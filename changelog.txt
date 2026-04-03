@@ -71,3 +71,10 @@
 - Implemented IIslandRenderer interface, RenderContext, and SpaEnvelope
 - Implemented LocaleInfo and AlternateLanguagePage records
 - Added tests for highlighting, islands, and localization types
+
+## Task 10: Link Verification + Registration API
+- Implemented LinkCheckResult union (ValidLink, BrokenLinkResult, ExternalLink)
+- Implemented PennOptions with SiteTitle, SiteDescription, CanonicalBaseUrl, ContentRootPath
+- Implemented MarkdownContentOptions for content source configuration
+- Implemented HighlightingOptions, IslandsOptions, LocalizationOptions
+- Added tests for link check union and full registration API

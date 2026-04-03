@@ -1,0 +1,141 @@
+using Penn.Generation;
+using Penn.Infrastructure;
+using Penn.Routing;
+
+namespace Penn.Tests.Infrastructure;
+
+public class LinkCheckResultTests
+{
+    private static ContentRoute MakeRoute(string path = "/test") => new()
+    {
+        CanonicalPath = new UrlPath(path),
+        OutputFile = new FilePath($"{path.TrimStart('/')}/index.html")
+    };
+
+    // --- Construction tests ---
+
+    [Fact]
+    public void ConstructFromValidLink()
+    {
+        var valid = new ValidLink(MakeRoute(), "https://example.com");
+        var result = new LinkCheckResult(valid);
+        (result is ValidLink).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ConstructFromBrokenLinkResult()
+    {
+        var broken = new BrokenLinkResult(MakeRoute(), "/missing", LinkType.Internal, "Page not found");
+        var result = new LinkCheckResult(broken);
+        (result is BrokenLinkResult).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ConstructFromExternalLink()
+    {
+        var external = new ExternalLink(MakeRoute(), "https://external.com/page");
+        var result = new LinkCheckResult(external);
+        (result is ExternalLink).ShouldBeTrue();
+    }
+
+    // --- Property verification ---
+
+    [Fact]
+    public void ValidLink_PreservesProperties()
+    {
+        var route = MakeRoute("/docs/intro");
+        var valid = new ValidLink(route, "/docs/other");
+        var result = new LinkCheckResult(valid);
+
+        var recovered = result switch
+        {
+            ValidLink v => v,
+            _ => null
+        };
+
+        recovered.ShouldNotBeNull();
+        recovered.SourcePage.ShouldBe(route);
+        recovered.Url.ShouldBe("/docs/other");
+    }
+
+    [Fact]
+    public void BrokenLinkResult_PreservesProperties()
+    {
+        var route = MakeRoute("/blog/post");
+        var broken = new BrokenLinkResult(route, "/nowhere", LinkType.Internal, "Not found");
+        var result = new LinkCheckResult(broken);
+
+        var recovered = result switch
+        {
+            BrokenLinkResult b => b,
+            _ => null
+        };
+
+        recovered.ShouldNotBeNull();
+        recovered.SourcePage.ShouldBe(route);
+        recovered.Url.ShouldBe("/nowhere");
+        recovered.Type.ShouldBe(LinkType.Internal);
+        recovered.Reason.ShouldBe("Not found");
+    }
+
+    [Fact]
+    public void ExternalLink_PreservesProperties()
+    {
+        var route = MakeRoute("/page");
+        var external = new ExternalLink(route, "https://github.com");
+        var result = new LinkCheckResult(external);
+
+        var recovered = result switch
+        {
+            ExternalLink e => e,
+            _ => null
+        };
+
+        recovered.ShouldNotBeNull();
+        recovered.SourcePage.ShouldBe(route);
+        recovered.Url.ShouldBe("https://github.com");
+    }
+
+    // --- Exhaustive pattern matching ---
+
+    [Fact]
+    public void ExhaustivePatternMatch_AllThreeCases()
+    {
+        var route = MakeRoute("/test");
+        LinkCheckResult valid = new LinkCheckResult(new ValidLink(route, "/ok"));
+        LinkCheckResult broken = new LinkCheckResult(new BrokenLinkResult(route, "/bad", LinkType.Anchor, "Missing anchor"));
+        LinkCheckResult external = new LinkCheckResult(new ExternalLink(route, "https://ext.com"));
+
+        Describe(valid).ShouldBe("Valid: /ok");
+        Describe(broken).ShouldBe("Broken: /bad (Anchor)");
+        Describe(external).ShouldBe("External: https://ext.com");
+    }
+
+    private static string Describe(LinkCheckResult result) => result switch
+    {
+        ValidLink v => $"Valid: {v.Url}",
+        BrokenLinkResult b => $"Broken: {b.Url} ({b.Type})",
+        ExternalLink e => $"External: {e.Url}",
+        _ => throw new InvalidOperationException("Unknown LinkCheckResult case")
+    };
+
+    // --- BrokenLinkResult uses LinkType from Penn.Generation ---
+
+    [Fact]
+    public void BrokenLinkResult_SupportsAllLinkTypes()
+    {
+        var route = MakeRoute();
+
+        var @internal = new BrokenLinkResult(route, "/a", LinkType.Internal, "not found");
+        @internal.Type.ShouldBe(LinkType.Internal);
+
+        var external = new BrokenLinkResult(route, "/b", LinkType.External, "timeout");
+        external.Type.ShouldBe(LinkType.External);
+
+        var anchor = new BrokenLinkResult(route, "/c#heading", LinkType.Anchor, "missing anchor");
+        anchor.Type.ShouldBe(LinkType.Anchor);
+
+        var image = new BrokenLinkResult(route, "/img.png", LinkType.Image, "404");
+        image.Type.ShouldBe(LinkType.Image);
+    }
+}
