@@ -132,3 +132,10 @@
 - Created Penn.UI (Razor SDK), Penn.MonorailCss, Penn.DocSite (Razor SDK), Penn.Docs (Web SDK), Penn.IntegrationTests
 - Updated Penn.slnx with all new projects
 - Added Markdig, AngleSharp, Mdazor, TextMateSharp, System.ServiceModel.Syndication to Penn.csproj
+
+## Task 19: Port T2 - Markdig Parser + Renderer
+- Implemented MarkdownContentParser<TFrontMatter> (IContentParser) using FrontMatterParser
+- Implemented MarkdownContentRenderer (IContentRenderer) using Markdig pipeline
+- Implemented MarkdownPipelineFactory for configuring Markdig extensions
+- Implemented MarkdownOutlineGenerator for flat OutlineEntry[] extraction
+- Tests cover parsing with/without front matter, rendering to HTML, outline extraction
