@@ -238,3 +238,10 @@
 - Modified CodeHighlightRenderer to check preprocessors before normal highlighting
 - Modified MarkdownPipelineFactory to thread preprocessors through pipeline
 - Registered IFileWatcher in AddPenn()
+
+## Roslyn T2: Penn.Roslyn Scaffold + Basic Highlighting
+- Created Penn.Roslyn project (Microsoft.CodeAnalysis, MSBuild.Locator, DiffPlex)
+- Created Penn.Roslyn.Tests project
+- Implemented RoslynHighlighter (ICodeHighlighter, priority 100, C#/VB)
+- Implemented SyntaxHighlighter (AdhocWorkspace + Classifier API → hljs-* CSS)
+- Implemented RoslynOptions and initial AddPennRoslyn() registration

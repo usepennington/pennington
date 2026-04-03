@@ -4,10 +4,12 @@
     <Project Path="src/Penn.UI/Penn.UI.csproj" />
     <Project Path="src/Penn.MonorailCss/Penn.MonorailCss.csproj" />
     <Project Path="src/Penn.DocSite/Penn.DocSite.csproj" />
+    <Project Path="src/Penn.Roslyn/Penn.Roslyn.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Penn.Tests/Penn.Tests.csproj" />
     <Project Path="tests/Penn.IntegrationTests/Penn.IntegrationTests.csproj" />
+    <Project Path="tests/Penn.Roslyn.Tests/Penn.Roslyn.Tests.csproj" />
   </Folder>
   <Folder Name="/docs/">
     <Project Path="docs/Penn.Docs/Penn.Docs.csproj" />
