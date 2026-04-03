@@ -1,0 +1,10 @@
+
+<div class="mx-4">
+<ol class="relative text-gray-500 border-l-2 border-base-200 dark:border-base-800 dark:text-base-400 list-none ">
+    @ChildContent
+</ol>
+</div>
+@code {
+    [Parameter] public string Type { get; set; } = "primary";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

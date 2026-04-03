@@ -1,0 +1,40 @@
+
+<span class="inline-flex align-middle rounded items-center px-@PaddingX py-@PaddingY text-@TextSize ring-1 ring-inset ring-@Color-300 dark:ring-@Color-400/30 bg-@Color-400/10 text-@Color-500 dark:text-@Color-400">
+    @Text
+</span>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public string Variant { get; set; } = "note";
+    [Parameter] public string Size { get; set; } = "medium";
+
+    private string Color => Variant switch
+    {
+        "success" => "emerald",
+        "tip" => "sky",
+        "caution" => "amber",
+        "danger" => "rose",
+        _ => "base"
+    };
+
+    private string PaddingX => Size switch
+    {
+        "small" => "2.5",
+        "large" => "3",
+        _ => "2.5"
+    };
+
+    private string PaddingY => Size switch
+    {
+        "small" => "1",
+        "large" => ".75",
+        _ => "1"
+    };
+
+    private string TextSize => Size switch
+    {
+        "small" => "xs",
+        "large" => "base",
+        _ => "sm"
+    };
+}

@@ -1,0 +1,13 @@
+
+<li class="mb-10 ">
+    <span class="not-prose -start-3 lg:-start-4 absolute flex items-center font-display text-xs lg:text-base font-bold justify-center mt-0.5 lg:mt-0 w-6 h-6 lg:w-8 lg:h-8 bg-base-100 rounded-full ring-2 ring-base-300 dark:ring-base-800 dark:bg-base-900">
+        @StepNumber
+    </span>
+
+    @ChildContent
+</li>
+
+@code {
+    [Parameter] public string StepNumber { get; set; } = "1";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

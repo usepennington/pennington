@@ -173,3 +173,11 @@
 - Ported ColorPaletteGenerator (OKLCH palette generation)
 - Ported MonorailServiceExtensions (AddMonorailCss/UseMonorailCss)
 - Added tests for class collection and extraction
+
+## Task 24: Port T7 - Penn.UI Components
+- Copied scripts.js and spa-engine.js to Penn.UI/wwwroot
+- Ported 12 Razor components from MyLittleContentEngine.UI
+  - TableOfContentsNavigation, OutlineNavigation, Badge, Card, CardGrid
+  - LinkCard, Steps, Step, BigTable, FallbackNotice, LanguageSwitcher, CodeBlock
+- Updated type references: NavigationTreeItem.Title/Route, ICodeHighlighter
+- Updated _Imports.razor with Penn namespaces

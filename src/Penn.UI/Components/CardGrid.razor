@@ -1,0 +1,8 @@
+<div class="not-prose mt-6 mb-8 grid grid-cols-1 gap-6 sm:grid-cols-@Columns">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public string Columns { get; set; } = "2";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

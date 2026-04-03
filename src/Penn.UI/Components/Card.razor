@@ -1,0 +1,25 @@
+<div class="not-prose">
+    <div class="group h-full relative rounded-xl text-@Color-900 dark:text-@Color-50 border border-@Color-200 dark:border-@Color-900 dark:border-@Color-800 bg-@Color-200/50 dark:bg-@Color-500/10">
+        <div class="relative flex flex-row gap-x-4 overflow-hidden rounded-xl p-6">
+            @if (Icon != null)
+            {
+                <div class="pt-1 text-@Color-700 dark:text-@Color-500 fill-@Color-200 dark:fill-@Color-950">
+                    @Icon
+                </div>
+            }
+            <div>
+                <h2 class="font-display font-bold text-@Color-900 dark:text-@Color-50 pb-2" >@Title</h2>
+                <div class="text-sm">
+                    @ChildContent
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Icon { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string Color { get; set; } = "primary";
+
+}

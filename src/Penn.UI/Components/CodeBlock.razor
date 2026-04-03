@@ -1,0 +1,152 @@
+@using Penn.Highlighting
+@using Microsoft.AspNetCore.Components.RenderTree
+@inject ICodeHighlighter CodeHighlighter
+
+@((MarkupString)_highlightedHtml)
+
+@code {
+
+    // Right now we get a compiler warning of: The types in 'Microsoft.AspNetCore.Components.RenderTree' are not
+    // recommended for use outside of the Blazor framework. These type definitions will change in future releases.
+    // Not sure how else to grab this content, so damn the torpedoes.
+#pragma warning disable BL0006
+
+    /// <summary>
+    /// The programming language for syntax highlighting (e.g., "csharp", "python", "javascript").
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string Language { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The code content to highlight. Provide either this parameter or ChildContent.
+    /// </summary>
+    [Parameter]
+    public string? Code { get; set; }
+
+    /// <summary>
+    /// The code content to highlight as child content. Provide either this or the Code parameter.
+    /// Example: &lt;CodeBlock Language="csharp"&gt;var x = 1;&lt;/CodeBlock&gt;
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Indicates whether this code block is part of a tabbed code group.
+    /// When true, omits standalone container CSS classes. Default is false.
+    /// </summary>
+    [Parameter]
+    public bool IsInTabGroup { get; set; }
+
+    private string _highlightedHtml = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(Language))
+        {
+            _highlightedHtml = "<div class=\"text-danger\">Error: Language parameter is required.</div>";
+            return;
+        }
+
+        // Get code from either parameter or child content
+        var codeToHighlight = Code ?? (ChildContent != null ? ExtractTextFromRenderFragment() : null);
+
+        if (string.IsNullOrWhiteSpace(codeToHighlight))
+        {
+            _highlightedHtml = "<div class=\"text-danger\">Error: Code content is required (provide Code parameter or ChildContent).</div>";
+            return;
+        }
+
+        // Normalize indentation (especially important for ChildContent which includes .razor file indentation)
+        codeToHighlight = NormalizeIndents(codeToHighlight);
+
+        // Highlight the code using the service
+        _highlightedHtml = CodeHighlighter.Highlight(
+            code: codeToHighlight.Trim(),
+            language: Language);
+    }
+
+    private string ExtractTextFromRenderFragment()
+    {
+        if (ChildContent == null)
+            return string.Empty;
+
+        using var writer = new StringWriter();
+
+        try
+        {
+            var builder = new Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder();
+            ChildContent(builder);
+            var frames = builder.GetFrames();
+
+            foreach (var frame in frames.Array)
+            {
+                if (frame.FrameType is RenderTreeFrameType.Text or RenderTreeFrameType.Markup)
+                {
+                    writer.Write(frame.TextContent);
+                }
+            }
+
+            return writer.ToString();
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Normalizes indentation by removing the common leading whitespace from all non-empty lines.
+    /// </summary>
+    private static string NormalizeIndents(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return text;
+
+        var lines = text.Split('\n');
+        var minIndent = int.MaxValue;
+
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            var indent = 0;
+            foreach (var ch in line)
+            {
+                if (ch == ' ') indent++;
+                else if (ch == '\t') indent += 4;
+                else break;
+            }
+
+            if (indent < minIndent)
+                minIndent = indent;
+        }
+
+        if (minIndent == 0 || minIndent == int.MaxValue)
+            return text;
+
+        var result = new System.Text.StringBuilder();
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                result.AppendLine();
+            }
+            else
+            {
+                var removed = 0;
+                var startIndex = 0;
+                foreach (var ch in line)
+                {
+                    if (removed >= minIndent) break;
+                    if (ch == ' ') { removed++; startIndex++; }
+                    else if (ch == '\t') { removed += 4; startIndex++; }
+                    else break;
+                }
+                result.AppendLine(line[startIndex..]);
+            }
+        }
+
+        return result.ToString();
+    }
+}
