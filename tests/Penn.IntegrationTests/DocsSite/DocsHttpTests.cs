@@ -69,13 +69,31 @@ public class DocsHttpTests : IClassFixture<DocsWebApplicationFactory>
     }
 
     [Fact]
-    public async Task SpaDataEndpoint_DoesNotThrowDiException()
+    public async Task SpaDataEndpoint_ReturnsJsonForContentPage()
     {
         var response = await _client.GetAsync("/_spa-data/getting-started/creating-first-site.json");
-        // The SPA endpoint had a DI issue (RenderContext not registered).
-        // With the fix, the endpoint resolves without throwing.
-        // It returns 404 when no IIslandRenderer implementations are registered
-        // (the default for docs sites), which is correct behavior.
+        response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync();
+        content.ShouldContain("Creating Your First Site");
+        content.ShouldContain("islands");
+        content.ShouldContain("content");
+    }
+
+    [Fact]
+    public async Task SpaDataEndpoint_ReturnsIslandHtmlWithArticle()
+    {
+        var response = await _client.GetAsync("/_spa-data/getting-started/creating-first-site.json");
+        var content = await response.Content.ReadAsStringAsync();
+        // The "content" island should contain the rendered article with prose styling.
+        // Angle brackets are JSON-encoded (\u003C), so check for the class name and tag.
+        content.ShouldContain("prose");
+        content.ShouldContain("header");
+    }
+
+    [Fact]
+    public async Task SpaDataEndpoint_Returns404ForNonExistentPage()
+    {
+        var response = await _client.GetAsync("/_spa-data/does-not-exist.json");
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.NotFound);
     }
 

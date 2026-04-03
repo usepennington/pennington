@@ -222,3 +222,11 @@
 - Added InternalsVisibleTo for test project access
 - Fixed content path resolution in AddPenn() and UsePenn() to use IWebHostEnvironment.ContentRootPath instead of Directory.GetCurrentDirectory()
 - Tests verify end-to-end page rendering, navigation, and SPA endpoints
+
+## SPA Island Rendering
+- Implemented ComponentRenderer (Blazor HtmlRenderer for server-side component rendering)
+- Implemented RazorIslandRenderer<T> base class for island renderers
+- Implemented DocSiteArticleSlotRenderer for the "content" island
+- Registered island renderer and ComponentRenderer in DocSite DI
+- Updated SPA endpoint to resolve page titles from content services
+- Integration tests verify SPA data endpoint returns rendered article HTML

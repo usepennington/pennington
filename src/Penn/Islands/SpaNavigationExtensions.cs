@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Penn.Content;
 using Penn.Infrastructure;
 using Penn.Routing;
 
@@ -41,7 +42,7 @@ public static class SpaNavigationExtensions
         var options = app.ServiceProvider.GetRequiredService<SpaNavigationOptions>();
         var dataPath = options.DataPath.TrimStart('/');
 
-        app.MapGet($"/{dataPath}/{{*slug}}", async (string? slug, SpaPageDataService service) =>
+        app.MapGet($"/{dataPath}/{{*slug}}", async (string? slug, SpaPageDataService service, IEnumerable<IContentService> contentServices) =>
         {
             if (slug == null) return Results.NotFound();
 
@@ -56,8 +57,20 @@ public static class SpaNavigationExtensions
                 OutputFile = new Routing.FilePath($"{url.TrimStart('/')}/index.html".TrimStart('/'))
             };
 
-            // For now, use slug as title - the DocSite will provide proper metadata
-            var data = await service.GetPageDataAsync(route, slug);
+            // Try to resolve the page title from content services
+            string title = slug;
+            foreach (var svc in contentServices)
+            {
+                var tocItems = await svc.GetContentTocEntriesAsync();
+                var match = tocItems.FirstOrDefault(t => t.Route.CanonicalPath.Matches(new Routing.UrlPath(url)));
+                if (match != null)
+                {
+                    title = match.Title;
+                    break;
+                }
+            }
+
+            var data = await service.GetPageDataAsync(route, title);
             return data is null
                 ? Results.NotFound()
                 : Results.Content(SpaEnvelopeSerializer.Serialize(data), "application/json");

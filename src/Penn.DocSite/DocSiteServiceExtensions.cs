@@ -57,6 +57,12 @@ public static class DocSiteServiceExtensions
         // SPA navigation
         services.AddSpaNavigation();
 
+        // Component renderer for SPA islands
+        services.AddScoped<ComponentRenderer>();
+
+        // Register the article island renderer
+        services.AddTransient<IIslandRenderer, Slots.DocSiteArticleSlotRenderer>();
+
         // Content resolver
         services.AddTransient<Services.ContentResolver>();
 
