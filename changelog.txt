@@ -1,0 +1,10 @@
+# Penn Changelog
+
+## Task 1: Project Scaffolding & Git Init
+- Created Penn.slnx solution
+- Created src/Penn class library (net11.0, C# preview)
+- Created tests/Penn.Tests xUnit project with FluentAssertions
+- Added C# 15 union type polyfills
+- Created directory structure per architecture spec
+- Initialized git repository
+- Created CLAUDE.md with build/test/convention docs

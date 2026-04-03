@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Penn/Penn.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Penn.Tests/Penn.Tests.csproj" />
+  </Folder>
+</Solution>
