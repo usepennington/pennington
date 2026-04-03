@@ -37,11 +37,19 @@ public static class PennExtensions
         // Core services
         services.AddSingleton<FrontMatterParser>();
         services.AddSingleton<NavigationBuilder>();
+
+        // Highlighting: register TextMate and Shell highlighters, then the service
+        services.AddSingleton<TextMateLanguageRegistry>();
+        services.AddSingleton<ICodeHighlighter, TextMateHighlighter>(sp =>
+            new TextMateHighlighter(sp.GetRequiredService<TextMateLanguageRegistry>()));
+        services.AddSingleton<ICodeHighlighter, ShellHighlighter>();
         services.AddSingleton<HighlightingService>(sp =>
             new HighlightingService(sp.GetServices<ICodeHighlighter>()));
 
-        // Markdown pipeline
-        services.AddSingleton<MarkdownPipeline>(_ => MarkdownPipelineFactory.CreateDefault());
+        // Markdown pipeline — includes highlighting, tabs, and custom alerts
+        services.AddSingleton<MarkdownPipeline>(sp =>
+            MarkdownPipelineFactory.CreateWithExtensions(
+                sp.GetRequiredService<HighlightingService>()));
         services.AddTransient<IContentRenderer, MarkdownContentRenderer>();
 
         // Register markdown content services for each configured source

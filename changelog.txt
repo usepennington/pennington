@@ -202,3 +202,15 @@
 - Ported Index.razor homepage from v1
 - Updated Pages.razor with dynamic component fallback for Razor pages
 - Supports any @page component (homepage, about pages, etc.)
+
+## Task 27: Markdig Extensions - Highlighting, Tabs, Alerts
+- Ported TextMateHighlighter (ICodeHighlighter, priority 50) with TextMateSharp
+- Ported TextMateLanguageRegistry for custom grammar support
+- Ported ShellHighlighter (ICodeHighlighter, priority 75) for bash/shell
+- Ported CodeTransformer for [!code highlight/++/--/focus/error/warning/word] directives
+- Ported CodeHighlightRenderer, CodeBlockHtmlBuilder, CodeBlockExtensions
+- Ported TabbedCodeBlocks extension (TabbedCodeBlock, renderer, LanguageNormalizer)
+- Ported CustomAlertInlineParser for [!NOTE], [!TIP], [!WARNING], etc.
+- Updated MarkdownPipelineFactory with highlighting, tabs, and alert extensions
+- Registered TextMateHighlighter and ShellHighlighter in AddPenn()
+- Roslyn highlighting deferred to optional Penn.Roslyn package
