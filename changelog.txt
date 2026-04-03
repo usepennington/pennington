@@ -164,3 +164,12 @@
 - Implemented SpaPageDataService coordinating IIslandRenderer instances
 - Implemented SpaNavigationExtensions (AddSpaNavigation, UseSpaNavigation endpoint)
 - Tests cover slug conversion, envelope assembly, empty/multi-renderer scenarios
+
+## Task 23: Port T6 - Penn.MonorailCss
+- Ported CssClassCollector (thread-safe class name storage)
+- Ported CssClassCollectorProcessor (IResponseProcessor for HTML/JSON class extraction)
+- Ported MonorailCssOptions, IColorScheme, AlgorithmicColorScheme, NamedColorScheme
+- Ported MonorailCssService with full Applies dictionaries (code blocks, tabs, alerts, HLJS, search)
+- Ported ColorPaletteGenerator (OKLCH palette generation)
+- Ported MonorailServiceExtensions (AddMonorailCss/UseMonorailCss)
+- Added tests for class collection and extraction
