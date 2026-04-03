@@ -139,3 +139,13 @@
 - Implemented MarkdownPipelineFactory for configuring Markdig extensions
 - Implemented MarkdownOutlineGenerator for flat OutlineEntry[] extraction
 - Tests cover parsing with/without front matter, rendering to HTML, outline extraction
+
+## Task 20: Port T3 - File Discovery + MarkdownContentService
+- Implemented MarkdownContentServiceOptions for configuring content sources
+- Implemented MarkdownContentService<TFrontMatter> (IContentService)
+  - DiscoverAsync yields DiscoveredItems for each .md file
+  - GetContentTocEntriesAsync with HierarchyParts from URL, draft/section handling
+  - GetCrossReferencesAsync for xref resolution (ICrossReferenceable)
+  - GetContentToCopyAsync excludes .md/.mdx/.razor/.yml files
+  - Caches front matter metadata for performance
+- Tests cover discovery, routing, TOC, drafts, cross-refs, copy exclusions
