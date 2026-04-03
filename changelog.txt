@@ -43,3 +43,11 @@
 - Implemented 4 case records: DiscoveredItem, ParsedItem, RenderedItem, FailedItem
 - Implemented ContentItem union with Route property accessible on all cases
 - Added tests for union construction, Route property, exhaustive matching, error propagation
+
+## Task 6: Build Report System
+- Implemented BuildDiagnostic union (DiagnosticInfo, DiagnosticWarning, DiagnosticError)
+  - Shared Route and Message properties on the union
+- Implemented BrokenLink record with LinkType enum
+- Implemented BuildReport class with HasErrors, TotalPages
+- Implemented BuildReportBuilder for accumulating diagnostics and results
+- Added comprehensive tests for diagnostics, report, and builder
