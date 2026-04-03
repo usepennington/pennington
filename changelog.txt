@@ -111,3 +111,10 @@
 - Implemented RssFeedBuilder with date sorting and draft/undated exclusion
 - All builders use capability interface checks (IDraftable, IDateable, etc.)
 - Tests cover happy path, draft exclusion, date handling, HTML stripping
+
+## Task 16: Link Verification Service
+- Implemented LinkVerificationService for static link analysis
+- Extracts href and src attributes from rendered HTML via regex
+- Classifies links as ValidLink, BrokenLinkResult, or ExternalLink
+- Handles query strings, anchors, trailing slashes, external URLs
+- Tests cover valid/broken/external links, images, mixed pages
