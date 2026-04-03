@@ -38,3 +38,8 @@
 - Implemented ProgrammaticContent union (TextProgrammaticContent, BinaryProgrammaticContent)
 - Implemented IProgrammaticContentGenerator interface
 - Added tests for all types, union conversions, and exhaustive pattern matching
+
+## Task 5: ContentItem Union
+- Implemented 4 case records: DiscoveredItem, ParsedItem, RenderedItem, FailedItem
+- Implemented ContentItem union with Route property accessible on all cases
+- Added tests for union construction, Route property, exhaustive matching, error propagation
