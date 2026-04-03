@@ -10,7 +10,7 @@ using Penn.Roslyn.Utilities;
 /// <summary>
 /// Roslyn Classifier API wrapper that produces HTML with hljs-* and roslyn-* CSS classes.
 /// </summary>
-internal sealed class SyntaxHighlighter : IDisposable
+public sealed class SyntaxHighlighter : IDisposable
 {
     private readonly AdhocWorkspace _adHocWorkspace;
     private readonly Project _csharpProject;

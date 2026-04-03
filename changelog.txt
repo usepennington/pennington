@@ -263,3 +263,14 @@
 - Implemented XmlDocIdNormalizer for consistent xmldocid lookup
 - Implemented TextFormatter.NormalizeIndents()
 - Tests cover xmldocid normalization, code fragment extraction, indentation
+
+## Roslyn T5: Preprocessor + Full DI Wiring
+- Implemented RoslynCodeBlockPreprocessor (ICodeBlockPreprocessor)
+  - :xmldocid — extracts and highlights symbol code by XML documentation ID
+  - :xmldocid,bodyonly — extracts only the method/class body
+  - :xmldocid-diff — highlights two symbols and shows line-level diff
+  - :path — reads and highlights file relative to solution root
+- Finalized AddPennRoslyn() with full service registration
+  - SolutionWorkspaceService, SymbolExtractionService registered when SolutionPath set
+  - RoslynCodeBlockPreprocessor registered as ICodeBlockPreprocessor
+- Penn.Roslyn integration is now complete and pluggable

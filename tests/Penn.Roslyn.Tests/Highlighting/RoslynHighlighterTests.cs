@@ -4,7 +4,13 @@ using Penn.Roslyn.Highlighting;
 
 public sealed class RoslynHighlighterTests : IDisposable
 {
-    private readonly RoslynHighlighter _highlighter = new();
+    private readonly SyntaxHighlighter _syntaxHighlighter = new();
+    private readonly RoslynHighlighter _highlighter;
+
+    public RoslynHighlighterTests()
+    {
+        _highlighter = new RoslynHighlighter(_syntaxHighlighter);
+    }
 
     [Fact]
     public void Highlights_CSharp_Code_With_Spans()
@@ -67,5 +73,5 @@ public sealed class RoslynHighlighterTests : IDisposable
         result.ShouldContain("hljs-keyword");
     }
 
-    public void Dispose() => _highlighter.Dispose();
+    public void Dispose() => _syntaxHighlighter.Dispose();
 }

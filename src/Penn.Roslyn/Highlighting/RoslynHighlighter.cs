@@ -6,9 +6,14 @@ using Penn.Highlighting;
 /// Roslyn-based code highlighter for C# and VB. Priority 100 (beats TextMate at 50).
 /// Uses AdhocWorkspace + Classifier API -- no solution workspace needed.
 /// </summary>
-public sealed class RoslynHighlighter : ICodeHighlighter, IDisposable
+public sealed class RoslynHighlighter : ICodeHighlighter
 {
-    private readonly SyntaxHighlighter _highlighter = new();
+    private readonly SyntaxHighlighter _highlighter;
+
+    public RoslynHighlighter(SyntaxHighlighter highlighter)
+    {
+        _highlighter = highlighter;
+    }
 
     public IReadOnlySet<string> SupportedLanguages { get; } =
         new HashSet<string> { "csharp", "cs", "c#", "vb", "vbnet" };
@@ -25,6 +30,4 @@ public sealed class RoslynHighlighter : ICodeHighlighter, IDisposable
 
         return _highlighter.Highlight(code, lang);
     }
-
-    public void Dispose() => _highlighter.Dispose();
 }
