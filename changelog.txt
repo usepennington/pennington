@@ -97,3 +97,10 @@
 - Added WriteTo(TextWriter) and ToFormattedString() to BuildReport
 - Structured output: summary, errors with source files, warnings, broken links
 - Tests cover clean builds, error/warning/broken-link scenarios, formatting
+
+## Task 14: Front Matter Parsing
+- Added YamlDotNet package dependency
+- Implemented FrontMatterParser with YAML extraction and deserialization
+- FrontMatterResult<T> carries parsed metadata + remaining markdown body
+- Supports camelCase YAML properties, ignores unknown fields
+- Tests cover DocFrontMatter, BlogFrontMatter, missing/empty front matter, tags, dates
