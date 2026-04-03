@@ -29,3 +29,12 @@
 - Implemented DocFrontMatter convenience record (FrontMatter/DocFrontMatter.cs)
 - Implemented BlogFrontMatter convenience record (FrontMatter/BlogFrontMatter.cs)
 - Added tests for interface implementation, defaults, capability checking
+
+## Task 4: Pipeline Support Types + ContentSource Union
+- Implemented supporting records: OutlineEntry, Tag, CrossReference, SocialMetadata, ContentError
+- Implemented RenderedContent record with ImmutableList collections
+- Implemented SearchIndexDocument record (Search/SearchIndexDocument.cs)
+- Implemented ContentSource union (MarkdownFileSource, RazorPageSource, RedirectSource, ProgrammaticSource)
+- Implemented ProgrammaticContent union (TextProgrammaticContent, BinaryProgrammaticContent)
+- Implemented IProgrammaticContentGenerator interface
+- Added tests for all types, union conversions, and exhaustive pattern matching
