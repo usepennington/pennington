@@ -24,4 +24,7 @@ public record DocSiteOptions
     public string? ExtraStyles { get; init; }
     public string? AdditionalHtmlHeadContent { get; init; }
     public Assembly[] AdditionalRoutingAssemblies { get; init; } = [];
+
+    /// <summary>Path to .sln or .slnx for Roslyn integration. Requires Penn.Roslyn package.</summary>
+    public string? SolutionPath { get; init; }
 }
