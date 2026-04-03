@@ -84,3 +84,11 @@
 - Falls back to PlainTextHighlighter when no registered highlighter matches
 - HasHighlighter() for server vs client-side highlighting decisions
 - Tests cover priority resolution, fallback, multi-language scenarios
+
+## Task 12: Navigation Tree Builder
+- Implemented NavigationBuilder with BuildTree() and BuildNavigationInfo()
+- Tree building from flat ContentTocItem list using HierarchyParts
+- Selection state and ancestor expansion from current route
+- Depth-first prev/next navigation
+- Breadcrumb trail computation
+- Tests cover hierarchy, ordering, selection, prev/next, breadcrumbs
