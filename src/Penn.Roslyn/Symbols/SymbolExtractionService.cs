@@ -1,0 +1,225 @@
+namespace Penn.Roslyn.Symbols;
+
+using System.Collections.Concurrent;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
+using Penn.Roslyn.Utilities;
+using Penn.Roslyn.Workspace;
+
+/// <summary>
+/// Extracts all symbols from a Roslyn Solution and enables lookup by XML documentation ID.
+/// Uses <see cref="AsyncLazy{T}"/> for lazy one-time symbol table loading with retry on failure.
+/// </summary>
+internal sealed class SymbolExtractionService : ISymbolExtractionService
+{
+    private readonly ISolutionWorkspaceService _workspaceService;
+    private readonly ILogger<SymbolExtractionService> _logger;
+    private AsyncLazy<IReadOnlyDictionary<string, SymbolInfo>> _symbolsLazy;
+
+    public SymbolExtractionService(
+        ISolutionWorkspaceService workspaceService,
+        ILogger<SymbolExtractionService> logger)
+    {
+        ArgumentNullException.ThrowIfNull(workspaceService);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        _workspaceService = workspaceService;
+        _logger = logger;
+        _symbolsLazy = new AsyncLazy<IReadOnlyDictionary<string, SymbolInfo>>(LoadAllSymbolsAsync);
+    }
+
+    public async Task<IReadOnlyDictionary<string, SymbolInfo>> ExtractSymbolsAsync(Solution solution)
+    {
+        var symbols = new ConcurrentDictionary<string, SymbolInfo>(StringComparer.Ordinal);
+
+        await Parallel.ForEachAsync(solution.Projects, async (project, ct) =>
+        {
+            var compilation = await project.GetCompilationAsync(ct);
+            if (compilation is null)
+            {
+                _logger.LogWarning("Failed to get compilation for project {ProjectName}", project.Name);
+                return;
+            }
+
+            await Parallel.ForEachAsync(project.Documents, async (document, ct2) =>
+            {
+                try
+                {
+                    await ExtractDocumentSymbolsAsync(document, compilation, project, symbols, ct2);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to extract symbols from {DocumentPath}", document.FilePath);
+                }
+            });
+        });
+
+        _logger.LogDebug("Extracted {Count} symbols from solution", symbols.Count);
+        return symbols;
+    }
+
+    public async Task<SymbolInfo?> FindSymbolAsync(string xmlDocId)
+    {
+        var normalizedId = XmlDocIdNormalizer.Normalize(xmlDocId);
+        var symbols = await _symbolsLazy.Value;
+
+        if (symbols.TryGetValue(normalizedId, out var symbolInfo))
+        {
+            return symbolInfo;
+        }
+
+        _logger.LogTrace("Symbol not found for xmlDocId: {XmlDocId} (normalized: {NormalizedId})", xmlDocId, normalizedId);
+        return null;
+    }
+
+    public async Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false)
+    {
+        var symbolInfo = await FindSymbolAsync(xmlDocId);
+        if (symbolInfo is null)
+        {
+            _logger.LogWarning("Cannot extract code fragment — symbol not found: {XmlDocId}", xmlDocId);
+            return string.Empty;
+        }
+
+        var root = await symbolInfo.Document.GetSyntaxRootAsync();
+        if (root is null)
+        {
+            return string.Empty;
+        }
+
+        // Find the node in the current syntax tree by its span
+        var node = root.FindNode(symbolInfo.TextSpan);
+        if (node is null)
+        {
+            return string.Empty;
+        }
+
+        // Extend span to include leading whitespace trivia
+        var leadingTrivia = node.GetLeadingTrivia();
+        var extendedSpan = leadingTrivia.Count > 0
+            ? TextSpan.FromBounds(leadingTrivia.FullSpan.Start, node.Span.End)
+            : node.Span;
+
+        var sourceText = await symbolInfo.Document.GetTextAsync();
+        var fullText = sourceText.ToString();
+
+        var fragment = await CodeFragmentExtractor.ExtractCodeFragmentAsync(node, fullText, bodyOnly);
+        return TextFormatter.NormalizeIndents(fragment);
+    }
+
+    public void ClearCache()
+    {
+        _logger.LogDebug("Clearing symbol extraction cache");
+        _symbolsLazy.Reset();
+    }
+
+    private async Task<IReadOnlyDictionary<string, SymbolInfo>> LoadAllSymbolsAsync()
+    {
+        _logger.LogDebug("Loading all symbols from workspace");
+
+        var projects = await _workspaceService.GetProjectsAsync();
+        var solution = projects.FirstOrDefault()?.Solution;
+
+        if (solution is null)
+        {
+            _logger.LogWarning("No solution available from workspace service");
+            return new Dictionary<string, SymbolInfo>();
+        }
+
+        return await ExtractSymbolsAsync(solution);
+    }
+
+    private async Task ExtractDocumentSymbolsAsync(
+        Document document,
+        Compilation compilation,
+        Project project,
+        ConcurrentDictionary<string, SymbolInfo> symbols,
+        CancellationToken ct)
+    {
+        var syntaxRoot = await document.GetSyntaxRootAsync(ct);
+        if (syntaxRoot is null)
+        {
+            return;
+        }
+
+        var semanticModel = compilation.GetSemanticModel(syntaxRoot.SyntaxTree);
+        var sourceText = await document.GetTextAsync(ct);
+
+        // Extract type declarations and their members
+        foreach (var typeDecl in syntaxRoot.DescendantNodes().OfType<TypeDeclarationSyntax>())
+        {
+            AddSymbol(typeDecl, semanticModel, document, sourceText, project, symbols);
+
+            // Extract members within the type
+            foreach (var member in typeDecl.Members)
+            {
+                AddSymbol(member, semanticModel, document, sourceText, project, symbols);
+            }
+        }
+
+        // Extract delegate declarations
+        foreach (var delegateDecl in syntaxRoot.DescendantNodes().OfType<DelegateDeclarationSyntax>())
+        {
+            AddSymbol(delegateDecl, semanticModel, document, sourceText, project, symbols);
+        }
+
+        // Extract enum declarations and their members
+        foreach (var enumDecl in syntaxRoot.DescendantNodes().OfType<EnumDeclarationSyntax>())
+        {
+            AddSymbol(enumDecl, semanticModel, document, sourceText, project, symbols);
+
+            foreach (var member in enumDecl.Members)
+            {
+                AddSymbol(member, semanticModel, document, sourceText, project, symbols);
+            }
+        }
+
+        // Extract global statements (top-level programs)
+        foreach (var globalStatement in syntaxRoot.DescendantNodes().OfType<GlobalStatementSyntax>())
+        {
+            AddSymbol(globalStatement, semanticModel, document, sourceText, project, symbols);
+        }
+    }
+
+    private void AddSymbol(
+        SyntaxNode node,
+        SemanticModel semanticModel,
+        Document document,
+        SourceText sourceText,
+        Project project,
+        ConcurrentDictionary<string, SymbolInfo> symbols)
+    {
+        var symbol = semanticModel.GetDeclaredSymbol(node);
+        if (symbol is null)
+        {
+            return;
+        }
+
+        var docId = symbol.GetDocumentationCommentId();
+        if (string.IsNullOrEmpty(docId))
+        {
+            return;
+        }
+
+        var normalizedId = XmlDocIdNormalizer.Normalize(docId);
+
+        var xmlDoc = symbol.GetDocumentationCommentXml();
+
+        var info = new SymbolInfo(
+            Symbol: symbol,
+            Document: document,
+            SyntaxNode: node,
+            SourceText: sourceText,
+            TextSpan: node.Span,
+            XmlDocumentation: string.IsNullOrWhiteSpace(xmlDoc) ? null : xmlDoc,
+            Project: project
+        );
+
+        if (!symbols.TryAdd(normalizedId, info))
+        {
+            _logger.LogTrace("Duplicate symbol ID: {DocId}", normalizedId);
+        }
+    }
+}

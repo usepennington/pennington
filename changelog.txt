@@ -255,3 +255,11 @@
   - Full solution reload for structural changes (.csproj, .sln)
   - File watch integration via IFileWatcher
   - Compilation caching per project
+
+## Roslyn T4: Symbol Extraction + Code Fragment
+- Implemented ISymbolExtractionService with parallel symbol extraction
+- Implemented SymbolExtractionService with AsyncLazy cache
+- Implemented CodeFragmentExtractor with bodyOnly support
+- Implemented XmlDocIdNormalizer for consistent xmldocid lookup
+- Implemented TextFormatter.NormalizeIndents()
+- Tests cover xmldocid normalization, code fragment extraction, indentation
