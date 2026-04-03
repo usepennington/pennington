@@ -7,6 +7,15 @@
     <RootNamespace>Penn</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
+    <PackageReference Include="Markdig" Version="*" />
+    <PackageReference Include="AngleSharp" Version="*" />
+    <PackageReference Include="Mdazor" Version="0.0.0-alpha.0.13" />
+    <PackageReference Include="TextMateSharp" Version="*" />
+    <PackageReference Include="TextMateSharp.Grammars" Version="*" />
+    <PackageReference Include="System.ServiceModel.Syndication" Version="*" />
   </ItemGroup>
 </Project>

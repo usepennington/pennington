@@ -1,8 +1,15 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Penn/Penn.csproj" />
+    <Project Path="src/Penn.UI/Penn.UI.csproj" />
+    <Project Path="src/Penn.MonorailCss/Penn.MonorailCss.csproj" />
+    <Project Path="src/Penn.DocSite/Penn.DocSite.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Penn.Tests/Penn.Tests.csproj" />
+    <Project Path="tests/Penn.IntegrationTests/Penn.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/docs/">
+    <Project Path="docs/Penn.Docs/Penn.Docs.csproj" />
   </Folder>
 </Solution>

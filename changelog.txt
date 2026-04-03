@@ -127,3 +127,8 @@
 - Exception safety: parser/renderer exceptions wrapped into FailedItem
 - RunAsync() convenience for full end-to-end pipeline execution
 - Tests cover happy path, error propagation, drafts, exceptions, multiple services
+
+## Task 18: Port T1 - Project Scaffolding
+- Created Penn.UI (Razor SDK), Penn.MonorailCss, Penn.DocSite (Razor SDK), Penn.Docs (Web SDK), Penn.IntegrationTests
+- Updated Penn.slnx with all new projects
+- Added Markdig, AngleSharp, Mdazor, TextMateSharp, System.ServiceModel.Syndication to Penn.csproj
