@@ -181,3 +181,11 @@
   - LinkCard, Steps, Step, BigTable, FallbackNotice, LanguageSwitcher, CodeBlock
 - Updated type references: NavigationTreeItem.Title/Route, ICodeHighlighter
 - Updated _Imports.razor with Penn namespaces
+
+## Task 25: Port T8 - Penn.DocSite Package
+- Implemented DocSiteFrontMatter with IRedirectable capability
+- Implemented DocSiteOptions (SiteTitle, ColorScheme, fonts, GitHub, etc.)
+- Implemented DocSiteServiceExtensions (AddDocSite/UseDocSite/RunDocSiteAsync)
+- Implemented ContentResolver service for URL-based content lookup
+- Ported App.razor, Routes.razor, MainLayout.razor, Pages.razor, DocSiteArticle.razor
+- Simplified: no localization, no Roslyn, no Mdazor

@@ -1,0 +1,54 @@
+@page "/{*fileName:nonfile}"
+@using Microsoft.AspNetCore.Components.Sections
+@using Penn.DocSite.Services
+@inject ContentResolver ContentResolver
+@inject NavigationBuilder NavBuilder
+@inject DocSiteOptions DocSiteOptions
+@inject NavigationManager NavigationManager
+
+@if (_resolved != null)
+{
+    <PageTitle>@_resolved.Title — @DocSiteOptions.SiteTitle</PageTitle>
+    <HeadContent>
+        <meta name="description" content="@_resolved.Description" />
+    </HeadContent>
+    <DocSiteArticle
+        Title="@_resolved.Title"
+        HtmlContent="@_resolved.Html"
+        PreviousPageName="@_navInfo?.PreviousPage?.Title"
+        PreviousPageHref="@_navInfo?.PreviousPage?.Route.NavigationPath.Value"
+        NextPageName="@_navInfo?.NextPage?.Title"
+        NextPageHref="@_navInfo?.NextPage?.Route.NavigationPath.Value" />
+
+    <SectionContent SectionName="sidebar">
+        <OutlineNavigation ContentSelector="article main" />
+    </SectionContent>
+}
+else if (_notFound)
+{
+    <PageTitle>Not Found</PageTitle>
+    <p>Page not found.</p>
+}
+
+@code {
+    [Parameter] public string? FileName { get; set; }
+
+    private ResolvedContent? _resolved;
+    private NavigationInfo? _navInfo;
+    private bool _notFound;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var url = FileName ?? "/";
+        _resolved = await ContentResolver.GetContentByUrlAsync(url);
+
+        if (_resolved != null)
+        {
+            _navInfo = await ContentResolver.GetNavigationInfoAsync(url);
+        }
+        else
+        {
+            _notFound = true;
+        }
+    }
+}

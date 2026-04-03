@@ -1,0 +1,45 @@
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Hosting
+@inject IWebHostEnvironment WebHostEnvironment
+@inject DocSiteOptions DocSiteOptions
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <link rel="stylesheet" href="@GetVersioned("/styles.css")">
+    <script src="@GetVersioned("/_content/Penn.UI/scripts.js")" defer></script>
+    <script src="@GetVersioned("/_content/Penn.UI/spa-engine.js")" defer></script>
+
+    @if (!string.IsNullOrEmpty(DocSiteOptions.AdditionalHtmlHeadContent))
+    {
+        @((MarkupString)DocSiteOptions.AdditionalHtmlHeadContent)
+    }
+
+    <script>
+        const isDarkMode = localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark", isDarkMode);
+        document.documentElement.dataset.theme = isDarkMode ? "dark" : "light";
+    </script>
+
+    <HeadOutlet/>
+</head>
+
+<body data-mobile-menu-open="false" class="data-[mobile-menu-open=true]:overflow-hidden">
+<div>
+    <Routes/>
+</div>
+</body>
+</html>
+
+@code{
+    static readonly string Version = DateTime.Now.Ticks.ToString();
+
+    string GetVersioned(string url) => WebHostEnvironment.IsDevelopment()
+        ? url
+        : QueryHelpers.AddQueryString(url, "v", Version);
+}
