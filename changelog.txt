@@ -51,3 +51,10 @@
 - Implemented BuildReport class with HasErrors, TotalPages
 - Implemented BuildReportBuilder for accumulating diagnostics and results
 - Added comprehensive tests for diagnostics, report, and builder
+
+## Task 7: Content Service + Pipeline Interfaces
+- Implemented ContentToCopy, ContentToCreate, ContentTocItem records
+- Implemented IContentService interface with DiscoverAsync, copy, create, TOC, xref methods
+- Implemented IContentPipeline interface (Discover, Parse, Render, Generate stages)
+- Implemented OutputOptions with FromArgs factory
+- Added tests for content types, service contract, and output options
