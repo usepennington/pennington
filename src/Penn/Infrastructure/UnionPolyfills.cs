@@ -1,10 +1,9 @@
-// Polyfill for C# 15 union types — required until .NET 11 RTM includes these in the BCL.
-// The compiler recognizes the union keyword but needs these runtime types to emit the code.
+#if !NET11_0_OR_GREATER
 namespace System.Runtime.CompilerServices;
 
-/// <summary>Marker interface for compiler-generated union structs.</summary>
-public interface IUnion { }
+[AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
+internal sealed class UnionAttribute<T> : Attribute;
 
-/// <summary>Attribute applied by the compiler to union struct declarations.</summary>
-[AttributeUsage(AttributeTargets.Struct)]
-public sealed class UnionAttribute : Attribute { }
+[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
+internal sealed class UnionTypeAttribute : Attribute;
+#endif
