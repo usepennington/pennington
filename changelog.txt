@@ -118,3 +118,12 @@
 - Classifies links as ValidLink, BrokenLinkResult, or ExternalLink
 - Handles query strings, anchors, trailing slashes, external URLs
 - Tests cover valid/broken/external links, images, mixed pages
+
+## Task 17: Content Pipeline Implementation
+- Implemented ContentPipeline orchestrating Discover → Parse → Render → Generate
+- IContentParser and IContentRenderer interfaces for pluggable stage handlers
+- FailedItem propagation: errors flow through entire pipeline untouched
+- Draft filtering at Generate stage (IDraftable → SkippedPages)
+- Exception safety: parser/renderer exceptions wrapped into FailedItem
+- RunAsync() convenience for full end-to-end pipeline execution
+- Tests cover happy path, error propagation, drafts, exceptions, multiple services
