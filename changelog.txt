@@ -195,3 +195,10 @@
 - Copied all 29 markdown content files from v1
 - Copied static assets (fonts, favicon, social.png, robots.txt)
 - Site builds and is ready for runtime testing
+
+## Task 30: Homepage + General Razor Page Support
+- Added RazorPageContentService for discovering @page Razor components
+- Added AdditionalRoutingAssemblies to PennOptions
+- Ported Index.razor homepage from v1
+- Updated Pages.razor with dynamic component fallback for Razor pages
+- Supports any @page component (homepage, about pages, etc.)

@@ -73,6 +73,13 @@ public static class PennExtensions
             });
         }
 
+        // Register Razor page content service for @page component discovery
+        if (options.AdditionalRoutingAssemblies.Length > 0)
+        {
+            services.AddSingleton<IContentService>(
+                new RazorPageContentService(options.AdditionalRoutingAssemblies));
+        }
+
         // Pipeline
         services.AddTransient<IContentPipeline, ContentPipeline>();
 

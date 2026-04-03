@@ -1,5 +1,6 @@
 namespace Penn.Infrastructure;
 
+using System.Reflection;
 using Penn.Highlighting;
 using Penn.Islands;
 using Penn.Localization;
@@ -29,6 +30,9 @@ public sealed class PennOptions
     }
 
     public IReadOnlyList<MarkdownContentOptions> MarkdownSources => _markdownSources;
+
+    /// <summary>Assemblies to scan for @page Razor components.</summary>
+    public Assembly[] AdditionalRoutingAssemblies { get; set; } = [];
 }
 
 /// <summary>Options for a markdown content source.</summary>

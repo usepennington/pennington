@@ -1,5 +1,6 @@
 namespace Penn.DocSite;
 
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Penn.Infrastructure;
@@ -30,6 +31,13 @@ public static class DocSiteServiceExtensions
                 md.ContentPath = options.ContentRootPath.Value;
                 md.BasePageUrl = "/";
             });
+
+            // Scan the entry assembly (the app) plus any explicitly configured assemblies
+            var appAssembly = Assembly.GetEntryAssembly();
+            var allAssemblies = appAssembly != null
+                ? [appAssembly, .. options.AdditionalRoutingAssemblies]
+                : options.AdditionalRoutingAssemblies;
+            penn.AdditionalRoutingAssemblies = allAssemblies;
         });
 
         // MonorailCSS
