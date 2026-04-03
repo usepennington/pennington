@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Penn.Infrastructure;
+using Penn.Routing;
 
 /// <summary>Extension methods for SPA navigation registration.</summary>
 public static class SpaNavigationExtensions
@@ -15,6 +17,21 @@ public static class SpaNavigationExtensions
         configure?.Invoke(options);
         services.AddSingleton(options);
         services.AddTransient<SpaPageDataService>();
+
+        // Register a default RenderContext so SpaPageDataService can be resolved.
+        // If AddPenn() already registered one, TryAdd semantics aren't needed —
+        // the last registration wins, but AddSpaNavigation is typically called
+        // before any override, so this provides a safe default.
+        services.AddSingleton(sp =>
+        {
+            var pennOptions = sp.GetService<PennOptions>();
+            return new RenderContext(
+                BaseUrl: new UrlPath(pennOptions?.CanonicalBaseUrl ?? "/"),
+                SiteTitle: pennOptions?.SiteTitle ?? "",
+                Locale: null
+            );
+        });
+
         return services;
     }
 

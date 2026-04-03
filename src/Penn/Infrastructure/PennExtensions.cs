@@ -55,19 +55,30 @@ public static class PennExtensions
         // Register markdown content services for each configured source
         foreach (var source in options.MarkdownSources)
         {
-            var sourceOptions = new MarkdownContentServiceOptions
-            {
-                ContentPath = new FilePath(source.ContentPath),
-                BasePageUrl = new UrlPath(source.BasePageUrl),
-                Section = source.Section,
-            };
+            // Capture loop variable for closure
+            var capturedSource = source;
 
-            // Register the content service
-            var frontMatterType = source.FrontMatterType ?? typeof(DocFrontMatter);
+            // Register the content service — resolve content path at activation time
+            // using IWebHostEnvironment.ContentRootPath so tests and hosts both work.
+            var frontMatterType = capturedSource.FrontMatterType ?? typeof(DocFrontMatter);
             var serviceType = typeof(MarkdownContentService<>).MakeGenericType(frontMatterType);
 
             services.AddSingleton(typeof(IContentService), sp =>
             {
+                var env = sp.GetService<IWebHostEnvironment>();
+                var resolvedContentPath = Path.IsPathRooted(capturedSource.ContentPath)
+                    ? capturedSource.ContentPath
+                    : env != null
+                        ? Path.Combine(env.ContentRootPath, capturedSource.ContentPath)
+                        : capturedSource.ContentPath;
+
+                var sourceOptions = new MarkdownContentServiceOptions
+                {
+                    ContentPath = new FilePath(resolvedContentPath),
+                    BasePageUrl = new UrlPath(capturedSource.BasePageUrl),
+                    Section = capturedSource.Section,
+                };
+
                 var parser = sp.GetRequiredService<FrontMatterParser>();
                 return Activator.CreateInstance(serviceType, sourceOptions, parser)!;
             });
@@ -111,9 +122,12 @@ public static class PennExtensions
     public static WebApplication UsePenn(this WebApplication app)
     {
         var options = app.Services.GetRequiredService<PennOptions>();
+        var hostContentRoot = app.Environment.ContentRootPath;
 
         // Serve static files from content root
-        var contentRoot = Path.Combine(Directory.GetCurrentDirectory(), options.ContentRootPath);
+        var contentRoot = Path.IsPathRooted(options.ContentRootPath)
+            ? options.ContentRootPath
+            : Path.Combine(hostContentRoot, options.ContentRootPath);
         if (Directory.Exists(contentRoot))
         {
             app.UseStaticFiles(new StaticFileOptions
@@ -127,7 +141,9 @@ public static class PennExtensions
         // Serve static files from each content source directory
         foreach (var source in options.MarkdownSources)
         {
-            var contentPath = Path.Combine(Directory.GetCurrentDirectory(), source.ContentPath);
+            var contentPath = Path.IsPathRooted(source.ContentPath)
+                ? source.ContentPath
+                : Path.Combine(hostContentRoot, source.ContentPath);
             if (!Directory.Exists(contentPath)) continue;
 
             var requestPath = new UrlPath(source.BasePageUrl).EnsureLeadingSlash().RemoveTrailingSlash().Value;

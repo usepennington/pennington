@@ -214,3 +214,11 @@
 - Updated MarkdownPipelineFactory with highlighting, tabs, and alert extensions
 - Registered TextMateHighlighter and ShellHighlighter in AddPenn()
 - Roslyn highlighting deferred to optional Penn.Roslyn package
+
+## Task 29: Integration Tests + SPA Fix
+- Created DocsWebApplicationFactory for WebApplicationFactory<Program>
+- Created HTTP integration tests for homepage, content pages, styles, scripts, SPA data, static assets
+- Fixed SPA DI issue: registered RenderContext in AddSpaNavigation()
+- Added InternalsVisibleTo for test project access
+- Fixed content path resolution in AddPenn() and UsePenn() to use IWebHostEnvironment.ContentRootPath instead of Directory.GetCurrentDirectory()
+- Tests verify end-to-end page rendering, navigation, and SPA endpoints

@@ -12,4 +12,7 @@
   <ItemGroup>
     <Watch Include="Content\**\*.*" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Penn.IntegrationTests" />
+  </ItemGroup>
 </Project>
