@@ -6,13 +6,18 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Penn.Roslyn.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Penn\Penn.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="*" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="*" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="*" />
     <PackageReference Include="Microsoft.Build.Locator" Version="*" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="*" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="*" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="DiffPlex" Version="*" />
   </ItemGroup>
 </Project>

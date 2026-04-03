@@ -245,3 +245,13 @@
 - Implemented RoslynHighlighter (ICodeHighlighter, priority 100, C#/VB)
 - Implemented SyntaxHighlighter (AdhocWorkspace + Classifier API → hljs-* CSS)
 - Implemented RoslynOptions and initial AddPennRoslyn() registration
+
+## Roslyn T3: Solution Workspace + File Watching
+- Implemented ISolutionWorkspaceService interface
+- Implemented SolutionWorkspaceService with MSBuild workspace
+  - Static MSBuildLocator initialization
+  - Temp build path to avoid polluting real output
+  - Deferred document updates for .cs content changes
+  - Full solution reload for structural changes (.csproj, .sln)
+  - File watch integration via IFileWatcher
+  - Compilation caching per project
