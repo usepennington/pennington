@@ -78,3 +78,9 @@
 - Implemented MarkdownContentOptions for content source configuration
 - Implemented HighlightingOptions, IslandsOptions, LocalizationOptions
 - Added tests for link check union and full registration API
+
+## Task 11: Code Highlighting Service
+- Implemented HighlightingService with priority-based highlighter dispatch
+- Falls back to PlainTextHighlighter when no registered highlighter matches
+- HasHighlighter() for server vs client-side highlighting decisions
+- Tests cover priority resolution, fallback, multi-language scenarios
