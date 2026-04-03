@@ -230,3 +230,11 @@
 - Registered island renderer and ComponentRenderer in DocSite DI
 - Updated SPA endpoint to resolve page titles from content services
 - Integration tests verify SPA data endpoint returns rendered article HTML
+
+## Roslyn T1: Penn Core Extension Points
+- Added ICodeBlockPreprocessor interface for pluggable code block preprocessing
+- Added IFileWatcher + FileWatcher (FileSystemWatcher-based, no ASP.NET deps)
+- Added FileWatchDependencyFactory<T> for cached-until-invalidated service lifetimes
+- Modified CodeHighlightRenderer to check preprocessors before normal highlighting
+- Modified MarkdownPipelineFactory to thread preprocessors through pipeline
+- Registered IFileWatcher in AddPenn()

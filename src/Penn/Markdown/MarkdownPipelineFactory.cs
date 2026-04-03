@@ -28,12 +28,13 @@ public static class MarkdownPipelineFactory
     public static MarkdownPipeline CreateWithExtensions(
         HighlightingService highlightingService,
         Func<CodeHighlightRenderOptions>? codeOptions = null,
-        Func<TabbedCodeBlockRenderOptions>? tabOptions = null)
+        Func<TabbedCodeBlockRenderOptions>? tabOptions = null,
+        IEnumerable<ICodeBlockPreprocessor>? preprocessors = null)
     {
         return new MarkdownPipelineBuilder()
             .UseAdvancedExtensions()
             .UseYamlFrontMatter()
-            .UseSyntaxHighlighting(highlightingService, codeOptions)
+            .UseSyntaxHighlighting(highlightingService, codeOptions, preprocessors)
             .UseTabbedCodeBlocks(tabOptions)
             .UseCustomAlerts()
             .Build();
@@ -51,9 +52,10 @@ internal static class MarkdownPipelineBuilderExtensions
     public static MarkdownPipelineBuilder UseSyntaxHighlighting(
         this MarkdownPipelineBuilder builder,
         HighlightingService highlightingService,
-        Func<CodeHighlightRenderOptions>? options = null)
+        Func<CodeHighlightRenderOptions>? options = null,
+        IEnumerable<ICodeBlockPreprocessor>? preprocessors = null)
     {
-        builder.Extensions.AddIfNotAlready(new CodeHighlightingExtension(highlightingService, options));
+        builder.Extensions.AddIfNotAlready(new CodeHighlightingExtension(highlightingService, options, preprocessors));
         return builder;
     }
 
@@ -80,7 +82,8 @@ internal static class MarkdownPipelineBuilderExtensions
 
     private sealed class CodeHighlightingExtension(
         HighlightingService highlightingService,
-        Func<CodeHighlightRenderOptions>? options) : IMarkdownExtension
+        Func<CodeHighlightRenderOptions>? options,
+        IEnumerable<ICodeBlockPreprocessor>? preprocessors) : IMarkdownExtension
     {
         public void Setup(MarkdownPipelineBuilder pipeline)
         {
@@ -97,7 +100,7 @@ internal static class MarkdownPipelineBuilderExtensions
             }
 
             htmlRenderer.ObjectRenderers.AddIfNotAlready(
-                new CodeHighlightRenderer(highlightingService, options));
+                new CodeHighlightRenderer(highlightingService, options, preprocessors));
         }
     }
 

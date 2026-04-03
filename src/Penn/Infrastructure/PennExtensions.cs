@@ -14,6 +14,7 @@ using Penn.Highlighting;
 using Penn.Markdown;
 using Penn.Navigation;
 using Penn.Pipeline;
+using Penn.Markdown.Extensions;
 using Penn.Routing;
 using Penn.Search;
 using Penn.Feeds;
@@ -38,6 +39,9 @@ public static class PennExtensions
         services.AddSingleton<FrontMatterParser>();
         services.AddSingleton<NavigationBuilder>();
 
+        // File watching
+        services.AddSingleton<IFileWatcher, FileWatcher>();
+
         // Highlighting: register TextMate and Shell highlighters, then the service
         services.AddSingleton<TextMateLanguageRegistry>();
         services.AddSingleton<ICodeHighlighter, TextMateHighlighter>(sp =>
@@ -46,10 +50,11 @@ public static class PennExtensions
         services.AddSingleton<HighlightingService>(sp =>
             new HighlightingService(sp.GetServices<ICodeHighlighter>()));
 
-        // Markdown pipeline — includes highlighting, tabs, and custom alerts
+        // Markdown pipeline — includes highlighting, tabs, custom alerts, and preprocessors
         services.AddSingleton<MarkdownPipeline>(sp =>
             MarkdownPipelineFactory.CreateWithExtensions(
-                sp.GetRequiredService<HighlightingService>()));
+                sp.GetRequiredService<HighlightingService>(),
+                preprocessors: sp.GetServices<ICodeBlockPreprocessor>()));
         services.AddTransient<IContentRenderer, MarkdownContentRenderer>();
 
         // Register markdown content services for each configured source

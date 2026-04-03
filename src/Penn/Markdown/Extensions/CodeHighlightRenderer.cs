@@ -19,13 +19,18 @@ internal sealed class CodeHighlightRenderer : HtmlObjectRenderer<CodeBlock>
 {
     private readonly HighlightingService _highlightingService;
     private readonly Func<CodeHighlightRenderOptions> _optionsFactory;
+    private readonly IReadOnlyList<ICodeBlockPreprocessor> _preprocessors;
 
     public CodeHighlightRenderer(
         HighlightingService highlightingService,
-        Func<CodeHighlightRenderOptions>? optionsFactory = null)
+        Func<CodeHighlightRenderOptions>? optionsFactory = null,
+        IEnumerable<ICodeBlockPreprocessor>? preprocessors = null)
     {
         _highlightingService = highlightingService ?? throw new ArgumentNullException(nameof(highlightingService));
         _optionsFactory = optionsFactory ?? (() => CodeHighlightRenderOptions.Default);
+        _preprocessors = (preprocessors ?? [])
+            .OrderByDescending(p => p.Priority)
+            .ToList();
     }
 
     protected override void Write(HtmlRenderer renderer, CodeBlock codeBlock)
@@ -37,6 +42,20 @@ internal sealed class CodeHighlightRenderer : HtmlObjectRenderer<CodeBlock>
 
         var isInTabGroup = codeBlock.Parent is TabbedCodeBlock;
         var options = _optionsFactory();
+
+        foreach (var preprocessor in _preprocessors)
+        {
+            var result = preprocessor.TryProcess(code, languageId);
+            if (result != null)
+            {
+                var html = result.SkipTransform
+                    ? result.HighlightedHtml
+                    : CodeTransformer.Transform(result.HighlightedHtml);
+                var wrappedHtml = CodeBlockHtmlBuilder.BuildHtml(html, options, isInTabGroup);
+                renderer.Write(wrappedHtml);
+                return;
+            }
+        }
 
         try
         {
