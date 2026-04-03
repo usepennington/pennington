@@ -116,6 +116,7 @@ public static class PennExtensions
             if (!Directory.Exists(contentPath)) continue;
 
             var requestPath = new UrlPath(source.BasePageUrl).EnsureLeadingSlash().RemoveTrailingSlash().Value;
+            if (requestPath == "/") requestPath = "";
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(contentPath),

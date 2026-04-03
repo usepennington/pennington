@@ -13,12 +13,14 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
 {
     private readonly MarkdownContentServiceOptions _options;
     private readonly FrontMatterParser _parser;
+    private readonly string _absoluteContentPath;
     private List<(ContentRoute Route, TFrontMatter FrontMatter)>? _cachedMetadata;
 
     public MarkdownContentService(MarkdownContentServiceOptions options, FrontMatterParser parser)
     {
         _options = options;
         _parser = parser;
+        _absoluteContentPath = Path.GetFullPath(options.ContentPath.Value);
     }
 
     public string DefaultSection => _options.Section ?? "";
@@ -30,7 +32,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
         foreach (var file in files)
         {
             var route = ContentRouteFactory.FromMarkdownFile(
-                file, _options.ContentPath, _options.BasePageUrl, _options.Locale);
+                file, new FilePath(_absoluteContentPath), _options.BasePageUrl, _options.Locale);
             var source = new ContentSource(new MarkdownFileSource(file));
             yield return new DiscoveredItem(route, source);
         }
@@ -84,7 +86,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
 
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
     {
-        var contentPath = _options.ContentPath.Value;
+        var contentPath = _absoluteContentPath;
         if (!Directory.Exists(contentPath))
             return Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
@@ -109,7 +111,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
 
     private List<FilePath> DiscoverFiles()
     {
-        var contentPath = _options.ContentPath.Value;
+        var contentPath = _absoluteContentPath;
         if (!Directory.Exists(contentPath))
             return [];
 
@@ -127,7 +129,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
         foreach (var file in DiscoverFiles())
         {
             var route = ContentRouteFactory.FromMarkdownFile(
-                file, _options.ContentPath, _options.BasePageUrl, _options.Locale);
+                file, new FilePath(_absoluteContentPath), _options.BasePageUrl, _options.Locale);
 
             try
             {

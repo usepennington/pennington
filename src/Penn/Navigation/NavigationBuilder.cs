@@ -51,6 +51,7 @@ public sealed class NavigationBuilder
     {
         var depth = parentParts.Length;
 
+        // Find items exactly at this level
         var itemsAtLevel = allItems
             .Where(item => item.HierarchyParts.Length == depth + 1
                         && PartsMatch(item.HierarchyParts, parentParts))
@@ -58,8 +59,51 @@ public sealed class NavigationBuilder
             .ThenBy(item => item.Title, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
+        // Find distinct section names at this depth that have deeper descendants
+        // but no direct item (auto-create folder nodes)
+        var sectionsWithDescendants = allItems
+            .Where(item => item.HierarchyParts.Length > depth + 1
+                        && PartsMatch(item.HierarchyParts, parentParts))
+            .Select(item => item.HierarchyParts[depth])
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(section => !itemsAtLevel.Any(i =>
+                string.Equals(i.HierarchyParts[depth], section, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
         var builder = ImmutableList.CreateBuilder<NavigationTreeItem>();
 
+        // Add auto-created section nodes first
+        foreach (var section in sectionsWithDescendants)
+        {
+            var sectionParts = parentParts.Append(section).ToArray();
+            var children = BuildLevel(allItems, sectionParts, currentRoute);
+            var isExpanded = children.Any(c => c.IsSelected || c.IsExpanded);
+
+            // Find the minimum order among children to use for section ordering
+            var minOrder = children.Any() ? children.Min(c => c.Order) : int.MaxValue;
+
+            // Create a section title from the folder name
+            var sectionTitle = FormatSectionTitle(section);
+
+            // Use an empty route for section headers (they're not navigable)
+            var sectionRoute = new ContentRoute
+            {
+                CanonicalPath = new UrlPath(""),
+                OutputFile = new FilePath("")
+            };
+
+            builder.Add(new NavigationTreeItem(
+                Title: sectionTitle,
+                Route: sectionRoute,
+                Order: minOrder,
+                Section: null,
+                IsSelected: false,
+                IsExpanded: isExpanded,
+                Children: children
+            ));
+        }
+
+        // Add direct items
         foreach (var item in itemsAtLevel)
         {
             var children = BuildLevel(allItems, item.HierarchyParts, currentRoute);
@@ -78,7 +122,15 @@ public sealed class NavigationBuilder
             ));
         }
 
-        return builder.ToImmutable();
+        // Sort all items by order, then title
+        return builder.OrderBy(i => i.Order).ThenBy(i => i.Title, StringComparer.OrdinalIgnoreCase).ToImmutableList();
+    }
+
+    private static string FormatSectionTitle(string folderName)
+    {
+        // Convert kebab-case to title case: "getting-started" → "Getting Started"
+        return string.Join(' ', folderName.Split('-')
+            .Select(w => w.Length > 0 ? char.ToUpper(w[0]) + w[1..] : w));
     }
 
     private static bool PartsMatch(string[] itemParts, string[] parentParts)

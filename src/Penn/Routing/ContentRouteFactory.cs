@@ -28,9 +28,10 @@ public static class ContentRouteFactory
         }
         else
         {
+            var baseValue = basePath.Value == "/" ? "" : basePath.Value;
             canonicalPath = string.IsNullOrEmpty(urlSegment)
-                ? basePath.Value == "" ? new UrlPath("/") : basePath
-                : new UrlPath($"{basePath.Value}/{NormalizeSegment(urlSegment)}");
+                ? basePath.Value == "" || basePath.Value == "/" ? new UrlPath("/") : basePath
+                : new UrlPath($"{baseValue}/{NormalizeSegment(urlSegment)}");
         }
 
         canonicalPath = canonicalPath.EnsureLeadingSlash();
