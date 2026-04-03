@@ -65,3 +65,9 @@
 - Implemented NavigationInfo record (section, breadcrumbs, prev/next)
 - Implemented SitemapEntry and RssFeedItem records
 - Added tests for navigation tree, breadcrumbs, and feed types
+
+## Task 9: Highlighting + Islands + Localization
+- Implemented ICodeHighlighter interface and PlainTextHighlighter fallback
+- Implemented IIslandRenderer interface, RenderContext, and SpaEnvelope
+- Implemented LocaleInfo and AlternateLanguagePage records
+- Added tests for highlighting, islands, and localization types
