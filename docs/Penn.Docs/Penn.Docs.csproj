@@ -9,4 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Penn.DocSite\Penn.DocSite.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Watch Include="Content\**\*.*" />
+  </ItemGroup>
 </Project>

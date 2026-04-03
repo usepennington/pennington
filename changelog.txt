@@ -189,3 +189,9 @@
 - Implemented ContentResolver service for URL-based content lookup
 - Ported App.razor, Routes.razor, MainLayout.razor, Pages.razor, DocSiteArticle.razor
 - Simplified: no localization, no Roslyn, no Mdazor
+
+## Task 26: Port T9 - Penn.Docs Site
+- Created Program.cs with DocSiteOptions (colors, fonts, GitHub URL)
+- Copied all 29 markdown content files from v1
+- Copied static assets (fonts, favicon, social.png, robots.txt)
+- Site builds and is ready for runtime testing

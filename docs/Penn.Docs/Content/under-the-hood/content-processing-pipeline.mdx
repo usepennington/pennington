@@ -1,0 +1,205 @@
+---
+title: "Static Site Generation Pipeline"
+description: "Deep dive into how static site generation works in MyLittleContentEngine"
+uid: "docs.under-the-hood.content-processing-pipeline"
+order: 3010
+---
+
+The static site generation pipeline in MyLittleContentEngine transforms your Blazor application into a collection of
+pre-rendered HTML files. This process is orchestrated by the `OutputGenerationService.GenerateStaticPages` method, which
+coordinates multiple subsystems to produce a complete static website.
+
+## Overview of the Generation Process
+
+The static generation pipeline follows a carefully orchestrated sequence of operations:
+<Steps>
+<Step stepNumber="1">
+## Page Collection and Discovery
+
+The pipeline begins by collecting all pages that need to be generated from multiple sources:
+
+### Content Service Pages
+
+Content services are the heart of the page collection system. Each registered `IContentService` (such as `MarkdownContentService` or `ApiReferenceContentService`) acts as a catalog of pages that need to be generated.
+
+#### What is a Content Service?
+
+An `IContentService` is the core abstraction for contributing pages to the static generation process. Each service implements the `GetPagesToGenerateAsync` method, which returns a list of pages to generate. Each page includes:
+
+- A **URL** to request from the running Blazor application
+- An **output file path** where the rendered HTML will be saved
+- Optional metadata (title, description, last modified date, etc.)
+
+Multiple content services work together to build your complete site. For example, one service handles markdown files, another generates API documentation, and another discovers Razor pages.
+
+#### How Content Services Contribute Pages
+
+Let's look at how different content services contribute pages to the generation process:
+
+**MarkdownContentService** scans your Content directory for markdown files:
+- For a file at `Content/guides/getting-started.md`:
+  - URL to request: `/guides/getting-started/`
+  - Output file: `guides/getting-started/index.html`
+- For a file at `Content/blog/hello-world.md`:
+  - URL to request: `/blog/hello-world/`
+  - Output file: `blog/hello-world/index.html`
+
+**ApiReferenceContentService** analyzes your .NET assemblies using Roslyn:
+- For a namespace like `System.Collections`:
+  - URL to request: `/api/system.collections/` (based on configured template)
+  - Output file: `api/system.collections/index.html`
+- For a type like `List<T>`:
+  - URL to request: `/api/system.collections.generic.list-1/`
+  - Output file: `api/system.collections.generic.list-1/index.html`
+
+**RazorPageContentService** discovers Razor components with `@page` directives:
+- For a component with `@page "/about"`:
+  - URL to request: `/about/`
+  - Output file: `about/index.html`
+- For a component with `@page "/contact"`:
+  - URL to request: `/contact/`
+  - Output file: `contact/index.html`
+
+#### The URL-to-File Mapping
+
+Each page has both a URL and an output file path. This separation is important:
+
+- The **URL** is what gets requested from the running Blazor application during generation
+- The **output file** is where the rendered HTML gets saved in your output directory
+- This allows flexible URL schemes (like clean URLs with trailing slashes) while maintaining proper file structure
+
+For example, requesting `/guides/getting-started/` returns fully rendered HTML that gets saved to `guides/getting-started/index.html`. When deployed, web servers automatically serve `index.html` when users visit `/guides/getting-started/`.
+
+`GetPagesToGenerateAsync` only tells the output generation service the URLs to access, you'll still need to wire that up with ASP.NET to produce the actual content.
+
+### Route Discovery
+
+The system automatically discovers routes from two sources:
+
+#### Blazor Component Routes
+
+When `AddPagesWithoutParameters` is enabled, the `RoutesHelperService` scans assemblies for Blazor components with
+`@page` directives. This discovers routes like:
+
+- `@page "/about"` becomes `/about/index.html`
+- `@page "/contact"` becomes `/contact/index.html`
+
+Only non-parameterized routes are included (routes without `{parameter}` segments).
+
+#### MapGet Endpoints
+
+The system also discovers HTTP GET endpoints registered via `app.MapGet()`. These are assigned `Priority.MustBeLast`
+because they often include dynamically generated content like CSS files that depend on other pages being processed first. This includes generating the MonorailCSS stylesheet if it's been registered.
+
+
+</Step>
+<Step stepNumber="2">
+
+## Output Directory Preparation
+
+Before generation begins, the output directory is completely cleared and recreated. This ensures a clean slate for each generation run, preventing stale files from previous builds.
+
+
+</Step>
+<Step stepNumber="3">
+## Static Asset Collection and Copying
+
+The pipeline collects and copies all static assets from multiple sources:
+
+### Web Root Assets
+
+Standard `wwwroot` files from the main application are automatically included.
+
+### Razor Class Library Assets
+
+Static assets from referenced Razor Class Libraries are automatically included. This includes `scripts.js` from the `MyLittleContentEngine.UI` library, which is essential for the UI functionality.
+
+### Content Engine Assets
+
+Custom content directories registered via `MapContentEngineStaticAssets` are included with their assets mapped to specific request paths.
+
+### Content Service Assets
+
+Individual content services can contribute their own static assets through the `GetContentToCopyAsync` method.
+
+All collected assets are then copied to the output directory, respecting the `IgnoredPathsOnContentCopy` configuration.
+
+</Step>
+<Step stepNumber="4">
+## Page Generation with Priority Ordering
+
+Pages are generated in priority order to handle dependencies correctly. The system uses three priority levels:
+
+- **`MustBeFirst` (0)**: Pages that other pages might depend on
+- **`Normal` (50)**: Standard content pages
+- **`MustBeLast` (100)**: Pages that depend on other pages (like CSS files that need to scan generated HTML)
+
+Within each priority level, pages are generated in parallel for optimal performance.
+
+</Step>
+<Step stepNumber="5">
+
+## Page Rendering with HTTP Requests
+
+Once all pages are collected and assets are copied, the generation process renders each page by making HTTP requests to your running Blazor application.
+
+### How Page Rendering Works
+
+The rendering process follows these steps for each page:
+
+1. **Start an HTTP client** pointed at your running Blazor application (e.g., `http://localhost:5000`)
+2. **Make an HTTP GET request** for each page URL (e.g., `/guides/getting-started/`)
+3. **The Blazor application processes the request**:
+   - Routes to the appropriate component or page
+   - Executes any server-side logic
+   - Renders the page with layouts and components
+   - Returns fully rendered HTML
+4. **Save the HTML** to the corresponding output file path
+5. **Create directories** as needed in the output folder
+
+This approach means your pages are rendered exactly as they would be when served dynamically, ensuring consistency between development and production.
+
+### Priority-Based Generation
+
+Pages aren't generated in random order - they follow a priority system to handle dependencies:
+
+- **MustBeFirst (0)**: Pages that other pages might depend on (rarely used)
+- **Normal (50)**: Standard content pages from content services (most pages)
+- **MustBeLast (100)**: Pages that depend on other pages being generated first
+
+The `MustBeLast` priority is crucial for pages that need to analyze generated content:
+
+- **MonorailCSS stylesheet** (`styles.css`) scans all generated HTML to discover which CSS classes are used, then generates only the CSS needed
+- **Sitemaps** need the complete list of generated pages before they can be created
+- **Search indexes** may need to scan all content before generating search data
+
+Within each priority level, pages are generated **in parallel** to maximize performance and reduce build time.
+
+### Example Generation Flow
+
+Here's a complete example showing how a markdown file becomes a static HTML page:
+
+**Starting Point:** A markdown file at `Content/blog/hello-world.md`
+
+1. **Collection Phase**: MarkdownContentService discovers the file and returns:
+   - URL: `/blog/hello-world/`
+   - Output file: `blog/hello-world/index.html`
+   - Metadata: title, description, last modified date
+
+2. **HTTP Request**: Generator makes request to `http://localhost:5000/blog/hello-world/`
+
+3. **Blazor Renders**:
+   - Routes to markdown rendering component
+   - Processes markdown content
+   - Applies layout with navigation, footer, etc.
+   - Injects metadata into HTML `<head>`
+   - Returns complete HTML document
+
+4. **Save to Disk**: HTML saved to `_output/blog/hello-world/index.html`
+
+5. **Ready for Deployment**: The static HTML file can now be deployed to any web server or hosting platform
+
+This same process applies to all pages - API documentation, Razor pages, and any custom content from your IContentService implementations.
+
+</Step>
+</Steps>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://phil-scott-78.github.io/MyLittleContentEngine/sitemap.xml
