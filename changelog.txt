@@ -149,3 +149,11 @@
   - GetContentToCopyAsync excludes .md/.mdx/.razor/.yml files
   - Caches front matter metadata for performance
 - Tests cover discovery, routing, TOC, drafts, cross-refs, copy exclusions
+
+## Task 21: Port T4 - Middleware + DI Wiring
+- Implemented IResponseProcessor interface for response body processing
+- Implemented ResponseProcessingMiddleware (captures body, chains processors)
+- Implemented BaseUrlRewritingProcessor for subdirectory deployment URL rewriting
+- Implemented PennExtensions: AddPenn(), UsePenn(), RunOrBuildAsync()
+- Implemented OutputGenerationService for static site generation via HTTP crawl
+- Tests cover DI registration, middleware pipeline behavior
