@@ -92,3 +92,8 @@
 - Depth-first prev/next navigation
 - Breadcrumb trail computation
 - Tests cover hierarchy, ordering, selection, prev/next, breadcrumbs
+
+## Task 13: Build Report Output
+- Added WriteTo(TextWriter) and ToFormattedString() to BuildReport
+- Structured output: summary, errors with source files, warnings, broken links
+- Tests cover clean builds, error/warning/broken-link scenarios, formatting
