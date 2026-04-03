@@ -104,3 +104,10 @@
 - FrontMatterResult<T> carries parsed metadata + remaining markdown body
 - Supports camelCase YAML properties, ignores unknown fields
 - Tests cover DocFrontMatter, BlogFrontMatter, missing/empty front matter, tags, dates
+
+## Task 15: Search Index + Feed Builders
+- Implemented SearchIndexBuilder with HTML stripping for plain-text body
+- Implemented SitemapBuilder with draft exclusion and absolute URLs
+- Implemented RssFeedBuilder with date sorting and draft/undated exclusion
+- All builders use capability interface checks (IDraftable, IDateable, etc.)
+- Tests cover happy path, draft exclusion, date handling, HTML stripping
