@@ -157,3 +157,10 @@
 - Implemented PennExtensions: AddPenn(), UsePenn(), RunOrBuildAsync()
 - Implemented OutputGenerationService for static site generation via HTTP crawl
 - Tests cover DI registration, middleware pipeline behavior
+
+## Task 22: Port T5 - SPA Navigation
+- Implemented SpaSlug for URL/slug conversion
+- Implemented SpaNavigationOptions and SpaEnvelopeSerializer (JSON)
+- Implemented SpaPageDataService coordinating IIslandRenderer instances
+- Implemented SpaNavigationExtensions (AddSpaNavigation, UseSpaNavigation endpoint)
+- Tests cover slug conversion, envelope assembly, empty/multi-renderer scenarios
