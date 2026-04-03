@@ -58,3 +58,10 @@
 - Implemented IContentPipeline interface (Discover, Parse, Render, Generate stages)
 - Implemented OutputOptions with FromArgs factory
 - Added tests for content types, service contract, and output options
+
+## Task 8: Navigation + Search + Feed Types
+- Implemented NavigationTreeItem record with recursive tree structure
+- Implemented BreadcrumbItem record
+- Implemented NavigationInfo record (section, breadcrumbs, prev/next)
+- Implemented SitemapEntry and RssFeedItem records
+- Added tests for navigation tree, breadcrumbs, and feed types
