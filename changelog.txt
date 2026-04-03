@@ -9,3 +9,14 @@
   - Matches() for tolerant URL comparison (trailing slash, index.html variants, case-insensitive)
   - Implicit conversion from string
 - Added comprehensive UrlPath tests
+
+## Task 2: FilePath + ContentRoute + ContentRouteFactory
+- Implemented FilePath readonly record struct (Routing/FilePath.cs)
+  - `/` operator, Extension, FileName, FileNameWithoutExtension
+- Implemented ContentRoute sealed record (Routing/ContentRoute.cs)
+  - CanonicalPath, OutputFile, SourceFile, Locale
+  - Derived: NavigationPath, WithBaseUrl(), AbsoluteUrl(), IsDefaultLocale
+- Implemented ContentRouteFactory static class (Routing/ContentRouteFactory.cs)
+  - FromMarkdownFile, FromRazorPage, FromUrl, FromCustom, ForRedirect
+  - All URL logic centralized in factory methods
+- Added comprehensive tests for all routing types
