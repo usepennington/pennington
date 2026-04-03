@@ -20,3 +20,12 @@
   - FromMarkdownFile, FromRazorPage, FromUrl, FromCustom, ForRedirect
   - All URL logic centralized in factory methods
 - Added comprehensive tests for all routing types
+
+## Task 3: Front Matter System
+- Implemented IFrontMatter core interface (FrontMatter/IFrontMatter.cs)
+- Implemented 8 capability interfaces (FrontMatter/Capabilities.cs)
+  - IDraftable, ITaggable, IRedirectable, ISectionable
+  - ICrossReferenceable, IOrderable, IDescribable, IDateable
+- Implemented DocFrontMatter convenience record (FrontMatter/DocFrontMatter.cs)
+- Implemented BlogFrontMatter convenience record (FrontMatter/BlogFrontMatter.cs)
+- Added tests for interface implementation, defaults, capability checking
