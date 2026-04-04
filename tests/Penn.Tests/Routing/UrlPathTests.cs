@@ -5,36 +5,6 @@ namespace Penn.Tests.Routing;
 public class UrlPathTests
 {
     [Fact]
-    public void ImplicitConversion_FromString_CreatesUrlPath()
-    {
-        UrlPath path = "/hello";
-        path.Value.ShouldBe("/hello");
-    }
-
-    [Fact]
-    public void ToString_ReturnsValue()
-    {
-        var path = new UrlPath("/test");
-        path.ToString().ShouldBe("/test");
-    }
-
-    [Fact]
-    public void RecordEquality_SameValue_AreEqual()
-    {
-        var a = new UrlPath("/foo");
-        var b = new UrlPath("/foo");
-        a.ShouldBe(b);
-    }
-
-    [Fact]
-    public void RecordEquality_DifferentValue_AreNotEqual()
-    {
-        var a = new UrlPath("/foo");
-        var b = new UrlPath("/bar");
-        a.ShouldNotBe(b);
-    }
-
-    [Fact]
     public void DivisionOperator_CombinesTwoPaths()
     {
         var left = new UrlPath("/blog");

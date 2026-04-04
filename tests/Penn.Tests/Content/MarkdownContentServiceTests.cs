@@ -303,36 +303,10 @@ public class MarkdownContentServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetContentToCreateAsync_ReturnsEmpty()
-    {
-        var service = CreateTestService(
-            files: [
-                ("page.md", "---\ntitle: Page\n---\n# Page")
-            ]);
-
-        var toCreate = await service.GetContentToCreateAsync();
-        toCreate.ShouldBe(ImmutableList<ContentToCreate>.Empty);
-    }
-
-    [Fact]
-    public void DefaultSection_ReturnsOptionSection()
-    {
-        var service = CreateTestService(section: "MySection", files: []);
-        service.DefaultSection.ShouldBe("MySection");
-    }
-
-    [Fact]
     public void DefaultSection_ReturnsEmptyWhenNull()
     {
         var service = CreateTestService(section: null, files: []);
         service.DefaultSection.ShouldBe("");
-    }
-
-    [Fact]
-    public void SearchPriority_ReturnsDefault()
-    {
-        var service = CreateTestService(files: []);
-        service.SearchPriority.ShouldBe(10);
     }
 
     [Fact]

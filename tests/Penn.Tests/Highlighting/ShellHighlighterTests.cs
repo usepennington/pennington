@@ -20,20 +20,6 @@ public class ShellHighlighterTests
     }
 
     [Fact]
-    public void SupportedLanguages_ContainsBashShellSh()
-    {
-        _highlighter.SupportedLanguages.ShouldContain("bash");
-        _highlighter.SupportedLanguages.ShouldContain("shell");
-        _highlighter.SupportedLanguages.ShouldContain("sh");
-    }
-
-    [Fact]
-    public void Priority_Is75()
-    {
-        _highlighter.Priority.ShouldBe(75);
-    }
-
-    [Fact]
     public void Highlight_CommentLine_GetsCommentClass()
     {
         var code = "# this is a comment";

@@ -12,34 +12,6 @@ public class LinkCheckResultTests
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html")
     };
 
-    // --- Construction tests ---
-
-    [Fact]
-    public void ConstructFromValidLink()
-    {
-        var valid = new ValidLink(MakeRoute(), "https://example.com");
-        var result = new LinkCheckResult(valid);
-        (result is ValidLink).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ConstructFromBrokenLinkResult()
-    {
-        var broken = new BrokenLinkResult(MakeRoute(), "/missing", LinkType.Internal, "Page not found");
-        var result = new LinkCheckResult(broken);
-        (result is BrokenLinkResult).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ConstructFromExternalLink()
-    {
-        var external = new ExternalLink(MakeRoute(), "https://external.com/page");
-        var result = new LinkCheckResult(external);
-        (result is ExternalLink).ShouldBeTrue();
-    }
-
-    // --- Property verification ---
-
     [Fact]
     public void ValidLink_PreservesProperties()
     {

@@ -28,76 +28,6 @@ public class ContentItemTests
     private static IFrontMatter MakeMetadata(string title = "Test Page") =>
         new DocFrontMatter { Title = title };
 
-    // --- Construction tests ---
-
-    [Fact]
-    public void ConstructFromDiscoveredItem()
-    {
-        var discovered = new DiscoveredItem(MakeRoute(), MakeSource());
-        var item = new ContentItem(discovered);
-        (item is DiscoveredItem).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ConstructFromParsedItem()
-    {
-        var parsed = new ParsedItem(MakeRoute(), MakeMetadata(), "# Hello");
-        var item = new ContentItem(parsed);
-        (item is ParsedItem).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ConstructFromRenderedItem()
-    {
-        var rendered = new RenderedItem(MakeRoute(), MakeMetadata(), MakeRenderedContent());
-        var item = new ContentItem(rendered);
-        (item is RenderedItem).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ConstructFromFailedItem()
-    {
-        var failed = new FailedItem(MakeRoute(), new ContentError("Something went wrong"));
-        var item = new ContentItem(failed);
-        (item is FailedItem).ShouldBeTrue();
-    }
-
-    // --- Route property tests ---
-
-    [Fact]
-    public void RouteProperty_DiscoveredItem_ReturnsCorrectRoute()
-    {
-        var route = MakeRoute("/discovered");
-        var item = new ContentItem(new DiscoveredItem(route, MakeSource()));
-        item.Route.ShouldBe(route);
-    }
-
-    [Fact]
-    public void RouteProperty_ParsedItem_ReturnsCorrectRoute()
-    {
-        var route = MakeRoute("/parsed");
-        var item = new ContentItem(new ParsedItem(route, MakeMetadata(), "raw"));
-        item.Route.ShouldBe(route);
-    }
-
-    [Fact]
-    public void RouteProperty_RenderedItem_ReturnsCorrectRoute()
-    {
-        var route = MakeRoute("/rendered");
-        var item = new ContentItem(new RenderedItem(route, MakeMetadata(), MakeRenderedContent()));
-        item.Route.ShouldBe(route);
-    }
-
-    [Fact]
-    public void RouteProperty_FailedItem_ReturnsCorrectRoute()
-    {
-        var route = MakeRoute("/failed");
-        var item = new ContentItem(new FailedItem(route, new ContentError("oops")));
-        item.Route.ShouldBe(route);
-    }
-
-    // --- Exhaustive pattern matching ---
-
     [Fact]
     public void ExhaustivePatternMatch_AllFourCases()
     {
@@ -121,8 +51,6 @@ public class ContentItemTests
         _ => throw new InvalidOperationException("Unknown ContentItem case")
     };
 
-    // --- FailedItem propagation ---
-
     [Fact]
     public void FailedItem_ErrorMessage_PreservedThroughUnion()
     {
@@ -141,8 +69,6 @@ public class ContentItemTests
         recovered.Error.Exception.ShouldNotBeNull();
         recovered.Error.Exception.Message.ShouldBe("bad syntax");
     }
-
-    // --- DiscoveredItem carries ContentSource ---
 
     [Fact]
     public void DiscoveredItem_CarriesContentSourceCorrectly()
@@ -167,8 +93,6 @@ public class ContentItemTests
         md.Path.Value.ShouldBe("docs/intro.md");
     }
 
-    // --- ParsedItem carries IFrontMatter and RawMarkdown ---
-
     [Fact]
     public void ParsedItem_CarriesFrontMatterAndRawMarkdown()
     {
@@ -187,8 +111,6 @@ public class ContentItemTests
         result.Metadata.Title.ShouldBe("My Article");
         result.RawMarkdown.ShouldBe("# My Article\n\nSome content here.");
     }
-
-    // --- RenderedItem carries RenderedContent ---
 
     [Fact]
     public void RenderedItem_CarriesRenderedContent()

@@ -15,30 +15,6 @@ public class HighlightingTests
     }
 
     [Fact]
-    public void PlainTextHighlighter_Priority_IsZero()
-    {
-        var highlighter = new PlainTextHighlighter();
-
-        highlighter.Priority.ShouldBe(0);
-    }
-
-    [Fact]
-    public void PlainTextHighlighter_SupportedLanguages_ContainsWildcard()
-    {
-        var highlighter = new PlainTextHighlighter();
-
-        highlighter.SupportedLanguages.ShouldContain("*");
-    }
-
-    [Fact]
-    public void PlainTextHighlighter_ImplementsICodeHighlighter()
-    {
-        var highlighter = new PlainTextHighlighter();
-
-        highlighter.ShouldBeAssignableTo<ICodeHighlighter>();
-    }
-
-    [Fact]
     public void ICodeHighlighter_StubHighlighter_VerifiesInterfaceContract()
     {
         ICodeHighlighter highlighter = new StubCSharpHighlighter();

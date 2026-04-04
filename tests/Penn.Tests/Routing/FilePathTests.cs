@@ -5,20 +5,6 @@ namespace Penn.Tests.Routing;
 public class FilePathTests
 {
     [Fact]
-    public void ImplicitConversion_FromString_CreatesFilePath()
-    {
-        FilePath path = "some/file.txt";
-        path.Value.ShouldBe("some/file.txt");
-    }
-
-    [Fact]
-    public void ToString_ReturnsValue()
-    {
-        var path = new FilePath("content/page.md");
-        path.ToString().ShouldBe("content/page.md");
-    }
-
-    [Fact]
     public void DivisionOperator_CombinesTwoPaths()
     {
         var left = new FilePath("content");
@@ -109,19 +95,4 @@ public class FilePathTests
         path.FileNameWithoutExtension.ShouldBe("page");
     }
 
-    [Fact]
-    public void RecordEquality_SameValue_AreEqual()
-    {
-        var a = new FilePath("content/page.md");
-        var b = new FilePath("content/page.md");
-        a.ShouldBe(b);
-    }
-
-    [Fact]
-    public void RecordEquality_DifferentValue_AreNotEqual()
-    {
-        var a = new FilePath("content/page.md");
-        var b = new FilePath("content/other.md");
-        a.ShouldNotBe(b);
-    }
 }

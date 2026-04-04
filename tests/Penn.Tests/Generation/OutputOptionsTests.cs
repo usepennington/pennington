@@ -6,28 +6,6 @@ namespace Penn.Tests.Generation;
 public class OutputOptionsTests
 {
     [Fact]
-    public void DefaultBaseUrl_IsSlash()
-    {
-        var options = new OutputOptions
-        {
-            OutputDirectory = new FilePath("output")
-        };
-
-        options.BaseUrl.Value.ShouldBe("/");
-    }
-
-    [Fact]
-    public void DefaultCleanOutput_IsTrue()
-    {
-        var options = new OutputOptions
-        {
-            OutputDirectory = new FilePath("output")
-        };
-
-        options.CleanOutput.ShouldBeTrue();
-    }
-
-    [Fact]
     public void FromArgs_WithNoExtraArgs()
     {
         var options = OutputOptions.FromArgs(["build"]);

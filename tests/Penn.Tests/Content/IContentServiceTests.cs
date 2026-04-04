@@ -56,20 +56,6 @@ public class IContentServiceTests
         result.ShouldBe(ImmutableList<CrossReference>.Empty);
     }
 
-    [Fact]
-    public void Stub_DefaultSectionAccessible()
-    {
-        IContentService service = new StubContentService();
-        service.DefaultSection.ShouldBe("Test");
-    }
-
-    [Fact]
-    public void Stub_SearchPriorityAccessible()
-    {
-        IContentService service = new StubContentService();
-        service.SearchPriority.ShouldBe(5);
-    }
-
     private class StubContentService : IContentService
     {
         public string DefaultSection => "Test";

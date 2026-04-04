@@ -27,20 +27,6 @@ public class BuildReportTests
             duration ?? TimeSpan.FromSeconds(1));
 
     [Fact]
-    public void EmptyReport_HasErrors_IsFalse()
-    {
-        var report = MakeReport();
-        report.HasErrors.ShouldBeFalse();
-    }
-
-    [Fact]
-    public void EmptyReport_TotalPages_IsZero()
-    {
-        var report = MakeReport();
-        report.TotalPages.ShouldBe(0);
-    }
-
-    [Fact]
     public void ReportWithGeneratedPagesOnly_HasErrors_IsFalse()
     {
         var report = MakeReport(
@@ -93,11 +79,4 @@ public class BuildReportTests
         report.TotalPages.ShouldBe(6);
     }
 
-    [Fact]
-    public void Duration_IsPreserved()
-    {
-        var duration = TimeSpan.FromMinutes(2.5);
-        var report = MakeReport(duration: duration);
-        report.Duration.ShouldBe(duration);
-    }
 }

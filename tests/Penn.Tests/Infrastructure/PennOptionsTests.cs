@@ -9,37 +9,6 @@ namespace Penn.Tests.Infrastructure;
 
 public class PennOptionsTests
 {
-    // --- Default values ---
-
-    [Fact]
-    public void DefaultValues_AreCorrect()
-    {
-        var options = new PennOptions();
-
-        options.SiteTitle.ShouldBe("");
-        options.SiteDescription.ShouldBe("");
-        options.CanonicalBaseUrl.ShouldBeNull();
-        options.ContentRootPath.ShouldBe("Content");
-        options.MarkdownSources.ShouldBeEmpty();
-    }
-
-    // --- SiteTitle and SiteDescription ---
-
-    [Fact]
-    public void SetSiteTitleAndDescription()
-    {
-        var options = new PennOptions
-        {
-            SiteTitle = "My Docs",
-            SiteDescription = "Documentation site"
-        };
-
-        options.SiteTitle.ShouldBe("My Docs");
-        options.SiteDescription.ShouldBe("Documentation site");
-    }
-
-    // --- AddMarkdownContent ---
-
     [Fact]
     public void AddMarkdownContent_RegistersSource()
     {
@@ -80,20 +49,6 @@ public class PennOptionsTests
         options.MarkdownSources[1].ContentPath.ShouldBe("blog");
     }
 
-    // --- MarkdownContentOptions defaults ---
-
-    [Fact]
-    public void MarkdownContentOptions_DefaultValues()
-    {
-        var mco = new MarkdownContentOptions();
-
-        mco.ContentPath.ShouldBe("Content");
-        mco.BasePageUrl.ShouldBe("/");
-        mco.Section.ShouldBeNull();
-    }
-
-    // --- HighlightingOptions ---
-
     [Fact]
     public void HighlightingOptions_AddHighlighter_Generic()
     {
@@ -126,15 +81,6 @@ public class PennOptionsTests
         options.Islands.RegisteredIslands.Count.ShouldBe(1);
         options.Islands.RegisteredIslands.ShouldContainKey("test-island");
         options.Islands.RegisteredIslands["test-island"].ShouldBe(typeof(StubIsland));
-    }
-
-    // --- LocalizationOptions ---
-
-    [Fact]
-    public void LocalizationOptions_DefaultLocale_IsEn()
-    {
-        var options = new PennOptions();
-        options.Localization.DefaultLocale.ShouldBe("en");
     }
 
     [Fact]

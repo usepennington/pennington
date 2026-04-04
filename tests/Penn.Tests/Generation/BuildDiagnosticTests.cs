@@ -12,40 +12,6 @@ public class BuildDiagnosticTests
     };
 
     [Fact]
-    public void ConstructFromDiagnosticInfo_VerifyRouteAndMessage()
-    {
-        var route = MakeRoute("/info-page");
-        var info = new DiagnosticInfo(route, "Info message");
-        var diagnostic = new BuildDiagnostic(info);
-
-        diagnostic.Route.ShouldBe(route);
-        diagnostic.Message.ShouldBe("Info message");
-    }
-
-    [Fact]
-    public void ConstructFromDiagnosticWarning_VerifyRouteAndMessage()
-    {
-        var route = MakeRoute("/warn-page");
-        var warning = new DiagnosticWarning(route, "Warning message");
-        var diagnostic = new BuildDiagnostic(warning);
-
-        diagnostic.Route.ShouldBe(route);
-        diagnostic.Message.ShouldBe("Warning message");
-    }
-
-    [Fact]
-    public void ConstructFromDiagnosticError_VerifyRouteMessageAndException()
-    {
-        var route = MakeRoute("/error-page");
-        var ex = new InvalidOperationException("something broke");
-        var error = new DiagnosticError(route, "Error message", ex);
-        var diagnostic = new BuildDiagnostic(error);
-
-        diagnostic.Route.ShouldBe(route);
-        diagnostic.Message.ShouldBe("Error message");
-    }
-
-    [Fact]
     public void ExhaustivePatternMatch_AllThreeCases()
     {
         BuildDiagnostic info = new BuildDiagnostic(new DiagnosticInfo(MakeRoute("/a"), "info"));

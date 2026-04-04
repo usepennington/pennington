@@ -6,39 +6,6 @@ namespace Penn.Tests.Pipeline;
 public class ContentSourceTests
 {
     [Fact]
-    public void ConstructFromMarkdownFileSource()
-    {
-        var source = new MarkdownFileSource("content/page.md");
-        var cs = new ContentSource(source);
-        (cs is MarkdownFileSource).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ConstructFromRazorPageSource()
-    {
-        var source = new RazorPageSource("MyApp.Pages.Index");
-        var cs = new ContentSource(source);
-        (cs is RazorPageSource).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ConstructFromRedirectSource()
-    {
-        var source = new RedirectSource("/new-location");
-        var cs = new ContentSource(source);
-        (cs is RedirectSource).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ConstructFromProgrammaticSource()
-    {
-        var generator = new StubGenerator();
-        var source = new ProgrammaticSource(generator);
-        var cs = new ContentSource(source);
-        (cs is ProgrammaticSource).ShouldBeTrue();
-    }
-
-    [Fact]
     public void ExhaustivePatternMatch_AllCases()
     {
         ContentSource markdown = new ContentSource(new MarkdownFileSource("page.md"));

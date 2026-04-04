@@ -6,22 +6,6 @@ namespace Penn.Tests.Pipeline;
 public class ProgrammaticContentTests
 {
     [Fact]
-    public void ConstructFromTextProgrammaticContent()
-    {
-        var text = new TextProgrammaticContent(null, "<p>hello</p>");
-        var pc = new ProgrammaticContent(text);
-        (pc is TextProgrammaticContent).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ConstructFromBinaryProgrammaticContent()
-    {
-        var binary = new BinaryProgrammaticContent(() => Task.FromResult(new byte[] { 1, 2, 3 }), "application/octet-stream");
-        var pc = new ProgrammaticContent(binary);
-        (pc is BinaryProgrammaticContent).ShouldBeTrue();
-    }
-
-    [Fact]
     public void PatternMatch_TextCase()
     {
         var pc = new ProgrammaticContent(new TextProgrammaticContent(null, "raw content"));

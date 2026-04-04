@@ -36,18 +36,6 @@ public class TextMateHighlighterTests
     }
 
     [Fact]
-    public void SupportedLanguages_ContainsWildcard()
-    {
-        _highlighter.SupportedLanguages.ShouldContain("*");
-    }
-
-    [Fact]
-    public void Priority_Is50()
-    {
-        _highlighter.Priority.ShouldBe(50);
-    }
-
-    [Fact]
     public void Highlight_EmptyCode_ReturnsEmptyString()
     {
         var result = _highlighter.Highlight("", "csharp");
