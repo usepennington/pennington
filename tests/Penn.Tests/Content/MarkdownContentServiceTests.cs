@@ -3,83 +3,68 @@ using Penn.Content;
 using Penn.FrontMatter;
 using Penn.Pipeline;
 using Penn.Routing;
+using Testably.Abstractions.Testing;
 
 namespace Penn.Tests.Content;
 
-public class MarkdownContentServiceTests : IDisposable
+public class MarkdownContentServiceTests
 {
-    private readonly List<string> _tempDirs = [];
-
-    public void Dispose()
-    {
-        foreach (var dir in _tempDirs)
-        {
-            if (Directory.Exists(dir))
-                Directory.Delete(dir, true);
-        }
-    }
-
     private MarkdownContentService<DocFrontMatter> CreateTestService(
+        MockFileSystem fs,
         string? section = "Documentation",
-        UrlPath? basePageUrl = null,
-        params (string RelativePath, string Content)[] files)
+        UrlPath? basePageUrl = null)
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), "penn_test_" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(tempDir);
-        _tempDirs.Add(tempDir);
-
-        foreach (var (relativePath, content) in files)
-        {
-            var fullPath = Path.Combine(tempDir, relativePath);
-            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-            File.WriteAllText(fullPath, content);
-        }
-
         var options = new MarkdownContentServiceOptions
         {
-            ContentPath = new FilePath(tempDir),
+            ContentPath = new FilePath("/content"),
             BasePageUrl = basePageUrl ?? new UrlPath("/docs"),
             Section = section
         };
 
-        return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser());
+        return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs);
+    }
+
+    private static MockFileSystem CreateFs(params (string Path, string Content)[] files)
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/content");
+        foreach (var (path, content) in files)
+        {
+            var fullPath = $"/content/{path}";
+            var dir = fs.Path.GetDirectoryName(fullPath);
+            if (dir != null) fs.Directory.CreateDirectory(dir);
+            fs.File.WriteAllText(fullPath, content);
+        }
+        return fs;
     }
 
     [Fact]
     public async Task DiscoverAsync_FindsMarkdownFiles()
     {
-        var service = CreateTestService(
-            files: [
-                ("getting-started.md", "---\ntitle: Getting Started\n---\n# Getting Started"),
-                ("advanced.md", "---\ntitle: Advanced\n---\n# Advanced")
-            ]);
+        var fs = CreateFs(
+            ("getting-started.md", "---\ntitle: Getting Started\n---\n# Getting Started"),
+            ("advanced.md", "---\ntitle: Advanced\n---\n# Advanced"));
+        var service = CreateTestService(fs);
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
-        {
             items.Add(item);
-        }
 
         items.Count.ShouldBe(2);
         foreach (var item in items)
-        {
             (item.Source is MarkdownFileSource).ShouldBeTrue();
-        }
     }
 
     [Fact]
     public async Task DiscoverAsync_BuildsCorrectRoutes()
     {
-        var service = CreateTestService(
-            files: [
-                ("getting-started.md", "---\ntitle: Getting Started\n---\n# Getting Started")
-            ]);
+        var fs = CreateFs(
+            ("getting-started.md", "---\ntitle: Getting Started\n---\n# Getting Started"));
+        var service = CreateTestService(fs);
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
-        {
             items.Add(item);
-        }
 
         items.Count.ShouldBe(1);
         items[0].Route.CanonicalPath.Value.ShouldBe("/docs/getting-started");
@@ -88,16 +73,13 @@ public class MarkdownContentServiceTests : IDisposable
     [Fact]
     public async Task DiscoverAsync_SourcePointsToFile()
     {
-        var service = CreateTestService(
-            files: [
-                ("intro.md", "---\ntitle: Intro\n---\n# Intro")
-            ]);
+        var fs = CreateFs(
+            ("intro.md", "---\ntitle: Intro\n---\n# Intro"));
+        var service = CreateTestService(fs);
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
-        {
             items.Add(item);
-        }
 
         items.Count.ShouldBe(1);
         (items[0].Source is MarkdownFileSource).ShouldBeTrue();
@@ -112,11 +94,10 @@ public class MarkdownContentServiceTests : IDisposable
     [Fact]
     public async Task GetContentTocEntriesAsync_ReturnsEntries()
     {
-        var service = CreateTestService(
-            files: [
-                ("getting-started.md", "---\ntitle: Getting Started\norder: 1\n---\n# Getting Started"),
-                ("advanced.md", "---\ntitle: Advanced Topics\norder: 5\n---\n# Advanced")
-            ]);
+        var fs = CreateFs(
+            ("getting-started.md", "---\ntitle: Getting Started\norder: 1\n---\n# Getting Started"),
+            ("advanced.md", "---\ntitle: Advanced Topics\norder: 5\n---\n# Advanced"));
+        var service = CreateTestService(fs);
 
         var entries = await service.GetContentTocEntriesAsync();
 
@@ -134,11 +115,10 @@ public class MarkdownContentServiceTests : IDisposable
     [Fact]
     public async Task GetContentTocEntriesAsync_SkipsDrafts()
     {
-        var service = CreateTestService(
-            files: [
-                ("published.md", "---\ntitle: Published\nisDraft: false\n---\n# Published"),
-                ("draft.md", "---\ntitle: Draft Post\nisDraft: true\n---\n# Draft")
-            ]);
+        var fs = CreateFs(
+            ("published.md", "---\ntitle: Published\nisDraft: false\n---\n# Published"),
+            ("draft.md", "---\ntitle: Draft Post\nisDraft: true\n---\n# Draft"));
+        var service = CreateTestService(fs);
 
         var entries = await service.GetContentTocEntriesAsync();
 
@@ -149,11 +129,9 @@ public class MarkdownContentServiceTests : IDisposable
     [Fact]
     public async Task GetContentTocEntriesAsync_UsesSectionFromOptions()
     {
-        var service = CreateTestService(
-            section: "Guides",
-            files: [
-                ("page.md", "---\ntitle: A Page\n---\n# A Page")
-            ]);
+        var fs = CreateFs(
+            ("page.md", "---\ntitle: A Page\n---\n# A Page"));
+        var service = CreateTestService(fs, section: "Guides");
 
         var entries = await service.GetContentTocEntriesAsync();
 
@@ -164,11 +142,9 @@ public class MarkdownContentServiceTests : IDisposable
     [Fact]
     public async Task GetContentTocEntriesAsync_UsesSectionFromFrontMatter()
     {
-        var service = CreateTestService(
-            section: "DefaultSection",
-            files: [
-                ("page.md", "---\ntitle: A Page\nsection: OverriddenSection\n---\n# A Page")
-            ]);
+        var fs = CreateFs(
+            ("page.md", "---\ntitle: A Page\nsection: OverriddenSection\n---\n# A Page"));
+        var service = CreateTestService(fs, section: "DefaultSection");
 
         var entries = await service.GetContentTocEntriesAsync();
 
@@ -179,11 +155,10 @@ public class MarkdownContentServiceTests : IDisposable
     [Fact]
     public async Task GetCrossReferencesAsync_ReturnsXrefs()
     {
-        var service = CreateTestService(
-            files: [
-                ("api.md", "---\ntitle: API Reference\nuid: api-ref\n---\n# API"),
-                ("guide.md", "---\ntitle: User Guide\nuid: user-guide\n---\n# Guide")
-            ]);
+        var fs = CreateFs(
+            ("api.md", "---\ntitle: API Reference\nuid: api-ref\n---\n# API"),
+            ("guide.md", "---\ntitle: User Guide\nuid: user-guide\n---\n# Guide"));
+        var service = CreateTestService(fs);
 
         var xrefs = await service.GetCrossReferencesAsync();
 
@@ -199,11 +174,10 @@ public class MarkdownContentServiceTests : IDisposable
     [Fact]
     public async Task GetCrossReferencesAsync_SkipsFilesWithoutUid()
     {
-        var service = CreateTestService(
-            files: [
-                ("with-uid.md", "---\ntitle: Has UID\nuid: my-uid\n---\n# Has UID"),
-                ("no-uid.md", "---\ntitle: No UID\n---\n# No UID")
-            ]);
+        var fs = CreateFs(
+            ("with-uid.md", "---\ntitle: Has UID\nuid: my-uid\n---\n# Has UID"),
+            ("no-uid.md", "---\ntitle: No UID\n---\n# No UID"));
+        var service = CreateTestService(fs);
 
         var xrefs = await service.GetCrossReferencesAsync();
 
@@ -214,12 +188,10 @@ public class MarkdownContentServiceTests : IDisposable
     [Fact]
     public async Task GetContentToCopyAsync_ExcludesMarkdown()
     {
-        var service = CreateTestService(
-            files: [
-                ("page.md", "---\ntitle: Page\n---\n# Page"),
-                ("images/logo.png", "fake-png-data"),
-                ("data/config.yml", "key: value")
-            ]);
+        var fs = CreateFs(
+            ("page.md", "---\ntitle: Page\n---\n# Page"),
+            ("images/logo.png", "fake-png-data"));
+        var service = CreateTestService(fs);
 
         var toCopy = await service.GetContentToCopyAsync();
 
@@ -230,16 +202,15 @@ public class MarkdownContentServiceTests : IDisposable
     [Fact]
     public async Task GetContentToCopyAsync_ExcludesAllExcludedExtensions()
     {
-        var service = CreateTestService(
-            files: [
-                ("page.md", "# Markdown"),
-                ("page.mdx", "# MDX"),
-                ("page.razor", "<div>Razor</div>"),
-                ("data.yml", "key: value"),
-                ("data.yaml", "key: value"),
-                ("image.jpg", "fake-jpg-data"),
-                ("script.js", "console.log('hello');")
-            ]);
+        var fs = CreateFs(
+            ("page.md", "# Markdown"),
+            ("page.mdx", "# MDX"),
+            ("page.razor", "<div>Razor</div>"),
+            ("data.yml", "key: value"),
+            ("data.yaml", "key: value"),
+            ("image.jpg", "fake-jpg-data"),
+            ("script.js", "console.log('hello');"));
+        var service = CreateTestService(fs);
 
         var toCopy = await service.GetContentToCopyAsync();
 
@@ -252,13 +223,13 @@ public class MarkdownContentServiceTests : IDisposable
     [Fact]
     public async Task EmptyDirectory_ReturnsEmptyResults()
     {
-        var service = CreateTestService(files: []);
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/content");
+        var service = CreateTestService(fs);
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
-        {
             items.Add(item);
-        }
 
         items.ShouldBeEmpty();
 
@@ -275,20 +246,18 @@ public class MarkdownContentServiceTests : IDisposable
     [Fact]
     public async Task NonExistentDirectory_ReturnsEmptyResults()
     {
+        var fs = new MockFileSystem();
         var options = new MarkdownContentServiceOptions
         {
-            ContentPath = new FilePath(Path.Combine(Path.GetTempPath(), "penn_nonexistent_" + Guid.NewGuid().ToString("N"))),
+            ContentPath = new FilePath("/nonexistent"),
             BasePageUrl = new UrlPath("/docs"),
             Section = "Test"
         };
-
-        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser());
+        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs);
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
-        {
             items.Add(item);
-        }
 
         items.ShouldBeEmpty();
 
@@ -305,29 +274,191 @@ public class MarkdownContentServiceTests : IDisposable
     [Fact]
     public void DefaultSection_ReturnsEmptyWhenNull()
     {
-        var service = CreateTestService(section: null, files: []);
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/content");
+        var service = CreateTestService(fs, section: null);
         service.DefaultSection.ShouldBe("");
     }
 
     [Fact]
     public async Task DiscoverAsync_SubdirectoryFiles()
     {
-        var service = CreateTestService(
-            files: [
-                ("guides/setup.md", "---\ntitle: Setup Guide\n---\n# Setup"),
-                ("guides/advanced/config.md", "---\ntitle: Config\n---\n# Config")
-            ]);
+        var fs = CreateFs(
+            ("guides/setup.md", "---\ntitle: Setup Guide\n---\n# Setup"),
+            ("guides/advanced/config.md", "---\ntitle: Config\n---\n# Config"));
+        var service = CreateTestService(fs);
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
-        {
             items.Add(item);
-        }
 
         items.Count.ShouldBe(2);
 
         var routes = items.Select(i => i.Route.CanonicalPath.Value).ToList();
         routes.ShouldContain("/docs/guides/setup");
         routes.ShouldContain("/docs/guides/advanced/config");
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_IndexMd_MapsToBaseUrl()
+    {
+        var fs = CreateFs(
+            ("index.md", "---\ntitle: Home\n---\n# Welcome"));
+        var service = CreateTestService(fs);
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        items.Count.ShouldBe(1);
+        items[0].Route.CanonicalPath.Value.ShouldBe("/docs");
+    }
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_OrderableCapability_UsesOrder()
+    {
+        var fs = CreateFs(
+            ("first.md", "---\ntitle: First Page\norder: 1\n---\n# First"),
+            ("second.md", "---\ntitle: Second Page\norder: 2\n---\n# Second"),
+            ("unordered.md", "---\ntitle: Unordered\n---\n# Unordered"));
+        var service = CreateTestService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(3);
+        var first = entries.First(e => e.Title == "First Page");
+        var second = entries.First(e => e.Title == "Second Page");
+        var unordered = entries.First(e => e.Title == "Unordered");
+
+        first.Order.ShouldBe(1);
+        second.Order.ShouldBe(2);
+        unordered.Order.ShouldBe(int.MaxValue); // default for non-orderable
+    }
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_HierarchyParts_ReflectPathStructure()
+    {
+        var fs = CreateFs(
+            ("api/auth/tokens.md", "---\ntitle: Tokens\n---\n# Tokens"));
+        var service = CreateTestService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(1);
+        entries[0].HierarchyParts.ShouldBe(["docs", "api", "auth", "tokens"]);
+    }
+
+    // --- BlogFrontMatter tests ---
+
+    private MarkdownContentService<BlogFrontMatter> CreateBlogService(
+        MockFileSystem fs,
+        string? section = null,
+        UrlPath? basePageUrl = null)
+    {
+        var options = new MarkdownContentServiceOptions
+        {
+            ContentPath = new FilePath("/content"),
+            BasePageUrl = basePageUrl ?? new UrlPath("/blog"),
+            Section = section
+        };
+
+        return new MarkdownContentService<BlogFrontMatter>(options, new FrontMatterParser(), fs);
+    }
+
+    [Fact]
+    public async Task BlogFrontMatter_DiscoverAsync_FindsPosts()
+    {
+        var fs = CreateFs(
+            ("hello-world.md", "---\ntitle: Hello World\ndate: 2026-03-15\ntags:\n  - intro\n---\n# Hello World"));
+        var service = CreateBlogService(fs);
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        items.Count.ShouldBe(1);
+        items[0].Route.CanonicalPath.Value.ShouldBe("/blog/hello-world");
+    }
+
+    [Fact]
+    public async Task BlogFrontMatter_DraftsSkippedInToc()
+    {
+        var fs = CreateFs(
+            ("published.md", "---\ntitle: Published Post\ndate: 2026-03-15\nisDraft: false\n---\n# Published"),
+            ("draft.md", "---\ntitle: Draft Post\ndate: 2026-04-01\nisDraft: true\n---\n# Draft"));
+        var service = CreateBlogService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(1);
+        entries[0].Title.ShouldBe("Published Post");
+    }
+
+    [Fact]
+    public async Task BlogFrontMatter_CrossReferences_WithUid()
+    {
+        var fs = CreateFs(
+            ("post-with-uid.md", "---\ntitle: Referenced Post\nuid: blog-post-1\ndate: 2026-03-15\n---\n# Post"),
+            ("post-no-uid.md", "---\ntitle: No UID Post\ndate: 2026-03-20\n---\n# Another Post"));
+        var service = CreateBlogService(fs);
+
+        var xrefs = await service.GetCrossReferencesAsync();
+
+        xrefs.Count.ShouldBe(1);
+        xrefs[0].Uid.ShouldBe("blog-post-1");
+        xrefs[0].Title.ShouldBe("Referenced Post");
+    }
+
+    [Fact]
+    public async Task BlogFrontMatter_NonOrderable_DefaultsToMaxValue()
+    {
+        // BlogFrontMatter doesn't implement IOrderable
+        var fs = CreateFs(
+            ("post.md", "---\ntitle: A Blog Post\ndate: 2026-03-15\n---\n# Post"));
+        var service = CreateBlogService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(1);
+        entries[0].Order.ShouldBe(int.MaxValue);
+    }
+
+    [Fact]
+    public async Task MultipleContentPaths_SameContentDirectory()
+    {
+        var fs = CreateFs(
+            ("guide.md", "---\ntitle: User Guide\norder: 1\nuid: guide\n---\n# Guide"),
+            ("faq.md", "---\ntitle: FAQ\norder: 2\n---\n# FAQ"));
+        var service = CreateTestService(fs);
+
+        // Verify all APIs work together
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        var toc = await service.GetContentTocEntriesAsync();
+        var xrefs = await service.GetCrossReferencesAsync();
+        var toCopy = await service.GetContentToCopyAsync();
+
+        items.Count.ShouldBe(2);
+        toc.Count.ShouldBe(2);
+        xrefs.Count.ShouldBe(1); // only guide has uid
+        toCopy.ShouldBeEmpty(); // only .md files present
+    }
+
+    [Fact]
+    public void SearchPriority_ReturnsConfiguredValue()
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/content");
+        var options = new MarkdownContentServiceOptions
+        {
+            ContentPath = new FilePath("/content"),
+            BasePageUrl = new UrlPath("/docs"),
+            SearchPriority = 10
+        };
+        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs);
+
+        service.SearchPriority.ShouldBe(10);
     }
 }

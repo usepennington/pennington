@@ -339,6 +339,120 @@ public class ContentPipelineTests
         failed.Error.Message.ShouldBe("parse went wrong");
     }
 
+    [Fact]
+    public async Task RendererException_WrappedIntoFailedItem()
+    {
+        var item = new DiscoveredItem(MakeRoute("/render-crash"), MakeSource());
+        var service = new StubContentService(item);
+
+        var pipeline = new ContentPipeline([service], new StubParser(), new ThrowingRenderer());
+
+        var report = await pipeline.RunAsync(MakeOptions());
+
+        report.FailedPages.Count.ShouldBe(1);
+        report.HasErrors.ShouldBeTrue();
+        var errorDiag = report.Diagnostics.First(d => d is DiagnosticError);
+        var error = errorDiag switch { DiagnosticError e => e, _ => null };
+        error.ShouldNotBeNull();
+        error.Message.ShouldContain("Render failed:");
+        error.Message.ShouldContain("Component exploded");
+    }
+
+    [Fact]
+    public async Task MultipleFailures_AllRecordedInReport()
+    {
+        var item1 = new DiscoveredItem(MakeRoute("/fail-1"), MakeSource());
+        var item2 = new DiscoveredItem(MakeRoute("/fail-2"), MakeSource());
+        var item3 = new DiscoveredItem(MakeRoute("/success"), MakeSource());
+        var service = new StubContentService(item1, item2, item3);
+
+        var pipeline = new ContentPipeline([service], new SelectiveParser(), new StubRenderer());
+
+        var report = await pipeline.RunAsync(MakeOptions());
+
+        report.FailedPages.Count.ShouldBe(2);
+        report.GeneratedPages.Count.ShouldBe(1);
+        report.TotalPages.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task ProgrammaticSource_DiscoveredAndFlowsThroughPipeline()
+    {
+        var generator = new StubProgrammaticGenerator();
+        var route = MakeRoute("/generated/page");
+        var source = new ContentSource(new ProgrammaticSource(generator));
+        var item = new DiscoveredItem(route, source);
+        var service = new StubContentService(item);
+
+        // Parser checks source type, so use a parser that handles any source
+        var pipeline = new ContentPipeline([service], new StubParser(), new StubRenderer());
+
+        var report = await pipeline.RunAsync(MakeOptions());
+
+        // ProgrammaticSource passes through parser (our stub doesn't check source type)
+        report.GeneratedPages.Count.ShouldBe(1);
+        report.HasErrors.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task RenderStage_ParsedItemPassesThrough_AlreadyRenderedSkipped()
+    {
+        var route = MakeRoute("/already-rendered");
+        var renderedItem = new ContentItem(
+            new RenderedItem(route, new TestFrontMatter("Already Done"), MakeRenderedContent()));
+
+        async IAsyncEnumerable<ContentItem> Source()
+        {
+            yield return renderedItem;
+            await Task.CompletedTask;
+        }
+
+        var pipeline = new ContentPipeline([], new StubParser(), new StubRenderer());
+        var results = await CollectAsync(pipeline.RenderAsync(Source()));
+
+        results.Count.ShouldBe(1);
+        // Already rendered items pass through unchanged
+        (results[0] is RenderedItem).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task GenerateStage_UnexpectedItemType_GetsWarning()
+    {
+        // If a DiscoveredItem somehow reaches the Generate stage (wasn't parsed or rendered),
+        // it should get a warning
+        var route = MakeRoute("/stuck");
+        var discoveredItem = new ContentItem(new DiscoveredItem(route, MakeSource()));
+
+        async IAsyncEnumerable<ContentItem> Source()
+        {
+            yield return discoveredItem;
+            await Task.CompletedTask;
+        }
+
+        var pipeline = new ContentPipeline([], new StubParser(), new StubRenderer());
+        var report = await pipeline.GenerateAsync(Source(), MakeOptions());
+
+        report.GeneratedPages.Count.ShouldBe(0);
+        report.Diagnostics.Any(d => d is DiagnosticWarning).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Pipeline_MixedContentServices_FailureInOneDoesNotAffectOther()
+    {
+        var goodItem = new DiscoveredItem(MakeRoute("/good"), MakeSource());
+        var badItem = new DiscoveredItem(MakeRoute("/bad-fail"), MakeSource());
+
+        var goodService = new StubContentService(goodItem);
+        var badService = new StubContentService(badItem);
+
+        var pipeline = new ContentPipeline([goodService, badService], new SelectiveParser(), new StubRenderer());
+
+        var report = await pipeline.RunAsync(MakeOptions());
+
+        report.GeneratedPages.Count.ShouldBe(1);
+        report.FailedPages.Count.ShouldBe(1);
+    }
+
     // --- Selective parser for mixed results test ---
 
     private class SelectiveParser : IContentParser
@@ -360,5 +474,24 @@ public class ContentPipelineTests
             return Task.FromResult(new ContentItem(
                 new ParsedItem(item.Route, new TestFrontMatter("Page"), "# Page")));
         }
+    }
+
+    // --- Stub renderer (throws exception) ---
+
+    private class ThrowingRenderer : IContentRenderer
+    {
+        public Task<ContentItem> RenderAsync(ParsedItem item)
+            => throw new InvalidOperationException("Component exploded");
+    }
+
+    // --- Stub programmatic content generator ---
+
+    private class StubProgrammaticGenerator : IProgrammaticContentGenerator
+    {
+        public Task<ProgrammaticContent> GenerateAsync(ContentRoute route)
+            => Task.FromResult(new ProgrammaticContent(
+                new TextProgrammaticContent(
+                    Metadata: null,
+                    RawContent: "<p>Generated content</p>")));
     }
 }

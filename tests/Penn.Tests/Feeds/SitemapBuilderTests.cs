@@ -108,4 +108,110 @@ public class SitemapBuilderTests
 
         entries.ShouldBeEmpty();
     }
+
+    // Front matter with no capabilities
+    private record MinimalFrontMatter(string Title) : IFrontMatter;
+
+    [Fact]
+    public void Build_NonDraftableFrontMatter_Included()
+    {
+        var items = new List<RenderedItem>
+        {
+            new(
+                Route: MakeRoute("/page"),
+                Metadata: new MinimalFrontMatter("Minimal Page"),
+                Content: MakeContent()
+            ),
+        };
+
+        var entries = _builder.Build(items);
+
+        entries.Count.ShouldBe(1);
+        entries[0].Url.Value.ShouldBe("https://example.com/page");
+    }
+
+    [Fact]
+    public void Build_NonDateable_LastModifiedIsNull()
+    {
+        var items = new List<RenderedItem>
+        {
+            new(
+                Route: MakeRoute("/page"),
+                Metadata: new MinimalFrontMatter("No Date"),
+                Content: MakeContent()
+            ),
+        };
+
+        var entries = _builder.Build(items);
+
+        entries.Count.ShouldBe(1);
+        entries[0].LastModified.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Build_LocaleInRoute_PreservedInUrl()
+    {
+        var items = new List<RenderedItem>
+        {
+            new(
+                Route: MakeRoute("/fr/docs/intro", "fr"),
+                Metadata: new TestFrontMatter { Title = "Introduction" },
+                Content: MakeContent()
+            ),
+        };
+
+        var entries = _builder.Build(items);
+
+        entries.Count.ShouldBe(1);
+        entries[0].Url.Value.ShouldBe("https://example.com/fr/docs/intro");
+    }
+
+    [Fact]
+    public void Build_MultiplePagesWithDrafts_OnlyNonDraftsIncluded()
+    {
+        var items = new List<RenderedItem>
+        {
+            new(
+                Route: MakeRoute("/getting-started"),
+                Metadata: new TestFrontMatter { Title = "Getting Started" },
+                Content: MakeContent()
+            ),
+            new(
+                Route: MakeRoute("/wip"),
+                Metadata: new TestFrontMatter { Title = "WIP", IsDraft = true },
+                Content: MakeContent()
+            ),
+            new(
+                Route: MakeRoute("/about"),
+                Metadata: new MinimalFrontMatter("About"),
+                Content: MakeContent()
+            ),
+        };
+
+        var entries = _builder.Build(items);
+
+        entries.Count.ShouldBe(2);
+        var urls = entries.Select(e => e.Url.Value).ToList();
+        urls.ShouldContain("https://example.com/getting-started");
+        urls.ShouldContain("https://example.com/about");
+    }
+
+    [Fact]
+    public void Build_ChangeFrequencyAndPriority_AreNull()
+    {
+        var items = new List<RenderedItem>
+        {
+            new(
+                Route: MakeRoute("/page"),
+                Metadata: new TestFrontMatter { Title = "Page", Date = new DateTime(2026, 1, 1) },
+                Content: MakeContent()
+            ),
+        };
+
+        var entries = _builder.Build(items);
+
+        entries.Count.ShouldBe(1);
+        entries[0].ChangeFrequency.ShouldBeNull();
+        entries[0].Priority.ShouldBeNull();
+    }
 }

@@ -154,4 +154,154 @@ public class RssFeedBuilderTests
         feed.Count.ShouldBe(1);
         feed[0].Description.ShouldBe("A great article about testing");
     }
+
+    // Front matter with no capability interfaces at all
+    private record MinimalFrontMatter(string Title) : IFrontMatter;
+
+    [Fact]
+    public void Build_NonDateableFrontMatter_ExcludedFromFeed()
+    {
+        var items = new List<RenderedItem>
+        {
+            new(
+                Route: MakeRoute("/about"),
+                Metadata: new MinimalFrontMatter("About Us"),
+                Content: MakeContent()
+            ),
+        };
+
+        var feed = _builder.Build(items);
+
+        feed.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Build_NonDraftableFrontMatter_IncludedIfDateable()
+    {
+        // Front matter that is IDateable but NOT IDraftable — should be included
+        var items = new List<RenderedItem>
+        {
+            new(
+                Route: MakeRoute("/blog/post"),
+                Metadata: new DateOnlyFrontMatter { Title = "Date Only", Date = new DateTime(2026, 5, 1) },
+                Content: MakeContent()
+            ),
+        };
+
+        var feed = _builder.Build(items);
+
+        feed.Count.ShouldBe(1);
+        feed[0].Title.ShouldBe("Date Only");
+    }
+
+    [Fact]
+    public void Build_NullDescription_OmitsDescription()
+    {
+        var items = new List<RenderedItem>
+        {
+            new(
+                Route: MakeRoute("/blog/post"),
+                Metadata: new TestFrontMatter { Title = "No Desc", Date = new DateTime(2026, 3, 1), Description = null },
+                Content: MakeContent()
+            ),
+        };
+
+        var feed = _builder.Build(items);
+
+        feed.Count.ShouldBe(1);
+        feed[0].Description.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Build_EmptyList_ReturnsEmptyFeed()
+    {
+        var feed = _builder.Build([]);
+
+        feed.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Build_MixedCapabilities_OnlyDateableNonDraftIncluded()
+    {
+        var items = new List<RenderedItem>
+        {
+            // Dated non-draft: included
+            new(
+                Route: MakeRoute("/blog/good"),
+                Metadata: new TestFrontMatter { Title = "Good Post", Date = new DateTime(2026, 6, 1) },
+                Content: MakeContent()
+            ),
+            // Dated draft: excluded
+            new(
+                Route: MakeRoute("/blog/draft"),
+                Metadata: new TestFrontMatter { Title = "Draft", IsDraft = true, Date = new DateTime(2026, 5, 1) },
+                Content: MakeContent()
+            ),
+            // Non-dated non-draft: excluded
+            new(
+                Route: MakeRoute("/about"),
+                Metadata: new TestFrontMatter { Title = "About" },
+                Content: MakeContent()
+            ),
+            // No capabilities: excluded
+            new(
+                Route: MakeRoute("/contact"),
+                Metadata: new MinimalFrontMatter("Contact"),
+                Content: MakeContent()
+            ),
+        };
+
+        var feed = _builder.Build(items);
+
+        feed.Count.ShouldBe(1);
+        feed[0].Title.ShouldBe("Good Post");
+    }
+
+    [Fact]
+    public void Build_AbsoluteUrls_UseCanonicalBase()
+    {
+        var items = new List<RenderedItem>
+        {
+            new(
+                Route: MakeRoute("/blog/my-post"),
+                Metadata: new TestFrontMatter { Title = "My Post", Date = new DateTime(2026, 3, 1) },
+                Content: MakeContent()
+            ),
+        };
+
+        var feed = _builder.Build(items);
+
+        feed[0].Url.Value.ShouldStartWith("https://example.com");
+        feed[0].Url.Value.ShouldBe("https://example.com/blog/my-post");
+    }
+
+    [Fact]
+    public void Build_SameDayPosts_BothIncludedAndOrdered()
+    {
+        var sameDay = new DateTime(2026, 3, 15);
+        var items = new List<RenderedItem>
+        {
+            new(
+                Route: MakeRoute("/blog/first"),
+                Metadata: new TestFrontMatter { Title = "First", Date = sameDay },
+                Content: MakeContent()
+            ),
+            new(
+                Route: MakeRoute("/blog/second"),
+                Metadata: new TestFrontMatter { Title = "Second", Date = sameDay },
+                Content: MakeContent()
+            ),
+        };
+
+        var feed = _builder.Build(items);
+
+        feed.Count.ShouldBe(2);
+    }
+
+    // IDateable but NOT IDraftable
+    private record DateOnlyFrontMatter : IFrontMatter, IDateable
+    {
+        public string Title { get; init; } = "Test";
+        public DateTime? Date { get; init; }
+    }
 }
