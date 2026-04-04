@@ -1,24 +1,42 @@
 namespace Penn.Generation;
 
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Penn.Content;
 using Penn.Infrastructure;
 using Penn.Routing;
 
-/// <summary>Generates static HTML by HTTP-crawling the running app.</summary>
+/// <summary>
+/// Generates a static site by HTTP-crawling the running app.
+/// Pages are fetched in priority order: HTML content first, then MapGet routes (like /styles.css) last.
+/// This ensures CSS class collectors have observed all HTML before the stylesheet is generated.
+/// </summary>
 public sealed class OutputGenerationService
 {
     private readonly IEnumerable<IContentService> _contentServices;
     private readonly OutputOptions _outputOptions;
     private readonly PennOptions _pennOptions;
+    private readonly IWebHostEnvironment _environment;
+    private readonly EndpointDataSource _endpointDataSource;
+    private readonly ILogger<OutputGenerationService> _logger;
 
     public OutputGenerationService(
         IEnumerable<IContentService> contentServices,
         OutputOptions outputOptions,
-        PennOptions pennOptions)
+        PennOptions pennOptions,
+        IWebHostEnvironment environment,
+        EndpointDataSource endpointDataSource,
+        ILogger<OutputGenerationService> logger)
     {
         _contentServices = contentServices;
         _outputOptions = outputOptions;
         _pennOptions = pennOptions;
+        _environment = environment;
+        _endpointDataSource = endpointDataSource;
+        _logger = logger;
     }
 
     public async Task GenerateAsync(string appUrl)
@@ -26,37 +44,140 @@ public sealed class OutputGenerationService
         using var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
         client.BaseAddress = new Uri(appUrl);
 
-        // Collect all pages to generate via discovery
-        var pages = new List<(string Url, FilePath OutputFile)>();
+        var outputDir = _outputOptions.OutputDirectory.Value;
+
+        // Phase 1: Collect pages from content services (Priority.Normal)
+        var contentPages = new List<PageToGenerate>();
         foreach (var service in _contentServices)
         {
             await foreach (var item in service.DiscoverAsync())
             {
                 var url = item.Route.CanonicalPath.EnsureTrailingSlash().Value;
-                pages.Add((url, item.Route.OutputFile));
+                contentPages.Add(new PageToGenerate(url, item.Route.OutputFile));
             }
         }
 
-        // Create output directory
-        var outputDir = _outputOptions.OutputDirectory.Value;
+        // Phase 2: Discover MapGet routes (Priority.MustBeLast — includes /styles.css)
+        var mapGetPages = DiscoverMapGetRoutes();
+
+        _logger.LogInformation("Static generation: {ContentCount} content pages, {MapGetCount} MapGet routes",
+            contentPages.Count, mapGetPages.Count);
+
+        // Phase 3: Clear and recreate output directory
         if (Directory.Exists(outputDir))
             Directory.Delete(outputDir, true);
         Directory.CreateDirectory(outputDir);
 
-        // Copy static assets
+        // Phase 4: Copy static assets
+        await CopyStaticAssetsAsync(outputDir);
+
+        // Phase 5: Create dynamic content files
+        await CreateContentFilesAsync(outputDir);
+
+        // Phase 6: Fetch all HTML content pages (in parallel)
+        _logger.LogInformation("Fetching {Count} content pages...", contentPages.Count);
+        await FetchPagesAsync(client, contentPages, outputDir);
+
+        // Phase 7: Fetch MapGet routes LAST (CSS needs all HTML to have been processed first)
+        _logger.LogInformation("Fetching {Count} MapGet routes (styles.css etc.)...", mapGetPages.Count);
+        await FetchPagesAsync(client, mapGetPages, outputDir);
+
+        _logger.LogInformation("Static generation complete. Output: {OutputDir}", outputDir);
+    }
+
+    private List<PageToGenerate> DiscoverMapGetRoutes()
+    {
+        var pages = new List<PageToGenerate>();
+
+        foreach (var endpoint in _endpointDataSource.Endpoints)
+        {
+            if (endpoint is not RouteEndpoint routeEndpoint)
+                continue;
+
+            var httpMethods = routeEndpoint.Metadata.GetMetadata<HttpMethodMetadata>();
+            if (httpMethods?.HttpMethods.Contains("GET") != true)
+                continue;
+
+            var rawText = routeEndpoint.RoutePattern.RawText;
+            if (string.IsNullOrWhiteSpace(rawText))
+                continue;
+
+            // Skip Blazor component routes, framework routes, static files, and parameterized routes
+            if (rawText.Contains("{") ||
+                rawText.Contains("_framework") ||
+                rawText.Contains("_blazor") ||
+                endpoint.DisplayName?.Contains("static files") == true)
+                continue;
+
+            // Skip fallback routes (catch-all page routes)
+            if (endpoint.Metadata.Any(m => m.GetType().Name == "FallbackMetadata"))
+                continue;
+
+            // Skip component-based routes
+            if (endpoint.Metadata.Any(m => m.GetType().Name == "ComponentTypeMetadata"))
+                continue;
+
+            var url = rawText.StartsWith('/') ? rawText : "/" + rawText;
+
+            // Determine output file — for something like /styles.css, output as styles.css
+            var outputPath = url.TrimStart('/');
+            if (string.IsNullOrEmpty(outputPath)) outputPath = "index.html";
+
+            pages.Add(new PageToGenerate(url, new FilePath(outputPath)));
+            _logger.LogDebug("Discovered MapGet route: {Url} -> {OutputFile}", url, outputPath);
+        }
+
+        return pages;
+    }
+
+    private async Task CopyStaticAssetsAsync(string outputDir)
+    {
+        // Copy content directory assets (non-markdown files)
         foreach (var service in _contentServices)
         {
             var toCopy = await service.GetContentToCopyAsync();
             foreach (var item in toCopy)
             {
-                var targetPath = Path.Combine(outputDir, item.OutputPath.Value);
-                var targetDir = Path.GetDirectoryName(targetPath);
-                if (targetDir != null) Directory.CreateDirectory(targetDir);
-                File.Copy(item.SourcePath.Value, targetPath, true);
+                CopyFile(item.SourcePath.Value, Path.Combine(outputDir, item.OutputPath.Value));
             }
         }
 
-        // Fetch and save each page
+        // Copy wwwroot static web assets
+        CopyFileProvider(_environment.WebRootFileProvider, "", outputDir);
+
+        // Copy RCL static web assets (Penn.UI scripts, etc.)
+        // CompositeFileProvider contains all registered static web asset providers
+        if (_environment.WebRootFileProvider is CompositeFileProvider composite)
+        {
+            foreach (var provider in composite.FileProviders)
+            {
+                if (provider != _environment.WebRootFileProvider)
+                {
+                    CopyFileProvider(provider, "", outputDir);
+                }
+            }
+        }
+    }
+
+    private async Task CreateContentFilesAsync(string outputDir)
+    {
+        foreach (var service in _contentServices)
+        {
+            var toCreate = await service.GetContentToCreateAsync();
+            foreach (var item in toCreate)
+            {
+                var targetPath = Path.Combine(outputDir, item.OutputPath.Value);
+                var dir = Path.GetDirectoryName(targetPath);
+                if (dir != null) Directory.CreateDirectory(dir);
+
+                var bytes = await item.ContentGenerator();
+                await File.WriteAllBytesAsync(targetPath, bytes);
+            }
+        }
+    }
+
+    private async Task FetchPagesAsync(HttpClient client, List<PageToGenerate> pages, string outputDir)
+    {
         await Parallel.ForEachAsync(pages, async (page, ct) =>
         {
             try
@@ -66,22 +187,80 @@ public sealed class OutputGenerationService
                 var dir = Path.GetDirectoryName(outputPath);
                 if (dir != null) Directory.CreateDirectory(dir);
 
-                if (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently)
+                if (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently ||
+                    response.StatusCode == System.Net.HttpStatusCode.Found)
                 {
                     var location = response.Headers.Location?.ToString() ?? "/";
-                    var redirectHtml = $"<!DOCTYPE html><html><head><meta http-equiv=\"refresh\" content=\"0;url={location}\"></head></html>";
+                    var redirectHtml = $"""
+                        <!DOCTYPE html>
+                        <html><head>
+                        <meta http-equiv="refresh" content="0;url={location}">
+                        <link rel="canonical" href="{location}">
+                        </head></html>
+                        """;
                     await File.WriteAllTextAsync(outputPath, redirectHtml, ct);
+                    _logger.LogInformation("  Redirect: {Url} -> {Location}", page.Url, location);
                 }
                 else if (response.IsSuccessStatusCode)
                 {
-                    var content = await response.Content.ReadAsStringAsync(ct);
-                    await File.WriteAllTextAsync(outputPath, content, ct);
+                    // Check if response is binary
+                    var contentType = response.Content.Headers.ContentType?.MediaType ?? "";
+                    if (contentType.StartsWith("text/") || contentType.Contains("json") || contentType.Contains("xml"))
+                    {
+                        var content = await response.Content.ReadAsStringAsync(ct);
+                        await File.WriteAllTextAsync(outputPath, content, ct);
+                    }
+                    else
+                    {
+                        var bytes = await response.Content.ReadAsByteArrayAsync(ct);
+                        await File.WriteAllBytesAsync(outputPath, bytes, ct);
+                    }
+                    _logger.LogDebug("  Generated: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
+                }
+                else
+                {
+                    _logger.LogWarning("  Failed: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Log but don't fail the whole build for one page
+                _logger.LogError(ex, "  Error generating {Url}", page.Url);
             }
         });
     }
+
+    private void CopyFile(string source, string target)
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(target);
+            if (dir != null) Directory.CreateDirectory(dir);
+            File.Copy(source, target, true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to copy {Source} to {Target}", source, target);
+        }
+    }
+
+    private void CopyFileProvider(IFileProvider provider, string subpath, string outputDir)
+    {
+        var contents = provider.GetDirectoryContents(subpath);
+        foreach (var item in contents)
+        {
+            var relativePath = string.IsNullOrEmpty(subpath) ? item.Name : $"{subpath}/{item.Name}";
+
+            if (item.IsDirectory)
+            {
+                CopyFileProvider(provider, relativePath, outputDir);
+            }
+            else if (item.PhysicalPath != null)
+            {
+                var targetPath = Path.Combine(outputDir, relativePath);
+                CopyFile(item.PhysicalPath, targetPath);
+            }
+        }
+    }
+
+    private record PageToGenerate(string Url, FilePath OutputFile);
 }
