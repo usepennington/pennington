@@ -1,0 +1,19 @@
+@if (!string.IsNullOrEmpty(Value))
+{
+    <div class="flex items-center gap-2">
+        @if (!string.IsNullOrEmpty(IconPath))
+        {
+            <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="@IconPath"></path>
+            </svg>
+        }
+        <span class="text-base-800">@Label:</span>
+        <span class="text-base-800">@Value</span>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string? Value { get; set; }
+    [Parameter] public string IconPath { get; set; } = string.Empty;
+}

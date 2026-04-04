@@ -1,0 +1,103 @@
+<div class="mx-auto max-w-2xl">
+    <article>
+        <header class="flex flex-col">
+            <h1 class="mt-2 font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-base-800 dark:text-base-100">@Post.FrontMatter.Title</h1>
+            <time datetime="@(Post.FrontMatter.Date?.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture))" class="order-first flex items-center text-base text-base-400 dark:text-base-500">
+                <span class="h-4 w-0.5 bg-primary-200 dark:bg-primary-500"></span>
+                <span class="ml-3 uppercase text-xs">@(Post.FrontMatter.Date?.ToString("MMMM d, yyyy", new CultureInfo("en-US")))</span>
+            </time>
+        </header>
+
+        @if (Series != null)
+        {
+            <div class="mt-8 p-4 inset-shadow inset-shadow-base-500 bg-white/50 dark:bg-base-950/10 border border-base-200 dark:border-base-700 rounded-lg">
+                <p class="text-sm font-medium text-base-600 dark:text-base-400">This post is part of a series</p>
+                <ul class="mt-2 space-y-1 list-disc pl-6 text-sm text-base-600 dark:text-base-400">
+                    @foreach (var seriesPost in Series)
+                    {
+                        @if (seriesPost.Url == Post.Url)
+                        {
+                            <li><strong class="text-primary-600 dark:text-primary-400">@seriesPost.FrontMatter.Title</strong></li>
+                        }
+                        else
+                        {
+                            <li><a href="@seriesPost.Url" class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">@seriesPost.FrontMatter.Title</a></li>
+                        }
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="mt-8 prose prose-zinc dark:prose-invert prose-sm prose-headings:font-display max-w-none">
+            @((MarkupString)HtmlContent)
+        </div>
+
+        @if (_nextPost != null)
+        {
+            <div class="mt-8 p-6 bg-base-50 dark:bg-base-900/50 border border-base-200 dark:border-base-700 rounded-lg">
+                <a href="@_nextPost.Url" class="block group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-base-600 dark:text-base-400">Ready for the next article in the series?</p>
+                            <p class="text-primary-600 dark:text-primary-400 group-hover:text-primary-700 dark:group-hover:text-primary-300">@_nextPost.FrontMatter.Title</p>
+                        </div>
+                        <svg class="h-6 w-6 text-primary-600 dark:text-primary-400 group-hover:text-primary-700 dark:group-hover:text-primary-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (Post.Tags.Any())
+        {
+            <div class="mt-8 pt-8 border-t border-base-200 dark:border-base-700">
+                <h2 class="text-sm font-display font-medium text-base-600 dark:text-base-400">Tags</h2>
+                <div class="mt-2 flex flex-wrap gap-2">
+                    @foreach (var tag in Post.Tags)
+                    {
+                        <a href="@tag.Url" class="inline-flex items-center px-3 py-1 text-sm font-medium text-primary-600 dark:text-primary-400 bg-base-100 dark:bg-base-800 rounded-full hover:bg-base-200 dark:hover:bg-base-700">
+                            @tag.Name
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Post.FrontMatter.Repository))
+        {
+            <div class="mt-8 pt-8 border-t border-base-200 dark:border-base-700">
+                <a href="@Post.FrontMatter.Repository" class="block p-4 bg-base-50 dark:bg-base-900/50 border border-base-200 dark:border-base-700 rounded-lg hover:bg-base-100 dark:hover:bg-base-800/50">
+                    <h2 class="text-sm font-medium text-base-600 dark:text-base-400">Source Code</h2>
+                    <p class="mt-1 text-sm text-base-500 dark:text-base-400">Example source code for this post</p>
+                </a>
+            </div>
+        }
+
+        <div class="mt-8 pt-8 border-t border-base-200 dark:border-base-700">
+            <a href="/" class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium">
+                &larr; Back home
+            </a>
+        </div>
+    </article>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required BlogPostPage Post { get; init; }
+    [Parameter] public List<BlogPostPage>? Series { get; init; }
+    [Parameter, EditorRequired] public required string HtmlContent { get; init; }
+
+    private BlogPostPage? _nextPost;
+
+    protected override void OnInitialized()
+    {
+        if (Series != null)
+        {
+            var thisPostIndex = Series.FindIndex(x => x.Url == Post.Url);
+            if (thisPostIndex >= 0 && thisPostIndex < Series.Count - 1)
+            {
+                _nextPost = Series[thisPostIndex + 1];
+            }
+        }
+    }
+}

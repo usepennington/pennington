@@ -1,0 +1,80 @@
+# Redirect mappings for Spectre.Console
+# Maps old spectreconsole.net URLs to new Diátaxis-structured content
+
+redirects:
+  # Live Rendering Section
+  /live/live-display: /console/live/live-display
+  /live/progress: /console/live/progress
+  /live/status: /console/live/status
+  /live/async: /console/live/async-patterns
+  /live: /console/how-to/live-rendering-and-dynamic-updates
+
+  # Widgets Section
+  /widgets/panel: /console/widgets/panel
+  /widgets/table: /console/widgets/table
+  /widgets/tree: /console/widgets/tree
+  /widgets/barchart: /console/widgets/bar-chart
+  /widgets/breakdownchart: /console/widgets/breakdown-chart
+  /widgets/rows: /console/widgets/rows
+  /widgets/rule: /console/widgets/rule
+  /widgets/calendar: /console/widgets/calendar
+  /widgets/grid: /console/widgets/grid
+  /widgets/layout: /console/widgets/layout
+  /widgets/figlet: /console/widgets/figlet
+  /widgets/padder: /console/widgets/padder
+  /widgets/canvas: /console/widgets/canvas
+  /widgets/canvas-image: /console/widgets/canvas-image
+  /widgets/json: /console/widgets/json
+  /widgets/text-path: /console/widgets/text-path
+  /widgets: /console
+
+  # Prompts Section
+  /prompts/text: /console/prompts/text-prompt
+  /prompts/selection: /console/prompts/selection-prompt
+  /prompts/multiselection: /console/prompts/multi-selection-prompt
+  /prompts: /console/how-to/prompting-for-user-input
+
+  # CLI Section
+  /cli/getting-started: /cli/tutorials/quick-start-your-first-cli-app
+  /cli/introduction: /cli
+  /cli/commandapp: /cli/how-to/configuring-commandapp-and-commands
+  /cli/settings: /cli/reference/attribute-and-parameter-reference
+  /cli/commands: /cli/how-to/defining-commands-and-arguments
+  /cli/composing: /cli/how-to/working-with-multiple-command-hierarchies
+  /cli/migration: /cli/explanation/spectre-console-cli-vs-spectre-cli-migration-guide
+  /cli/exceptions: /cli/how-to/handling-errors-and-exit-codes
+  /cli/command-help: /cli/how-to/customizing-help-text-and-usage
+  /cli/unit-testing: /cli/how-to/testing-command-line-applications
+  /cli/opencli: /cli/reference/extensibility-points
+
+  # Appendix/Reference Section
+  /appendix/styles: /console/reference/text-style-reference
+  /appendix/borders: /console/reference/border-styles-reference
+  /appendix/emojis: /console/reference/emoji-cheat-sheet
+  /appendix/spinners: /console/reference/spinner-styles-reference
+  /appendix: /console/reference/api-reference
+
+  # General Pages
+  /quick-start: /console/tutorials/getting-started-building-rich-console-app
+  /best-practices: /console/explanation/best-practices-for-console-applications
+  /unit-testing: /console/how-to/testing-console-output
+  /markup: /console/how-to/styling-text-with-markup-and-color
+  /exceptions: /console/how-to/formatting-and-handling-exceptions
+  /api: /console/reference/api-reference
+
+  # Blog & Pagination
+  /blog/release-notes: /blog
+  /blog/release-notes/2: /blog
+  /blog/release-notes/3: /blog
+  /blog/news: /blog
+  /blog/category: /blog
+  /blog/2: /blog
+  /blog/3: /blog
+
+  # No matching content - redirect to root
+  /analyzer/rules/spectre1000: /
+  /analyzer/rules/spectre1010: /
+  /analyzer/rules/spectre1020: /
+  /analyzer/rules/spectre1021: /
+  /analyzer/rules: /
+  /doctemplate: /

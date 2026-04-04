@@ -1,0 +1,48 @@
+@using Microsoft.AspNetCore.WebUtilities
+@inject PennOptions Options
+@inject BlogSiteOptions BlogOptions
+@inject IWebHostEnvironment WebHostEnvironment
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    @if (BlogOptions.EnableRss)
+    {
+        <link type="application/rss+xml" rel="alternate" title="@Options.SiteTitle" href="/rss.xml" />
+    }
+    <link rel="stylesheet" href="@GetVersioned("/styles.css")">
+    <script src="@GetVersioned("/_content/Penn.UI/scripts.js")" defer></script>
+
+    @if (!string.IsNullOrEmpty(BlogOptions.AdditionalHtmlHeadContent))
+    {
+        @((MarkupString)BlogOptions.AdditionalHtmlHeadContent)
+    }
+
+    <meta name="description" content="@Options.SiteDescription">
+
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <HeadOutlet/>
+    <PageTitle>@Options.SiteTitle</PageTitle>
+</head>
+
+<body data-mobile-menu-open="false" class="data-[mobile-menu-open=true]:overflow-hidden">
+    <Routes/>
+</body>
+</html>
+
+@code{
+    static readonly string Version = DateTime.Now.Ticks.ToString();
+
+    string GetVersioned(string url) => WebHostEnvironment.IsDevelopment()
+            ? url
+            : QueryHelpers.AddQueryString(url, "v", Version);
+}

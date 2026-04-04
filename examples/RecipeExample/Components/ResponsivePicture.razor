@@ -1,0 +1,56 @@
+@* Responsive image component using srcset for optimal browser selection with LQIP *@
+@inject IResponsiveImageContentService ResponsiveImageService
+
+<div class="relative bg-cover bg-center bg-no-repeat @CssClass" style="background-image: url('@LqipDataUrl')">
+    <img srcset="/images/@(FileName)-xs.webp 480w,
+             /images/@(FileName)-sm.webp 768w,
+             /images/@(FileName)-md.webp 1024w,
+             /images/@(FileName)-lg.webp 1440w,
+             /images/@(FileName)-xl.webp 1920w"
+         sizes="@Sizes"
+         src="/images/@(FileName)-md.webp"
+         class="@($"w-full h-full object-cover bg-primary-300/25 aspect-[{AspectRatio}] backdrop-blur-sm")"
+         alt="@AltText"
+         loading="@Loading"
+         width="@Width"
+         height="@Height" />
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string FileName { get; set; } = string.Empty;
+    [Parameter] public string AltText { get; set; } = string.Empty;
+    [Parameter] public string CssClass { get; set; } = string.Empty;
+    [Parameter] public string Loading { get; set; } = "lazy";
+    [Parameter] public string Sizes { get; set; } = "(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 400px";
+    [Parameter] public int? Width { get; set; }
+    [Parameter] public int? Height { get; set; }
+    [Parameter] public string? AspectRatio { get; set; }
+
+    private string? LqipDataUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var lqipBytes = await ResponsiveImageService.GenerateLqipAsync(FileName);
+            if (lqipBytes != null)
+                LqipDataUrl = $"data:image/webp;base64,{Convert.ToBase64String(lqipBytes)}";
+        }
+        catch { /* Silently fail */ }
+
+        if (!Width.HasValue || !Height.HasValue)
+        {
+            try
+            {
+                var dimensions = await ResponsiveImageService.GetOriginalImageDimensionsAsync(FileName);
+                if (dimensions.HasValue)
+                {
+                    Width ??= dimensions.Value.width;
+                    Height ??= dimensions.Value.height;
+                    AspectRatio ??= $"{dimensions.Value.width} / {dimensions.Value.height}";
+                }
+            }
+            catch { /* Silently fail */ }
+        }
+    }
+}

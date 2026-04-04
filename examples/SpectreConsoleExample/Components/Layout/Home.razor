@@ -1,0 +1,186 @@
+@page "/"
+@inject PennOptions PennOptions
+@inject SpectreContentHelper ContentHelper
+
+<PageTitle>@PennOptions.SiteTitle</PageTitle>
+
+<div class="space-y-12">
+    <!-- Hero Section -->
+    <section class="text-center pt-12 lg:pt-20">
+        <h1 class="text-5xl lg:text-6xl font-extrabold mb-6">
+            <span class="bg-gradient-to-r from-primary-600 to-tertiary-one-600 dark:from-primary-400 dark:to-tertiary-one-400 bg-clip-text text-transparent">
+                Spectre.Console
+            </span>
+        </h1>
+        <p class="text-xl lg:text-2xl text-base-600 dark:text-base-400 max-w-3xl mx-auto mb-8">
+            @PennOptions.SiteDescription
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/console" class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 transition-colors">
+                Explore Console
+                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                </svg>
+            </a>
+            <a href="/cli" class="inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-lg text-base-700 dark:text-base-200 bg-base-100 hover:bg-base-200 dark:bg-base-800 dark:hover:bg-base-700 transition-colors">
+                Explore CLI
+                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                </svg>
+            </a>
+        </div>
+    </section>
+
+    <!-- Console Output Showcase -->
+    <section class="w-full">
+        <div class="transition-all bg-base-800 border border-base-700 -mx-8 md:mx-0 p-1 md:p-4 rounded-sm md:rounded-2xl shadow-2xl">
+            <div class="max-w-5xl mx-auto">
+                <div class="overflow-hidden rounded">
+                    <picture>
+                        <source media="(max-width: 640px)" srcset="/assets/hero-rich-sm.webp">
+                        <source media="(min-width: 641px)" srcset="/assets/hero-rich.webp">
+                        <img src="/assets/hero-rich.webp"
+                             alt="Spectre.Console rich terminal output demonstration"
+                             class="w-full h-auto block"
+                             loading="lazy">
+                    </picture>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Console Card -->
+        <article class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-50 to-tertiary-two-100 dark:from-primary-950 dark:to-tertiary-two-950 border border-primary-200 dark:border-primary-800 transition-all hover:shadow-xl">
+            <div class="p-8">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 bg-primary-600 dark:bg-primary-500 rounded-lg text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold ml-4">Console Documentation</h2>
+                </div>
+
+                <p class="text-base-600 dark:text-base-400 mb-6">
+                    Learn how to create beautiful console output with tables, charts, progress bars, and rich text formatting.
+                </p>
+
+                @if (_consolePages != null && _consolePages.Count > 0)
+                {
+                    <div class="mb-6">
+                        <h3 class="font-semibold text-sm uppercase tracking-wide text-base-700 dark:text-base-300 mb-3">
+                            Get Started
+                        </h3>
+                        <ul class="space-y-2">
+                            @foreach (var p in _consolePages.Where(p => p.Url.Contains("/tutorials/")).OrderBy(i => i.FrontMatter.Title))
+                            {
+                                <li>
+                                    <a href="@p.Url" class="flex items-center text-primary-700 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 group/link">
+                                        <svg class="w-4 h-4 mr-2 opacity-0 group-hover/link:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                        <span class="group-hover/link:translate-x-1 transition-transform">@p.FrontMatter.Title</span>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <a href="/console" class="inline-flex items-center text-primary-700 dark:text-primary-400 font-medium hover:text-primary-800 dark:hover:text-primary-300 group/link">
+                    View all Console docs
+                    <svg class="ml-1 w-4 h-4 group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            </div>
+        </article>
+
+        <!-- CLI Card -->
+        <article class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-tertiary-one-50 to-primary-100 dark:from-tertiary-one-950 dark:to-primary-950 border border-tertiary-one-200 dark:border-tertiary-one-800 transition-all hover:shadow-xl">
+            <div class="p-8">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 bg-tertiary-one-600 dark:bg-tertiary-one-500 rounded-lg text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold ml-4">CLI Documentation</h2>
+                </div>
+
+                <p class="text-base-600 dark:text-base-400 mb-6">
+                    Build powerful command-line applications with type-safe commands, argument parsing, and dependency injection.
+                </p>
+
+                @if (_cliPages != null && _cliPages.Count > 0)
+                {
+                    <div class="mb-6">
+                        <h3 class="font-semibold text-sm uppercase tracking-wide text-base-700 dark:text-base-300 mb-3">
+                            Get Started
+                        </h3>
+                        <ul class="space-y-2">
+                            @foreach (var p in _cliPages.Where(p => p.Url.Contains("/tutorials/")).OrderBy(i => i.FrontMatter.Title))
+                            {
+                                <li>
+                                    <a href="@p.Url" class="flex items-center text-tertiary-one-700 dark:text-tertiary-one-400 hover:text-tertiary-one-800 dark:hover:text-tertiary-one-300 group/link">
+                                        <svg class="w-4 h-4 mr-2 opacity-0 group-hover/link:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                        <span class="group-hover/link:translate-x-1 transition-transform">@p.FrontMatter.Title</span>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <a href="/cli" class="inline-flex items-center text-tertiary-one-700 dark:text-tertiary-one-400 font-medium hover:text-tertiary-one-800 dark:hover:text-tertiary-one-300 group/link">
+                    View all CLI docs
+                    <svg class="ml-1 w-4 h-4 group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            </div>
+        </article>
+    </div>
+
+    <!-- Quick Start Section -->
+    <section class="mt-12 p-8 bg-base-100 dark:bg-base-800 rounded-2xl">
+        <h2 class="text-3xl font-bold mb-6 text-center">Quick Start</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div class="bg-white dark:bg-base-900 p-6 rounded-lg">
+                <h3 class="font-semibold mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Install Spectre.Console
+                </h3>
+                <pre class="bg-base-100 dark:bg-base-800 p-3 rounded text-sm overflow-x-auto"><code>dotnet add package Spectre.Console</code></pre>
+            </div>
+            <div class="bg-white dark:bg-base-900 p-6 rounded-lg">
+                <h3 class="font-semibold mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-tertiary-one-600 dark:text-tertiary-one-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Install Spectre.Console.Cli
+                </h3>
+                <pre class="bg-base-100 dark:bg-base-800 p-3 rounded text-sm overflow-x-auto"><code>dotnet add package Spectre.Console.Cli</code></pre>
+            </div>
+        </div>
+    </section>
+</div>
+
+@code {
+    private List<PageInfo<SpectreDocFrontMatter>>? _consolePages;
+    private List<PageInfo<SpectreDocFrontMatter>>? _cliPages;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _consolePages = await ContentHelper.GetAllPagesAsync<SpectreDocFrontMatter>("/console");
+        _cliPages = await ContentHelper.GetAllPagesAsync<SpectreDocFrontMatter>("/cli");
+
+        await base.OnInitializedAsync();
+    }
+}

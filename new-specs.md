@@ -1297,6 +1297,8 @@ Every feature from v1 mapped to v2 location:
 
 ## 22. Testing Strategy
 
+**Test framework:** xunit.v3.mtp-v2 with Shouldly for assertions.
+
 v1's test infrastructure (`PennTestBuilder`, `MarkdownTestData`, `ServiceMockFactory`) is well-designed. v2 extends it to support union-type pipelines, stage-by-stage testing, and dev/build parity validation.
 
 ### PennTestBuilder 2.0
@@ -1318,8 +1320,8 @@ var rendered = await builder.BuildRenderingStageAsync(parsed).ToListAsync();
 
 // Or test the full pipeline at once
 var report = await builder.BuildFullPipelineAsync();
-report.HasErrors.Should().BeFalse();
-report.GeneratedPages.Count.Should().Be(2);
+report.HasErrors.ShouldBeFalse();
+report.GeneratedPages.Count.ShouldBe(2);
 ```
 
 ### Pipeline Stage Testing
@@ -1336,9 +1338,9 @@ public async Task FailedItems_PropagateThrough_EntirePipeline()
 
     var report = await builder.BuildFullPipelineAsync();
 
-    report.FailedPages.Should().HaveCount(1);
+    report.FailedPages.Count.ShouldBe(1);
     report.Diagnostics.OfType<DiagnosticError>()
-        .Should().Contain(d => d.Message.Contains("YAML"));
+        .ShouldContain(d => d.Message.Contains("YAML"));
 }
 ```
 
@@ -1353,7 +1355,7 @@ public async Task DevMode_And_BuildMode_ProduceIdenticalOutput()
     var buildHtml = await ReadBuildOutput("docs/getting-started/index.html");
 
     // Semantic comparison (ignoring whitespace, timestamps)
-    devHtml.Should().BeSemanticallySameAs(buildHtml);
+    devHtml.ShouldBeSemanticallySameAs(buildHtml);
 }
 ```
 

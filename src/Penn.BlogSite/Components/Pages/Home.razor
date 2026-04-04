@@ -1,0 +1,93 @@
+@page "/"
+@inject BlogContentResolver ContentResolver
+@inject PennOptions PennOptions
+@inject BlogSiteOptions BlogOptions
+
+@if (_posts == null)
+{
+    <div>Posts not found</div>
+    return;
+}
+<PageTitle>@PennOptions.SiteTitle - Recent Posts</PageTitle>
+
+<div class="md:px-4 border-box">
+    <div class="mx-auto w-full max-w-7xl lg:px-8">
+        <div class="relative sm:px-8 lg:px-12">
+            <div>
+                @if (BlogOptions.HeroContent != null)
+                {
+                    <div class="prose lg:prose-lg dark:prose-invert prose-sm lg:prose-base prose-headings:font-display mb-16 lg:mb-24">
+                        <h1>@BlogOptions.HeroContent.Title</h1>
+                        <p>@((MarkupString)BlogOptions.HeroContent.Description)</p>
+                    </div>
+                }
+                <div class="mx-auto grid max-w-xl grid-cols-1 gap-y-20 lg:max-w-none lg:grid-cols-2">
+                    <div class="flex flex-col flex-1">
+                        <BlogSummary Posts="_recentPosts" />
+
+                        @if (_posts.Count > 5)
+                        {
+                            <div class="mt-16">
+                                <a href="/archive" class="inline-flex items-center gap-2 justify-center rounded-md py-2 px-3 text-sm outline-offset-2 transition active:transition-none bg-base-50 font-medium text-base-900 hover:bg-base-100 active:bg-base-100 active:text-base-900/60 dark:bg-base-800/50 dark:text-base-300 dark:hover:bg-base-800 dark:hover:text-base-50 dark:active:bg-base-800/50 dark:active:text-base-50/70 group w-full">
+                                    View all @_posts.Count posts
+                                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="h-4 w-4 stroke-base-400 transition group-active:stroke-base-600 dark:group-hover:stroke-base-50 dark:group-active:stroke-base-50">
+                                        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                    <div class="lg:ml-24">
+                        @if (BlogOptions.MyWork.Length > 0 || BlogOptions.Socials.Length > 0 || BlogOptions.AuthorBio != null)
+                        {
+                            <div class="hidden lg:block sticky top-14 rounded-2xl border border-base-200/90 dark:border-base-700/50 text-primary-600 dark:text-primary-50 p-6">
+                                <div class="flex flex-col space-y-8">
+                                    @if (BlogOptions.MyWork.Length > 0)
+                                    {
+                                        <div>
+                                            <h3 class="font-bold mb-4">My Work</h3>
+                                            <dl class="space-y-2 text-xs">
+                                                @foreach (var w in BlogOptions.MyWork)
+                                                {
+                                                    <div>
+                                                        <a class="text-base-900 dark:text-base-100 hover:text-primary-900 dark:hover:text-primary-400 transition-colors" href="@w.Url">
+                                                            <dt>@w.Title</dt>
+                                                            <dd class="text-base-400 dark:text-base-500">@w.Description</dd>
+                                                        </a>
+                                                    </div>
+                                                }
+                                            </dl>
+                                        </div>
+                                    }
+
+                                    @if (BlogOptions.Socials.Length > 0)
+                                    {
+                                        <div class="flex flex-row space-x-4">
+                                            @foreach (var (icon, link) in BlogOptions.Socials)
+                                            {
+                                                <a href="@link" class="h-6 w-6 text-base-800 dark:text-base-400 hover:text-primary-900 dark:hover:text-primary-400 transition-colors">
+                                                    @icon
+                                                </a>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+    private List<BlogPostPage>? _posts;
+    private List<BlogPostPage>? _recentPosts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _posts = await ContentResolver.GetAllPostsAsync();
+        _recentPosts = _posts.Take(10).ToList();
+    }
+}

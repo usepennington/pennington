@@ -1,0 +1,36 @@
+@layout ContentWithProseLayout
+@page "/tags/{TagEncodedName}"
+@inject BlogContentResolver ContentResolver
+@inject PennOptions PennOptions
+
+@if (_tag == null)
+{
+    <div>Unknown tag</div>
+    return;
+}
+
+<PageTitle>@PennOptions.SiteTitle - @(_tag.Name)</PageTitle>
+
+<header>
+    <h1>@(_tag.Name)</h1>
+    <p>Blog posts tagged by <span class="text-primary-800 dark:text-primary-300">@(_tag.Name)</span></p>
+</header>
+<div class="not-prose">
+    <BlogPostsList Posts="_posts"/>
+</div>
+
+@code {
+    [Parameter] public required string TagEncodedName { get; set; }
+
+    private BlogTag? _tag;
+    private ImmutableList<BlogPostPage>? _posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(TagEncodedName)) return;
+        var result = await ContentResolver.GetPostsByTagAsync(TagEncodedName);
+        if (result == null) return;
+
+        (_tag, _posts) = result.Value;
+    }
+}

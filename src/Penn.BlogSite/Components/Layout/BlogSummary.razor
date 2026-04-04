@@ -1,0 +1,13 @@
+@if (Posts != null && Posts.Any())
+{
+    <div class="flex flex-col gap-16">
+        @foreach (var post in Posts)
+        {
+            <BlogArticleCard Post="post" />
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public IEnumerable<BlogPostPage>? Posts { get; set; }
+}

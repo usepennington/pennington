@@ -1,0 +1,67 @@
+@page "/blog/{*fileName:nonfile}"
+@inject PennOptions PennOptions
+@inject BlogSiteOptions BlogOptions
+@inject BlogContentResolver ContentResolver
+
+@if (_rendered == null)
+{
+    <div>Post not found</div>
+    return;
+}
+<PageTitle>@PennOptions.SiteTitle - @_rendered.Page.FrontMatter.Title</PageTitle>
+
+<HeadContent>
+    <meta property="og:title" content="@_rendered.Page.FrontMatter.Title" />
+    <meta property="og:description" content="@_rendered.Page.FrontMatter.Description" />
+    @if (BlogOptions.SocialMediaImageUrlFactory != null)
+    {
+        <meta property="og:image" content="@GetSocialImageUrl()" />
+    }
+    <meta property="og:url" content="@GetFullUrl()" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="@PennOptions.SiteTitle" />
+    @if (_rendered.Page.FrontMatter.Date.HasValue)
+    {
+        <meta property="article:published_time" content="@_rendered.Page.FrontMatter.Date.Value.ToString("yyyy-MM-ddTHH:mm:ssZ")" />
+    }
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@_rendered.Page.FrontMatter.Title" />
+    <meta name="twitter:description" content="@_rendered.Page.FrontMatter.Description" />
+    @if (BlogOptions.SocialMediaImageUrlFactory != null)
+    {
+        <meta name="twitter:image" content="@GetSocialImageUrl()" />
+    }
+</HeadContent>
+
+<BlogPost Post="_rendered.Page" HtmlContent="@_rendered.Html" Series="_series"/>
+
+@code{
+    [Parameter] public required string FileName { get; init; }
+    private RenderedBlogPost? _rendered;
+    private List<BlogPostPage>? _series;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var url = $"{BlogOptions.BlogBaseUrl}/{FileName}";
+        _rendered = await ContentResolver.GetPostByUrlAsync(url);
+
+        if (_rendered != null && !string.IsNullOrWhiteSpace(_rendered.Page.FrontMatter.Series))
+        {
+            var allPosts = await ContentResolver.GetAllPostsAsync();
+            _series = allPosts
+                .Where(i => string.Equals(i.FrontMatter.Series, _rendered.Page.FrontMatter.Series, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(i => i.FrontMatter.Date)
+                .ToList();
+        }
+    }
+
+    private string GetSocialImageUrl()
+    {
+        if (_rendered == null || BlogOptions.SocialMediaImageUrlFactory == null) return "";
+        var imageUrl = BlogOptions.SocialMediaImageUrlFactory(_rendered.Page);
+        return imageUrl.StartsWith('/') ? $"{PennOptions.CanonicalBaseUrl}{imageUrl}" : imageUrl;
+    }
+
+    private string GetFullUrl() => _rendered == null ? "" : $"{PennOptions.CanonicalBaseUrl}{_rendered.Page.Url}";
+}

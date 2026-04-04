@@ -1,0 +1,94 @@
+@using System.Globalization
+
+<div class="mx-auto max-w-3xl">
+    <article>
+        <header class="flex flex-col mb-8">
+            <h1 class="mt-2 font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-base-800 dark:text-base-100">
+                @FrontMatter.Title
+            </h1>
+            <div class="order-first flex items-center text-base text-base-400 dark:text-base-500">
+                <span class="h-4 w-0.5 bg-primary-200 dark:bg-primary-500"></span>
+                @if (FrontMatter.Date.HasValue)
+                {
+                    <time datetime="@FrontMatter.Date.Value.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture)"
+                          class="ml-3 uppercase text-xs">
+                        @FrontMatter.Date.Value.ToString("MMMM d, yyyy", new CultureInfo("en-US"))
+                    </time>
+                }
+                @if (!string.IsNullOrEmpty(FrontMatter.Author))
+                {
+                    <span class="ml-3 text-xs">by @FrontMatter.Author</span>
+                }
+            </div>
+        </header>
+
+        @if (Series != null && Series.Count > 1)
+        {
+            <div class="mt-8 p-4 bg-primary-50 dark:bg-primary-950/20 border border-primary-200 dark:border-primary-800 rounded-lg">
+                <p class="text-sm font-medium text-base-600 dark:text-base-400">This post is part of a series</p>
+                <ul class="mt-2 space-y-1 list-disc pl-6 text-sm text-base-600 dark:text-base-400">
+                    @foreach (var post in Series)
+                    {
+                        @if (post.Url.TrimStart('/') == "blog/" + CurrentUrl)
+                        {
+                            <li><strong class="text-primary-600 dark:text-primary-400">@post.FrontMatter.Title</strong></li>
+                        }
+                        else
+                        {
+                            <li>
+                                <a href="@post.Url" class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
+                                    @post.FrontMatter.Title
+                                </a>
+                            </li>
+                        }
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="mt-8 prose dark:prose-invert prose-lg max-w-none">
+            @((MarkupString)HtmlContent)
+        </div>
+
+        @if (FrontMatter.Tags.Any())
+        {
+            <div class="mt-8 pt-8 border-t border-base-200 dark:border-base-700">
+                <h2 class="text-sm font-display font-medium text-base-600 dark:text-base-400">Tags</h2>
+                <div class="mt-2 flex flex-wrap gap-2">
+                    @foreach (var tag in FrontMatter.Tags)
+                    {
+                        <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/30 rounded-full">
+                            @tag
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(FrontMatter.Repository))
+        {
+            <div class="mt-8 pt-8 border-t border-base-200 dark:border-base-700">
+                <a href="@FrontMatter.Repository"
+                   class="block p-4 bg-base-50 dark:bg-base-900/50 border border-base-200 dark:border-base-700 rounded-lg hover:bg-base-100 dark:hover:bg-base-800/50">
+                    <h2 class="text-sm font-medium text-base-600 dark:text-base-400">Source Code</h2>
+                    <p class="mt-1 text-sm text-base-500 dark:text-base-400">
+                        Example source code for this post
+                    </p>
+                </a>
+            </div>
+        }
+
+        <div class="mt-8 pt-8 border-t border-base-200 dark:border-base-700">
+            <a href="/blog" class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium">
+                &larr; Back to blog
+            </a>
+        </div>
+    </article>
+</div>
+
+@code {
+    [Parameter] public required SpectreBlogFrontMatter FrontMatter { get; init; }
+    [Parameter] public required string HtmlContent { get; init; }
+    [Parameter] public List<PageInfo<SpectreBlogFrontMatter>>? Series { get; init; }
+    [Parameter] public string? CurrentUrl { get; init; }
+}

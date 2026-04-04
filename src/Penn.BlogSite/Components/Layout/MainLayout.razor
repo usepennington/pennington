@@ -1,0 +1,94 @@
+@inherits LayoutComponentBase
+@inject BlogSiteOptions Options
+@inject PennOptions PennOptions
+
+<div class="h-full min-h-screen font-sans ">
+    <div class="relative flex w-full h-full flex-col min-h-screen bg-base-50 dark:bg-base-950">
+        <header class="mx-auto py-4 w-full max-w-7xl bg-base-100 dark:bg-base-900 border-r border-l border-b border-base-200/50 dark:border-base-800/50">
+            <div class="mx-auto w-full max-w-5xl flex flex-row items-center gap-x-2 px-4">
+                <div class="text-base-800 uppercase dark:text-base-100 text-2xl font-extrabold">
+                    <a href="/">@Options.SiteTitle</a>
+                </div>
+
+                <div class="flex-1">
+                    @if (Options.MainSiteLinks.Length > 0)
+                    {
+                        <div class="hidden md:flex flex-wrap justify-center gap-x-4 md:gap-x-6 lg:gap-x-12 text-sm uppercase text-base-800 dark:text-base-100">
+                            @foreach (var link in Options.MainSiteLinks)
+                            {
+                                <a class="transition hover:text-primary-500 dark:hover:text-primary-400"
+                                   href="@link.Url">@link.Title</a>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="flex flex-row gap-x-4">
+                    <button type="button" aria-label="Search" id="search-input"
+                            class="p-1 rounded-md hover:bg-base-200 dark:hover:bg-base-800 transition">
+                        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="w-6 h-6 text-base-800 dark:text-base-100" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M12.01 12a4.25 4.25 0 1 0-6.02-6 4.25 4.25 0 0 0 6.02 6Zm0 0 3.24 3.25"></path>
+                        </svg>
+                    </button>
+
+                    @if (Options.MainSiteLinks.Length > 0)
+                    {
+                        <div class="md:hidden flex justify-center">
+                            <button id="mobile-menu-button" class="p-1 rounded-md hover:bg-base-200 dark:hover:bg-base-800 transition" aria-label="Toggle mobile menu">
+                                <svg class="w-6 h-6 text-base-800 dark:text-base-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    }
+
+                    <button aria-label="Toggle Dark Mode" class="hover:bg-base-200 dark:hover:bg-base-800 rounded-md p-1" data-theme-toggle="">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="dark:hidden text-base-900 dark:text-base-200 h-6 w-6" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                            <path d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z" stroke-width="1.5"></path>
+                            <path d="M11.9955 3H12.0045M11.9961 21H12.0051M18.3588 5.63599H18.3678M5.63409 18.364H5.64307M5.63409 5.63647H5.64307M18.3582 18.3645H18.3672M20.991 12.0006H21M3 12.0006H3.00898" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="hidden dark:block text-base-900 dark:text-base-200 h-6 w-6" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                            <path d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            @if (Options.MainSiteLinks.Length > 0)
+            {
+                <div id="mobile-menu" class="hidden data-[expanded=true]:block" data-expanded="false">
+                    <div class="pt-4 space-y-3">
+                        @foreach (var link in Options.MainSiteLinks)
+                        {
+                            <a class="block px-4 py-2 uppercase text-base-800 text-xs dark:text-base-100 transition hover:text-primary-500 dark:hover:text-primary-400"
+                               href="@link.Url">@link.Title</a>
+                        }
+                    </div>
+                </div>
+            }
+        </header>
+        <div class="mx-auto w-full max-w-7xl transition-spacing pt-4 md:pt-6 lg:pt-16 bg-base-100 dark:bg-base-900 border-r border-l border-base-200/50 dark:border-base-800/50">
+            <main class="flex-auto">
+                <div class="relative px-4 sm:px-8 lg:px-12 mx-auto max-w-2xl lg:max-w-7xl">
+                    @Body
+                </div>
+            </main>
+            <footer class="mt-32 flex-none sm:px-8 mx-auto w-full max-w-7xl lg:px-8">
+                <div class="border-t border-base-100 pt-10 pb-16 dark:border-base-700/40 relative px-4 sm:px-8 lg:px-12 mx-auto max-w-2xl lg:max-w-5xl">
+                    <div class="flex flex-col items-center justify-between gap-6 md:flex-row">
+                        <div class="flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm font-medium text-base-800 dark:text-base-200">
+                            @foreach (var link in Options.MainSiteLinks)
+                            {
+                                <a class="transition hover:text-primary-500 dark:hover:text-primary-400"
+                                   href="@link.Url">@link.Title</a>
+                            }
+                        </div>
+                        <p class="text-sm text-base-400 dark:text-base-400">
+                            &copy; @DateTime.Now.Year @(Options.AuthorName ?? PennOptions.SiteTitle). All rights reserved.
+                        </p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+</div>

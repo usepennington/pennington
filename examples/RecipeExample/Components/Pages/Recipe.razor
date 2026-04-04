@@ -1,0 +1,198 @@
+@page "/recipes/{*fileName:nonfile}"
+@using CooklangSharp.Models
+@using Fractions
+@inject IRecipeContentService RecipeService
+
+@if (_recipe == null)
+{
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="text-base-600 text-lg">Loading recipe @FileName ...</div>
+    </div>
+}
+else
+{
+    <article class="max-w-6xl mx-auto">
+        <!-- Hero Section with Overlaid Title -->
+        <div class="rounded-xl border border-base-500 bg-clip-border mt-8 overflow-hidden mx-4">
+            <div class="relative">
+                <ResponsivePicture FileName="@FileName" AltText="@("picture of " + _recipe.DisplayName)" CssClass="w-full blur-xs brightness-75 h-96 object-cover" Loading="eager" Sizes="100vw" />
+                <div class="absolute bottom-0 left-0 w-full">
+                    <h1 class="text-5xl md:text-7xl w-1/2 font-display font-extrabold text-white text-stroke-2 text-stroke-base-900 p-6 pb-8">
+                        @((MarkupString)HighlightSecondWord(_recipe.DisplayName))
+                    </h1>
+                    <div class="relative flex flex-wrap gap-x-4 gap-y-2 w-full bg-white/80 border-t border-primary-500/50 backdrop-blur-sm py-2 px-4 text-xs md:text-sm">
+                        <InfoPillWithIcon Label="Servings" Value="@_recipe.FrontMatter.Servings" IconPath="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <InfoPillWithIcon Label="Prep Time" Value="@_recipe.FrontMatter.PrepTime" IconPath="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <InfoPillWithIcon Label="Cook Time" Value="@_recipe.FrontMatter.CookTime" IconPath="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                        <InfoPillWithIcon Label="Rest Time" Value="@_recipe.FrontMatter.RestTime" IconPath="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        @if (!string.IsNullOrEmpty(_recipe.FrontMatter.Description))
+        {
+            <div class="px-4 my-8">
+                <p class="text-base-700 leading-relaxed">@_recipe.FrontMatter.Description</p>
+            </div>
+        }
+
+        <!-- Ingredients Section -->
+        @{
+            var ingredients = _recipe.Recipe.Sections
+                .SelectMany(s => s.Content)
+                .OfType<StepContent>()
+                .SelectMany(sc => sc.Step.Items)
+                .OfType<IngredientItem>()
+                .GroupBy(i => i.Name)
+                .ToList();
+        }
+        @if (ingredients.Any())
+        {
+            <div class="bg-base-100 border border-base-200 rounded-lg p-6 mx-4 mb-8">
+                <h2 class="text-2xl font-bold text-base-900 mb-6">Ingredients</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 md:gap-x-16 lg:gap-x-32 xl:gap-x-64 gap-y-4 text-sm">
+                    @foreach (var ingredient in ingredients)
+                    {
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="font-semibold text-base-800">@ingredient.Key</span>
+                                @{
+                                    var firstItem = ingredient.First();
+                                }
+                                @if (!string.IsNullOrEmpty(firstItem.Note))
+                                {
+                                    <span class="text-base-600 italic text-sm block">(@firstItem.Note)</span>
+                                }
+                            </div>
+                            <div class="text-right">
+                                @{
+                                    var total = ingredient.Aggregate(Fraction.Zero, (current, ingredientItem) => ingredientItem.Quantity switch
+                                    {
+                                        FractionalQuantity fractionalQuantity => current.Add(Fraction.GetReducedFraction(fractionalQuantity.Whole * fractionalQuantity.Denominator + fractionalQuantity.Numerator, fractionalQuantity.Denominator)),
+                                        RegularQuantity regularQuantity => current.Add(Fraction.FromDoubleRounded(regularQuantity.Value)),
+                                        _ => current
+                                    });
+                                    var totalQuantity = total.IsZero ? string.Empty : total.ToString();
+                                }
+                                @if (!string.IsNullOrWhiteSpace(totalQuantity))
+                                {
+                                    <span class="font-medium text-primary-600">@totalQuantity</span>
+                                }
+                                @if (!string.IsNullOrEmpty(firstItem.Units))
+                                {
+                                    <span class="text-base-600 ml-1">@firstItem.Units</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Recipe Steps -->
+        @{
+            var steps = _recipe.Recipe.Sections
+                .SelectMany(s => s.Content)
+                .OfType<StepContent>()
+                .ToList();
+        }
+        @if (steps.Any())
+        {
+            <div class="px-4 mb-12">
+                <h2 class="text-2xl font-bold text-base-900 mb-6">Instructions</h2>
+                <ol class="space-y-6">
+                    @{int stepNumber = 1;}
+                    @foreach (var stepContent in steps)
+                    {
+                        <li class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-bold">
+                                @stepNumber
+                            </div>
+                            <div class="flex-1 text-base-700 leading-relaxed pt-1">
+                                @((MarkupString)FormatStepText(stepContent.Step))
+                            </div>
+                        </li>
+                        stepNumber++;
+                    }
+                </ol>
+            </div>
+        }
+
+        <!-- Navigation -->
+        <nav class="px-4 py-6 border-t border-base-200">
+            <a href="/" class="inline-flex items-center px-6 py-3 bg-base-600 text-white rounded-lg hover:bg-base-700 transition-colors duration-200 font-medium">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Back to Recipe Collection
+            </a>
+        </nav>
+    </article>
+}
+
+@code {
+    private string _fileName = string.Empty;
+    [Parameter] public string FileName { get => _fileName; set => _fileName = value?.TrimEnd('/') ?? string.Empty; }
+
+    private RecipeContentPage? _recipe;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var url = $"/recipes/{FileName}";
+        _recipe = await RecipeService.GetRecipeByUrlOrDefault(url);
+    }
+
+    private string HighlightSecondWord(string title)
+    {
+        var words = title.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length < 2) return title;
+
+        var result = new System.Text.StringBuilder();
+        for (int i = 0; i < words.Length; i++)
+        {
+            if (i == 1)
+                result.Append($"<span class=\"text-primary-500\">{words[i]}</span>");
+            else
+                result.Append(words[i]);
+
+            if (i < words.Length - 1) result.Append(' ');
+        }
+        return result.ToString();
+    }
+
+    private string FormatStepText(CooklangSharp.Models.Step step)
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (var item in step.Items)
+        {
+            switch (item)
+            {
+                case TextItem textItem:
+                    sb.Append(textItem.Value);
+                    break;
+                case IngredientItem ingredientItem:
+                    sb.Append($"<span class=\"font-semibold text-primary-600\">{ingredientItem.Name}</span>");
+                    if (ingredientItem.Quantity != null && !ingredientItem.Quantity.ToString().Equals("some"))
+                    {
+                        sb.Append($"<span class=\"text-base-600\"> ({ingredientItem.Quantity}");
+                        if (!string.IsNullOrEmpty(ingredientItem.Units))
+                            sb.Append($" {ingredientItem.Units}");
+                        sb.Append(")</span>");
+                    }
+                    break;
+                case CookwareItem cookwareItem:
+                    sb.Append($"<span class=\"font-medium text-accent-600\">{cookwareItem.Name}</span>");
+                    break;
+                case TimerItem timerItem:
+                    sb.Append("<span class=\"bg-accent-100 text-accent-800 px-2 py-1 rounded-md font-medium\">");
+                    if (!string.IsNullOrEmpty(timerItem.Name))
+                        sb.Append($"{timerItem.Name} ");
+                    sb.Append($"{timerItem.Quantity} {timerItem.Units}</span>");
+                    break;
+            }
+        }
+        return sb.ToString();
+    }
+}

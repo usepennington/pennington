@@ -1,0 +1,31 @@
+@layout ContentWithProseLayout
+@page "/archive"
+@inject BlogContentResolver ContentResolver
+@inject PennOptions PennOptions
+
+@if (_posts == null)
+{
+    <div>Posts not found</div>
+    return;
+}
+
+<PageTitle>Archive - @PennOptions.SiteTitle</PageTitle>
+
+<header>
+    <h1>All Posts</h1>
+    <p>A complete archive of all @_posts.Count blog posts, organized by most recent.</p>
+</header>
+<div class="mt-16 sm:mt-20 not-prose">
+    <div>
+        <BlogSummary Posts="_posts" />
+    </div>
+</div>
+
+@code {
+    private List<BlogPostPage>? _posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _posts = await ContentResolver.GetAllPostsAsync();
+    }
+}

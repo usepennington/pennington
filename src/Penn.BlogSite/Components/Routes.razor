@@ -1,0 +1,7 @@
+@inject BlogSiteOptions Options
+
+<Router AppAssembly="typeof(App).Assembly" AdditionalAssemblies="@Options.AdditionalRoutingAssemblies">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="typeof(MainLayout)" />
+    </Found>
+</Router>

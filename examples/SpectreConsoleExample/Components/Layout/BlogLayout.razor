@@ -1,0 +1,11 @@
+@inherits LayoutComponentBase
+
+<div class="min-h-screen bg-base-50 dark:bg-base-950">
+    <SharedHeader CurrentSection="blog" HasTableOfContents="false" ShowSidebarToggle="false" ShowSearch="true" />
+
+    <main class="container mx-auto px-4 py-8 md:py-12">
+        @Body
+    </main>
+
+    <SharedFooter />
+</div>

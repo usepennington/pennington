@@ -1,0 +1,114 @@
+@page "/blog/"
+@page "/blog/{*fileName:nonfile}"
+@layout BlogLayout
+@inject SpectreContentHelper ContentHelper
+
+@if (_isListing)
+{
+    <PageTitle>Blog - Spectre.Console</PageTitle>
+
+    <div class="mx-auto max-w-3xl">
+        <h1 class="text-4xl font-extrabold text-base-900 dark:text-base-100 mb-8">Blog</h1>
+
+        @if (_allPosts != null)
+        {
+            <div class="space-y-8">
+                @foreach (var post in _allPosts.OrderByDescending(p => p.FrontMatter.Date))
+                {
+                    <article class="group">
+                        <a href="@post.Url" class="block">
+                            <div class="flex items-center text-sm text-base-400 dark:text-base-500 mb-1">
+                                <span class="h-4 w-0.5 bg-primary-200 dark:bg-primary-500"></span>
+                                @if (post.FrontMatter.Date.HasValue)
+                                {
+                                    <time class="ml-3 uppercase text-xs">
+                                        @post.FrontMatter.Date.Value.ToString("MMMM d, yyyy", new System.Globalization.CultureInfo("en-US"))
+                                    </time>
+                                }
+                            </div>
+                            <h2 class="text-xl font-bold text-base-900 dark:text-base-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                @post.FrontMatter.Title
+                            </h2>
+                            @if (!string.IsNullOrEmpty(post.FrontMatter.Description))
+                            {
+                                <p class="mt-2 text-base-600 dark:text-base-400 line-clamp-2">
+                                    @post.FrontMatter.Description
+                                </p>
+                            }
+                        </a>
+                    </article>
+                }
+            </div>
+        }
+    </div>
+    return;
+}
+
+@if (_frontMatter == null)
+{
+    <div class="text-center py-16">
+        <h2 class="text-2xl font-display font-bold text-base-900 dark:text-base-100">Post not found</h2>
+        <p class="mt-2 text-base-600 dark:text-base-400">The blog post you're looking for doesn't exist.</p>
+        <a href="/blog" class="mt-4 inline-block text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
+            &larr; Back to blog
+        </a>
+    </div>
+    return;
+}
+
+<PageTitle>@_frontMatter.Title - Spectre.Console Blog</PageTitle>
+
+<HeadContent>
+    <meta property="og:title" content="@_frontMatter.Title" />
+    <meta property="og:description" content="@_frontMatter.Description" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Spectre.Console Blog" />
+    <meta property="article:published_time" content="@_frontMatter.Date?.ToString("yyyy-MM-ddTHH:mm:ssZ")" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="@_frontMatter.Title" />
+    <meta name="twitter:description" content="@_frontMatter.Description" />
+</HeadContent>
+
+<BlogPost FrontMatter="_frontMatter" HtmlContent="@_postContent" Series="_series" CurrentUrl="@FileName"/>
+
+@code {
+    [Parameter] public string FileName { get; set; } = "";
+
+    private bool _isListing;
+    private SpectreBlogFrontMatter? _frontMatter;
+    private string? _postContent;
+    private List<PageInfo<SpectreBlogFrontMatter>>? _series;
+    private List<PageInfo<SpectreBlogFrontMatter>>? _allPosts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(FileName))
+        {
+            // Blog listing page
+            _isListing = true;
+            _allPosts = await ContentHelper.GetAllPagesAsync<SpectreBlogFrontMatter>("/blog");
+            return;
+        }
+
+        var result = await ContentHelper.GetRenderedPageAsync<SpectreBlogFrontMatter>("/blog/" + FileName);
+        if (result == null)
+        {
+            _frontMatter = null;
+            _postContent = null;
+            return;
+        }
+
+        _frontMatter = result.FrontMatter;
+        _postContent = result.Html;
+
+        if (_frontMatter != null && !string.IsNullOrWhiteSpace(_frontMatter.Series))
+        {
+            var allPosts = await ContentHelper.GetAllPagesAsync<SpectreBlogFrontMatter>("/blog");
+            _series = allPosts
+                .Where(i => string.Equals(i.FrontMatter.Series, _frontMatter.Series, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(i => i.FrontMatter.Date)
+                .ToList();
+        }
+    }
+}

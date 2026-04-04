@@ -17,5 +17,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\docs\Penn.Docs\Penn.Docs.csproj" />
+    <ProjectReference Include="..\..\examples\MinimalExample\MinimalExample.csproj" />
+    <ProjectReference Include="..\..\examples\RecipeExample\RecipeExample.csproj" />
+    <ProjectReference Include="..\..\examples\BlogExample\BlogExample.csproj" />
+    <ProjectReference Include="..\..\src\Penn.BlogSite\Penn.BlogSite.csproj" />
   </ItemGroup>
 </Project>

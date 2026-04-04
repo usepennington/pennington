@@ -1,0 +1,33 @@
+@layout ContentWithProseLayout
+@page "/tags"
+@inject BlogContentResolver ContentResolver
+@inject PennOptions PennOptions
+
+<PageTitle>@PennOptions.SiteTitle - Tags</PageTitle>
+
+<h1>All Tags</h1>
+
+@if (_tagsWithCount == null)
+{
+    <div>No tags?</div>
+    return;
+}
+
+<ul>
+    @foreach (var tagGroup in _tagsWithCount)
+    {
+        <li>
+            <a href="@tagGroup.Tag.Url">@tagGroup.Tag.Name</a>
+            <span class="text-xs text-base-600 dark:text-base-400"> (@tagGroup.Count)</span>
+        </li>
+    }
+</ul>
+
+@code {
+    private ImmutableList<(BlogTag Tag, int Count)>? _tagsWithCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _tagsWithCount = await ContentResolver.GetTagsWithCountsAsync();
+    }
+}
