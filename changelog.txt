@@ -274,3 +274,12 @@
   - SolutionWorkspaceService, SymbolExtractionService registered when SolutionPath set
   - RoslynCodeBlockPreprocessor registered as ICodeBlockPreprocessor
 - Penn.Roslyn integration is now complete and pluggable
+
+## Documentation Rewrite
+- Rewrote all 28 documentation pages for Penn v2
+- Updated homepage (Index.razor) with Penn branding
+- Updated all front matter UIDs (docs.* → penn.*)
+- Updated all xref links to new UIDs
+- Updated all code examples to Penn v2 APIs
+- Updated all xmldocid/path references to Penn types and files
+- Removed all MyLittleContentEngine references

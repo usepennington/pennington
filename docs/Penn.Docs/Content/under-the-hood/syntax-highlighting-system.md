@@ -1,210 +1,223 @@
 ---
-title: "Syntax Highlighting System Architecture"
-description: "Deep dive into MyLittleContentEngine's multi-layered syntax highlighting system with Roslyn, TextMateSharp, and custom highlighters"
-uid: "docs.under-the-hood.syntax-highlighting-system"
+title: "Syntax Highlighting System"
+description: "Penn's pluggable, priority-based syntax highlighting architecture from Markdig integration to Roslyn-powered semantic highlighting"
+uid: "penn.under-the-hood.syntax-highlighting-system"
 order: 3020
 ---
 
-MyLittleContentEngine features a sophisticated multi-layered syntax highlighting system that provides server-side highlighting for optimal performance while maintaining broad language compatibility. The system uses a cascading approach with four different highlighting engines, each optimized for specific use cases.
+Penn does all its syntax highlighting at build time. No client-side JavaScript, no runtime cost for readers, no flash of unstyled code. The system is pluggable, priority-based, and -- thanks to the optional Penn.Roslyn package -- can produce semantically accurate highlighting for C# and VB.NET using the actual compiler.
 
-> [!NOTE]
-> To enable Roslyn syntax highlighting for C# and VB.NET, see [Connecting to Roslyn](xref:docs.getting-started.connecting-to-roslyn). For information about styling syntax highlighting, see [Monorail CSS Configuration](xref:docs.reference.monorail-css-configuration).
+Here is the full stack, top to bottom:
 
-## Architecture Overview
-
-The syntax highlighting system follows a priority-based cascade that maximizes accuracy and performance:
-
-```mermaid
-graph TD
-    A[Code Block] --> B{Language Detection}
-    B --> C{Roslyn Available?}
-    C -->|Yes + C#/VB| D[Roslyn Highlighter]
-    C -->|No| E{Custom Highlighter?}
-    E -->|GBNF/Shell/Text| F[Custom Highlighter]
-    E -->|No| G{TextMate Grammar?}
-    G -->|Available| H[TextMateSharp]
-    G -->|Unavailable| I[Client-side Highlight.js]
-    
-    D --> J[Server-side HTML with CSS Classes]
-    F --> J
-    H --> J
-    I --> K[Client-side Highlighting]
+```
+Markdown fenced code block
+  |
+  v
+CodeHighlightRenderer (Markdig extension)
+  |
+  +-- ICodeBlockPreprocessor[] (checked first, highest priority wins)
+  |     |
+  |     +-- RoslynCodeBlockPreprocessor (priority 100)
+  |           handles :xmldocid, :path, :xmldocid-diff modifiers
+  |
+  +-- HighlightingService (priority dispatch for normal code blocks)
+  |     |
+  |     +-- RoslynHighlighter    (priority 100, C#/VB)  [Penn.Roslyn, optional]
+  |     +-- ShellHighlighter     (priority 75, bash/shell/sh)
+  |     +-- TextMateHighlighter  (priority 50, all TextMate grammars)
+  |     +-- PlainTextHighlighter (priority 0, fallback)
+  |
+  +-- CodeTransformer (line annotations: highlight, diff, focus, etc.)
+  |
+  +-- CodeBlockHtmlBuilder (final HTML wrapper)
 ```
 
-This layered approach ensures that:
-- **C# and VB.NET** get the most accurate highlighting via Roslyn
-- **Common languages** are highlighted server-side for better performance
-- **Specialized languages** receive custom tokenization
-- **Any language** can be handled via client-side fallback
+## How a Code Block Gets Highlighted
 
-## Layer 1: Roslyn Highlighter (Highest Priority)
+When Markdig encounters a fenced code block, it delegates rendering to `CodeHighlightRenderer`, which replaces the default Markdig `CodeBlockRenderer`. Here is the sequence:
 
-The Roslyn highlighter provides the most accurate syntax highlighting for .NET languages by leveraging Microsoft's actual C# and VB.NET compilers.
+1. **Extract language and code.** The renderer pulls the language identifier (e.g., `csharp`, `bash`, `python:xmldocid`) and the raw code text from the Markdig AST.
 
+2. **Check preprocessors.** Each registered `ICodeBlockPreprocessor` gets a shot at the block, in priority order (highest first). If a preprocessor returns a `CodeBlockPreprocessResult`, the renderer uses that HTML and skips normal highlighting. If all preprocessors return `null`, we continue.
 
-### Special Roslyn Features
+3. **Parse language modifiers.** The language identifier is split at the first colon: `csharp:xmldocid` becomes base language `csharp` with modifier `xmldocid`. Plain `python` has no modifier.
 
-#### XML Documentation Integration
-`````markdown
+4. **Dispatch to HighlightingService.** The service finds the highest-priority `ICodeHighlighter` that supports the base language and calls `Highlight(code, language)`.
+
+5. **Apply line transformations.** `CodeTransformer.Transform()` processes inline directives like `// [!code highlight]`, `// [!code ++]`, and `// [!code focus]`, restructuring the HTML into individual `<span class="line">` elements with appropriate CSS classes.
+
+6. **Wrap in HTML.** `CodeBlockHtmlBuilder.BuildHtml()` adds the outer wrapper divs with configurable CSS classes.
+
+## ICodeHighlighter: The Priority Contract
+
+Every highlighter implements a simple interface:
+
 ```csharp:xmldocid
-T:System.Collections.Generic.List<T>.Add
+T:Penn.Highlighting.ICodeHighlighter
 ```
-`````
 
-This extracts the actual implementation of `List<T>.Add` from the loaded assemblies and highlights it with full semantic information.
+The contract is intentionally minimal:
 
-#### File Path Loading
+- **`SupportedLanguages`**: A set of language identifiers this highlighter handles. Use `"*"` to match everything (TextMate and PlainText do this).
+- **`Highlight(code, language)`**: Returns HTML with `<pre><code>` wrapping and `<span>` elements for tokens.
+- **`Priority`**: An integer. Higher wins.
 
-`````markdown
-```csharp:path
-examples/MinimalExample/Program.cs
+`HighlightingService` sorts all registered highlighters by priority descending and picks the first match:
+
+```csharp:xmldocid
+T:Penn.Highlighting.HighlightingService
 ```
-`````
 
-Loads and highlights external files from your solution, ensuring documentation stays in sync with actual code.
+The dispatch logic is deliberately simple -- iterate the sorted list, return the first highlighter whose `SupportedLanguages` contains the requested language (or `"*"`). If nothing matches at all, `PlainTextHighlighter` provides the fallback. It just HTML-encodes the code and wraps it in `<pre><code>`.
 
-> [!TIP]  
-> This will work for non-C# files too, but they have to be part of the .NET solution.
+### The Highlighter Stack
 
-#### Body-Only Documentation
-`````markdown
+| Highlighter | Priority | Languages | Package |
+|---|---|---|---|
+| `RoslynHighlighter` | 100 | `csharp`, `cs`, `c#`, `vb`, `vbnet` | Penn.Roslyn |
+| `ShellHighlighter` | 75 | `bash`, `shell`, `sh` | Penn |
+| `TextMateHighlighter` | 50 | `*` (all TextMate grammars) | Penn |
+| `PlainTextHighlighter` | 0 | `*` (universal fallback) | Penn |
+
+Because `RoslynHighlighter` has the highest priority for C#, it always wins over TextMate when Penn.Roslyn is installed. Remove the Penn.Roslyn package and TextMate seamlessly takes over -- no configuration changes needed.
+
+### ShellHighlighter
+
+Shell gets its own highlighter because TextMate grammars for shell scripting are... let's say "inconsistent." The `ShellHighlighter` uses regex-based tokenization tuned for command-line documentation:
+
+- Command recognition (first word on each line)
+- Flag highlighting (`-f`, `--verbose`)
+- String detection (single and double quotes)
+- Comment support (`#` and `REM`)
+
+It produces CSS classes compatible with the `hljs-*` convention, same as every other highlighter.
+
+### TextMateHighlighter
+
+`TextMateHighlighter` uses TextMateSharp to load VS Code grammar definitions. It supports 49+ languages including all the usual suspects (JavaScript, Python, Rust, Go, Java, etc.) plus more obscure ones (HLSL, Typst, Clojure).
+
+The highlighter works by tokenizing each line against a TextMate grammar and mapping TextMate scopes to `hljs-*` CSS classes. The scope mapping table covers comments, keywords, strings, types, functions, operators, and many more -- ordered from most specific to least specific so that `comment.line.double-slash` matches before the generic `comment`.
+
+Grammar resolution tries multiple strategies: first the registry's own language-to-scope mapping, then `source.{language}` patterns. If no grammar can be found, it falls back to plain HTML-encoded output.
+
+One quirk: TextMateSharp's registry is not thread-safe, so all tokenization happens under a lock. This is fine for build-time highlighting -- you are not tokenizing code on every page request.
+
+## ICodeBlockPreprocessor: Intercepting Before Highlighting
+
+Preprocessors run *before* the normal highlighting pipeline. They are the escape hatch for code blocks that need special treatment.
+
+```csharp:xmldocid
+T:Penn.Markdown.Extensions.ICodeBlockPreprocessor
+```
+
+A preprocessor receives the raw code and the full language identifier (including modifiers like `:xmldocid`). It returns a `CodeBlockPreprocessResult` if it handled the block, or `null` to pass through to normal highlighting.
+
+The result includes:
+
+- **`HighlightedHtml`**: The fully highlighted HTML.
+- **`BaseLanguage`**: For CSS class purposes.
+- **`SkipTransform`**: If `true`, `CodeTransformer` is not applied. Useful when the preprocessor produces its own line structure.
+
+### RoslynCodeBlockPreprocessor
+
+The star preprocessor. It handles three language modifiers:
+
+#### `:xmldocid` -- Symbol Extraction
+
+````markdown
+```csharp:xmldocid
+T:Penn.Pipeline.ContentItem
+```
+````
+
+The preprocessor resolves the XML documentation ID against the loaded Roslyn workspace, extracts the full source code of the symbol, highlights it with Roslyn's semantic classifier, and returns the result. Multiple IDs can be listed (one per line) and they are concatenated in the output.
+
+Add `,bodyonly` to strip the containing type and show just the method body:
+
+````markdown
 ```csharp:xmldocid,bodyonly
-M:MyNamespace.MyClass.MyMethod
+M:Penn.Pipeline.ContentPipeline.RunAsync(Penn.Generation.OutputOptions)
 ```
-`````
+````
 
-Shows only the method body without class declaration context.
+#### `:path` -- File Inclusion
 
-### Implementation Details
-
-The Roslyn highlighter operates by:
-1. **Loading Solutions**: Scans referenced assemblies and XML documentation
-2. **Semantic Analysis**: Uses full compiler semantic information
-3. **Classification**: Applies precise token classification (keywords, types, literals, etc.)
-4. **HTML Generation**: Outputs semantic HTML with CSS classes matching Highlight.js conventions
-
-
-## Layer 2: Custom Highlighters
-
-Custom highlighters provide specialized tokenization for domain-specific languages that benefit from purpose-built parsers.
-
-### GBNF (Grammar Backus-Naur Form)
-
-**Language**: `gbnf`
-**Purpose**: Highlighting grammar definitions for language parsers
-
-```gbnf
-root ::= expr
-expr ::= term (("+" | "-") term)*
-term ::= factor (("*" | "/") factor)*
-factor ::= number | "(" expr ")"
-number ::= [0-9]+
+````markdown
+```csharp:path
+src/Penn/Pipeline/ContentItem.cs
 ```
+````
 
-**Features:**
-- **Rule Detection**: Identifies grammar rule definitions
-- **Operator Highlighting**: Highlights GBNF operators (`::=`, `|`, `*`, `+`, `?`)
-- **String Literals**: Recognizes quoted terminal symbols
-- **Character Ranges**: Highlights bracket notation `[a-z]`
-- **Comments**: Supports `//` line comments
+Reads the file from disk (relative to the solution root), highlights it with Roslyn, and returns the result. Works for any file in the solution, not just C#.
 
-### Shell/Bash Highlighter
+#### `:xmldocid-diff` -- Side-by-Side Comparison
 
-**Languages**: `bash`, `shell`
-**Purpose**: Command-line script highlighting with semantic understanding
-
-```bash
-#!/bin/bash
-# Install dependencies
-curl -sfL https://example.com/install.sh | tar -xzf -
-dotnet build --configuration Release
+````markdown
+```csharp:xmldocid-diff
+T:Penn.Pipeline.ContentItem
+T:Penn.Pipeline.ContentSource
 ```
+````
 
-**Features:**
-- **Command Recognition**: Identifies shell commands and built-ins
-- **Flag Highlighting**: Recognizes command-line flags (`-f`, `--verbose`)
-- **String Detection**: Handles single and double-quoted strings
-- **Comment Support**: Highlights `#` and `REM` comments
-- **Shebang Support**: Recognizes script interpreters
+Extracts two symbols, highlights both with Roslyn, then computes a line-level diff using DiffPlex. Added lines get `diff-add`, removed lines get `diff-remove`. Requires exactly two XML doc IDs.
 
-### Plain Text Handler
+## CodeTransformer: Line Annotations
 
-**Languages**: `text`, `` (empty string)
-**Purpose**: Renders code without syntax highlighting
+After highlighting, `CodeTransformer` processes inline directives embedded in code comments. These directives control visual presentation without affecting the actual code:
 
-Simply wraps content in `<pre><code>` tags with HTML escaping, providing a fallback for content that shouldn't be highlighted.
+| Directive | CSS Class | Effect |
+|---|---|---|
+| `// [!code highlight]` | `highlight` | Highlights the line |
+| `// [!code hl]` | `highlight` | Alias for highlight |
+| `// [!code ++]` | `diff-add` | Shows line as added (diff) |
+| `// [!code --]` | `diff-remove` | Shows line as removed (diff) |
+| `// [!code focus]` | `focused` | Focuses the line (others get `blurred`) |
+| `// [!code error]` | `error` | Marks line as error |
+| `// [!code warning]` | `warning` | Marks line as warning |
+| `// [!code word:term]` | `word-highlight` | Highlights a specific word |
+| `// [!code word:term\|msg]` | `word-highlight-with-message` | Highlights word with callout |
 
-## Layer 3: TextMateSharp Integration
+The transformer also handles snippet directives (`[!code include-start]`, `[!code exclude-start]`, etc.) for showing only portions of a larger code block.
 
-[TextMateSharp](https://github.com/danipen/TextMateSharp) provides broad language support using Visual Studio Code's grammar definitions, offering server-side highlighting for 49+ programming languages.
+The directive comment itself is stripped from the output. If the comment marker is the only thing on the line after stripping, the entire comment is removed. The transformer works across all comment styles -- `//`, `#`, `--`, `<!--`, `*`, `%`, `'`, `REM`, `;`, and `/*`.
 
-### Language Coverage
+The transformer restructures the HTML into individual line `<span>` elements, which enables per-line CSS styling. It also normalizes indentation after snippet extraction, so included code fragments are not awkwardly indented.
 
-#### Web Technologies
-- **Frontend**: HTML, CSS, SCSS, Less, JavaScript, TypeScript
-- **Data**: JSON, XML, YAML
-- **Templates**: Handlebars, Pug, Razor
+## CodeBlockHtmlBuilder: The Final Wrapper
 
-#### Systems Programming
-- **Native**: C, C++, Rust, Go, Swift, Objective-C
-- **Managed**: Java, Kotlin, Dart, Pascal
+The last step wraps everything in a consistent HTML structure:
 
-#### Scripting & Dynamic
-- **Python**: Full Python 3 syntax support
-- **Ruby**: Including Rails-specific highlighting
-- **PHP**: Web-focused syntax highlighting
-- **PowerShell**: Windows scripting support
-- **Lua**: Lightweight scripting language
-- **R**: Statistical computing language
-
-#### Functional Programming
-- **F#**: .NET functional language
-- **Clojure**: JVM-based Lisp dialect
-- **Julia**: Scientific computing language
-
-#### Documentation & Markup
-- **Markdown**: Including extensions and frontmatter
-- **LaTeX**: Mathematical typesetting
-- **AsciiDoc**: Technical documentation
-- **Typst**: Modern markup language
-
-#### Specialized Languages
-- **HLSL/ShaderLab**: Graphics programming
-- **SQL**: Database queries
-- **Groovy**: JVM scripting
-- **Dockerfile**: Container definitions
-
-### Fallback Behavior
-
-When a requested language isn't found:
-1. **Scope Name Generation**: Tries `source.{language}` pattern
-2. **Alias Resolution**: Attempts common language aliases
-3. **Plain Text Fallback**: Renders as plain code block if no grammar is found
-
-## Layer 4: Client-Side Highlight.js (Fallback)
-
-When server-side highlighting isn't available, the system falls back to client-side Highlight.js for maximum language compatibility.
-
-### Pre-loaded Languages (23)
-
-High-frequency languages loaded immediately:
-- **Web**: `javascript`, `typescript`, `css`, `html`, `xml`, `json`, `yaml`
-- **Systems**: `cpp`, `c`, `rust`, `go`, `java`, `kotlin`, `swift`
-- **Scripting**: `python`, `php`, `ruby`, `bash`, `shell`
-- **Data**: `sql`, `markdown`
-- **.NET**: `csharp`
-
-### Dynamic Loading
-
-For uncommon languages, Highlight.js loads additional grammars from CDN:
-
-```javascript
-// Lazy load additional languages from CDN
-const response = await fetch(`https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/${language}.min.js`);
+```html
+<div class="code-highlight-wrapper not-prose">
+  <div class="standalone-code-container">
+    <div class="standalone-code-highlight">
+      <pre><code>...highlighted code...</code></pre>
+    </div>
+  </div>
+</div>
 ```
 
-This provides access to 190+ languages without increasing initial bundle size.
+The CSS classes are configurable through `CodeHighlightRenderOptions`. When a code block is inside a tabbed group, the standalone container wrapper is omitted.
 
-## Summary
+## Adding a Custom Highlighter
 
-MyLittleContentEngine's syntax highlighting system provides comprehensive language support through a multi-layered architecture with 52+ server-side languages and 190+ client-side languages for maximum compatibility.
+Register an `ICodeHighlighter` with the DI container and Penn picks it up automatically:
+
+```csharp
+services.AddSingleton<ICodeHighlighter, MyCustomHighlighter>();
+```
+
+Set a priority higher than 50 to beat TextMate for your target languages. The `SupportedLanguages` set controls which languages your highlighter claims. Be specific -- if you only handle `toml`, do not register `"*"` and break everyone else.
+
+Similarly, custom preprocessors are registered as `ICodeBlockPreprocessor` and sorted by priority.
+
+## Why Server-Side?
+
+Penn does highlighting at build time for several reasons:
+
+1. **No FOUC.** Code blocks are already highlighted when the HTML arrives. No flash of unstyled code while a JavaScript library loads.
+2. **Smaller payloads.** No need to ship highlight.js or Prism bundles to the client.
+3. **Semantic accuracy.** Roslyn highlighting uses the actual C# compiler. It knows that `var` is a keyword but `List` is a type. No regex-based highlighter can match that.
+4. **Consistency.** The same highlighting runs during dev and build. What you see in `dotnet watch` is what readers see in production.
+
+The trade-off is build time. Roslyn highlighting, in particular, is not cheap -- it loads your entire solution workspace. But for a documentation site where you build once and serve many times, this is the right trade-off.

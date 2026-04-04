@@ -1,362 +1,106 @@
 ---
 title: "Using the BlogSite Package"
-description: "Learn how to create a blog site using the BlogSite package with customizable themes, RSS feeds, and social features"
-uid: "docs.getting-started.using-blogsite"
+description: "Penn.BlogSite -- the blog-shaped package that doesn't exist yet"
+uid: "penn.guides.using-blogsite"
 order: 2500
 ---
 
-The `MyLittleContentEngine.BlogSite` package provides a complete blog site solution with minimal setup. It includes all the components, layouts, and styling needed to create a professional blog with customizable branding, RSS feeds, and social media integration.
+Penn.BlogSite is the planned companion to Penn.DocSite: a ready-made blog layout with posts, archives, tags, RSS feeds, and all the other things you'd expect from a blog that someone actually thought about for more than fifteen minutes.
 
-> [!IMPORTANT]  
-> While functional, the `BlogSite` package drives the documentation for my personal blog. It can and will
-> change as this site changes. It is better suited as inspiration or proof-of-concepts than a blog you want total control over.
+It doesn't exist yet.
 
-## What You'll Build
+## What's Coming
 
-You'll create a blog site with:
+The plan for Penn.BlogSite mirrors how Penn.DocSite works: a single `AddBlogSite()` call that wires up Penn core, MonorailCSS, SPA navigation, and a blog-specific layout with opinionated defaults. You'll get:
 
-- A nice little blog layout with posts and archives
-- Individual blog post pages with metadata
-- Tag-based organization and filtering
-- RSS feed generation
-- Responsive design with dark/light mode
-- Social media integration
-- A bit of custom branding and styling
+- **Post listing** with date, description, and tag display
+- **Tag-based filtering** and a tag index page
+- **RSS feed** generation from your content
+- **Archive pages** organized by date
+- **SPA navigation** between posts (using the same island renderer pattern as DocSite)
+- **Dark/light mode** with the standard Penn theme toggle
 
-<Steps>
-<Step stepNumber="1">
-## Create a New Blazor Project
-
-Start by creating a new minimal web project:
-
-```bash
-dotnet new web -n MyBlogSite
-cd MyBlogSite
-```
-</Step>
-
-<Step stepNumber="2">
-
-## Add the BlogSite Package
-
-Add the BlogSite package reference to your project:
-
-```bash
-dotnet add package MyLittleContentEngine.BlogSite
-```
-
-This package includes all the dependencies you need:
-- `MyLittleContentEngine` - Core content management functionality
-- `MyLittleContentEngine.UI` - UI components for blogs
-- `MyLittleContentEngine.MonorailCss` - CSS framework for styling
-- `Mdazor` - Markdown rendering for Blazor
-</Step>
-
-<Step stepNumber="3">
-
-## Configure File Watching for Development
-
-Add the following to your `.csproj` file so content changes trigger live reload during development:
-
-```xml
-<ItemGroup>
-    <Watch Include="Content/**/*.*"/>
-</ItemGroup>
-```
-</Step>
-
-<Step stepNumber="4">
-
-## Configure the BlogSite
-
-Replace the content of `Program.cs` with the following minimal configuration:
+The configuration shape will look something like:
 
 ```csharp
-using MyLittleContentEngine.BlogSite;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddBlogSite(_ => new BlogSiteOptions
 {
     SiteTitle = "My Blog",
-    Description = "A blog about my adventures in coding",
-});
-
-var app = builder.Build();
-
-app.UseBlogSite();
-
-await app.RunBlogSiteAsync(args);
-```
-
-This minimal setup provides a complete blog site with default styling and layout.
-</Step>
-
-<Step stepNumber="5">
-
-## Create the Content Structure
-
-Create the blog content directory structure:
-
-```bash
-mkdir -p Content/Blog
-```
-
-The BlogSite package expects your blog posts to be in the `Content/Blog` directory by default.
-</Step>
-
-<Step stepNumber="6">
-
-## Write Your First Blog Post
-
-Create your first blog post at `Content/Blog/2024/01/welcome-to-my-blog.md`:
-
-```bash
-mkdir -p Content/Blog/2024/01
-```
-
-I like to put my blog posts in a year/month folder structure, but you can use any structure you want.
-
-```markdown
----
-title: "Welcome to My Blog"
-description: "My first blog post using MyLittleContentEngine"
-date: 2024-01-15
-tags: ["blogging", "getting-started"]
----
-
-# Welcome to My Blog
-
-This is my first blog post using MyLittleContentEngine! I'm excited to share my thoughts and experiences.
-
-## What You Can Expect
-
-- Regular updates about my coding journey
-- Tips and tricks I've learned
-- Project showcases
-- Technical deep-dives
-
-Stay tuned for more content!
-```
-</Step>
-
-<Step stepNumber="7">
-
-## Customize Your Blog
-
-You can customize various aspects of your blog by modifying the options in `Program.cs`:
-
-```csharp
-using MonorailCss;
-using MyLittleContentEngine.BlogSite;
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddBlogSite(_ => new BlogSiteOptions
-{
-    // Basic site information
-    SiteTitle = "My Coding Blog",
-    Description = "Adventures in software development",
-    CanonicalBaseUrl = "https://myblog.example.com",
-    
-    // Styling and branding
-    PrimaryHue = 250, // Purple theme (0-360)
-    BaseColorName = ColorNames.Slate,
-    DisplayFontFamily = "Inter",
-    BodyFontFamily = "Inter",
-    
-    // Blog configuration
+    Description = "Thoughts, mostly about code",
     AuthorName = "Your Name",
-    AuthorBio = "Software developer passionate about clean code",
-    EnableRss = true,
-    EnableSitemap = true,
-    
-    // Navigation links
-    MainSiteLinks = [
-        new HeaderLink("About", "/about"),
-        new HeaderLink("Contact", "/contact")
-    ],
-    
-    // Advanced customization
-    ExtraStyles = """
-        .blog-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        """
+    CanonicalBaseUrl = "https://myblog.example.com",
 });
 
 var app = builder.Build();
 app.UseBlogSite();
 await app.RunBlogSiteAsync(args);
 ```
-</Step>
 
-<Step stepNumber="8">
+This is aspirational API design. The real thing may look different.
 
-## Add Social Media Integration
+## Building a Blog with Penn Core Today
 
-For social media features, you can add social links and project showcases:
+You don't need to wait for Penn.BlogSite. Penn core has everything you need to build a blog -- you'll just wire it up yourself instead of getting it for free.
 
-```csharp
-builder.Services.AddBlogSite(_ => new BlogSiteOptions
-{
-    SiteTitle = "My Coding Blog",
-    Description = "Adventures in software development",
-
-    // Social media links
-    Socials = [
-        new SocialLink(
-            Icon: SocialIcons.BlueskyIcon,
-            Url: "https://bsky.app/yourusername"
-        ),
-        new SocialLink(
-            Icon: SocialIcons.GithubIcon,
-            Url: "https://github.com/yourusername"
-        )
-    ],
-    
-    // Project showcase
-    MyWork = [
-        new Project(
-            Title: "Awesome Library",
-            Description: "A useful library for developers",
-            Url: "https://github.com/yourusername/awesome-library"
-        ),
-        new Project(
-            Title: "Cool App",
-            Description: "An innovative web application",
-            Url: "https://coolapp.example.com"
-        )
-    ],
-    
-    // Custom hero content for home page
-    HeroContent = new HeroContent(
-        Title: "Welcome to My Blog",
-        Description: "Sharing my journey in software development"
-    )
-});
-```
-</Step>
-
-<Step stepNumber="9">
-
-## Add Custom HTML and Fonts
-
-For advanced customization, you can add custom HTML to the head section:
+### 1. Define Blog Front Matter
 
 ```csharp
-builder.Services.AddBlogSite(_ => new BlogSiteOptions
+public class BlogFrontMatter : IFrontMatter
 {
-    SiteTitle = "My Blog",
-    Description = "A blog about coding",
+    public string Title { get; set; } = "";
+    public string? Description { get; set; }
+    public string? Uid { get; set; }
+    public int Order { get; set; }
+    public bool IsDraft { get; set; }
+    
+    public DateTime Date { get; set; } = DateTime.UtcNow;
+    public string[] Tags { get; set; } = [];
+    public string? Author { get; set; }
+}
+```
 
-    // Custom HTML for head section
-    AdditionalHtmlHeadContent = """
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-        <meta name="author" content="Your Name">
-        """
+### 2. Register Content
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddPenn(penn =>
+{
+    penn.SiteTitle = "My Blog";
+    penn.SiteDescription = "A blog about things";
+    penn.CanonicalBaseUrl = "https://myblog.example.com";
+
+    penn.AddMarkdownContent<BlogFrontMatter>(md =>
+    {
+        md.ContentPath = "Content/posts";
+        md.BasePageUrl = "/blog";
+        md.Section = "blog";
+    });
 });
 ```
-</Step>
 
-<Step stepNumber="10">
+### 3. Create Your Layout
 
-## Test Your Blog Site
+Build Razor components for the blog layout, post pages, tag listing, and whatever else you want. Use `@page` directives for custom routes (like `/tags`) and let the markdown content service handle blog post routes.
 
-Run your site in development mode:
+### 4. Add SPA Navigation (Optional)
+
+Follow the [Adding SPA Navigation](xref:penn.guides.adding-spa-navigation) guide to add instant page transitions between posts. The pattern is the same regardless of content type.
+
+### 5. Build
 
 ```bash
+# Development
 dotnet watch
+
+# Static build
+dotnet run -- build /
 ```
 
-Navigate to `https://localhost:5001` to see your blog in action!
+## Why Not Just Release BlogSite Now?
 
-While the page is open, try editing your blog post. You should see the changes reflected immediately without needing to restart the server.
-</Step>
-</Steps>
+Because a blog package that's "good enough" but changes constantly is worse than no package at all. Penn.DocSite already exists because it drives these docs -- it has a concrete use case and a real user (this site). Penn.BlogSite will ship when there's a blog that needs it and the API has settled enough to be worth packaging.
 
-## What Success Looks Like
-
-After running `dotnet watch`, navigate to the URL shown in your terminal (typically `http://localhost:5131`).
-You'll see a blog homepage with:
-
-- Your post listed with title, date, and description
-- A sidebar with your site name, author info, and tag list
-- A header with your site title and any navigation links you configured
-
-Click through to the post and you'll see the full Markdown content rendered with your blog layout. Edit your
-post file and save — the browser refreshes automatically without restarting the server.
-
-## Blog Post Front Matter
-
-Your blog posts support rich metadata in the front matter. The BlogSite package uses `BlogSiteFrontMatter` which includes:
-
-```markdown
----
-title: "My Post Title"
-description: "A brief description of the post"
-author: "Author Name"
-date: 2024-01-15
-tags: ["tag1", "tag2", "tag3"]
-series: "optional name of a series that this post is part of"
-repository: "optional repository link"
-uid: "unique-identifier-for-xref-links"
-is_draft: false
-redirect_url: "optional-redirect-target"
----
-```
-
-### Front Matter Properties
-
-- **title**: The title of the blog post (required)
-- **description**: A brief description for SEO and summaries (required)
-- **author**: Author name for the post
-- **date**: Publication date (defaults to current time)
-- **tags**: Array of tags for categorization
-- **series**: Optional series name for grouping related posts
-- **repository**: Optional repository or project link
-- **uid**: Unique identifier for cross-referencing
-- **is_draft**: Set to true to exclude from generation
-- **redirect_url**: Optional URL to redirect this page to
-
-
-## Available Configuration Options
-
-The `BlogSiteOptions` class provides many customization options:
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `SiteTitle` | string | required | The title displayed in the header |
-| `Description` | string | required | Site description for SEO |
-| `PrimaryHue` | int | 250 | Primary color hue (0-360) |
-| `BaseColorName` | string | "Slate" | Base color palette name |
-| `CanonicalBaseUrl` | string? | null | Canonical URL for SEO and RSS |
-| `MainSiteLinks` | HeaderLink[] | [] | Navigation links in header/footer |
-| `ContentRootPath` | string | "Content" | Path to content directory |
-| `BlogContentPath` | string | "Blog" | Path to blog content (relative to ContentRootPath) |
-| `BlogBaseUrl` | string | "/blog" | Base URL for blog posts |
-| `TagsPageUrl` | string | "/tags" | URL for the tags page |
-| `ExtraStyles` | string? | null | Additional CSS styles |
-| `HeroContent` | HeroContent? | null | Custom hero content for home page |
-| `DisplayFontFamily` | string? | null | Custom font family for display elements |
-| `BodyFontFamily` | string? | null | Custom font family for body text |
-| `AdditionalHtmlHeadContent` | string? | null | Custom HTML for head section |
-| `AdditionalRoutingAssemblies` | Assembly[] | [] | List of additional assemblies to scan for routing |
-| `AuthorName` | string? | null | Author name for the blog |
-| `AuthorBio` | string? | null | Author bio for the blog |
-| `EnableRss` | bool | true | Enable RSS feed generation |
-| `EnableSitemap` | bool | true | Enable sitemap generation |
-| `MyWork` | Project[] | [] | Projects to include in sidebar |
-| `Socials` | SocialLink[] | [] | Social media links |
-| `SolutionPath` | string? | null | Path to solution file for API docs |
-| `SocialMediaImageUrlFactory` | Func<MarkdownContentPage<BlogSiteFrontMatter>, string>? | null | Function to generate social media image URLs |
-
-
-## Next Steps
-
-The BlogSite package allows you to get up and running quickly, but there are no promises made
-that the design or functionality of the site will remain consistent. It's what drives my personal
-blog, so as my whims change so will the package. Use it for quick proof-of-concepts, demos, or inspiration
-for your own blog using the `MyLittleContentEngine` services directly.
+In the meantime, Penn core is perfectly capable of powering a blog. You just have to build the layout yourself. Think of it as an opportunity for creative expression. Or a chore. Depending on your relationship with CSS.

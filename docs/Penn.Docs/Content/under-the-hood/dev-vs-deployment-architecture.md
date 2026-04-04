@@ -1,264 +1,203 @@
 ---
 title: "Development vs Deployment Architecture"
-description: "Understanding how MyLittleContentEngine works across development, build, and production phases"
-uid: "docs.under-the-hood.dev-vs-deployment-architecture"
+description: "How Penn runs as a live dev server and a static site generator from the same codebase"
+uid: "penn.under-the-hood.dev-vs-deployment-architecture"
 order: 3000
 ---
 
-MyLittleContentEngine operates in three distinct phases, each with different architectural characteristics. Understanding these phases is essential for effectively developing and deploying your content sites.
+Penn is two things at once: a live ASP.NET Core web application during development and a static site generator at build time. Same codebase, same content pipeline, same rendering logic. The difference is one command-line argument.
 
-## The Three Phases
+This dual-mode design means you get hot reload, full debugging, and a real web server during development -- then flip a switch and produce a folder of static HTML files for deployment. No separate build tool, no template language mismatch, no "it looked different in dev."
 
-MyLittleContentEngine is a **hybrid static site generator** that uses Blazor Server-Side Rendering (SSR) as its rendering engine. This unique approach provides the best of both worlds: a rich development experience with hot reload capabilities, and a fully static output for production deployment.
+## The Two Modes
 
-The three phases are:
-
-1. **Development Mode** - Running your site locally with `dotnet run` or `dotnet watch`
-2. **Build/Generation Phase** - Generating static files with `dotnet run -- build`
-3. **Production Serving** - Hosting the generated static files
-
-## Development Mode
-
-When you run your application with `dotnet run` or `dotnet watch`, MyLittleContentEngine operates as a standard ASP.NET Core web application with Blazor SSR.
-
-### How It Works
-
-Your application starts a web server that handles requests dynamically. When a user (or you during development) requests a page:
-
-1. The ASP.NET Core routing system matches the URL to a Blazor component
-2. The component requests content from the appropriate `IContentService` implementation
-3. The content service lazily loads and caches content in memory
-4. The Blazor component renders the content as HTML
-5. The response is sent to the browser
-
-### Content Service Behavior
-
-Content services like `MarkdownContentService` use lazy loading with caching:
-
-- **On first request**: The service processes all content files (e.g., all markdown files) and builds an in-memory index
-- **Subsequent requests**: Content is served from the cache, making responses very fast
-- **On file changes**: The file watcher invalidates the cache, triggering a fresh reload on the next request
-
-This caching strategy provides excellent performance while keeping content always up-to-date during development.
-
-### Hot Reload
-
-MyLittleContentEngine includes a sophisticated hot reload system:
-
-- File watchers monitor your content directories for changes
-- When a file changes (e.g., you save a markdown file), the system invalidates the cached content
-- The next page request triggers a complete reprocessing of content
-- Your browser sees the updated content immediately
-
-This enables a smooth development workflow where you can edit content and see changes instantly.
-
-### Static Assets
-
-During development, static assets are served directly from their source locations:
-
-- Files in `wwwroot/`
-- Content directory assets (images, downloads, etc.)
-- Razor Class Library assets (like `scripts.js` from MyLittleContentEngine.UI)
-
-All assets are served dynamically through middleware, allowing you to modify them and see changes immediately.
-
-## Build/Generation Phase
-
-When you run `dotnet run -- build`, MyLittleContentEngine switches from dynamic serving to static site generation.
-
-### How It Works
-
-The generation process follows these steps:
-
-1. **Temporary Server Start**: A web server starts temporarily (just like in development mode)
-2. **Page Collection**: The `OutputGenerationService` asks all registered content services for their pages via `IContentService.GetPagesToGenerateAsync()`
-3. **Output Preparation**: The output directory is cleared and recreated
-4. **Asset Collection**: Static assets are collected from all sources via `IContentService.GetContentToCopyAsync()`
-5. **Page Generation**: Each page is rendered by making HTTP requests to the temporary server
-6. **Server Shutdown**: The temporary server stops, leaving only static files
-
-### The Role of IContentService
-
-During generation, `IContentService` implementations play a crucial role:
-
-- **`GetPagesToGenerateAsync()`**: Returns a list of all pages to render
-  - `MarkdownContentService` returns one page per markdown file, plus tag pages
-  - `ApiReferenceContentService` returns pages for namespaces, types, etc.
-  - Custom content services can contribute their own pages
-
-- **`GetContentToCopyAsync()`**: Returns static assets to copy
-  - Image files, downloads, or other resources that don't need rendering
-
-- **`GetContentToCreateAsync()`**: Returns dynamically generated files
-  - Sitemap.xml, RSS feeds, search indexes, etc.
-
-### Priority-Based Generation
-
-Pages are generated in priority order to handle dependencies:
-
-- **MustBeFirst** (0): Pages that other pages depend on
-- **Normal** (50): Standard content pages
-- **MustBeLast** (100): Pages that depend on other generated content (like CSS files that scan HTML)
-
-Within each priority level, pages are generated in parallel for optimal performance.
-
-### The HTTP Trick
-
-The generation process uses a clever technique: it makes HTTP requests to the running application, just as a browser would. This means:
-
-- Pages are rendered using exactly the same code path as development
-- No duplicate rendering logic is needed
-- The generated HTML is exactly what users would see if you ran the site dynamically
-
-## Production Serving
-
-After generation completes, you have a folder full of static HTML files and assets that can be deployed anywhere.
-
-### What Gets Generated
-
-The output directory contains:
-
-- **HTML files**: One file per page (e.g., `blog/my-post.html`)
-- **Static assets**: JavaScript, CSS, images, downloads
-- **Generated files**: Sitemap, RSS feed, search index
-- **Directory structure**: Mirrors your URL structure
-
-### How It Differs from Development
-
-The generated HTML has been transformed:
-
-1. **Cross-references resolved**: `<xref:some.uid>` links are converted to proper `<a>` tags
-2. **Base URLs applied**: If you built with a base path (e.g., `/my-blog/`), all URLs are rewritten
-3. **No server required**: Everything is baked into the HTML
-
-### Hosting Requirements
-
-The static output can be hosted on any static file server:
-
-- GitHub Pages
-- Netlify
-- Azure Static Web Apps
-- Any web server (nginx, Apache, IIS)
-
-The only requirement is that the host can serve HTML files and handle routing (e.g., serving `/about.html` when `/about` is requested). Most modern static hosts handle this automatically.
-
-## Complete Walkthrough Example
-
-Let's follow a blog post through all three phases to see how everything connects.
-
-### Phase 1: Development
-
-You create a new markdown file:
-
-```markdown
----
-title: "My First Blog Post"
-description: "Learning how MyLittleContentEngine works"
-uid: "blog.first-post"
----
-
-# My First Blog Post
-
-This is my first post using MyLittleContentEngine!
-```
-
-**What happens:**
-
-1. You save `Content/blog/my-first-post.md`
-2. The file watcher detects the change and invalidates the `MarkdownContentService` cache
-3. You navigate to `http://localhost:5000/blog/my-first-post` in your browser
-4. The Blazor routing matches the URL to a content page component
-5. The component calls `MarkdownContentService.GetRenderedContentPageByUrlOrDefault("/blog/my-first-post")`
-6. Since the cache was invalidated, the service:
-   - Scans all markdown files in the content directory
-   - Finds your new file and processes it
-   - Parses the front matter
-   - Converts markdown to HTML
-   - Stores the result in memory
-7. The component receives the rendered HTML and displays it
-8. The browser shows your blog post
-
-**Subsequent visits** to this page (or any other page) use the cached content until you modify a file again.
-
-### Phase 2: Build
-
-You're ready to deploy, so you run:
+### Development: `dotnet watch`
 
 ```bash
-dotnet run -- build "/" "output"
+dotnet watch
 ```
 
-**What happens:**
+Penn starts as a standard ASP.NET Core application with Blazor SSR. Every page request runs through the full content pipeline: content services discover files, the parser extracts front matter and markdown, the renderer produces HTML, and the Blazor component renders it into a page with layout, navigation, and all the trimmings.
 
-1. The application starts a temporary web server on a random port
-2. `OutputGenerationService` calls `MarkdownContentService.GetPagesToGenerateAsync()`
-3. The markdown service processes all files (including your blog post) and returns:
-   - A page entry for `/blog/my-first-post`
-   - Pages for any other markdown files
-   - Pages for tag listings
-4. The service also calls `GetContentToCopyAsync()` to find images and other assets
-5. For your blog post, the generator:
-   - Makes an HTTP GET request to `http://localhost:[port]/blog/my-first-post`
-   - The server renders it (same as development)
-   - Saves the HTML to `output/blog/my-first-post.html`
-6. All other pages are generated in parallel
-7. Static assets are copied to the output directory
-8. The temporary server shuts down
+Content is cached after the first request. Edit a markdown file, and the file watcher invalidates the cache. Refresh your browser. Done.
 
-### Phase 3: Production
+### Static Build: `dotnet run -- build`
 
-You deploy the `output/` folder to your hosting service.
+```bash
+dotnet run -- build
+```
 
-**What happens:**
+Penn starts the same ASP.NET Core application, but instead of waiting for browser requests, it drives itself. `RunOrBuildAsync` detects the `build` argument and switches to generation mode:
 
-1. A user navigates to `https://yourdomain.com/blog/my-first-post`
-2. The static file host serves `blog/my-first-post.html`
-3. The browser receives pure HTML (no server-side processing)
-4. Client-side JavaScript enhances the page with interactive features
-5. The user sees your blog post
+```csharp:xmldocid
+T:Penn.Infrastructure.PennExtensions
+```
 
-**Key differences from development:**
+The generation flow:
 
-- No ASP.NET Core server running
-- No content services executing
-- No dynamic rendering
-- Just static files being served by a basic web server
+1. Start the web server (same as dev mode).
+2. Get the `OutputGenerationService` from DI.
+3. Call `GenerateAsync()` with the server's base address.
+4. Shut down the server.
+5. Exit.
 
-If you need to update the blog post, you edit the markdown file and rebuild. The development workflow stays the same; only the final deployment changes.
+The app starts, generates, and stops. No long-running process.
 
-## Key Differences Summary
+## RunOrBuildAsync: The Mode Switch
 
-| Aspect | Development Mode | Build Phase | Production Serving |
-|--------|-----------------|-------------|-------------------|
-| **Runtime** | ASP.NET Core + Blazor SSR | Temporary server for generation | Static file host |
-| **Content Processing** | Lazy load + cache, reprocess on file changes | All content processed once | N/A (pre-rendered) |
-| **IContentService Role** | Serves content dynamically from cache | Provides lists of pages and assets to generate | Not present |
-| **Hot Reload** | File watching invalidates cache | Not applicable | Not applicable |
-| **Response Time** | Fast (from cache) after warmup | N/A | Instant (static files) |
-| **URL Handling** | Runtime routing and middleware | Baked into generated HTML | Host serves static files |
-| **Resource Usage** | Memory for caching content | Temporary (during generation only) | Minimal (just file serving) |
-| **When to Use** | Local development and testing | Before deployment | End-user access |
+The mode decision happens in a single method:
 
-## Understanding the Hybrid Approach
+```csharp
+public static async Task RunOrBuildAsync(this WebApplication app, string[] args)
+{
+    StaticWebAssetsLoader.UseStaticWebAssets(app.Environment, app.Configuration);
 
-MyLittleContentEngine's architecture provides several advantages:
+    if (args.Length > 0 && args[0].Equals("build", StringComparison.OrdinalIgnoreCase))
+    {
+        await app.StartAsync();
+        var generator = app.Services.GetRequiredService<OutputGenerationService>();
+        var addresses = app.Urls.Any() ? app.Urls : ["http://localhost:5000"];
+        await generator.GenerateAsync(addresses.First());
+        await app.StopAsync();
+    }
+    else
+    {
+        await app.RunAsync();
+    }
+}
+```
 
-**For Developers:**
-- Familiar ASP.NET development experience
-- Instant feedback with hot reload
-- Full debugging capabilities during development
-- Content services work the same way in development and build
+No `build` argument? `app.RunAsync()` -- standard dev server. Got `build`? Start, generate, stop. The rest of your `Program.cs` is identical for both modes.
 
-**For Users:**
-- Fast page loads (static HTML)
-- No server-side dependencies
-- Works on any static hosting platform
-- Excellent performance and reliability
+## OutputGenerationService: The Self-Crawler
 
-**For Content:**
-- Single source of truth (your markdown files, API metadata, etc.)
-- Content services define how content is processed
-- Same rendering logic in development and production
-- Extensible through custom `IContentService` implementations
+Static generation works by making HTTP requests to the running application. Yes, really. The app talks to itself.
 
-This hybrid approach makes MyLittleContentEngine unique among static site generators: you develop with the full power of a web framework, but deploy with the simplicity of static files.
+`OutputGenerationService` does the following:
+
+1. **Discover pages.** Iterates all `IContentService` implementations and calls `DiscoverAsync()` to collect every page URL and its output file path.
+
+2. **Prepare the output directory.** Wipes the output folder (default `output/`) and creates it fresh.
+
+3. **Copy static assets.** Each content service provides a list of files to copy (images, downloads, etc.) via `GetContentToCopyAsync()`.
+
+4. **Fetch and save each page.** For each discovered page, makes an HTTP GET request to the running server. The response HTML is saved to the corresponding output file.
+
+The HTTP self-crawl is the key trick. It means:
+
+- Pages are rendered through exactly the same code path as development. No special "static rendering" mode.
+- Layouts, components, middleware, response processors -- everything runs normally.
+- The generated HTML is byte-for-byte what a browser would receive.
+
+Pages are fetched in parallel using `Parallel.ForEachAsync` for performance. Redirect responses (301) produce a tiny HTML file with a `<meta http-equiv="refresh">` tag.
+
+## OutputOptions: Controlling the Build
+
+Build options are parsed from command-line arguments:
+
+```bash
+dotnet run -- build /my-base-url output-folder
+```
+
+- **Base URL** (optional, default `/`): Prepended to all URLs. Useful when deploying to a subdirectory like GitHub Pages (`/my-repo/`).
+- **Output directory** (optional, default `output`): Where the static files land.
+
+The `BaseUrlRewritingProcessor` middleware rewrites URLs in the generated HTML when a non-root base URL is configured. This means your markdown files use root-relative paths (`/docs/getting-started/`) and they get rewritten to `/my-repo/docs/getting-started/` at build time.
+
+## What Gets Generated
+
+After a build, the output directory contains:
+
+```
+output/
++-- index.html
++-- docs/
+|   +-- getting-started/
+|   |   +-- index.html
+|   +-- configuration/
+|       +-- index.html
++-- _spa-data/
+|   +-- index.json
+|   +-- docs/getting-started.json
++-- images/
+|   +-- logo.png
++-- styles.css
++-- scripts.js
+```
+
+- **HTML files** for every discovered page.
+- **SPA data files** (if SPA navigation is configured) as JSON envelopes.
+- **Static assets** copied from content directories and wwwroot.
+- **Generated files** like sitemaps, RSS feeds, and search indexes (from `GetContentToCreateAsync()`).
+
+Clean URLs work because each page becomes `slug/index.html`. Static file hosts serve `index.html` automatically when a directory is requested.
+
+## Development vs Build: What Changes
+
+| Aspect | Development (`dotnet watch`) | Build (`dotnet run -- build`) |
+|---|---|---|
+| **Server** | Runs continuously | Starts, generates, stops |
+| **Rendering** | On-demand per request | All pages, in parallel |
+| **Caching** | File-watch invalidation | Not needed (one-shot) |
+| **Drafts** | Visible (pipeline renders them) | Filtered at Generate stage |
+| **Base URL rewriting** | Not applied | Applied to all output |
+| **Output** | HTTP responses | Static HTML files |
+| **File watching** | Active (hot reload) | Not meaningful |
+
+### Draft Handling
+
+During development, draft pages (`IsDraft: true` in front matter) are rendered normally -- you can preview them in your browser. During a static build, the Generate stage filters them out. They go through Discover, Parse, and Render (so you still get build errors if a draft has broken markdown), but they are not written to the output directory.
+
+### Same Pipeline, Different Exit
+
+The content pipeline (Discover, Parse, Render) runs identically in both modes. The only difference is what happens at the end:
+
+- **Dev mode**: Rendered content is served via HTTP to your browser.
+- **Build mode**: Rendered content is fetched via HTTP (from self) and saved to disk.
+
+This is why Penn uses the "self-crawl" approach instead of rendering directly to files. The rendering code does not need to know which mode it is in. It just serves HTML, same as always.
+
+## Hosting the Output
+
+The generated static files work on any static file host:
+
+- **GitHub Pages**: Push the output directory.
+- **Netlify / Vercel**: Point at the output directory.
+- **Azure Static Web Apps**: Deploy the output.
+- **nginx / Apache / IIS**: Serve the directory. Configure clean URL support if your host does not handle `index.html` fallback automatically.
+- **S3 + CloudFront**: Upload and configure index document support.
+
+No server runtime needed. No .NET, no Node.js, no anything. Just files.
+
+## The Complete Lifecycle
+
+Here is the full journey of a markdown file through both modes:
+
+**During development:**
+
+```
+You save getting-started.md
+  --> FileWatcher detects change
+  --> Content cache invalidated
+  --> You refresh browser
+  --> ASP.NET routes request to content page component
+  --> Pipeline: Discover --> Parse --> Render
+  --> Blazor SSR renders the full page
+  --> Browser shows your changes
+```
+
+**During build:**
+
+```
+You run: dotnet run -- build
+  --> ASP.NET starts on localhost
+  --> OutputGenerationService discovers all pages
+  --> Fetches /docs/getting-started/ from localhost
+  --> Pipeline: Discover --> Parse --> Render (same as dev!)
+  --> Blazor SSR renders the full page (same as dev!)
+  --> HTML saved to output/docs/getting-started/index.html
+  --> Server stops
+  --> Deploy output/ to your host
+```
+
+Same pipeline. Same rendering. Same HTML. Different delivery mechanism. That is the entire trick.

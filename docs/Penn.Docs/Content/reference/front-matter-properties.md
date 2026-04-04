@@ -1,268 +1,208 @@
 ---
 title: "Front Matter Properties"
-description: "Reference guide for all available front matter properties and their usage"
-uid: "docs.reference.front-matter-properties"
+description: "Reference for the capability-based front matter system — IFrontMatter, capability interfaces, and built-in types"
+uid: "penn.reference.front-matter-properties"
 order: 4002
 ---
 
-All front matter implementations must implement the `IFrontMatter` interface, which defines the base contract for
-content metadata.
+Penn v2 threw out the kitchen sink. Where v1 stuffed every conceivable property into `IFrontMatter` and dared you to ignore the ones you didn't need, v2 starts with almost nothing and lets you opt in. It's the difference between a buffet and a tasting menu — fewer regrets either way.
 
-## Quick Reference
+## The Base Interface
 
-### YAML Properties
+```csharp:path
+src/Penn/FrontMatter/IFrontMatter.cs
+```
 
-These are the properties you write in the `---` front matter block of your Markdown files. The YAML key uses
-underscored naming (e.g. `is_draft`, not `isDraft`).
+That's it. One property. Every content page has a title. Everything else is a capability you compose by implementing additional interfaces.
 
-| YAML Key | C# Property | Type | Default | Purpose |
-|----------|-------------|------|---------|---------|
-| `title` | `Title` | `string` | required | Page title — used in navigation, browser tab, RSS |
-| `uid` | `Uid` | `string?` | `null` | Unique ID for cross-referencing with `xref:` |
-| `tags` | `Tags` | `string[]` | `[]` | Tag-based categorization and filtering |
-| `is_draft` | `IsDraft` | `bool` | `false` | When `true`, page is excluded from generation |
-| `redirect_url` | `RedirectUrl` | `string?` | `null` | Redirect this URL to another page |
+## Capability Interfaces
 
-### Metadata Returned by `AsMetadata()`
-
-Your `IFrontMatter` implementation maps to these standard fields via the `AsMetadata()` method:
-
-| Field | Type | Default | Purpose |
-|-------|------|---------|---------|
-| `Title` | `string` | required | Page headers and HTML `<title>` |
-| `Description` | `string` | `""` | Meta description, RSS summaries |
-| `LastMod` | `DateTime?` | `null` | Sitemaps and RSS `<lastmod>` |
-| `RssItem` | `bool` | `true` | Include this page in the RSS feed |
-| `Order` | `int` | `int.MaxValue` | Sort order in navigation and TOC |
-
----
+Capabilities are small interfaces in the `Penn.FrontMatter` namespace. Your front matter record implements only the ones it needs, and the pipeline checks for them at runtime via pattern matching.
 
 ```csharp:xmldocid
-T:MyLittleContentEngine.Models.IFrontMatter
+T:Penn.FrontMatter.IDraftable
 ```
 
-## Required Properties
+```csharp:xmldocid
+T:Penn.FrontMatter.ITaggable
+```
 
-### Title
+```csharp:xmldocid
+T:Penn.FrontMatter.IDescribable
+```
 
-- **Type**: `string`
-- **Purpose**: The title of the content page
-- **Usage**: Used in page headers, metadata, RSS feeds, and navigation
-- **Example**: `title: "Getting Started with Blazor"`
+```csharp:xmldocid
+T:Penn.FrontMatter.IOrderable
+```
 
-## Optional Properties
+```csharp:xmldocid
+T:Penn.FrontMatter.IDateable
+```
 
-### Tags
+```csharp:xmldocid
+T:Penn.FrontMatter.ICrossReferenceable
+```
 
-- **Type**: `string[]` (array of strings)
-- **Purpose**: Content categorization and tagging
-- **Usage**: Used for tag-based navigation, filtering, and content organization
-- **Example**:
-  ```yaml
-  tags:
-    - Blazor
-    - .NET
-    - Web Development
-  ```
+```csharp:xmldocid
+T:Penn.FrontMatter.ISectionable
+```
 
-### Uid
+```csharp:xmldocid
+T:Penn.FrontMatter.IRedirectable
+```
 
-- **Type**: `string?` (nullable string)
-- **Purpose**: Unique identifier for the content page
-- **Usage**: Used for cross-referencing and unique identification
-- **Default**: `null`
-- **Example**: `uid: "getting-started-blazor"`
+### Quick Reference
 
+| Interface | Property | Type | Purpose |
+|-----------|----------|------|---------|
+| `IDraftable` | `IsDraft` | `bool` | Exclude page from generation when `true` |
+| `ITaggable` | `Tags` | `string[]` | Tag-based categorization and filtering |
+| `IDescribable` | `Description` | `string?` | Meta description, RSS summaries |
+| `IOrderable` | `Order` | `int` | Sort position in navigation and TOC |
+| `IDateable` | `Date` | `DateTime?` | Publication date for feeds and sorting |
+| `ICrossReferenceable` | `Uid` | `string?` | Unique ID for `xref:` cross-references |
+| `ISectionable` | `Section` | `string?` | Logical section grouping |
+| `IRedirectable` | `RedirectUrl` | `string?` | HTTP redirect to another URL |
 
-### IsDraft
+## How the Pipeline Uses Capabilities
 
-- **Type**: `bool`
-- **Purpose**: Controls whether the content page will be generated
-- **Usage**: When `true`, the page's excluded from static generation
-- **Default**: `false`
-- **Example**: `is_draft: true`
-
-### RedirectUrl
-
-- **Type**: `string?` (nullable string)
-- **Purpose**: Creates an HTML redirect page that automatically redirects to another URL
-- **Usage**: When specified, generates an HTML page with `<meta http-equiv="refresh">` instead of rendering markdown content
-- **Default**: `null`
-- **Example**: `redirect_url: "config-runsettings"`
-- **Note**: Pages with redirect URLs are excluded from the table of contents but are still included in static generation
-
-## Required Methods
-
-All front matter must implement `AsMetadata`, which returns a `Metadata` instance. This class contains fields that all content generations rely on being standard. The `AsMetadata` method acts as a conversion from custom metadata to this standard format.
-
-The `Metadata` class also provides additional computed information for RSS feeds and sitemaps.
-
-### The `AsMetadata` Method
-
-#### Title
-
-- **Type**: `string`
-- **Purpose**: The title of the content page
-- **Usage**: Used in page headers, metadata, RSS feeds, and navigation
-- **Example**: `title: "Getting Started with Blazor"`
-
-#### Description
-
-- **Type**: `string`
-- **Purpose**: The description of the content page
-- **Usage**: Used in page headers, metadata, RSS feeds, and navigation to describe the page
-- **Example**: `description: "A how-to guide on taking your first steps with Blazor"`
-
-
-
-#### LastMod
-
-- **Type**: `DateTime?`
-- **Purpose**: Date when the page was last modified
-- **Usage**: Used in XML sitemaps and RSS feeds
-
-#### RssItem
-
-- **Type**: `bool`
-- **Purpose**: Controls whether the page should be included in RSS feeds
-- **Usage**: RSS feed filtering
-- **Default**: `true`
-
-#### Order
-
-- **Type**: `int`
-- **Purpose**: Controls page order in navigation or table of contents
-- **Usage**: Navigation ordering and TOC generation
-- **Default**: `int.MaxValue`
-
-
-## YAML Front Matter Examples
-
-### Blog Post Example
+The pipeline doesn't care what your front matter type looks like — it checks capabilities with pattern matching. No interface, no behaviour:
 
 ```csharp
-public class BlogFrontMatter : IFrontMatter
-{
-    public string Title { get; init; } = "Empty title";
-    public string? Uid { get; init; } = null;
-    public bool IsDraft { get; init; } = false;
-    public string[] Tags { get; init; } = [];
+// Skip drafts — only if the type opted into IDraftable
+if (frontMatter is IDraftable { IsDraft: true })
+    continue;
 
-    // custom properties for blog posts
-    public string Description { get; init; } = string.Empty;
-    public DateTime Date { get; init; } = DateTime.Now;
-    
-    public Metadata AsMetadata()
-    {
-        return new Metadata()
-        {
-            Title = Title,
-            Description = Description,
-            LastMod = Date,
-            RssItem = true
-        };
-    }
-}
+// Build navigation order — only if the type opted into IOrderable
+var order = frontMatter is IOrderable orderable
+    ? orderable.Order
+    : int.MaxValue;
+
+// Filter by tag — only if the type opted into ITaggable
+if (frontMatter is ITaggable taggable && taggable.Tags.Contains("archived"))
+    continue;
 ```
 
-Each post would have front matter like this:
+This means a minimal front matter type with just `IFrontMatter` will never be skipped as a draft, will sort to the end of navigation, and will have no tags. That's not a bug — it's a feature. You get exactly the behaviour you asked for.
+
+## Built-in Front Matter Types
+
+Penn ships three front matter records that cover common use cases. You can use them directly or treat them as examples for your own types.
+
+### DocFrontMatter
+
+The general-purpose documentation type. Implements everything except `IDateable` and `IRedirectable` — documentation pages don't typically have publication dates or redirects.
+
+```csharp:path
+src/Penn/FrontMatter/DocFrontMatter.cs
+```
+
+**YAML example:**
 
 ```yaml
 ---
-title: "Getting Started with Blazor"
-description: "A comprehensive guide to building your first Blazor application"
-date: 2025-01-15
+title: "Getting Started"
+description: "Your first Penn site in under five minutes (optimistic estimate)"
+uid: "penn.getting-started"
+order: 1000
+section: "guides"
 tags:
-  - Blazor
-  - .NET
   - Tutorial
-is_draft: false
-uid: "blazor-getting-started"
+  - Quick Start
 ---
 ```
 
-### Documentation Page Example
+### BlogFrontMatter
 
-```csharp
-internal class DocsFrontMatter : IFrontMatter
-{
-    public string Title { get; init; } = "Empty title";
-    public bool IsDraft { get; init; } = false;
-    public string[] Tags { get; init; } = [];
-    public string? Uid { get; init; } = null;
-    
-    // custom properties for documentation pages
-    public string Description { get; init; } = string.Empty;
-    public int Order { get; init; } = int.MaxValue;
-    
-    public Metadata AsMetadata()
-    {
-        return new Metadata()
-        {
-            Title = Title,
-            Description = Description,
-            LastMod = DateTime.MinValue,
-            RssItem = false,
-            Order = Order
-        };
-    }
+Adds `IDateable` for publication dates. Includes two extra properties — `Author` and `Series` — that aren't capability interfaces, because not everything needs to be an abstraction.
 
-}
+```csharp:path
+src/Penn/FrontMatter/BlogFrontMatter.cs
 ```
+
+**YAML example:**
 
 ```yaml
 ---
-title: "API Reference"
-description: "Complete API documentation for MyLittleContentEngine"
-order: 4001
+title: "On the Merits of Capability Interfaces"
+description: "A meditation on doing less, better"
+date: 2026-03-15
+author: "Penn Contributor"
+series: "Architecture Decisions"
+tags:
+  - Architecture
+  - Design
+is_draft: false
+uid: "blog.capability-interfaces"
+---
+```
+
+### DocSiteFrontMatter
+
+The most fully-featured built-in type — implements all eight capability interfaces. Used by `Penn.DocSite` for documentation sites that need redirects (moved pages) alongside the standard documentation features.
+
+```csharp:path
+src/Penn.DocSite/DocSiteFrontMatter.cs
+```
+
+**YAML example:**
+
+```yaml
+---
+title: "Configuration Reference"
+description: "All configuration options for Penn.DocSite"
+uid: "docsite.configuration"
+order: 2000
+section: "reference"
+redirect_url:
 tags:
   - Reference
-  - API
-is_draft: false
+  - Configuration
 ---
 ```
+
+## Creating Your Own Front Matter Type
+
+Pick the capabilities you need. Ignore the rest. Penn won't judge.
+
+```csharp
+public record RecipeFrontMatter : IFrontMatter, ITaggable, IDateable, IDescribable
+{
+    public string Title { get; init; } = "";
+    public string? Description { get; init; }
+    public string[] Tags { get; init; } = [];
+    public DateTime? Date { get; init; }
+
+    // Custom properties — not everything has to be an interface
+    public int PrepTimeMinutes { get; init; }
+    public int CookTimeMinutes { get; init; }
+    public string[] Ingredients { get; init; } = [];
+}
+```
+
+Register it with a markdown content source:
+
+```csharp
+services.AddPenn(options =>
+{
+    options.SiteTitle = "My Recipe Site";
+    options.AddMarkdownContent<RecipeFrontMatter>(source =>
+    {
+        source.ContentPath = "Content/recipes";
+        source.BasePageUrl = "/recipes";
+    });
+});
+```
+
+This type will support tags, dates, and descriptions. It won't support drafts, ordering, sections, cross-references, or redirects — because it doesn't implement those interfaces.
 
 ## YAML Naming Convention
 
-By default, MyLittleContentEngine uses YamlDotNet's `UnderscoredNamingConvention` for deserializing front matter properties. This means:
+Penn uses YamlDotNet's `UnderscoredNamingConvention` for deserializing front matter. C# property names map to underscored YAML keys:
 
-- C# properties like `RedirectUrl` are mapped to YAML properties like `redirect_url`
-- C# properties like `IsDraft` are mapped to YAML properties like `is_draft`
-- C# properties like `PublishDate` are mapped to YAML properties like `publish_date`
-
-### Example Property Mapping
-
-```csharp
-public class BlogFrontMatter : IFrontMatter
-{
-    public string Title { get; init; } = "";           // maps to: title
-    public bool IsDraft { get; init; } = false;        // maps to: is_draft
-    public string? RedirectUrl { get; init; } = null;  // maps to: redirect_url
-    public DateTime PublishDate { get; init; };        // maps to: publish_date
-}
-```
-
-```yaml
----
-title: "My Blog Post"
-is_draft: false
-redirect_url: "new-location"
-publish_date: 2024-01-15
----
-```
-
-### Customizing YAML Naming Convention
-
-You can customize the naming convention by configuring the `FrontMatterDeserializer` in the `ContentEngineOptions` class found in `ContentOptions.cs`. You can replace the default `UnderscoredNamingConvention` with other YamlDotNet conventions like:
-
-- `CamelCaseNamingConvention` - maps `RedirectUrl` to `redirectUrl`
-- `PascalCaseNamingConvention` - maps `RedirectUrl` to `RedirectUrl`
-- `KebabCaseNamingConvention` - maps `RedirectUrl` to `redirect-url`
-
-## Best Practices
-
-1. **Consistent Naming**: Use consistent property names across your content
-2. **Meaningful Defaults**: Provide sensible defaults for optional properties
-3. **Type Safety**: Leverage the C# type system for validation
-4. **Required Properties**: Mark essential properties as required
-5. **Naming Convention**: Be aware of the YAML naming convention when writing front matter
+| C# Property | YAML Key |
+|-------------|----------|
+| `Title` | `title` |
+| `IsDraft` | `is_draft` |
+| `RedirectUrl` | `redirect_url` |
+| `PrepTimeMinutes` | `prep_time_minutes` |

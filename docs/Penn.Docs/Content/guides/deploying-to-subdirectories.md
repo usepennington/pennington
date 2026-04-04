@@ -1,156 +1,136 @@
 ---
 title: "Deploying to Subdirectories"
-description: "Deploy your MyLittleContentEngine site to subdirectories with BaseUrl rewriting middleware"
-uid: "docs.guides.deploying-to-subdirectories"
+description: "Configure BaseUrl rewriting so your Penn site works correctly when hosted at a non-root path"
+uid: "penn.guides.deploying-to-subdirectories"
 order: 2200
 ---
 
-When deploying your MyLittleContentEngine site to hosting services like GitHub Pages, Azure Static Web Apps, or any
-other host where your site runs in a subdirectory (e.g., `https://mysite.com/my-app/`), you need to configure BaseUrl
-rewriting to ensure all links work correctly.
+If your site lives at `https://example.com/my-project/` instead of `https://example.com/`, every root-relative URL in your HTML needs the `/my-project` prefix. Penn's <xref:T:Penn.Infrastructure.BaseUrlRewritingProcessor> handles this automatically -- you just tell it the base path.
 
-MyLittleContentEngine includes the `BaseUrlRewritingMiddleware` that automatically handles this by rewriting
-root-relative URLs in your HTML responses to include the configured base path. You can configure the BaseUrl either
-through command line arguments during build or programmatically in your application.
-
-> [!NOTE]
-> For comprehensive information about link types, BaseUrl concepts, and testing strategies,
-> see <xref:docs.guides.linking-documents-and-media>.
+This is the kind of problem that's simple to describe and surprisingly annoying to get right by hand. Fortunately, you don't have to.
 
 ## How BaseUrl Rewriting Works
 
-The BaseUrlRewritingMiddleware performs two main functions:
+The `BaseUrlRewritingProcessor` is an `IResponseProcessor` registered by `AddPenn()`. It inspects HTML and JSON responses and rewrites root-relative URLs to include the configured base path.
 
-1. **Cross-Reference Resolution**: Resolves `xref:` links to their actual targets
-2. **BaseUrl Rewriting**: Rewrites root-relative URLs (starting with `/`) to include your configured BaseUrl
+Specifically, it rewrites:
 
-### URL Rewriting Process
+- `href="/..."` attributes
+- `src="/..."` attributes
+- `action="/..."` attributes
 
-The middleware processes HTML responses and rewrites URLs in the following elements:
-
-- **Links**: `<a href="/page">` and `<link href="/styles.css">`
-- **Images**: `<img src="/image.jpg">`
-- **Scripts**: `<script src="/script.js">`
-- **Media**: `<iframe>`, `<embed>`, `<source>`, `<track>` tags
-- **Data attributes**: Any `data-*` attributes containing URLs
-- **CSS**: `url()` functions and `@import` statements in style attributes
+It also adds a `data-base-url` attribute to the `<body>` element, which client-side scripts use to resolve paths correctly.
 
 ### Example Transformation
 
-With `BaseUrl = "/my-app/"`, the middleware transforms:
+With `BaseUrl = "/my-project"`:
 
 ```html
 <!-- Before -->
-<a href="/docs/getting-started">Getting Started</a>
-<img src="/images/logo.png" alt="Logo">
+<a href="/guides/search">Search Guide</a>
 <script src="/scripts/app.js"></script>
 
 <!-- After -->
-<a href="/my-app/docs/getting-started">Getting Started</a>
-<img src="/my-app/images/logo.png" alt="Logo">
-<script src="/my-app/scripts/app.js"></script>
+<a href="/my-project/guides/search">Search Guide</a>
+<script src="/my-project/scripts/app.js"></script>
+<body data-base-url="/my-project">
 ```
+
+The processor skips URLs that start with `//` (protocol-relative) and only runs when the base URL is something other than `/`. If you're deploying to the root, it does nothing. It's polite like that.
+
+### Processing Order
+
+`BaseUrlRewritingProcessor` has `Order = 0`, meaning it runs before other response processors like the `CssClassCollectorProcessor` (Order = 100). This ensures CSS class collection sees the final HTML.
 
 ## Configuration
 
-<Steps>
-<Step stepNumber="1">
-## Configure BaseUrl Using Command Line Arguments
+### Command Line Arguments
 
-The recommended approach is to configure BaseUrl using command line arguments during the build process. This allows you
-to specify different BaseUrl values for different deployment environments without modifying your code.
-
-### Using Build Command Arguments
-
-```bash
-# For subdirectory deployment
-dotnet run -- build "/my-app/"
-
-# For custom output directory
-dotnet run -- build "/my-app/" "custom-output"
-
-# For root deployment
-dotnet run -- build "/"
-```
-
-### For BlogSite and DocSite (Automatic)
-
-If you're using BlogSite or DocSite packages, BaseUrl configuration is handled automatically when you pass `args` to `RunBlogSiteAsync` or `RunDocSiteAsync`:
+The base URL comes from command line arguments passed to `dotnet run -- build`. <xref:T:Penn.Generation.OutputOptions> parses them:
 
 ```csharp
-// BlogSite - BaseUrl handled automatically via args
-builder.Services.AddBlogSite(_ => new BlogSiteOptions
-{
-    SiteTitle = "My Blog",
-    Description = "My awesome blog",
-});
+// OutputOptions.FromArgs parsing:
+// args[0] = "build" (consumed by RunOrBuildAsync)
+// args[1] = base URL (e.g., "/my-project")
+// args[2] = output directory (default: "output")
+```
 
-var app = builder.Build();
-app.UseBlogSite();
-await app.RunBlogSiteAsync(args); // args are used internally for BaseUrl
+So the build command looks like:
 
-// DocSite - BaseUrl handled automatically via args
+```bash
+# Deploy to /my-project/ subdirectory
+dotnet run -- build /my-project
+
+# Deploy to /my-project/ with custom output directory
+dotnet run -- build /my-project custom-output
+
+# Deploy to root (default)
+dotnet run -- build /
+```
+
+### With DocSite or Custom Sites
+
+If you're using `AddDocSite()`, pass `args` through to `RunDocSiteAsync()` and it handles everything:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddDocSite(_ => new DocSiteOptions
 {
     SiteTitle = "My Documentation",
-    Description = "My awesome docs",
+    Description = "Docs for my project",
 });
 
 var app = builder.Build();
 app.UseDocSite();
-await app.RunDocSiteAsync(args); // args are used internally for BaseUrl
+await app.RunDocSiteAsync(args); // args flow through to RunOrBuildAsync
 ```
 
-The `args` parameter is passed through to the framework's `RunOrBuildContent` method, which automatically parses the command-line arguments and configures `OutputOptions` with the appropriate BaseUrl.
-
-### For Custom Sites
-
-If you're building a custom site without BlogSite/DocSite packages:
+For a custom site using `AddPenn()` directly:
 
 ```csharp
-builder.Services.AddContentEngineService(_ => new ContentEngineOptions
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddPenn(penn =>
 {
-    SiteTitle = "My Site",
-    SiteDescription = "My awesome site",
-    ContentRootPath = "Content",
+    penn.SiteTitle = "My Site";
+    // ...
 });
+
+var app = builder.Build();
+app.UsePenn();
+await app.RunOrBuildAsync(args);
 ```
+
+In both cases, `RunOrBuildAsync()` checks if `args[0]` is `"build"`. If so, it starts the app, runs <xref:T:Penn.Generation.OutputGenerationService> to crawl every discovered page, and writes the output. If not, it runs the app normally for development.
 
 ### BaseUrl Guidelines
 
-- **Include leading slash**: Use `/my-app/`, not `my-app/`
-- **Include trailing slash**: Use `/my-app/`, not `/my-app`
-- **Root deployment**: Use `/` for root directory deployment
-- **Command line takes precedence**: Command line arguments override environment variables
-  </Step>
+- **Include leading slash**: `/my-project`, not `my-project`
+- **No trailing slash needed**: Penn normalizes it internally
+- **Root deployment**: Use `/` or omit the argument entirely
 
-<Step stepNumber="2">
-## Configure Static Generation with GitHub Actions
+## GitHub Actions Example
 
-For static site generation, use command line arguments in your build process. The examples below work for both BlogSite/DocSite and custom implementations:
-
-### GitHub Actions Example
+Here's a complete workflow for deploying to GitHub Pages at a subdirectory:
 
 ```yaml
-name: Build and publish to GitHub Pages
+name: Build and deploy to GitHub Pages
 
 on:
   push:
-    branches: [ "*" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
 env:
   ASPNETCORE_ENVIRONMENT: Production
-  WEBAPP_PATH: ./src/MyContentSite/
-  WEBAPP_CSPROJ: MyContentSite.csproj
+  WEBAPP_PATH: ./src/MyDocsSite/
+  WEBAPP_CSPROJ: MyDocsSite.csproj
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -158,7 +138,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -167,16 +146,11 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Build the Project
+      - name: Build and generate static site
         run: |
           dotnet build
-
-      - name: Run webapp and generate static files
-        run: |
-          dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}} --configuration Release -- build "/your-repository-name/"
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+          dotnet run --project ${{ env.WEBAPP_PATH }}${{ env.WEBAPP_CSPROJ }} \
+            --configuration Release -- build "/your-repository-name/"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -189,61 +163,28 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 ```
 
-  </Step>
-  </Steps>
+Replace `/your-repository-name/` with your actual GitHub repository name.
 
-## Cross-Reference Resolution
+## Testing Locally
 
-The BaseUrlRewritingMiddleware also handles cross-reference (`xref:`) resolution, converting references like:
+You can test subdirectory behavior without deploying:
 
-```markdown
-See the [ContentService documentation](xref:MyLittleContentEngine.ContentService)
+```bash
+dotnet run -- build /my-project
 ```
 
-Into actual links:
-
-```html
-<a href="/my-app/api/MyLittleContentEngine.ContentService">ContentService documentation</a>
-```
-
-### Unresolved Cross-References
-
-When a cross-reference cannot be resolved, the middleware:
-
-1. **Preserves the link text** for user experience
-2. **Adds error styling** with red color and strikethrough
-3. **Includes debug attributes** for troubleshooting:
-    - `data-xref-error="Reference not found"`
-    - `data-xref-uid="the-unresolved-uid"`
-
-```html
-<!-- Unresolved xref becomes: -->
-<span data-xref-error="Reference not found"
-      data-xref-uid="Unknown.Type"
-      class="text-red-500 line-through">
-  Unknown Type
-</span>
-```
+Then serve the `output` directory with any static file server and verify links resolve correctly. Penn writes redirect stubs for pages that return 301, so even redirects work in the static output.
 
 ## Best Practices
 
-1. **Use command line arguments** for BaseUrl to support multiple deployment targets
-2. **Pass args to Run methods** - BlogSite/DocSite automatically handle BaseUrl when you pass `args` to `RunBlogSiteAsync(args)` or `RunDocSiteAsync(args)`
-3. **Use root-relative URLs** in your content (`/page` not `page`)
-4. **Test locally** with different BaseUrl values using: `dotnet run -- build "/test-path/"`
-5. **Monitor for unresolved xrefs** using browser developer tools to check for error attributes
-6. **Use LinkService** in Blazor components for consistent URL generation
-
-> [!TIP]
-> For guidance on choosing the right link types and linking best practices, see
-> the [Linking Documents and Media](xref:docs.guides.linking-documents-and-media) guide.
-
-The BaseUrlRewritingMiddleware makes subdirectory deployment seamless while maintaining the flexibility to deploy to
-different environments without code changes.
+1. **Always use root-relative URLs** in your content (`/page`, not `page`). The rewriter only transforms root-relative paths.
+2. **Pass `args` through** to `RunOrBuildAsync()` or `RunDocSiteAsync()`. If you forget, the base URL defaults to `/` and your subdirectory links will break.
+3. **Test before deploying** with a local static file server. Broken links in production are embarrassing.
+4. **Check `data-base-url`** in the rendered HTML if client-side scripts aren't finding assets. The attribute should appear on `<body>`.

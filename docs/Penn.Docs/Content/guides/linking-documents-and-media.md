@@ -1,13 +1,11 @@
 ---
 title: "Link Types and Syntax"
-description: "Reference for relative, absolute, cross-reference, and external links in MyLittleContentEngine"
-uid: "docs.guides.linking-documents-and-media"
+description: "Reference for relative, absolute, cross-reference, and external links in Penn"
+uid: "penn.guides.linking-documents-and-media"
 order: 2010
 ---
 
-The most challenging aspect of building static sites is creating links that work consistently across different
-deployment scenarios. MyLittleContentEngine solves this through automatic BaseUrl-aware link rewriting that ensures
-your links work seamlessly whether deployed at the root domain or in a subdirectory.
+The most challenging aspect of building static sites is creating links that work consistently across different deployment scenarios. Penn solves this through automatic BaseUrl-aware link rewriting that ensures your links work whether deployed at a root domain or buried three subdirectories deep in a GitHub Pages site. You are welcome to attempt this yourself. Penn will wait.
 
 ## The Deployment Challenge
 
@@ -18,33 +16,31 @@ Static sites often need to work in multiple deployment contexts:
 - **Production in subdirectory**: `https://mydomain.github.io/my-repo/`
 - **Versioned in subdirectory**: `https://mydomain.github.io/my-repo/v4/`
 
-The same site must generate correct links regardless of where it's deployed. MyLittleContentEngine's automatic link
-rewriting handles this complexity for you.
+The same site must generate correct links regardless of where it ends up. Penn's `ResponseProcessingMiddleware` rewrites root-relative URLs at render time using the configured `OutputOptions`, so you don't have to think about it.
 
 ## Understanding BaseUrl
 
-The `BaseUrl` setting tells MyLittleContentEngine where your site will be deployed. This is critical for ensuring links work across different deployment scenarios and is now configured via command line arguments using OutputOptions.
-
-### Quick BaseUrl Setup
+The `CanonicalBaseUrl` setting in <xref:T:Penn.Infrastructure.PennOptions> tells Penn where your site will be deployed:
 
 ```csharp
-builder.Services.AddContentEngineService(_ => new ContentEngineOptions
+builder.Services.AddPenn(penn =>
 {
-    SiteTitle = "My Documentation Site",
-    SiteDescription = "Technical documentation",
-    ContentRootPath = "Content",
+    penn.SiteTitle = "My Documentation Site";
+    penn.SiteDescription = "Technical documentation";
+    penn.CanonicalBaseUrl = "https://mydomain.com";
+    penn.ContentRootPath = "Content";
 });
 ```
 
 > [!TIP]
-> BaseUrl is configured via command-line arguments at build time, not in `Program.cs`. See
-> [Deploying to Subdirectories](xref:docs.guides.deploying-to-subdirectories) for the full setup.
+> For subdirectory deployments, the base URL is configured via command-line arguments at build time, not in `Program.cs`. Run `dotnet run -- build "/my-repo/"` to set the base path for static generation.
 
 ## Link Types and Best Practices
 
-MyLittleContentEngine supports different linking patterns to suit various use cases:
+Penn supports different linking patterns. Each has its place. None is perfect. Such is life.
 
 ### Relative Links
+
 Best for linking between closely related content:
 
 ```markdown
@@ -58,7 +54,8 @@ Best for linking between closely related content:
 ```
 
 ### Absolute Links
-Best for site-wide navigation and assets:
+
+Best for site-wide navigation and assets. Penn rewrites these automatically based on the configured base URL:
 
 ```markdown
 <!-- Site navigation -->
@@ -72,46 +69,48 @@ Best for site-wide navigation and assets:
 ```
 
 ### Cross-References (xref)
-For linking to documented APIs and types:
+
+For linking to content by UID rather than path. This is the civilized option. If your front matter type implements <xref:T:Penn.FrontMatter.ICrossReferenceable>, Penn resolves `xref:` links to the correct URL via `MarkdownContentService.GetCrossReferencesAsync()`, which maps UIDs to <xref:T:Penn.Routing.ContentRoute> instances using `ContentRoute.CanonicalPath`:
 
 ```markdown
-<!-- Link to API documentation -->
-[ContentService](xref:MyLittleContentEngine.ContentService)
-[Configuration Guide](xref:docs.guides.configuration)
+<!-- Link to content by UID -->
+[Configuration Guide](xref:penn.guides.configuration)
+[Content Service](xref:penn.api.content-service)
 
 <!-- Shorthand syntax using xref tags -->
-<xref:MyLittleContentEngine.ContentService>
-<xref:docs.guides.configuration>
+<xref:penn.guides.configuration>
+<xref:penn.api.content-service>
 ```
 
-The `<xref:uid>` syntax provides a convenient shorthand that automatically uses the target's title as the link text. Both approaches resolve to the same output, but the tag syntax is more concise when you want to use the document's actual title.
+The `<xref:uid>` syntax automatically uses the target document's `Title` as the link text. Both forms resolve to the same output.
 
 > [!NOTE]
-> Cross-reference syntax works in both Markdown files and Razor pages. The processing happens during HTML generation, so you can use these patterns anywhere in your content.
+> Cross-reference resolution requires that the target content's front matter implements `ICrossReferenceable` and has a non-empty `Uid` property. Penn is not psychic. If the UID doesn't exist, the link renders as-is, which is embarrassing but not fatal.
 
 ### External Links
-For referencing external resources:
+
+For resources that exist outside your site. Penn leaves these alone, because it knows its place:
 
 ```markdown
-<!-- External sites -->
 [Microsoft Docs](https://docs.microsoft.com)
 [GitHub Repository](https://github.com/example/repo)
 ```
 
 ## Automatic Link Processing
 
-MyLittleContentEngine automatically processes links in your content to ensure they work correctly across different deployment scenarios. All root-relative URLs (starting with `/`) are automatically adjusted based on your site's configured BaseUrl.
+Penn automatically processes all root-relative URLs (starting with `/`) in rendered content, adjusting them based on the configured base URL. This happens in the response processing middleware, after Markdown rendering. You write `/docs/guide` and Penn rewrites it to `/my-repo/docs/guide` if that's where you're deployed.
 
-## Static Files in `ContentRootPath`
+This means you never write deployment-aware links in your content. You write canonical paths. Penn handles the rest.
 
-Static files like images, CSS, and JavaScript are served from the `ContentRootPath` directory and automatically
-processed:
+## Static Files in Content Directories
+
+Static files like images, CSS, and JavaScript placed in your content directories are served automatically. Penn's `UsePenn()` middleware configures `StaticFileOptions` for each registered content source, mapping files from the content path to the configured `BasePageUrl`.
 
 ### In Markdown
 
 ```markdown
-![Logo](/images/logo.png)
-[Download PDF](/documents/guide.pdf)
+![Architecture Diagram](/images/architecture.png)
+[Download the PDF](/documents/whitepaper.pdf)
 ```
 
 ### In Razor Components
@@ -121,27 +120,19 @@ processed:
 <a href="/documents/guide.pdf">Download Guide</a>
 ```
 
+Both receive automatic base URL rewriting during response processing.
+
 ## Testing Your Links
 
 During development, verify that your links work correctly:
 
 1. **Run locally**: Use `dotnet watch` to test in development
-2. **Check all link types**: Verify relative, absolute, and cross-reference links work
-3. **Test static generation**: Use `dotnet run -- build "/"` to test static output locally
+2. **Check all link types**: Verify relative, absolute, and cross-reference links resolve
+3. **Test static generation**: Use `dotnet run -- build "/"` to generate static output and inspect the HTML
 
 ## Best Practices
 
-1. **Choose the right link type**:
-   - Use **relative links** for closely related content
-   - Use **absolute links** for site-wide navigation and assets
-   - Use **cross-references** for API documentation
-   - Use **external links** for outside resources
-
-2. **Be consistent**: Stick to a consistent linking pattern throughout your site
-
-3. **Use descriptive link text**: Make links meaningful and accessible
-
-4. **Test regularly**: Verify links work during development and after content updates
-
-5. **Leverage automatic processing**: Let MyLittleContentEngine handle URL rewriting automatically
-
+1. **Use cross-references for internal links**: They survive content reorganization. Relative links do not.
+2. **Use absolute links for assets**: Let Penn rewrite them for deployment.
+3. **Use descriptive link text**: "Click here" is not descriptive. Penn cannot fix your prose.
+4. **Test with a base URL**: Run `dotnet run -- build "/test-base/"` to verify links work in subdirectory deployments.

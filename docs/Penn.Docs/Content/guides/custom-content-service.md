@@ -1,183 +1,235 @@
 ---
 title: "Create Custom Content Service"
-description: "Implement a custom IContentService to handle specialized content sources and processing requirements"
-uid: "docs.guides.custom-content-service"
+description: "Implement IContentService to integrate non-markdown content sources with Penn's pipeline"
+uid: "penn.guides.custom-content-service"
 order: 2100
 ---
 
-This guide shows you how to create a custom `IContentService` implementation to integrate specialized content sources
-with MyLittleContentEngine. Custom content services are useful when you need to pull content from databases, APIs, or
-other non-file sources.
+Penn's built-in `MarkdownContentService<T>` handles markdown files. But sometimes your content lives in a database, an API, or a collection of YAML files describing recipes you'll never actually cook. This guide shows you how to implement <xref:T:Penn.Content.IContentService> to bring any content source into Penn's pipeline.
 
 ## Understanding IContentService
 
-The `IContentService` interface defines how MyLittleContentEngine discovers and processes content. It provides five key
-methods:
+The <xref:T:Penn.Content.IContentService> interface is how Penn discovers and provides content. It defines five methods and two properties:
 
-- `GetPagesToGenerateAsync()` - Returns all pages that should be generated
-- `GetContentTocEntriesAsync()` - Returns table of contents entries with hierarchy information for navigation
-- `GetContentToCopyAsync()` - Returns static assets to copy
-- `GetCrossReferencesAsync()` - Returns cross-references for linking
-- `GetContentToCreateAsync()` - Returns content that should be created dynamically during generation
+- `DiscoverAsync()` -- Returns an `IAsyncEnumerable<DiscoveredItem>` of all content this service is responsible for
+- `GetContentTocEntriesAsync()` -- Navigation entries for the table of contents
+- `GetCrossReferencesAsync()` -- Cross-references for `xref:` resolution
+- `GetContentToCopyAsync()` -- Static files to copy to output
+- `GetContentToCreateAsync()` -- Dynamically generated files (search indexes, etc.)
+- `DefaultSection` -- The navigation section for this service's content
+- `SearchPriority` -- Relative ranking in search results
 
-`MarkdownContentService<TFrontMatter>` and `ApiReferenceContentService` are both built-in implementations of `IContentService` 
-that handle Markdown files and API references, respectively. You can create your own implementation to handle content
-from other sources, such as a database or an external API. Keep in mind that during development, the content service might
-appear dynamic, but it's designed to be static for production builds. 
+Penn iterates over all registered `IContentService` implementations during both development and static generation. Every service contributes to the unified site. There is no priority or override mechanism -- just aggregation.
+
+## The Pipeline and Union Types
+
+Penn v2 uses C# 15 union types to model content as it flows through the pipeline. Understanding <xref:T:Penn.Pipeline.ContentItem> is key:
+
+```csharp
+// The four stages of content
+public record DiscoveredItem(ContentRoute Route, ContentSource Source);
+public record ParsedItem(ContentRoute Route, IFrontMatter Metadata, string RawMarkdown);
+public record RenderedItem(ContentRoute Route, IFrontMatter Metadata, RenderedContent Content);
+public record FailedItem(ContentRoute Route, ContentError Error);
+
+// The union -- compiler enforces exhaustive matching
+public union ContentItem(DiscoveredItem, ParsedItem, RenderedItem, FailedItem);
+```
+
+Your `IContentService` produces <xref:T:Penn.Pipeline.DiscoveredItem> values. Each carries a `ContentRoute` (where) and a <xref:T:Penn.Pipeline.ContentSource> (what):
+
+```csharp
+public record MarkdownFileSource(FilePath Path);
+public record RazorPageSource(string ComponentType);
+public record RedirectSource(UrlPath TargetUrl);
+public record ProgrammaticSource(IProgrammaticContentGenerator Generator);
+
+public union ContentSource(MarkdownFileSource, RazorPageSource, RedirectSource, ProgrammaticSource);
+```
+
+For custom content services, `ProgrammaticSource` is your friend. It wraps an `IProgrammaticContentGenerator` that Penn calls when it needs the actual content.
 
 ## Basic Implementation
 
-Here's a minimal custom content service that loads content from a database:
+Here's a custom content service that serves recipes from an in-memory collection. In production, this could be a database, an API, or a filing cabinet you've painstakingly digitized:
 
 ```csharp
 using System.Collections.Immutable;
-using MyLittleContentEngine.Models;
-using MyLittleContentEngine.Services.Content;
-using MyLittleContentEngine.Services.Content.TableOfContents;
+using Penn.Content;
+using Penn.FrontMatter;
+using Penn.Pipeline;
+using Penn.Routing;
 
-public class DatabaseContentService : IContentService
+public class RecipeContentService : IContentService
 {
-    private readonly IDbContext _dbContext;
-    private readonly IMarkdownProcessor _markdownProcessor;
+    private readonly List<Recipe> _recipes;
 
-    public DatabaseContentService(IDbContext dbContext, IMarkdownProcessor markdownProcessor)
+    public RecipeContentService(IRecipeRepository repository)
     {
-        _dbContext = dbContext;
-        _markdownProcessor = markdownProcessor;
+        _recipes = repository.GetAll().ToList();
     }
 
-    public async Task<ImmutableList<PageToGenerate>> GetPagesToGenerateAsync()
-    {
-        var articles = await _dbContext.Articles
-            .Where(a => a.IsPublished)
-            .OrderByDescending(a => a.PublishedDate)
-            .ToListAsync();
+    public string DefaultSection => "recipes";
+    public int SearchPriority => 5;
 
-        var pages = articles.Select(article => new PageToGenerate
+    public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
+    {
+        foreach (var recipe in _recipes)
         {
-            Url = $"/articles/{article.Slug}",
-            Title = article.Title,
-            Content = _markdownProcessor.ToHtml(article.Content),
-            FrontMatter = new ArticleFrontMatter
-            {
-                Title = article.Title,
-                Description = article.Summary,
-                Tags = article.Tags?.Split(',') ?? [],
-                PublishedDate = article.PublishedDate
-            }
-        }).ToImmutableList();
+            var route = ContentRouteFactory.FromUrl(
+                new UrlPath($"/recipes/{recipe.Slug}"));
 
-        return pages;
+            var generator = new RecipeContentGenerator(recipe);
+            var source = new ContentSource(new ProgrammaticSource(generator));
+
+            yield return new DiscoveredItem(route, source);
+        }
+
+        await Task.CompletedTask;
     }
 
-    public async Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
+    public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {
-        // Example 1: Simple top-level entry
-        var articlesIndex = new ContentTocItem(
-            "Articles",
-            "/articles", 
-            100, // Order
-            ["articles"] // Hierarchy parts - creates top-level "Articles" section
-        );
+        var builder = ImmutableList.CreateBuilder<ContentTocItem>();
 
-        // Example 2: Nested hierarchy with category grouping
-        var categories = await _dbContext.Categories.ToListAsync();
-        var categoryEntries = categories.Select(cat => new ContentTocItem(
-            cat.Name,
-            $"/articles/category/{cat.Slug}",
-            200 + cat.Order,
-            ["articles", "categories", cat.Slug] // Creates Articles -> Categories -> [Category Name]
-        ));
-
-        return [articlesIndex, ..categoryEntries];
-    }
-
-    public async Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
-    {
-        // Copy any uploaded images from the database to the output
-        var images = await _dbContext.ArticleImages.ToListAsync();
-        
-        return images.Select(img => new ContentToCopy
+        foreach (var recipe in _recipes)
         {
-            SourcePath = img.FilePath,
-            DestinationPath = $"images/{img.FileName}"
-        }).ToImmutableList();
+            var route = ContentRouteFactory.FromUrl(
+                new UrlPath($"/recipes/{recipe.Slug}"));
+
+            builder.Add(new ContentTocItem(
+                Title: recipe.Name,
+                Route: route,
+                Order: recipe.SortOrder,
+                HierarchyParts: ["recipes", recipe.Category, recipe.Slug],
+                Section: DefaultSection
+            ));
+        }
+
+        return Task.FromResult(builder.ToImmutable());
     }
 
-    public async Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
+    public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
     {
-        var articles = await _dbContext.Articles.ToListAsync();
-        
-        return articles.Select(article => new CrossReference
+        var builder = ImmutableList.CreateBuilder<CrossReference>();
+
+        foreach (var recipe in _recipes.Where(r => r.Uid is not null))
         {
-            Id = article.Id.ToString(),
-            Title = article.Title,
-            Url = $"/articles/{article.Slug}",
-            Type = "article"
-        }).ToImmutableList();
+            var route = ContentRouteFactory.FromUrl(
+                new UrlPath($"/recipes/{recipe.Slug}"));
+            builder.Add(new CrossReference(recipe.Uid!, recipe.Name, route));
+        }
+
+        return Task.FromResult(builder.ToImmutable());
+    }
+
+    public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
+        => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
+
+    public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
+        => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
+}
+```
+
+## The IProgrammaticContentGenerator
+
+The `ProgrammaticSource` variant of <xref:T:Penn.Pipeline.ContentSource> wraps an `IProgrammaticContentGenerator`. Penn calls `GenerateAsync` when it actually needs the content -- not at discovery time. This is important for performance: discovery should be fast; content generation can be lazy.
+
+`GenerateAsync` returns a `ProgrammaticContent` union -- either `TextProgrammaticContent` (for HTML/markdown) or `BinaryProgrammaticContent` (for images, PDFs, etc.):
+
+```csharp
+public class RecipeContentGenerator : IProgrammaticContentGenerator
+{
+    private readonly Recipe _recipe;
+
+    public RecipeContentGenerator(Recipe recipe) => _recipe = recipe;
+
+    public Task<ProgrammaticContent> GenerateAsync(ContentRoute route)
+    {
+        var frontMatter = new RecipeFrontMatter
+        {
+            Title = _recipe.Name,
+            Description = _recipe.Summary,
+        };
+
+        var markdown = $"""
+            ## Ingredients
+
+            {string.Join("\n", _recipe.Ingredients.Select(i => $"- {i}"))}
+
+            ## Instructions
+
+            {string.Join("\n", _recipe.Steps.Select((s, i) => $"{i + 1}. {s}"))}
+            """;
+
+        var content = new TextProgrammaticContent(frontMatter, markdown);
+        return Task.FromResult<ProgrammaticContent>(content);
     }
 }
 ```
 
+> [!NOTE]
+> If your `TextProgrammaticContent` has a `ContentType` of `"text/html"`, Penn treats the `RawContent` as already-rendered HTML. If it's anything else (or omitted), Penn processes it as markdown through the standard rendering pipeline. Choose wisely.
+
 ## Service Registration
 
-Register your custom content service in `Program.cs`, both when the concrete type is used and when it's registered as
-an `IContentService`. You can use this pattern to ensure the same instance is used throughout the application:
+Register your custom content service in `Program.cs` as an `IContentService`:
 
 ```csharp
-// For services that need file-watch cache invalidation, use AddFileWatched
-var configuredServices = new ConfiguredContentEngineServiceCollection(builder.Services);
-configuredServices.AddFileWatched<DatabaseContentService>();
+builder.Services.AddPenn(penn =>
+{
+    penn.SiteTitle = "My Recipe Site";
+    penn.ContentRootPath = "Content";
 
-// Register as IContentService (this allows multiple IContentService implementations)  
-builder.Services.AddSingleton<IContentService>(provider => provider.GetRequiredService<DatabaseContentService>());
+    // Markdown docs alongside custom content
+    penn.AddMarkdownContent<DocFrontMatter>(opts =>
+    {
+        opts.ContentPath = "Content/docs";
+        opts.BasePageUrl = "/docs";
+    });
+});
+
+// Register the custom content service
+builder.Services.AddSingleton<IContentService, RecipeContentService>();
 ```
 
-For multiple content services, the framework will combine results from all registered services for site generation and 
-the table of contents.
+Penn collects all `IContentService` registrations from the DI container. Your custom service sits alongside `MarkdownContentService<T>` registrations from `AddMarkdownContent` calls. There's no special ceremony required.
+
+## Caching and File Watching
+
+For content services backed by external data, you may want cache invalidation when files change. Penn's `FileWatchDependencyFactory<T>` manages a cached instance that auto-invalidates when `IFileWatcher` detects changes:
+
+```csharp
+// Register with file-watch support
+builder.Services.AddSingleton<FileWatchDependencyFactory<RecipeContentService>>();
+builder.Services.AddSingleton<IContentService>(sp =>
+    sp.GetRequiredService<FileWatchDependencyFactory<RecipeContentService>>().GetInstance());
+```
+
+When any watched file changes, `FileWatchDependencyFactory` disposes the existing instance and creates a fresh one on next access. This is the same pattern Penn's built-in content services use. It is not sophisticated. It is reliable.
 
 ## Understanding Hierarchy Parts
 
-The `GetContentTocEntriesAsync()` method returns `ContentTocItem` objects that include hierarchy parts - an array of strings that defines where the entry appears in the navigation tree. This gives you complete control over the navigation structure independently of your URL structure.
-
-### Hierarchy Examples
+The `ContentTocItem` includes hierarchy parts -- an array of strings defining where the entry sits in the navigation tree. This is independent of URL structure:
 
 ```csharp
-// Creates a top-level "Blog" entry
-new ContentTocItem("Blog", "/blog", 100, ["blog"])
+// Top-level "Recipes" entry
+new ContentTocItem("Recipes", route, 100, ["recipes"], "recipes")
 
-// Creates Blog -> Posts -> "My First Post" 
-new ContentTocItem("My First Post", "/blog/posts/first", 200, ["blog", "posts", "my-first-post"])
+// Recipes -> Desserts -> "Chocolate Cake"
+new ContentTocItem("Chocolate Cake", route, 200,
+    ["recipes", "desserts", "chocolate-cake"], "recipes")
 
-// Creates Documentation -> API -> Classes -> "ContentService"
-new ContentTocItem("ContentService", "/api/contentservice", 300, ["documentation", "api", "classes", "contentservice"])
+// Recipes -> Mains -> "Pad Thai"
+new ContentTocItem("Pad Thai", route, 300,
+    ["recipes", "mains", "pad-thai"], "recipes")
 ```
 
-### Key Benefits
-
-- **Custom Organization**: Group content logically regardless of URL structure
-- **Multi-level Navigation**: Create deep hierarchies with unlimited nesting
-- **Content Service Independence**: Each service controls its own navigation structure
-- **Flexible Naming**: Hierarchy parts can differ from URL segments for better navigation labels
-
-## Advanced Implementation Features
-
-### Caching for Performance
-
-For content services that make expensive operations (API calls, database queries),
-consider implementing caching using [`AsyncLazy<T>` with `AddFileWatched<T>()`](../under-the-hood/hot-reload-architecture). The built-in
-`IContentService` implementations use this pattern to cache results until a trigger occurs that requires a refresh.
-
-### Content Transformation
-
-Transform external content formats into HTML on demand rather than at loading time. For larger sites, the development
-experience can be improved by only gathering the data needed to return the data for the `IContentService` methods. These
-are needed for things such as site-wide navigation, cross-references, and static assets. If there's work that's only
-presentation-related, wait until the user requests it to speed up the initial load time.
+This gives you full control over navigation without coupling it to URL paths. The hierarchy parts define nesting; the `Section` property groups items into navigation regions.
 
 ## Performance Considerations
 
-- **Lazy Loading**: Only load content when needed
-- **Parallel Processing**: Use `Task.WhenAll()` for independent operations
-- **Memory Management**: Dispose of resources properly
-
+- **Discovery should be fast**: `DiscoverAsync()` is called frequently. Keep it lightweight -- enumerate routes, don't generate content.
+- **Content generation is lazy**: `IProgrammaticContentGenerator.GenerateAsync()` is called on-demand. This is where expensive work belongs.
+- **Cache when possible**: Use `FileWatchDependencyFactory<T>` or your own caching to avoid recreating expensive objects on every request.
+- **Return empty immutable lists, not null**: Penn uses `ImmutableList<T>.Empty` throughout. Follow the convention.

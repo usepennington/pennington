@@ -1,158 +1,155 @@
 ---
 title: "Table of Contents Generation"
-description: "How MyLittleContentEngine builds hierarchical navigation from your content structure"
-uid: "docs.under-the-hood.table-of-contents-generation"
+description: "How Penn builds hierarchical navigation trees, breadcrumbs, and prev/next links from flat content"
+uid: "penn.under-the-hood.table-of-contents-generation"
 order: 3020
 ---
 
-The Table of Contents (TOC) system in MyLittleContentEngine automatically creates hierarchical navigation menus from your content pages. It analyzes your page URLs and front matter to build organized, nested navigation structures that reflect your site's content organization.
+Documentation sites live and die by their navigation. Penn's table of contents system takes a flat list of content pages and produces a hierarchical navigation tree, breadcrumbs, and prev/next links. It handles section auto-creation, ordering, and active-state tracking. All from data your content services already provide.
 
-To retrieve the TOC entries, you can use the `GetNavigationTocAsync()` method from the `ITableOfContentService` interface.
+No configuration files for navigation structure. No manually maintained sidebar definitions. The tree builds itself from your content, and you control it with front matter and folder structure.
 
+## ContentTocItem: The Input
 
+Every `IContentService` provides table of contents entries through `GetContentTocEntriesAsync()`. Each entry is a `ContentTocItem`:
 
-## How TOC Generation Works
+```csharp:xmldocid
+T:Penn.Content.ContentTocItem
+```
 
-The TOC generation process transforms your flat collection of content files into a structured navigation tree. It handles complex scenarios like folder structures, index pages, and custom ordering to create intuitive navigation.
+Six fields:
 
-<Steps>
-<Step stepNumber="1">
-## Collecting Pages and Metadata
+- **`Title`**: Display name in navigation. Pages without titles are excluded from navigation entirely.
+- **`Route`**: The `ContentRoute` with canonical URL and output file path.
+- **`Order`**: Sorting weight. Lower numbers appear first.
+- **`HierarchyParts`**: An array of strings that defines position in the tree. This is the key to everything.
+- **`Section`**: Optional section grouping (for multi-section sites).
+- **`Locale`**: Optional locale identifier.
 
-The system starts by gathering all pages from your content sources and extracting the information needed for navigation:
+### HierarchyParts: The Tree Coordinates
 
-### Page Discovery
+`HierarchyParts` is the mechanism that turns flat content into a tree. For a markdown file at `Content/guides/getting-started/installation.md` with base URL `/docs`, the content service might produce:
 
-Pages come from multiple sources:
+```
+HierarchyParts = ["guides", "getting-started", "installation"]
+```
 
-- **Markdown files** with front matter in your content directories
-- **API documentation** automatically generated from your code
-- **Custom content sources** you've configured
+The array length determines the depth, and the values at each position determine the parent-child relationships. Think of it as a path through the tree, where each element names a node.
 
-Each `IContentService` must implement `GetContentTocEntriesAsync()` to provide the necessary metadata for TOC generation.
+Content services have full control over how they generate hierarchy parts. The markdown service uses folder structure. An API reference service might use namespaces. A blog service might use date-based groupings. The `NavigationBuilder` does not care where the parts come from -- it just builds a tree from them.
 
-### Required Information
+## NavigationBuilder: The Tree Constructor
 
-For each page, the system needs four pieces of information:
+`NavigationBuilder` is the engine that transforms a flat `IReadOnlyList<ContentTocItem>` into an `ImmutableList<NavigationTreeItem>`:
 
-- **Title**: The display name for navigation (from the `title` property in front matter)
-- **URL**: The page's web address
-- **Order**: A number for sorting (from the `order` property, defaults to a high number if not specified)
-- **Hierarchy Parts**: An array of strings that defines the navigation structure
+```csharp:xmldocid
+T:Penn.Navigation.NavigationBuilder
+```
 
-Pages without titles are automatically excluded from navigation menus.
+### Building the Tree
 
-</Step>
-<Step stepNumber="2">
+The algorithm is recursive and works level by level:
 
-## Building the Hierarchy
+1. **Find items at the current depth.** For the root level (depth 0), find all items with `HierarchyParts.Length == 1`. For depth 1, find items with length 2 whose first part matches the parent.
 
-The system organizes pages into a tree structure based on hierarchy parts provided by each content service.
+2. **Auto-create section nodes.** Find hierarchy parts at this depth that have descendants but no direct item. For example, if there are items at `["guides", "installation"]` and `["guides", "configuration"]` but nothing at just `["guides"]`, the builder creates a non-navigable section node for "guides."
 
-### Hierarchy Parts Organization
+3. **Sort.** Items are ordered by `Order`, then alphabetically by `Title`.
 
-Each content service provides hierarchy parts that determine the page's position in the navigation. For example:
+4. **Recurse.** For each item at this level, build its children by descending one level deeper.
 
-- `["getting-started", "installation"]` becomes a child of the "Getting Started" section
-- `["api", "classes", "ContentService"]` creates nested folders: API → Classes → ContentService
+### Auto-Created Section Nodes
 
-Content services have full control over their hierarchy structure and can customize it. For example, the `MarkdownContentService` uses the folder structure to generate the hierarchy parts. A service providing a product list might use product categories as hierarchy parts.
+When a folder exists in the hierarchy but has no corresponding page, the builder creates a section node automatically:
 
-### Folder Structure Creation
+```
+Content/
+  guides/                   <-- no index.md here
+    installation.md
+    configuration.md
+```
 
-The system automatically creates folder-like navigation entries for hierarchy parts that don't have corresponding pages. These folders help organize related content even when there's no explicit index page.
+This produces a tree like:
 
-### Index Page Handling
+```
+Guides (non-navigable section)
+  +-- Installation
+  +-- Configuration
+```
 
-Pages named `index` get special treatment—they represent both the folder and a navigable page. An index page like `/getting-started/index` becomes:
+The section title is generated from the folder name: kebab-case is converted to title case (`getting-started` becomes "Getting Started"). The section's order is inherited from its lowest-ordered child.
 
-- A clickable navigation item with the folder's name
-- A container that can hold child pages
+These auto-created nodes have empty routes -- they are not clickable. They exist purely to organize the navigation visually.
 
-</Step>
-<Step stepNumber="3">
+### NavigationTreeItem
 
-## Navigation Entry Types
+Each node in the tree is a `NavigationTreeItem`:
 
-The system creates different types of navigation entries based on your content structure:
+```csharp:xmldocid
+T:Penn.Navigation.NavigationTreeItem
+```
 
-Regular Pages
-   : Standard content pages that appear as individual navigation items. They can have child pages if other content exists beneath them in the URL hierarchy.
+The record carries:
 
-Index Pages
-   : Special pages that serve dual purposes—they're both clickable navigation items and containers for child pages. When you have an index page, it becomes the representative for its entire folder.
+- **`Title`** and **`Route`**: What to display and where to link.
+- **`Order`**: For sorting.
+- **`Section`**: Optional section grouping.
+- **`IsSelected`**: Whether this is the current page.
+- **`IsExpanded`**: Whether this node's subtree should be visible (true if any descendant is selected).
+- **`Children`**: An `ImmutableList<NavigationTreeItem>` of child nodes.
 
-Folder Containers
-   : When you have pages in a subfolder but no index page, the system creates a non-clickable folder entry that organizes the child pages.
+`IsExpanded` is the key to collapsible navigation. When you visit `/guides/installation/`, the "Guides" section node gets `IsExpanded = true` because one of its descendants is selected. The "API Reference" section stays collapsed.
 
-Folder Absorption
-   : If a folder contains an index page, the folder "absorbs" the index page's properties. The navigation shows the index page's title and link, but includes all the folder's other children as sub-items.
+## NavigationInfo: The Full Picture
 
-</Step>
-<Step stepNumber="4">
+For a given page, `BuildNavigationInfo` provides everything the layout needs:
 
-## Automatic Naming
+```csharp:xmldocid
+T:Penn.Navigation.NavigationInfo
+```
 
-The system uses a priority-based approach to determine folder titles in the navigation:
+This includes:
 
-### Title Priority System
+- **`SectionName`**: The section the current page belongs to.
+- **`Breadcrumbs`**: A list of `BreadcrumbItem` records from root to current page.
+- **`PageTitle`**: The current page's title.
+- **`PreviousPage`** and **`NextPage`**: For sequential navigation.
 
-When generating navigation entries, the system determines folder titles using this priority order:
+### Prev/Next Computation
 
-Priority 1: Folder Metadata
-   : If a `_index.metadata.yml` file exists in the folder with a `title` property, that title is used. This gives you complete control over folder display names.
+Previous and next pages are determined by flattening the tree depth-first:
 
-Priority 2: Index Page Title
-   : If the folder contains an `index.md` file with a title in its front matter, that title is used for both the page and the folder.
+```
+Home                    [0]
+Getting Started         [1]  (section)
+  Installation          [2]
+  First Steps           [3]
+Guides                  [4]  (section)
+  Basic Usage           [5]
+  Advanced Features     [6]
+```
 
-Priority 3: Auto-Generated Title
-   : If neither of the above exists, the system automatically generates a readable title from the folder name.
+If you are on "Installation" (index 2), previous is "Getting Started" (index 1) and next is "First Steps" (index 3). The flattening respects the tree order, so prev/next follows the same path a reader would take going through the docs linearly.
 
-### Auto-Generated Titles
+Section nodes *are* included in the flattened list. If a section node is navigable (has a route), it participates in prev/next. Auto-created sections with empty routes are also in the list -- whether your UI skips them is a presentation decision.
 
-When no explicit title is provided through metadata or index pages, hierarchy parts like `getting-started` are automatically converted to proper titles like "Getting Started". The system:
+### Breadcrumbs
 
-- Converts dashes to spaces
-- Handles double dashes specially (preserves them as single dashes)
-- Applies proper title case formatting
+Breadcrumbs are computed by walking the tree from root to the selected node:
 
-### Title Case Rules
+```
+Home > Getting Started > Installation
+```
 
-The system uses APA title case:
+Each breadcrumb is a `BreadcrumbItem` with a title and optional route. The algorithm follows the `IsExpanded` trail: starting from the root, it enters each expanded node until it finds the selected one.
 
-- Always capitalizes the first word and important words
-- Keeps articles, conjunctions, and short prepositions lowercase (unless they start a title)
-- Capitalizes both parts of hyphenated words
+## Ordering
 
-Examples:
+The ordering system is straightforward:
 
-- `api-reference` → "API Reference"
-- `under-the-hood` → "Under the Hood"
-- `getting-started` → "Getting Started"
-- `how--to` → "How-To" (double dash preserved as single dash)
-
-</Step>
-<Step stepNumber="5">
-
-## Selection and Active States
-
-The navigation system tracks which page you're currently viewing and highlights the appropriate navigation items:
-
-The navigation entry matching your current URL is marked as selected and visually highlighted.
-
-
-All parent folders and sections containing the current page are also marked as selected, creating a visual breadcrumb effect in the navigation.
-
-</Step>
-<Step stepNumber="6">
-
-## Ordering and Sorting
-
-Navigation items are sorted based on order values from your content:
-
-### Page Order Control
-
-Set explicit `order` values in your front matter to control navigation sequence:
+1. **Explicit order**: Set `order` in your front matter. Lower numbers sort first.
+2. **Auto-created sections**: Inherit the minimum `Order` value from their children.
+3. **Alphabetical fallback**: Items with the same order are sorted by title (case-insensitive).
 
 ```yaml
 ---
@@ -161,176 +158,77 @@ order: 100
 ---
 ```
 
-Pages without explicit order values appear after those with order values, sorted alphabetically.
+A practical ordering scheme:
 
-### Folder Order Control
+| Order Range | Purpose |
+|---|---|
+| 0-99 | Top-level landing pages |
+| 100-199 | Getting Started section |
+| 200-299 | Core concepts |
+| 1000-1999 | Reference docs |
+| 3000-3999 | Under the Hood (you are here) |
+| 9000+ | Appendices, changelog |
 
-Folders can have their order controlled in two ways:
+Leave gaps between items so you can insert new pages without renumbering everything. If you have learned anything from BASIC line numbers, it is this.
 
-Explicit Folder Order
-   : Create a `_index.metadata.yml` file in the folder with an `order` property to set the folder's position explicitly:
+## Multi-Section Sites
 
-   ```yaml
-   title: "Getting Started"
-   order: 100
-   ```
+Penn supports multiple independent content sources, each with their own section. For example, a project might have:
 
-   This gives you precise control over where folders appear in the navigation, independent of their contents.
+- `/docs/` -- Documentation (section: "docs")
+- `/blog/` -- Blog posts (section: "blog")
+- `/api/` -- API reference (section: "api")
 
-Inherited Order (default)
-   : Without explicit folder metadata, folders inherit the order of their lowest-ordered child page.
+Each section's content service provides `ContentTocItem` records with appropriate `Section` values. The `NavigationBuilder` processes all items together, and the `Section` field lets the UI filter or group navigation by section.
 
-This inheritance ensures logical grouping—a folder containing a page with `order: 100` will appear before a folder whose lowest child has `order: 200`.
+## A Complete Example
 
-</Step>
-</Steps>
-
-## Folder Metadata Configuration
-
-You can customize folder behavior and appearance using `_index.metadata.yml` files. These files provide metadata for folders without requiring an index page.
-
-### Creating Folder Metadata Files
-
-Create a file named `_index.metadata.yml` in any content folder to customize that folder's properties:
-
-```yaml
-title: "Custom Folder Title"
-order: 100
-```
-
-The file will be discovered automatically at startup and cached for performance.
-
-### Available Properties
-
-The following properties can be configured in folder metadata files:
-
-title
-   : Override the auto-generated folder name with a custom title. This takes priority over both auto-generated names and index page titles.
-
-order
-   : Explicitly set the folder's position in navigation. This overrides the default behavior of inheriting the lowest child order.
-
-description
-   : Provide a description for the folder (used in RSS feeds and sitemaps if applicable).
-
-lastMod
-   : Specify when the folder was last modified (used in sitemaps). Format: `2024-01-15` or full ISO 8601 datetime.
-
-rssItem
-   : Control whether the folder appears in RSS feeds (boolean, defaults to `true`).
-
-section
-   : Specify which table of contents section this folder belongs to.
-
-### When to Use Folder Metadata
-
-Use folder metadata files when you need to:
-
-Customize folder titles without creating index pages
-   : When you want a readable folder name but don't need a landing page.
-
-   ```yaml
-   title: "How-To Guides"
-   order: 1000
-   ```
-
-Control folder ordering explicitly
-   : When you need a folder to appear in a specific position regardless of its children's order values.
-
-   ```yaml
-   title: "Getting Started"
-   order: 100
-   ```
-
-Handle special characters in folder names
-   : When your folder uses URL-safe naming (like `how--to` for "How-To") but you want a clean display title.
-
-   ```yaml
-   title: "How-To"
-   order: 2000
-   ```
-
-### Multi-Section Content
-
-Folder metadata works seamlessly with multi-section content. The metadata files are discovered across all registered content sources and differentiated by their base URLs:
-
-- `/console/how-to/_index.metadata.yml` → cache key: `console/how-to`
-- `/cli/how-to/_index.metadata.yml` → cache key: `cli/how-to`
-
-This allows different sections to have folders with the same name but different metadata.
-
-## Practical Example
-
-Consider this content structure using both front matter and folder metadata:
+Given this content structure:
 
 ```
 Content/
-├── index.md (order: 1)
-├── getting-started/
-│   ├── _index.metadata.yml
-│   ├── installation.md (order: 110)
-│   └── first-steps.md (order: 120)
-├── guides/
-│   ├── index.md (order: 200)
-│   ├── basic-usage.md (order: 210)
-│   └── advanced-features.md (order: 220)
-└── api/
-    ├── _index.metadata.yml
-    ├── classes/
-    │   ├── _index.metadata.yml
-    │   └── ContentService.md (order: 311)
-    └── interfaces/
-        ├── _index.metadata.yml
-        └── IContentService.md (order: 321)
++-- index.md              (order: 1, title: "Home")
++-- getting-started/
+|   +-- installation.md   (order: 110, title: "Installation")
+|   +-- first-steps.md    (order: 120, title: "First Steps")
++-- guides/
+|   +-- index.md          (order: 200, title: "User Guides")
+|   +-- basic-usage.md    (order: 210, title: "Basic Usage")
+|   +-- advanced.md       (order: 220, title: "Advanced Features")
++-- api/
+    +-- overview.md       (order: 1000, title: "API Overview")
+    +-- content-item.md   (order: 1010, title: "ContentItem")
 ```
 
-With folder metadata files:
+The `NavigationBuilder` produces:
 
-**getting-started/_index.metadata.yml:**
-```yaml
-title: "Getting Started"
-order: 100
 ```
-
-**api/_index.metadata.yml:**
-```yaml
-title: "API Reference"
-order: 300
-description: "Complete API documentation for MyLittleContentEngine"
+Home                          (order: 1, navigable)
+Getting Started               (order: 110, auto-created section, not navigable)
+  +-- Installation            (order: 110, navigable)
+  +-- First Steps             (order: 120, navigable)
+User Guides                   (order: 200, navigable -- has index.md)
+  +-- Basic Usage             (order: 210, navigable)
+  +-- Advanced Features       (order: 220, navigable)
+Api                           (order: 1000, auto-created section, not navigable)
+  +-- API Overview            (order: 1000, navigable)
+  +-- ContentItem             (order: 1010, navigable)
 ```
-
-**api/classes/_index.metadata.yml:**
-```yaml
-title: "Classes"
-order: 310
-```
-
-**api/interfaces/_index.metadata.yml:**
-```yaml
-title: "Interfaces"
-order: 320
-```
-
-This generates navigation like:
-
-1. **Home** (clickable, order: 1)
-2. **Getting Started** (non-clickable folder, order: 100 from metadata)
-    - **Installation** (clickable, order: 110)
-    - **First Steps** (clickable, order: 120)
-3. **User Guides** (clickable, order: 200 from guides/index.md)
-    - **Basic Usage** (clickable, order: 210)
-    - **Advanced Features** (clickable, order: 220)
-4. **API Reference** (non-clickable folder, order: 300 from metadata)
-    - **Classes** (non-clickable folder, order: 310 from metadata)
-        - **ContentService** (clickable, order: 311)
-    - **Interfaces** (non-clickable folder, order: 320 from metadata)
-        - **IContentService** (clickable, order: 321)
 
 Key observations:
 
-- The **Getting Started** folder has a custom title and explicit order from `_index.metadata.yml`, but no index page (non-clickable)
-- The **User Guides** folder has both an index page and children (clickable, with title from index.md front matter)
-- The **API Reference** section uses folder metadata throughout to provide clean titles and explicit ordering
-- Without folder metadata, "API Reference" would be titled "Api" and inherit order 311 from its lowest child
+- "Getting Started" is auto-created because there is no `getting-started/index.md`. Its order (110) comes from its lowest child.
+- "User Guides" is navigable because `guides/index.md` exists. It is both a page and a container.
+- "Api" is auto-created with title derived from the folder name `api` (title-cased to "Api"). If you wanted "API Reference" instead, you would either add an `index.md` with that title or -- if Penn supports folder metadata -- configure it there.
 
-The system automatically handles the hierarchy, creates readable folder names, respects your custom ordering, and provides both tree-based and sequential navigation.
+When visiting `/guides/basic-usage/`:
+
+```
+Breadcrumbs: Home > User Guides > Basic Usage
+Previous: User Guides
+Next: Advanced Features
+IsExpanded: User Guides = true, Getting Started = false, Api = false
+IsSelected: Basic Usage = true
+```
+
+The whole thing is computed from flat data. No configuration file describes this tree structure. It emerges from the hierarchy parts, order values, and the recursive build algorithm. Change your folder structure, and the navigation updates automatically.

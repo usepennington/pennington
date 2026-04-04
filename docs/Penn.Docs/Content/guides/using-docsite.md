@@ -1,268 +1,261 @@
 ---
 title: "Using the DocSite Package"
-description: "Learn how to create a documentation site using the DocSite package with customizable branding and styling"
-uid: "docs.getting-started.using-docsite"
+description: "Build a documentation site with Penn.DocSite -- the opinionated, inflexible, sufficient-to-the-purpose documentation package"
+uid: "penn.guides.using-docsite"
 order: 2510
 ---
 
-The `MyLittleContentEngine.DocSite` package provides a complete documentation site solution with minimal setup. It includes all the components, layouts, and styling needed to create a professional documentation site with customizable branding.
+Penn.DocSite is the cookie-cutter documentation site package. It wraps Penn core, MonorailCSS, and SPA navigation into a single `AddDocSite()` call and gives you a professional-looking documentation site with search, dark mode, sidebar navigation, and article pagination. You're reading a site built with it right now.
 
-> [!IMPORTANT]  
-> While functional, the `DocSite` package drives the documentation for MyLittleContentEngine. It can and will
-> change as this site changes. It is better suited as inspiration or proof-of-concepts than production documentation.
+> [!IMPORTANT]
+> Penn.DocSite drives the documentation for Penn itself. It is opinionated, inflexible, and sufficient to the purpose. It will change when this site's needs change. Use it for quick documentation sites, proof-of-concepts, or as inspiration for building your own layout with Penn core.
 
-## What You'll Build
+## What You Get
 
-You'll create a documentation site with:
+- **Sidebar navigation** built automatically from your content structure
+- **Article layout** with previous/next page links
+- **SPA navigation** between pages (no full page reloads)
+- **Search** with FlexSearch (Ctrl+K)
+- **Dark/light mode** toggle
+- **MonorailCSS** styling with customizable color schemes
+- **Static site generation** via `dotnet run -- build`
 
-- Professional documentation layout with navigation
-- API documentation generation
-- Search functionality
-- Responsive design with dark/light mode
-- Custom branding and styling
+## Quick Start
 
-## Prerequisites
-
-Before starting, ensure you have:
-
-- .NET 9 SDK or later installed
-- A code editor (Visual Studio, VS Code, or JetBrains Rider)
-- Familiarity with command-line tools
-
-<Steps>
-<Step stepNumber="1">
-## Create a New Blazor Project
-
-Start by creating a new minimal web project:
+### 1. Create a Project
 
 ```bash
-dotnet new web -n MyDocSite
-cd MyDocSite
-```
-</Step>
-
-<Step stepNumber="2">
-
-## Add the DocSite Package
-
-Add the DocSite package reference to your project:
-
-```bash
-dotnet add package MyLittleContentEngine.DocSite
+dotnet new web -n MyDocs
+cd MyDocs
+dotnet add package Penn.DocSite
 ```
 
-This package includes all the dependencies you need:
-- `MyLittleContentEngine` - Core content management functionality
-- `MyLittleContentEngine.UI` - UI components for documentation
-- `MyLittleContentEngine.MonorailCss` - CSS framework for styling
-- `Mdazor` - Markdown rendering for Blazor
-</Step>
-
-<Step stepNumber="3">
-
-## Configure File Watching for Development
-
-Add the following to your `.csproj` file so content changes trigger live reload during development:
-
-```xml
-<ItemGroup>
-    <Watch Include="Content/**/*.*"/>
-</ItemGroup>
-```
-</Step>
-
-<Step stepNumber="4">
-
-## Configure the DocSite
-
-Replace the content of `Program.cs` with the following minimal configuration:
+### 2. Configure Program.cs
 
 ```csharp
-using MyLittleContentEngine.DocSite;
+using Penn.DocSite;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDocSite(_ => new DocSiteOptions
 {
-    SiteTitle = "My Documentation Site",
+    SiteTitle = "My Project Docs",
     Description = "Documentation for my project",
 });
 
 var app = builder.Build();
-
 app.UseDocSite();
-
 await app.RunDocSiteAsync(args);
 ```
 
-This minimal setup provides a complete documentation site with default styling and layout.
-</Step>
+That's the entire `Program.cs`. Four meaningful lines.
 
-<Step stepNumber="5">
+### 3. Add Content
 
-## Create the Content Structure
-
-Create the content directory structure:
-
-```bash
-mkdir -p Content
-```
-
-The DocSite package expects your content to be in the `Content` directory by default.
-</Step>
-
-<Step stepNumber="6">
-
-## Write Your First Documentation Page
-
-Create your first documentation page at `Content/index.md`:
+Create `Content/index.md`:
 
 ```markdown
 ---
-title: "Welcome to My Documentation"
-description: "Getting started with our documentation site"
+title: "Welcome"
+description: "Getting started with my project"
 ---
 
 # Welcome
 
-This is the home page of our documentation site. You can write content using Markdown and it will be automatically rendered with a professional layout.
-
-## Features
-
-- **Responsive Design**: Looks great on all devices
-- **Search**: Built-in search functionality
-- **API Documentation**: Automatic API reference generation
-- **Dark Mode**: Toggle between light and dark themes
+This is the home page. Add more `.md` files and they'll appear in the sidebar automatically.
 ```
-</Step>
 
-<Step stepNumber="7">
-
-## Customize Your Site
-
-You can customize various aspects of your documentation site by modifying the options in `Program.cs`:
-
-```csharp
-builder.Services.AddDocSite(_ => new DocSiteOptions
-{
-    // Basic site information
-    SiteTitle = "My Documentation Site",
-    Description = "Comprehensive documentation for my project",
-    CanonicalBaseUrl = "https://mydocs.example.com",
-    
-    // Styling and branding
-    PrimaryHue = 235, // Blue theme (0-360)
-    BaseColorName = "Zinc", // Base color palette
-    GitHubUrl = "https://github.com/myuser/myproject",
-    
-    // API Documentation (optional)
-    SolutionPath = "../../MySolution.slnx",
-    IncludeNamespaces = ["MyProject", "MyProject.Core"],
-    ExcludeNamespaces = ["MyProject.Tests"],
-    
-    // Advanced customization
-    ExtraStyles = """
-        .custom-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        """
-});
-```
-</Step>
-
-<Step stepNumber="8">
-
-## Add Custom Branding (Optional)
-
-For advanced customization, you can add custom header content or logos:
-
-```csharp
-builder.Services.AddDocSite(_ => new DocSiteOptions
-{
-    SiteTitle = "My Documentation Site",
-
-    // Custom header with logo
-    HeaderContent = """
-        <div class="flex items-center gap-2">
-            <img src="/logo.png" alt="Logo" class="h-8 w-8" />
-            <span class="text-xl font-bold">My Docs</span>
-        </div>
-        """,
-    
-    // Custom footer
-    FooterContent = """
-        <div class="text-center text-sm text-base-600 dark:text-base-400">
-            © 2024 My Company. All rights reserved.
-        </div>
-        """,
-    
-    // Additional HTML for the head section
-    AdditionalHtmlHeadContent = """
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-        """
-});
-```
-</Step>
-
-<Step stepNumber="9">
-
-## Test Your Documentation Site
-
-Run your site in development mode:
+### 4. Run It
 
 ```bash
 dotnet watch
 ```
 
-Navigate to `https://localhost:5001` to see your documentation site in action!
+Navigate to the URL in your terminal. You'll see your documentation page with a sidebar, search, and dark mode toggle. Edit `index.md` and save -- the browser refreshes automatically.
 
-While the page is open, try editing the `Content/index.md` file. You should see the changes reflected immediately without needing to restart the server.
-</Step>
-</Steps>
+## What AddDocSite Does
 
-## What Success Looks Like
+<xref:T:Penn.DocSite.DocSiteServiceExtensions> method `AddDocSite()` orchestrates several registrations:
 
-After running `dotnet watch`, navigate to the URL shown in your terminal (typically `http://localhost:5131`).
-You'll see:
+1. **Penn core** via `AddPenn()` -- configures `PennOptions` with your site title, description, content path, and a markdown content source using `DocSiteFrontMatter`.
+2. **MonorailCSS** via `AddMonorailCss()` -- sets up the CSS framework with your color scheme and any extra styles.
+3. **SPA navigation** via `AddSpaNavigation()` -- registers `SpaPageDataService` and the data endpoint.
+4. **ComponentRenderer** -- scoped Blazor `HtmlRenderer` for island rendering.
+5. **DocSiteArticleSlotRenderer** -- the island renderer for the main article content area.
+6. **Razor components** via `AddRazorComponents()` -- DocSite ships its own `App` component, layout, and pages.
 
-- Your documentation home page rendered from `Content/index.md`
-- A sidebar navigation panel (starts empty but builds automatically as you add pages)
-- A clean documentation layout with a dark/light mode toggle
+### UseDocSite
 
-Add a second page at `Content/getting-started.md` with a `title` in the front matter, save it, and watch the
-sidebar navigation update automatically — no configuration required.
+The `UseDocSite()` extension method configures the middleware pipeline:
 
-> [!NOTE]
-> You're reading documentation built with DocSite right now. The site you see here is generated from the same
-> package, giving you an immediate reference for what's possible.
+```csharp
+public static WebApplication UseDocSite(this WebApplication app)
+{
+    app.UseAntiforgery();
+    app.UseStaticFiles();
+    app.MapRazorComponents<Components.App>()
+        .AddAdditionalAssemblies(options.AdditionalRoutingAssemblies);
+    app.UseMonorailCss();
+    app.UseSpaNavigation();
+    app.UsePenn();
+    return app;
+}
+```
 
-## Available Configuration Options
+### RunDocSiteAsync
 
-The `DocSiteOptions` class provides many customization options:
+`RunDocSiteAsync()` delegates to `RunOrBuildAsync()`, which checks the command line arguments:
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `SiteTitle` | string | "Documentation Site" | The title displayed in the header |
-| `Description` | string | "A documentation site..." | Site description for SEO |
-| `PrimaryHue` | int | 235 | Primary color hue (0-360) |
-| `BaseColorName` | string | "Zinc" | Base color palette name |
-| `GitHubUrl` | string? | null | GitHub repository URL |
-| `CanonicalBaseUrl` | string? | null | Canonical URL for SEO |
-| `SolutionPath` | string? | null | Path to solution file for API docs |
-| `IncludeNamespaces` | string[]? | null | Namespaces to include in API docs |
-| `ExcludeNamespaces` | string[]? | null | Namespaces to exclude from API docs |
-| `ContentRootPath` | string | "Content" | Path to content directory |
-| `ExtraStyles` | string? | null | Additional CSS styles |
-| `HeaderIcon` | string? | null | Custom header icon HTML |
-| `HeaderContent` | string? | null | Custom header content HTML |
-| `FooterContent` | string? | null | Custom footer content HTML |
-| `AdditionalHtmlHeadContent` | string? | null | Custom HTML for head section |
+- No arguments: runs the dev server
+- `build` argument: generates a static site to the output directory
 
-## Next Steps
+```bash
+# Development
+dotnet run
 
-The DocSite package allows you to get up and running quickly, but there are no promises made
-that the design or functionality of the site will remain consistent. It's what drives the documentation
-for my personal projects, so as my whims change so will the package. Use it for quick proof-of-concepts, demos, or inspiration
-for your own documentation site using the `MyLittleContentEngine` services directly.
+# Static build to ./output
+dotnet run -- build /
+
+# Static build for subdirectory deployment
+dotnet run -- build /my-project
+```
+
+## DocSiteOptions
+
+<xref:T:Penn.DocSite.DocSiteOptions> is a record with the following properties:
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `SiteTitle` | `string` | required | Title shown in the header and browser tab |
+| `Description` | `string` | required | Site description for SEO meta tags |
+| `ColorScheme` | `IColorScheme?` | Blue/Purple/Cyan/Pink/Slate | MonorailCSS color scheme |
+| `CanonicalBaseUrl` | `string?` | `null` | Canonical URL for SEO and feed generation |
+| `ContentRootPath` | `FilePath` | `"Content"` | Path to the content directory |
+| `HeaderIcon` | `string?` | `null` | HTML for a custom header icon |
+| `HeaderContent` | `string?` | `null` | Custom HTML in the header |
+| `FooterContent` | `string?` | `null` | Custom HTML in the footer |
+| `GitHubUrl` | `string?` | `null` | GitHub repository URL (shown in header) |
+| `SocialImageUrl` | `string?` | `null` | Default social sharing image |
+| `DisplayFontFamily` | `string?` | `null` | Font family for headings |
+| `BodyFontFamily` | `string?` | `null` | Font family for body text |
+| `ExtraStyles` | `string?` | `null` | Additional CSS appended to the stylesheet |
+| `AdditionalHtmlHeadContent` | `string?` | `null` | Extra HTML in `<head>` (fonts, meta tags) |
+| `AdditionalRoutingAssemblies` | `Assembly[]` | `[]` | Assemblies to scan for @page components |
+| `SolutionPath` | `string?` | `null` | Path to .sln/.slnx for Roslyn API docs |
+
+## Customization Examples
+
+### Custom Colors
+
+```csharp
+using Penn.MonorailCss;
+
+builder.Services.AddDocSite(_ => new DocSiteOptions
+{
+    SiteTitle = "My Docs",
+    Description = "Documentation",
+    ColorScheme = new NamedColorScheme
+    {
+        PrimaryColorName = ColorNames.Emerald,
+        AccentColorName = ColorNames.Teal,
+        TertiaryOneColorName = ColorNames.Sky,
+        TertiaryTwoColorName = ColorNames.Violet,
+        BaseColorName = ColorNames.Zinc,
+    },
+});
+```
+
+Or generate colors algorithmically from a single hue:
+
+```csharp
+ColorScheme = new AlgorithmicColorScheme
+{
+    PrimaryHue = 160, // Green-ish
+    BaseColorName = ColorNames.Slate,
+}
+```
+
+### Custom Branding
+
+```csharp
+builder.Services.AddDocSite(_ => new DocSiteOptions
+{
+    SiteTitle = "My Docs",
+    Description = "Documentation",
+    GitHubUrl = "https://github.com/myorg/myproject",
+    HeaderContent = """
+        <div class="flex items-center gap-2">
+            <img src="/logo.svg" alt="Logo" class="h-6 w-6" />
+            <span class="font-bold">My Project</span>
+        </div>
+        """,
+    FooterContent = """
+        <p class="text-sm text-base-500">Built with Penn.</p>
+        """,
+    AdditionalHtmlHeadContent = """
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+              rel="stylesheet">
+        """,
+    DisplayFontFamily = "Inter",
+    BodyFontFamily = "Inter",
+});
+```
+
+### File Watching for Development
+
+Add this to your `.csproj` so `dotnet watch` picks up content changes:
+
+```xml
+<ItemGroup>
+    <Watch Include="Content/**/*.*" />
+</ItemGroup>
+```
+
+## Content Structure
+
+DocSite uses `DocSiteFrontMatter` for its markdown content. Front matter fields:
+
+```markdown
+---
+title: "Page Title"
+description: "Brief description for SEO and navigation"
+uid: "unique-id-for-cross-references"
+order: 100
+---
+```
+
+Pages are organized by directory structure. Create subdirectories for sections:
+
+```
+Content/
+  index.md
+  getting-started/
+    installation.md
+    configuration.md
+  guides/
+    first-guide.md
+    second-guide.md
+```
+
+The sidebar navigation builds automatically from this structure. The `order` property in front matter controls sort order within a section -- lower numbers appear first.
+
+## Static Build
+
+```bash
+dotnet run -- build /
+```
+
+This generates a complete static site in the `output` directory. Every page is crawled via HTTP, rendered to HTML, and written to disk. Static assets are copied. The search index is generated. SPA data JSON files are created for each page.
+
+For subdirectory deployments (e.g., GitHub Pages), pass the base path:
+
+```bash
+dotnet run -- build /my-project
+```
+
+See [Deploying to Subdirectories](xref:penn.guides.deploying-to-subdirectories) for CI/CD details.
+
+## This Site Is DocSite
+
+The documentation you're reading right now is built with Penn.DocSite. The source is in `docs/Penn.Docs/` in the Penn repository. It's the canonical example of what DocSite can do -- and also the canonical example of what it can't. If you need something it doesn't support, Penn core gives you the building blocks to do it yourself.

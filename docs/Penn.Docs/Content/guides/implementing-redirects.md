@@ -1,34 +1,48 @@
 ---
 title: "Implementing Redirects"
-description: "Set up redirects using front matter properties or configuration files for content reorganization and migration"
-uid: "docs.guides.implementing-redirects"
+description: "Set up redirects using front matter properties or configuration files when content moves"
+uid: "penn.guides.implementing-redirects"
 order: 2050
 ---
 
-MyLittleContentEngine supports redirecting old URLs to new locations when you reorganize content, rename pages, or migrate from another platform.
+Content moves. URLs shouldn't break. Penn supports redirecting old URLs to new locations when you reorganize, rename, or acknowledge that your original information architecture was a mistake. It happens. Penn doesn't judge.
 
 ## Choose Your Approach
 
-**Front Matter Redirects** - Add `redirect_url` to a single markdown file's YAML front matter. Use when:
+**Front Matter Redirects** -- Add `redirect_url` to a markdown file's YAML front matter. Your front matter type must implement `IRedirectable`. Use this when:
 - Moving or renaming individual pages
 - Deprecating specific content
-- Keeping the original markdown file in your content structure
+- Keeping the original file in your content structure as a breadcrumb
 
-**Configuration File Redirects** - Create a `_redirects.yml` file to manage multiple redirects. Use when:
+**Configuration File Redirects** -- Create a `_redirects.yml` file to manage multiple redirects. Use this when:
 - Bulk migrations from another platform
-- Redirecting URLs without corresponding markdown files
-- Managing redirects centrally in one file
+- Redirecting URLs that don't have corresponding markdown files
+- Managing redirects centrally in one place
 
-You can combine both approaches in the same project.
+You can combine both approaches. Penn aggregates them without complaint.
 
 ## Redirect a Single Page with Front Matter
 
-<Steps>
-<Step stepNumber="1">
+### Step 1: Implement IRedirectable
 
-### Add redirect_url to Your Markdown File
+Your front matter type needs to implement `IRedirectable` from `Penn.FrontMatter.Capabilities`:
 
-Open the markdown file you want to redirect and add the `redirect_url` property to its YAML front matter:
+```csharp
+using Penn.FrontMatter;
+
+public record MyFrontMatter : IFrontMatter, IRedirectable, ICrossReferenceable
+{
+    public string Title { get; init; } = "";
+    public string? RedirectUrl { get; init; }
+    public string? Uid { get; init; }
+}
+```
+
+The built-in `DocFrontMatter` does not implement `IRedirectable` by default -- it's a deliberate omission, because documentation pages shouldn't casually redirect. If you need it, create a front matter type that includes the capability.
+
+### Step 2: Add redirect_url to Your Markdown File
+
+Open the markdown file you want to redirect and add `redirect_url` to its YAML front matter:
 
 ```yaml
 ---
@@ -54,34 +68,24 @@ redirect_url: /docs/guides/new-guide
 redirect_url: https://external-site.com/resource
 ```
 
-</Step>
-
-<Step stepNumber="2">
-
-### Build Your Site
+### Step 3: Build Your Site
 
 Run your build command as usual:
 
 ```bash
-dotnet run
+dotnet run -- build
 ```
 
-MyLittleContentEngine generates an HTML redirect file at the original location instead of rendering the markdown content. The page is automatically excluded from your table of contents.
-
-</Step>
-</Steps>
+When the pipeline encounters a `DiscoveredItem` whose front matter implements `IRedirectable` with a non-null `RedirectUrl`, Penn generates a `RedirectSource` in the content source union. The output is an HTML redirect file at the original location instead of rendered markdown. The page is excluded from the table of contents.
 
 > [!NOTE]
-> Any markdown content in the file is ignored when `redirect_url` is set. The file only generates a redirect page.
+> Any markdown content in the file is ignored when `redirect_url` is set. The file exists solely as a redirect marker. Write a haiku in the body if you like. Nobody will see it.
 
 ## Redirect Multiple Pages with Configuration File
 
-<Steps>
-<Step stepNumber="1">
+### Step 1: Create _redirects.yml in Content Root
 
-### Create _redirects.yml in Content Root
-
-Create a file named `_redirects.yml` in your content root directory (the path you specified in `ContentEngineOptions.ContentRootPath`):
+Create a file named `_redirects.yml` in your content root directory (the path configured in `PennOptions.ContentRootPath`):
 
 ```yaml
 redirects:
@@ -92,13 +96,9 @@ redirects:
 
 Each line maps a source path to a destination URL.
 
-</Step>
+### Step 2: Organize with Comments
 
-<Step stepNumber="2">
-
-### Organize Redirects with Comments
-
-Group related redirects and document why they exist:
+Group related redirects and document why they exist, because future-you will not remember:
 
 ```yaml
 # Site restructuring - moved widgets to console section
@@ -114,43 +114,43 @@ redirects:
   /old-docs: https://archive.example.com
 ```
 
-</Step>
-
-<Step stepNumber="3">
-
-### Build Your Site
-
-Run your build command:
+### Step 3: Build Your Site
 
 ```bash
 dotnet run -- build
 ```
 
-MyLittleContentEngine generates an HTML file for each redirect mapping. Source path `/old-page` creates `old-page.html` in your output directory.
-
-</Step>
-</Steps>
+Penn generates an HTML file for each redirect mapping. Source path `/old-page` creates `old-page/index.html` in your output directory.
 
 > [!WARNING]
-> Invalid YAML syntax will cause all redirects to fail silently. Validate your YAML before deploying.
+> Invalid YAML syntax causes all redirects in the file to fail silently. Validate your YAML before deploying. Penn trusts you to write valid YAML. Penn's trust is, historically, misplaced.
 
 ## How Redirects Work
 
-Both methods generate HTML pages that use meta refresh for instant redirection. The generated pages include:
+Both approaches generate HTML pages with meta refresh for instant redirection. The generated pages include:
+
 - Automatic redirect with 0-second delay
 - Fallback "click here" link for accessibility
 - `noindex` tag to prevent search engine indexing
 
-Search engines treat these redirects similarly to 301 redirects, making them suitable for static hosting platforms like GitHub Pages and Netlify where server-level redirects aren't available.
+The generated redirect HTML is minimal:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="refresh" content="0;url=/new-location">
+</head>
+</html>
+```
+
+Search engines treat meta refresh redirects similarly to 301 redirects, making them suitable for static hosting platforms like GitHub Pages and Netlify where server-level redirects aren't available. This is not ideal. It is sufficient.
 
 ## Verify Redirects Work
 
-<Steps>
-<Step stepNumber="1">
+### Step 1: Build Your Site
 
-### Build Your Site
-
-Generate the static files including redirect HTML:
+Generate the static files:
 
 ```bash
 dotnet run -- build
@@ -162,42 +162,38 @@ For subdirectory deployments:
 dotnet run -- build "/my-app/"
 ```
 
-</Step>
+### Step 2: Serve the Build Output
 
-<Step stepNumber="2">
-
-### Install dotnet-serve
-
-If you haven't already, install the [dotnet-serve](https://github.com/natemcmaster/dotnet-serve) tool:
+Install [dotnet-serve](https://github.com/natemcmaster/dotnet-serve) if you haven't:
 
 ```bash
 dotnet tool install --global dotnet-serve
 ```
 
-This is a one-time installation.
-
-</Step>
-
-<Step stepNumber="3">
-
-### Serve the Build Output
-
-Serve the generated static files locally:
+Serve the generated static files:
 
 ```bash
 dotnet serve -d output --default-extensions:.html
 ```
 
-</Step>
+### Step 3: Test the Redirect
 
-<Step stepNumber="4">
-
-### Test the Redirect
-
-Navigate to the old URL in your browser. You should be redirected automatically to the new location.
-
-</Step>
-</Steps>
+Navigate to the old URL in your browser. You should be redirected automatically to the new location. If you aren't, check the generated HTML file for the source path and verify the destination URL is correct.
 
 > [!NOTE]
-> Redirects are only generated during the static build process (`dotnet run -- build`), not during development mode (`dotnet watch`). During `dotnet watch`, you're testing the Blazor SSR application, not the static HTML output.
+> Redirects are generated during the static build process (`dotnet run -- build`), not during development mode (`dotnet watch`). During `dotnet watch`, you're testing the Blazor SSR application, where redirects are handled as HTTP 301 responses by the pipeline. The meta-refresh HTML is only for the static output.
+
+## Redirects in the Pipeline
+
+For the technically curious: when Penn encounters a redirect, it creates a `DiscoveredItem` with a `RedirectSource(UrlPath TargetUrl)` as the content source. The `ContentSource` union ensures the pipeline handles this case explicitly:
+
+```csharp
+public union ContentSource(
+    MarkdownFileSource,
+    RazorPageSource,
+    RedirectSource,      // <- this one
+    ProgrammaticSource
+);
+```
+
+During static generation, the `OutputGenerationService` detects 301 responses and writes redirect HTML. During development, the server returns a proper HTTP redirect. Same intent, different mechanisms, both correct. Penn is nothing if not thorough about the boring parts.

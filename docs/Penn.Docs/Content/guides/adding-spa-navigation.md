@@ -1,213 +1,289 @@
 ---
 title: "Adding SPA Navigation"
-description: "Add instant page transitions to your content site with the Razor Island system"
-uid: "docs.guides.adding-spa-navigation"
+description: "Add instant page transitions to your Penn site with the island renderer architecture"
+uid: "penn.guides.adding-spa-navigation"
 order: 2520
 ---
 
-Out of the box, MyLittleContentEngine generates static HTML — every link click triggers a full page load. That's
-fast enough for most sites, but for content-heavy sites with sidebar navigation it can feel sluggish. SPA
-navigation fixes this by fetching only the page data on subsequent clicks and swapping content in-place, while
-keeping the first page load as fast static HTML.
+Out of the box, Penn generates static HTML. Every link click triggers a full page load. That's fine for most sites, but for content-heavy pages with sidebar navigation it feels sluggish -- like opening a new book every time you turn a page.
 
-In this tutorial, you'll add SPA navigation to a recipe site. The same approach works for documentation,
-blogs, or any content site.
+SPA navigation fixes this. The first visit loads full static HTML (fast, no JavaScript required). After that, clicking an internal link fetches a small JSON envelope containing pre-rendered HTML for each named "island" in your layout, and the SPA engine swaps the content in place. No full reload, no flash of unstyled content, no existential dread about your bundle size.
 
-## What You'll Build
+## The Architecture
 
-- A recipe site where clicking between recipes swaps content instantly — no full page reload
-- Named **islands** in the layout that update independently (article content + a recipe info sidebar)
-- Razor components that render both the initial static page and SPA updates from a single source of truth
+Penn's SPA system is built on three types:
 
-## How It Works
+- <xref:T:Penn.Islands.IIslandRenderer> -- the interface every island renderer implements
+- <xref:T:Penn.Islands.RazorIslandRenderer`1> -- a base class for renderers that produce HTML from a Razor component
+- <xref:T:Penn.Islands.SpaPageDataService> -- coordinates all registered renderers and assembles the JSON envelope
+- <xref:T:Penn.Islands.ComponentRenderer> -- renders Blazor components to HTML strings via `HtmlRenderer`
 
-The first visit to your site loads full static HTML — normal browser behaviour. After that, clicking an
-internal link fetches a small JSON file containing pre-rendered HTML for each named island, and the SPA engine
-swaps the content without a reload. If the JSON isn't available (custom Razor pages, external links), it
-falls back to a normal page load gracefully.
+### The Flow
 
-## Prerequisites
+1. User clicks a link. The SPA engine intercepts it.
+2. The engine fetches `/_spa-data/{slug}.json` from the server.
+3. <xref:T:Penn.Islands.SpaPageDataService> iterates over all registered `IIslandRenderer` implementations.
+4. Each renderer receives a `ContentRoute` and `RenderContext`, produces HTML (or returns empty to skip).
+5. The service assembles a `SpaEnvelopeDto` with the page title and a dictionary of `{ islandName: html }`.
+6. The SPA engine replaces the contents of each `data-spa-island` element in the DOM.
 
-- A working MyLittleContentEngine site (see [Creating Your First Site](xref:docs.getting-started.creating-first-site))
-- Familiarity with Blazor components and front matter
+## The IIslandRenderer Interface
 
-<Steps>
-<Step stepNumber="1">
+This is the contract. Every island renderer implements it:
 
-## Define Your Front Matter
-
-Create a front matter class with the fields your site needs. For a recipe site, that includes cooking
-metadata alongside the standard `IFrontMatter` properties:
-
-```csharp:path
-examples/SpaNavigationExample/RecipeFrontMatter.cs
+```csharp
+public interface IIslandRenderer
+{
+    string IslandName { get; }
+    Task<string> RenderAsync(ContentRoute route, RenderContext context);
+}
 ```
 
-The `PrepTime`, `CookTime`, `Servings`, and `Difficulty` fields are recipe-specific — your site would have
-whatever domain fields make sense. The SPA system doesn't care about the shape of your front matter; it just
-needs `IFrontMatter` for the base contract.
+`IslandName` must match the `data-spa-island` attribute in your layout HTML. `RenderAsync` receives the `ContentRoute` for the target page (including `CanonicalPath`, `Locale`, etc.) and a `RenderContext` with the site's base URL and title.
 
-</Step>
-<Step stepNumber="2">
+Returning an empty string means "I have nothing for this route" -- the island will be left alone or cleared depending on the `data-spa-loading` strategy.
 
-## Create Razor Components for Your Islands
+## Using RazorIslandRenderer
 
-Each island needs a Razor component that produces the HTML to inject. These components are normal `.razor` files
-with `[Parameter]` properties — no special base class or interface needed.
+Most island renderers render a Razor component. <xref:T:Penn.Islands.RazorIslandRenderer`1> handles the boilerplate:
 
-First, the main content component that renders the article title and markdown body:
+```csharp
+public abstract class RazorIslandRenderer<TComponent>(
+    ComponentRenderer renderer) : IIslandRenderer
+    where TComponent : IComponent
+{
+    public abstract string IslandName { get; }
 
-```razor:path
-examples/SpaNavigationExample/Slots/Components/RecipeContent.razor
+    protected abstract Task<IDictionary<string, object?>?> BuildParametersAsync(
+        ContentRoute route);
+
+    public async Task<string> RenderAsync(ContentRoute route, RenderContext context)
+    {
+        var parameters = await BuildParametersAsync(route);
+        if (parameters is null) return "";
+        return await renderer.RenderComponentAsync<TComponent>(parameters);
+    }
+}
 ```
 
-Then a sidebar component for recipe metadata:
+You override `BuildParametersAsync` to fetch your data and return a parameter dictionary. Return `null` to skip rendering entirely. The base class calls <xref:T:Penn.Islands.ComponentRenderer> to turn your Razor component into an HTML string.
 
-```razor:path
-examples/SpaNavigationExample/Slots/Components/RecipeInfoCard.razor
+## Tutorial: Adding SPA Navigation to a Recipe Site
+
+Let's wire up SPA navigation for a recipe site with two islands: a main content area and a recipe info sidebar.
+
+### 1. Define Your Front Matter
+
+```csharp
+public class RecipeFrontMatter : IFrontMatter
+{
+    public string Title { get; set; } = "";
+    public string? Description { get; set; }
+    public string? Uid { get; set; }
+    public int Order { get; set; }
+    public bool IsDraft { get; set; }
+    
+    // Recipe-specific fields
+    public string? PrepTime { get; set; }
+    public string? CookTime { get; set; }
+    public int Servings { get; set; }
+    public string? Difficulty { get; set; }
+}
 ```
 
-> [!TIP]
-> These same components are used by both the initial SSR page load and the Razor Island system. One
-> component, two rendering paths — no duplicated markup.
+### 2. Create Razor Components for Islands
 
-</Step>
-<Step stepNumber="3">
+These components render both the initial SSR page and the SPA updates. One component, two rendering paths:
 
-## Write Island Renderers
+**RecipeContent.razor**
 
-An island renderer connects your data to your Razor component. It fetches the content page, extracts the data
-it needs, and returns a parameter dictionary. The base class `RazorIslandRenderer<TComponent>` handles the
-actual rendering via Blazor's `HtmlRenderer`.
+```razor
+<article class="prose dark:prose-invert">
+    <h1>@Title</h1>
+    @((MarkupString)HtmlContent)
+</article>
 
-The content island renderer fetches the markdown content and passes it to the `RecipeContent` component:
-
-```csharp:path
-examples/SpaNavigationExample/Slots/RecipeContentSlotRenderer.cs
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string HtmlContent { get; set; } = "";
+}
 ```
 
-The sidebar island renderer reads recipe-specific front matter fields:
+**RecipeInfoCard.razor**
 
-```csharp:path
-examples/SpaNavigationExample/Slots/RecipeInfoSlotRenderer.cs
+```razor
+<div class="rounded-lg border p-4">
+    <dl>
+        <dt>Prep Time</dt><dd>@PrepTime</dd>
+        <dt>Cook Time</dt><dd>@CookTime</dd>
+        <dt>Servings</dt><dd>@Servings</dd>
+        <dt>Difficulty</dt><dd>@Difficulty</dd>
+    </dl>
+</div>
+
+@code {
+    [Parameter] public string? PrepTime { get; set; }
+    [Parameter] public string? CookTime { get; set; }
+    [Parameter] public int Servings { get; set; }
+    [Parameter] public string? Difficulty { get; set; }
+}
 ```
 
-Each renderer declares an `IslandName` — this must match the `data-spa-island` attribute you'll add to the layout
-in the next step.
+### 3. Write Island Renderers
 
-</Step>
-<Step stepNumber="4">
+Each renderer fetches data for a `ContentRoute` and maps it to component parameters.
 
-## Wire Up the Layout
+**RecipeContentSlotRenderer.cs**
 
-Add `data-spa-island` attributes to the layout elements that should update during SPA navigation. The
-attribute value must match the `IslandName` from your renderers.
+```csharp
+public class RecipeContentSlotRenderer(
+    ContentResolver contentResolver,
+    ComponentRenderer renderer) : RazorIslandRenderer<RecipeContent>(renderer)
+{
+    public override string IslandName => "content";
 
-```razor:path
-examples/SpaNavigationExample/Components/Layout/MainLayout.razor
+    protected override async Task<IDictionary<string, object?>?> BuildParametersAsync(
+        ContentRoute route)
+    {
+        var page = await contentResolver.GetByUrlAsync(route.CanonicalPath.Value);
+        if (page is null) return null;
+
+        return new Dictionary<string, object?>
+        {
+            [nameof(RecipeContent.Title)] = page.Title,
+            [nameof(RecipeContent.HtmlContent)] = page.Html,
+        };
+    }
+}
 ```
 
-The key attributes:
+**RecipeInfoSlotRenderer.cs**
 
-- `data-spa-island="content"` marks the article area — the SPA engine replaces its contents on navigation
-- `data-spa-island="recipe-info"` marks the sidebar — same treatment
-- `data-spa-loading="skeleton"` shows a shimmer placeholder while slow fetches complete
-- `data-spa-loading="clear"` empties the island immediately (good for small sidebar elements)
+```csharp
+public class RecipeInfoSlotRenderer(
+    ContentResolver contentResolver,
+    ComponentRenderer renderer) : RazorIslandRenderer<RecipeInfoCard>(renderer)
+{
+    public override string IslandName => "recipe-info";
 
-</Step>
-<Step stepNumber="5">
+    protected override async Task<IDictionary<string, object?>?> BuildParametersAsync(
+        ContentRoute route)
+    {
+        var page = await contentResolver.GetByUrlAsync(route.CanonicalPath.Value);
+        if (page?.FrontMatter is not RecipeFrontMatter fm) return null;
 
-## Use the Components in Your SSR Page
-
-Your `Pages.razor` renders the initial static HTML. Use the same Razor components you created for the island
-renderers:
-
-```razor:path
-examples/SpaNavigationExample/Components/Layout/Pages.razor
+        return new Dictionary<string, object?>
+        {
+            [nameof(RecipeInfoCard.PrepTime)] = fm.PrepTime,
+            [nameof(RecipeInfoCard.CookTime)] = fm.CookTime,
+            [nameof(RecipeInfoCard.Servings)] = fm.Servings,
+            [nameof(RecipeInfoCard.Difficulty)] = fm.Difficulty,
+        };
+    }
+}
 ```
 
-Notice `RecipeContent` and `RecipeInfoCard` appear here — the same components the island renderers use. Change
-the component once, both SSR and SPA update.
+Note how each renderer's `IslandName` (`"content"`, `"recipe-info"`) corresponds to a `data-spa-island` attribute in the layout.
 
-</Step>
-<Step stepNumber="6">
+### 4. Wire Up the Layout
 
-## Register Services and Include Scripts
+Add `data-spa-island` attributes to the elements that should update during SPA navigation:
 
-In `Program.cs`, chain `.WithSpaNavigation<T>()` after your markdown content service and register your island
-renderers:
+```razor
+<div class="flex">
+    <main data-spa-island="content" data-spa-loading="skeleton">
+        <RecipeContent Title="@title" HtmlContent="@html" />
+    </main>
 
-```csharp:path
-examples/SpaNavigationExample/Program.cs
+    <aside data-spa-island="recipe-info" data-spa-loading="clear">
+        <RecipeInfoCard PrepTime="@prepTime" CookTime="@cookTime"
+                        Servings="@servings" Difficulty="@difficulty" />
+    </aside>
+</div>
 ```
 
-Then include the SPA engine script in your `App.razor` (after the main `scripts.js`):
+The `data-spa-loading` attribute controls what happens while the fetch is in progress:
 
-```razor:path
-examples/SpaNavigationExample/Components/App.razor
+- `"skeleton"` -- shows a shimmer placeholder (good for main content areas)
+- `"clear"` -- empties the island immediately (good for small sidebar widgets)
+
+### 5. Register Services
+
+In `Program.cs`:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddPenn(penn =>
+{
+    penn.SiteTitle = "Recipe Book";
+    penn.AddMarkdownContent<RecipeFrontMatter>(md =>
+    {
+        md.ContentPath = "Content/recipes";
+        md.BasePageUrl = "/recipes";
+    });
+});
+
+// SPA navigation
+builder.Services.AddSpaNavigation();
+builder.Services.AddScoped<ComponentRenderer>();
+builder.Services.AddTransient<IIslandRenderer, RecipeContentSlotRenderer>();
+builder.Services.AddTransient<IIslandRenderer, RecipeInfoSlotRenderer>();
+
+var app = builder.Build();
+
+app.UsePenn();
+app.UseSpaNavigation();
+
+await app.RunOrBuildAsync(args);
 ```
 
-The `spa-engine.js` script handles link interception, fetch racing, skeleton display, view transitions,
-history management, and scroll position — all driven by the `data-spa-island` attributes in your layout.
+Key registrations:
 
-</Step>
-<Step stepNumber="7">
+- `AddSpaNavigation()` registers <xref:T:Penn.Islands.SpaPageDataService> and maps the `/_spa-data/{slug}` endpoint.
+- Each `IIslandRenderer` is registered as transient -- the `SpaPageDataService` iterates over all of them per request.
+- `ComponentRenderer` is scoped because it wraps Blazor's `HtmlRenderer`, which is tied to a service scope.
 
-## Add Some Content
+### 6. Include the SPA Script
 
-Create a few markdown files with your front matter fields. Here's an example recipe:
+In your `App.razor`:
 
-```markdown:path
-examples/SpaNavigationExample/Content/pasta-carbonara.md
+```html
+<script src="/_content/Penn.UI/scripts.js" defer></script>
 ```
 
-</Step>
-<Step stepNumber="8">
+The SPA engine is included in the main script bundle. It intercepts link clicks, fetches the JSON envelope, and swaps island content.
 
-## Run It
+### 7. Run It
 
 ```bash
 dotnet watch
 ```
 
-Navigate to your site and click between recipes. The content and sidebar swap instantly without a full page
-reload. Open the browser's Network tab — you'll see small `.json` fetches instead of full HTML page loads.
-
-</Step>
-</Steps>
-
-## What Success Looks Like
-
-When you click a recipe link in the sidebar:
-
-1. The article content swaps to the new recipe (title, instructions, ingredients)
-2. The sidebar card updates with the new recipe's prep time, cook time, and servings
-3. The URL updates in the address bar and browser back/forward works
-4. The first visit to any page still loads full static HTML — no JavaScript required for the initial render
-
-If a fetch takes longer than 100ms (slow network, cold cache), you'll see a shimmer skeleton in the content
-area that holds for at least 250ms to avoid a flash.
+Click between recipes. The content and sidebar swap instantly. Open the Network tab -- you'll see small JSON fetches to `/_spa-data/recipes--pasta-carbonara.json` instead of full HTML page loads.
 
 ## Responding to Navigation Events
 
-The SPA engine fires `spa:commit` on `document` after new content is injected. Use this to reinitialise
-interactive features:
+The SPA engine fires custom events on `document`:
 
 ```javascript
+// After new content is injected
 document.addEventListener('spa:commit', (e) => {
     // e.detail contains { url, data }
+    // Reinitialise any interactive features
     window.pageManager?.syntaxHighlighter?.init();
-    window.pageManager?.tabManager?.init();
+});
+
+// Before the fetch starts
+document.addEventListener('spa:before-navigate', (e) => {
+    // Good place to tear down transient UI state
 });
 ```
 
-A `spa:before-navigate` event fires before the fetch starts, useful for clearing transient UI state.
+## How DocSite Uses This
 
-## Next Steps
+For a real-world example, Penn.DocSite wires up SPA navigation internally. Its `AddDocSite()` method calls `AddSpaNavigation()`, registers a `ComponentRenderer`, and adds a `DocSiteArticleSlotRenderer` that renders the article content island. You get SPA navigation without any manual setup. The pattern is identical to what's shown here -- DocSite just does it for you.
 
-- [Razor Islands Reference](xref:docs.reference.razor-islands) — full API reference for interfaces, data
-  attributes, JSON envelope, and lifecycle events
-- [Using DocSite](xref:docs.getting-started.using-docsite) — DocSite uses SPA navigation out of the box with
-  built-in content managers and outline rebuilding
-- [Custom Content Service](xref:docs.guides.custom-content-service) — build an island renderer backed by a
-  non-markdown content source
+## Fallback Behavior
+
+If the SPA data endpoint returns 404 (the page doesn't have island data -- maybe it's a custom Razor page), the SPA engine falls back to a normal full-page navigation. No error, no broken state. Pages that can be SPA-navigated are; pages that can't aren't. It's not clever, but it's reliable.

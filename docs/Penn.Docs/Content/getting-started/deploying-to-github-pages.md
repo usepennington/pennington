@@ -1,39 +1,80 @@
 ---
 title: "Deploying to GitHub Pages"
-description: "Configure and deploy your MyLittleContentEngine site to GitHub Pages with automated builds"
-uid: "docs.getting-started.deploying-to-github-pages"
+description: "Generate a static site and deploy it to GitHub Pages with a GitHub Actions workflow"
+uid: "penn.getting-started.deploying-to-github-pages"
 order: 1090
 ---
 
-This tutorial covers:
+Penn runs as a normal ASP.NET application in development. For deployment, it switches to static generation mode: it starts the server, crawls every page, writes HTML files to an output directory, and shuts down. The result is a folder of static files that any web server — or GitHub Pages — can serve.
 
-- Setting up GitHub Actions for automated builds
-- Configuring base URLs for subdirectory deployment
-- Handling static assets and routing correctly
-- Custom domain configuration
+No server runtime required. No containers. Just files. The web's most underrated deployment model.
 
 ## Prerequisites
 
 - A GitHub account and repository
-- Completed at least the ["Creating Your First Site"](xref:docs.getting-started.creating-first-site) tutorial
-- Basic understanding of Git and GitHub
-- Your MyLittleContentEngine project pushed to a GitHub repository
+- Completed at least the [Creating Your First Site](xref:penn.getting-started.creating-first-site) tutorial
+- Your Penn project pushed to a GitHub repository
+- Basic familiarity with Git
 
 <Steps>
 <Step stepNumber="1">
+## Understand the Build Command
+
+Penn's static generation is triggered by passing `build` as a command-line argument:
+
+```bash
+dotnet run -- build
+```
+
+This starts the server, requests every known page, writes the HTML to an `output` directory, and exits. You can also specify a base URL and output directory:
+
+```bash
+dotnet run -- build "/repository-name/"
+dotnet run -- build "/repository-name/" "dist"
+```
+
+**Arguments:**
+- `build` — triggers static generation instead of the dev server
+- Base URL (optional) — the path prefix for all links, e.g., `/my-project/` for GitHub Pages subdirectory hosting. Defaults to `/`.
+- Output directory (optional) — where to write generated files. Defaults to `output`.
+
+The base URL matters because GitHub Pages serves your site at `https://username.github.io/repository-name/`, not at the root. Penn rewrites all links, asset paths, and navigation URLs to include this prefix during static generation. In development, everything works at `/` as usual.
+
+You can also set the base URL via the `BaseHref` environment variable if you'd rather not pass it as an argument:
+
+```bash
+export BaseHref="/my-project/"
+dotnet run -- build
+```
+</Step>
+
+<Step stepNumber="2">
 ## Prepare Your Repository
 
-First, ensure your project is properly configured for GitHub Pages deployment.
-
-### Repository Settings
+### Enable GitHub Pages
 
 1. Navigate to your repository on GitHub
-2. Go to **Settings** → **Pages**
+2. Go to **Settings** > **Pages**
 3. Under **Source**, select **GitHub Actions**
 
-### Project Structure
+### Pin the .NET SDK Version
 
-Make sure your project structure follows this pattern:
+Create a `global.json` in your repository root to ensure consistent builds:
+
+```json
+{
+  "sdk": {
+    "version": "11.0.0",
+    "rollForward": "latestMinor"
+  }
+}
+```
+
+This ensures GitHub Actions uses the same .NET SDK version as your local development environment. Without it, you're rolling the dice on which SDK version the runner has cached.
+
+### Verify Project Structure
+
+Your repository should look something like this:
 
 ```
 your-repo/
@@ -41,38 +82,24 @@ your-repo/
 │   └── workflows/
 │       └── deploy.yml
 ├── src/
-│   └── YourProject/
-│       ├── YourProject.csproj
+│   └── YourDocsSite/
+│       ├── YourDocsSite.csproj
 │       ├── Program.cs
 │       └── Content/
 ├── global.json
 └── README.md
 ```
 
-Note that we are using a [`global.json`](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json) file to specify the
-.NET SDK version. This ensures consistent builds across different environments, and is used in the GitHub Actions workflow to install
-the appropriate .NET version.
-
-Create a `global.json` file in your repository root:
-
-```json
-{
-  "sdk": {
-    "version": "9.0.0",
-    "rollForward": "latestMinor"
-  }
-}
-```
-
-This ensures GitHub Actions uses the same .NET version as your local development environment.
+The exact structure depends on your solution layout. The workflow just needs to know where your project lives.
 </Step>
-<Step stepNumber="2">
-## Configure GitHub Actions Workflow
 
-Create `.github/workflows/deploy.yml` in your repository root:
+<Step stepNumber="3">
+## Create the GitHub Actions Workflow
+
+Create `.github/workflows/deploy.yml`:
 
 ```yaml
-name: Build and publish to GitHub Pages
+name: Build and deploy to GitHub Pages
 
 on:
   push:
@@ -82,15 +109,14 @@ on:
 
 env:
   ASPNETCORE_ENVIRONMENT: Production
-  WEBAPP_PATH: ./src/YourProject/
-  WEBAPP_CSPROJ: YourProject.csproj
+  WEBAPP_PATH: ./src/YourDocsSite/
+  WEBAPP_CSPROJ: YourDocsSite.csproj
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -106,12 +132,12 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Run webapp and generate static files
+      - name: Build and generate static files
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: true
         run: |
           dotnet build
-          dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}} --configuration Release -- build "/your-repository-name/"
+          dotnet run --project ${{ env.WEBAPP_PATH }}${{ env.WEBAPP_CSPROJ }} --configuration Release -- build "/your-repository-name/"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -137,121 +163,50 @@ jobs:
         uses: actions/deploy-pages@v4
 ```
 
-### Key Configuration Points
+### What to Customize
 
-**Variables to Update:**
+Three things need your actual values:
 
-- `WEBAPP_PATH`: Path to your project directory
-- `WEBAPP_CSPROJ`: Your project file name
-- `"/your-repository-name/"`: Your repository name in the build command (for GitHub Pages subdirectory)
+- **`WEBAPP_PATH`** — path to your doc site project directory (e.g., `./docs/MyDocs/`)
+- **`WEBAPP_CSPROJ`** — your project file name (e.g., `MyDocs.csproj`)
+- **`"/your-repository-name/"`** — your GitHub repository name in the build command
 
-**Important:** Replace `your-repository-name` and `YourProject` with your actual values.
+The `.nojekyll` file tells GitHub Pages not to process your output through Jekyll. Without it, files and directories starting with underscores get silently ignored, which breaks things in ways that are deeply annoying to debug.
+
+### How the Workflow Runs
+
+- **Build job** runs on every push to any branch and on pull requests to `main`. This gives you CI validation on feature branches.
+- **Deploy job** only runs when code lands on `main` (direct push or merged PR). Your site only updates on main — feature branches build but don't deploy.
 </Step>
-<Step stepNumber="3">
-## Configuring Base URLs
 
-This is one of the most important aspects of GitHub Pages deployment. Understanding BaseUrl is crucial for your site to
-work correctly.
-
-### Why BaseUrl Matters
-
-**Local Development vs GitHub Pages:**
-
-- **Local development**: Your site runs at `http://localhost:5000/` (root domain)
-- **GitHub Pages**: Your site runs at `https://username.github.io/repository-name/` (subdirectory)
-
-Without proper BaseUrl configuration, your site will have broken links, missing CSS, and non-functional navigation when
-deployed to GitHub Pages.
-
-See the [Linking Documents and Media](xref:docs.guides.linking-documents-and-media) guide for more details on how
-MyLittleContentEngine handles links.
-
-### How BaseUrl Configuration Works
-
-MyLittleContentEngine automatically handles BaseUrl configuration through command-line arguments. When you run the build command:
-
-```bash
-dotnet run -- build "/your-repository-name/"
-```
-
-The framework:
-1. Parses the command-line arguments passed to `RunBlogSiteAsync(args)` or `RunDocSiteAsync(args)`
-2. Extracts the BaseUrl (`/your-repository-name/`) from the second argument after `build`
-3. Configures `OutputOptions` internally with this BaseUrl
-4. Uses this BaseUrl to rewrite all links, assets, and navigation URLs during static generation
-
-**You don't need to modify your `Program.cs`** - the BlogSite and DocSite packages handle this automatically when you pass `args` to `RunBlogSiteAsync(args)` or `RunDocSiteAsync(args)`.
-
-### Command-Line Build Format
-
-```bash
-dotnet run --project YourProject.csproj -- build [BaseUrl] [OutputFolder]
-```
-
-**Arguments:**
-- `build` - Triggers static generation mode
-- `BaseUrl` (optional) - The base URL path (e.g., `/repository-name/` for GitHub Pages, `/` for root deployment)
-- `OutputFolder` (optional) - Output directory path (defaults to `output`)
-
-**Examples:**
-```bash
-# GitHub Pages subdirectory deployment
-dotnet run -- build "/my-blog/"
-
-# Root deployment (custom domain)
-dotnet run -- build "/"
-
-# Custom output folder
-dotnet run -- build "/my-blog/" "dist"
-```
-
-**Environment Variable Fallback:**
-
-If no BaseUrl is provided via command-line, the system checks for a `BaseHref` environment variable:
-
-```bash
-export BaseHref="/my-blog/"
-dotnet run -- build
-```
-</Step>
 <Step stepNumber="4">
+## Deploy
 
-## Test Your Deployment
-
-### Push Your Changes
-
-Commit and push your workflow file:
+Commit and push:
 
 ```bash
-git add .github/workflows/deploy.yml
-git commit -m "Add GitHub Pages deployment workflow"
+git add .github/workflows/deploy.yml global.json
+git commit -m "Add GitHub Pages deployment"
 git push origin main
 ```
 
-### Monitor the Build
+Then:
 
 1. Go to the **Actions** tab in your repository
 2. Watch the workflow run
-3. Check for any errors in the build process
+3. Once the deploy job completes, your site is live at `https://username.github.io/repository-name/`
 
-### Verify Deployment
-
-Once the workflow completes:
-
-1. Your site should be available at `https://username.github.io/repository-name/`
-2. Check that all pages load correctly
-3. Verify that navigation works properly
-4. Test that images and other assets load
-
+The first deployment takes a minute or two. Subsequent deployments are faster since the runner caches the .NET SDK and NuGet packages.
 </Step>
+
 <Step stepNumber="5">
 ## Custom Domain (Optional)
 
-To use a custom domain:
+If you have a custom domain, the base URL changes from `/repository-name/` to `/`:
 
 ### Configure DNS
 
-Add a CNAME record pointing to `username.github.io`:
+Add a CNAME record pointing to your GitHub Pages site:
 
 ```
 CNAME  www.yourdomain.com  username.github.io
@@ -259,50 +214,49 @@ CNAME  www.yourdomain.com  username.github.io
 
 ### Update Repository Settings
 
-1. Go to **Settings** → **Pages**
+1. Go to **Settings** > **Pages**
 2. Enter your custom domain in the **Custom domain** field
-3. GitHub will automatically create a `CNAME` file in your repository
+3. Enable **Enforce HTTPS** once the certificate provisions
 
-### Update Base URL
+### Update the Build Command
 
-Modify your workflow to use your custom domain:
+Change the base URL in your workflow to `/`:
 
 ```yaml
-- name: Run webapp and generate static files
+- name: Build and generate static files
   env:
     DOTNET_CLI_TELEMETRY_OPTOUT: true
   run: |
     dotnet build
-    dotnet run --project ${{ env.WEBAPP_PATH }}${{env.WEBAPP_CSPROJ}} --configuration Release -- build "/"  # Root path for custom domain
+    dotnet run --project ${{ env.WEBAPP_PATH }}${{ env.WEBAPP_CSPROJ }} --configuration Release -- build "/"
 ```
+
+With a custom domain, your site lives at the root — no subdirectory prefix needed.
 </Step>
 </Steps>
 
-
-
 ## What Success Looks Like
 
-After pushing to `main`, navigate to the **Actions** tab in your repository and watch the workflow run. Once the
-deploy job completes (typically 1–2 minutes), your site will be live at
-`https://username.github.io/repository-name/`.
+After pushing to `main`, navigate to the **Actions** tab and watch the workflow. Once the deploy job finishes (typically 1-2 minutes), your site is live.
 
 Verify that:
-- Pages load correctly with styling applied
-- Navigation links work between pages
-- Images and other assets load
+- Pages load with styling intact
+- Navigation works between pages
+- Images and assets load correctly
+- If using Roslyn, code blocks render with syntax highlighting
 
-Every time you push to the `main` branch from this point forward, your site rebuilds and deploys automatically.
+Every push to `main` from this point forward triggers an automatic rebuild and deploy. Push content changes and they're live in minutes.
 
 ## Troubleshooting
 
-**Site loads but assets are missing (CSS, JS, images)**
-: Check that the repository name in your build command (`build "/your-repository-name/"`) exactly matches your
-GitHub repository name, including case.
+**Site loads but CSS/JS/images are missing**
+: The repository name in your build command (`build "/your-repository-name/"`) must exactly match your GitHub repository name, including case. A mismatch means every asset URL is wrong.
 
 **404 on all pages after deployment**
-: Ensure the `.nojekyll` file step is present in your workflow. Without it, GitHub Pages' Jekyll processing
-interferes with the generated HTML.
+: Make sure the `.nojekyll` file step is in your workflow. GitHub Pages' default Jekyll processing ignores directories that start with underscores, which breaks static file serving.
 
-**Workflow runs but site isn't updating**
-: The deploy job only runs on pushes to `main`. Check the **Actions** tab to confirm the *deploy* job ran,
-not just the *build* job. The build job runs on all branches for CI validation.
+**Workflow runs but site doesn't update**
+: The deploy job only runs on pushes to `main`. Check the Actions tab — you'll see the build job succeeded on your branch, but the deploy job was skipped. This is by design.
+
+**Build succeeds locally but fails in CI**
+: Check your `global.json`. If it pins a .NET version that isn't available on the GitHub runner, `setup-dotnet` will fail. Use `rollForward: "latestMinor"` to give yourself some flexibility.

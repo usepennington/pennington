@@ -1,70 +1,73 @@
 ---
 title: "Working with Multiple Content Sources"
-description: "Configure multiple content sources with different front matter types and URL structures for complex sites"
-uid: "docs.guides.multiple-content-sources"
+description: "Configure multiple content sources with different front matter types and URL structures"
+uid: "penn.guides.multiple-content-sources"
 order: 1500
 ---
 
-This guide shows you how to configure multiple content sources in MyLittleContentEngine to create complex sites with different types of content, each with their own front matter schemas, URL structures, and behaviors.
+This guide shows you how to register multiple markdown content sources within a single Penn site. Different content types, different front matter schemas, different URL structures, same `AddPenn` lambda. Penn is inflexible in many ways, but it is flexible about this.
 
 ## Understanding Multiple Content Sources
 
-Multiple content sources allow you to organize different types of content with distinct characteristics:
+Multiple content sources let you organize distinct content types with their own characteristics:
 
-- **Different Front Matter Types**: Blog posts with dates and RSS feeds vs. documentation with ordering
+- **Different Front Matter Types**: Blog posts with dates vs. documentation with ordering
 - **Separate URL Structures**: `/blog/` for articles, `/docs/` for documentation, `/` for static pages
-- **Content-Specific Behaviors**: RSS generation for blogs but not docs, different ordering schemes
+- **Content-Specific Behaviors**: Tags on blog posts, sections on docs, neither on landing pages
 - **Organizational Flexibility**: Keep content types in separate directories with their own rules
 
 ## Basic Multiple Content Source Setup
 
-Here's how to configure a site with three different content types:
+Here's a site with three content types, registered via `penn.AddMarkdownContent<T>()` calls inside the `AddPenn` lambda:
 
 ```csharp
-using MyLittleContentEngine;
-using MyLittleContentEngine.MonorailCss;
+using Penn;
+using Penn.MonorailCss;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
 
-// Global site configuration
-builder.Services.AddContentEngineService(_ => new ContentEngineOptions
+builder.Services.AddPenn(penn =>
+{
+    penn.SiteTitle = "Daily Life Hub";
+    penn.SiteDescription = "Your everyday life, simplified";
+    penn.ContentRootPath = "Content";
+
+    // Static pages at root level
+    penn.AddMarkdownContent<ContentFrontMatter>(opts =>
     {
-        SiteTitle = "Daily Life Hub",
-        SiteDescription = "Your everyday life, simplified",
-        ContentRootPath = "Content",
-    })
-    .WithMarkdownContentService(_ => new MarkdownContentOptions<ContentFrontMatter>()
-    {
-        // Static pages at root level (about, contact, etc.)
-        ContentPath = "Content",
-        BasePageUrl = "",
-        ExcludeSubfolders = true, // Don't include blog/ and docs/ subfolders
-    })
-    .WithMarkdownContentService(_ => new MarkdownContentOptions<BlogFrontMatter>()
-    {
-        // Blog posts with RSS feeds
-        ContentPath = "Content/blog",
-        BasePageUrl = "/blog"
-    })
-    .WithMarkdownContentService(_ => new MarkdownContentOptions<DocsFrontMatter>()
-    {
-        // Documentation with ordering
-        ContentPath = "Content/docs",
-        BasePageUrl = "/docs"
+        opts.ContentPath = "Content";
+        opts.BasePageUrl = "/";
     });
+
+    // Blog posts
+    penn.AddMarkdownContent<BlogFrontMatter>(opts =>
+    {
+        opts.ContentPath = "Content/blog";
+        opts.BasePageUrl = "/blog";
+    });
+
+    // Documentation with ordering
+    penn.AddMarkdownContent<DocFrontMatter>(opts =>
+    {
+        opts.ContentPath = "Content/docs";
+        opts.BasePageUrl = "/docs";
+    });
+});
 
 builder.Services.AddMonorailCss();
 
 var app = builder.Build();
-app.UseAntiforgery();
 app.UseStaticFiles();
-app.MapRazorComponents<App>();
+app.UsePenn();
 app.UseMonorailCss();
+app.MapRazorComponents<App>();
 
-await app.RunOrBuildContent(args);
+await app.RunOrBuildAsync(args);
 ```
+
+Each `AddMarkdownContent<T>()` call registers a separate `MarkdownContentService<T>` as an `IContentService`. Penn resolves content paths using `IWebHostEnvironment.ContentRootPath`, so relative paths in `ContentPath` work across development and production.
 
 ## Content Directory Structure
 
@@ -78,106 +81,73 @@ Content/
 │   ├── best-pizza-toppings.md
 │   ├── mystery-of-missing-socks.md
 │   └── office-plant-survival-guide.md
-└── docs/                 # Documentation (DocsFrontMatter)
+└── docs/                 # Documentation (DocFrontMatter)
     ├── coffee-brewing-guide.md
     ├── indoor-herb-garden.md
     └── home-organization-systems.md
 ```
 
+> [!WARNING]
+> If your root content source (`ContentPath = "Content"`) overlaps with subdirectories used by other sources, both services will discover files in those subdirectories. Penn will not resolve this for you. Use distinct, non-overlapping paths, or accept the consequences of your architectural choices.
+
 ## Front Matter Types
 
-Each content source needs its own front matter class implementing `IFrontMatter`. Here are three common patterns:
+Penn v2 uses a composable capability system. <xref:T:Penn.FrontMatter.IFrontMatter> requires only `Title`. Everything else comes from opt-in interfaces: <xref:T:Penn.FrontMatter.IDraftable>, <xref:T:Penn.FrontMatter.ITaggable>, <xref:T:Penn.FrontMatter.IOrderable>, <xref:T:Penn.FrontMatter.ICrossReferenceable>, <xref:T:Penn.FrontMatter.IDescribable>, `IDateable`, `ISectionable`, and `IRedirectable`.
 
 ### Static Content Front Matter
 
-For general pages without special ordering or RSS requirements:
+For pages that need nothing special:
 
 ```csharp
-using MyLittleContentEngine.Models;
+using Penn.FrontMatter;
 
-public class ContentFrontMatter : IFrontMatter
+public record ContentFrontMatter : IFrontMatter, ICrossReferenceable
 {
     public string Title { get; init; } = "Untitled";
-    public int Order { get; init; }
-    public string[] Tags { get; init; } = [];
-    public bool IsDraft { get; init; }
     public string? Uid { get; init; }
-    public string? RedirectUrl { get; init; }
-    
-    public Metadata AsMetadata()
-    {
-        return new Metadata()
-        {
-            Title = Title,
-            Description = string.Empty,
-            LastMod = DateTime.MaxValue,
-            Order = Order,
-            RssItem = false // Static pages don't appear in RSS
-        };
-    }
 }
 ```
 
 ### Blog Content Front Matter
 
-For time-based content with RSS feeds:
+Penn provides <xref:T:Penn.FrontMatter.BlogFrontMatter> out of the box, but you can roll your own:
 
 ```csharp
-using MyLittleContentEngine.Models;
+using Penn.FrontMatter;
 
-public class BlogFrontMatter : IFrontMatter
+public record BlogFrontMatter : IFrontMatter, IDraftable, ITaggable,
+    IDescribable, IDateable, ICrossReferenceable
 {
     public string Title { get; init; } = "Untitled Post";
-    public string Description { get; init; } = string.Empty;
-    public string? Uid { get; init; }
-    public DateTime Date { get; init; } = DateTime.Now;
-    public bool IsDraft { get; init; } = false;
+    public string? Description { get; init; }
+    public bool IsDraft { get; init; }
     public string[] Tags { get; init; } = [];
-    public string? RedirectUrl { get; init; }
-    
-    public Metadata AsMetadata()
-    {
-        return new Metadata()
-        {
-            Title = Title,
-            Description = Description,
-            LastMod = Date,
-            RssItem = true // Blog posts appear in RSS feeds
-        };
-    }
+    public DateTime? Date { get; init; }
+    public string? Uid { get; init; }
 }
 ```
 
 ### Documentation Front Matter
 
-For ordered documentation with no RSS:
+Penn also provides <xref:T:Penn.FrontMatter.DocFrontMatter>, which covers the documentation use case with ordering, sections, and cross-references. Use it directly or use it as a template:
 
 ```csharp
-using MyLittleContentEngine.Models;
+using Penn.FrontMatter;
 
-public class DocsFrontMatter : IFrontMatter
+public record DocsFrontMatter : IFrontMatter, IOrderable, IDraftable,
+    IDescribable, ICrossReferenceable, ISectionable
 {
     public string Title { get; init; } = "Untitled Document";
-    public string Description { get; init; } = string.Empty;
-    public bool IsDraft { get; init; } = false;
-    public string[] Tags { get; init; } = [];
-    public string? RedirectUrl { get; init; }
+    public string? Description { get; init; }
+    public bool IsDraft { get; init; }
     public int Order { get; init; } = int.MaxValue;
     public string? Uid { get; init; }
-    
-    public Metadata AsMetadata()
-    {
-        return new Metadata()
-        {
-            Title = Title,
-            Description = Description,
-            LastMod = DateTime.MinValue,
-            RssItem = false, // Documentation doesn't appear in RSS
-            Order = Order
-        };
-    }
+    public string? Section { get; init; }
 }
 ```
+
+> [!NOTE]
+> You don't have to implement all capabilities. A front matter record that only implements `IFrontMatter` works fine -- it just won't participate in drafts, ordering, cross-references, or any other capability-specific behavior. Penn checks for each interface at runtime with pattern matching (`fm is IDraftable { IsDraft: true }`), so unused capabilities cost nothing.
 
 ## Content Examples
 
@@ -186,16 +156,12 @@ public class DocsFrontMatter : IFrontMatter
 ```markdown
 ---
 title: "Welcome to Daily Life Hub"
-order: 1
-tags:
-  - home
-  - welcome
-isDraft: false
+uid: "home"
 ---
 
 ## Your Everyday Life, Simplified
 
-Welcome to Daily Life Hub, where we explore the amusing, practical, and occasionally profound aspects of modern living.
+Welcome to Daily Life Hub.
 ```
 
 ### Blog Post Example
@@ -209,7 +175,6 @@ tags:
   - food
   - opinion
   - pizza
-isDraft: false
 ---
 
 ## The Eternal Question
@@ -222,13 +187,10 @@ Pizza toppings have divided families, ended friendships, and sparked heated deba
 ```markdown
 ---
 title: "Ultimate Coffee Brewing Guide"
-description: "Master the art of coffee brewing with these comprehensive techniques"
-tags:
-  - coffee
-  - brewing
-  - guide
+description: "Master the art of coffee brewing"
 order: 100
-isDraft: false
+uid: "docs.coffee-brewing"
+section: "beverages"
 ---
 
 ## Essential Equipment
@@ -236,98 +198,54 @@ isDraft: false
 ### For the Minimalist
 - French press
 - Coffee grinder (burr preferred)
-...
 ```
 
-## Advanced Configuration Options
+## Custom URL Structures
 
-### Content Path Filtering
-
-Use `ExcludeSubfolders` to prevent content services from processing subdirectories:
+Each content source gets its own URL namespace via `BasePageUrl`:
 
 ```csharp
-// Only process files directly in Content/, not Content/blog/ or Content/docs/
-builder.Services.WithMarkdownContentService(_ => new MarkdownContentOptions<ContentFrontMatter>()
+builder.Services.AddPenn(penn =>
 {
-    ContentPath = "Content",
-    BasePageUrl = "",
-    ExcludeSubfolders = true,
+    // Blog posts at /blog/post-name
+    penn.AddMarkdownContent<BlogFrontMatter>(opts =>
+    {
+        opts.ContentPath = "Content/blog";
+        opts.BasePageUrl = "/blog";
+    });
+
+    // Documentation at /docs/guide-name
+    penn.AddMarkdownContent<DocFrontMatter>(opts =>
+    {
+        opts.ContentPath = "Content/docs";
+        opts.BasePageUrl = "/docs";
+    });
+
+    // API docs at /api/reference-name
+    penn.AddMarkdownContent<ApiDocsFrontMatter>(opts =>
+    {
+        opts.ContentPath = "Content/api";
+        opts.BasePageUrl = "/api";
+    });
 });
 ```
 
-### Custom URL Structures
+The `Section` property on `MarkdownContentOptions` lets you group content sources for navigation without changing their URL structure. This is useful when you want multiple directories to appear under the same navigation heading.
 
-Configure different URL patterns for each content type:
+## Navigation and Content Merging
 
-```csharp
-// Blog posts at /blog/post-name
-builder.Services.WithMarkdownContentService(_ => new MarkdownContentOptions<BlogFrontMatter>()
-{
-    ContentPath = "Content/blog",
-    BasePageUrl = "/blog"
-});
+Multiple content sources automatically combine. The framework merges all content from all registered `IContentService` implementations when building:
 
-// Documentation at /docs/guide-name
-builder.Services.WithMarkdownContentService(_ => new MarkdownContentOptions<DocsFrontMatter>()
-{
-    ContentPath = "Content/docs",
-    BasePageUrl = "/docs"
-});
+- **Table of Contents**: Each service contributes entries via `GetContentTocEntriesAsync()`
+- **Cross-References**: All services contribute to the xref map via `GetCrossReferencesAsync()`
+- **Static Assets**: Each service reports files to copy via `GetContentToCopyAsync()`
+- **Discovery**: The pipeline iterates `DiscoverAsync()` across all services
 
-// API docs at /api/reference-name
-builder.Services.WithMarkdownContentService(_ => new MarkdownContentOptions<ApiDocsFrontMatter>()
-{
-    ContentPath = "Content/api",
-    BasePageUrl = "/api"
-});
-```
-
-### Environment-Based Configuration
-
-Configure different content paths for different environments:
-
-```csharp
-var contentRoot = Environment.GetEnvironmentVariable("CONTENT_ROOT") ?? "Content";
-var blogPath = Path.Combine(contentRoot, "blog");
-var docsPath = Path.Combine(contentRoot, "docs");
-
-builder.Services.WithMarkdownContentService(_ => new MarkdownContentOptions<BlogFrontMatter>()
-{
-    ContentPath = blogPath,
-    BasePageUrl = "/blog"
-});
-```
-
-## Navigation and Table of Contents
-
-Multiple content sources automatically combine their content in the navigation tree. The framework merges all content from all services when generating:
-
-- **Table of Contents**: All content sources contribute to the site navigation
-- **Cross-References**: Links work across all content types
-- **Search Indexes**: All content is searchable regardless of source
-
-## Content Service Priority
-
-When multiple content services are registered, they all contribute to the final site. The framework automatically:
-
-1. **Combines Content**: All pages from all services are included
-2. **Merges Navigation**: Table of contents includes all content sources
-3. **Resolves Cross-References**: Links work between different content types
-4. **Handles Conflicts**: Later registrations don't override earlier ones
+Penn does not deduplicate. If two services produce the same URL, you get undefined behavior, which is a polite way of saying "a bug you caused."
 
 ## Best Practices
 
-### Organization Strategy
-- **Group by Purpose**: Keep different content types in separate directories. Make it easy for Razor pages to discover
-  their content by folder.
-- **Consistent Naming**: Use clear, descriptive names for content types
-- **Logical Hierarchies**: Structure directories to match your site's information architecture
-
-
-### Front Matter Design
-- **Shared Properties**: Include common properties (Title, Description, Tags) in all front matter types
-- **Type-Specific Fields**: Add specialized fields only where needed (Date for blogs, Order for docs)
-- **Consistent Naming**: Use consistent property names across front matter types
-
-
-Multiple content sources provide the flexibility to create sophisticated content sites while maintaining clear separation of concerns and content-specific behaviors.
+- **Use non-overlapping paths**: Each `ContentPath` should be distinct to avoid double-discovery
+- **Use built-in front matter types when they fit**: `DocFrontMatter` and `BlogFrontMatter` cover the common cases. Custom types are for when they don't.
+- **Implement `ICrossReferenceable` on everything**: UIDs make cross-source linking possible. Without them, you're back to relative paths and prayer.
+- **Keep capability interfaces minimal**: Only implement the interfaces your content type actually uses. A blog post doesn't need `IOrderable`. Documentation doesn't need `IDateable`. Restraint is a virtue.

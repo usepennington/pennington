@@ -1,204 +1,143 @@
 ---
 title: "Implement Search Functionality"
-description: "Add powerful client-side search to your content site with built-in indexing and FlexSearch"
-uid: "docs.guides.implement-search-functionality"
+description: "Add client-side search to your Penn site with SearchIndexBuilder and FlexSearch"
+uid: "penn.guides.implement-search-functionality"
 order: 2060
 ---
 
-MyLittleContentEngine includes a built-in search system that automatically indexes your content and provides fast, client-side search functionality. The search system uses FlexSearch for high-performance searching with smart ranking and highlighting.
+Penn builds a search index from your rendered content and serves it as JSON. A client-side FlexSearch engine loads that index and provides instant, fuzzy search with highlighting. You don't have to configure a search server, because there isn't one. The entire index ships as a static file. This is either a feature or a limitation, depending on how much content you have. For most documentation and blog sites it's plenty.
 
-## How Search Works
+## How It Works
 
-The search system consists of three main components:
+1. During the build, <xref:T:Penn.Search.SearchIndexBuilder> processes every <xref:T:Penn.Pipeline.RenderedItem> from the content pipeline.
+2. Each item becomes a `SearchIndexDocument` with a title, body text (HTML stripped), URL, section, locale, and priority.
+3. Drafts are excluded automatically -- `SearchIndexBuilder` checks for `IDraftable { IsDraft: true }` and returns `null`.
+4. The resulting JSON is served at `/search-index.json` during dev and written to the output directory during build.
+5. On the client, FlexSearch loads the JSON, indexes it, and powers the search modal.
 
-1. **Server-side Index Generation**: Automatically creates a JSON search index from all your content
-2. **Client-side Search Engine**: Uses FlexSearch to provide fast, fuzzy searching
-3. **Search UI**: Modal interface with keyboard shortcuts and result highlighting
+### The SearchIndexDocument Shape
 
-### Architecture Overview
-
-```mermaid
-graph TD
-    A[Content Services] --> B[SearchIndexService]
-    B --> C[search-indexjson]
-    C --> D[FlexSearch Engine]
-    D --> E[Search Results UI]
-
-    F[User Types Query] --> D
-    G[Ctrl+K Shortcut] --> E
-    H[Search Button Click] --> E
+```csharp
+public record SearchIndexDocument(
+    string Title,
+    string Body,       // Plain text, HTML tags stripped
+    UrlPath Url,
+    string? Section,
+    string Locale,
+    int Priority        // Higher = more prominent in results
+);
 ```
 
-**Content Processing Flow:**
-1. Content services (Markdown, API Reference) provide pages via `GetPagesToGenerateAsync()`
-2. `SearchIndexService` fetches each page's HTML and extracts searchable content
-3. Content is cleaned (code blocks removed), headings are extracted with priority levels
-4. A JSON index is generated at `/search-index.json` with weighted content and search priorities
-5. Client-side FlexSearch loads the index and provides instant search results
+The `Body` field comes from `SearchIndexBuilder.StripHtml()`, which removes tags, decodes common HTML entities, and collapses whitespace. It's not sophisticated -- it doesn't parse nested structures or handle edge cases in CDATA sections -- but it works well enough for search indexing.
 
 ## Prerequisites
 
-- MyLittleContentEngine site with content
-- `MyLittleContentEngine.UI` package installed
-- Search UI components added to your layout
+- A Penn site with content (markdown or Razor pages)
+- The Penn UI scripts included in your layout
+- A search trigger element with `id="search-input"`
 
-## Implementation Steps
+## Adding Search to Your Site
 
-<Steps>
-<Step stepNumber="1">
-## Add Required Packages
+### 1. It's Already Registered
 
-Ensure you have the UI package installed:
+If you're using `AddPenn()`, the <xref:T:Penn.Search.SearchIndexBuilder> is registered automatically:
 
-```bash
-dotnet add package MyLittleContentEngine.UI
+```csharp
+// Inside AddPenn() -- you don't need to do this yourself
+services.AddSingleton(_ => new SearchIndexBuilder());
 ```
 
-The search functionality is automatically included with the UI package - no additional setup required.
-</Step>
+If you're using `AddDocSite()`, search is fully wired up out of the box, including the UI. You can stop reading here and go make lunch.
 
-<Step stepNumber="2">
-## Add Search UI to Your Layout
+### 2. Add the Search Trigger
 
-Add a search input element to your layout with the `id="search-input"`:
+In your layout, add an element with `id="search-input"`:
 
 ```html
 <button type="button" id="search-input" class="w-full rounded-md">
     Search documentation...
 </button>
-
 ```
 
-The search system will automatically:
-- Generate a search modal when the input is clicked
-- Enable `Ctrl+K` keyboard shortcut
-- Provide search results with highlighting
-</Step>
+The client-side scripts will:
+- Attach a click handler that opens the search modal
+- Register `Ctrl+K` / `Cmd+K` as a keyboard shortcut
+- Fetch `/search-index.json` on first open (lazy-loaded, not eager)
 
-<Step stepNumber="3">
-## Include Scripts and Base URL
+### 3. Include the Scripts
 
-In your `App.razor`, ensure you have the required scripts and base URL configuration:
+In your `App.razor`, include the Penn UI script bundle and set the base URL for subdirectory deployments:
 
 ```html
 <head>
-    <!-- Other head content -->
-    <script src="@LinkService.GetLink("/_content/MyLittleContentEngine.UI/scripts.js")" defer></script>
-    
-    <script>
-        // Set global base URL for scripts to use (required for subdirectory deployments)
-        window.MyLittleContentEngineBaseUrl = '@LinkService.GetLink("/")';
-    </script>
+    <script src="/_content/Penn.UI/scripts.js" defer></script>
 </head>
 ```
 
-Don't forget to inject the LinkService:
+For subdirectory deployments, the base URL is communicated via a `data-base-url` attribute on `<body>`, which the <xref:T:Penn.Infrastructure.BaseUrlRewritingProcessor> adds automatically.
+
+### 4. Customize Search Priority (Optional)
+
+Content services expose a `SearchPriority` property. Higher values push results toward the top:
 
 ```csharp
-@inject LinkService LinkService
-```
-</Step>
-
-<Step stepNumber="4">
-## Configure Content Service Priorities (Optional)
-
-Content services have configurable search priorities that affect result ranking:
-
-- **MarkdownContentService**: Priority 10 (high) - documentation and guides appear first
-- **ApiReferenceContentService**: Priority 5 (medium) - API docs appear after main content
-
-To customize priorities for custom content services, implement the `SearchPriority` property:
-
-```csharp
-public class MyCustomContentService : IContentService
+public class MyContentService : IContentService
 {
-    public int SearchPriority => 8; // Custom priority (1-10 range recommended)
-    
-    // Other implementation...
+    public int SearchPriority => 8; // Default is 5
+    // ...
 }
 ```
-</Step>
-</Steps>
+
+The `SearchIndexBuilder` uses a `defaultPriority` of 5, but individual content services can override this when building their `RenderedItem` records.
 
 ## Search Features
 
-### Intelligent Content Ranking
+### Content Ranking
 
-The search system uses multiple factors to rank results:
+FlexSearch ranks results using field weights:
 
-1. **Field Weights**: Title (3x) > Description (2x) > Headings (1.5x) > Content (1x)
-2. **Heading Priority**: H1 headings weighted higher than H2, H3, etc.
-3. **Content Service Priority**: Markdown content ranked higher than API reference
-4. **Position in Results**: Earlier matches in FlexSearch results get higher scores
+- **Title** (3x) -- what the page is called matters most
+- **Description** (2x) -- the summary you wrote in front matter
+- **Body** (1x) -- the full text, because sometimes people search for obscure things
 
-### Smart Content Processing
+The `Priority` field from `SearchIndexDocument` acts as a tiebreaker. Documentation pages (priority 10) outrank API reference pages (priority 5) when scores are otherwise equal.
 
-- **Code Block Removal**: Code samples are excluded from search content for cleaner results
-- **Heading Extraction**: Headings are extracted with level-based priority weighting
-- **HTML Cleaning**: Scripts, styles, and markup are removed, leaving clean searchable text
-- **Optimized Index**: Headings stored as `"level:text"` format for efficient client-side processing
+### Content Processing
 
-### Search UI Features
+`SearchIndexBuilder.StripHtml()` is intentionally simple:
 
-- **Modal Interface**: Clean, focused search experience
-- **Keyboard Shortcuts**: `Ctrl+K` (Windows/Linux) or `Cmd+K` (Mac) to open search
-- **Live Search**: Results appear as you type with 300ms debounce
-- **Result Highlighting**: Search terms highlighted in titles, descriptions, and content snippets
-- **Failure Handling**: Graceful degradation with clear error messages, no retry storms
+- Removes HTML tags via regex (`<[^>]+>`)
+- Decodes `&amp;`, `&lt;`, `&gt;`, `&quot;`, `&#39;`, `&nbsp;`
+- Collapses runs of whitespace to a single space
 
-## Customization
+This means code blocks, navigation chrome, and other markup noise don't pollute your search index.
+
+### Search UI
+
+The built-in search modal provides:
+
+- **Keyboard shortcut**: `Ctrl+K` (Windows/Linux) or `Cmd+K` (Mac)
+- **Live results**: 300ms debounce, results appear as you type
+- **Highlighting**: Search terms highlighted in titles and snippets
+- **Graceful failure**: If the index can't load, you get a clear error message instead of a blank modal
 
 ### Styling
 
-The search interface uses semantic CSS classes that are automatically styled by MonorailCSS:
+The search modal uses semantic CSS classes styled by MonorailCSS:
 
-- `.search-modal-backdrop` - Modal overlay
-- `.search-modal-content` - Modal container
-- `.search-result-item` - Individual search results
-- `.search-highlight` - Highlighted search terms
+- `.search-modal-backdrop` -- the overlay behind the modal
+- `.search-modal-content` -- the modal container
+- `.search-result-item` -- each result row
+- `.search-highlight` -- highlighted search terms
 
-Customize the appearance by adding CSS rules in your stylesheets or via MonorailCSS configuration.
-
-### Search Index Endpoint
-
-The search index is automatically available at `/search-index.json` and includes:
-
-```json
-{
-  "documents": [
-    {
-      "url": "/page-url",
-      "title": "Page Title", 
-      "description": "Page description",
-      "content": "Clean page content without code blocks",
-      "headings": ["1:Main Heading", "2:Sub Heading"],
-      "searchPriority": 10
-    }
-  ],
-  "generatedAt": "2024-01-01T00:00:00.000Z"
-}
-```
+You can override these via MonorailCSS configuration or additional CSS.
 
 ## Troubleshooting
 
-**Search modal not appearing:**
-- Verify `id="search-input"` is present on your search element
-- Check browser console for JavaScript errors
-- Ensure `scripts.js` is loading correctly
+**Search modal doesn't open**: Confirm an element with `id="search-input"` exists in the DOM and that `scripts.js` loaded without errors.
 
-**Search index not loading:**
-- Verify the `/search-index.json` endpoint is accessible
-- Check that `MyLittleContentEngineBaseUrl` is set correctly in subdirectory deployments
-- Look for network errors in browser developer tools
+**Empty results**: Check that `/search-index.json` returns data. If it's empty, verify your content services are producing `RenderedItem` records and that the search index builder is registered.
 
-**No search results:**
-- Verify your content services are implementing `GetPagesToGenerateAsync()` correctly
-- Check that pages are publicly accessible (search index generation fetches actual HTML)
-- Ensure content contains searchable text (not just images or code)
+**Wrong URLs in results**: If you're deploying to a subdirectory, make sure the base URL is configured correctly. See [Deploying to Subdirectories](xref:penn.guides.deploying-to-subdirectories).
 
-**Subdirectory deployment issues:**
-- Ensure `LinkService` is injected in `App.razor` 
-- Verify `window.MyLittleContentEngineBaseUrl` is set correctly
-- Check that the search index URL resolves to the correct subdirectory
-
-Your search functionality will now provide fast, intelligent search across all your content with automatic indexing and a polished user interface!
+**Stale index during development**: The search index is rebuilt on each request in dev mode. If results seem stale, hard-refresh the page to clear the FlexSearch client cache.

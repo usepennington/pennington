@@ -1,186 +1,172 @@
 ---
 title: "Hot Reload Architecture"
-description: "Understanding the lazy caching and file watching system that powers MyLittleContentEngine's hot reload functionality"
-uid: "docs.under-the-hood.hot-reload-architecture"
+description: "How Penn's file watching and cached-until-invalidated services provide instant content updates during development"
+uid: "penn.under-the-hood.hot-reload-architecture"
 order: 3001
 ---
 
-MyLittleContentEngine provides seamless hot reload functionality during development, allowing content changes to be reflected immediately without restarting the application. This capability is built on two key infrastructure components working together: **AsyncLazy** for thread-safe caching and **FileWatchDependencyFactory** for file system monitoring and cache invalidation.
+When you are writing docs, the feedback loop matters. Edit a markdown file, save, and see the result. Penn's hot reload system makes this work through three collaborating pieces: `IFileWatcher` for monitoring the file system, `FileWatchDependencyFactory<T>` for managing cached service instances that auto-invalidate on changes, and `SolutionWorkspaceService` for keeping the Roslyn workspace in sync without reloading the entire solution every time someone edits a `.cs` file.
+
+It is not glamorous infrastructure. But when it works well, you do not notice it, and that is the point.
 
 ## Architecture Overview
 
-All built-in `IContentServices` adhere to the hot reload system, which operates on a simple but powerful principle:
-
-1. Process site wide on reload
-2. Process page wide on demand
-
-For example, when you edit a markdown file, it could cause many different things to update beyond just its content:
-
-- The Home Page
-- Site navigation
-- Tag lists
-- xRef links
-- Next/Previous pages
-
-For example, in the Markdown `IContentService`, when a change is detected, we reread every Markdown file and parse only the front matter. We'll defer rendering the Markdown to HTML until the page is actually requested. This gives us two benefits:
-
-1. **Performance**: Not that Markdig is slow, but between server-side syntax highlighting and Roslyn-connected operations, things can start to add up
-2. **Full site context**: Our Markdig extensions and link resolvers have a full site to reference when rendering. This is critical for cross-references and other link rewriting operations. 
-
-```mermaid
-graph TB
-    A[File System Changes] --> B[ContentEngineFileWatcher]
-    B --> C[FileWatchDependencyFactory.InvalidateInstance]
-    C --> D[Debounced Refresh 50ms]
-    D --> E[PerformRefreshAsync]
-    E --> F[Factory Function Execution]
-    F --> G[Cache Update]
-    G --> H[Next Request Gets Updated Content]
-    
-    I[Blazor Hot Reload] --> J[MetadataUpdateHandler]
-    J --> K[ClearCache Called]
-    K --> C
+```
+File System
+    |
+    | (FileSystemWatcher events)
+    v
+FileWatcher (IFileWatcher)
+    |
+    +-- SubscribeToChanges() --> FileWatchDependencyFactory<T>.InvalidateInstance()
+    |                                |
+    |                                +-- Disposes cached T instance
+    |                                +-- Next GetInstance() creates fresh T
+    |
+    +-- AddPathWatch(*.cs) --> SolutionWorkspaceService
+                                    |
+                                    +-- Content change: UpdateDocument() (deferred)
+                                    +-- Structural change: InvalidateSolution() (full reload)
 ```
 
-## FileWatchDependencyFactory: Smart Caching with File Invalidation
+## IFileWatcher and FileWatcher
 
-The `FileWatchDependencyFactory<T>` class combined with `AsyncLazy<T>` provides a thread-safe, lazy-loading cache that automatically invalidates when file changes are detected. Services use `AsyncLazy<T>` for thread-safe initialization while `AddFileWatched<T>()` registration handles automatic cache invalidation.
+`IFileWatcher` is the low-level file monitoring interface:
 
-For example, it's used to cache the results of processing markdown files into a dictionary of content pages. It's also used in the caching of the MSBuild workspace that drives the Roslyn interactions. This allows these expensive operations to be performed once with the ability to refresh the cache when the underlying files change.
+```csharp:xmldocid
+T:Penn.Infrastructure.IFileWatcher
+```
 
-### Key Features
+Two methods, no nonsense:
 
-- **Lazy Loading**: Values are computed only when first accessed
-- **Thread Safety**: AsyncLazy provides safe concurrent access from multiple threads
-- **Automatic Invalidation**: FileWatchDependencyFactory handles cache invalidation on file changes
-- **Service Integration**: Integrates seamlessly with DI container service lifetimes
-- **Async-First**: Built for async operations throughout
+- **`AddPathWatch`**: Watch a directory for files matching a pattern. You provide a callback that receives the changed file path and change type.
+- **`SubscribeToChanges`**: Register a callback that fires whenever *any* watched file changes. This is the integration point for `FileWatchDependencyFactory`.
+
+The implementation, `FileWatcher`, wraps .NET's `FileSystemWatcher`. It handles the usual `FileSystemWatcher` bookkeeping: deduplication of watch registrations, subdirectory support, and multiple event types (Changed, Created, Deleted, Renamed).
+
+When any watched file changes, `FileWatcher` notifies all path-specific callbacks *and* all general subscribers. The path-specific callbacks get the file path and change type; the general subscribers just get a "something changed" signal.
+
+## FileWatchDependencyFactory: Cached-Until-Invalidated Services
+
+This is the clever bit. `FileWatchDependencyFactory<T>` manages a single cached instance of a service `T` that gets thrown away when files change:
+
+```csharp:path
+src/Penn/Infrastructure/FileWatchDependencyFactory.cs
+```
+
+The lifecycle:
+
+1. **First call to `GetInstance()`**: Creates `T` using `ActivatorUtilities.CreateInstance<T>()` from the DI container. This is potentially expensive -- think "scan every markdown file and parse all front matter" or "load an MSBuild workspace."
+2. **Subsequent calls**: Returns the cached instance. Fast.
+3. **File change detected**: `InvalidateInstance()` fires. Disposes the old instance (if it implements `IDisposable`), sets it to `null`.
+4. **Next call to `GetInstance()`**: Creates a fresh instance. Back to step 1.
+
+The pattern is "lazy evaluation with file-system-triggered cache invalidation." The key insight is that invalidation is *immediate* but re-creation is *deferred*. When you save a file, the old cache is thrown away instantly. But we do not eagerly rebuild everything -- we wait until someone actually requests the data. This avoids wasted work when multiple files change in rapid succession (like a git checkout that touches dozens of files).
+
+### Thread Safety
+
+All access to the cached instance goes through a `Lock`. This means:
+
+- Only one thread creates the instance (no duplicate initialization).
+- `InvalidateInstance()` and `GetInstance()` cannot race each other.
+- Disposal of the old instance happens under the lock, preventing use-after-dispose.
 
 ### Usage Pattern
 
+Register the factory in DI as a singleton. It subscribes to `IFileWatcher` changes automatically via constructor injection:
+
 ```csharp
-// Register service with file-watch invalidation (direct registration)
-services.AddFileWatched<MarkdownContentProcessor<TFrontMatter>>();
+services.AddSingleton<FileWatchDependencyFactory<ExpensiveService>>();
+```
 
-// In service, use AsyncLazy for thread-safe caching
-private readonly AsyncLazy<ConcurrentDictionary<string, MarkdownContentPage<TFrontMatter>>> _contentCache;
+Then inject the factory wherever you need the service:
 
-public MarkdownContentService(MarkdownContentProcessor<TFrontMatter> processor)
+```csharp
+public class MyComponent(FileWatchDependencyFactory<ExpensiveService> factory)
 {
-    _contentCache = new AsyncLazy<ConcurrentDictionary<string, MarkdownContentPage<TFrontMatter>>>(
-        async () => await processor.ProcessContentFiles(),
-        AsyncLazyFlags.RetryOnFailure);
-}
-
-// Access cached value (computed on first access)
-var content = await _contentCache;
-```
-
-### Cache Invalidation
-
-The FileWatchDependencyFactory automatically handles cache invalidation when file changes are detected:
-
-- **Immediate Invalidation**: Cache is invalidated immediately when files change
-- **Lazy Recomputation**: New values are computed only when next accessed
-- **Thread Safety**: Invalidation is thread-safe across multiple concurrent requests
-
-This eliminates the need for manual debouncing logic while ensuring responsive cache updates during development.
-
-## ContentEngineFileWatcher: File System Monitoring
-
-The `ContentEngineFileWatcher` monitors specified directories for file changes and triggers refresh operations. It supports both specific file pattern watching and general directory monitoring, with comprehensive integration into Blazor's hot reload system.
-
-### File System Watching Features
-
-- **Pattern-Based Watching**: Monitor specific file types (e.g., `*.md`, `*.razor`)
-- **Directory Watching**: Monitor entire directories for any file changes
-- **Subdirectory Support**: Optionally include subdirectories in watch operations
-- **Multiple Event Types**: Responds to file changes, creation, deletion, and renaming
-- **Duplicate Protection**: Prevents duplicate watchers for the same path/pattern combinations
-
-### Blazor Hot Reload Integration
-
-The watcher includes special support for Blazor's hot reload mechanism through the [`MetadataUpdateHandler`](https://learn.microsoft.com/en-us/dotnet/api/system.reflection.metadata.metadataupdatehandlerattribute?view=net-9.0) attribute:
-
-```csharp
-[assembly: MetadataUpdateHandler(typeof(ContentEngineFileWatcher))]
-```
-
-This integration provides:
-
-- **IDE Integration**: Works with Visual Studio and VS Code hot reload
-- **dotnet watch Support**: Automatic refresh when using `dotnet watch`
-- **Metadata Updates**: Responds to C# code changes that affect content processing
-- **Cache Clearing**: Automatically clears content caches when code changes
-
-### Watch Types
-
-The file watcher supports two primary watch patterns:
-
-#### 1. Specific File Pattern Watching
-```csharp
-// Watch for specific file types with path information
-fileWatcher.AddPathWatch(
-    path: "Content/Blog", 
-    filePattern: "*.md", 
-    onFileChanged: (filePath) => ProcessSpecificFile(filePath),
-    includeSubdirectories: true
-);
-```
-
-#### 2. General Directory Watching
-```csharp
-// Watch entire directories for any changes
-fileWatcher.AddPathsWatch(
-    paths: ["Content", "wwwroot"], 
-    onUpdate: () => RefreshAllContent(),
-    includeSubdirectories: true
-);
-```
-
-## Integration in Content Services
-
-The hot reload architecture is seamlessly integrated into content services. Here's how it works in practice:
-
-### MarkdownContentService Example
-
-```csharp
-public class MarkdownContentService<TFrontMatter> : IMarkdownContentService<TFrontMatter>
-{
-    private readonly AsyncLazy<ConcurrentDictionary<string, MarkdownContentPage<TFrontMatter>>> _contentCache;
-
-    public MarkdownContentService(
-        ContentEngineContentOptions<TFrontMatter> engineContentOptions,
-        IContentEngineFileWatcher fileWatcher,
-        // ... other services
-    )
+    public void DoWork()
     {
-        // Set up lazy cache with expensive content processing operation
-        _contentCache = new AsyncLazy<ConcurrentDictionary<string, MarkdownContentPage<TFrontMatter>>>(
-            async () => await _contentProcessor.ProcessContentFiles(),
-            AsyncLazyFlags.RetryOnFailure);
-
-        // File watching and cache invalidation is handled by AddFileWatched<T>() registration
-        // No need to manually register the service first - AddFileWatched does it all
-    }
-
-    public async Task<MarkdownContentPage<TFrontMatter>?> GetContentPageByUrlOrDefault(string url)
-    {
-        var data = await _contentCache; // May trigger recomputation if cache was invalidated
-        return data.GetValueOrDefault(url);
+        var service = factory.GetInstance(); // cached or freshly created
+        service.Process();
     }
 }
 ```
 
-### Workflow
+## SolutionWorkspaceService: Smart Roslyn Updates
 
-1. **Initial Load**: First content access triggers expensive processing operation
-2. **File Change**: Developer modifies a markdown file or source code
-3. **Detection**: `ContentEngineFileWatcher` detects the change
-4. **Invalidation**: Calls `NeedsRefresh()` which triggers `_contentCache.Refresh()`
-5. **Debouncing**: If multiple changes occur rapidly, they're coalesced
-6. **Reprocessing**: After debounce delay, content is reprocessed
-7. **Cache Update**: New content replaces cached values
-8. **UI Refresh**: Next page request gets updated content
+The Roslyn workspace is the most expensive thing Penn manages. Loading a full .NET solution -- resolving project references, parsing every `.cs` file, building compilation objects -- can take several seconds. You *really* do not want to do that every time someone saves a file.
 
-The hot reload architecture provides a solid foundation for productive development workflows while maintaining excellent performance characteristics through intelligent caching and efficient file system monitoring.
+`SolutionWorkspaceService` uses a two-tier invalidation strategy:
+
+### Content Changes (Cheap)
+
+When a `.cs` file is *modified* (content changed, not added or deleted), the service uses **deferred document updates**:
+
+```csharp
+case WatcherChangeTypes.Changed:
+    UpdateDocument(path);
+    break;
+```
+
+`UpdateDocument()` enqueues the file path in a `ConcurrentQueue`. The actual update is applied lazily -- the next time someone asks for the solution, `ApplyPendingUpdates()` reads the new file content and calls `Solution.WithDocumentText()` to create an updated solution snapshot. Only the affected project's compilation cache is invalidated.
+
+This is dramatically cheaper than reloading the entire solution. The Roslyn `Solution` type is immutable, so `WithDocumentText()` returns a new solution that shares most of its state with the old one. Only the changed document and its containing project need to be re-analyzed.
+
+### Structural Changes (Expensive but Necessary)
+
+When a `.cs` file is *added*, *deleted*, or *renamed*, or when a `.csproj` or `.sln`/`.slnx` file changes, the service does a full invalidation:
+
+```csharp
+case WatcherChangeTypes.Created:
+case WatcherChangeTypes.Deleted:
+case WatcherChangeTypes.Renamed:
+    InvalidateSolution();
+    break;
+```
+
+`InvalidateSolution()` throws away the entire workspace, all cached compilations, and all pending updates. The next access reloads the solution from scratch. This is slow but correct -- structural changes (new files, removed projects, changed references) cannot be handled incrementally.
+
+### The File Watching Registration
+
+`SolutionWorkspaceService` registers watchers for three file patterns, all rooted at the solution directory:
+
+| Pattern | Change Type | Action |
+|---|---|---|
+| `*.cs` | Changed | `UpdateDocument()` (deferred) |
+| `*.cs` | Created/Deleted/Renamed | `InvalidateSolution()` |
+| `*.csproj` | Any | `InvalidateSolution()` |
+| `*.sln` / `*.slnx` | Any (matching configured path) | `InvalidateSolution()` |
+
+The solution file watcher is selective -- it only invalidates when the changed `.sln` or `.slnx` matches the configured solution path. Changing an unrelated solution file in a subdirectory does not trigger a reload.
+
+### Compilation Caching
+
+On top of the solution-level caching, `SolutionWorkspaceService` maintains a per-project compilation cache (`ConcurrentDictionary<ProjectId, Compilation>`). Getting a `Compilation` from Roslyn is expensive -- it involves full semantic analysis. The cache means that requesting the compilation for `Penn.Core` twice only compiles it once.
+
+When a deferred document update invalidates a project, only that project's compilation cache entry is removed. Other projects keep their cached compilations, which makes incremental re-analysis fast.
+
+## How It All Fits Together
+
+Here is a typical development session:
+
+1. **App starts.** `FileWatcher` is created. `SolutionWorkspaceService` registers its file watches. Nothing is loaded yet.
+
+2. **First page request.** `FileWatchDependencyFactory<ContentPipeline>` (or similar) calls `GetInstance()`. The content pipeline discovers markdown files, parses front matter, builds navigation. `SolutionWorkspaceService` loads the solution and compiles projects. All of this is cached.
+
+3. **You edit `getting-started.md`.** `FileWatcher` detects the change. `FileWatchDependencyFactory` invalidates the content cache. The Roslyn workspace is unaffected (it only watches `.cs` files).
+
+4. **You refresh the page.** `GetInstance()` finds the cache empty, creates a fresh content pipeline. Only the content is reprocessed. Roslyn compilations are still cached.
+
+5. **You edit `MyComponent.cs`.** `FileWatcher` detects the change. `SolutionWorkspaceService.UpdateDocument()` enqueues the file. The content cache is *also* invalidated (because `FileWatchDependencyFactory` subscribes to all file changes). 
+
+6. **You refresh the page.** Content pipeline rebuilds. When it gets to a `csharp:xmldocid` code block, Roslyn applies the pending document update, invalidates just that project's compilation, and re-analyzes. Other projects keep their cached compilations.
+
+7. **You add a new `.cs` file.** `SolutionWorkspaceService.InvalidateSolution()` fires. The entire workspace is thrown away. Next access reloads from scratch. Slow, but correct.
+
+The overall effect: editing markdown files is near-instant. Editing existing C# files is fast (incremental update). Adding or removing files is slow but rare during normal content writing.
+
+## Why Not Debounce?
+
+You might notice there is no debounce logic in `FileWatchDependencyFactory`. Many file-watching systems add a delay to coalesce rapid changes. Penn does not, for a simple reason: invalidation is cheap (just set a field to `null`), and re-creation only happens on the *next request*. If ten files change in quick succession, the cache gets invalidated ten times -- but the expensive rebuild only happens once, when the next page request comes in.
+
+The debounce is implicit in the request cycle. Save five files, switch to your browser, refresh -- by the time the request arrives, all the invalidations have already happened.

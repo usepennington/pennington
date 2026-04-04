@@ -1,154 +1,170 @@
 ---
-title: "Optimizing CSS and JavaScript for Production"
-description: "Optimize your MyLittleContentEngine site's CSS and JavaScript assets for better performance in production deployments"
-uid: "docs.guides.optimizing-css-and-javascript"
+title: "Optimizing CSS and JavaScript"
+description: "How Penn generates CSS at runtime with MonorailCSS, and what you can do about asset optimization"
+uid: "penn.guides.optimizing-css-and-javascript"
 order: 2300
 ---
 
-MyLittleContentEngine generates CSS dynamically at runtime using MonorailCSS and includes JavaScript from the UI
-package. While this provides an excellent development experience, you might want to optimize these assets for production
-deployments to improve load times and user experience.
+Penn generates CSS at runtime. This sounds alarming until you understand why: the stylesheet contains only the utility classes actually used in your content. No purging step, no PurgeCSS configuration, no "why is my production build missing styles" debugging sessions. The tradeoff is that CSS generation is a runtime concern, which means understanding how it works is useful if you want to optimize for production.
 
 > [!IMPORTANT]
-> The optimization techniques shown here are **optional** and represent one possible approach. There are many other
-> tools and strategies for asset optimization. Choose the approach that best fits your deployment pipeline and
-> performance requirements.
+> The optimization techniques in this guide are optional. Penn sites are fast out of the box. These techniques shave kilobytes, not seconds. Apply them if you care about that sort of thing.
 
-## Understanding MyLittleContentEngine Asset Architecture
+## How Penn Generates CSS
 
-Before optimizing, it's helpful to understand how CSS and JavaScript work in MyLittleContentEngine:
+### The Collection Phase
 
-### CSS Generation with MonorailCSS
+Penn uses MonorailCSS (a Tailwind-like utility CSS framework) with a runtime class collection pipeline:
 
-MyLittleContentEngine uses a **runtime CSS generation** approach:
+1. **`CssClassCollectorProcessor`** is an `IResponseProcessor` that scans every HTML and JSON response for `class="..."` attributes. It extracts CSS class names and registers them with the `CssClassCollector`.
 
-1. **Class Collection**: `CssClassCollectorMiddleware` scans HTML responses for CSS classes
-2. **Dynamic Stylesheet**: CSS is generated on-demand at `/styles.css` containing only used classes
-3. **Color Palettes**: Colors are dynamically generated from configurable hue values
-4. **Purged Output**: Only CSS classes actually used in your content are included
+2. **`CssClassCollector`** is a thread-safe singleton that accumulates all discovered class names across requests. It uses a `ReaderWriterLockSlim` for concurrent access.
 
-### JavaScript from UI Package
+3. **`MonorailCssService`** reads the collected classes and generates a stylesheet via the MonorailCSS framework engine.
 
-The UI package provides JavaScript functionality in a single bundle:
+4. The stylesheet is served at `/styles.css` (configurable via `UseMonorailCss(path)`).
 
-- **Single File**: All JavaScript is in `scripts.js` (~48KB unminified)
-- **Class-Based**: Uses ES6 classes for different features (theme switching, search, etc.)
-- **Dynamic Imports**: External libraries (Mermaid, Highlight.js) loaded from CDN as needed
-- **No Build Process**: Served directly without bundling or minification
+### Processing Order Matters
 
-## Production Optimization Example
+`CssClassCollectorProcessor` has `Order = 100`, which means it runs *after* `BaseUrlRewritingProcessor` (Order = 0). This is intentional -- the collector sees the final HTML after URL rewriting, ensuring it captures classes from the fully processed output.
 
-Here's an example approach using the [tdewolff/minify](https://github.com/tdewolff/minify) tool in a GitHub Actions
-workflow:
+The processor never modifies the response body. It only observes. This is a read-only observer pattern, not a transform.
 
-### GitHub Actions Workflow
+### JSON Response Handling
 
-This example shows how to minify CSS and JavaScript files after static site generation:
+SPA navigation returns JSON responses containing HTML strings with escaped quotes. The `CssClassCollectorProcessor` handles this by unescaping `\u0022` and `\"` sequences before scanning for class attributes. Without this step, CSS classes in SPA island content would be invisible to the collector, and your SPA pages would have unstyled content. That would be bad.
+
+### Startup Content Scanning
+
+MonorailCSS also supports scanning static files at startup via `MonorailCssOptions.ContentPaths`:
+
+```csharp
+services.AddMonorailCss(sp => new MonorailCssOptions
+{
+    ContentPaths = ["scripts/app.js"],  // Paths relative to wwwroot
+});
+```
+
+This catches CSS classes that only appear in client-side JavaScript (like dynamically constructed class strings). The `MonorailServiceExtensions.ScanContentFiles()` method reads each file, extracts potential class names using two strategies:
+
+1. **HTML class attribute extraction**: Regex matching `class="..."` patterns
+2. **Broad token extraction**: Splits on delimiters and keeps everything. False positives are harmless -- MonorailCSS ignores tokens it doesn't recognize as utility classes.
+
+### The Color System
+
+MonorailCSS supports two color scheme approaches:
+
+**Named colors** -- map existing Tailwind palette names to semantic roles:
+
+```csharp
+ColorScheme = new NamedColorScheme
+{
+    PrimaryColorName = ColorNames.Blue,
+    AccentColorName = ColorNames.Purple,
+    TertiaryOneColorName = ColorNames.Cyan,
+    TertiaryTwoColorName = ColorNames.Pink,
+    BaseColorName = ColorNames.Slate,
+}
+```
+
+**Algorithmic colors** -- generate palettes from a single hue value:
+
+```csharp
+ColorScheme = new AlgorithmicColorScheme
+{
+    PrimaryHue = 220,
+    BaseColorName = ColorNames.Gray,
+}
+```
+
+The algorithmic approach derives accent and tertiary hues automatically (complementary, split-complementary). Good for rapid prototyping. The named approach gives you full control.
+
+## The Build Pipeline
+
+During static site generation (`dotnet run -- build`), the CSS pipeline works like this:
+
+1. The app starts and `UseMonorailCss()` scans any configured `ContentPaths`.
+2. `OutputGenerationService` crawls every discovered page via HTTP.
+3. Each response passes through `ResponseProcessingMiddleware`, which invokes `CssClassCollectorProcessor`.
+4. The collector accumulates classes from all pages.
+5. When the build requests `/styles.css`, `MonorailCssService` generates the final stylesheet from all collected classes.
+6. The stylesheet is written to the output directory.
+
+This means the build order matters. Pages must be crawled *before* the stylesheet is fetched, or the stylesheet will be incomplete. Penn handles this automatically -- `OutputGenerationService` crawls pages first, then copies static assets.
+
+## Production Optimization
+
+### Post-Build Minification
+
+After static generation, you can minify CSS and JavaScript with any tool you like. Here's an example using [tdewolff/minify](https://github.com/tdewolff/minify) in a GitHub Actions workflow:
 
 ```yaml
-name: Build and Deploy with Minification
+- name: Generate static site
+  run: |
+    dotnet run --project ./src/MyDocs/MyDocs.csproj \
+      --configuration Release -- build "/my-project/"
 
-on:
-  push:
-    branches: [ main ]
+- name: Install minify
+  run: |
+    curl -sfL https://github.com/tdewolff/minify/releases/latest/download/minify_linux_amd64.tar.gz \
+      | tar -xzf - -C /tmp
+    sudo mv /tmp/minify /usr/local/bin/
 
-env:
-  WEBAPP_PATH: ./docs/MyLittleContentEngine.Docs/
-  WEBAPP_CSPROJ: MyLittleContentEngine.Docs.csproj
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
-
-      # Generate static site with all assets
-      - name: Generate static files
-        env:
-          ASPNETCORE_ENVIRONMENT: Production
-        run: |
-          dotnet build
-          dotnet run --project ${{ env.WEBAPP_PATH }}${{ env.WEBAPP_CSPROJ }} \
-            --configuration Release -- build "/MyLittleContentEngine/"
-
-      # Install minification tool
-      - name: Install minify
-        run: |
-          curl -sfL https://github.com/tdewolff/minify/releases/latest/download/minify_linux_amd64.tar.gz | tar -xzf - -C /tmp
-          sudo mv /tmp/minify /usr/local/bin/
-
-      # Minify CSS and JavaScript files in the output directory
-      - name: Minify assets
-        run: |
-          # Find and minify all CSS files
-          find "${{ env.WEBAPP_PATH }}output" -type f -name "*.css" | while read cssfile; do
-            /usr/local/bin/minify -o "$cssfile" "$cssfile"
-            echo "Minified $cssfile"
-          done
-
-          # Find and minify all JavaScript files  
-          find "${{ env.WEBAPP_PATH }}output" -type f -name "*.js" | while read jsfile; do
-            /usr/local/bin/minify -o "$jsfile" "$jsfile"
-            echo "Minified $jsfile"
-          done
-
-      # Deploy optimized assets
-      - name: Deploy to hosting
-        run: |
-          # Your deployment step here
-          echo "Deploy from ${{ env.WEBAPP_PATH }}output"
+- name: Minify assets
+  run: |
+    find ./src/MyDocs/output -type f -name "*.css" -exec /usr/local/bin/minify -o {} {} \;
+    find ./src/MyDocs/output -type f -name "*.js" -exec /usr/local/bin/minify -o {} {} \;
 ```
 
-### What This Optimization Does
+Typical reductions:
 
-The minification process provides several benefits:
+- **CSS**: 20-30% smaller (whitespace, comments, shorthand optimization)
+- **JavaScript**: 15-25% smaller (whitespace, comments, variable shortening)
 
-#### CSS Optimization
+### Extra Styles
 
-- **Whitespace Removal**: Removes unnecessary spaces, tabs, and newlines
-- **Comment Stripping**: Removes CSS comments
-- **Property Optimization**: Shortens color codes and combines properties where possible
-- **Size Reduction**: Typically reduces CSS size by 20-30%
+If you need CSS that MonorailCSS can't express as utility classes, use the `ExtraStyles` option:
 
-#### JavaScript Optimization
+```csharp
+services.AddMonorailCss(sp => new MonorailCssOptions
+{
+    ExtraStyles = """
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('/fonts/custom.woff2') format('woff2');
+        }
 
-- **Whitespace Removal**: Removes unnecessary formatting
-- **Comment Removal**: Strips JavaScript comments
-- **Variable Minification**: Shortens local variable names
-- **Size Reduction**: Typically reduces JavaScript size by 15-25%
-
-### Expected Results
-
-For a typical MyLittleContentEngine site, you might see optimizations like:
-
-```bash
-# Before minification
-styles.css: 45.2 KB
-scripts.js: 48.8 KB
-Total: 94.0 KB
-
-# After minification  
-styles.css: 31.7 KB (-30%)
-scripts.js: 38.1 KB (-22%)
-Total: 69.8 KB (-26%)
+        .custom-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        """,
+});
 ```
+
+Extra styles are prepended to the generated stylesheet. They're not processed by MonorailCSS -- they're raw CSS.
+
+### Custom Framework Settings
+
+For advanced MonorailCSS customization, use `CustomCssFrameworkSettings`:
+
+```csharp
+services.AddMonorailCss(sp => new MonorailCssOptions
+{
+    CustomCssFrameworkSettings = settings => settings with
+    {
+        // Customize the framework settings here
+    },
+});
+```
+
+## SPA Navigation and CSS
+
+SPA navigation creates a subtle CSS problem: when new island content is injected, it may contain CSS classes that weren't present in any previously rendered page. The `CssClassCollectorProcessor` handles this because it scans JSON responses too (the SPA data endpoint returns JSON with embedded HTML). During the build, all SPA data endpoints are crawled, so the final stylesheet includes classes from all possible island content.
+
+During development, new classes in SPA content are collected on-the-fly. The stylesheet at `/styles.css` is regenerated per-request, so it always reflects the current set of collected classes. This means you might see a brief flash of unstyled content on the first SPA navigation to a page with new utility classes -- refreshing resolves it. In production (static output), this doesn't happen because all pages are pre-crawled.
 
 ## Summary
 
-Asset optimization for MyLittleContentEngine is an optional but valuable step for production deployments. The example
-shown using the `minify` tool in GitHub Actions represents one straightforward approach, but many alternatives exist
-depending on your specific requirements and deployment pipeline.
+Penn's CSS pipeline is: collect classes from responses, generate a stylesheet from those classes, serve it. No build step, no configuration file, no `tailwind.config.js`. The MonorailCSS integration handles the runtime generation, and the response processor pipeline ensures classes from both HTML and JSON responses are captured.
 
-Key takeaways:
-
-- **Optional Process**: Optimization is not required but can improve performance
-- **Post-Build Step**: Apply optimizations after static site generation
-- **Measure Impact**: Always measure the actual performance impact
-
-The most important aspect is measuring the real-world impact of your optimizations on your users' experience rather than
-just focusing on file size reductions.
+For production, the generated CSS is already purged by nature (only used classes are included). Post-build minification is the main optimization lever, and it's a straightforward post-processing step you can add to any CI/CD pipeline.

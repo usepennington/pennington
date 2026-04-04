@@ -1,173 +1,148 @@
 ---
 title: "Razor Pages with Metadata"
-description: "Learn how to add metadata to Razor pages using sidecar .yml files for enhanced static site generation with custom titles, descriptions, and ordering."
-uid: "docs.guides.razor-pages-with-metadata"
+description: "Use @page Razor components alongside markdown content in Penn's content pipeline"
+uid: "penn.guides.razor-pages-with-metadata"
 order: 2060
 ---
 
-MyLittleContentEngine automatically discovers and generates static pages from Razor components in your application. You can enhance these pages with metadata by creating sidecar `.yml` files that provide additional information like titles, descriptions, and ordering for use in sitemaps, RSS feeds, and navigation.
+Not everything fits neatly into a markdown file. Sometimes you need a custom Razor component with its own layout, interactive elements, or data-driven content. Penn's <xref:T:Penn.Content.RazorPageContentService> lets you mix `@page` Razor components into the same content pipeline as your markdown pages -- they get discovered, included in static generation, and show up in the search index.
 
-## How It Works
+This is useful for pages like "About", "Contact", dashboards, or anything where markdown feels like the wrong tool.
 
-The `RazorPageContentService` automatically scans all assemblies in your application for Razor components that have `@page` directives without parameters. For each component found, it searches for an optional metadata file using the naming convention:
+## How RazorPageContentService Works
 
+`RazorPageContentService` scans the assemblies you configure for types that:
+
+1. Inherit from `ComponentBase`
+2. Have one or more `[RouteAttribute]` attributes (the compiled form of `@page "/some-path"`)
+3. Use **non-parameterized** routes (no `{id}` or `{*slug}` segments)
+
+For each qualifying component, it creates a `ContentRoute` from the route template and yields a `DiscoveredItem` for the content pipeline.
+
+### What It Skips
+
+- **Parameterized routes**: Routes like `@page "/posts/{slug}"` are excluded because the service can't enumerate all possible values. These are typically catch-all routes like `Pages.razor` that render markdown content.
+- **Abstract types**: Base components are ignored.
+- **Dynamic assemblies**: If an assembly can't be scanned (reflection errors), it's silently skipped.
+
+### Registration
+
+`RazorPageContentService` is registered automatically by `AddPenn()` when you configure `AdditionalRoutingAssemblies`:
+
+```csharp
+builder.Services.AddPenn(penn =>
+{
+    penn.SiteTitle = "My Site";
+    penn.AdditionalRoutingAssemblies = [typeof(Program).Assembly];
+    // ...
+});
 ```
-ComponentName.razor.metadata.yml
+
+If you're using `AddDocSite()`, it handles this for you -- it registers the entry assembly plus any assemblies you pass via `DocSiteOptions.AdditionalRoutingAssemblies`.
+
+## Creating a Razor Page
+
+### 1. Create the Component
+
+Create a standard `@page` Razor component:
+
+```razor
+@page "/about"
+
+<PageTitle>About Us</PageTitle>
+
+<div class="prose dark:prose-invert">
+    <h1>About This Project</h1>
+    <p>
+        This project exists because someone thought "I should build a content engine"
+        and then couldn't stop.
+    </p>
+</div>
 ```
 
-For example, if you have an `Index.razor` component, the service will look for `Index.razor.metadata.yml`.
-
-## Metadata File Discovery
-
-The service requires metadata files to be located **in the same directory** as their corresponding Razor component. The discovery process:
-
-1. **Finds the Razor component**: Searches common directories like `Components/Pages`, `Components`, `Pages`, `Views`, `Areas`, `src/Components/Pages`, etc.
-2. **Looks for metadata side-by-side**: Once the `.razor` file is found, looks for the `.metadata.yml` file in the exact same directory
-3. **Enforces co-location**: Metadata files in different directories are ignored
-
-This approach ensures that components and their metadata are always kept together, making them easier to maintain and organize.
-
-## Creating a Razor Page with Metadata
-
-### Step 1: Create Your Razor Component
-
-Create a standard Razor page component:
+Multiple `@page` directives work fine -- each non-parameterized route becomes a separate `DiscoveredItem`:
 
 ```razor
 @page "/about"
 @page "/about-us"
-
-<PageTitle>About Us</PageTitle>
-
-<h1>About Our Company</h1>
-
-<p>Welcome to our company page...</p>
 ```
 
-### Step 2: Create the Metadata File
+### 2. Place It in Your Components Directory
 
-Create a sidecar metadata file named `About.razor.metadata.yml` (matching your component's class name):
-
-```yaml
-title: "About Our Company"
-description: "Learn more about our company history, mission, and values"
-lastMod: "2024-01-15T10:30:00Z"
-order: 10
-rssItem: true
-```
-
-### Step 3: Place Files Side-by-Side
-
-The metadata file **must** be in the same directory as the Razor component:
+The component goes wherever your Blazor components live. A common convention:
 
 ```
-Components/Pages/
-├── About.razor
-└── About.razor.metadata.yml
+Components/
+  Pages/
+    About.razor
+    Contact.razor
 ```
 
-Other examples of valid side-by-side organization:
+### 3. It Just Works
 
-```
-Pages/
-├── Index.razor
-├── Index.razor.metadata.yml
-├── Services.razor
-└── Services.razor.metadata.yml
-```
+With `AdditionalRoutingAssemblies` configured, the `RazorPageContentService` discovers your `@page` components at startup. During static generation, `OutputGenerationService` crawls these pages just like markdown content -- fetching the HTML via HTTP and writing it to the output directory.
 
-```
-src/Components/Pages/
-├── Contact.razor
-└── Contact.razor.metadata.yml
-```
+## The Pages.razor Catch-All
 
-## Metadata Properties
+In a Penn site, you typically have a `Pages.razor` component with a catch-all route that renders markdown content:
 
-The metadata file supports all properties from the `Metadata` class:
-
-### title
-The page title used in RSS feeds and navigation.
-
-```yaml
-title: "About Our Company"
-```
-
-### description
-A brief description of the page content, used in RSS feeds and SEO metadata.
-
-```yaml
-description: "Learn about our company history, mission, and values"
-```
-
-### lastMod
-The last modification date in ISO 8601 format. Used in sitemaps for SEO.
-
-```yaml
-lastMod: "2024-01-15T10:30:00Z"
-```
-
-### order
-Controls the order of pages in navigation and table of contents. Lower numbers appear first.
-
-```yaml
-order: 10
-```
-
-Default value is `int.MaxValue` (no specific ordering).
-
-### rssItem
-Whether this page should be included in RSS feeds.
-
-```yaml
-rssItem: true  # Include in RSS (default)
-rssItem: false # Exclude from RSS
-```
-
-## Complete Example
-
-Here's a complete example with both the Razor component and its metadata:
-
-**Components/Pages/Services.razor**
 ```razor
-@page "/services"
-@page "/our-services"
+@page "/{*slug}"
 
-<PageTitle>Our Services</PageTitle>
-
-<h1>Professional Services</h1>
-
-<div class="services-grid">
-    <div class="service-card">
-        <h2>Web Development</h2>
-        <p>Custom web applications built with modern technologies.</p>
-    </div>
-    
-    <div class="service-card">
-        <h2>Consulting</h2>
-        <p>Expert guidance for your digital transformation.</p>
-    </div>
-</div>
+@* This catches all routes not handled by specific @page components *@
+@* It loads the markdown content for the given slug and renders it *@
 ```
 
-**Services.razor.metadata.yml**
-```yaml
-title: "Professional Services"
-description: "Comprehensive web development and consulting services for modern businesses"
-lastMod: "2024-01-20T14:15:00Z"
-order: 20
-rssItem: true
+`RazorPageContentService` ignores this component because its route contains `{*slug}` -- a parameterized segment. The markdown content service handles those routes instead. This is by design: specific `@page` components take precedence (Blazor's routing rules), and the catch-all handles everything else.
+
+## Static Generation
+
+During `dotnet run -- build`, Penn discovers all content sources:
+
+1. **Markdown content services** yield pages from `.md` files
+2. **RazorPageContentService** yields pages from `@page` components
+3. **OutputGenerationService** crawls every discovered URL via HTTP and writes the HTML to disk
+
+Your Razor pages end up as static HTML files in the output directory, same as markdown pages. No special handling needed.
+
+## Search Integration
+
+Pages discovered by `RazorPageContentService` are included in the content pipeline and can be indexed for search. The `SearchIndexBuilder` processes them like any other `RenderedItem`.
+
+## Practical Example
+
+A documentation site with a custom interactive demo page:
+
+```
+Content/
+  index.md
+  guides/
+    getting-started.md
+Components/
+  Pages/
+    InteractiveDemo.razor    <-- @page "/demo"
+    About.razor              <-- @page "/about"
 ```
 
-## Static Generation Integration
+Both markdown pages and Razor pages appear in the generated site. The sidebar navigation includes markdown pages (from the content structure), and the Razor pages are accessible at their declared routes.
 
-When MyLittleContentEngine generates your static site:
+```csharp
+builder.Services.AddPenn(penn =>
+{
+    penn.SiteTitle = "My Project";
+    penn.AdditionalRoutingAssemblies = [typeof(Program).Assembly];
+    penn.AddMarkdownContent<DocFrontMatter>(md =>
+    {
+        md.ContentPath = "Content";
+        md.BasePageUrl = "/";
+    });
+});
+```
 
-1. **Page Discovery**: Finds all Razor components with `@page` directives
-2. **Metadata Loading**: Searches for and loads corresponding metadata files
-3. **Static Generation**: Generates HTML files with enhanced metadata
-4. **Sitemap Generation**: Includes `lastMod` dates in `sitemap.xml`
-5. **RSS Feed**: Includes pages with `rssItem: true` in RSS feeds
-6. **Navigation**: Uses `order` property for consistent page ordering
+The Razor pages at `/demo` and `/about` are discovered automatically. The markdown pages at `/` and `/guides/getting-started` come from the content directory. Everything ends up in the same static output.
 
-This feature provides a powerful way to enhance your Razor pages with rich metadata while maintaining the simplicity and flexibility of standard Blazor development.
+## Limitations
+
+- **No metadata sidecar files in v2**: Unlike some documentation systems, Penn v2 doesn't currently use `.yml` sidecar files for Razor page metadata. The page title comes from `<PageTitle>` in the component.
+- **Non-parameterized routes only**: `RazorPageContentService` can't discover pages with route parameters. Those pages exist at runtime but aren't included in static generation automatically.
+- **Assembly scanning**: The service scans assemblies at startup. If you add a new `@page` component, you need to restart the dev server for it to be discovered. Hot reload updates existing components but doesn't re-scan for new routes.
