@@ -25,5 +25,6 @@
     <Project Path="examples/MultipleContentSourceExample/MultipleContentSourceExample.csproj" />
     <Project Path="examples/RoslynIntegrationExample/RoslynIntegrationExample.csproj" />
     <Project Path="examples/SearchExample/SearchExample.csproj" />
+    <Project Path="examples/SpaNavigationExample/SpaNavigationExample.csproj" />
   </Folder>
 </Solution>

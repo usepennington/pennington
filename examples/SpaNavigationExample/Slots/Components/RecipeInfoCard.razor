@@ -1,0 +1,43 @@
+<div class="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm">
+    <h3 class="font-semibold text-neutral-900 mb-3">Recipe Info</h3>
+    <dl class="space-y-2">
+        <div class="flex justify-between">
+            <dt class="text-neutral-500">Prep time</dt>
+            <dd class="font-medium text-neutral-800">@PrepTime min</dd>
+        </div>
+        <div class="flex justify-between">
+            <dt class="text-neutral-500">Cook time</dt>
+            <dd class="font-medium text-neutral-800">@CookTime min</dd>
+        </div>
+        <div class="flex justify-between">
+            <dt class="text-neutral-500">Total</dt>
+            <dd class="font-medium text-neutral-800">@(PrepTime + CookTime) min</dd>
+        </div>
+        <div class="flex justify-between border-t border-neutral-200 pt-2">
+            <dt class="text-neutral-500">Servings</dt>
+            <dd class="font-medium text-neutral-800">@Servings</dd>
+        </div>
+        <div class="flex justify-between">
+            <dt class="text-neutral-500">Difficulty</dt>
+            <dd class="font-medium text-neutral-800">@Difficulty</dd>
+        </div>
+    </dl>
+
+    @if (Tags.Length > 0)
+    {
+        <div class="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-neutral-200">
+            @foreach (var tag in Tags)
+            {
+                <span class="text-xs bg-neutral-100 text-neutral-600 px-2 py-0.5 rounded-full">@tag</span>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int PrepTime { get; set; }
+    [Parameter] public int CookTime { get; set; }
+    [Parameter] public int Servings { get; set; }
+    [Parameter] public string Difficulty { get; set; } = "Easy";
+    [Parameter] public string[] Tags { get; set; } = [];
+}

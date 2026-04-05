@@ -1,0 +1,55 @@
+@page "/{*fileName:nonfile}"
+
+@using Microsoft.AspNetCore.Components.Sections
+@using SpaNavigationExample.Slots.Components
+@inject PennOptions PennOptions
+@inject ContentHelper ContentHelper
+
+@if (_frontMatter is not null && _html is not null)
+{
+    <PageTitle>@PennOptions.SiteTitle - @_frontMatter.Title</PageTitle>
+    <HeadContent>
+        @if (!string.IsNullOrWhiteSpace(_frontMatter.Description))
+        {
+            <meta name="description" content="@_frontMatter.Description" />
+            <meta property="og:description" content="@_frontMatter.Description" />
+        }
+    </HeadContent>
+
+    <RecipeContent Title="@_frontMatter.Title" HtmlContent="@_html" />
+
+    @if (_frontMatter.PrepTime > 0 || _frontMatter.CookTime > 0)
+    {
+        <SectionContent SectionName="recipe-info">
+            <RecipeInfoCard PrepTime="@_frontMatter.PrepTime"
+                            CookTime="@_frontMatter.CookTime"
+                            Servings="@_frontMatter.Servings"
+                            Difficulty="@_frontMatter.Difficulty"
+                            Tags="@_frontMatter.Tags" />
+        </SectionContent>
+    }
+}
+else
+{
+    <PageTitle>@PennOptions.SiteTitle</PageTitle>
+    <div class="flex justify-center items-center h-64">
+        <p class="text-neutral-500">Page not found</p>
+    </div>
+}
+
+@code {
+    private RecipeFrontMatter? _frontMatter;
+    private string? _html;
+
+    [Parameter] public required string FileName { get; init; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var fileName = string.IsNullOrWhiteSpace(FileName) ? "index" : FileName;
+        var page = await ContentHelper.GetPageByUrlAsync(fileName);
+        if (page is null) return;
+
+        _frontMatter = page.Value.FrontMatter;
+        _html = page.Value.Html;
+    }
+}
