@@ -50,4 +50,15 @@ public class RazorPageContentServiceTests
         // Test assembly has no @page components, so nothing should be discovered
         items.ShouldBeEmpty();
     }
+
+    [Fact]
+    public async Task MissingTrailingSlashPages_EmptyWhenNoPagesDiscovered()
+    {
+        var service = new RazorPageContentService([]);
+
+        // Trigger discovery
+        await foreach (var _ in service.DiscoverAsync()) { }
+
+        service.MissingTrailingSlashPages.ShouldBeEmpty();
+    }
 }

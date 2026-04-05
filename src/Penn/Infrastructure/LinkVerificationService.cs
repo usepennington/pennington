@@ -41,6 +41,36 @@ public sealed partial class LinkVerificationService
         return results.ToImmutable();
     }
 
+    /// <summary>
+    /// Find internal page links in HTML that are missing a trailing slash.
+    /// Returns the list of offending URLs.
+    /// </summary>
+    public static ImmutableList<string> FindLinksWithoutTrailingSlash(string html)
+    {
+        var links = ExtractLinks(html);
+        var results = ImmutableList.CreateBuilder<string>();
+
+        foreach (var (url, _) in links)
+        {
+            if (IsExternalUrl(url) || url.StartsWith('#'))
+                continue;
+
+            var pathOnly = url.Split('#')[0].Split('?')[0];
+            if (string.IsNullOrEmpty(pathOnly) || pathOnly == "/")
+                continue;
+
+            // Skip URLs that look like files (have an extension in the last segment)
+            var lastSegment = pathOnly.Split('/')[^1];
+            if (lastSegment.Contains('.'))
+                continue;
+
+            if (!pathOnly.EndsWith('/'))
+                results.Add(url);
+        }
+
+        return results.ToImmutable();
+    }
+
     private LinkCheckResult ClassifyLink(ContentRoute sourcePage, string url, LinkType linkType)
     {
         // External links (http://, https://, //, mailto:, tel:)

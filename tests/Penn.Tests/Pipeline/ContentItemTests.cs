@@ -9,7 +9,7 @@ public class ContentItemTests
 {
     private static ContentRoute MakeRoute(string path = "/test") => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html")
     };
 
@@ -36,10 +36,10 @@ public class ContentItemTests
         ContentItem rendered = new ContentItem(new RenderedItem(MakeRoute("/c"), MakeMetadata(), MakeRenderedContent()));
         ContentItem failed = new ContentItem(new FailedItem(MakeRoute("/d"), new ContentError("fail")));
 
-        Describe(discovered).ShouldBe("Discovered: /a");
-        Describe(parsed).ShouldBe("Parsed: /b");
-        Describe(rendered).ShouldBe("Rendered: /c");
-        Describe(failed).ShouldBe("Failed: /d");
+        Describe(discovered).ShouldBe("Discovered: /a/");
+        Describe(parsed).ShouldBe("Parsed: /b/");
+        Describe(rendered).ShouldBe("Rendered: /c/");
+        Describe(failed).ShouldBe("Failed: /d/");
     }
 
     private static string Describe(ContentItem item) => item switch

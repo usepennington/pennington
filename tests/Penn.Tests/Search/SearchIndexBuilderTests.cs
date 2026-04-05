@@ -10,7 +10,7 @@ public class SearchIndexBuilderTests
 {
     private static ContentRoute MakeRoute(string path, string locale = "") => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html"),
         Locale = locale
     };
@@ -49,7 +49,7 @@ public class SearchIndexBuilderTests
         doc.ShouldNotBeNull();
         doc.Title.ShouldBe("Introduction");
         doc.Body.ShouldBe("Welcome to the docs");
-        doc.Url.Value.ShouldBe("/docs/intro");
+        doc.Url.Value.ShouldBe("/docs/intro/");
         doc.Locale.ShouldBe("en");
         doc.Priority.ShouldBe(5);
     }

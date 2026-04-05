@@ -24,7 +24,7 @@ public class ContentTypeTests
     {
         var route = new ContentRoute
         {
-            CanonicalPath = new UrlPath("/a/b/c"),
+            CanonicalPath = new UrlPath("/a/b/c/"),
             OutputFile = new FilePath("a/b/c/index.html")
         };
 

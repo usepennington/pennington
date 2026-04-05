@@ -7,7 +7,7 @@ public class BuildDiagnosticTests
 {
     private static ContentRoute MakeRoute(string path = "/test") => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html")
     };
 
@@ -18,9 +18,9 @@ public class BuildDiagnosticTests
         BuildDiagnostic warning = new BuildDiagnostic(new DiagnosticWarning(MakeRoute("/b"), "warn"));
         BuildDiagnostic error = new BuildDiagnostic(new DiagnosticError(MakeRoute("/c"), "err", null));
 
-        Describe(info).ShouldBe("Info: /a - info");
-        Describe(warning).ShouldBe("Warning: /b - warn");
-        Describe(error).ShouldBe("Error: /c - err");
+        Describe(info).ShouldBe("Info: /a/ - info");
+        Describe(warning).ShouldBe("Warning: /b/ - warn");
+        Describe(error).ShouldBe("Error: /c/ - err");
     }
 
     [Fact]

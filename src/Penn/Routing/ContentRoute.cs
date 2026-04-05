@@ -7,7 +7,6 @@ public sealed record ContentRoute
     public FilePath? SourceFile { get; init; }
     public string Locale { get; init; } = "";
 
-    public UrlPath NavigationPath => CanonicalPath.EnsureTrailingSlash();
     public UrlPath WithBaseUrl(UrlPath baseUrl) => baseUrl / CanonicalPath;
     public UrlPath AbsoluteUrl(UrlPath canonicalBase) => canonicalBase / CanonicalPath;
     public bool IsDefaultLocale => string.IsNullOrEmpty(Locale);

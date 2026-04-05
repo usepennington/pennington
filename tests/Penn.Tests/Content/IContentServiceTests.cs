@@ -19,7 +19,7 @@ public class IContentServiceTests
         }
 
         items.Count.ShouldBe(1);
-        items[0].Route.CanonicalPath.Value.ShouldBe("/test");
+        items[0].Route.CanonicalPath.Value.ShouldBe("/test/");
         items[0].Route.OutputFile.Value.ShouldBe("test/index.html");
         (items[0].Source is MarkdownFileSource).ShouldBeTrue();
     }
@@ -65,7 +65,7 @@ public class IContentServiceTests
         {
             var route = new ContentRoute
             {
-                CanonicalPath = new UrlPath("/test"),
+                CanonicalPath = new UrlPath("/test/"),
                 OutputFile = new FilePath("test/index.html")
             };
             yield return new DiscoveredItem(route, new ContentSource(new MarkdownFileSource("test.md")));

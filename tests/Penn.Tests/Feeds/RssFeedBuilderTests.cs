@@ -10,7 +10,7 @@ public class RssFeedBuilderTests
 {
     private static ContentRoute MakeRoute(string path, string locale = "") => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html"),
         Locale = locale
     };
@@ -52,7 +52,7 @@ public class RssFeedBuilderTests
 
         feed.Count.ShouldBe(1);
         feed[0].Title.ShouldBe("Post One");
-        feed[0].Url.Value.ShouldBe("https://example.com/blog/post-1");
+        feed[0].Url.Value.ShouldBe("https://example.com/blog/post-1/");
         feed[0].PublishDate.ShouldBe(date);
     }
 
@@ -272,7 +272,7 @@ public class RssFeedBuilderTests
         var feed = _builder.Build(items);
 
         feed[0].Url.Value.ShouldStartWith("https://example.com");
-        feed[0].Url.Value.ShouldBe("https://example.com/blog/my-post");
+        feed[0].Url.Value.ShouldBe("https://example.com/blog/my-post/");
     }
 
     [Fact]

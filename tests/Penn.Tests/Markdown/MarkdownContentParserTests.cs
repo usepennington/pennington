@@ -2,6 +2,7 @@ using Penn.FrontMatter;
 using Penn.Markdown;
 using Penn.Pipeline;
 using Penn.Routing;
+using Testably.Abstractions.Testing;
 
 namespace Penn.Tests.Markdown;
 
@@ -9,47 +10,51 @@ public class MarkdownContentParserTests
 {
     private static ContentRoute MakeRoute(string path = "/test") => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html")
     };
 
-    private readonly MarkdownContentParser<DocFrontMatter> _parser = new(new FrontMatterParser());
+    private static MockFileSystem CreateFs(params (string Path, string Content)[] files)
+    {
+        var fs = new MockFileSystem();
+        foreach (var (path, content) in files)
+        {
+            var dir = fs.Path.GetDirectoryName(path);
+            if (dir != null) fs.Directory.CreateDirectory(dir);
+            fs.File.WriteAllText(path, content);
+        }
+        return fs;
+    }
 
     [Fact]
     public async Task ParseAsync_MarkdownFileWithFrontMatter_ReturnsParsedItem()
     {
-        var tempFile = Path.GetTempFileName();
-        try
-        {
-            await File.WriteAllTextAsync(tempFile,
-                "---\ntitle: Hello World\n---\n# Hello\n\nSome content.",
-                TestContext.Current.CancellationToken);
+        var fs = CreateFs(("/content/hello.md",
+            "---\ntitle: Hello World\n---\n# Hello\n\nSome content."));
 
-            var source = new ContentSource(new MarkdownFileSource(new FilePath(tempFile)));
-            var discovered = new DiscoveredItem(MakeRoute("/hello"), source);
+        var parser = new MarkdownContentParser<DocFrontMatter>(new FrontMatterParser(), fs);
+        var source = new ContentSource(new MarkdownFileSource(new FilePath("/content/hello.md")));
+        var discovered = new DiscoveredItem(MakeRoute("/hello"), source);
 
-            var result = await _parser.ParseAsync(discovered);
+        var result = await parser.ParseAsync(discovered);
 
-            (result is ParsedItem).ShouldBeTrue();
-            var parsed = result switch { ParsedItem p => p, _ => null };
-            parsed.ShouldNotBeNull();
-            parsed.Metadata.Title.ShouldBe("Hello World");
-            parsed.RawMarkdown.ShouldContain("# Hello");
-            parsed.RawMarkdown.ShouldContain("Some content.");
-        }
-        finally
-        {
-            File.Delete(tempFile);
-        }
+        (result is ParsedItem).ShouldBeTrue();
+        var parsed = result switch { ParsedItem p => p, _ => null };
+        parsed.ShouldNotBeNull();
+        parsed.Metadata.Title.ShouldBe("Hello World");
+        parsed.RawMarkdown.ShouldContain("# Hello");
+        parsed.RawMarkdown.ShouldContain("Some content.");
     }
 
     [Fact]
     public async Task ParseAsync_MissingFile_ReturnsFailedItem()
     {
+        var fs = new MockFileSystem();
+        var parser = new MarkdownContentParser<DocFrontMatter>(new FrontMatterParser(), fs);
         var source = new ContentSource(new MarkdownFileSource(new FilePath("/nonexistent/path/file.md")));
         var discovered = new DiscoveredItem(MakeRoute("/missing"), source);
 
-        var result = await _parser.ParseAsync(discovered);
+        var result = await parser.ParseAsync(discovered);
 
         (result is FailedItem).ShouldBeTrue();
         var failed = result switch { FailedItem f => f, _ => null };
@@ -61,10 +66,12 @@ public class MarkdownContentParserTests
     [Fact]
     public async Task ParseAsync_NonMarkdownSource_ReturnsFailedItem()
     {
+        var fs = new MockFileSystem();
+        var parser = new MarkdownContentParser<DocFrontMatter>(new FrontMatterParser(), fs);
         var source = new ContentSource(new RazorPageSource("SomePage"));
         var discovered = new DiscoveredItem(MakeRoute("/razor"), source);
 
-        var result = await _parser.ParseAsync(discovered);
+        var result = await parser.ParseAsync(discovered);
 
         (result is FailedItem).ShouldBeTrue();
         var failed = result switch { FailedItem f => f, _ => null };
@@ -75,28 +82,38 @@ public class MarkdownContentParserTests
     [Fact]
     public async Task ParseAsync_FileWithNoFrontMatter_ReturnsParsedItemWithDefaultMetadata()
     {
-        var tempFile = Path.GetTempFileName();
-        try
-        {
-            await File.WriteAllTextAsync(tempFile,
-                "# Just Markdown\n\nNo front matter here.",
-                TestContext.Current.CancellationToken);
+        var fs = CreateFs(("/content/plain.md",
+            "# Just Markdown\n\nNo front matter here."));
 
-            var source = new ContentSource(new MarkdownFileSource(new FilePath(tempFile)));
-            var discovered = new DiscoveredItem(MakeRoute("/plain"), source);
+        var parser = new MarkdownContentParser<DocFrontMatter>(new FrontMatterParser(), fs);
+        var source = new ContentSource(new MarkdownFileSource(new FilePath("/content/plain.md")));
+        var discovered = new DiscoveredItem(MakeRoute("/plain"), source);
 
-            var result = await _parser.ParseAsync(discovered);
+        var result = await parser.ParseAsync(discovered);
 
-            (result is ParsedItem).ShouldBeTrue();
-            var parsed = result switch { ParsedItem p => p, _ => null };
-            parsed.ShouldNotBeNull();
-            parsed.Metadata.Title.ShouldBe("");
-            parsed.RawMarkdown.ShouldContain("# Just Markdown");
-            parsed.RawMarkdown.ShouldContain("No front matter here.");
-        }
-        finally
-        {
-            File.Delete(tempFile);
-        }
+        (result is ParsedItem).ShouldBeTrue();
+        var parsed = result switch { ParsedItem p => p, _ => null };
+        parsed.ShouldNotBeNull();
+        parsed.Metadata.Title.ShouldBe("");
+        parsed.RawMarkdown.ShouldContain("# Just Markdown");
+        parsed.RawMarkdown.ShouldContain("No front matter here.");
+    }
+
+    [Fact]
+    public async Task ParseAsync_FileWithWindowsLineEndings_ParsesCorrectly()
+    {
+        var fs = CreateFs(("/content/windows.md",
+            "---\r\ntitle: Windows File\r\n---\r\n# Hello\r\n\r\nWindows line endings."));
+
+        var parser = new MarkdownContentParser<DocFrontMatter>(new FrontMatterParser(), fs);
+        var source = new ContentSource(new MarkdownFileSource(new FilePath("/content/windows.md")));
+        var discovered = new DiscoveredItem(MakeRoute("/windows"), source);
+
+        var result = await parser.ParseAsync(discovered);
+
+        (result is ParsedItem).ShouldBeTrue();
+        var parsed = result switch { ParsedItem p => p, _ => null };
+        parsed.ShouldNotBeNull();
+        parsed.Metadata.Title.ShouldBe("Windows File");
     }
 }

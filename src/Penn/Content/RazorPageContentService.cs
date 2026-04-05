@@ -14,11 +14,18 @@ using Penn.Routing;
 public sealed class RazorPageContentService : IContentService
 {
     private readonly Assembly[] _assemblies;
+    private readonly List<(string Template, string TypeName)> _missingTrailingSlashPages = [];
 
     public RazorPageContentService(Assembly[] assemblies)
     {
         _assemblies = assemblies;
     }
+
+    /// <summary>
+    /// Razor @page directives that were missing a trailing slash.
+    /// Populated after <see cref="DiscoverAsync"/> runs.
+    /// </summary>
+    public IReadOnlyList<(string Template, string TypeName)> MissingTrailingSlashPages => _missingTrailingSlashPages;
 
     public string DefaultSection => "";
     public int SearchPriority => 5;
@@ -67,6 +74,9 @@ public sealed class RazorPageContentService : IContentService
                         // Skip parameterized routes (contain {})
                         if (template.Contains('{'))
                             continue;
+
+                        if (template != "/" && !template.EndsWith('/'))
+                            _missingTrailingSlashPages.Add((template, type.FullName ?? type.Name));
 
                         var route = ContentRouteFactory.FromRazorPage(template);
                         results.Add((route, type.AssemblyQualifiedName ?? type.FullName ?? type.Name));

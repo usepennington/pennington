@@ -6,7 +6,7 @@ public static class ContentRouteFactory
     /// Markdown: file path to route.
     /// Converts a markdown file path relative to contentRoot into a URL.
     /// Example: sourceFile="Content/Docs/getting-started.md", contentRoot="Content/Docs", basePageUrl="/docs"
-    ///   results in CanonicalPath="/docs/getting-started", OutputFile="docs/getting-started/index.html"
+    ///   results in CanonicalPath="/docs/getting-started/", OutputFile="docs/getting-started/index.html"
     /// </summary>
     public static ContentRoute FromMarkdownFile(FilePath sourceFile, FilePath contentRoot, UrlPath basePageUrl, string locale = "")
     {
@@ -36,16 +36,10 @@ public static class ContentRouteFactory
 
         canonicalPath = canonicalPath.EnsureLeadingSlash();
 
-        // Output file: strip leading slash, add /index.html
-        var outputPath = canonicalPath.RemoveLeadingSlash().Value;
-        var outputFile = string.IsNullOrEmpty(outputPath)
-            ? new FilePath("index.html")
-            : new FilePath($"{outputPath}/index.html");
-
         return new ContentRoute
         {
-            CanonicalPath = canonicalPath,
-            OutputFile = outputFile,
+            CanonicalPath = canonicalPath.EnsureTrailingSlash(),
+            OutputFile = BuildOutputFile(canonicalPath),
             SourceFile = sourceFile,
             Locale = locale
         };
@@ -54,19 +48,14 @@ public static class ContentRouteFactory
     /// <summary>Razor: @page directive to route.</summary>
     public static ContentRoute FromRazorPage(string pageRoute, string locale = "")
     {
-        var path = new UrlPath(pageRoute).EnsureLeadingSlash();
+        var path = new UrlPath(pageRoute).EnsureLeadingSlash().RemoveTrailingSlash();
         if (!string.IsNullOrEmpty(locale))
             path = new UrlPath($"/{locale}{path.Value}");
 
-        var outputPath = path.RemoveLeadingSlash().Value;
-        var outputFile = string.IsNullOrEmpty(outputPath)
-            ? new FilePath("index.html")
-            : new FilePath($"{outputPath}/index.html");
-
         return new ContentRoute
         {
-            CanonicalPath = path,
-            OutputFile = outputFile,
+            CanonicalPath = path.EnsureTrailingSlash(),
+            OutputFile = BuildOutputFile(path),
             Locale = locale
         };
     }
@@ -78,15 +67,10 @@ public static class ContentRouteFactory
         if (!string.IsNullOrEmpty(locale))
             path = new UrlPath($"/{locale}{path.Value}");
 
-        var outputPath = path.RemoveLeadingSlash().Value;
-        var outputFile = string.IsNullOrEmpty(outputPath)
-            ? new FilePath("index.html")
-            : new FilePath($"{outputPath}/index.html");
-
         return new ContentRoute
         {
-            CanonicalPath = path,
-            OutputFile = outputFile,
+            CanonicalPath = path.EnsureTrailingSlash(),
+            OutputFile = BuildOutputFile(path),
             Locale = locale
         };
     }
@@ -98,15 +82,10 @@ public static class ContentRouteFactory
         if (!string.IsNullOrEmpty(locale))
             path = new UrlPath($"/{locale}{path.Value}");
 
-        var outputPath = path.RemoveLeadingSlash().Value;
-        var outputFile = string.IsNullOrEmpty(outputPath)
-            ? new FilePath("index.html")
-            : new FilePath($"{outputPath}/index.html");
-
         return new ContentRoute
         {
-            CanonicalPath = path,
-            OutputFile = outputFile,
+            CanonicalPath = path.EnsureTrailingSlash(),
+            OutputFile = BuildOutputFile(path),
             SourceFile = sourceFile,
             Locale = locale
         };
@@ -116,15 +95,11 @@ public static class ContentRouteFactory
     public static ContentRoute ForRedirect(UrlPath sourceUrl)
     {
         var path = sourceUrl.EnsureLeadingSlash().RemoveTrailingSlash();
-        var outputPath = path.RemoveLeadingSlash().Value;
-        var outputFile = string.IsNullOrEmpty(outputPath)
-            ? new FilePath("index.html")
-            : new FilePath($"{outputPath}/index.html");
 
         return new ContentRoute
         {
-            CanonicalPath = path,
-            OutputFile = outputFile
+            CanonicalPath = path.EnsureTrailingSlash(),
+            OutputFile = BuildOutputFile(path)
         };
     }
 
@@ -146,6 +121,14 @@ public static class ContentRouteFactory
     {
         var lastDot = path.LastIndexOf('.');
         return lastDot > 0 ? path[..lastDot] : path;
+    }
+
+    private static FilePath BuildOutputFile(UrlPath path)
+    {
+        var outputPath = path.RemoveTrailingSlash().RemoveLeadingSlash().Value;
+        return string.IsNullOrEmpty(outputPath)
+            ? new FilePath("index.html")
+            : new FilePath($"{outputPath}/index.html");
     }
 
     // Normalize URL segment: lowercase, replace backslashes

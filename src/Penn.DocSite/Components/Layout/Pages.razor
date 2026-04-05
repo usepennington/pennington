@@ -17,9 +17,9 @@
         Title="@_resolved.Title"
         HtmlContent="@_resolved.Html"
         PreviousPageName="@_navInfo?.PreviousPage?.Title"
-        PreviousPageHref="@_navInfo?.PreviousPage?.Route.NavigationPath.Value"
+        PreviousPageHref="@_navInfo?.PreviousPage?.Route.CanonicalPath.Value"
         NextPageName="@_navInfo?.NextPage?.Title"
-        NextPageHref="@_navInfo?.NextPage?.Route.NavigationPath.Value" />
+        NextPageHref="@_navInfo?.NextPage?.Route.CanonicalPath.Value" />
 
     <SectionContent SectionName="sidebar">
         <OutlineNavigation ContentSelector="article main" />

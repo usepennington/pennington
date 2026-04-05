@@ -12,7 +12,7 @@ public class ContentRouteFactoryTests
             contentRoot: "Content/Docs",
             basePageUrl: "/docs");
 
-        route.CanonicalPath.Value.ShouldBe("/docs/getting-started");
+        route.CanonicalPath.Value.ShouldBe("/docs/getting-started/");
         route.OutputFile.Value.ShouldBe("docs/getting-started/index.html");
         route.SourceFile.ShouldNotBeNull();
         route.SourceFile.Value.Value.ShouldBe("Content/Docs/getting-started.md");
@@ -26,7 +26,7 @@ public class ContentRouteFactoryTests
             contentRoot: "Content/Docs",
             basePageUrl: "/docs");
 
-        route.CanonicalPath.Value.ShouldBe("/docs");
+        route.CanonicalPath.Value.ShouldBe("/docs/");
         route.OutputFile.Value.ShouldBe("docs/index.html");
     }
 
@@ -39,7 +39,7 @@ public class ContentRouteFactoryTests
             basePageUrl: "/docs",
             locale: "fr");
 
-        route.CanonicalPath.Value.ShouldBe("/fr/docs/getting-started");
+        route.CanonicalPath.Value.ShouldBe("/fr/docs/getting-started/");
         route.OutputFile.Value.ShouldBe("fr/docs/getting-started/index.html");
         route.Locale.ShouldBe("fr");
     }
@@ -52,7 +52,7 @@ public class ContentRouteFactoryTests
             contentRoot: "Content/Docs",
             basePageUrl: "/docs");
 
-        route.CanonicalPath.Value.ShouldBe("/docs/guides/advanced/setup");
+        route.CanonicalPath.Value.ShouldBe("/docs/guides/advanced/setup/");
         route.OutputFile.Value.ShouldBe("docs/guides/advanced/setup/index.html");
     }
 
@@ -65,7 +65,7 @@ public class ContentRouteFactoryTests
             basePageUrl: "/docs",
             locale: "de");
 
-        route.CanonicalPath.Value.ShouldBe("/de/docs");
+        route.CanonicalPath.Value.ShouldBe("/de/docs/");
         route.OutputFile.Value.ShouldBe("de/docs/index.html");
     }
 
@@ -74,7 +74,7 @@ public class ContentRouteFactoryTests
     {
         var route = ContentRouteFactory.FromRazorPage("/about");
 
-        route.CanonicalPath.Value.ShouldBe("/about");
+        route.CanonicalPath.Value.ShouldBe("/about/");
         route.OutputFile.Value.ShouldBe("about/index.html");
         route.SourceFile.ShouldBeNull();
     }
@@ -84,7 +84,7 @@ public class ContentRouteFactoryTests
     {
         var route = ContentRouteFactory.FromRazorPage("/about", locale: "es");
 
-        route.CanonicalPath.Value.ShouldBe("/es/about");
+        route.CanonicalPath.Value.ShouldBe("/es/about/");
         route.OutputFile.Value.ShouldBe("es/about/index.html");
         route.Locale.ShouldBe("es");
     }
@@ -94,7 +94,7 @@ public class ContentRouteFactoryTests
     {
         var route = ContentRouteFactory.FromUrl("/blog/my-post");
 
-        route.CanonicalPath.Value.ShouldBe("/blog/my-post");
+        route.CanonicalPath.Value.ShouldBe("/blog/my-post/");
         route.OutputFile.Value.ShouldBe("blog/my-post/index.html");
     }
 
@@ -103,17 +103,17 @@ public class ContentRouteFactoryTests
     {
         var route = ContentRouteFactory.FromUrl("/blog/my-post", locale: "ja");
 
-        route.CanonicalPath.Value.ShouldBe("/ja/blog/my-post");
+        route.CanonicalPath.Value.ShouldBe("/ja/blog/my-post/");
         route.OutputFile.Value.ShouldBe("ja/blog/my-post/index.html");
         route.Locale.ShouldBe("ja");
     }
 
     [Fact]
-    public void FromUrl_WithTrailingSlash_RemovesIt()
+    public void FromUrl_WithTrailingSlash_NormalizesToTrailingSlash()
     {
         var route = ContentRouteFactory.FromUrl("/blog/my-post/");
 
-        route.CanonicalPath.Value.ShouldBe("/blog/my-post");
+        route.CanonicalPath.Value.ShouldBe("/blog/my-post/");
         route.OutputFile.Value.ShouldBe("blog/my-post/index.html");
     }
 
@@ -124,7 +124,7 @@ public class ContentRouteFactoryTests
             url: "/api/data",
             sourceFile: new FilePath("data/source.json"));
 
-        route.CanonicalPath.Value.ShouldBe("/api/data");
+        route.CanonicalPath.Value.ShouldBe("/api/data/");
         route.OutputFile.Value.ShouldBe("api/data/index.html");
         route.SourceFile.ShouldNotBeNull();
         route.SourceFile.Value.Value.ShouldBe("data/source.json");
@@ -135,7 +135,7 @@ public class ContentRouteFactoryTests
     {
         var route = ContentRouteFactory.FromCustom(url: "/api/data");
 
-        route.CanonicalPath.Value.ShouldBe("/api/data");
+        route.CanonicalPath.Value.ShouldBe("/api/data/");
         route.OutputFile.Value.ShouldBe("api/data/index.html");
         route.SourceFile.ShouldBeNull();
     }
@@ -147,7 +147,7 @@ public class ContentRouteFactoryTests
             url: "/api/data",
             locale: "pt");
 
-        route.CanonicalPath.Value.ShouldBe("/pt/api/data");
+        route.CanonicalPath.Value.ShouldBe("/pt/api/data/");
         route.OutputFile.Value.ShouldBe("pt/api/data/index.html");
         route.Locale.ShouldBe("pt");
     }
@@ -157,18 +157,18 @@ public class ContentRouteFactoryTests
     {
         var route = ContentRouteFactory.ForRedirect("/old-page");
 
-        route.CanonicalPath.Value.ShouldBe("/old-page");
+        route.CanonicalPath.Value.ShouldBe("/old-page/");
         route.OutputFile.Value.ShouldBe("old-page/index.html");
         route.Locale.ShouldBe("");
         route.SourceFile.ShouldBeNull();
     }
 
     [Fact]
-    public void ForRedirect_WithTrailingSlash_RemovesIt()
+    public void ForRedirect_WithTrailingSlash_NormalizesToTrailingSlash()
     {
         var route = ContentRouteFactory.ForRedirect("/old-page/");
 
-        route.CanonicalPath.Value.ShouldBe("/old-page");
+        route.CanonicalPath.Value.ShouldBe("/old-page/");
         route.OutputFile.Value.ShouldBe("old-page/index.html");
     }
 }

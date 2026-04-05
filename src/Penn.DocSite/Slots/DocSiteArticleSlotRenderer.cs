@@ -27,9 +27,9 @@ internal class DocSiteArticleSlotRenderer(
             [nameof(DocSiteArticle.Title)] = resolved.Title,
             [nameof(DocSiteArticle.HtmlContent)] = resolved.Html,
             [nameof(DocSiteArticle.PreviousPageName)] = navInfo?.PreviousPage?.Title,
-            [nameof(DocSiteArticle.PreviousPageHref)] = navInfo?.PreviousPage?.Route.NavigationPath.Value,
+            [nameof(DocSiteArticle.PreviousPageHref)] = navInfo?.PreviousPage?.Route.CanonicalPath.Value,
             [nameof(DocSiteArticle.NextPageName)] = navInfo?.NextPage?.Title,
-            [nameof(DocSiteArticle.NextPageHref)] = navInfo?.NextPage?.Route.NavigationPath.Value,
+            [nameof(DocSiteArticle.NextPageHref)] = navInfo?.NextPage?.Route.CanonicalPath.Value,
         };
     }
 }

@@ -8,7 +8,7 @@ public class BuildReportOutputTests
 {
     private static ContentRoute MakeRoute(string path, string? source = null) => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html"),
         SourceFile = source is not null ? new FilePath(source) : (FilePath?)null
     };
@@ -78,7 +78,7 @@ public class BuildReportOutputTests
         var output = report.ToFormattedString();
 
         output.ShouldContain("WARNINGS");
-        output.ShouldContain("/docs/old-page: redirect target not found");
+        output.ShouldContain("/docs/old-page/: redirect target not found");
         output.ShouldContain("1 warnings");
     }
 
@@ -97,8 +97,8 @@ public class BuildReportOutputTests
 
         output.ShouldContain("WARNINGS");
         output.ShouldContain("2 broken links found:");
-        output.ShouldContain("/docs/setup links to /docs/install (404)");
-        output.ShouldContain("/blog/post links to /missing-image.png (404)");
+        output.ShouldContain("/docs/setup/ links to /docs/install (404)");
+        output.ShouldContain("/blog/post/ links to /missing-image.png (404)");
     }
 
     [Fact]
@@ -149,9 +149,9 @@ public class BuildReportOutputTests
 
         // Warnings section
         output.ShouldContain("WARNINGS");
-        output.ShouldContain("/old: deprecated");
+        output.ShouldContain("/old/: deprecated");
         output.ShouldContain("1 broken links found:");
-        output.ShouldContain("/page links to /missing (404)");
+        output.ShouldContain("/page/ links to /missing (404)");
     }
 
     [Fact]

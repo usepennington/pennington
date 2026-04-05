@@ -7,7 +7,7 @@ public class BuildReportBuilderTests
 {
     private static ContentRoute MakeRoute(string path = "/test") => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html")
     };
 

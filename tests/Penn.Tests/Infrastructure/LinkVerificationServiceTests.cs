@@ -8,7 +8,7 @@ public class LinkVerificationServiceTests
 {
     private static ContentRoute MakeRoute(string path) => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html")
     };
 
@@ -395,7 +395,81 @@ public class LinkVerificationServiceTests
         brokenCount.ShouldBe(3);
     }
 
-    // --- 19. Large real-world page ---
+    // --- 19. FindLinksWithoutTrailingSlash ---
+
+    [Fact]
+    public void FindLinksWithoutTrailingSlash_DetectsMissingSlash()
+    {
+        var html = """<a href="/docs/page">Page</a>""";
+        var results = LinkVerificationService.FindLinksWithoutTrailingSlash(html);
+        results.Count.ShouldBe(1);
+        results[0].ShouldBe("/docs/page");
+    }
+
+    [Fact]
+    public void FindLinksWithoutTrailingSlash_IgnoresCorrectLinks()
+    {
+        var html = """<a href="/docs/page/">Page</a>""";
+        var results = LinkVerificationService.FindLinksWithoutTrailingSlash(html);
+        results.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void FindLinksWithoutTrailingSlash_IgnoresFileUrls()
+    {
+        var html = """<a href="/styles.css">CSS</a><img src="/logo.png">""";
+        var results = LinkVerificationService.FindLinksWithoutTrailingSlash(html);
+        results.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void FindLinksWithoutTrailingSlash_IgnoresExternalLinks()
+    {
+        var html = """<a href="https://example.com/no-slash">External</a>""";
+        var results = LinkVerificationService.FindLinksWithoutTrailingSlash(html);
+        results.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void FindLinksWithoutTrailingSlash_IgnoresAnchorLinks()
+    {
+        var html = """<a href="#section">Anchor</a>""";
+        var results = LinkVerificationService.FindLinksWithoutTrailingSlash(html);
+        results.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void FindLinksWithoutTrailingSlash_IgnoresRootSlash()
+    {
+        var html = """<a href="/">Home</a>""";
+        var results = LinkVerificationService.FindLinksWithoutTrailingSlash(html);
+        results.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void FindLinksWithoutTrailingSlash_MultipleBadLinks_AllReported()
+    {
+        var html = """
+            <a href="/docs/intro">Intro</a>
+            <a href="/docs/setup/">Setup</a>
+            <a href="/about">About</a>
+            """;
+        var results = LinkVerificationService.FindLinksWithoutTrailingSlash(html);
+        results.Count.ShouldBe(2);
+        results.ShouldContain("/docs/intro");
+        results.ShouldContain("/about");
+    }
+
+    [Fact]
+    public void FindLinksWithoutTrailingSlash_LinkWithQueryAndHash_ChecksPathOnly()
+    {
+        var html = """<a href="/docs/page?v=2#section">Page</a>""";
+        var results = LinkVerificationService.FindLinksWithoutTrailingSlash(html);
+        results.Count.ShouldBe(1);
+        results[0].ShouldBe("/docs/page?v=2#section");
+    }
+
+    // --- 20. Large real-world page ---
 
     [Fact]
     public void RealisticDocPage_MixedLinkTypes()

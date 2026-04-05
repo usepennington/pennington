@@ -3,6 +3,8 @@ namespace Penn.Pipeline;
 using Penn.Content;
 using Penn.FrontMatter;
 using Penn.Generation;
+using Penn.Infrastructure;
+using Penn.Routing;
 
 /// <summary>
 /// Orchestrates the content processing pipeline.
@@ -117,6 +119,14 @@ public sealed class ContentPipeline : IContentPipeline
                     else
                     {
                         reportBuilder.AddGeneratedPage(rendered.Route);
+
+                        // Check for internal links missing trailing slashes
+                        var badLinks = LinkVerificationService.FindLinksWithoutTrailingSlash(rendered.Content.Html);
+                        foreach (var badLink in badLinks)
+                        {
+                            reportBuilder.AddWarning(rendered.Route,
+                                $"Internal link \"{badLink}\" is missing a trailing slash");
+                        }
                     }
                     break;
 
@@ -128,6 +138,20 @@ public sealed class ContentPipeline : IContentPipeline
                     // Items that didn't reach Rendered state — warn
                     reportBuilder.AddWarning(item.Route, "Item did not complete pipeline");
                     break;
+            }
+        }
+
+        // Check for Razor @page directives missing trailing slashes
+        foreach (var service in _services)
+        {
+            if (service is RazorPageContentService razorService)
+            {
+                foreach (var (template, typeName) in razorService.MissingTrailingSlashPages)
+                {
+                    var route = ContentRouteFactory.FromRazorPage(template);
+                    reportBuilder.AddWarning(route,
+                        $"Razor @page directive \"{template}\" is missing a trailing slash (in {typeName})");
+                }
             }
         }
 

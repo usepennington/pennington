@@ -33,7 +33,7 @@
             }
             else
             {
-                <a data-current="@tocEntry.IsSelected.ToString().ToLowerInvariant()" href="@tocEntry.Route.NavigationPath.Value" class="@(tocEntry.Children.Count == 0 ? RootLinkStructureClass + " " + RootLinkColorClass : SectionHeaderStructureClass + " " + SectionHeaderColorClass)">@tocEntry.Title</a>
+                <a data-current="@tocEntry.IsSelected.ToString().ToLowerInvariant()" href="@tocEntry.Route.CanonicalPath.Value" class="@(tocEntry.Children.Count == 0 ? RootLinkStructureClass + " " + RootLinkColorClass : SectionHeaderStructureClass + " " + SectionHeaderColorClass)">@tocEntry.Title</a>
             }
             @if (tocEntry.Children.Count > 0)
             {
@@ -41,7 +41,7 @@
                     @foreach (var childEntry in tocEntry.Children.OrderBy(i => i.Order).Where(i => i.Route.CanonicalPath.Value != ""))
                     {
                         <li class="block">
-                            <a data-current="@childEntry.IsSelected.ToString().ToLowerInvariant()" href="@childEntry.Route.NavigationPath.Value" class="@LinkStructureClass @LinkColorClass">@childEntry.Title</a>
+                            <a data-current="@childEntry.IsSelected.ToString().ToLowerInvariant()" href="@childEntry.Route.CanonicalPath.Value" class="@LinkStructureClass @LinkColorClass">@childEntry.Title</a>
                         </li>
                     }
                 </ul>

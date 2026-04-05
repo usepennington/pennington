@@ -17,7 +17,7 @@ public class EndToEndBuildTests
 {
     private static ContentRoute MakeRoute(string path) => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html")
     };
 
@@ -128,9 +128,9 @@ public class EndToEndBuildTests
 
         var parser = new MarkdownParserStub(item =>
         {
-            if (item.Route.CanonicalPath.Value.Contains("broken"))
+            if (item.Route.CanonicalPath.Value.Contains("broken/"))
                 return new ContentItem(new FailedItem(item.Route, new ContentError("YAML parse error at line 3")));
-            if (item.Route.CanonicalPath.Value.Contains("wip"))
+            if (item.Route.CanonicalPath.Value.Contains("wip/"))
                 return new ContentItem(new ParsedItem(item.Route, new DraftFrontMatter(), "# WIP"));
             return new ContentItem(new ParsedItem(item.Route, new TestFrontMatter("Page"), "# Content"));
         });
@@ -149,7 +149,7 @@ public class EndToEndBuildTests
         var errors = report.Diagnostics.Where(d => d is DiagnosticError).ToList();
         errors.Count.ShouldBe(1);
         errors[0].Message.ShouldContain("YAML parse error");
-        errors[0].Route.CanonicalPath.Value.ShouldBe("/docs/broken");
+        errors[0].Route.CanonicalPath.Value.ShouldBe("/docs/broken/");
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public class EndToEndBuildTests
         // Renderer produces HTML with links — some valid, some broken
         var renderer = new RenderWithHtmlStub(item =>
         {
-            if (item.Route.CanonicalPath.Value == "/docs/intro")
+            if (item.Route.CanonicalPath.Value == "/docs/intro/")
                 return """
                     <p>See <a href="/docs/config">Configuration</a> for setup.</p>
                     <p>Also check <a href="/docs/missing-page">this page</a>.</p>
@@ -221,7 +221,7 @@ public class EndToEndBuildTests
         brokenUrls.ShouldContain("/images/logo.png");
 
         // Verify source page tracking
-        finalReport.BrokenLinks.All(b => b.SourcePage.CanonicalPath.Value == "/docs/intro").ShouldBeTrue();
+        finalReport.BrokenLinks.All(b => b.SourcePage.CanonicalPath.Value == "/docs/intro/").ShouldBeTrue();
     }
 
     [Fact]
@@ -264,7 +264,7 @@ public class EndToEndBuildTests
         // Intro links to API by path — should be valid
         var renderer = new RenderWithHtmlStub(item =>
         {
-            if (item.Route.CanonicalPath.Value == "/docs/intro")
+            if (item.Route.CanonicalPath.Value == "/docs/intro/")
                 return """<p>See the <a href="/docs/api">API Reference</a> for details.</p>""";
             return """<p>Back to <a href="/docs/intro">Intro</a>.</p>""";
         });
@@ -297,7 +297,7 @@ public class EndToEndBuildTests
 
         var parser = new MarkdownParserStub(item =>
         {
-            if (item.Route.CanonicalPath.Value.Contains("broken"))
+            if (item.Route.CanonicalPath.Value.Contains("broken/"))
                 return new ContentItem(new FailedItem(item.Route, new ContentError("Front matter parse failed: invalid YAML")));
             return new ContentItem(new ParsedItem(item.Route, new TestFrontMatter("Intro"), "# Intro"));
         });

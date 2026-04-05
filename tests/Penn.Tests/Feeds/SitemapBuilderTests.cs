@@ -10,7 +10,7 @@ public class SitemapBuilderTests
 {
     private static ContentRoute MakeRoute(string path, string locale = "") => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html"),
         Locale = locale
     };
@@ -55,8 +55,8 @@ public class SitemapBuilderTests
         var entries = _builder.Build(items);
 
         entries.Count.ShouldBe(2);
-        entries[0].Url.Value.ShouldBe("https://example.com/about");
-        entries[1].Url.Value.ShouldBe("https://example.com/contact");
+        entries[0].Url.Value.ShouldBe("https://example.com/about/");
+        entries[1].Url.Value.ShouldBe("https://example.com/contact/");
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class SitemapBuilderTests
         var entries = _builder.Build(items);
 
         entries.Count.ShouldBe(1);
-        entries[0].Url.Value.ShouldBe("https://example.com/published");
+        entries[0].Url.Value.ShouldBe("https://example.com/published/");
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public class SitemapBuilderTests
         var entries = _builder.Build(items);
 
         entries.Count.ShouldBe(1);
-        entries[0].Url.Value.ShouldBe("https://example.com/page");
+        entries[0].Url.Value.ShouldBe("https://example.com/page/");
     }
 
     [Fact]
@@ -163,7 +163,7 @@ public class SitemapBuilderTests
         var entries = _builder.Build(items);
 
         entries.Count.ShouldBe(1);
-        entries[0].Url.Value.ShouldBe("https://example.com/fr/docs/intro");
+        entries[0].Url.Value.ShouldBe("https://example.com/fr/docs/intro/");
     }
 
     [Fact]
@@ -192,8 +192,8 @@ public class SitemapBuilderTests
 
         entries.Count.ShouldBe(2);
         var urls = entries.Select(e => e.Url.Value).ToList();
-        urls.ShouldContain("https://example.com/getting-started");
-        urls.ShouldContain("https://example.com/about");
+        urls.ShouldContain("https://example.com/getting-started/");
+        urls.ShouldContain("https://example.com/about/");
     }
 
     [Fact]

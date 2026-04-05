@@ -9,7 +9,7 @@ public class NavigationBuilderTests
 {
     private static ContentRoute MakeRoute(string path) => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html")
     };
 

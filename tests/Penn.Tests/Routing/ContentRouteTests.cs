@@ -5,40 +5,16 @@ namespace Penn.Tests.Routing;
 public class ContentRouteTests
 {
     [Fact]
-    public void NavigationPath_AddsTrailingSlash()
-    {
-        var route = new ContentRoute
-        {
-            CanonicalPath = new UrlPath("/docs/getting-started"),
-            OutputFile = new FilePath("docs/getting-started/index.html")
-        };
-
-        route.NavigationPath.Value.ShouldBe("/docs/getting-started/");
-    }
-
-    [Fact]
-    public void NavigationPath_AlreadyHasTrailingSlash_ReturnsSame()
-    {
-        var route = new ContentRoute
-        {
-            CanonicalPath = new UrlPath("/docs/"),
-            OutputFile = new FilePath("docs/index.html")
-        };
-
-        route.NavigationPath.Value.ShouldBe("/docs/");
-    }
-
-    [Fact]
     public void WithBaseUrl_CombinesCorrectly()
     {
         var route = new ContentRoute
         {
-            CanonicalPath = new UrlPath("/docs/getting-started"),
+            CanonicalPath = new UrlPath("/docs/getting-started/"),
             OutputFile = new FilePath("docs/getting-started/index.html")
         };
 
         var result = route.WithBaseUrl(new UrlPath("/mysite"));
-        result.Value.ShouldBe("/mysite/docs/getting-started");
+        result.Value.ShouldBe("/mysite/docs/getting-started/");
     }
 
     [Fact]
@@ -46,12 +22,12 @@ public class ContentRouteTests
     {
         var route = new ContentRoute
         {
-            CanonicalPath = new UrlPath("/docs/getting-started"),
+            CanonicalPath = new UrlPath("/docs/getting-started/"),
             OutputFile = new FilePath("docs/getting-started/index.html")
         };
 
         var result = route.AbsoluteUrl(new UrlPath("https://example.com"));
-        result.Value.ShouldBe("https://example.com/docs/getting-started");
+        result.Value.ShouldBe("https://example.com/docs/getting-started/");
     }
 
     [Fact]
@@ -59,7 +35,7 @@ public class ContentRouteTests
     {
         var route = new ContentRoute
         {
-            CanonicalPath = new UrlPath("/docs"),
+            CanonicalPath = new UrlPath("/docs/"),
             OutputFile = new FilePath("docs/index.html")
         };
 
@@ -71,7 +47,7 @@ public class ContentRouteTests
     {
         var route = new ContentRoute
         {
-            CanonicalPath = new UrlPath("/fr/docs"),
+            CanonicalPath = new UrlPath("/fr/docs/"),
             OutputFile = new FilePath("fr/docs/index.html"),
             Locale = "fr"
         };

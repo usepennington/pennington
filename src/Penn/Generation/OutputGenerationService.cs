@@ -1,5 +1,6 @@
 namespace Penn.Generation;
 
+using System.IO.Abstractions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -21,6 +22,7 @@ public sealed class OutputGenerationService
     private readonly PennOptions _pennOptions;
     private readonly IWebHostEnvironment _environment;
     private readonly EndpointDataSource _endpointDataSource;
+    private readonly IFileSystem _fileSystem;
     private readonly ILogger<OutputGenerationService> _logger;
 
     public OutputGenerationService(
@@ -29,6 +31,7 @@ public sealed class OutputGenerationService
         PennOptions pennOptions,
         IWebHostEnvironment environment,
         EndpointDataSource endpointDataSource,
+        IFileSystem fileSystem,
         ILogger<OutputGenerationService> logger)
     {
         _contentServices = contentServices;
@@ -36,6 +39,7 @@ public sealed class OutputGenerationService
         _pennOptions = pennOptions;
         _environment = environment;
         _endpointDataSource = endpointDataSource;
+        _fileSystem = fileSystem;
         _logger = logger;
     }
 
@@ -52,7 +56,7 @@ public sealed class OutputGenerationService
         {
             await foreach (var item in service.DiscoverAsync())
             {
-                var url = item.Route.CanonicalPath.EnsureTrailingSlash().Value;
+                var url = item.Route.CanonicalPath.Value;
                 contentPages.Add(new PageToGenerate(url, item.Route.OutputFile));
             }
         }
@@ -64,9 +68,9 @@ public sealed class OutputGenerationService
             contentPages.Count, mapGetPages.Count);
 
         // Phase 3: Clear and recreate output directory
-        if (Directory.Exists(outputDir))
-            Directory.Delete(outputDir, true);
-        Directory.CreateDirectory(outputDir);
+        if (_fileSystem.Directory.Exists(outputDir))
+            _fileSystem.Directory.Delete(outputDir, true);
+        _fileSystem.Directory.CreateDirectory(outputDir);
 
         // Phase 4: Copy static assets
         await CopyStaticAssetsAsync(outputDir);
@@ -138,7 +142,7 @@ public sealed class OutputGenerationService
             var toCopy = await service.GetContentToCopyAsync();
             foreach (var item in toCopy)
             {
-                CopyFile(item.SourcePath.Value, Path.Combine(outputDir, item.OutputPath.Value));
+                CopyFile(item.SourcePath.Value, _fileSystem.Path.Combine(outputDir, item.OutputPath.Value));
             }
         }
 
@@ -166,12 +170,12 @@ public sealed class OutputGenerationService
             var toCreate = await service.GetContentToCreateAsync();
             foreach (var item in toCreate)
             {
-                var targetPath = Path.Combine(outputDir, item.OutputPath.Value);
-                var dir = Path.GetDirectoryName(targetPath);
-                if (dir != null) Directory.CreateDirectory(dir);
+                var targetPath = _fileSystem.Path.Combine(outputDir, item.OutputPath.Value);
+                var dir = _fileSystem.Path.GetDirectoryName(targetPath);
+                if (dir != null) _fileSystem.Directory.CreateDirectory(dir);
 
                 var bytes = await item.ContentGenerator();
-                await File.WriteAllBytesAsync(targetPath, bytes);
+                await _fileSystem.File.WriteAllBytesAsync(targetPath, bytes);
             }
         }
     }
@@ -183,9 +187,9 @@ public sealed class OutputGenerationService
             try
             {
                 var response = await client.GetAsync(page.Url, ct);
-                var outputPath = Path.Combine(outputDir, page.OutputFile.Value);
-                var dir = Path.GetDirectoryName(outputPath);
-                if (dir != null) Directory.CreateDirectory(dir);
+                var outputPath = _fileSystem.Path.Combine(outputDir, page.OutputFile.Value);
+                var dir = _fileSystem.Path.GetDirectoryName(outputPath);
+                if (dir != null) _fileSystem.Directory.CreateDirectory(dir);
 
                 if (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently ||
                     response.StatusCode == System.Net.HttpStatusCode.Found)
@@ -198,7 +202,7 @@ public sealed class OutputGenerationService
                         <link rel="canonical" href="{location}">
                         </head></html>
                         """;
-                    await File.WriteAllTextAsync(outputPath, redirectHtml, ct);
+                    await _fileSystem.File.WriteAllTextAsync(outputPath, redirectHtml, ct);
                     _logger.LogInformation("  Redirect: {Url} -> {Location}", page.Url, location);
                 }
                 else if (response.IsSuccessStatusCode)
@@ -208,12 +212,12 @@ public sealed class OutputGenerationService
                     if (contentType.StartsWith("text/") || contentType.Contains("json") || contentType.Contains("xml"))
                     {
                         var content = await response.Content.ReadAsStringAsync(ct);
-                        await File.WriteAllTextAsync(outputPath, content, ct);
+                        await _fileSystem.File.WriteAllTextAsync(outputPath, content, ct);
                     }
                     else
                     {
                         var bytes = await response.Content.ReadAsByteArrayAsync(ct);
-                        await File.WriteAllBytesAsync(outputPath, bytes, ct);
+                        await _fileSystem.File.WriteAllBytesAsync(outputPath, bytes, ct);
                     }
                     _logger.LogDebug("  Generated: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
                 }
@@ -233,9 +237,9 @@ public sealed class OutputGenerationService
     {
         try
         {
-            var dir = Path.GetDirectoryName(target);
-            if (dir != null) Directory.CreateDirectory(dir);
-            File.Copy(source, target, true);
+            var dir = _fileSystem.Path.GetDirectoryName(target);
+            if (dir != null) _fileSystem.Directory.CreateDirectory(dir);
+            _fileSystem.File.Copy(source, target, true);
         }
         catch (Exception ex)
         {
@@ -256,7 +260,7 @@ public sealed class OutputGenerationService
             }
             else if (item.PhysicalPath != null)
             {
-                var targetPath = Path.Combine(outputDir, relativePath);
+                var targetPath = _fileSystem.Path.Combine(outputDir, relativePath);
                 CopyFile(item.PhysicalPath, targetPath);
             }
         }

@@ -13,7 +13,7 @@ public class ContentPipelineTests
 
     private static ContentRoute MakeRoute(string path) => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html")
     };
 
@@ -258,8 +258,8 @@ public class ContentPipelineTests
         var discovered = await CollectAsync(pipeline.DiscoverAsync());
 
         discovered.Count.ShouldBe(2);
-        discovered[0].Route.CanonicalPath.Value.ShouldBe("/service1/page");
-        discovered[1].Route.CanonicalPath.Value.ShouldBe("/service2/page");
+        discovered[0].Route.CanonicalPath.Value.ShouldBe("/service1/page/");
+        discovered[1].Route.CanonicalPath.Value.ShouldBe("/service2/page/");
     }
 
     [Fact]
@@ -437,6 +437,44 @@ public class ContentPipelineTests
     }
 
     [Fact]
+    public async Task GenerateAsync_LinksWithoutTrailingSlash_EmitsWarnings()
+    {
+        var item = new DiscoveredItem(MakeRoute("/docs/intro"), MakeSource());
+        var service = new StubContentService(item);
+
+        var parser = new StubParser();
+        // Renderer produces HTML with a link missing a trailing slash
+        var renderer = new CustomHtmlRenderer(_ =>
+            """<p>See <a href="/docs/config">Config</a> and <a href="/docs/setup/">Setup</a>.</p>""");
+
+        var pipeline = new ContentPipeline([service], parser, renderer);
+        var report = await pipeline.RunAsync(MakeOptions());
+
+        report.GeneratedPages.Count.ShouldBe(1);
+        var warnings = report.Diagnostics.Where(d => d is DiagnosticWarning).ToList();
+        warnings.Count.ShouldBe(1);
+        warnings[0].Message.ShouldContain("/docs/config");
+        warnings[0].Message.ShouldContain("missing a trailing slash");
+    }
+
+    [Fact]
+    public async Task GenerateAsync_AllLinksHaveTrailingSlash_NoWarnings()
+    {
+        var item = new DiscoveredItem(MakeRoute("/docs/intro"), MakeSource());
+        var service = new StubContentService(item);
+
+        var parser = new StubParser();
+        var renderer = new CustomHtmlRenderer(_ =>
+            """<p>See <a href="/docs/config/">Config</a> and <a href="https://example.com">Ext</a>.</p>""");
+
+        var pipeline = new ContentPipeline([service], parser, renderer);
+        var report = await pipeline.RunAsync(MakeOptions());
+
+        report.GeneratedPages.Count.ShouldBe(1);
+        report.Diagnostics.Where(d => d is DiagnosticWarning).ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Pipeline_MixedContentServices_FailureInOneDoesNotAffectOther()
     {
         var goodItem = new DiscoveredItem(MakeRoute("/good"), MakeSource());
@@ -473,6 +511,23 @@ public class ContentPipelineTests
 
             return Task.FromResult(new ContentItem(
                 new ParsedItem(item.Route, new TestFrontMatter("Page"), "# Page")));
+        }
+    }
+
+    // --- Custom HTML renderer (caller provides HTML) ---
+
+    private class CustomHtmlRenderer(Func<ParsedItem, string> htmlFunc) : IContentRenderer
+    {
+        public Task<ContentItem> RenderAsync(ParsedItem item)
+        {
+            var content = new RenderedContent(
+                Html: htmlFunc(item),
+                Outline: [],
+                Tags: ImmutableList<Tag>.Empty,
+                CrossReferences: ImmutableList<CrossReference>.Empty,
+                SearchDocument: null,
+                Social: null);
+            return Task.FromResult(new ContentItem(new RenderedItem(item.Route, item.Metadata, content)));
         }
     }
 

@@ -7,7 +7,7 @@ public class SpaPageDataServiceTests
 {
     private static ContentRoute MakeRoute(string path = "/test") => new()
     {
-        CanonicalPath = new UrlPath(path),
+        CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html")
     };
 
@@ -134,7 +134,7 @@ public class SpaPageDataServiceTests
         await service.GetPageDataAsync(route, "Test");
 
         capturedRoute.ShouldNotBeNull();
-        capturedRoute.CanonicalPath.Value.ShouldBe("/docs/getting-started");
+        capturedRoute.CanonicalPath.Value.ShouldBe("/docs/getting-started/");
     }
 
     private class StubIslandRenderer(string name, string html) : IIslandRenderer

@@ -49,7 +49,7 @@ public class ProgrammaticContentTests
         var generator = new StubGenerator();
         var route = new ContentRoute
         {
-            CanonicalPath = "/test",
+            CanonicalPath = "/test/",
             OutputFile = "test/index.html"
         };
 

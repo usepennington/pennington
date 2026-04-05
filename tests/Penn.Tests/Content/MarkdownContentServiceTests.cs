@@ -67,7 +67,7 @@ public class MarkdownContentServiceTests
             items.Add(item);
 
         items.Count.ShouldBe(1);
-        items[0].Route.CanonicalPath.Value.ShouldBe("/docs/getting-started");
+        items[0].Route.CanonicalPath.Value.ShouldBe("/docs/getting-started/");
     }
 
     [Fact]
@@ -295,8 +295,8 @@ public class MarkdownContentServiceTests
         items.Count.ShouldBe(2);
 
         var routes = items.Select(i => i.Route.CanonicalPath.Value).ToList();
-        routes.ShouldContain("/docs/guides/setup");
-        routes.ShouldContain("/docs/guides/advanced/config");
+        routes.ShouldContain("/docs/guides/setup/");
+        routes.ShouldContain("/docs/guides/advanced/config/");
     }
 
     [Fact]
@@ -311,7 +311,7 @@ public class MarkdownContentServiceTests
             items.Add(item);
 
         items.Count.ShouldBe(1);
-        items[0].Route.CanonicalPath.Value.ShouldBe("/docs");
+        items[0].Route.CanonicalPath.Value.ShouldBe("/docs/");
     }
 
     [Fact]
@@ -377,7 +377,7 @@ public class MarkdownContentServiceTests
             items.Add(item);
 
         items.Count.ShouldBe(1);
-        items[0].Route.CanonicalPath.Value.ShouldBe("/blog/hello-world");
+        items[0].Route.CanonicalPath.Value.ShouldBe("/blog/hello-world/");
     }
 
     [Fact]
