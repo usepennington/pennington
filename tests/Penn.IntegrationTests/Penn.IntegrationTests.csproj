@@ -9,6 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="*" />
+    <PackageReference Include="Testably.Abstractions" Version="10.2.0" />
     <PackageReference Include="xunit.v3" Version="*" />
     <PackageReference Include="xunit.runner.visualstudio" Version="*" />
     <PackageReference Include="Shouldly" Version="*" />
@@ -20,6 +21,13 @@
     <ProjectReference Include="..\..\examples\MinimalExample\MinimalExample.csproj" />
     <ProjectReference Include="..\..\examples\RecipeExample\RecipeExample.csproj" />
     <ProjectReference Include="..\..\examples\BlogExample\BlogExample.csproj" />
+    <ProjectReference Include="..\..\examples\MultipleContentSourceExample\MultipleContentSourceExample.csproj" />
+    <ProjectReference Include="..\..\examples\UserInterfaceExample\UserInterfaceExample.csproj" />
+    <ProjectReference Include="..\..\examples\RoslynIntegrationExample\RoslynIntegrationExample.csproj" />
+    <ProjectReference Include="..\..\examples\SpaNavigationExample\SpaNavigationExample.csproj" />
+    <ProjectReference Include="..\..\examples\SearchExample\SearchExample.csproj" />
+    <ProjectReference Include="..\..\examples\LocalizationExample\LocalizationExample.csproj" />
     <ProjectReference Include="..\..\src\Penn.BlogSite\Penn.BlogSite.csproj" />
+    <ProjectReference Include="..\..\src\Penn.Roslyn\Penn.Roslyn.csproj" />
   </ItemGroup>
 </Project>

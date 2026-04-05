@@ -45,8 +45,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var fileName = string.IsNullOrWhiteSpace(FileName) ? "index" : FileName;
-        var page = await ContentHelper.GetPageByUrlAsync(fileName);
+        var url = string.IsNullOrWhiteSpace(FileName) ? "/" : FileName;
+        var page = await ContentHelper.GetPageByUrlAsync(url);
         if (page is null) return;
 
         _frontMatter = page.Value.FrontMatter;
