@@ -25,7 +25,7 @@ public class RoslynIntegrationExamplePlaywrightTests : IClassFixture<RoslynInteg
         var body = await _page.Locator("body").TextContentAsync();
         body.ShouldNotBeNull();
         body.ShouldContain("Welcome");
-        body.ShouldContain("Penn");
+        body.ShouldContain("My Little Content Engine");
     }
 
     [Fact]
