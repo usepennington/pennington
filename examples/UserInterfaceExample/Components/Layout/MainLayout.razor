@@ -1,0 +1,30 @@
+@using System.Collections.Immutable
+@inherits LayoutComponentBase
+@inject ContentHelper ContentHelper
+@inject NavigationManager NavigationManager
+
+<div class="min-h-screen flex">
+    <!-- Left Column: Table of Contents -->
+    <div class="w-80 bg-neutral-50 border-r border-neutral-200 flex-shrink-0">
+        <div class="sticky top-0 h-screen overflow-y-auto p-6">
+            <TableOfContentsNavigation TableOfContents="@_tableOfContents" />
+        </div>
+    </div>
+
+    <!-- Right Column: Content Area -->
+    <div class="flex-1 min-w-0">
+        <main class="w-full">
+            @Body
+        </main>
+    </div>
+</div>
+
+@code{
+    private ImmutableList<NavigationTreeItem>? _tableOfContents;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _tableOfContents = await ContentHelper.GetNavigationTocAsync(NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath);
+        await base.OnInitializedAsync();
+    }
+}
