@@ -1,0 +1,41 @@
+@inherits LayoutComponentBase
+@inject ContentHelper ContentHelper
+@inject NavigationManager NavigationManager
+
+<div>
+    <div class="max-w-4xl mx-auto p-4">
+        <div class="flex flex-row gap-x-8">
+            @if (_toc is { Count: > 0 })
+            {
+                <aside class="w-40">
+                    <TableOfContentsNavigation TableOfContents="@_toc"/>
+                </aside>
+            }
+            <main class="flex-1 w-full">
+                @Body
+            </main>
+        </div>
+    </div>
+</div>
+
+@code{
+    private ImmutableList<NavigationTreeItem>? _toc;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var currentPath = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath;
+
+        string? section = null;
+        if (currentPath.StartsWith("/docs", StringComparison.OrdinalIgnoreCase))
+        {
+            section = "docs";
+        }
+
+        if (section != null)
+        {
+            _toc = await ContentHelper.GetNavigationAsync(section, currentPath);
+        }
+
+        await base.OnInitializedAsync();
+    }
+}

@@ -1,0 +1,45 @@
+@page "/docs/{*fileName:nonfile}"
+@inject PennOptions PennOptions
+@inject ContentHelper ContentHelper
+
+@if (_html == null || _frontMatter == null)
+{
+    <PageTitle>@PennOptions.SiteTitle</PageTitle>
+    <p>Doc not found</p>
+    return;
+}
+<PageTitle>@PennOptions.SiteTitle - @_frontMatter.Title</PageTitle>
+<article>
+    <header>
+        <p>Docs</p>
+        <h1 class="text-4xl font-bold"> @_frontMatter.Title</h1>
+    </header>
+
+    <div class="prose max-w-full">
+        @((MarkupString)_html)
+    </div>
+</article>
+
+@code {
+    private DocsFrontMatter? _frontMatter;
+    private string? _html;
+
+    [Parameter] public required string FileName { get; init; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var fileName = FileName?.TrimEnd('/') ?? string.Empty;
+        var url = string.IsNullOrWhiteSpace(fileName)
+            ? "/docs"
+            : $"/docs/{fileName}";
+
+        var page = await ContentHelper.GetRenderedPageAsync<DocsFrontMatter>(url);
+        if (page == null)
+        {
+            return;
+        }
+
+        _frontMatter = page.FrontMatter;
+        _html = page.Html;
+    }
+}

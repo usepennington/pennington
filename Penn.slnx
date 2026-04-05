@@ -22,5 +22,6 @@
     <Project Path="examples/SpectreConsoleExample/SpectreConsoleExample.csproj" />
     <Project Path="examples/Spectre.Console.Examples/Spectre.Console.Examples.csproj" />
     <Project Path="examples/UserInterfaceExample/UserInterfaceExample.csproj" />
+    <Project Path="examples/MultipleContentSourceExample/MultipleContentSourceExample.csproj" />
   </Folder>
 </Solution>
