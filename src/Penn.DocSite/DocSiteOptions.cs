@@ -1,6 +1,7 @@
 namespace Penn.DocSite;
 
 using System.Reflection;
+using Penn.Infrastructure;
 using Penn.MonorailCss;
 using Penn.Routing;
 
@@ -27,4 +28,7 @@ public record DocSiteOptions
 
     /// <summary>Path to .sln or .slnx for Roslyn integration. Requires Penn.Roslyn package.</summary>
     public string? SolutionPath { get; init; }
+
+    /// <summary>Configure localization options (locales, default locale).</summary>
+    public Action<LocalizationOptions>? ConfigureLocalization { get; init; }
 }

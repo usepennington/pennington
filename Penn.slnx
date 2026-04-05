@@ -26,5 +26,6 @@
     <Project Path="examples/RoslynIntegrationExample/RoslynIntegrationExample.csproj" />
     <Project Path="examples/SearchExample/SearchExample.csproj" />
     <Project Path="examples/SpaNavigationExample/SpaNavigationExample.csproj" />
+    <Project Path="examples/LocalizationExample/LocalizationExample.csproj" />
   </Folder>
 </Solution>

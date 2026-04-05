@@ -32,6 +32,9 @@ public static class DocSiteServiceExtensions
                 md.BasePageUrl = "/";
             });
 
+            // Localization
+            options.ConfigureLocalization?.Invoke(penn.Localization);
+
             // Scan the entry assembly (the app) plus any explicitly configured assemblies
             var appAssembly = Assembly.GetEntryAssembly();
             var allAssemblies = appAssembly != null
