@@ -1,0 +1,17 @@
+@page "/random/{*fileName:nonfile}"
+@inject RandomContentService RandomContentService
+
+<div class="prose dark:prose-invert">
+    @((MarkupString) Content)
+</div>
+
+@code {
+    [Parameter] public required string FileName { get; init; } = string.Empty;
+    private string Content { get; set; } = string.Empty;
+
+
+    protected override void OnInitialized()
+    {
+        Content = RandomContentService.GetContent(FileName);
+    }
+}
