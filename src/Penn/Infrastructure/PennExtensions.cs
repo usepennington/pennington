@@ -137,6 +137,10 @@ public static class PennExtensions
         services.AddSingleton(_ => new RssFeedBuilder(canonicalBase));
         services.AddSingleton(_ => new SearchIndexBuilder());
 
+        // Search index and sitemap services (serve via MapGet, auto-discovered by static build)
+        services.AddSingleton<SearchIndexService>();
+        services.AddSingleton<Feeds.SitemapService>();
+
         // Per-request diagnostic context
         services.AddHttpContextAccessor();
         services.AddScoped<Diagnostics.DiagnosticContext>();
@@ -206,6 +210,12 @@ public static class PennExtensions
 
         // Response processing middleware
         app.UseMiddleware<ResponseProcessingMiddleware>();
+
+        // Search index and sitemap endpoints (auto-discovered by static build)
+        app.MapGet("/search-index.json", async (SearchIndexService service) =>
+            Results.Content(await service.GetSearchIndexJsonAsync(), "application/json"));
+        app.MapGet("/sitemap.xml", async (Feeds.SitemapService service) =>
+            Results.Content(await service.GetSitemapXmlAsync(), "application/xml"));
 
         return app;
     }
