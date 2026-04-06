@@ -4,22 +4,27 @@ using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
+using Microsoft.Extensions.DependencyInjection;
 using Penn.Diagnostics;
 
 /// <summary>
 /// Resolves xref: cross-reference links in HTML strings.
 /// Used by both the response processor (full HTML pages) and
 /// the SPA data endpoint (island HTML fragments).
+/// Resolves XrefResolver lazily from IServiceProvider so it always
+/// gets the current instance from the FileWatchDependencyFactory.
 /// </summary>
 public sealed partial class XrefResolvingService
 {
-    private readonly XrefResolver _resolver;
+    private readonly IServiceProvider _serviceProvider;
     private readonly IBrowsingContext _browsingContext = BrowsingContext.New(Configuration.Default);
 
-    public XrefResolvingService(XrefResolver resolver)
+    public XrefResolvingService(IServiceProvider serviceProvider)
     {
-        _resolver = resolver;
+        _serviceProvider = serviceProvider;
     }
+
+    private XrefResolver Resolver => _serviceProvider.GetRequiredService<XrefResolver>();
 
     /// <summary>
     /// Resolve all xref patterns in an HTML string.
@@ -49,7 +54,7 @@ public sealed partial class XrefResolvingService
         {
             var match = matches[i];
             var uid = match.Groups[1].Value;
-            var xref = await _resolver.ResolveAsync(uid);
+            var xref = await Resolver.ResolveAsync(uid);
 
             string replacement;
             if (xref is not null)
@@ -84,7 +89,7 @@ public sealed partial class XrefResolvingService
                 continue;
 
             var uid = href[5..];
-            var xref = await _resolver.ResolveAsync(uid);
+            var xref = await Resolver.ResolveAsync(uid);
 
             if (xref is not null)
             {

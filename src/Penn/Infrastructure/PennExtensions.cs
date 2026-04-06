@@ -117,8 +117,8 @@ public static class PennExtensions
         // Pipeline
         services.AddTransient<IContentPipeline, ContentPipeline>();
 
-        // Xref resolution
-        services.AddSingleton<XrefResolver>();
+        // Xref resolution — factory-managed, recreated on file changes
+        services.AddFileWatched<XrefResolver>();
 
         // Response processors
         services.AddSingleton<IResponseProcessor>(sp =>
