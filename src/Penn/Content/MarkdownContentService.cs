@@ -17,7 +17,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
     private readonly FrontMatterParser _parser;
     private readonly IFileSystem _fileSystem;
     private readonly string _absoluteContentPath;
-    private List<(ContentRoute Route, TFrontMatter FrontMatter)>? _cachedMetadata;
+    private readonly AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>> _metadataLazy;
 
     public MarkdownContentService(MarkdownContentServiceOptions options, FrontMatterParser parser, IFileSystem fileSystem, IFileWatcher fileWatcher)
     {
@@ -25,12 +25,12 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
         _parser = parser;
         _fileSystem = fileSystem;
         _absoluteContentPath = _fileSystem.Path.GetFullPath(options.ContentPath.Value);
+        _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>>(LoadMetadataAsync);
 
-        // Watch markdown content directory for changes to enable hot reload
-        fileWatcher.AddPathWatch(
-            _absoluteContentPath,
-            "*.*",
-            (_, _) => _cachedMetadata = null);
+        // Register content directory for watching so the central watcher
+        // knows about it. The FileWatchDependencyFactory handles instance
+        // recreation — no manual cache invalidation needed here.
+        fileWatcher.AddPathWatch(_absoluteContentPath, "*.*", (_, _) => { });
     }
 
     public string DefaultSection => _options.Section ?? "";
@@ -52,7 +52,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
 
     public async Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {
-        var metadata = await GetCachedMetadataAsync();
+        var metadata = await _metadataLazy.Value;
         var builder = ImmutableList.CreateBuilder<ContentTocItem>();
 
         foreach (var (route, fm) in metadata)
@@ -80,7 +80,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
 
     public async Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
     {
-        var metadata = await GetCachedMetadataAsync();
+        var metadata = await _metadataLazy.Value;
         var builder = ImmutableList.CreateBuilder<CrossReference>();
 
         foreach (var (route, fm) in metadata)
@@ -130,11 +130,9 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
             .ToList();
     }
 
-    private async Task<List<(ContentRoute Route, TFrontMatter FrontMatter)>> GetCachedMetadataAsync()
+    private async Task<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>> LoadMetadataAsync()
     {
-        if (_cachedMetadata != null) return _cachedMetadata;
-
-        var result = new List<(ContentRoute, TFrontMatter)>();
+        var builder = ImmutableList.CreateBuilder<(ContentRoute, TFrontMatter)>();
 
         foreach (var file in DiscoverFiles())
         {
@@ -146,7 +144,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
                 var content = await _fileSystem.File.ReadAllTextAsync(file.Value);
                 var parsed = _parser.Parse<TFrontMatter>(content);
                 var fm = parsed.Metadata ?? new TFrontMatter();
-                result.Add((route, fm));
+                builder.Add((route, fm));
             }
             catch
             {
@@ -154,7 +152,6 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
             }
         }
 
-        _cachedMetadata = result;
-        return result;
+        return builder.ToImmutable();
     }
 }
