@@ -1,40 +1,14 @@
-using System.Reflection.Metadata;
-using Penn.MonorailCss;
-
-[assembly: MetadataUpdateHandler(typeof(CssClassCollector))]
-
 namespace Penn.MonorailCss;
 
 /// <summary>
 /// Thread-safe collector for CSS class names discovered during request processing.
+/// Classes accumulate across requests and are never cleared at runtime — stale classes
+/// are harmless (MonorailCSS ignores unknown tokens) and are removed on the next build.
 /// </summary>
 public class CssClassCollector
 {
-    // At one point we were using MetaDataUpdateHandler, but it was causing issues with the
-    // timing. Sometimes the browser refresh would happen before the call for this ClearCache would occur,
-    // which would result in the classes being added to the collection then immediately removed.
-    //
-    // For now, we'll just keep adding to the Classes hashset and not worry about clearing it.
-    // It'll cause some CSS classes to be added that are not used during hot reload scenarios,
-    // but that's not a big deal. The classes will be removed on the next build.
     private static readonly HashSet<string> Classes = [];
     private static readonly ReaderWriterLockSlim ProcessingLock = new(LockRecursionPolicy.SupportsRecursion);
-
-    private static void OnUpdate()
-    {
-        ProcessingLock.EnterWriteLock();
-        try
-        {
-            Classes.Clear();
-        }
-        finally
-        {
-            ProcessingLock.ExitWriteLock();
-        }
-    }
-
-    internal static void ClearCache(Type[]? _) => OnUpdate();
-    internal static void UpdateContent(string assemblyName, bool isApplicationProject, string relativePath, byte[] contents) => OnUpdate();
 
     /// <summary>Registers CSS class names for the given URL.</summary>
     public void AddClasses(string url, IEnumerable<string> classes)

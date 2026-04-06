@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -45,6 +46,9 @@ public partial class CssClassCollectorProcessor(
         var classMatches = CssClassGatherRegex().Matches(textToScan);
         var allClasses = classMatches
             .SelectMany(m => m.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            .Select(WebUtility.HtmlDecode)
+            .Where(c => c is not null)
+            .Select(c => c!)
             .Distinct()
             .ToList();
 
