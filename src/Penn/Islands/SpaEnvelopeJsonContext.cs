@@ -2,6 +2,7 @@ namespace Penn.Islands;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Penn.Diagnostics;
 
 /// <summary>JSON serialization for SPA envelopes.</summary>
 public static class SpaEnvelopeSerializer
@@ -9,7 +10,8 @@ public static class SpaEnvelopeSerializer
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     };
 
     public static string Serialize(SpaEnvelopeDto envelope)
@@ -20,5 +22,6 @@ public static class SpaEnvelopeSerializer
 public record SpaEnvelopeDto(
     string Title,
     string? Description,
-    Dictionary<string, string> Islands
+    Dictionary<string, string> Islands,
+    IReadOnlyList<Diagnostic>? Diagnostics = null
 );

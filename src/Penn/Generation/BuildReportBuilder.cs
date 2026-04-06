@@ -2,6 +2,7 @@ namespace Penn.Generation;
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Penn.Diagnostics;
 using Penn.Routing;
 
 public sealed class BuildReportBuilder
@@ -16,23 +17,23 @@ public sealed class BuildReportBuilder
     public void AddDiagnostic(BuildDiagnostic diagnostic) => _diagnostics.Add(diagnostic);
 
     public void AddInfo(ContentRoute route, string message)
-        => _diagnostics.Add(new BuildDiagnostic(new DiagnosticInfo(route, message)));
+        => _diagnostics.Add(new BuildDiagnostic(DiagnosticSeverity.Info, route, message));
 
     public void AddWarning(ContentRoute route, string message)
-        => _diagnostics.Add(new BuildDiagnostic(new DiagnosticWarning(route, message)));
+        => _diagnostics.Add(new BuildDiagnostic(DiagnosticSeverity.Warning, route, message));
 
     public void AddWarning(string message, string? sourceFile = null)
-        => _diagnostics.Add(new BuildDiagnostic(new DiagnosticWarning(null, message, sourceFile)));
+        => _diagnostics.Add(new BuildDiagnostic(DiagnosticSeverity.Warning, null, message, SourceFile: sourceFile));
 
     public void AddError(ContentRoute route, string message, Exception? exception = null)
     {
-        _diagnostics.Add(new BuildDiagnostic(new DiagnosticError(route, message, exception)));
+        _diagnostics.Add(new BuildDiagnostic(DiagnosticSeverity.Error, route, message, exception));
         _failedPages.Add(route);
     }
 
     public void AddError(string message, Exception? exception = null, string? sourceFile = null)
     {
-        _diagnostics.Add(new BuildDiagnostic(new DiagnosticError(null, message, exception, sourceFile)));
+        _diagnostics.Add(new BuildDiagnostic(DiagnosticSeverity.Error, null, message, exception, sourceFile));
     }
 
     public void AddBrokenLink(BrokenLink link) => _brokenLinks.Add(link);

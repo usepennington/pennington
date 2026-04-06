@@ -189,7 +189,12 @@ public sealed class RoslynCodeBlockPreprocessorTests
             new StubSymbolExtractionService(),
             new SyntaxHighlighter(),
             new RoslynOptions(),
-            new Penn.Generation.BuildDiagnosticsCollector());
+            new NullHttpContextAccessor());
+    }
+
+    private sealed class NullHttpContextAccessor : Microsoft.AspNetCore.Http.IHttpContextAccessor
+    {
+        public Microsoft.AspNetCore.Http.HttpContext? HttpContext { get; set; }
     }
 
     /// <summary>Stub that returns empty for any extraction call.</summary>

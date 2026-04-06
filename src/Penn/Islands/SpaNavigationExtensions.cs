@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Penn.Content;
+using Penn.Diagnostics;
 using Penn.Infrastructure;
 using Penn.Routing;
 
@@ -42,7 +43,7 @@ public static class SpaNavigationExtensions
         var options = app.ServiceProvider.GetRequiredService<SpaNavigationOptions>();
         var dataPath = options.DataPath.TrimStart('/');
 
-        app.MapGet($"/{dataPath}/{{*slug}}", async (string? slug, SpaPageDataService service, IEnumerable<IContentService> contentServices) =>
+        app.MapGet($"/{dataPath}/{{*slug}}", async (string? slug, SpaPageDataService service, IEnumerable<IContentService> contentServices, DiagnosticContext diagnosticContext, XrefResolvingService xrefService) =>
         {
             if (slug == null) return Results.NotFound();
 
@@ -71,9 +72,23 @@ public static class SpaNavigationExtensions
             }
 
             var data = await service.GetPageDataAsync(route, title);
-            return data is null
-                ? Results.NotFound()
-                : Results.Content(SpaEnvelopeSerializer.Serialize(data), "application/json");
+            if (data is null) return Results.NotFound();
+
+            // Resolve xrefs in island HTML (response processors don't run on JSON)
+            var resolvedIslands = new Dictionary<string, string>(data.Islands.Count);
+            foreach (var (name, html) in data.Islands)
+            {
+                resolvedIslands[name] = await xrefService.ResolveAsync(html, diagnosticContext);
+            }
+            data = data with { Islands = resolvedIslands };
+
+            // Include per-request diagnostics in the SPA envelope for the dev overlay
+            if (diagnosticContext.HasAny)
+            {
+                data = data with { Diagnostics = diagnosticContext.Diagnostics };
+            }
+
+            return Results.Content(SpaEnvelopeSerializer.Serialize(data), "application/json");
         });
 
         return app;

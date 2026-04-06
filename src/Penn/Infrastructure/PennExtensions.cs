@@ -122,8 +122,10 @@ public static class PennExtensions
         // Response processors
         services.AddSingleton<IResponseProcessor>(sp =>
             new BaseUrlRewritingProcessor(sp.GetRequiredService<OutputOptions>()));
+        services.AddSingleton<XrefResolvingService>();
         services.AddSingleton<IResponseProcessor, XrefResolvingProcessor>();
         services.AddSingleton<IResponseProcessor, LiveReloadScriptProcessor>();
+        services.AddSingleton<IResponseProcessor, DiagnosticOverlayProcessor>();
 
         // Live reload (only does work when DOTNET_WATCH is set)
         services.AddSingleton<LiveReloadServer>();
@@ -134,8 +136,9 @@ public static class PennExtensions
         services.AddSingleton(_ => new RssFeedBuilder(canonicalBase));
         services.AddSingleton(_ => new SearchIndexBuilder());
 
-        // Diagnostics collector (singleton — accumulates across requests during build)
-        services.AddSingleton<BuildDiagnosticsCollector>();
+        // Per-request diagnostic context
+        services.AddHttpContextAccessor();
+        services.AddScoped<Diagnostics.DiagnosticContext>();
 
         // Output generation
         services.AddTransient<OutputGenerationService>();

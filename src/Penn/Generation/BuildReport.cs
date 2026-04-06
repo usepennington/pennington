@@ -2,6 +2,7 @@ namespace Penn.Generation;
 
 using System.Collections.Immutable;
 using System.Linq;
+using Penn.Diagnostics;
 using Penn.Routing;
 
 public sealed class BuildReport
@@ -13,7 +14,7 @@ public sealed class BuildReport
     public ImmutableList<ContentRoute> FailedPages { get; }
     public TimeSpan Duration { get; }
 
-    public bool HasErrors => Diagnostics.Any(d => d is DiagnosticError)
+    public bool HasErrors => Diagnostics.Any(d => d.Severity is DiagnosticSeverity.Error)
                           || BrokenLinks.Count > 0
                           || FailedPages.Count > 0;
 
@@ -45,14 +46,14 @@ public sealed class BuildReport
         if (FailedPages.Count > 0)
             writer.WriteLine($"  {FailedPages.Count} pages failed");
 
-        var warnings = Diagnostics.Count(d => d is DiagnosticWarning);
+        var warnings = Diagnostics.Count(d => d.Severity is DiagnosticSeverity.Warning);
         if (warnings > 0)
             writer.WriteLine($"  {warnings} warnings");
 
         writer.WriteLine();
 
         // Errors section
-        var errors = Diagnostics.Where(d => d is DiagnosticError).ToList();
+        var errors = Diagnostics.Where(d => d.Severity is DiagnosticSeverity.Error).ToList();
         if (errors.Count > 0)
         {
             writer.WriteLine("ERRORS");
@@ -64,7 +65,7 @@ public sealed class BuildReport
         }
 
         // Warnings section
-        var warningDiags = Diagnostics.Where(d => d is DiagnosticWarning).ToList();
+        var warningDiags = Diagnostics.Where(d => d.Severity is DiagnosticSeverity.Warning).ToList();
         if (warningDiags.Count > 0 || BrokenLinks.Count > 0)
         {
             writer.WriteLine("WARNINGS");

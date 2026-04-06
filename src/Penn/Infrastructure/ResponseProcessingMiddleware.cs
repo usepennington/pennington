@@ -2,6 +2,8 @@ namespace Penn.Infrastructure;
 
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Penn.Diagnostics;
 
 /// <summary>Captures response body once and runs all registered IResponseProcessors in order.</summary>
 public sealed class ResponseProcessingMiddleware(RequestDelegate next)
@@ -29,12 +31,17 @@ public sealed class ResponseProcessingMiddleware(RequestDelegate next)
                 foreach (var processor in applicable)
                     body = await processor.ProcessAsync(body, context);
 
+                // Write diagnostic headers after processors (which may add diagnostics)
+                // but before the body is sent to the client
+                WriteDiagnosticHeaders(context);
+
                 var bytes = Encoding.UTF8.GetBytes(body);
                 context.Response.ContentLength = null;
                 await originalBodyStream.WriteAsync(bytes);
             }
             else
             {
+                WriteDiagnosticHeaders(context);
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 await memoryStream.CopyToAsync(originalBodyStream);
             }
@@ -42,6 +49,20 @@ public sealed class ResponseProcessingMiddleware(RequestDelegate next)
         finally
         {
             context.Response.Body = originalBodyStream;
+        }
+    }
+
+    private static void WriteDiagnosticHeaders(HttpContext context)
+    {
+        var diagnosticContext = context.RequestServices?.GetService<DiagnosticContext>();
+        if (diagnosticContext is not { HasAny: true }) return;
+
+        foreach (var diag in diagnosticContext.Diagnostics)
+        {
+            var value = diag.Source is not null
+                ? $"{diag.Severity}|{diag.Message}|{diag.Source}"
+                : $"{diag.Severity}|{diag.Message}";
+            context.Response.Headers.Append("X-Penn-Diagnostic", value);
         }
     }
 }

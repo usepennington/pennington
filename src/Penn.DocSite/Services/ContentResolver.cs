@@ -1,6 +1,7 @@
 namespace Penn.DocSite.Services;
 
 using Penn.Content;
+using Penn.Diagnostics;
 using Penn.FrontMatter;
 using Penn.Navigation;
 using Penn.Pipeline;
@@ -15,17 +16,20 @@ public sealed class ContentResolver
     private readonly FrontMatterParser _parser;
     private readonly IContentRenderer _renderer;
     private readonly NavigationBuilder _navBuilder;
+    private readonly DiagnosticContext _diagnostics;
 
     public ContentResolver(
         IEnumerable<IContentService> services,
         FrontMatterParser parser,
         IContentRenderer renderer,
-        NavigationBuilder navBuilder)
+        NavigationBuilder navBuilder,
+        DiagnosticContext diagnostics)
     {
         _services = services;
         _parser = parser;
         _renderer = renderer;
         _navBuilder = navBuilder;
+        _diagnostics = diagnostics;
     }
 
     /// <summary>
@@ -59,6 +63,11 @@ public sealed class ContentResolver
 
         // Render
         var renderResult = await _renderer.RenderAsync(parseResult);
+        if (renderResult is FailedItem failed)
+        {
+            _diagnostics.AddError(failed.Error.Message, "ContentResolver");
+            return null;
+        }
         if (renderResult is not RenderedItem rendered) return null;
 
         return new ResolvedContent(

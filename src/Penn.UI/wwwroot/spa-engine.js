@@ -305,6 +305,7 @@
             commitIslands(islands, data);
             announceNavigation(data.title, islands);
             fire('spa:commit', { url, slug, data });
+            fire('spa:diagnostics', data.diagnostics || []);
             restoreScrollY != null ? window.scrollTo(0, restoreScrollY) : scrollToTarget(url);
             reloadDevStylesheet();
         };

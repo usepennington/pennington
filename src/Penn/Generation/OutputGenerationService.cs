@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Penn.Content;
+using Penn.Diagnostics;
 using Penn.Infrastructure;
 using Penn.Routing;
 
@@ -24,7 +25,6 @@ public sealed class OutputGenerationService
     private readonly EndpointDataSource _endpointDataSource;
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<OutputGenerationService> _logger;
-    private readonly BuildDiagnosticsCollector _diagnosticsCollector;
 
     public OutputGenerationService(
         IEnumerable<IContentService> contentServices,
@@ -33,8 +33,7 @@ public sealed class OutputGenerationService
         IWebHostEnvironment environment,
         EndpointDataSource endpointDataSource,
         IFileSystem fileSystem,
-        ILogger<OutputGenerationService> logger,
-        BuildDiagnosticsCollector diagnosticsCollector)
+        ILogger<OutputGenerationService> logger)
     {
         _contentServices = contentServices;
         _outputOptions = outputOptions;
@@ -42,7 +41,6 @@ public sealed class OutputGenerationService
         _endpointDataSource = endpointDataSource;
         _fileSystem = fileSystem;
         _logger = logger;
-        _diagnosticsCollector = diagnosticsCollector;
     }
 
     public async Task<BuildReport> GenerateAsync(string appUrl)
@@ -121,12 +119,6 @@ public sealed class OutputGenerationService
             }
         }
 
-        // Phase 9: Drain rendering-time diagnostics (xmldocid errors, :path errors, etc.)
-        foreach (var diag in _diagnosticsCollector.Drain())
-        {
-            reportBuilder.AddDiagnostic(diag);
-        }
-
         return reportBuilder.Build();
     }
 
@@ -144,6 +136,13 @@ public sealed class OutputGenerationService
                 case FetchOutcome.Error:
                     reportBuilder.AddError(result.Page.Route, result.Detail ?? "Unknown error");
                     break;
+            }
+
+            // Add per-request diagnostics from response headers
+            foreach (var diag in result.Diagnostics)
+            {
+                reportBuilder.AddDiagnostic(new BuildDiagnostic(
+                    diag.Severity, result.Page.Route, diag.Message, SourceFile: diag.Source));
             }
         }
     }
@@ -264,6 +263,9 @@ public sealed class OutputGenerationService
                 var dir = _fileSystem.Path.GetDirectoryName(outputPath);
                 if (dir != null) _fileSystem.Directory.CreateDirectory(dir);
 
+                // Extract per-request diagnostics from response headers
+                var diagnostics = ParseDiagnosticHeaders(response);
+
                 if (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently ||
                     response.StatusCode == System.Net.HttpStatusCode.Found)
                 {
@@ -277,7 +279,7 @@ public sealed class OutputGenerationService
                         """;
                     await _fileSystem.File.WriteAllTextAsync(outputPath, redirectHtml, ct);
                     _logger.LogDebug("Redirect: {Url} -> {Location}", page.Url, location);
-                    results.Add(new FetchResult(page, FetchOutcome.Redirect));
+                    results.Add(new FetchResult(page, FetchOutcome.Redirect, Diagnostics: diagnostics));
                 }
                 else if (response.IsSuccessStatusCode)
                 {
@@ -290,21 +292,21 @@ public sealed class OutputGenerationService
 
                         // Capture HTML content for link verification
                         var htmlContent = contentType.Contains("html") ? content : null;
-                        results.Add(new FetchResult(page, FetchOutcome.Generated, HtmlContent: htmlContent));
+                        results.Add(new FetchResult(page, FetchOutcome.Generated, HtmlContent: htmlContent, Diagnostics: diagnostics));
                     }
                     else
                     {
                         var bytes = await response.Content.ReadAsByteArrayAsync(ct);
                         await _fileSystem.File.WriteAllBytesAsync(outputPath, bytes, ct);
                         _logger.LogDebug("Generated: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
-                        results.Add(new FetchResult(page, FetchOutcome.Generated));
+                        results.Add(new FetchResult(page, FetchOutcome.Generated, Diagnostics: diagnostics));
                     }
                 }
                 else
                 {
                     _logger.LogDebug("Failed: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
                     results.Add(new FetchResult(page, FetchOutcome.Failed,
-                        $"HTTP {(int)response.StatusCode} fetching {page.Url}"));
+                        $"HTTP {(int)response.StatusCode} fetching {page.Url}", Diagnostics: diagnostics));
                 }
             }
             catch (Exception ex)
@@ -350,6 +352,24 @@ public sealed class OutputGenerationService
         }
     }
 
+    private static List<Diagnostic> ParseDiagnosticHeaders(HttpResponseMessage response)
+    {
+        if (!response.Headers.TryGetValues("X-Penn-Diagnostic", out var values))
+            return [];
+
+        var diagnostics = new List<Diagnostic>();
+        foreach (var value in values)
+        {
+            var parts = value.Split('|', 3);
+            if (parts.Length < 2) continue;
+            if (!Enum.TryParse<DiagnosticSeverity>(parts[0], out var severity)) continue;
+            var message = parts[1];
+            var source = parts.Length > 2 ? parts[2] : null;
+            diagnostics.Add(new Diagnostic(severity, message, source));
+        }
+        return diagnostics;
+    }
+
     private record PageToGenerate(ContentRoute Route)
     {
         public string Url => Route.CanonicalPath.Value;
@@ -357,5 +377,14 @@ public sealed class OutputGenerationService
     }
 
     private enum FetchOutcome { Generated, Redirect, Failed, Error }
-    private record FetchResult(PageToGenerate Page, FetchOutcome Outcome, string? Detail = null, string? HtmlContent = null);
+
+    private record FetchResult(
+        PageToGenerate Page,
+        FetchOutcome Outcome,
+        string? Detail = null,
+        string? HtmlContent = null,
+        IReadOnlyList<Diagnostic>? Diagnostics = null)
+    {
+        public IReadOnlyList<Diagnostic> Diagnostics { get; init; } = Diagnostics ?? [];
+    }
 }
