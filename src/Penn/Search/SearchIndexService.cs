@@ -8,34 +8,28 @@ using Penn.Infrastructure;
 using Penn.Pipeline;
 
 /// <summary>
-/// Generates and caches the search index JSON for the /search-index.json endpoint.
-/// Invalidates when content files change.
+/// Generates search index JSON for the /search-index.json endpoint.
+/// Uses <see cref="AsyncLazy{T}"/> for lazy, thread-safe computation.
+/// When managed by <see cref="FileWatchDependencyFactory{T}"/>, the instance is
+/// recreated on file changes — no manual watcher subscription needed.
 /// </summary>
 public sealed class SearchIndexService
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly SearchIndexBuilder _builder;
-    private string? _cachedJson;
+    private readonly AsyncLazy<string> _indexLazy;
 
-    public SearchIndexService(
-        IServiceProvider serviceProvider,
-        SearchIndexBuilder builder,
-        IFileWatcher fileWatcher)
+    public SearchIndexService(IServiceProvider serviceProvider, SearchIndexBuilder builder)
     {
-        _serviceProvider = serviceProvider;
-        _builder = builder;
-        fileWatcher.SubscribeToChanges(() => _cachedJson = null);
+        _indexLazy = new AsyncLazy<string>(() => BuildSearchIndexAsync(serviceProvider, builder));
     }
 
-    public async Task<string> GetSearchIndexJsonAsync()
-    {
-        if (_cachedJson != null)
-            return _cachedJson;
+    public Task<string> GetSearchIndexJsonAsync() => _indexLazy.Value;
 
+    private static async Task<string> BuildSearchIndexAsync(IServiceProvider sp, SearchIndexBuilder builder)
+    {
         var documents = new List<SearchIndexDocument>();
-        var contentServices = _serviceProvider.GetServices<IContentService>();
-        var parser = _serviceProvider.GetRequiredService<IContentParser>();
-        var renderer = _serviceProvider.GetRequiredService<IContentRenderer>();
+        var contentServices = sp.GetServices<IContentService>();
+        var parser = sp.GetRequiredService<IContentParser>();
+        var renderer = sp.GetRequiredService<IContentRenderer>();
 
         foreach (var service in contentServices)
         {
@@ -47,14 +41,13 @@ public sealed class SearchIndexService
                 var renderResult = await renderer.RenderAsync(parsed);
                 if (renderResult is not RenderedItem rendered) continue;
 
-                var doc = _builder.Build(rendered);
+                var doc = builder.Build(rendered);
                 if (doc != null)
                     documents.Add(doc);
             }
         }
 
-        _cachedJson = JsonSerializer.Serialize(documents, SearchIndexJsonContext.Default.ListSearchIndexDocument);
-        return _cachedJson;
+        return JsonSerializer.Serialize(documents, SearchIndexJsonContext.Default.ListSearchIndexDocument);
     }
 }
 

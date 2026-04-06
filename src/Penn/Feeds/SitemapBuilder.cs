@@ -12,6 +12,8 @@ public sealed class SitemapBuilder
 {
     private readonly UrlPath _canonicalBase;
 
+    public UrlPath CanonicalBase => _canonicalBase;
+
     public SitemapBuilder(UrlPath canonicalBase)
     {
         _canonicalBase = canonicalBase;

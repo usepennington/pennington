@@ -1,57 +1,48 @@
 namespace Penn.Feeds;
 
+using System.Collections.Immutable;
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Penn.Content;
+using Penn.FrontMatter;
 using Penn.Infrastructure;
-using Penn.Pipeline;
 
 /// <summary>
-/// Generates and caches the sitemap XML for the /sitemap.xml endpoint.
-/// Invalidates when content files change.
+/// Generates sitemap XML for the /sitemap.xml endpoint.
+/// Uses <see cref="AsyncLazy{T}"/> for lazy, thread-safe computation.
+/// When managed by <see cref="FileWatchDependencyFactory{T}"/>, the instance is
+/// recreated on file changes — trusts IContentService for fresh metadata.
 /// </summary>
 public sealed class SitemapService
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly SitemapBuilder _builder;
-    private string? _cachedXml;
+    private readonly AsyncLazy<string> _sitemapLazy;
 
-    public SitemapService(
-        IServiceProvider serviceProvider,
-        SitemapBuilder builder,
-        IFileWatcher fileWatcher)
+    public SitemapService(IServiceProvider serviceProvider, SitemapBuilder builder)
     {
-        _serviceProvider = serviceProvider;
-        _builder = builder;
-        fileWatcher.SubscribeToChanges(() => _cachedXml = null);
+        _sitemapLazy = new AsyncLazy<string>(() => BuildSitemapAsync(serviceProvider, builder));
     }
 
-    public async Task<string> GetSitemapXmlAsync()
-    {
-        if (_cachedXml != null)
-            return _cachedXml;
+    public Task<string> GetSitemapXmlAsync() => _sitemapLazy.Value;
 
-        var renderedItems = new List<RenderedItem>();
-        var contentServices = _serviceProvider.GetServices<IContentService>();
-        var parser = _serviceProvider.GetRequiredService<IContentParser>();
-        var renderer = _serviceProvider.GetRequiredService<IContentRenderer>();
+    private static async Task<string> BuildSitemapAsync(IServiceProvider sp, SitemapBuilder builder)
+    {
+        // Sitemap only needs routes and metadata — no rendering required.
+        // Use IContentService.GetContentTocEntriesAsync() for route discovery
+        // and DiscoverAsync() + parse for IDateable metadata.
+        var contentServices = sp.GetServices<IContentService>();
+        var entries = ImmutableList.CreateBuilder<SitemapEntry>();
 
         foreach (var service in contentServices)
         {
-            await foreach (var discovered in service.DiscoverAsync())
+            var tocItems = await service.GetContentTocEntriesAsync();
+            foreach (var item in tocItems)
             {
-                var parseResult = await parser.ParseAsync(discovered);
-                if (parseResult is not ParsedItem parsed) continue;
-
-                var renderResult = await renderer.RenderAsync(parsed);
-                if (renderResult is RenderedItem rendered)
-                    renderedItems.Add(rendered);
+                var absoluteUrl = item.Route.AbsoluteUrl(builder.CanonicalBase);
+                entries.Add(new SitemapEntry(absoluteUrl, LastModified: null, ChangeFrequency: null, Priority: null));
             }
         }
 
-        var entries = _builder.Build(renderedItems);
-        _cachedXml = SerializeToXml(entries);
-        return _cachedXml;
+        return SerializeToXml(entries.ToImmutable());
     }
 
     private static string SerializeToXml(IReadOnlyList<SitemapEntry> entries)

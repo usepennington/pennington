@@ -137,9 +137,9 @@ public static class PennExtensions
         services.AddSingleton(_ => new RssFeedBuilder(canonicalBase));
         services.AddSingleton(_ => new SearchIndexBuilder());
 
-        // Search index and sitemap services (serve via MapGet, auto-discovered by static build)
-        services.AddSingleton<SearchIndexService>();
-        services.AddSingleton<Feeds.SitemapService>();
+        // Search index and sitemap services — factory-managed, trust IContentService for fresh data
+        services.AddFileWatched<SearchIndexService>();
+        services.AddFileWatched<Feeds.SitemapService>();
 
         // Per-request diagnostic context
         services.AddHttpContextAccessor();
