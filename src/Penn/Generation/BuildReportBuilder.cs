@@ -21,10 +21,18 @@ public sealed class BuildReportBuilder
     public void AddWarning(ContentRoute route, string message)
         => _diagnostics.Add(new BuildDiagnostic(new DiagnosticWarning(route, message)));
 
+    public void AddWarning(string message, string? sourceFile = null)
+        => _diagnostics.Add(new BuildDiagnostic(new DiagnosticWarning(null, message, sourceFile)));
+
     public void AddError(ContentRoute route, string message, Exception? exception = null)
     {
         _diagnostics.Add(new BuildDiagnostic(new DiagnosticError(route, message, exception)));
         _failedPages.Add(route);
+    }
+
+    public void AddError(string message, Exception? exception = null, string? sourceFile = null)
+    {
+        _diagnostics.Add(new BuildDiagnostic(new DiagnosticError(null, message, exception, sourceFile)));
     }
 
     public void AddBrokenLink(BrokenLink link) => _brokenLinks.Add(link);

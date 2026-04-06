@@ -81,8 +81,17 @@ public sealed partial class LinkVerificationService
         if (url.StartsWith('#'))
             return new LinkCheckResult(new ValidLink(sourcePage, url));
 
+        // Strip query string and fragment
+        var pathOnly = url.Split('#')[0].Split('?')[0];
+
+        // Framework-managed static asset paths — not content routes, skip verification
+        if (pathOnly.StartsWith("/_content/", StringComparison.OrdinalIgnoreCase) ||
+            pathOnly.StartsWith("/_framework/", StringComparison.OrdinalIgnoreCase) ||
+            pathOnly.StartsWith("/_blazor/", StringComparison.OrdinalIgnoreCase))
+            return new LinkCheckResult(new ValidLink(sourcePage, url));
+
         // Internal links — check against known routes
-        var normalizedUrl = NormalizePath(url.Split('#')[0].Split('?')[0]);
+        var normalizedUrl = NormalizePath(pathOnly);
 
         if (_knownPaths.Contains(normalizedUrl))
             return new LinkCheckResult(new ValidLink(sourcePage, url));

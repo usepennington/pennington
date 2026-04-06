@@ -116,9 +116,13 @@ public static class PennExtensions
         // Pipeline
         services.AddTransient<IContentPipeline, ContentPipeline>();
 
+        // Xref resolution
+        services.AddSingleton<XrefResolver>();
+
         // Response processors
         services.AddSingleton<IResponseProcessor>(sp =>
             new BaseUrlRewritingProcessor(sp.GetRequiredService<OutputOptions>()));
+        services.AddSingleton<IResponseProcessor, XrefResolvingProcessor>();
         services.AddSingleton<IResponseProcessor, LiveReloadScriptProcessor>();
 
         // Live reload (only does work when DOTNET_WATCH is set)
@@ -129,6 +133,9 @@ public static class PennExtensions
         services.AddSingleton(_ => new SitemapBuilder(canonicalBase));
         services.AddSingleton(_ => new RssFeedBuilder(canonicalBase));
         services.AddSingleton(_ => new SearchIndexBuilder());
+
+        // Diagnostics collector (singleton — accumulates across requests during build)
+        services.AddSingleton<BuildDiagnosticsCollector>();
 
         // Output generation
         services.AddTransient<OutputGenerationService>();
@@ -194,8 +201,14 @@ public static class PennExtensions
             await app.StartAsync();
             var generator = app.Services.GetRequiredService<OutputGenerationService>();
             var addresses = app.Urls.Any() ? app.Urls : ["http://localhost:5000"];
-            await generator.GenerateAsync(addresses.First());
+            var report = await generator.GenerateAsync(addresses.First());
             await app.StopAsync();
+
+            report.WriteTo(Console.Out);
+            if (report.HasErrors)
+            {
+                Environment.ExitCode = 1;
+            }
         }
         else
         {

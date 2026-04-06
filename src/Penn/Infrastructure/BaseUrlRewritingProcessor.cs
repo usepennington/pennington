@@ -1,13 +1,18 @@
 namespace Penn.Infrastructure;
 
-using System.Text.RegularExpressions;
+using AngleSharp;
+using AngleSharp.Dom;
 using Microsoft.AspNetCore.Http;
 using Penn.Generation;
 
-/// <summary>Rewrites URLs in HTML responses to include the configured base URL.</summary>
-public sealed partial class BaseUrlRewritingProcessor : IResponseProcessor
+/// <summary>
+/// Rewrites URLs in HTML responses to include the configured base URL.
+/// Uses AngleSharp for robust HTML parsing and attribute manipulation.
+/// </summary>
+public sealed class BaseUrlRewritingProcessor : IResponseProcessor
 {
     private readonly string _baseUrl;
+    private readonly IBrowsingContext _browsingContext = BrowsingContext.New(Configuration.Default);
 
     public BaseUrlRewritingProcessor(OutputOptions? outputOptions)
     {
@@ -26,35 +31,40 @@ public sealed partial class BaseUrlRewritingProcessor : IResponseProcessor
             && (contentType.Contains("text/html") || contentType.Contains("application/json"));
     }
 
-    public Task<string> ProcessAsync(string responseBody, HttpContext context)
+    public async Task<string> ProcessAsync(string responseBody, HttpContext context)
     {
         var contentType = context.Response.ContentType ?? "";
         if (contentType.Contains("text/html"))
         {
-            responseBody = RewriteHtml(responseBody);
+            return await RewriteHtmlAsync(responseBody);
         }
-        return Task.FromResult(responseBody);
+        return responseBody;
     }
 
-    private string RewriteHtml(string html)
+    private async Task<string> RewriteHtmlAsync(string html)
     {
-        // Rewrite href="/..." and src="/..." to include base URL
-        html = HrefRegex().Replace(html, match =>
-        {
-            var attr = match.Groups[1].Value;
-            var quote = match.Groups[2].Value;
-            var url = match.Groups[3].Value;
-            if (url.StartsWith('/') && !url.StartsWith("//"))
-                url = _baseUrl + url;
-            return $"{attr}={quote}{url}{quote}";
-        });
+        var document = await _browsingContext.OpenAsync(req => req.Content(html));
 
         // Add data-base-url to body
-        html = html.Replace("<body", $"<body data-base-url=\"{_baseUrl}\"", StringComparison.OrdinalIgnoreCase);
+        document.Body?.SetAttribute("data-base-url", _baseUrl);
 
-        return html;
+        // Rewrite root-relative URLs in href, src, and action attributes
+        foreach (var element in document.QuerySelectorAll("[href], [src], [action]"))
+        {
+            RewriteAttribute(element, "href");
+            RewriteAttribute(element, "src");
+            RewriteAttribute(element, "action");
+        }
+
+        return document.ToHtml();
     }
 
-    [GeneratedRegex("""(href|src|action)\s*=\s*(["'])(\/[^"']*?)\2""", RegexOptions.IgnoreCase)]
-    private static partial Regex HrefRegex();
+    private void RewriteAttribute(IElement element, string attrName)
+    {
+        var value = element.GetAttribute(attrName);
+        if (value is not null && value.StartsWith('/') && !value.StartsWith("//"))
+        {
+            element.SetAttribute(attrName, _baseUrl + value);
+        }
+    }
 }

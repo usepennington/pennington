@@ -188,7 +188,8 @@ public sealed class RoslynCodeBlockPreprocessorTests
         return new RoslynCodeBlockPreprocessor(
             new StubSymbolExtractionService(),
             new SyntaxHighlighter(),
-            new RoslynOptions());
+            new RoslynOptions(),
+            new Penn.Generation.BuildDiagnosticsCollector());
     }
 
     /// <summary>Stub that returns empty for any extraction call.</summary>

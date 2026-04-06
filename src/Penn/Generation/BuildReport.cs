@@ -58,10 +58,7 @@ public sealed class BuildReport
             writer.WriteLine("ERRORS");
             foreach (var diag in errors)
             {
-                writer.WriteLine($"  {diag.Route.CanonicalPath}");
-                writer.WriteLine($"    {diag.Message}");
-                if (diag.Route.SourceFile is { } source)
-                    writer.WriteLine($"    Source: {source}");
+                WriteDiagnostic(writer, diag);
             }
             writer.WriteLine();
         }
@@ -73,7 +70,10 @@ public sealed class BuildReport
             writer.WriteLine("WARNINGS");
             foreach (var diag in warningDiags)
             {
-                writer.WriteLine($"  {diag.Route.CanonicalPath}: {diag.Message}");
+                if (diag.Route is { } route)
+                    writer.WriteLine($"  {route.CanonicalPath}: {diag.Message}");
+                else
+                    writer.WriteLine($"  {diag.Message}");
             }
             if (BrokenLinks.Count > 0)
             {
@@ -84,6 +84,28 @@ public sealed class BuildReport
                 }
             }
             writer.WriteLine();
+        }
+    }
+
+    private static void WriteDiagnostic(TextWriter writer, BuildDiagnostic diag)
+    {
+        if (diag.Route is { } route)
+        {
+            writer.WriteLine($"  {route.CanonicalPath}");
+            writer.WriteLine($"    {diag.Message}");
+            if (route.SourceFile is { } routeSource)
+                writer.WriteLine($"    Source: {routeSource}");
+            else if (diag.SourceFile is { } diagSource)
+                writer.WriteLine($"    File: {diagSource}");
+        }
+        else if (diag.SourceFile is { } sourceFile)
+        {
+            writer.WriteLine($"  {sourceFile}");
+            writer.WriteLine($"    {diag.Message}");
+        }
+        else
+        {
+            writer.WriteLine($"  {diag.Message}");
         }
     }
 

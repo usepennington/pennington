@@ -1,5 +1,6 @@
 namespace Penn.Generation;
 
+using System.Collections.Concurrent;
 using System.IO.Abstractions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -19,11 +20,11 @@ public sealed class OutputGenerationService
 {
     private readonly IEnumerable<IContentService> _contentServices;
     private readonly OutputOptions _outputOptions;
-    private readonly PennOptions _pennOptions;
     private readonly IWebHostEnvironment _environment;
     private readonly EndpointDataSource _endpointDataSource;
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<OutputGenerationService> _logger;
+    private readonly BuildDiagnosticsCollector _diagnosticsCollector;
 
     public OutputGenerationService(
         IEnumerable<IContentService> contentServices,
@@ -32,39 +33,40 @@ public sealed class OutputGenerationService
         IWebHostEnvironment environment,
         EndpointDataSource endpointDataSource,
         IFileSystem fileSystem,
-        ILogger<OutputGenerationService> logger)
+        ILogger<OutputGenerationService> logger,
+        BuildDiagnosticsCollector diagnosticsCollector)
     {
         _contentServices = contentServices;
         _outputOptions = outputOptions;
-        _pennOptions = pennOptions;
         _environment = environment;
         _endpointDataSource = endpointDataSource;
         _fileSystem = fileSystem;
         _logger = logger;
+        _diagnosticsCollector = diagnosticsCollector;
     }
 
-    public async Task GenerateAsync(string appUrl)
+    public async Task<BuildReport> GenerateAsync(string appUrl)
     {
+        var reportBuilder = new BuildReportBuilder();
         using var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
         client.BaseAddress = new Uri(appUrl);
 
         var outputDir = _outputOptions.OutputDirectory.Value;
 
-        // Phase 1: Collect pages from content services (Priority.Normal)
+        // Phase 1: Collect pages from content services
         var contentPages = new List<PageToGenerate>();
         foreach (var service in _contentServices)
         {
             await foreach (var item in service.DiscoverAsync())
             {
-                var url = item.Route.CanonicalPath.Value;
-                contentPages.Add(new PageToGenerate(url, item.Route.OutputFile));
+                contentPages.Add(new PageToGenerate(item.Route));
             }
         }
 
-        // Phase 2: Discover MapGet routes (Priority.MustBeLast — includes /styles.css)
+        // Phase 2: Discover MapGet routes (includes /styles.css)
         var mapGetPages = DiscoverMapGetRoutes();
 
-        _logger.LogInformation("Static generation: {ContentCount} content pages, {MapGetCount} MapGet routes",
+        _logger.LogDebug("Static generation: {ContentCount} content pages, {MapGetCount} MapGet routes",
             contentPages.Count, mapGetPages.Count);
 
         // Phase 3: Clear and recreate output directory
@@ -73,20 +75,77 @@ public sealed class OutputGenerationService
         _fileSystem.Directory.CreateDirectory(outputDir);
 
         // Phase 4: Copy static assets
-        await CopyStaticAssetsAsync(outputDir);
+        try
+        {
+            await CopyStaticAssetsAsync(outputDir, reportBuilder);
+        }
+        catch (Exception ex)
+        {
+            reportBuilder.AddError("Failed to copy static assets", ex);
+        }
 
         // Phase 5: Create dynamic content files
-        await CreateContentFilesAsync(outputDir);
+        try
+        {
+            await CreateContentFilesAsync(outputDir, reportBuilder);
+        }
+        catch (Exception ex)
+        {
+            reportBuilder.AddError("Failed to create dynamic content files", ex);
+        }
 
         // Phase 6: Fetch all HTML content pages (in parallel)
-        _logger.LogInformation("Fetching {Count} content pages...", contentPages.Count);
-        await FetchPagesAsync(client, contentPages, outputDir);
+        var contentResults = await FetchPagesAsync(client, contentPages, outputDir);
+        ProcessFetchResults(reportBuilder, contentResults);
 
         // Phase 7: Fetch MapGet routes LAST (CSS needs all HTML to have been processed first)
-        _logger.LogInformation("Fetching {Count} MapGet routes (styles.css etc.)...", mapGetPages.Count);
-        await FetchPagesAsync(client, mapGetPages, outputDir);
+        var mapGetResults = await FetchPagesAsync(client, mapGetPages, outputDir);
+        ProcessFetchResults(reportBuilder, mapGetResults);
 
-        _logger.LogInformation("Static generation complete. Output: {OutputDir}", outputDir);
+        // Phase 8: Verify internal links across all fetched HTML pages
+        var allRoutes = contentPages.Concat(mapGetPages).Select(p => p.Route);
+        var linkVerifier = new LinkVerificationService(allRoutes);
+        foreach (var result in contentResults.Concat(mapGetResults))
+        {
+            if (result is { Outcome: FetchOutcome.Generated, HtmlContent: { } html })
+            {
+                var linkResults = linkVerifier.VerifyLinks(result.Page.Route, html);
+                foreach (var linkResult in linkResults)
+                {
+                    if (linkResult is BrokenLinkResult broken)
+                    {
+                        reportBuilder.AddBrokenLink(
+                            new BrokenLink(broken.SourcePage, broken.Url, broken.Type, broken.Reason));
+                    }
+                }
+            }
+        }
+
+        // Phase 9: Drain rendering-time diagnostics (xmldocid errors, :path errors, etc.)
+        foreach (var diag in _diagnosticsCollector.Drain())
+        {
+            reportBuilder.AddDiagnostic(diag);
+        }
+
+        return reportBuilder.Build();
+    }
+
+    private static void ProcessFetchResults(BuildReportBuilder reportBuilder, List<FetchResult> results)
+    {
+        foreach (var result in results)
+        {
+            switch (result.Outcome)
+            {
+                case FetchOutcome.Generated:
+                case FetchOutcome.Redirect:
+                    reportBuilder.AddGeneratedPage(result.Page.Route);
+                    break;
+                case FetchOutcome.Failed:
+                case FetchOutcome.Error:
+                    reportBuilder.AddError(result.Page.Route, result.Detail ?? "Unknown error");
+                    break;
+            }
+        }
     }
 
     private List<PageToGenerate> DiscoverMapGetRoutes()
@@ -127,14 +186,19 @@ public sealed class OutputGenerationService
             var outputPath = url.TrimStart('/');
             if (string.IsNullOrEmpty(outputPath)) outputPath = "index.html";
 
-            pages.Add(new PageToGenerate(url, new FilePath(outputPath)));
+            var route = new ContentRoute
+            {
+                CanonicalPath = new UrlPath(url),
+                OutputFile = new FilePath(outputPath),
+            };
+            pages.Add(new PageToGenerate(route));
             _logger.LogDebug("Discovered MapGet route: {Url} -> {OutputFile}", url, outputPath);
         }
 
         return pages;
     }
 
-    private async Task CopyStaticAssetsAsync(string outputDir)
+    private async Task CopyStaticAssetsAsync(string outputDir, BuildReportBuilder reportBuilder)
     {
         // Copy content directory assets (non-markdown files)
         foreach (var service in _contentServices)
@@ -142,12 +206,12 @@ public sealed class OutputGenerationService
             var toCopy = await service.GetContentToCopyAsync();
             foreach (var item in toCopy)
             {
-                CopyFile(item.SourcePath.Value, _fileSystem.Path.Combine(outputDir, item.OutputPath.Value));
+                CopyFile(item.SourcePath.Value, _fileSystem.Path.Combine(outputDir, item.OutputPath.Value), reportBuilder);
             }
         }
 
         // Copy wwwroot static web assets
-        CopyFileProvider(_environment.WebRootFileProvider, "", outputDir);
+        CopyFileProvider(_environment.WebRootFileProvider, "", outputDir, reportBuilder);
 
         // Copy RCL static web assets (Penn.UI scripts, etc.)
         // CompositeFileProvider contains all registered static web asset providers
@@ -157,31 +221,40 @@ public sealed class OutputGenerationService
             {
                 if (provider != _environment.WebRootFileProvider)
                 {
-                    CopyFileProvider(provider, "", outputDir);
+                    CopyFileProvider(provider, "", outputDir, reportBuilder);
                 }
             }
         }
     }
 
-    private async Task CreateContentFilesAsync(string outputDir)
+    private async Task CreateContentFilesAsync(string outputDir, BuildReportBuilder reportBuilder)
     {
         foreach (var service in _contentServices)
         {
             var toCreate = await service.GetContentToCreateAsync();
             foreach (var item in toCreate)
             {
-                var targetPath = _fileSystem.Path.Combine(outputDir, item.OutputPath.Value);
-                var dir = _fileSystem.Path.GetDirectoryName(targetPath);
-                if (dir != null) _fileSystem.Directory.CreateDirectory(dir);
+                try
+                {
+                    var targetPath = _fileSystem.Path.Combine(outputDir, item.OutputPath.Value);
+                    var dir = _fileSystem.Path.GetDirectoryName(targetPath);
+                    if (dir != null) _fileSystem.Directory.CreateDirectory(dir);
 
-                var bytes = await item.ContentGenerator();
-                await _fileSystem.File.WriteAllBytesAsync(targetPath, bytes);
+                    var bytes = await item.ContentGenerator();
+                    await _fileSystem.File.WriteAllBytesAsync(targetPath, bytes);
+                }
+                catch (Exception ex)
+                {
+                    reportBuilder.AddError($"Failed to create content file: {item.OutputPath.Value}", ex,
+                        sourceFile: item.OutputPath.Value);
+                }
             }
         }
     }
 
-    private async Task FetchPagesAsync(HttpClient client, List<PageToGenerate> pages, string outputDir)
+    private async Task<List<FetchResult>> FetchPagesAsync(HttpClient client, List<PageToGenerate> pages, string outputDir)
     {
+        var results = new ConcurrentBag<FetchResult>();
         await Parallel.ForEachAsync(pages, async (page, ct) =>
         {
             try
@@ -203,37 +276,47 @@ public sealed class OutputGenerationService
                         </head></html>
                         """;
                     await _fileSystem.File.WriteAllTextAsync(outputPath, redirectHtml, ct);
-                    _logger.LogInformation("  Redirect: {Url} -> {Location}", page.Url, location);
+                    _logger.LogDebug("Redirect: {Url} -> {Location}", page.Url, location);
+                    results.Add(new FetchResult(page, FetchOutcome.Redirect));
                 }
                 else if (response.IsSuccessStatusCode)
                 {
-                    // Check if response is binary
                     var contentType = response.Content.Headers.ContentType?.MediaType ?? "";
                     if (contentType.StartsWith("text/") || contentType.Contains("json") || contentType.Contains("xml"))
                     {
                         var content = await response.Content.ReadAsStringAsync(ct);
                         await _fileSystem.File.WriteAllTextAsync(outputPath, content, ct);
+                        _logger.LogDebug("Generated: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
+
+                        // Capture HTML content for link verification
+                        var htmlContent = contentType.Contains("html") ? content : null;
+                        results.Add(new FetchResult(page, FetchOutcome.Generated, HtmlContent: htmlContent));
                     }
                     else
                     {
                         var bytes = await response.Content.ReadAsByteArrayAsync(ct);
                         await _fileSystem.File.WriteAllBytesAsync(outputPath, bytes, ct);
+                        _logger.LogDebug("Generated: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
+                        results.Add(new FetchResult(page, FetchOutcome.Generated));
                     }
-                    _logger.LogDebug("  Generated: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
                 }
                 else
                 {
-                    _logger.LogWarning("  Failed: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
+                    _logger.LogDebug("Failed: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
+                    results.Add(new FetchResult(page, FetchOutcome.Failed,
+                        $"HTTP {(int)response.StatusCode} fetching {page.Url}"));
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "  Error generating {Url}", page.Url);
+                _logger.LogError(ex, "Error generating {Url}", page.Url);
+                results.Add(new FetchResult(page, FetchOutcome.Error, ex.Message));
             }
         });
+        return [.. results];
     }
 
-    private void CopyFile(string source, string target)
+    private void CopyFile(string source, string target, BuildReportBuilder reportBuilder)
     {
         try
         {
@@ -243,11 +326,12 @@ public sealed class OutputGenerationService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to copy {Source} to {Target}", source, target);
+            reportBuilder.AddWarning($"Failed to copy {source} to {target}", sourceFile: source);
+            _logger.LogDebug(ex, "Failed to copy {Source} to {Target}", source, target);
         }
     }
 
-    private void CopyFileProvider(IFileProvider provider, string subpath, string outputDir)
+    private void CopyFileProvider(IFileProvider provider, string subpath, string outputDir, BuildReportBuilder reportBuilder)
     {
         var contents = provider.GetDirectoryContents(subpath);
         foreach (var item in contents)
@@ -256,15 +340,22 @@ public sealed class OutputGenerationService
 
             if (item.IsDirectory)
             {
-                CopyFileProvider(provider, relativePath, outputDir);
+                CopyFileProvider(provider, relativePath, outputDir, reportBuilder);
             }
             else if (item.PhysicalPath != null)
             {
                 var targetPath = _fileSystem.Path.Combine(outputDir, relativePath);
-                CopyFile(item.PhysicalPath, targetPath);
+                CopyFile(item.PhysicalPath, targetPath, reportBuilder);
             }
         }
     }
 
-    private record PageToGenerate(string Url, FilePath OutputFile);
+    private record PageToGenerate(ContentRoute Route)
+    {
+        public string Url => Route.CanonicalPath.Value;
+        public FilePath OutputFile => Route.OutputFile;
+    }
+
+    private enum FetchOutcome { Generated, Redirect, Failed, Error }
+    private record FetchResult(PageToGenerate Page, FetchOutcome Outcome, string? Detail = null, string? HtmlContent = null);
 }

@@ -1,6 +1,7 @@
 namespace Penn.Roslyn.Preprocessing;
 
 using System.Net;
+using Penn.Generation;
 using Penn.Markdown.Extensions;
 using Penn.Roslyn.Highlighting;
 using Penn.Roslyn.Symbols;
@@ -14,15 +15,18 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
     private readonly ISymbolExtractionService _symbolService;
     private readonly SyntaxHighlighter _highlighter;
     private readonly RoslynOptions _options;
+    private readonly BuildDiagnosticsCollector _diagnostics;
 
     public RoslynCodeBlockPreprocessor(
         ISymbolExtractionService symbolService,
         SyntaxHighlighter highlighter,
-        RoslynOptions options)
+        RoslynOptions options,
+        BuildDiagnosticsCollector diagnostics)
     {
         _symbolService = symbolService;
         _highlighter = highlighter;
         _options = options;
+        _diagnostics = diagnostics;
     }
 
     public int Priority => 100;
@@ -96,6 +100,7 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
 
                 if (string.IsNullOrEmpty(fragment))
                 {
+                    _diagnostics.AddWarning(null, $"Unresolved xmldocid: {xmlDocId}");
                     var errorComment = $"""<span class="comment">// Error: Symbol not found for '{WebUtility.HtmlEncode(xmlDocId)}'</span>""";
                     htmlFragments.Add(errorComment);
                     continue;
@@ -114,6 +119,7 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
         }
         catch (Exception ex)
         {
+            _diagnostics.AddError(null, $"Error processing xmldocid: {ex.Message}");
             var errorHtml = $"<pre><code><!-- Error processing xmldocid: {WebUtility.HtmlEncode(ex.Message)} -->{WebUtility.HtmlEncode(code)}</code></pre>";
             return new CodeBlockPreprocessResult(errorHtml, baseLanguage, SkipTransform: true);
         }
@@ -127,6 +133,7 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
 
             if (xmlDocIds.Length != 2)
             {
+                _diagnostics.AddError(null, $"xmldocid-diff requires exactly 2 XmlDocIds, got {xmlDocIds.Length}");
                 var errorHtml = $"<pre><code><!-- Error: xmldocid-diff requires exactly 2 XmlDocIds, got {xmlDocIds.Length} -->{WebUtility.HtmlEncode(code)}</code></pre>";
                 return new CodeBlockPreprocessResult(errorHtml, baseLanguage, SkipTransform: true);
             }
@@ -148,6 +155,8 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
 
             if (errors.Count > 0)
             {
+                foreach (var error in errors)
+                    _diagnostics.AddWarning(null, $"Unresolved xmldocid-diff: {error}");
                 var errorHtml = string.Join("\n", errors.Select(e =>
                     $"""<span class="comment">// {WebUtility.HtmlEncode(e)}</span>"""));
                 return new CodeBlockPreprocessResult(
@@ -173,6 +182,7 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
         }
         catch (Exception ex)
         {
+            _diagnostics.AddError(null, $"Error processing xmldocid-diff: {ex.Message}");
             var errorHtml = $"<pre><code><!-- Error processing xmldocid-diff: {WebUtility.HtmlEncode(ex.Message)} -->{WebUtility.HtmlEncode(code)}</code></pre>";
             return new CodeBlockPreprocessResult(errorHtml, baseLanguage, SkipTransform: true);
         }
@@ -187,12 +197,14 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
             // Validate path to prevent directory traversal
             if (relativePath.Contains("..") || Path.IsPathRooted(relativePath))
             {
+                _diagnostics.AddError(null, $"Invalid file path: {relativePath}");
                 var errorHtml = $"<pre><code><!-- Error: Invalid file path -->{WebUtility.HtmlEncode(code)}</code></pre>";
                 return new CodeBlockPreprocessResult(errorHtml, baseLanguage, SkipTransform: true);
             }
 
             if (string.IsNullOrEmpty(_options.SolutionPath))
             {
+                _diagnostics.AddError(null, "Solution path not configured for :path code block");
                 var errorHtml = $"<pre><code><!-- Error: Solution path not configured -->{WebUtility.HtmlEncode(code)}</code></pre>";
                 return new CodeBlockPreprocessResult(errorHtml, baseLanguage, SkipTransform: true);
             }
@@ -200,6 +212,7 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
             var solutionDir = Path.GetDirectoryName(_options.SolutionPath);
             if (string.IsNullOrEmpty(solutionDir))
             {
+                _diagnostics.AddError(null, "Solution directory not found for :path code block");
                 var errorHtml = $"<pre><code><!-- Error: Solution directory not found -->{WebUtility.HtmlEncode(code)}</code></pre>";
                 return new CodeBlockPreprocessResult(errorHtml, baseLanguage, SkipTransform: true);
             }
@@ -207,6 +220,7 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
             var fullPath = Path.Combine(solutionDir, relativePath);
             if (!File.Exists(fullPath))
             {
+                _diagnostics.AddWarning(null, $"File not found for :path code block: {relativePath}");
                 var errorHtml = $"<pre><code><!-- Error: File not found: {WebUtility.HtmlEncode(relativePath)} -->{WebUtility.HtmlEncode(code)}</code></pre>";
                 return new CodeBlockPreprocessResult(errorHtml, baseLanguage, SkipTransform: true);
             }
@@ -219,6 +233,7 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
         }
         catch (Exception ex)
         {
+            _diagnostics.AddError(null, $"Error loading file for :path code block: {ex.Message}");
             var errorHtml = $"<pre><code><!-- Error loading file: {WebUtility.HtmlEncode(ex.Message)} -->{WebUtility.HtmlEncode(code)}</code></pre>";
             return new CodeBlockPreprocessResult(errorHtml, baseLanguage, SkipTransform: true);
         }
