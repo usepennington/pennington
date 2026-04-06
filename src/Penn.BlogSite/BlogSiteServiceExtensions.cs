@@ -47,7 +47,7 @@ public static class BlogSiteServiceExtensions
             };
         });
 
-        services.AddTransient<BlogContentResolver>();
+        services.AddFileWatched<BlogContentResolver>();
 
         return services;
     }

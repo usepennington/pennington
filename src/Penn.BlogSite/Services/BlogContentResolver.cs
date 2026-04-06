@@ -4,12 +4,15 @@ using System.Collections.Immutable;
 using System.Web;
 using Penn.Content;
 using Penn.FrontMatter;
+using Penn.Infrastructure;
 using Penn.Pipeline;
 using Penn.Routing;
 
 /// <summary>
 /// Resolves blog content pages by URL and provides query methods
 /// for listing posts, filtering by tag, etc.
+/// When managed by <see cref="FileWatchDependencyFactory{T}"/>, the instance is
+/// recreated on file changes — trusts IContentService for fresh data.
 /// </summary>
 public sealed class BlogContentResolver
 {
@@ -17,8 +20,7 @@ public sealed class BlogContentResolver
     private readonly FrontMatterParser _parser;
     private readonly IContentRenderer _renderer;
     private readonly BlogSiteOptions _options;
-
-    private List<BlogPostPage>? _cachedPosts;
+    private readonly AsyncLazy<List<BlogPostPage>> _postsLazy;
 
     public BlogContentResolver(
         IEnumerable<IContentService> services,
@@ -30,15 +32,16 @@ public sealed class BlogContentResolver
         _parser = parser;
         _renderer = renderer;
         _options = options;
+        _postsLazy = new AsyncLazy<List<BlogPostPage>>(LoadAllPostsAsync);
     }
 
     /// <summary>
     /// Get all blog posts ordered by date descending.
     /// </summary>
-    public async Task<List<BlogPostPage>> GetAllPostsAsync()
-    {
-        if (_cachedPosts != null) return _cachedPosts;
+    public Task<List<BlogPostPage>> GetAllPostsAsync() => _postsLazy.Value;
 
+    private async Task<List<BlogPostPage>> LoadAllPostsAsync()
+    {
         var posts = new List<BlogPostPage>();
         foreach (var service in _services)
         {
@@ -67,8 +70,7 @@ public sealed class BlogContentResolver
             }
         }
 
-        _cachedPosts = posts.OrderByDescending(p => p.FrontMatter.Date).ToList();
-        return _cachedPosts;
+        return posts.OrderByDescending(p => p.FrontMatter.Date).ToList();
     }
 
     /// <summary>
