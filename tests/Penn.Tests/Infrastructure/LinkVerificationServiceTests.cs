@@ -25,9 +25,7 @@ public class LinkVerificationServiceTests
         var results = service.VerifyLinks(source, html);
 
         results.Count.ShouldBe(1);
-        (results[0] is ValidLink).ShouldBeTrue();
-        var valid = results[0] switch { ValidLink v => v, _ => null };
-        valid.ShouldNotBeNull();
+        var valid = results[0].ShouldBeCase<ValidLink>();
         valid.Url.ShouldBe("/docs/getting-started");
         valid.SourcePage.ShouldBe(source);
     }
@@ -45,9 +43,7 @@ public class LinkVerificationServiceTests
         var results = service.VerifyLinks(source, html);
 
         results.Count.ShouldBe(1);
-        (results[0] is BrokenLinkResult).ShouldBeTrue();
-        var broken = results[0] switch { BrokenLinkResult b => b, _ => null };
-        broken.ShouldNotBeNull();
+        var broken = results[0].ShouldBeCase<BrokenLinkResult>();
         broken.Url.ShouldBe("/docs/nonexistent");
         broken.Type.ShouldBe(LinkType.Internal);
         broken.Reason.ShouldBe("Page not found");
@@ -67,9 +63,7 @@ public class LinkVerificationServiceTests
         var results = service.VerifyLinks(source, html);
 
         results.Count.ShouldBe(1);
-        (results[0] is ExternalLink).ShouldBeTrue();
-        var external = results[0] switch { ExternalLink e => e, _ => null };
-        external.ShouldNotBeNull();
+        var external = results[0].ShouldBeCase<ExternalLink>();
         external.Url.ShouldBe("https://example.com");
         external.SourcePage.ShouldBe(source);
     }
@@ -87,9 +81,7 @@ public class LinkVerificationServiceTests
         var results = service.VerifyLinks(source, html);
 
         results.Count.ShouldBe(1);
-        (results[0] is ValidLink).ShouldBeTrue();
-        var valid = results[0] switch { ValidLink v => v, _ => null };
-        valid.ShouldNotBeNull();
+        var valid = results[0].ShouldBeCase<ValidLink>();
         valid.Url.ShouldBe("#section-1");
     }
 
@@ -106,9 +98,7 @@ public class LinkVerificationServiceTests
         var results = service.VerifyLinks(source, html);
 
         results.Count.ShouldBe(1);
-        (results[0] is BrokenLinkResult).ShouldBeTrue();
-        var broken = results[0] switch { BrokenLinkResult b => b, _ => null };
-        broken.ShouldNotBeNull();
+        var broken = results[0].ShouldBeCase<BrokenLinkResult>();
         broken.Url.ShouldBe("/images/missing.png");
         broken.Type.ShouldBe(LinkType.Image);
         broken.Reason.ShouldBe("Page not found");
@@ -133,21 +123,15 @@ public class LinkVerificationServiceTests
         results.Count.ShouldBe(3);
 
         // Valid internal link
-        (results[0] is ValidLink).ShouldBeTrue();
-        var valid = results[0] switch { ValidLink v => v, _ => null };
-        valid.ShouldNotBeNull();
+        var valid = results[0].ShouldBeCase<ValidLink>();
         valid.Url.ShouldBe("/docs/intro");
 
         // Broken internal link
-        (results[1] is BrokenLinkResult).ShouldBeTrue();
-        var broken = results[1] switch { BrokenLinkResult b => b, _ => null };
-        broken.ShouldNotBeNull();
+        var broken = results[1].ShouldBeCase<BrokenLinkResult>();
         broken.Url.ShouldBe("/docs/missing");
 
         // External link
-        (results[2] is ExternalLink).ShouldBeTrue();
-        var external = results[2] switch { ExternalLink e => e, _ => null };
-        external.ShouldNotBeNull();
+        var external = results[2].ShouldBeCase<ExternalLink>();
         external.Url.ShouldBe("https://github.com");
     }
 
@@ -164,9 +148,7 @@ public class LinkVerificationServiceTests
         var results = service.VerifyLinks(source, html);
 
         results.Count.ShouldBe(1);
-        (results[0] is ValidLink).ShouldBeTrue();
-        var valid = results[0] switch { ValidLink v => v, _ => null };
-        valid.ShouldNotBeNull();
+        var valid = results[0].ShouldBeCase<ValidLink>();
         valid.Url.ShouldBe("/docs/page?v=2");
     }
 
@@ -183,9 +165,7 @@ public class LinkVerificationServiceTests
         var results = service.VerifyLinks(source, html);
 
         results.Count.ShouldBe(1);
-        (results[0] is ValidLink).ShouldBeTrue();
-        var valid = results[0] switch { ValidLink v => v, _ => null };
-        valid.ShouldNotBeNull();
+        var valid = results[0].ShouldBeCase<ValidLink>();
         valid.Url.ShouldBe("/docs/page#section");
     }
 
@@ -202,9 +182,7 @@ public class LinkVerificationServiceTests
         var results = service.VerifyLinks(source, html);
 
         results.Count.ShouldBe(1);
-        (results[0] is ValidLink).ShouldBeTrue();
-        var valid = results[0] switch { ValidLink v => v, _ => null };
-        valid.ShouldNotBeNull();
+        var valid = results[0].ShouldBeCase<ValidLink>();
         valid.Url.ShouldBe("/docs/page/");
     }
 
@@ -220,9 +198,7 @@ public class LinkVerificationServiceTests
         var results = service.VerifyLinks(source, html);
 
         results.Count.ShouldBe(1);
-        (results[0] is ExternalLink).ShouldBeTrue();
-        var external = results[0] switch { ExternalLink e => e, _ => null };
-        external.ShouldNotBeNull();
+        var external = results[0].ShouldBeCase<ExternalLink>();
         external.Url.ShouldBe("mailto:user@example.com");
     }
 
@@ -333,13 +309,11 @@ public class LinkVerificationServiceTests
         // Result 0: /docs/intro (valid link)
         (results[0] is ValidLink).ShouldBeTrue();
         // Result 1: /docs/missing (broken internal link — href extracted before src)
-        var brokenLink = results[1] switch { BrokenLinkResult b => b, _ => null };
-        brokenLink.ShouldNotBeNull();
+        var brokenLink = results[1].ShouldBeCase<BrokenLinkResult>();
         brokenLink.Type.ShouldBe(LinkType.Internal);
         brokenLink.Url.ShouldBe("/docs/missing");
         // Result 2: /images/logo.png (broken image — src extracted after all href)
-        var brokenImg = results[2] switch { BrokenLinkResult b => b, _ => null };
-        brokenImg.ShouldNotBeNull();
+        var brokenImg = results[2].ShouldBeCase<BrokenLinkResult>();
         brokenImg.Type.ShouldBe(LinkType.Image);
         brokenImg.Url.ShouldBe("/images/logo.png");
     }

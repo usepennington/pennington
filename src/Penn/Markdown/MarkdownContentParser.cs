@@ -23,8 +23,8 @@ public sealed class MarkdownContentParser<TFrontMatter> : IContentParser
     {
         if (item.Source is not MarkdownFileSource markdownSource)
         {
-            return new ContentItem(new FailedItem(item.Route,
-                new ContentError("Unsupported content source type for parser")));
+            return new FailedItem(item.Route,
+                new ContentError("Unsupported content source type for parser"));
         }
 
         try
@@ -35,12 +35,12 @@ public sealed class MarkdownContentParser<TFrontMatter> : IContentParser
             var result = _frontMatterParser.Parse<TFrontMatter>(content);
             var metadata = result.Metadata ?? new TFrontMatter();
 
-            return new ContentItem(new ParsedItem(item.Route, metadata, result.Body));
+            return new ParsedItem(item.Route, metadata, result.Body);
         }
         catch (Exception ex)
         {
-            return new ContentItem(new FailedItem(item.Route,
-                new ContentError($"Failed to parse {markdownSource.Path}: {ex.Message}", ex)));
+            return new FailedItem(item.Route,
+                new ContentError($"Failed to parse {markdownSource.Path}: {ex.Message}", ex));
         }
     }
 }

@@ -58,13 +58,7 @@ public class ContentItemTests
         var failed = new FailedItem(MakeRoute("/broken"), error);
         var item = new ContentItem(failed);
 
-        var recovered = item switch
-        {
-            FailedItem f => f,
-            _ => null
-        };
-
-        recovered.ShouldNotBeNull();
+        var recovered = item.ShouldBeCase<FailedItem>();
         recovered.Error.Message.ShouldBe("Parse error at line 42");
         recovered.Error.Exception.ShouldNotBeNull();
         recovered.Error.Exception.Message.ShouldBe("bad syntax");
@@ -77,19 +71,8 @@ public class ContentItemTests
         var discovered = new DiscoveredItem(MakeRoute(), source);
         var item = new ContentItem(discovered);
 
-        var result = item switch
-        {
-            DiscoveredItem d => d.Source,
-            _ => default
-        };
-
-        (result is MarkdownFileSource).ShouldBeTrue();
-        var md = result switch
-        {
-            MarkdownFileSource m => m,
-            _ => null
-        };
-        md.ShouldNotBeNull();
+        var d = item.ShouldBeCase<DiscoveredItem>();
+        var md = d.Source.ShouldBeCase<MarkdownFileSource>();
         md.Path.Value.ShouldBe("docs/intro.md");
     }
 
@@ -101,13 +84,7 @@ public class ContentItemTests
         var parsed = new ParsedItem(MakeRoute(), metadata, rawMarkdown);
         var item = new ContentItem(parsed);
 
-        var result = item switch
-        {
-            ParsedItem p => p,
-            _ => null
-        };
-
-        result.ShouldNotBeNull();
+        var result = item.ShouldBeCase<ParsedItem>();
         result.Metadata.Title.ShouldBe("My Article");
         result.RawMarkdown.ShouldBe("# My Article\n\nSome content here.");
     }
@@ -119,13 +96,7 @@ public class ContentItemTests
         var rendered = new RenderedItem(MakeRoute(), MakeMetadata(), content);
         var item = new ContentItem(rendered);
 
-        var result = item switch
-        {
-            RenderedItem r => r,
-            _ => null
-        };
-
-        result.ShouldNotBeNull();
+        var result = item.ShouldBeCase<RenderedItem>();
         result.Content.Html.ShouldBe("<p>test</p>");
         result.Content.Outline.ShouldBeEmpty();
         result.Content.Tags.ShouldBeEmpty();

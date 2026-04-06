@@ -25,9 +25,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        (result is RenderedItem).ShouldBeTrue();
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Html.ShouldContain("<h1");
         rendered.Content.Html.ShouldContain("Hello");
         rendered.Content.Html.ShouldContain("<p>World</p>");
@@ -41,9 +39,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        (result is RenderedItem).ShouldBeTrue();
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Outline.Length.ShouldBe(2);
         rendered.Content.Outline[0].Text.ShouldBe("Getting Started");
         rendered.Content.Outline[0].Level.ShouldBe(2);
@@ -60,9 +56,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        (result is RenderedItem).ShouldBeTrue();
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Html.Trim().ShouldBeEmpty();
         rendered.Content.Outline.ShouldBeEmpty();
     }
@@ -76,9 +70,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        (result is RenderedItem).ShouldBeTrue();
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Route.ShouldBe(route);
         rendered.Metadata.Title.ShouldBe("Preserved Title");
     }
@@ -91,8 +83,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Html.ShouldContain("<pre>");
         rendered.Content.Html.ShouldContain("<code");
         rendered.Content.Html.ShouldContain("var x = 42;");
@@ -106,8 +97,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Html.ShouldContain("<a");
         rendered.Content.Html.ShouldContain("href=\"/docs/getting-started\"");
         rendered.Content.Html.ShouldContain("Penn docs");
@@ -121,8 +111,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Html.ShouldContain("<img");
         rendered.Content.Html.ShouldContain("src=\"/images/logo.png\"");
         rendered.Content.Html.ShouldContain("alt=\"Logo\"");
@@ -136,8 +125,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Html.ShouldContain("<ul>");
         rendered.Content.Html.ShouldContain("<li>First item</li>");
         rendered.Content.Html.ShouldContain("<li>Third item</li>");
@@ -151,8 +139,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Html.ShouldContain("<table");
         rendered.Content.Html.ShouldContain("<th>Name</th>");
         rendered.Content.Html.ShouldContain("<td>Key</td>");
@@ -167,8 +154,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Html.ShouldContain("<strong>bold</strong>");
         rendered.Content.Html.ShouldContain("<em>italic</em>");
         rendered.Content.Html.ShouldContain("<code>inline code</code>");
@@ -182,8 +168,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Html.ShouldContain("<blockquote");
     }
 
@@ -195,8 +180,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Outline.Length.ShouldBe(5);
         rendered.Content.Outline.Count(e => e.Level == 2).ShouldBe(3);
         rendered.Content.Outline.Count(e => e.Level == 3).ShouldBe(2);
@@ -226,8 +210,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Html.ShouldContain("<a");
         rendered.Content.Html.ShouldContain("<pre>");
         rendered.Content.Html.ShouldContain("<img");
@@ -242,8 +225,7 @@ public class MarkdownContentRendererTests
 
         var result = await _renderer.RenderAsync(parsed);
 
-        var rendered = result switch { RenderedItem r => r, _ => null };
-        rendered.ShouldNotBeNull();
+        var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Tags.ShouldBeEmpty();
         rendered.Content.CrossReferences.ShouldBeEmpty();
         rendered.Content.SearchDocument.ShouldBeNull();

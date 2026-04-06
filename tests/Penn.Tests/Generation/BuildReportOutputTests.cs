@@ -48,7 +48,7 @@ public class BuildReportOutputTests
     {
         var errorRoute = MakeRoute("/docs/api/broken-page", "Content/Docs/api/broken-page.md");
         var diagnostics = ImmutableList.Create(
-            new BuildDiagnostic(new DiagnosticError(errorRoute, "HTTP 500: NullReferenceException in Render", null)));
+            new BuildDiagnostic(DiagnosticSeverity.Error, errorRoute, "HTTP 500: NullReferenceException in Render"));
 
         var report = MakeReport(
             diagnostics: diagnostics,
@@ -69,7 +69,7 @@ public class BuildReportOutputTests
     public void BuildWithWarnings_ShowsWarningsSection()
     {
         var diagnostics = ImmutableList.Create(
-            new BuildDiagnostic(new DiagnosticWarning(MakeRoute("/docs/old-page"), "redirect target not found")));
+            new BuildDiagnostic(DiagnosticSeverity.Warning, MakeRoute("/docs/old-page"), "redirect target not found"));
 
         var report = MakeReport(
             diagnostics: diagnostics,
@@ -119,8 +119,8 @@ public class BuildReportOutputTests
     {
         var errorRoute = MakeRoute("/broken", "Content/broken.md");
         var diagnostics = ImmutableList.Create(
-            new BuildDiagnostic(new DiagnosticError(errorRoute, "render failed", null)),
-            new BuildDiagnostic(new DiagnosticWarning(MakeRoute("/old"), "deprecated")));
+            new BuildDiagnostic(DiagnosticSeverity.Error, errorRoute, "render failed"),
+            new BuildDiagnostic(DiagnosticSeverity.Warning, MakeRoute("/old"), "deprecated"));
         var brokenLinks = ImmutableList.Create(
             new BrokenLink(MakeRoute("/page"), "/missing", LinkType.Internal, "404"));
 
@@ -170,7 +170,7 @@ public class BuildReportOutputTests
     public void ToFormattedString_ReturnsSameContentAsWriteTo()
     {
         var diagnostics = ImmutableList.Create(
-            new BuildDiagnostic(new DiagnosticWarning(MakeRoute("/warn"), "something")));
+            new BuildDiagnostic(DiagnosticSeverity.Warning, MakeRoute("/warn"), "something"));
 
         var report = MakeReport(
             diagnostics: diagnostics,

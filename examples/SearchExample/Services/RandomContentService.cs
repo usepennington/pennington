@@ -53,7 +53,7 @@ public class RandomContentService : IContentService
         foreach (var (route, title) in _items)
         {
             var generator = new RandomContentGenerator(this, title);
-            var source = new ContentSource(new ProgrammaticSource(generator));
+            ContentSource source = new ProgrammaticSource(generator);
             yield return new DiscoveredItem(route, source);
         }
 
@@ -142,8 +142,7 @@ public class RandomContentService : IContentService
 
             var html = service.GetContent(relativePath);
             var metadata = new RandomFrontMatter { Title = title };
-            ProgrammaticContent content = new ProgrammaticContent(
-                new TextProgrammaticContent(metadata, html, "text/html"));
+            ProgrammaticContent content = new TextProgrammaticContent(metadata, html, "text/html");
             return Task.FromResult(content);
         }
     }

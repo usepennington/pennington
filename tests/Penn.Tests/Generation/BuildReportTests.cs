@@ -38,7 +38,7 @@ public class BuildReportTests
     public void ReportWithDiagnosticError_HasErrors_IsTrue()
     {
         var diagnostics = ImmutableList.Create(
-            new BuildDiagnostic(new DiagnosticError(MakeRoute(), "error", null)));
+            new BuildDiagnostic(DiagnosticSeverity.Error, MakeRoute(), "error"));
         var report = MakeReport(diagnostics: diagnostics);
         report.HasErrors.ShouldBeTrue();
     }
@@ -63,8 +63,8 @@ public class BuildReportTests
     public void ReportWithOnlyInfoAndWarning_HasErrors_IsFalse()
     {
         var diagnostics = ImmutableList.Create(
-            new BuildDiagnostic(new DiagnosticInfo(MakeRoute("/a"), "info")),
-            new BuildDiagnostic(new DiagnosticWarning(MakeRoute("/b"), "warn")));
+            new BuildDiagnostic(DiagnosticSeverity.Info, MakeRoute("/a"), "info"),
+            new BuildDiagnostic(DiagnosticSeverity.Warning, MakeRoute("/b"), "warn"));
         var report = MakeReport(diagnostics: diagnostics);
         report.HasErrors.ShouldBeFalse();
     }

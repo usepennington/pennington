@@ -54,14 +54,8 @@ public class ProgrammaticContentTests
         };
 
         var result = await generator.GenerateAsync(route);
-        var text = result switch
-        {
-            TextProgrammaticContent t => t,
-            _ => null
-        };
-
-        text.ShouldNotBeNull();
-        text!.RawContent.ShouldBe("test");
+        var text = result.ShouldBeCase<TextProgrammaticContent>();
+        text.RawContent.ShouldBe("test");
         text.Metadata.ShouldBeNull();
     }
 

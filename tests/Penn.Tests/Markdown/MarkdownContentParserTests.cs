@@ -38,9 +38,7 @@ public class MarkdownContentParserTests
 
         var result = await parser.ParseAsync(discovered);
 
-        (result is ParsedItem).ShouldBeTrue();
-        var parsed = result switch { ParsedItem p => p, _ => null };
-        parsed.ShouldNotBeNull();
+        var parsed = result.ShouldBeCase<ParsedItem>();
         parsed.Metadata.Title.ShouldBe("Hello World");
         parsed.RawMarkdown.ShouldContain("# Hello");
         parsed.RawMarkdown.ShouldContain("Some content.");
@@ -56,9 +54,7 @@ public class MarkdownContentParserTests
 
         var result = await parser.ParseAsync(discovered);
 
-        (result is FailedItem).ShouldBeTrue();
-        var failed = result switch { FailedItem f => f, _ => null };
-        failed.ShouldNotBeNull();
+        var failed = result.ShouldBeCase<FailedItem>();
         failed.Error.Message.ShouldContain("Failed to parse");
         failed.Error.Exception.ShouldNotBeNull();
     }
@@ -73,9 +69,7 @@ public class MarkdownContentParserTests
 
         var result = await parser.ParseAsync(discovered);
 
-        (result is FailedItem).ShouldBeTrue();
-        var failed = result switch { FailedItem f => f, _ => null };
-        failed.ShouldNotBeNull();
+        var failed = result.ShouldBeCase<FailedItem>();
         failed.Error.Message.ShouldContain("Unsupported content source type");
     }
 
@@ -91,9 +85,7 @@ public class MarkdownContentParserTests
 
         var result = await parser.ParseAsync(discovered);
 
-        (result is ParsedItem).ShouldBeTrue();
-        var parsed = result switch { ParsedItem p => p, _ => null };
-        parsed.ShouldNotBeNull();
+        var parsed = result.ShouldBeCase<ParsedItem>();
         parsed.Metadata.Title.ShouldBe("");
         parsed.RawMarkdown.ShouldContain("# Just Markdown");
         parsed.RawMarkdown.ShouldContain("No front matter here.");
@@ -111,9 +103,7 @@ public class MarkdownContentParserTests
 
         var result = await parser.ParseAsync(discovered);
 
-        (result is ParsedItem).ShouldBeTrue();
-        var parsed = result switch { ParsedItem p => p, _ => null };
-        parsed.ShouldNotBeNull();
+        var parsed = result.ShouldBeCase<ParsedItem>();
         parsed.Metadata.Title.ShouldBe("Windows File");
     }
 }

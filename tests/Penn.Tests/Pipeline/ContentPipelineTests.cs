@@ -160,11 +160,9 @@ public class ContentPipelineTests
 
         // Verify the error message is preserved
         report.Diagnostics.Count.ShouldBeGreaterThan(0);
-        var errorDiag = report.Diagnostics.First(d => d is DiagnosticError);
-        (errorDiag is DiagnosticError).ShouldBeTrue();
-        var error = errorDiag switch { DiagnosticError e => e, _ => null };
-        error.ShouldNotBeNull();
-        error.Message.ShouldContain("YAML parse error at line 3");
+        var errorDiag = report.Diagnostics.First(d => d.Severity is DiagnosticSeverity.Error);
+        errorDiag.Severity.ShouldBe(DiagnosticSeverity.Error);
+        errorDiag.Message.ShouldContain("YAML parse error at line 3");
     }
 
     [Fact]
@@ -181,10 +179,8 @@ public class ContentPipelineTests
         report.GeneratedPages.Count.ShouldBe(0);
         report.HasErrors.ShouldBeTrue();
 
-        var errorDiag = report.Diagnostics.First(d => d is DiagnosticError);
-        var error = errorDiag switch { DiagnosticError e => e, _ => null };
-        error.ShouldNotBeNull();
-        error.Message.ShouldContain("Render error: component crash");
+        var errorDiag = report.Diagnostics.First(d => d.Severity is DiagnosticSeverity.Error);
+        errorDiag.Message.ShouldContain("Render error: component crash");
     }
 
     [Fact]
@@ -201,11 +197,9 @@ public class ContentPipelineTests
         report.GeneratedPages.Count.ShouldBe(0);
         report.HasErrors.ShouldBeTrue();
 
-        var errorDiag = report.Diagnostics.First(d => d is DiagnosticError);
-        var error = errorDiag switch { DiagnosticError e => e, _ => null };
-        error.ShouldNotBeNull();
-        error.Message.ShouldContain("Parse failed:");
-        error.Message.ShouldContain("Unexpected parse crash");
+        var errorDiag = report.Diagnostics.First(d => d.Severity is DiagnosticSeverity.Error);
+        errorDiag.Message.ShouldContain("Parse failed:");
+        errorDiag.Message.ShouldContain("Unexpected parse crash");
     }
 
     [Fact]
@@ -311,9 +305,7 @@ public class ContentPipelineTests
         var results = await CollectAsync(pipeline.ParseAsync(Source()));
 
         results.Count.ShouldBe(1);
-        (results[0] is FailedItem).ShouldBeTrue();
-        var failed = results[0] switch { FailedItem f => f, _ => null };
-        failed.ShouldNotBeNull();
+        var failed = results[0].ShouldBeCase<FailedItem>();
         failed.Error.Message.ShouldBe("earlier failure");
     }
 
@@ -333,9 +325,7 @@ public class ContentPipelineTests
         var results = await CollectAsync(pipeline.RenderAsync(Source()));
 
         results.Count.ShouldBe(1);
-        (results[0] is FailedItem).ShouldBeTrue();
-        var failed = results[0] switch { FailedItem f => f, _ => null };
-        failed.ShouldNotBeNull();
+        var failed = results[0].ShouldBeCase<FailedItem>();
         failed.Error.Message.ShouldBe("parse went wrong");
     }
 
@@ -351,11 +341,9 @@ public class ContentPipelineTests
 
         report.FailedPages.Count.ShouldBe(1);
         report.HasErrors.ShouldBeTrue();
-        var errorDiag = report.Diagnostics.First(d => d is DiagnosticError);
-        var error = errorDiag switch { DiagnosticError e => e, _ => null };
-        error.ShouldNotBeNull();
-        error.Message.ShouldContain("Render failed:");
-        error.Message.ShouldContain("Component exploded");
+        var errorDiag = report.Diagnostics.First(d => d.Severity is DiagnosticSeverity.Error);
+        errorDiag.Message.ShouldContain("Render failed:");
+        errorDiag.Message.ShouldContain("Component exploded");
     }
 
     [Fact]
@@ -433,7 +421,7 @@ public class ContentPipelineTests
         var report = await pipeline.GenerateAsync(Source(), MakeOptions());
 
         report.GeneratedPages.Count.ShouldBe(0);
-        report.Diagnostics.Any(d => d is DiagnosticWarning).ShouldBeTrue();
+        report.Diagnostics.Any(d => d.Severity is DiagnosticSeverity.Warning).ShouldBeTrue();
     }
 
     [Fact]
@@ -451,7 +439,7 @@ public class ContentPipelineTests
         var report = await pipeline.RunAsync(MakeOptions());
 
         report.GeneratedPages.Count.ShouldBe(1);
-        var warnings = report.Diagnostics.Where(d => d is DiagnosticWarning).ToList();
+        var warnings = report.Diagnostics.Where(d => d.Severity is DiagnosticSeverity.Warning).ToList();
         warnings.Count.ShouldBe(1);
         warnings[0].Message.ShouldContain("/docs/config");
         warnings[0].Message.ShouldContain("missing a trailing slash");
@@ -471,7 +459,7 @@ public class ContentPipelineTests
         var report = await pipeline.RunAsync(MakeOptions());
 
         report.GeneratedPages.Count.ShouldBe(1);
-        report.Diagnostics.Where(d => d is DiagnosticWarning).ShouldBeEmpty();
+        report.Diagnostics.Where(d => d.Severity is DiagnosticSeverity.Warning).ShouldBeEmpty();
     }
 
     [Fact]

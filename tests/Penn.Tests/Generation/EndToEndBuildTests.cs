@@ -146,7 +146,7 @@ public class EndToEndBuildTests
         report.HasErrors.ShouldBeTrue();
 
         // Verify the error diagnostic has the right message
-        var errors = report.Diagnostics.Where(d => d is DiagnosticError).ToList();
+        var errors = report.Diagnostics.Where(d => d.Severity is DiagnosticSeverity.Error).ToList();
         errors.Count.ShouldBe(1);
         errors[0].Message.ShouldContain("YAML parse error");
         errors[0].Route.CanonicalPath.Value.ShouldBe("/docs/broken/");
@@ -407,8 +407,7 @@ public class EndToEndBuildTests
         brokenCount.ShouldBe(1); // /docs/deployment
 
         var broken = results.Where(r => r is BrokenLinkResult).ToList();
-        var brokenLink = broken[0] switch { BrokenLinkResult b => b, _ => null };
-        brokenLink.ShouldNotBeNull();
+        var brokenLink = broken[0].ShouldBeCase<BrokenLinkResult>();
         brokenLink.Url.ShouldBe("/docs/deployment");
         brokenLink.Reason.ShouldBe("Page not found");
     }

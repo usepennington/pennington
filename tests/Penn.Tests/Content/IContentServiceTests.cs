@@ -68,7 +68,7 @@ public class IContentServiceTests
                 CanonicalPath = new UrlPath("/test/"),
                 OutputFile = new FilePath("test/index.html")
             };
-            yield return new DiscoveredItem(route, new ContentSource(new MarkdownFileSource("test.md")));
+            yield return new DiscoveredItem(route, new MarkdownFileSource("test.md"));
             await Task.CompletedTask;
         }
 

@@ -19,6 +19,6 @@ public union ContentItem(DiscoveredItem, ParsedItem, RenderedItem, FailedItem)
         ParsedItem p     => p.Route,
         RenderedItem r   => r.Route,
         FailedItem f     => f.Route,
-        _ => throw new InvalidOperationException("Uninitialized ContentItem")
+        null => throw new InvalidOperationException("Uninitialized ContentItem")
     };
 }

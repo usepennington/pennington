@@ -34,7 +34,7 @@ public class BuildReportBuilderTests
 
         var report = builder.Build();
         report.Diagnostics.Count.ShouldBe(1);
-        (report.Diagnostics[0] is DiagnosticInfo).ShouldBeTrue();
+        report.Diagnostics[0].Severity.ShouldBe(DiagnosticSeverity.Info);
         report.Diagnostics[0].Message.ShouldBe("informational");
     }
 
@@ -47,7 +47,7 @@ public class BuildReportBuilderTests
 
         var report = builder.Build();
         report.Diagnostics.Count.ShouldBe(1);
-        (report.Diagnostics[0] is DiagnosticWarning).ShouldBeTrue();
+        report.Diagnostics[0].Severity.ShouldBe(DiagnosticSeverity.Warning);
         report.Diagnostics[0].Message.ShouldBe("watch out");
     }
 
@@ -60,7 +60,7 @@ public class BuildReportBuilderTests
 
         var report = builder.Build();
         report.Diagnostics.Count.ShouldBe(1);
-        (report.Diagnostics[0] is DiagnosticError).ShouldBeTrue();
+        report.Diagnostics[0].Severity.ShouldBe(DiagnosticSeverity.Error);
         report.Diagnostics[0].Message.ShouldBe("failed");
         report.FailedPages.Count.ShouldBe(1);
         report.FailedPages[0].ShouldBe(route);
@@ -117,7 +117,7 @@ public class BuildReportBuilderTests
     public void AddDiagnostic_AddsDirectly()
     {
         var builder = new BuildReportBuilder();
-        var diagnostic = new BuildDiagnostic(new DiagnosticInfo(MakeRoute(), "direct add"));
+        var diagnostic = new BuildDiagnostic(DiagnosticSeverity.Info, MakeRoute(), "direct add");
         builder.AddDiagnostic(diagnostic);
 
         var report = builder.Build();
@@ -166,9 +166,9 @@ public class BuildReportBuilderTests
         report.HasErrors.ShouldBeTrue(); // errors + broken links
 
         // Diagnostics breakdown
-        report.Diagnostics.Count(d => d is DiagnosticInfo).ShouldBe(1);
-        report.Diagnostics.Count(d => d is DiagnosticWarning).ShouldBe(1);
-        report.Diagnostics.Count(d => d is DiagnosticError).ShouldBe(1);
+        report.Diagnostics.Count(d => d.Severity is DiagnosticSeverity.Info).ShouldBe(1);
+        report.Diagnostics.Count(d => d.Severity is DiagnosticSeverity.Warning).ShouldBe(1);
+        report.Diagnostics.Count(d => d.Severity is DiagnosticSeverity.Error).ShouldBe(1);
     }
 
     [Fact]
@@ -223,10 +223,9 @@ public class BuildReportBuilderTests
 
         var report = builder.Build();
 
-        var error = report.Diagnostics[0] switch { DiagnosticError e => e, _ => null };
-        error.ShouldNotBeNull();
-        error.Exception.ShouldBe(ex);
-        error.Exception!.Message.ShouldBe("NullRef in Render");
+        report.Diagnostics[0].Severity.ShouldBe(DiagnosticSeverity.Error);
+        report.Diagnostics[0].Exception.ShouldBe(ex);
+        report.Diagnostics[0].Exception!.Message.ShouldBe("NullRef in Render");
     }
 
     [Fact]

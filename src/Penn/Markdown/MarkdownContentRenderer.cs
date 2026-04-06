@@ -41,14 +41,14 @@ public sealed class MarkdownContentRenderer : IContentRenderer
                 Social: null
             );
 
-            return Task.FromResult(new ContentItem(
-                new RenderedItem(item.Route, item.Metadata, renderedContent)));
+            return Task.FromResult<ContentItem>(
+                new RenderedItem(item.Route, item.Metadata, renderedContent));
         }
         catch (Exception ex)
         {
-            return Task.FromResult(new ContentItem(
+            return Task.FromResult<ContentItem>(
                 new FailedItem(item.Route,
-                    new ContentError($"Render failed: {ex.Message}", ex))));
+                    new ContentError($"Render failed: {ex.Message}", ex)));
         }
     }
 }

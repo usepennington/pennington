@@ -75,11 +75,11 @@ public sealed partial class LinkVerificationService
     {
         // External links (http://, https://, //, mailto:, tel:)
         if (IsExternalUrl(url))
-            return new LinkCheckResult(new ExternalLink(sourcePage, url));
+            return new ExternalLink(sourcePage, url);
 
         // Anchor-only links (#something)
         if (url.StartsWith('#'))
-            return new LinkCheckResult(new ValidLink(sourcePage, url));
+            return new ValidLink(sourcePage, url);
 
         // Strip query string and fragment
         var pathOnly = url.Split('#')[0].Split('?')[0];
@@ -88,15 +88,15 @@ public sealed partial class LinkVerificationService
         if (pathOnly.StartsWith("/_content/", StringComparison.OrdinalIgnoreCase) ||
             pathOnly.StartsWith("/_framework/", StringComparison.OrdinalIgnoreCase) ||
             pathOnly.StartsWith("/_blazor/", StringComparison.OrdinalIgnoreCase))
-            return new LinkCheckResult(new ValidLink(sourcePage, url));
+            return new ValidLink(sourcePage, url);
 
         // Internal links — check against known routes
         var normalizedUrl = NormalizePath(pathOnly);
 
         if (_knownPaths.Contains(normalizedUrl))
-            return new LinkCheckResult(new ValidLink(sourcePage, url));
+            return new ValidLink(sourcePage, url);
 
-        return new LinkCheckResult(new BrokenLinkResult(sourcePage, url, linkType, "Page not found"));
+        return new BrokenLinkResult(sourcePage, url, linkType, "Page not found");
     }
 
     /// <summary>

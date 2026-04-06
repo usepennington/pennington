@@ -19,13 +19,7 @@ public class LinkCheckResultTests
         var valid = new ValidLink(route, "/docs/other");
         var result = new LinkCheckResult(valid);
 
-        var recovered = result switch
-        {
-            ValidLink v => v,
-            _ => null
-        };
-
-        recovered.ShouldNotBeNull();
+        var recovered = result.ShouldBeCase<ValidLink>();
         recovered.SourcePage.ShouldBe(route);
         recovered.Url.ShouldBe("/docs/other");
     }
@@ -37,13 +31,7 @@ public class LinkCheckResultTests
         var broken = new BrokenLinkResult(route, "/nowhere", LinkType.Internal, "Not found");
         var result = new LinkCheckResult(broken);
 
-        var recovered = result switch
-        {
-            BrokenLinkResult b => b,
-            _ => null
-        };
-
-        recovered.ShouldNotBeNull();
+        var recovered = result.ShouldBeCase<BrokenLinkResult>();
         recovered.SourcePage.ShouldBe(route);
         recovered.Url.ShouldBe("/nowhere");
         recovered.Type.ShouldBe(LinkType.Internal);
@@ -57,13 +45,7 @@ public class LinkCheckResultTests
         var external = new ExternalLink(route, "https://github.com");
         var result = new LinkCheckResult(external);
 
-        var recovered = result switch
-        {
-            ExternalLink e => e,
-            _ => null
-        };
-
-        recovered.ShouldNotBeNull();
+        var recovered = result.ShouldBeCase<ExternalLink>();
         recovered.SourcePage.ShouldBe(route);
         recovered.Url.ShouldBe("https://github.com");
     }

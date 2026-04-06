@@ -12,11 +12,32 @@ public class BuildDiagnosticTests
     };
 
     [Fact]
-    public void ExhaustivePatternMatch_AllThreeCases()
+    public void SeverityCheck_Info()
     {
-        BuildDiagnostic info = new BuildDiagnostic(new DiagnosticInfo(MakeRoute("/a"), "info"));
-        BuildDiagnostic warning = new BuildDiagnostic(new DiagnosticWarning(MakeRoute("/b"), "warn"));
-        BuildDiagnostic error = new BuildDiagnostic(new DiagnosticError(MakeRoute("/c"), "err", null));
+        var diagnostic = new BuildDiagnostic(DiagnosticSeverity.Info, MakeRoute(), "info");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Info);
+    }
+
+    [Fact]
+    public void SeverityCheck_Warning()
+    {
+        var diagnostic = new BuildDiagnostic(DiagnosticSeverity.Warning, MakeRoute(), "warn");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
+    }
+
+    [Fact]
+    public void SeverityCheck_Error()
+    {
+        var diagnostic = new BuildDiagnostic(DiagnosticSeverity.Error, MakeRoute(), "err");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Error);
+    }
+
+    [Fact]
+    public void Describe_AllThreeSeverities()
+    {
+        var info = new BuildDiagnostic(DiagnosticSeverity.Info, MakeRoute("/a"), "info");
+        var warning = new BuildDiagnostic(DiagnosticSeverity.Warning, MakeRoute("/b"), "warn");
+        var error = new BuildDiagnostic(DiagnosticSeverity.Error, MakeRoute("/c"), "err");
 
         Describe(info).ShouldBe("Info: /a/ - info");
         Describe(warning).ShouldBe("Warning: /b/ - warn");
@@ -24,53 +45,20 @@ public class BuildDiagnosticTests
     }
 
     [Fact]
-    public void TypeCheck_IsDiagnosticError()
-    {
-        var diagnostic = new BuildDiagnostic(new DiagnosticError(MakeRoute(), "fail", null));
-        (diagnostic is DiagnosticError).ShouldBeTrue();
-        (diagnostic is DiagnosticInfo).ShouldBeFalse();
-        (diagnostic is DiagnosticWarning).ShouldBeFalse();
-    }
-
-    [Fact]
-    public void TypeCheck_IsDiagnosticInfo()
-    {
-        var diagnostic = new BuildDiagnostic(new DiagnosticInfo(MakeRoute(), "info"));
-        (diagnostic is DiagnosticInfo).ShouldBeTrue();
-        (diagnostic is DiagnosticError).ShouldBeFalse();
-        (diagnostic is DiagnosticWarning).ShouldBeFalse();
-    }
-
-    [Fact]
-    public void TypeCheck_IsDiagnosticWarning()
-    {
-        var diagnostic = new BuildDiagnostic(new DiagnosticWarning(MakeRoute(), "warn"));
-        (diagnostic is DiagnosticWarning).ShouldBeTrue();
-        (diagnostic is DiagnosticInfo).ShouldBeFalse();
-        (diagnostic is DiagnosticError).ShouldBeFalse();
-    }
-
-    [Fact]
-    public void DiagnosticError_ExceptionAccessibleViaPatternMatch()
+    public void DiagnosticError_ExceptionAccessible()
     {
         var ex = new InvalidOperationException("bad state");
-        var diagnostic = new BuildDiagnostic(new DiagnosticError(MakeRoute(), "error", ex));
+        var diagnostic = new BuildDiagnostic(DiagnosticSeverity.Error, MakeRoute(), "error", ex);
 
-        var recovered = diagnostic switch
-        {
-            DiagnosticError e => e.Exception,
-            _ => null
-        };
-
-        recovered.ShouldNotBeNull();
-        recovered.Message.ShouldBe("bad state");
+        diagnostic.Exception.ShouldNotBeNull();
+        diagnostic.Exception.Message.ShouldBe("bad state");
     }
 
-    private static string Describe(BuildDiagnostic d) => d switch
+    private static string Describe(BuildDiagnostic d) => d.Severity switch
     {
-        DiagnosticInfo i    => $"Info: {i.Route.CanonicalPath} - {i.Message}",
-        DiagnosticWarning w => $"Warning: {w.Route.CanonicalPath} - {w.Message}",
-        DiagnosticError e   => $"Error: {e.Route.CanonicalPath} - {e.Message}",
-        _ => throw new InvalidOperationException("Unknown diagnostic case")
+        DiagnosticSeverity.Info    => $"Info: {d.Route!.CanonicalPath} - {d.Message}",
+        DiagnosticSeverity.Warning => $"Warning: {d.Route!.CanonicalPath} - {d.Message}",
+        DiagnosticSeverity.Error   => $"Error: {d.Route!.CanonicalPath} - {d.Message}",
+        _ => throw new InvalidOperationException("Unknown severity")
     };
 }

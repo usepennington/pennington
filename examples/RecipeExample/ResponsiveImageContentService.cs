@@ -130,7 +130,7 @@ public class ResponsiveImageContentService : IResponsiveImageContentService, ICo
                     CanonicalPath = new UrlPath(url),
                     OutputFile = new FilePath($"images/{filename}-{size}.webp"),
                 };
-                var source = new ContentSource(new RazorPageSource(url));
+                ContentSource source = new RazorPageSource(url);
                 yield return new DiscoveredItem(route, source);
             }
         }

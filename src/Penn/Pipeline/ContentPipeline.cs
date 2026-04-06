@@ -31,7 +31,7 @@ public sealed class ContentPipeline : IContentPipeline
         {
             await foreach (var discovered in service.DiscoverAsync())
             {
-                yield return new ContentItem(discovered);
+                yield return discovered;
             }
         }
     }
@@ -56,8 +56,8 @@ public sealed class ContentPipeline : IContentPipeline
                 }
                 catch (Exception ex)
                 {
-                    result = new ContentItem(new FailedItem(discovered.Route,
-                        new ContentError($"Parse failed: {ex.Message}", ex)));
+                    result = new FailedItem(discovered.Route,
+                        new ContentError($"Parse failed: {ex.Message}", ex));
                 }
                 yield return result;
             }
@@ -89,8 +89,8 @@ public sealed class ContentPipeline : IContentPipeline
                 }
                 catch (Exception ex)
                 {
-                    result = new ContentItem(new FailedItem(parsed.Route,
-                        new ContentError($"Render failed: {ex.Message}", ex)));
+                    result = new FailedItem(parsed.Route,
+                        new ContentError($"Render failed: {ex.Message}", ex));
                 }
                 yield return result;
             }

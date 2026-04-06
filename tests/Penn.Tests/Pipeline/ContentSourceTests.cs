@@ -8,10 +8,10 @@ public class ContentSourceTests
     [Fact]
     public void ExhaustivePatternMatch_AllCases()
     {
-        ContentSource markdown = new ContentSource(new MarkdownFileSource("page.md"));
-        ContentSource razor = new ContentSource(new RazorPageSource("MyPage"));
-        ContentSource redirect = new ContentSource(new RedirectSource("/target"));
-        ContentSource programmatic = new ContentSource(new ProgrammaticSource(new StubGenerator()));
+        ContentSource markdown = new MarkdownFileSource("page.md");
+        ContentSource razor = new RazorPageSource("MyPage");
+        ContentSource redirect = new RedirectSource("/target");
+        ContentSource programmatic = new ProgrammaticSource(new StubGenerator());
 
         Describe(markdown).ShouldBe("Markdown: page.md");
         Describe(razor).ShouldBe("Razor: MyPage");
@@ -22,7 +22,7 @@ public class ContentSourceTests
     [Fact]
     public void UnwrapsToCorrectType_MarkdownFileSource()
     {
-        ContentSource cs = new ContentSource(new MarkdownFileSource("docs/intro.md"));
+        ContentSource cs = new MarkdownFileSource("docs/intro.md");
         var result = cs switch
         {
             MarkdownFileSource m => m.Path.Value,
@@ -34,7 +34,7 @@ public class ContentSourceTests
     [Fact]
     public void UnwrapsToCorrectType_RazorPageSource()
     {
-        ContentSource cs = new ContentSource(new RazorPageSource("App.Pages.Home"));
+        ContentSource cs = new RazorPageSource("App.Pages.Home");
         var result = cs switch
         {
             RazorPageSource r => r.ComponentType,
@@ -46,7 +46,7 @@ public class ContentSourceTests
     [Fact]
     public void UnwrapsToCorrectType_RedirectSource()
     {
-        ContentSource cs = new ContentSource(new RedirectSource("/new-path"));
+        ContentSource cs = new RedirectSource("/new-path");
         var result = cs switch
         {
             RedirectSource r => r.TargetUrl.Value,
@@ -59,7 +59,7 @@ public class ContentSourceTests
     public void UnwrapsToCorrectType_ProgrammaticSource()
     {
         var gen = new StubGenerator();
-        ContentSource cs = new ContentSource(new ProgrammaticSource(gen));
+        ContentSource cs = new ProgrammaticSource(gen);
         var result = cs switch
         {
             ProgrammaticSource p => p.Generator,
@@ -74,12 +74,12 @@ public class ContentSourceTests
         RazorPageSource r => $"Razor: {r.ComponentType}",
         RedirectSource r => $"Redirect: {r.TargetUrl}",
         ProgrammaticSource p => $"Programmatic: {p.Generator}",
-        _ => throw new InvalidOperationException("Unknown content source"),
+        null => throw new InvalidOperationException("Uninitialized ContentSource"),
     };
 
     private class StubGenerator : IProgrammaticContentGenerator
     {
         public Task<ProgrammaticContent> GenerateAsync(ContentRoute route)
-            => Task.FromResult(new ProgrammaticContent(new TextProgrammaticContent(null, "test")));
+            => Task.FromResult<ProgrammaticContent>(new TextProgrammaticContent(null, "test"));
     }
 }

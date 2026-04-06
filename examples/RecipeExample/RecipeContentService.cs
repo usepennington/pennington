@@ -119,7 +119,7 @@ public partial class RecipeContentService : IRecipeContentService
                 CanonicalPath = new UrlPath(url),
                 OutputFile = new FilePath($"{url.TrimStart('/')}/index.html"),
             };
-            var source = new ContentSource(new RazorPageSource(page.DisplayName));
+            ContentSource source = new RazorPageSource(page.DisplayName);
             yield return new DiscoveredItem(route, source);
         }
     }

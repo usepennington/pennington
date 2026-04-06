@@ -43,7 +43,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
         {
             var route = ContentRouteFactory.FromMarkdownFile(
                 file, new FilePath(_absoluteContentPath), _options.BasePageUrl, _options.Locale);
-            var source = new ContentSource(new MarkdownFileSource(file));
+            ContentSource source = new MarkdownFileSource(file);
             yield return new DiscoveredItem(route, source);
         }
 

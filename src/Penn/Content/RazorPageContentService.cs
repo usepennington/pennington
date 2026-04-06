@@ -34,7 +34,7 @@ public sealed class RazorPageContentService : IContentService
     {
         foreach (var (route, componentType) in DiscoverRazorPages())
         {
-            var source = new ContentSource(new RazorPageSource(componentType));
+            ContentSource source = new RazorPageSource(componentType);
             yield return new DiscoveredItem(route, source);
         }
 
