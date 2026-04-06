@@ -8,14 +8,14 @@ using Microsoft.AspNetCore.Http;
 /// </summary>
 public sealed class LiveReloadScriptProcessor : IResponseProcessor
 {
-    private static readonly bool IsDevMode = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH"));
+    private readonly bool _isDevMode = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH"));
 
     // Run after other processors
     public int Order => 1000;
 
     public bool ShouldProcess(HttpContext context)
     {
-        if (!IsDevMode) return false;
+        if (!_isDevMode) return false;
 
         var contentType = context.Response.ContentType ?? "";
         return context.Response.StatusCode is >= 200 and < 300

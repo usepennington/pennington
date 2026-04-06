@@ -13,14 +13,14 @@ using Penn.Diagnostics;
 /// </summary>
 public sealed class DiagnosticOverlayProcessor : IResponseProcessor
 {
-    private static readonly bool IsDevMode = !string.IsNullOrEmpty(
+    private readonly bool _isDevMode = !string.IsNullOrEmpty(
         Environment.GetEnvironmentVariable("DOTNET_WATCH"));
 
     public int Order => 10000;
 
     public bool ShouldProcess(HttpContext context)
     {
-        if (!IsDevMode) return false;
+        if (!_isDevMode) return false;
         var contentType = context.Response.ContentType ?? "";
         return context.Response.StatusCode is >= 200 and < 300
             && contentType.Contains("text/html");
