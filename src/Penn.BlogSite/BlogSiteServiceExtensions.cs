@@ -10,16 +10,14 @@ using Penn.MonorailCss;
 public static class BlogSiteServiceExtensions
 {
     public static IServiceCollection AddBlogSite(this IServiceCollection services,
-        Func<IServiceProvider, BlogSiteOptions> configureOptions)
+        Func<BlogSiteOptions> configureOptions)
     {
-        services.AddTransient(configureOptions);
+        var options = configureOptions();
+        services.AddSingleton(options);
         services.AddRazorComponents();
 
         services.AddPenn(penn =>
         {
-            var sp = services.BuildServiceProvider();
-            var options = configureOptions(sp);
-
             penn.SiteTitle = options.SiteTitle;
             penn.SiteDescription = options.Description;
             penn.CanonicalBaseUrl = options.CanonicalBaseUrl;

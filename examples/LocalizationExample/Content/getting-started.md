@@ -40,7 +40,7 @@ Content/
 In your `Program.cs`, add the `Localization` option to your `DocSiteOptions`:
 
 ```csharp
-builder.Services.AddDocSite(_ => new DocSiteOptions
+builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "My Site",
     Localization = new LocalizationOptions

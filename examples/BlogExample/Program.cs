@@ -5,7 +5,7 @@ using Penn.MonorailCss;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddBlogSite(_ => new BlogSiteOptions
+builder.Services.AddBlogSite(() => new BlogSiteOptions
 {
     SiteTitle = "Calvin's Chewing Chronicles",
     Description = "A sophisticated publication for the serious gum enthusiast",

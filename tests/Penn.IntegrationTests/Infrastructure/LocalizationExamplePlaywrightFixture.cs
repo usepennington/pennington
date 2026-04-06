@@ -30,7 +30,7 @@ public class LocalizationExamplePlaywrightFixture : IAsyncLifetime
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Logging.ClearProviders();
 
-        builder.Services.AddDocSite(_ => new DocSiteOptions
+        builder.Services.AddDocSite(() => new DocSiteOptions
         {
             SiteTitle = "The Multilingual Tavern",
             Description = "A documentation site that speaks many tongues",

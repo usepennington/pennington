@@ -28,7 +28,7 @@ public class BlogExamplePlaywrightFixture : IAsyncLifetime
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Logging.ClearProviders();
 
-        builder.Services.AddBlogSite(_ => new BlogSiteOptions
+        builder.Services.AddBlogSite(() => new BlogSiteOptions
         {
             SiteTitle = "Calvin's Chewing Chronicles",
             Description = "A sophisticated publication for the serious gum enthusiast",

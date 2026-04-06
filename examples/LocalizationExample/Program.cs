@@ -3,7 +3,7 @@ using Penn.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDocSite(_ => new DocSiteOptions
+builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "The Multilingual Tavern",
     Description = "A documentation site that speaks many tongues",

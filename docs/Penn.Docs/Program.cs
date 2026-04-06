@@ -5,7 +5,7 @@ using Penn.Roslyn;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDocSite(_ => new DocSiteOptions
+builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Penn",
     Description = "A Content Engine for .NET",

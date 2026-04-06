@@ -37,7 +37,7 @@ using Penn.DocSite;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDocSite(_ => new DocSiteOptions
+builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "My Project Docs",
     Description = "Documentation for my project",
@@ -150,7 +150,7 @@ dotnet run -- build /my-project
 ```csharp
 using Penn.MonorailCss;
 
-builder.Services.AddDocSite(_ => new DocSiteOptions
+builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "My Docs",
     Description = "Documentation",
@@ -178,7 +178,7 @@ ColorScheme = new AlgorithmicColorScheme
 ### Custom Branding
 
 ```csharp
-builder.Services.AddDocSite(_ => new DocSiteOptions
+builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "My Docs",
     Description = "Documentation",

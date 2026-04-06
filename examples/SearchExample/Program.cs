@@ -7,7 +7,7 @@ using Random = SearchExample.Services.Random;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDocSite(_ => new DocSiteOptions
+builder.Services.AddDocSite(() => new DocSiteOptions
 {
     // Basic site information
     SiteTitle = "Random Content Site",

@@ -25,7 +25,7 @@ The configuration shape will look something like:
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddBlogSite(_ => new BlogSiteOptions
+builder.Services.AddBlogSite(() => new BlogSiteOptions
 {
     SiteTitle = "My Blog",
     Description = "Thoughts, mostly about code",

@@ -10,17 +10,15 @@ using Penn.MonorailCss;
 public static class DocSiteServiceExtensions
 {
     public static IServiceCollection AddDocSite(this IServiceCollection services,
-        Func<IServiceProvider, DocSiteOptions> configureOptions)
+        Func<DocSiteOptions> configureOptions)
     {
-        services.AddTransient(configureOptions);
+        var options = configureOptions();
+        services.AddSingleton(options);
         services.AddRazorComponents();
 
         // Penn core
         services.AddPenn(penn =>
         {
-            var sp = services.BuildServiceProvider();
-            var options = configureOptions(sp);
-
             penn.SiteTitle = options.SiteTitle;
             penn.SiteDescription = options.Description;
             penn.CanonicalBaseUrl = options.CanonicalBaseUrl;

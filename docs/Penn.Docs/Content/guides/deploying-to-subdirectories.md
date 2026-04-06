@@ -75,7 +75,7 @@ If you're using `AddDocSite()`, pass `args` through to `RunDocSiteAsync()` and i
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDocSite(_ => new DocSiteOptions
+builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "My Documentation",
     Description = "Docs for my project",
