@@ -1,5 +1,6 @@
 namespace Penn.Markdown;
 
+using System.IO.Abstractions;
 using Penn.FrontMatter;
 using Penn.Pipeline;
 
@@ -10,10 +11,12 @@ public sealed class MarkdownContentParser<TFrontMatter> : IContentParser
     where TFrontMatter : IFrontMatter, new()
 {
     private readonly FrontMatterParser _frontMatterParser;
+    private readonly IFileSystem _fileSystem;
 
-    public MarkdownContentParser(FrontMatterParser frontMatterParser)
+    public MarkdownContentParser(FrontMatterParser frontMatterParser, IFileSystem fileSystem)
     {
         _frontMatterParser = frontMatterParser;
+        _fileSystem = fileSystem;
     }
 
     public async Task<ContentItem> ParseAsync(DiscoveredItem item)
@@ -27,7 +30,7 @@ public sealed class MarkdownContentParser<TFrontMatter> : IContentParser
         try
         {
             var filePath = markdownSource.Path.Value;
-            var content = await File.ReadAllTextAsync(filePath);
+            var content = await _fileSystem.File.ReadAllTextAsync(filePath);
 
             var result = _frontMatterParser.Parse<TFrontMatter>(content);
             var metadata = result.Metadata ?? new TFrontMatter();

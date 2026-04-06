@@ -1,11 +1,13 @@
 namespace Penn.Infrastructure;
 
+using System.IO.Abstractions;
 using Markdig;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Penn.Content;
 using Penn.FrontMatter;
@@ -18,6 +20,7 @@ using Penn.Markdown.Extensions;
 using Penn.Routing;
 using Penn.Search;
 using Penn.Feeds;
+using Testably.Abstractions;
 
 public static class PennExtensions
 {
@@ -38,6 +41,9 @@ public static class PennExtensions
         // Core services
         services.AddSingleton<FrontMatterParser>();
         services.AddSingleton<NavigationBuilder>();
+
+        // File system abstraction
+        services.TryAddSingleton<IFileSystem>(new RealFileSystem());
 
         // File watching
         services.AddSingleton<IFileWatcher, FileWatcher>();
@@ -85,7 +91,9 @@ public static class PennExtensions
                 };
 
                 var parser = sp.GetRequiredService<FrontMatterParser>();
-                return Activator.CreateInstance(serviceType, sourceOptions, parser)!;
+                var fileSystem = sp.GetRequiredService<IFileSystem>();
+                var fileWatcher = sp.GetRequiredService<IFileWatcher>();
+                return Activator.CreateInstance(serviceType, sourceOptions, parser, fileSystem, fileWatcher)!;
             });
 
             // Register parser for the front matter type
@@ -93,7 +101,8 @@ public static class PennExtensions
             services.AddTransient(typeof(IContentParser), sp =>
             {
                 var fmParser = sp.GetRequiredService<FrontMatterParser>();
-                return Activator.CreateInstance(parserType, fmParser)!;
+                var fileSystem = sp.GetRequiredService<IFileSystem>();
+                return Activator.CreateInstance(parserType, fmParser, fileSystem)!;
             });
         }
 
@@ -110,6 +119,10 @@ public static class PennExtensions
         // Response processors
         services.AddSingleton<IResponseProcessor>(sp =>
             new BaseUrlRewritingProcessor(sp.GetRequiredService<OutputOptions>()));
+        services.AddSingleton<IResponseProcessor, LiveReloadScriptProcessor>();
+
+        // Live reload (only does work when DOTNET_WATCH is set)
+        services.AddSingleton<LiveReloadServer>();
 
         // Feed builders
         var canonicalBase = new UrlPath(options.CanonicalBaseUrl ?? "/");
@@ -160,6 +173,10 @@ public static class PennExtensions
                 ServeUnknownFileTypes = true,
             });
         }
+
+        // Live reload: eagerly resolve so it subscribes to file watcher, then map WebSocket endpoint
+        _ = app.Services.GetRequiredService<LiveReloadServer>();
+        app.UsePennLiveReload();
 
         // Response processing middleware
         app.UseMiddleware<ResponseProcessingMiddleware>();

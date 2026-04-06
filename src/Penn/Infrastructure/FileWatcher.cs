@@ -1,5 +1,6 @@
 namespace Penn.Infrastructure;
 
+using System.IO.Abstractions;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
@@ -7,33 +8,34 @@ using Microsoft.Extensions.Logging;
 /// </summary>
 public sealed class FileWatcher : IFileWatcher
 {
-    private readonly Dictionary<string, FileSystemWatcher> _watchers = new();
+    private readonly IFileSystem _fileSystem;
+    private readonly Dictionary<string, IFileSystemWatcher> _watchers = new();
     private readonly List<Action> _subscribers = [];
     private readonly ILogger<FileWatcher>? _logger;
     private bool _disposed;
 
-    public FileWatcher(ILogger<FileWatcher>? logger = null)
+    public FileWatcher(IFileSystem fileSystem, ILogger<FileWatcher>? logger = null)
     {
+        _fileSystem = fileSystem;
         _logger = logger;
     }
 
     public void AddPathWatch(string path, string filePattern, Action<string, WatcherChangeTypes> onFileChanged, bool includeSubdirectories = true)
     {
-        var fullPath = Path.GetFullPath(path);
+        _logger?.LogInformation("Adding file watch: {Path} with pattern {Pattern}", path, filePattern);
+        var fullPath = _fileSystem.Path.GetFullPath(path);
         var key = $"{fullPath}|{filePattern}";
 
         if (_watchers.ContainsKey(key)) return;
-        if (!Directory.Exists(fullPath))
+        if (!_fileSystem.Directory.Exists(fullPath))
         {
             _logger?.LogWarning("Watch path does not exist: {Path}", fullPath);
             return;
         }
 
-        var watcher = new FileSystemWatcher(fullPath, filePattern)
-        {
-            IncludeSubdirectories = includeSubdirectories,
-            NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.CreationTime
-        };
+        var watcher = _fileSystem.FileSystemWatcher.New(fullPath, filePattern);
+        watcher.IncludeSubdirectories = includeSubdirectories;
+        watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.CreationTime;
 
         watcher.Changed += (_, e) => { onFileChanged(e.FullPath, WatcherChangeTypes.Changed); NotifySubscribers(); };
         watcher.Created += (_, e) => { onFileChanged(e.FullPath, WatcherChangeTypes.Created); NotifySubscribers(); };

@@ -1,7 +1,9 @@
 namespace Penn.Content;
 
 using System.Collections.Immutable;
+using System.IO.Abstractions;
 using Penn.FrontMatter;
+using Penn.Infrastructure;
 using Penn.Pipeline;
 using Penn.Routing;
 
@@ -13,14 +15,22 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
 {
     private readonly MarkdownContentServiceOptions _options;
     private readonly FrontMatterParser _parser;
+    private readonly IFileSystem _fileSystem;
     private readonly string _absoluteContentPath;
     private List<(ContentRoute Route, TFrontMatter FrontMatter)>? _cachedMetadata;
 
-    public MarkdownContentService(MarkdownContentServiceOptions options, FrontMatterParser parser)
+    public MarkdownContentService(MarkdownContentServiceOptions options, FrontMatterParser parser, IFileSystem fileSystem, IFileWatcher fileWatcher)
     {
         _options = options;
         _parser = parser;
-        _absoluteContentPath = Path.GetFullPath(options.ContentPath.Value);
+        _fileSystem = fileSystem;
+        _absoluteContentPath = _fileSystem.Path.GetFullPath(options.ContentPath.Value);
+
+        // Watch markdown content directory for changes to enable hot reload
+        fileWatcher.AddPathWatch(
+            _absoluteContentPath,
+            "*.*",
+            (_, _) => _cachedMetadata = null);
     }
 
     public string DefaultSection => _options.Section ?? "";
@@ -87,19 +97,19 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
     {
         var contentPath = _absoluteContentPath;
-        if (!Directory.Exists(contentPath))
+        if (!_fileSystem.Directory.Exists(contentPath))
             return Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
         var builder = ImmutableList.CreateBuilder<ContentToCopy>();
         var excludedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".md", ".mdx", ".razor", ".yml", ".yaml" };
 
-        foreach (var file in Directory.EnumerateFiles(contentPath, "*.*", SearchOption.AllDirectories))
+        foreach (var file in _fileSystem.Directory.EnumerateFiles(contentPath, "*.*", SearchOption.AllDirectories))
         {
-            var ext = Path.GetExtension(file);
+            var ext = _fileSystem.Path.GetExtension(file);
             if (excludedExtensions.Contains(ext)) continue;
 
-            var relativePath = Path.GetRelativePath(contentPath, file).Replace('\\', '/');
+            var relativePath = _fileSystem.Path.GetRelativePath(contentPath, file).Replace('\\', '/');
             builder.Add(new ContentToCopy(new FilePath(file), new FilePath(relativePath)));
         }
 
@@ -112,10 +122,10 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
     private List<FilePath> DiscoverFiles()
     {
         var contentPath = _absoluteContentPath;
-        if (!Directory.Exists(contentPath))
+        if (!_fileSystem.Directory.Exists(contentPath))
             return [];
 
-        return Directory.EnumerateFiles(contentPath, _options.FilePattern, SearchOption.AllDirectories)
+        return _fileSystem.Directory.EnumerateFiles(contentPath, _options.FilePattern, SearchOption.AllDirectories)
             .Select(f => new FilePath(f))
             .ToList();
     }
@@ -133,7 +143,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
 
             try
             {
-                var content = await File.ReadAllTextAsync(file.Value);
+                var content = await _fileSystem.File.ReadAllTextAsync(file.Value);
                 var parsed = _parser.Parse<TFrontMatter>(content);
                 var fm = parsed.Metadata ?? new TFrontMatter();
                 result.Add((route, fm));

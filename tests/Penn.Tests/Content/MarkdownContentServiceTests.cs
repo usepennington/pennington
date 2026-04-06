@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Penn.Content;
 using Penn.FrontMatter;
+using Penn.Infrastructure;
 using Penn.Pipeline;
 using Penn.Routing;
 using Testably.Abstractions.Testing;
@@ -21,7 +22,7 @@ public class MarkdownContentServiceTests
             Section = section
         };
 
-        return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs);
+        return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs));
     }
 
     private static MockFileSystem CreateFs(params (string Path, string Content)[] files)
@@ -253,7 +254,7 @@ public class MarkdownContentServiceTests
             BasePageUrl = new UrlPath("/docs"),
             Section = "Test"
         };
-        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs);
+        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs));
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
@@ -362,7 +363,7 @@ public class MarkdownContentServiceTests
             Section = section
         };
 
-        return new MarkdownContentService<BlogFrontMatter>(options, new FrontMatterParser(), fs);
+        return new MarkdownContentService<BlogFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs));
     }
 
     [Fact]
@@ -457,7 +458,7 @@ public class MarkdownContentServiceTests
             BasePageUrl = new UrlPath("/docs"),
             SearchPriority = 10
         };
-        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs);
+        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs));
 
         service.SearchPriority.ShouldBe(10);
     }
