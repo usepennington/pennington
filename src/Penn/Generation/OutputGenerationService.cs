@@ -100,7 +100,24 @@ public sealed class OutputGenerationService
         var mapGetResults = await FetchPagesAsync(client, mapGetPages, outputDir);
         ProcessFetchResults(reportBuilder, mapGetResults);
 
-        // Phase 8: Verify internal links across all fetched HTML pages
+        // Phase 8: Generate 404.html by fetching a non-existent URL (triggers fallback route)
+        try
+        {
+            var notFoundResponse = await client.GetAsync("/__penn-404-generator");
+            var notFoundHtml = await notFoundResponse.Content.ReadAsStringAsync();
+            if (!string.IsNullOrWhiteSpace(notFoundHtml))
+            {
+                var notFoundPath = _fileSystem.Path.Combine(outputDir, "404.html");
+                await _fileSystem.File.WriteAllTextAsync(notFoundPath, notFoundHtml);
+                _logger.LogDebug("Generated 404.html");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Failed to generate 404.html");
+        }
+
+        // Phase 9: Verify internal links across all fetched HTML pages
         var allRoutes = contentPages.Concat(mapGetPages).Select(p => p.Route);
         var linkVerifier = new LinkVerificationService(allRoutes);
         foreach (var result in contentResults.Concat(mapGetResults))
