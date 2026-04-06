@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Penn.Content;
 using Penn.FrontMatter;
 using Penn.Generation;
@@ -151,6 +152,21 @@ public static class PennExtensions
     {
         var options = app.Services.GetRequiredService<PennOptions>();
         var hostContentRoot = app.Environment.ContentRootPath;
+
+        // Validate content paths at startup
+        var logger = app.Services.GetService<ILoggerFactory>()?.CreateLogger("Penn");
+        foreach (var source in options.MarkdownSources)
+        {
+            var contentPath = Path.IsPathRooted(source.ContentPath)
+                ? source.ContentPath
+                : Path.Combine(hostContentRoot, source.ContentPath);
+            if (!Directory.Exists(contentPath))
+            {
+                logger?.LogWarning(
+                    "Penn: content path '{ContentPath}' does not exist. No content will be discovered from this source.",
+                    contentPath);
+            }
+        }
 
         // Serve static files from content root
         var contentRoot = Path.IsPathRooted(options.ContentRootPath)
