@@ -1,7 +1,7 @@
-namespace Penn.Roslyn.Utilities;
+namespace Penn.Infrastructure;
 
 /// <summary>Thread-safe async lazy initialization with retry on failure.</summary>
-internal sealed class AsyncLazy<T>
+public sealed class AsyncLazy<T>
 {
     private readonly Func<Task<T>> _factory;
     private Task<T>? _task;

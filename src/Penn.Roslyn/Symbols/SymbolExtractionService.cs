@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using Penn.Infrastructure;
 using Penn.Roslyn.Utilities;
 using Penn.Roslyn.Workspace;
 
