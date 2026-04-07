@@ -1,4 +1,6 @@
 @page "/blog/{*fileName:nonfile}"
+@using Penn.StructuredData
+@using Penn.UI.Components
 @inject PennOptions PennOptions
 @inject BlogSiteOptions BlogOptions
 @inject BlogContentResolver ContentResolver
@@ -34,6 +36,11 @@
     }
 </HeadContent>
 
+@if (!string.IsNullOrEmpty(PennOptions.CanonicalBaseUrl))
+{
+    <StructuredData Article="BuildArticleLd()" />
+}
+
 <BlogPost Post="_rendered.Page" HtmlContent="@_rendered.Html" Series="_series"/>
 
 @code{
@@ -54,6 +61,22 @@
                 .OrderBy(i => i.FrontMatter.Date)
                 .ToList();
         }
+    }
+
+    private JsonLdArticle? BuildArticleLd()
+    {
+        if (_rendered == null || string.IsNullOrEmpty(PennOptions.CanonicalBaseUrl)) return null;
+        var fm = _rendered.Page.FrontMatter;
+        var author = !string.IsNullOrEmpty(fm.Author) ? fm.Author
+            : !string.IsNullOrEmpty(BlogOptions.AuthorName) ? BlogOptions.AuthorName
+            : null;
+        return new JsonLdArticle(
+            Headline: fm.Title,
+            Description: fm.Description,
+            Url: $"{PennOptions.CanonicalBaseUrl.TrimEnd('/')}{_rendered.Page.Url}",
+            DatePublished: fm.Date,
+            AuthorName: author
+        );
     }
 
     private string GetSocialImageUrl()

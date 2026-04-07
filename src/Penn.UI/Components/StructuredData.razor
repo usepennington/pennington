@@ -1,0 +1,33 @@
+@using Penn.StructuredData
+
+<HeadContent>
+    @if (_articleJson != null)
+    {
+        <script type="application/ld+json">@((MarkupString)_articleJson)</script>
+    }
+    @if (_breadcrumbJson != null)
+    {
+        <script type="application/ld+json">@((MarkupString)_breadcrumbJson)</script>
+    }
+    @if (_webSiteJson != null)
+    {
+        <script type="application/ld+json">@((MarkupString)_webSiteJson)</script>
+    }
+</HeadContent>
+
+@code {
+    [Parameter] public JsonLdArticle? Article { get; set; }
+    [Parameter] public JsonLdBreadcrumbList? Breadcrumbs { get; set; }
+    [Parameter] public JsonLdWebSite? WebSite { get; set; }
+
+    private string? _articleJson;
+    private string? _breadcrumbJson;
+    private string? _webSiteJson;
+
+    protected override void OnParametersSet()
+    {
+        _articleJson = Article is not null ? JsonLdSerializer.SerializeArticle(Article) : null;
+        _breadcrumbJson = Breadcrumbs is not null ? JsonLdSerializer.SerializeBreadcrumbList(Breadcrumbs) : null;
+        _webSiteJson = WebSite is not null ? JsonLdSerializer.SerializeWebSite(WebSite) : null;
+    }
+}

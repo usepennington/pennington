@@ -3,8 +3,11 @@
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Sections
 @using Penn.DocSite.Services
+@using Penn.FrontMatter
 @using Penn.Infrastructure
 @using Penn.Localization
+@using Penn.StructuredData
+@using Penn.UI.Components
 @inject ContentResolver ContentResolver
 @inject NavigationBuilder NavBuilder
 @inject DocSiteOptions DocSiteOptions
@@ -24,6 +27,10 @@
             <link rel="alternate" hreflang="@hreflang" href="@alt.Route.CanonicalPath.Value" />
         }
     </HeadContent>
+    @if (!string.IsNullOrEmpty(DocSiteOptions.CanonicalBaseUrl))
+    {
+        <StructuredData Article="BuildArticleLd()" Breadcrumbs="BuildBreadcrumbsLd()" />
+    }
     <DocSiteArticle
         Title="@_resolved.Title"
         HtmlContent="@_resolved.Html"
@@ -37,6 +44,10 @@
 }
 else if (_homeComponentType != null)
 {
+    @if (!string.IsNullOrEmpty(DocSiteOptions.CanonicalBaseUrl))
+    {
+        <StructuredData WebSite="BuildWebSiteLd()" />
+    }
     <DynamicComponent Type="_homeComponentType" />
 }
 else if (_notFound)
@@ -53,6 +64,43 @@ else if (_notFound)
     private bool _notFound;
     private Type? _homeComponentType;
     private ImmutableList<AlternateLanguagePage> _alternateLanguages = ImmutableList<AlternateLanguagePage>.Empty;
+
+    private JsonLdArticle? BuildArticleLd()
+    {
+        if (_resolved == null || string.IsNullOrEmpty(DocSiteOptions.CanonicalBaseUrl)) return null;
+        var baseUrl = DocSiteOptions.CanonicalBaseUrl.TrimEnd('/');
+        return new JsonLdArticle(
+            Headline: _resolved.Title,
+            Description: _resolved.Description,
+            Url: $"{baseUrl}{_resolved.Route.CanonicalPath.EnsureTrailingSlash().Value}",
+            DatePublished: (_resolved.Metadata as IDateable)?.Date,
+            AuthorName: null
+        );
+    }
+
+    private JsonLdBreadcrumbList? BuildBreadcrumbsLd()
+    {
+        if (_navInfo?.Breadcrumbs is not { Count: > 0 } crumbs) return null;
+        var baseUrl = DocSiteOptions.CanonicalBaseUrl!.TrimEnd('/');
+        var items = crumbs.Select((b, i) => new JsonLdBreadcrumbItem(
+            Position: i + 1,
+            Name: b.Title,
+            Url: b.Route?.CanonicalPath.Value is { Length: > 0 }
+                ? $"{baseUrl}{b.Route.CanonicalPath.EnsureTrailingSlash().Value}"
+                : null
+        )).ToList();
+        return new JsonLdBreadcrumbList(items);
+    }
+
+    private JsonLdWebSite? BuildWebSiteLd()
+    {
+        if (string.IsNullOrEmpty(DocSiteOptions.CanonicalBaseUrl)) return null;
+        return new JsonLdWebSite(
+            Name: DocSiteOptions.SiteTitle,
+            Url: DocSiteOptions.CanonicalBaseUrl.TrimEnd('/') + "/",
+            Description: DocSiteOptions.Description
+        );
+    }
 
     protected override async Task OnInitializedAsync()
     {

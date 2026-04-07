@@ -1,4 +1,6 @@
 @page "/"
+@using Penn.StructuredData
+@using Penn.UI.Components
 @inject BlogContentResolver ContentResolver
 @inject PennOptions PennOptions
 @inject BlogSiteOptions BlogOptions
@@ -9,6 +11,10 @@
     return;
 }
 <PageTitle>@PennOptions.SiteTitle - Recent Posts</PageTitle>
+@if (!string.IsNullOrEmpty(PennOptions.CanonicalBaseUrl))
+{
+    <StructuredData WebSite="BuildWebSiteLd()" />
+}
 
 <div class="md:px-4 border-box">
     <div class="mx-auto w-full max-w-7xl lg:px-8">
@@ -84,6 +90,16 @@
 @code{
     private List<BlogPostPage>? _posts;
     private List<BlogPostPage>? _recentPosts;
+
+    private JsonLdWebSite? BuildWebSiteLd()
+    {
+        if (string.IsNullOrEmpty(PennOptions.CanonicalBaseUrl)) return null;
+        return new JsonLdWebSite(
+            Name: PennOptions.SiteTitle,
+            Url: PennOptions.CanonicalBaseUrl.TrimEnd('/') + "/",
+            Description: BlogOptions.Description
+        );
+    }
 
     protected override async Task OnInitializedAsync()
     {
