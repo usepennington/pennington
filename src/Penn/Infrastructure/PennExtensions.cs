@@ -111,8 +111,13 @@ public static class PennExtensions
         // Register Razor page content service for @page component discovery
         if (options.AdditionalRoutingAssemblies.Length > 0)
         {
-            services.AddSingleton<IContentService>(
-                new RazorPageContentService(options.AdditionalRoutingAssemblies));
+            var assemblies = options.AdditionalRoutingAssemblies;
+            services.AddSingleton<IContentService>(sp =>
+                new RazorPageContentService(
+                    assemblies,
+                    sp.GetRequiredService<IFileSystem>(),
+                    sp.GetRequiredService<FrontMatterParser>(),
+                    sp.GetRequiredService<ILogger<RazorPageContentService>>()));
         }
 
         // Pipeline

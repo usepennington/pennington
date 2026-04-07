@@ -178,16 +178,92 @@ playground/index.html
 about/index.html
 ```
 
-Markdown pages get sidebar navigation from their front matter and directory structure. Razor pages are standalone at their declared URLs. Both appear in the search index and sitemap.
+Markdown pages get sidebar navigation from their front matter and directory structure. Both appear in the search index and sitemap.
+
+## Sidecar Metadata
+
+Razor pages can carry front matter metadata through sidecar files. Place a `.razor.metadata.yml` file next to the component file:
+
+```
+Components/
+  Pages/
+    About.razor
+    About.razor.metadata.yml
+```
+
+The sidecar file is plain YAML using the same `DocFrontMatter` fields available to markdown pages:
+
+```yaml
+title: About Us
+description: Learn about the project and team
+order: 10
+section: General
+```
+
+### Supported fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Page title for navigation and sitemap |
+| `description` | string | Page description for SEO |
+| `order` | int | Sort order in navigation (default: `int.MaxValue`) |
+| `section` | string | TOC section grouping |
+| `isDraft` | bool | Exclude from output when `true` |
+| `uid` | string | Cross-reference identifier for `<xref:>` links |
+| `tags` | string[] | Tag list |
+
+Pages with a sidecar file appear in the table-of-contents navigation alongside markdown pages. Pages without a sidecar file continue to work as before -- they are crawled and indexed but do not appear in navigation.
+
+### Naming convention
+
+The sidecar file name must match the component name exactly: `{ComponentName}.razor.metadata.yml`. It must be in the same directory as the `.razor` file. Metadata files in other directories are ignored.
+
+### Draft pages
+
+Setting `isDraft: true` in the sidecar file excludes the page from both discovery and navigation. The page will not be crawled during static generation.
+
+```yaml
+title: Work in Progress
+isDraft: true
+```
+
+## Practical example with sidecar metadata
+
+```
+Content/
+  getting-started/
+    installation.md
+    configuration.md
+Components/
+  Pages/
+    Playground.razor
+    Playground.razor.metadata.yml
+    About.razor
+    About.razor.metadata.yml
+```
+
+`Playground.razor.metadata.yml`:
+
+```yaml
+title: Interactive Playground
+description: Try out the library features in your browser
+order: 50
+section: Tools
+```
+
+Both Razor pages now appear in the sidebar navigation with the specified titles and ordering. Running `dotnet run -- build` produces:
+
+```
+getting-started/installation/index.html
+getting-started/configuration/index.html
+playground/index.html
+about/index.html
+```
 
 ## Limitations
 
 **Non-parameterized routes only.** `RazorPageContentService` cannot discover pages with route parameters. A component with `@page "/posts/{slug}"` is invisible to the service. If you need parameterized Razor pages in static output, implement a <xref:penn.guides.custom-content-service> that enumerates the possible parameter values and yields a `DiscoveredItem` for each.
 
-**No sidecar metadata.** Markdown files carry front matter (title, description, order, section). Razor pages have no equivalent sidecar mechanism. The page title comes from `<PageTitle>`, and the description comes from whatever `<HeadContent>` you render. There is no way to set `order`, `section`, or other Penn front matter properties on a Razor page.
-
-**Restart required for new pages.** Assembly scanning happens once at startup. If you add a new `@page` component while the dev server is running, you need to restart it. Hot reload updates the content of existing components but does not re-scan for new route attributes.
-
-**No navigation tree integration.** Razor pages are not added to the table-of-contents navigation that markdown pages participate in. `RazorPageContentService` returns empty results from `GetContentTocEntriesAsync()`. If you need a Razor page in the sidebar, link to it manually or build a custom navigation component.
+**Restart required for new pages.** Assembly scanning happens once at startup. If you add a new `@page` component while the dev server is running, you need to restart it. Hot reload updates the content of existing components but does not re-scan for new route attributes. This also applies to sidecar file changes -- the metadata cache is built once at startup.
 
 For more on extending the content pipeline beyond what `RazorPageContentService` provides, see <xref:penn.guides.custom-content-service> and <xref:penn.under-the-hood.content-processing-pipeline>.

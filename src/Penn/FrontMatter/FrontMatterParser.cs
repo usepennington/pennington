@@ -34,6 +34,13 @@ public sealed class FrontMatterParser
     }
 
     /// <summary>
+    /// Deserialize raw YAML content (no --- delimiters) into a front matter type.
+    /// Used for sidecar metadata files.
+    /// </summary>
+    public T DeserializeYaml<T>(string yaml) where T : IFrontMatter, new()
+        => _deserializer.Deserialize<T>(yaml) ?? new T();
+
+    /// <summary>
     /// Try to extract the YAML block between --- delimiters.
     /// Returns true if front matter was found.
     /// </summary>

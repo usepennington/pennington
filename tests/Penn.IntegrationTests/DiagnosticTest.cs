@@ -73,7 +73,11 @@ public class DiagnosticTest
     {
         // The Penn.Docs assembly contains Index.razor with @page "/"
         var docsAssembly = typeof(Penn.Docs.Components.Index).Assembly;
-        var service = new RazorPageContentService([docsAssembly]);
+        var service = new RazorPageContentService(
+            [docsAssembly],
+            new RealFileSystem(),
+            new FrontMatterParser(),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<RazorPageContentService>.Instance);
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
