@@ -95,4 +95,64 @@ public sealed class LocalizationOptions
         => _locales[code] = new LocaleInfo(displayName);
 
     public IReadOnlyDictionary<string, LocaleInfo> Locales => _locales;
+
+    /// <summary>True when more than one locale is configured.</summary>
+    public bool IsMultiLocale => _locales.Count > 1;
+
+    /// <summary>
+    /// Extracts the locale code from a URL path.
+    /// Returns the default locale when the first segment is not a known non-default locale.
+    /// </summary>
+    public string GetLocaleFromUrl(string url)
+    {
+        if (!IsMultiLocale) return DefaultLocale;
+
+        var trimmed = url.TrimStart('/');
+        var firstSlash = trimmed.IndexOf('/');
+        var firstSegment = firstSlash >= 0 ? trimmed[..firstSlash] : trimmed;
+
+        if (!string.IsNullOrEmpty(firstSegment)
+            && _locales.ContainsKey(firstSegment)
+            && !string.Equals(firstSegment, DefaultLocale, StringComparison.OrdinalIgnoreCase))
+        {
+            return firstSegment;
+        }
+
+        return DefaultLocale;
+    }
+
+    /// <summary>
+    /// Strips the locale prefix from a URL, returning the content-relative path.
+    /// For the default locale (no prefix), returns the URL unchanged.
+    /// </summary>
+    public string StripLocalePrefix(string url, string locale)
+    {
+        if (string.Equals(locale, DefaultLocale, StringComparison.OrdinalIgnoreCase))
+            return url;
+
+        var trimmed = url.TrimStart('/');
+        var prefix = locale + "/";
+
+        if (trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            return "/" + trimmed[prefix.Length..];
+
+        // URL is just the locale with no trailing path
+        if (string.Equals(trimmed, locale, StringComparison.OrdinalIgnoreCase))
+            return "/";
+
+        return url;
+    }
+
+    /// <summary>
+    /// Builds a full URL for a content path in a specific locale.
+    /// </summary>
+    public string BuildLocaleUrl(string contentPath, string locale)
+    {
+        var path = contentPath.Trim('/');
+
+        if (string.Equals(locale, DefaultLocale, StringComparison.OrdinalIgnoreCase))
+            return string.IsNullOrEmpty(path) ? "/" : $"/{path}/";
+
+        return string.IsNullOrEmpty(path) ? $"/{locale}/" : $"/{locale}/{path}/";
+    }
 }

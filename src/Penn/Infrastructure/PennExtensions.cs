@@ -34,6 +34,7 @@ public static class PennExtensions
 
         // Register options
         services.AddSingleton(options);
+        services.AddSingleton(options.Localization);
 
         // Register output options from CLI args
         var args = Environment.GetCommandLineArgs();
@@ -95,7 +96,8 @@ public static class PennExtensions
                 var parser = sp.GetRequiredService<FrontMatterParser>();
                 var fileSystem = sp.GetRequiredService<IFileSystem>();
                 var fileWatcher = sp.GetRequiredService<IFileWatcher>();
-                return Activator.CreateInstance(serviceType, sourceOptions, parser, fileSystem, fileWatcher)!;
+                var localization = sp.GetRequiredService<LocalizationOptions>();
+                return Activator.CreateInstance(serviceType, sourceOptions, parser, fileSystem, fileWatcher, localization)!;
             });
 
             // Register parser for the front matter type
@@ -216,6 +218,33 @@ public static class PennExtensions
                 RequestPath = requestPath,
                 ServeUnknownFileTypes = true,
             });
+        }
+
+        // Serve static files from locale subdirectories
+        if (options.Localization.IsMultiLocale)
+        {
+            foreach (var source in options.MarkdownSources)
+            {
+                var contentPath = Path.IsPathRooted(source.ContentPath)
+                    ? source.ContentPath
+                    : Path.Combine(hostContentRoot, source.ContentPath);
+
+                foreach (var locale in options.Localization.Locales.Keys)
+                {
+                    if (string.Equals(locale, options.Localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var localeContentPath = Path.Combine(contentPath, locale);
+                    if (!Directory.Exists(localeContentPath)) continue;
+
+                    app.UseStaticFiles(new StaticFileOptions
+                    {
+                        FileProvider = new PhysicalFileProvider(localeContentPath),
+                        RequestPath = $"/{locale}",
+                        ServeUnknownFileTypes = true,
+                    });
+                }
+            }
         }
 
         // Live reload: eagerly resolve so it subscribes to file watcher, then map WebSocket endpoint

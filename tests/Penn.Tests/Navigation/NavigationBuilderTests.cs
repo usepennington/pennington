@@ -271,4 +271,74 @@ public class NavigationBuilderTests
         info.SectionName.ShouldBe("documentation");
         info.PageTitle.ShouldBe("API Docs");
     }
+
+    // --- Locale filtering tests ---
+
+    private static ContentTocItem MakeLocaleTocItem(string title, string path, int order, string? locale, params string[] hierarchy) => new(
+        Title: title,
+        Route: new ContentRoute
+        {
+            CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
+            OutputFile = new FilePath($"{path.TrimStart('/')}/index.html"),
+            Locale = locale ?? ""
+        },
+        Order: order,
+        HierarchyParts: hierarchy,
+        Section: null,
+        Locale: locale
+    );
+
+    [Fact]
+    public void BuildTree_WithLocale_FiltersToMatchingLocale()
+    {
+        var items = new List<ContentTocItem>
+        {
+            MakeLocaleTocItem("Guide EN", "/guide", 1, "en", "guide"),
+            MakeLocaleTocItem("Guide FR", "/fr/guide", 1, "fr", "fr", "guide"),
+        };
+
+        var tree = _builder.BuildTree(items, locale: "en");
+        tree.Count.ShouldBe(1);
+        tree[0].Title.ShouldBe("Guide EN");
+    }
+
+    [Fact]
+    public void BuildTree_WithLocale_StripsLocalePrefixFromHierarchy()
+    {
+        var items = new List<ContentTocItem>
+        {
+            MakeLocaleTocItem("Guide FR", "/fr/guide", 1, "fr", "fr", "guide"),
+        };
+
+        var tree = _builder.BuildTree(items, locale: "fr");
+        tree.Count.ShouldBe(1);
+        tree[0].Title.ShouldBe("Guide FR");
+        // Hierarchy was ["fr", "guide"], after stripping it's ["guide"] — renders as top-level
+    }
+
+    [Fact]
+    public void BuildTree_WithLocale_NullLocaleItemsPassFilter()
+    {
+        var items = new List<ContentTocItem>
+        {
+            MakeLocaleTocItem("Guide EN", "/guide", 1, "en", "guide"),
+            MakeTocItem("About (agnostic)", "/about", 2, "about"), // locale = null
+        };
+
+        var tree = _builder.BuildTree(items, locale: "en");
+        tree.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void BuildTree_NullLocale_IncludesAll()
+    {
+        var items = new List<ContentTocItem>
+        {
+            MakeLocaleTocItem("Guide EN", "/guide", 1, "en", "guide"),
+            MakeLocaleTocItem("Guide FR", "/fr/guide", 1, "fr", "fr", "guide"),
+        };
+
+        var tree = _builder.BuildTree(items, locale: null);
+        tree.Count.ShouldBe(2);
+    }
 }

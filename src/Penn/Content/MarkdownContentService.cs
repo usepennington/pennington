@@ -9,6 +9,8 @@ using Penn.Routing;
 
 /// <summary>
 /// Discovers and provides markdown content from a directory.
+/// When <see cref="LocalizationOptions"/> has multiple locales, also discovers
+/// content from locale subdirectories (e.g., Content/fr/, Content/de/).
 /// </summary>
 public sealed class MarkdownContentService<TFrontMatter> : IContentService
     where TFrontMatter : IFrontMatter, new()
@@ -16,14 +18,21 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
     private readonly MarkdownContentServiceOptions _options;
     private readonly FrontMatterParser _parser;
     private readonly IFileSystem _fileSystem;
+    private readonly LocalizationOptions _localization;
     private readonly string _absoluteContentPath;
     private readonly AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>> _metadataLazy;
 
-    public MarkdownContentService(MarkdownContentServiceOptions options, FrontMatterParser parser, IFileSystem fileSystem, IFileWatcher fileWatcher)
+    public MarkdownContentService(
+        MarkdownContentServiceOptions options,
+        FrontMatterParser parser,
+        IFileSystem fileSystem,
+        IFileWatcher fileWatcher,
+        LocalizationOptions localization)
     {
         _options = options;
         _parser = parser;
         _fileSystem = fileSystem;
+        _localization = localization;
         _absoluteContentPath = _fileSystem.Path.GetFullPath(options.ContentPath.Value);
         _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>>(LoadMetadataAsync);
 
@@ -39,10 +48,11 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
         var files = DiscoverFiles();
-        foreach (var file in files)
+        foreach (var (file, locale) in files)
         {
-            var route = ContentRouteFactory.FromMarkdownFile(
-                file, new FilePath(_absoluteContentPath), _options.BasePageUrl, _options.Locale);
+            var contentRoot = new FilePath(GetContentRootForLocale(locale));
+            var basePageUrl = GetBasePageUrlForLocale(locale);
+            var route = ContentRouteFactory.FromMarkdownFile(file, contentRoot, basePageUrl, locale);
             ContentSource source = new MarkdownFileSource(file);
             yield return new DiscoveredItem(route, source);
         }
@@ -71,7 +81,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
                 Order: order,
                 HierarchyParts: hierarchyParts,
                 Section: section ?? DefaultSection,
-                Locale: string.IsNullOrEmpty(_options.Locale) ? null : _options.Locale
+                Locale: string.IsNullOrEmpty(route.Locale) ? null : route.Locale
             ));
         }
 
@@ -103,6 +113,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
         var builder = ImmutableList.CreateBuilder<ContentToCopy>();
         var excludedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".md", ".mdx", ".razor", ".yml", ".yaml" };
+        var localeSubfolders = GetNonDefaultLocaleSubfolders();
 
         foreach (var file in _fileSystem.Directory.EnumerateFiles(contentPath, "*.*", SearchOption.AllDirectories))
         {
@@ -110,7 +121,28 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
             if (excludedExtensions.Contains(ext)) continue;
 
             var relativePath = _fileSystem.Path.GetRelativePath(contentPath, file).Replace('\\', '/');
+
+            // Skip locale subfolders from the default locale scan — they get their own entries below
+            if (IsInLocaleSubfolder(relativePath, localeSubfolders)) continue;
+
             builder.Add(new ContentToCopy(new FilePath(file), new FilePath(relativePath)));
+        }
+
+        // Also enumerate static files from non-default locale subdirectories
+        foreach (var locale in localeSubfolders)
+        {
+            var localePath = _fileSystem.Path.Combine(contentPath, locale);
+            if (!_fileSystem.Directory.Exists(localePath)) continue;
+
+            foreach (var file in _fileSystem.Directory.EnumerateFiles(localePath, "*.*", SearchOption.AllDirectories))
+            {
+                var ext = _fileSystem.Path.GetExtension(file);
+                if (excludedExtensions.Contains(ext)) continue;
+
+                var relativeToLocale = _fileSystem.Path.GetRelativePath(localePath, file).Replace('\\', '/');
+                // Output at /{locale}/relative/path so they serve at the locale-prefixed URL
+                builder.Add(new ContentToCopy(new FilePath(file), new FilePath($"{locale}/{relativeToLocale}")));
+            }
         }
 
         return Task.FromResult(builder.ToImmutable());
@@ -119,25 +151,53 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
     public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
         => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
 
-    private List<FilePath> DiscoverFiles()
+    /// <summary>
+    /// Discovers markdown files. When multi-locale, discovers from the base path
+    /// (default locale) and each locale subdirectory, tagging files with their locale.
+    /// </summary>
+    private List<(FilePath File, string Locale)> DiscoverFiles()
     {
         var contentPath = _absoluteContentPath;
         if (!_fileSystem.Directory.Exists(contentPath))
             return [];
 
-        return _fileSystem.Directory.EnumerateFiles(contentPath, _options.FilePattern, SearchOption.AllDirectories)
-            .Select(f => new FilePath(f))
-            .ToList();
+        var localeSubfolders = GetNonDefaultLocaleSubfolders();
+        var results = new List<(FilePath, string)>();
+
+        // Default locale: enumerate base path, excluding locale subdirectories
+        foreach (var file in _fileSystem.Directory.EnumerateFiles(contentPath, _options.FilePattern, SearchOption.AllDirectories))
+        {
+            var relativePath = _fileSystem.Path.GetRelativePath(contentPath, file).Replace('\\', '/');
+            if (IsInLocaleSubfolder(relativePath, localeSubfolders)) continue;
+
+            var locale = _localization.IsMultiLocale ? _localization.DefaultLocale : _options.Locale;
+            results.Add((new FilePath(file), locale));
+        }
+
+        // Non-default locales: enumerate each locale subdirectory
+        foreach (var locale in localeSubfolders)
+        {
+            var localePath = _fileSystem.Path.Combine(contentPath, locale);
+            if (!_fileSystem.Directory.Exists(localePath)) continue;
+
+            foreach (var file in _fileSystem.Directory.EnumerateFiles(localePath, _options.FilePattern, SearchOption.AllDirectories))
+            {
+                results.Add((new FilePath(file), locale));
+            }
+        }
+
+        return results;
     }
 
     private async Task<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>> LoadMetadataAsync()
     {
         var builder = ImmutableList.CreateBuilder<(ContentRoute, TFrontMatter)>();
 
-        foreach (var file in DiscoverFiles())
+        foreach (var (file, locale) in DiscoverFiles())
         {
-            var route = ContentRouteFactory.FromMarkdownFile(
-                file, new FilePath(_absoluteContentPath), _options.BasePageUrl, _options.Locale);
+            var contentRoot = new FilePath(GetContentRootForLocale(locale));
+            var basePageUrl = GetBasePageUrlForLocale(locale);
+            var route = ContentRouteFactory.FromMarkdownFile(file, contentRoot, basePageUrl, locale);
 
             try
             {
@@ -153,5 +213,45 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
         }
 
         return builder.ToImmutable();
+    }
+
+    /// <summary>Returns locale codes for non-default locales when multi-locale is configured.</summary>
+    private List<string> GetNonDefaultLocaleSubfolders()
+    {
+        if (!_localization.IsMultiLocale) return [];
+        return _localization.Locales.Keys
+            .Where(l => !string.Equals(l, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    /// <summary>Returns the content root path for a given locale.</summary>
+    private string GetContentRootForLocale(string locale)
+    {
+        if (!_localization.IsMultiLocale
+            || string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
+            return _absoluteContentPath;
+
+        return _fileSystem.Path.Combine(_absoluteContentPath, locale);
+    }
+
+    /// <summary>Returns the base page URL for a given locale.</summary>
+    private UrlPath GetBasePageUrlForLocale(string locale)
+    {
+        if (!_localization.IsMultiLocale
+            || string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
+            return _options.BasePageUrl;
+
+        // Non-default locale: base URL is /{locale}{basePageUrl}
+        var basePath = _options.BasePageUrl.RemoveTrailingSlash().Value;
+        return basePath is "/" or ""
+            ? new UrlPath($"/{locale}")
+            : new UrlPath($"/{locale}{basePath}");
+    }
+
+    private static bool IsInLocaleSubfolder(string relativePath, List<string> localeSubfolders)
+    {
+        if (localeSubfolders.Count == 0) return false;
+        var firstSegment = relativePath.Split('/')[0];
+        return localeSubfolders.Any(l => string.Equals(firstSegment, l, StringComparison.OrdinalIgnoreCase));
     }
 }

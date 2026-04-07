@@ -6,5 +6,6 @@ using Penn.Routing;
 public record AlternateLanguagePage(
     string Locale,
     string DisplayName,
-    ContentRoute Route
+    ContentRoute Route,
+    bool IsCurrentLocale = false
 );

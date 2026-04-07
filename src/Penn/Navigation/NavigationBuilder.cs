@@ -8,12 +8,16 @@ public sealed class NavigationBuilder
 {
     /// <summary>
     /// Build a navigation tree from flat TOC items.
+    /// When <paramref name="locale"/> is specified, filters to that locale and
+    /// strips the locale prefix from hierarchy parts.
     /// </summary>
     public ImmutableList<NavigationTreeItem> BuildTree(
         IReadOnlyList<ContentTocItem> items,
-        ContentRoute? currentRoute = null)
+        ContentRoute? currentRoute = null,
+        string? locale = null)
     {
-        return BuildLevel(items, [], currentRoute);
+        var filtered = FilterByLocale(items, locale);
+        return BuildLevel(filtered, [], currentRoute);
     }
 
     /// <summary>
@@ -21,9 +25,10 @@ public sealed class NavigationBuilder
     /// </summary>
     public NavigationInfo BuildNavigationInfo(
         IReadOnlyList<ContentTocItem> items,
-        ContentRoute currentRoute)
+        ContentRoute currentRoute,
+        string? locale = null)
     {
-        var tree = BuildTree(items, currentRoute);
+        var tree = BuildTree(items, currentRoute, locale);
         var flatList = Flatten(tree);
 
         var currentIndex = flatList.FindIndex(n => n.Route.CanonicalPath.Matches(currentRoute.CanonicalPath));
@@ -124,6 +129,32 @@ public sealed class NavigationBuilder
 
         // Sort all items by order, then title
         return builder.OrderBy(i => i.Order).ThenBy(i => i.Title, StringComparer.OrdinalIgnoreCase).ToImmutableList();
+    }
+
+    /// <summary>
+    /// Filters TOC items by locale and strips locale prefix from hierarchy parts.
+    /// Items with null locale are locale-agnostic and pass all filters.
+    /// </summary>
+    private static IReadOnlyList<ContentTocItem> FilterByLocale(
+        IReadOnlyList<ContentTocItem> items, string? locale)
+    {
+        if (locale == null) return items;
+
+        return items
+            .Where(i => i.Locale == null
+                || string.Equals(i.Locale, locale, StringComparison.OrdinalIgnoreCase))
+            .Select(i =>
+            {
+                // Strip locale prefix from hierarchy parts for non-default locales
+                if (i.HierarchyParts.Length > 0
+                    && string.Equals(i.HierarchyParts[0], locale, StringComparison.OrdinalIgnoreCase)
+                    && i.Locale != null)
+                {
+                    return i with { HierarchyParts = i.HierarchyParts[1..] };
+                }
+                return i;
+            })
+            .ToList();
     }
 
     private static string FormatSectionTitle(string folderName)

@@ -1183,7 +1183,7 @@ class SearchManager {
                 cache: 100,
                 document: {
                     id: 'id',
-                    store: ["title", "body", "url", "section"],
+                    store: ["title", "body", "url", "section", "locale"],
                     index: ["title", "body"]
                 }
             });
@@ -1197,7 +1197,8 @@ class SearchManager {
                     title: doc.title || '',
                     body: doc.body || '',
                     url: url,
-                    section: doc.section || ''
+                    section: doc.section || '',
+                    locale: doc.locale || ''
                 };
 
                 this.searchIndex.add(docToIndex);
@@ -1314,6 +1315,24 @@ class SearchManager {
             .map(([docId, score]) => ({ docId, score }));
     }
 
+    /**
+     * Detect the current locale from the URL path.
+     * Reads known locales from a data attribute on the body element.
+     */
+    getCurrentLocale() {
+        const locales = (document.body.getAttribute('data-locales') || '').split(',').filter(Boolean);
+        const defaultLocale = document.body.getAttribute('data-default-locale') || '';
+        if (locales.length <= 1) return null; // Single-locale site, no filtering
+
+        const path = window.location.pathname.replace(/^\//, '');
+        const firstSegment = path.split('/')[0];
+
+        if (firstSegment && locales.includes(firstSegment) && firstSegment !== defaultLocale) {
+            return firstSegment;
+        }
+        return defaultLocale || null;
+    }
+
     displayResults(results, query) {
         if (results.length === 0) {
             this.searchResults.innerHTML = '<div class="search-modal-no-results">No results found</div>';
@@ -1322,8 +1341,20 @@ class SearchManager {
 
         // FlexSearch Document API returns array of field results
         // Combine and score the results from different fields
-        const scoredResults = this.combineFieldResults(results);
-        
+        let scoredResults = this.combineFieldResults(results);
+
+        // Filter by current locale when multi-locale
+        const currentLocale = this.getCurrentLocale();
+        if (currentLocale) {
+            scoredResults = scoredResults.filter(({ docId }) => {
+                const doc = this.searchData[parseInt(docId)];
+                if (!doc) return false;
+                const docLocale = doc.locale || '';
+                // Include locale-agnostic (empty) and matching locale results
+                return docLocale === '' || docLocale.toLowerCase() === currentLocale.toLowerCase();
+            });
+        }
+
         if (scoredResults.length === 0) {
             this.searchResults.innerHTML = '<div class="search-modal-no-results">No results found</div>';
             return;

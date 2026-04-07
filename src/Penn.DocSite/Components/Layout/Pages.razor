@@ -1,17 +1,28 @@
 @page "/{*fileName:nonfile}"
+@using System.Collections.Immutable
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Sections
 @using Penn.DocSite.Services
+@using Penn.Infrastructure
+@using Penn.Localization
 @inject ContentResolver ContentResolver
 @inject NavigationBuilder NavBuilder
 @inject DocSiteOptions DocSiteOptions
 @inject NavigationManager NavigationManager
+@inject LocalizationOptions Localization
 
 @if (_resolved != null)
 {
     <PageTitle>@_resolved.Title — @DocSiteOptions.SiteTitle</PageTitle>
     <HeadContent>
         <meta name="description" content="@_resolved.Description" />
+        @foreach (var alt in _alternateLanguages)
+        {
+            var hreflang = Localization.Locales.TryGetValue(alt.Locale, out var info)
+                ? info.HtmlLang ?? alt.Locale
+                : alt.Locale;
+            <link rel="alternate" hreflang="@hreflang" href="@alt.Route.CanonicalPath.Value" />
+        }
     </HeadContent>
     <DocSiteArticle
         Title="@_resolved.Title"
@@ -39,6 +50,7 @@ else if (_notFound)
     private NavigationInfo? _navInfo;
     private bool _notFound;
     private Type? _homeComponentType;
+    private ImmutableList<AlternateLanguagePage> _alternateLanguages = ImmutableList<AlternateLanguagePage>.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -50,6 +62,10 @@ else if (_notFound)
         if (_resolved != null)
         {
             _navInfo = await ContentResolver.GetNavigationInfoAsync(url);
+            if (Localization.IsMultiLocale)
+            {
+                _alternateLanguages = await ContentResolver.GetAlternateLanguagesAsync(url);
+            }
         }
         else if (url == "index")
         {

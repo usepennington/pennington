@@ -1,8 +1,10 @@
 @using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Hosting
+@using Penn.Infrastructure
 @inject IWebHostEnvironment WebHostEnvironment
 @inject DocSiteOptions DocSiteOptions
+@inject LocalizationOptions Localization
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -29,7 +31,12 @@
     <HeadOutlet/>
 </head>
 
-<body data-mobile-menu-open="false" class="data-[mobile-menu-open=true]:overflow-hidden">
+<body data-mobile-menu-open="false"
+      class="data-[mobile-menu-open=true]:overflow-hidden"
+      @if (Localization.IsMultiLocale)
+      {
+          <text>data-locales="@string.Join(",", Localization.Locales.Keys)" data-default-locale="@Localization.DefaultLocale"</text>
+      }>
 <div>
     <Routes/>
 </div>

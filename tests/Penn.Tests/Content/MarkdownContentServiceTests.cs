@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using Penn.Content;
 using Penn.FrontMatter;
 using Penn.Infrastructure;
+using Penn.Localization;
 using Penn.Pipeline;
 using Penn.Routing;
 using Testably.Abstractions.Testing;
@@ -10,10 +11,13 @@ namespace Penn.Tests.Content;
 
 public class MarkdownContentServiceTests
 {
+    private static readonly LocalizationOptions DefaultLocalization = new();
+
     private MarkdownContentService<DocFrontMatter> CreateTestService(
         MockFileSystem fs,
         string? section = "Documentation",
-        UrlPath? basePageUrl = null)
+        UrlPath? basePageUrl = null,
+        LocalizationOptions? localization = null)
     {
         var options = new MarkdownContentServiceOptions
         {
@@ -22,7 +26,7 @@ public class MarkdownContentServiceTests
             Section = section
         };
 
-        return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs));
+        return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs), localization ?? DefaultLocalization);
     }
 
     private static MockFileSystem CreateFs(params (string Path, string Content)[] files)
@@ -254,7 +258,7 @@ public class MarkdownContentServiceTests
             BasePageUrl = new UrlPath("/docs"),
             Section = "Test"
         };
-        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs));
+        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
@@ -363,7 +367,7 @@ public class MarkdownContentServiceTests
             Section = section
         };
 
-        return new MarkdownContentService<BlogFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs));
+        return new MarkdownContentService<BlogFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
     }
 
     [Fact]
@@ -458,8 +462,131 @@ public class MarkdownContentServiceTests
             BasePageUrl = new UrlPath("/docs"),
             SearchPriority = 10
         };
-        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs));
+        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
 
         service.SearchPriority.ShouldBe(10);
+    }
+
+    // --- Multi-locale tests ---
+
+    private static LocalizationOptions CreateMultiLocale()
+    {
+        var options = new LocalizationOptions { DefaultLocale = "en" };
+        options.AddLocale("en", new LocaleInfo("English"));
+        options.AddLocale("fr", new LocaleInfo("Français"));
+        return options;
+    }
+
+    private static MockFileSystem CreateMultiLocaleFs(params (string Path, string Content)[] files)
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/content");
+        fs.Directory.CreateDirectory("/content/fr");
+        foreach (var (path, content) in files)
+        {
+            var fullPath = $"/content/{path}";
+            var dir = fs.Path.GetDirectoryName(fullPath);
+            if (dir != null) fs.Directory.CreateDirectory(dir);
+            fs.File.WriteAllText(fullPath, content);
+        }
+        return fs;
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_MultiLocale_DiscoversLocaleSubfolders()
+    {
+        var fs = CreateMultiLocaleFs(
+            ("getting-started.md", "---\ntitle: Getting Started\n---\n# Getting Started"),
+            ("fr/getting-started.md", "---\ntitle: Démarrage\n---\n# Démarrage"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/"), localization: CreateMultiLocale());
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        items.Count.ShouldBe(2);
+        items.ShouldContain(i => i.Route.Locale == "en");
+        items.ShouldContain(i => i.Route.Locale == "fr");
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_MultiLocale_DefaultLocaleExcludesSubfolders()
+    {
+        var fs = CreateMultiLocaleFs(
+            ("page.md", "---\ntitle: Page\n---\n# Page"),
+            ("fr/page.md", "---\ntitle: Page FR\n---\n# Page FR"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/"), localization: CreateMultiLocale());
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        // Default locale item should NOT have fr/ prefix in path
+        var enItem = items.First(i => i.Route.Locale == "en");
+        enItem.Route.CanonicalPath.Value.ShouldNotContain("fr");
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_MultiLocale_NonDefaultLocaleRoutesHavePrefix()
+    {
+        var fs = CreateMultiLocaleFs(
+            ("about.md", "---\ntitle: About\n---\n# About"),
+            ("fr/about.md", "---\ntitle: À propos\n---\n# À propos"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/"), localization: CreateMultiLocale());
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        var frItem = items.First(i => i.Route.Locale == "fr");
+        frItem.Route.CanonicalPath.Value.ShouldStartWith("/fr/");
+    }
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_MultiLocale_AllLocaleEntriesPresent()
+    {
+        var fs = CreateMultiLocaleFs(
+            ("guide.md", "---\ntitle: Guide\norder: 1\n---\n# Guide"),
+            ("fr/guide.md", "---\ntitle: Guide FR\norder: 1\n---\n# Guide FR"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/"), localization: CreateMultiLocale());
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(2);
+        entries.ShouldContain(e => e.Locale == "en" && e.Title == "Guide");
+        entries.ShouldContain(e => e.Locale == "fr" && e.Title == "Guide FR");
+    }
+
+    [Fact]
+    public async Task GetContentToCopyAsync_MultiLocale_IncludesLocaleAssets()
+    {
+        var fs = CreateMultiLocaleFs(
+            ("images/logo.png", "fake-png"),
+            ("fr/images/logo-fr.png", "fake-png-fr"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/"), localization: CreateMultiLocale());
+
+        var toCopy = await service.GetContentToCopyAsync();
+
+        toCopy.Count.ShouldBe(2);
+        toCopy.ShouldContain(c => c.OutputPath.Value == "images/logo.png");
+        toCopy.ShouldContain(c => c.OutputPath.Value == "fr/images/logo-fr.png");
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_MultiLocale_SingleLocaleOptIn_NoExtraDiscovery()
+    {
+        // When only one locale is configured, behavior should be unchanged
+        var fs = CreateFs(
+            ("getting-started.md", "---\ntitle: Getting Started\n---\n# Getting Started"));
+        var singleLocale = new LocalizationOptions { DefaultLocale = "en" };
+        singleLocale.AddLocale("en", "English");
+        var service = CreateTestService(fs, localization: singleLocale);
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        items.Count.ShouldBe(1);
+        // With single locale, original behavior: locale comes from options.Locale (empty by default)
     }
 }

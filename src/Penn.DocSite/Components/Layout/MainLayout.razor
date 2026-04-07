@@ -1,11 +1,15 @@
 @using System.Collections.Immutable
 @using Microsoft.AspNetCore.Components.Sections
 @using Penn.DocSite.Services
+@using Penn.Infrastructure
+@using Penn.Localization
+@using Penn.UI.Components
 @inherits LayoutComponentBase
 @inject ContentResolver ContentResolver
 @inject NavigationBuilder NavBuilder
 @inject NavigationManager NavigationManager
 @inject DocSiteOptions DocSiteOptions
+@inject LocalizationOptions Localization
 
 <HeadContent>
     @if (!string.IsNullOrEmpty(DocSiteOptions.SocialImageUrl))
@@ -108,6 +112,11 @@
                         </div>
 
                         <div class="flex items-center gap-x-2">
+                            @if (_langSwitcherItems.Count > 1)
+                            {
+                                <LanguageSwitcher AlternateLanguages="_langSwitcherItems" />
+                            }
+
                             <!-- sun icon -->
                             <button aria-label="Toggle Dark Mode"
                                     class="hover:bg-base-200 dark:hover:bg-base-800 rounded-md p-1" data-theme-toggle>
@@ -175,6 +184,7 @@
 
 @code{
     private ImmutableList<NavigationTreeItem>? _toc;
+    private IReadOnlyList<LanguageSwitcher.AlternateLanguageItem> _langSwitcherItems = [];
 
     private readonly RenderFragment _mobileMenuButton =
         @<button id="menu-toggle" aria-label="Toggle Navigation Menu" aria-controls="nav-sidebar"
@@ -197,15 +207,26 @@
     protected override async Task OnInitializedAsync()
     {
         var currentPath = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath;
+        var locale = Localization.IsMultiLocale ? Localization.GetLocaleFromUrl(currentPath) : null;
 
-        var tocItems = await ContentResolver.GetTocItemsAsync();
+        var tocItems = await ContentResolver.GetTocItemsAsync(locale);
         var currentRoute = new ContentRoute
         {
             CanonicalPath = new UrlPath(currentPath),
             OutputFile = new FilePath($"{currentPath.TrimStart('/')}/index.html"),
         };
 
-        _toc = NavBuilder.BuildTree(tocItems.ToList(), currentRoute);
+        _toc = NavBuilder.BuildTree(tocItems.ToList(), currentRoute, locale);
+
+        // Build language switcher items
+        if (Localization.IsMultiLocale)
+        {
+            var alternates = await ContentResolver.GetAlternateLanguagesAsync(currentPath);
+            _langSwitcherItems = alternates
+                .Select(a => new LanguageSwitcher.AlternateLanguageItem(
+                    a.Locale, a.DisplayName, a.Route.CanonicalPath.Value, a.IsCurrentLocale))
+                .ToList();
+        }
 
         await base.OnInitializedAsync();
     }
