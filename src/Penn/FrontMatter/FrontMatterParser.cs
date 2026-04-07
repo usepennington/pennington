@@ -1,5 +1,6 @@
 namespace Penn.FrontMatter;
 
+using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -29,7 +30,7 @@ public sealed class FrontMatterParser
             return new FrontMatterResult<T>(default, content);
         }
 
-        var metadata = _deserializer.Deserialize<T>(yaml) ?? new T();
+        var metadata = SafeDeserialize<T>(yaml) ?? new T();
         return new FrontMatterResult<T>(metadata, body);
     }
 
@@ -38,7 +39,13 @@ public sealed class FrontMatterParser
     /// Used for sidecar metadata files.
     /// </summary>
     public T DeserializeYaml<T>(string yaml) where T : IFrontMatter, new()
-        => _deserializer.Deserialize<T>(yaml) ?? new T();
+        => SafeDeserialize<T>(yaml) ?? new T();
+
+    private T? SafeDeserialize<T>(string yaml)
+    {
+        var parser = new SafeYamlParser(new Parser(new StringReader(yaml)));
+        return _deserializer.Deserialize<T>(parser);
+    }
 
     /// <summary>
     /// Try to extract the YAML block between --- delimiters.

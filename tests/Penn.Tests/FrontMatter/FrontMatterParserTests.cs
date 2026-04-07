@@ -180,4 +180,51 @@ public class FrontMatterParserTests
         result.Metadata.ShouldBeNull();
         result.Body.ShouldBe(content);
     }
+
+    [Fact]
+    public void Parse_YamlAnchor_ThrowsToPreventBillionLaughs()
+    {
+        var content = "---\ntitle: &bomb payload\n---\nContent.";
+
+        Should.Throw<YamlDotNet.Core.YamlException>(
+            () => _parser.Parse<DocFrontMatter>(content));
+    }
+
+    [Fact]
+    public void DeserializeYaml_YamlAnchor_ThrowsToPreventBillionLaughs()
+    {
+        var yaml = "title: &bomb payload";
+
+        Should.Throw<YamlDotNet.Core.YamlException>(
+            () => _parser.DeserializeYaml<DocFrontMatter>(yaml));
+    }
+
+    [Fact]
+    public void Parse_ArbitraryTypeTag_ThrowsToPreventTypeInstantiation()
+    {
+        var content = "---\ntitle: !<tag:example.org:attack> malicious\n---\nContent.";
+
+        Should.Throw<YamlDotNet.Core.YamlException>(
+            () => _parser.Parse<DocFrontMatter>(content));
+    }
+
+    [Fact]
+    public void Parse_DotNetTypeTag_ThrowsToPreventTypeInstantiation()
+    {
+        var content = "---\ntitle: !<!System.Diagnostics.Process> evil\n---\nContent.";
+
+        Should.Throw<YamlDotNet.Core.YamlException>(
+            () => _parser.Parse<DocFrontMatter>(content));
+    }
+
+    [Fact]
+    public void Parse_QuotedSpecialCharacters_NotAffectedBySecurityRestrictions()
+    {
+        var content = "---\ntitle: \"Anchors & aliases * are fine in strings\"\n---\nContent.";
+
+        var result = _parser.Parse<DocFrontMatter>(content);
+
+        result.Metadata.ShouldNotBeNull();
+        result.Metadata.Title.ShouldBe("Anchors & aliases * are fine in strings");
+    }
 }
