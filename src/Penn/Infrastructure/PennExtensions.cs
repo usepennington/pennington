@@ -21,6 +21,7 @@ using Penn.Markdown.Extensions;
 using Penn.Routing;
 using Penn.Search;
 using Penn.Feeds;
+using Penn.LlmsTxt;
 using Testably.Abstractions;
 
 public static class PennExtensions
@@ -141,6 +142,14 @@ public static class PennExtensions
         services.AddFileWatched<SearchIndexService>();
         services.AddFileWatched<Feeds.SitemapService>();
 
+        // llms.txt generation
+        if (options.LlmsTxt is { } llmsTxtOptions)
+        {
+            services.AddSingleton(llmsTxtOptions);
+            services.AddFileWatched<LlmsTxtService>();
+            services.AddSingleton<IContentService, LlmsTxtContentService>();
+        }
+
         // Per-request diagnostic context
         services.AddHttpContextAccessor();
         services.AddScoped<Diagnostics.DiagnosticContext>();
@@ -216,6 +225,12 @@ public static class PennExtensions
             Results.Content(await service.GetSearchIndexJsonAsync(), "application/json"));
         app.MapGet("/sitemap.xml", async (Feeds.SitemapService service) =>
             Results.Content(await service.GetSitemapXmlAsync(), "application/xml"));
+
+        if (app.Services.GetService<LlmsTxtOptions>() is not null)
+        {
+            app.MapGet("/llms.txt", async (LlmsTxtService service) =>
+                Results.Content(await service.GetLlmsTxtAsync(), "text/plain"));
+        }
 
         return app;
     }

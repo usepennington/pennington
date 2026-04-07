@@ -30,6 +30,9 @@ public static class DocSiteServiceExtensions
                 md.BasePageUrl = "/";
             });
 
+            // llms.txt generation
+            penn.AddLlmsTxt();
+
             // Localization
             options.ConfigureLocalization?.Invoke(penn.Localization);
 

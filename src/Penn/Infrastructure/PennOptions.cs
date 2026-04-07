@@ -3,6 +3,7 @@ namespace Penn.Infrastructure;
 using System.Reflection;
 using Penn.Highlighting;
 using Penn.Islands;
+using Penn.LlmsTxt;
 using Penn.Localization;
 
 /// <summary>Main configuration options for the Penn content engine.</summary>
@@ -30,6 +31,18 @@ public sealed class PennOptions
     }
 
     public IReadOnlyList<MarkdownContentOptions> MarkdownSources => _markdownSources;
+
+    private LlmsTxtOptions? _llmsTxtOptions;
+
+    /// <summary>Enable llms.txt generation for this site.</summary>
+    public LlmsTxtOptions AddLlmsTxt(Action<LlmsTxtOptions>? configure = null)
+    {
+        _llmsTxtOptions = new LlmsTxtOptions();
+        configure?.Invoke(_llmsTxtOptions);
+        return _llmsTxtOptions;
+    }
+
+    public LlmsTxtOptions? LlmsTxt => _llmsTxtOptions;
 
     /// <summary>Assemblies to scan for @page Razor components.</summary>
     public Assembly[] AdditionalRoutingAssemblies { get; set; } = [];
