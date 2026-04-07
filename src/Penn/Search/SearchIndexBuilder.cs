@@ -32,7 +32,7 @@ public sealed partial class SearchIndexBuilder
         return new SearchIndexDocument(
             Title: item.Metadata.Title,
             Body: body,
-            Url: item.Route.CanonicalPath,
+            Url: item.Route.CanonicalPath.Value,
             Section: section,
             Locale: item.Route.Locale,
             Priority: _defaultPriority

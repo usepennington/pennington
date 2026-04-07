@@ -1174,8 +1174,8 @@ class SearchManager {
             }
             
             const indexData = await response.json();
-            this.searchData = indexData.documents;
-            
+            this.searchData = indexData;
+
             // Create FlexSearch Document index
             this.searchIndex = new this.FlexSearch.Document({
                 tokenize: "forward",
@@ -1183,24 +1183,23 @@ class SearchManager {
                 cache: 100,
                 document: {
                     id: 'id',
-                    store: ["title", "description", "content", "headingsText", "url"],
-                    index: ["title", "description", "content", "headingsText"]
+                    store: ["title", "body", "url", "section"],
+                    index: ["title", "body"]
                 }
             });
-            
+
             // Index all documents
             this.searchData.forEach((doc, index) => {
-                const url = baseUrl ? `${baseUrl}/{doc.url}` : doc.url;
-                
+                const url = baseUrl ? `${baseUrl}/${doc.url}` : doc.url;
+
                 const docToIndex = {
                     id: index.toString(), // FlexSearch Document API needs string IDs
                     title: doc.title || '',
-                    description: doc.description || '',
-                    content: doc.content || '',
-                    headingsText: this.parseHeadingsText(doc.headings || []),
-                    url: url
+                    body: doc.body || '',
+                    url: url,
+                    section: doc.section || ''
                 };
-                
+
                 this.searchIndex.add(docToIndex);
             });
             
@@ -1286,20 +1285,18 @@ class SearchManager {
         // Field weights
         const fieldWeights = {
             'title': 3,
-            'description': 2,
-            'headingsText': 1.5,
-            'content': 1
+            'body': 1
         };
-        
+
         results.forEach(fieldResult => {
             const field = fieldResult.field;
             const weight = fieldWeights[field] || 1;
             const docIds = fieldResult.result;
-            
+
             docIds.forEach((docId, index) => {
                 // Get the document to access its search priority
                 const doc = this.searchData[parseInt(docId)];
-                const searchPriority = doc?.searchPriority || 1;
+                const searchPriority = doc?.priority || 1;
                 
                 // Give higher score to documents that appear earlier in results
                 const positionScore = 1 / (index + 1);
@@ -1338,10 +1335,9 @@ class SearchManager {
 
             // Use simple highlighting for now
             const highlightedTitle = this.highlightText(doc.title, query);
-            const highlightedDescription = this.highlightText(doc.description || '', query);
-            
+
             // Get content snippet with simple highlighting
-            const snippet = this.getContentSnippet(doc.content, query);
+            const snippet = this.getContentSnippet(doc.body, query);
 
             let baseUrl = document.body.getAttribute('data-base-url') || '';
             if (baseUrl.endsWith('/')) {
@@ -1445,14 +1441,22 @@ class SyntaxHighlighter {
 
     getRelevantCodeNodes() {
         const codeNodes = Array.from(document.body.querySelectorAll('code'));
-        return codeNodes.filter(node =>
-            Array.from(node.classList).some(cls => cls.startsWith(this.prefix) && cls !== this.prefix + 'mermaid' && cls !== this.prefix + 'text' && cls !== this.prefix)
-        );
+        return codeNodes.filter(node => {
+            const hasLanguageClass = Array.from(node.classList).some(cls =>
+                cls.startsWith(this.prefix) && cls !== this.prefix + 'mermaid' && cls !== this.prefix + 'text' && cls !== this.prefix
+            );
+            if (!hasLanguageClass) return false;
+
+            // Skip blocks already highlighted server-side by TextMate
+            if (node.querySelector('span[class^="hljs-"]')) return false;
+
+            return true;
+        });
     }
 
     async setupHighlightJs() {
         // Load highlight.js from CDN
-        this.hljs = await import('https://cdn.jsdelivr.net/npm/highlight.js@11/lib/core.min.js');
+        this.hljs = await import('https://esm.sh/highlight.js@11/lib/core');
         
         // Configure highlight.js
         this.hljs.default.configure({
@@ -1463,13 +1467,13 @@ class SyntaxHighlighter {
         // Load common languages
         const languages = [
             'javascript', 'typescript', 'python', 'java', 'csharp', 'cpp', 'c',
-            'css', 'html', 'xml', 'json', 'yaml', 'bash', 'shell', 'sql',
+            'css', 'xml', 'json', 'yaml', 'bash', 'shell', 'sql',
             'php', 'ruby', 'go', 'rust', 'kotlin', 'swift', 'markdown'
         ];
 
         for (const lang of languages) {
             try {
-                const langModule = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/${lang}.min.js`);
+                const langModule = await import(`https://esm.sh/highlight.js@11/lib/languages/${lang}`);
                 this.hljs.default.registerLanguage(lang, langModule.default);
             } catch (err) {
                 // Language not available, skip silently

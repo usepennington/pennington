@@ -49,7 +49,7 @@ public class SearchIndexBuilderTests
         doc.ShouldNotBeNull();
         doc.Title.ShouldBe("Introduction");
         doc.Body.ShouldBe("Welcome to the docs");
-        doc.Url.Value.ShouldBe("/docs/intro/");
+        doc.Url.ShouldBe("/docs/intro/");
         doc.Locale.ShouldBe("en");
         doc.Priority.ShouldBe(5);
     }

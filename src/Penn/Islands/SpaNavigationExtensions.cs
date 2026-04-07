@@ -19,6 +19,7 @@ public static class SpaNavigationExtensions
         configure?.Invoke(options);
         services.AddSingleton(options);
         services.AddTransient<SpaPageDataService>();
+        services.AddTransient<IContentService, SpaNavigationContentService>();
 
         // Register a default RenderContext so SpaPageDataService can be resolved.
         // If AddPenn() already registered one, TryAdd semantics aren't needed —
