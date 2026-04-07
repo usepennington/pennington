@@ -171,4 +171,35 @@ public class ContentRouteFactoryTests
         route.CanonicalPath.Value.ShouldBe("/old-page/");
         route.OutputFile.Value.ShouldBe("old-page/index.html");
     }
+
+    [Theory]
+    [InlineData("../../etc/passwd", "Content/Docs")]
+    [InlineData("Content/Docs/../../secret.md", "Content/Docs")]
+    [InlineData("Content\\..\\..\\secret.md", "Content/Docs")]
+    [InlineData("../outside/file.md", "Content/Docs")]
+    public void FromMarkdownFile_PathTraversal_ThrowsArgumentException(string sourceFile, string contentRoot)
+    {
+        Should.Throw<ArgumentException>(() =>
+            ContentRouteFactory.FromMarkdownFile(sourceFile, contentRoot, "/docs"));
+    }
+
+    [Fact]
+    public void FromMarkdownFile_SiblingDirectoryOverlap_ThrowsArgumentException()
+    {
+        Should.Throw<ArgumentException>(() =>
+            ContentRouteFactory.FromMarkdownFile(
+                "Content/DocsExtra/file.md",
+                "Content/Docs",
+                "/docs"));
+    }
+
+    [Theory]
+    [InlineData("Content/Docs/getting-started.md", "Content/Docs")]
+    [InlineData("Content/Docs/guides/advanced/setup.md", "Content/Docs")]
+    [InlineData("Content/Docs/index.md", "Content/Docs")]
+    public void FromMarkdownFile_ValidPathWithinContentRoot_DoesNotThrow(string sourceFile, string contentRoot)
+    {
+        Should.NotThrow(() =>
+            ContentRouteFactory.FromMarkdownFile(sourceFile, contentRoot, "/docs"));
+    }
 }

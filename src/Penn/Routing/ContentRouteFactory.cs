@@ -10,6 +10,17 @@ public static class ContentRouteFactory
     /// </summary>
     public static ContentRoute FromMarkdownFile(FilePath sourceFile, FilePath contentRoot, UrlPath basePageUrl, string locale = "")
     {
+        var fullSource = Path.GetFullPath(sourceFile.Value);
+        var fullRoot = Path.GetFullPath(contentRoot.Value);
+
+        if (!fullRoot.EndsWith(Path.DirectorySeparatorChar))
+            fullRoot += Path.DirectorySeparatorChar;
+
+        if (!fullSource.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException(
+                $"Source file '{sourceFile.Value}' resolves outside content root '{contentRoot.Value}'.",
+                nameof(sourceFile));
+
         // Get relative path from content root, remove extension
         var relative = GetRelativePath(contentRoot.Value, sourceFile.Value);
         var withoutExt = RemoveExtension(relative);
