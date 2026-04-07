@@ -1,5 +1,6 @@
 namespace Penn.Infrastructure;
 
+using System.Net;
 using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Dom;
@@ -59,12 +60,12 @@ public sealed partial class XrefResolvingService
             string replacement;
             if (xref is not null)
             {
-                replacement = $"""<a href="{xref.Route.CanonicalPath.Value}">{xref.Title}</a>""";
+                replacement = $"""<a href="{WebUtility.HtmlEncode(xref.Route.CanonicalPath.Value)}">{WebUtility.HtmlEncode(xref.Title)}</a>""";
             }
             else
             {
                 diagnostics?.AddWarning($"Unresolved xref: {uid}", "XrefResolver");
-                replacement = $"""<a href="xref:{uid}" data-xref-error="Reference not found" data-xref-uid="{uid}">{uid}</a>""";
+                replacement = $"""<a href="xref:{WebUtility.HtmlEncode(uid)}" data-xref-error="Reference not found" data-xref-uid="{WebUtility.HtmlEncode(uid)}">{WebUtility.HtmlEncode(uid)}</a>""";
             }
 
             html = string.Concat(html.AsSpan(0, match.Index), replacement, html.AsSpan(match.Index + match.Length));
