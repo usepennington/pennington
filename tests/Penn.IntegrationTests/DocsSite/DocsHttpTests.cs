@@ -91,10 +91,12 @@ public class DocsHttpTests : IClassFixture<DocsWebApplicationFactory>
     }
 
     [Fact]
-    public async Task SpaDataEndpoint_Returns404ForNonExistentPage()
+    public async Task SpaDataEndpoint_ReturnsReloadForNonExistentPage()
     {
         var response = await _client.GetAsync("/_spa-data/does-not-exist.json", TestContext.Current.CancellationToken);
-        response.StatusCode.ShouldBe(System.Net.HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        content.ShouldContain("reload");
     }
 
     [Fact]
