@@ -7,6 +7,9 @@ public sealed record ContentRoute
     public FilePath? SourceFile { get; init; }
     public string Locale { get; init; } = "";
 
+    /// <summary>True when this route serves default-locale content as a fallback for a missing translation.</summary>
+    public bool IsFallback { get; init; }
+
     public UrlPath WithBaseUrl(UrlPath baseUrl) => baseUrl / CanonicalPath;
     public UrlPath AbsoluteUrl(UrlPath canonicalBase) => canonicalBase / CanonicalPath;
     public bool IsDefaultLocale => string.IsNullOrEmpty(Locale);

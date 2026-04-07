@@ -49,13 +49,18 @@ public sealed class ContentResolver
     {
         url = "/" + url.Trim('/');
 
-        // Try exact URL first (finds locale-specific markdown or exact matches)
+        // Normalize bare "/index" to "/" so it matches the homepage route
+        if (url.Equals("/index", StringComparison.OrdinalIgnoreCase))
+            url = "/";
+
+        // Try exact URL first (finds locale-specific markdown, fallback entries, or exact matches)
         var found = await FindDiscoveredItem(url);
         var locale = _localization.GetLocaleFromUrl(url);
-        var isFallback = false;
-        string? requestedLocale = null;
+        var isFallback = found?.Route.IsFallback ?? false;
+        string? requestedLocale = isFallback ? locale : null;
+        if (isFallback) locale = _localization.DefaultLocale;
 
-        // Fallback: strip locale prefix and try the content-relative path
+        // Runtime fallback: strip locale prefix and try the content-relative path
         if (found == null
             && _localization.IsMultiLocale
             && !string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
@@ -66,7 +71,6 @@ public sealed class ContentResolver
             {
                 isFallback = true;
                 requestedLocale = locale;
-                locale = _localization.DefaultLocale;
             }
         }
 
@@ -94,7 +98,13 @@ public sealed class ContentResolver
             Metadata: rendered.Metadata,
             Locale: locale,
             IsFallback: isFallback,
-            RequestedLocale: requestedLocale
+            RequestedLocale: requestedLocale,
+            FallbackRequestedDisplayName: isFallback
+                ? (_localization.Locales.TryGetValue(requestedLocale ?? "", out var reqInfo) ? reqInfo.DisplayName : requestedLocale)
+                : null,
+            FallbackDefaultDisplayName: isFallback
+                ? (_localization.Locales.TryGetValue(locale, out var defInfo) ? defInfo.DisplayName : locale)
+                : null
         );
     }
 
@@ -146,42 +156,23 @@ public sealed class ContentResolver
 
     /// <summary>
     /// Get alternate language versions for a page URL.
+    /// Always includes all configured locales — fallback resolution handles missing translations.
     /// </summary>
-    public async Task<ImmutableList<AlternateLanguagePage>> GetAlternateLanguagesAsync(string url)
+    public Task<ImmutableList<AlternateLanguagePage>> GetAlternateLanguagesAsync(string url)
     {
         if (!_localization.IsMultiLocale)
-            return ImmutableList<AlternateLanguagePage>.Empty;
+            return Task.FromResult(ImmutableList<AlternateLanguagePage>.Empty);
 
         url = "/" + url.Trim('/');
+        if (url.Equals("/index", StringComparison.OrdinalIgnoreCase))
+            url = "/";
         var locale = _localization.GetLocaleFromUrl(url);
         var contentPath = _localization.StripLocalePrefix(url, locale);
-
-        // Collect all TOC entries across all services
-        var allItems = new List<ContentTocItem>();
-        foreach (var service in _services)
-        {
-            allItems.AddRange(await service.GetContentTocEntriesAsync());
-        }
 
         var builder = ImmutableList.CreateBuilder<AlternateLanguagePage>();
 
         foreach (var (localeCode, localeInfo) in _localization.Locales)
         {
-            // Check if this locale has the page (or it's locale-agnostic)
-            var exists = allItems.Any(item =>
-            {
-                // Locale-agnostic items (Razor pages, etc.) are available in all locales
-                if (item.Locale == null) return NormalizeUrl(item.Route.CanonicalPath.Value) == NormalizeUrl(contentPath);
-
-                if (!string.Equals(item.Locale, localeCode, StringComparison.OrdinalIgnoreCase))
-                    return false;
-
-                var itemContentPath = _localization.StripLocalePrefix(item.Route.CanonicalPath.Value, localeCode);
-                return NormalizeUrl(itemContentPath) == NormalizeUrl(contentPath);
-            });
-
-            if (!exists) continue;
-
             var localeUrl = _localization.BuildLocaleUrl(contentPath.Trim('/'), localeCode);
             builder.Add(new AlternateLanguagePage(
                 Locale: localeCode,
@@ -196,7 +187,7 @@ public sealed class ContentResolver
             ));
         }
 
-        return builder.ToImmutable();
+        return Task.FromResult(builder.ToImmutable());
     }
 
     private async Task<DiscoveredItem?> FindDiscoveredItem(string url)
@@ -223,7 +214,6 @@ public sealed class ContentResolver
         return new ParsedItem(item.Route, metadata, result.Body);
     }
 
-    private static string NormalizeUrl(string url) => url.Trim('/').ToLowerInvariant();
 }
 
 public record ResolvedContent(
@@ -235,5 +225,7 @@ public record ResolvedContent(
     IFrontMatter Metadata,
     string Locale = "",
     bool IsFallback = false,
-    string? RequestedLocale = null
+    string? RequestedLocale = null,
+    string? FallbackRequestedDisplayName = null,
+    string? FallbackDefaultDisplayName = null
 );

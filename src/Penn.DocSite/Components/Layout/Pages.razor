@@ -30,7 +30,9 @@
         PreviousPageName="@_navInfo?.PreviousPage?.Title"
         PreviousPageHref="@_navInfo?.PreviousPage?.Route.CanonicalPath.Value"
         NextPageName="@_navInfo?.NextPage?.Title"
-        NextPageHref="@_navInfo?.NextPage?.Route.CanonicalPath.Value" />
+        NextPageHref="@_navInfo?.NextPage?.Route.CanonicalPath.Value"
+        FallbackRequestedLocale="@_resolved.FallbackRequestedDisplayName"
+        FallbackDefaultLocale="@_resolved.FallbackDefaultDisplayName" />
 
 }
 else if (_homeComponentType != null)

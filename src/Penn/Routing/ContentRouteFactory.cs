@@ -33,9 +33,10 @@ public static class ContentRouteFactory
         UrlPath canonicalPath;
         if (!string.IsNullOrEmpty(locale))
         {
+            var baseValue = basePath.Value == "/" ? "" : basePath.Value;
             canonicalPath = string.IsNullOrEmpty(urlSegment)
-                ? new UrlPath($"/{locale}{basePath.Value}")
-                : new UrlPath($"/{locale}{basePath.Value}/{NormalizeSegment(urlSegment)}");
+                ? new UrlPath($"/{locale}{baseValue}")
+                : new UrlPath($"/{locale}{baseValue}/{NormalizeSegment(urlSegment)}");
         }
         else
         {

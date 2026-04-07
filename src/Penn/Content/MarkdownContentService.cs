@@ -47,14 +47,9 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
 
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
-        var files = DiscoverFiles();
-        foreach (var (file, locale) in files)
+        foreach (var (route, sourceFile) in DiscoverRoutesWithFallbacks())
         {
-            var contentRoot = new FilePath(GetContentRootForLocale(locale));
-            var basePageUrl = GetBasePageUrlForLocale(locale);
-            var route = ContentRouteFactory.FromMarkdownFile(file, contentRoot, basePageUrl, locale);
-            ContentSource source = new MarkdownFileSource(file);
-            yield return new DiscoveredItem(route, source);
+            yield return new DiscoveredItem(route, new MarkdownFileSource(sourceFile));
         }
 
         await Task.CompletedTask; // Satisfy async requirement
@@ -193,15 +188,11 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
     {
         var builder = ImmutableList.CreateBuilder<(ContentRoute, TFrontMatter)>();
 
-        foreach (var (file, locale) in DiscoverFiles())
+        foreach (var (route, sourceFile) in DiscoverRoutesWithFallbacks())
         {
-            var contentRoot = new FilePath(GetContentRootForLocale(locale));
-            var basePageUrl = GetBasePageUrlForLocale(locale);
-            var route = ContentRouteFactory.FromMarkdownFile(file, contentRoot, basePageUrl, locale);
-
             try
             {
-                var content = await _fileSystem.File.ReadAllTextAsync(file.Value);
+                var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
                 var parsed = _parser.Parse<TFrontMatter>(content);
                 var fm = parsed.Metadata ?? new TFrontMatter();
                 builder.Add((route, fm));
@@ -224,6 +215,77 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
             .ToList();
     }
 
+    /// <summary>
+    /// Creates a ContentRoute for a discovered file, handling default-locale tagging.
+    /// Default locale files get no URL prefix but are tagged with the locale code.
+    /// </summary>
+    private ContentRoute CreateRouteForFile(FilePath file, string locale)
+    {
+        var contentRoot = new FilePath(GetContentRootForLocale(locale));
+        var isDefaultLocale = _localization.IsMultiLocale
+            && string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase);
+        var route = ContentRouteFactory.FromMarkdownFile(
+            file, contentRoot, _options.BasePageUrl, isDefaultLocale ? "" : locale);
+        if (isDefaultLocale)
+            route = route with { Locale = locale };
+        return route;
+    }
+
+    /// <summary>
+    /// Produces routes for all discovered files plus fallback entries for missing locale content.
+    /// Fallback entries point to default-locale source files and have <see cref="ContentRoute.IsFallback"/> set.
+    /// </summary>
+    private IEnumerable<(ContentRoute Route, FilePath SourceFile)> DiscoverRoutesWithFallbacks()
+    {
+        var files = DiscoverFiles();
+        var defaultLocaleFiles = new List<(FilePath File, string RelativePath)>();
+        var nonDefaultLocaleRelPaths = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var (file, locale) in files)
+        {
+            var route = CreateRouteForFile(file, locale);
+            yield return (route, file);
+
+            if (!_localization.IsMultiLocale) continue;
+
+            var contentRoot = GetContentRootForLocale(locale);
+            var relativePath = _fileSystem.Path.GetRelativePath(contentRoot, file.Value).Replace('\\', '/');
+            var isDefaultLocale = string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase);
+
+            if (isDefaultLocale)
+            {
+                defaultLocaleFiles.Add((file, relativePath));
+            }
+            else
+            {
+                if (!nonDefaultLocaleRelPaths.TryGetValue(locale, out var paths))
+                {
+                    paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    nonDefaultLocaleRelPaths[locale] = paths;
+                }
+                paths.Add(relativePath);
+            }
+        }
+
+        if (!_localization.IsMultiLocale) yield break;
+
+        foreach (var locale in GetNonDefaultLocaleSubfolders())
+        {
+            var existing = nonDefaultLocaleRelPaths.GetValueOrDefault(locale)
+                ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var (file, relativePath) in defaultLocaleFiles)
+            {
+                if (existing.Contains(relativePath)) continue;
+
+                var route = ContentRouteFactory.FromMarkdownFile(
+                    file, new FilePath(_absoluteContentPath), _options.BasePageUrl, locale);
+                route = route with { IsFallback = true };
+                yield return (route, file);
+            }
+        }
+    }
+
     /// <summary>Returns the content root path for a given locale.</summary>
     private string GetContentRootForLocale(string locale)
     {
@@ -232,20 +294,6 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
             return _absoluteContentPath;
 
         return _fileSystem.Path.Combine(_absoluteContentPath, locale);
-    }
-
-    /// <summary>Returns the base page URL for a given locale.</summary>
-    private UrlPath GetBasePageUrlForLocale(string locale)
-    {
-        if (!_localization.IsMultiLocale
-            || string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
-            return _options.BasePageUrl;
-
-        // Non-default locale: base URL is /{locale}{basePageUrl}
-        var basePath = _options.BasePageUrl.RemoveTrailingSlash().Value;
-        return basePath is "/" or ""
-            ? new UrlPath($"/{locale}")
-            : new UrlPath($"/{locale}{basePath}");
     }
 
     private static bool IsInLocaleSubfolder(string relativePath, List<string> localeSubfolders)

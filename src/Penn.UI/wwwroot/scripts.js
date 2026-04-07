@@ -48,6 +48,44 @@ class PageManager {
         this.mermaidManager?.init();
         this.outlineManager?.init();
         this.updateActiveNavLink(url.pathname);
+        this.updateLanguageSwitcher(url.pathname);
+    }
+
+    updateLanguageSwitcher(pathname) {
+        const switcher = document.querySelector('[data-lang-switcher]');
+        if (!switcher) return;
+
+        const defaultLocale = switcher.dataset.defaultLocale || '';
+        const locales = (document.body.getAttribute('data-locales') || '').split(',').filter(Boolean);
+        if (locales.length <= 1) return;
+
+        // Strip locale prefix from current path to get content-relative path
+        const trimmed = pathname.replace(/^\//, '').replace(/\/$/, '');
+        const firstSegment = trimmed.split('/')[0];
+        let contentPath = trimmed;
+        let currentLocale = defaultLocale;
+
+        if (firstSegment && locales.includes(firstSegment) && firstSegment !== defaultLocale) {
+            currentLocale = firstSegment;
+            contentPath = trimmed.substring(firstSegment.length).replace(/^\//, '');
+        }
+
+        // Update each locale link
+        switcher.querySelectorAll('a[data-locale]').forEach(link => {
+            const locale = link.dataset.locale;
+            const isDefault = locale === defaultLocale;
+            const newPath = isDefault
+                ? (contentPath ? `/${contentPath}/` : '/')
+                : (contentPath ? `/${locale}/${contentPath}/` : `/${locale}/`);
+            link.href = newPath;
+        });
+
+        // Update current locale indicator
+        const currentLabel = switcher.querySelector('[data-lang-current]');
+        if (currentLabel) {
+            const currentLink = switcher.querySelector(`a[data-locale="${currentLocale}"]`);
+            if (currentLink) currentLabel.textContent = currentLink.textContent.trim();
+        }
     }
 
     updateActiveNavLink(pathname) {

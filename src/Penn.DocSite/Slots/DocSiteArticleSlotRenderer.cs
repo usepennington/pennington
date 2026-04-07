@@ -30,6 +30,8 @@ internal class DocSiteArticleSlotRenderer(
             [nameof(DocSiteArticle.PreviousPageHref)] = navInfo?.PreviousPage?.Route.CanonicalPath.Value,
             [nameof(DocSiteArticle.NextPageName)] = navInfo?.NextPage?.Title,
             [nameof(DocSiteArticle.NextPageHref)] = navInfo?.NextPage?.Route.CanonicalPath.Value,
+            [nameof(DocSiteArticle.FallbackRequestedLocale)] = resolved.FallbackRequestedDisplayName,
+            [nameof(DocSiteArticle.FallbackDefaultLocale)] = resolved.FallbackDefaultDisplayName,
         };
     }
 }

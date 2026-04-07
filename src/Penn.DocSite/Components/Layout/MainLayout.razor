@@ -114,7 +114,7 @@
                         <div class="flex items-center gap-x-2">
                             @if (_langSwitcherItems.Count > 1)
                             {
-                                <LanguageSwitcher AlternateLanguages="_langSwitcherItems" />
+                                <LanguageSwitcher AlternateLanguages="_langSwitcherItems" DefaultLocale="@Localization.DefaultLocale" />
                             }
 
                             <!-- sun icon -->
