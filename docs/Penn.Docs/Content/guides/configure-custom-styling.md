@@ -1,18 +1,18 @@
 ---
 title: "Configure Custom Styling"
-description: "Customize MonorailCSS colors, themes, fonts, and extra styles in your Penn site"
+description: "Customize MonorailCSS colors, themes, fonts, and styles in your Penn site"
 uid: "penn.guides.configure-custom-styling"
 order: 2050
 ---
 
-This guide covers customizing the visual appearance of your Penn site using MonorailCSS. MonorailCSS is a [TailwindCSS](https://tailwindcss.com/)-compatible utility-first CSS framework that aims for syntax compatibility with Tailwind while doing everything at runtime. No build step. No `node_modules`. No existential dread about your JavaScript toolchain.
+Penn uses [MonorailCSS](https://github.com/nickyoungblood/monorailcss) for its utility-first CSS. MonorailCSS is Tailwind-compatible, runs entirely at runtime in .NET, and requires no Node.js toolchain. It scans your rendered HTML to discover which utility classes are in use, then generates only those styles. No build step, no `node_modules`, no purge configuration.
 
-Penn doesn't require MonorailCSS, but `Penn.MonorailCss` exists for a reason, and that reason is that Penn's default components assume Tailwind-compatible utility classes are available. Use MonorailCSS, use Tailwind, or write your own CSS. Penn is opinionated but not possessive.
+Penn does not require MonorailCSS. You can use Tailwind, plain CSS, or any other approach. However, Penn's built-in UI components (`Penn.UI`) emit Tailwind-compatible utility classes, so a compatible CSS framework must be available for them to render correctly.
 
 > [!NOTE]
-> For the full MonorailCSS configuration reference, see [Monorail CSS Configuration](xref:penn.reference.monorail-css-configuration).
+> For the full API reference, see [MonorailCSS Configuration](xref:penn.reference.monorail-css-configuration).
 
-## Prerequisites
+## Registering MonorailCSS
 
 Install the package:
 
@@ -20,7 +20,7 @@ Install the package:
 dotnet add package Penn.MonorailCss
 ```
 
-Register the services and middleware in `Program.cs`:
+Register services and middleware in `Program.cs`:
 
 ```csharp
 builder.Services.AddMonorailCss();
@@ -30,7 +30,9 @@ app.UsePenn();
 app.UseMonorailCss();
 ```
 
-Link the generated stylesheet in your layout:
+`AddMonorailCss()` registers the `CssClassCollector`, `MonorailCssService`, and the response processor that scans HTML for class names. `UseMonorailCss()` maps a `GET /styles.css` endpoint that returns the generated stylesheet.
+
+Link the stylesheet in your layout:
 
 ```razor
 @inject LinkService LinkService
@@ -38,100 +40,112 @@ Link the generated stylesheet in your layout:
 <link rel="stylesheet" href="@LinkService.GetLink("styles.css")" />
 ```
 
-> [!NOTE]
-> MonorailCSS works by scanning your rendered HTML at runtime to discover which CSS classes are in use, then generating only those styles. No purging step, no content configuration, no surprise missing classes in production. The tradeoff is runtime cost, which is negligible for content sites.
+If you use `Penn.DocSite`, this wiring is handled automatically by `AddDocSite()` and `UseDocSite()`. See [Using the DocSite Package](xref:penn.guides.using-docsite) for details.
 
-## Understanding MonorailCSS Colors
+## Understanding the Color System
 
-MonorailCSS uses a TailwindCSS-compatible color system with numbered scales (50-950) and semantic color roles. Penn's color system revolves around five roles:
+Penn maps colors to five semantic roles. Each role produces a full Tailwind-compatible scale from `50` (lightest) through `950` (darkest):
 
-- **primary** -- Your brand color. Used for links, buttons, and emphasis.
-- **accent** -- Complementary color for highlights and secondary actions.
-- **tertiary-one** and **tertiary-two** -- Additional accent colors, used primarily in syntax highlighting.
-- **base** -- Neutral colors for backgrounds, text, and borders.
+| Role | Purpose | Default |
+|------|---------|---------|
+| `primary` | Brand color. Links, buttons, emphasis. | Blue |
+| `accent` | Complementary color. Secondary actions, highlights. | Purple |
+| `tertiary-one` | Syntax highlighting (strings, numbers, literals). | Cyan |
+| `tertiary-two` | Syntax highlighting (variables, attributes). | Pink |
+| `base` | Neutral. Backgrounds, text, borders. | Slate |
 
-### Color Scale Structure
+Use these roles in your templates with standard Tailwind utility syntax:
 
-Like Tailwind, each color has a numerical scale:
+```razor
+<div class="bg-primary-600 text-primary-50">
+<p class="text-base-800 dark:text-base-200">
+<button class="bg-accent-500 hover:bg-accent-600">
+```
 
-- `50` -- Lightest shade
-- `100-400` -- Light shades
-- `500` -- Base/medium shade
-- `600-800` -- Dark shades
-- `900-950` -- Darkest shades
+The scale values follow Tailwind conventions: `50` and `100` are near-white, `500` is the mid-tone, and `900`/`950` are near-black.
 
-## Customizing Color Palettes
+## Named Color Scheme
 
-MonorailCSS provides two approaches, because sometimes you know exactly what color you want, and sometimes you just want "blue-ish."
-
-### Named Color Scheme
-
-The simplest approach. Pick Tailwind color names for each role:
+The simplest way to customize colors is to assign existing Tailwind palette names to each role:
 
 ```csharp
 builder.Services.AddMonorailCss(_ => new MonorailCssOptions
 {
     ColorScheme = new NamedColorScheme
     {
-        PrimaryColorName = ColorNames.Blue,
-        AccentColorName = ColorNames.Purple,
-        TertiaryOneColorName = ColorNames.Cyan,
-        TertiaryTwoColorName = ColorNames.Pink,
-        BaseColorName = ColorNames.Slate
+        PrimaryColorName = ColorNames.Emerald,
+        AccentColorName = ColorNames.Teal,
+        TertiaryOneColorName = ColorNames.Sky,
+        TertiaryTwoColorName = ColorNames.Violet,
+        BaseColorName = ColorNames.Zinc
     }
 });
 ```
 
-This maps existing Tailwind palettes to Penn's semantic roles. If you like Tailwind's blue, you get Tailwind's blue. All of it. Every shade.
+This maps the full 50-950 range of each Tailwind palette directly to the corresponding semantic role. All standard Tailwind color names are available:
 
-### Algorithmic Color Scheme
+- **Neutrals**: `Gray`, `Slate`, `Zinc`, `Neutral`, `Stone`
+- **Colors**: `Red`, `Orange`, `Amber`, `Yellow`, `Lime`, `Green`, `Emerald`, `Teal`, `Cyan`, `Sky`, `Blue`, `Indigo`, `Violet`, `Purple`, `Fuchsia`, `Pink`, `Rose`
 
-For more control, generate palettes from a hue value (0-360 degrees). `AlgorithmicColorScheme` uses `ColorPaletteGenerator.GenerateFromHue()` to create a full 50-950 palette from a single number:
+## Algorithmic Color Scheme
+
+For palette generation from a single value, use `AlgorithmicColorScheme`. It takes a hue (0-360 degrees) and generates a full 50-950 OKLCH color palette using `ColorPaletteGenerator.GenerateFromHue()`:
 
 ```csharp
 builder.Services.AddMonorailCss(_ => new MonorailCssOptions
 {
     ColorScheme = new AlgorithmicColorScheme
     {
-        PrimaryHue = 230,                        // Blue-ish
-        BaseColorName = ColorNames.Zinc,         // Neutral palette
-        ColorSchemeGenerator = primary => (
-            primary + 180,  // Accent hue (complementary)
-            primary + 90,   // Tertiary one hue
-            primary - 90    // Tertiary two hue
-        )
+        PrimaryHue = 230,
+        BaseColorName = ColorNames.Zinc
     }
 });
 ```
 
-The `ColorSchemeGenerator` function takes the primary hue and returns a tuple of `(accentHue, tertiaryOneHue, tertiaryTwoHue)`. The default generates complementary and split-complementary colors. Override it if your color theory opinions differ from Penn's. They probably should.
+The `PrimaryHue` value maps to the color wheel: 0 is red, 120 is green, 240 is blue.
 
-### Available Color Names
+### The ColorSchemeGenerator Function
 
-All [TailwindCSS colors](https://tailwindcss.com/docs/colors) are available:
+By default, accent and tertiary hues are derived from the primary hue using complementary and split-complementary offsets:
 
-- **Neutrals**: `Gray`, `Slate`, `Zinc`, `Neutral`, `Stone`
-- **Colors**: `Red`, `Orange`, `Amber`, `Yellow`, `Lime`, `Green`, `Emerald`, `Teal`, `Cyan`, `Sky`, `Blue`, `Indigo`, `Violet`, `Purple`, `Fuchsia`, `Pink`, `Rose`
+- Accent: `primary + 180` (complementary)
+- Tertiary one: `primary + 90`
+- Tertiary two: `primary - 90`
 
-### Using Colors in Templates
+Override this with the `ColorSchemeGenerator` property:
 
-All five roles are available as utility classes:
-
-```razor
-<div class="bg-primary-600 text-primary-50 border-primary-700">
-<p class="text-base-800 dark:text-base-200">
-<button class="bg-accent-500 hover:bg-accent-600">
+```csharp
+ColorScheme = new AlgorithmicColorScheme
+{
+    PrimaryHue = 205,
+    BaseColorName = ColorNames.Slate,
+    ColorSchemeGenerator = primary => (
+        primary + 155,  // Accent hue
+        primary + 45,   // Tertiary one hue
+        primary - 30    // Tertiary two hue
+    )
+}
 ```
 
-Stick to `base`, `primary`, and `accent` for your primary design system. The tertiary colors are there for syntax highlighting and the occasional flourish. Restraint is appreciated.
+The function receives the primary hue as input and returns a tuple of `(accentHue, tertiaryOneHue, tertiaryTwoHue)`. Hue values outside 0-360 are normalized automatically.
 
-## Implementing Dark/Light Theme Switching
+### How Palette Generation Works
+
+`ColorPaletteGenerator` builds each shade using the OKLCH color space. It applies per-shade lightness and chroma values calibrated to match Tailwind v4 palettes, with hue-specific adjustments:
+
+- Yellows and greens receive lightness boosts in mid-tones (shades 300-600) to avoid appearing muddy.
+- Blues shift slightly toward violet in darker shades for vibrancy.
+- Chroma follows a Gaussian distribution, peaking at shades 500-600.
+
+The base color (`BaseColorName`) always uses an existing Tailwind neutral palette rather than generating one algorithmically.
+
+## Dark/Light Theme Switching
 
 Penn supports dark mode through Tailwind's `dark:` variant prefix, controlled by a `dark` class on `<html>`.
 
-### Preventing Flash of Unstyled Content
+### Preventing Flash of Unstyled Content (FOUC)
 
-Add this script in the `<head>` of your HTML, before any stylesheets load:
+Add this inline script in the `<head>` of your HTML, before any stylesheets:
 
 ```html
 <script>
@@ -143,11 +157,11 @@ Add this script in the `<head>` of your HTML, before any stylesheets load:
 </script>
 ```
 
-This must be in `<head>`, not in an external script. Loading it later causes a flash of light-mode content that makes your dark-mode users wince. Penn has seen this happen. Penn remembers.
+This script must be inline in `<head>`, not in an external file. If it loads after the page renders, users see a flash of the wrong theme.
 
 ### Theme Toggle Button
 
-Add a button with the `data-theme-toggle` attribute. Penn's JavaScript finds elements with this attribute and wires up the click handler automatically:
+Add a button with the `data-theme-toggle` attribute. Penn's `ThemeManager` (in `scripts.js`) finds all elements with this attribute at initialization and wires up click handlers automatically:
 
 ```razor
 <button aria-label="Toggle Dark Mode" data-theme-toggle>
@@ -156,22 +170,21 @@ Add a button with the `data-theme-toggle` attribute. Penn's JavaScript finds ele
 </button>
 ```
 
-The `ThemeManager` class toggles the `dark` class on `document.documentElement` and persists the preference to `localStorage`.
+Clicking the button toggles the `dark` class on `document.documentElement` and persists the preference to `localStorage.theme`.
 
 ### Using Dark Mode Classes
 
-MonorailCSS supports the full TailwindCSS `dark:` prefix syntax:
+All MonorailCSS utilities support the `dark:` prefix:
 
 ```razor
-<div class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-<p class="text-primary-700 dark:text-primary-300">
+<div class="bg-white dark:bg-base-900 text-base-900 dark:text-base-100">
 <button class="bg-primary-600 hover:bg-primary-700
                dark:bg-primary-500 dark:hover:bg-primary-400">
 ```
 
 ## Custom Fonts
 
-Override the font families in the design system:
+Override font families through the `CustomCssFrameworkSettings` callback:
 
 ```csharp
 builder.Services.AddMonorailCss(_ => new MonorailCssOptions
@@ -192,30 +205,38 @@ builder.Services.AddMonorailCss(_ => new MonorailCssOptions
 });
 ```
 
-The `CustomCssFrameworkSettings` function receives the default `CssFrameworkSettings` (already configured with Penn's color scheme, prose customization, and component styles) and returns a modified version. Use `with` expressions to override only what you need.
+The `CustomCssFrameworkSettings` function receives the fully configured `CssFrameworkSettings` (with Penn's color scheme, prose customization, and component styles already applied) and returns a modified version. Use `with` expressions to override individual properties while preserving everything else.
+
+Use `.Add()` to introduce new font family keys (e.g., `font-display`) and `.SetItem()` to replace existing ones (e.g., override the default `mono` stack).
 
 ## Custom CSS Classes with Applies
 
-The `Applies` dictionary lets you define reusable component classes using Tailwind utility syntax:
+The `Applies` dictionary maps CSS selectors to Tailwind utility class strings. MonorailCSS expands these into real CSS rules:
 
 ```csharp
 CustomCssFrameworkSettings = defaultSettings => defaultSettings with
 {
-    Applies = new Dictionary<string, string>
-    {
-        { ".my-card", "bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm dark:bg-base-900 dark:border-base-700" },
-        { ".btn-primary", "bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md transition-colors" },
-        { ".prose code", "bg-primary-100 text-primary-800 px-2 py-1 rounded dark:bg-primary-900 dark:text-primary-200" }
-    }
+    Applies = defaultSettings.Applies
+        .Add(".my-card", "bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm dark:bg-base-900 dark:border-base-700")
+        .Add(".btn-primary", "bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md transition-colors")
 }
 ```
 
 > [!WARNING]
-> The `Applies` dictionary in the above example replaces the default applies entirely. If you want to keep Penn's default code block, tab, and alert styles, merge your custom applies with `defaultSettings.Applies` instead of creating a new dictionary. Penn's defaults are opinionated, but they're also the thing keeping your syntax highlighting from looking terrible.
+> Merge your custom applies with `defaultSettings.Applies` as shown above. If you create a new dictionary instead, you replace Penn's default applies for code blocks, tabs, alerts, syntax highlighting, and search. Those defaults are what style the built-in components.
+
+To replace the defaults entirely (if you are providing your own component styles):
+
+```csharp
+Applies = new Dictionary<string, string>
+{
+    { ".my-selector", "bg-white p-4 rounded" }
+}.ToImmutableDictionary()
+```
 
 ## Extra Styles
 
-For raw CSS that doesn't fit the utility model, use `ExtraStyles`:
+For raw CSS that does not fit the utility model, use `ExtraStyles`. This content is prepended to the generated stylesheet:
 
 ```csharp
 builder.Services.AddMonorailCss(_ => new MonorailCssOptions
@@ -230,11 +251,11 @@ builder.Services.AddMonorailCss(_ => new MonorailCssOptions
 });
 ```
 
-Extra styles are prepended to the generated stylesheet, so they're available alongside utility classes.
+Use `ExtraStyles` for font imports, CSS custom properties, keyframe animations, and any rules that require standard CSS syntax.
 
-## Content Paths for CSS Discovery
+## Content Paths
 
-If you have CSS classes used only in client-side JavaScript or other non-HTML files, tell MonorailCSS where to find them:
+MonorailCSS discovers utility classes by scanning server-rendered HTML responses. Classes that appear only in client-side JavaScript files are not visible to this process. The `ContentPaths` property tells MonorailCSS to scan additional files at startup:
 
 ```csharp
 builder.Services.AddMonorailCss(_ => new MonorailCssOptions
@@ -243,9 +264,11 @@ builder.Services.AddMonorailCss(_ => new MonorailCssOptions
 });
 ```
 
-This is the Tailwind "content" problem -- classes referenced only in JS won't appear in server-rendered HTML, so MonorailCSS wouldn't normally discover them. `ContentPaths` solves this by scanning the specified files at startup.
+Paths are relative to the web root. MonorailCSS extracts potential class names using both `class="..."` attribute parsing and broad token splitting. False positives are harmless -- MonorailCSS ignores tokens it does not recognize as utility classes.
 
 ## Complete Example
+
+This example combines an algorithmic color scheme, custom fonts, extra styles, and content path scanning:
 
 ```csharp
 builder.Services.AddMonorailCss(_ => new MonorailCssOptions
@@ -268,18 +291,29 @@ builder.Services.AddMonorailCss(_ => new MonorailCssOptions
             FontFamilies = defaultSettings.DesignSystem.FontFamilies
                 .Add("brand", new FontFamilyDefinition("Inter, sans-serif"))
                 .SetItem("mono", new FontFamilyDefinition("'JetBrains Mono', monospace"))
-        }
+        },
+        Applies = defaultSettings.Applies
+            .Add(".btn-primary", "bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md")
     },
 
     ExtraStyles = """
         @import url('https://fonts.googleapis.com/css2?family=Inter&family=JetBrains+Mono&display=swap');
-        """
+        """,
+
+    ContentPaths = ["js/search-ui.js"]
 });
 ```
 
 ## Troubleshooting
 
-- **No styling applied**: Ensure the `<link>` tag uses `LinkService.GetLink("styles.css")` and that `UseMonorailCss()` is called after `UsePenn()` in the middleware pipeline.
-- **Theme not switching**: Verify your button has the `data-theme-toggle` attribute and the JavaScript is loaded.
-- **Missing classes**: If classes from JS files are missing, add their paths to `ContentPaths`.
-- **Colors look wrong**: Double-check your hue values. Hue 0 is red, 120 is green, 240 is blue. Common knowledge, yet commonly forgotten.
+**No styles appear.** Verify that the `<link>` tag uses `LinkService.GetLink("styles.css")` and that `UseMonorailCss()` is called in the middleware pipeline.
+
+**Theme toggle does not work.** Check that the toggle button has the `data-theme-toggle` attribute and that Penn's `scripts.js` is loaded on the page.
+
+**Classes from JavaScript files are missing.** Add the file paths to `ContentPaths`. Paths are relative to `wwwroot`.
+
+**Algorithmic colors look wrong.** Verify your hue value. Hue 0 is red, 60 is yellow, 120 is green, 180 is cyan, 240 is blue, 300 is magenta.
+
+**Custom applies removed built-in styles.** Make sure you are merging with `defaultSettings.Applies` using `.Add()` rather than creating a new dictionary. See the [Custom CSS Classes with Applies](#custom-css-classes-with-applies) section.
+
+**FOUC on page load.** The inline theme detection script must be in `<head>` before any `<link>` or `<style>` elements. If it is in an external file or at the end of `<body>`, the browser renders the page before the script runs.

@@ -5,68 +5,105 @@ uid: "penn.guides.implement-search-functionality"
 order: 2060
 ---
 
-Penn builds a search index from your rendered content and serves it as JSON. A client-side FlexSearch engine loads that index and provides instant, fuzzy search with highlighting. You don't have to configure a search server, because there isn't one. The entire index ships as a static file. This is either a feature or a limitation, depending on how much content you have. For most documentation and blog sites it's plenty.
+Penn builds a search index from your rendered content and serves it as a static JSON file. On the client, FlexSearch loads that file and provides instant, fuzzy search with term highlighting. There is no search server. The entire index ships as `/search-index.json`, which makes it work identically in dev mode and after static site generation.
 
-## How It Works
+## How Search Works End-to-End
 
-1. During the build, <xref:T:Penn.Search.SearchIndexBuilder> processes every <xref:T:Penn.Pipeline.RenderedItem> from the content pipeline.
-2. Each item becomes a `SearchIndexDocument` with a title, body text (HTML stripped), URL, section, locale, and priority.
-3. Drafts are excluded automatically -- `SearchIndexBuilder` checks for `IDraftable { IsDraft: true }` and returns `null`.
-4. The resulting JSON is served at `/search-index.json` during dev and written to the output directory during build.
-5. On the client, FlexSearch loads the JSON, indexes it, and powers the search modal.
+The pipeline has a server side and a client side.
 
-### The SearchIndexDocument Shape
+**Server side:**
+
+1. `SearchIndexService` iterates over every registered `IContentService`, discovering and rendering all content through the standard parse/render pipeline.
+2. For each `RenderedItem`, `SearchIndexBuilder` strips HTML from the rendered output, extracts metadata, and produces a `SearchIndexDocument`.
+3. Drafts are excluded automatically -- the builder checks for `IDraftable { IsDraft: true }` and returns `null`.
+4. The list of documents is serialized to JSON using a source-generated `JsonSerializerContext` with camelCase property naming.
+5. Penn maps the endpoint `GET /search-index.json` in `UsePenn()`, which returns the serialized index with `application/json` content type.
+
+**Client side:**
+
+6. When the user first opens the search modal, the `SearchManager` class (in `scripts.js`) dynamically imports FlexSearch 0.8.2 from a CDN.
+7. It fetches `/search-index.json` (adjusting for any base URL on subdirectory deployments).
+8. FlexSearch indexes the documents using forward tokenization with Latin-advanced encoding.
+9. As the user types, a 300ms debounced search runs against the local index. Results are scored, ranked, and displayed with highlighted terms.
+
+The index is computed lazily. `SearchIndexService` wraps the build in an `AsyncLazy<string>`, so the JSON is only generated on first request. During development, the service is managed by `FileWatchDependencyFactory`, which recreates the instance when content files change on disk. You get fresh search results without restarting the server.
+
+## The SearchIndexDocument Shape
+
+Each document in the index has six fields:
 
 ```csharp
 public record SearchIndexDocument(
-    string Title,
-    string Body,       // Plain text, HTML tags stripped
-    UrlPath Url,
-    string? Section,
-    string Locale,
-    int Priority        // Higher = more prominent in results
+    string Title,       // From IFrontMatter.Title
+    string Body,        // Plain text -- HTML tags stripped
+    string Url,         // Canonical URL path
+    string? Section,    // From ISectionable.Section, if implemented
+    string Locale,      // From ContentRoute.Locale
+    int Priority        // Ranking weight (default 5)
 );
 ```
 
-The `Body` field comes from `SearchIndexBuilder.StripHtml()`, which removes tags, decodes common HTML entities, and collapses whitespace. It's not sophisticated -- it doesn't parse nested structures or handle edge cases in CDATA sections -- but it works well enough for search indexing.
+The `Body` field is produced by `SearchIndexBuilder.StripHtml()`. This method removes HTML tags with a regex, decodes the six most common HTML entities (`&amp;`, `&lt;`, `&gt;`, `&quot;`, `&#39;`, `&nbsp;`), and collapses whitespace. Code blocks, navigation chrome, and other markup are reduced to plain text so they don't pollute search results.
 
-## Prerequisites
+The `Section` field is populated only when the content's front matter implements `ISectionable`. For most sites this maps to the content source's configured section name.
 
-- A Penn site with content (markdown or Razor pages)
-- The Penn UI scripts included in your layout
-- A search trigger element with `id="search-input"`
+The `Url` field holds the canonical path (e.g., `/guides/implement-search-functionality`). During subdirectory deployments, the client-side code prepends the base URL when building result links.
 
-## Adding Search to Your Site
+## What DocSite Wires Up Automatically
 
-### 1. It's Already Registered
+If you are using `AddDocSite()`, search works out of the box. No configuration needed. Here is what happens behind the scenes:
 
-If you're using `AddPenn()`, the <xref:T:Penn.Search.SearchIndexBuilder> is registered automatically:
+- `AddDocSite()` calls `AddPenn()`, which registers `SearchIndexBuilder` as a singleton and `SearchIndexService` via `AddFileWatched<SearchIndexService>()`.
+- `UsePenn()` maps the `/search-index.json` endpoint.
+- The DocSite layout includes a `<button id="search-input">` in the header, which the `SearchManager` uses as its activation trigger.
+- The `App.razor` shell includes `<script src="/_content/Penn.UI/scripts.js" defer>`, which contains the `SearchManager` class.
+
+If you are building with [DocSite](xref:penn.guides.using-docsite), you can stop reading here. Everything below applies to custom sites that use `AddPenn()` directly.
+
+## Adding Search to a Custom Site
+
+When you call `AddPenn()`, the search index infrastructure is registered automatically. You need to provide three things in your layout: a trigger element, the script reference, and (optionally) a base URL attribute for subdirectory deployments.
+
+### 1. Registration Is Automatic
+
+`AddPenn()` handles all service registration:
 
 ```csharp
-// Inside AddPenn() -- you don't need to do this yourself
+// These lines are inside AddPenn() -- you don't write them yourself
 services.AddSingleton(_ => new SearchIndexBuilder());
+services.AddFileWatched<SearchIndexService>();
 ```
 
-If you're using `AddDocSite()`, search is fully wired up out of the box, including the UI. You can stop reading here and go make lunch.
+And `UsePenn()` maps the endpoint:
 
-### 2. Add the Search Trigger
+```csharp
+// Also inside UsePenn()
+app.MapGet("/search-index.json", async (SearchIndexService service) =>
+    Results.Content(await service.GetSearchIndexJsonAsync(), "application/json"));
+```
 
-In your layout, add an element with `id="search-input"`:
+You get this for free by calling `AddPenn()` and `UsePenn()`.
+
+### 2. Add the Search Trigger Element
+
+The `SearchManager` looks for an element with `id="search-input"`. If it doesn't find one, search is silently disabled. Add a button to your layout:
 
 ```html
-<button type="button" id="search-input" class="w-full rounded-md">
-    Search documentation...
+<button type="button" id="search-input">
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" stroke="currentColor"></circle>
+        <path d="M21 21l-4.35-4.35" stroke="currentColor"></path>
+    </svg>
+    Search
+    <kbd>Ctrl K</kbd>
 </button>
 ```
 
-The client-side scripts will:
-- Attach a click handler that opens the search modal
-- Register `Ctrl+K` / `Cmd+K` as a keyboard shortcut
-- Fetch `/search-index.json` on first open (lazy-loaded, not eager)
+Style this however you want. The only requirement is `id="search-input"`.
 
-### 3. Include the Scripts
+### 3. Include the Script
 
-In your `App.razor`, include the Penn UI script bundle and set the base URL for subdirectory deployments:
+In your `App.razor` or equivalent HTML shell, reference the Penn.UI script bundle:
 
 ```html
 <head>
@@ -74,70 +111,144 @@ In your `App.razor`, include the Penn UI script bundle and set the base URL for 
 </head>
 ```
 
-For subdirectory deployments, the base URL is communicated via a `data-base-url` attribute on `<body>`, which the <xref:T:Penn.Infrastructure.BaseUrlRewritingProcessor> adds automatically.
+This script contains the `PageManager` class, which initializes a `SearchManager` instance on page load. The `SearchManager` creates the search modal dynamically, attaches event listeners, and handles the full search lifecycle.
 
-### 4. Customize Search Priority (Optional)
+## Client-Side Search Behavior
 
-Content services expose a `SearchPriority` property. Higher values push results toward the top:
+### Lazy Loading
 
-```csharp
-public class MyContentService : IContentService
-{
-    public int SearchPriority => 8; // Default is 5
-    // ...
-}
+FlexSearch is not bundled with `scripts.js`. It is loaded as an ES module from a CDN the first time the user opens the search modal:
+
+```javascript
+const flexSearchModule = await import(
+    'https://cdnjs.cloudflare.com/ajax/libs/FlexSearch/0.8.2/flexsearch.bundle.module.min.js'
+);
+this.FlexSearch = flexSearchModule.default;
 ```
 
-The `SearchIndexBuilder` uses a `defaultPriority` of 5, but individual content services can override this when building their `RenderedItem` records.
+The search index JSON is also fetched lazily at this point. Until the user activates search, no network requests are made for search-related resources.
 
-## Search Features
+If either the FlexSearch import or the index fetch fails, the manager sets a `searchIndexFailed` flag and stops retrying. Subsequent modal opens display a "Search is currently unavailable" message.
 
-### Content Ranking
+### Indexing and Scoring
 
-FlexSearch ranks results using field weights:
+FlexSearch is configured with a Document index that stores `title`, `body`, `url`, and `section`, and indexes on `title` and `body`:
 
-- **Title** (3x) -- what the page is called matters most
-- **Description** (2x) -- the summary you wrote in front matter
-- **Body** (1x) -- the full text, because sometimes people search for obscure things
+```javascript
+this.searchIndex = new this.FlexSearch.Document({
+    tokenize: "forward",
+    encoder: this.FlexSearch.Charset.LatinAdvanced,
+    cache: 100,
+    document: {
+        id: 'id',
+        store: ["title", "body", "url", "section"],
+        index: ["title", "body"]
+    }
+});
+```
 
-The `Priority` field from `SearchIndexDocument` acts as a tiebreaker. Documentation pages (priority 10) outrank API reference pages (priority 5) when scores are otherwise equal.
+Forward tokenization means a search for "mark" matches "markdown" but not "remark". The Latin-advanced encoder handles accented characters and common transliterations.
 
-### Content Processing
+When a search runs, FlexSearch returns separate result arrays per indexed field. The `combineFieldResults` method merges them with weighted scoring:
 
-`SearchIndexBuilder.StripHtml()` is intentionally simple:
+| Field | Weight |
+|-------|--------|
+| `title` | 3x |
+| `body` | 1x |
 
-- Removes HTML tags via regex (`<[^>]+>`)
-- Decodes `&amp;`, `&lt;`, `&gt;`, `&quot;`, `&#39;`, `&nbsp;`
-- Collapses runs of whitespace to a single space
+Within each field, documents appearing earlier in the result array receive a higher position score (`1 / (index + 1)`). The `priority` value from the search index document acts as a multiplier on top of that. A document with priority 10 scores twice as high as one with priority 5, all else being equal.
 
-This means code blocks, navigation chrome, and other markup noise don't pollute your search index.
+### Debounce
 
-### Search UI
+Search input is debounced at 300ms. Each keystroke resets the timer. Only when the user pauses typing does the search execute. This prevents unnecessary computation while the user is still forming their query.
 
-The built-in search modal provides:
+## Search UI Features
 
-- **Keyboard shortcut**: `Ctrl+K` (Windows/Linux) or `Cmd+K` (Mac)
-- **Live results**: 300ms debounce, results appear as you type
-- **Highlighting**: Search terms highlighted in titles and snippets
-- **Graceful failure**: If the index can't load, you get a clear error message instead of a blank modal
+### Keyboard Shortcut
 
-### Styling
+Press `Ctrl+K` (Windows/Linux) or `Cmd+K` (macOS) to open the search modal from anywhere on the page. Press `Escape` to close it.
 
-The search modal uses semantic CSS classes styled by MonorailCSS:
+### The Modal
 
-- `.search-modal-backdrop` -- the overlay behind the modal
-- `.search-modal-content` -- the modal container
-- `.search-result-item` -- each result row
-- `.search-highlight` -- highlighted search terms
+The `SearchManager` builds the modal DOM dynamically on initialization. It consists of:
 
-You can override these via MonorailCSS configuration or additional CSS.
+- A backdrop overlay (`.search-modal-backdrop`) that closes the modal on click
+- A search input with a magnifying glass icon
+- A results container that shows one of four states: placeholder text, a loading indicator, search results, or an error message
+
+When the modal opens, it sets `document.body.style.overflow = 'hidden'` to prevent background scrolling. Closing the modal restores scrolling and clears the input.
+
+### Result Display
+
+Each result shows:
+
+- The page title with matching terms wrapped in `<mark class="search-highlight">` tags
+- A content snippet (up to 150 characters) centered on the first occurrence of a matching term, also with highlighting
+
+Results link directly to the page. Clicking a result closes the modal. In SPA-enabled sites, the navigation happens without a full page reload.
+
+### Snippet Generation
+
+The `getContentSnippet` method locates the first matching term in the body text and extracts 75 characters on each side. Terms shorter than 3 characters are ignored to avoid highlighting noise like "a" or "to". If no term is found, the snippet falls back to the first 150 characters of the body.
+
+## Customizing Search Priority
+
+The `SearchIndexBuilder` constructor accepts a `defaultPriority` parameter (default: 5). `AddPenn()` registers it with the default value:
+
+```csharp
+services.AddSingleton(_ => new SearchIndexBuilder());
+```
+
+To change the default priority for all documents, register the builder yourself before calling `AddPenn()`, or replace the registration after:
+
+```csharp
+services.AddSingleton(_ => new SearchIndexBuilder(defaultPriority: 10));
+```
+
+Each `IContentService` also exposes a `SearchPriority` property. `MarkdownContentService` defaults to 10; `RazorPageContentService` defaults to 5. You can set this per source through `MarkdownContentServiceOptions`:
+
+```csharp
+penn.AddMarkdownContent<MyFrontMatter>(md =>
+{
+    md.ContentPath = "Content/guides";
+    md.BasePageUrl = "/guides";
+    md.SearchPriority = 15; // Boost guides above other content
+});
+```
+
+The priority value appears in the JSON index and is used by the client-side scoring algorithm as a multiplier on the position-weighted field score.
+
+## Subdirectory Deployments
+
+When deploying to a subdirectory (e.g., `/my-project/`), URLs in the search index and the path to `search-index.json` itself need adjustment. Penn handles this through the `data-base-url` attribute on `<body>`.
+
+The `BaseUrlRewritingProcessor` adds this attribute automatically during static builds when a base URL is provided:
+
+```bash
+dotnet run -- build /my-project
+```
+
+The `SearchManager` reads the attribute to construct the correct index URL and to prefix result links:
+
+```javascript
+let baseUrl = document.body.getAttribute('data-base-url') || '';
+const searchIndexUrl = baseUrl ? `${baseUrl}/search-index.json` : '/search-index.json';
+```
+
+Result URLs are also prefixed with the base URL when rendering links in the modal. This means search results point to the correct paths regardless of where the site is hosted.
+
+For more details on subdirectory configuration, see [Deploying to Subdirectories](xref:penn.guides.deploying-to-subdirectories).
 
 ## Troubleshooting
 
-**Search modal doesn't open**: Confirm an element with `id="search-input"` exists in the DOM and that `scripts.js` loaded without errors.
+**Search modal does not open.** Confirm that an element with `id="search-input"` exists in the DOM. Open the browser console and check that `scripts.js` loaded without errors. The `SearchManager.init()` method returns early if it cannot find the trigger element.
 
-**Empty results**: Check that `/search-index.json` returns data. If it's empty, verify your content services are producing `RenderedItem` records and that the search index builder is registered.
+**"Search is currently unavailable" message.** The FlexSearch CDN import or the `/search-index.json` fetch failed. Check the browser console for network errors. If you are behind a corporate proxy that blocks CDN resources, you may need to self-host the FlexSearch module.
 
-**Wrong URLs in results**: If you're deploying to a subdirectory, make sure the base URL is configured correctly. See [Deploying to Subdirectories](xref:penn.guides.deploying-to-subdirectories).
+**Empty results for content that exists.** Verify that `/search-index.json` returns data by requesting it directly in the browser. If the array is empty, check that your content services are producing `RenderedItem` records and that the items are not marked as drafts. Also confirm that `SearchIndexBuilder` and `SearchIndexService` are registered (they are if you called `AddPenn()`).
 
-**Stale index during development**: The search index is rebuilt on each request in dev mode. If results seem stale, hard-refresh the page to clear the FlexSearch client cache.
+**Wrong URLs in search results.** For subdirectory deployments, verify that `<body data-base-url="/your-path">` is present in the rendered HTML. If it is missing, the `BaseUrlRewritingProcessor` may not be running -- check that you passed the base URL argument to the build command.
+
+**Stale results during development.** `SearchIndexService` is managed by `FileWatchDependencyFactory`, which recreates the service instance when content files change on disk. If results still seem stale, the browser may have cached the old `search-index.json`. Hard-refresh the page or clear the browser cache.
+
+**Search works in dev but not after build.** Confirm that `/search-index.json` is present in your output directory. The static build discovers it through the mapped endpoint. If the file is missing, check the build report output for errors.

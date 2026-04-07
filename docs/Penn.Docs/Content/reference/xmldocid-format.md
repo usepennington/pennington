@@ -1,45 +1,51 @@
 ---
 title: "XmlDocId Format"
-description: "Reference for XML Documentation ID strings — format specification, prefix characters, and Penn-specific examples"
+description: "Reference for XML Documentation ID strings used by Penn.Roslyn — format specification, prefix characters, encoding rules, and usage in code blocks"
 uid: "penn.reference.xmldocid-format"
 order: 4003
 ---
 
-XML Documentation ID strings (XmlDocId) are the .NET ecosystem's way of giving every type, method, property, and field a stable, unique name. They're not pretty — nobody has ever called `M:System.Linq.Enumerable.Where``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})` elegant — but they're unambiguous, and Penn uses them for API documentation generation and code block references.
+XML Documentation ID strings (XmlDocIds) uniquely identify every type, method, property, field, event, and namespace in a .NET assembly. The .NET compiler generates them automatically from source code. Penn.Roslyn uses XmlDocIds to locate symbols in a Roslyn workspace and render their source code in documentation pages.
+
+This page documents the XmlDocId format, its encoding rules, and how Penn consumes these IDs.
 
 ## Format Specification
 
-Every XmlDocId is a prefix character, a colon, and a fully qualified name. The prefix tells you what kind of thing it is.
+Every XmlDocId follows this structure:
 
-### Prefix Characters
+```
+prefix:fully.qualified.name
+```
 
-| Prefix | Element Type | Description |
-|--------|-------------|-------------|
-| `T:` | Type | Classes, interfaces, structs, enums, delegates, records |
-| `F:` | Field | Fields, constants |
-| `P:` | Property | Properties, indexers |
-| `M:` | Method | Methods, constructors, operators, extension methods |
-| `E:` | Event | Events |
-| `N:` | Namespace | Namespaces |
+The prefix is a single uppercase letter. The colon separates it from the fully qualified name. There are no spaces.
+
+## Prefix Characters
+
+| Prefix | Element | Examples |
+|--------|---------|----------|
+| `N:` | Namespace | `N:Penn.FrontMatter` |
+| `T:` | Type (class, struct, record, interface, enum, delegate) | `T:Penn.FrontMatter.IFrontMatter` |
+| `M:` | Method (method, constructor, operator, finalizer) | `M:Penn.Routing.UrlPath.Combine(Penn.Routing.UrlPath)` |
+| `P:` | Property (property, indexer) | `P:Penn.FrontMatter.IFrontMatter.Title` |
+| `F:` | Field (field, constant, enum member) | `F:Penn.Generation.OutputOptions.DefaultOutputPath` |
+| `E:` | Event | `E:MyApp.Services.FileWatcher.Changed` |
 
 ## Types
 
-The most common usage. Fully qualified name, namespace and all:
+### Simple Types
+
+Use the fully qualified name including namespace:
 
 ```
 T:Penn.FrontMatter.IFrontMatter
 T:Penn.FrontMatter.DocFrontMatter
-T:Penn.FrontMatter.BlogFrontMatter
-T:Penn.FrontMatter.IDraftable
 T:Penn.Islands.IIslandRenderer
-T:Penn.Islands.RenderContext
 T:Penn.MonorailCss.MonorailCssOptions
-T:Penn.MonorailCss.AlgorithmicColorScheme
 ```
 
 ### Generic Types
 
-Generic types use a backtick followed by the number of type parameters:
+Append a backtick and the number of type parameters:
 
 ```
 T:System.Collections.Generic.List`1
@@ -47,46 +53,74 @@ T:System.Collections.Generic.Dictionary`2
 T:Penn.Content.MarkdownContentService`1
 ```
 
+`List<T>` has one type parameter, so the suffix is `` `1 ``. `Dictionary<TKey, TValue>` has two, so the suffix is `` `2 ``.
+
 ### Nested Types
 
-Nested types use `+` to separate the containing type from the nested type:
+Separate the outer type from the inner type with `+`:
 
 ```
 T:Penn.Islands.SpaEnvelopeSerializer+Options
-T:OuterClass+InnerClass
+T:MyApp.OuterClass+InnerClass
+T:MyApp.OuterClass+InnerClass+DeeplyNested
 ```
 
 ## Methods
 
-Method IDs include parameter types in parentheses, fully qualified:
+Method IDs include parameter types in parentheses, fully qualified and comma-separated. No spaces between parameters.
 
 ```
-M:Penn.Infrastructure.PennExtensions.AddPenn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Penn.Infrastructure.PennOptions})
-M:Penn.Islands.ComponentRenderer.RenderComponentAsync``1(System.Collections.Generic.IDictionary{System.String,System.Object})
 M:Penn.MonorailCss.ColorPaletteGenerator.GenerateFromHue(System.Double)
+M:Penn.Infrastructure.PennExtensions.AddPenn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Penn.Infrastructure.PennOptions})
+```
+
+A method with no parameters has empty parentheses:
+
+```
+M:Penn.Roslyn.Symbols.ISymbolExtractionService.ClearCache
 ```
 
 ### Constructors
 
-Constructors use `#ctor` instead of the type name:
+Constructors use `#ctor` in place of the method name:
 
 ```
 M:Penn.Islands.RenderContext.#ctor(Penn.Routing.UrlPath,System.String,System.String)
 ```
 
-### Generic Method Parameters
+Static constructors use `#cctor`:
 
-Generic method type parameters use double backticks:
+```
+M:MyApp.Constants.#cctor
+```
+
+### Generic Methods
+
+A method's own type parameters use double backticks followed by the count:
 
 ```
 M:Penn.Islands.ComponentRenderer.RenderComponentAsync``1(System.Collections.Generic.IDictionary{System.String,System.Object})
 ```
 
-The ``1`` means the method has one type parameter. References to that parameter in the signature use `{``0}`.
+The ` ``1 ` after the method name means one method-level type parameter. References to that parameter in the signature appear as `` ``0 `` (zero-indexed).
+
+Type-level generic parameters (from the containing class) use a single backtick: `` `0 ``, `` `1 ``.
+
+### Generic Parameters in Signatures
+
+Generic type arguments in parameter types are enclosed in curly braces, not angle brackets:
+
+```
+M:Type.Method(System.Collections.Generic.List{System.String})
+M:Type.Method(System.Func{System.String,System.Boolean})
+M:Type.Method(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.List{System.Int32}})
+```
+
+`List<string>` becomes `List{System.String}`. Nested generics nest the curly braces.
 
 ### Extension Methods
 
-Extension methods are documented as static methods on their containing class. The `this` parameter is just a regular parameter:
+Extension methods are encoded as static methods on their declaring class. The `this` modifier does not appear in the ID:
 
 ```
 M:Penn.Infrastructure.PennExtensions.AddPenn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Penn.Infrastructure.PennOptions})
@@ -94,6 +128,8 @@ M:Penn.MonorailCss.MonorailServiceExtensions.AddMonorailCss(Microsoft.Extensions
 ```
 
 ## Properties
+
+### Simple Properties
 
 ```
 P:Penn.FrontMatter.IFrontMatter.Title
@@ -103,23 +139,80 @@ P:Penn.MonorailCss.MonorailCssOptions.ColorScheme
 P:Penn.Islands.RenderContext.BaseUrl
 ```
 
-## Array and Special Parameters
+### Indexers
+
+Indexers use `Item` as the property name with the parameter type in parentheses:
+
+```
+P:System.Collections.Generic.List`1.Item(System.Int32)
+P:System.Collections.Generic.Dictionary`2.Item(`0)
+```
+
+## Fields and Events
+
+Fields and constants:
+
+```
+F:Penn.Generation.OutputOptions.DefaultOutputPath
+F:MyApp.Settings.MaxRetryCount
+```
+
+Enum members are fields:
+
+```
+F:Penn.MonorailCss.AlgorithmicColorScheme.Complementary
+F:Penn.MonorailCss.AlgorithmicColorScheme.Analogous
+```
+
+Events:
+
+```
+E:MyApp.Services.FileWatcher.Changed
+E:MyApp.Services.FileWatcher.Error
+```
+
+## Arrays and Special Parameters
 
 Array parameters use square brackets:
 
 ```
-M:MyMethod(System.String[])
-M:MyMethod(System.Int32[,])    // Multi-dimensional array
-M:MyMethod(System.Int32[][])   // Jagged array
+M:MyApp.Processor.Run(System.String[])
 ```
 
-Nullable reference types don't change the XmlDocId — `string?` and `string` produce the same ID.
+Multi-dimensional arrays use commas inside the brackets:
+
+```
+M:MyApp.Processor.Run(System.Int32[,])
+M:MyApp.Processor.Run(System.Int32[,,])
+```
+
+Jagged arrays stack the brackets:
+
+```
+M:MyApp.Processor.Run(System.Int32[][])
+```
+
+`ref` and `out` parameters use `@`:
+
+```
+M:MyApp.Parser.TryParse(System.String,System.Int32@)
+```
+
+Pointer types use `*`:
+
+```
+M:MyApp.Interop.Process(System.Int32*)
+```
+
+Nullable value types use `System.Nullable{System.Int32}`. Nullable reference type annotations (`string?` vs `string`) do not change the XmlDocId.
 
 ## Usage in Penn
 
-### Code Block References
+Penn.Roslyn provides four code block modifiers that accept XmlDocIds. Add the modifier after the language identifier in a fenced code block. For full setup instructions, see [Connecting to Roslyn](xref:penn.getting-started.connecting-to-roslyn).
 
-Penn's markdown renderer supports `xmldocid` code blocks that expand to formatted API documentation:
+### `:xmldocid`
+
+Renders the full source declaration of one or more symbols. Place each XmlDocId on its own line:
 
 ````markdown
 ```csharp:xmldocid
@@ -127,11 +220,49 @@ T:Penn.FrontMatter.IFrontMatter
 ```
 ````
 
-This renders the source code of `IFrontMatter` with syntax highlighting and a link to the source file.
+Multiple symbols in one block:
 
-### Source Path References
+````markdown
+```csharp:xmldocid
+T:Penn.FrontMatter.IDraftable
+T:Penn.FrontMatter.ITaggable
+T:Penn.FrontMatter.IOrderable
+```
+````
 
-You can also reference source files directly with `:path`:
+### `:xmldocid,bodyonly`
+
+Renders only the implementation body, stripping the declaration signature, braces, and attributes. For methods, this returns the method body. For types, this returns the content between the type's braces:
+
+````markdown
+```csharp:xmldocid,bodyonly
+M:Penn.Infrastructure.PennExtensions.AddPenn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Penn.Infrastructure.PennOptions})
+```
+````
+
+### `:xmldocid-diff`
+
+Accepts exactly two XmlDocIds and renders a line-level diff. Lines from the first symbol that are absent in the second appear as removals. Lines in the second that are absent in the first appear as additions:
+
+````markdown
+```csharp:xmldocid-diff
+T:Penn.FrontMatter.IFrontMatter
+T:Penn.FrontMatter.DocFrontMatter
+```
+````
+
+Also supports `,bodyonly`:
+
+````markdown
+```csharp:xmldocid-diff,bodyonly
+M:MyApp.Services.OldService.Process
+M:MyApp.Services.NewService.Process
+```
+````
+
+### `:path`
+
+Includes a file by its path relative to the solution root. This modifier uses the solution directory, not XmlDocIds:
 
 ````markdown
 ```csharp:path
@@ -139,36 +270,51 @@ src/Penn/FrontMatter/IFrontMatter.cs
 ```
 ````
 
-### Cross-References
-
-The `xref:` link format uses the `Uid` from `ICrossReferenceable`, not XmlDocId strings. Don't mix them up — they serve different purposes.
+Directory traversal (`..`) and absolute paths are rejected.
 
 ## Getting XmlDocId Values
 
 ### JetBrains Rider / ReSharper
 
-1. Right-click the type, method, or member
-2. Select **Copy Code Reference**
-3. The XmlDocId is now on your clipboard
+Right-click any symbol and select **Copy Code Reference**. The XmlDocId is copied to your clipboard.
 
-Keyboard shortcut: **Ctrl+Shift+Alt+C** (Windows/Linux) or **Cmd+Shift+Alt+C** (macOS).
+Keyboard shortcut: **Ctrl+Shift+Alt+C** (Windows/Linux), **Cmd+Shift+Alt+C** (macOS).
 
-### Visual Studio
+### Visual Studio XML Documentation File
 
-The **XML Documentation Comments** feature generates these IDs in the XML doc file during build. Check the `bin/` output for `YourAssembly.xml`.
+Enable XML documentation output in your project file:
+
+```xml
+<PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+</PropertyGroup>
+```
+
+Build the project. The generated XML file in `bin/` contains every XmlDocId for the assembly. Search the file for the member name.
 
 ### Manual Construction
 
-For simple cases:
+1. Choose the prefix: `T:`, `M:`, `P:`, `F:`, `E:`, or `N:`.
+2. Write the fully qualified name, including namespace.
+3. For generic types, append `` `N `` where N is the type parameter count.
+4. For generic methods, append `` ``N `` after the method name.
+5. For methods, add parameter types in parentheses, comma-separated, fully qualified.
+6. For generic arguments in parameters, use `{` and `}` instead of `<` and `>`.
 
-1. Pick the prefix (`T:`, `M:`, `P:`, `F:`, `E:`, `N:`)
-2. Write the fully qualified name including namespace
-3. For generics, add `` `N `` where N is the type parameter count
-4. For methods, add parameter types in parentheses, comma-separated
+## Penn Normalization
 
-## Penn Type Reference
+Penn normalizes XmlDocIds before lookup by stripping namespace prefixes from parameter types. Both of these resolve to the same symbol:
 
-A quick reference of commonly used Penn XmlDocId strings:
+```
+M:Type.Method(System.String,System.Int32)
+M:Type.Method(String,Int32)
+```
+
+You can use either the fully qualified or the short form in `:xmldocid` code blocks. The normalizer handles generic parameters (`` `0 ``, `` ``0 ``), nested generics, arrays, and `ref`/`out` markers.
+
+## Penn Type Quick Reference
+
+Commonly referenced Penn XmlDocIds:
 
 ```
 T:Penn.FrontMatter.IFrontMatter
@@ -182,9 +328,13 @@ T:Penn.FrontMatter.ISectionable
 T:Penn.FrontMatter.IRedirectable
 T:Penn.FrontMatter.DocFrontMatter
 T:Penn.FrontMatter.BlogFrontMatter
+T:Penn.Infrastructure.PennOptions
 T:Penn.Islands.IIslandRenderer
 T:Penn.Islands.RenderContext
 T:Penn.Islands.ComponentRenderer
 T:Penn.MonorailCss.MonorailCssOptions
 T:Penn.MonorailCss.AlgorithmicColorScheme
+T:Penn.Roslyn.RoslynOptions
+M:Penn.Infrastructure.PennExtensions.AddPenn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Penn.Infrastructure.PennOptions})
+M:Penn.Roslyn.RoslynExtensions.AddPennRoslyn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Penn.Roslyn.RoslynOptions})
 ```

@@ -5,7 +5,7 @@ uid: "penn.under-the-hood.table-of-contents-generation"
 order: 3020
 ---
 
-Documentation sites live and die by their navigation. Penn's table of contents system takes a flat list of content pages and produces a hierarchical navigation tree, breadcrumbs, and prev/next links. It handles section auto-creation, ordering, and active-state tracking. All from data your content services already provide.
+Documentation sites live and die by their navigation. Penn's table of contents system takes a flat list of content pages and produces a hierarchical navigation tree, breadcrumbs, and prev/next links. It handles section auto-creation, ordering, and active-state tracking, all from data your content services already provide.
 
 No configuration files for navigation structure. No manually maintained sidebar definitions. The tree builds itself from your content, and you control it with front matter and folder structure.
 
@@ -26,9 +26,9 @@ Six fields:
 - **`Section`**: Optional section grouping (for multi-section sites).
 - **`Locale`**: Optional locale identifier.
 
-### HierarchyParts: The Tree Coordinates
+### HierarchyParts as Tree Coordinates
 
-`HierarchyParts` is the mechanism that turns flat content into a tree. For a markdown file at `Content/guides/getting-started/installation.md` with base URL `/docs`, the content service might produce:
+`HierarchyParts` is the mechanism that turns flat content into a tree. For a markdown file at `Content/guides/getting-started/installation.md`, the content service produces:
 
 ```
 HierarchyParts = ["guides", "getting-started", "installation"]
@@ -36,29 +36,33 @@ HierarchyParts = ["guides", "getting-started", "installation"]
 
 The array length determines the depth, and the values at each position determine the parent-child relationships. Think of it as a path through the tree, where each element names a node.
 
-Content services have full control over how they generate hierarchy parts. The markdown service uses folder structure. An API reference service might use namespaces. A blog service might use date-based groupings. The `NavigationBuilder` does not care where the parts come from -- it just builds a tree from them.
+Content services have full control over how they generate hierarchy parts. The markdown service uses folder structure. An API reference service might use namespaces. A blog service might use date-based groupings. The `NavigationBuilder` does not care where the parts come from -- it builds a tree from them.
 
 ## NavigationBuilder: The Tree Constructor
 
-`NavigationBuilder` is the engine that transforms a flat `IReadOnlyList<ContentTocItem>` into an `ImmutableList<NavigationTreeItem>`:
+`NavigationBuilder` transforms a flat `IReadOnlyList<ContentTocItem>` into an `ImmutableList<NavigationTreeItem>`:
 
 ```csharp:xmldocid
 T:Penn.Navigation.NavigationBuilder
 ```
 
-### Building the Tree
+### The Recursive BuildLevel Algorithm
 
-The algorithm is recursive and works level by level:
+The `BuildLevel` method is the core of the tree construction. It operates recursively, processing one depth level at a time.
 
-1. **Find items at the current depth.** For the root level (depth 0), find all items with `HierarchyParts.Length == 1`. For depth 1, find items with length 2 whose first part matches the parent.
+1. **Find items at the current depth.** At the root level (depth 0), find all items with `HierarchyParts.Length == 1`. At depth 1, find items with length 2 whose first part matches the parent. The match is case-insensitive via `PartsMatch`, which compares each element of `HierarchyParts` against the parent's parts prefix.
 
-2. **Auto-create section nodes.** Find hierarchy parts at this depth that have descendants but no direct item. For example, if there are items at `["guides", "installation"]` and `["guides", "configuration"]` but nothing at just `["guides"]`, the builder creates a non-navigable section node for "guides."
+2. **Detect orphan sections.** Scan for hierarchy parts at this depth that have descendants deeper in the tree but no direct item at this level. These are folders that contain child pages but have no `index.md` of their own.
 
-3. **Sort.** Items are ordered by `Order`, then alphabetically by `Title`.
+3. **Auto-create section nodes.** For each orphan section, create a non-navigable `NavigationTreeItem` with an empty route, a title derived from `FormatSectionTitle`, and an order inherited from its lowest-ordered child.
 
-4. **Recurse.** For each item at this level, build its children by descending one level deeper.
+4. **Sort.** Both auto-created sections and direct items are combined and ordered by `Order`, then alphabetically by `Title` (case-insensitive).
 
-### Auto-Created Section Nodes
+5. **Recurse.** For each node at this level, call `BuildLevel` again with the node's `HierarchyParts` as the new parent prefix, descending one level deeper.
+
+During recursion, the builder also computes `IsSelected` (does this node's route match the current route?) and `IsExpanded` (is this node selected, or is any of its descendants selected or expanded?). These flags propagate upward through the tree: selecting a leaf causes every ancestor to expand.
+
+## Auto-Created Section Nodes
 
 When a folder exists in the hierarchy but has no corresponding page, the builder creates a section node automatically:
 
@@ -77,13 +81,15 @@ Guides (non-navigable section)
   +-- Configuration
 ```
 
-The section title is generated from the folder name: kebab-case is converted to title case (`getting-started` becomes "Getting Started"). The section's order is inherited from its lowest-ordered child.
+The section title is generated by `FormatSectionTitle`, which converts kebab-case folder names to title case: `getting-started` becomes "Getting Started". The conversion splits on hyphens, capitalizes the first character of each word, and joins with spaces.
 
-These auto-created nodes have empty routes -- they are not clickable. They exist purely to organize the navigation visually.
+The section's `Order` is set to the minimum `Order` value among its children. If the children have orders 210 and 220, the section gets order 210. This means children control their parent section's position in the navigation.
 
-### NavigationTreeItem
+Auto-created nodes carry empty routes. They are not clickable and do not participate as navigable pages. They exist to organize the navigation visually.
 
-Each node in the tree is a `NavigationTreeItem`:
+## NavigationTreeItem: The Tree Node
+
+Each node in the final tree is a `NavigationTreeItem`:
 
 ```csharp:xmldocid
 T:Penn.Navigation.NavigationTreeItem
@@ -92,17 +98,17 @@ T:Penn.Navigation.NavigationTreeItem
 The record carries:
 
 - **`Title`** and **`Route`**: What to display and where to link.
-- **`Order`**: For sorting.
+- **`Order`**: Sorting weight.
 - **`Section`**: Optional section grouping.
-- **`IsSelected`**: Whether this is the current page.
-- **`IsExpanded`**: Whether this node's subtree should be visible (true if any descendant is selected).
+- **`IsSelected`**: Whether this node is the current page. Exactly one node in the tree has `IsSelected = true` at any time.
+- **`IsExpanded`**: Whether this node's subtree should be visible. True if the node itself is selected or any descendant is selected or expanded.
 - **`Children`**: An `ImmutableList<NavigationTreeItem>` of child nodes.
 
-`IsExpanded` is the key to collapsible navigation. When you visit `/guides/installation/`, the "Guides" section node gets `IsExpanded = true` because one of its descendants is selected. The "API Reference" section stays collapsed.
+`IsExpanded` is the key to collapsible navigation. When you visit `/guides/installation/`, the "Guides" section node gets `IsExpanded = true` because one of its descendants is selected. The "API Reference" section stays collapsed. A UI component walks the tree and renders only expanded subtrees, giving readers a focused view of where they are.
 
 ## NavigationInfo: The Full Picture
 
-For a given page, `BuildNavigationInfo` provides everything the layout needs:
+For a given page, `BuildNavigationInfo` assembles everything the layout needs:
 
 ```csharp:xmldocid
 T:Penn.Navigation.NavigationInfo
@@ -111,13 +117,13 @@ T:Penn.Navigation.NavigationInfo
 This includes:
 
 - **`SectionName`**: The section the current page belongs to.
-- **`Breadcrumbs`**: A list of `BreadcrumbItem` records from root to current page.
+- **`Breadcrumbs`**: A list of `BreadcrumbItem` records from root to the current page.
 - **`PageTitle`**: The current page's title.
-- **`PreviousPage`** and **`NextPage`**: For sequential navigation.
+- **`PreviousPage`** and **`NextPage`**: Adjacent pages for sequential navigation.
 
-### Prev/Next Computation
+### Prev/Next via Depth-First Flattening
 
-Previous and next pages are determined by flattening the tree depth-first:
+Previous and next pages are determined by flattening the entire tree depth-first into a linear list:
 
 ```
 Home                    [0]
@@ -129,26 +135,26 @@ Guides                  [4]  (section)
   Advanced Features     [6]
 ```
 
-If you are on "Installation" (index 2), previous is "Getting Started" (index 1) and next is "First Steps" (index 3). The flattening respects the tree order, so prev/next follows the same path a reader would take going through the docs linearly.
+If you are on "Installation" (index 2), previous is "Getting Started" (index 1) and next is "First Steps" (index 3). The flattening respects the sorted tree order, so prev/next follows the same path a reader would take going through the docs linearly.
 
-Section nodes *are* included in the flattened list. If a section node is navigable (has a route), it participates in prev/next. Auto-created sections with empty routes are also in the list -- whether your UI skips them is a presentation decision.
+Section nodes are included in the flattened list. If a section node is navigable (has a route), it participates in prev/next. Auto-created sections with empty routes are also in the list -- whether your UI skips them is a presentation decision.
 
-### Breadcrumbs
+### Breadcrumbs via Expanded-Path Walk
 
-Breadcrumbs are computed by walking the tree from root to the selected node:
+Breadcrumbs are computed by walking the tree from root to the selected node, following the `IsExpanded` trail. The `FindPath` method enters each expanded node, appending a `BreadcrumbItem` to the path. If a node's children contain the target, the node stays in the breadcrumb trail. If not, it backtracks.
 
 ```
-Home > Getting Started > Installation
+Home > User Guides > Basic Usage
 ```
 
-Each breadcrumb is a `BreadcrumbItem` with a title and optional route. The algorithm follows the `IsExpanded` trail: starting from the root, it enters each expanded node until it finds the selected one.
+Each breadcrumb is a `BreadcrumbItem` with a title and optional route. Non-navigable section nodes appear in the breadcrumb trail with a null route, so the UI can render them as plain text rather than links.
 
 ## Ordering
 
-The ordering system is straightforward:
+The ordering system has three tiers:
 
 1. **Explicit order**: Set `order` in your front matter. Lower numbers sort first.
-2. **Auto-created sections**: Inherit the minimum `Order` value from their children.
+2. **Inherited section order**: Auto-created sections take the minimum `Order` value from their children.
 3. **Alphabetical fallback**: Items with the same order are sorted by title (case-insensitive).
 
 ```yaml
@@ -166,22 +172,12 @@ A practical ordering scheme:
 | 100-199 | Getting Started section |
 | 200-299 | Core concepts |
 | 1000-1999 | Reference docs |
-| 3000-3999 | Under the Hood (you are here) |
+| 3000-3999 | Under the Hood |
 | 9000+ | Appendices, changelog |
 
-Leave gaps between items so you can insert new pages without renumbering everything. If you have learned anything from BASIC line numbers, it is this.
+Leave gaps between items so you can insert new pages without renumbering everything. See <xref:penn.guides.edit-content-existing-site> for how to work with ordering when adding pages to an existing site.
 
-## Multi-Section Sites
-
-Penn supports multiple independent content sources, each with their own section. For example, a project might have:
-
-- `/docs/` -- Documentation (section: "docs")
-- `/blog/` -- Blog posts (section: "blog")
-- `/api/` -- API reference (section: "api")
-
-Each section's content service provides `ContentTocItem` records with appropriate `Section` values. The `NavigationBuilder` processes all items together, and the `Section` field lets the UI filter or group navigation by section.
-
-## A Complete Example
+## A Complete Worked Example
 
 Given this content structure:
 
@@ -200,7 +196,7 @@ Content/
     +-- content-item.md   (order: 1010, title: "ContentItem")
 ```
 
-The `NavigationBuilder` produces:
+The content services produce eight `ContentTocItem` records with hierarchy parts like `["getting-started", "installation"]`, `["guides", "basic-usage"]`, and so on. `NavigationBuilder.BuildTree` processes them and produces:
 
 ```
 Home                          (order: 1, navigable)
@@ -217,9 +213,9 @@ Api                           (order: 1000, auto-created section, not navigable)
 
 Key observations:
 
-- "Getting Started" is auto-created because there is no `getting-started/index.md`. Its order (110) comes from its lowest child.
-- "User Guides" is navigable because `guides/index.md` exists. It is both a page and a container.
-- "Api" is auto-created with title derived from the folder name `api` (title-cased to "Api"). If you wanted "API Reference" instead, you would either add an `index.md` with that title or -- if Penn supports folder metadata -- configure it there.
+- "Getting Started" is auto-created because there is no `getting-started/index.md`. Its order (110) comes from its lowest-ordered child.
+- "User Guides" is navigable because `guides/index.md` exists. It is both a page and a container for child pages.
+- "Api" is auto-created with title derived from the folder name `api` (title-cased to "Api"). To get "API Reference" instead, add an `api/index.md` with that title.
 
 When visiting `/guides/basic-usage/`:
 
@@ -231,4 +227,6 @@ IsExpanded: User Guides = true, Getting Started = false, Api = false
 IsSelected: Basic Usage = true
 ```
 
-The whole thing is computed from flat data. No configuration file describes this tree structure. It emerges from the hierarchy parts, order values, and the recursive build algorithm. Change your folder structure, and the navigation updates automatically.
+The navigation tree is computed from flat data. No configuration file describes this tree structure. It emerges from the hierarchy parts, order values, and the recursive build algorithm. Change your folder structure, and the navigation updates automatically.
+
+For content services that generate `ContentTocItem` records from non-file sources, the same algorithm applies. See <xref:penn.guides.custom-content-service> for how to build a content service that produces its own hierarchy parts.

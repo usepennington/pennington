@@ -1,24 +1,20 @@
 ---
 title: "Using the DocSite Package"
-description: "Build a documentation site with Penn.DocSite -- the opinionated, inflexible, sufficient-to-the-purpose documentation package"
+description: "Build a documentation site with Penn.DocSite — the batteries-included documentation package"
 uid: "penn.guides.using-docsite"
 order: 2510
 ---
 
-Penn.DocSite is the cookie-cutter documentation site package. It wraps Penn core, MonorailCSS, and SPA navigation into a single `AddDocSite()` call and gives you a professional-looking documentation site with search, dark mode, sidebar navigation, and article pagination. You're reading a site built with it right now.
-
-> [!IMPORTANT]
-> Penn.DocSite drives the documentation for Penn itself. It is opinionated, inflexible, and sufficient to the purpose. It will change when this site's needs change. Use it for quick documentation sites, proof-of-concepts, or as inspiration for building your own layout with Penn core.
+Penn.DocSite wraps Penn core, MonorailCSS, and SPA navigation into a single `AddDocSite()` call. It gives you a documentation site with sidebar navigation, search, dark mode, article pagination, and static site generation. The site you are reading was built with it.
 
 ## What You Get
 
-- **Sidebar navigation** built automatically from your content structure
-- **Article layout** with previous/next page links
-- **SPA navigation** between pages (no full page reloads)
-- **Search** with FlexSearch (Ctrl+K)
-- **Dark/light mode** toggle
-- **MonorailCSS** styling with customizable color schemes
-- **Static site generation** via `dotnet run -- build`
+- **Sidebar navigation** generated automatically from your content directory structure and front matter
+- **SPA navigation** between pages -- clicking a link fetches a JSON envelope and swaps content in place, with no full page reload
+- **Search** via FlexSearch, accessible with Ctrl+K
+- **Dark/light mode** toggle with a script that prevents flash of unstyled content
+- **MonorailCSS** utility-first styling with customizable color schemes and extra styles
+- **Static site generation** via `dotnet run -- build` that crawls every page and writes HTML to disk
 
 ## Quick Start
 
@@ -27,10 +23,12 @@ Penn.DocSite is the cookie-cutter documentation site package. It wraps Penn core
 ```bash
 dotnet new web -n MyDocs
 cd MyDocs
-dotnet add package Penn.DocSite
+dotnet add package Penn.DocSite --prerelease
 ```
 
-### 2. Configure Program.cs
+### 2. Write Program.cs
+
+Replace the contents of `Program.cs`:
 
 ```csharp
 using Penn.DocSite;
@@ -48,7 +46,7 @@ app.UseDocSite();
 await app.RunDocSiteAsync(args);
 ```
 
-That's the entire `Program.cs`. Four meaningful lines.
+Four meaningful lines: register services, build, configure middleware, run.
 
 ### 3. Add Content
 
@@ -58,11 +56,12 @@ Create `Content/index.md`:
 ---
 title: "Welcome"
 description: "Getting started with my project"
+order: 1
 ---
 
 # Welcome
 
-This is the home page. Add more `.md` files and they'll appear in the sidebar automatically.
+This is the home page. Add more `.md` files and they appear in the sidebar.
 ```
 
 ### 4. Run It
@@ -71,81 +70,130 @@ This is the home page. Add more `.md` files and they'll appear in the sidebar au
 dotnet watch
 ```
 
-Navigate to the URL in your terminal. You'll see your documentation page with a sidebar, search, and dark mode toggle. Edit `index.md` and save -- the browser refreshes automatically.
+Navigate to the URL in your terminal. You will see your page rendered in a styled layout with sidebar navigation, search, and a dark mode toggle. Edit `index.md` and save -- the browser refreshes automatically.
+
+> [!TIP]
+> Add a `Watch` item to your `.csproj` so `dotnet watch` picks up content changes:
+> ```xml
+> <ItemGroup>
+>     <Watch Include="Content\**\*.*" />
+> </ItemGroup>
+> ```
+
+For a full walkthrough of project setup, content structure, and static builds, see [Creating Your First Site](xref:penn.getting-started.creating-first-site).
 
 ## What AddDocSite Does
 
-<xref:T:Penn.DocSite.DocSiteServiceExtensions> method `AddDocSite()` orchestrates several registrations:
+The `AddDocSite()` extension method on `IServiceCollection` accepts a factory function that returns a `DocSiteOptions` record. Internally it performs six registrations:
 
-1. **Penn core** via `AddPenn()` -- configures `PennOptions` with your site title, description, content path, and a markdown content source using `DocSiteFrontMatter`.
-2. **MonorailCSS** via `AddMonorailCss()` -- sets up the CSS framework with your color scheme and any extra styles.
-3. **SPA navigation** via `AddSpaNavigation()` -- registers `SpaPageDataService` and the data endpoint.
-4. **ComponentRenderer** -- scoped Blazor `HtmlRenderer` for island rendering.
-5. **DocSiteArticleSlotRenderer** -- the island renderer for the main article content area.
-6. **Razor components** via `AddRazorComponents()` -- DocSite ships its own `App` component, layout, and pages.
+1. **Penn core** via `AddPenn()` -- configures `PennOptions` with your site title, description, canonical URL, and content root path. Registers a markdown content source using `DocSiteFrontMatter` as the front matter type, with the content path from your options and a base page URL of `/`.
+2. **MonorailCSS** via `AddMonorailCss()` -- sets up the utility-first CSS framework with your `ColorScheme` (or the default Blue/Purple/Cyan/Pink/Slate scheme) and any `ExtraStyles` you provide.
+3. **SPA navigation** via `AddSpaNavigation()` -- registers `SpaPageDataService` and the `/_spa-data/` endpoint that serves JSON envelopes for client-side page transitions.
+4. **ComponentRenderer** -- a scoped Blazor `HtmlRenderer` used by island renderers to produce HTML strings from Razor components.
+5. **DocSiteArticleSlotRenderer** -- the island renderer for the main article content area, registered as an `IIslandRenderer`.
+6. **Razor components** via `AddRazorComponents()` -- DocSite ships its own `App` component, layout, and pages. Your entry assembly is scanned automatically for additional `@page` components.
+
+If you set `ConfigureLocalization` on `DocSiteOptions`, the delegate is forwarded to `PennOptions.Localization` during this registration.
+
+## UseDocSite and RunDocSiteAsync
 
 ### UseDocSite
 
-The `UseDocSite()` extension method configures the middleware pipeline:
+The `UseDocSite()` extension method on `WebApplication` configures the middleware pipeline in the correct order:
 
 ```csharp
-public static WebApplication UseDocSite(this WebApplication app)
-{
-    app.UseAntiforgery();
-    app.UseStaticFiles();
-    app.MapRazorComponents<Components.App>()
-        .AddAdditionalAssemblies(options.AdditionalRoutingAssemblies);
-    app.UseMonorailCss();
-    app.UseSpaNavigation();
-    app.UsePenn();
-    return app;
-}
+app.UseAntiforgery();
+app.UseStaticFiles();
+app.MapRazorComponents<Components.App>()
+    .AddAdditionalAssemblies(options.AdditionalRoutingAssemblies);
+app.UseMonorailCss();
+app.UseSpaNavigation();
+app.UsePenn();
 ```
+
+Calling this single method replaces what would otherwise be six individual middleware registrations. The order matters: static files must be served before Razor components, and MonorailCSS must process responses before they reach the client.
 
 ### RunDocSiteAsync
 
-`RunDocSiteAsync()` delegates to `RunOrBuildAsync()`, which checks the command line arguments:
+`RunDocSiteAsync()` delegates to Penn's `RunOrBuildAsync()`, which inspects the command-line arguments:
 
-- No arguments: runs the dev server
-- `build` argument: generates a static site to the output directory
+- **No arguments** -- starts the development server.
+- **`build` argument** -- starts the server, crawls every known route, writes static HTML and assets to an output directory, generates the search index and SPA data JSON files, then exits.
 
 ```bash
 # Development
 dotnet run
 
-# Static build to ./output
+# Static build (root deployment)
 dotnet run -- build /
 
-# Static build for subdirectory deployment
+# Static build (subdirectory deployment)
 dotnet run -- build /my-project
 ```
 
-## DocSiteOptions
+The base path argument tells Penn how to rewrite links and asset paths for subdirectory hosting such as GitHub Pages.
 
-<xref:T:Penn.DocSite.DocSiteOptions> is a record with the following properties:
+## DocSiteOptions Reference
+
+`DocSiteOptions` is a record with two required properties and a set of optional configuration points:
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `SiteTitle` | `string` | required | Title shown in the header and browser tab |
-| `Description` | `string` | required | Site description for SEO meta tags |
-| `ColorScheme` | `IColorScheme?` | Blue/Purple/Cyan/Pink/Slate | MonorailCSS color scheme |
-| `CanonicalBaseUrl` | `string?` | `null` | Canonical URL for SEO and feed generation |
-| `ContentRootPath` | `FilePath` | `"Content"` | Path to the content directory |
-| `HeaderIcon` | `string?` | `null` | HTML for a custom header icon |
-| `HeaderContent` | `string?` | `null` | Custom HTML in the header |
-| `FooterContent` | `string?` | `null` | Custom HTML in the footer |
-| `GitHubUrl` | `string?` | `null` | GitHub repository URL (shown in header) |
-| `SocialImageUrl` | `string?` | `null` | Default social sharing image |
-| `DisplayFontFamily` | `string?` | `null` | Font family for headings |
-| `BodyFontFamily` | `string?` | `null` | Font family for body text |
-| `ExtraStyles` | `string?` | `null` | Additional CSS appended to the stylesheet |
-| `AdditionalHtmlHeadContent` | `string?` | `null` | Extra HTML in `<head>` (fonts, meta tags) |
-| `AdditionalRoutingAssemblies` | `Assembly[]` | `[]` | Assemblies to scan for @page components |
-| `SolutionPath` | `string?` | `null` | Path to .sln/.slnx for Roslyn API docs |
+| `SiteTitle` | `string` | **required** | Site title shown in the header and browser tab |
+| `Description` | `string` | **required** | Site description for SEO meta tags |
+| `ColorScheme` | `IColorScheme?` | Blue/Purple/Cyan/Pink/Slate | MonorailCSS color scheme for the site |
+| `CanonicalBaseUrl` | `string?` | `null` | Canonical base URL for SEO and feed generation |
+| `ContentRootPath` | `FilePath` | `"Content"` | Path to the markdown content directory |
+| `HeaderIcon` | `string?` | `null` | HTML string for a custom icon in the header |
+| `HeaderContent` | `string?` | `null` | Custom HTML rendered in the site header |
+| `FooterContent` | `string?` | `null` | Custom HTML rendered in the site footer |
+| `GitHubUrl` | `string?` | `null` | GitHub repository URL displayed in the header |
+| `SocialImageUrl` | `string?` | `null` | Default image URL for OpenGraph and Twitter Cards |
+| `DisplayFontFamily` | `string?` | `null` | CSS font family for headings |
+| `BodyFontFamily` | `string?` | `null` | CSS font family for body text |
+| `ExtraStyles` | `string?` | `null` | Additional CSS appended to the generated stylesheet |
+| `AdditionalHtmlHeadContent` | `string?` | `null` | Extra HTML injected into `<head>` (font links, meta tags) |
+| `AdditionalRoutingAssemblies` | `Assembly[]` | `[]` | Assemblies to scan for `@page` Razor components |
+| `SolutionPath` | `string?` | `null` | Path to a `.sln` or `.slnx` file for Roslyn integration (requires `Penn.Roslyn`) |
+| `ConfigureLocalization` | `Action<LocalizationOptions>?` | `null` | Delegate to configure locales and default locale |
+
+## DocSiteFrontMatter
+
+`DocSiteFrontMatter` is the metadata model for every markdown page in a DocSite project. It implements `IFrontMatter` plus seven capability interfaces:
+
+| Interface | Property | Type | Purpose |
+|-----------|----------|------|---------|
+| `IFrontMatter` | `Title` | `string` | Page title, used in navigation and the browser tab |
+| `IDescribable` | `Description` | `string?` | Page description for SEO meta tags and search results |
+| `IOrderable` | `Order` | `int` | Sort position within a navigation section (lower values first, default `int.MaxValue`) |
+| `ICrossReferenceable` | `Uid` | `string?` | Unique identifier for `xref:` cross-reference links |
+| `ISectionable` | `Section` | `string?` | Groups pages under a navigation section heading |
+| `ITaggable` | `Tags` | `string[]` | Categorization labels |
+| `IDraftable` | `IsDraft` | `bool` | When `true`, hides the page from navigation and output |
+| `IRedirectable` | `RedirectUrl` | `string?` | Redirects this page's URL to another location |
+
+`DocSiteFrontMatter` does not implement `IDateable`. Documentation pages are not date-oriented content. If you need publication dates, define a custom front matter record or use `Penn.BlogSite`.
+
+A typical front matter block:
+
+```markdown
+---
+title: "Installation"
+description: "How to install and configure the library"
+uid: "myproject.installation"
+section: "Getting Started"
+order: 100
+tags: ["setup", "configuration"]
+---
+```
+
+Penn's pipeline reads these interfaces to decide what features each page supports. For instance, `IOrderable` controls sidebar sort order, `ICrossReferenceable` enables `xref:` link resolution, and `IDraftable` suppresses pages during builds. See [Front Matter Properties](xref:penn.reference.front-matter-properties) for the full reference.
 
 ## Customization Examples
 
 ### Custom Colors
+
+Use `NamedColorScheme` to pick from the standard Tailwind color palette:
 
 ```csharp
 using Penn.MonorailCss;
@@ -165,15 +213,19 @@ builder.Services.AddDocSite(() => new DocSiteOptions
 });
 ```
 
-Or generate colors algorithmically from a single hue:
+Or generate colors algorithmically from a single hue value (0--360):
 
 ```csharp
 ColorScheme = new AlgorithmicColorScheme
 {
-    PrimaryHue = 160, // Green-ish
+    PrimaryHue = 160,
     BaseColorName = ColorNames.Slate,
 }
 ```
+
+`AlgorithmicColorScheme` derives accent and tertiary hues by default at +180, +90, and -90 degrees from the primary. You can override this with the `ColorSchemeGenerator` property.
+
+For full color scheme documentation, see [Configure Custom Styling](xref:penn.guides.configure-custom-styling).
 
 ### Custom Branding
 
@@ -192,6 +244,20 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     FooterContent = """
         <p class="text-sm text-base-500">Built with Penn.</p>
         """,
+});
+```
+
+`HeaderContent` and `FooterContent` accept raw HTML. Use MonorailCSS utility classes for layout and styling.
+
+### Custom Fonts
+
+Load a web font via `AdditionalHtmlHeadContent` and apply it with the font family properties:
+
+```csharp
+builder.Services.AddDocSite(() => new DocSiteOptions
+{
+    SiteTitle = "My Docs",
+    Description = "Documentation",
     AdditionalHtmlHeadContent = """
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
@@ -202,60 +268,27 @@ builder.Services.AddDocSite(() => new DocSiteOptions
 });
 ```
 
-### File Watching for Development
+`DisplayFontFamily` applies to headings. `BodyFontFamily` applies to body text. Both accept any valid CSS `font-family` value.
 
-Add this to your `.csproj` so `dotnet watch` picks up content changes:
+### Extra Styles
 
-```xml
-<ItemGroup>
-    <Watch Include="Content/**/*.*" />
-</ItemGroup>
+For CSS that MonorailCSS does not cover, use `ExtraStyles`:
+
+```csharp
+ExtraStyles = """
+    .custom-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 0.5rem;
+    }
+    """
 ```
 
-## Content Structure
+The string is appended to the generated MonorailCSS stylesheet.
 
-DocSite uses `DocSiteFrontMatter` for its markdown content. Front matter fields:
+## Next Steps
 
-```markdown
----
-title: "Page Title"
-description: "Brief description for SEO and navigation"
-uid: "unique-id-for-cross-references"
-order: 100
----
-```
-
-Pages are organized by directory structure. Create subdirectories for sections:
-
-```
-Content/
-  index.md
-  getting-started/
-    installation.md
-    configuration.md
-  guides/
-    first-guide.md
-    second-guide.md
-```
-
-The sidebar navigation builds automatically from this structure. The `order` property in front matter controls sort order within a section -- lower numbers appear first.
-
-## Static Build
-
-```bash
-dotnet run -- build /
-```
-
-This generates a complete static site in the `output` directory. Every page is crawled via HTTP, rendered to HTML, and written to disk. Static assets are copied. The search index is generated. SPA data JSON files are created for each page.
-
-For subdirectory deployments (e.g., GitHub Pages), pass the base path:
-
-```bash
-dotnet run -- build /my-project
-```
-
-See [Deploying to Subdirectories](xref:penn.guides.deploying-to-subdirectories) for CI/CD details.
-
-## This Site Is DocSite
-
-The documentation you're reading right now is built with Penn.DocSite. The source is in `docs/Penn.Docs/` in the Penn repository. It's the canonical example of what DocSite can do -- and also the canonical example of what it can't. If you need something it doesn't support, Penn core gives you the building blocks to do it yourself.
+- [Creating Your First Site](xref:penn.getting-started.creating-first-site) -- step-by-step tutorial for building a site from scratch
+- [Configure Custom Styling](xref:penn.guides.configure-custom-styling) -- full MonorailCSS color scheme and styling reference
+- [Adding SPA Navigation](xref:penn.guides.adding-spa-navigation) -- how the island renderer architecture works under the hood
+- [Front Matter Properties](xref:penn.reference.front-matter-properties) -- complete reference for all front matter fields and capability interfaces

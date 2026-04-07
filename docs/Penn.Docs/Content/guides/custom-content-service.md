@@ -5,38 +5,57 @@ uid: "penn.guides.custom-content-service"
 order: 2100
 ---
 
-Penn's built-in `MarkdownContentService<T>` handles markdown files. But sometimes your content lives in a database, an API, or a collection of YAML files describing recipes you'll never actually cook. This guide shows you how to implement <xref:T:Penn.Content.IContentService> to bring any content source into Penn's pipeline.
+Penn's built-in `MarkdownContentService<T>` handles markdown files. When your content lives in a database, an API, a collection of `.cook` files, or some other format entirely, you implement `IContentService` to bring it into the pipeline. This guide walks through the full interface, the union types that carry content through the pipeline, and a complete working implementation.
 
 ## Understanding IContentService
 
-The <xref:T:Penn.Content.IContentService> interface is how Penn discovers and provides content. It defines five methods and two properties:
+The `IContentService` interface defines five methods and two properties. Every registered implementation contributes to the unified site during both development and static generation.
 
-- `DiscoverAsync()` -- Returns an `IAsyncEnumerable<DiscoveredItem>` of all content this service is responsible for
-- `GetContentTocEntriesAsync()` -- Navigation entries for the table of contents
-- `GetCrossReferencesAsync()` -- Cross-references for `xref:` resolution
-- `GetContentToCopyAsync()` -- Static files to copy to output
-- `GetContentToCreateAsync()` -- Dynamically generated files (search indexes, etc.)
-- `DefaultSection` -- The navigation section for this service's content
-- `SearchPriority` -- Relative ranking in search results
+```csharp
+public interface IContentService
+{
+    IAsyncEnumerable<DiscoveredItem> DiscoverAsync();
+    Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync();
+    Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync();
+    Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync();
+    Task<ImmutableList<CrossReference>> GetCrossReferencesAsync();
 
-Penn iterates over all registered `IContentService` implementations during both development and static generation. Every service contributes to the unified site. There is no priority or override mechanism -- just aggregation.
+    string DefaultSection { get; }
+    int SearchPriority { get; }
+}
+```
+
+The methods:
+
+- **`DiscoverAsync()`** -- Yields `DiscoveredItem` values, each pairing a `ContentRoute` (where the content lives in the URL space) with a `ContentSource` (how to obtain the content). Called at the start of every pipeline run.
+- **`GetContentTocEntriesAsync()`** -- Returns navigation entries. Each `ContentTocItem` positions content in the table-of-contents tree.
+- **`GetCrossReferencesAsync()`** -- Returns `CrossReference` values that map UIDs to routes. Other content can then use `xref:your.uid` to link to your pages.
+- **`GetContentToCopyAsync()`** -- Returns `ContentToCopy` pairs (source file, output path) for static assets like images. Penn copies these during static generation.
+- **`GetContentToCreateAsync()`** -- Returns `ContentToCreate` entries for dynamically generated files (search indexes, sitemaps, RSS feeds). Each carries a `Func<Task<byte[]>>` that Penn calls at build time.
+
+The properties:
+
+- **`DefaultSection`** -- The navigation section this service's content belongs to. Used when individual items don't specify their own section.
+- **`SearchPriority`** -- Relative ranking weight in search results. Lower values rank higher.
+
+Penn iterates over all registered `IContentService` implementations and aggregates results. There is no priority or override mechanism between services -- just aggregation.
 
 ## The Pipeline and Union Types
 
-Penn v2 uses C# 15 union types to model content as it flows through the pipeline. Understanding <xref:T:Penn.Pipeline.ContentItem> is key:
+Content flows through four stages, modeled as cases of the `ContentItem` union:
 
 ```csharp
-// The four stages of content
 public record DiscoveredItem(ContentRoute Route, ContentSource Source);
 public record ParsedItem(ContentRoute Route, IFrontMatter Metadata, string RawMarkdown);
 public record RenderedItem(ContentRoute Route, IFrontMatter Metadata, RenderedContent Content);
 public record FailedItem(ContentRoute Route, ContentError Error);
 
-// The union -- compiler enforces exhaustive matching
 public union ContentItem(DiscoveredItem, ParsedItem, RenderedItem, FailedItem);
 ```
 
-Your `IContentService` produces <xref:T:Penn.Pipeline.DiscoveredItem> values. Each carries a `ContentRoute` (where) and a <xref:T:Penn.Pipeline.ContentSource> (what):
+Your `IContentService` produces `DiscoveredItem` values. The pipeline advances them through parsing and rendering. The compiler enforces exhaustive matching on the union, so nothing gets silently dropped.
+
+Each `DiscoveredItem` carries a `ContentSource` that tells the pipeline what kind of content it's dealing with:
 
 ```csharp
 public record MarkdownFileSource(FilePath Path);
@@ -47,11 +66,36 @@ public record ProgrammaticSource(IProgrammaticContentGenerator Generator);
 public union ContentSource(MarkdownFileSource, RazorPageSource, RedirectSource, ProgrammaticSource);
 ```
 
-For custom content services, `ProgrammaticSource` is your friend. It wraps an `IProgrammaticContentGenerator` that Penn calls when it needs the actual content.
+For custom content services, `ProgrammaticSource` is the one you want. It wraps an `IProgrammaticContentGenerator` that Penn calls when it needs actual content. The other three cases are used internally by `MarkdownContentService`, `RazorPageContentService`, and the redirect system.
 
-## Basic Implementation
+For a deeper look at how the pipeline processes these types, see <xref:penn.under-the-hood.content-processing-pipeline>.
 
-Here's a custom content service that serves recipes from an in-memory collection. In production, this could be a database, an API, or a filing cabinet you've painstakingly digitized:
+## Building a Recipe Content Service
+
+Here's a complete `IContentService` implementation that serves recipes from an in-memory collection. In production, the data source could be a database, an external API, or flat files in a custom format.
+
+Start with a model and a front matter type:
+
+```csharp
+public record Recipe(
+    string Slug,
+    string Name,
+    string Category,
+    string Summary,
+    string[] Ingredients,
+    string[] Steps,
+    string? Uid = null,
+    int SortOrder = 0);
+
+public record RecipeFrontMatter : IFrontMatter, IDescribable, ICrossReferenceable
+{
+    public string Title { get; init; } = "Untitled";
+    public string? Description { get; init; }
+    public string? Uid { get; init; }
+}
+```
+
+Now the content service:
 
 ```csharp
 using System.Collections.Immutable;
@@ -62,25 +106,28 @@ using Penn.Routing;
 
 public class RecipeContentService : IContentService
 {
-    private readonly List<Recipe> _recipes;
+    private readonly IRecipeRepository _repository;
+    private List<Recipe>? _recipes;
 
     public RecipeContentService(IRecipeRepository repository)
     {
-        _recipes = repository.GetAll().ToList();
+        _repository = repository;
     }
 
     public string DefaultSection => "recipes";
     public int SearchPriority => 5;
 
+    private List<Recipe> Recipes => _recipes ??= _repository.GetAll().ToList();
+
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
-        foreach (var recipe in _recipes)
+        foreach (var recipe in Recipes)
         {
-            var route = ContentRouteFactory.FromUrl(
+            var route = ContentRouteFactory.FromCustom(
                 new UrlPath($"/recipes/{recipe.Slug}"));
 
             var generator = new RecipeContentGenerator(recipe);
-            var source = new ContentSource(new ProgrammaticSource(generator));
+            ContentSource source = new ProgrammaticSource(generator);
 
             yield return new DiscoveredItem(route, source);
         }
@@ -92,9 +139,9 @@ public class RecipeContentService : IContentService
     {
         var builder = ImmutableList.CreateBuilder<ContentTocItem>();
 
-        foreach (var recipe in _recipes)
+        foreach (var recipe in Recipes)
         {
-            var route = ContentRouteFactory.FromUrl(
+            var route = ContentRouteFactory.FromCustom(
                 new UrlPath($"/recipes/{recipe.Slug}"));
 
             builder.Add(new ContentTocItem(
@@ -102,8 +149,8 @@ public class RecipeContentService : IContentService
                 Route: route,
                 Order: recipe.SortOrder,
                 HierarchyParts: ["recipes", recipe.Category, recipe.Slug],
-                Section: DefaultSection
-            ));
+                Section: DefaultSection,
+                Locale: null));
         }
 
         return Task.FromResult(builder.ToImmutable());
@@ -113,9 +160,9 @@ public class RecipeContentService : IContentService
     {
         var builder = ImmutableList.CreateBuilder<CrossReference>();
 
-        foreach (var recipe in _recipes.Where(r => r.Uid is not null))
+        foreach (var recipe in Recipes.Where(r => r.Uid is not null))
         {
-            var route = ContentRouteFactory.FromUrl(
+            var route = ContentRouteFactory.FromCustom(
                 new UrlPath($"/recipes/{recipe.Slug}"));
             builder.Add(new CrossReference(recipe.Uid!, recipe.Name, route));
         }
@@ -131,11 +178,42 @@ public class RecipeContentService : IContentService
 }
 ```
 
-## The IProgrammaticContentGenerator
+Several things to note:
 
-The `ProgrammaticSource` variant of <xref:T:Penn.Pipeline.ContentSource> wraps an `IProgrammaticContentGenerator`. Penn calls `GenerateAsync` when it actually needs the content -- not at discovery time. This is important for performance: discovery should be fast; content generation can be lazy.
+- **`ContentRouteFactory.FromCustom`** builds a `ContentRoute` from a URL path. It handles trailing slashes and output file paths (`recipes/pad-thai/index.html`) automatically. Use `FromCustom` for non-markdown content; use `FromUrl` when you don't need to attach a source file.
+- **`ProgrammaticSource`** wraps the generator. Penn calls `GenerateAsync` later -- not during discovery.
+- **Empty methods return `ImmutableList<T>.Empty`**, not `null`. Penn expects non-null returns throughout.
+- **`ContentTocItem` takes six arguments**: `Title`, `Route`, `Order`, `HierarchyParts`, `Section`, and `Locale`. All six are required. Pass `null` for `Locale` when your content isn't localized.
 
-`GenerateAsync` returns a `ProgrammaticContent` union -- either `TextProgrammaticContent` (for HTML/markdown) or `BinaryProgrammaticContent` (for images, PDFs, etc.):
+## IProgrammaticContentGenerator
+
+The `ProgrammaticSource` case of `ContentSource` wraps an `IProgrammaticContentGenerator`. Penn calls `GenerateAsync` when it needs the content -- not at discovery time. This separation matters for performance: discovery should be fast; content generation can be lazy.
+
+```csharp
+public interface IProgrammaticContentGenerator
+{
+    Task<ProgrammaticContent> GenerateAsync(ContentRoute route);
+}
+```
+
+`GenerateAsync` returns a `ProgrammaticContent` union with two cases:
+
+```csharp
+public record TextProgrammaticContent(
+    IFrontMatter? Metadata,
+    string RawContent,
+    string ContentType = "text/html");
+
+public record BinaryProgrammaticContent(
+    Func<Task<byte[]>> ByteGenerator,
+    string ContentType);
+
+public union ProgrammaticContent(TextProgrammaticContent, BinaryProgrammaticContent);
+```
+
+### Text content
+
+For the recipe service, the generator produces markdown that Penn processes through the standard rendering pipeline:
 
 ```csharp
 public class RecipeContentGenerator : IProgrammaticContentGenerator
@@ -150,6 +228,7 @@ public class RecipeContentGenerator : IProgrammaticContentGenerator
         {
             Title = _recipe.Name,
             Description = _recipe.Summary,
+            Uid = _recipe.Uid,
         };
 
         var markdown = $"""
@@ -162,18 +241,98 @@ public class RecipeContentGenerator : IProgrammaticContentGenerator
             {string.Join("\n", _recipe.Steps.Select((s, i) => $"{i + 1}. {s}"))}
             """;
 
-        var content = new TextProgrammaticContent(frontMatter, markdown);
-        return Task.FromResult<ProgrammaticContent>(content);
+        ProgrammaticContent content = new TextProgrammaticContent(
+            frontMatter, markdown, "text/markdown");
+        return Task.FromResult(content);
     }
 }
 ```
 
-> [!NOTE]
-> If your `TextProgrammaticContent` has a `ContentType` of `"text/html"`, Penn treats the `RawContent` as already-rendered HTML. If it's anything else (or omitted), Penn processes it as markdown through the standard rendering pipeline. Choose wisely.
+The `ContentType` parameter on `TextProgrammaticContent` controls how Penn handles the `RawContent`:
+
+- `"text/html"` (the default) -- Penn treats the content as already-rendered HTML and skips the markdown pipeline.
+- Any other value (e.g., `"text/markdown"`) -- Penn processes the content through the standard Parse and Render stages.
+
+Choose based on whether your content source produces raw markup or markdown that needs processing.
+
+### Binary content
+
+For binary assets like generated images or PDFs, return `BinaryProgrammaticContent`. The pipeline pattern-matches the union and writes bytes directly, skipping Parse and Render entirely:
+
+```csharp
+public class ThumbnailGenerator : IProgrammaticContentGenerator
+{
+    private readonly string _sourceImagePath;
+    private readonly int _width;
+
+    public ThumbnailGenerator(string sourceImagePath, int width)
+    {
+        _sourceImagePath = sourceImagePath;
+        _width = width;
+    }
+
+    public Task<ProgrammaticContent> GenerateAsync(ContentRoute route)
+    {
+        ProgrammaticContent content = new BinaryProgrammaticContent(
+            ByteGenerator: async () =>
+            {
+                var bytes = await File.ReadAllBytesAsync(_sourceImagePath);
+                return ResizeImage(bytes, _width);
+            },
+            ContentType: "image/webp");
+
+        return Task.FromResult(content);
+    }
+
+    private static byte[] ResizeImage(byte[] source, int width)
+    {
+        // Image processing logic here
+        return source;
+    }
+}
+```
+
+The `ByteGenerator` is a `Func<Task<byte[]>>`, so the actual byte generation is deferred until output time. This keeps discovery and pipeline processing fast even when generating hundreds of image variants.
+
+## ContentTocItem and Hierarchy Parts
+
+The `ContentTocItem` record controls where your content appears in the navigation tree:
+
+```csharp
+public record ContentTocItem(
+    string Title,
+    ContentRoute Route,
+    int Order,
+    string[] HierarchyParts,
+    string? Section,
+    string? Locale);
+```
+
+The `HierarchyParts` array defines the nesting structure. It is independent of the URL -- you control the navigation tree without coupling it to URL paths.
+
+```csharp
+// Top-level group header (no leaf page, just a category node)
+new ContentTocItem("Recipes", route, 0,
+    ["recipes"], "recipes", null)
+
+// Recipes > Desserts > Chocolate Cake
+new ContentTocItem("Chocolate Cake", route, 100,
+    ["recipes", "desserts", "chocolate-cake"], "recipes", null)
+
+// Recipes > Mains > Pad Thai
+new ContentTocItem("Pad Thai", route, 200,
+    ["recipes", "mains", "pad-thai"], "recipes", null)
+```
+
+The `NavigationBuilder` uses these parts to construct the tree. Items sharing the same prefix are grouped. The `Order` field controls sorting within each level -- lower values appear first.
+
+The `Section` property groups items into navigation regions. The built-in `MarkdownContentService<T>` sets this from the `ISectionable` capability on front matter, falling back to the service's `DefaultSection`. Your custom service can use the same pattern or hardcode a section.
+
+`Locale` enables multi-language navigation. Pass `null` for single-locale sites. When set, Penn builds separate navigation trees per locale.
 
 ## Service Registration
 
-Register your custom content service in `Program.cs` as an `IContentService`:
+Register your custom content service as an `IContentService` in `Program.cs`:
 
 ```csharp
 builder.Services.AddPenn(penn =>
@@ -193,43 +352,96 @@ builder.Services.AddPenn(penn =>
 builder.Services.AddSingleton<IContentService, RecipeContentService>();
 ```
 
-Penn collects all `IContentService` registrations from the DI container. Your custom service sits alongside `MarkdownContentService<T>` registrations from `AddMarkdownContent` calls. There's no special ceremony required.
+Penn resolves all `IContentService` registrations from the DI container. Your custom service sits alongside the `MarkdownContentService<T>` instances that `AddMarkdownContent` creates. No special ceremony needed.
 
-## Caching and File Watching
-
-For content services backed by external data, you may want cache invalidation when files change. Penn's `FileWatchDependencyFactory<T>` manages a cached instance that auto-invalidates when `IFileWatcher` detects changes:
+If your service needs constructor parameters beyond what DI can resolve, use the factory overload:
 
 ```csharp
-// Register with file-watch support
+builder.Services.AddSingleton<IContentService>(sp =>
+{
+    var repository = sp.GetRequiredService<IRecipeRepository>();
+    return new RecipeContentService(repository);
+});
+```
+
+You can also register the service under its own interface in addition to `IContentService`, so other parts of your application can consume it directly:
+
+```csharp
+var recipeService = new RecipeContentService(recipePath);
+builder.Services.AddSingleton<IRecipeContentService>(recipeService);
+builder.Services.AddSingleton<IContentService>(recipeService);
+```
+
+This dual-registration pattern is common when Razor components or API endpoints need to query the same data the content service exposes. See <xref:penn.guides.multiple-content-sources> for more on combining content services.
+
+## Caching with FileWatchDependencyFactory
+
+When your content service reads from the file system, you want cache invalidation during development. Penn's `FileWatchDependencyFactory<T>` manages a cached instance that auto-invalidates when `IFileWatcher` detects changes.
+
+The simplest approach is `AddFileWatched`, which registers the factory and wires up transient resolution:
+
+```csharp
+builder.Services.AddFileWatched<IContentService, RecipeContentService>();
+```
+
+This registers a `FileWatchDependencyFactory<RecipeContentService>` as a singleton. The factory creates a `RecipeContentService` instance on first access and caches it. When any watched file changes, the factory disposes the old instance and creates a new one on next access.
+
+For the file watcher to know about your content directory, your service constructor should register a watch via `IFileWatcher`:
+
+```csharp
+public class RecipeContentService : IContentService
+{
+    private readonly string _contentPath;
+
+    public RecipeContentService(string contentPath, IFileWatcher fileWatcher)
+    {
+        _contentPath = contentPath;
+        fileWatcher.AddPathWatch(_contentPath, "*.cook", (_, _) => { });
+    }
+
+    // ... rest of the implementation
+}
+```
+
+`AddPathWatch` tells the central file watcher to monitor the directory. When a `.cook` file changes, `FileWatchDependencyFactory` disposes the current `RecipeContentService` and creates a fresh one. The callback parameter on `AddPathWatch` is for service-level notifications -- pass an empty lambda when the factory handles invalidation.
+
+If you need the manual factory pattern instead (for dual-registration or other DI scenarios):
+
+```csharp
 builder.Services.AddSingleton<FileWatchDependencyFactory<RecipeContentService>>();
 builder.Services.AddSingleton<IContentService>(sp =>
-    sp.GetRequiredService<FileWatchDependencyFactory<RecipeContentService>>().GetInstance());
+    sp.GetRequiredService<FileWatchDependencyFactory<RecipeContentService>>()
+        .GetInstance());
 ```
 
-When any watched file changes, `FileWatchDependencyFactory` disposes the existing instance and creates a fresh one on next access. This is the same pattern Penn's built-in content services use. It is not sophisticated. It is reliable.
-
-## Understanding Hierarchy Parts
-
-The `ContentTocItem` includes hierarchy parts -- an array of strings defining where the entry sits in the navigation tree. This is independent of URL structure:
-
-```csharp
-// Top-level "Recipes" entry
-new ContentTocItem("Recipes", route, 100, ["recipes"], "recipes")
-
-// Recipes -> Desserts -> "Chocolate Cake"
-new ContentTocItem("Chocolate Cake", route, 200,
-    ["recipes", "desserts", "chocolate-cake"], "recipes")
-
-// Recipes -> Mains -> "Pad Thai"
-new ContentTocItem("Pad Thai", route, 300,
-    ["recipes", "mains", "pad-thai"], "recipes")
-```
-
-This gives you full control over navigation without coupling it to URL paths. The hierarchy parts define nesting; the `Section` property groups items into navigation regions.
+This is the same pattern Penn's built-in services use. It is not sophisticated. It is reliable.
 
 ## Performance Considerations
 
-- **Discovery should be fast**: `DiscoverAsync()` is called frequently. Keep it lightweight -- enumerate routes, don't generate content.
-- **Content generation is lazy**: `IProgrammaticContentGenerator.GenerateAsync()` is called on-demand. This is where expensive work belongs.
-- **Cache when possible**: Use `FileWatchDependencyFactory<T>` or your own caching to avoid recreating expensive objects on every request.
-- **Return empty immutable lists, not null**: Penn uses `ImmutableList<T>.Empty` throughout. Follow the convention.
+**Keep discovery fast.** `DiscoverAsync()` runs on every pipeline execution. It should enumerate routes and create lightweight generator objects, not read files or query databases. Defer expensive work to `IProgrammaticContentGenerator.GenerateAsync()`.
+
+**Content generation is lazy.** `GenerateAsync()` is called when the pipeline actually needs the content. During development, this happens on-demand per request. During static build, it happens once per page. Put expensive work here.
+
+**Use `AsyncLazy<T>` for metadata caching.** If your TOC entries and cross-references require parsing files, cache the results. Penn's `MarkdownContentService<T>` uses `AsyncLazy<ImmutableList<T>>` to parse front matter once and share results across `GetContentTocEntriesAsync()` and `GetCrossReferencesAsync()`:
+
+```csharp
+private readonly AsyncLazy<ImmutableList<RecipeMetadata>> _metadataLazy;
+
+public RecipeContentService(string contentPath)
+{
+    _metadataLazy = new AsyncLazy<ImmutableList<RecipeMetadata>>(
+        LoadAllMetadataAsync);
+}
+
+public async Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
+{
+    var metadata = await _metadataLazy.Value;
+    // Build TOC entries from cached metadata
+}
+```
+
+**Return empty immutable lists, not null.** Penn calls all five methods on every service. Returning `null` will throw. Use `ImmutableList<ContentToCopy>.Empty` for methods your service doesn't need.
+
+**Binary generators defer byte creation.** `BinaryProgrammaticContent` takes a `Func<Task<byte[]>>`, not a `byte[]`. The function is called at output time, so the pipeline can process hundreds of binary items without holding them all in memory simultaneously.
+
+**Avoid duplicate URLs across services.** Penn aggregates content from all `IContentService` implementations without deduplication. If two services produce the same canonical path, you get undefined behavior during rendering and static generation. Check your URL schemes before registering multiple services. See <xref:penn.reference.front-matter-properties> for how front matter UIDs factor into cross-reference resolution.

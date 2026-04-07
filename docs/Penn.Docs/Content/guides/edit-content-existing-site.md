@@ -1,135 +1,192 @@
 ---
 title: "Editing Content"
-description: "Create and edit markdown content in your Penn site with hot reload that mostly works"
+description: "Day-to-day workflow for creating pages, organizing content, using drafts, and live reload"
 uid: "penn.guides.edit-content-existing-site"
 order: 2020
 ---
 
-This guide covers the day-to-day workflow for creating and editing content. It is, arguably, the only workflow that matters. Everything else is ceremony.
+This guide covers the day-to-day workflow for creating pages, organizing them into sections, using drafts, and getting live feedback as you write.
 
 ## Creating a New Page
 
-Add a new Markdown file to your content directory. The filename becomes part of the URL, because Penn is not going to invent a routing scheme when the filesystem already has one:
-
-| File path | URL |
-|-----------|-----|
-| `Content/index.md` | `/` |
-| `Content/about.md` | `/about` |
-| `Content/guides/setup.md` | `/guides/setup` |
-
-Every page needs YAML front matter with at least a `title`. Penn's <xref:T:Penn.FrontMatter.IFrontMatter> interface requires exactly one property, and that's it:
+Add a markdown file to your content directory. The only required front matter property is `title`, defined by the `IFrontMatter` interface:
 
 ```markdown
 ---
 title: "My New Page"
 ---
 
-# My New Page
-
-Content goes here, written in standard Markdown.
+Your content goes here.
 ```
 
-If you're using <xref:T:Penn.FrontMatter.DocFrontMatter> (Penn's built-in front matter type), you also get `description`, `order`, `tags`, `uid`, `section`, and `is_draft` for free. It implements the capability interfaces so you don't have to think about it. Penn is opinionated about this. You are welcome to disagree, quietly.
+That is a complete, valid Penn page. It will appear in navigation, get a URL derived from its filename, and render through the markdown pipeline. Penn discovers all `.md` files recursively under your content directory, so you can place the file anywhere in the tree.
 
-## Organizing Content
-
-Subdirectories become sections in your sidebar navigation automatically. Penn uses <xref:T:Penn.Routing.ContentRoute> to map files to URLs via `ContentRouteFactory.FromMarkdownFile`, which strips extensions and lowercases everything, because mixed-case URLs are a cry for help:
-
-```
-Content/
-├── index.md              <- home page
-├── getting-started/
-│   ├── index.md          <- section landing page
-│   ├── installation.md
-│   └── first-steps.md
-└── guides/
-    ├── index.md
-    └── advanced.md
-```
-
-To control display order within a section, implement <xref:T:Penn.FrontMatter.IOrderable> on your front matter type (or just use `DocFrontMatter`, which already does):
+If your site uses `DocFrontMatter` (the default for doc sites), you also have access to `description`, `order`, `tags`, `uid`, `section`, and `isDraft`. These come from the capability interfaces that `DocFrontMatter` implements (`IOrderable`, `IDraftable`, `ICrossReferenceable`, `ISectionable`, `IDescribable`, `ITaggable`). See <xref:penn.reference.front-matter-properties> for the full list of available properties.
 
 ```yaml
 ---
 title: "Installation"
-order: 1
+description: "How to install Penn"
+uid: "penn.guides.installation"
+order: 10
+tags: ["setup", "getting-started"]
 ---
 ```
 
-Pages without an explicit `order` sort alphabetically after any ordered pages. This is fine until you have a page named "aardvark" that insists on going first.
+## File-to-URL Mapping
 
-## Drafts
+Penn derives URLs from file paths using `ContentRouteFactory.FromMarkdownFile`. The rules are:
 
-If your front matter type implements <xref:T:Penn.FrontMatter.IDraftable>, set `is_draft: true` to exclude a page from generation without deleting it:
+1. Strip the file extension.
+2. Lowercase the entire path.
+3. Replace backslashes with forward slashes.
+4. Append a trailing slash.
+5. Treat `index.md` as the directory root.
+
+Given a content root of `Content/` and a base URL of `/docs`:
+
+| File path | URL |
+|-----------|-----|
+| `Content/index.md` | `/docs/` |
+| `Content/getting-started.md` | `/docs/getting-started/` |
+| `Content/guides/setup.md` | `/docs/guides/setup/` |
+| `Content/guides/index.md` | `/docs/guides/` |
+| `Content/API-Reference.md` | `/docs/api-reference/` |
+
+The output file for each page follows the same structure. `/docs/getting-started/` becomes `docs/getting-started/index.html` on disk. This is how clean URLs work with static file hosting -- every page is an `index.html` inside a directory named after the page.
+
+Note that the lowercasing is unconditional. A file named `API-Reference.md` always becomes `/docs/api-reference/`, regardless of platform. Penn normalizes all URL segments through `ToLowerInvariant()` to ensure consistent URLs across case-sensitive and case-insensitive file systems.
+
+## Organizing Content in Directories
+
+Subdirectories become sections in your site's table of contents. Create an `index.md` in each directory to give the section a landing page:
+
+```
+Content/
+  index.md
+  getting-started/
+    index.md
+    installation.md
+    first-steps.md
+  guides/
+    index.md
+    configuration.md
+    advanced.md
+```
+
+Use the `order` front matter property to control how pages sort within a section:
+
+```yaml
+---
+title: "Installation"
+order: 10
+---
+```
+
+```yaml
+---
+title: "First Steps"
+order: 20
+---
+```
+
+Pages without an `order` value default to `int.MaxValue` and sort after all explicitly ordered pages. Among unordered pages, the sort order depends on file system discovery order. Use a consistent numbering scheme (10, 20, 30 or 100, 200, 300) to leave room for inserting pages later without renumbering everything.
+
+The `section` property lets you override which navigation group a page belongs to. This is useful when you need a page to appear in a different section of the sidebar than its directory would imply. If you omit `section`, the page inherits the section configured on its `MarkdownContentServiceOptions`.
+
+## Working with Drafts
+
+Mark a page as a draft by setting `isDraft: true` in the front matter:
 
 ```yaml
 ---
 title: "Work in Progress"
-is_draft: true
+isDraft: true
 ---
 ```
 
-Draft pages are skipped during static generation but remain accessible during development with `dotnet watch`. Penn's `MarkdownContentService` checks for `IDraftable` when building the table of contents and quietly omits drafts. No judgment.
+> [!IMPORTANT]
+> Penn's YAML parser uses **camelCase** naming. The property is `isDraft`, not `is_draft`. Similarly, other properties use camelCase: `redirectUrl`, not `redirect_url`. This applies to all front matter properties.
+
+Draft pages are excluded from:
+
+- The table of contents and sidebar navigation
+- Search indexes
+- Static site generation output
+
+During development, draft pages are still accessible by navigating directly to their URL. `MarkdownContentService` only filters drafts from the TOC entries (via the `IDraftable` check in `GetContentTocEntriesAsync`), not from route discovery. This means you can preview a draft page while you write it.
+
+Your front matter type must implement `IDraftable` for draft filtering to work. Both `DocFrontMatter` and `BlogFrontMatter` include this capability by default. If you define a custom front matter record, add `IDraftable` to the interface list and include a `bool IsDraft` property to opt in to draft support.
 
 ## The Live Reload Workflow
 
 Start the development server with file watching:
 
 ```bash
-dotnet watch
+dotnet watch --project path/to/YourSite
 ```
 
 Expected output:
 
 ```
-dotnet watch Hot reload enabled.
-Using launch settings from /projects/MyWebsite/Properties/launchSettings.json...
-info: Microsoft.Hosting.Lifetime[14] Now listening on: http://localhost:5131
-info: Microsoft.Hosting.Lifetime[0] Application started. Press Ctrl+C to shut down.
+dotnet watch  Hot reload enabled.
+info: Penn.Infrastructure.FileWatcher[0]
+      Adding file watch: /path/to/Content with pattern *.*
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5131
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
 ```
 
-Open your site in a browser alongside your editor. Edit any markdown file in your content directory, then save. The console will show:
+Open the site in your browser. Edit a markdown file and save. The page reloads automatically.
 
-```
-dotnet watch File updated: .\Content\guides\edit-content-existing-site.md
-dotnet watch No C# changes to apply.
-```
+Penn injects a WebSocket client that connects to `/__penn/reload`. When `FileWatcher` detects a change, `LiveReloadServer` sends a reload message to every connected browser tab. The reload path is only active when the `DOTNET_WATCH` environment variable is set, so it has zero impact on production.
 
-The "No C# changes to apply" message means no code changed, but your content will still be refreshed in the browser.
+This workflow works well for content authoring: edit markdown, save, see the result. There is no manual refresh step and no build command to run between edits.
+
+For information about the markdown syntax extensions available while writing content (code tabs, alerts, and more), see <xref:penn.guides.markdown-extensions>. For linking between pages, see <xref:penn.guides.linking-documents-and-media>.
 
 ## How File Watching Works
 
-Under the hood, Penn registers `FileWatcher` (implementing `IFileWatcher`) during `AddPenn()`. The `FileWatcher` wraps `FileSystemWatcher` instances and monitors your content directories for `.md` file changes -- creates, updates, deletes, and renames.
+Penn's content refresh pipeline has three components:
 
-When a file changes, `FileWatcher` notifies its subscribers. The `FileWatchDependencyFactory<T>` listens for these notifications and invalidates cached service instances, so the next request gets fresh content. This is the same pattern the `MarkdownContentService` uses to clear its cached metadata.
+**FileWatcher** wraps `FileSystemWatcher` instances. When `MarkdownContentService` is created, it calls `fileWatcher.AddPathWatch` to register its content directory for monitoring. The watcher listens for all four change types: creates, modifications, deletes, and renames. It watches all subdirectories by default, matching all files (`*.*`).
 
-The flow:
+**FileWatchDependencyFactory&lt;T&gt;** is a singleton that manages a cached service instance. It subscribes to `FileWatcher` via `SubscribeToChanges`. When any watched file changes, `InvalidateInstance` acquires a lock, disposes the current cached instance if it implements `IDisposable`, and sets the reference to null.
 
-1. You save a `.md` file
-2. `FileWatcher` detects the change via `FileSystemWatcher`
-3. `FileWatchDependencyFactory<T>.InvalidateInstance()` disposes the cached service and nulls it
-4. Next HTTP request triggers `GetInstance()`, which creates a fresh instance with `ActivatorUtilities`
-5. `dotnet watch` triggers a browser refresh
+**On the next HTTP request**, the DI container calls `GetInstance` on the factory. Finding no cached instance, the factory creates a fresh one using `ActivatorUtilities.CreateInstance`. The new `MarkdownContentService` instance rediscovers all content files from disk and rebuilds its metadata, picking up your changes.
 
-It is not sophisticated. It is sufficient.
+The sequence:
+
+1. You save a markdown file.
+2. `FileWatcher` detects the change and calls `NotifySubscribers`.
+3. `FileWatchDependencyFactory<T>.InvalidateInstance()` disposes and nulls the cached service.
+4. `LiveReloadServer.NotifyClients()` sends `"reload"` over WebSocket to all connected browsers.
+5. The browser reloads. The incoming request calls `GetInstance()`, which creates a new service instance.
+6. The new instance reads the updated content from disk.
+
+This means Penn never polls for changes and never holds stale content after a file modification. The same `FileWatcher` instance also drives invalidation for other cached services like `SearchIndexService` and `SitemapService`, so search results and sitemaps stay current during development too.
 
 ## Hot Reload vs. Full Restart
 
-Most content changes trigger **hot reload** (fast, browser auto-refreshes):
+Changes that **auto-refresh** (no restart needed):
 
-- Editing markdown content
-- Modifying existing front matter values
-- Updating images and static assets in the content directory
-- Changes to front matter that affect navigation structure
-- Adding or removing content files
-- Adjusting Razor pages
+- Editing markdown content or front matter values
+- Adding or deleting content files
+- Renaming content files
+- Updating images and static files in content directories
+- Modifying Razor component markup (via `dotnet watch` hot reload)
 
-Some changes require a **full restart** (stop with Ctrl+C, then rerun `dotnet watch`):
+Changes that **require a full restart** (stop with Ctrl+C, then rerun `dotnet watch`):
 
-- Modifying `Program.cs` (including your `AddPenn()` configuration)
+- Modifying `Program.cs` or service registration code (the `AddDocSite` / `AddPenn` calls)
+- Adding new content source registrations
+- Changing configuration that is read once at startup (site title, base URL, content root paths)
+- Adding or updating NuGet package references
 
-## Related Topics
+The distinction is straightforward: if the change affects files that `FileWatcher` monitors (content, static assets, Razor markup), it auto-refreshes. If the change affects code that runs at startup or alters the DI container, you need a restart.
 
-- [Markdown Extensions](xref:penn.guides.markdown-extensions) -- Code tabs, alerts, and more
-- [Linking Documents and Media](xref:penn.guides.linking-documents-and-media) -- Cross-references, images, and static assets
-- [Configure Custom Styling](xref:penn.guides.configure-custom-styling) -- Customize appearance with MonorailCSS
+> [!TIP]
+> When in doubt, save and check the browser. If the change did not appear, stop the server with Ctrl+C and rerun `dotnet watch`. The restart takes a few seconds.
+
+For a deeper look at how the invalidation pipeline is wired together, see <xref:penn.under-the-hood.hot-reload-architecture>.

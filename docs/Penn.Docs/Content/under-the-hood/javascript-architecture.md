@@ -5,163 +5,128 @@ uid: "penn.under-the-hood.javascript-architecture"
 order: 3050
 ---
 
-Penn generates static HTML. Every page works without JavaScript -- search engines index it, browsers render it, screen readers read it. But a documentation site with zero interactivity is... spartan. So Penn ships `scripts.js`, a modular client-side system that adds theme switching, search, code tabs, page outlines, and other quality-of-life features.
+Penn generates static HTML. Every page works without JavaScript -- search engines index it, browsers render it, screen readers read it. But a documentation site with zero interactivity is spartan. So Penn ships `scripts.js`, a modular client-side system that adds theme switching, search, code tabs, scroll-tracking page outlines, and other quality-of-life features.
 
-The architecture follows a simple principle: each feature is a self-contained manager class, and `PageManager` coordinates them all. Nothing initializes unless the DOM elements it needs are present. Nothing loads external libraries until they are actually needed.
+The architecture follows a single principle: each feature is a self-contained manager class, and `PageManager` coordinates them all. Nothing initializes unless the DOM elements it needs are present. Nothing loads external libraries until they are actually needed.
 
 ## Architecture Overview
 
 ```
 PageManager (entry point, window.pageManager)
   |
-  +-- ThemeManager         -- dark/light mode switching
+  +-- ThemeManager         -- dark/light mode, localStorage persistence
   +-- OutlineManager       -- scroll-tracking table of contents
-  +-- TabManager           -- tabbed code blocks with ARIA support
-  +-- MermaidManager       -- diagram rendering with theme awareness
-  +-- MobileNavManager     -- hamburger menu for mobile
-  +-- MainSiteNavManager   -- top-level site navigation
-  +-- SidebarToggleManager -- ToC sidebar panel
-  +-- SearchManager        -- FlexSearch-powered client-side search
+  +-- TabManager           -- ARIA-compliant tabbed code blocks
+  +-- SyntaxHighlighter    -- client-side highlight.js fallback
+  +-- MermaidManager       -- lazy CDN load, OKLCH-to-hex, theme-aware re-render
+  +-- MobileNavManager     -- sidebar hamburger toggle
+  +-- MainSiteNavManager   -- top-level site nav hamburger
+  +-- SidebarToggleManager -- ToC sidebar panel toggle
+  +-- SearchManager        -- Ctrl+K, lazy FlexSearch, weighted scoring
 ```
+
+All managers are instantiated once on page load. After SPA navigation, `PageManager` selectively reinitializes the managers that operate on page content (outline, tabs, syntax highlighting, mermaid). Managers that bind to persistent chrome (theme, nav, search) keep their original state.
 
 ## PageManager
 
-The coordinator. `PageManager` detects DOM ready state, instantiates all component managers, and exposes itself as `window.pageManager` for debugging. It handles the lifecycle: initialize on page load, reinitialize after SPA navigation (via the `spa:commit` event).
+`PageManager` is the entry point. It detects DOM ready state, instantiates every manager, calls their `init()` methods, and exposes itself as `window.pageManager` for console debugging.
 
-Not much to say about it. It creates managers and calls their `init()` methods. The boring kind of important.
+Two event listeners wire it into the SPA lifecycle:
+
+- **`spa:before-navigate`** -- calls `onSpaNavigating()`, which clears the outline so the old headings do not linger during fetch.
+- **`spa:commit`** -- calls `onSpaCommit(url)`, which reinitializes content-dependent managers and updates the active navigation link by matching `data-current` attributes against the new URL pathname.
+
+This is the glue between the [SPA Island Architecture](xref:penn.under-the-hood.spa-island-architecture) and the component managers. The SPA engine handles page fetching and DOM injection; `PageManager` handles re-initialization of interactive features inside the injected content.
 
 ## ThemeManager
 
-Manages dark/light theme switching with `localStorage` persistence. Binds to any element with the `data-theme-toggle` attribute. When toggled, it:
+Manages dark/light theme switching with `localStorage` persistence. Binds to any element carrying the `data-theme-toggle` attribute. When toggled, it:
 
-1. Flips the `dark` class on the document root.
-2. Saves the preference to `localStorage`.
-3. Notifies other managers (like MermaidManager) to update their theme-dependent rendering.
+1. Flips the `dark` class on `document.documentElement`.
+2. Sets `dataset.theme` to `"light"` or `"dark"`.
+3. Writes the preference to `localStorage.theme`.
+4. Triggers `MermaidManager.reinitializeForTheme()` so diagrams re-render with the new color scheme.
 
-Theme preference is read on page load before first paint, avoiding the dreaded white flash when the user prefers dark mode. This is achieved by an inline `<script>` in the `<head>` that runs before the body renders.
+Theme preference is read before first paint by an inline `<script>` in the `<head>`, avoiding the white flash when the user prefers dark mode. For details on how themes integrate with Penn's CSS design tokens, see [Configure Custom Styling](xref:penn.guides.configure-custom-styling).
 
 ## OutlineManager
 
-Provides a scroll-tracking table of contents in the sidebar. As you scroll through the page, the currently visible heading is highlighted in the outline.
+Provides a scroll-tracking table of contents in the sidebar. As you scroll, the currently visible heading is highlighted in the outline navigation.
 
-The implementation uses `requestAnimationFrame`-throttled scroll detection (not `IntersectionObserver` -- the scroll math is simpler and gives more predictable results for the "which heading is currently at the top" question). A visual highlighter element tracks the current section with smooth CSS transitions.
+Scroll detection uses a `requestAnimationFrame`-throttled handler with a `{ passive: true }` listener. The `isScrolling` flag ensures only one rAF callback is queued at a time. The handler walks the sections array in reverse, using `getBoundingClientRect()` to find the last heading at or above a reading position offset (130px header + 50px). If no heading qualifies, the first one is selected.
 
-OutlineManager can either use pre-rendered outline markup (from the server-side `RenderedContent.Outline` data) or dynamically generate an outline from H2/H3 headings in the content. The dynamic generation is a fallback for pages that do not have server-rendered outlines.
+Outline generation works in two modes. If the server rendered outline markup, `OutlineManager` discovers the existing links inside `[data-role="page-outline"] ul`. If the container has a `data-content-selector` attribute, the manager dynamically extracts H2 and H3 headings from the content, builds a parent/child structure (H3s nest under the preceding H2), and renders the list.
 
-Configuration via data attributes:
-
-- `data-role="page-outline"` -- the outline navigation container
-- `data-content-selector` -- CSS selector for the content element to scan for headings
+A visual highlighter element (`[data-role="page-outline-highlighter"]`) tracks the active link with absolute positioning and CSS opacity transitions. On SPA navigation, `reset()` aborts the previous scroll listener via `AbortController` and clears the section map, preventing stale DOM references.
 
 ## TabManager
 
-Handles tabbed code blocks -- the ones where you can switch between multiple languages or configurations in a single code block group. Full ARIA accessibility support: `role="tablist"`, `role="tab"`, `role="tabpanel"`, `aria-selected`, and keyboard navigation.
+Handles tabbed content blocks -- typically switching between language variants in code examples. Each tab group is a `[role="tablist"]` element with an `id`.
 
-Tab state is synchronized across groups on the same page. If you select "bash" in one tab group, all other groups that have a "bash" tab switch to it too. This is stored in `sessionStorage` so it persists across page navigations within a session.
+Full ARIA semantics: `role="tab"` on buttons, `aria-controls` pointing to panel IDs, `tabindex` management (`0` for active, `-1` for inactive), and `data-state` toggling. Panels are shown/hidden via the `hidden` attribute and `data-selected`.
 
-Each tab group is identified by a pattern in its ID, allowing multiple independent tab groups on the same page.
+Panel visibility uses an ID convention: button IDs follow `tabButton{GroupName}-{Index}`, panel IDs follow `tab-content{GroupName}-{Index}`. The `hideRelatedContentPanels` method parses the group name from the button ID to hide all panels in the group before showing the selected one.
 
 ## MermaidManager
 
-Renders Mermaid diagrams with theme-aware styling. Diagrams are authored in markdown as `mermaid` fenced code blocks and rendered client-side by the Mermaid library.
+Renders Mermaid diagrams with theme-aware styling. Diagrams are authored as `mermaid` fenced code blocks and detected via `code.language-mermaid` elements.
 
-The interesting bit: Penn's CSS uses OKLCH color variables (via MonorailCSS), but Mermaid only understands hex colors. `MermaidManager` reads the computed CSS custom properties using `getComputedStyle()`, converts OKLCH values to hex, and passes them as Mermaid theme configuration.
+**Lazy CDN loading.** If no mermaid code blocks exist on the page, the library is never fetched. On first encounter, a dynamic `import()` from `cdn.jsdelivr.net/npm/mermaid@11` loads and caches the module.
 
-When the theme changes (dark to light or vice versa), `ThemeManager` notifies `MermaidManager`, which re-renders all diagrams with the new color scheme. This avoids the jarring experience of dark-themed diagrams on a light page.
+**OKLCH-to-hex conversion.** Penn's CSS uses OKLCH color variables (via [MonorailCSS](xref:penn.guides.configure-custom-styling)), but Mermaid only understands hex. `getMermaidConfig()` reads computed CSS custom properties and converts OKLCH values through the OKLab color space pipeline: OKLCH to OKLab, to linear LMS, to linear RGB, to sRGB, to hex. Fallback hex values cover conversion failures.
 
-Mermaid itself is lazy-loaded from CDN. If no `mermaid` code blocks exist on the page, the library is never fetched.
+**Theme-aware re-rendering.** When `ThemeManager` toggles, it calls `reinitializeForTheme()`, which reconfigures Mermaid with new color variables and re-renders every tracked diagram. Timestamp-based unique IDs (`mermaid-diagram-{timestamp}-{index}`) force Mermaid to apply the new theme. Original diagram text is preserved in `dataset.originalText` so re-renders start from source.
 
-## MobileNavManager
+## MobileNavManager and MainSiteNavManager
 
-Controls the mobile navigation sidebar. A hamburger button toggles the sidebar, which slides in from the left with an overlay backdrop. Includes:
+`MobileNavManager` controls the document sidebar on mobile. A hamburger button (`#menu-toggle`) toggles the sidebar with an overlay backdrop. Dismissal: link click (mobile only, `innerWidth < 1024`), overlay click, click-outside, or Escape. Opening sets `data-mobile-menu-open="true"` on the body, which CSS uses to lock scrolling.
 
-- Auto-close on link click (so navigating closes the menu)
-- Escape key support
-- Body scroll locking when the menu is open
-- Click-outside-to-close
+`MainSiteNavManager` handles the top-level site navigation hamburger, separate from the document sidebar. Same dismissal pattern, plus a `resize` listener that auto-closes at the 768px breakpoint. Menu state tracked via `dataset.expanded`.
 
-At desktop breakpoints, the mobile nav is hidden entirely via CSS. The manager does not initialize its event listeners unnecessarily -- it checks for the toggle button element first.
-
-## MainSiteNavManager
-
-Manages the top-level site navigation menu, primarily for mobile viewports. Auto-closes when the window resizes past the desktop breakpoint (768px). Includes click-outside and escape key handlers.
+Both managers check for their toggle elements before binding listeners -- on pages without those elements, they are no-ops.
 
 ## SidebarToggleManager
 
-Handles the table of contents sidebar toggle for layouts with collapsible sidebars. Provides an overlay-based sidebar with a close button. Event propagation is stopped when clicking inside the panel, so it does not accidentally close itself.
+Handles the table of contents sidebar toggle for layouts with a collapsible right-side panel. Binds to `#sidebar-toggle`, `#sidebar-overlay`, `#sidebar-close`, and `#sidebar-panel`. The overlay click handler checks `e.target === this.sidebarOverlay` so clicks on the panel itself do not trigger a close. Escape key dismissal included.
 
 ## SearchManager
 
-Client-side search using FlexSearch with a modal interface. This is the most complex manager, and it earns the complexity:
+Client-side full-text search using FlexSearch with a modal interface. For a full walkthrough, see [Implement Search Functionality](xref:penn.guides.implement-search-functionality).
 
-- **Keyboard shortcut**: Cmd/Ctrl+K opens the search modal.
-- **Lazy loading**: Both the search index (`search-index.json`) and the FlexSearch library are loaded on first open, not at page load.
-- **Weighted scoring**: Title matches rank higher than description, which ranks higher than heading matches, which rank higher than body content matches.
-- **Query highlighting**: Search terms are highlighted in results.
-- **Snippet generation**: Results show a text snippet centered around the matched term.
-- **Error handling**: Network failures and parsing errors are caught and reported gracefully.
+**Keyboard shortcut.** Cmd+K (macOS) or Ctrl+K (Windows/Linux) opens the search modal. Escape closes it.
 
-The search index is generated at build time by the content pipeline. Each `RenderedItem` can include a `SearchIndexDocument` with title, description, headings, and body text. The `SearchIndexBuilder` aggregates these into a single JSON file.
+**Lazy loading.** Neither the FlexSearch library nor the search index (`search-index.json`) is loaded at startup. Both are fetched on first modal open. If the load fails, `searchIndexFailed` prevents retry attempts.
+
+**Index construction.** Documents are indexed into a FlexSearch `Document` instance with `tokenize: "forward"` and `LatinAdvanced` encoding. Two fields are indexed (`title`, `body`); four are stored for display (`title`, `body`, `url`, `section`).
+
+**Weighted scoring.** `combineFieldResults()` merges results across fields. Title matches get 3x weight; body matches get 1x. Position-based scoring (`1 / (index + 1)`) and a per-document `priority` multiplier determine final ordering.
+
+**Snippets and highlighting.** `getContentSnippet()` extracts a 150-character window centered on the first match. `highlightText()` wraps terms in `<mark class="search-highlight">` elements. Search is debounced at 300ms.
 
 ## Key Patterns
 
-### Lazy Loading
+**Lazy loading.** External libraries load via dynamic `import()` only when needed: Mermaid on diagram detection, FlexSearch on modal open, highlight.js on unprocessed code blocks. `scripts.js` contains no library code.
 
-External libraries are loaded dynamically from CDN only when needed:
+**Conditional initialization.** Every manager checks for required DOM elements before binding listeners. A page without code tabs has no tab event handlers. A page without a search input never loads FlexSearch.
 
-- **Mermaid**: Loaded when a `mermaid` code block is detected.
-- **FlexSearch**: Loaded when the search modal opens.
+**Data attribute discovery.** Managers find elements via data attributes (`data-theme-toggle`, `data-role="page-outline"`, `data-content-selector`, `data-current`) rather than CSS classes, keeping JavaScript decoupled from styling.
 
-This keeps the initial page load fast. `scripts.js` itself is small; the heavy libraries only arrive when their features are actually used.
-
-### Conditional Initialization
-
-Every manager checks for its required DOM elements before initializing:
-
-```javascript
-init() {
-    this.toggleButton = document.querySelector('[data-mobile-nav-toggle]');
-    if (!this.toggleButton) return; // Nothing to do on this page
-    // ... set up event listeners
-}
-```
-
-This means a page without code tabs does not have tab event listeners. A page without a search button does not load FlexSearch. Features are present only when the HTML calls for them.
-
-### SPA Navigation Integration
-
-After an SPA navigation (see [SPA Island Architecture](xref:penn.under-the-hood.spa-island-architecture)), the `spa:commit` event fires on `document`. `PageManager` listens for this event and reinitializes all managers for the new page content. This handles:
-
-- Rebuilding the page outline from new headings
-- Initializing code tabs in the new content
-- Rendering any new Mermaid diagrams
-- Updating the active navigation link
-
-The reinit is lightweight -- managers clean up their old state and set up fresh for the new DOM.
-
-### Data Attribute Configuration
-
-Managers discover their DOM elements through data attributes rather than CSS class names. This keeps the JavaScript decoupled from styling:
-
-- `data-theme-toggle` -- theme toggle buttons
-- `data-role="page-outline"` -- outline container
-- `data-content-selector` -- content element for outline generation
-- `data-spa-island` -- SPA island containers
+**SPA integration.** After SPA navigation, the `spa:commit` event triggers reinitialization of content-dependent managers. `spa:before-navigate` clears the outline before new content arrives. Managers like `OutlineManager` abort their previous `AbortController` and set up fresh. Managers like `ThemeManager` and `SearchManager` operate on persistent chrome and are not reinitialized.
 
 ## Accessibility
 
-All interactive components follow accessibility best practices:
+- **Tabs**: `role="tablist"`, `role="tab"`, `role="tabpanel"`, `aria-controls`, managed `tabindex`.
+- **Navigation**: `aria-expanded` on sidebar toggles, `aria-hidden` on overlays.
+- **Search modal**: auto-focus input, body scroll lock.
+- **Keyboard**: Escape closes every overlay, modal, and menu. Cmd/Ctrl+K opens search.
+- **Screen readers**: the SPA engine maintains an `aria-live="polite"` announcer for page transitions.
 
-- **ARIA attributes** for tabs (`tablist`, `tab`, `tabpanel`), navigation landmarks, and modals.
-- **Keyboard navigation** with Escape key support for modals, overlays, and menus.
-- **Focus management** in the search modal (auto-focus on the input, trap focus within the modal).
-- **Screen reader support** through semantic HTML, ARIA labels, and live regions.
+## Performance
 
-## Performance Notes
+- **rAF throttle**: Scroll handler fires at most once per animation frame.
+- **Passive listeners**: Scroll events use `{ passive: true }`.
+- **AbortController cleanup**: Scroll listeners are aborted on reinit, preventing leaks across navigations.
+- **Cached DOM queries**: Element references stored after `init()`, not re-queried per event.
+- **Deferred loading**: CDN libraries fetched only when triggered.
 
-- Scroll handlers use `requestAnimationFrame` throttling.
-- Event listeners use `{ passive: true }` where appropriate (scroll events).
-- DOM queries are cached after initialization, not repeated on every event.
-- External library loading is deferred and conditional.
-
-The JavaScript footprint is intentionally small. Penn is a static documentation site generator, not a single-page application framework. The JS exists to enhance, not to replace, the server-rendered HTML.
+The JavaScript exists to enhance server-rendered HTML. When it loads, interactive features appear. When it does not, every page still works.

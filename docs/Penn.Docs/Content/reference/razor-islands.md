@@ -5,46 +5,53 @@ uid: "penn.reference.razor-islands"
 order: 4030
 ---
 
-Razor Islands turn a static content site into something that feels like an SPA without actually being one. Each island is a named region of the page — "content", "sidebar", "toc", whatever you like — that updates independently when the user navigates. The first page load is full static HTML (search engines love this). Subsequent navigations fetch a JSON envelope and swap island contents in place. The surrounding layout never reloads.
-
-It's not a full SPA framework. It's just enough to make navigation fast. Penn is, as always, sufficient to the purpose.
+Penn's Razor Island system turns a static content site into something that navigates like an SPA. Each island is a named region of the page -- "content", "sidebar", "toc" -- that updates independently when the user follows a link. The first page load delivers full static HTML (search engines and users without JavaScript see fully formed content). Subsequent navigations fetch a JSON envelope and swap island contents in place. The surrounding layout never reloads.
 
 ## Architecture Overview
 
 ```
-First load:  Browser → Full HTML page (all islands pre-rendered)
-Navigation:  Browser → GET /_spa-data/page.json → SpaEnvelopeDto → Swap islands
+First load:  Browser  -->  GET /docs/intro  -->  Full HTML (all islands pre-rendered)
+Navigation:  Browser  -->  GET /_spa-data/docs/intro.json  -->  SpaEnvelopeDto  -->  Swap islands
 ```
 
-The flow involves four pieces:
+Four pieces make this work:
 
-1. **`IIslandRenderer`** — Produces HTML for a named island given a route
-2. **`SpaPageDataService`** — Coordinates all renderers into a `SpaEnvelopeDto`
-3. **`ComponentRenderer`** — Renders Blazor components to HTML strings (server-side)
-4. **Client-side SPA engine** — Intercepts link clicks, fetches envelopes, swaps DOM
+1. **`IIslandRenderer`** implementations produce HTML for named regions given a route.
+2. **`SpaPageDataService`** coordinates all renderers into a single `SpaEnvelopeDto`.
+3. **`ComponentRenderer`** renders Blazor components to static HTML strings on the server.
+4. **The client-side SPA engine** (`spa-engine.js`) intercepts link clicks, fetches envelopes, and swaps DOM content.
+
+For a guided walkthrough of adding SPA navigation to a site, see [Adding SPA Navigation](xref:penn.guides.adding-spa-navigation). For a deeper look at how the JavaScript engine handles prefetching, view transitions, and scroll restoration, see [SPA Island Architecture](xref:penn.under-the-hood.spa-island-architecture).
 
 ## IIslandRenderer
 
-The core interface. Implement this to produce HTML for a named region of your page.
+The core abstraction. Each implementation produces HTML for one named region of the page.
 
 ```csharp:path
 src/Penn/Islands/IIslandRenderer.cs
 ```
 
-| Member | Description |
-|--------|-------------|
-| `IslandName` | Must match a `data-spa-island` attribute in the layout. |
-| `RenderAsync` | Receives the `ContentRoute` being navigated to and a `RenderContext`. Return an empty string to omit this island from the envelope. |
+| Member | Type | Description |
+|--------|------|-------------|
+| `IslandName` | `string` | Identifier that must match a `data-spa-island` attribute in the layout HTML. |
+| `RenderAsync` | `Task<string>` | Receives the target `ContentRoute` and a `RenderContext`. Returns an HTML string, or an empty string to omit this island from the envelope. |
+
+## ContentRoute and RenderContext
 
 ### ContentRoute
-
-The route carries everything a renderer needs to resolve content:
 
 ```csharp:path
 src/Penn/Routing/ContentRoute.cs
 ```
 
-Key properties: `CanonicalPath` (e.g. `/docs/getting-started`), `OutputFile`, `SourceFile`, and `Locale`. The `NavigationPath` property ensures a trailing slash for consistent URL matching.
+| Property | Type | Description |
+|----------|------|-------------|
+| `CanonicalPath` | `UrlPath` | The URL path for the page, e.g. `/docs/getting-started`. |
+| `OutputFile` | `FilePath` | The output file path for static generation, e.g. `docs/getting-started/index.html`. |
+| `SourceFile` | `FilePath?` | The source file that produced this content, if known. |
+| `Locale` | `string` | Locale code for localized content. Empty string for the default locale. |
+
+Helper methods: `WithBaseUrl(UrlPath)` prepends a base URL, `AbsoluteUrl(UrlPath)` produces a full canonical URL, and `IsDefaultLocale` returns `true` when `Locale` is empty.
 
 ### RenderContext
 
@@ -52,7 +59,11 @@ Key properties: `CanonicalPath` (e.g. `/docs/getting-started`), `OutputFile`, `S
 src/Penn/Islands/RenderContext.cs
 ```
 
-Ambient context for the render pass — the site's base URL, title, and locale. Available to all island renderers during a request.
+| Property | Type | Description |
+|----------|------|-------------|
+| `BaseUrl` | `UrlPath` | The site's base URL, from `PennOptions.CanonicalBaseUrl`. |
+| `SiteTitle` | `string` | The site title, from `PennOptions.SiteTitle`. |
+| `Locale` | `string?` | The locale for this render pass, or `null`. |
 
 ## RazorIslandRenderer&lt;TComponent&gt;
 
@@ -62,14 +73,16 @@ Abstract base class for the common case: rendering a Blazor component to an HTML
 src/Penn/Islands/RazorIslandRenderer.cs
 ```
 
-`BuildParametersAsync` returns `null` to skip the island for that route, or a dictionary of component parameters. Keys should use `nameof(Component.Property)` for refactor safety.
+### BuildParametersAsync
 
-> [!NOTE]
-> Components rendered via `RazorIslandRenderer` support `@inject` for DI services but cannot use JavaScript interop, `NavigationManager`, or other browser-dependent APIs. These are server-side renders — there is no browser.
+The single abstract method you implement. Return a parameter dictionary or `null` to skip:
 
-### Example: A Real Island Renderer
+- A `Dictionary<string, object?>` of component parameters. Keys should use `nameof(Component.Property)` for refactor safety.
+- `null` to skip this island for that route. `RenderAsync` returns an empty string and the island is omitted from the envelope.
 
-Here's how `Penn.DocSite` implements its article content island:
+### Example: DocSite's Article Island
+
+Here is how `Penn.DocSite` implements its article content island:
 
 ```csharp
 internal class DocSiteArticleSlotRenderer(
@@ -91,25 +104,31 @@ internal class DocSiteArticleSlotRenderer(
             [nameof(DocSiteArticle.Title)] = resolved.Title,
             [nameof(DocSiteArticle.HtmlContent)] = resolved.Html,
             [nameof(DocSiteArticle.PreviousPageName)] = navInfo?.PreviousPage?.Title,
-            [nameof(DocSiteArticle.PreviousPageHref)] = navInfo?.PreviousPage?.Route.NavigationPath.Value,
+            [nameof(DocSiteArticle.PreviousPageHref)] = navInfo?.PreviousPage?.Route.CanonicalPath.Value,
             [nameof(DocSiteArticle.NextPageName)] = navInfo?.NextPage?.Title,
-            [nameof(DocSiteArticle.NextPageHref)] = navInfo?.NextPage?.Route.NavigationPath.Value,
+            [nameof(DocSiteArticle.NextPageHref)] = navInfo?.NextPage?.Route.CanonicalPath.Value,
         };
     }
 }
 ```
 
-The pattern: inject your content resolver, look up the content for the route, return `null` if nothing matches, otherwise build the parameter dictionary.
+> [!NOTE]
+> Components rendered via `RazorIslandRenderer` support `@inject` for DI services but cannot use JavaScript interop, `NavigationManager`, or other browser-dependent APIs. These are server-side static renders -- there is no browser context.
 
 ## ComponentRenderer
 
-Wraps Blazor's `HtmlRenderer` to render any `IComponent` to an HTML string. Registered as Scoped — shared across a request, disposed at scope end.
+Wraps Blazor's `HtmlRenderer` to render any `IComponent` to an HTML string. Registered as **Scoped** -- one instance per request, disposed at scope end.
 
 ```csharp:path
 src/Penn/Islands/ComponentRenderer.cs
 ```
 
-You typically won't use `ComponentRenderer` directly. `RazorIslandRenderer<TComponent>` calls it for you. But if you need to render a component outside the island system — say, for an email template or an RSS feed item — you can inject it:
+| Member | Description |
+|--------|-------------|
+| `RenderComponentAsync<TComponent>` | Renders a component with optional parameters and returns the HTML string. Dispatches through `HtmlRenderer.Dispatcher` to satisfy Blazor's threading requirements. |
+| `DisposeAsync` | Disposes the underlying `HtmlRenderer`. Called automatically at scope end. |
+
+`RazorIslandRenderer<TComponent>` calls `ComponentRenderer` internally. If you need to render a component outside the island system -- for an email template or RSS feed entry -- inject it directly:
 
 ```csharp
 public class EmailService(ComponentRenderer renderer)
@@ -134,55 +153,82 @@ Coordinates all registered `IIslandRenderer` instances for a given route and pro
 src/Penn/Islands/SpaPageDataService.cs
 ```
 
-Each renderer runs in registration order. Renderers that return empty strings are omitted from the envelope. If no renderer produces content, `GetPageDataAsync` returns `null`.
+`GetPageDataAsync` iterates every registered renderer in registration order. Renderers that return empty strings are omitted from the envelope. If no renderer produces content, the method returns `null` and the SPA endpoint returns 404.
 
 ## SpaEnvelopeDto
 
-The JSON payload returned for each page during SPA navigation.
+The JSON payload returned for each page during SPA navigation. The SPA engine uses this to update the page title, meta tags, and island contents.
 
 ```json
 {
   "title": "Front Matter Properties",
   "description": "Reference for the capability-based front matter system",
   "islands": {
-    "content": "<article>…</article>",
-    "toc": "<nav>…</nav>"
+    "content": "<article>...</article>",
+    "toc": "<nav>...</nav>"
   }
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `title` | `string` | Page title — the SPA engine sets `document.title` |
-| `description` | `string?` | Page description — updates `<meta name="description">` |
-| `islands` | `object` | Map of island name to HTML string. Keys match `data-spa-island` attributes in the layout. |
+| Field | Type | Nullable | Description |
+|-------|------|----------|-------------|
+| `title` | `string` | No | Page title. The SPA engine sets `document.title` to `"{SiteTitle} - {title}"`. |
+| `description` | `string?` | Yes | Page description. Updates `<meta name="description">` and Open Graph tags. |
+| `islands` | `object` | No | Map of island name to HTML string. Keys correspond to `data-spa-island` attributes in the layout. |
+| `diagnostics` | `array?` | Yes | Development-only. Diagnostic messages from the render pass, surfaced in the dev overlay. Omitted from production responses via `JsonIgnoreCondition.WhenWritingNull`. |
+
+Serialized by `SpaEnvelopeSerializer` using `System.Text.Json` with camelCase naming and null-omission.
 
 ## Registration
 
-Island renderers are registered as `IIslandRenderer` implementations in the DI container. You can register them directly or use `PennOptions.Islands`:
+### AddSpaNavigation
+
+Call `AddSpaNavigation` on `IServiceCollection` to register the SPA infrastructure:
 
 ```csharp
-// Option 1: Direct DI registration
-services.AddTransient<IIslandRenderer, MyContentIslandRenderer>();
-services.AddTransient<IIslandRenderer, MySidebarIslandRenderer>();
+builder.Services.AddSpaNavigation();
+```
 
-// Option 2: Via PennOptions
-services.AddPenn(options =>
+This registers:
+
+| Service | Lifetime | Purpose |
+|---------|----------|---------|
+| `SpaNavigationOptions` | Singleton | Configuration (data path prefix) |
+| `SpaPageDataService` | Transient | Coordinates island renderers into envelopes |
+| `SpaNavigationContentService` | Transient | `IContentService` that generates `/_spa-data/*.json` routes for static builds |
+| `RenderContext` | Singleton | Ambient site context for renderers |
+
+`AddSpaNavigation` accepts an optional configuration delegate:
+
+```csharp
+builder.Services.AddSpaNavigation(options =>
 {
-    options.Islands.Register<MyContentIslandRenderer>("content");
-    options.Islands.Register<MySidebarIslandRenderer>("sidebar");
+    options.DataPath = "/_api/pages";  // default: "/_spa-data"
 });
 ```
 
-Don't forget to register `ComponentRenderer` as Scoped if you're using `RazorIslandRenderer`:
+### UseSpaNavigation
+
+Call `UseSpaNavigation` on the endpoint route builder to map the SPA data endpoint:
 
 ```csharp
-services.AddScoped<ComponentRenderer>();
+app.UseSpaNavigation();
 ```
+
+This maps a `GET /{DataPath}/{*slug}` endpoint that:
+
+1. Converts the slug to a URL via `SpaSlug.ToUrl`.
+2. Constructs a `ContentRoute` for the target page.
+3. Resolves the page title from registered `IContentService` instances.
+4. Calls `SpaPageDataService.GetPageDataAsync` to render all islands.
+5. Resolves `xref:` links in the rendered HTML.
+6. Returns the serialized `SpaEnvelopeDto` as `application/json`.
+
+`ComponentRenderer` must be registered as **Scoped** because the underlying `HtmlRenderer` is stateful and must be disposed after each request. Island renderers are typically **Transient**.
 
 ## Data Attributes
 
-Add these to layout elements to wire them up as islands.
+The client-side engine discovers islands by querying `[data-spa-island]` elements in the DOM.
 
 ### data-spa-island
 
@@ -204,17 +250,21 @@ Controls what the user sees while the SPA engine fetches new content.
 
 | Value | Behaviour |
 |-------|-----------|
-| `"skeleton"` | Shows a shimmer placeholder (or a custom template) |
-| `"clear"` | Empties the island immediately |
-| `"keep"` | Leaves previous content in place until new data arrives (default) |
+| `"skeleton"` | Shows a shimmer placeholder. Uses a custom `<template>` if one exists, otherwise falls back to a built-in shimmer animation. |
+| `"clear"` | Empties the island immediately, showing blank space until content arrives. |
+| `"keep"` | Leaves the previous content in place until new data arrives. This is the default. |
 
 ```html
 <article data-spa-island="content" data-spa-loading="skeleton">
+    @Body
+</article>
 ```
 
-### Custom Skeleton Templates
+The skeleton is shown only when the fetch takes longer than the configurable threshold (default: 100ms). Fast navigations -- including prefetched pages -- skip the skeleton entirely.
 
-Provide a `<template>` element with `data-spa-skeleton-for` matching the island name:
+### data-spa-skeleton-for
+
+Provide a custom skeleton template for a specific island. The `<template>` element's `data-spa-skeleton-for` value must match the island name.
 
 ```html
 <template data-spa-skeleton-for="content">
@@ -226,67 +276,83 @@ Provide a `<template>` element with `data-spa-skeleton-for` matching the island 
 </template>
 ```
 
-## Configuration via &lt;html&gt; Attributes
+### Configuration Attributes
 
-The client-side SPA engine reads configuration from `data-*` attributes on the `<html>` element.
+The SPA engine reads additional configuration from `data-*` attributes on the `<html>` and `<body>` elements.
 
-| Attribute | Default | Purpose |
-|-----------|---------|---------|
-| `data-base-url` (on `<body>`) | `""` | Base URL prefix for subdirectory deployments |
-| `data-spa-data-path` | `"/_spa-data"` | URL prefix for page data JSON files |
-| `data-spa-skeleton-delay` | `"100"` | Milliseconds before showing skeleton (fast fetches skip it) |
-| `data-spa-min-skeleton` | `"250"` | Minimum milliseconds to show skeleton once visible |
+| Attribute | Element | Default | Purpose |
+|-----------|---------|---------|---------|
+| `data-base-url` | `<body>` | `""` | Base URL prefix for subdirectory deployments |
+| `data-spa-data-path` | `<html>` | `"/_spa-data"` | URL prefix for page data JSON files |
+| `data-spa-skeleton-delay` | `<html>` | `"100"` | Milliseconds to wait before showing a skeleton (fast fetches skip it) |
+| `data-spa-min-skeleton` | `<html>` | `"250"` | Minimum milliseconds to display the skeleton once it becomes visible |
 
 ## Lifecycle Events
 
-The SPA engine dispatches custom events on `document`.
+The SPA engine dispatches custom events on `document` at two points during navigation.
 
 ### spa:before-navigate
 
-Fires before the fetch starts. Use it to tear down transient UI state.
+Fires before the fetch starts. The previous page content is still in the DOM.
 
 ```javascript
 document.addEventListener('spa:before-navigate', (e) => {
-    const { url } = e.detail;
-    // Close modals, dismiss tooltips, reset scroll indicators
+    const { url, slug } = e.detail;
+    // Close modals, dismiss tooltips, cancel pending animations
 });
 ```
 
+| Detail field | Type | Description |
+|-------------|------|-------------|
+| `url` | `URL` | The target URL |
+| `slug` | `string` | The SPA data slug (e.g. `"docs/intro"` or `"index"`) |
+
 ### spa:commit
 
-Fires after new island content is injected into the DOM. Use it to reinitialise interactive features.
+Fires after new island content has been injected into the DOM.
 
 ```javascript
 document.addEventListener('spa:commit', (e) => {
-    const { url, data } = e.detail;
+    const { url, slug, data } = e.detail;
     // Re-highlight code blocks, rebuild table of contents,
-    // update active navigation links, reinit copy buttons
+    // update active navigation state, reinitialize copy buttons
 });
 ```
 
 | Detail field | Type | Description |
 |-------------|------|-------------|
 | `url` | `URL` | The navigated URL |
-| `data` | `object` | The full `SpaEnvelopeDto` (title, description, islands) |
+| `slug` | `string` | The SPA data slug |
+| `data` | `object` | The full deserialized `SpaEnvelopeDto` (title, description, islands) |
 
-## Creating a Custom Island Renderer
+## Creating Custom Islands
 
-The minimal path — implement `IIslandRenderer` directly:
+### Minimal: Implement IIslandRenderer Directly
+
+For islands that don't need a Razor component -- raw HTML, or content fetched from a service:
 
 ```csharp
-public class TableOfContentsRenderer : IIslandRenderer
+public class BreadcrumbIslandRenderer(
+    IContentService contentService) : IIslandRenderer
 {
-    public string IslandName => "toc";
+    public string IslandName => "breadcrumbs";
 
-    public Task<string> RenderAsync(ContentRoute route, RenderContext context)
+    public async Task<string> RenderAsync(ContentRoute route, RenderContext context)
     {
-        // Build TOC HTML from route, return empty string to skip
-        return Task.FromResult("<nav>...</nav>");
+        var entries = await contentService.GetContentTocEntriesAsync();
+        var current = entries.FirstOrDefault(
+            e => e.Route.CanonicalPath.Matches(route.CanonicalPath));
+
+        if (current is null) return "";
+
+        return $"""<nav aria-label="Breadcrumb"><a href="/">Home</a> / {current.Title}</nav>""";
     }
 }
 ```
 
-The Razor path — use `RazorIslandRenderer<TComponent>` when you want to render a Blazor component:
+### Razor Component Path: RazorIslandRenderer&lt;TComponent&gt;
+
+For islands backed by a Razor component with parameters:
 
 ```csharp
 public class SearchIslandRenderer(
@@ -306,12 +372,30 @@ public class SearchIslandRenderer(
 }
 ```
 
-## Scripts
+Register the renderers and mark the layout:
 
-Include the SPA engine in your `App.razor` after other scripts:
-
-```html
-<script src="/_content/Penn/spa-engine.js" defer></script>
+```csharp
+builder.Services.AddSpaNavigation();
+builder.Services.AddScoped<ComponentRenderer>();
+builder.Services.AddTransient<IIslandRenderer, BreadcrumbIslandRenderer>();
+builder.Services.AddTransient<IIslandRenderer, SearchIslandRenderer>();
 ```
 
-The engine activates automatically — no initialisation call needed. It discovers islands from `data-spa-island` attributes, intercepts same-origin link clicks, and handles browser history, view transitions, and scroll position restoration.
+```html
+<!-- Layout.razor -->
+<nav data-spa-island="breadcrumbs" data-spa-loading="keep">
+    <BreadcrumbComponent />
+</nav>
+
+<div data-spa-island="search" data-spa-loading="clear">
+    <SearchPanel />
+</div>
+```
+
+Include the SPA engine script in your `App.razor` or layout:
+
+```html
+<script src="/_content/Penn.UI/spa-engine.js" defer></script>
+```
+
+The engine activates automatically -- no initialization call needed.

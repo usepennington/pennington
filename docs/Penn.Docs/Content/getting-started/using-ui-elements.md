@@ -1,37 +1,35 @@
 ---
 title: "Using UI Elements"
-description: "Enhance your content with Penn.UI Razor components — badges, cards, steps, navigation, and more"
+description: "Reference for Penn.UI Razor components: badges, cards, steps, code blocks, and navigation"
 uid: "penn.getting-started.using-ui-elements"
 order: 1030
 ---
 
-Penn.UI ships a collection of Razor components designed for documentation and content sites. They're not a general-purpose component library — they do a few things well, and those things happen to be exactly what documentation sites need.
+Penn.UI is a focused set of Razor components built for documentation and content sites. If you registered your site with `AddDocSite`, Penn.UI is already available. There is no extra package to install and no additional configuration required. You can use these components in both `.razor` files and `.md` content files immediately.
 
-If you're using `Penn.DocSite`, these components are already available. Penn.DocSite registers Penn.UI automatically, so there's no separate package to install or configure. Just use them in your markdown and Razor files.
-
-## Available Components
+## Component Overview
 
 | Component | Purpose |
 |-----------|---------|
-| `Badge` | Inline status labels |
-| `Card` | Content containers with optional icons |
+| `Badge` | Inline status or category label |
+| `Card` | Bordered content container with optional title and icon |
 | `CardGrid` | Responsive grid layout for cards |
 | `LinkCard` | Clickable card that navigates to a URL |
-| `Steps` / `Step` | Numbered step-by-step instructions |
-| `CodeBlock` | Programmatic syntax highlighting |
-| `BigTable` | Scrollable table wrapper |
-| `TableOfContentsNavigation` | Sidebar navigation from content structure |
-| `OutlineNavigation` | On-page heading outline |
+| `Steps` / `Step` | Numbered vertical timeline for instructions |
+| `CodeBlock` | Syntax-highlighted code from Razor context |
+| `BigTable` | Horizontal scroll wrapper for wide tables |
+| `TableOfContentsNavigation` | Sidebar navigation tree from content structure |
+| `OutlineNavigation` | On-page heading outline with scroll tracking |
 
 ## Badge
 
-Inline labels for marking status, versions, or categories. Small, unobtrusive, and color-coded.
+Renders an inline color-coded label. Use badges to mark versions, stability levels, or categories.
 
 ```razor
-<Badge Text="New" Variant="success" />
+<Badge Text="Stable" Variant="success" />
 <Badge Text="Beta" Variant="tip" />
 <Badge Text="Deprecated" Variant="danger" />
-<Badge Text="Experimental" Variant="caution" />
+<Badge Text="Caution" Variant="caution" />
 <Badge Text="Default" />
 ```
 
@@ -39,27 +37,39 @@ Inline labels for marking status, versions, or categories. Small, unobtrusive, a
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `Text` | `string` | `""` | The label text |
-| `Variant` | `string` | `"note"` | Color variant: `success`, `tip`, `caution`, `danger`, or default |
-| `Size` | `string` | `"medium"` | Size: `small`, `medium`, or `large` |
+| `Text` | `string` | `""` | The label text displayed inside the badge |
+| `Variant` | `string` | `"note"` | Color variant. Accepted values: `success` (emerald), `tip` (sky), `caution` (amber), `danger` (rose), or any other value for the default neutral style |
+| `Size` | `string` | `"medium"` | Controls padding and font size. Accepted values: `small`, `medium`, `large` |
 
-Badges render inline, so you can drop them into paragraphs or headings. They're particularly useful in API reference pages to flag stability levels.
+Badges render inline, so you can place them next to headings or inside paragraphs. They pair well with API reference pages where you need to flag stability or version requirements at a glance.
+
+```razor
+## CreatePipeline <Badge Text="v2.0+" Variant="tip" Size="small" />
+```
 
 ## Card
 
-A content container with an optional title and icon. Use it to call attention to important information, group related concepts, or create visual breaks in long pages.
+A bordered content container with an optional heading and icon. Cards create visual separation and draw attention to callouts, summaries, or grouped information.
 
 ```razor
-<Card Title="Important Note" Color="primary">
-    Penn processes markdown at render time, not build time.
-    This means your content is always fresh.
+<Card Title="Note" Color="primary">
+    Penn processes markdown at request time, not at build time.
+    Content changes are reflected immediately during development.
 </Card>
+```
 
+To add an icon, use the `Icon` render fragment:
+
+```razor
 <Card Title="Warning" Color="accent">
     <Icon>
-        <svg><!-- your icon SVG --></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+            <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.168 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495z" clip-rule="evenodd" />
+        </svg>
     </Icon>
-    This operation cannot be undone.
+    <ChildContent>
+        This operation cannot be undone.
+    </ChildContent>
 </Card>
 ```
 
@@ -67,20 +77,22 @@ A content container with an optional title and icon. Use it to call attention to
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `Title` | `string?` | `null` | Card heading |
-| `Color` | `string` | `"primary"` | Color theme name from your MonorailCSS palette |
-| `Icon` | `RenderFragment?` | `null` | Optional icon slot (SVG or any markup) |
-| `ChildContent` | `RenderFragment?` | `null` | Card body content |
+| `Title` | `string?` | `null` | Heading text displayed at the top of the card |
+| `Color` | `string` | `"primary"` | Color theme name from your MonorailCSS design palette (e.g., `primary`, `accent`, `base`) |
+| `Icon` | `RenderFragment?` | `null` | Optional icon content rendered to the left of the card body. Typically an SVG element |
+| `ChildContent` | `RenderFragment?` | `null` | The card body content |
+
+The `Color` parameter maps to your site's MonorailCSS color palette. Penn.DocSite defines `primary`, `accent`, and `base` by default. If you have configured custom colors in your `DocSiteOptions`, you can reference those names here.
 
 ## CardGrid
 
-Wraps cards (or any content) in a responsive grid. Two columns by default, collapsing to one on small screens.
+Arranges child elements in a responsive grid. The grid collapses to a single column on small viewports and expands to the specified column count at the `sm` breakpoint.
 
 ```razor
 <CardGrid Columns="3">
-    <Card Title="Fast">Built on ASP.NET's pipeline.</Card>
-    <Card Title="Simple">Markdown in, HTML out.</Card>
-    <Card Title="Honest">Code samples from real source.</Card>
+    <Card Title="Parse">Markdown to AST via Markdig.</Card>
+    <Card Title="Transform">Pipeline extensions enrich the tree.</Card>
+    <Card Title="Render">AST to HTML with syntax highlighting.</Card>
 </CardGrid>
 ```
 
@@ -88,20 +100,22 @@ Wraps cards (or any content) in a responsive grid. Two columns by default, colla
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `Columns` | `string` | `"2"` | Number of grid columns at the `sm` breakpoint |
-| `ChildContent` | `RenderFragment?` | `null` | Grid items |
+| `Columns` | `string` | `"2"` | Number of grid columns at the `sm` breakpoint and above |
+| `ChildContent` | `RenderFragment?` | `null` | Grid items, typically `Card` or `LinkCard` components |
+
+You can nest any content inside `CardGrid`, not just cards. However, the spacing and layout are optimized for card-shaped children.
 
 ## LinkCard
 
-Like `Card`, but the whole thing is a clickable link. Use these for "next steps" sections or feature grids that link to detail pages.
+A card that wraps its entire surface in a link. The hover state provides visual feedback. Use `LinkCard` for navigation grids, "next steps" sections, or feature overviews that link to detail pages.
 
 ```razor
 <CardGrid>
     <LinkCard Title="Getting Started" Href="/getting-started" Color="primary">
-        Build your first Penn site in under five minutes.
+        Build your first Penn site in five minutes.
     </LinkCard>
     <LinkCard Title="API Reference" Href="/api" Color="accent">
-        Every type, method, and option documented.
+        Types, methods, and configuration options.
     </LinkCard>
 </CardGrid>
 ```
@@ -110,95 +124,138 @@ Like `Card`, but the whole thing is a clickable link. Use these for "next steps"
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `Title` | `string?` | `null` | Card heading |
-| `Href` | `string?` | `null` | Navigation URL |
-| `Color` | `string` | `"primary"` | Color theme name |
-| `Icon` | `RenderFragment?` | `null` | Optional icon slot |
+| `Title` | `string?` | `null` | Card heading text |
+| `Href` | `string?` | `null` | URL the card links to |
+| `Color` | `string` | `"primary"` | Color theme name from your MonorailCSS palette |
+| `Icon` | `RenderFragment?` | `null` | Optional icon content rendered to the left of the card body |
 | `ChildContent` | `RenderFragment?` | `null` | Card body content |
+
+`LinkCard` accepts the same `Icon` parameter as `Card`. The icon renders to the left of the title and body, inside the clickable area.
 
 ## Steps and Step
 
-Numbered step-by-step instructions. This is the component powering every tutorial on this site, including the one you're reading. Each step gets a numbered indicator on a vertical timeline.
+A numbered vertical timeline for step-by-step instructions. `Steps` is the outer container that draws the connecting line. `Step` is each individual item, with a numbered circle on the left.
 
 ```razor
 <Steps>
     <Step StepNumber="1">
-        ## Install the Package
+        ## Install the package
 
         ```bash
         dotnet add package Penn.DocSite --prerelease
         ```
     </Step>
     <Step StepNumber="2">
-        ## Configure Program.cs
+        ## Configure services
 
-        Add `AddDocSite` to your service collection.
+        Register Penn in your `Program.cs`:
+
+        ```csharp
+        builder.Services.AddDocSite(() => new DocSiteOptions
+        {
+            SiteTitle = "My Docs",
+        });
+        ```
     </Step>
     <Step StepNumber="3">
-        ## Write Content
+        ## Add content
 
-        Create markdown files in `Content/`.
+        Create markdown files in the `Content/` directory.
     </Step>
 </Steps>
 ```
 
-Steps can contain any content — markdown headings, code blocks, images, other components. They're just containers with a number on the side.
+Each step can contain any content: markdown headings, code blocks, images, nested components. They are containers with a number on the side, nothing more.
+
+### Steps Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `Type` | `string` | `"primary"` | Reserved for future styling variants |
+| `ChildContent` | `RenderFragment?` | `null` | One or more `Step` components |
 
 ### Step Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `StepNumber` | `string` | `"1"` | The step number displayed in the circle |
-| `ChildContent` | `RenderFragment?` | `null` | Step content |
+| `StepNumber` | `string` | `"1"` | The number displayed in the circle indicator |
+| `ChildContent` | `RenderFragment?` | `null` | The step body content |
+
+The `StepNumber` parameter is a string, not an integer. This means you can use labels like `"A"`, `"B"`, `"C"` if your sequence calls for it, though numeric steps are the common case.
 
 ## CodeBlock
 
-Programmatic syntax highlighting for when you need to render code from a Razor component rather than from markdown. The `CodeBlock` component uses Penn's highlighting pipeline, so the output matches your markdown code fences.
+Provides syntax highlighting when you need to render code programmatically from a Razor component. `CodeBlock` uses Penn's highlighting pipeline (TextMate-based), so the output matches your markdown fenced code blocks.
+
+There are two ways to provide code. You can pass it as child content:
 
 ```razor
 <CodeBlock Language="csharp">
-    var options = new DocSiteOptions
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Services.AddDocSite(() => new DocSiteOptions
     {
         SiteTitle = "My Site",
-        Description = "Built with Penn",
-    };
+    });
 </CodeBlock>
 ```
 
-You can also pass code as a parameter:
+Or you can pass it as a string parameter, which is useful when the code comes from a variable:
 
 ```razor
-<CodeBlock Language="json" Code="@myJsonString" />
+<CodeBlock Language="json" Code="@configJson" />
+
+@code {
+    private string configJson = """
+        {
+            "title": "My Site",
+            "version": "1.0.0"
+        }
+        """;
+}
 ```
 
 ### Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `Language` | `string` | `""` | Language identifier for highlighting (`csharp`, `json`, `bash`, etc.) |
-| `Code` | `string?` | `null` | Code string to highlight (alternative to child content) |
-| `ChildContent` | `RenderFragment?` | `null` | Code as child content |
-| `IsInTabGroup` | `bool` | `false` | Omits standalone container classes when part of a tab group |
+| `Language` | `string` | `""` | **Required.** Language identifier for syntax highlighting (e.g., `csharp`, `json`, `bash`, `xml`, `javascript`) |
+| `Code` | `string?` | `null` | Code to highlight, as a string. Provide either this or `ChildContent` |
+| `ChildContent` | `RenderFragment?` | `null` | Code to highlight, as child content. Provide either this or `Code` |
+| `IsInTabGroup` | `bool` | `false` | When `true`, omits standalone container CSS classes. Set this when the code block is rendered inside a tabbed code group |
+
+`Language` is an editor-required parameter. If you omit it, the component renders an error message instead of highlighted code.
+
+When you use child content, the component automatically normalizes indentation. Leading whitespace that comes from your `.razor` file indentation is stripped so the output is clean.
+
+For most documentation content, markdown fenced code blocks are simpler and preferred. Use `CodeBlock` when you need to render code dynamically in a Razor page or layout, or when embedding highlighted code inside another component.
 
 ## BigTable
 
-A simple wrapper that adds horizontal scrolling to wide tables. Wrap any table content that might overflow on small screens.
+Wraps content in a horizontally scrollable container with compact text sizing. Use it around markdown tables that have too many columns to fit on small screens.
 
 ```razor
 <BigTable>
 
-| Column 1 | Column 2 | Column 3 | Column 4 | Column 5 | Column 6 |
-|----------|----------|----------|----------|----------|----------|
-| data | data | data | data | data | data |
+| Method | Route | Auth | Cache | Rate Limit | Description |
+|--------|-------|------|-------|-------------|-------------|
+| GET | /api/items | Yes | 60s | 100/min | List all items |
+| POST | /api/items | Yes | None | 20/min | Create an item |
+| DELETE | /api/items/:id | Yes | None | 10/min | Delete an item |
 
 </BigTable>
 ```
 
-No parameters beyond `ChildContent`. It just adds `overflow-x-scroll` and reasonable text sizing.
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `ChildContent` | `RenderFragment?` | `null` | Table content (typically a markdown or HTML table) |
+
+`BigTable` has no configuration beyond its child content. It applies `overflow-x-scroll` and `text-sm` to the wrapper, and that is all it does.
 
 ## TableOfContentsNavigation
 
-Generates sidebar navigation from your content structure. Penn builds a navigation tree from your markdown files and their front matter, and this component renders it as a hierarchical list with section headers.
+Renders a sidebar navigation tree from your site's content structure. Penn builds a `NavigationTreeItem` hierarchy from your markdown files and their front matter metadata (title, order, section). This component displays that tree as a nested list with section headers and active-page highlighting.
 
 ```razor
 @using Penn.UI.Components.Navigation
@@ -218,68 +275,111 @@ Generates sidebar navigation from your content structure. Penn builds a navigati
 }
 ```
 
-If you're using `Penn.DocSite`, this is already wired into the layout. You'd only use it directly if you're building a custom layout.
-
 ### Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `TableOfContents` | `ImmutableList<NavigationTreeItem>?` | `null` | Navigation tree data |
-| `Section` | `string?` | `null` | Filter to a specific content section |
+| `TableOfContents` | `ImmutableList<NavigationTreeItem>?` | `null` | The navigation tree data built by `NavigationBuilder` |
+| `Section` | `string?` | `null` | Optional filter to show only a specific content section |
+| `SectionHeaderStructureClass` | `string` | `"font-display font-medium first:pt-0"` | CSS classes for section header layout |
+| `SectionHeaderColorClass` | `string` | `"text-base-900 dark:text-base-50"` | CSS classes for section header colors |
+| `LinkStructureClass` | `string` | *(see source)* | CSS classes for child link layout |
+| `LinkColorClass` | `string` | *(see source)* | CSS classes for child link colors, including active state |
+| `RootLinkStructureClass` | `string` | `"block w-full py-1"` | CSS classes for top-level link layout |
+| `RootLinkColorClass` | `string` | *(see source)* | CSS classes for top-level link colors |
 
-The component highlights the current page automatically via `data-current` attributes and Penn's SPA navigation scripts.
+If you are using `Penn.DocSite`, this component is already wired into the default layout. The layout passes the navigation tree and handles section filtering for you. You only need to use this component directly when building a custom layout.
+
+The component highlights the current page automatically using `data-current` attributes, which Penn's SPA navigation scripts keep in sync during client-side page transitions.
 
 ## OutlineNavigation
 
-Shows a "On This Page" outline of headings from the current page. The outline is generated client-side from heading elements in the rendered content.
+Displays an "On This Page" outline generated client-side from heading elements in the rendered content. As you scroll, the outline highlights the heading nearest the viewport.
 
 ```razor
 @using Penn.UI.Components.Navigation
 
-<OutlineNavigation ContentSelector="article" />
+<OutlineNavigation ContentSelector="article" Title="On This Page" />
 ```
 
 ### Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `ContentSelector` | `string` | `""` | CSS selector for the content area to scan for headings |
-| `Title` | `string` | `"On This Page"` | Heading text above the outline |
+| `ContentSelector` | `string` | `""` | **Required.** CSS selector for the content area to scan for headings (e.g., `"article"`, `"#main-content"`, `".prose"`) |
+| `Title` | `string` | `"On This Page"` | Heading text displayed above the outline list |
+| `ContainerStructureClass` | `string` | `"border-l border-base-200 dark:border-base-800"` | CSS classes for the outer container layout |
+| `ContainerColorClass` | `string` | `""` | CSS classes for the outer container colors |
+| `ListStructureClass` | `string` | `"list-none pl-4"` | CSS classes for the heading list layout |
+| `ListColorClass` | `string` | `"text-neutral-500 dark:text-neutral-400"` | CSS classes for the heading list colors |
+| `OutlineLinkColorClass` | `string` | *(see source)* | CSS classes for individual link colors, including the selected state |
+| `OutlineLinkStructureClass` | `string` | *(see source)* | CSS classes for individual link layout |
 
-The outline highlights the heading nearest the viewport as you scroll — one of those small touches that makes documentation sites feel polished instead of generated.
+If you are using `Penn.DocSite`, the outline navigation is already included in the default layout. The layout passes `ContentSelector` pointed at the article element. You only need this component directly when building a custom layout.
+
+The outline is generated entirely client-side using JavaScript. It scans the DOM for heading elements within the `ContentSelector` target, builds the link list, and attaches a scroll listener for active-heading tracking.
 
 ## Using Components in Markdown
 
-Penn's markdown pipeline supports Razor components directly in your `.md` files. No special syntax needed — just write the component tags:
+Penn's markdown pipeline supports Razor components directly in `.md` files. Write the component tags as you would in a `.razor` file.
+
+There are three rules to follow:
+
+1. **Components must be on their own lines.** Do not place a component tag inline within a paragraph. The markdown parser treats inline HTML differently from block-level HTML.
+
+2. **Do not indent component tags.** Markdown parsers treat lines indented by four or more spaces as code blocks. Keep your opening and closing tags flush with the left margin.
+
+3. **Use blank lines around component content.** If you include markdown inside a component (headings, lists, code fences), separate it from the component tags with blank lines so the parser processes it as markdown rather than raw HTML.
+
+Here is a complete example:
 
 ```markdown
 ---
-title: "My Guide"
+title: "Setup Guide"
 ---
 
-Here's how to get started:
+## Overview
+
+This guide walks through initial setup.
+
+<Badge Text="Required" Variant="caution" />
 
 <Steps>
-<Step stepNumber="1">
-## First Step
+<Step StepNumber="1">
 
-Do the thing.
+## Install dependencies
+
+Run the following command:
+
+```bash
+dotnet add package Penn.DocSite --prerelease
+```
+
 </Step>
-<Step stepNumber="2">
-## Second Step
+<Step StepNumber="2">
 
-Do the other thing.
+## Verify the installation
+
+Build and run your project:
+
+```bash
+dotnet run
+```
+
 </Step>
 </Steps>
 
 <Card Title="Tip" Color="primary">
-You can mix markdown and components freely.
+
+You can mix markdown and components freely as long as you
+follow the three rules above.
+
 </Card>
 ```
 
-Components must be on their own lines (not inline with paragraph text), and the opening/closing tags must not be indented — markdown parsers treat indented HTML as code blocks, which is not what you want.
+Note that `StepNumber` uses a lowercase `s` for the attribute name in markdown context. Razor component parameters in HTML are case-insensitive, but the convention in Penn's documentation is to use the casing shown in each component's parameter table.
 
 ## Next Steps
 
-- [Connecting to Roslyn](xref:penn.getting-started.connecting-to-roslyn) — embed live code examples from your solution
-- [Deploying to GitHub Pages](xref:penn.getting-started.deploying-to-github-pages) — publish your site with automated builds
+- [Connecting to Roslyn](xref:penn.getting-started.connecting-to-roslyn) -- embed live code examples verified against your actual solution
+- [Deploying to GitHub Pages](xref:penn.getting-started.deploying-to-github-pages) -- publish your site with a GitHub Actions workflow

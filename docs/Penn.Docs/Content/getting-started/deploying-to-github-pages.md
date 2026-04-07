@@ -1,20 +1,24 @@
 ---
 title: "Deploying to GitHub Pages"
-description: "Generate a static site and deploy it to GitHub Pages with a GitHub Actions workflow"
+description: "Generate a static site and deploy it to GitHub Pages using GitHub Actions"
 uid: "penn.getting-started.deploying-to-github-pages"
 order: 1090
 ---
 
-Penn runs as a normal ASP.NET application in development. For deployment, it switches to static generation mode: it starts the server, crawls every page, writes HTML files to an output directory, and shuts down. The result is a folder of static files that any web server — or GitHub Pages — can serve.
+Penn runs as a normal ASP.NET application in development. For deployment, it switches to static generation mode: it starts the server, crawls every page, writes HTML files to an output directory, and shuts down. The result is a folder of static files that GitHub Pages can serve directly.
 
-No server runtime required. No containers. Just files. The web's most underrated deployment model.
+## What You'll Learn
+
+- How Penn's `build` command generates a static site
+- How to configure GitHub Pages with GitHub Actions
+- How to set up a workflow that builds and deploys automatically
+- How to read the build report and fix common issues
 
 ## Prerequisites
 
 - A GitHub account and repository
-- Completed at least the [Creating Your First Site](xref:penn.getting-started.creating-first-site) tutorial
+- Completed the [Creating Your First Site](xref:penn.getting-started.creating-first-site) tutorial
 - Your Penn project pushed to a GitHub repository
-- Basic familiarity with Git
 
 <Steps>
 <Step stepNumber="1">
@@ -26,26 +30,24 @@ Penn's static generation is triggered by passing `build` as a command-line argum
 dotnet run -- build
 ```
 
-This starts the server, requests every known page, writes the HTML to an `output` directory, and exits. You can also specify a base URL and output directory:
+The `RunOrBuildAsync` method checks for this argument. When present, it starts the server internally, crawls every discovered page, writes the output, and exits. Without it, the application runs as a normal dev server.
+
+You can pass two optional positional arguments after `build`:
 
 ```bash
 dotnet run -- build "/repository-name/"
 dotnet run -- build "/repository-name/" "dist"
 ```
 
-**Arguments:**
-- `build` — triggers static generation instead of the dev server
-- Base URL (optional) — the path prefix for all links, e.g., `/my-project/` for GitHub Pages subdirectory hosting. Defaults to `/`.
-- Output directory (optional) — where to write generated files. Defaults to `output`.
+| Argument | Position | Default | Description |
+|----------|----------|---------|-------------|
+| Base URL | 1st | `/` | Path prefix for all links and assets |
+| Output directory | 2nd | `output` | Where generated files are written |
 
-The base URL matters because GitHub Pages serves your site at `https://username.github.io/repository-name/`, not at the root. Penn rewrites all links, asset paths, and navigation URLs to include this prefix during static generation. In development, everything works at `/` as usual.
+The base URL is important for GitHub Pages. Your site is served at `https://username.github.io/repository-name/`, not at the root. Penn rewrites all links, asset paths, and navigation URLs to include this prefix during static generation. In development, everything works at `/` as usual.
 
-You can also set the base URL via the `BaseHref` environment variable if you'd rather not pass it as an argument:
-
-```bash
-export BaseHref="/my-project/"
-dotnet run -- build
-```
+> [!NOTE]
+> The base URL and output directory are positional CLI arguments only. There is no environment variable equivalent.
 </Step>
 
 <Step stepNumber="2">
@@ -57,9 +59,11 @@ dotnet run -- build
 2. Go to **Settings** > **Pages**
 3. Under **Source**, select **GitHub Actions**
 
+This tells GitHub Pages to deploy from a workflow artifact instead of a branch.
+
 ### Pin the .NET SDK Version
 
-Create a `global.json` in your repository root to ensure consistent builds:
+Create a `global.json` in your repository root:
 
 ```json
 {
@@ -70,7 +74,7 @@ Create a `global.json` in your repository root to ensure consistent builds:
 }
 ```
 
-This ensures GitHub Actions uses the same .NET SDK version as your local development environment. Without it, you're rolling the dice on which SDK version the runner has cached.
+This ensures the GitHub Actions runner uses the same .NET SDK version as your local environment. The `rollForward` setting allows patch updates without breaking the build.
 
 ### Verify Project Structure
 
@@ -90,7 +94,7 @@ your-repo/
 └── README.md
 ```
 
-The exact structure depends on your solution layout. The workflow just needs to know where your project lives.
+The exact layout depends on your solution. The workflow just needs to know the path to your project.
 </Step>
 
 <Step stepNumber="3">
@@ -165,22 +169,22 @@ jobs:
 
 ### What to Customize
 
-Three things need your actual values:
+Three values need your actual project details:
 
-- **`WEBAPP_PATH`** — path to your doc site project directory (e.g., `./docs/MyDocs/`)
-- **`WEBAPP_CSPROJ`** — your project file name (e.g., `MyDocs.csproj`)
-- **`"/your-repository-name/"`** — your GitHub repository name in the build command
+- **`WEBAPP_PATH`** -- path to your doc site project directory (e.g., `./docs/MyDocs/`)
+- **`WEBAPP_CSPROJ`** -- your project file name (e.g., `MyDocs.csproj`)
+- **`"/your-repository-name/"`** -- your GitHub repository name, used as the base URL
 
-The `.nojekyll` file tells GitHub Pages not to process your output through Jekyll. Without it, files and directories starting with underscores get silently ignored, which breaks things in ways that are deeply annoying to debug.
+The `.nojekyll` file tells GitHub Pages not to process your output through Jekyll. Without it, directories starting with underscores get silently ignored.
 
 ### How the Workflow Runs
 
-- **Build job** runs on every push to any branch and on pull requests to `main`. This gives you CI validation on feature branches.
-- **Deploy job** only runs when code lands on `main` (direct push or merged PR). Your site only updates on main — feature branches build but don't deploy.
+- **Build job** runs on every push and on pull requests to `main`. This gives you CI validation on feature branches.
+- **Deploy job** only runs when code lands on `main` (direct push or merged PR). Feature branches build but don't deploy.
 </Step>
 
 <Step stepNumber="4">
-## Deploy
+## Deploy and Verify
 
 Commit and push:
 
@@ -196,20 +200,26 @@ Then:
 2. Watch the workflow run
 3. Once the deploy job completes, your site is live at `https://username.github.io/repository-name/`
 
-The first deployment takes a minute or two. Subsequent deployments are faster since the runner caches the .NET SDK and NuGet packages.
+The first deployment takes a minute or two. Subsequent runs are faster once the runner caches the .NET SDK and NuGet packages.
+
+Verify that:
+
+- Pages load with styling intact
+- Navigation works between pages
+- Images and assets resolve correctly
 </Step>
 
 <Step stepNumber="5">
 ## Custom Domain (Optional)
 
-If you have a custom domain, the base URL changes from `/repository-name/` to `/`:
+With a custom domain, your base URL changes from `/repository-name/` to `/`.
 
 ### Configure DNS
 
 Add a CNAME record pointing to your GitHub Pages site:
 
 ```
-CNAME  www.yourdomain.com  username.github.io
+CNAME  docs.yourdomain.com  username.github.io
 ```
 
 ### Update Repository Settings
@@ -231,32 +241,59 @@ Change the base URL in your workflow to `/`:
     dotnet run --project ${{ env.WEBAPP_PATH }}${{ env.WEBAPP_CSPROJ }} --configuration Release -- build "/"
 ```
 
-With a custom domain, your site lives at the root — no subdirectory prefix needed.
+No subdirectory prefix is needed when serving from a custom domain.
 </Step>
 </Steps>
 
-## What Success Looks Like
+## Reading the Build Report
 
-After pushing to `main`, navigate to the **Actions** tab and watch the workflow. Once the deploy job finishes (typically 1-2 minutes), your site is live.
+When the build completes, Penn prints a summary to the console:
 
-Verify that:
-- Pages load with styling intact
-- Navigation works between pages
-- Images and assets load correctly
-- If using Roslyn, code blocks render with syntax highlighting
+```
+Build Complete — 32 pages in 2.4s
+  32 pages generated
+  1 warnings
+```
 
-Every push to `main` from this point forward triggers an automatic rebuild and deploy. Push content changes and they're live in minutes.
+The report includes:
+
+- **Page count** -- total pages generated, skipped (drafts), and failed
+- **Warnings** -- non-fatal issues such as missing images or unresolved xrefs
+- **Broken links** -- internal links that point to pages that don't exist, listed with the source page and target URL
+- **Errors** -- fatal problems that prevented page generation
+
+Penn generates a `404.html` page automatically during the build (Phase 8 of the generation process). GitHub Pages serves this file for any URL that doesn't match a generated page.
+
+The build also runs link verification (Phase 9), checking every internal link across all generated HTML. If broken links are found, they appear in the report:
+
+```
+WARNINGS
+  2 broken links found:
+    /getting-started links to /nonexistent-page (page not found)
+    /guides/intro links to /old-path (page not found)
+```
+
+> [!IMPORTANT]
+> The build sets a non-zero exit code when errors or broken links are detected. This causes the GitHub Actions workflow to fail, preventing deployment of a broken site. Fix all reported issues before merging to `main`.
 
 ## Troubleshooting
 
-**Site loads but CSS/JS/images are missing**
-: The repository name in your build command (`build "/your-repository-name/"`) must exactly match your GitHub repository name, including case. A mismatch means every asset URL is wrong.
+**Site loads but CSS, JS, or images are missing**
+: The base URL in your build command must exactly match your GitHub repository name, including case. `build "/My-Repo/"` and `build "/my-repo/"` produce different asset paths.
 
 **404 on all pages after deployment**
-: Make sure the `.nojekyll` file step is in your workflow. GitHub Pages' default Jekyll processing ignores directories that start with underscores, which breaks static file serving.
+: Ensure the `.nojekyll` file step is in your workflow. GitHub Pages' default Jekyll processing ignores directories starting with underscores, which breaks static file serving.
 
 **Workflow runs but site doesn't update**
-: The deploy job only runs on pushes to `main`. Check the Actions tab — you'll see the build job succeeded on your branch, but the deploy job was skipped. This is by design.
+: The deploy job only runs on pushes to `main`. Check the Actions tab -- the build job succeeded on your feature branch, but the deploy job was skipped. This is by design.
 
 **Build succeeds locally but fails in CI**
-: Check your `global.json`. If it pins a .NET version that isn't available on the GitHub runner, `setup-dotnet` will fail. Use `rollForward: "latestMinor"` to give yourself some flexibility.
+: Check your `global.json`. If it pins a .NET version that isn't available on the GitHub runner, `setup-dotnet` fails. Use `rollForward: "latestMinor"` for flexibility.
+
+**Build exits with a non-zero code**
+: Read the build report output. Broken internal links and generation errors both cause a non-zero exit. The report lists every broken link with its source page and target URL so you can fix them directly.
+
+## Next Steps
+
+- [Using UI Elements](xref:penn.getting-started.using-ui-elements) -- enhance your pages with cards, badges, steps, and more
+- [Connecting to Roslyn](xref:penn.getting-started.connecting-to-roslyn) -- embed live, verified code examples from your .NET solution
