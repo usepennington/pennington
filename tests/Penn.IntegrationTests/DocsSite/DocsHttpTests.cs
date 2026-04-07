@@ -116,6 +116,56 @@ public class DocsHttpTests : IClassFixture<DocsWebApplicationFactory>
         content.ShouldContain("Page not found");
     }
 
+    [Fact]
+    public async Task Layout_HasSkipToContentLink()
+    {
+        var response = await _client.GetAsync("/getting-started/creating-first-site/", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        content.ShouldContain("""href="#main-content""");
+        content.ShouldContain("Skip to main content");
+    }
+
+    [Fact]
+    public async Task Layout_HasSkipToNavigationLink()
+    {
+        var response = await _client.GetAsync("/getting-started/creating-first-site/", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        content.ShouldContain("""href="#nav-sidebar""");
+        content.ShouldContain("Skip to navigation");
+    }
+
+    [Fact]
+    public async Task Layout_ContentArticleHasMainContentId()
+    {
+        var response = await _client.GetAsync("/getting-started/creating-first-site/", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        content.ShouldContain("""id="main-content""");
+    }
+
+    [Fact]
+    public async Task Layout_SidebarNavHasAriaLabel()
+    {
+        var response = await _client.GetAsync("/getting-started/creating-first-site/", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        content.ShouldContain("""aria-label="Sidebar""");
+    }
+
+    [Fact]
+    public async Task Layout_HeaderNavHasAriaLabel()
+    {
+        var response = await _client.GetAsync("/getting-started/creating-first-site/", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        content.ShouldContain("""aria-label="Site""");
+    }
+
+    [Fact]
+    public async Task StylesCss_ContainsSkipLinkUtilities()
+    {
+        var response = await _client.GetAsync("/styles.css", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        content.ShouldContain("sr-only");
+    }
+
     [Theory]
     [InlineData("/getting-started/creating-first-site/")]
     [InlineData("/getting-started/deploying-to-github-pages/")]

@@ -20,13 +20,15 @@
 </HeadContent>
 
 <div class="dark:scheme-dark font-sans box-border bg-base-100 dark:bg-base-950 text-base-900 dark:text-base-50">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-primary-700 focus:text-white focus:p-3">Skip to main content</a>
+    <a href="#nav-sidebar" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-primary-700 focus:text-white focus:p-3">Skip to navigation</a>
     <div style="scrollbar-gutter: stable both-edges;">
         <!-- Mobile overlay -->
         <div id="mobile-overlay" class="fixed inset-0 bg-base-950/50 backdrop-blur z-30 lg:hidden aria-hidden:hidden"
              aria-hidden="true"></div>
 
         <div class="flex flex-row min-h-screen w-full">
-            <div id="nav-sidebar" data-expanded="false" class="transition-[margin] ease-in-out duration-300 -ml-80 data-[expanded=true]:ml-0 lg:ml-0 w-80 lg:min-w-80 2xl:w-1/4 flex-none border-r border-base-200 dark:border-base-800 fixed lg:static lg:z-auto z-40 h-full lg:h-auto bg-base-100 dark:bg-base-950">
+            <nav id="nav-sidebar" aria-label="Sidebar" data-expanded="false" class="transition-[margin] ease-in-out duration-300 -ml-80 data-[expanded=true]:ml-0 lg:ml-0 w-80 lg:min-w-80 2xl:w-1/4 flex-none border-r border-base-200 dark:border-base-800 fixed lg:static lg:z-auto z-40 h-full lg:h-auto bg-base-100 dark:bg-base-950">
                 <div class="sticky xl:ml-auto xl:w-80 2xl:w-92 p-8  font-display tracking-tight top-0 h-screen overflow-y-auto scrollbar-color scrollbar-thin scrollbar-track-base-100 scrollbar-thumb-base-400 dark:scrollbar-track-base-900 dark:scrollbar-thumb-base-700 ">
                     <div>
                         <div>
@@ -56,10 +58,10 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </nav>
             <div class="flex-1 min-w-0 lg:ml-0">
                 <header class="sticky top-0 z-10 h-14 backdrop-blur-sm bg-base-50/90 dark:bg-base-950/90 flex items-center justify-between gap-x-8 border-b border-base-200 dark:border-base-800">
-                    <nav class="mx-auto px-4 lg:px-8 max-w-6xl flex flex-row items-center gap-x-2 w-full">
+                    <nav aria-label="Site" class="mx-auto px-4 lg:px-8 max-w-6xl flex flex-row items-center gap-x-2 w-full">
                         @_mobileMenuButton
                         <div
                             class="lg:hidden flex flex-1 lg:flex-none min-w-0 shrink items-center place-content-center gap-x-2 lg:gap-x-4">
@@ -151,7 +153,7 @@
                 </header>
                 <main class="mx-auto max-w-7xl">
                     <div class="flex lg:gap-x-8 xl:gap-x-12">
-                        <article data-spa-island="content" data-spa-loading="skeleton" class="flex-1 mt-4 lg:mt-8 ml-4 lg:ml-8 mr-4 xl:mr-0 min-w-0">
+                        <article id="main-content" data-spa-island="content" data-spa-loading="skeleton" class="flex-1 mt-4 lg:mt-8 ml-4 lg:ml-8 mr-4 xl:mr-0 min-w-0">
                             @Body
                         </article>
                         <div class="hidden xl:block sticky top-24 h-min  lg:max-h-[calc(100vh-7rem)] overflow-y-auto w-80  font-display tracking-tight text-sm">

@@ -3,6 +3,7 @@
 @inject PennOptions PennOptions
 
 <div class="h-full min-h-screen font-sans ">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-primary-700 focus:text-white focus:p-3">Skip to main content</a>
     <div class="relative flex w-full h-full flex-col min-h-screen bg-base-50 dark:bg-base-950">
         <header class="mx-auto py-4 w-full max-w-7xl bg-base-100 dark:bg-base-900 border-r border-l border-b border-base-200/50 dark:border-base-800/50">
             <div class="mx-auto w-full max-w-5xl flex flex-row items-center gap-x-2 px-4">
@@ -13,13 +14,13 @@
                 <div class="flex-1">
                     @if (Options.MainSiteLinks.Length > 0)
                     {
-                        <div class="hidden md:flex flex-wrap justify-center gap-x-4 md:gap-x-6 lg:gap-x-12 text-sm uppercase text-base-800 dark:text-base-100">
+                        <nav aria-label="Site" class="hidden md:flex flex-wrap justify-center gap-x-4 md:gap-x-6 lg:gap-x-12 text-sm uppercase text-base-800 dark:text-base-100">
                             @foreach (var link in Options.MainSiteLinks)
                             {
                                 <a class="transition hover:text-primary-500 dark:hover:text-primary-400"
                                    href="@link.Url">@link.Title</a>
                             }
-                        </div>
+                        </nav>
                     }
                 </div>
 
@@ -68,7 +69,7 @@
             }
         </header>
         <div class="mx-auto w-full max-w-7xl transition-spacing pt-4 md:pt-6 lg:pt-16 bg-base-100 dark:bg-base-900 border-r border-l border-base-200/50 dark:border-base-800/50">
-            <main class="flex-auto">
+            <main id="main-content" class="flex-auto">
                 <div class="relative px-4 sm:px-8 lg:px-12 mx-auto max-w-2xl lg:max-w-7xl">
                     @Body
                 </div>
@@ -76,13 +77,13 @@
             <footer class="mt-32 flex-none sm:px-8 mx-auto w-full max-w-7xl lg:px-8">
                 <div class="border-t border-base-100 pt-10 pb-16 dark:border-base-700/40 relative px-4 sm:px-8 lg:px-12 mx-auto max-w-2xl lg:max-w-5xl">
                     <div class="flex flex-col items-center justify-between gap-6 md:flex-row">
-                        <div class="flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm font-medium text-base-800 dark:text-base-200">
+                        <nav aria-label="Footer" class="flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm font-medium text-base-800 dark:text-base-200">
                             @foreach (var link in Options.MainSiteLinks)
                             {
                                 <a class="transition hover:text-primary-500 dark:hover:text-primary-400"
                                    href="@link.Url">@link.Title</a>
                             }
-                        </div>
+                        </nav>
                         <p class="text-sm text-base-400 dark:text-base-400">
                             &copy; @DateTime.Now.Year @(Options.AuthorName ?? PennOptions.SiteTitle). All rights reserved.
                         </p>
