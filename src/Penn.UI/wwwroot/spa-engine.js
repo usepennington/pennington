@@ -76,6 +76,7 @@
     // -----------------------------------------------------------------------
 
     const delay = (ms) => new Promise(r => setTimeout(r, ms));
+    function isReloadSignal(data) { return data && data.reload === true; }
 
     function getSlug(url) {
         let p = url.pathname;
@@ -241,6 +242,7 @@
         }
         const promise = fetch(`${BASE_PATH}${DATA_PATH}/${slug}.json`)
             .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+            .then(d => { if (isReloadSignal(d)) throw new Error('reload'); return d; })
             .catch(() => null);
         _prefetchCache.set(slug, promise);
     }
@@ -311,6 +313,7 @@
         };
 
         if (fetchData) {
+            if (isReloadSignal(fetchData)) { location.href = url.href; return; }
             // Fast path — data arrived before the threshold.
             maybeTransition(() => doCommit(fetchData));
         } else {
@@ -332,6 +335,7 @@
             if (remaining > 0) await delay(remaining);
             if (ctrl.signal.aborted) return;
 
+            if (isReloadSignal(fetchData)) { location.href = url.href; return; }
             maybeTransition(() => doCommit(fetchData));
         }
     }

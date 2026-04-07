@@ -73,7 +73,11 @@ public static class SpaNavigationExtensions
             }
 
             var data = await service.GetPageDataAsync(route, title);
-            if (data is null) return Results.NotFound();
+            if (data is null)
+            {
+                var reloadEnvelope = new SpaEnvelopeDto(title, null, [], Reload: true);
+                return Results.Content(SpaEnvelopeSerializer.Serialize(reloadEnvelope), "application/json");
+            }
 
             // Resolve xrefs in island HTML (response processors don't run on JSON)
             var resolvedIslands = new Dictionary<string, string>(data.Islands.Count);

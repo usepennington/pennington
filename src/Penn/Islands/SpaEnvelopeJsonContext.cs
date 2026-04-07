@@ -23,5 +23,6 @@ public record SpaEnvelopeDto(
     string Title,
     string? Description,
     Dictionary<string, string> Islands,
-    IReadOnlyList<Diagnostic>? Diagnostics = null
+    IReadOnlyList<Diagnostic>? Diagnostics = null,
+    bool? Reload = null
 );
