@@ -1,0 +1,93 @@
+@page "/schedule"
+@inject ScheduleService ScheduleSvc
+@inject InstructorService InstructorSvc
+
+<PageTitle>Class Schedule — 937 Yoga</PageTitle>
+
+<section class="yoga-section">
+    <div class="yoga-container">
+        <div class="text-center mb-12">
+            <h1 class="font-display text-4xl md:text-5xl font-bold text-base-900 dark:text-base-50 mb-4">Class Schedule</h1>
+            <p class="text-base-500 dark:text-base-400 max-w-xl mx-auto">
+                @ScheduleSvc.GetAllClasses().Count classes across 7 days. All levels welcome.
+            </p>
+        </div>
+
+        <!-- Weekly Calendar -->
+        <div class="space-y-8">
+            @foreach (var (day, classes) in ScheduleSvc.GetWeeklySchedule())
+            {
+                <div>
+                    <h2 class="font-display text-xl font-bold text-base-900 dark:text-base-50 mb-4 pb-2 border-b border-base-200 dark:border-base-700">
+                        @day
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach (var cls in classes)
+                        {
+                            var instructor = InstructorSvc.GetById(cls.InstructorId);
+                            <a href="/schedule/@cls.Id" class="yoga-schedule-cell group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-semibold text-primary-700 dark:text-primary-400">@cls.StartTime – @cls.EndTime</span>
+                                    <span class="@LevelCss(cls.Level)">@cls.Level</span>
+                                </div>
+                                <h3 class="font-medium text-base-900 dark:text-base-100 mb-1 group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
+                                    @cls.ClassName
+                                </h3>
+                                <div class="flex items-center justify-between text-xs text-base-500 dark:text-base-400">
+                                    <span>@(instructor?.Name ?? "TBA")</span>
+                                    <span>@cls.Room</span>
+                                </div>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <span class="yoga-tag text-xs">@cls.ClassType</span>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Timeline View -->
+        <div class="mt-16">
+            <h2 class="font-display text-2xl font-bold text-base-900 dark:text-base-50 mb-8 text-center">Daily Timeline</h2>
+            <div class="relative">
+                <div class="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-primary-200 dark:bg-primary-800"></div>
+                @{ var index = 0; }
+                @foreach (var cls in ScheduleSvc.GetAllClasses().OrderBy(c => DayIndex(c.DayOfWeek)).ThenBy(c => c.StartTime).Take(8))
+                {
+                    var instructor = InstructorSvc.GetById(cls.InstructorId);
+                    var isLeft = index % 2 == 0;
+                    <div class="relative flex items-center mb-8 @(isLeft ? "md:flex-row" : "md:flex-row-reverse")">
+                        <div class="absolute left-4 md:left-1/2 w-3 h-3 -ml-1.5 rounded-full bg-primary-500 border-2 border-white dark:border-base-950 z-10"></div>
+                        <div class="ml-12 md:ml-0 md:w-1/2 @(isLeft ? "md:pr-12 md:text-right" : "md:pl-12")">
+                            <a href="/schedule/@cls.Id" class="yoga-card inline-block w-full">
+                                <div class="yoga-card-body">
+                                    <span class="yoga-schedule-time">@cls.DayOfWeek &middot; @cls.StartTime</span>
+                                    <h3 class="font-display text-lg font-semibold text-base-900 dark:text-base-50 mt-1">@cls.ClassName</h3>
+                                    <p class="text-sm text-base-500 dark:text-base-400 mt-1">with @(instructor?.Name ?? "TBA") &middot; @cls.Room</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    index++;
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private static string LevelCss(string level) => level.ToLowerInvariant() switch
+    {
+        "beginner" => "yoga-level-beginner",
+        "intermediate" => "yoga-level-intermediate",
+        "advanced" => "yoga-level-advanced",
+        _ => "yoga-level-all",
+    };
+
+    private static int DayIndex(string day) => day.ToLowerInvariant() switch
+    {
+        "monday" => 0, "tuesday" => 1, "wednesday" => 2, "thursday" => 3,
+        "friday" => 4, "saturday" => 5, "sunday" => 6, _ => 7,
+    };
+}

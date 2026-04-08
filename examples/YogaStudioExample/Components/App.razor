@@ -1,0 +1,23 @@
+@inject Penn.Localization.LocaleContext Locale
+
+<!DOCTYPE html>
+<html lang="@Locale.HtmlLang" dir="@Locale.Direction" data-spa-data-path="/_spa-data">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="937 Yoga — Find your flow. Modern yoga studio offering Vinyasa, Yin, Power, Hot Yoga, Meditation and more."/>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="/styles.css"/>
+
+    <HeadOutlet/>
+</head>
+
+<body class="bg-base-50 text-base-900 antialiased dark:bg-base-950 dark:text-base-100">
+    <Routes/>
+    <script src="/_content/Penn.UI/spa-engine.js" defer></script>
+    <script src="/js/search.js" defer></script>
+    <script src="/js/faq.js" defer></script>
+</body>
+</html>

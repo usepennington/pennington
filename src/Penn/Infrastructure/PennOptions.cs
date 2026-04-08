@@ -17,6 +17,7 @@ public sealed class PennOptions
     public HighlightingOptions Highlighting { get; } = new();
     public IslandsOptions Islands { get; } = new();
     public LocalizationOptions Localization { get; } = new();
+    public TranslationOptions Translations { get; } = new();
 
     private readonly List<MarkdownContentOptions> _markdownSources = [];
 
@@ -155,4 +156,46 @@ public sealed class LocalizationOptions
 
         return string.IsNullOrEmpty(path) ? $"/{locale}/" : $"/{locale}/{path}/";
     }
+
+    /// <summary>
+    /// Gets alternate language versions for a page URL across all configured locales.
+    /// Pure URL math — does not check if content exists (fallback handles that).
+    /// </summary>
+    public IReadOnlyList<AlternateLanguage> GetAlternateLanguages(string url)
+    {
+        if (!IsMultiLocale) return [];
+
+        url = "/" + url.Trim('/');
+        if (url.Equals("/index", StringComparison.OrdinalIgnoreCase))
+            url = "/";
+
+        var locale = GetLocaleFromUrl(url);
+        var contentPath = StripLocalePrefix(url, locale);
+
+        var result = new List<AlternateLanguage>();
+        foreach (var (code, info) in _locales)
+        {
+            var localeUrl = BuildLocaleUrl(contentPath.Trim('/'), code);
+            result.Add(new AlternateLanguage(
+                Locale: code,
+                DisplayName: info.DisplayName,
+                HtmlLang: info.HtmlLang ?? code,
+                Url: localeUrl,
+                IsCurrentLocale: string.Equals(code, locale, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        return result;
+    }
 }
+
+/// <summary>
+/// Represents one language version of a page, used for language switchers
+/// and hreflang link tags. Content-route-independent (pure URL math).
+/// </summary>
+public record AlternateLanguage(
+    string Locale,
+    string DisplayName,
+    string HtmlLang,
+    string Url,
+    bool IsCurrentLocale = false
+);

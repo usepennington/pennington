@@ -157,34 +157,29 @@ public sealed class ContentResolver
     /// <summary>
     /// Get alternate language versions for a page URL.
     /// Always includes all configured locales — fallback resolution handles missing translations.
+    /// Delegates URL math to <see cref="LocalizationOptions.GetAlternateLanguages"/> and
+    /// wraps results with <see cref="ContentRoute"/> for DocSite consumption.
     /// </summary>
     public Task<ImmutableList<AlternateLanguagePage>> GetAlternateLanguagesAsync(string url)
     {
         if (!_localization.IsMultiLocale)
             return Task.FromResult(ImmutableList<AlternateLanguagePage>.Empty);
 
-        url = "/" + url.Trim('/');
-        if (url.Equals("/index", StringComparison.OrdinalIgnoreCase))
-            url = "/";
-        var locale = _localization.GetLocaleFromUrl(url);
-        var contentPath = _localization.StripLocalePrefix(url, locale);
-
+        var alternates = _localization.GetAlternateLanguages(url);
         var builder = ImmutableList.CreateBuilder<AlternateLanguagePage>();
 
-        foreach (var (localeCode, localeInfo) in _localization.Locales)
+        foreach (var alt in alternates)
         {
-            var localeUrl = _localization.BuildLocaleUrl(contentPath.Trim('/'), localeCode);
             builder.Add(new AlternateLanguagePage(
-                Locale: localeCode,
-                DisplayName: localeInfo.DisplayName,
+                Locale: alt.Locale,
+                DisplayName: alt.DisplayName,
                 Route: new ContentRoute
                 {
-                    CanonicalPath = new UrlPath(localeUrl),
-                    OutputFile = new FilePath($"{localeUrl.Trim('/')}/index.html"),
-                    Locale = localeCode
+                    CanonicalPath = new UrlPath(alt.Url),
+                    OutputFile = new FilePath($"{alt.Url.Trim('/')}/index.html"),
+                    Locale = alt.Locale,
                 },
-                IsCurrentLocale: string.Equals(localeCode, locale, StringComparison.OrdinalIgnoreCase)
-            ));
+                IsCurrentLocale: alt.IsCurrentLocale));
         }
 
         return Task.FromResult(builder.ToImmutable());

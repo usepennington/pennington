@@ -1,0 +1,143 @@
+@page "/"
+@inject ScheduleService ScheduleSvc
+@inject InstructorService InstructorSvc
+
+<PageTitle>937 Yoga — Find Your Flow</PageTitle>
+
+<!-- Hero -->
+<section class="yoga-hero">
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,_var(--tw-gradient-from)_0%,_transparent_50%)] from-primary-400"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,_var(--tw-gradient-from)_0%,_transparent_50%)] from-accent-300"></div>
+    </div>
+    <div class="yoga-hero-content">
+        <p class="text-sm font-medium tracking-widest uppercase text-primary-600 dark:text-primary-400 mb-4">Portland's Neighborhood Studio</p>
+        <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-bold text-base-900 dark:text-base-50 leading-tight mb-6">
+            Find Your<br/>
+            <span class="text-primary-700 dark:text-primary-400">Flow</span>
+        </h1>
+        <p class="text-lg md:text-xl text-base-600 dark:text-base-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Vinyasa, Yin, Power, Hot Yoga, Meditation and more.
+            All levels welcome. First class free.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="/schedule" class="yoga-btn-primary">View Schedule</a>
+            <a href="/pricing" class="yoga-btn-secondary">See Pricing</a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Classes -->
+<section class="yoga-section">
+    <div class="yoga-container">
+        <div class="text-center mb-12">
+            <h2 class="font-display text-3xl md:text-4xl font-bold text-base-900 dark:text-base-50 mb-4">This Week's Highlights</h2>
+            <p class="text-base-500 dark:text-base-400 max-w-xl mx-auto">From sunrise flows to candlelit sessions, find the class that moves you.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            @foreach (var cls in FeaturedClasses)
+            {
+                var instructor = InstructorSvc.GetById(cls.InstructorId);
+                <a href="/schedule/@cls.Id" class="yoga-card group">
+                    <div class="h-2 bg-gradient-to-r from-primary-500 to-primary-600"></div>
+                    <div class="yoga-card-body">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="yoga-schedule-time">@cls.DayOfWeek &middot; @cls.StartTime</span>
+                            <span class="@LevelCss(cls.Level)">@cls.Level</span>
+                        </div>
+                        <h3 class="font-display text-xl font-semibold text-base-900 dark:text-base-50 mb-2 group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
+                            @cls.ClassName
+                        </h3>
+                        <p class="text-sm text-base-500 dark:text-base-400 mb-3 line-clamp-2">@cls.Description</p>
+                        @if (instructor is not null)
+                        {
+                            <p class="text-sm font-medium text-primary-700 dark:text-primary-400">with @instructor.Name</p>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+
+        <div class="text-center mt-10">
+            <a href="/schedule" class="yoga-btn-secondary">View Full Schedule</a>
+        </div>
+    </div>
+</section>
+
+<!-- Instructors Preview -->
+<section class="yoga-section-alt">
+    <div class="yoga-container">
+        <div class="text-center mb-12">
+            <h2 class="font-display text-3xl md:text-4xl font-bold text-base-900 dark:text-base-50 mb-4">Meet Your Guides</h2>
+            <p class="text-base-500 dark:text-base-400 max-w-xl mx-auto">Experienced, passionate, and here to support your practice at every level.</p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+            @foreach (var inst in InstructorSvc.GetAll())
+            {
+                <a href="/instructors/@inst.Slug" class="text-center group">
+                    <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text-2xl font-bold text-primary-800 dark:text-primary-200 mb-3 group-hover:scale-105 transition-transform">
+                        @inst.Name[0]
+                    </div>
+                    <h3 class="font-medium text-sm text-base-900 dark:text-base-100 group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">@inst.Name</h3>
+                    <p class="text-xs text-base-500 dark:text-base-400 mt-0.5">@inst.Specialties.FirstOrDefault()</p>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="yoga-section">
+    <div class="yoga-container">
+        <div class="text-center mb-12">
+            <h2 class="font-display text-3xl md:text-4xl font-bold text-base-900 dark:text-base-50 mb-4">What Our Community Says</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="yoga-testimonial">
+                <p class="text-base-600 dark:text-base-300 italic mb-4 leading-relaxed">"I came for the exercise and stayed for the community. 937 Yoga has become my second home. The instructors genuinely care about every student."</p>
+                <p class="font-medium text-sm text-base-900 dark:text-base-100">Sarah K.</p>
+                <p class="text-xs text-base-500">Member since 2023</p>
+            </div>
+            <div class="yoga-testimonial">
+                <p class="text-base-600 dark:text-base-300 italic mb-4 leading-relaxed">"As a complete beginner, I was nervous about my first class. Maya made me feel welcome from the moment I walked in. Two years later, I'm doing headstands."</p>
+                <p class="font-medium text-sm text-base-900 dark:text-base-100">Marcus T.</p>
+                <p class="text-xs text-base-500">Member since 2024</p>
+            </div>
+            <div class="yoga-testimonial">
+                <p class="text-base-600 dark:text-base-300 italic mb-4 leading-relaxed">"The Thursday candlelit vinyasa is pure magic. I look forward to it all week. If you haven't tried it, you're missing out."</p>
+                <p class="font-medium text-sm text-base-900 dark:text-base-100">Elena R.</p>
+                <p class="text-xs text-base-500">Member since 2024</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="bg-primary-800 dark:bg-primary-950 py-16 px-6">
+    <div class="yoga-container text-center">
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-4">Your First Class is Free</h2>
+        <p class="text-primary-200 max-w-lg mx-auto mb-8">No commitment, no pressure. Just show up, breathe, and see how you feel.</p>
+        <a href="/schedule" class="inline-flex items-center justify-center px-8 py-4 rounded-full text-sm font-semibold bg-white text-primary-800 hover:bg-primary-50 transition-colors">
+            Book Your Free Class
+        </a>
+    </div>
+</section>
+
+@code {
+    private List<ScheduleEntry> FeaturedClasses => ScheduleSvc.GetAllClasses()
+        .GroupBy(c => c.DayOfWeek)
+        .SelectMany(g => g.Take(1))
+        .Take(3)
+        .ToList();
+
+    private static string LevelCss(string level) => level.ToLowerInvariant() switch
+    {
+        "beginner" => "yoga-level-beginner",
+        "intermediate" => "yoga-level-intermediate",
+        "advanced" => "yoga-level-advanced",
+        _ => "yoga-level-all",
+    };
+}

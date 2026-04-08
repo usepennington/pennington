@@ -5,9 +5,10 @@
 @inject IWebHostEnvironment WebHostEnvironment
 @inject DocSiteOptions DocSiteOptions
 @inject LocalizationOptions Localization
+@inject Penn.Localization.LocaleContext Locale
 
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="@Locale.HtmlLang" dir="@Locale.Direction">
 
 <head>
     <meta charset="utf-8"/>

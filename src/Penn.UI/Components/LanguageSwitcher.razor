@@ -1,6 +1,11 @@
-@if (AlternateLanguages.Count > 1)
+@using Penn.Infrastructure
+@using Penn.Localization
+@inject LocaleContext Locale
+@inject LocalizationOptions Localization
+
+@if (_items.Count > 1)
 {
-    <details class="relative" data-lang-switcher data-default-locale="@DefaultLocale">
+    <details class="relative" data-lang-switcher data-default-locale="@Localization.DefaultLocale">
         <summary class="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-base-600 dark:text-base-300 hover:bg-base-200 dark:hover:bg-base-800 cursor-pointer list-none [&::-webkit-details-marker]:hidden"
                  aria-label="Switch language">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -9,7 +14,7 @@
             <span data-lang-current>@CurrentDisplayName</span>
         </summary>
         <div class="absolute right-0 z-20 mt-1 min-w-32 rounded-md border border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-900 py-1 shadow-lg">
-            @foreach (var lang in AlternateLanguages)
+            @foreach (var lang in _items)
             {
                 <a href="@lang.Url"
                    data-spa-reload
@@ -23,11 +28,34 @@
 }
 
 @code {
-    [Parameter] public IReadOnlyList<AlternateLanguageItem> AlternateLanguages { get; set; } = [];
-    [Parameter] public string DefaultLocale { get; set; } = "";
+    /// <summary>
+    /// Optional explicit alternate languages. When provided, the switcher uses these URLs.
+    /// When null or empty, auto-computes from LocaleContext and LocalizationOptions.
+    /// </summary>
+    [Parameter] public IReadOnlyList<AlternateLanguageItem>? AlternateLanguages { get; set; }
 
-    private string CurrentDisplayName => AlternateLanguages
+    private IReadOnlyList<AlternateLanguageItem> _items = [];
+
+    private string CurrentDisplayName => _items
         .FirstOrDefault(l => l.IsCurrentLocale)?.DisplayName ?? "";
+
+    protected override void OnParametersSet()
+    {
+        _items = AlternateLanguages is { Count: > 0 }
+            ? AlternateLanguages
+            : BuildFromLocaleContext();
+    }
+
+    private List<AlternateLanguageItem> BuildFromLocaleContext()
+    {
+        // Use ContentPath (locale-stripped) for URL building, but determine
+        // "current" from LocaleContext.Locale since the path is already stripped.
+        return Localization.GetAlternateLanguages(Locale.ContentPath)
+            .Select(a => new AlternateLanguageItem(
+                a.Locale, a.DisplayName, a.Url,
+                IsCurrentLocale: string.Equals(a.Locale, Locale.Locale, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+    }
 
     public record AlternateLanguageItem(string Locale, string DisplayName, string Url, bool IsCurrentLocale);
 }

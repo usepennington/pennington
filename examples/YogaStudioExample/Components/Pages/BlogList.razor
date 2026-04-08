@@ -1,0 +1,87 @@
+@page "/blog"
+@inject ContentHelper Content
+
+<PageTitle>Blog — 937 Yoga</PageTitle>
+
+<section class="yoga-section">
+    <div class="yoga-container max-w-4xl">
+        <div class="text-center mb-12">
+            <h1 class="font-display text-4xl md:text-5xl font-bold text-base-900 dark:text-base-50 mb-4">The 937 Blog</h1>
+            <p class="text-base-500 dark:text-base-400 max-w-xl mx-auto">
+                Insights on yoga, wellness, and mindful living from our instructors.
+            </p>
+        </div>
+
+        <!-- Tags -->
+        @if (Tags.Count > 0)
+        {
+            <div class="flex flex-wrap justify-center gap-2 mb-10">
+                @foreach (var tag in Tags)
+                {
+                    <span class="yoga-tag">@tag</span>
+                }
+            </div>
+        }
+
+        <!-- Blog posts -->
+        <div class="space-y-8">
+            @foreach (var (route, fm) in Posts)
+            {
+                <a href="@route.CanonicalPath.Value" class="yoga-blog-card flex flex-col md:flex-row">
+                    <div class="md:w-64 shrink-0 h-48 md:h-auto bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-900 dark:to-accent-900 flex items-center justify-center">
+                        <svg class="h-12 w-12 text-primary-300 dark:text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                    </div>
+                    <div class="p-6 flex-1">
+                        <div class="yoga-blog-meta mb-3">
+                            @if (fm.Date.HasValue)
+                            {
+                                <time datetime="@fm.Date.Value.ToString("yyyy-MM-dd")">@fm.Date.Value.ToString("MMMM d, yyyy")</time>
+                            }
+                            @if (fm.Author is not null)
+                            {
+                                <span>&middot;</span>
+                                <span>@fm.Author</span>
+                            }
+                            @if (fm.ReadingTimeMinutes > 0)
+                            {
+                                <span>&middot;</span>
+                                <span>@fm.ReadingTimeMinutes min read</span>
+                            }
+                        </div>
+                        <h2 class="font-display text-xl font-bold text-base-900 dark:text-base-50 mb-2 group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
+                            @fm.Title
+                        </h2>
+                        @if (fm.Description is not null)
+                        {
+                            <p class="text-base-600 dark:text-base-300 mb-4 line-clamp-2">@fm.Description</p>
+                        }
+                        <div class="flex flex-wrap gap-2">
+                            @foreach (var tag in fm.Tags)
+                            {
+                                <span class="yoga-tag text-xs">@tag</span>
+                            }
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+
+        @if (Posts.Count == 0)
+        {
+            <p class="text-center text-base-500 dark:text-base-400 py-12">No blog posts yet. Check back soon!</p>
+        }
+    </div>
+</section>
+
+@code {
+    private List<(ContentRoute Route, YogaBlogFrontMatter FrontMatter)> Posts { get; set; } = [];
+    private List<string> Tags { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        Posts = await Content.GetAllBlogPostsAsync();
+        Tags = await Content.GetAllBlogTagsAsync();
+    }
+}

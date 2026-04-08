@@ -1,0 +1,96 @@
+@page "/schedule/{Id}"
+@inject ScheduleService ScheduleSvc
+@inject InstructorService InstructorSvc
+
+@if (Entry is not null)
+{
+    <PageTitle>@Entry.ClassName — 937 Yoga</PageTitle>
+
+    <section class="yoga-section">
+        <div class="yoga-container max-w-3xl">
+            <a href="/schedule" class="inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 mb-6 transition-colors">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Back to Schedule
+            </a>
+
+            <div class="flex items-center gap-3 mb-4">
+                <span class="yoga-tag">@Entry.ClassType</span>
+                <span class="@LevelCss(Entry.Level)">@Entry.Level</span>
+            </div>
+
+            <h1 class="font-display text-4xl md:text-5xl font-bold text-base-900 dark:text-base-50 mb-6">@Entry.ClassName</h1>
+
+            <p class="text-lg text-base-600 dark:text-base-300 leading-relaxed mb-8">@Entry.Description</p>
+
+            <!-- Details Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                <div class="yoga-card">
+                    <div class="yoga-card-body text-center">
+                        <p class="text-xs text-base-500 dark:text-base-400 uppercase tracking-wider mb-1">Day</p>
+                        <p class="font-semibold text-base-900 dark:text-base-100">@Entry.DayOfWeek</p>
+                    </div>
+                </div>
+                <div class="yoga-card">
+                    <div class="yoga-card-body text-center">
+                        <p class="text-xs text-base-500 dark:text-base-400 uppercase tracking-wider mb-1">Time</p>
+                        <p class="font-semibold text-base-900 dark:text-base-100">@Entry.StartTime – @Entry.EndTime</p>
+                    </div>
+                </div>
+                <div class="yoga-card">
+                    <div class="yoga-card-body text-center">
+                        <p class="text-xs text-base-500 dark:text-base-400 uppercase tracking-wider mb-1">Room</p>
+                        <p class="font-semibold text-base-900 dark:text-base-100">@Entry.Room</p>
+                    </div>
+                </div>
+                <div class="yoga-card">
+                    <div class="yoga-card-body text-center">
+                        <p class="text-xs text-base-500 dark:text-base-400 uppercase tracking-wider mb-1">Capacity</p>
+                        <p class="font-semibold text-base-900 dark:text-base-100">@Entry.MaxCapacity spots</p>
+                    </div>
+                </div>
+            </div>
+
+            @if (Instructor is not null)
+            {
+                <div class="yoga-card">
+                    <div class="yoga-card-body flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text-xl font-bold text-primary-800 dark:text-primary-200 shrink-0">
+                            @Instructor.Name[0]
+                        </div>
+                        <div>
+                            <a href="/instructors/@Instructor.Slug" class="font-semibold text-base-900 dark:text-base-100 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                                @Instructor.Name
+                            </a>
+                            <p class="text-sm text-base-500 dark:text-base-400">@Instructor.Title</p>
+                            <p class="text-sm text-base-600 dark:text-base-300 italic mt-1">"@Instructor.Quote"</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+else
+{
+    <section class="yoga-section text-center">
+        <h1 class="font-display text-3xl font-bold text-base-900 dark:text-base-50 mb-4">Class Not Found</h1>
+        <a href="/schedule" class="yoga-btn-primary">Back to Schedule</a>
+    </section>
+}
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+
+    private ScheduleEntry? Entry => ScheduleSvc.GetClassById(Id);
+    private InstructorProfile? Instructor => Entry is not null ? InstructorSvc.GetById(Entry.InstructorId) : null;
+
+    private static string LevelCss(string level) => level.ToLowerInvariant() switch
+    {
+        "beginner" => "yoga-level-beginner",
+        "intermediate" => "yoga-level-intermediate",
+        "advanced" => "yoga-level-advanced",
+        _ => "yoga-level-all",
+    };
+}

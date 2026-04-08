@@ -1,0 +1,44 @@
+@page "/about"
+@inject ContentHelper Content
+@inject NavigationManager Nav
+
+<PageTitle>About — 937 Yoga</PageTitle>
+
+<!-- Decorative header band -->
+<div class="h-48 bg-gradient-to-br from-primary-50 via-accent-50 to-primary-100 dark:from-base-900 dark:via-base-950 dark:to-base-900"></div>
+
+<section class="px-6 -mt-24 pb-16 md:pb-24">
+    <div class="max-w-3xl mx-auto">
+        @if (_html is not null)
+        {
+            <div class="bg-white rounded-2xl shadow-sm border border-base-200 dark:bg-base-900 dark:border-base-700 p-8 md:p-12">
+                <header class="text-center mb-12">
+                    <h1 class="font-display text-4xl md:text-5xl font-bold text-base-900 dark:text-base-50 mb-4">@(_fm?.Title ?? "About")</h1>
+                    @if (_fm?.Description is not null)
+                    {
+                        <p class="text-lg text-base-500 dark:text-base-400">@_fm.Description</p>
+                    }
+                </header>
+                <div class="prose prose-base dark:prose-invert max-w-none">
+                    @((MarkupString)_html)
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private YogaFrontMatter? _fm;
+    private string? _html;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var url = new Uri(Nav.Uri).AbsolutePath;
+        var result = await Content.GetRenderedPageAsync<YogaFrontMatter>(url);
+        if (result.HasValue)
+        {
+            _fm = result.Value.FrontMatter;
+            _html = result.Value.Html;
+        }
+    }
+}

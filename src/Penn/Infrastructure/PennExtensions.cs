@@ -10,10 +10,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Localization;
 using Penn.Content;
 using Penn.FrontMatter;
 using Penn.Generation;
 using Penn.Highlighting;
+using Penn.Localization;
 using Penn.Markdown;
 using Penn.Navigation;
 using Penn.Pipeline;
@@ -26,6 +29,8 @@ using Testably.Abstractions;
 
 public static class PennExtensions
 {
+    private const string LocaleRoutingKey = "Penn.LocaleRoutingAdded";
+
     /// <summary>Register all Penn services.</summary>
     public static IServiceCollection AddPenn(this IServiceCollection services, Action<PennOptions> configure)
     {
@@ -134,6 +139,7 @@ public static class PennExtensions
         services.AddSingleton<XrefResolvingService>();
         services.AddSingleton<IResponseProcessor, XrefResolvingProcessor>();
         services.AddSingleton<IResponseProcessor, LiveReloadScriptProcessor>();
+        services.AddSingleton<IResponseProcessor, LocaleLinkRewritingProcessor>();
         services.AddSingleton<IResponseProcessor, DiagnosticOverlayProcessor>();
 
         // Live reload (only does work when DOTNET_WATCH is set)
@@ -161,10 +167,75 @@ public static class PennExtensions
         services.AddHttpContextAccessor();
         services.AddScoped<Diagnostics.DiagnosticContext>();
 
+        // Locale context — scoped per request, populated by LocaleDetectionMiddleware
+        services.AddScoped(sp =>
+        {
+            var localization = sp.GetRequiredService<LocalizationOptions>();
+            return new LocaleContext(localization);
+        });
+
+        // ASP.NET localization + Penn's IStringLocalizer backed by TranslationOptions
+        services.AddLocalization();
+        services.AddSingleton(options.Translations);
+        services.AddSingleton<IStringLocalizerFactory, PennStringLocalizerFactory>();
+
         // Output generation
         services.AddTransient<OutputGenerationService>();
 
         return services;
+    }
+
+    /// <summary>
+    /// Adds locale detection and URL path rewriting middleware. Must be called
+    /// <b>before</b> <c>MapRazorComponents</c> so that Blazor routing sees the
+    /// locale-stripped path (e.g., <c>/gen-z/schedule</c> becomes <c>/schedule</c>).
+    /// <para>
+    /// Called automatically by <see cref="UsePenn"/> when it hasn't been called yet,
+    /// but at that point it is too late for Blazor endpoint routing. Sites that use
+    /// <c>@page</c> directives with locale prefixes must call this explicitly.
+    /// </para>
+    /// </summary>
+    public static WebApplication UsePennLocaleRouting(this WebApplication app)
+    {
+        var options = app.Services.GetRequiredService<PennOptions>();
+
+        if (!options.Localization.IsMultiLocale) return app;
+
+        // Guard against double-registration
+        var appBuilder = (IApplicationBuilder)app;
+        if (appBuilder.Properties.ContainsKey(LocaleRoutingKey)) return app;
+        appBuilder.Properties[LocaleRoutingKey] = true;
+
+        var cultureProvider = new PennUrlRequestCultureProvider(options.Localization);
+        var defaultCulture = cultureProvider.MapToCultureName(options.Localization.DefaultLocale);
+
+        var cultures = options.Localization.Locales.Keys
+            .Select(l => cultureProvider.MapToCultureName(l))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(n => new System.Globalization.CultureInfo(n))
+            .ToList();
+
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            DefaultRequestCulture = new RequestCulture(defaultCulture),
+            SupportedCultures = cultures,
+            SupportedUICultures = cultures,
+            RequestCultureProviders =
+            [
+                cultureProvider,
+                new CookieRequestCultureProvider(),
+                new AcceptLanguageHeaderRequestCultureProvider(),
+            ],
+        });
+
+        app.UseMiddleware<LocaleDetectionMiddleware>();
+
+        // Explicitly place routing AFTER locale detection. In .NET 8+, routing is
+        // implicitly placed at the start of the pipeline; calling UseRouting()
+        // explicitly overrides that so endpoint matching sees the rewritten path.
+        app.UseRouting();
+
+        return app;
     }
 
     /// <summary>Configure the Penn middleware pipeline.</summary>
@@ -246,6 +317,11 @@ public static class PennExtensions
                 }
             }
         }
+
+        // Locale detection — ensure it's registered (idempotent).
+        // For Blazor @page routing this must run before MapRazorComponents;
+        // callers that need that should call UsePennLocaleRouting() explicitly.
+        app.UsePennLocaleRouting();
 
         // Live reload: eagerly resolve so it subscribes to file watcher, then map WebSocket endpoint
         _ = app.Services.GetRequiredService<LiveReloadServer>();

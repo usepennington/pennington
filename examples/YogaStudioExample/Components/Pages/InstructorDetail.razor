@@ -1,0 +1,97 @@
+@page "/instructors/{Slug}"
+@inject InstructorService InstructorSvc
+@inject ScheduleService ScheduleSvc
+
+@if (Instructor is not null)
+{
+    <PageTitle>@Instructor.Name — 937 Yoga</PageTitle>
+
+    <section class="yoga-section">
+        <div class="yoga-container max-w-4xl">
+            <a href="/instructors" class="inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 mb-8 transition-colors">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                All Instructors
+            </a>
+
+            <div class="md:flex gap-10">
+                <div class="shrink-0 mb-8 md:mb-0">
+                    <div class="w-48 h-48 rounded-2xl bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text-6xl font-bold text-primary-800 dark:text-primary-200">
+                        @Instructor.Name[0]
+                    </div>
+                </div>
+
+                <div class="flex-1">
+                    <h1 class="font-display text-4xl font-bold text-base-900 dark:text-base-50 mb-2">@Instructor.Name</h1>
+                    <p class="text-lg text-primary-600 dark:text-primary-400 mb-4">@Instructor.Title</p>
+                    <p class="text-base-600 dark:text-base-300 leading-relaxed mb-6">@Instructor.Bio</p>
+
+                    <blockquote class="border-l-4 border-accent-300 dark:border-accent-700 pl-4 py-2 mb-6">
+                        <p class="text-base-600 dark:text-base-300 italic">"@Instructor.Quote"</p>
+                    </blockquote>
+
+                    <div class="mb-6">
+                        <h3 class="text-sm font-semibold text-base-900 dark:text-base-100 uppercase tracking-wider mb-3">Specialties</h3>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach (var spec in Instructor.Specialties)
+                            {
+                                <span class="yoga-tag">@spec</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-sm font-semibold text-base-900 dark:text-base-100 uppercase tracking-wider mb-3">Certifications</h3>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach (var cert in Instructor.Certifications)
+                            {
+                                <span class="yoga-tag-accent">@cert</span>
+                            }
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-base-500 dark:text-base-400">@Instructor.YearsExperience years of teaching experience</p>
+                </div>
+            </div>
+
+            @if (InstructorClasses.Count > 0)
+            {
+                <div class="mt-12">
+                    <h2 class="font-display text-2xl font-bold text-base-900 dark:text-base-50 mb-6">@Instructor.Name's Classes</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        @foreach (var cls in InstructorClasses)
+                        {
+                            <a href="/schedule/@cls.Id" class="yoga-schedule-cell group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-semibold text-primary-700 dark:text-primary-400">@cls.DayOfWeek &middot; @cls.StartTime</span>
+                                    <span class="yoga-tag text-xs">@cls.ClassType</span>
+                                </div>
+                                <h3 class="font-medium text-base-900 dark:text-base-100 group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
+                                    @cls.ClassName
+                                </h3>
+                                <p class="text-xs text-base-500 dark:text-base-400 mt-1">@cls.Room</p>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+else
+{
+    <section class="yoga-section text-center">
+        <h1 class="font-display text-3xl font-bold text-base-900 dark:text-base-50 mb-4">Instructor Not Found</h1>
+        <a href="/instructors" class="yoga-btn-primary">View All Instructors</a>
+    </section>
+}
+
+@code {
+    [Parameter] public string Slug { get; set; } = "";
+
+    private Models.InstructorProfile? Instructor => InstructorSvc.GetBySlug(Slug);
+
+    private List<ScheduleEntry> InstructorClasses =>
+        Instructor is not null ? ScheduleSvc.GetClassesByInstructor(Instructor.Id) : [];
+}

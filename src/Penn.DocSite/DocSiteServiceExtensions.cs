@@ -77,6 +77,7 @@ public static class DocSiteServiceExtensions
     {
         var options = app.Services.GetRequiredService<DocSiteOptions>();
 
+        app.UsePennLocaleRouting();
         app.UseAntiforgery();
         app.UseStaticFiles();
         app.MapRazorComponents<Components.App>()
