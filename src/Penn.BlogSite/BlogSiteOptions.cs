@@ -2,6 +2,7 @@ namespace Penn.BlogSite;
 
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
+using Penn.Infrastructure;
 using Penn.MonorailCss;
 using Penn.Routing;
 
@@ -25,6 +26,7 @@ public record BlogSiteOptions
     public string? DisplayFontFamily { get; init; }
     public string? BodyFontFamily { get; init; }
     public string? AdditionalHtmlHeadContent { get; init; }
+    public FontPreload[] FontPreloads { get; init; } = [];
 
     public Assembly[] AdditionalRoutingAssemblies { get; init; } = [];
 

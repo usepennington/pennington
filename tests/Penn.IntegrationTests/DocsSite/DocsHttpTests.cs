@@ -166,6 +166,27 @@ public class DocsHttpTests : IClassFixture<DocsWebApplicationFactory>
         content.ShouldContain("sr-only");
     }
 
+    [Fact]
+    public async Task Homepage_HasFontPreloadHints()
+    {
+        var response = await _client.GetAsync("/", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        content.ShouldContain("""rel="preload" href="fonts/lexend.woff2" as="font" type="font/woff2" crossorigin""");
+        content.ShouldContain("""rel="preload" href="fonts/noto-sans.woff2" as="font" type="font/woff2" crossorigin""");
+    }
+
+    [Fact]
+    public async Task FontPreloadHints_AppearBeforeStylesheet()
+    {
+        var response = await _client.GetAsync("/", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var preloadIndex = content.IndexOf("""rel="preload""");
+        var stylesheetIndex = content.IndexOf("""rel="stylesheet""");
+        preloadIndex.ShouldBeGreaterThan(-1);
+        stylesheetIndex.ShouldBeGreaterThan(-1);
+        preloadIndex.ShouldBeLessThan(stylesheetIndex);
+    }
+
     [Theory]
     [InlineData("/getting-started/creating-first-site/")]
     [InlineData("/getting-started/deploying-to-github-pages/")]

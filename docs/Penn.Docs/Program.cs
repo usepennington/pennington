@@ -1,5 +1,6 @@
 using MonorailCss.Theme;
 using Penn.DocSite;
+using Penn.Infrastructure;
 using Penn.MonorailCss;
 using Penn.Roslyn;
 
@@ -20,6 +21,11 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     CanonicalBaseUrl = "https://phil-scott-78.github.io/penn/",
     DisplayFontFamily = "Lexend, sans-serif",
     BodyFontFamily = "'Noto Sans', sans-serif",
+    FontPreloads =
+    [
+        new FontPreload("fonts/lexend.woff2"),
+        new FontPreload("fonts/noto-sans.woff2"),
+    ],
     HeaderIcon = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>""",
     ExtraStyles = """
         @font-face {

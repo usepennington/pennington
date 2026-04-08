@@ -13,6 +13,10 @@
     {
         <link type="application/rss+xml" rel="alternate" title="@Options.SiteTitle" href="/rss.xml" />
     }
+    @foreach (var font in BlogOptions.FontPreloads)
+    {
+        <link rel="preload" href="@font.Href" as="font" type="@font.Type" crossorigin>
+    }
     <link rel="stylesheet" href="@GetVersioned("/styles.css")">
     <script src="@GetVersioned("/_content/Penn.UI/scripts.js")" defer></script>
 

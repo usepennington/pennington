@@ -24,6 +24,7 @@ public record DocSiteOptions
     public string? BodyFontFamily { get; init; }
     public string? ExtraStyles { get; init; }
     public string? AdditionalHtmlHeadContent { get; init; }
+    public FontPreload[] FontPreloads { get; init; } = [];
     public Assembly[] AdditionalRoutingAssemblies { get; init; } = [];
 
     /// <summary>Path to .sln or .slnx for Roslyn integration. Requires Penn.Roslyn package.</summary>

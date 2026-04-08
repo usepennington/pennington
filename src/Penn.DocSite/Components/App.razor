@@ -13,6 +13,10 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
+    @foreach (var font in DocSiteOptions.FontPreloads)
+    {
+        <link rel="preload" href="@font.Href" as="font" type="@font.Type" crossorigin>
+    }
     <link rel="stylesheet" href="@GetVersioned("/styles.css")">
     <script src="@GetVersioned("/_content/Penn.UI/scripts.js")" defer></script>
     <script src="@GetVersioned("/_content/Penn.UI/spa-engine.js")" defer></script>
