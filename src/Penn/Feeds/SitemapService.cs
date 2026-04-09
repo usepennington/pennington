@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Penn.Content;
 using Penn.Infrastructure;
+using Penn.Pipeline;
 
 /// <summary>
 /// Generates sitemap XML for the /sitemap.xml endpoint.
@@ -27,27 +28,33 @@ public sealed class SitemapService
     {
         var contentServices = sp.GetServices<IContentService>();
         var localization = sp.GetRequiredService<LocalizationOptions>();
-        var entries = ImmutableList.CreateBuilder<SitemapEntry>();
-        var tocItems = new List<ContentTocItem>();
+        var parser = sp.GetRequiredService<IContentParser>();
+        var renderer = sp.GetRequiredService<IContentRenderer>();
+        var renderedItems = new List<RenderedItem>();
 
         foreach (var service in contentServices)
         {
-            var items = await service.GetContentTocEntriesAsync();
-            tocItems.AddRange(items);
-            foreach (var item in items)
+            await foreach (var discovered in service.DiscoverAsync())
             {
-                var absoluteUrl = item.Route.AbsoluteUrl(builder.CanonicalBase);
-                entries.Add(new SitemapEntry(absoluteUrl, LastModified: null, ChangeFrequency: null, Priority: null));
+                var parseResult = await parser.ParseAsync(discovered);
+                if (parseResult is not ParsedItem parsed) continue;
+
+                var renderResult = await renderer.RenderAsync(parsed);
+                if (renderResult is not RenderedItem rendered) continue;
+
+                renderedItems.Add(rendered);
             }
         }
 
+        var entries = builder.Build(renderedItems);
+
         if (localization.IsMultiLocale)
         {
-            var localeUrlMap = BuildLocaleUrlMap(tocItems, localization);
-            return SerializeToXmlWithHreflang(entries.ToImmutable(), localeUrlMap, localization, builder.CanonicalBase);
+            var localeUrlMap = BuildLocaleUrlMap(renderedItems, localization);
+            return SerializeToXmlWithHreflang(entries, localeUrlMap, localization, builder.CanonicalBase);
         }
 
-        return SerializeToXml(entries.ToImmutable());
+        return SerializeToXml(entries);
     }
 
     private static string SerializeToXml(IReadOnlyList<SitemapEntry> entries)
@@ -127,15 +134,15 @@ public sealed class SitemapService
     /// Builds a map from content-relative URL to list of (locale, URL) pairs.
     /// </summary>
     private static Dictionary<string, List<(string Locale, string Url)>> BuildLocaleUrlMap(
-        List<ContentTocItem> tocItems,
+        List<RenderedItem> items,
         LocalizationOptions localization)
     {
         var map = new Dictionary<string, List<(string, string)>>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var item in tocItems)
+        foreach (var item in items)
         {
             var url = item.Route.CanonicalPath.Value;
-            var locale = item.Locale ?? localization.DefaultLocale;
+            var locale = item.Route.Locale is { Length: > 0 } loc ? loc : localization.DefaultLocale;
             var contentRelative = StripLocalePrefix(url, localization);
 
             if (!map.TryGetValue(contentRelative, out var list))
