@@ -25,7 +25,16 @@ public static class RoslynExtensions
         if (!string.IsNullOrEmpty(options.SolutionPath))
         {
             services.AddSingleton<ISolutionWorkspaceService, SolutionWorkspaceService>();
-            services.AddSingleton<ISymbolExtractionService, SymbolExtractionService>();
+            services.AddSingleton<ISymbolExtractionService>(sp =>
+            {
+                var symbolService = ActivatorUtilities.CreateInstance<SymbolExtractionService>(sp);
+                if (sp.GetRequiredService<ISolutionWorkspaceService>() is SolutionWorkspaceService sws)
+                {
+                    sws.SymbolExtractionService = symbolService;
+                }
+
+                return symbolService;
+            });
             services.AddSingleton<ICodeBlockPreprocessor, RoslynCodeBlockPreprocessor>();
         }
 

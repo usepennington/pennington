@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Penn.Infrastructure;
+using Penn.Roslyn.Symbols;
 
 /// <summary>
 /// Implementation of <see cref="ISolutionWorkspaceService"/> that manages an MSBuild workspace,
@@ -25,6 +26,8 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
     private readonly ConcurrentDictionary<ProjectId, Compilation> _compilationCache = new();
     private readonly ConcurrentQueue<string> _pendingUpdates = new();
     private bool _isDisposed;
+
+    internal ISymbolExtractionService? SymbolExtractionService { get; set; }
 
     static SolutionWorkspaceService()
     {
@@ -201,6 +204,8 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
 
             _logger.LogTrace("Solution cache invalidated, workspace disposed");
         }
+
+        SymbolExtractionService?.ClearCache();
     }
 
     public void UpdateDocument(string filePath)

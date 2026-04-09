@@ -1,7 +1,9 @@
 namespace Penn.Roslyn.Tests.Workspace;
 
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging.Abstractions;
 using Penn.Infrastructure;
+using Penn.Roslyn.Symbols;
 using Penn.Roslyn.Workspace;
 
 public sealed class SolutionWorkspaceServiceTests
@@ -93,6 +95,22 @@ public sealed class SolutionWorkspaceServiceTests
         });
     }
 
+    [Fact]
+    public void InvalidateSolution_Clears_Symbol_Cache()
+    {
+        var options = new RoslynOptions { SolutionPath = "B:\\Penn\\Penn.slnx" };
+        var watcher = new StubFileWatcher();
+        var logger = NullLogger<SolutionWorkspaceService>.Instance;
+        var symbolService = new SpySymbolExtractionService();
+
+        using var service = new SolutionWorkspaceService(options, watcher, logger);
+        service.SymbolExtractionService = symbolService;
+
+        service.InvalidateSolution();
+
+        symbolService.ClearCacheCallCount.ShouldBe(1);
+    }
+
     /// <summary>
     /// Minimal stub for IFileWatcher that records registered patterns.
     /// </summary>
@@ -108,5 +126,22 @@ public sealed class SolutionWorkspaceServiceTests
         public void SubscribeToChanges(Action onUpdate) { }
 
         public void Dispose() { }
+    }
+
+    private sealed class SpySymbolExtractionService : ISymbolExtractionService
+    {
+        public int ClearCacheCallCount { get; private set; }
+
+        public Task<IReadOnlyDictionary<string, Penn.Roslyn.Symbols.SymbolInfo>> ExtractSymbolsAsync(Solution solution)
+            => Task.FromResult<IReadOnlyDictionary<string, Penn.Roslyn.Symbols.SymbolInfo>>(
+                new Dictionary<string, Penn.Roslyn.Symbols.SymbolInfo>());
+
+        public Task<Penn.Roslyn.Symbols.SymbolInfo?> FindSymbolAsync(string xmlDocId)
+            => Task.FromResult<Penn.Roslyn.Symbols.SymbolInfo?>(null);
+
+        public Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false)
+            => Task.FromResult(string.Empty);
+
+        public void ClearCache() => ClearCacheCallCount++;
     }
 }
