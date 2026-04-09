@@ -49,10 +49,20 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
     {
         foreach (var (route, sourceFile) in DiscoverRoutesWithFallbacks())
         {
+            try
+            {
+                var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
+                var parsed = _parser.Parse<TFrontMatter>(content);
+                if (parsed.Metadata is IDraftable { IsDraft: true })
+                    continue;
+            }
+            catch
+            {
+                // If front matter can't be parsed, include the file
+            }
+
             yield return new DiscoveredItem(route, new MarkdownFileSource(sourceFile));
         }
-
-        await Task.CompletedTask; // Satisfy async requirement
     }
 
     public async Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()

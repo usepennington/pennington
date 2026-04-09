@@ -29,7 +29,7 @@ Code bugs discovered during documentation verification (2026-04-09)
    - Files: src/Penn/Generation/OutputGenerationService.cs
            src/Penn/Generation/OutputOptions.cs
 
-5. BuildReport.SkippedPages never populated
+5. [FIXED] BuildReport.SkippedPages never populated
    - AddSkippedPage() exists on BuildReportBuilder but is never called
    - Drafts are filtered during DiscoverAsync, before reaching generation
    - Effect: SkippedPages is always empty; "N drafts skipped" output never appears

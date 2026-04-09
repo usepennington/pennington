@@ -97,6 +97,22 @@ public class MarkdownContentServiceTests
     }
 
     [Fact]
+    public async Task DiscoverAsync_SkipsDrafts()
+    {
+        var fs = CreateFs(
+            ("published.md", "---\ntitle: Published\nisDraft: false\n---\n# Published"),
+            ("draft.md", "---\ntitle: Draft Post\nisDraft: true\n---\n# Draft"));
+        var service = CreateTestService(fs);
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        items.Count.ShouldBe(1);
+        items[0].Route.CanonicalPath.Value.ShouldBe("/docs/published/");
+    }
+
+    [Fact]
     public async Task GetContentTocEntriesAsync_ReturnsEntries()
     {
         var fs = CreateFs(
