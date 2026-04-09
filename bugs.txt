@@ -15,14 +15,14 @@ Code bugs discovered during documentation verification (2026-04-09)
    - Files: src/Penn/Infrastructure/PennOptions.cs
            src/Penn/Infrastructure/PennExtensions.cs
 
-3. HighlightingOptions.Highlighters never consumed
+3. [FIXED] HighlightingOptions.Highlighters never consumed
    - HighlightingOptions.AddHighlighter<T>() stores highlighters in a list
    - AddPenn() never reads the list to register them in DI
    - Effect: custom highlighters registered via options API are silently ignored
    - Files: src/Penn/Infrastructure/PennOptions.cs
            src/Penn/Infrastructure/PennExtensions.cs
 
-4. OutputOptions.CleanOutput never checked
+4. [FIXED] OutputOptions.CleanOutput never checked
    - Property exists (defaults to true) but GenerateAsync unconditionally
      deletes and recreates the output directory
    - Effect: no way to do incremental builds

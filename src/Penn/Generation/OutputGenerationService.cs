@@ -67,8 +67,8 @@ public sealed class OutputGenerationService
         _logger.LogDebug("Static generation: {ContentCount} content pages, {MapGetCount} MapGet routes",
             contentPages.Count, mapGetPages.Count);
 
-        // Phase 3: Clear and recreate output directory
-        if (_fileSystem.Directory.Exists(outputDir))
+        // Phase 3: Clean output directory (if configured) and ensure it exists
+        if (_outputOptions.CleanOutput && _fileSystem.Directory.Exists(outputDir))
             _fileSystem.Directory.Delete(outputDir, true);
         _fileSystem.Directory.CreateDirectory(outputDir);
 
