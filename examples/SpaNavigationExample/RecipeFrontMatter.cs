@@ -1,6 +1,6 @@
 namespace SpaNavigationExample;
 
-using Penn.FrontMatter;
+using Pennington.FrontMatter;
 
 public record RecipeFrontMatter : IFrontMatter, IDescribable, IOrderable, ITaggable, IDraftable, ICrossReferenceable, ISectionable
 {

@@ -2,9 +2,9 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using CooklangSharp;
-using Penn.Content;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Pipeline;
+using Pennington.Routing;
 using RecipeExample.Models;
 using YamlDotNet.Serialization;
 

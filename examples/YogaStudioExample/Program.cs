@@ -1,7 +1,7 @@
-using Penn.Infrastructure;
-using Penn.Islands;
-using Penn.Localization;
-using Penn.MonorailCss;
+using Pennington.Infrastructure;
+using Pennington.Islands;
+using Pennington.Localization;
+using Pennington.MonorailCss;
 using YogaStudioExample.Components;
 using YogaStudioExample.Islands;
 using YogaStudioExample.Models;
@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
 
-builder.Services.AddPenn(penn =>
+builder.Services.AddPennington(penn =>
 {
     penn.SiteTitle = "937 Yoga";
     penn.SiteDescription = "Find your flow at 937 Yoga Studio";
@@ -70,11 +70,11 @@ builder.Services.AddSingleton<ScheduleService>();
 builder.Services.AddSingleton<InstructorService>();
 
 var app = builder.Build();
-app.UsePennLocaleRouting(); // Must be before MapRazorComponents for locale URL rewriting
-app.UseAntiforgery();       // Must be after UsePennLocaleRouting (which calls UseRouting internally)
+app.UsePenningtonLocaleRouting(); // Must be before MapRazorComponents for locale URL rewriting
+app.UseAntiforgery();       // Must be after UsePenningtonLocaleRouting (which calls UseRouting internally)
 app.MapStaticAssets();
 app.MapRazorComponents<App>();
 app.UseMonorailCss();
 app.UseSpaNavigation();
-app.UsePenn();
+app.UsePennington();
 await app.RunOrBuildAsync(args);

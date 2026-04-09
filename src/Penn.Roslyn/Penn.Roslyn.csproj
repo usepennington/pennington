@@ -5,10 +5,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="Penn.Roslyn.Tests" />
+    <InternalsVisibleTo Include="Pennington.Roslyn.Tests" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Penn\Penn.csproj" />
+    <ProjectReference Include="..\Pennington\Pennington.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="*" />

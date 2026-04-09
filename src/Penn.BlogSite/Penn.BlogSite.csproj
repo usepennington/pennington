@@ -10,8 +10,8 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Penn\Penn.csproj" />
-    <ProjectReference Include="..\Penn.UI\Penn.UI.csproj" />
-    <ProjectReference Include="..\Penn.MonorailCss\Penn.MonorailCss.csproj" />
+    <ProjectReference Include="..\Pennington\Pennington.csproj" />
+    <ProjectReference Include="..\Pennington.UI\Pennington.UI.csproj" />
+    <ProjectReference Include="..\Pennington.MonorailCss\Pennington.MonorailCss.csproj" />
   </ItemGroup>
 </Project>

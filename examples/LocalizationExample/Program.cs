@@ -1,5 +1,5 @@
-using Penn.DocSite;
-using Penn.Localization;
+using Pennington.DocSite;
+using Pennington.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 

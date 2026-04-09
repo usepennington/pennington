@@ -1,4 +1,4 @@
-namespace Penn.Routing;
+namespace Pennington.Routing;
 
 public readonly record struct FilePath(string Value)
 {

@@ -1,6 +1,6 @@
 namespace ForgePortalExample;
 
-using Penn.Infrastructure;
+using Pennington.Infrastructure;
 using Microsoft.AspNetCore.Http;
 
 public class FeedbackWidgetProcessor : IResponseProcessor

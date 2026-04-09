@@ -1,4 +1,4 @@
-namespace Penn.Islands;
+namespace Pennington.Islands;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;

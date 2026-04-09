@@ -1,7 +1,7 @@
-using Penn.FrontMatter;
-using Penn.Infrastructure;
-using Penn.Islands;
-using Penn.MonorailCss;
+using Pennington.FrontMatter;
+using Pennington.Infrastructure;
+using Pennington.Islands;
+using Pennington.MonorailCss;
 using SpaNavigationTutorialExample;
 using SpaNavigationTutorialExample.Components;
 using SpaNavigationTutorialExample.Islands;
@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
 
-builder.Services.AddPenn(penn =>
+builder.Services.AddPennington(penn =>
 {
     penn.SiteTitle = "SPA Navigation Tutorial";
     penn.SiteDescription = "Demonstrates SPA navigation with islands";
@@ -37,6 +37,6 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>();
 app.UseMonorailCss();
 app.UseSpaNavigation();
-app.UsePenn();
+app.UsePennington();
 
 await app.RunOrBuildAsync(args);

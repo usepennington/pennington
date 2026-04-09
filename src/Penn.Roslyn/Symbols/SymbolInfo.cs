@@ -1,4 +1,4 @@
-namespace Penn.Roslyn.Symbols;
+namespace Pennington.Roslyn.Symbols;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;

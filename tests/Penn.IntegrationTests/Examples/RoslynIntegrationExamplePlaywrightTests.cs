@@ -1,7 +1,7 @@
-namespace Penn.IntegrationTests.Examples;
+namespace Pennington.IntegrationTests.Examples;
 
 using Microsoft.Playwright;
-using Penn.IntegrationTests.Infrastructure;
+using Pennington.IntegrationTests.Infrastructure;
 
 public class RoslynIntegrationExamplePlaywrightTests : IClassFixture<RoslynIntegrationExamplePlaywrightFixture>, IAsyncLifetime
 {

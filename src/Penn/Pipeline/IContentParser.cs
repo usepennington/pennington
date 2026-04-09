@@ -1,4 +1,4 @@
-namespace Penn.Pipeline;
+namespace Pennington.Pipeline;
 
 /// <summary>
 /// Parses a discovered item into a parsed item (extracts front matter + markdown body).

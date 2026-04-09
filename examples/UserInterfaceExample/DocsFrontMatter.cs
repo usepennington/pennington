@@ -1,4 +1,4 @@
-using Penn.FrontMatter;
+using Pennington.FrontMatter;
 
 namespace UserInterfaceExample;
 

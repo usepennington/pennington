@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
-using Penn.Feeds;
-using Penn.FrontMatter;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Feeds;
+using Pennington.FrontMatter;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
-namespace Penn.Tests.Feeds;
+namespace Pennington.Tests.Feeds;
 
 public class SitemapBuilderTests
 {

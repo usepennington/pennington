@@ -1,12 +1,12 @@
-namespace Penn.IntegrationTests.Infrastructure;
+namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Penn.DocSite;
-using Penn.Localization;
+using Pennington.DocSite;
+using Pennington.Localization;
 
 public class LocalizationExamplePlaywrightFixture : IAsyncLifetime
 {

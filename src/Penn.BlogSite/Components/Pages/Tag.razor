@@ -1,7 +1,7 @@
 @layout ContentWithProseLayout
 @page "/tags/{TagEncodedName}"
 @inject BlogContentResolver ContentResolver
-@inject PennOptions PennOptions
+@inject PenningtonOptions PenningtonOptions
 
 @if (_tag == null)
 {
@@ -9,7 +9,7 @@
     return;
 }
 
-<PageTitle>@PennOptions.SiteTitle - @(_tag.Name)</PageTitle>
+<PageTitle>@PenningtonOptions.SiteTitle - @(_tag.Name)</PageTitle>
 
 <header>
     <h1>@(_tag.Name)</h1>

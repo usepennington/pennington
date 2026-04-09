@@ -1,4 +1,4 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
@@ -70,12 +70,12 @@ public sealed class LiveReloadServer
 
 public static class LiveReloadExtensions
 {
-    internal const string ReloadPath = "/__penn/reload";
+    internal const string ReloadPath = "/__pennington/reload";
 
     /// <summary>
     /// Adds live reload WebSocket support for development. Only active when DOTNET_WATCH is set.
     /// </summary>
-    public static WebApplication UsePennLiveReload(this WebApplication app)
+    public static WebApplication UsePenningtonLiveReload(this WebApplication app)
     {
         if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH")))
             return app;

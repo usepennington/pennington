@@ -1,18 +1,18 @@
 ---
 title: "Styling Your Site with MonorailCSS"
-description: "Add Penn.MonorailCss to a Penn site and configure color schemes, dark mode, custom fonts, and extra styles"
+description: "Add Pennington.MonorailCss to a Pennington site and configure color schemes, dark mode, custom fonts, and extra styles"
 uid: "penn.tutorials.styling-with-monorailcss"
 order: 20
 ---
 
 ## Beat 1: Starting Point — MonorailCSS Registration
 
-Establish the baseline. If the reader is using DocSite or BlogSite, MonorailCSS is already wired in. If they are building a custom Penn app, they need two lines. Show both paths so no one is left behind.
+Establish the baseline. If the reader is using DocSite or BlogSite, MonorailCSS is already wired in. If they are building a custom Pennington app, they need two lines. Show both paths so no one is left behind.
 
 ### What to show
-- Code reference: `M:Penn.MonorailCss.MonorailServiceExtensions.AddMonorailCss(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{System.IServiceProvider,Penn.MonorailCss.MonorailCssOptions})` — show the extension method signature; explain it registers `CssClassCollector`, `MonorailCssService`, and a `CssClassCollectorProcessor`
-- Code reference: `M:Penn.MonorailCss.MonorailServiceExtensions.UseMonorailCss(Microsoft.AspNetCore.Builder.WebApplication,System.String)` — show the extension method; explain it maps a GET endpoint at `/styles.css` (configurable) that returns the generated stylesheet
-- Reference how DocSite wires these in automatically: `:path src/Penn.DocSite/DocSiteServiceExtensions.cs` (lines 48-59 for AddMonorailCss, line 85 for UseMonorailCss)
+- Code reference: `M:Pennington.MonorailCss.MonorailServiceExtensions.AddMonorailCss(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{System.IServiceProvider,Pennington.MonorailCss.MonorailCssOptions})` — show the extension method signature; explain it registers `CssClassCollector`, `MonorailCssService`, and a `CssClassCollectorProcessor`
+- Code reference: `M:Pennington.MonorailCss.MonorailServiceExtensions.UseMonorailCss(Microsoft.AspNetCore.Builder.WebApplication,System.String)` — show the extension method; explain it maps a GET endpoint at `/styles.css` (configurable) that returns the generated stylesheet
+- Reference how DocSite wires these in automatically: `:path src/Pennington.DocSite/DocSiteServiceExtensions.cs` (lines 48-59 for AddMonorailCss, line 85 for UseMonorailCss)
 - For custom apps, show the minimal two-line setup:
   ```csharp
   builder.Services.AddMonorailCss();
@@ -31,9 +31,9 @@ MonorailCSS maps five semantic color roles to full shade palettes ranging from 5
 In this step the reader picks named Tailwind palettes for each role and wires them into the color scheme.
 
 ### What to show
-- Code reference: `T:Penn.MonorailCss.NamedColorScheme` — show the class definition with its required properties
-- Code reference: `P:Penn.DocSite.DocSiteOptions.ColorScheme` — show that DocSiteOptions accepts an `IColorScheme?` which flows into MonorailCss
-- Show the default color scheme from `MonorailCssOptions`: `:path src/Penn.MonorailCss/MonorailCssOptions.cs` (lines 16-23) — Blue primary, Purple accent, Cyan tertiary-one, Pink tertiary-two, Slate base
+- Code reference: `T:Pennington.MonorailCss.NamedColorScheme` — show the class definition with its required properties
+- Code reference: `P:Pennington.DocSite.DocSiteOptions.ColorScheme` — show that DocSiteOptions accepts an `IColorScheme?` which flows into MonorailCss
+- Show the default color scheme from `MonorailCssOptions`: `:path src/Pennington.MonorailCss/MonorailCssOptions.cs` (lines 16-23) — Blue primary, Purple accent, Cyan tertiary-one, Pink tertiary-two, Slate base
 - Show the code the reader adds to their `DocSiteOptions` (or `MonorailCssOptions` directly):
   ```csharp
   ColorScheme = new NamedColorScheme
@@ -60,8 +60,8 @@ In this step the reader picks named Tailwind palettes for each role and wires th
 Show the alternative approach: generating all five palettes from a single hue value using OKLCH color science.
 
 ### What to show
-- Code reference: `T:Penn.MonorailCss.AlgorithmicColorScheme` — show the full class definition with `PrimaryHue` (required), `BaseColorName` (defaults to Gray), and `ColorSchemeGenerator` (the function that derives accent and tertiary hues)
-- Show the `ApplyToTheme` method: `:path src/Penn.MonorailCss/MonorailCssOptions.cs` (lines 81-94) — explain that it calls `ColorPaletteGenerator.GenerateFromHue()` for each role
+- Code reference: `T:Pennington.MonorailCss.AlgorithmicColorScheme` — show the full class definition with `PrimaryHue` (required), `BaseColorName` (defaults to Gray), and `ColorSchemeGenerator` (the function that derives accent and tertiary hues)
+- Show the `ApplyToTheme` method: `:path src/Pennington.MonorailCss/MonorailCssOptions.cs` (lines 81-94) — explain that it calls `ColorPaletteGenerator.GenerateFromHue()` for each role
 - Show the default `ColorSchemeGenerator` function: `primary => (primary + 180, primary + 90, primary - 90)` — complementary accent (opposite on the color wheel), and two triadic tertiaries
 - Show the replacement code:
   ```csharp
@@ -85,11 +85,11 @@ Show the alternative approach: generating all five palettes from a single hue va
 Walk through adding a custom font with proper preloading to avoid flash of unstyled text.
 
 ### What to show
-- Code reference: `T:Penn.Infrastructure.FontPreload` — show the record definition: `FontPreload(string Href, string Type = "font/woff2")`
-- Code reference: `P:Penn.DocSite.DocSiteOptions.FontPreloads` — show the property (array of `FontPreload`)
-- Code reference: `P:Penn.DocSite.DocSiteOptions.DisplayFontFamily` and `P:Penn.DocSite.DocSiteOptions.BodyFontFamily` — show these DocSite-specific properties
-- Code reference: `P:Penn.DocSite.DocSiteOptions.ExtraStyles` — show the property for injecting raw CSS
-- Show the App.razor font preload loop: `:path src/Penn.DocSite/Components/App.razor` (line 17) — the `@foreach` that emits `<link rel="preload">` tags
+- Code reference: `T:Pennington.Infrastructure.FontPreload` — show the record definition: `FontPreload(string Href, string Type = "font/woff2")`
+- Code reference: `P:Pennington.DocSite.DocSiteOptions.FontPreloads` — show the property (array of `FontPreload`)
+- Code reference: `P:Pennington.DocSite.DocSiteOptions.DisplayFontFamily` and `P:Pennington.DocSite.DocSiteOptions.BodyFontFamily` — show these DocSite-specific properties
+- Code reference: `P:Pennington.DocSite.DocSiteOptions.ExtraStyles` — show the property for injecting raw CSS
+- Show the App.razor font preload loop: `:path src/Pennington.DocSite/Components/App.razor` (line 17) — the `@foreach` that emits `<link rel="preload">` tags
 - Show the configuration code:
   ```csharp
   ExtraStyles = """
@@ -116,8 +116,8 @@ Show the reader how to use MonorailCSS utility classes directly in Razor markup,
       Custom styled content
   </div>
   ```
-- Code reference: `T:Penn.MonorailCss.MonorailCssOptions` — show the `ContentPaths` property (lines 38-43): explain that for classes used only in JavaScript files (not HTML), you can list those files in `ContentPaths` so they are scanned at startup
-- Reference `M:Penn.MonorailCss.MonorailServiceExtensions.ScanContentFiles(Penn.MonorailCss.CssClassCollector,Microsoft.Extensions.FileProviders.IFileProvider,System.String[])` — the method that extracts potential class names from non-HTML files
+- Code reference: `T:Pennington.MonorailCss.MonorailCssOptions` — show the `ContentPaths` property (lines 38-43): explain that for classes used only in JavaScript files (not HTML), you can list those files in `ContentPaths` so they are scanned at startup
+- Reference `M:Pennington.MonorailCss.MonorailServiceExtensions.ScanContentFiles(Pennington.MonorailCss.CssClassCollector,Microsoft.Extensions.FileProviders.IFileProvider,System.String[])` — the method that extracts potential class names from non-HTML files
 - Show how MonorailCSS detects classes: the `CssClassCollectorProcessor` runs as an `IResponseProcessor`, scanning every HTML response for class attributes and extracting tokens
 
 ### Key points

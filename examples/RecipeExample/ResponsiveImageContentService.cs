@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
-using Penn.Content;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Pipeline;
+using Pennington.Routing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;

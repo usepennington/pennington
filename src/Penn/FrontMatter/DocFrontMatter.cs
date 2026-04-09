@@ -1,4 +1,4 @@
-namespace Penn.FrontMatter;
+namespace Pennington.FrontMatter;
 
 /// <summary>
 /// Covers the DocSite use case — implements common doc capabilities.

@@ -1,11 +1,11 @@
 using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Content;
-using Penn.Infrastructure;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Infrastructure;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
-namespace Penn.Tests.Infrastructure;
+namespace Pennington.Tests.Infrastructure;
 
 public class XrefResolvingServiceTests
 {

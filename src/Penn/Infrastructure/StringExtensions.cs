@@ -1,4 +1,4 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 internal static class StringExtensions
 {

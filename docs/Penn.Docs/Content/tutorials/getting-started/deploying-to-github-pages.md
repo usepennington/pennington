@@ -47,7 +47,7 @@ The reader examines the `output/` directory to understand what static generation
     404.html
     styles.css
     _content/
-      Penn.UI/
+      Pennington.UI/
   ```
 - Each content page becomes a directory with `index.html`. Auxiliary files (`search-index.json`, `sitemap.xml`, `styles.css`, `404.html`) and static assets from Razor Class Libraries (`_content/`) are generated alongside. DocSite also generates `llms.txt` and `_llms/` files.
 
@@ -57,14 +57,14 @@ GitHub Pages project repos serve at `username.github.io/repo-name/`. The build c
 
 ### What to show
 - Command: `dotnet run -- build /my-docs/`
-- Penn's `BaseUrlRewritingProcessor` rewrites all root-relative URLs in the HTML to include the base path, and adds a `data-base-url` attribute to `<body>` for client-side JavaScript.
+- Pennington's `BaseUrlRewritingProcessor` rewrites all root-relative URLs in the HTML to include the base path, and adds a `data-base-url` attribute to `<body>` for client-side JavaScript.
 - For root-domain deployment (`username.github.io`), simply omit the base URL argument.
 
 ### Key points
 - The base URL must include both leading and trailing slashes: `/my-docs/`
 - Root-relative URLs in HTML (like `/styles.css`) become `/my-docs/styles.css` after rewriting
 - The `data-base-url` attribute on `<body>` ensures client-side JavaScript (SPA navigation, search) knows the prefix
-- If the site uses `CanonicalBaseUrl` in options (e.g., `P:Penn.DocSite.DocSiteOptions.CanonicalBaseUrl`), the base URL from the build command handles deployment path rewriting separately from the canonical URL used in sitemaps and meta tags
+- If the site uses `CanonicalBaseUrl` in options (e.g., `P:Pennington.DocSite.DocSiteOptions.CanonicalBaseUrl`), the base URL from the build command handles deployment path rewriting separately from the canonical URL used in sitemaps and meta tags
 
 ## Beat 4: Create the GitHub Actions workflow
 
@@ -92,7 +92,7 @@ The reader creates a complete `.github/workflows/deploy.yml` file. The goal is a
 - `actions/configure-pages` sets up the GitHub Pages deployment target
 - `actions/upload-pages-artifact` packages the output directory as a GitHub Pages artifact
 - `actions/deploy-pages` deploys the artifact to GitHub Pages
-- The `dotnet run --project <path>` syntax is needed when the project is not in the repository root -- replace `<path>` with the actual project path (e.g., `docs/Penn.Docs`)
+- The `dotnet run --project <path>` syntax is needed when the project is not in the repository root -- replace `<path>` with the actual project path (e.g., `docs/Pennington.Docs`)
 - For monorepo setups, the reader may need `dotnet restore` before `dotnet run` to ensure all dependencies are available
 
 ## Beat 5: Enable GitHub Pages in repository settings

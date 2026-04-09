@@ -1,6 +1,6 @@
-namespace Penn.IntegrationTests.DocsSite;
+namespace Pennington.IntegrationTests.DocsSite;
 
-using Penn.IntegrationTests.Infrastructure;
+using Pennington.IntegrationTests.Infrastructure;
 
 public class DocsHttpTests : IClassFixture<DocsWebApplicationFactory>
 {
@@ -15,7 +15,7 @@ public class DocsHttpTests : IClassFixture<DocsWebApplicationFactory>
     public async Task Homepage_ReturnsSuccess_WithHeroContent()
     {
         var response = await _client.GetAsync("/", TestContext.Current.CancellationToken);
-        await response.ShouldReturnSuccessWithContent("Penn");
+        await response.ShouldReturnSuccessWithContent("Pennington");
     }
 
     [Fact(Skip = "Docs content restructuring in progress")]
@@ -57,14 +57,14 @@ public class DocsHttpTests : IClassFixture<DocsWebApplicationFactory>
     [Fact]
     public async Task ScriptsJs_ReturnsSuccess()
     {
-        var response = await _client.GetAsync("/_content/Penn.UI/scripts.js", TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync("/_content/Pennington.UI/scripts.js", TestContext.Current.CancellationToken);
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task SpaEngineJs_ReturnsSuccess()
     {
-        var response = await _client.GetAsync("/_content/Penn.UI/spa-engine.js", TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync("/_content/Pennington.UI/spa-engine.js", TestContext.Current.CancellationToken);
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
     }
 

@@ -1,11 +1,11 @@
-namespace Penn.Roslyn.Highlighting;
+namespace Pennington.Roslyn.Highlighting;
 
 using System.Net;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.Text;
-using Penn.Roslyn.Utilities;
+using Pennington.Roslyn.Utilities;
 
 /// <summary>
 /// Roslyn Classifier API wrapper that produces HTML with hljs-* and roslyn-* CSS classes.

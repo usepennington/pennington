@@ -1,16 +1,16 @@
-@using Penn.Navigation
-@using Penn.Content
+@using Pennington.Navigation
+@using Pennington.Content
 @using System.Collections.Immutable
 @inherits LayoutComponentBase
 @inject IEnumerable<IContentService> ContentServices
 @inject NavigationBuilder NavigationBuilder
 @inject NavigationManager NavigationManager
-@inject PennOptions PennOptions
+@inject PenningtonOptions PenningtonOptions
 
 <div class="min-h-screen flex flex-col">
     <header class="border-b border-neutral-200 bg-white px-6 py-3 flex items-center gap-4">
         <a href="/" class="text-lg font-bold text-neutral-900 hover:text-neutral-700 transition">
-            @PennOptions.SiteTitle
+            @PenningtonOptions.SiteTitle
         </a>
         <span class="text-neutral-400 text-sm">SPA Navigation Demo</span>
     </header>

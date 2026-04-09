@@ -1,4 +1,4 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 using System.IO.Abstractions;
 using Markdig;
@@ -12,30 +12,30 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Localization;
-using Penn.Content;
-using Penn.FrontMatter;
-using Penn.Generation;
-using Penn.Highlighting;
-using Penn.Islands;
-using Penn.Localization;
-using Penn.Markdown;
-using Penn.Navigation;
-using Penn.Pipeline;
-using Penn.Markdown.Extensions;
-using Penn.Routing;
-using Penn.Search;
-using Penn.Feeds;
-using Penn.LlmsTxt;
+using Pennington.Content;
+using Pennington.FrontMatter;
+using Pennington.Generation;
+using Pennington.Highlighting;
+using Pennington.Islands;
+using Pennington.Localization;
+using Pennington.Markdown;
+using Pennington.Navigation;
+using Pennington.Pipeline;
+using Pennington.Markdown.Extensions;
+using Pennington.Routing;
+using Pennington.Search;
+using Pennington.Feeds;
+using Pennington.LlmsTxt;
 using Testably.Abstractions;
 
-public static class PennExtensions
+public static class PenningtonExtensions
 {
-    private const string LocaleRoutingKey = "Penn.LocaleRoutingAdded";
+    private const string LocaleRoutingKey = "Pennington.LocaleRoutingAdded";
 
-    /// <summary>Register all Penn services.</summary>
-    public static IServiceCollection AddPenn(this IServiceCollection services, Action<PennOptions> configure)
+    /// <summary>Register all Pennington services.</summary>
+    public static IServiceCollection AddPennington(this IServiceCollection services, Action<PenningtonOptions> configure)
     {
-        var options = new PennOptions();
+        var options = new PenningtonOptions();
         configure(options);
 
         // Register options
@@ -185,10 +185,10 @@ public static class PennExtensions
             return new LocaleContext(localization);
         });
 
-        // ASP.NET localization + Penn's IStringLocalizer backed by TranslationOptions
+        // ASP.NET localization + Pennington's IStringLocalizer backed by TranslationOptions
         services.AddLocalization();
         services.AddSingleton(options.Translations);
-        services.AddSingleton<IStringLocalizerFactory, PennStringLocalizerFactory>();
+        services.AddSingleton<IStringLocalizerFactory, PenningtonStringLocalizerFactory>();
 
         // Output generation
         services.AddTransient<OutputGenerationService>();
@@ -201,14 +201,14 @@ public static class PennExtensions
     /// <b>before</b> <c>MapRazorComponents</c> so that Blazor routing sees the
     /// locale-stripped path (e.g., <c>/gen-z/schedule</c> becomes <c>/schedule</c>).
     /// <para>
-    /// Called automatically by <see cref="UsePenn"/> when it hasn't been called yet,
+    /// Called automatically by <see cref="UsePennington"/> when it hasn't been called yet,
     /// but at that point it is too late for Blazor endpoint routing. Sites that use
     /// <c>@page</c> directives with locale prefixes must call this explicitly.
     /// </para>
     /// </summary>
-    public static WebApplication UsePennLocaleRouting(this WebApplication app)
+    public static WebApplication UsePenningtonLocaleRouting(this WebApplication app)
     {
-        var options = app.Services.GetRequiredService<PennOptions>();
+        var options = app.Services.GetRequiredService<PenningtonOptions>();
 
         if (!options.Localization.IsMultiLocale) return app;
 
@@ -217,7 +217,7 @@ public static class PennExtensions
         if (appBuilder.Properties.ContainsKey(LocaleRoutingKey)) return app;
         appBuilder.Properties[LocaleRoutingKey] = true;
 
-        var cultureProvider = new PennUrlRequestCultureProvider(options.Localization);
+        var cultureProvider = new PenningtonUrlRequestCultureProvider(options.Localization);
         var defaultCulture = cultureProvider.MapToCultureName(options.Localization.DefaultLocale);
 
         var cultures = options.Localization.Locales.Keys
@@ -249,14 +249,14 @@ public static class PennExtensions
         return app;
     }
 
-    /// <summary>Configure the Penn middleware pipeline.</summary>
-    public static WebApplication UsePenn(this WebApplication app)
+    /// <summary>Configure the Pennington middleware pipeline.</summary>
+    public static WebApplication UsePennington(this WebApplication app)
     {
-        var options = app.Services.GetRequiredService<PennOptions>();
+        var options = app.Services.GetRequiredService<PenningtonOptions>();
         var hostContentRoot = app.Environment.ContentRootPath;
 
         // Validate content paths at startup
-        var logger = app.Services.GetService<ILoggerFactory>()?.CreateLogger("Penn");
+        var logger = app.Services.GetService<ILoggerFactory>()?.CreateLogger("Pennington");
         foreach (var source in options.MarkdownSources)
         {
             var contentPath = Path.IsPathRooted(source.ContentPath)
@@ -265,7 +265,7 @@ public static class PennExtensions
             if (!Directory.Exists(contentPath))
             {
                 logger?.LogWarning(
-                    "Penn: content path '{ContentPath}' does not exist. No content will be discovered from this source.",
+                    "Pennington: content path '{ContentPath}' does not exist. No content will be discovered from this source.",
                     contentPath);
             }
         }
@@ -331,12 +331,12 @@ public static class PennExtensions
 
         // Locale detection — ensure it's registered (idempotent).
         // For Blazor @page routing this must run before MapRazorComponents;
-        // callers that need that should call UsePennLocaleRouting() explicitly.
-        app.UsePennLocaleRouting();
+        // callers that need that should call UsePenningtonLocaleRouting() explicitly.
+        app.UsePenningtonLocaleRouting();
 
         // Live reload: eagerly resolve so it subscribes to file watcher, then map WebSocket endpoint
         _ = app.Services.GetRequiredService<LiveReloadServer>();
-        app.UsePennLiveReload();
+        app.UsePenningtonLiveReload();
 
         // Response processing middleware
         app.UseMiddleware<ResponseProcessingMiddleware>();

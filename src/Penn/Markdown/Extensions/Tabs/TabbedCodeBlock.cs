@@ -1,4 +1,4 @@
-namespace Penn.Markdown.Extensions.Tabs;
+namespace Pennington.Markdown.Extensions.Tabs;
 
 using Markdig.Syntax;
 

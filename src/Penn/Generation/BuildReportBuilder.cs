@@ -1,9 +1,9 @@
-namespace Penn.Generation;
+namespace Pennington.Generation;
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using Penn.Diagnostics;
-using Penn.Routing;
+using Pennington.Diagnostics;
+using Pennington.Routing;
 
 public sealed class BuildReportBuilder
 {

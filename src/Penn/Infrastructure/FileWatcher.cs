@@ -1,4 +1,4 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 using System.IO.Abstractions;
 using Microsoft.Extensions.Logging;

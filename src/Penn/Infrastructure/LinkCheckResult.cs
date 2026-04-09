@@ -1,7 +1,7 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
-using Penn.Generation;
-using Penn.Routing;
+using Pennington.Generation;
+using Pennington.Routing;
 
 // Case types
 public record ValidLink(ContentRoute SourcePage, string Url);

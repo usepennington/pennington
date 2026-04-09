@@ -1,4 +1,4 @@
-namespace Penn.Diagnostics;
+namespace Pennington.Diagnostics;
 
 /// <summary>
 /// A diagnostic produced during HTTP request handling.

@@ -1,7 +1,7 @@
-using Penn.Infrastructure;
-using Penn.Localization;
+using Pennington.Infrastructure;
+using Pennington.Localization;
 
-namespace Penn.Tests.Localization;
+namespace Pennington.Tests.Localization;
 
 public class LocaleContextTests
 {

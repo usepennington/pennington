@@ -18,7 +18,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Penn\Penn.csproj" />
-    <ProjectReference Include="..\..\src\Penn.MonorailCss\Penn.MonorailCss.csproj" />
+    <ProjectReference Include="..\..\src\Pennington\Pennington.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.MonorailCss\Pennington.MonorailCss.csproj" />
   </ItemGroup>
 </Project>

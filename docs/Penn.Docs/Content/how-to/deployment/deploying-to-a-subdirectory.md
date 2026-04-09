@@ -7,25 +7,25 @@ order: 10
 
 ## Beat 1: The Problem — Root-Relative Paths Break Under a Subdirectory
 
-Explain why a Penn site that works at `http://localhost:5000/` breaks when hosted at `https://phil.github.io/beacon/`. Every root-relative URL (`href="/getting-started/"`, `src="/styles.css"`) points to the host root, skipping the `/beacon/` prefix entirely. This affects links, scripts, stylesheets, images, and client-side search paths.
+Explain why a Pennington site that works at `http://localhost:5000/` breaks when hosted at `https://phil.github.io/beacon/`. Every root-relative URL (`href="/getting-started/"`, `src="/styles.css"`) points to the host root, skipping the `/beacon/` prefix entirely. This affects links, scripts, stylesheets, images, and client-side search paths.
 
 ### What to show
 - A before/after comparison: the same `<a href="/getting-started/">` that works at root but 404s at `/beacon/`
 - Mention this is the universal problem for GitHub Pages project sites, Azure subdirectory apps, and reverse-proxy mounts
 
 ### Key points
-- Penn generates root-relative URLs by default (no base URL prefix)
+- Pennington generates root-relative URLs by default (no base URL prefix)
 - The fix must rewrite every URL attribute in every generated HTML page
-- Penn solves this with a two-part system: `OutputOptions.BaseUrl` for build-time configuration and `BaseUrlRewritingProcessor` for runtime rewriting
+- Pennington solves this with a two-part system: `OutputOptions.BaseUrl` for build-time configuration and `BaseUrlRewritingProcessor` for runtime rewriting
 
 ## Beat 2: Build with a Base URL — CLI Argument Syntax
 
-Show the build command that passes a base URL. Walk through how `OutputOptions.FromArgs` (`T:Penn.Generation.OutputOptions`, method `M:Penn.Generation.OutputOptions.FromArgs(System.String[])`) parses the CLI arguments: `args[1]` becomes `P:Penn.Generation.OutputOptions.BaseUrl` and `args[2]` becomes `P:Penn.Generation.OutputOptions.OutputDirectory`.
+Show the build command that passes a base URL. Walk through how `OutputOptions.FromArgs` (`T:Pennington.Generation.OutputOptions`, method `M:Pennington.Generation.OutputOptions.FromArgs(System.String[])`) parses the CLI arguments: `args[1]` becomes `P:Pennington.Generation.OutputOptions.BaseUrl` and `args[2]` becomes `P:Pennington.Generation.OutputOptions.OutputDirectory`.
 
 ### What to show
 - The build command: `dotnet run -- build /beacon/ ./output`
-- Reference `M:Penn.Generation.OutputOptions.FromArgs(System.String[])` (:path `src/Penn/Generation/OutputOptions.cs`) to show the argument parsing: `args[1]` maps to `BaseUrl`, `args[2]` maps to `OutputDirectory`, with defaults of `/` and `output`
-- Reference `P:Penn.Generation.OutputOptions.BaseUrl` (type `T:Penn.Routing.UrlPath`) and `P:Penn.Generation.OutputOptions.OutputDirectory` (type `T:Penn.Routing.FilePath`)
+- Reference `M:Pennington.Generation.OutputOptions.FromArgs(System.String[])` (:path `src/Pennington/Generation/OutputOptions.cs`) to show the argument parsing: `args[1]` maps to `BaseUrl`, `args[2]` maps to `OutputDirectory`, with defaults of `/` and `output`
+- Reference `P:Pennington.Generation.OutputOptions.BaseUrl` (type `T:Pennington.Routing.UrlPath`) and `P:Pennington.Generation.OutputOptions.OutputDirectory` (type `T:Pennington.Routing.FilePath`)
 
 ### Key points
 - The argument order is `build [baseUrl] [outputDir]` — base URL comes first
@@ -34,13 +34,13 @@ Show the build command that passes a base URL. Walk through how `OutputOptions.F
 
 ## Beat 3: How BaseUrlRewritingProcessor Rewrites HTML
 
-Walk through what happens to every HTML response during build. The `BaseUrlRewritingProcessor` (`T:Penn.Infrastructure.BaseUrlRewritingProcessor`) implements `T:Penn.Infrastructure.IResponseProcessor` and uses AngleSharp to parse the HTML DOM, then rewrites `href`, `src`, and `action` attributes on every element.
+Walk through what happens to every HTML response during build. The `BaseUrlRewritingProcessor` (`T:Pennington.Infrastructure.BaseUrlRewritingProcessor`) implements `T:Pennington.Infrastructure.IResponseProcessor` and uses AngleSharp to parse the HTML DOM, then rewrites `href`, `src`, and `action` attributes on every element.
 
 ### What to show
-- Reference `T:Penn.Infrastructure.BaseUrlRewritingProcessor` (:path `src/Penn/Infrastructure/BaseUrlRewritingProcessor.cs`)
-- Reference the constructor that reads `P:Penn.Generation.OutputOptions.BaseUrl` and trims the trailing slash
-- Reference `M:Penn.Infrastructure.BaseUrlRewritingProcessor.ShouldProcess(Microsoft.AspNetCore.Http.HttpContext)` — skips processing when `_baseUrl` is empty or `/`, only runs on `text/html` and `application/json` responses with 2xx status
-- Reference `M:Penn.Infrastructure.BaseUrlRewritingProcessor.ProcessAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)` — delegates to `RewriteHtmlAsync` for HTML content
+- Reference `T:Pennington.Infrastructure.BaseUrlRewritingProcessor` (:path `src/Pennington/Infrastructure/BaseUrlRewritingProcessor.cs`)
+- Reference the constructor that reads `P:Pennington.Generation.OutputOptions.BaseUrl` and trims the trailing slash
+- Reference `M:Pennington.Infrastructure.BaseUrlRewritingProcessor.ShouldProcess(Microsoft.AspNetCore.Http.HttpContext)` — skips processing when `_baseUrl` is empty or `/`, only runs on `text/html` and `application/json` responses with 2xx status
+- Reference `M:Pennington.Infrastructure.BaseUrlRewritingProcessor.ProcessAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)` — delegates to `RewriteHtmlAsync` for HTML content
 - Show the private `RewriteHtmlAsync` method: it uses `_browsingContext.OpenAsync` (AngleSharp) to parse the HTML, sets `data-base-url` on `<body>`, then iterates `[href], [src], [action]` elements calling `RewriteAttribute`
 - Show the private `RewriteAttribute` method: for any attribute starting with `/` (but not `//`), it prepends `_baseUrl`
 - Show a concrete before/after: `href="/getting-started/"` becomes `href="/beacon/getting-started/"`, `src="/styles.css"` becomes `src="/beacon/styles.css"`
@@ -48,7 +48,7 @@ Walk through what happens to every HTML response during build. The `BaseUrlRewri
 ### Key points
 - AngleSharp ensures robust HTML parsing — no regex-based rewriting
 - The processor also sets `data-base-url` on `<body>`, which the client-side search and SPA navigation scripts read to construct correct URLs
-- The `IResponseProcessor` pipeline (`T:Penn.Infrastructure.ResponseProcessingMiddleware`, :path `src/Penn/Infrastructure/ResponseProcessingMiddleware.cs`) runs all processors in `P:Penn.Infrastructure.IResponseProcessor.Order` sequence; `BaseUrlRewritingProcessor` has `Order = 0`
+- The `IResponseProcessor` pipeline (`T:Pennington.Infrastructure.ResponseProcessingMiddleware`, :path `src/Pennington/Infrastructure/ResponseProcessingMiddleware.cs`) runs all processors in `P:Pennington.Infrastructure.IResponseProcessor.Order` sequence; `BaseUrlRewritingProcessor` has `Order = 0`
 
 ## Beat 4: Inspect the Rewritten Output
 
@@ -71,10 +71,10 @@ Have the reader open a generated HTML file from the `./output` directory and ver
 Distinguish between the build base URL (relative path prefix) and `CanonicalBaseUrl` (full absolute URL). The build base URL rewrites relative links; `CanonicalBaseUrl` is used for sitemaps, RSS feeds, JSON-LD structured data, and social meta tags.
 
 ### What to show
-- Reference `P:Penn.DocSite.DocSiteOptions.CanonicalBaseUrl` (:path `src/Penn.DocSite/DocSiteOptions.cs`) — set to `"https://phil.github.io/beacon/"`
-- Reference `P:Penn.Infrastructure.PennOptions.CanonicalBaseUrl` (:path `src/Penn/Infrastructure/PennOptions.cs`) — the core-level equivalent, propagated from `DocSiteOptions`
-- Show how `CanonicalBaseUrl` flows to `T:Penn.Feeds.SitemapBuilder` and `T:Penn.Feeds.RssFeedBuilder` via `M:Penn.Infrastructure.PennExtensions.AddPenn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Penn.Infrastructure.PennOptions})` (:path `src/Penn/Infrastructure/PennExtensions.cs`)
-- Show how DocSite layout uses `CanonicalBaseUrl` for JSON-LD structured data (:path `src/Penn.DocSite/Components/Layout/Pages.razor`)
+- Reference `P:Pennington.DocSite.DocSiteOptions.CanonicalBaseUrl` (:path `src/Pennington.DocSite/DocSiteOptions.cs`) — set to `"https://phil.github.io/beacon/"`
+- Reference `P:Pennington.Infrastructure.PenningtonOptions.CanonicalBaseUrl` (:path `src/Pennington/Infrastructure/PenningtonOptions.cs`) — the core-level equivalent, propagated from `DocSiteOptions`
+- Show how `CanonicalBaseUrl` flows to `T:Pennington.Feeds.SitemapBuilder` and `T:Pennington.Feeds.RssFeedBuilder` via `M:Pennington.Infrastructure.PenningtonExtensions.AddPennington(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Infrastructure.PenningtonOptions})` (:path `src/Pennington/Infrastructure/PenningtonExtensions.cs`)
+- Show how DocSite layout uses `CanonicalBaseUrl` for JSON-LD structured data (:path `src/Pennington.DocSite/Components/Layout/Pages.razor`)
 
 ### Key points
 - `CanonicalBaseUrl` is optional — but without it, sitemaps have relative URLs and structured data is skipped
@@ -106,9 +106,9 @@ Provide a complete, portable GitHub Actions workflow that builds the site with t
   - Runs `dotnet run --project docs/Beacon.Docs -- build /${{ github.event.repository.name }}/ ./output`
   - Deploys `./output` to GitHub Pages
 - Point out that `${{ github.event.repository.name }}` makes the workflow portable — it works for any repository without hardcoding the base path
-- Reference `M:Penn.Infrastructure.PennExtensions.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])` (:path `src/Penn/Infrastructure/PennExtensions.cs`) — the method that detects `build` as the first argument and triggers `T:Penn.Generation.OutputGenerationService`
+- Reference `M:Pennington.Infrastructure.PenningtonExtensions.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])` (:path `src/Pennington/Infrastructure/PenningtonExtensions.cs`) — the method that detects `build` as the first argument and triggers `T:Pennington.Generation.OutputGenerationService`
 
 ### Key points
 - The workflow is portable across repositories because it uses the dynamic repository name
-- `RunOrBuildAsync` sets `Environment.ExitCode = 1` when `P:Penn.Generation.BuildReport.HasErrors` is true, so the GitHub Actions step will fail automatically on build errors
+- `RunOrBuildAsync` sets `Environment.ExitCode = 1` when `P:Pennington.Generation.BuildReport.HasErrors` is true, so the GitHub Actions step will fail automatically on build errors
 - The output directory (`./output`) becomes the GitHub Pages deployment artifact

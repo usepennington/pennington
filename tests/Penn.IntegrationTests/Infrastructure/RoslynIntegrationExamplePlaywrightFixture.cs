@@ -1,13 +1,13 @@
-namespace Penn.IntegrationTests.Infrastructure;
+namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
-using Penn.Roslyn;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
+using Pennington.Roslyn;
 
 public class RoslynIntegrationExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -32,7 +32,7 @@ public class RoslynIntegrationExamplePlaywrightFixture : IAsyncLifetime
         builder.Logging.ClearProviders();
 
         builder.Services.AddRazorComponents();
-        builder.Services.AddPenn(penn =>
+        builder.Services.AddPennington(penn =>
         {
             penn.SiteTitle = "My Little Content Engine";
             penn.SiteDescription = "An Inflexible Content Engine for .NET";
@@ -45,9 +45,9 @@ public class RoslynIntegrationExamplePlaywrightFixture : IAsyncLifetime
             });
         });
 
-        builder.Services.AddPennRoslyn(options =>
+        builder.Services.AddPenningtonRoslyn(options =>
         {
-            options.SolutionPath = "../../Penn.slnx";
+            options.SolutionPath = "../../Pennington.slnx";
         });
 
         builder.Services.AddMonorailCss();
@@ -57,7 +57,7 @@ public class RoslynIntegrationExamplePlaywrightFixture : IAsyncLifetime
         _app.UseAntiforgery();
         _app.MapRazorComponents<global::RoslynIntegrationExample.Components.App>();
         _app.UseMonorailCss();
-        _app.UsePenn();
+        _app.UsePennington();
 
         await _app.StartAsync();
         BaseUrl = _app.Urls.First();

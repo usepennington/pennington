@@ -1,4 +1,4 @@
-namespace Penn.Highlighting;
+namespace Pennington.Highlighting;
 
 /// <summary>
 /// Dispatches code highlighting to the highest-priority ICodeHighlighter

@@ -1,13 +1,13 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 using System.Reflection;
-using Penn.Highlighting;
-using Penn.Islands;
-using Penn.LlmsTxt;
-using Penn.Localization;
+using Pennington.Highlighting;
+using Pennington.Islands;
+using Pennington.LlmsTxt;
+using Pennington.Localization;
 
-/// <summary>Main configuration options for the Penn content engine.</summary>
-public sealed class PennOptions
+/// <summary>Main configuration options for the Pennington content engine.</summary>
+public sealed class PenningtonOptions
 {
     public string SiteTitle { get; set; } = "";
     public string SiteDescription { get; set; } = "";
@@ -23,7 +23,7 @@ public sealed class PennOptions
 
     /// <summary>Register a markdown content source with a specific front matter type.</summary>
     public MarkdownContentOptions AddMarkdownContent<TFrontMatter>(Action<MarkdownContentOptions> configure)
-        where TFrontMatter : Penn.FrontMatter.IFrontMatter
+        where TFrontMatter : Pennington.FrontMatter.IFrontMatter
     {
         var options = new MarkdownContentOptions { FrontMatterType = typeof(TFrontMatter) };
         configure(options);

@@ -1,11 +1,11 @@
-namespace Penn.Search;
+namespace Pennington.Search;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Content;
-using Penn.Infrastructure;
-using Penn.Pipeline;
+using Pennington.Content;
+using Pennington.Infrastructure;
+using Pennington.Pipeline;
 
 /// <summary>
 /// Generates search index JSON for the /search-index.json endpoint.

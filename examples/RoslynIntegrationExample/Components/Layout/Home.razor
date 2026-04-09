@@ -1,5 +1,5 @@
 @page "/"
-@inject PennOptions PennOptions
+@inject PenningtonOptions PenningtonOptions
 @inject ContentHelper ContentHelper
 
 @if (_pages == null)
@@ -8,7 +8,7 @@
     return;
 }
 
-<h1 class="text-4xl font-bold pb-4">Welcome @PennOptions.SiteTitle!</h1>
+<h1 class="text-4xl font-bold pb-4">Welcome @PenningtonOptions.SiteTitle!</h1>
 
 <ul class="list-disc pl-6 space-y-2">
     @foreach (var p in _pages

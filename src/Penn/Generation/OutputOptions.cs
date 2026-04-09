@@ -1,6 +1,6 @@
-namespace Penn.Generation;
+namespace Pennington.Generation;
 
-using Penn.Routing;
+using Pennington.Routing;
 
 public sealed class OutputOptions
 {

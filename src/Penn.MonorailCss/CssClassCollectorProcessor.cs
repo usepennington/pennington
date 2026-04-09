@@ -2,9 +2,9 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Penn.Infrastructure;
+using Pennington.Infrastructure;
 
-namespace Penn.MonorailCss;
+namespace Pennington.MonorailCss;
 
 /// <summary>
 /// Extracts CSS class names from HTML and JSON responses and registers them

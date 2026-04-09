@@ -1,7 +1,7 @@
-using Penn.Generation;
-using Penn.Routing;
+using Pennington.Generation;
+using Pennington.Routing;
 
-namespace Penn.Tests.Generation;
+namespace Pennington.Tests.Generation;
 
 public class BuildReportBuilderTests
 {

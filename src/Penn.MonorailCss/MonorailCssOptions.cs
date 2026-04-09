@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using MonorailCss;
 using MonorailCss.Theme;
 
-namespace Penn.MonorailCss;
+namespace Pennington.MonorailCss;
 
 /// <summary>
 /// Options for configuring the Monorail CSS framework integration.

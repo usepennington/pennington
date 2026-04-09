@@ -1,9 +1,9 @@
-namespace Penn.Localization;
+namespace Pennington.Localization;
 
 using AngleSharp;
 using AngleSharp.Dom;
 using Microsoft.AspNetCore.Http;
-using Penn.Infrastructure;
+using Pennington.Infrastructure;
 
 /// <summary>
 /// Response processor that rewrites internal page links to include the current
@@ -37,14 +37,14 @@ public sealed class LocaleLinkRewritingProcessor : IResponseProcessor
         if (context.Response.StatusCode is < 200 or >= 300) return false;
 
         // Only rewrite for non-default locales
-        var locale = context.Items["Penn.Locale"] as string;
+        var locale = context.Items["Pennington.Locale"] as string;
         return locale is not null
             && !string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase);
     }
 
     public async Task<string> ProcessAsync(string responseBody, HttpContext context)
     {
-        var locale = context.Items["Penn.Locale"] as string ?? _localization.DefaultLocale;
+        var locale = context.Items["Pennington.Locale"] as string ?? _localization.DefaultLocale;
         var document = await _browsingContext.OpenAsync(req => req.Content(responseBody));
         var baseUri = GetBaseUri(context);
 

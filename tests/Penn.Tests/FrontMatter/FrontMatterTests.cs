@@ -1,6 +1,6 @@
-using Penn.FrontMatter;
+using Pennington.FrontMatter;
 
-namespace Penn.Tests.FrontMatter;
+namespace Pennington.Tests.FrontMatter;
 
 public class FrontMatterTests
 {

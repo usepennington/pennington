@@ -9,7 +9,7 @@ order: 20
 Add SPA navigation in your `Program.cs`:
 
 ```csharp
-builder.Services.AddPenn(penn =>
+builder.Services.AddPennington(penn =>
 {
     // ... other configuration ...
     penn.Islands.Register<ArticleIslandRenderer>("article");

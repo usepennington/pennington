@@ -1,4 +1,4 @@
-namespace Penn.Pipeline;
+namespace Pennington.Pipeline;
 
 public record SocialMetadata(
     string? Description,

@@ -11,7 +11,7 @@ Localization infrastructure exists as skeleton types (`LocaleInfo`, `AlternateLa
 - `ContentRouteFactory` methods accept an optional `locale` parameter that prefixes URLs with `/{locale}/`
 - `MarkdownContentServiceOptions` has no `Locale` field — each content source is locale-unaware
 - `DocSiteOptions.ConfigureLocalization` exists as an `Action<LocalizationOptions>?` but the wiring is unclear
-- `LanguageSwitcher.razor` component exists in Penn.UI but has limited backing infrastructure
+- `LanguageSwitcher.razor` component exists in Pennington.UI but has limited backing infrastructure
 - An `examples/LocalizationExample/` exists
 
 ## Requirements
@@ -24,10 +24,10 @@ Localization infrastructure exists as skeleton types (`LocaleInfo`, `AlternateLa
 - Consider how navigation (sidebar TOC) works per locale — each locale should have its own navigation tree
 
 ## Key Files
-- `src/Penn/Infrastructure/PennOptions.cs` — `MarkdownContentOptions` needs `Locale`
-- `src/Penn/Localization/LocaleInfo.cs`, `AlternateLanguagePage.cs` — existing types
-- `src/Penn/Content/MarkdownContentService.cs` — locale-aware discovery
-- `src/Penn/Feeds/SitemapService.cs` — add hreflang alternate links
-- `src/Penn.DocSite/Components/Layout/MainLayout.razor` — render hreflang links in head
-- `src/Penn.UI/Components/LanguageSwitcher.razor` — wire to alternate pages
+- `src/Pennington/Infrastructure/PenningtonOptions.cs` — `MarkdownContentOptions` needs `Locale`
+- `src/Pennington/Localization/LocaleInfo.cs`, `AlternateLanguagePage.cs` — existing types
+- `src/Pennington/Content/MarkdownContentService.cs` — locale-aware discovery
+- `src/Pennington/Feeds/SitemapService.cs` — add hreflang alternate links
+- `src/Pennington.DocSite/Components/Layout/MainLayout.razor` — render hreflang links in head
+- `src/Pennington.UI/Components/LanguageSwitcher.razor` — wire to alternate pages
 - `examples/LocalizationExample/` — reference for expected behavior

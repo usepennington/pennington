@@ -1,20 +1,20 @@
-namespace Penn.Localization;
+namespace Pennington.Localization;
 
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
-using Penn.Infrastructure;
+using Pennington.Infrastructure;
 
 /// <summary>
 /// An <see cref="IRequestCultureProvider"/> that reads the locale from the URL
 /// path prefix and maps it to the closest <see cref="CultureInfo"/> for
 /// ASP.NET's request localization pipeline.
 /// </summary>
-public sealed class PennUrlRequestCultureProvider : IRequestCultureProvider
+public sealed class PenningtonUrlRequestCultureProvider : IRequestCultureProvider
 {
     private readonly LocalizationOptions _localization;
 
-    public PennUrlRequestCultureProvider(LocalizationOptions localization)
+    public PenningtonUrlRequestCultureProvider(LocalizationOptions localization)
     {
         _localization = localization;
     }
@@ -30,7 +30,7 @@ public sealed class PennUrlRequestCultureProvider : IRequestCultureProvider
     }
 
     /// <summary>
-    /// Maps a Penn locale code to a valid .NET culture name.
+    /// Maps a Pennington locale code to a valid .NET culture name.
     /// Uses <see cref="LocaleInfo.HtmlLang"/> when available, otherwise tries the
     /// locale code directly, and falls back to the default locale's culture.
     /// </summary>

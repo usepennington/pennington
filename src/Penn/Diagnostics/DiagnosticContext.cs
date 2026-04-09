@@ -1,4 +1,4 @@
-namespace Penn.Diagnostics;
+namespace Pennington.Diagnostics;
 
 /// <summary>
 /// Scoped service that accumulates diagnostics for a single HTTP request.

@@ -1,4 +1,4 @@
-namespace Penn.Localization;
+namespace Pennington.Localization;
 
 public record LocaleInfo(
     string DisplayName,

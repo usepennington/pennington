@@ -1,9 +1,9 @@
-namespace Penn.DocSite.Slots;
+namespace Pennington.DocSite.Slots;
 
-using Penn.DocSite.Services;
-using Penn.DocSite.Slots.Components;
-using Penn.Islands;
-using Penn.Routing;
+using Pennington.DocSite.Services;
+using Pennington.DocSite.Slots.Components;
+using Pennington.Islands;
+using Pennington.Routing;
 
 /// <summary>
 /// Renders the article content island for SPA navigation.

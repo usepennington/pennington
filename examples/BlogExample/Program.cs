@@ -1,7 +1,7 @@
 using MonorailCss.Theme;
-using Penn.BlogSite;
-using Penn.BlogSite.Components;
-using Penn.MonorailCss;
+using Pennington.BlogSite;
+using Pennington.BlogSite.Components;
+using Pennington.MonorailCss;
 
 var builder = WebApplication.CreateBuilder(args);
 

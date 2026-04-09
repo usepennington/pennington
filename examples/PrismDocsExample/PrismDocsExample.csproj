@@ -9,7 +9,7 @@
     <Watch Include="Content\**\*.*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Penn.DocSite\Penn.DocSite.csproj" />
-    <ProjectReference Include="..\..\src\Penn.Roslyn\Penn.Roslyn.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.DocSite\Pennington.DocSite.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.Roslyn\Pennington.Roslyn.csproj" />
   </ItemGroup>
 </Project>

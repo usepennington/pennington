@@ -1,8 +1,8 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Diagnostics;
+using Pennington.Diagnostics;
 
 /// <summary>
 /// Response processor that resolves xref: cross-reference links in HTML responses.

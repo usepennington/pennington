@@ -1,4 +1,4 @@
-namespace Penn.StructuredData;
+namespace Pennington.StructuredData;
 
 /// <summary>JSON-LD Article schema for content pages.</summary>
 public record JsonLdArticle(

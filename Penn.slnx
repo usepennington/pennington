@@ -1,19 +1,19 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Penn/Penn.csproj" />
-    <Project Path="src/Penn.UI/Penn.UI.csproj" />
-    <Project Path="src/Penn.MonorailCss/Penn.MonorailCss.csproj" />
-    <Project Path="src/Penn.DocSite/Penn.DocSite.csproj" />
-    <Project Path="src/Penn.Roslyn/Penn.Roslyn.csproj" />
-    <Project Path="src/Penn.BlogSite/Penn.BlogSite.csproj" />
+    <Project Path="src/Pennington/Pennington.csproj" />
+    <Project Path="src/Pennington.UI/Pennington.UI.csproj" />
+    <Project Path="src/Pennington.MonorailCss/Pennington.MonorailCss.csproj" />
+    <Project Path="src/Pennington.DocSite/Pennington.DocSite.csproj" />
+    <Project Path="src/Pennington.Roslyn/Pennington.Roslyn.csproj" />
+    <Project Path="src/Pennington.BlogSite/Pennington.BlogSite.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/Penn.Tests/Penn.Tests.csproj" />
-    <Project Path="tests/Penn.IntegrationTests/Penn.IntegrationTests.csproj" />
-    <Project Path="tests/Penn.Roslyn.Tests/Penn.Roslyn.Tests.csproj" />
+    <Project Path="tests/Pennington.Tests/Pennington.Tests.csproj" />
+    <Project Path="tests/Pennington.IntegrationTests/Pennington.IntegrationTests.csproj" />
+    <Project Path="tests/Pennington.Roslyn.Tests/Pennington.Roslyn.Tests.csproj" />
   </Folder>
   <Folder Name="/docs/">
-    <Project Path="docs/Penn.Docs/Penn.Docs.csproj" />
+    <Project Path="docs/Pennington.Docs/Pennington.Docs.csproj" />
   </Folder>
   <Folder Name="/examples/">
     <Project Path="examples/MinimalExample/MinimalExample.csproj" />

@@ -1,4 +1,4 @@
-namespace Penn.Roslyn;
+namespace Pennington.Roslyn;
 
 /// <summary>Configuration for Roslyn integration.</summary>
 public sealed class RoslynOptions

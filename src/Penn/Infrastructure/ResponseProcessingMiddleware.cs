@@ -1,9 +1,9 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Diagnostics;
+using Pennington.Diagnostics;
 
 /// <summary>Captures response body once and runs all registered IResponseProcessors in order.</summary>
 public sealed class ResponseProcessingMiddleware(RequestDelegate next)
@@ -62,7 +62,7 @@ public sealed class ResponseProcessingMiddleware(RequestDelegate next)
             var value = diag.Source is not null
                 ? $"{diag.Severity}|{diag.Message}|{diag.Source}"
                 : $"{diag.Severity}|{diag.Message}";
-            context.Response.Headers.Append("X-Penn-Diagnostic", value);
+            context.Response.Headers.Append("X-Pennington-Diagnostic", value);
         }
     }
 }

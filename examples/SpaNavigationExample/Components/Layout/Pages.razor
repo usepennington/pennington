@@ -2,12 +2,12 @@
 
 @using Microsoft.AspNetCore.Components.Sections
 @using SpaNavigationExample.Slots.Components
-@inject PennOptions PennOptions
+@inject PenningtonOptions PenningtonOptions
 @inject ContentHelper ContentHelper
 
 @if (_frontMatter is not null && _html is not null)
 {
-    <PageTitle>@PennOptions.SiteTitle - @_frontMatter.Title</PageTitle>
+    <PageTitle>@PenningtonOptions.SiteTitle - @_frontMatter.Title</PageTitle>
     <HeadContent>
         @if (!string.IsNullOrWhiteSpace(_frontMatter.Description))
         {
@@ -31,7 +31,7 @@
 }
 else
 {
-    <PageTitle>@PennOptions.SiteTitle</PageTitle>
+    <PageTitle>@PenningtonOptions.SiteTitle</PageTitle>
     <div class="flex justify-center items-center h-64">
         <p class="text-neutral-500">Page not found</p>
     </div>

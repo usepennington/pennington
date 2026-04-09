@@ -2,7 +2,7 @@ namespace YogaStudioExample.Models;
 
 using System.Collections.Immutable;
 using MonorailCss.Theme;
-using Penn.MonorailCss;
+using Pennington.MonorailCss;
 
 public class YogaColorScheme : IColorScheme
 {

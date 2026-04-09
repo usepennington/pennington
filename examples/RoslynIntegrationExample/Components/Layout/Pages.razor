@@ -1,15 +1,15 @@
 @page "/{*fileName:nonfile}"
-@inject PennOptions PennOptions
+@inject PenningtonOptions PenningtonOptions
 @inject ContentHelper ContentHelper
 
 @if (_html == null || _frontMatter == null)
 {
-    <PageTitle>@PennOptions.SiteTitle</PageTitle>
+    <PageTitle>@PenningtonOptions.SiteTitle</PageTitle>
     <p>Not found</p>
     return;
 }
 
-<PageTitle>@PennOptions.SiteTitle - @_frontMatter.Title</PageTitle>
+<PageTitle>@PenningtonOptions.SiteTitle - @_frontMatter.Title</PageTitle>
 <article>
     <header>
         <h1 class="text-4xl font-bold">@_frontMatter.Title</h1>

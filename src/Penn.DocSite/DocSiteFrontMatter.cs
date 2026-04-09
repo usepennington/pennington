@@ -1,6 +1,6 @@
-namespace Penn.DocSite;
+namespace Pennington.DocSite;
 
-using Penn.FrontMatter;
+using Pennington.FrontMatter;
 
 /// <summary>
 /// Front matter for doc site pages.

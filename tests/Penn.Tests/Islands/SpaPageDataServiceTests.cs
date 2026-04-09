@@ -1,7 +1,7 @@
-using Penn.Islands;
-using Penn.Routing;
+using Pennington.Islands;
+using Pennington.Routing;
 
-namespace Penn.Tests.Islands;
+namespace Pennington.Tests.Islands;
 
 public class SpaPageDataServiceTests
 {

@@ -1,6 +1,6 @@
 namespace RoslynIntegrationExample;
 
-using Penn.FrontMatter;
+using Pennington.FrontMatter;
 
 /// <summary>
 /// Front matter for the Roslyn integration example site.

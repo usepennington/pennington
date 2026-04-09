@@ -1,14 +1,14 @@
 using System.Collections.Immutable;
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Content;
-using Penn.Feeds;
-using Penn.FrontMatter;
-using Penn.Infrastructure;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Feeds;
+using Pennington.FrontMatter;
+using Pennington.Infrastructure;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
-namespace Penn.Tests.Feeds;
+namespace Pennington.Tests.Feeds;
 
 public class SitemapServiceTests
 {

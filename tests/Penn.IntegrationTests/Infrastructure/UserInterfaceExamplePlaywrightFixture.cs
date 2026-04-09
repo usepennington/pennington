@@ -1,12 +1,12 @@
-namespace Penn.IntegrationTests.Infrastructure;
+namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
 
 public class UserInterfaceExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -31,7 +31,7 @@ public class UserInterfaceExamplePlaywrightFixture : IAsyncLifetime
         builder.Logging.ClearProviders();
 
         builder.Services.AddRazorComponents();
-        builder.Services.AddPenn(penn =>
+        builder.Services.AddPennington(penn =>
         {
             penn.SiteTitle = "Daily Life Hub";
             penn.SiteDescription = "Your everyday life, simplified";
@@ -50,7 +50,7 @@ public class UserInterfaceExamplePlaywrightFixture : IAsyncLifetime
         _app.UseAntiforgery();
         _app.MapRazorComponents<global::UserInterfaceExample.Components.App>();
         _app.UseMonorailCss();
-        _app.UsePenn();
+        _app.UsePennington();
 
         await _app.StartAsync();
         BaseUrl = _app.Urls.First();

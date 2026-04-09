@@ -1,8 +1,8 @@
-namespace Penn.Markdown;
+namespace Pennington.Markdown;
 
 using System.IO.Abstractions;
-using Penn.FrontMatter;
-using Penn.Pipeline;
+using Pennington.FrontMatter;
+using Pennington.Pipeline;
 
 /// <summary>
 /// Parses discovered markdown files into ParsedItems using FrontMatterParser.

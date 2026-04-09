@@ -1,6 +1,6 @@
-namespace Penn.Content;
+namespace Pennington.Content;
 
-using Penn.Routing;
+using Pennington.Routing;
 
 /// <summary>
 /// A static file to copy to the output directory.

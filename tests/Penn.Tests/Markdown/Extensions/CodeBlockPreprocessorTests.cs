@@ -1,10 +1,10 @@
 using Markdig;
 using Markdig.Renderers;
-using Penn.Highlighting;
-using Penn.Markdown;
-using Penn.Markdown.Extensions;
+using Pennington.Highlighting;
+using Pennington.Markdown;
+using Pennington.Markdown.Extensions;
 
-namespace Penn.Tests.Markdown.Extensions;
+namespace Pennington.Tests.Markdown.Extensions;
 
 public class CodeBlockPreprocessorTests
 {

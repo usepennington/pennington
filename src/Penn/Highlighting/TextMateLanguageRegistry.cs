@@ -1,4 +1,4 @@
-namespace Penn.Highlighting;
+namespace Pennington.Highlighting;
 
 using TextMateSharp.Grammars;
 using TextMateSharp.Internal.Grammars.Reader;

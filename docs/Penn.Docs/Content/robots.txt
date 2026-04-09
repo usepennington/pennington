@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://phil-scott-78.github.io/penn/sitemap.xml
+Sitemap: https://phil-scott-78.github.io/pennington/sitemap.xml

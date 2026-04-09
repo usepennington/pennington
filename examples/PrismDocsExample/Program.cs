@@ -1,5 +1,5 @@
-using Penn.DocSite;
-using Penn.Roslyn;
+using Pennington.DocSite;
+using Pennington.Roslyn;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +12,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
 
 // Note: Roslyn integration requires a valid solution.
 // In testing, code blocks will show raw source if Roslyn can't load.
-builder.Services.AddPennRoslyn(options =>
+builder.Services.AddPenningtonRoslyn(options =>
 {
     options.SolutionPath = Path.Combine(builder.Environment.ContentRootPath, "src", "Prism.slnx");
 });

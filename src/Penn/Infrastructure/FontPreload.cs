@@ -1,4 +1,4 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 /// <summary>
 /// Represents a font file to preload via a link rel="preload" hint in the HTML head.

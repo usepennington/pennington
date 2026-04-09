@@ -1,4 +1,4 @@
-namespace Penn.FrontMatter;
+namespace Pennington.FrontMatter;
 
 /// <summary>
 /// Covers the BlogSite use case — implements blog capabilities.

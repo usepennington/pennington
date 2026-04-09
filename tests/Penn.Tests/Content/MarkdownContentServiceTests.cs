@@ -1,13 +1,13 @@
 using System.Collections.Immutable;
-using Penn.Content;
-using Penn.FrontMatter;
-using Penn.Infrastructure;
-using Penn.Localization;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.FrontMatter;
+using Pennington.Infrastructure;
+using Pennington.Localization;
+using Pennington.Pipeline;
+using Pennington.Routing;
 using Testably.Abstractions.Testing;
 
-namespace Penn.Tests.Content;
+namespace Pennington.Tests.Content;
 
 public class MarkdownContentServiceTests
 {

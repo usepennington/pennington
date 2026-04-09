@@ -13,6 +13,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Penn\Penn.csproj" />
+    <ProjectReference Include="..\Pennington\Pennington.csproj" />
   </ItemGroup>
 </Project>

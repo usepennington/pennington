@@ -11,14 +11,14 @@ Show the command to trigger static site generation and explain how `RunOrBuildAs
 
 ### What to show
 - The build command: `dotnet run -- build / ./output`
-- Reference `M:Penn.Infrastructure.PennExtensions.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])` (:path `src/Penn/Infrastructure/PennExtensions.cs`) — the entry point that checks `args[0].Equals("build", StringComparison.OrdinalIgnoreCase)`
-- Show the detection flow: if first arg is `build`, it calls `app.StartAsync()`, resolves `T:Penn.Generation.OutputGenerationService` from DI, calls `M:Penn.Generation.OutputGenerationService.GenerateAsync(System.String)`, then `app.StopAsync()`
+- Reference `M:Pennington.Infrastructure.PenningtonExtensions.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])` (:path `src/Pennington/Infrastructure/PenningtonExtensions.cs`) — the entry point that checks `args[0].Equals("build", StringComparison.OrdinalIgnoreCase)`
+- Show the detection flow: if first arg is `build`, it calls `app.StartAsync()`, resolves `T:Pennington.Generation.OutputGenerationService` from DI, calls `M:Pennington.Generation.OutputGenerationService.GenerateAsync(System.String)`, then `app.StopAsync()`
 - If the first arg is not `build`, it falls through to `app.RunAsync()` for normal dev server mode
-- Reference `M:Penn.Generation.OutputOptions.FromArgs(System.String[])` (:path `src/Penn/Generation/OutputOptions.cs`) — parses `args[1]` as `P:Penn.Generation.OutputOptions.BaseUrl` and `args[2]` as `P:Penn.Generation.OutputOptions.OutputDirectory`
+- Reference `M:Pennington.Generation.OutputOptions.FromArgs(System.String[])` (:path `src/Pennington/Generation/OutputOptions.cs`) — parses `args[1]` as `P:Pennington.Generation.OutputOptions.BaseUrl` and `args[2]` as `P:Pennington.Generation.OutputOptions.OutputDirectory`
 
 ### Key points
 - The same `Program.cs` serves both dev mode and static build — no separate build tool needed
-- The `OutputOptions` are registered as a singleton in DI during `AddPenn`, parsed from `Environment.GetCommandLineArgs()` (:path `src/Penn/Infrastructure/PennExtensions.cs`, line where `OutputOptions.FromArgs` is called)
+- The `OutputOptions` are registered as a singleton in DI during `AddPennington`, parsed from `Environment.GetCommandLineArgs()` (:path `src/Pennington/Infrastructure/PenningtonExtensions.cs`, line where `OutputOptions.FromArgs` is called)
 - Default output directory is `output`, default base URL is `/`
 
 ## Beat 2: The Nine Generation Phases
@@ -26,16 +26,16 @@ Show the command to trigger static site generation and explain how `RunOrBuildAs
 Walk through each phase of `OutputGenerationService.GenerateAsync` so the reader understands what the console output means and what order things happen in.
 
 ### What to show
-- Reference `M:Penn.Generation.OutputGenerationService.GenerateAsync(System.String)` (:path `src/Penn/Generation/OutputGenerationService.cs`)
-- **Phase 1: Collect content pages** — iterates all `T:Penn.Content.IContentService` registrations, calling `M:Penn.Content.IContentService.DiscoverAsync` to build a list of `PageToGenerate` records
+- Reference `M:Pennington.Generation.OutputGenerationService.GenerateAsync(System.String)` (:path `src/Pennington/Generation/OutputGenerationService.cs`)
+- **Phase 1: Collect content pages** — iterates all `T:Pennington.Content.IContentService` registrations, calling `M:Pennington.Content.IContentService.DiscoverAsync` to build a list of `PageToGenerate` records
 - **Phase 2: Discover MapGet routes** — scans `EndpointDataSource` for GET endpoints (like `/styles.css`, `/search-index.json`, `/sitemap.xml`) that are not Blazor component routes or parameterized routes
-- **Phase 3: Clean and recreate output directory** — unconditionally deletes and recreates `P:Penn.Generation.OutputOptions.OutputDirectory`. Note: `P:Penn.Generation.OutputOptions.CleanOutput` exists (default `true`) but is not currently checked — the output directory is always cleaned
-- **Phase 4: Copy static assets** — copies non-markdown content files from content services (`GetContentToCopyAsync`), wwwroot files, and RCL static web assets (Penn.UI scripts, etc.)
+- **Phase 3: Clean and recreate output directory** — unconditionally deletes and recreates `P:Pennington.Generation.OutputOptions.OutputDirectory`. Note: `P:Pennington.Generation.OutputOptions.CleanOutput` exists (default `true`) but is not currently checked — the output directory is always cleaned
+- **Phase 4: Copy static assets** — copies non-markdown content files from content services (`GetContentToCopyAsync`), wwwroot files, and RCL static web assets (Pennington.UI scripts, etc.)
 - **Phase 5: Create dynamic content files** — calls `GetContentToCreateAsync` on each content service for dynamically generated files
 - **Phase 6: Fetch HTML content pages** — HTTP-crawls the running app in parallel using `HttpClient`, writes responses as static files. This is where markdown-rendered pages become HTML files
 - **Phase 7: Fetch MapGet routes last** — fetches CSS, search index, sitemap, etc. **after** all HTML. This ordering matters because the CSS class collector (`CssClassCollector`) needs to observe all HTML before generating the stylesheet
 - **Phase 8: Generate 404.html** — fetches `/__penn-404-generator` to produce a custom 404 page via the app's fallback route
-- **Phase 9: Verify internal links** — runs `T:Penn.Infrastructure.LinkVerificationService` (:path `src/Penn/Infrastructure/LinkVerificationService.cs`) across all fetched HTML, checking every internal link against the set of known routes
+- **Phase 9: Verify internal links** — runs `T:Pennington.Infrastructure.LinkVerificationService` (:path `src/Pennington/Infrastructure/LinkVerificationService.cs`) across all fetched HTML, checking every internal link against the set of known routes
 
 ### Key points
 - Phase ordering is critical: HTML before CSS ensures the utility-first CSS generator sees all classes before producing the stylesheet
@@ -47,29 +47,29 @@ Walk through each phase of `OutputGenerationService.GenerateAsync` so the reader
 After generation completes, `BuildReportBuilder.Build()` produces a `BuildReport`. Explain every property and what it means for the reader's build.
 
 ### What to show
-- Reference `T:Penn.Generation.BuildReport` (:path `src/Penn/Generation/BuildReport.cs`)
-- `P:Penn.Generation.BuildReport.GeneratedPages` (`ImmutableList<ContentRoute>`) — pages that were successfully fetched and written
-- `P:Penn.Generation.BuildReport.SkippedPages` (`ImmutableList<ContentRoute>`) — pages skipped (e.g., drafts). Note: in the current implementation, drafts are filtered during `DiscoverAsync` before reaching the generation phase, so this list is typically empty. The property exists for future use or custom `IContentService` implementations that call `BuildReportBuilder.AddSkippedPage`
-- `P:Penn.Generation.BuildReport.FailedPages` (`ImmutableList<ContentRoute>`) — pages that returned non-success HTTP status codes or threw exceptions during fetch
-- `P:Penn.Generation.BuildReport.Diagnostics` (`ImmutableList<BuildDiagnostic>`) — all info, warning, and error diagnostics collected during the build
-- `P:Penn.Generation.BuildReport.BrokenLinks` (`ImmutableList<BrokenLink>`) — internal links that point to pages not in the generated set
-- `P:Penn.Generation.BuildReport.Duration` (`TimeSpan`) — total build time
-- `P:Penn.Generation.BuildReport.HasErrors` — computed property: true when any diagnostic has `DiagnosticSeverity.Error`, or `BrokenLinks.Count > 0`, or `FailedPages.Count > 0`
-- `P:Penn.Generation.BuildReport.TotalPages` — computed: `GeneratedPages.Count + SkippedPages.Count + FailedPages.Count`
-- Reference `T:Penn.Generation.BuildDiagnostic` (:path `src/Penn/Generation/BuildDiagnostic.cs`) — record with `Severity` (`T:Penn.Diagnostics.DiagnosticSeverity`: `Info`, `Warning`, `Error`), optional `Route`, `Message`, optional `Exception`, optional `SourceFile`
-- Reference `T:Penn.Generation.BrokenLink` (:path `src/Penn/Generation/BrokenLink.cs`) — record with `SourcePage` (the page containing the link), `Url` (the broken target), `Type` (`T:Penn.Generation.LinkType`: `Internal`, `External`, `Anchor`, `Image`), and `Reason`
+- Reference `T:Pennington.Generation.BuildReport` (:path `src/Pennington/Generation/BuildReport.cs`)
+- `P:Pennington.Generation.BuildReport.GeneratedPages` (`ImmutableList<ContentRoute>`) — pages that were successfully fetched and written
+- `P:Pennington.Generation.BuildReport.SkippedPages` (`ImmutableList<ContentRoute>`) — pages skipped (e.g., drafts). Note: in the current implementation, drafts are filtered during `DiscoverAsync` before reaching the generation phase, so this list is typically empty. The property exists for future use or custom `IContentService` implementations that call `BuildReportBuilder.AddSkippedPage`
+- `P:Pennington.Generation.BuildReport.FailedPages` (`ImmutableList<ContentRoute>`) — pages that returned non-success HTTP status codes or threw exceptions during fetch
+- `P:Pennington.Generation.BuildReport.Diagnostics` (`ImmutableList<BuildDiagnostic>`) — all info, warning, and error diagnostics collected during the build
+- `P:Pennington.Generation.BuildReport.BrokenLinks` (`ImmutableList<BrokenLink>`) — internal links that point to pages not in the generated set
+- `P:Pennington.Generation.BuildReport.Duration` (`TimeSpan`) — total build time
+- `P:Pennington.Generation.BuildReport.HasErrors` — computed property: true when any diagnostic has `DiagnosticSeverity.Error`, or `BrokenLinks.Count > 0`, or `FailedPages.Count > 0`
+- `P:Pennington.Generation.BuildReport.TotalPages` — computed: `GeneratedPages.Count + SkippedPages.Count + FailedPages.Count`
+- Reference `T:Pennington.Generation.BuildDiagnostic` (:path `src/Pennington/Generation/BuildDiagnostic.cs`) — record with `Severity` (`T:Pennington.Diagnostics.DiagnosticSeverity`: `Info`, `Warning`, `Error`), optional `Route`, `Message`, optional `Exception`, optional `SourceFile`
+- Reference `T:Pennington.Generation.BrokenLink` (:path `src/Pennington/Generation/BrokenLink.cs`) — record with `SourcePage` (the page containing the link), `Url` (the broken target), `Type` (`T:Pennington.Generation.LinkType`: `Internal`, `External`, `Anchor`, `Image`), and `Reason`
 
 ### Key points
 - `HasErrors` is the single boolean that determines the build's pass/fail status
 - Broken links are classified as errors (they contribute to `HasErrors`)
-- Diagnostics can also arrive from per-request response headers (`X-Penn-Diagnostic`), which individual middleware or renderers can emit during page generation
+- Diagnostics can also arrive from per-request response headers (`X-Pennington-Diagnostic`), which individual middleware or renderers can emit during page generation
 
 ## Beat 4: Read the Console Output
 
 Show what `BuildReport.WriteTo` prints to the console and how to interpret each section.
 
 ### What to show
-- Reference `M:Penn.Generation.BuildReport.WriteTo(System.IO.TextWriter)` (:path `src/Penn/Generation/BuildReport.cs`)
+- Reference `M:Pennington.Generation.BuildReport.WriteTo(System.IO.TextWriter)` (:path `src/Pennington/Generation/BuildReport.cs`)
 - The summary line: `Build Complete — {TotalPages} pages in {Duration}s` followed by counts for generated, skipped (draft), and failed pages, plus warning count
 - The ERRORS section: lists each error diagnostic with its route's `CanonicalPath`, the message, and the source file path
 - The WARNINGS section: lists warning diagnostics and broken links. Broken links show the format: `{SourcePage.CanonicalPath} links to {Url} ({Reason})`
@@ -78,7 +78,7 @@ Show what `BuildReport.WriteTo` prints to the console and how to interpret each 
 ### Key points
 - The summary line always prints, even on success
 - Errors are listed before warnings
-- `M:Penn.Generation.BuildReport.ToFormattedString` returns the same output as a string (useful for logging or artifact capture)
+- `M:Pennington.Generation.BuildReport.ToFormattedString` returns the same output as a string (useful for logging or artifact capture)
 
 ## Beat 5: Diagnose Common Build Issues
 
@@ -93,14 +93,14 @@ Walk through the most common diagnostics and how to fix them.
 
 ### Key points
 - The build report always includes the source file path when available, making it easy to locate the problem
-- Per-request diagnostics (from the `X-Penn-Diagnostic` response header) can surface renderer-specific warnings that only appear during build
+- Per-request diagnostics (from the `X-Pennington-Diagnostic` response header) can surface renderer-specific warnings that only appear during build
 
 ## Beat 6: CI Exit Codes and Build Failure
 
 Show how `RunOrBuildAsync` translates `BuildReport.HasErrors` into a process exit code, and how this integrates with CI systems.
 
 ### What to show
-- Reference `M:Penn.Infrastructure.PennExtensions.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])` (:path `src/Penn/Infrastructure/PennExtensions.cs`) — after `GenerateAsync` returns, it calls `report.WriteTo(Console.Out)`, then checks `P:Penn.Generation.BuildReport.HasErrors`: if true, sets `Environment.ExitCode = 1`
+- Reference `M:Pennington.Infrastructure.PenningtonExtensions.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])` (:path `src/Pennington/Infrastructure/PenningtonExtensions.cs`) — after `GenerateAsync` returns, it calls `report.WriteTo(Console.Out)`, then checks `P:Pennington.Generation.BuildReport.HasErrors`: if true, sets `Environment.ExitCode = 1`
 - Show that `HasErrors` is true when:
   - Any `BuildDiagnostic` has `DiagnosticSeverity.Error`
   - `BrokenLinks.Count > 0`
@@ -111,7 +111,7 @@ Show how `RunOrBuildAsync` translates `BuildReport.HasErrors` into a process exi
 ### Key points
 - Broken links are treated as errors, not warnings, for exit code purposes
 - To fail on warnings too, the reader would need to inspect the `BuildReport` programmatically after `GenerateAsync` returns and set `Environment.ExitCode` based on custom criteria
-- The build report is written to stdout; capture it with shell redirection or use `M:Penn.Generation.BuildReport.ToFormattedString` for programmatic access
+- The build report is written to stdout; capture it with shell redirection or use `M:Pennington.Generation.BuildReport.ToFormattedString` for programmatic access
 
 ## Beat 7: Capture the Build Report as a CI Artifact
 
@@ -122,7 +122,7 @@ Show how to persist the build output and report for debugging failed builds in C
   - Runs the build: `dotnet run --project docs/Beacon.Docs -- build / ./output`
   - Uploads `./output` as a build artifact (useful for inspecting generated HTML)
   - Optionally redirects build output to a file for artifact upload: `dotnet run ... 2>&1 | tee build-report.txt`
-- Reference `T:Penn.Generation.BuildReportBuilder` (:path `src/Penn/Generation/BuildReportBuilder.cs`) — the builder that accumulates diagnostics during generation. Methods: `M:Penn.Generation.BuildReportBuilder.AddWarning(Penn.Routing.ContentRoute,System.String)`, `M:Penn.Generation.BuildReportBuilder.AddError(Penn.Routing.ContentRoute,System.String,System.Exception)`, `M:Penn.Generation.BuildReportBuilder.AddBrokenLink(Penn.Generation.BrokenLink)`, `M:Penn.Generation.BuildReportBuilder.AddGeneratedPage(Penn.Routing.ContentRoute)`, `M:Penn.Generation.BuildReportBuilder.AddSkippedPage(Penn.Routing.ContentRoute)`, `M:Penn.Generation.BuildReportBuilder.Build`
+- Reference `T:Pennington.Generation.BuildReportBuilder` (:path `src/Pennington/Generation/BuildReportBuilder.cs`) — the builder that accumulates diagnostics during generation. Methods: `M:Pennington.Generation.BuildReportBuilder.AddWarning(Pennington.Routing.ContentRoute,System.String)`, `M:Pennington.Generation.BuildReportBuilder.AddError(Pennington.Routing.ContentRoute,System.String,System.Exception)`, `M:Pennington.Generation.BuildReportBuilder.AddBrokenLink(Pennington.Generation.BrokenLink)`, `M:Pennington.Generation.BuildReportBuilder.AddGeneratedPage(Pennington.Routing.ContentRoute)`, `M:Pennington.Generation.BuildReportBuilder.AddSkippedPage(Pennington.Routing.ContentRoute)`, `M:Pennington.Generation.BuildReportBuilder.Build`
 
 ### Key points
 - The output directory itself is the most useful artifact — you can open generated HTML files to inspect rewritten links, check the search index, and verify the sitemap
@@ -134,7 +134,7 @@ Show how to persist the build output and report for debugging failed builds in C
 Explain the deliberate ordering of Phase 6 (HTML content) before Phase 7 (MapGet routes) and why it matters for utility-first CSS generation.
 
 ### What to show
-- Reference the doc comment on `T:Penn.Generation.OutputGenerationService` (:path `src/Penn/Generation/OutputGenerationService.cs`): "Pages are fetched in priority order: HTML content first, then MapGet routes (like /styles.css) last. This ensures CSS class collectors have observed all HTML before the stylesheet is generated."
+- Reference the doc comment on `T:Pennington.Generation.OutputGenerationService` (:path `src/Pennington/Generation/OutputGenerationService.cs`): "Pages are fetched in priority order: HTML content first, then MapGet routes (like /styles.css) last. This ensures CSS class collectors have observed all HTML before the stylesheet is generated."
 - Phase 6 fetches all content pages in parallel via `FetchPagesAsync`
 - Phase 7 fetches MapGet routes (including `/styles.css`) **after** Phase 6 completes
 - The MonorailCSS integration collects CSS classes as HTML is rendered; the `/styles.css` endpoint then produces a stylesheet containing only the classes actually used

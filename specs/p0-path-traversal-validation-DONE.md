@@ -1,7 +1,7 @@
 # P0: Path Traversal Validation in ContentRouteFactory
 
 ## Problem
-`ContentRouteFactory.FromMarkdownFile()` (`src/Penn/Routing/ContentRouteFactory.cs`) does not validate that the resolved file path stays within the content root directory. The `GetRelativePath` helper normalizes slashes but doesn't prevent `../../` sequences from escaping the content boundary.
+`ContentRouteFactory.FromMarkdownFile()` (`src/Pennington/Routing/ContentRouteFactory.cs`) does not validate that the resolved file path stays within the content root directory. The `GetRelativePath` helper normalizes slashes but doesn't prevent `../../` sequences from escaping the content boundary.
 
 ## Current State
 - `GetRelativePath()` (line 107) does simple string prefix matching after slash normalization
@@ -15,5 +15,5 @@
 - Ensure the validation works correctly on both Windows (backslash) and Unix (forward slash) paths
 
 ## Key Files
-- `src/Penn/Routing/ContentRouteFactory.cs` — add validation in `FromMarkdownFile`
-- `tests/Penn.Tests/` — add security-focused tests
+- `src/Pennington/Routing/ContentRouteFactory.cs` — add validation in `FromMarkdownFile`
+- `tests/Pennington.Tests/` — add security-focused tests

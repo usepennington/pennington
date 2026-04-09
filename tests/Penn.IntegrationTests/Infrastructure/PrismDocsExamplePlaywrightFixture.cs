@@ -1,11 +1,11 @@
-namespace Penn.IntegrationTests.Infrastructure;
+namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Penn.DocSite;
-using Penn.Roslyn;
+using Pennington.DocSite;
+using Pennington.Roslyn;
 
 public class PrismDocsExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -38,7 +38,7 @@ public class PrismDocsExamplePlaywrightFixture : IAsyncLifetime
 
         // Note: Roslyn integration requires a valid solution.
         // In testing, code blocks will show raw source if Roslyn can't load.
-        builder.Services.AddPennRoslyn(options =>
+        builder.Services.AddPenningtonRoslyn(options =>
         {
             options.SolutionPath = Path.Combine(projectPath, "src", "Prism.slnx");
         });

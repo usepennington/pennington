@@ -1,7 +1,7 @@
-namespace Penn.Content;
+namespace Pennington.Content;
 
 using System.Collections.Immutable;
-using Penn.Pipeline;
+using Pennington.Pipeline;
 
 /// <summary>
 /// Discovers and provides content for the pipeline.

@@ -10,7 +10,7 @@ isDraft: false
 
 ## Advanced Content Management
 
-This page covers more advanced topics for working with Penn and demonstrates cross-page navigation.
+This page covers more advanced topics for working with Pennington and demonstrates cross-page navigation.
 
 ## Related Pages
 

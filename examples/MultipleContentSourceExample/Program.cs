@@ -1,13 +1,13 @@
 using MultipleContentSourceExample;
 using MultipleContentSourceExample.Components;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
 
-builder.Services.AddPenn(penn =>
+builder.Services.AddPennington(penn =>
 {
     penn.SiteTitle = "My Little Content Engine";
     penn.SiteDescription = "An Inflexible Content Engine for .NET";
@@ -42,6 +42,6 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>();
 app.UseMonorailCss();
-app.UsePenn();
+app.UsePennington();
 
 await app.RunOrBuildAsync(args);

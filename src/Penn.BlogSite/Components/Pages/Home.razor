@@ -1,8 +1,8 @@
 @page "/"
-@using Penn.StructuredData
-@using Penn.UI.Components
+@using Pennington.StructuredData
+@using Pennington.UI.Components
 @inject BlogContentResolver ContentResolver
-@inject PennOptions PennOptions
+@inject PenningtonOptions PenningtonOptions
 @inject BlogSiteOptions BlogOptions
 
 @if (_posts == null)
@@ -10,8 +10,8 @@
     <div>Posts not found</div>
     return;
 }
-<PageTitle>@PennOptions.SiteTitle - Recent Posts</PageTitle>
-@if (!string.IsNullOrEmpty(PennOptions.CanonicalBaseUrl))
+<PageTitle>@PenningtonOptions.SiteTitle - Recent Posts</PageTitle>
+@if (!string.IsNullOrEmpty(PenningtonOptions.CanonicalBaseUrl))
 {
     <StructuredData WebSite="BuildWebSiteLd()" />
 }
@@ -93,10 +93,10 @@
 
     private JsonLdWebSite? BuildWebSiteLd()
     {
-        if (string.IsNullOrEmpty(PennOptions.CanonicalBaseUrl)) return null;
+        if (string.IsNullOrEmpty(PenningtonOptions.CanonicalBaseUrl)) return null;
         return new JsonLdWebSite(
-            Name: PennOptions.SiteTitle,
-            Url: PennOptions.CanonicalBaseUrl.TrimEnd('/') + "/",
+            Name: PenningtonOptions.SiteTitle,
+            Url: PenningtonOptions.CanonicalBaseUrl.TrimEnd('/') + "/",
             Description: BlogOptions.Description
         );
     }

@@ -1,10 +1,10 @@
-namespace Penn.Roslyn.Tests.Workspace;
+namespace Pennington.Roslyn.Tests.Workspace;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging.Abstractions;
-using Penn.Infrastructure;
-using Penn.Roslyn.Symbols;
-using Penn.Roslyn.Workspace;
+using Pennington.Infrastructure;
+using Pennington.Roslyn.Symbols;
+using Pennington.Roslyn.Workspace;
 
 public sealed class SolutionWorkspaceServiceTests
 {
@@ -19,7 +19,7 @@ public sealed class SolutionWorkspaceServiceTests
     [Fact]
     public void Constructor_Does_Not_Throw_With_Valid_Options()
     {
-        var options = new RoslynOptions { SolutionPath = "B:\\Penn\\Penn.slnx" };
+        var options = new RoslynOptions { SolutionPath = "B:\\Pennington\\Pennington.slnx" };
         var watcher = new StubFileWatcher();
         var logger = NullLogger<SolutionWorkspaceService>.Instance;
 
@@ -42,7 +42,7 @@ public sealed class SolutionWorkspaceServiceTests
     [Fact]
     public void InvalidateSolution_Does_Not_Throw_Before_Load()
     {
-        var options = new RoslynOptions { SolutionPath = "B:\\Penn\\Penn.slnx" };
+        var options = new RoslynOptions { SolutionPath = "B:\\Pennington\\Pennington.slnx" };
         var watcher = new StubFileWatcher();
         var logger = NullLogger<SolutionWorkspaceService>.Instance;
 
@@ -54,19 +54,19 @@ public sealed class SolutionWorkspaceServiceTests
     [Fact]
     public void UpdateDocument_Queues_Without_Error()
     {
-        var options = new RoslynOptions { SolutionPath = "B:\\Penn\\Penn.slnx" };
+        var options = new RoslynOptions { SolutionPath = "B:\\Pennington\\Pennington.slnx" };
         var watcher = new StubFileWatcher();
         var logger = NullLogger<SolutionWorkspaceService>.Instance;
 
         using var service = new SolutionWorkspaceService(options, watcher, logger);
 
-        Should.NotThrow(() => service.UpdateDocument("B:\\Penn\\src\\Penn\\Routing\\UrlPath.cs"));
+        Should.NotThrow(() => service.UpdateDocument("B:\\Pennington\\src\\Pennington\\Routing\\UrlPath.cs"));
     }
 
     [Fact]
     public void Constructor_Registers_File_Watches()
     {
-        var options = new RoslynOptions { SolutionPath = "B:\\Penn\\Penn.slnx" };
+        var options = new RoslynOptions { SolutionPath = "B:\\Pennington\\Pennington.slnx" };
         var watcher = new StubFileWatcher();
         var logger = NullLogger<SolutionWorkspaceService>.Instance;
 
@@ -82,7 +82,7 @@ public sealed class SolutionWorkspaceServiceTests
     [Fact]
     public void Dispose_Can_Be_Called_Multiple_Times()
     {
-        var options = new RoslynOptions { SolutionPath = "B:\\Penn\\Penn.slnx" };
+        var options = new RoslynOptions { SolutionPath = "B:\\Pennington\\Pennington.slnx" };
         var watcher = new StubFileWatcher();
         var logger = NullLogger<SolutionWorkspaceService>.Instance;
 
@@ -98,7 +98,7 @@ public sealed class SolutionWorkspaceServiceTests
     [Fact]
     public void InvalidateSolution_Clears_Symbol_Cache()
     {
-        var options = new RoslynOptions { SolutionPath = "B:\\Penn\\Penn.slnx" };
+        var options = new RoslynOptions { SolutionPath = "B:\\Pennington\\Pennington.slnx" };
         var watcher = new StubFileWatcher();
         var logger = NullLogger<SolutionWorkspaceService>.Instance;
         var symbolService = new SpySymbolExtractionService();
@@ -132,12 +132,12 @@ public sealed class SolutionWorkspaceServiceTests
     {
         public int ClearCacheCallCount { get; private set; }
 
-        public Task<IReadOnlyDictionary<string, Penn.Roslyn.Symbols.SymbolInfo>> ExtractSymbolsAsync(Solution solution)
-            => Task.FromResult<IReadOnlyDictionary<string, Penn.Roslyn.Symbols.SymbolInfo>>(
-                new Dictionary<string, Penn.Roslyn.Symbols.SymbolInfo>());
+        public Task<IReadOnlyDictionary<string, Pennington.Roslyn.Symbols.SymbolInfo>> ExtractSymbolsAsync(Solution solution)
+            => Task.FromResult<IReadOnlyDictionary<string, Pennington.Roslyn.Symbols.SymbolInfo>>(
+                new Dictionary<string, Pennington.Roslyn.Symbols.SymbolInfo>());
 
-        public Task<Penn.Roslyn.Symbols.SymbolInfo?> FindSymbolAsync(string xmlDocId)
-            => Task.FromResult<Penn.Roslyn.Symbols.SymbolInfo?>(null);
+        public Task<Pennington.Roslyn.Symbols.SymbolInfo?> FindSymbolAsync(string xmlDocId)
+            => Task.FromResult<Pennington.Roslyn.Symbols.SymbolInfo?>(null);
 
         public Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false)
             => Task.FromResult(string.Empty);

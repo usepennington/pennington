@@ -1,12 +1,12 @@
 using System.Globalization;
-using Penn.Infrastructure;
-using Penn.Localization;
+using Pennington.Infrastructure;
+using Pennington.Localization;
 
-namespace Penn.Tests.Localization;
+namespace Pennington.Tests.Localization;
 
-public class PennStringLocalizerTests
+public class PenningtonStringLocalizerTests
 {
-    private static (PennStringLocalizer Localizer, TranslationOptions Translations) CreateLocalizer()
+    private static (PenningtonStringLocalizer Localizer, TranslationOptions Translations) CreateLocalizer()
     {
         var locOptions = new LocalizationOptions { DefaultLocale = "en" };
         locOptions.AddLocale("en", new LocaleInfo("English"));
@@ -19,7 +19,7 @@ public class PennStringLocalizerTests
         translations.Add("fr", "greeting", "Bonjour");
         translations.Add("gen-z", "greeting", "Yo");
 
-        return (new PennStringLocalizer(translations, locOptions), translations);
+        return (new PenningtonStringLocalizer(translations, locOptions), translations);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class PennStringLocalizerTests
         var translations = new TranslationOptions();
         translations.Add("en", "welcome", "Welcome, {0}!");
 
-        var localizer = new PennStringLocalizer(translations, locOptions);
+        var localizer = new PenningtonStringLocalizer(translations, locOptions);
 
         using var _ = SetCulture("en");
         localizer["welcome", "Alice"].Value.ShouldBe("Welcome, Alice!");

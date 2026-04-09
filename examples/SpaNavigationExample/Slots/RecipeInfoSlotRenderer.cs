@@ -1,5 +1,5 @@
-using Penn.Islands;
-using Penn.Routing;
+using Pennington.Islands;
+using Pennington.Routing;
 using SpaNavigationExample.Slots.Components;
 
 namespace SpaNavigationExample.Slots;

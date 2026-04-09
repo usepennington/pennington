@@ -1,4 +1,4 @@
-namespace Penn.StructuredData;
+namespace Pennington.StructuredData;
 
 using System.Text.Encodings.Web;
 using System.Text.Json;

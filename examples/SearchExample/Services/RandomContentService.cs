@@ -4,10 +4,10 @@ using System.Text;
 using Bogus;
 using Markdig;
 using Markdig.Extensions.AutoIdentifiers;
-using Penn.Content;
-using Penn.FrontMatter;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.FrontMatter;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
 namespace SearchExample.Services;
 

@@ -1,7 +1,7 @@
-namespace Penn.Islands;
+namespace Pennington.Islands;
 
 using Microsoft.AspNetCore.Components;
-using Penn.Routing;
+using Pennington.Routing;
 
 /// <summary>
 /// Base class for island renderers that render a Razor component.

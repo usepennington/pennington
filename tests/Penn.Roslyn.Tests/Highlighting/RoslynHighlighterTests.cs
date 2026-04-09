@@ -1,6 +1,6 @@
-namespace Penn.Roslyn.Tests.Highlighting;
+namespace Pennington.Roslyn.Tests.Highlighting;
 
-using Penn.Roslyn.Highlighting;
+using Pennington.Roslyn.Highlighting;
 
 public sealed class RoslynHighlighterTests : IDisposable
 {

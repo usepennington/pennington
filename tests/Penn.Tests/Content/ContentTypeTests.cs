@@ -1,7 +1,7 @@
-using Penn.Content;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Routing;
 
-namespace Penn.Tests.Content;
+namespace Pennington.Tests.Content;
 
 public class ContentTypeTests
 {

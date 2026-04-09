@@ -1,13 +1,13 @@
 using System.Collections.Immutable;
-using Penn.Content;
-using Penn.FrontMatter;
-using Penn.Generation;
-using Penn.Infrastructure;
-using Penn.Markdown;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.FrontMatter;
+using Pennington.Generation;
+using Pennington.Infrastructure;
+using Pennington.Markdown;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
-namespace Penn.Tests.Generation;
+namespace Pennington.Tests.Generation;
 
 /// <summary>
 /// End-to-end tests exercising the full content pipeline through to build report

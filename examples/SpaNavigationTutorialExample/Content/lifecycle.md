@@ -6,7 +6,7 @@ order: 30
 
 ## Available Events
 
-Penn dispatches custom events during SPA navigation:
+Pennington dispatches custom events during SPA navigation:
 
 - **`spa:before-navigate`** — fired before navigation starts
 - **`spa:commit`** — fired after new content is rendered

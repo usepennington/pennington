@@ -1,4 +1,4 @@
-namespace Penn.Pipeline;
+namespace Pennington.Pipeline;
 
 /// <summary>
 /// Renders a parsed item into HTML.

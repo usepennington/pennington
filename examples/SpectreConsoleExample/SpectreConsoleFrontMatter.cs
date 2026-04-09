@@ -1,6 +1,6 @@
 namespace SpectreConsoleExample;
 
-using Penn.FrontMatter;
+using Pennington.FrontMatter;
 
 /// <summary>
 /// Front matter for Spectre.Console and CLI documentation pages.

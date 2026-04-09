@@ -1,4 +1,4 @@
-namespace Penn.Search;
+namespace Pennington.Search;
 
 public record SearchIndexDocument(
     string Title,

@@ -1,4 +1,4 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 /// <summary>
 /// Watches file system paths for changes and notifies subscribers.

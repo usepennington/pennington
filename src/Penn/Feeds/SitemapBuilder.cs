@@ -1,9 +1,9 @@
-namespace Penn.Feeds;
+namespace Pennington.Feeds;
 
 using System.Collections.Immutable;
-using Penn.FrontMatter;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.FrontMatter;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
 /// <summary>
 /// Builds sitemap entries from rendered content.

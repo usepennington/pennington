@@ -1,13 +1,13 @@
-namespace Penn.Markdown;
+namespace Pennington.Markdown;
 
 using Markdig;
 using Markdig.Extensions.Alerts;
 using Markdig.Parsers.Inlines;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
-using Penn.Highlighting;
-using Penn.Markdown.Extensions;
-using Penn.Markdown.Extensions.Tabs;
+using Pennington.Highlighting;
+using Pennington.Markdown.Extensions;
+using Pennington.Markdown.Extensions.Tabs;
 
 /// <summary>
 /// Creates a configured Markdig MarkdownPipeline.

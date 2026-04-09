@@ -1,8 +1,8 @@
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Penn.Infrastructure;
+using Pennington.Infrastructure;
 
-namespace Penn.Tests.Infrastructure;
+namespace Pennington.Tests.Infrastructure;
 
 public class ResponseProcessingMiddlewareTests
 {

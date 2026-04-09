@@ -1,4 +1,4 @@
-namespace Penn.Highlighting;
+namespace Pennington.Highlighting;
 
 public interface ICodeHighlighter
 {

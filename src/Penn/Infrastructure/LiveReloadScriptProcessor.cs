@@ -1,4 +1,4 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 using Microsoft.AspNetCore.Http;
 
@@ -27,7 +27,7 @@ public sealed class LiveReloadScriptProcessor : IResponseProcessor
         const string script = """
             <script>
             (function(){
-                var p=(location.protocol==='https:'?'wss://':'ws://')+location.host+'/__penn/reload';
+                var p=(location.protocol==='https:'?'wss://':'ws://')+location.host+'/__pennington/reload';
                 function connect(){
                     var ws=new WebSocket(p);
                     ws.onmessage=function(){location.reload();};

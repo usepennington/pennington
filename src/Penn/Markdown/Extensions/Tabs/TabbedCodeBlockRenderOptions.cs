@@ -1,4 +1,4 @@
-namespace Penn.Markdown.Extensions.Tabs;
+namespace Pennington.Markdown.Extensions.Tabs;
 
 /// <summary>
 /// Options for customizing the CSS classes used in the tabbed code block renderer.

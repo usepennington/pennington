@@ -1,6 +1,6 @@
-using Penn.Infrastructure;
-using Penn.MonorailCss;
-using Penn.Roslyn;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
+using Pennington.Roslyn;
 using RoslynIntegrationExample;
 using RoslynIntegrationExample.Components;
 
@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
 
-builder.Services.AddPenn(penn =>
+builder.Services.AddPennington(penn =>
 {
     penn.SiteTitle = "My Little Content Engine";
     penn.SiteDescription = "An Inflexible Content Engine for .NET";
@@ -21,9 +21,9 @@ builder.Services.AddPenn(penn =>
     });
 });
 
-builder.Services.AddPennRoslyn(options =>
+builder.Services.AddPenningtonRoslyn(options =>
 {
-    options.SolutionPath = "../../Penn.slnx";
+    options.SolutionPath = "../../Pennington.slnx";
 });
 
 builder.Services.AddMonorailCss();
@@ -34,6 +34,6 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>();
 app.UseMonorailCss();
-app.UsePenn();
+app.UsePennington();
 
 await app.RunOrBuildAsync(args);

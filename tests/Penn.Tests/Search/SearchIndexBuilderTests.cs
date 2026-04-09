@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
-using Penn.FrontMatter;
-using Penn.Pipeline;
-using Penn.Routing;
-using Penn.Search;
+using Pennington.FrontMatter;
+using Pennington.Pipeline;
+using Pennington.Routing;
+using Pennington.Search;
 
-namespace Penn.Tests.Search;
+namespace Pennington.Tests.Search;
 
 public class SearchIndexBuilderTests
 {

@@ -1,16 +1,16 @@
-namespace Penn.LlmsTxt;
+namespace Pennington.LlmsTxt;
 
 using System.Collections.Immutable;
 using System.IO.Abstractions;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Content;
-using Penn.FrontMatter;
-using Penn.Infrastructure;
-using Penn.Navigation;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.FrontMatter;
+using Pennington.Infrastructure;
+using Pennington.Navigation;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
 /// <summary>
 /// Generates llms.txt index and stripped markdown files.
@@ -23,7 +23,7 @@ public sealed class LlmsTxtService
 
     public LlmsTxtService(
         IServiceProvider serviceProvider,
-        PennOptions pennOptions,
+        PenningtonOptions pennOptions,
         LlmsTxtOptions llmsTxtOptions,
         NavigationBuilder navigationBuilder)
     {
@@ -39,7 +39,7 @@ public sealed class LlmsTxtService
 
     private static async Task<LlmsTxtData> BuildAsync(
         IServiceProvider sp,
-        PennOptions pennOptions,
+        PenningtonOptions pennOptions,
         LlmsTxtOptions llmsTxtOptions,
         NavigationBuilder navigationBuilder)
     {
@@ -161,7 +161,7 @@ public sealed class LlmsTxtService
             sb.AppendLine();
     }
 
-    private static async Task<string?> ReadUserHeaderAsync(IServiceProvider sp, PennOptions pennOptions)
+    private static async Task<string?> ReadUserHeaderAsync(IServiceProvider sp, PenningtonOptions pennOptions)
     {
         var fileSystem = sp.GetRequiredService<IFileSystem>();
         var env = sp.GetService<IWebHostEnvironment>();

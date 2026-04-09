@@ -9,6 +9,6 @@
     <Watch Include="Content\**\*.*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Penn.BlogSite\Penn.BlogSite.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.BlogSite\Pennington.BlogSite.csproj" />
   </ItemGroup>
 </Project>

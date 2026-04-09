@@ -1,6 +1,6 @@
-using Penn.FrontMatter;
+using Pennington.FrontMatter;
 
-namespace Penn.Tests.FrontMatter;
+namespace Pennington.Tests.FrontMatter;
 
 public class FrontMatterParserTests
 {
@@ -9,7 +9,7 @@ public class FrontMatterParserTests
     private const string DocMarkdown = """
         ---
         title: Getting Started
-        description: How to get started with Penn
+        description: How to get started with Pennington
         isDraft: false
         tags: [routing, setup]
         section: Documentation
@@ -17,21 +17,21 @@ public class FrontMatterParserTests
         ---
         # Getting Started
 
-        Welcome to Penn.
+        Welcome to Pennington.
         """;
 
     private const string BlogMarkdown = """
         ---
-        title: Announcing Penn
+        title: Announcing Pennington
         description: Our first blog post
         date: 2026-03-15
         author: Jane Doe
         series: Launch Week
         tags: [announcement, dotnet]
         ---
-        # Announcing Penn
+        # Announcing Pennington
 
-        We are excited to announce Penn.
+        We are excited to announce Pennington.
         """;
 
     [Fact]
@@ -41,13 +41,13 @@ public class FrontMatterParserTests
 
         result.Metadata.ShouldNotBeNull();
         result.Metadata.Title.ShouldBe("Getting Started");
-        result.Metadata.Description.ShouldBe("How to get started with Penn");
+        result.Metadata.Description.ShouldBe("How to get started with Pennington");
         result.Metadata.IsDraft.ShouldBeFalse();
         result.Metadata.Tags.ShouldBe(new[] { "routing", "setup" });
         result.Metadata.Section.ShouldBe("Documentation");
         result.Metadata.Order.ShouldBe(1);
         result.Body.ShouldContain("# Getting Started");
-        result.Body.ShouldContain("Welcome to Penn.");
+        result.Body.ShouldContain("Welcome to Pennington.");
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class FrontMatterParserTests
         var result = _parser.Parse<BlogFrontMatter>(BlogMarkdown);
 
         result.Metadata.ShouldNotBeNull();
-        result.Metadata.Title.ShouldBe("Announcing Penn");
+        result.Metadata.Title.ShouldBe("Announcing Pennington");
         result.Metadata.Date.ShouldBe(new DateTime(2026, 3, 15));
         result.Metadata.Author.ShouldBe("Jane Doe");
         result.Metadata.Series.ShouldBe("Launch Week");

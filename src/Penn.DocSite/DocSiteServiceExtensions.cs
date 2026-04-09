@@ -1,11 +1,11 @@
-namespace Penn.DocSite;
+namespace Pennington.DocSite;
 
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Infrastructure;
-using Penn.Islands;
-using Penn.MonorailCss;
+using Pennington.Infrastructure;
+using Pennington.Islands;
+using Pennington.MonorailCss;
 
 public static class DocSiteServiceExtensions
 {
@@ -16,8 +16,8 @@ public static class DocSiteServiceExtensions
         services.AddSingleton(options);
         services.AddRazorComponents();
 
-        // Penn core
-        services.AddPenn(penn =>
+        // Pennington core
+        services.AddPennington(penn =>
         {
             penn.SiteTitle = options.SiteTitle;
             penn.SiteDescription = options.Description;
@@ -77,14 +77,14 @@ public static class DocSiteServiceExtensions
     {
         var options = app.Services.GetRequiredService<DocSiteOptions>();
 
-        app.UsePennLocaleRouting();
+        app.UsePenningtonLocaleRouting();
         app.UseAntiforgery();
         app.UseStaticFiles();
         app.MapRazorComponents<Components.App>()
             .AddAdditionalAssemblies(options.AdditionalRoutingAssemblies);
         app.UseMonorailCss();
         app.UseSpaNavigation();
-        app.UsePenn();
+        app.UsePennington();
 
         return app;
     }

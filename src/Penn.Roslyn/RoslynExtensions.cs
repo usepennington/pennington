@@ -1,17 +1,17 @@
-namespace Penn.Roslyn;
+namespace Pennington.Roslyn;
 
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Highlighting;
-using Penn.Markdown.Extensions;
-using Penn.Roslyn.Highlighting;
-using Penn.Roslyn.Preprocessing;
-using Penn.Roslyn.Symbols;
-using Penn.Roslyn.Workspace;
+using Pennington.Highlighting;
+using Pennington.Markdown.Extensions;
+using Pennington.Roslyn.Highlighting;
+using Pennington.Roslyn.Preprocessing;
+using Pennington.Roslyn.Symbols;
+using Pennington.Roslyn.Workspace;
 
 public static class RoslynExtensions
 {
     /// <summary>Add Roslyn-based code analysis and highlighting.</summary>
-    public static IServiceCollection AddPennRoslyn(this IServiceCollection services, Action<RoslynOptions>? configure = null)
+    public static IServiceCollection AddPenningtonRoslyn(this IServiceCollection services, Action<RoslynOptions>? configure = null)
     {
         var options = new RoslynOptions();
         configure?.Invoke(options);

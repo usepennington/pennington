@@ -1,9 +1,9 @@
 namespace YogaStudioExample.Services;
 
-using Penn.Content;
-using Penn.FrontMatter;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.FrontMatter;
+using Pennington.Pipeline;
+using Pennington.Routing;
 using YogaStudioExample.Models;
 
 public sealed class ContentHelper

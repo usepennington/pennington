@@ -1,12 +1,12 @@
 # P3: Documentation Versioning Support
 
 ## Problem
-Penn has no concept of content versions. API documentation sites commonly need to serve multiple versions simultaneously (e.g., `/v1/docs/`, `/v2/docs/`, `/latest/docs/`) so users on older releases can access the correct documentation.
+Pennington has no concept of content versions. API documentation sites commonly need to serve multiple versions simultaneously (e.g., `/v1/docs/`, `/v2/docs/`, `/latest/docs/`) so users on older releases can access the correct documentation.
 
 ## Current State
 - `ContentRoute` has `CanonicalPath`, `OutputFile`, `SourceFile`, `Locale` — no version field
 - `MarkdownContentOptions` has `ContentPath`, `BasePageUrl`, `Section` — no version configuration
-- `PennOptions.AddMarkdownContent<T>()` registers content sources but has no version awareness
+- `PenningtonOptions.AddMarkdownContent<T>()` registers content sources but has no version awareness
 - Navigation is built per-site, not per-version
 - No version selector UI component exists
 - The locale system (`/{locale}/` URL prefix) provides a pattern that versioning could follow
@@ -38,10 +38,10 @@ Penn has no concept of content versions. API documentation sites commonly need t
 - Sitemap should include all versioned pages
 
 ## Key Files
-- `src/Penn/Infrastructure/PennOptions.cs` — `MarkdownContentOptions` needs `Version`
-- `src/Penn/Routing/ContentRoute.cs` — add `Version` property
-- `src/Penn/Routing/ContentRouteFactory.cs` — version-aware URL generation
-- `src/Penn/Content/MarkdownContentService.cs` — pass version through discovery
-- `src/Penn.UI/Components/` — new `VersionSelector` component
-- `src/Penn.DocSite/Components/Layout/MainLayout.razor` — include version selector
-- `src/Penn/Navigation/NavigationBuilder.cs` — version-scoped tree building
+- `src/Pennington/Infrastructure/PenningtonOptions.cs` — `MarkdownContentOptions` needs `Version`
+- `src/Pennington/Routing/ContentRoute.cs` — add `Version` property
+- `src/Pennington/Routing/ContentRouteFactory.cs` — version-aware URL generation
+- `src/Pennington/Content/MarkdownContentService.cs` — pass version through discovery
+- `src/Pennington.UI/Components/` — new `VersionSelector` component
+- `src/Pennington.DocSite/Components/Layout/MainLayout.razor` — include version selector
+- `src/Pennington/Navigation/NavigationBuilder.cs` — version-scoped tree building

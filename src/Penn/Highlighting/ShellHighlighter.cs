@@ -1,8 +1,8 @@
-namespace Penn.Highlighting;
+namespace Pennington.Highlighting;
 
 using System.Text;
 using System.Text.RegularExpressions;
-using Penn.Infrastructure;
+using Pennington.Infrastructure;
 
 /// <summary>
 /// Provides syntax highlighting for shell/bash/batch commands.

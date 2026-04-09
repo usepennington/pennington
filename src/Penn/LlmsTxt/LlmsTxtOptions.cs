@@ -1,4 +1,4 @@
-namespace Penn.LlmsTxt;
+namespace Pennington.LlmsTxt;
 
 /// <summary>Configuration for llms.txt generation.</summary>
 public sealed class LlmsTxtOptions

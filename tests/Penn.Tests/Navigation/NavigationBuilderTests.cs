@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
-using Penn.Content;
-using Penn.Navigation;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Navigation;
+using Pennington.Routing;
 
-namespace Penn.Tests.Navigation;
+namespace Pennington.Tests.Navigation;
 
 public class NavigationBuilderTests
 {

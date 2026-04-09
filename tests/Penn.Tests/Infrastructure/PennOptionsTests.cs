@@ -1,18 +1,18 @@
-using Penn.FrontMatter;
-using Penn.Highlighting;
-using Penn.Infrastructure;
-using Penn.Islands;
-using Penn.Localization;
-using Penn.Routing;
+using Pennington.FrontMatter;
+using Pennington.Highlighting;
+using Pennington.Infrastructure;
+using Pennington.Islands;
+using Pennington.Localization;
+using Pennington.Routing;
 
-namespace Penn.Tests.Infrastructure;
+namespace Pennington.Tests.Infrastructure;
 
-public class PennOptionsTests
+public class PenningtonOptionsTests
 {
     [Fact]
     public void AddMarkdownContent_RegistersSource()
     {
-        var options = new PennOptions();
+        var options = new PenningtonOptions();
         options.AddMarkdownContent<DocFrontMatter>(o =>
         {
             o.ContentPath = "docs";
@@ -29,7 +29,7 @@ public class PennOptionsTests
     [Fact]
     public void AddMarkdownContent_CapturesFrontMatterType()
     {
-        var options = new PennOptions();
+        var options = new PenningtonOptions();
         var source = options.AddMarkdownContent<DocFrontMatter>(o => o.ContentPath = "content");
 
         // FrontMatterType is internal, so we verify via the returned options object
@@ -40,7 +40,7 @@ public class PennOptionsTests
     [Fact]
     public void AddMarkdownContent_MultipleSources_Accumulate()
     {
-        var options = new PennOptions();
+        var options = new PenningtonOptions();
         options.AddMarkdownContent<DocFrontMatter>(o => o.ContentPath = "docs");
         options.AddMarkdownContent<BlogFrontMatter>(o => o.ContentPath = "blog");
 
@@ -52,7 +52,7 @@ public class PennOptionsTests
     [Fact]
     public void HighlightingOptions_AddHighlighter_Generic()
     {
-        var options = new PennOptions();
+        var options = new PenningtonOptions();
         options.Highlighting.AddHighlighter<PlainTextHighlighter>();
 
         options.Highlighting.Highlighters.Count.ShouldBe(1);
@@ -62,7 +62,7 @@ public class PennOptionsTests
     [Fact]
     public void HighlightingOptions_AddHighlighter_Instance()
     {
-        var options = new PennOptions();
+        var options = new PenningtonOptions();
         var highlighter = new PlainTextHighlighter();
         options.Highlighting.AddHighlighter(highlighter);
 
@@ -75,7 +75,7 @@ public class PennOptionsTests
     [Fact]
     public void IslandsOptions_Register_AddsIslandType()
     {
-        var options = new PennOptions();
+        var options = new PenningtonOptions();
         options.Islands.Register<StubIsland>("test-island");
 
         options.Islands.RegisteredIslands.Count.ShouldBe(1);
@@ -86,7 +86,7 @@ public class PennOptionsTests
     [Fact]
     public void LocalizationOptions_AddLocale_WithLocaleInfo()
     {
-        var options = new PennOptions();
+        var options = new PenningtonOptions();
         var info = new LocaleInfo("French", "ltr", "fr");
         options.Localization.AddLocale("fr", info);
 
@@ -99,7 +99,7 @@ public class PennOptionsTests
     [Fact]
     public void LocalizationOptions_AddLocale_WithDisplayName()
     {
-        var options = new PennOptions();
+        var options = new PenningtonOptions();
         options.Localization.AddLocale("de", "German");
 
         options.Localization.Locales.Count.ShouldBe(1);

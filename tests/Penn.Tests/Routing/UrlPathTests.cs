@@ -1,6 +1,6 @@
-using Penn.Routing;
+using Pennington.Routing;
 
-namespace Penn.Tests.Routing;
+namespace Pennington.Tests.Routing;
 
 public class UrlPathTests
 {

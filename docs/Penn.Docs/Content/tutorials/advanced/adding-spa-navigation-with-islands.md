@@ -1,13 +1,13 @@
 ---
 title: "Adding SPA Navigation with Islands"
-description: "Convert a server-rendered Penn site to client-side SPA navigation by implementing island renderers, wiring the SPA data endpoint, and handling lifecycle events"
+description: "Convert a server-rendered Pennington site to client-side SPA navigation by implementing island renderers, wiring the SPA data endpoint, and handling lifecycle events"
 uid: "penn.tutorials.adding-spa-navigation-with-islands"
 order: 20
 ---
 
 ## Beat 1: Starting Point — Full-Page Reloads
 
-Set the scene. The reader has a multi-page Penn site with a sidebar and content area. Every link click triggers a full-page HTML download. Open the browser Network tab and click between pages to see 15-30 KB HTML documents on every navigation.
+Set the scene. The reader has a multi-page Pennington site with a sidebar and content area. Every link click triggers a full-page HTML download. Open the browser Network tab and click between pages to see 15-30 KB HTML documents on every navigation.
 
 ### What to show
 - Describe the existing site structure: a two-column layout with sidebar navigation and a content area
@@ -16,7 +16,7 @@ Set the scene. The reader has a multi-page Penn site with a sidebar and content 
 
 ### Key points
 - SPA navigation is an enhancement layer, not a replacement for server-rendered HTML — the first page load is always full static HTML
-- Penn's island system works with pre-rendered HTML, not a client-side JavaScript framework — there is no virtual DOM, no component hydration
+- Pennington's island system works with pre-rendered HTML, not a client-side JavaScript framework — there is no virtual DOM, no component hydration
 
 ## Beat 2: Register SPA Navigation Services
 
@@ -36,11 +36,11 @@ Islands are named DOM regions that get swapped during client-side navigation ins
 Now wire up the SPA infrastructure in the service collection and middleware pipeline.
 
 ### What to show
-- Code reference: `M:Penn.Islands.SpaNavigationExtensions.AddSpaNavigation(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Penn.Islands.SpaNavigationOptions})` — show the extension method; explain it registers `SpaPageDataService`, `SpaNavigationContentService`, and a default `RenderContext`
-- Code reference: `M:Penn.Islands.SpaNavigationExtensions.UseSpaNavigation(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)` — show the extension method; explain it maps the `/_spa-data/{*slug}` endpoint
-- Code reference: `T:Penn.Islands.SpaNavigationOptions` — show the class with its `DataPath` property (defaults to `/_spa-data`)
-- Code reference: `T:Penn.Islands.SpaEnvelopeDto` — the record that represents the JSON envelope: `Title`, `Description`, `Islands` dictionary, `Diagnostics`, `Reload`
-- Show how DocSite registers these: `:path src/Penn.DocSite/DocSiteServiceExtensions.cs` (line 62 for `AddSpaNavigation()`, line 86 for `UseSpaNavigation()`)
+- Code reference: `M:Pennington.Islands.SpaNavigationExtensions.AddSpaNavigation(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Islands.SpaNavigationOptions})` — show the extension method; explain it registers `SpaPageDataService`, `SpaNavigationContentService`, and a default `RenderContext`
+- Code reference: `M:Pennington.Islands.SpaNavigationExtensions.UseSpaNavigation(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)` — show the extension method; explain it maps the `/_spa-data/{*slug}` endpoint
+- Code reference: `T:Pennington.Islands.SpaNavigationOptions` — show the class with its `DataPath` property (defaults to `/_spa-data`)
+- Code reference: `T:Pennington.Islands.SpaEnvelopeDto` — the record that represents the JSON envelope: `Title`, `Description`, `Islands` dictionary, `Diagnostics`, `Reload`
+- Show how DocSite registers these: `:path src/Pennington.DocSite/DocSiteServiceExtensions.cs` (line 62 for `AddSpaNavigation()`, line 86 for `UseSpaNavigation()`)
 - For a custom app, show the registration:
   ```csharp
   builder.Services.AddSpaNavigation();
@@ -51,7 +51,7 @@ Now wire up the SPA infrastructure in the service collection and middleware pipe
 ### Key points
 - `SpaNavigationContentService` automatically generates `/_spa-data/{slug}.json` routes for every HTML content page, so the static site builder produces JSON files alongside the HTML
 - The `DataPath` is configurable but the default `/_spa-data` is conventional and should rarely need changing
-- **Important**: `AddSpaNavigation` does NOT register `ComponentRenderer`. Custom (non-DocSite) apps must register it manually: `services.AddScoped<ComponentRenderer>()`. DocSite does this automatically in `AddDocSite` (`:path src/Penn.DocSite/DocSiteServiceExtensions.cs` line 65)
+- **Important**: `AddSpaNavigation` does NOT register `ComponentRenderer`. Custom (non-DocSite) apps must register it manually: `services.AddScoped<ComponentRenderer>()`. DocSite does this automatically in `AddDocSite` (`:path src/Pennington.DocSite/DocSiteServiceExtensions.cs` line 65)
 
 ## Beat 3: Create the Article Island Renderer
 
@@ -60,21 +60,21 @@ Every island renderer implements `IIslandRenderer`, which defines two members: `
 Now create the content island renderer.
 
 ### What to show
-- Code reference: `T:Penn.Islands.IIslandRenderer` — show the full interface:
+- Code reference: `T:Pennington.Islands.IIslandRenderer` — show the full interface:
   - `string IslandName { get; }` — the name that matches the `data-spa-island` attribute in HTML
   - `Task<string> RenderAsync(ContentRoute route, RenderContext context)` — renders the island's HTML for a given route
-- Code reference: `T:Penn.Routing.ContentRoute` — show the record (particularly `CanonicalPath`, `OutputFile`, `Locale`, `IsFallback`) to explain what the renderer receives
-- Code reference: `T:Penn.Islands.RenderContext` — show the record: `BaseUrl`, `SiteTitle`, `Locale`
-- Code reference: `T:Penn.Islands.RazorIslandRenderer``1` — show the full abstract class:
+- Code reference: `T:Pennington.Routing.ContentRoute` — show the record (particularly `CanonicalPath`, `OutputFile`, `Locale`, `IsFallback`) to explain what the renderer receives
+- Code reference: `T:Pennington.Islands.RenderContext` — show the record: `BaseUrl`, `SiteTitle`, `Locale`
+- Code reference: `T:Pennington.Islands.RazorIslandRenderer``1` — show the full abstract class:
   - Constructor receives `ComponentRenderer renderer`
   - Abstract `IslandName` property
-  - Abstract `M:Penn.Islands.RazorIslandRenderer``1.BuildParametersAsync(Penn.Routing.ContentRoute)` method — returns a parameter dictionary or `null` to skip the island
+  - Abstract `M:Pennington.Islands.RazorIslandRenderer``1.BuildParametersAsync(Pennington.Routing.ContentRoute)` method — returns a parameter dictionary or `null` to skip the island
   - The `RenderAsync` implementation: calls `BuildParametersAsync`, then `renderer.RenderComponentAsync<TComponent>(parameters)`
-- Code reference for the real-world example: `:path src/Penn.DocSite/Slots/DocSiteArticleSlotRenderer.cs` — show the full class (approximately 38 lines):
+- Code reference for the real-world example: `:path src/Pennington.DocSite/Slots/DocSiteArticleSlotRenderer.cs` — show the full class (approximately 38 lines):
   - Extends `RazorIslandRenderer<DocSiteArticle>`
   - `IslandName => "content"`
   - `BuildParametersAsync` resolves content via `ContentResolver`, gets navigation info, and returns a dictionary with `Title`, `HtmlContent`, `PreviousPageName`, `PreviousPageHref`, `NextPageName`, `NextPageHref`, `FallbackRequestedLocale`, `FallbackDefaultLocale`
-- Show the Razor component it renders: `:path src/Penn.DocSite/Slots/Components/DocSiteArticle.razor` — the component that receives these parameters
+- Show the Razor component it renders: `:path src/Pennington.DocSite/Slots/Components/DocSiteArticle.razor` — the component that receives these parameters
 
 ### Key points
 - `IslandName` must exactly match the `data-spa-island` value in your layout HTML — case-sensitive
@@ -89,7 +89,7 @@ Now create the content island renderer.
 Show how to register the island renderer in the DI container.
 
 ### What to show
-- Register the island renderer via direct DI registration (what DocSite uses): `services.AddTransient<IIslandRenderer, ArticleIslandRenderer>();` — reference `:path src/Penn.DocSite/DocSiteServiceExtensions.cs` line 68
+- Register the island renderer via direct DI registration (what DocSite uses): `services.AddTransient<IIslandRenderer, ArticleIslandRenderer>();` — reference `:path src/Pennington.DocSite/DocSiteServiceExtensions.cs` line 68
 - `SpaPageDataService` collects all `IIslandRenderer` implementations from DI and iterates them for each page
 
 ### Key points
@@ -101,7 +101,7 @@ Show how to register the island renderer in the DI container.
 Show the reader how to annotate their layout HTML to designate island regions.
 
 ### What to show
-- Reference the DocSite MainLayout as a real example: `:path src/Penn.DocSite/Components/Layout/MainLayout.razor` (line 190) — show the article element:
+- Reference the DocSite MainLayout as a real example: `:path src/Pennington.DocSite/Components/Layout/MainLayout.razor` (line 190) — show the article element:
   ```html
   <article id="main-content" data-spa-island="content" data-spa-loading="skeleton" class="...">
       @Body
@@ -111,7 +111,7 @@ Show the reader how to annotate their layout HTML to designate island regions.
   - `"keep"` (default) — leave previous content in place until new data arrives; best for navigation sidebars
   - `"skeleton"` — replace content with a shimmer placeholder immediately; best for the main content area
   - `"clear"` — empty the element immediately; for elements that should not show stale content
-- Show how the spa-engine discovers islands: `:path src/Penn.UI/wwwroot/spa-engine.js` (lines 124-141) — the `discoverIslands()` function that queries `[data-spa-island]` elements and reads their loading mode
+- Show how the spa-engine discovers islands: `:path src/Pennington.UI/wwwroot/spa-engine.js` (lines 124-141) — the `discoverIslands()` function that queries `[data-spa-island]` elements and reads their loading mode
 
 ### Key points
 - The `data-spa-island` value must match an `IslandName` from a registered `IIslandRenderer`
@@ -159,7 +159,7 @@ Show how to hook into the navigation lifecycle for custom JavaScript behavior.
       });
   });
   ```
-- Reference the event dispatching in the spa-engine: `:path src/Penn.UI/wwwroot/spa-engine.js` — `fire('spa:before-navigate', { url, slug })` and `fire('spa:commit', { url, slug, data })`
+- Reference the event dispatching in the spa-engine: `:path src/Pennington.UI/wwwroot/spa-engine.js` — `fire('spa:before-navigate', { url, slug })` and `fire('spa:commit', { url, slug, data })`
 - Mention the View Transitions API integration: the spa-engine uses `document.startViewTransition()` when available, providing smooth CSS transitions between page states
 
 ### Key points

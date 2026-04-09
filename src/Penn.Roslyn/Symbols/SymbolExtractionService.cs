@@ -1,13 +1,13 @@
-namespace Penn.Roslyn.Symbols;
+namespace Pennington.Roslyn.Symbols;
 
 using System.Collections.Concurrent;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Penn.Infrastructure;
-using Penn.Roslyn.Utilities;
-using Penn.Roslyn.Workspace;
+using Pennington.Infrastructure;
+using Pennington.Roslyn.Utilities;
+using Pennington.Roslyn.Workspace;
 
 /// <summary>
 /// Extracts all symbols from a Roslyn Solution and enables lookup by XML documentation ID.

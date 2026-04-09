@@ -1,6 +1,6 @@
 @inherits LayoutComponentBase
 @inject BlogSiteOptions Options
-@inject PennOptions PennOptions
+@inject PenningtonOptions PenningtonOptions
 
 <div class="h-full min-h-screen font-sans ">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-primary-700 focus:text-white focus:p-3">Skip to main content</a>
@@ -85,7 +85,7 @@
                             }
                         </nav>
                         <p class="text-sm text-base-400 dark:text-base-400">
-                            &copy; @DateTime.Now.Year @(Options.AuthorName ?? PennOptions.SiteTitle). All rights reserved.
+                            &copy; @DateTime.Now.Year @(Options.AuthorName ?? PenningtonOptions.SiteTitle). All rights reserved.
                         </p>
                     </div>
                 </div>

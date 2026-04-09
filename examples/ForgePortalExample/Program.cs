@@ -1,15 +1,15 @@
 using ForgePortalExample;
 using ForgePortalExample.Components;
-using Penn.Content;
-using Penn.FrontMatter;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
+using Pennington.Content;
+using Pennington.FrontMatter;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
 
-builder.Services.AddPenn(penn =>
+builder.Services.AddPennington(penn =>
 {
     penn.SiteTitle = "Forge";
     penn.SiteDescription = "Internal Developer Portal";
@@ -49,6 +49,6 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>();
 app.UseMonorailCss();
-app.UsePenn();
+app.UsePennington();
 
 await app.RunOrBuildAsync(args);

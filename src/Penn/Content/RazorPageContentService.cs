@@ -1,13 +1,13 @@
-namespace Penn.Content;
+namespace Pennington.Content;
 
 using System.Collections.Immutable;
 using System.IO.Abstractions;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
-using Penn.FrontMatter;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.FrontMatter;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
 /// <summary>
 /// Discovers @page Razor components for the content pipeline.

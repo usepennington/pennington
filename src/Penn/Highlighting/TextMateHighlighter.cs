@@ -1,8 +1,8 @@
-namespace Penn.Highlighting;
+namespace Pennington.Highlighting;
 
 using System.Net;
 using System.Text;
-using Penn.Infrastructure;
+using Pennington.Infrastructure;
 using TextMateSharp.Grammars;
 using TextMateSharp.Registry;
 

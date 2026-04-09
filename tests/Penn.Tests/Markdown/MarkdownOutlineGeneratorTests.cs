@@ -1,8 +1,8 @@
 using Markdig;
 using Markdig.Syntax;
-using Penn.Markdown;
+using Pennington.Markdown;
 
-namespace Penn.Tests.Markdown;
+namespace Pennington.Tests.Markdown;
 
 public class MarkdownOutlineGeneratorTests
 {

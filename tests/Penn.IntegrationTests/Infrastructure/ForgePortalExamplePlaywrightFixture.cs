@@ -1,14 +1,14 @@
-namespace Penn.IntegrationTests.Infrastructure;
+namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Penn.Content;
-using Penn.FrontMatter;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
+using Pennington.Content;
+using Pennington.FrontMatter;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
 
 public class ForgePortalExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -33,7 +33,7 @@ public class ForgePortalExamplePlaywrightFixture : IAsyncLifetime
         builder.Logging.ClearProviders();
 
         builder.Services.AddRazorComponents();
-        builder.Services.AddPenn(penn =>
+        builder.Services.AddPennington(penn =>
         {
             penn.SiteTitle = "Forge";
             penn.SiteDescription = "Internal Developer Portal";
@@ -72,7 +72,7 @@ public class ForgePortalExamplePlaywrightFixture : IAsyncLifetime
         _app.UseAntiforgery();
         _app.MapRazorComponents<global::ForgePortalExample.Components.App>();
         _app.UseMonorailCss();
-        _app.UsePenn();
+        _app.UsePennington();
 
         await _app.StartAsync();
         BaseUrl = _app.Urls.First();

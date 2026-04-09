@@ -1,4 +1,4 @@
-namespace Penn.IntegrationTests.Infrastructure;
+namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -6,9 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Playwright;
-using Penn.Content;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
+using Pennington.Content;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
 
 public class RecipeExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -36,7 +36,7 @@ public class RecipeExamplePlaywrightFixture : IAsyncLifetime
 
         builder.Services.AddRazorComponents();
 
-        builder.Services.AddPenn(penn =>
+        builder.Services.AddPennington(penn =>
         {
             penn.SiteTitle = "Recipe Collection";
             penn.SiteDescription = "CookLang Recipe Website";
@@ -57,7 +57,7 @@ public class RecipeExamplePlaywrightFixture : IAsyncLifetime
         _app.UseAntiforgery();
         _app.MapRazorComponents<global::RecipeExample.Components.App>();
         _app.UseMonorailCss();
-        _app.UsePenn();
+        _app.UsePennington();
 
         _app.MapGet("/images/{filename}-{size}.webp",
             async (string filename, string size, global::RecipeExample.IResponsiveImageContentService imgService) =>

@@ -10,22 +10,22 @@ order: 40
 The reader examines Beacon's documentation site running with the default MonorailCSS configuration. They identify three things that need to change: code block backgrounds are too light for the brand, alert colors need adjustment, and a planned JavaScript theme-toggle widget uses utility classes that MonorailCSS will not see in HTML.
 
 ### What to show
-- The `T:Penn.MonorailCss.MonorailCssOptions` class with its four properties: `P:Penn.MonorailCss.MonorailCssOptions.ColorScheme`, `P:Penn.MonorailCss.MonorailCssOptions.CustomCssFrameworkSettings`, `P:Penn.MonorailCss.MonorailCssOptions.ExtraStyles`, `P:Penn.MonorailCss.MonorailCssOptions.ContentPaths`
-- The default `ColorScheme` value -- a `T:Penn.MonorailCss.NamedColorScheme` with `PrimaryColorName = ColorNames.Blue`, `AccentColorName = ColorNames.Purple`, `TertiaryOneColorName = ColorNames.Cyan`, `TertiaryTwoColorName = ColorNames.Pink`, `BaseColorName = ColorNames.Slate`
-- How DocSite passes options through: in `M:Penn.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Penn.DocSite.DocSiteOptions})`, `DocSiteOptions.ColorScheme` is forwarded to `MonorailCssOptions.ColorScheme`, and `DocSiteOptions.ExtraStyles` to `MonorailCssOptions.ExtraStyles`
-- The generated `/styles.css` endpoint registered by `M:Penn.MonorailCss.MonorailServiceExtensions.UseMonorailCss(Microsoft.AspNetCore.Builder.WebApplication,System.String)`
+- The `T:Pennington.MonorailCss.MonorailCssOptions` class with its four properties: `P:Pennington.MonorailCss.MonorailCssOptions.ColorScheme`, `P:Pennington.MonorailCss.MonorailCssOptions.CustomCssFrameworkSettings`, `P:Pennington.MonorailCss.MonorailCssOptions.ExtraStyles`, `P:Pennington.MonorailCss.MonorailCssOptions.ContentPaths`
+- The default `ColorScheme` value -- a `T:Pennington.MonorailCss.NamedColorScheme` with `PrimaryColorName = ColorNames.Blue`, `AccentColorName = ColorNames.Purple`, `TertiaryOneColorName = ColorNames.Cyan`, `TertiaryTwoColorName = ColorNames.Pink`, `BaseColorName = ColorNames.Slate`
+- How DocSite passes options through: in `M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})`, `DocSiteOptions.ColorScheme` is forwarded to `MonorailCssOptions.ColorScheme`, and `DocSiteOptions.ExtraStyles` to `MonorailCssOptions.ExtraStyles`
+- The generated `/styles.css` endpoint registered by `M:Pennington.MonorailCss.MonorailServiceExtensions.UseMonorailCss(Microsoft.AspNetCore.Builder.WebApplication,System.String)`
 
 ### Key points
 - `MonorailCssOptions` controls the entire CSS generation pipeline -- color scheme, design token overrides, extra raw CSS, and file scanning
 - The `CustomCssFrameworkSettings` callback defaults to the identity function (`settings => settings`) -- it only modifies the framework when you provide a custom callback
 - `ExtraStyles` defaults to `string.Empty` -- when set, it is prepended to the generated stylesheet
-- `ContentPaths` defaults to an empty array -- most sites do not need it because the `T:Penn.MonorailCss.CssClassCollectorProcessor` discovers classes at runtime from HTML and JSON responses
+- `ContentPaths` defaults to an empty array -- most sites do not need it because the `T:Pennington.MonorailCss.CssClassCollectorProcessor` discovers classes at runtime from HTML and JSON responses
 
 ---
 
 ## Beat 2: Override the color scheme with NamedColorScheme
 
-The reader replaces the default color scheme with a `NamedColorScheme` that maps Beacon's brand colors (Teal primary, Cyan accent) to Penn's five semantic color roles. After running, the entire site palette shifts.
+The reader replaces the default color scheme with a `NamedColorScheme` that maps Beacon's brand colors (Teal primary, Cyan accent) to Pennington's five semantic color roles. After running, the entire site palette shifts.
 
 ### What to show
 - Configure `MonorailCssOptions` through `DocSiteOptions`:
@@ -39,15 +39,15 @@ The reader replaces the default color scheme with a `NamedColorScheme` that maps
       BaseColorName = ColorNames.Slate,
   },
   ```
-- Show `T:Penn.MonorailCss.NamedColorScheme` and its `M:Penn.MonorailCss.NamedColorScheme.ApplyToTheme(MonorailCss.Theme.Theme)` method -- it calls `theme.MapColorPalette(name, "primary")` for each semantic role
-- Contrast with `T:Penn.MonorailCss.AlgorithmicColorScheme` which generates palettes from a hue via `T:Penn.MonorailCss.ColorPaletteGenerator` -- show `M:Penn.MonorailCss.ColorPaletteGenerator.GenerateFromHue(System.Double)` that produces OKLCH color values
-- Show the `T:Penn.MonorailCss.IColorScheme` interface: `M:Penn.MonorailCss.IColorScheme.ApplyToTheme(MonorailCss.Theme.Theme)` returns a modified `Theme`
+- Show `T:Pennington.MonorailCss.NamedColorScheme` and its `M:Pennington.MonorailCss.NamedColorScheme.ApplyToTheme(MonorailCss.Theme.Theme)` method -- it calls `theme.MapColorPalette(name, "primary")` for each semantic role
+- Contrast with `T:Pennington.MonorailCss.AlgorithmicColorScheme` which generates palettes from a hue via `T:Pennington.MonorailCss.ColorPaletteGenerator` -- show `M:Pennington.MonorailCss.ColorPaletteGenerator.GenerateFromHue(System.Double)` that produces OKLCH color values
+- Show the `T:Pennington.MonorailCss.IColorScheme` interface: `M:Pennington.MonorailCss.IColorScheme.ApplyToTheme(MonorailCss.Theme.Theme)` returns a modified `Theme`
 
 ### Key points
-- `NamedColorScheme` maps existing Tailwind color palette names to Penn's semantic roles -- no color generation involved, just remapping
-- `AlgorithmicColorScheme` generates full palettes algorithmically: `P:Penn.MonorailCss.AlgorithmicColorScheme.PrimaryHue` (0-360) is the input, and `P:Penn.MonorailCss.AlgorithmicColorScheme.ColorSchemeGenerator` computes accent and tertiary hues (default: complementary + split-complementary)
-- Penn uses five semantic color roles everywhere: `primary` (links, highlights, headings), `accent` (functions, tabs), `tertiary-one` (strings, numbers in code), `tertiary-two` (variables, attributes in code), `base` (backgrounds, borders, text)
-- You can implement `T:Penn.MonorailCss.IColorScheme` yourself for full control -- the interface has a single method
+- `NamedColorScheme` maps existing Tailwind color palette names to Pennington's semantic roles -- no color generation involved, just remapping
+- `AlgorithmicColorScheme` generates full palettes algorithmically: `P:Pennington.MonorailCss.AlgorithmicColorScheme.PrimaryHue` (0-360) is the input, and `P:Pennington.MonorailCss.AlgorithmicColorScheme.ColorSchemeGenerator` computes accent and tertiary hues (default: complementary + split-complementary)
+- Pennington uses five semantic color roles everywhere: `primary` (links, highlights, headings), `accent` (functions, tabs), `tertiary-one` (strings, numbers in code), `tertiary-two` (variables, attributes in code), `base` (backgrounds, borders, text)
+- You can implement `T:Pennington.MonorailCss.IColorScheme` yourself for full control -- the interface has a single method
 
 ---
 
@@ -56,7 +56,7 @@ The reader replaces the default color scheme with a `NamedColorScheme` that maps
 The reader writes the `CustomCssFrameworkSettings` callback to override code block backgrounds and alert accent colors at the design-token level. This is a theme-level override, not a CSS hack.
 
 ### What to show
-- Set `P:Penn.MonorailCss.MonorailCssOptions.CustomCssFrameworkSettings` -- the property type is `Func<CssFrameworkSettings, CssFrameworkSettings>`:
+- Set `P:Pennington.MonorailCss.MonorailCssOptions.CustomCssFrameworkSettings` -- the property type is `Func<CssFrameworkSettings, CssFrameworkSettings>`:
   ```csharp
   CustomCssFrameworkSettings = settings => settings with
   {
@@ -67,7 +67,7 @@ The reader writes the `CustomCssFrameworkSettings` callback to override code blo
               "fill-teal-700 dark:fill-teal-500 bg-teal-100/75 border-teal-500/20 dark:border-teal-500/30 dark:bg-teal-900/25 text-teal-800 dark:text-teal-200"),
   },
   ```
-- Show how `T:Penn.MonorailCss.MonorailCssService` uses the callback: in `M:Penn.MonorailCss.MonorailCssService.GetStyleSheet`, the service builds a `CssFrameworkSettings` with default `Applies` (code blocks, tabs, alerts, hljs, search modal), then passes it through `options.CustomCssFrameworkSettings(cssFrameworkSettings)` before creating the `CssFramework`
+- Show how `T:Pennington.MonorailCss.MonorailCssService` uses the callback: in `M:Pennington.MonorailCss.MonorailCssService.GetStyleSheet`, the service builds a `CssFrameworkSettings` with default `Applies` (code blocks, tabs, alerts, hljs, search modal), then passes it through `options.CustomCssFrameworkSettings(cssFrameworkSettings)` before creating the `CssFramework`
 - Reference the built-in applies dictionaries to show what keys are available for override: the code block keys (`.code-highlight-wrapper .standalone-code-container`, `.code-highlight-wrapper pre`, etc.), alert keys (`.markdown-alert-note`, `.markdown-alert-tip`, `.markdown-alert-caution`, `.markdown-alert-warning`, `.markdown-alert-important`), and hljs syntax highlighting keys (`.hljs-keyword`, `.hljs-string`, `.hljs-function`, etc.)
 
 ### Key points
@@ -83,7 +83,7 @@ The reader writes the `CustomCssFrameworkSettings` callback to override code blo
 The reader adds a `@layer brand` declaration with custom CSS properties. They learn that `ExtraStyles` is prepended to the generated stylesheet and how CSS layer ordering works with MonorailCSS.
 
 ### What to show
-- Set `P:Penn.MonorailCss.MonorailCssOptions.ExtraStyles` (through `P:Penn.DocSite.DocSiteOptions.ExtraStyles`):
+- Set `P:Pennington.MonorailCss.MonorailCssOptions.ExtraStyles` (through `P:Pennington.DocSite.DocSiteOptions.ExtraStyles`):
   ```csharp
   ExtraStyles = """
       @layer brand {
@@ -95,7 +95,7 @@ The reader adds a `@layer brand` declaration with custom CSS properties. They le
       }
       """,
   ```
-- Show how `M:Penn.MonorailCss.MonorailCssService.GetStyleSheet` prepends `ExtraStyles` before the generated utility stylesheet:
+- Show how `M:Pennington.MonorailCss.MonorailCssService.GetStyleSheet` prepends `ExtraStyles` before the generated utility stylesheet:
   ```
   {options.ExtraStyles}
   
@@ -117,19 +117,19 @@ The reader adds a JavaScript file that toggles utility classes on DOM elements. 
 ### What to show
 - Create `wwwroot/js/theme-toggle.js` with ~15 lines toggling classes like `bg-slate-800`, `text-white`, `border-teal-500` on a container element
 - Run the site and observe the missing styles
-- Explain the `T:Penn.MonorailCss.CssClassCollector` dual strategy:
-  1. **Runtime scanning** via `T:Penn.MonorailCss.CssClassCollectorProcessor` -- an `T:Penn.Infrastructure.IResponseProcessor` that extracts CSS class names from HTML and JSON responses using regex. Show `M:Penn.MonorailCss.CssClassCollectorProcessor.ProcessAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)` (it observes but never modifies responses)
-  2. **Startup file scanning** via `P:Penn.MonorailCss.MonorailCssOptions.ContentPaths` -- files scanned at startup by `M:Penn.MonorailCss.MonorailServiceExtensions.ScanContentFiles(Penn.MonorailCss.CssClassCollector,Microsoft.Extensions.FileProviders.IFileProvider,System.String[])`. Show the two extraction strategies in `M:Penn.MonorailCss.MonorailServiceExtensions.ExtractPotentialClasses(System.String)`: HTML class attribute regex and broad token splitting
-- Set `P:Penn.MonorailCss.MonorailCssOptions.ContentPaths` to `["js/theme-toggle.js"]`
+- Explain the `T:Pennington.MonorailCss.CssClassCollector` dual strategy:
+  1. **Runtime scanning** via `T:Pennington.MonorailCss.CssClassCollectorProcessor` -- an `T:Pennington.Infrastructure.IResponseProcessor` that extracts CSS class names from HTML and JSON responses using regex. Show `M:Pennington.MonorailCss.CssClassCollectorProcessor.ProcessAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)` (it observes but never modifies responses)
+  2. **Startup file scanning** via `P:Pennington.MonorailCss.MonorailCssOptions.ContentPaths` -- files scanned at startup by `M:Pennington.MonorailCss.MonorailServiceExtensions.ScanContentFiles(Pennington.MonorailCss.CssClassCollector,Microsoft.Extensions.FileProviders.IFileProvider,System.String[])`. Show the two extraction strategies in `M:Pennington.MonorailCss.MonorailServiceExtensions.ExtractPotentialClasses(System.String)`: HTML class attribute regex and broad token splitting
+- Set `P:Pennington.MonorailCss.MonorailCssOptions.ContentPaths` to `["js/theme-toggle.js"]`
 - Note: `ContentPaths` are relative to the web root (`wwwroot/`), not the project root
-- Show `M:Penn.MonorailCss.CssClassCollector.AddClasses(System.String,System.Collections.Generic.IEnumerable{System.String})` and `M:Penn.MonorailCss.CssClassCollector.GetClasses` -- the thread-safe collector that accumulates classes across requests
+- Show `M:Pennington.MonorailCss.CssClassCollector.AddClasses(System.String,System.Collections.Generic.IEnumerable{System.String})` and `M:Pennington.MonorailCss.CssClassCollector.GetClasses` -- the thread-safe collector that accumulates classes across requests
 
 ### Key points
 - The `CssClassCollectorProcessor` only sees classes in rendered HTML and JSON responses -- classes referenced only in JavaScript, CSS-in-JS, or data attributes are invisible to it
 - `ContentPaths` solves this the same way Tailwind's `content` configuration does: scan specified files at startup and register all potential class names
 - `ExtractPotentialClasses` uses two strategies: (1) regex matching on `class="..."` attributes, (2) broad token splitting that catches classes in JS string constants -- false positives are harmless because MonorailCSS ignores tokens it does not recognize
 - `CssClassCollector` is thread-safe (uses `ReaderWriterLockSlim`) -- classes accumulate across requests and are never cleared at runtime; stale classes are harmless and removed on the next static build
-- `P:Penn.MonorailCss.CssClassCollector.ShouldProcess(System.String)` always returns `true` in the current implementation
+- `P:Pennington.MonorailCss.CssClassCollector.ShouldProcess(System.String)` always returns `true` in the current implementation
 
 ---
 
@@ -143,7 +143,7 @@ The reader inspects `/styles.css` to confirm that all customizations are present
 - Verify the overridden `.code-highlight-wrapper .standalone-code-container` selector uses the slate-based classes
 - Verify the `.markdown-alert-note` selector uses teal-based classes
 - Search for `bg-slate-800`, `text-white`, `border-teal-500` to confirm the JS-referenced classes generated styles
-- Show the `/styles.css` endpoint mapping in `M:Penn.MonorailCss.MonorailServiceExtensions.UseMonorailCss(Microsoft.AspNetCore.Builder.WebApplication,System.String)`: `app.MapGet(path, (MonorailCssService cssService) => Results.Content(cssService.GetStyleSheet(), "text/css"))`
+- Show the `/styles.css` endpoint mapping in `M:Pennington.MonorailCss.MonorailServiceExtensions.UseMonorailCss(Microsoft.AspNetCore.Builder.WebApplication,System.String)`: `app.MapGet(path, (MonorailCssService cssService) => Results.Content(cssService.GetStyleSheet(), "text/css"))`
 
 ### Key points
 - The stylesheet is generated on every request during development (the `CssClassCollector` grows as new pages are visited) and at build time for static output

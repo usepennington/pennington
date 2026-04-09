@@ -1,8 +1,8 @@
-namespace Penn.Navigation;
+namespace Pennington.Navigation;
 
 using System.Collections.Immutable;
-using Penn.Content;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Routing;
 
 public sealed class NavigationBuilder
 {

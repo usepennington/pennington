@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.Playwright" Version="*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\docs\Penn.Docs\Penn.Docs.csproj" />
+    <ProjectReference Include="..\..\docs\Pennington.Docs\Pennington.Docs.csproj" />
     <ProjectReference Include="..\..\examples\MinimalExample\MinimalExample.csproj" />
     <ProjectReference Include="..\..\examples\RecipeExample\RecipeExample.csproj" />
     <ProjectReference Include="..\..\examples\BlogExample\BlogExample.csproj" />
@@ -36,7 +36,7 @@
     <ProjectReference Include="..\..\examples\BeaconDocsExample\BeaconDocsExample.csproj" />
     <ProjectReference Include="..\..\examples\ForgePortalExample\ForgePortalExample.csproj" />
     <ProjectReference Include="..\..\examples\PrismDocsExample\PrismDocsExample.csproj" />
-    <ProjectReference Include="..\..\src\Penn.BlogSite\Penn.BlogSite.csproj" />
-    <ProjectReference Include="..\..\src\Penn.Roslyn\Penn.Roslyn.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.BlogSite\Pennington.BlogSite.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.Roslyn\Pennington.Roslyn.csproj" />
   </ItemGroup>
 </Project>

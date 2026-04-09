@@ -13,7 +13,7 @@ Use `[!code ++]` and `[!code --]` line directives to produce green/red diff anno
 
 ### What to show
 - A code block where the old `var client = new BeaconClient();` line has `// [!code --]` appended, and the new `var monitor = new HttpMonitor();` line has `// [!code ++]` appended
-- Reference `M:Penn.Markdown.Extensions.CodeTransformer.Transform(System.String)` which parses `[!code]` directives from comment markers
+- Reference `M:Pennington.Markdown.Extensions.CodeTransformer.Transform(System.String)` which parses `[!code]` directives from comment markers
 - Show the CSS class mapping: `++` maps to `diff-add`, `--` maps to `diff-remove` (defined in `CodeTransformer.GetCssClassForNotation`)
 - The `<pre>` element receives a `has-diff` class when any diff directives are present
 
@@ -35,7 +35,7 @@ Use `[!code highlight]` on changed lines and `[!code focus]` to dim everything e
 ### Key points
 - Focus and highlight compose independently: a line can be both focused AND highlighted
 - The blurring is applied to all lines that are NOT focused, creating a visual spotlight effect
-- Reference the `ApplyTransformationsToDom` logic in `T:Penn.Markdown.Extensions.CodeTransformer`
+- Reference the `ApplyTransformationsToDom` logic in `T:Pennington.Markdown.Extensions.CodeTransformer`
 
 ## Beat 3: Word Highlighting
 
@@ -64,4 +64,4 @@ Mark a deprecated method call with `[!code error]` and a performance-sensitive l
 
 ### Key points
 - Error and warning are distinct from diff: they annotate existing code rather than showing additions/removals
-- These are purely visual annotations; they do not affect build diagnostics in `T:Penn.Generation.BuildReport`
+- These are purely visual annotations; they do not affect build diagnostics in `T:Pennington.Generation.BuildReport`

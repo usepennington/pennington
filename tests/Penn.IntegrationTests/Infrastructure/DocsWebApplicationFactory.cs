@@ -1,4 +1,4 @@
-namespace Penn.IntegrationTests.Infrastructure;
+namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -13,7 +13,7 @@ public class DocsWebApplicationFactory : WebApplicationFactory<Program>
         // Set content root to docs project directory
         var docsProjectPath = Path.GetFullPath(Path.Combine(
             Directory.GetCurrentDirectory(),
-            "..", "..", "..", "..", "..", "docs", "Penn.Docs"));
+            "..", "..", "..", "..", "..", "docs", "Pennington.Docs"));
 
         builder.UseContentRoot(docsProjectPath);
 

@@ -2,13 +2,13 @@
 @page "/console/"
 @page "/cli/{*fileName:nonfile}"
 @page "/console/{*fileName:nonfile}"
-@inject PennOptions PennOptions
+@inject PenningtonOptions PenningtonOptions
 @inject SpectreContentHelper ContentHelper
 @inject NavigationManager NavigationManager
 
 @if (_postContent == null || _navigationInfo == null)
 {
-    <PageTitle>@PennOptions.SiteTitle</PageTitle>
+    <PageTitle>@PenningtonOptions.SiteTitle</PageTitle>
     <div class="text-center py-12">
         <svg class="w-16 h-16 mx-auto text-base-400 dark:text-base-600 mb-4" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -25,7 +25,7 @@
     return;
 }
 
-<PageTitle>@PennOptions.SiteTitle - @_navigationInfo.PageTitle</PageTitle>
+<PageTitle>@PenningtonOptions.SiteTitle - @_navigationInfo.PageTitle</PageTitle>
 
 <article class="max-w-7xl mx-auto">
     <!-- Article Header -->

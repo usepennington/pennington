@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using Penn.Content;
-using Penn.FrontMatter;
-using Penn.Pipeline;
+using Pennington.Content;
+using Pennington.FrontMatter;
+using Pennington.Pipeline;
 using Testably.Abstractions.Testing;
 
-namespace Penn.Tests.Content;
+namespace Pennington.Tests.Content;
 
 public class RazorPageContentServiceTests
 {
@@ -52,8 +52,8 @@ public class RazorPageContentServiceTests
     [Fact]
     public async Task DiscoverAsync_SkipsParameterizedRoutes()
     {
-        // The Penn.DocSite assembly has Pages.razor with route "/{*fileName:nonfile}" which is parameterized.
-        // It should be excluded. We test by scanning Penn.Tests assembly which has no @page components.
+        // The Pennington.DocSite assembly has Pages.razor with route "/{*fileName:nonfile}" which is parameterized.
+        // It should be excluded. We test by scanning Pennington.Tests assembly which has no @page components.
         var service = CreateService([typeof(RazorPageContentServiceTests).Assembly]);
 
         var items = new List<DiscoveredItem>();

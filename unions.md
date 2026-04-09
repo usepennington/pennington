@@ -1,12 +1,12 @@
 # Using C# 15 union types in a content engine
 
-I've been working on [Penn](https://github.com/example/penn), a content engine that turns markdown, Razor pages, and programmatic content into static documentation sites. When C# 15 shipped union types, I wanted to try them out on a real problem. Here's what I found.
+I've been working on [Pennington](https://github.com/example/pennington), a content engine that turns markdown, Razor pages, and programmatic content into static documentation sites. When C# 15 shipped union types, I wanted to try them out on a real problem. Here's what I found.
 
 This post walks through four patterns where unions helped, one case where they didn't, and the practical details I wish I'd known upfront.
 
 ## What we're building
 
-Penn has a content pipeline with four stages:
+Pennington has a content pipeline with four stages:
 
 1. **Discover** content (find markdown files, Razor pages, etc.)
 2. **Parse** front matter and body text
@@ -87,7 +87,7 @@ A few things to note:
 
 ## Pattern 2: Multiple content sources
 
-Content in Penn can come from four different sources:
+Content in Pennington can come from four different sources:
 
 ```csharp
 public record MarkdownFileSource(FilePath Path);
@@ -136,7 +136,7 @@ public union ContentItem(DiscoveredItem, ParsedItem, RenderedItem, FailedItem)
 
 ## Pattern 4: Link verification results
 
-When Penn checks links in rendered HTML, there are three possible outcomes:
+When Pennington checks links in rendered HTML, there are three possible outcomes:
 
 ```csharp
 public record ValidLink(ContentRoute SourcePage, string Url);

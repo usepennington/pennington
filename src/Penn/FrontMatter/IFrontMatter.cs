@@ -1,4 +1,4 @@
-namespace Penn.FrontMatter;
+namespace Pennington.FrontMatter;
 
 /// <summary>
 /// Minimum: every content page has a title.

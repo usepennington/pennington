@@ -1,6 +1,6 @@
-namespace Penn.Feeds;
+namespace Pennington.Feeds;
 
-using Penn.Routing;
+using Pennington.Routing;
 
 public record RssFeedItem(
     string Title,

@@ -1,7 +1,7 @@
 namespace YogaStudioExample.Islands;
 
-using Penn.Islands;
-using Penn.Routing;
+using Pennington.Islands;
+using Pennington.Routing;
 using YogaStudioExample.Islands.Components;
 using YogaStudioExample.Models;
 using YogaStudioExample.Services;

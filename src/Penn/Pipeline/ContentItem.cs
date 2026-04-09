@@ -1,7 +1,7 @@
-namespace Penn.Pipeline;
+namespace Pennington.Pipeline;
 
-using Penn.FrontMatter;
-using Penn.Routing;
+using Pennington.FrontMatter;
+using Pennington.Routing;
 
 // Case types — each is a standalone record
 public record DiscoveredItem(ContentRoute Route, ContentSource Source);

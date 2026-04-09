@@ -1,6 +1,6 @@
-using Penn.Highlighting;
+using Pennington.Highlighting;
 
-namespace Penn.Tests.Highlighting;
+namespace Pennington.Tests.Highlighting;
 
 public class HighlightingServiceTests
 {

@@ -4,7 +4,7 @@
 The doc site uses custom fonts loaded via `@font-face` in CSS with `font-display: swap`, but the HTML contains no `<link rel="preload">` hints. This means fonts aren't discovered until the CSS is parsed, causing a flash of unstyled text (FOUT) that could be mitigated by preloading.
 
 ## Current State
-- `App.razor` (`src/Penn.DocSite/Components/App.razor`) has the `<head>` section with stylesheet and script references
+- `App.razor` (`src/Pennington.DocSite/Components/App.razor`) has the `<head>` section with stylesheet and script references
 - `DocSiteOptions` has `DisplayFontFamily` and `BodyFontFamily` properties but no font file path configuration
 - Font files are served from the wwwroot or RCL static assets
 - No `<link rel="preload">` elements exist anywhere in the head
@@ -18,5 +18,5 @@ The doc site uses custom fonts loaded via `@font-face` in CSS with `font-display
 - Consider auto-detecting font files from `@font-face` declarations in the MonorailCSS output as a future enhancement, but for now explicit configuration is sufficient
 
 ## Key Files
-- `src/Penn.DocSite/DocSiteOptions.cs` — add font preload configuration
-- `src/Penn.DocSite/Components/App.razor` — emit preload links in head
+- `src/Pennington.DocSite/DocSiteOptions.cs` — add font preload configuration
+- `src/Pennington.DocSite/Components/App.razor` — emit preload links in head

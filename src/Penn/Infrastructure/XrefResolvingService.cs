@@ -1,4 +1,4 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 using System.Net;
 using System.Text.RegularExpressions;
@@ -6,7 +6,7 @@ using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Diagnostics;
+using Pennington.Diagnostics;
 
 /// <summary>
 /// Resolves xref: cross-reference links in HTML strings.

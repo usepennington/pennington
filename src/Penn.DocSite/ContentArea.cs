@@ -1,4 +1,4 @@
-namespace Penn.DocSite;
+namespace Pennington.DocSite;
 
 /// <summary>
 /// Defines a content area within a documentation site.

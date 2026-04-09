@@ -1,6 +1,6 @@
 namespace ForgePortalExample;
 
-using Penn.FrontMatter;
+using Pennington.FrontMatter;
 
 public record PageFrontMatter : IFrontMatter
 {

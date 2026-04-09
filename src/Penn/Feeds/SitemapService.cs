@@ -1,11 +1,11 @@
-namespace Penn.Feeds;
+namespace Pennington.Feeds;
 
 using System.Collections.Immutable;
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Content;
-using Penn.Infrastructure;
-using Penn.Pipeline;
+using Pennington.Content;
+using Pennington.Infrastructure;
+using Pennington.Pipeline;
 
 /// <summary>
 /// Generates sitemap XML for the /sitemap.xml endpoint.

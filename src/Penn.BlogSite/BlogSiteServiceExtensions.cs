@@ -1,11 +1,11 @@
-namespace Penn.BlogSite;
+namespace Pennington.BlogSite;
 
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Penn.BlogSite.Services;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
+using Pennington.BlogSite.Services;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
 
 public static class BlogSiteServiceExtensions
 {
@@ -16,7 +16,7 @@ public static class BlogSiteServiceExtensions
         services.AddSingleton(options);
         services.AddRazorComponents();
 
-        services.AddPenn(penn =>
+        services.AddPennington(penn =>
         {
             penn.SiteTitle = options.SiteTitle;
             penn.SiteDescription = options.Description;
@@ -61,7 +61,7 @@ public static class BlogSiteServiceExtensions
         app.MapRazorComponents<Components.App>()
             .AddAdditionalAssemblies(options.AdditionalRoutingAssemblies);
         app.UseMonorailCss();
-        app.UsePenn();
+        app.UsePennington();
 
         return app;
     }

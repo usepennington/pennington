@@ -1,22 +1,22 @@
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Content;
-using Penn.FrontMatter;
-using Penn.Highlighting;
-using Penn.Infrastructure;
-using Penn.Islands;
-using Penn.Markdown;
-using Penn.Navigation;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.FrontMatter;
+using Pennington.Highlighting;
+using Pennington.Infrastructure;
+using Pennington.Islands;
+using Pennington.Markdown;
+using Pennington.Navigation;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
-namespace Penn.Tests.Infrastructure;
+namespace Pennington.Tests.Infrastructure;
 
-public class PennExtensionsTests
+public class PenningtonExtensionsTests
 {
-    private static ServiceProvider BuildProvider(Action<PennOptions>? configure = null)
+    private static ServiceProvider BuildProvider(Action<PenningtonOptions>? configure = null)
     {
         var services = new ServiceCollection();
-        services.AddPenn(configure ?? (opts =>
+        services.AddPennington(configure ?? (opts =>
         {
             opts.SiteTitle = "Test Site";
         }));
@@ -24,18 +24,18 @@ public class PennExtensionsTests
     }
 
     [Fact]
-    public void AddPenn_Registers_PennOptions()
+    public void AddPennington_Registers_PenningtonOptions()
     {
         using var provider = BuildProvider();
 
-        var options = provider.GetService<PennOptions>();
+        var options = provider.GetService<PenningtonOptions>();
 
         options.ShouldNotBeNull();
         options.SiteTitle.ShouldBe("Test Site");
     }
 
     [Fact]
-    public void AddPenn_Registers_FrontMatterParser()
+    public void AddPennington_Registers_FrontMatterParser()
     {
         using var provider = BuildProvider();
 
@@ -45,7 +45,7 @@ public class PennExtensionsTests
     }
 
     [Fact]
-    public void AddPenn_Registers_IContentService_ForConfiguredSource()
+    public void AddPennington_Registers_IContentService_ForConfiguredSource()
     {
         using var provider = BuildProvider(opts =>
         {
@@ -62,7 +62,7 @@ public class PennExtensionsTests
     }
 
     [Fact]
-    public void AddPenn_Registers_IContentParser()
+    public void AddPennington_Registers_IContentParser()
     {
         using var provider = BuildProvider(opts =>
         {
@@ -78,7 +78,7 @@ public class PennExtensionsTests
     }
 
     [Fact]
-    public void AddPenn_Registers_IContentRenderer()
+    public void AddPennington_Registers_IContentRenderer()
     {
         using var provider = BuildProvider();
 
@@ -89,7 +89,7 @@ public class PennExtensionsTests
     }
 
     [Fact]
-    public void AddPenn_Registers_NavigationBuilder()
+    public void AddPennington_Registers_NavigationBuilder()
     {
         using var provider = BuildProvider();
 
@@ -99,7 +99,7 @@ public class PennExtensionsTests
     }
 
     [Fact]
-    public void AddPenn_Registers_IslandRenderers_FromOptions()
+    public void AddPennington_Registers_IslandRenderers_FromOptions()
     {
         using var provider = BuildProvider(opts =>
         {
@@ -113,7 +113,7 @@ public class PennExtensionsTests
     }
 
     [Fact]
-    public void AddPenn_Registers_CodeHighlighters_FromOptions()
+    public void AddPennington_Registers_CodeHighlighters_FromOptions()
     {
         using var provider = BuildProvider(opts =>
         {

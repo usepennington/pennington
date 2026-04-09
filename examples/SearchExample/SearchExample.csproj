@@ -9,6 +9,6 @@
     <PackageReference Include="Bogus" Version="35.6.5" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Penn.DocSite\Penn.DocSite.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.DocSite\Pennington.DocSite.csproj" />
   </ItemGroup>
 </Project>

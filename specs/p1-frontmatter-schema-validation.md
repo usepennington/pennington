@@ -21,8 +21,8 @@ Front matter is parsed with `IgnoreUnmatchedProperties()` and no field-level val
 - Add unit tests for: missing title, empty title, unrecognized properties (already ignored — verify diagnostic is emitted), invalid date formats
 
 ## Key Files
-- `src/Penn/FrontMatter/FrontMatterParser.cs` — add validation after deserialization
-- `src/Penn/FrontMatter/IFrontMatter.cs` — consider adding validation contract
-- `src/Penn/Diagnostics/DiagnosticContext.cs` — validation results go here
-- `src/Penn/Content/MarkdownContentService.cs` — wire validation into discovery pipeline
-- `tests/Penn.Tests/` — validation tests
+- `src/Pennington/FrontMatter/FrontMatterParser.cs` — add validation after deserialization
+- `src/Pennington/FrontMatter/IFrontMatter.cs` — consider adding validation contract
+- `src/Pennington/Diagnostics/DiagnosticContext.cs` — validation results go here
+- `src/Pennington/Content/MarkdownContentService.cs` — wire validation into discovery pipeline
+- `tests/Pennington.Tests/` — validation tests

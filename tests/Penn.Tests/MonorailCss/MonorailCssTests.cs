@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
-using Penn.MonorailCss;
+using Pennington.MonorailCss;
 
-namespace Penn.Tests.MonorailCss;
+namespace Pennington.Tests.MonorailCss;
 
 public class MonorailCssTests
 {
@@ -76,7 +76,7 @@ public class MonorailCssTests
         var collector = new CssClassCollector();
         var logger = NullLogger<CssClassCollectorProcessor>.Instance;
         var processor = new CssClassCollectorProcessor(collector, logger);
-        var responseProcessor = (Penn.Infrastructure.IResponseProcessor)processor;
+        var responseProcessor = (Pennington.Infrastructure.IResponseProcessor)processor;
 
         var html = """<div class="extract-bg-blue-500 extract-text-white extract-p-4"><span class="extract-font-bold">Hello</span></div>""";
 

@@ -1,9 +1,9 @@
-namespace Penn.Markdown;
+namespace Pennington.Markdown;
 
 using System.Collections.Immutable;
 using Markdig;
 using Markdig.Renderers;
-using Penn.Pipeline;
+using Pennington.Pipeline;
 
 /// <summary>
 /// Renders parsed markdown items to HTML using Markdig.

@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
-using Penn.Content;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
-namespace Penn.Tests.Content;
+namespace Pennington.Tests.Content;
 
 public class IContentServiceTests
 {

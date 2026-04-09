@@ -1,8 +1,8 @@
-namespace Penn.Roslyn.Tests.Symbols;
+namespace Pennington.Roslyn.Tests.Symbols;
 
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Penn.Roslyn.Symbols;
+using Pennington.Roslyn.Symbols;
 
 public sealed class CodeFragmentExtractorTests
 {

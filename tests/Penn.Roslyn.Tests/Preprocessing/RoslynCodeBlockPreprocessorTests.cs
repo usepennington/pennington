@@ -1,10 +1,10 @@
-namespace Penn.Roslyn.Tests.Preprocessing;
+namespace Pennington.Roslyn.Tests.Preprocessing;
 
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Highlighting;
-using Penn.Markdown.Extensions;
-using Penn.Roslyn.Highlighting;
-using Penn.Roslyn.Preprocessing;
+using Pennington.Highlighting;
+using Pennington.Markdown.Extensions;
+using Pennington.Roslyn.Highlighting;
+using Pennington.Roslyn.Preprocessing;
 
 public sealed class RoslynCodeBlockPreprocessorTests
 {
@@ -127,11 +127,11 @@ public sealed class RoslynCodeBlockPreprocessorTests
     }
 
     [Fact]
-    public void AddPennRoslyn_Registers_ICodeHighlighter()
+    public void AddPenningtonRoslyn_Registers_ICodeHighlighter()
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddPennRoslyn();
+        services.AddPenningtonRoslyn();
 
         var provider = services.BuildServiceProvider();
         var highlighter = provider.GetService<ICodeHighlighter>();
@@ -141,11 +141,11 @@ public sealed class RoslynCodeBlockPreprocessorTests
     }
 
     [Fact]
-    public void AddPennRoslyn_Registers_SyntaxHighlighter_As_Singleton()
+    public void AddPenningtonRoslyn_Registers_SyntaxHighlighter_As_Singleton()
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddPennRoslyn();
+        services.AddPenningtonRoslyn();
 
         var provider = services.BuildServiceProvider();
         var h1 = provider.GetService<SyntaxHighlighter>();
@@ -156,11 +156,11 @@ public sealed class RoslynCodeBlockPreprocessorTests
     }
 
     [Fact]
-    public void AddPennRoslyn_Without_SolutionPath_Does_Not_Register_Preprocessor()
+    public void AddPenningtonRoslyn_Without_SolutionPath_Does_Not_Register_Preprocessor()
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddPennRoslyn();
+        services.AddPenningtonRoslyn();
 
         var provider = services.BuildServiceProvider();
         var preprocessor = provider.GetService<ICodeBlockPreprocessor>();
@@ -169,15 +169,15 @@ public sealed class RoslynCodeBlockPreprocessorTests
     }
 
     [Fact]
-    public void AddPennRoslyn_With_SolutionPath_Registers_ICodeBlockPreprocessor()
+    public void AddPenningtonRoslyn_With_SolutionPath_Registers_ICodeBlockPreprocessor()
     {
         var services = new ServiceCollection();
         services.AddLogging();
 
         // Register IFileWatcher which SolutionWorkspaceService requires
-        services.AddSingleton<Penn.Infrastructure.IFileWatcher, StubFileWatcher>();
+        services.AddSingleton<Pennington.Infrastructure.IFileWatcher, StubFileWatcher>();
 
-        services.AddPennRoslyn(opts => opts.SolutionPath = @"C:\fake\solution.sln");
+        services.AddPenningtonRoslyn(opts => opts.SolutionPath = @"C:\fake\solution.sln");
 
         var descriptors = services.Where(d => d.ServiceType == typeof(ICodeBlockPreprocessor)).ToList();
         descriptors.Count.ShouldBe(1);
@@ -198,15 +198,15 @@ public sealed class RoslynCodeBlockPreprocessorTests
     }
 
     /// <summary>Stub that returns empty for any extraction call.</summary>
-    private sealed class StubSymbolExtractionService : Penn.Roslyn.Symbols.ISymbolExtractionService
+    private sealed class StubSymbolExtractionService : Pennington.Roslyn.Symbols.ISymbolExtractionService
     {
-        public Task<IReadOnlyDictionary<string, Penn.Roslyn.Symbols.SymbolInfo>> ExtractSymbolsAsync(
+        public Task<IReadOnlyDictionary<string, Pennington.Roslyn.Symbols.SymbolInfo>> ExtractSymbolsAsync(
             Microsoft.CodeAnalysis.Solution solution)
-            => Task.FromResult<IReadOnlyDictionary<string, Penn.Roslyn.Symbols.SymbolInfo>>(
-                new Dictionary<string, Penn.Roslyn.Symbols.SymbolInfo>());
+            => Task.FromResult<IReadOnlyDictionary<string, Pennington.Roslyn.Symbols.SymbolInfo>>(
+                new Dictionary<string, Pennington.Roslyn.Symbols.SymbolInfo>());
 
-        public Task<Penn.Roslyn.Symbols.SymbolInfo?> FindSymbolAsync(string xmlDocId)
-            => Task.FromResult<Penn.Roslyn.Symbols.SymbolInfo?>(null);
+        public Task<Pennington.Roslyn.Symbols.SymbolInfo?> FindSymbolAsync(string xmlDocId)
+            => Task.FromResult<Pennington.Roslyn.Symbols.SymbolInfo?>(null);
 
         public Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false)
             => Task.FromResult(string.Empty);
@@ -215,7 +215,7 @@ public sealed class RoslynCodeBlockPreprocessorTests
     }
 
     /// <summary>Stub file watcher for DI registration tests.</summary>
-    private sealed class StubFileWatcher : Penn.Infrastructure.IFileWatcher
+    private sealed class StubFileWatcher : Pennington.Infrastructure.IFileWatcher
     {
         public void AddPathWatch(string path, string filePattern, Action<string, WatcherChangeTypes> onFileChanged, bool includeSubdirectories = true) { }
         public void SubscribeToChanges(Action onUpdate) { }

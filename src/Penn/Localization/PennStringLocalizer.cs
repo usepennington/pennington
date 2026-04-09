@@ -1,21 +1,21 @@
-namespace Penn.Localization;
+namespace Pennington.Localization;
 
 using System.Globalization;
 using Microsoft.Extensions.Localization;
-using LocalizationOptions = Penn.Infrastructure.LocalizationOptions;
+using LocalizationOptions = Pennington.Infrastructure.LocalizationOptions;
 
 /// <summary>
 /// An <see cref="IStringLocalizer"/> backed by <see cref="TranslationOptions"/>.
 /// Reads <see cref="CultureInfo.CurrentUICulture"/> to determine the current locale,
-/// maps it back to a Penn locale code, and looks up translations with fallback to the
+/// maps it back to a Pennington locale code, and looks up translations with fallback to the
 /// default locale, then to the key itself.
 /// </summary>
-public sealed class PennStringLocalizer : IStringLocalizer
+public sealed class PenningtonStringLocalizer : IStringLocalizer
 {
     private readonly TranslationOptions _translations;
     private readonly LocalizationOptions _localization;
 
-    public PennStringLocalizer(TranslationOptions translations, LocalizationOptions localization)
+    public PenningtonStringLocalizer(TranslationOptions translations, LocalizationOptions localization)
     {
         _translations = translations;
         _localization = localization;
@@ -81,7 +81,7 @@ public sealed class PennStringLocalizer : IStringLocalizer
     }
 
     /// <summary>
-    /// Maps CultureInfo.CurrentUICulture back to a Penn locale code.
+    /// Maps CultureInfo.CurrentUICulture back to a Pennington locale code.
     /// Checks the culture name against registered locales and their HtmlLang values.
     /// </summary>
     private string ResolveLocale()
@@ -89,7 +89,7 @@ public sealed class PennStringLocalizer : IStringLocalizer
         var culture = CultureInfo.CurrentUICulture;
         var cultureName = culture.Name;
 
-        // Direct match: culture name is a registered Penn locale
+        // Direct match: culture name is a registered Pennington locale
         if (_localization.Locales.ContainsKey(cultureName))
             return cultureName;
 

@@ -1,7 +1,7 @@
-using Penn.Infrastructure;
-using Penn.Pipeline;
+using Pennington.Infrastructure;
+using Pennington.Pipeline;
 
-namespace Penn.Tests;
+namespace Pennington.Tests;
 
 /// <summary>
 /// Shouldly-style assertions that check a union case type and extract the value.

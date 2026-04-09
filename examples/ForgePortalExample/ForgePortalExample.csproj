@@ -10,8 +10,8 @@
     <Watch Include="releases\**\*.*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Penn\Penn.csproj" />
-    <ProjectReference Include="..\..\src\Penn.UI\Penn.UI.csproj" />
-    <ProjectReference Include="..\..\src\Penn.MonorailCss\Penn.MonorailCss.csproj" />
+    <ProjectReference Include="..\..\src\Pennington\Pennington.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.UI\Pennington.UI.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.MonorailCss\Pennington.MonorailCss.csproj" />
   </ItemGroup>
 </Project>

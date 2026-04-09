@@ -1,1 +1,1 @@
-// Tests moved to Penn.IntegrationTests.Examples.MinimalExamplePlaywrightTests
+// Tests moved to Pennington.IntegrationTests.Examples.MinimalExamplePlaywrightTests

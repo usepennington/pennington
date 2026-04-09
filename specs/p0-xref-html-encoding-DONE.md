@@ -1,7 +1,7 @@
 # P0: HTML Encoding in Xref Resolution ✅ DONE
 
 ## Problem
-`XrefResolvingService.ResolveXrefTagsAsync()` (`src/Penn/Infrastructure/XrefResolvingService.cs`, line 62) uses raw string interpolation to build `<a>` tags. If `xref.Title` or `xref.Route.CanonicalPath.Value` contains HTML-special characters (quotes, angle brackets, ampersands), the output HTML is malformed or potentially exploitable.
+`XrefResolvingService.ResolveXrefTagsAsync()` (`src/Pennington/Infrastructure/XrefResolvingService.cs`, line 62) uses raw string interpolation to build `<a>` tags. If `xref.Title` or `xref.Route.CanonicalPath.Value` contains HTML-special characters (quotes, angle brackets, ampersands), the output HTML is malformed or potentially exploitable.
 
 ## Current State
 - Line 62: `$"""<a href="{xref.Route.CanonicalPath.Value}">{xref.Title}</a>"""`
@@ -17,5 +17,5 @@
 - Apply the same fix to the error-case replacement string on line 67
 
 ## Key Files
-- `src/Penn/Infrastructure/XrefResolvingService.cs` — fix lines 62 and 67
-- `tests/Penn.Tests/` — add encoding tests
+- `src/Pennington/Infrastructure/XrefResolvingService.cs` — fix lines 62 and 67
+- `tests/Pennington.Tests/` — add encoding tests

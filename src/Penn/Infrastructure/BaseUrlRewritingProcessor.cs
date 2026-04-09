@@ -1,9 +1,9 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 using AngleSharp;
 using AngleSharp.Dom;
 using Microsoft.AspNetCore.Http;
-using Penn.Generation;
+using Pennington.Generation;
 
 /// <summary>
 /// Rewrites URLs in HTML responses to include the configured base URL.

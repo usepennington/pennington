@@ -1,7 +1,7 @@
-namespace Penn.Islands;
+namespace Pennington.Islands;
 
 using System.Collections.Immutable;
-using Penn.Pipeline;
+using Pennington.Pipeline;
 
 public record SpaEnvelope(
     string Title,

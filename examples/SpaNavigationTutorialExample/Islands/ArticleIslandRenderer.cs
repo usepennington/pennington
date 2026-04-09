@@ -1,7 +1,7 @@
 namespace SpaNavigationTutorialExample.Islands;
 
-using Penn.Islands;
-using Penn.Routing;
+using Pennington.Islands;
+using Pennington.Routing;
 using SpaNavigationTutorialExample.Islands.Components;
 
 public class ArticleIslandRenderer(

@@ -1,13 +1,13 @@
-namespace Penn.Islands;
+namespace Pennington.Islands;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Content;
-using Penn.Diagnostics;
-using Penn.Infrastructure;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Diagnostics;
+using Pennington.Infrastructure;
+using Pennington.Routing;
 
 /// <summary>Extension methods for SPA navigation registration.</summary>
 public static class SpaNavigationExtensions
@@ -22,12 +22,12 @@ public static class SpaNavigationExtensions
         services.AddTransient<IContentService, SpaNavigationContentService>();
 
         // Register a default RenderContext so SpaPageDataService can be resolved.
-        // If AddPenn() already registered one, TryAdd semantics aren't needed —
+        // If AddPennington() already registered one, TryAdd semantics aren't needed —
         // the last registration wins, but AddSpaNavigation is typically called
         // before any override, so this provides a safe default.
         services.AddSingleton(sp =>
         {
-            var pennOptions = sp.GetService<PennOptions>();
+            var pennOptions = sp.GetService<PenningtonOptions>();
             return new RenderContext(
                 BaseUrl: new UrlPath(pennOptions?.CanonicalBaseUrl ?? "/"),
                 SiteTitle: pennOptions?.SiteTitle ?? "",

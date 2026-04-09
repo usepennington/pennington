@@ -1,5 +1,5 @@
 @using Microsoft.AspNetCore.WebUtilities
-@inject PennOptions Options
+@inject PenningtonOptions Options
 @inject BlogSiteOptions BlogOptions
 @inject IWebHostEnvironment WebHostEnvironment
 <!DOCTYPE html>
@@ -18,7 +18,7 @@
         <link rel="preload" href="@font.Href" as="font" type="@font.Type" crossorigin>
     }
     <link rel="stylesheet" href="@GetVersioned("/styles.css")">
-    <script src="@GetVersioned("/_content/Penn.UI/scripts.js")" defer></script>
+    <script src="@GetVersioned("/_content/Pennington.UI/scripts.js")" defer></script>
 
     @if (!string.IsNullOrEmpty(BlogOptions.AdditionalHtmlHeadContent))
     {

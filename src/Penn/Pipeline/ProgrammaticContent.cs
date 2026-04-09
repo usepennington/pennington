@@ -1,7 +1,7 @@
-namespace Penn.Pipeline;
+namespace Pennington.Pipeline;
 
-using Penn.FrontMatter;
-using Penn.Routing;
+using Pennington.FrontMatter;
+using Pennington.Routing;
 
 /// <summary>
 /// Produces front matter and raw content for the Parse stage.

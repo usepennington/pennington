@@ -1,4 +1,4 @@
-namespace Penn.Islands;
+namespace Pennington.Islands;
 
 /// <summary>Converts between URLs and SPA data slugs.</summary>
 public static class SpaSlug

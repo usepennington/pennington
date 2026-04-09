@@ -1,4 +1,4 @@
-namespace Penn.IntegrationTests;
+namespace Pennington.IntegrationTests;
 
 public class SmokeTest
 {

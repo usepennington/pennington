@@ -12,9 +12,9 @@ You want to understand how breadcrumbs and prev/next page links are generated so
 Show how breadcrumbs are computed from the navigation tree and exposed through `NavigationInfo`.
 
 ### What to show
-- Reference `M:Penn.Navigation.NavigationBuilder.BuildNavigationInfo(System.Collections.Generic.IReadOnlyList{Penn.Content.ContentTocItem},Penn.Routing.ContentRoute,System.String)` (:path `src/Penn/Navigation/NavigationBuilder.cs`) — builds the full `NavigationInfo` for a specific route
-- Reference `T:Penn.Navigation.NavigationInfo` (:path `src/Penn/Navigation/NavigationInfo.cs`) — record with `SectionName`, `SectionRoute`, `Breadcrumbs` (`ImmutableList<BreadcrumbItem>`), `PageTitle`, `PreviousPage`, `NextPage`
-- Reference `T:Penn.Navigation.BreadcrumbItem` (:path `src/Penn/Navigation/BreadcrumbItem.cs`) — record with `Title` and `Route` (nullable `ContentRoute`)
+- Reference `M:Pennington.Navigation.NavigationBuilder.BuildNavigationInfo(System.Collections.Generic.IReadOnlyList{Pennington.Content.ContentTocItem},Pennington.Routing.ContentRoute,System.String)` (:path `src/Pennington/Navigation/NavigationBuilder.cs`) — builds the full `NavigationInfo` for a specific route
+- Reference `T:Pennington.Navigation.NavigationInfo` (:path `src/Pennington/Navigation/NavigationInfo.cs`) — record with `SectionName`, `SectionRoute`, `Breadcrumbs` (`ImmutableList<BreadcrumbItem>`), `PageTitle`, `PreviousPage`, `NextPage`
+- Reference `T:Pennington.Navigation.BreadcrumbItem` (:path `src/Pennington/Navigation/BreadcrumbItem.cs`) — record with `Title` and `Route` (nullable `ContentRoute`)
 - The `BuildBreadcrumbs` private method walks the tree depth-first using `FindPath`, accumulating `BreadcrumbItem` entries from root to the selected item
 - Example: navigating to `Content/tutorials/monitoring/setting-up-alerts.md` produces breadcrumbs: `[Tutorials, Monitoring & Alerts, Setting Up Alerts]`
 
@@ -28,8 +28,8 @@ Show how breadcrumbs are computed from the navigation tree and exposed through `
 Show how prev/next navigation follows depth-first order across the entire tree.
 
 ### What to show
-- Reference `P:Penn.Navigation.NavigationInfo.PreviousPage` and `P:Penn.Navigation.NavigationInfo.NextPage` (both `NavigationTreeItem?`) on `T:Penn.Navigation.NavigationInfo` (:path `src/Penn/Navigation/NavigationInfo.cs`)
-- The `Flatten` private method in `NavigationBuilder` (:path `src/Penn/Navigation/NavigationBuilder.cs`) performs depth-first traversal, producing a linear list of all pages in tree order
+- Reference `P:Pennington.Navigation.NavigationInfo.PreviousPage` and `P:Pennington.Navigation.NavigationInfo.NextPage` (both `NavigationTreeItem?`) on `T:Pennington.Navigation.NavigationInfo` (:path `src/Pennington/Navigation/NavigationInfo.cs`)
+- The `Flatten` private method in `NavigationBuilder` (:path `src/Pennington/Navigation/NavigationBuilder.cs`) performs depth-first traversal, producing a linear list of all pages in tree order
 - `PreviousPage` is the item at `currentIndex - 1` in the flattened list; `NextPage` is at `currentIndex + 1`
 - Prev/next links cross section boundaries — the last page in "Tutorials > Monitoring" links to the first page in the next sibling section
 

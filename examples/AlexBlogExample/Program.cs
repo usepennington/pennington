@@ -1,5 +1,5 @@
-using Penn.BlogSite;
-using Penn.BlogSite.Components;
+using Pennington.BlogSite;
+using Pennington.BlogSite.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 

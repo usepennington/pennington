@@ -1,21 +1,21 @@
 ---
 title: "BlogSite Quick Start"
-description: "Launch a blog with posts, tags, series, archives, and RSS using the Penn.BlogSite package"
+description: "Launch a blog with posts, tags, series, archives, and RSS using the Pennington.BlogSite package"
 uid: "penn.tutorials.blogsite-quick-start"
 order: 30
 ---
 
-## Beat 1: Create the project and install Penn.BlogSite
+## Beat 1: Create the project and install Pennington.BlogSite
 
 The reader scaffolds an empty ASP.NET project and adds the BlogSite package. The goal is to show that BlogSite is a single-package solution for blogs, parallel to DocSite for documentation.
 
 ### What to show
-- Terminal commands: `dotnet new web -n AlexBlog`, then `dotnet add package Penn.BlogSite`
-- Brief explanation: `Penn.BlogSite` bundles Penn core, MonorailCSS, and a blog-specific layout with home page, post pages, tag pages, and archive
+- Terminal commands: `dotnet new web -n AlexBlog`, then `dotnet add package Pennington.BlogSite`
+- Brief explanation: `Pennington.BlogSite` bundles Pennington core, MonorailCSS, and a blog-specific layout with home page, post pages, tag pages, and archive
 - Show the `.csproj` with the single PackageReference
 
 ### Key points
-- Like DocSite, BlogSite is a convenience layer -- it internally registers Penn, MonorailCSS, and its own Razor components
+- Like DocSite, BlogSite is a convenience layer -- it internally registers Pennington, MonorailCSS, and its own Razor components
 - BlogSite provides: home page with hero and project showcase, blog post listing, individual post pages, tag pages, date-based ordering, RSS feed, and sitemap
 - No layout component needs to be created by the reader
 
@@ -25,18 +25,18 @@ The reader writes ~10 lines of Program.cs configuring the blog's identity and au
 
 ### What to show
 - Complete Program.cs (~10 lines) using:
-  - `M:Penn.BlogSite.BlogSiteServiceExtensions.AddBlogSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Penn.BlogSite.BlogSiteOptions})` -- takes a factory function returning `BlogSiteOptions`
-  - `M:Penn.BlogSite.BlogSiteServiceExtensions.UseBlogSite(Microsoft.AspNetCore.Builder.WebApplication)` -- configures middleware
-  - `M:Penn.BlogSite.BlogSiteServiceExtensions.RunBlogSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])` -- delegates to `RunOrBuildAsync`
+  - `M:Pennington.BlogSite.BlogSiteServiceExtensions.AddBlogSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.BlogSite.BlogSiteOptions})` -- takes a factory function returning `BlogSiteOptions`
+  - `M:Pennington.BlogSite.BlogSiteServiceExtensions.UseBlogSite(Microsoft.AspNetCore.Builder.WebApplication)` -- configures middleware
+  - `M:Pennington.BlogSite.BlogSiteServiceExtensions.RunBlogSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])` -- delegates to `RunOrBuildAsync`
 - The `BlogSiteOptions` record configured with:
-  - `P:Penn.BlogSite.BlogSiteOptions.SiteTitle` -- `"Alex's Dev Blog"` (required)
-  - `P:Penn.BlogSite.BlogSiteOptions.Description` -- `"Notes on .NET, tools, and developer life"` (required)
-  - `P:Penn.BlogSite.BlogSiteOptions.AuthorName` -- `"Alex Chen"`
-  - `P:Penn.BlogSite.BlogSiteOptions.AuthorBio` -- `"Software engineer who writes about .NET, developer tools, and the occasional hot take."`
-- Code reference: `T:Penn.BlogSite.BlogSiteOptions`
+  - `P:Pennington.BlogSite.BlogSiteOptions.SiteTitle` -- `"Alex's Dev Blog"` (required)
+  - `P:Pennington.BlogSite.BlogSiteOptions.Description` -- `"Notes on .NET, tools, and developer life"` (required)
+  - `P:Pennington.BlogSite.BlogSiteOptions.AuthorName` -- `"Alex Chen"`
+  - `P:Pennington.BlogSite.BlogSiteOptions.AuthorBio` -- `"Software engineer who writes about .NET, developer tools, and the occasional hot take."`
+- Code reference: `T:Pennington.BlogSite.BlogSiteOptions`
 
 ### Key points
-- `AddBlogSite` is a single package that bundles Penn, MonorailCSS, and blog components
+- `AddBlogSite` is a single package that bundles Pennington, MonorailCSS, and blog components
 - The home page will look sparse with just these options -- we'll add the hero, social links, and project showcase after writing the first posts.
 
 ## Beat 3: Write the first blog post
@@ -53,18 +53,18 @@ The reader creates the first markdown file with `BlogSiteFrontMatter` including 
   - `series: "Building a CLI"`
   - `description: "Start a CLI tool from scratch with System.CommandLine"`
 - Body: ~150 words with a C# code block showing argument parsing
-- Code reference for the front matter type: `T:Penn.BlogSite.BlogSiteFrontMatter`
+- Code reference for the front matter type: `T:Pennington.BlogSite.BlogSiteFrontMatter`
 
 ### Key points
-- `BlogSiteFrontMatter` implements: `T:Penn.FrontMatter.IFrontMatter`, `T:Penn.FrontMatter.IDraftable`, `T:Penn.FrontMatter.ITaggable`, `T:Penn.FrontMatter.IDescribable`, `T:Penn.FrontMatter.IDateable`, `T:Penn.FrontMatter.ICrossReferenceable`, `T:Penn.FrontMatter.ISectionable`, `T:Penn.FrontMatter.IRedirectable`
+- `BlogSiteFrontMatter` implements: `T:Pennington.FrontMatter.IFrontMatter`, `T:Pennington.FrontMatter.IDraftable`, `T:Pennington.FrontMatter.ITaggable`, `T:Pennington.FrontMatter.IDescribable`, `T:Pennington.FrontMatter.IDateable`, `T:Pennington.FrontMatter.ICrossReferenceable`, `T:Pennington.FrontMatter.ISectionable`, `T:Pennington.FrontMatter.IRedirectable`
 - Key fields unique to blog posts:
-  - `P:Penn.BlogSite.BlogSiteFrontMatter.Date` -- a `DateTime?` used for ordering (newest first) and display
-  - `P:Penn.BlogSite.BlogSiteFrontMatter.Author` -- displayed on the post page
-  - `P:Penn.BlogSite.BlogSiteFrontMatter.Series` -- a string that groups posts into a series (more on this in Beat 4)
-  - `P:Penn.BlogSite.BlogSiteFrontMatter.Repository` -- optional link to a code repository for the post
-  - `P:Penn.BlogSite.BlogSiteFrontMatter.Tags` -- string array for categorization; each tag generates a tag page at `{TagsPageUrl}/{encoded-tag-name}`
-  - `P:Penn.BlogSite.BlogSiteFrontMatter.IsDraft` -- set to `true` to exclude a post from the published site
-- Contrast with the core `T:Penn.FrontMatter.BlogFrontMatter` which is the base version without `RedirectUrl`, `Section`, or `Repository` -- `BlogSiteFrontMatter` is the full-featured variant used by the BlogSite package
+  - `P:Pennington.BlogSite.BlogSiteFrontMatter.Date` -- a `DateTime?` used for ordering (newest first) and display
+  - `P:Pennington.BlogSite.BlogSiteFrontMatter.Author` -- displayed on the post page
+  - `P:Pennington.BlogSite.BlogSiteFrontMatter.Series` -- a string that groups posts into a series (more on this in Beat 4)
+  - `P:Pennington.BlogSite.BlogSiteFrontMatter.Repository` -- optional link to a code repository for the post
+  - `P:Pennington.BlogSite.BlogSiteFrontMatter.Tags` -- string array for categorization; each tag generates a tag page at `{TagsPageUrl}/{encoded-tag-name}`
+  - `P:Pennington.BlogSite.BlogSiteFrontMatter.IsDraft` -- set to `true` to exclude a post from the published site
+- Contrast with the core `T:Pennington.FrontMatter.BlogFrontMatter` which is the base version without `RedirectUrl`, `Section`, or `Repository` -- `BlogSiteFrontMatter` is the full-featured variant used by the BlogSite package
 - The file path `Content/Blog/building-a-cli-part-1.md` maps to URL `/blog/building-a-cli-part-1/` because of `BlogBaseUrl` being `/blog`
 
 ## Beat 4: Write the second post and demonstrate series linking
@@ -83,13 +83,13 @@ The reader creates a second post with the same `series` value and sees how BlogS
 - Run the site with `dotnet watch`
 - Navigate to Part 1 -- show the series navigation that appears, linking to Part 2
 - Navigate to Part 2 -- show the series navigation linking back to Part 1
-- The series mechanism: `T:Penn.BlogSite.Services.BlogContentResolver` queries all posts via `M:Penn.BlogSite.Services.BlogContentResolver.GetAllPostsAsync` and groups by the `Series` property on `BlogSiteFrontMatter`
+- The series mechanism: `T:Pennington.BlogSite.Services.BlogContentResolver` queries all posts via `M:Pennington.BlogSite.Services.BlogContentResolver.GetAllPostsAsync` and groups by the `Series` property on `BlogSiteFrontMatter`
 
 ### Key points
 - Series linking is automatic -- any two or more posts with the same `series` string value are grouped and linked chronologically by date
-- `T:Penn.BlogSite.Services.BlogContentResolver` is the service responsible for resolving blog posts, computing tags, and grouping series
+- `T:Pennington.BlogSite.Services.BlogContentResolver` is the service responsible for resolving blog posts, computing tags, and grouping series
 - `BlogContentResolver` is registered as a file-watched service (`AddFileWatched<BlogContentResolver>`) so it re-scans content when files change
-- `T:Penn.BlogSite.BlogPostPage` is the resolved post model: it has `FrontMatter` (the `BlogSiteFrontMatter`), `Url`, and `Tags` (array of `T:Penn.BlogSite.BlogTag`)
+- `T:Pennington.BlogSite.BlogPostPage` is the resolved post model: it has `FrontMatter` (the `BlogSiteFrontMatter`), `Url`, and `Tags` (array of `T:Pennington.BlogSite.BlogTag`)
 - Posts within a series are ordered by `Date` -- the series navigation shows them in chronological order regardless of file name
 
 ## Beat 5: Write a standalone post with different tags
@@ -109,8 +109,8 @@ The reader creates a third post without a series, using different tags. The goal
 ### Key points
 - The `dotnet` tag now appears in all three posts, `cli` in two, `linux` and `workflow` in one -- this creates interesting tag page content
 - Posts without a `series` value render without series navigation
-- The `[!TIP]` alert demonstrates that Penn's markdown alert extension works in blog posts just as in documentation pages
-- Tags are URL-encoded for the tag page URL: `BlogTag` (`T:Penn.BlogSite.BlogTag`) has `Name` (display) and `Url` (e.g., `/tags/dotnet`)
+- The `[!TIP]` alert demonstrates that Pennington's markdown alert extension works in blog posts just as in documentation pages
+- Tags are URL-encoded for the tag page URL: `BlogTag` (`T:Pennington.BlogSite.BlogTag`) has `Name` (display) and `Url` (e.g., `/tags/dotnet`)
 
 ## Beat 6: Personalize the home page
 
@@ -118,11 +118,11 @@ The reader adds the hero section, social links, and project showcase to BlogSite
 
 ### What to show
 - Return to `Program.cs` and add to `BlogSiteOptions`:
-  - `P:Penn.BlogSite.BlogSiteOptions.HeroContent` -- `new HeroContent("Hi, I'm Alex", "I write about .NET, developer tools, and making software that doesn't make you cry.")`
-  - `P:Penn.BlogSite.BlogSiteOptions.Socials` -- array of `T:Penn.BlogSite.SocialLink` with GitHub and Mastodon entries (each takes an SVG `RenderFragment` and a URL)
-  - `P:Penn.BlogSite.BlogSiteOptions.MyWork` -- array of `T:Penn.BlogSite.Project`: `new Project("Tempo", "Task scheduling for .NET", "https://github.com/...")`
-  - `P:Penn.BlogSite.BlogSiteOptions.CanonicalBaseUrl` -- `"https://alexchen.dev"` (needed for RSS and sitemap absolute URLs)
-- Code reference: `T:Penn.BlogSite.HeroContent`, `T:Penn.BlogSite.SocialLink`, `T:Penn.BlogSite.Project`
+  - `P:Pennington.BlogSite.BlogSiteOptions.HeroContent` -- `new HeroContent("Hi, I'm Alex", "I write about .NET, developer tools, and making software that doesn't make you cry.")`
+  - `P:Pennington.BlogSite.BlogSiteOptions.Socials` -- array of `T:Pennington.BlogSite.SocialLink` with GitHub and Mastodon entries (each takes an SVG `RenderFragment` and a URL)
+  - `P:Pennington.BlogSite.BlogSiteOptions.MyWork` -- array of `T:Pennington.BlogSite.Project`: `new Project("Tempo", "Task scheduling for .NET", "https://github.com/...")`
+  - `P:Pennington.BlogSite.BlogSiteOptions.CanonicalBaseUrl` -- `"https://alexchen.dev"` (needed for RSS and sitemap absolute URLs)
+- Code reference: `T:Pennington.BlogSite.HeroContent`, `T:Pennington.BlogSite.SocialLink`, `T:Pennington.BlogSite.Project`
 - Run `dotnet watch` and see the home page transform: hero section at the top, social links, and project cards
 
 ### Key points
@@ -140,22 +140,22 @@ The reader starts the dev server and walks through the blog's pages and feeds. T
 - Walk through each feature in the browser:
   1. **Home page** -- hero section with title and description from `HeroContent`, recent posts listed with titles/dates/descriptions, "My Work" section with project cards, social links in the footer/header
   2. **Blog post page** -- navigate to any post, see the title, date, author, tags (as clickable links), and rendered markdown content. For the series posts, see the series navigation at the bottom
-  3. **Tag pages** -- click a tag (e.g., "dotnet") to see the tag page at `/tags/dotnet` listing all posts with that tag. Navigate to `/tags/` to see all tags with post counts (via `M:Penn.BlogSite.Services.BlogContentResolver.GetTagsWithCountsAsync`)
+  3. **Tag pages** -- click a tag (e.g., "dotnet") to see the tag page at `/tags/dotnet` listing all posts with that tag. Navigate to `/tags/` to see all tags with post counts (via `M:Pennington.BlogSite.Services.BlogContentResolver.GetTagsWithCountsAsync`)
   4. **Date ordering** -- posts appear newest first (the Linux post from April 1, then CLI Part 2 from March 22, then Part 1 from March 15)
-  5. **RSS feed** -- note that `P:Penn.BlogSite.BlogSiteOptions.EnableRss` (default `true`) adds a `<link type="application/rss+xml">` tag pointing to `/rss.xml` in the HTML head. RSS feed serving is not yet implemented in Penn core -- the `T:Penn.Feeds.RssFeedBuilder` is registered but no endpoint serves the XML. This is tracked as a known gap
+  5. **RSS feed** -- note that `P:Pennington.BlogSite.BlogSiteOptions.EnableRss` (default `true`) adds a `<link type="application/rss+xml">` tag pointing to `/rss.xml` in the HTML head. RSS feed serving is not yet implemented in Pennington core -- the `T:Pennington.Feeds.RssFeedBuilder` is registered but no endpoint serves the XML. This is tracked as a known gap
   6. **Sitemap** -- visit `/sitemap.xml` to see the auto-generated sitemap
   7. **Styles** -- note the MonorailCSS styling, dark mode toggle, syntax highlighting in code blocks
 
 ### Key points
-- The blog home page layout, post layout, tag pages, and archive pages are all provided by BlogSite's Razor components in `src/Penn.BlogSite/Components/`
+- The blog home page layout, post layout, tag pages, and archive pages are all provided by BlogSite's Razor components in `src/Pennington.BlogSite/Components/`
 - `BlogContentResolver` powers most of the data:
-  - `M:Penn.BlogSite.Services.BlogContentResolver.GetAllPostsAsync` -- all posts ordered by date descending
-  - `M:Penn.BlogSite.Services.BlogContentResolver.GetPostByUrlAsync(System.String)` -- single post lookup
-  - `M:Penn.BlogSite.Services.BlogContentResolver.GetTagsWithCountsAsync` -- tags with their post counts
-  - `M:Penn.BlogSite.Services.BlogContentResolver.GetPostsByTagAsync(System.String)` -- posts filtered by a specific tag
-- Sitemaps are powered by Penn core's `T:Penn.Feeds.SitemapService` (registered in `AddPenn`). RSS feed generation is not yet complete -- `T:Penn.Feeds.RssFeedBuilder` is registered but no endpoint serves the feed
-- The `P:Penn.BlogSite.BlogSiteOptions.SocialMediaImageUrlFactory` property can be set to a function that generates per-post social images from a `T:Penn.BlogSite.BlogPostPage`
-- `P:Penn.BlogSite.BlogSiteOptions.EnableSitemap` (default `true`) controls sitemap generation
+  - `M:Pennington.BlogSite.Services.BlogContentResolver.GetAllPostsAsync` -- all posts ordered by date descending
+  - `M:Pennington.BlogSite.Services.BlogContentResolver.GetPostByUrlAsync(System.String)` -- single post lookup
+  - `M:Pennington.BlogSite.Services.BlogContentResolver.GetTagsWithCountsAsync` -- tags with their post counts
+  - `M:Pennington.BlogSite.Services.BlogContentResolver.GetPostsByTagAsync(System.String)` -- posts filtered by a specific tag
+- Sitemaps are powered by Pennington core's `T:Pennington.Feeds.SitemapService` (registered in `AddPennington`). RSS feed generation is not yet complete -- `T:Pennington.Feeds.RssFeedBuilder` is registered but no endpoint serves the feed
+- The `P:Pennington.BlogSite.BlogSiteOptions.SocialMediaImageUrlFactory` property can be set to a function that generates per-post social images from a `T:Pennington.BlogSite.BlogPostPage`
+- `P:Pennington.BlogSite.BlogSiteOptions.EnableSitemap` (default `true`) controls sitemap generation
 
 ## Beat 8: What's next
 
@@ -168,6 +168,6 @@ The reader has a working blog and is pointed to further resources. The goal is t
 - For color scheme, font, and layout customization, see the Configuring BlogSite how-to.
 
 ### Key points
-- BlogSite and DocSite are peers -- both build on Penn core, but for different use cases
-- For a site that combines documentation and a blog, the reader could use Penn core directly with two `AddMarkdownContent` calls (one for docs, one for blog) and build the layout themselves
+- BlogSite and DocSite are peers -- both build on Pennington core, but for different use cases
+- For a site that combines documentation and a blog, the reader could use Pennington core directly with two `AddMarkdownContent` calls (one for docs, one for blog) and build the layout themselves
 - The `dotnet run -- build` command works the same way for static site generation

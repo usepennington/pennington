@@ -1,8 +1,8 @@
-namespace Penn.Localization;
+namespace Pennington.Localization;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Penn.Infrastructure;
+using Pennington.Infrastructure;
 
 /// <summary>
 /// Middleware that detects the locale from the URL path prefix, populates
@@ -40,8 +40,8 @@ public sealed class LocaleDetectionMiddleware
         localeContext.IsDefaultLocale = isDefault;
 
         // Store for any non-DI access patterns
-        context.Items["Penn.Locale"] = locale;
-        context.Items["Penn.LocaleContext"] = localeContext;
+        context.Items["Pennington.Locale"] = locale;
+        context.Items["Pennington.LocaleContext"] = localeContext;
 
         // Rewrite the request path to strip the locale prefix so Blazor routing
         // matches routes without locale-specific @page directives.

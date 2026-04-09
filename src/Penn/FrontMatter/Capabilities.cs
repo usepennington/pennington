@@ -1,4 +1,4 @@
-namespace Penn.FrontMatter;
+namespace Pennington.FrontMatter;
 
 /// <summary>
 /// Content that can be marked as draft.

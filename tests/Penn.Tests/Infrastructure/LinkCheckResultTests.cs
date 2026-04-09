@@ -1,8 +1,8 @@
-using Penn.Generation;
-using Penn.Infrastructure;
-using Penn.Routing;
+using Pennington.Generation;
+using Pennington.Infrastructure;
+using Pennington.Routing;
 
-namespace Penn.Tests.Infrastructure;
+namespace Pennington.Tests.Infrastructure;
 
 public class LinkCheckResultTests
 {
@@ -73,7 +73,7 @@ public class LinkCheckResultTests
         _ => throw new InvalidOperationException("Unknown LinkCheckResult case")
     };
 
-    // --- BrokenLinkResult uses LinkType from Penn.Generation ---
+    // --- BrokenLinkResult uses LinkType from Pennington.Generation ---
 
     [Fact]
     public void BrokenLinkResult_SupportsAllLinkTypes()

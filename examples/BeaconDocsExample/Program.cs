@@ -1,6 +1,6 @@
 using MonorailCss.Theme;
-using Penn.DocSite;
-using Penn.MonorailCss;
+using Pennington.DocSite;
+using Pennington.MonorailCss;
 
 var builder = WebApplication.CreateBuilder(args);
 

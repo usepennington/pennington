@@ -1,7 +1,7 @@
 @layout ContentWithProseLayout
 @page "/archive"
 @inject BlogContentResolver ContentResolver
-@inject PennOptions PennOptions
+@inject PenningtonOptions PenningtonOptions
 
 @if (_posts == null)
 {
@@ -9,7 +9,7 @@
     return;
 }
 
-<PageTitle>Archive - @PennOptions.SiteTitle</PageTitle>
+<PageTitle>Archive - @PenningtonOptions.SiteTitle</PageTitle>
 
 <header>
     <h1>All Posts</h1>

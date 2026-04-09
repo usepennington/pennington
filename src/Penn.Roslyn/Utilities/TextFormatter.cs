@@ -1,4 +1,4 @@
-namespace Penn.Roslyn.Utilities;
+namespace Pennington.Roslyn.Utilities;
 
 /// <summary>
 /// Text formatting utilities for code fragments.

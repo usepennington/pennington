@@ -1,4 +1,4 @@
-namespace Penn.IntegrationTests.Infrastructure;
+namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -6,9 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using global::MonorailCss.Theme;
-using Penn.FrontMatter;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
+using Pennington.FrontMatter;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
 
 public class NorthwindHandbookExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -33,7 +33,7 @@ public class NorthwindHandbookExamplePlaywrightFixture : IAsyncLifetime
         builder.Logging.ClearProviders();
 
         builder.Services.AddRazorComponents();
-        builder.Services.AddPenn(penn =>
+        builder.Services.AddPennington(penn =>
         {
             penn.SiteTitle = "Northwind Engineering Handbook";
             penn.SiteDescription = "How we build software at Northwind";
@@ -64,7 +64,7 @@ public class NorthwindHandbookExamplePlaywrightFixture : IAsyncLifetime
         _app.UseAntiforgery();
         _app.MapRazorComponents<global::NorthwindHandbookExample.Components.App>();
         _app.UseMonorailCss();
-        _app.UsePenn();
+        _app.UsePennington();
 
         await _app.StartAsync();
         BaseUrl = _app.Urls.First();

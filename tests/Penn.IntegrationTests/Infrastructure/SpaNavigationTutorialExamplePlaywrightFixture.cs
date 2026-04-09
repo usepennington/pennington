@@ -1,14 +1,14 @@
-namespace Penn.IntegrationTests.Infrastructure;
+namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Penn.FrontMatter;
-using Penn.Infrastructure;
-using Penn.Islands;
-using Penn.MonorailCss;
+using Pennington.FrontMatter;
+using Pennington.Infrastructure;
+using Pennington.Islands;
+using Pennington.MonorailCss;
 
 public class SpaNavigationTutorialExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -33,7 +33,7 @@ public class SpaNavigationTutorialExamplePlaywrightFixture : IAsyncLifetime
         builder.Logging.ClearProviders();
 
         builder.Services.AddRazorComponents();
-        builder.Services.AddPenn(penn =>
+        builder.Services.AddPennington(penn =>
         {
             penn.SiteTitle = "SPA Navigation Tutorial";
             penn.SiteDescription = "Demonstrates SPA navigation with islands";
@@ -58,7 +58,7 @@ public class SpaNavigationTutorialExamplePlaywrightFixture : IAsyncLifetime
         _app.MapRazorComponents<global::SpaNavigationTutorialExample.Components.App>();
         _app.UseMonorailCss();
         _app.UseSpaNavigation();
-        _app.UsePenn();
+        _app.UsePennington();
 
         await _app.StartAsync();
         BaseUrl = _app.Urls.First();

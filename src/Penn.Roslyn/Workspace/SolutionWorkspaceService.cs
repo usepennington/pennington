@@ -1,4 +1,4 @@
-namespace Penn.Roslyn.Workspace;
+namespace Pennington.Roslyn.Workspace;
 
 using System.Collections.Concurrent;
 using System.Text;
@@ -7,8 +7,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Penn.Infrastructure;
-using Penn.Roslyn.Symbols;
+using Pennington.Infrastructure;
+using Pennington.Roslyn.Symbols;
 
 /// <summary>
 /// Implementation of <see cref="ISolutionWorkspaceService"/> that manages an MSBuild workspace,
@@ -68,7 +68,7 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
         // Create temp folder for build artifacts to avoid polluting real output
         _tempBuildPath = Path.Combine(
             Path.GetTempPath(),
-            $"Penn_Build_{Guid.NewGuid():N}");
+            $"Pennington_Build_{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempBuildPath);
         _logger.LogDebug("Created temp build folder: {Path}", _tempBuildPath);
 

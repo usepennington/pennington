@@ -1,6 +1,6 @@
-namespace Penn.Roslyn.Highlighting;
+namespace Pennington.Roslyn.Highlighting;
 
-using Penn.Highlighting;
+using Pennington.Highlighting;
 
 /// <summary>
 /// Roslyn-based code highlighter for C# and VB. Priority 100 (beats TextMate at 50).

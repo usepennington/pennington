@@ -1,11 +1,11 @@
 @using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Hosting
-@using Penn.Infrastructure
+@using Pennington.Infrastructure
 @inject IWebHostEnvironment WebHostEnvironment
 @inject DocSiteOptions DocSiteOptions
 @inject LocalizationOptions Localization
-@inject Penn.Localization.LocaleContext Locale
+@inject Pennington.Localization.LocaleContext Locale
 
 <!DOCTYPE html>
 <html lang="@Locale.HtmlLang" dir="@Locale.Direction">
@@ -19,8 +19,8 @@
         <link rel="preload" href="@font.Href" as="font" type="@font.Type" crossorigin>
     }
     <link rel="stylesheet" href="@GetVersioned("/styles.css")">
-    <script src="@GetVersioned("/_content/Penn.UI/scripts.js")" defer></script>
-    <script src="@GetVersioned("/_content/Penn.UI/spa-engine.js")" defer></script>
+    <script src="@GetVersioned("/_content/Pennington.UI/scripts.js")" defer></script>
+    <script src="@GetVersioned("/_content/Pennington.UI/spa-engine.js")" defer></script>
 
     @if (!string.IsNullOrEmpty(DocSiteOptions.AdditionalHtmlHeadContent))
     {

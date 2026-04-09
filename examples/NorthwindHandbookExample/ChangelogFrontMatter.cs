@@ -1,6 +1,6 @@
 namespace NorthwindHandbookExample;
 
-using Penn.FrontMatter;
+using Pennington.FrontMatter;
 
 public record ChangelogFrontMatter : IFrontMatter, IDateable, IOrderable, ITaggable, IDescribable
 {

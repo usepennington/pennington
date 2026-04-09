@@ -14,6 +14,6 @@
     <PackageReference Include="Shouldly" Version="*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Penn.Roslyn\Penn.Roslyn.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.Roslyn\Pennington.Roslyn.csproj" />
   </ItemGroup>
 </Project>

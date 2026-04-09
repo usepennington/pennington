@@ -1,4 +1,4 @@
-namespace Penn.FrontMatter;
+namespace Pennington.FrontMatter;
 
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;

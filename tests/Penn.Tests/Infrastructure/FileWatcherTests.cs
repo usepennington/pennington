@@ -1,11 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Penn.Infrastructure;
+using Pennington.Infrastructure;
 using Testably.Abstractions;
 using Testably.Abstractions.Testing;
 
-namespace Penn.Tests.Infrastructure;
+namespace Pennington.Tests.Infrastructure;
 
 public class FileWatcherTests : IDisposable
 {

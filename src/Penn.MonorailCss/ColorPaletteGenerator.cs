@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Penn.MonorailCss;
+namespace Pennington.MonorailCss;
 
 /// <summary>
 /// Generates OKLCH color palettes from hue values for use with MonorailCSS themes.

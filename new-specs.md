@@ -1,6 +1,6 @@
-# Penn — Architecture Spec
+# Pennington — Architecture Spec
 
-*Formerly MyLittleContentEngine. Named for Penn Watson, printer.*
+*Formerly MyLittleContentEngine. Named for Pennington Watson, printer.*
 
 Target: **C# 15 / .NET 11** — leverages union types, improved pattern matching, and modern BCL.
 
@@ -504,7 +504,7 @@ When server-side highlighting can't handle a language (no matching grammar), the
 ### Custom Grammar Registration
 
 ```csharp
-builder.Services.AddPenn(options => {
+builder.Services.AddPennington(options => {
     options.Highlighting.AddTextMateGrammar("mylang", grammarStream);
     options.Highlighting.AddHighlighter<MyCustomHighlighter>();
 });
@@ -536,7 +536,7 @@ This happens in the pipeline, not as a separate content service.
 ### Islands Registration
 
 ```csharp
-builder.Services.AddPenn(options => {
+builder.Services.AddPennington(options => {
     options.Islands.Register<NavigationIsland>("navigation");
     options.Islands.Register<ContentIsland>("content");
     options.Islands.Register<OutlineIsland>("outline");
@@ -650,7 +650,7 @@ The hardest part of SPA: when islands swap, JavaScript managers must re-initiali
 ## 8. Package Structure
 
 ```
-Penn/                                     # Core — zero Roslyn dependency
+Pennington/                                     # Core — zero Roslyn dependency
 ├── Pipeline/                             # ContentItem union, pipeline stages
 ├── Routing/                              # ContentRoute, ContentRouteFactory, UrlPath
 ├── Content/                              # IContentService, Markdown*, Razor*, Redirect*
@@ -664,21 +664,21 @@ Penn/                                     # Core — zero Roslyn dependency
 ├── Localization/                         # Multi-locale support
 └── Infrastructure/                       # File watcher, middleware, link verification
 
-Penn.Roslyn/             # Optional — API docs + C# highlighting
+Pennington.Roslyn/             # Optional — API docs + C# highlighting
 ├── ApiReferenceContentService
 ├── RoslynHighlighter (ICodeHighlighter)
 ├── SymbolExtractionService
 └── CodeFragmentExtractor
 
-Penn.UI/                 # Razor component library
+Pennington.UI/                 # Razor component library
 ├── Components/ (Badge, Card, Steps, etc.)
 ├── Navigation/ (OutlineNav, TOCNav)
 └── wwwroot/ (scripts.js, spa-engine.js)
 
-Penn.MonorailCss/        # CSS integration (unchanged from v1)
+Pennington.MonorailCss/        # CSS integration (unchanged from v1)
 
-Penn.DocSite/            # Ready-to-use doc site
-Penn.BlogSite/           # Ready-to-use blog site
+Pennington.DocSite/            # Ready-to-use doc site
+Pennington.BlogSite/           # Ready-to-use blog site
 ```
 
 ### What Moved Out of Core
@@ -702,7 +702,7 @@ Core now has **zero** Microsoft.CodeAnalysis dependencies.
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddPenn(engine => {
+builder.Services.AddPennington(engine => {
     engine.SiteTitle = "My Site";
     engine.SiteDescription = "A site.";
     engine.AddMarkdownContent<MyFrontMatter>(md => {
@@ -714,14 +714,14 @@ builder.Services.AddPenn(engine => {
 builder.Services.AddMonorailCss();
 
 var app = builder.Build();
-app.UsePenn();
+app.UsePennington();
 await app.RunOrBuildAsync(args);
 ```
 
 ### Full Setup
 
 ```csharp
-builder.Services.AddPenn(engine => {
+builder.Services.AddPennington(engine => {
     engine.SiteTitle = "Docs";
     engine.SiteDescription = "Documentation";
     engine.CanonicalBaseUrl = "https://docs.example.com";
@@ -752,7 +752,7 @@ builder.Services.AddPenn(engine => {
 });
 
 // Optional: Roslyn integration (separate package)
-builder.Services.AddPennRoslyn(roslyn => {
+builder.Services.AddPenningtonRoslyn(roslyn => {
     roslyn.SolutionPath = "path/to/solution.slnx";
     roslyn.IncludeNamespaces = ["MyLib.Public"];
 });
@@ -778,7 +778,7 @@ await app.RunBlogSiteAsync(args);
 
 ### DocSite Behavior
 
-`AddDocSite()` registers a pre-configured Penn instance with:
+`AddDocSite()` registers a pre-configured Pennington instance with:
 - `DocFrontMatter` as the front matter type (all standard capabilities enabled)
 - Default islands: navigation, content, outline
 - Mdazor integration for Razor-in-Markdown
@@ -789,7 +789,7 @@ Users with custom front matter must implement all capability interfaces they nee
 
 ### BlogSite Behavior
 
-`AddBlogSite()` registers a blog-optimized Penn instance with:
+`AddBlogSite()` registers a blog-optimized Pennington instance with:
 - `BlogFrontMatter` as the front matter type
 - Date-sorted archive: pipeline sorts `IDateable` items descending by `Date`
 - Series grouping: `IBlogContentService<T>.GetPostsBySeriesAsync()` for series navigation
@@ -852,7 +852,7 @@ dotnet watch    # Hot reload for content + code changes
 ```
 
 File watcher system preserved from v1 with refinements:
-- `IPennFileWatcher` monitors content directories
+- `IPenningtonFileWatcher` monitors content directories
 - `FileWatchDependencyFactory<T>` invalidates cached services on change
 - Content changes → cache invalidation → reload on next request
 - Code changes → .NET hot reload
@@ -1109,7 +1109,7 @@ If island rendering fails, the page becomes a `FailedItem` — no partial SPA da
 Same middleware as v1, with ContentRoute awareness and a new error boundary:
 
 1. **ContentErrorBoundaryMiddleware** — catches content rendering failures (new in v2)
-2. **PennRedirectMiddleware** — redirects from `_redirects.yml`
+2. **PenningtonRedirectMiddleware** — redirects from `_redirects.yml`
 3. **ResponseProcessingMiddleware** — pipeline of `IResponseProcessor`
 4. **BaseUrlRewritingProcessor** — rewrites URLs using `ContentRoute.WithBaseUrl`
 5. **XrefResolver** — resolves `xref:uid` using cross-reference registry
@@ -1299,12 +1299,12 @@ Every feature from v1 mapped to v2 location:
 
 **Test framework:** xunit.v3.mtp-v2 with Shouldly for assertions.
 
-v1's test infrastructure (`PennTestBuilder`, `MarkdownTestData`, `ServiceMockFactory`) is well-designed. v2 extends it to support union-type pipelines, stage-by-stage testing, and dev/build parity validation.
+v1's test infrastructure (`PenningtonTestBuilder`, `MarkdownTestData`, `ServiceMockFactory`) is well-designed. v2 extends it to support union-type pipelines, stage-by-stage testing, and dev/build parity validation.
 
-### PennTestBuilder 2.0
+### PenningtonTestBuilder 2.0
 
 ```csharp
-var builder = new PennTestBuilder()
+var builder = new PenningtonTestBuilder()
     .WithMarkdownFiles(
         ("/content/index.md", MarkdownTestData.SimplePost),
         ("/content/about.md", MarkdownTestData.RichPost))
@@ -1333,7 +1333,7 @@ Each union type stage is independently testable:
 [Fact]
 public async Task FailedItems_PropagateThrough_EntirePipeline()
 {
-    var builder = new PennTestBuilder()
+    var builder = new PenningtonTestBuilder()
         .WithMarkdownFiles(("/content/bad.md", "---\ntitle: [invalid\n---\n# Hi"));
 
     var report = await builder.BuildFullPipelineAsync();
@@ -1381,7 +1381,7 @@ Use approval-based testing (e.g., Verify) for rendered HTML, SPA envelopes, and 
 [Fact]
 public async Task Rendering_RichPost_MatchesGoldenFile()
 {
-    var report = await new PennTestBuilder()
+    var report = await new PenningtonTestBuilder()
         .WithMarkdownFiles(("/content/post.md", MarkdownTestData.RichPost))
         .BuildFullPipelineAsync();
 
@@ -1412,8 +1412,8 @@ Content files (`.md`, `_redirects.yml`, `_index.metadata.yml`, YAML front matter
 
 ### What Users Change
 
-1. NuGet packages: `MyLittleContentEngine` → `Penn` + optionally `Penn.Roslyn`
-2. Registration: `AddContentEngineService().WithMarkdownContentService<T>()` → `AddPenn(engine => { engine.AddMarkdownContent<T>(...) })`
+1. NuGet packages: `MyLittleContentEngine` → `Pennington` + optionally `Pennington.Roslyn`
+2. Registration: `AddContentEngineService().WithMarkdownContentService<T>()` → `AddPennington(engine => { engine.AddMarkdownContent<T>(...) })`
 3. Front matter: Remove unused interface members, or switch to capability interfaces
 4. If using DocSite/BlogSite helpers: nearly identical — options class updated
 
@@ -1445,7 +1445,7 @@ For binary content services (responsive images), return `BinaryProgrammaticConte
 
 ## Appendix A. C# 15 Union Types — Developer Reference
 
-> **Why this appendix exists:** C# 15 union types ship with .NET 11. LLM training data and most developer experience predate this feature. This section is the canonical reference for Penn contributors. See also: [C# 15 Union Types — .NET Blog](https://devblogs.microsoft.com/dotnet/csharp-15-union-types/).
+> **Why this appendix exists:** C# 15 union types ship with .NET 11. LLM training data and most developer experience predate this feature. This section is the canonical reference for Pennington contributors. See also: [C# 15 Union Types — .NET Blog](https://devblogs.microsoft.com/dotnet/csharp-15-union-types/).
 
 ### Syntax
 
@@ -1489,7 +1489,7 @@ string description = pet switch
 // If you add a fourth case type to the union, every incomplete switch gets a warning.
 ```
 
-This is the primary value proposition for Penn: **the compiler enforces that every pipeline stage, every diagnostic severity, and every content source type is handled everywhere they're consumed.** Adding a new pipeline stage is a one-line union change that produces warnings at every incomplete handler.
+This is the primary value proposition for Pennington: **the compiler enforces that every pipeline stage, every diagnostic severity, and every content source type is handled everywhere they're consumed.** Adding a new pipeline stage is a one-line union change that produces warnings at every incomplete handler.
 
 ### Cases Are NOT Nested Types
 
@@ -1550,9 +1550,9 @@ public union ContentItem(DiscoveredItem, ParsedItem, RenderedItem, FailedItem)
 
 ### Implementation Detail: Boxing
 
-Union structs store their contents as a single `object?` reference. Value types are boxed. All Penn union cases are records (reference types), so **no boxing overhead** applies in this codebase.
+Union structs store their contents as a single `object?` reference. Value types are boxed. All Pennington union cases are records (reference types), so **no boxing overhead** applies in this codebase.
 
-### Penn's Union Types at a Glance
+### Pennington's Union Types at a Glance
 
 | Union | Cases | Purpose |
 |-------|-------|---------|

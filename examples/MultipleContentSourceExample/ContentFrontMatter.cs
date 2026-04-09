@@ -1,6 +1,6 @@
 namespace MultipleContentSourceExample;
 
-using Penn.FrontMatter;
+using Pennington.FrontMatter;
 
 /// <summary>
 /// Front matter for general content pages (root-level markdown files).

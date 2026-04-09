@@ -20,6 +20,6 @@ The site lacks skip navigation links for keyboard/screen reader users. The SPA e
 - Ensure the ARIA live region announcement timing doesn't conflict with the focus change
 
 ## Key Files
-- `src/Penn.DocSite/Components/Layout/MainLayout.razor` — add skip links and landmark labels
-- `src/Penn.UI/wwwroot/spa-engine.js` — verify focus management edge cases (no changes expected)
+- `src/Pennington.DocSite/Components/Layout/MainLayout.razor` — add skip links and landmark labels
+- `src/Pennington.UI/wwwroot/spa-engine.js` — verify focus management edge cases (no changes expected)
 - MonorailCSS or inline styles for the visually-hidden skip link styling

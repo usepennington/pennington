@@ -12,21 +12,21 @@ Set the scene: Beacon's docs have been reorganized, moving `/setup/` to `/gettin
 ### What to show
 - The scenario: a documentation restructure where `Content/setup.md` has been replaced by `Content/getting-started.md` at a new URL
 - Without a redirect, visitors to `/setup/` see a 404 and search engines lose their index entry
-- Penn solves this with the `IRedirectable` capability interface and meta-refresh HTML generation
+- Pennington solves this with the `IRedirectable` capability interface and meta-refresh HTML generation
 
 ### Key points
 - Redirects preserve SEO value by pointing crawlers to the new canonical URL
-- Penn generates static HTML redirect files rather than relying on server-side redirect rules, making this work with any static hosting provider (GitHub Pages, Netlify, S3, etc.)
+- Pennington generates static HTML redirect files rather than relying on server-side redirect rules, making this work with any static hosting provider (GitHub Pages, Netlify, S3, etc.)
 
 ## Beat 2: The IRedirectable Interface
 
 Introduce the `IRedirectable` capability interface and show which front matter types implement it.
 
 ### What to show
-- Reference `T:Penn.FrontMatter.IRedirectable` defined in `:path src/Penn/FrontMatter/Capabilities.cs` -- a single-property interface: `P:Penn.FrontMatter.IRedirectable.RedirectUrl` (string?)
-- Reference `T:Penn.DocSite.DocSiteFrontMatter` which implements `IRedirectable` alongside its other capabilities: `DocSiteFrontMatter : IFrontMatter, IDraftable, ITaggable, ISectionable, ICrossReferenceable, IOrderable, IDescribable, IRedirectable` -- see `:path src/Penn.DocSite/DocSiteFrontMatter.cs`
-- Reference `T:Penn.BlogSite.BlogSiteFrontMatter` which also implements `IRedirectable`: `BlogSiteFrontMatter : IFrontMatter, IDraftable, ITaggable, IDescribable, IDateable, ICrossReferenceable, ISectionable, IRedirectable` -- see `:path src/Penn.BlogSite/BlogSiteFrontMatter.cs`
-- Note that the core `T:Penn.FrontMatter.DocFrontMatter` does NOT implement `IRedirectable` -- only the site-level front matter types do
+- Reference `T:Pennington.FrontMatter.IRedirectable` defined in `:path src/Pennington/FrontMatter/Capabilities.cs` -- a single-property interface: `P:Pennington.FrontMatter.IRedirectable.RedirectUrl` (string?)
+- Reference `T:Pennington.DocSite.DocSiteFrontMatter` which implements `IRedirectable` alongside its other capabilities: `DocSiteFrontMatter : IFrontMatter, IDraftable, ITaggable, ISectionable, ICrossReferenceable, IOrderable, IDescribable, IRedirectable` -- see `:path src/Pennington.DocSite/DocSiteFrontMatter.cs`
+- Reference `T:Pennington.BlogSite.BlogSiteFrontMatter` which also implements `IRedirectable`: `BlogSiteFrontMatter : IFrontMatter, IDraftable, ITaggable, IDescribable, IDateable, ICrossReferenceable, ISectionable, IRedirectable` -- see `:path src/Pennington.BlogSite/BlogSiteFrontMatter.cs`
+- Note that the core `T:Pennington.FrontMatter.DocFrontMatter` does NOT implement `IRedirectable` -- only the site-level front matter types do
 - When `RedirectUrl` is null (the default), no redirect behavior occurs; the page renders normally
 
 ### Key points
@@ -45,9 +45,9 @@ Add a markdown file at the old URL path with `redirectUrl` pointing to the new l
   redirectUrl: "/getting-started/"
   ```
 - The body can contain a fallback message: `"This page has moved to [Getting Started](/getting-started/)."` for clients that do not follow meta-refresh
-- The `T:Penn.FrontMatter.FrontMatterParser` deserializes the YAML via `M:Penn.FrontMatter.FrontMatterParser.Parse``1(System.String)`, populating `P:Penn.FrontMatter.IRedirectable.RedirectUrl` on the `DocSiteFrontMatter` record
-- Reference `M:Penn.Routing.ContentRouteFactory.FromMarkdownFile(Penn.Routing.FilePath,Penn.Routing.FilePath,Penn.Routing.UrlPath,System.String)` which routes `setup.md` to `/setup/` with output file `setup/index.html`
-- Also reference `M:Penn.Routing.ContentRouteFactory.ForRedirect(Penn.Routing.UrlPath)` which creates a `ContentRoute` specifically for redirect pages -- this is used in the pipeline's `T:Penn.Pipeline.RedirectSource` case of the `T:Penn.Pipeline.ContentSource` union
+- The `T:Pennington.FrontMatter.FrontMatterParser` deserializes the YAML via `M:Pennington.FrontMatter.FrontMatterParser.Parse``1(System.String)`, populating `P:Pennington.FrontMatter.IRedirectable.RedirectUrl` on the `DocSiteFrontMatter` record
+- Reference `M:Pennington.Routing.ContentRouteFactory.FromMarkdownFile(Pennington.Routing.FilePath,Pennington.Routing.FilePath,Pennington.Routing.UrlPath,System.String)` which routes `setup.md` to `/setup/` with output file `setup/index.html`
+- Also reference `M:Pennington.Routing.ContentRouteFactory.ForRedirect(Pennington.Routing.UrlPath)` which creates a `ContentRoute` specifically for redirect pages -- this is used in the pipeline's `T:Pennington.Pipeline.RedirectSource` case of the `T:Pennington.Pipeline.ContentSource` union
 
 ### Key points
 - The redirect file is a real markdown file with front matter -- it goes through the normal discovery and parsing pipeline
@@ -59,12 +59,12 @@ Add a markdown file at the old URL path with `redirectUrl` pointing to the new l
 Trace how a redirect page is discovered, parsed, and ultimately generates redirect HTML during static site builds.
 
 ### What to show
-- Discovery: `T:Penn.Content.MarkdownContentService`1` discovers `setup.md` like any other markdown file and yields a `T:Penn.Pipeline.DiscoveredItem` with a `T:Penn.Pipeline.MarkdownFileSource`
-- Parsing: `T:Penn.Markdown.MarkdownContentParser`1` parses the file and produces a `T:Penn.Pipeline.ParsedItem` with the `DocSiteFrontMatter` metadata containing `RedirectUrl = "/getting-started/"`
-- Pipeline-level filtering: `T:Penn.LlmsTxt.LlmsTxtService` skips redirect pages: `if (parsed.Metadata is IRedirectable { RedirectUrl: not null }) continue;` -- redirects are excluded from llms.txt generation
-- SPA navigation: `T:Penn.Islands.SpaNavigationContentService` checks `item.Source is RazorPageSource or RedirectSource` to skip redirect sources from SPA island content
-- Reference `T:Penn.Pipeline.ContentSource` union type which includes `T:Penn.Pipeline.RedirectSource` as one of its cases: `union ContentSource(MarkdownFileSource, RazorPageSource, RedirectSource, ProgrammaticSource)`
-- `T:Penn.Pipeline.RedirectSource` holds `P:Penn.Pipeline.RedirectSource.TargetUrl` (a `T:Penn.Routing.UrlPath`)
+- Discovery: `T:Pennington.Content.MarkdownContentService`1` discovers `setup.md` like any other markdown file and yields a `T:Pennington.Pipeline.DiscoveredItem` with a `T:Pennington.Pipeline.MarkdownFileSource`
+- Parsing: `T:Pennington.Markdown.MarkdownContentParser`1` parses the file and produces a `T:Pennington.Pipeline.ParsedItem` with the `DocSiteFrontMatter` metadata containing `RedirectUrl = "/getting-started/"`
+- Pipeline-level filtering: `T:Pennington.LlmsTxt.LlmsTxtService` skips redirect pages: `if (parsed.Metadata is IRedirectable { RedirectUrl: not null }) continue;` -- redirects are excluded from llms.txt generation
+- SPA navigation: `T:Pennington.Islands.SpaNavigationContentService` checks `item.Source is RazorPageSource or RedirectSource` to skip redirect sources from SPA island content
+- Reference `T:Pennington.Pipeline.ContentSource` union type which includes `T:Pennington.Pipeline.RedirectSource` as one of its cases: `union ContentSource(MarkdownFileSource, RazorPageSource, RedirectSource, ProgrammaticSource)`
+- `T:Pennington.Pipeline.RedirectSource` holds `P:Pennington.Pipeline.RedirectSource.TargetUrl` (a `T:Pennington.Routing.UrlPath`)
 
 ### Key points
 - Redirect pages are real content items that flow through the full pipeline, not a special bypass
@@ -76,7 +76,7 @@ Trace how a redirect page is discovered, parsed, and ultimately generates redire
 Run the build and inspect the generated redirect HTML file. Show the meta-refresh tag that performs the actual redirect.
 
 ### What to show
-- Reference `T:Penn.Generation.OutputGenerationService` and its `M:Penn.Generation.OutputGenerationService.GenerateAsync(System.String)` method
+- Reference `T:Pennington.Generation.OutputGenerationService` and its `M:Pennington.Generation.OutputGenerationService.GenerateAsync(System.String)` method
 - In `FetchPagesAsync`, when the HTTP response has status `MovedPermanently` or `Found`, the service generates redirect HTML:
   ```html
   <!DOCTYPE html>
@@ -86,7 +86,7 @@ Run the build and inspect the generated redirect HTML file. Show the meta-refres
   </head></html>
   ```
 - The redirect HTML is written to `setup/index.html` in the output directory
-- The fetch result is recorded as `FetchOutcome.Redirect` and counted in `P:Penn.Generation.BuildReport.GeneratedPages` (redirects count as generated, not skipped)
+- The fetch result is recorded as `FetchOutcome.Redirect` and counted in `P:Pennington.Generation.BuildReport.GeneratedPages` (redirects count as generated, not skipped)
 - Reference the `FetchOutcome` enum: `Generated`, `Redirect`, `Failed`, `Error` -- redirects are a success outcome
 
 ### Key points

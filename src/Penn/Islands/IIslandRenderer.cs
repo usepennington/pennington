@@ -1,6 +1,6 @@
-namespace Penn.Islands;
+namespace Pennington.Islands;
 
-using Penn.Routing;
+using Pennington.Routing;
 
 public interface IIslandRenderer
 {

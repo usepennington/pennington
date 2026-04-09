@@ -1,6 +1,6 @@
-# Penn Documentation — Table of Contents
+# Pennington Documentation — Table of Contents
 
-Organized using the [Diataxis framework](https://diataxis.fr/). Penn core is the primary subject; DocSite and BlogSite are "headstart" packages.
+Organized using the [Diataxis framework](https://diataxis.fr/). Pennington core is the primary subject; DocSite and BlogSite are "headstart" packages.
 
 ---
 
@@ -10,15 +10,15 @@ Step-by-step walkthroughs that produce a working result. Ordered from simple →
 
 ### Getting Started
 
-- **Building a Site from Scratch** — Create a new ASP.NET project, wire `AddPenn`/`UsePenn`/`RunOrBuildAsync`, create markdown content with YAML front matter, build a Razor layout, run with `dotnet watch`. No DocSite — raw Penn core.
+- **Building a Site from Scratch** — Create a new ASP.NET project, wire `AddPennington`/`UsePennington`/`RunOrBuildAsync`, create markdown content with YAML front matter, build a Razor layout, run with `dotnet watch`. No DocSite — raw Pennington core.
 - **DocSite Quick Start** — `AddDocSite`/`UseDocSite`/`RunDocSiteAsync` in ~20 lines. Covers `DocSiteOptions`. Produces a polished site with search, SPA nav, outline, breadcrumbs.
-- **BlogSite Quick Start** — Same pattern for `Penn.BlogSite`. Posts with dates, tags, series. Automatic archives/tags pages and RSS.
+- **BlogSite Quick Start** — Same pattern for `Pennington.BlogSite`. Posts with dates, tags, series. Automatic archives/tags pages and RSS.
 - **Deploying to GitHub Pages** — `dotnet run build`, output structure, GitHub Actions workflow, base URL for subdirectory hosting.
 
 ### Customization
 
 - **Creating a Custom Front Matter Type** — Implement a custom record with `IFrontMatter` + capability interfaces. Register with `AddMarkdownContent<T>`. YAML mapping, pipeline consumption via pattern matching.
-- **Styling Your Site with MonorailCSS** — Add `Penn.MonorailCss`. `NamedColorScheme` vs `AlgorithmicColorScheme`, 5 semantic color roles, dark mode, custom fonts, `ExtraStyles`.
+- **Styling Your Site with MonorailCSS** — Add `Pennington.MonorailCss`. `NamedColorScheme` vs `AlgorithmicColorScheme`, 5 semantic color roles, dark mode, custom fonts, `ExtraStyles`.
 
 ### Advanced Features
 
@@ -29,11 +29,11 @@ Step-by-step walkthroughs that produce a working result. Ordered from simple →
 
 ## How-to Guides
 
-Recipes for specific tasks. Assume a working Penn site and basic knowledge.
+Recipes for specific tasks. Assume a working Pennington site and basic knowledge.
 
 ### Content Authoring
 
-- **Writing Markdown with Penn Extensions** — Code highlighting, tabbed code blocks, line directives (highlight, diff, focus, error, warning, word), snippet regions, alerts, Mermaid diagrams.
+- **Writing Markdown with Pennington Extensions** — Code highlighting, tabbed code blocks, line directives (highlight, diff, focus, error, warning, word), snippet regions, alerts, Mermaid diagrams.
 - **Linking and Cross-References** — Relative links, media assets, `xref:uid` syntax, assigning UIDs via `ICrossReferenceable`, resolution behavior, broken xref diagnostics.
 - **Working with Drafts, Tags, and Ordering** — `IsDraft`, `Tags`, `Order`, `Section` front matter capabilities and how the pipeline uses them.
 - **Implementing Redirects** — `IRedirectable` and `RedirectUrl`. Meta-refresh output in static builds.
@@ -54,7 +54,7 @@ Recipes for specific tasks. Assume a working Penn site and basic knowledge.
 
 - **RSS, Sitemap, and Structured Data** — `RssFeedBuilder`, `SitemapBuilder`, `CanonicalBaseUrl`, JSON-LD via `StructuredData` component, `AddLlmsTxt()`.
 
-### Extending Penn
+### Extending Pennington
 
 - **Building a Custom Content Service** — Implement `IContentService` (5 methods + 2 properties). Non-markdown sources (database, API, CMS). DI registration.
 - **Adding a Custom Code Highlighter** — Implement `ICodeHighlighter`. Priority-based dispatch. Registration via `Highlighting.AddHighlighter<T>()`.
@@ -64,7 +64,7 @@ Recipes for specific tasks. Assume a working Penn site and basic knowledge.
 
 ### Roslyn Integration
 
-- **Connecting to a Roslyn Workspace** — `Penn.Roslyn`, `RoslynOptions`, `ProjectFilter`. Modifiers: `:xmldocid`, `:xmldocid,bodyonly`, `:path`.
+- **Connecting to a Roslyn Workspace** — `Pennington.Roslyn`, `RoslynOptions`, `ProjectFilter`. Modifiers: `:xmldocid`, `:xmldocid,bodyonly`, `:path`.
 - **Showing Code Diffs** — `:xmldocid-diff` modifier, DiffPlex integration, before/after API comparison.
 
 ### Deployment
@@ -80,7 +80,7 @@ Austere, accurate, comprehensive. Describes what things are, not how to use them
 
 ### Configuration API
 
-- **PennOptions** — All properties: SiteTitle, SiteDescription, CanonicalBaseUrl, ContentRootPath, HighlightingOptions, IslandsOptions, LocalizationOptions, TranslationOptions, AddMarkdownContent, AddLlmsTxt, AdditionalRoutingAssemblies.
+- **PenningtonOptions** — All properties: SiteTitle, SiteDescription, CanonicalBaseUrl, ContentRootPath, HighlightingOptions, IslandsOptions, LocalizationOptions, TranslationOptions, AddMarkdownContent, AddLlmsTxt, AdditionalRoutingAssemblies.
 - **DocSiteOptions** — All properties and ContentArea record.
 - **BlogSiteOptions** — All properties and supporting records (SocialLink, HeaderLink, Project, HeroContent).
 - **MonorailCssOptions** — ColorScheme, CustomCssFrameworkSettings, ExtraStyles, ContentPaths. NamedColorScheme, AlgorithmicColorScheme, IColorScheme.
@@ -133,7 +133,7 @@ Austere, accurate, comprehensive. Describes what things are, not how to use them
 
 ### UI Components
 
-- **UI Component Library** — Complete parameter reference for all Penn.UI components: Badge, Card, CardGrid, LinkCard, BigTable, CodeBlock, Steps/Step, TableOfContentsNavigation, OutlineNavigation, LanguageSwitcher, StructuredData, FallbackNotice.
+- **UI Component Library** — Complete parameter reference for all Pennington.UI components: Badge, Card, CardGrid, LinkCard, BigTable, CodeBlock, Steps/Step, TableOfContentsNavigation, OutlineNavigation, LanguageSwitcher, StructuredData, FallbackNotice.
 
 ### Roslyn
 
@@ -141,7 +141,7 @@ Austere, accurate, comprehensive. Describes what things are, not how to use them
 
 ### Infrastructure
 
-- **File Watching and DI Wiring** — IFileWatcher, FileWatchDependencyFactory, AddFileWatched, AddPenn/UsePenn/RunOrBuildAsync details, service lifetimes, live reload protocol.
+- **File Watching and DI Wiring** — IFileWatcher, FileWatchDependencyFactory, AddFileWatched, AddPennington/UsePennington/RunOrBuildAsync details, service lifetimes, live reload protocol.
 
 ---
 
@@ -166,7 +166,7 @@ Illuminates the "why" — architecture, design decisions, trade-offs. No step-by
 
 ### Hot Reload
 
-- **Hot Reload and File Watching** — .NET hot reload vs Penn live reload. Invalidate-and-recreate pattern. FileWatchDependencyFactory services. WebSocket protocol. AsyncLazy.
+- **Hot Reload and File Watching** — .NET hot reload vs Pennington live reload. Invalidate-and-recreate pattern. FileWatchDependencyFactory services. WebSocket protocol. AsyncLazy.
 
 ### Navigation
 
@@ -191,7 +191,7 @@ Illuminates the "why" — architecture, design decisions, trade-offs. No step-by
 | Quadrant | Pages | Areas |
 |----------|-------|-------|
 | Tutorials | 8 | Getting Started, Customization, Advanced Features |
-| How-to Guides | 19 | Content Authoring, Configuration, Navigation & Search, SEO & Feeds, Extending Penn, Roslyn, Deployment |
+| How-to Guides | 19 | Content Authoring, Configuration, Navigation & Search, SEO & Feeds, Extending Pennington, Roslyn, Deployment |
 | Reference | 15 | Configuration API, Front Matter, Pipeline, Routing, Markdown, Navigation, Search, Localization, Islands & SPA, Response Processing, Generation, Feeds & SEO, UI Components, Roslyn, Infrastructure |
 | Explanation | 10 | Core Architecture, Rendering & Theming, SPA & Islands, Hot Reload, Navigation, Client-Side, Response Processing, Cross-References |
 | **Total** | **52** | |

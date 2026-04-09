@@ -1,4 +1,4 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 /// <summary>Thread-safe async lazy initialization with retry on failure.</summary>
 public sealed class AsyncLazy<T>

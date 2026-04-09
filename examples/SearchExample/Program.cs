@@ -1,7 +1,7 @@
 using MonorailCss.Theme;
-using Penn.Content;
-using Penn.DocSite;
-using Penn.MonorailCss;
+using Pennington.Content;
+using Pennington.DocSite;
+using Pennington.MonorailCss;
 using SearchExample.Services;
 using Random = SearchExample.Services.Random;
 
@@ -20,7 +20,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         PrimaryHue = 235, // Blue theme (0-360)
         BaseColorName = ColorNames.Slate // Base color palette
     },
-    GitHubUrl = "https://github.com/Penn/Penn",
+    GitHubUrl = "https://github.com/Pennington/Pennington",
 
     // Custom header with logo and branding
     HeaderContent = """
@@ -34,7 +34,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     // Custom footer
     FooterContent = """
         <div class="text-center text-sm text-base-600 dark:text-base-400">
-            &copy; 2024 Random Content Site. Built with Penn.
+            &copy; 2024 Random Content Site. Built with Pennington.
         </div>
         """,
 

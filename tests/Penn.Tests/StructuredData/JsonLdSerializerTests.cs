@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Penn.StructuredData;
+using Pennington.StructuredData;
 
-namespace Penn.Tests.StructuredData;
+namespace Pennington.Tests.StructuredData;
 
 public class JsonLdSerializerTests
 {

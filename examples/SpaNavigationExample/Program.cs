@@ -1,6 +1,6 @@
-using Penn.Infrastructure;
-using Penn.Islands;
-using Penn.MonorailCss;
+using Pennington.Infrastructure;
+using Pennington.Islands;
+using Pennington.MonorailCss;
 using SpaNavigationExample;
 using SpaNavigationExample.Components;
 using SpaNavigationExample.Slots;
@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
 
-builder.Services.AddPenn(penn =>
+builder.Services.AddPennington(penn =>
 {
     penn.SiteTitle = "My Recipe Book";
     penn.SiteDescription = "A cookbook powered by SPA slots";
@@ -36,5 +36,5 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>();
 app.UseMonorailCss();
 app.UseSpaNavigation();
-app.UsePenn();
+app.UsePennington();
 await app.RunOrBuildAsync(args);

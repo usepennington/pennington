@@ -1,8 +1,8 @@
-namespace Penn.Infrastructure;
+namespace Pennington.Infrastructure;
 
 using System.Collections.Immutable;
-using Penn.Content;
-using Penn.Pipeline;
+using Pennington.Content;
+using Pennington.Pipeline;
 
 /// <summary>
 /// Resolves cross-reference UIDs to URLs and titles.

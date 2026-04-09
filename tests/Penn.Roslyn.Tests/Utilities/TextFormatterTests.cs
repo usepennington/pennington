@@ -1,6 +1,6 @@
-namespace Penn.Roslyn.Tests.Utilities;
+namespace Pennington.Roslyn.Tests.Utilities;
 
-using Penn.Roslyn.Utilities;
+using Pennington.Roslyn.Utilities;
 
 public sealed class TextFormatterTests
 {

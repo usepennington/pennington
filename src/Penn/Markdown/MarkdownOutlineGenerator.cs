@@ -1,10 +1,10 @@
-namespace Penn.Markdown;
+namespace Pennington.Markdown;
 
 using System.Text;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
-using Penn.Pipeline;
+using Pennington.Pipeline;
 
 /// <summary>
 /// Extracts heading outline from a parsed Markdown document.

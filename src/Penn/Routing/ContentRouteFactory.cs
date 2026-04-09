@@ -1,4 +1,4 @@
-namespace Penn.Routing;
+namespace Pennington.Routing;
 
 public static class ContentRouteFactory
 {

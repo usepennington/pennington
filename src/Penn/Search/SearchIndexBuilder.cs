@@ -1,8 +1,8 @@
-namespace Penn.Search;
+namespace Pennington.Search;
 
 using System.Text.RegularExpressions;
-using Penn.FrontMatter;
-using Penn.Pipeline;
+using Pennington.FrontMatter;
+using Pennington.Pipeline;
 
 /// <summary>
 /// Builds search index documents from rendered content items.

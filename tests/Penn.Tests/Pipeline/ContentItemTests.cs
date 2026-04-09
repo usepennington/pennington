@@ -1,9 +1,9 @@
-using Penn.Pipeline;
-using Penn.FrontMatter;
-using Penn.Routing;
+using Pennington.Pipeline;
+using Pennington.FrontMatter;
+using Pennington.Routing;
 using System.Collections.Immutable;
 
-namespace Penn.Tests.Pipeline;
+namespace Pennington.Tests.Pipeline;
 
 public class ContentItemTests
 {

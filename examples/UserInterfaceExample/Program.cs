@@ -1,5 +1,5 @@
-using Penn.Infrastructure;
-using Penn.MonorailCss;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
 using UserInterfaceExample;
 using UserInterfaceExample.Components;
 
@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
 
-builder.Services.AddPenn(penn =>
+builder.Services.AddPennington(penn =>
 {
     penn.SiteTitle = "Daily Life Hub";
     penn.SiteDescription = "Your everyday life, simplified";
@@ -28,6 +28,6 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>();
 app.UseMonorailCss();
-app.UsePenn();
+app.UsePennington();
 
 await app.RunOrBuildAsync(args);

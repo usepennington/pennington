@@ -1,6 +1,6 @@
-namespace Penn.Roslyn.Tests.Symbols;
+namespace Pennington.Roslyn.Tests.Symbols;
 
-using Penn.Roslyn.Symbols;
+using Pennington.Roslyn.Symbols;
 
 public sealed class XmlDocIdNormalizerTests
 {

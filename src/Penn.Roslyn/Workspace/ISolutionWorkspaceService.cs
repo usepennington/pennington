@@ -1,4 +1,4 @@
-namespace Penn.Roslyn.Workspace;
+namespace Pennington.Roslyn.Workspace;
 
 using Microsoft.CodeAnalysis;
 

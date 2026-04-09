@@ -1,4 +1,4 @@
-namespace Penn.MonorailCss;
+namespace Pennington.MonorailCss;
 
 /// <summary>
 /// Thread-safe collector for CSS class names discovered during request processing.

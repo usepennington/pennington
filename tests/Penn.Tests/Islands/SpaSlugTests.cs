@@ -1,6 +1,6 @@
-using Penn.Islands;
+using Pennington.Islands;
 
-namespace Penn.Tests.Islands;
+namespace Pennington.Tests.Islands;
 
 public class SpaSlugTests
 {

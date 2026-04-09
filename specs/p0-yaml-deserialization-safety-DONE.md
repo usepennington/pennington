@@ -1,7 +1,7 @@
 # P0: YAML Deserialization Type Restrictions ✅ DONE
 
 ## Problem
-`FrontMatterParser` (`src/Penn/FrontMatter/FrontMatterParser.cs`) creates a `DeserializerBuilder` with no type restrictions. YamlDotNet's default configuration can instantiate arbitrary types via YAML tags (e.g., `!<tag:yaml.org,2002:object>`), which is a deserialization attack vector if untrusted YAML is ever processed.
+`FrontMatterParser` (`src/Pennington/FrontMatter/FrontMatterParser.cs`) creates a `DeserializerBuilder` with no type restrictions. YamlDotNet's default configuration can instantiate arbitrary types via YAML tags (e.g., `!<tag:yaml.org,2002:object>`), which is a deserialization attack vector if untrusted YAML is ever processed.
 
 ## Current State
 - `DeserializerBuilder` uses `.WithNamingConvention(CamelCaseNamingConvention.Instance)` and `.IgnoreUnmatchedProperties()` only
@@ -15,7 +15,7 @@
 - The fix must not break any existing front matter types (`DocFrontMatter`, `BlogFrontMatter`, or consumer-defined types implementing `IFrontMatter`)
 
 ## Key Files
-- `src/Penn/FrontMatter/FrontMatterParser.cs` — the deserializer to harden
-- `src/Penn/FrontMatter/IFrontMatter.cs` — base interface
-- `src/Penn/FrontMatter/Capabilities.cs` — capability interfaces with primitive properties
-- `tests/Penn.Tests/` — add security-focused tests
+- `src/Pennington/FrontMatter/FrontMatterParser.cs` — the deserializer to harden
+- `src/Pennington/FrontMatter/IFrontMatter.cs` — base interface
+- `src/Pennington/FrontMatter/Capabilities.cs` — capability interfaces with primitive properties
+- `tests/Pennington.Tests/` — add security-focused tests

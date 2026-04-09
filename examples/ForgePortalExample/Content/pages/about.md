@@ -2,7 +2,7 @@
 title: "About Forge"
 ---
 
-Forge is the internal developer portal for our organization. It's built with Penn, a .NET content engine.
+Forge is the internal developer portal for our organization. It's built with Pennington, a .NET content engine.
 
 ## Team
 

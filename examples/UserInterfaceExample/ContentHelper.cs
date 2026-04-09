@@ -1,11 +1,11 @@
 namespace UserInterfaceExample;
 
 using System.Collections.Immutable;
-using Penn.Content;
-using Penn.FrontMatter;
-using Penn.Navigation;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.FrontMatter;
+using Pennington.Navigation;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
 /// <summary>
 /// Helper for querying markdown content pages and building navigation.

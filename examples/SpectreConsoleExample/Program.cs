@@ -1,7 +1,7 @@
 using MonorailCss.Theme;
-using Penn.FrontMatter;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
+using Pennington.FrontMatter;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
 using SpectreConsoleExample;
 using SpectreConsoleExample.Components;
 
@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
 
-builder.Services.AddPenn(penn =>
+builder.Services.AddPennington(penn =>
 {
     penn.SiteTitle = "Spectre.Console Documentation";
     penn.SiteDescription = "Beautiful console applications with Spectre.Console";
@@ -59,6 +59,6 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>();
 app.UseMonorailCss();
-app.UsePenn();
+app.UsePennington();
 
 await app.RunOrBuildAsync(args);

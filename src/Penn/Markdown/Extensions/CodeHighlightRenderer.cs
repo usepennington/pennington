@@ -1,12 +1,12 @@
-namespace Penn.Markdown.Extensions;
+namespace Pennington.Markdown.Extensions;
 
 using System.Text;
 using Markdig.Parsers;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
-using Penn.Highlighting;
-using Penn.Markdown.Extensions.Tabs;
+using Pennington.Highlighting;
+using Pennington.Markdown.Extensions.Tabs;
 
 /// <summary>
 /// Custom Markdig renderer for fenced code blocks that:

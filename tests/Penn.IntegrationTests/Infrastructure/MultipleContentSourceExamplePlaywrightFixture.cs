@@ -1,12 +1,12 @@
-namespace Penn.IntegrationTests.Infrastructure;
+namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
 
 public class MultipleContentSourceExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -31,7 +31,7 @@ public class MultipleContentSourceExamplePlaywrightFixture : IAsyncLifetime
         builder.Logging.ClearProviders();
 
         builder.Services.AddRazorComponents();
-        builder.Services.AddPenn(penn =>
+        builder.Services.AddPennington(penn =>
         {
             penn.SiteTitle = "My Little Content Engine";
             penn.SiteDescription = "An Inflexible Content Engine for .NET";
@@ -64,7 +64,7 @@ public class MultipleContentSourceExamplePlaywrightFixture : IAsyncLifetime
         _app.UseAntiforgery();
         _app.MapRazorComponents<global::MultipleContentSourceExample.Components.App>();
         _app.UseMonorailCss();
-        _app.UsePenn();
+        _app.UsePennington();
 
         await _app.StartAsync();
         BaseUrl = _app.Urls.First();

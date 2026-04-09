@@ -1,9 +1,9 @@
-namespace Penn.DocSite;
+namespace Pennington.DocSite;
 
 using System.Reflection;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
-using Penn.Routing;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
+using Pennington.Routing;
 
 /// <summary>
 /// Configuration for a documentation site.
@@ -27,7 +27,7 @@ public record DocSiteOptions
     public FontPreload[] FontPreloads { get; init; } = [];
     public Assembly[] AdditionalRoutingAssemblies { get; init; } = [];
 
-    /// <summary>Path to .sln or .slnx for Roslyn integration. Requires Penn.Roslyn package.</summary>
+    /// <summary>Path to .sln or .slnx for Roslyn integration. Requires Pennington.Roslyn package.</summary>
     public string? SolutionPath { get; init; }
 
     /// <summary>Configure localization options (locales, default locale).</summary>

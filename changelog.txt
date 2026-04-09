@@ -1,7 +1,7 @@
-# Penn Changelog
+# Pennington Changelog
 
 ## Task 1: Project Scaffolding + UrlPath Value Type
-- Created project files (Penn.csproj, Penn.Tests.csproj, GlobalUsings)
+- Created project files (Pennington.csproj, Pennington.Tests.csproj, GlobalUsings)
 - Added C# 15 union type polyfills in Infrastructure/UnionPolyfills.cs
 - Implemented UrlPath readonly record struct in Routing/UrlPath.cs
   - `/` operator for path combining
@@ -74,7 +74,7 @@
 
 ## Task 10: Link Verification + Registration API
 - Implemented LinkCheckResult union (ValidLink, BrokenLinkResult, ExternalLink)
-- Implemented PennOptions with SiteTitle, SiteDescription, CanonicalBaseUrl, ContentRootPath
+- Implemented PenningtonOptions with SiteTitle, SiteDescription, CanonicalBaseUrl, ContentRootPath
 - Implemented MarkdownContentOptions for content source configuration
 - Implemented HighlightingOptions, IslandsOptions, LocalizationOptions
 - Added tests for link check union and full registration API
@@ -129,9 +129,9 @@
 - Tests cover happy path, error propagation, drafts, exceptions, multiple services
 
 ## Task 18: Port T1 - Project Scaffolding
-- Created Penn.UI (Razor SDK), Penn.MonorailCss, Penn.DocSite (Razor SDK), Penn.Docs (Web SDK), Penn.IntegrationTests
-- Updated Penn.slnx with all new projects
-- Added Markdig, AngleSharp, Mdazor, TextMateSharp, System.ServiceModel.Syndication to Penn.csproj
+- Created Pennington.UI (Razor SDK), Pennington.MonorailCss, Pennington.DocSite (Razor SDK), Pennington.Docs (Web SDK), Pennington.IntegrationTests
+- Updated Pennington.slnx with all new projects
+- Added Markdig, AngleSharp, Mdazor, TextMateSharp, System.ServiceModel.Syndication to Pennington.csproj
 
 ## Task 19: Port T2 - Markdig Parser + Renderer
 - Implemented MarkdownContentParser<TFrontMatter> (IContentParser) using FrontMatterParser
@@ -154,7 +154,7 @@
 - Implemented IResponseProcessor interface for response body processing
 - Implemented ResponseProcessingMiddleware (captures body, chains processors)
 - Implemented BaseUrlRewritingProcessor for subdirectory deployment URL rewriting
-- Implemented PennExtensions: AddPenn(), UsePenn(), RunOrBuildAsync()
+- Implemented PenningtonExtensions: AddPennington(), UsePennington(), RunOrBuildAsync()
 - Implemented OutputGenerationService for static site generation via HTTP crawl
 - Tests cover DI registration, middleware pipeline behavior
 
@@ -165,7 +165,7 @@
 - Implemented SpaNavigationExtensions (AddSpaNavigation, UseSpaNavigation endpoint)
 - Tests cover slug conversion, envelope assembly, empty/multi-renderer scenarios
 
-## Task 23: Port T6 - Penn.MonorailCss
+## Task 23: Port T6 - Pennington.MonorailCss
 - Ported CssClassCollector (thread-safe class name storage)
 - Ported CssClassCollectorProcessor (IResponseProcessor for HTML/JSON class extraction)
 - Ported MonorailCssOptions, IColorScheme, AlgorithmicColorScheme, NamedColorScheme
@@ -174,15 +174,15 @@
 - Ported MonorailServiceExtensions (AddMonorailCss/UseMonorailCss)
 - Added tests for class collection and extraction
 
-## Task 24: Port T7 - Penn.UI Components
-- Copied scripts.js and spa-engine.js to Penn.UI/wwwroot
+## Task 24: Port T7 - Pennington.UI Components
+- Copied scripts.js and spa-engine.js to Pennington.UI/wwwroot
 - Ported 12 Razor components from MyLittleContentEngine.UI
   - TableOfContentsNavigation, OutlineNavigation, Badge, Card, CardGrid
   - LinkCard, Steps, Step, BigTable, FallbackNotice, LanguageSwitcher, CodeBlock
 - Updated type references: NavigationTreeItem.Title/Route, ICodeHighlighter
-- Updated _Imports.razor with Penn namespaces
+- Updated _Imports.razor with Pennington namespaces
 
-## Task 25: Port T8 - Penn.DocSite Package
+## Task 25: Port T8 - Pennington.DocSite Package
 - Implemented DocSiteFrontMatter with IRedirectable capability
 - Implemented DocSiteOptions (SiteTitle, ColorScheme, fonts, GitHub, etc.)
 - Implemented DocSiteServiceExtensions (AddDocSite/UseDocSite/RunDocSiteAsync)
@@ -190,7 +190,7 @@
 - Ported App.razor, Routes.razor, MainLayout.razor, Pages.razor, DocSiteArticle.razor
 - Simplified: no localization, no Roslyn, no Mdazor
 
-## Task 26: Port T9 - Penn.Docs Site
+## Task 26: Port T9 - Pennington.Docs Site
 - Created Program.cs with DocSiteOptions (colors, fonts, GitHub URL)
 - Copied all 29 markdown content files from v1
 - Copied static assets (fonts, favicon, social.png, robots.txt)
@@ -198,7 +198,7 @@
 
 ## Task 30: Homepage + General Razor Page Support
 - Added RazorPageContentService for discovering @page Razor components
-- Added AdditionalRoutingAssemblies to PennOptions
+- Added AdditionalRoutingAssemblies to PenningtonOptions
 - Ported Index.razor homepage from v1
 - Updated Pages.razor with dynamic component fallback for Razor pages
 - Supports any @page component (homepage, about pages, etc.)
@@ -212,15 +212,15 @@
 - Ported TabbedCodeBlocks extension (TabbedCodeBlock, renderer, LanguageNormalizer)
 - Ported CustomAlertInlineParser for [!NOTE], [!TIP], [!WARNING], etc.
 - Updated MarkdownPipelineFactory with highlighting, tabs, and alert extensions
-- Registered TextMateHighlighter and ShellHighlighter in AddPenn()
-- Roslyn highlighting deferred to optional Penn.Roslyn package
+- Registered TextMateHighlighter and ShellHighlighter in AddPennington()
+- Roslyn highlighting deferred to optional Pennington.Roslyn package
 
 ## Task 29: Integration Tests + SPA Fix
 - Created DocsWebApplicationFactory for WebApplicationFactory<Program>
 - Created HTTP integration tests for homepage, content pages, styles, scripts, SPA data, static assets
 - Fixed SPA DI issue: registered RenderContext in AddSpaNavigation()
 - Added InternalsVisibleTo for test project access
-- Fixed content path resolution in AddPenn() and UsePenn() to use IWebHostEnvironment.ContentRootPath instead of Directory.GetCurrentDirectory()
+- Fixed content path resolution in AddPennington() and UsePennington() to use IWebHostEnvironment.ContentRootPath instead of Directory.GetCurrentDirectory()
 - Tests verify end-to-end page rendering, navigation, and SPA endpoints
 
 ## SPA Island Rendering
@@ -231,20 +231,20 @@
 - Updated SPA endpoint to resolve page titles from content services
 - Integration tests verify SPA data endpoint returns rendered article HTML
 
-## Roslyn T1: Penn Core Extension Points
+## Roslyn T1: Pennington Core Extension Points
 - Added ICodeBlockPreprocessor interface for pluggable code block preprocessing
 - Added IFileWatcher + FileWatcher (FileSystemWatcher-based, no ASP.NET deps)
 - Added FileWatchDependencyFactory<T> for cached-until-invalidated service lifetimes
 - Modified CodeHighlightRenderer to check preprocessors before normal highlighting
 - Modified MarkdownPipelineFactory to thread preprocessors through pipeline
-- Registered IFileWatcher in AddPenn()
+- Registered IFileWatcher in AddPennington()
 
-## Roslyn T2: Penn.Roslyn Scaffold + Basic Highlighting
-- Created Penn.Roslyn project (Microsoft.CodeAnalysis, MSBuild.Locator, DiffPlex)
-- Created Penn.Roslyn.Tests project
+## Roslyn T2: Pennington.Roslyn Scaffold + Basic Highlighting
+- Created Pennington.Roslyn project (Microsoft.CodeAnalysis, MSBuild.Locator, DiffPlex)
+- Created Pennington.Roslyn.Tests project
 - Implemented RoslynHighlighter (ICodeHighlighter, priority 100, C#/VB)
 - Implemented SyntaxHighlighter (AdhocWorkspace + Classifier API → hljs-* CSS)
-- Implemented RoslynOptions and initial AddPennRoslyn() registration
+- Implemented RoslynOptions and initial AddPenningtonRoslyn() registration
 
 ## Roslyn T3: Solution Workspace + File Watching
 - Implemented ISolutionWorkspaceService interface
@@ -270,16 +270,16 @@
   - :xmldocid,bodyonly — extracts only the method/class body
   - :xmldocid-diff — highlights two symbols and shows line-level diff
   - :path — reads and highlights file relative to solution root
-- Finalized AddPennRoslyn() with full service registration
+- Finalized AddPenningtonRoslyn() with full service registration
   - SolutionWorkspaceService, SymbolExtractionService registered when SolutionPath set
   - RoslynCodeBlockPreprocessor registered as ICodeBlockPreprocessor
-- Penn.Roslyn integration is now complete and pluggable
+- Pennington.Roslyn integration is now complete and pluggable
 
 ## Documentation Rewrite
-- Rewrote all 28 documentation pages for Penn v2
-- Updated homepage (Index.razor) with Penn branding
+- Rewrote all 28 documentation pages for Pennington v2
+- Updated homepage (Index.razor) with Pennington branding
 - Updated all front matter UIDs (docs.* → penn.*)
 - Updated all xref links to new UIDs
-- Updated all code examples to Penn v2 APIs
-- Updated all xmldocid/path references to Penn types and files
+- Updated all code examples to Pennington v2 APIs
+- Updated all xmldocid/path references to Pennington types and files
 - Removed all MyLittleContentEngine references

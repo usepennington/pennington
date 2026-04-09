@@ -1,6 +1,6 @@
 namespace MultipleContentSourceExample;
 
-using Penn.FrontMatter;
+using Pennington.FrontMatter;
 
 /// <summary>
 /// Front matter for blog posts.

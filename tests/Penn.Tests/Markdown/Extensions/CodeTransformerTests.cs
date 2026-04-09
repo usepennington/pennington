@@ -1,6 +1,6 @@
-using Penn.Markdown.Extensions;
+using Pennington.Markdown.Extensions;
 
-namespace Penn.Tests.Markdown.Extensions;
+namespace Pennington.Tests.Markdown.Extensions;
 
 public class CodeTransformerTests
 {
@@ -82,8 +82,8 @@ internal static class CodeTransformerAccessor
     public static string Transform(string highlightedHtml)
     {
         // Use reflection to access the internal static method
-        var type = typeof(Penn.Markdown.Extensions.CodeHighlightRenderOptions).Assembly
-            .GetType("Penn.Markdown.Extensions.CodeTransformer")!;
+        var type = typeof(Pennington.Markdown.Extensions.CodeHighlightRenderOptions).Assembly
+            .GetType("Pennington.Markdown.Extensions.CodeTransformer")!;
         var method = type.GetMethod("Transform",
             System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)!;
         return (string)method.Invoke(null, [highlightedHtml])!;

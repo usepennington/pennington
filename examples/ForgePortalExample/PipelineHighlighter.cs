@@ -3,7 +3,7 @@ namespace ForgePortalExample;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using Penn.Highlighting;
+using Pennington.Highlighting;
 
 public partial class PipelineHighlighter : ICodeHighlighter
 {

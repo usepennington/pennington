@@ -1,12 +1,12 @@
-namespace Penn.IntegrationTests.Infrastructure;
+namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using global::MonorailCss.Theme;
-using Penn.DocSite;
-using Penn.MonorailCss;
+using Pennington.DocSite;
+using Pennington.MonorailCss;
 
 public class BeaconDocsExamplePlaywrightFixture : IAsyncLifetime
 {

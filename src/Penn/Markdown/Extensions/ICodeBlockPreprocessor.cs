@@ -1,4 +1,4 @@
-namespace Penn.Markdown.Extensions;
+namespace Pennington.Markdown.Extensions;
 
 /// <summary>
 /// Preprocesses fenced code blocks before normal highlighting.

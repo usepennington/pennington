@@ -1,4 +1,4 @@
-namespace Penn.Islands;
+namespace Pennington.Islands;
 
 /// <summary>Configuration for SPA navigation.</summary>
 public sealed class SpaNavigationOptions

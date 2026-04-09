@@ -1,4 +1,4 @@
-namespace Penn.BlogSite;
+namespace Pennington.BlogSite;
 
 /// <summary>
 /// A blog post with its front matter and metadata.

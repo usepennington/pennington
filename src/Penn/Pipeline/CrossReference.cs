@@ -1,5 +1,5 @@
-namespace Penn.Pipeline;
+namespace Pennington.Pipeline;
 
-using Penn.Routing;
+using Pennington.Routing;
 
 public record CrossReference(string Uid, string Title, ContentRoute Route);

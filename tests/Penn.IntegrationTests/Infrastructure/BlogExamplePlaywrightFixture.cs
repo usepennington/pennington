@@ -1,10 +1,10 @@
-namespace Penn.IntegrationTests.Infrastructure;
+namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Penn.BlogSite;
+using Pennington.BlogSite;
 
 public class BlogExamplePlaywrightFixture : IAsyncLifetime
 {

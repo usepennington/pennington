@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Penn.Infrastructure;
+using Pennington.Infrastructure;
 
-namespace Penn.MonorailCss;
+namespace Pennington.MonorailCss;
 
 /// <summary>
 /// Extension methods for registering and configuring MonorailCSS services.

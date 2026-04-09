@@ -1,8 +1,8 @@
-namespace Penn.Islands;
+namespace Pennington.Islands;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Penn.Diagnostics;
+using Pennington.Diagnostics;
 
 /// <summary>JSON serialization for SPA envelopes.</summary>
 public static class SpaEnvelopeSerializer

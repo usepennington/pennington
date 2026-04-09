@@ -12,8 +12,8 @@ You want to control where pages appear in the sidebar navigation — their order
 Explain the fundamental mapping: directories become navigation sections, markdown files become pages, and the file system hierarchy defines the tree structure.
 
 ### What to show
-- Reference `T:Penn.Navigation.NavigationBuilder` (:path `src/Penn/Navigation/NavigationBuilder.cs`) — the service that transforms flat `ContentTocItem` lists into a tree of `NavigationTreeItem` nodes
-- Reference `T:Penn.Content.ContentTocItem` (:path `src/Penn/Content/ContentTocItem.cs`) — the flat input record with `Title`, `Route`, `Order`, `HierarchyParts` (string array derived from the file path), `Section`, and `Locale`
+- Reference `T:Pennington.Navigation.NavigationBuilder` (:path `src/Pennington/Navigation/NavigationBuilder.cs`) — the service that transforms flat `ContentTocItem` lists into a tree of `NavigationTreeItem` nodes
+- Reference `T:Pennington.Content.ContentTocItem` (:path `src/Pennington/Content/ContentTocItem.cs`) — the flat input record with `Title`, `Route`, `Order`, `HierarchyParts` (string array derived from the file path), `Section`, and `Locale`
 - Show how `HierarchyParts` is derived from the content file path: `Content/tutorials/monitoring/creating-monitors.md` produces `["tutorials", "monitoring", "creating-monitors"]`
 - Show a simple directory tree and the resulting sidebar navigation
 
@@ -27,7 +27,7 @@ Explain the fundamental mapping: directories become navigation sections, markdow
 Show how the `order` front matter property controls page sequence and what happens when it's omitted.
 
 ### What to show
-- Reference the `BuildLevel` method in `T:Penn.Navigation.NavigationBuilder` (:path `src/Penn/Navigation/NavigationBuilder.cs`) — the private method that sorts items at each level: `.OrderBy(item => item.Order).ThenBy(item => item.Title, StringComparer.OrdinalIgnoreCase)`
+- Reference the `BuildLevel` method in `T:Pennington.Navigation.NavigationBuilder` (:path `src/Pennington/Navigation/NavigationBuilder.cs`) — the private method that sorts items at each level: `.OrderBy(item => item.Order).ThenBy(item => item.Title, StringComparer.OrdinalIgnoreCase)`
 - Show 4 pages without `order` values: they sort alphabetically by title
 - Add `order: 10`, `order: 20`, etc. to the pages: they now sort by the explicit order
 - Pages without an explicit `order` value have `Order = int.MaxValue` (the default) and sort AFTER all explicitly ordered pages, then alphabetically by title among other unordered pages.
@@ -43,8 +43,8 @@ Show how the `order` front matter property controls page sequence and what happe
 Explain what happens when a directory has no `index.md` — NavigationBuilder creates a section header node automatically.
 
 ### What to show
-- Reference the `sectionsWithDescendants` logic in `BuildLevel` (:path `src/Penn/Navigation/NavigationBuilder.cs`) — finds directory names (hierarchy parts) that have descendants but no direct item at that level
-- Reference `M:Penn.Navigation.NavigationBuilder.FormatSectionTitle(System.String)` — converts kebab-case directory names to title case: `"getting-started"` becomes `"Getting Started"`
+- Reference the `sectionsWithDescendants` logic in `BuildLevel` (:path `src/Pennington/Navigation/NavigationBuilder.cs`) — finds directory names (hierarchy parts) that have descendants but no direct item at that level
+- Reference `M:Pennington.Navigation.NavigationBuilder.FormatSectionTitle(System.String)` — converts kebab-case directory names to title case: `"getting-started"` becomes `"Getting Started"`
 - Show that auto-created section nodes get an empty `Route` (non-navigable), meaning they render as section headers in the sidebar, not as clickable links
 - The section node's `Order` is set to the minimum `Order` among its children, so it sorts naturally with sibling pages
 
@@ -59,7 +59,7 @@ Show how adding an `index.md` to a directory replaces the auto-generated header 
 
 ### What to show
 - Create `Content/tutorials/monitoring/index.md` with `title: "Monitoring & Alerts"` — this becomes a navigable entry that replaces the auto-generated "Monitoring" header
-- Reference `T:Penn.Navigation.NavigationTreeItem` (:path `src/Penn/Navigation/NavigationTreeItem.cs`) — record with `Title`, `Route`, `Order`, `Section`, `IsSelected`, `IsExpanded`, `Children`
+- Reference `T:Pennington.Navigation.NavigationTreeItem` (:path `src/Pennington/Navigation/NavigationTreeItem.cs`) — record with `Title`, `Route`, `Order`, `Section`, `IsSelected`, `IsExpanded`, `Children`
 - When an `index.md` exists, the `ContentTocItem` for it has `HierarchyParts` matching the directory level, so it appears as a direct item (not an auto-created section) with its children nested below
 - The `Title` from front matter replaces the kebab-case-derived title
 
@@ -73,8 +73,8 @@ Show how adding an `index.md` to a directory replaces the auto-generated header 
 Show how the `section` front matter property can group a page under a specific section header, regardless of its directory location.
 
 ### What to show
-- Reference the `Section` property on `T:Penn.Content.ContentTocItem` (:path `src/Penn/Content/ContentTocItem.cs`)
-- Reference the `Section` property on `T:Penn.Navigation.NavigationTreeItem` (:path `src/Penn/Navigation/NavigationTreeItem.cs`)
+- Reference the `Section` property on `T:Pennington.Content.ContentTocItem` (:path `src/Pennington/Content/ContentTocItem.cs`)
+- Reference the `Section` property on `T:Pennington.Navigation.NavigationTreeItem` (:path `src/Pennington/Navigation/NavigationTreeItem.cs`)
 - Show a page at `Content/guides/advanced-routing.md` with `section: "Monitoring & Alerts"` front matter — it groups under the "Monitoring & Alerts" section despite being in the `guides/` directory
 - Explain that `Section` is a display property passed through to the tree item; the actual tree hierarchy is still determined by `HierarchyParts` (the file path)
 
@@ -88,8 +88,8 @@ Show how the `section` front matter property can group a page under a specific s
 Show how `DocSiteOptions.Areas` segments the sidebar into tabbed content areas, each mapping to a top-level directory.
 
 ### What to show
-- Reference `T:Penn.DocSite.ContentArea` (:path `src/Penn.DocSite/ContentArea.cs`) — record with `Title` (display name), `Slug` (URL prefix / directory name), optional `Icon` (SVG markup)
-- Reference `P:Penn.DocSite.DocSiteOptions.Areas` (:path `src/Penn.DocSite/DocSiteOptions.cs`) — `IReadOnlyList<ContentArea>`, doc comment: "When empty or containing a single area, no area selector is shown. Each area's slug must match a top-level directory name under ContentRootPath."
+- Reference `T:Pennington.DocSite.ContentArea` (:path `src/Pennington.DocSite/ContentArea.cs`) — record with `Title` (display name), `Slug` (URL prefix / directory name), optional `Icon` (SVG markup)
+- Reference `P:Pennington.DocSite.DocSiteOptions.Areas` (:path `src/Pennington.DocSite/DocSiteOptions.cs`) — `IReadOnlyList<ContentArea>`, doc comment: "When empty or containing a single area, no area selector is shown. Each area's slug must match a top-level directory name under ContentRootPath."
 - Configure three areas in `DocSiteOptions`:
   ```csharp
   Areas = [
@@ -115,8 +115,8 @@ Address the most common navigation complaints and their fixes.
 - **"My section header shows the wrong name"**: without an `index.md`, the section name comes from `FormatSectionTitle` (kebab-case to title case). Fix: add an `index.md` with the desired `title` in front matter
 - **"Pages with the same order value are in unexpected order"**: they sort alphabetically by title (case-insensitive). Fix: use distinct order values or adjust titles
 - **"Prev/next links skip a page"**: the page may be in a different content area. Prev/next only traverses within the same tree. Fix: ensure the page is in the expected content area directory
-- The sidebar is rendered by the `TableOfContentsNavigation` component (`T:Penn.UI.Components.Navigation.TableOfContentsNavigation`, :path `src/Penn.UI/Components/Navigation/TableOfContentsNavigation.razor`) — see its API for CSS customization parameters
-- In-page heading tracking is handled by the `OutlineNavigation` component (`T:Penn.UI.Components.Navigation.OutlineNavigation`, :path `src/Penn.UI/Components/Navigation/OutlineNavigation.razor`) — it generates an "On This Page" sidebar from rendered HTML headings
+- The sidebar is rendered by the `TableOfContentsNavigation` component (`T:Pennington.UI.Components.Navigation.TableOfContentsNavigation`, :path `src/Pennington.UI/Components/Navigation/TableOfContentsNavigation.razor`) — see its API for CSS customization parameters
+- In-page heading tracking is handled by the `OutlineNavigation` component (`T:Pennington.UI.Components.Navigation.OutlineNavigation`, :path `src/Pennington.UI/Components/Navigation/OutlineNavigation.razor`) — it generates an "On This Page" sidebar from rendered HTML headings
 
 ### Key points
 - Navigation ordering is deterministic: `Order` ascending, then `Title` alphabetical (case-insensitive)

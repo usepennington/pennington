@@ -1,14 +1,14 @@
 using MonorailCss.Theme;
-using Penn.DocSite;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
-using Penn.Roslyn;
+using Pennington.DocSite;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
+using Pennington.Roslyn;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
-    SiteTitle = "Penn",
+    SiteTitle = "Pennington",
     Description = "A Content Engine for .NET",
     SocialImageUrl = "/social.png",
     ColorScheme = new AlgorithmicColorScheme
@@ -17,8 +17,8 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         ColorSchemeGenerator = i => (i + 180, i - 90, i + 90),
         BaseColorName = ColorNames.Zinc
     },
-    GitHubUrl = "https://github.com/phil-scott-78/penn",
-    CanonicalBaseUrl = "https://phil-scott-78.github.io/penn/",
+    GitHubUrl = "https://github.com/phil-scott-78/pennington",
+    CanonicalBaseUrl = "https://phil-scott-78.github.io/pennington/",
     DisplayFontFamily = "Lexend, sans-serif",
     BodyFontFamily = "'Noto Sans', sans-serif",
     FontPreloads =
@@ -45,7 +45,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
             unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
         }
     """,
-    SolutionPath = "../../Penn.slnx",
+    SolutionPath = "../../Pennington.slnx",
     Areas =
     [
         new ContentArea("Getting Started", "tutorials"),
@@ -56,9 +56,9 @@ builder.Services.AddDocSite(() => new DocSiteOptions
 });
 
 // Roslyn integration for :xmldocid and :path code extraction
-builder.Services.AddPennRoslyn(roslyn =>
+builder.Services.AddPenningtonRoslyn(roslyn =>
 {
-    roslyn.SolutionPath = "../../Penn.slnx";
+    roslyn.SolutionPath = "../../Pennington.slnx";
 });
 
 var app = builder.Build();

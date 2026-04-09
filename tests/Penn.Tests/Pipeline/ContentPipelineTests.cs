@@ -1,11 +1,11 @@
 using System.Collections.Immutable;
-using Penn.Content;
-using Penn.FrontMatter;
-using Penn.Generation;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.FrontMatter;
+using Pennington.Generation;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
-namespace Penn.Tests.Pipeline;
+namespace Pennington.Tests.Pipeline;
 
 public class ContentPipelineTests
 {

@@ -1,6 +1,6 @@
 namespace YogaStudioExample.Models;
 
-using Penn.FrontMatter;
+using Pennington.FrontMatter;
 
 public record YogaFrontMatter : IFrontMatter, IDraftable, ITaggable,
     ISectionable, ICrossReferenceable, IOrderable, IDescribable

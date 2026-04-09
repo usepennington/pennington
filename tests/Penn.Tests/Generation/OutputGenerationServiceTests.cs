@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
-using Penn.Content;
-using Penn.Generation;
-using Penn.Infrastructure;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Generation;
+using Pennington.Infrastructure;
+using Pennington.Routing;
 using Testably.Abstractions.Testing;
 
-namespace Penn.Tests.Generation;
+namespace Pennington.Tests.Generation;
 
 public class OutputGenerationServiceTests
 {
@@ -26,7 +26,7 @@ public class OutputGenerationServiceTests
         return new OutputGenerationService(
             contentServices ?? [],
             outputOptions,
-            new PennOptions(),
+            new PenningtonOptions(),
             env,
             endpoints,
             fs,

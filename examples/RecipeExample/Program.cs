@@ -1,7 +1,7 @@
 using MonorailCss.Theme;
-using Penn.Content;
-using Penn.Infrastructure;
-using Penn.MonorailCss;
+using Pennington.Content;
+using Pennington.Infrastructure;
+using Pennington.MonorailCss;
 using RecipeExample;
 using RecipeExample.Components;
 
@@ -11,7 +11,7 @@ builder.Services.AddRazorComponents();
 
 var recipePath = Path.Combine(builder.Environment.ContentRootPath, "recipes");
 
-builder.Services.AddPenn(penn =>
+builder.Services.AddPennington(penn =>
 {
     penn.SiteTitle = "Recipe Collection";
     penn.SiteDescription = "CookLang Recipe Website";
@@ -45,7 +45,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>();
 app.UseMonorailCss();
-app.UsePenn();
+app.UsePennington();
 
 // Responsive image endpoint
 app.MapGet("/images/{filename}-{size}.webp",

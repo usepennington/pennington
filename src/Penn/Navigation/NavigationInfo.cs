@@ -1,7 +1,7 @@
-namespace Penn.Navigation;
+namespace Pennington.Navigation;
 
 using System.Collections.Immutable;
-using Penn.Routing;
+using Pennington.Routing;
 
 public record NavigationInfo(
     string? SectionName,

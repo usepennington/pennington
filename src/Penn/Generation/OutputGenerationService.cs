@@ -1,4 +1,4 @@
-namespace Penn.Generation;
+namespace Pennington.Generation;
 
 using System.Collections.Concurrent;
 using System.IO.Abstractions;
@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
-using Penn.Content;
-using Penn.Diagnostics;
-using Penn.Infrastructure;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Diagnostics;
+using Pennington.Infrastructure;
+using Pennington.Routing;
 
 /// <summary>
 /// Generates a static site by HTTP-crawling the running app.
@@ -29,7 +29,7 @@ public sealed class OutputGenerationService
     public OutputGenerationService(
         IEnumerable<IContentService> contentServices,
         OutputOptions outputOptions,
-        PennOptions pennOptions,
+        PenningtonOptions pennOptions,
         IWebHostEnvironment environment,
         EndpointDataSource endpointDataSource,
         IFileSystem fileSystem,
@@ -103,7 +103,7 @@ public sealed class OutputGenerationService
         // Phase 8: Generate 404.html by fetching a non-existent URL (triggers fallback route)
         try
         {
-            var notFoundResponse = await client.GetAsync("/__penn-404-generator");
+            var notFoundResponse = await client.GetAsync("/__pennington-404-generator");
             var notFoundHtml = await notFoundResponse.Content.ReadAsStringAsync();
             if (!string.IsNullOrWhiteSpace(notFoundHtml))
             {
@@ -229,7 +229,7 @@ public sealed class OutputGenerationService
         // Copy wwwroot static web assets
         CopyFileProvider(_environment.WebRootFileProvider, "", outputDir, reportBuilder);
 
-        // Copy RCL static web assets (Penn.UI scripts, etc.)
+        // Copy RCL static web assets (Pennington.UI scripts, etc.)
         // CompositeFileProvider contains all registered static web asset providers
         if (_environment.WebRootFileProvider is CompositeFileProvider composite)
         {
@@ -371,7 +371,7 @@ public sealed class OutputGenerationService
 
     private static List<Diagnostic> ParseDiagnosticHeaders(HttpResponseMessage response)
     {
-        if (!response.Headers.TryGetValues("X-Penn-Diagnostic", out var values))
+        if (!response.Headers.TryGetValues("X-Pennington-Diagnostic", out var values))
             return [];
 
         var diagnostics = new List<Diagnostic>();

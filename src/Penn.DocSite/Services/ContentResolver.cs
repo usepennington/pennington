@@ -1,14 +1,14 @@
-namespace Penn.DocSite.Services;
+namespace Pennington.DocSite.Services;
 
 using System.Collections.Immutable;
-using Penn.Content;
-using Penn.Diagnostics;
-using Penn.FrontMatter;
-using Penn.Infrastructure;
-using Penn.Localization;
-using Penn.Navigation;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Diagnostics;
+using Pennington.FrontMatter;
+using Pennington.Infrastructure;
+using Pennington.Localization;
+using Pennington.Navigation;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
 /// <summary>
 /// Resolves content pages by URL for the DocSite.

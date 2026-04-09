@@ -1,9 +1,9 @@
-using Penn.FrontMatter;
-using Penn.Markdown;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.FrontMatter;
+using Pennington.Markdown;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
-namespace Penn.Tests.Markdown;
+namespace Pennington.Tests.Markdown;
 
 public class MarkdownContentRendererTests
 {
@@ -92,7 +92,7 @@ public class MarkdownContentRendererTests
     [Fact]
     public async Task RenderAsync_Links_ProducesAnchorTags()
     {
-        var markdown = "Visit [Penn docs](/docs/getting-started) for more info.";
+        var markdown = "Visit [Pennington docs](/docs/getting-started) for more info.";
         var parsed = new ParsedItem(MakeRoute("/links"), MakeMetadata(), markdown);
 
         var result = await _renderer.RenderAsync(parsed);
@@ -100,7 +100,7 @@ public class MarkdownContentRendererTests
         var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Html.ShouldContain("<a");
         rendered.Content.Html.ShouldContain("href=\"/docs/getting-started\"");
-        rendered.Content.Html.ShouldContain("Penn docs");
+        rendered.Content.Html.ShouldContain("Pennington docs");
     }
 
     [Fact]
@@ -192,10 +192,10 @@ public class MarkdownContentRendererTests
         var markdown = """
             ## Getting Started
 
-            Install [Penn](https://github.com/example/penn) by running:
+            Install [Pennington](https://github.com/example/pennington) by running:
 
             ```bash
-            dotnet add package Penn
+            dotnet add package Pennington
             ```
 
             ![Architecture](/images/architecture.png)

@@ -1,6 +1,6 @@
-namespace Penn.Localization;
+namespace Pennington.Localization;
 
-using Penn.Infrastructure;
+using Pennington.Infrastructure;
 
 /// <summary>
 /// Scoped per-request locale context, set by <see cref="LocaleDetectionMiddleware"/>.
@@ -24,7 +24,7 @@ public sealed class LocaleContext
         IsDefaultLocale = true;
     }
 
-    /// <summary>The Penn locale code for this request (e.g., "en", "fr", "gen-z").</summary>
+    /// <summary>The Pennington locale code for this request (e.g., "en", "fr", "gen-z").</summary>
     public string Locale { get; internal set; }
 
     /// <summary>Metadata for this locale.</summary>

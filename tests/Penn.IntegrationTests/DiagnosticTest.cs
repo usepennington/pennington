@@ -1,18 +1,18 @@
 using System.Reflection;
-using Penn.Content;
-using Penn.DocSite;
-using Penn.FrontMatter;
-using Penn.Infrastructure;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.DocSite;
+using Pennington.FrontMatter;
+using Pennington.Infrastructure;
+using Pennington.Pipeline;
+using Pennington.Routing;
 using Testably.Abstractions;
 
-namespace Penn.IntegrationTests;
+namespace Pennington.IntegrationTests;
 
 public class DiagnosticTest
 {
     private static string GetContentPath() => Path.GetFullPath(Path.Combine(
-        AppContext.BaseDirectory, "..", "..", "..", "..", "..", "docs", "Penn.Docs", "Content"));
+        AppContext.BaseDirectory, "..", "..", "..", "..", "..", "docs", "Pennington.Docs", "Content"));
 
     [Fact(Skip = "Docs content restructuring in progress")]
     public async Task DiscoverAsync_FindsContent()
@@ -62,7 +62,7 @@ public class DiagnosticTest
             BasePageUrl = new UrlPath("/"),
         };
 
-        // Use Penn's DocFrontMatter
+        // Use Pennington's DocFrontMatter
         var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), new RealFileSystem(), new FileWatcher(new RealFileSystem()), new LocalizationOptions());
         var tocItems = await service.GetContentTocEntriesAsync();
         tocItems.Count.ShouldBeGreaterThan(0, "TOC entries should not be empty with DocFrontMatter");
@@ -71,8 +71,8 @@ public class DiagnosticTest
     [Fact]
     public async Task RazorPageContentService_DiscoversHomepage()
     {
-        // The Penn.Docs assembly contains Index.razor with @page "/"
-        var docsAssembly = typeof(Penn.Docs.Components.Index).Assembly;
+        // The Pennington.Docs assembly contains Index.razor with @page "/"
+        var docsAssembly = typeof(Pennington.Docs.Components.Index).Assembly;
         var service = new RazorPageContentService(
             [docsAssembly],
             new RealFileSystem(),

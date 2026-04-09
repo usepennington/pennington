@@ -1,10 +1,10 @@
-namespace Penn.LlmsTxt;
+namespace Pennington.LlmsTxt;
 
 using System.Collections.Immutable;
 using System.Text;
-using Penn.Content;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Content;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
 /// <summary>
 /// Thin <see cref="IContentService"/> adapter that delegates to <see cref="LlmsTxtService"/>

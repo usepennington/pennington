@@ -1,7 +1,7 @@
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
-namespace Penn.Tests.Pipeline;
+namespace Pennington.Tests.Pipeline;
 
 public class ProgrammaticContentTests
 {

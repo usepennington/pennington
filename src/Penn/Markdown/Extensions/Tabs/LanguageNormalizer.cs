@@ -1,4 +1,4 @@
-namespace Penn.Markdown.Extensions.Tabs;
+namespace Pennington.Markdown.Extensions.Tabs;
 
 /// <summary>
 /// Maps language identifiers to human-readable display names for tab headers.

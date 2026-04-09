@@ -1,10 +1,10 @@
-using Penn.FrontMatter;
-using Penn.Markdown;
-using Penn.Pipeline;
-using Penn.Routing;
+using Pennington.FrontMatter;
+using Pennington.Markdown;
+using Pennington.Pipeline;
+using Pennington.Routing;
 using Testably.Abstractions.Testing;
 
-namespace Penn.Tests.Markdown;
+namespace Pennington.Tests.Markdown;
 
 public class MarkdownContentParserTests
 {

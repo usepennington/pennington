@@ -1,7 +1,7 @@
-namespace Penn.Generation;
+namespace Pennington.Generation;
 
-using Penn.Diagnostics;
-using Penn.Routing;
+using Pennington.Diagnostics;
+using Pennington.Routing;
 
 public record BuildDiagnostic(
     DiagnosticSeverity Severity,
