@@ -68,6 +68,10 @@ public static class PennExtensions
         services.AddSingleton<ICodeHighlighter, TextMateHighlighter>(sp =>
             new TextMateHighlighter(sp.GetRequiredService<TextMateLanguageRegistry>()));
         services.AddSingleton<ICodeHighlighter, ShellHighlighter>();
+        foreach (var highlighter in options.Highlighting.Highlighters)
+        {
+            services.AddSingleton<ICodeHighlighter>(highlighter);
+        }
         services.AddSingleton<HighlightingService>(sp =>
             new HighlightingService(sp.GetServices<ICodeHighlighter>()));
 

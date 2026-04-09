@@ -112,10 +112,30 @@ public class PennExtensionsTests
         islands[0].ShouldBeOfType<StubIsland>();
     }
 
+    [Fact]
+    public void AddPenn_Registers_CodeHighlighters_FromOptions()
+    {
+        using var provider = BuildProvider(opts =>
+        {
+            opts.Highlighting.AddHighlighter<StubHighlighter>();
+        });
+
+        var highlighters = provider.GetServices<ICodeHighlighter>().ToList();
+
+        highlighters.OfType<StubHighlighter>().Count().ShouldBe(1);
+    }
+
     private class StubIsland : IIslandRenderer
     {
         public string IslandName => "test";
         public Task<string> RenderAsync(ContentRoute route, RenderContext context)
             => Task.FromResult("<div>test</div>");
+    }
+
+    private class StubHighlighter : ICodeHighlighter
+    {
+        public IReadOnlySet<string> SupportedLanguages { get; } = new HashSet<string> { "stub" };
+        public string Highlight(string code, string language) => code;
+        public int Priority => 100;
     }
 }
