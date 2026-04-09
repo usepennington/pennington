@@ -1,9 +1,10 @@
+using Penn.FrontMatter;
 using Penn.Infrastructure;
 using Penn.Islands;
 using Penn.MonorailCss;
-using SpaNavigationExample;
-using SpaNavigationExample.Components;
-using SpaNavigationExample.Slots;
+using SpaNavigationTutorialExample;
+using SpaNavigationTutorialExample.Components;
+using SpaNavigationTutorialExample.Islands;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,25 +12,25 @@ builder.Services.AddRazorComponents();
 
 builder.Services.AddPenn(penn =>
 {
-    penn.SiteTitle = "My Recipe Book";
-    penn.SiteDescription = "A cookbook powered by SPA slots";
+    penn.SiteTitle = "SPA Navigation Tutorial";
+    penn.SiteDescription = "Demonstrates SPA navigation with islands";
     penn.ContentRootPath = "Content";
-    penn.AddMarkdownContent<RecipeFrontMatter>(md =>
+    penn.AddMarkdownContent<DocFrontMatter>(md =>
     {
         md.ContentPath = "Content";
         md.BasePageUrl = "";
     });
 
-    penn.Islands.Register<RecipeContentSlotRenderer>("content");
-    penn.Islands.Register<RecipeInfoSlotRenderer>("recipe-info");
+    penn.Islands.Register<ArticleIslandRenderer>("article");
+    penn.Islands.Register<NavIslandRenderer>("nav");
 });
 
 builder.Services.AddMonorailCss();
 builder.Services.AddTransient<ContentHelper>();
 
-// SPA navigation
 builder.Services.AddSpaNavigation();
 builder.Services.AddScoped<ComponentRenderer>();
+
 var app = builder.Build();
 app.UseAntiforgery();
 app.MapStaticAssets();
@@ -37,4 +38,5 @@ app.MapRazorComponents<App>();
 app.UseMonorailCss();
 app.UseSpaNavigation();
 app.UsePenn();
+
 await app.RunOrBuildAsync(args);

@@ -1,0 +1,69 @@
+Code bugs discovered during documentation verification (2026-04-09)
+==================================================================
+
+1. [FIXED] ClearCache() never called
+   - SymbolExtractionService.ClearCache() is defined but never invoked
+   - SolutionWorkspaceService.InvalidateSolution() should call it
+   - Effect: symbol table goes stale after structural file changes (new files, renames)
+   - Files: src/Penn.Roslyn/Symbols/SymbolExtractionService.cs
+           src/Penn.Roslyn/Workspace/SolutionWorkspaceService.cs
+
+2. [FIXED] IslandsOptions.RegisteredIslands never consumed
+   - IslandsOptions.Register<T>(name) stores types in a dictionary
+   - AddPenn() never iterates RegisteredIslands to register them in DI
+   - Effect: island renderers registered via options API are silently ignored
+   - Files: src/Penn/Infrastructure/PennOptions.cs
+           src/Penn/Infrastructure/PennExtensions.cs
+
+3. HighlightingOptions.Highlighters never consumed
+   - HighlightingOptions.AddHighlighter<T>() stores highlighters in a list
+   - AddPenn() never reads the list to register them in DI
+   - Effect: custom highlighters registered via options API are silently ignored
+   - Files: src/Penn/Infrastructure/PennOptions.cs
+           src/Penn/Infrastructure/PennExtensions.cs
+
+4. OutputOptions.CleanOutput never checked
+   - Property exists (defaults to true) but GenerateAsync unconditionally
+     deletes and recreates the output directory
+   - Effect: no way to do incremental builds
+   - Files: src/Penn/Generation/OutputGenerationService.cs
+           src/Penn/Generation/OutputOptions.cs
+
+5. BuildReport.SkippedPages never populated
+   - AddSkippedPage() exists on BuildReportBuilder but is never called
+   - Drafts are filtered during DiscoverAsync, before reaching generation
+   - Effect: SkippedPages is always empty; "N drafts skipped" output never appears
+   - Files: src/Penn/Generation/OutputGenerationService.cs
+           src/Penn/Generation/BuildReport.cs
+
+6. SitemapBuilder.Build() never called
+   - SitemapService builds entries directly from ContentTocItem objects
+   - SitemapBuilder.Build(IReadOnlyList<RenderedItem>) is dead code
+   - Effect: LastModified, ChangeFrequency, Priority are always null in sitemaps
+   - Files: src/Penn/Feeds/SitemapBuilder.cs
+           src/Penn/Feeds/SitemapService.cs
+
+7. RSS feed pipeline incomplete
+   - RssFeedBuilder is registered as singleton but Build() is never called
+   - No MapGet("/rss.xml", ...) endpoint exists anywhere
+   - BlogSite App.razor has <link> tag pointing to /rss.xml which returns 404
+   - Effect: RSS feeds don't work at all
+   - Files: src/Penn/Feeds/RssFeedBuilder.cs
+           src/Penn.BlogSite/Components/App.razor
+           src/Penn/Infrastructure/PennExtensions.cs
+
+8. IContentService.SearchPriority never flows to search index
+   - SearchIndexBuilder always uses default priority 5
+   - SearchIndexService.BuildSearchIndexAsync never reads SearchPriority
+   - MarkdownContentServiceOptions.SearchPriority is never copied from config
+   - Effect: per-source search ranking has no effect
+   - Files: src/Penn/Search/SearchIndexBuilder.cs
+           src/Penn/Search/SearchIndexService.cs
+           src/Penn/Infrastructure/PennExtensions.cs
+
+9. ExtractSymbolsAsync ignores ProjectFilter
+   - ProjectFilter is applied in GetProjectsAsync but ExtractSymbolsAsync
+     receives the full Solution object containing all projects
+   - Effect: all symbols from all projects are extracted regardless of filter
+   - Files: src/Penn.Roslyn/Symbols/SymbolExtractionService.cs
+           src/Penn.Roslyn/Workspace/SolutionWorkspaceService.cs

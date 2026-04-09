@@ -16,6 +16,7 @@ using Penn.Content;
 using Penn.FrontMatter;
 using Penn.Generation;
 using Penn.Highlighting;
+using Penn.Islands;
 using Penn.Localization;
 using Penn.Markdown;
 using Penn.Navigation;
@@ -45,6 +46,12 @@ public static class PennExtensions
         var args = Environment.GetCommandLineArgs();
         var outputOptions = OutputOptions.FromArgs(args.Length > 1 ? args[1..] : []);
         services.AddSingleton(outputOptions);
+
+        // Register islands from the options API
+        foreach (var (_, islandType) in options.Islands.RegisteredIslands)
+        {
+            services.AddTransient(typeof(IIslandRenderer), islandType);
+        }
 
         // Core services
         services.AddSingleton<FrontMatterParser>();

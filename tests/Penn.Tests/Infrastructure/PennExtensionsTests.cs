@@ -3,9 +3,11 @@ using Penn.Content;
 using Penn.FrontMatter;
 using Penn.Highlighting;
 using Penn.Infrastructure;
+using Penn.Islands;
 using Penn.Markdown;
 using Penn.Navigation;
 using Penn.Pipeline;
+using Penn.Routing;
 
 namespace Penn.Tests.Infrastructure;
 
@@ -94,5 +96,26 @@ public class PennExtensionsTests
         var navBuilder = provider.GetService<NavigationBuilder>();
 
         navBuilder.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void AddPenn_Registers_IslandRenderers_FromOptions()
+    {
+        using var provider = BuildProvider(opts =>
+        {
+            opts.Islands.Register<StubIsland>("test-island");
+        });
+
+        var islands = provider.GetServices<IIslandRenderer>().ToList();
+
+        islands.Count.ShouldBe(1);
+        islands[0].ShouldBeOfType<StubIsland>();
+    }
+
+    private class StubIsland : IIslandRenderer
+    {
+        public string IslandName => "test";
+        public Task<string> RenderAsync(ContentRoute route, RenderContext context)
+            => Task.FromResult("<div>test</div>");
     }
 }

@@ -35,6 +35,8 @@ builder.Services.AddPenn(penn =>
     penn.Localization.DefaultLocale = "en";
     penn.Localization.AddLocale("en", new LocaleInfo("English"));
     penn.Localization.AddLocale("gen-z", new LocaleInfo("Gen Z", HtmlLang: "en-genz"));
+
+    penn.Islands.Register<YogaContentIslandRenderer>("content");
 });
 
 builder.Services.AddMonorailCss(_ => new MonorailCssOptions
@@ -61,7 +63,6 @@ builder.Services.AddMonorailCss(_ => new MonorailCssOptions
 // SPA navigation
 builder.Services.AddSpaNavigation();
 builder.Services.AddScoped<ComponentRenderer>();
-builder.Services.AddTransient<IIslandRenderer, YogaContentIslandRenderer>();
 
 // Custom services
 builder.Services.AddTransient<ContentHelper>();
