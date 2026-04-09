@@ -1,0 +1,65 @@
+name: ci
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 11.0.x
+
+      - run: dotnet build Pennington.slnx -c Release
+
+      - name: Install Playwright browsers
+        run: pwsh tests/Pennington.IntegrationTests/bin/Release/net11.0/playwright.ps1 install --with-deps
+
+      - run: dotnet test Pennington.slnx -c Release --no-build
+
+      - run: dotnet pack Pennington.slnx -c Release --no-build -o ./artifacts
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: ./artifacts/*.*nupkg
+
+  publish:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: ./artifacts
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 11.0.x
+
+      - uses: nuget/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push to NuGet
+        shell: bash
+        run: |
+          for pkg in ./artifacts/*.nupkg; do
+            dotnet nuget push "$pkg" \
+              --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
+              --source https://api.nuget.org/v3/index.json
+          done
