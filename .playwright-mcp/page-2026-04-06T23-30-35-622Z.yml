@@ -1,0 +1,420 @@
+- generic [ref=e1]:
+  - generic [ref=e5]:
+    - generic [ref=e8]:
+      - generic [ref=e10]:
+        - img [ref=e11]
+        - link "Penn" [ref=e14] [cursor=pointer]:
+          - /url: /
+      - navigation [ref=e16]:
+        - list [ref=e17]:
+          - listitem [ref=e18]:
+            - generic [ref=e19]: Getting Started
+            - list [ref=e20]:
+              - listitem [ref=e21]:
+                - link "Creating Your First Site" [ref=e22] [cursor=pointer]:
+                  - /url: /getting-started/creating-first-site/
+              - listitem [ref=e23]:
+                - link "Connecting to Roslyn" [ref=e24] [cursor=pointer]:
+                  - /url: /getting-started/connecting-to-roslyn/
+              - listitem [ref=e25]:
+                - link "Using UI Elements" [ref=e26] [cursor=pointer]:
+                  - /url: /getting-started/using-ui-elements/
+              - listitem [ref=e27]:
+                - link "Deploying to GitHub Pages" [ref=e28] [cursor=pointer]:
+                  - /url: /getting-started/deploying-to-github-pages/
+          - listitem [ref=e29]:
+            - generic [ref=e30]: Guides
+            - list [ref=e31]:
+              - listitem [ref=e32]:
+                - link "Working with Multiple Content Sources" [ref=e33] [cursor=pointer]:
+                  - /url: /guides/multiple-content-sources/
+              - listitem [ref=e34]:
+                - link "Link Types and Syntax" [ref=e35] [cursor=pointer]:
+                  - /url: /guides/linking-documents-and-media/
+              - listitem [ref=e36]:
+                - link "Editing Content" [ref=e37] [cursor=pointer]:
+                  - /url: /guides/edit-content-existing-site/
+              - listitem [ref=e38]:
+                - link "Using Markdown Extensions" [ref=e39] [cursor=pointer]:
+                  - /url: /guides/markdown-extensions/
+              - listitem [ref=e40]:
+                - link "Configure Custom Styling" [ref=e41] [cursor=pointer]:
+                  - /url: /guides/configure-custom-styling/
+              - listitem [ref=e42]:
+                - link "Implementing Redirects" [ref=e43] [cursor=pointer]:
+                  - /url: /guides/implementing-redirects/
+              - listitem [ref=e44]:
+                - link "Implement Search Functionality" [ref=e45] [cursor=pointer]:
+                  - /url: /guides/implement-search-functionality/
+              - listitem [ref=e46]:
+                - link "Razor Pages with Metadata" [ref=e47] [cursor=pointer]:
+                  - /url: /guides/razor-pages-with-metadata/
+              - listitem [ref=e48]:
+                - link "Create Custom Content Service" [ref=e49] [cursor=pointer]:
+                  - /url: /guides/custom-content-service/
+              - listitem [ref=e50]:
+                - link "Deploying to Subdirectories" [ref=e51] [cursor=pointer]:
+                  - /url: /guides/deploying-to-subdirectories/
+              - listitem [ref=e52]:
+                - link "Optimizing CSS and JavaScript" [ref=e53] [cursor=pointer]:
+                  - /url: /guides/optimizing-css-and-javascript/
+              - listitem [ref=e54]:
+                - link "Using the BlogSite Package" [ref=e55] [cursor=pointer]:
+                  - /url: /guides/using-blogsite/
+              - listitem [ref=e56]:
+                - link "Using the DocSite Package" [ref=e57] [cursor=pointer]:
+                  - /url: /guides/using-docsite/
+              - listitem [ref=e58]:
+                - link "Adding SPA Navigation" [ref=e59] [cursor=pointer]:
+                  - /url: /guides/adding-spa-navigation/
+          - listitem [ref=e60]:
+            - generic [ref=e61]: Under The Hood
+            - list [ref=e62]:
+              - listitem [ref=e63]:
+                - link "Development vs Deployment Architecture" [ref=e64] [cursor=pointer]:
+                  - /url: /under-the-hood/dev-vs-deployment-architecture/
+              - listitem [ref=e65]:
+                - link "Hot Reload Architecture" [ref=e66] [cursor=pointer]:
+                  - /url: /under-the-hood/hot-reload-architecture/
+              - listitem [ref=e67]:
+                - link "Content Processing Pipeline" [ref=e68] [cursor=pointer]:
+                  - /url: /under-the-hood/content-processing-pipeline/
+              - listitem [ref=e69]:
+                - link "Syntax Highlighting System" [ref=e70] [cursor=pointer]:
+                  - /url: /under-the-hood/syntax-highlighting-system/
+              - listitem [ref=e71]:
+                - link "Table of Contents Generation" [ref=e72] [cursor=pointer]:
+                  - /url: /under-the-hood/table-of-contents-generation/
+              - listitem [ref=e73]:
+                - link "JavaScript Architecture" [ref=e74] [cursor=pointer]:
+                  - /url: /under-the-hood/javascript-architecture/
+              - listitem [ref=e75]:
+                - link "SPA Island Architecture" [ref=e76] [cursor=pointer]:
+                  - /url: /under-the-hood/spa-island-architecture/
+          - listitem [ref=e77]:
+            - generic [ref=e78]: Reference
+            - list [ref=e79]:
+              - listitem [ref=e80]:
+                - link "Front Matter Properties" [ref=e81] [cursor=pointer]:
+                  - /url: /reference/front-matter-properties/
+              - listitem [ref=e82]:
+                - link "XmlDocId Format" [ref=e83] [cursor=pointer]:
+                  - /url: /reference/xmldocid-format/
+              - listitem [ref=e84]:
+                - link "MonorailCSS Configuration" [ref=e85] [cursor=pointer]:
+                  - /url: /reference/monorail-css-configuration/
+              - listitem [ref=e86]:
+                - link "Razor Islands" [ref=e87] [cursor=pointer]:
+                  - /url: /reference/razor-islands/
+    - generic [ref=e88]:
+      - banner [ref=e89]:
+        - navigation [ref=e90]:
+          - button "Search Ctrl K" [ref=e92]:
+            - img [ref=e93]
+            - generic [ref=e95]: Search
+            - generic [ref=e96]: Ctrl K
+          - generic [ref=e97]:
+            - button "Toggle Dark Mode" [ref=e98]:
+              - img [ref=e99]
+            - link "GitHub repository" [ref=e102] [cursor=pointer]:
+              - /url: https://github.com/phil-scott-78/penn
+              - img [ref=e103]
+      - main [ref=e106]:
+        - generic [ref=e107]:
+          - article [ref=e108]:
+            - heading "Connecting to Roslyn" [active] [level=1] [ref=e236]
+            - main [ref=e237]:
+              - paragraph [ref=e238]: "Here's the problem with code samples in documentation: they lie. You write them once, the API evolves, and now your docs show code that doesn't compile. Nobody notices until a user copies it, pastes it, and files an issue titled \"your example doesn't work.\""
+              - paragraph [ref=e239]: Penn.Roslyn fixes this by pulling code directly from your actual source files and compiled symbols. Your documentation references your real code, and when that code changes, the docs change with it. No copying, no pasting, no lying.
+              - paragraph [ref=e240]:
+                - text: In v2, Roslyn support is a
+                - strong [ref=e241]: separate optional package
+                - text: . Penn core handles markdown and content; Penn.Roslyn adds the ability to reach into your .NET solution and extract code by XML documentation ID or file path. You opt in only if you need it.
+              - heading "What You'll Learn" [level=2] [ref=e242]
+              - list [ref=e243]:
+                - listitem [ref=e244]:
+                  - text: Install and configure
+                  - code [ref=e245]: Penn.Roslyn
+                  - text: as a separate package
+                - listitem [ref=e246]:
+                  - text: Reference code symbols with
+                  - code [ref=e247]: :xmldocid
+                  - text: blocks
+                - listitem [ref=e248]:
+                  - text: Include entire source files with
+                  - code [ref=e249]: :path
+                  - text: blocks
+                - listitem [ref=e250]:
+                  - text: Show API evolution with
+                  - code [ref=e251]: :xmldocid-diff
+                  - text: blocks
+              - heading "Prerequisites" [level=2] [ref=e252]
+              - list [ref=e253]:
+                - listitem [ref=e254]:
+                  - text: Completed the
+                  - link "Creating Your First Site" [ref=e255] [cursor=pointer]:
+                    - /url: /getting-started/creating-first-site/
+                  - text: tutorial
+                - listitem [ref=e256]: A .NET solution with some code worth documenting
+                - listitem [ref=e257]:
+                  - text: Familiarity with
+                  - link "XML documentation ID format" [ref=e258] [cursor=pointer]:
+                    - /url: /reference/xmldocid-format/
+                  - text: (the
+                  - code [ref=e259]: "T:"
+                  - text: ","
+                  - code [ref=e260]: "M:"
+                  - text: ","
+                  - code [ref=e261]: "P:"
+                  - text: prefixes)
+              - generic [ref=e262]:
+                - generic [ref=e263]:
+                  - text: "## Install Penn.Roslyn"
+                  - paragraph [ref=e264]: "Penn.Roslyn is its own NuGet package. This is deliberate — Roslyn adds a meaningful dependency footprint, and not every site needs live code extraction. Add it to your doc site project:"
+                  - code [ref=e269]:
+                    - generic [ref=e270]: dotnet add package Penn.Roslyn --prerelease
+                - generic [ref=e271]:
+                  - text: "## Configure Roslyn Integration"
+                  - paragraph [ref=e272]:
+                    - text: Update your
+                    - code [ref=e273]: Program.cs
+                    - text: to register Penn.Roslyn services. This is a separate call from
+                    - code [ref=e274]: AddDocSite
+                    - text: — it chains onto
+                    - code [ref=e275]: builder.Services
+                    - text: "directly:"
+                  - code [ref=e280]: "using Penn.DocSite; using Penn.Roslyn; var builder = WebApplication.CreateBuilder(args); builder.Services.AddDocSite(() => new DocSiteOptions { SiteTitle = \"My Docs\", Description = \"A site about things\", SolutionPath = \"../../MySolution.slnx\", }); // Roslyn integration — separate package, separate registration builder.Services.AddPennRoslyn(roslyn => { roslyn.SolutionPath = \"../../MySolution.slnx\"; }); var app = builder.Build(); app.UseDocSite(); await app.RunDocSiteAsync(args);"
+                  - paragraph [ref=e281]:
+                    - text: The
+                    - code [ref=e282]: SolutionPath
+                    - text: points to your
+                    - code [ref=e283]: .sln
+                    - text: or
+                    - code [ref=e284]: .slnx
+                    - text: file, relative to your doc site project root. Penn.Roslyn loads the solution via the Roslyn workspace API, which gives it access to every type, method, and property in your codebase.
+                  - paragraph [ref=e285]:
+                    - text: Here's what
+                    - code [ref=e286]: RoslynOptions
+                    - text: "looks like:"
+                  - code [ref=e291]:
+                    - generic [ref=e292]: /// <summary>Configuration for Roslyn integration.</summary>
+                    - text: "public sealed class RoslynOptions {"
+                    - generic [ref=e293]: /// <summary>Path to .sln or .slnx file. If null, only basic highlighting is enabled.</summary>
+                    - text: "public string? SolutionPath { get; set; }"
+                    - generic [ref=e294]: /// <summary>Optional project filter.</summary>
+                    - text: "public ProjectFilter? ProjectFilter { get; set; } }"
+                  - paragraph [ref=e295]:
+                    - text: The
+                    - code [ref=e296]: ProjectFilter
+                    - text: lets you narrow which projects get analyzed — useful if your solution has dozens of projects and you only document a few.
+                  - generic [ref=e297]:
+                    - text: "## Watch Source Code Changes"
+                    - paragraph [ref=e298]:
+                      - text: Since your documentation now depends on your source code, you'll want
+                      - code [ref=e299]: dotnet watch
+                      - text: to pick up changes in both. Update the
+                      - code [ref=e300]: <Watch>
+                      - text: items in your
+                      - code [ref=e301]: .csproj
+                      - text: ":"
+                    - code [ref=e306]:
+                      - generic [ref=e307]: <ItemGroup>
+                      - generic [ref=e308]: <Watch Include="Content\**\*.*" />
+                      - generic [ref=e309]: <Watch Include="..\..\src\**\*.cs" />
+                      - generic [ref=e310]: </ItemGroup>
+                    - paragraph [ref=e311]: The source path is relative to your project root, not the solution root. Adjust it to match where your source code lives relative to your doc site project. Exclude build artifacts by keeping the path specific to source directories.
+                    - generic [ref=e312]:
+                      - text: "## Use `:xmldocid` to Reference Code Symbols"
+                      - paragraph [ref=e313]: This is where it gets good. Instead of pasting code into your markdown, you reference it by its XML documentation ID. Penn.Roslyn finds the symbol in your solution and renders the current source code.
+                      - paragraph [ref=e314]:
+                        - text: In your markdown, write a fenced code block with
+                        - code [ref=e315]: :xmldocid
+                        - text: "appended to the language:"
+                      - code [ref=e320]: "```csharp:xmldocid T:Penn.Infrastructure.PennOptions ```"
+                      - paragraph [ref=e321]:
+                        - text: This renders the full source of the
+                        - code [ref=e322]: PennOptions
+                        - text: class, with Roslyn-powered syntax highlighting. When
+                        - code [ref=e323]: PennOptions
+                        - text: changes — new properties, renamed members, updated doc comments — your documentation reflects it automatically.
+                      - heading "Symbol Reference Formats" [level=3] [ref=e324]
+                      - paragraph [ref=e325]: "XML documentation IDs follow .NET conventions:"
+                      - table [ref=e326]:
+                        - rowgroup [ref=e327]:
+                          - row "Prefix Targets Example" [ref=e328]:
+                            - columnheader "Prefix" [ref=e329]
+                            - columnheader "Targets" [ref=e330]
+                            - columnheader "Example" [ref=e331]
+                        - rowgroup [ref=e332]:
+                          - 'row "T: Types (classes, records, interfaces, enums) T:Penn.FrontMatter.DocFrontMatter" [ref=e333]':
+                            - cell "T:" [ref=e334]:
+                              - code [ref=e335]: "T:"
+                            - cell "Types (classes, records, interfaces, enums)" [ref=e336]
+                            - cell "T:Penn.FrontMatter.DocFrontMatter" [ref=e337]:
+                              - code [ref=e338]: T:Penn.FrontMatter.DocFrontMatter
+                          - 'row "M: Methods M:Penn.Infrastructure.PennOptions.AddMarkdownContent``1(System.Action{Penn.Infrastructure.MarkdownContentOptions})" [ref=e339]':
+                            - cell "M:" [ref=e340]:
+                              - code [ref=e341]: "M:"
+                            - cell "Methods" [ref=e342]
+                            - 'cell "M:Penn.Infrastructure.PennOptions.AddMarkdownContent``1(System.Action{Penn.Infrastructure.MarkdownContentOptions})" [ref=e343]':
+                              - code [ref=e344]: "M:Penn.Infrastructure.PennOptions.AddMarkdownContent``1(System.Action{Penn.Infrastructure.MarkdownContentOptions})"
+                          - 'row "P: Properties P:Penn.Infrastructure.PennOptions.SiteTitle" [ref=e345]':
+                            - cell "P:" [ref=e346]:
+                              - code [ref=e347]: "P:"
+                            - cell "Properties" [ref=e348]
+                            - cell "P:Penn.Infrastructure.PennOptions.SiteTitle" [ref=e349]:
+                              - code [ref=e350]: P:Penn.Infrastructure.PennOptions.SiteTitle
+                          - 'row "F: Fields F:MyApp.Constants.MaxRetries" [ref=e351]':
+                            - cell "F:" [ref=e352]:
+                              - code [ref=e353]: "F:"
+                            - cell "Fields" [ref=e354]
+                            - cell "F:MyApp.Constants.MaxRetries" [ref=e355]:
+                              - code [ref=e356]: F:MyApp.Constants.MaxRetries
+                      - heading "Body-Only Mode" [level=3] [ref=e357]
+                      - paragraph [ref=e358]:
+                        - text: Sometimes you want just the implementation without the declaration boilerplate. Append
+                        - code [ref=e359]: ",bodyonly"
+                        - text: "to the modifier:"
+                      - code [ref=e364]: "```csharp:xmldocid,bodyonly M:MyApp.Services.DataService.ProcessAsync ```"
+                      - paragraph [ref=e365]: This strips the method signature and braces, showing only the body. Useful for walking through implementation details in a tutorial.
+                      - heading "Multiple Symbols in One Block" [level=3] [ref=e366]
+                      - paragraph [ref=e367]: "You can reference multiple symbols in a single code block — each on its own line:"
+                      - code [ref=e372]: "```csharp:xmldocid T:Penn.FrontMatter.IDraftable T:Penn.FrontMatter.ITaggable T:Penn.FrontMatter.IOrderable ```"
+                      - paragraph [ref=e373]: Penn.Roslyn extracts each symbol and renders them together, separated visually in the output. Handy for showing a family of related types.
+                      - generic [ref=e374]:
+                        - text: "## Use `:path` to Include Entire Files"
+                        - paragraph [ref=e375]:
+                          - text: Sometimes you want to show a complete file rather than a single symbol. The
+                          - code [ref=e376]: :path
+                          - text: "modifier includes a file from your solution by its path relative to the solution root:"
+                        - code [ref=e381]: "```csharp:path docs/Penn.Docs/Program.cs ```"
+                        - paragraph [ref=e382]:
+                          - text: This pulls in the full contents of
+                          - code [ref=e383]: Program.cs
+                          - text: as it exists on disk, with syntax highlighting. It works for any file type that Penn can highlight —
+                          - code [ref=e384]: .cs
+                          - text: ","
+                          - code [ref=e385]: .razor
+                          - text: ","
+                          - code [ref=e386]: .json
+                          - text: ","
+                          - code [ref=e387]: .xml
+                          - text: ","
+                          - code [ref=e388]: .yaml
+                          - text: ", and more:"
+                        - code [ref=e393]: "```yaml:path examples/MinimalExample/Content/index.md ```"
+                        - paragraph [ref=e394]:
+                          - text: The path is always relative to the solution directory (wherever your
+                          - code [ref=e395]: .slnx
+                          - text: or
+                          - code [ref=e396]: .sln
+                          - text: lives). No
+                          - code [ref=e397]: ..
+                          - text: traversal is allowed — Penn.Roslyn validates paths to prevent shenanigans.
+                        - generic [ref=e398]:
+                          - text: "## Use `:xmldocid-diff` to Show API Evolution"
+                          - paragraph [ref=e399]:
+                            - text: This one's genuinely useful for changelogs and migration guides. The
+                            - code [ref=e400]: :xmldocid-diff
+                            - text: "modifier takes two XML documentation IDs and renders a diff between them:"
+                          - code [ref=e405]: "```csharp:xmldocid-diff T:Penn.FrontMatter.IFrontMatter T:Penn.FrontMatter.DocFrontMatter ```"
+                          - paragraph [ref=e406]: Penn.Roslyn extracts both symbols, computes a line-level diff, and renders the result with added/removed line indicators. Lines unique to the first symbol appear as removals; lines unique to the second appear as additions. Shared lines render normally.
+                          - paragraph [ref=e407]:
+                            - text: Like
+                            - code [ref=e408]: :xmldocid
+                            - text: ", you can append"
+                            - code [ref=e409]: ",bodyonly"
+                            - text: "to compare just the bodies:"
+                          - code [ref=e414]: "```csharp:xmldocid-diff,bodyonly M:MyApp.Services.OldService.Process M:MyApp.Services.NewService.Process ```"
+                          - paragraph [ref=e415]: This is particularly effective for "here's what changed" sections in upgrade guides.
+                          - generic [ref=e416]:
+                            - text: "## Putting It All Together"
+                            - paragraph [ref=e417]:
+                              - text: Create a content page that exercises all three modifiers. Here's
+                              - code [ref=e418]: Content/api-reference.md
+                              - text: ":"
+                            - code [ref=e423]: "--- title: \"API Reference\" description: \"Penn's core configuration types\" order: 10 --- ## PennOptions The main configuration object for the Penn engine: ```csharp:xmldocid T:Penn.Infrastructure.PennOptions"
+                            - heading "Full Program.cs" [level=2] [ref=e424]
+                            - paragraph [ref=e425]: "Here's a complete working configuration:"
+                            - code [ref=e430]: "using MonorailCss.Theme; using Penn.DocSite; using Penn.MonorailCss; using Penn.Roslyn; var builder = WebApplication.CreateBuilder(args); builder.Services.AddDocSite(() => new DocSiteOptions { SiteTitle = \"Penn\", Description = \"A Content Engine for .NET\", SocialImageUrl = \"/social.png\", ColorScheme = new AlgorithmicColorScheme { PrimaryHue = 260, ColorSchemeGenerator = i => (i + 180, i - 90, i + 90), BaseColorName = ColorNames.Stone }, GitHubUrl = \"https://github.com/phil-scott-78/penn\", CanonicalBaseUrl = \"https://phil-scott-78.github.io/penn/\", DisplayFontFamily = \"Lexend, sans-serif\", BodyFontFamily = \"'Noto Sans', sans-serif\", HeaderIcon = \"\"\"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6\"><path d=\"M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z\"/></svg>\"\"\", ExtraStyles = \"\"\" @font-face { font-family: 'Lexend'; font-style: normal; font-weight: 100 900; font-display: swap; src: url(fonts/lexend.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; } @font-face { font-family: 'Noto Sans'; font-style: normal; font-weight: 100 900; font-display: swap; src: url(fonts/noto-sans.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; } \"\"\", SolutionPath = \"../../Penn.slnx\", }); // Roslyn integration for :xmldocid and :path code extraction builder.Services.AddPennRoslyn(roslyn => { roslyn.SolutionPath = \"../../Penn.slnx\"; }); var app = builder.Build(); app.UseDocSite(); await app.RunDocSiteAsync(args);"
+                            - 'heading "Front Matter: Interface vs Implementation" [level=2] [ref=e431]'
+                            - paragraph [ref=e432]: "The minimal interface compared to the full doc site record:"
+                            - code [ref=e437]:
+                              - generic [ref=e439]: /// <summary>
+                              - generic [ref=e440]: "- /// Minimum: every content page has a title."
+                              - generic [ref=e441]: + /// Front matter for doc site pages.
+                              - generic [ref=e442]: /// </summary>
+                              - generic [ref=e443]: "- public interface IFrontMatter"
+                              - generic [ref=e444]: "+ public record DocSiteFrontMatter : IFrontMatter, IDraftable, ITaggable,"
+                              - generic [ref=e445]: + ISectionable, ICrossReferenceable, IOrderable, IDescribable, IRedirectable
+                              - generic [ref=e446]: "{"
+                              - generic [ref=e447]: "- string Title { get; }"
+                              - generic [ref=e448]: "+ public string Title { get; init; } = \"\";"
+                              - generic [ref=e449]: "+ public string? Description { get; init; }"
+                              - generic [ref=e450]: "+ public bool IsDraft { get; init; }"
+                              - generic [ref=e451]: "+ public string[] Tags { get; init; } = [];"
+                              - generic [ref=e452]: "+ public int Order { get; init; } = int.MaxValue;"
+                              - generic [ref=e453]: "+ public string? RedirectUrl { get; init; }"
+                              - generic [ref=e454]: "+ public string? Section { get; init; }"
+                              - generic [ref=e455]: "+ public string? Uid { get; init; }"
+                              - generic [ref=e456]: "}"
+                            - code [ref=e462]:
+                              - generic [ref=e463]: Run your site and visit the page. Every code block is live — sourced from your actual codebase, highlighted by Roslyn, and updated whenever you change the underlying code.
+                              - generic [ref=e464]: </Step>
+                              - generic [ref=e465]: </Steps>
+                              - generic [ref=e467]: "## How It Works"
+                              - generic [ref=e469]: "When Penn.Roslyn processes your markdown:"
+                              - generic [ref=e471]: "1. It parses the language modifier (`:xmldocid`, `:path`, or `:xmldocid-diff`)"
+                              - generic [ref=e472]: "2. For `:xmldocid`, it resolves the XML documentation ID against the loaded Roslyn workspace, extracts the syntax node, and highlights it"
+                              - generic [ref=e473]: "3. For `:path`, it reads the file from disk relative to the solution root and highlights it"
+                              - generic [ref=e474]: "4. For `:xmldocid-diff`, it extracts both symbols and runs a line-level diff algorithm"
+                              - generic [ref=e476]: All of this happens at render time. In dev mode, changes to source files trigger a re-render. In build mode, it captures the state at build time.
+                              - generic [ref=e478]: "## Best Practices"
+                              - generic [ref=e480]: "- **Reference real code, not contrived examples.** The whole point is that your docs stay honest. If your examples live in an `examples/` project in your solution, reference those."
+                              - generic [ref=e481]: "- **Use `ProjectFilter` for large solutions.** Roslyn loads every project by default. If your solution has 40 projects and you only document 3, filtering speeds things up noticeably."
+                              - generic [ref=e482]: "- **Prefer `:xmldocid` over `:path` for types and methods.** Symbol-level extraction is more precise and survives file reorganization. Use `:path` for complete files like `Program.cs` where the whole file is the example."
+                              - generic [ref=e484]: "## Next Steps"
+                              - generic [ref=e486]: "- [Using UI Elements](xref:penn.getting-started.using-ui-elements) — enhance your pages with cards, badges, and step-by-step layouts"
+                              - generic [ref=e487]: "- [Deploying to GitHub Pages](xref:penn.getting-started.deploying-to-github-pages) — ship your site with GitHub Actions"
+            - generic [ref=e488]:
+              - generic [ref=e489]:
+                - 'link "Previous: Creating Your First Site" [ref=e490] [cursor=pointer]':
+                  - /url: /getting-started/creating-first-site/
+                  - img [ref=e492]
+                  - text: Previous
+                - link [ref=e494] [cursor=pointer]:
+                  - /url: /getting-started/creating-first-site/
+                  - text: Creating Your First Site
+              - generic [ref=e495]:
+                - 'link "Next: Using UI Elements" [ref=e496] [cursor=pointer]':
+                  - /url: /getting-started/using-ui-elements/
+                  - text: Next
+                  - img [ref=e498]
+                - link [ref=e500] [cursor=pointer]:
+                  - /url: /getting-started/using-ui-elements/
+                  - text: Using UI Elements
+          - list [ref=e505]:
+            - listitem [ref=e506]:
+              - link "What You'll Learn" [ref=e507] [cursor=pointer]:
+                - /url: "#what-youll-learn"
+            - listitem [ref=e508]:
+              - link "Prerequisites" [ref=e509] [cursor=pointer]:
+                - /url: "#prerequisites"
+            - listitem [ref=e510]:
+              - list [ref=e511]:
+                - listitem [ref=e512]:
+                  - link "Symbol Reference Formats" [ref=e513] [cursor=pointer]:
+                    - /url: "#symbol-reference-formats"
+                - listitem [ref=e514]:
+                  - link "Body-Only Mode" [ref=e515] [cursor=pointer]:
+                    - /url: "#body-only-mode"
+                - listitem [ref=e516]:
+                  - link "Multiple Symbols in One Block" [ref=e517] [cursor=pointer]:
+                    - /url: "#multiple-symbols-in-one-block"
+            - listitem [ref=e518]:
+              - link "Full Program.cs" [ref=e519] [cursor=pointer]:
+                - /url: "#full-program.cs"
+            - listitem [ref=e520]:
+              - 'link "Front Matter: Interface vs Implementation" [ref=e521] [cursor=pointer]':
+                - /url: "#front-matter-interface-vs-implementation"
+  - status [ref=e234]: Navigated to Connecting to Roslyn

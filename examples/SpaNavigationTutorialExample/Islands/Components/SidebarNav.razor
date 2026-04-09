@@ -1,0 +1,9 @@
+@using System.Collections.Immutable
+@using Penn.Navigation
+@using Penn.UI.Components.Navigation
+
+<TableOfContentsNavigation TableOfContents="@NavItems" />
+
+@code {
+    [Parameter] public ImmutableList<NavigationTreeItem>? NavItems { get; set; }
+}

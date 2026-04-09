@@ -1,0 +1,415 @@
+- generic [ref=e1]:
+  - generic [ref=e5]:
+    - generic [ref=e8]:
+      - generic [ref=e10]:
+        - img [ref=e11]
+        - link "Penn" [ref=e14] [cursor=pointer]:
+          - /url: /
+      - navigation [ref=e16]:
+        - list [ref=e17]:
+          - listitem [ref=e18]:
+            - generic [ref=e19]: Getting Started
+            - list [ref=e20]:
+              - listitem [ref=e21]:
+                - link "Creating Your First Site" [ref=e22] [cursor=pointer]:
+                  - /url: /getting-started/creating-first-site/
+              - listitem [ref=e23]:
+                - link "Connecting to Roslyn" [ref=e24] [cursor=pointer]:
+                  - /url: /getting-started/connecting-to-roslyn/
+              - listitem [ref=e25]:
+                - link "Using UI Elements" [ref=e26] [cursor=pointer]:
+                  - /url: /getting-started/using-ui-elements/
+              - listitem [ref=e27]:
+                - link "Deploying to GitHub Pages" [ref=e28] [cursor=pointer]:
+                  - /url: /getting-started/deploying-to-github-pages/
+          - listitem [ref=e29]:
+            - generic [ref=e30]: Guides
+            - list [ref=e31]:
+              - listitem [ref=e32]:
+                - link "Working with Multiple Content Sources" [ref=e33] [cursor=pointer]:
+                  - /url: /guides/multiple-content-sources/
+              - listitem [ref=e34]:
+                - link "Link Types and Syntax" [ref=e35] [cursor=pointer]:
+                  - /url: /guides/linking-documents-and-media/
+              - listitem [ref=e36]:
+                - link "Editing Content" [ref=e37] [cursor=pointer]:
+                  - /url: /guides/edit-content-existing-site/
+              - listitem [ref=e38]:
+                - link "Using Markdown Extensions" [ref=e39] [cursor=pointer]:
+                  - /url: /guides/markdown-extensions/
+              - listitem [ref=e40]:
+                - link "Configure Custom Styling" [ref=e41] [cursor=pointer]:
+                  - /url: /guides/configure-custom-styling/
+              - listitem [ref=e42]:
+                - link "Implementing Redirects" [ref=e43] [cursor=pointer]:
+                  - /url: /guides/implementing-redirects/
+              - listitem [ref=e44]:
+                - link "Implement Search Functionality" [ref=e45] [cursor=pointer]:
+                  - /url: /guides/implement-search-functionality/
+              - listitem [ref=e46]:
+                - link "Razor Pages with Metadata" [ref=e47] [cursor=pointer]:
+                  - /url: /guides/razor-pages-with-metadata/
+              - listitem [ref=e48]:
+                - link "Create Custom Content Service" [ref=e49] [cursor=pointer]:
+                  - /url: /guides/custom-content-service/
+              - listitem [ref=e50]:
+                - link "Deploying to Subdirectories" [ref=e51] [cursor=pointer]:
+                  - /url: /guides/deploying-to-subdirectories/
+              - listitem [ref=e52]:
+                - link "Optimizing CSS and JavaScript" [ref=e53] [cursor=pointer]:
+                  - /url: /guides/optimizing-css-and-javascript/
+              - listitem [ref=e54]:
+                - link "Using the BlogSite Package" [ref=e55] [cursor=pointer]:
+                  - /url: /guides/using-blogsite/
+              - listitem [ref=e56]:
+                - link "Using the DocSite Package" [ref=e57] [cursor=pointer]:
+                  - /url: /guides/using-docsite/
+              - listitem [ref=e58]:
+                - link "Adding SPA Navigation" [ref=e59] [cursor=pointer]:
+                  - /url: /guides/adding-spa-navigation/
+          - listitem [ref=e60]:
+            - generic [ref=e61]: Under The Hood
+            - list [ref=e62]:
+              - listitem [ref=e63]:
+                - link "Development vs Deployment Architecture" [ref=e64] [cursor=pointer]:
+                  - /url: /under-the-hood/dev-vs-deployment-architecture/
+              - listitem [ref=e65]:
+                - link "Hot Reload Architecture" [ref=e66] [cursor=pointer]:
+                  - /url: /under-the-hood/hot-reload-architecture/
+              - listitem [ref=e67]:
+                - link "Content Processing Pipeline" [ref=e68] [cursor=pointer]:
+                  - /url: /under-the-hood/content-processing-pipeline/
+              - listitem [ref=e69]:
+                - link "Syntax Highlighting System" [ref=e70] [cursor=pointer]:
+                  - /url: /under-the-hood/syntax-highlighting-system/
+              - listitem [ref=e71]:
+                - link "Table of Contents Generation" [ref=e72] [cursor=pointer]:
+                  - /url: /under-the-hood/table-of-contents-generation/
+              - listitem [ref=e73]:
+                - link "JavaScript Architecture" [ref=e74] [cursor=pointer]:
+                  - /url: /under-the-hood/javascript-architecture/
+              - listitem [ref=e75]:
+                - link "SPA Island Architecture" [ref=e76] [cursor=pointer]:
+                  - /url: /under-the-hood/spa-island-architecture/
+          - listitem [ref=e77]:
+            - generic [ref=e78]: Reference
+            - list [ref=e79]:
+              - listitem [ref=e80]:
+                - link "Front Matter Properties" [ref=e81] [cursor=pointer]:
+                  - /url: /reference/front-matter-properties/
+              - listitem [ref=e82]:
+                - link "XmlDocId Format" [ref=e83] [cursor=pointer]:
+                  - /url: /reference/xmldocid-format/
+              - listitem [ref=e84]:
+                - link "MonorailCSS Configuration" [ref=e85] [cursor=pointer]:
+                  - /url: /reference/monorail-css-configuration/
+              - listitem [ref=e86]:
+                - link "Razor Islands" [ref=e87] [cursor=pointer]:
+                  - /url: /reference/razor-islands/
+    - generic [ref=e88]:
+      - banner [ref=e89]:
+        - navigation [ref=e90]:
+          - button "Search Ctrl K" [ref=e92]:
+            - img [ref=e93]
+            - generic [ref=e95]: Search
+            - generic [ref=e96]: Ctrl K
+          - generic [ref=e97]:
+            - button "Toggle Dark Mode" [active] [ref=e98]:
+              - img [ref=e530]
+            - link "GitHub repository" [ref=e102] [cursor=pointer]:
+              - /url: https://github.com/phil-scott-78/penn
+              - img [ref=e103]
+      - main [ref=e106]:
+        - generic [ref=e107]:
+          - article [ref=e108]:
+            - heading "Creating Your First Site" [level=1] [ref=e236]
+            - main [ref=e237]:
+              - paragraph [ref=e238]: Penn is opinionated, inflexible, and sufficient to the purpose. It will not try to be everything to everyone. It will, however, build you a perfectly serviceable content site with minimal ceremony — and that's what we're doing here.
+              - paragraph [ref=e239]: By the end of this tutorial, you'll have a working site that serves markdown content in dev mode and generates static HTML when you ask nicely.
+              - heading "What You'll Build" [level=2] [ref=e240]
+              - paragraph [ref=e241]: "A documentation-style site with:"
+              - list [ref=e242]:
+                - listitem [ref=e243]: Markdown content rendered to pages
+                - listitem [ref=e244]: YAML front matter for metadata
+                - listitem [ref=e245]: Live reload in development
+                - listitem [ref=e246]: Static output for deployment
+              - heading "Prerequisites" [level=2] [ref=e247]
+              - list [ref=e248]:
+                - listitem [ref=e249]: .NET 11 SDK or later
+                - listitem [ref=e250]: A code editor you have opinions about
+                - listitem [ref=e251]: A terminal
+              - generic [ref=e252]:
+                - generic [ref=e253]:
+                  - text: "## Create a New Project"
+                  - paragraph [ref=e254]: Start with an empty ASP.NET project. Penn doesn't need Blazor templates or MVC scaffolding — it brings what it needs.
+                  - code [ref=e259]:
+                    - generic [ref=e260]: dotnet new web -n MyDocsSite
+                    - generic [ref=e261]: cd MyDocsSite
+                - generic [ref=e262]:
+                  - text: "## Add Penn.DocSite"
+                  - paragraph [ref=e263]:
+                    - text: Penn ships as a few focused packages.
+                    - code [ref=e264]: Penn.DocSite
+                    - text: is the batteries-included option for documentation sites — it pulls in the core engine, UI components, and a MonorailCSS-based design.
+                  - code [ref=e269]:
+                    - generic [ref=e270]: dotnet add package Penn.DocSite --prerelease
+                  - paragraph [ref=e271]: One package. One line. Penn has opinions about what you need, and this is most of it.
+                  - generic [ref=e272]:
+                    - text: "## Understand the Front Matter Model"
+                    - paragraph [ref=e273]:
+                      - text: Penn uses a front matter record to define metadata for your content pages. The
+                      - code [ref=e274]: DocSiteFrontMatter
+                      - text: type ships with
+                      - code [ref=e275]: Penn.DocSite
+                      - text: and covers the common cases — title, description, ordering, tags, drafts, sections, UIDs for cross-referencing, and redirects.
+                    - paragraph [ref=e276]: "Here's what it looks like:"
+                    - code [ref=e281]:
+                      - generic [ref=e283]: /// <summary>
+                      - generic [ref=e284]: /// Front matter for doc site pages.
+                      - generic [ref=e285]: /// </summary>
+                      - generic [ref=e286]: "public record DocSiteFrontMatter : IFrontMatter, IDraftable, ITaggable,"
+                      - generic [ref=e287]: ISectionable, ICrossReferenceable, IOrderable, IDescribable, IRedirectable
+                      - generic [ref=e288]: "{"
+                      - generic [ref=e289]: "public string Title { get; init; } = \"\";"
+                      - generic [ref=e290]: "public string? Description { get; init; }"
+                      - generic [ref=e291]: "public bool IsDraft { get; init; }"
+                      - generic [ref=e292]: "public string[] Tags { get; init; } = [];"
+                      - generic [ref=e293]: "public int Order { get; init; } = int.MaxValue;"
+                      - generic [ref=e294]: "public string? RedirectUrl { get; init; }"
+                      - generic [ref=e295]: "public string? Section { get; init; }"
+                      - generic [ref=e296]: "public string? Uid { get; init; }"
+                      - generic [ref=e297]: "}"
+                    - paragraph [ref=e298]:
+                      - text: Each property maps to a YAML key in your markdown files. You don't need to fill in all of them —
+                      - code [ref=e299]: Title
+                      - text: is the only one that matters to get started.
+                    - paragraph [ref=e300]:
+                      - text: If
+                      - code [ref=e301]: DocSiteFrontMatter
+                      - text: doesn't fit your needs, you can define your own record implementing
+                      - code [ref=e302]: IFrontMatter
+                      - text: and whichever capability interfaces you want (
+                      - code [ref=e303]: IDraftable
+                      - text: ","
+                      - code [ref=e304]: ITaggable
+                      - text: ","
+                      - code [ref=e305]: IOrderable
+                      - text: ", etc.). But for most documentation sites, the built-in type is the right call."
+                    - generic [ref=e306]:
+                      - text: "## Configure Program.cs"
+                      - paragraph [ref=e307]:
+                        - text: Replace the contents of
+                        - code [ref=e308]: Program.cs
+                        - text: "with Penn's configuration. Here's the actual configuration used by the Penn docs site itself:"
+                      - code [ref=e313]:
+                        - generic [ref=e314]: using MonorailCss.Theme;
+                        - generic [ref=e315]: using Penn.DocSite;
+                        - generic [ref=e316]: using Penn.MonorailCss;
+                        - generic [ref=e317]: using Penn.Roslyn;
+                        - generic [ref=e319]: var builder = WebApplication.CreateBuilder(args);
+                        - generic [ref=e321]: builder.Services.AddDocSite(() => new DocSiteOptions
+                        - generic [ref=e322]: "{"
+                        - generic [ref=e323]: SiteTitle = "Penn",
+                        - generic [ref=e324]: Description = "A Content Engine for .NET",
+                        - generic [ref=e325]: SocialImageUrl = "/social.png",
+                        - generic [ref=e326]: ColorScheme = new AlgorithmicColorScheme
+                        - generic [ref=e327]: "{"
+                        - generic [ref=e328]: PrimaryHue = 260,
+                        - generic [ref=e329]: ColorSchemeGenerator = i => (i + 180, i - 90, i + 90),
+                        - generic [ref=e330]: BaseColorName = ColorNames.Stone
+                        - generic [ref=e331]: "},"
+                        - generic [ref=e332]: GitHubUrl = "https://github.com/phil-scott-78/penn",
+                        - generic [ref=e333]: CanonicalBaseUrl = "https://phil-scott-78.github.io/penn/",
+                        - generic [ref=e334]: DisplayFontFamily = "Lexend, sans-serif",
+                        - generic [ref=e335]: BodyFontFamily = "'Noto Sans', sans-serif",
+                        - generic [ref=e336]: HeaderIcon = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>""",
+                        - generic [ref=e337]: ExtraStyles = """
+                        - generic [ref=e338]: "@font-face {"
+                        - generic [ref=e339]: "font-family: 'Lexend';"
+                        - generic [ref=e340]: "font-style: normal;"
+                        - generic [ref=e341]: "font-weight: 100 900;"
+                        - generic [ref=e342]: "font-display: swap;"
+                        - generic [ref=e343]: "src: url(fonts/lexend.woff2) format('woff2');"
+                        - generic [ref=e344]: "unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;"
+                        - generic [ref=e345]: "}"
+                        - generic [ref=e346]: "@font-face {"
+                        - generic [ref=e347]: "font-family: 'Noto Sans';"
+                        - generic [ref=e348]: "font-style: normal;"
+                        - generic [ref=e349]: "font-weight: 100 900;"
+                        - generic [ref=e350]: "font-display: swap;"
+                        - generic [ref=e351]: "src: url(fonts/noto-sans.woff2) format('woff2');"
+                        - generic [ref=e352]: "unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;"
+                        - generic [ref=e353]: "}"
+                        - generic [ref=e354]: "\"\"\","
+                        - generic [ref=e355]: SolutionPath = "../../Penn.slnx",
+                        - generic [ref=e356]: "});"
+                        - generic [ref=e358]: // Roslyn integration for :xmldocid and :path code extraction
+                        - generic [ref=e359]: builder.Services.AddPennRoslyn(roslyn =>
+                        - generic [ref=e360]: "{"
+                        - generic [ref=e361]: roslyn.SolutionPath = "../../Penn.slnx";
+                        - generic [ref=e362]: "});"
+                        - generic [ref=e364]: var app = builder.Build();
+                        - generic [ref=e365]: app.UseDocSite();
+                        - generic [ref=e366]: await app.RunDocSiteAsync(args);
+                      - paragraph [ref=e367]:
+                        - text: That's the whole thing.
+                        - code [ref=e368]: AddDocSite
+                        - text: registers Penn's core engine, the markdown pipeline, MonorailCSS, Razor components, and SPA navigation.
+                        - code [ref=e369]: UseDocSite
+                        - text: wires up the middleware.
+                        - code [ref=e370]: RunDocSiteAsync
+                        - text: handles both dev server mode and static build mode based on command-line arguments.
+                      - paragraph [ref=e371]: "For a minimal starting point, you can trim it down:"
+                      - code [ref=e376]:
+                        - generic [ref=e377]: using Penn.DocSite;
+                        - generic [ref=e379]: var builder = WebApplication.CreateBuilder(args);
+                        - generic [ref=e381]: builder.Services.AddDocSite(() => new DocSiteOptions
+                        - generic [ref=e382]: "{"
+                        - generic [ref=e383]: SiteTitle = "My Docs",
+                        - generic [ref=e384]: Description = "A site about things",
+                        - generic [ref=e385]: "});"
+                        - generic [ref=e387]: var app = builder.Build();
+                        - generic [ref=e388]: app.UseDocSite();
+                        - generic [ref=e389]: await app.RunDocSiteAsync(args);
+                      - paragraph [ref=e390]:
+                        - code [ref=e391]: DocSiteOptions
+                        - text: gives you control over titles, colors, fonts, GitHub links, and more. But
+                        - code [ref=e392]: SiteTitle
+                        - text: and
+                        - code [ref=e393]: Description
+                        - text: are the only required properties.
+                      - generic [ref=e394]:
+                        - text: "## Create Content"
+                        - paragraph [ref=e395]:
+                          - text: By default,
+                          - code [ref=e396]: DocSiteOptions
+                          - text: looks for markdown files in a
+                          - code [ref=e397]: Content
+                          - text: "directory relative to your project root. Create it:"
+                        - code [ref=e402]:
+                          - generic [ref=e403]: mkdir Content
+                        - paragraph [ref=e404]:
+                          - text: Now add your first page. Create
+                          - code [ref=e405]: Content/index.md
+                          - text: ":"
+                        - code [ref=e410]: "--- title: \"Welcome\" description: \"The front page\" order: 1 --- # Hello from Penn This is your first page. It was rendered from markdown, which is the only markup language that matters. ## Getting Started Write your content in `Content/`. Penn finds it, parses the YAML front matter, and renders it. That's the whole workflow."
+                        - paragraph [ref=e411]:
+                          - text: The YAML front matter block at the top maps to
+                          - code [ref=e412]: DocSiteFrontMatter
+                          - text: . The
+                          - code [ref=e413]: title
+                          - text: appears in navigation. The
+                          - code [ref=e414]: order
+                          - text: controls sorting. Everything after the closing
+                          - code [ref=e415]: "---"
+                          - text: is your markdown content.
+                        - generic [ref=e416]:
+                          - text: "## Add a Second Page"
+                          - paragraph [ref=e417]:
+                            - text: One page is a file. Two pages is a site. Create
+                            - code [ref=e418]: Content/second-page.md
+                            - text: ":"
+                          - code [ref=e423]: "--- title: \"A Second Page\" description: \"Proof that navigation works\" order: 2 --- ## Another Page Penn automatically generates navigation from your content structure. Add files, see them appear. Remove files, watch them vanish. No configuration required."
+                        - generic [ref=e424]:
+                          - text: "## Configure File Watching"
+                          - paragraph [ref=e425]:
+                            - text: To get live reload working during development, tell
+                            - code [ref=e426]: dotnet watch
+                            - text: to monitor your content files. Add this to your
+                            - code [ref=e427]: .csproj
+                            - text: ":"
+                          - code [ref=e432]:
+                            - generic [ref=e433]: <ItemGroup>
+                            - generic [ref=e434]: <Watch Include="Content\**\*.*" />
+                            - generic [ref=e435]: </ItemGroup>
+                          - paragraph [ref=e436]: This ensures changes to markdown files trigger a rebuild without restarting the server.
+                          - generic [ref=e437]:
+                            - text: "## Run Your Site"
+                            - paragraph [ref=e438]: "Start the dev server:"
+                            - code [ref=e443]:
+                              - generic [ref=e444]: dotnet run
+                            - paragraph [ref=e445]:
+                              - text: Navigate to the URL shown in your terminal (typically
+                              - code [ref=e446]: http://localhost:5000
+                              - text: ). You'll see your content rendered with Penn's doc site layout, complete with sidebar navigation generated from your pages.
+                            - paragraph [ref=e447]: "For live reload during development, use:"
+                            - code [ref=e452]:
+                              - generic [ref=e453]: dotnet watch
+                            - paragraph [ref=e454]:
+                              - text: Edit
+                              - code [ref=e455]: Content/index.md
+                              - text: ", save, and watch the browser update. Add new files, rename them, delete them — Penn picks up all of it without a restart."
+                            - generic [ref=e456]:
+                              - text: "## Generate Static Output"
+                              - paragraph [ref=e457]: "When you're ready to deploy, Penn can generate a complete static site:"
+                              - code [ref=e462]:
+                                - generic [ref=e463]: dotnet run -- build
+                              - paragraph [ref=e464]:
+                                - text: This starts the server, crawls every page, and writes static HTML to an
+                                - code [ref=e465]: output
+                                - text: "directory. For GitHub Pages or other subdirectory deployments, pass the base path:"
+                              - code [ref=e470]:
+                                - generic [ref=e471]: dotnet run -- build "/my-project/"
+                              - paragraph [ref=e472]: That's it. HTML files in a folder. The web's original deployment model.
+                              - heading "What Success Looks Like" [level=2] [ref=e473]
+                              - paragraph [ref=e474]:
+                                - text: When
+                                - code [ref=e475]: dotnet run
+                                - text: "is running, your site has:"
+                              - list [ref=e476]:
+                                - listitem [ref=e477]: A styled page layout courtesy of Penn.DocSite and MonorailCSS
+                                - listitem [ref=e478]:
+                                  - text: Sidebar navigation auto-generated from your content files and their
+                                  - code [ref=e479]: title
+                                  - text: front matter
+                                - listitem [ref=e480]:
+                                  - text: Proper URL routing —
+                                  - code [ref=e481]: Content/second-page.md
+                                  - text: becomes
+                                  - code [ref=e482]: /second-page
+                              - paragraph [ref=e483]: Try editing your markdown and saving. Try adding a third page. Penn watches the filesystem and does the right thing without being asked.
+                              - heading "Next Steps" [level=2] [ref=e484]
+                              - list [ref=e485]:
+                                - listitem [ref=e486]:
+                                  - link "Connecting to Roslyn" [ref=e487] [cursor=pointer]:
+                                    - /url: /getting-started/connecting-to-roslyn/
+                                  - text: — embed live, verified code examples from your .NET solution
+                                - listitem [ref=e488]:
+                                  - link "Using UI Elements" [ref=e489] [cursor=pointer]:
+                                    - /url: /getting-started/using-ui-elements/
+                                  - text: — enhance your pages with cards, badges, steps, and more
+                                - listitem [ref=e490]:
+                                  - link "Deploying to GitHub Pages" [ref=e491] [cursor=pointer]:
+                                    - /url: /getting-started/deploying-to-github-pages/
+                                  - text: — ship it with a GitHub Actions workflow
+            - generic [ref=e492]:
+              - generic [ref=e493]:
+                - 'link "Previous: Getting Started" [ref=e494] [cursor=pointer]':
+                  - /url: ""
+                  - img [ref=e496]
+                  - text: Previous
+                - link [ref=e498] [cursor=pointer]:
+                  - /url: ""
+                  - text: Getting Started
+              - generic [ref=e499]:
+                - 'link "Next: Connecting to Roslyn" [ref=e500] [cursor=pointer]':
+                  - /url: /getting-started/connecting-to-roslyn/
+                  - text: Next
+                  - img [ref=e502]
+                - link [ref=e504] [cursor=pointer]:
+                  - /url: /getting-started/connecting-to-roslyn/
+                  - text: Connecting to Roslyn
+          - list [ref=e509]:
+            - listitem [ref=e510]:
+              - link "What You'll Build" [ref=e511] [cursor=pointer]:
+                - /url: "#what-youll-build"
+            - listitem [ref=e512]:
+              - link "Prerequisites" [ref=e513] [cursor=pointer]:
+                - /url: "#prerequisites"
+            - listitem [ref=e514]:
+              - link "What Success Looks Like" [ref=e515] [cursor=pointer]:
+                - /url: "#what-success-looks-like"
+            - listitem [ref=e516]:
+              - link "Next Steps" [ref=e517] [cursor=pointer]:
+                - /url: "#next-steps"
+  - status [ref=e234]: Navigated to Creating Your First Site

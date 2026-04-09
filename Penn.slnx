@@ -27,5 +27,15 @@
     <Project Path="examples/SearchExample/SearchExample.csproj" />
     <Project Path="examples/SpaNavigationExample/SpaNavigationExample.csproj" />
     <Project Path="examples/LocalizationExample/LocalizationExample.csproj" />
+    <Project Path="examples/YogaStudioExample/YogaStudioExample.csproj" />
+    <Project Path="examples/NorthwindHandbookExample/NorthwindHandbookExample.csproj" />
+    <Project Path="examples/TempoDocsExample/TempoDocsExample.csproj" />
+    <Project Path="examples/AlexBlogExample/AlexBlogExample.csproj" />
+    <Project Path="examples/LocalizationTutorialExample/LocalizationTutorialExample.csproj" />
+    <Project Path="examples/SpaNavigationTutorialExample/SpaNavigationTutorialExample.csproj" />
+    <Project Path="examples/MaraBlogExample/MaraBlogExample.csproj" />
+    <Project Path="examples/BeaconDocsExample/BeaconDocsExample.csproj" />
+    <Project Path="examples/ForgePortalExample/ForgePortalExample.csproj" />
+    <Project Path="examples/PrismDocsExample/PrismDocsExample.csproj" />
   </Folder>
 </Solution>

@@ -1,0 +1,180 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - link "937 Yoga" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img [ref=e7]
+          - generic [ref=e10]: 937 Yoga
+        - navigation [ref=e11]:
+          - link "Home" [ref=e12] [cursor=pointer]:
+            - /url: /
+          - link "Classes" [ref=e13] [cursor=pointer]:
+            - /url: /schedule
+          - link "Instructors" [ref=e14] [cursor=pointer]:
+            - /url: /instructors
+          - link "Blog" [ref=e15] [cursor=pointer]:
+            - /url: /blog
+          - link "About" [ref=e16] [cursor=pointer]:
+            - /url: /about
+          - link "Pricing" [ref=e17] [cursor=pointer]:
+            - /url: /pricing
+          - link "Contact" [ref=e18] [cursor=pointer]:
+            - /url: /contact
+        - generic [ref=e19]:
+          - button "Ctrl+K" [ref=e20]:
+            - img [ref=e21]
+            - generic [ref=e23]: Ctrl+K
+          - button "English" [ref=e25]:
+            - img [ref=e26]
+            - generic [ref=e28]: English
+            - img [ref=e29]
+    - main [ref=e31]:
+      - generic [ref=e36]:
+        - paragraph [ref=e37]: Portland's Neighborhood Studio
+        - heading "Find Your Flow" [level=1] [ref=e38]:
+          - text: Find Your
+          - text: Flow
+        - paragraph [ref=e39]: Vinyasa, Yin, Power, Hot Yoga, Meditation and more. All levels welcome. First class free.
+        - generic [ref=e40]:
+          - link "View Schedule" [ref=e41] [cursor=pointer]:
+            - /url: /schedule
+          - link "See Pricing" [ref=e42] [cursor=pointer]:
+            - /url: /pricing
+      - generic [ref=e44]:
+        - generic [ref=e45]:
+          - heading "This Week's Highlights" [level=2] [ref=e46]
+          - paragraph [ref=e47]: From sunrise flows to candlelit sessions, find the class that moves you.
+        - generic [ref=e48]:
+          - link "Monday · 06:30 All Levels Sunrise Vinyasa Flow Start your week with an energizing flow. This class links breath to movement through sun salutations, standing sequences, and gentle inversions. Perfect for waking up the body and setting your intention for the week ahead. with Alex Rivera" [ref=e49] [cursor=pointer]:
+            - /url: /schedule/mon-vinyasa-morning
+            - generic [ref=e51]:
+              - generic [ref=e52]:
+                - generic [ref=e53]: Monday · 06:30
+                - generic [ref=e54]: All Levels
+              - heading "Sunrise Vinyasa Flow" [level=3] [ref=e55]
+              - paragraph [ref=e56]: Start your week with an energizing flow. This class links breath to movement through sun salutations, standing sequences, and gentle inversions. Perfect for waking up the body and setting your intention for the week ahead.
+              - paragraph [ref=e57]: with Alex Rivera
+          - link "Tuesday · 07:00 Intermediate Ashtanga Primary Series The traditional Ashtanga primary series led by our founder. This Mysore-style class allows students to work at their own pace within the established sequence. Maya provides individual adjustments and guidance throughout. with Maya Chen" [ref=e58] [cursor=pointer]:
+            - /url: /schedule/tue-ashtanga
+            - generic [ref=e60]:
+              - generic [ref=e61]:
+                - generic [ref=e62]: Tuesday · 07:00
+                - generic [ref=e63]: Intermediate
+              - heading "Ashtanga Primary Series" [level=3] [ref=e64]
+              - paragraph [ref=e65]: The traditional Ashtanga primary series led by our founder. This Mysore-style class allows students to work at their own pace within the established sequence. Maya provides individual adjustments and guidance throughout.
+              - paragraph [ref=e66]: with Maya Chen
+          - link "Wednesday · 06:30 All Levels Morning Flow A creative vinyasa sequence that changes weekly. Alex draws from dance and martial arts to create flows that feel fresh and playful while building strength and flexibility. with Alex Rivera" [ref=e67] [cursor=pointer]:
+            - /url: /schedule/wed-vinyasa-morning
+            - generic [ref=e69]:
+              - generic [ref=e70]:
+                - generic [ref=e71]: Wednesday · 06:30
+                - generic [ref=e72]: All Levels
+              - heading "Morning Flow" [level=3] [ref=e73]
+              - paragraph [ref=e74]: A creative vinyasa sequence that changes weekly. Alex draws from dance and martial arts to create flows that feel fresh and playful while building strength and flexibility.
+              - paragraph [ref=e75]: with Alex Rivera
+        - link "View Full Schedule" [ref=e77] [cursor=pointer]:
+          - /url: /schedule
+      - generic [ref=e79]:
+        - generic [ref=e80]:
+          - heading "Meet Your Guides" [level=2] [ref=e81]
+          - paragraph [ref=e82]: Experienced, passionate, and here to support your practice at every level.
+        - generic [ref=e83]:
+          - link "M Maya Chen Ashtanga" [ref=e84] [cursor=pointer]:
+            - /url: /instructors/maya-chen
+            - generic [ref=e85]: M
+            - heading "Maya Chen" [level=3] [ref=e86]
+            - paragraph [ref=e87]: Ashtanga
+          - link "J James Okafor Power Yoga" [ref=e88] [cursor=pointer]:
+            - /url: /instructors/james-okafor
+            - generic [ref=e89]: J
+            - heading "James Okafor" [level=3] [ref=e90]
+            - paragraph [ref=e91]: Power Yoga
+          - link "P Priya Sharma Yin Yoga" [ref=e92] [cursor=pointer]:
+            - /url: /instructors/priya-sharma
+            - generic [ref=e93]: P
+            - heading "Priya Sharma" [level=3] [ref=e94]
+            - paragraph [ref=e95]: Yin Yoga
+          - link "A Alex Rivera Vinyasa Flow" [ref=e96] [cursor=pointer]:
+            - /url: /instructors/alex-rivera
+            - generic [ref=e97]: A
+            - heading "Alex Rivera" [level=3] [ref=e98]
+            - paragraph [ref=e99]: Vinyasa Flow
+          - link "S Sam Tanaka Meditation" [ref=e100] [cursor=pointer]:
+            - /url: /instructors/sam-tanaka
+            - generic [ref=e101]: S
+            - heading "Sam Tanaka" [level=3] [ref=e102]
+            - paragraph [ref=e103]: Meditation
+      - generic [ref=e105]:
+        - heading "What Our Community Says" [level=2] [ref=e107]
+        - generic [ref=e108]:
+          - generic [ref=e109]:
+            - paragraph [ref=e110]: "\"I came for the exercise and stayed for the community. 937 Yoga has become my second home. The instructors genuinely care about every student.\""
+            - paragraph [ref=e111]: Sarah K.
+            - paragraph [ref=e112]: Member since 2023
+          - generic [ref=e113]:
+            - paragraph [ref=e114]: "\"As a complete beginner, I was nervous about my first class. Maya made me feel welcome from the moment I walked in. Two years later, I'm doing headstands.\""
+            - paragraph [ref=e115]: Marcus T.
+            - paragraph [ref=e116]: Member since 2024
+          - generic [ref=e117]:
+            - paragraph [ref=e118]: "\"The Thursday candlelit vinyasa is pure magic. I look forward to it all week. If you haven't tried it, you're missing out.\""
+            - paragraph [ref=e119]: Elena R.
+            - paragraph [ref=e120]: Member since 2024
+      - generic [ref=e122]:
+        - heading "Your First Class is Free" [level=2] [ref=e123]
+        - paragraph [ref=e124]: No commitment, no pressure. Just show up, breathe, and see how you feel.
+        - link "Book Your Free Class" [ref=e125] [cursor=pointer]:
+          - /url: /schedule
+    - contentinfo [ref=e126]:
+      - generic [ref=e127]:
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - generic [ref=e130]:
+              - img [ref=e131]
+              - generic [ref=e134]: 937 Yoga
+            - paragraph [ref=e135]: Find your flow. A modern studio rooted in tradition, open to everyone.
+          - generic [ref=e136]:
+            - heading "Practice" [level=3] [ref=e137]
+            - list [ref=e138]:
+              - listitem [ref=e139]:
+                - link "Class Schedule" [ref=e140] [cursor=pointer]:
+                  - /url: /schedule
+              - listitem [ref=e141]:
+                - link "Instructors" [ref=e142] [cursor=pointer]:
+                  - /url: /instructors
+              - listitem [ref=e143]:
+                - link "Pricing" [ref=e144] [cursor=pointer]:
+                  - /url: /pricing
+              - listitem [ref=e145]:
+                - link "Blog" [ref=e146] [cursor=pointer]:
+                  - /url: /blog
+          - generic [ref=e147]:
+            - heading "Studio" [level=3] [ref=e148]
+            - list [ref=e149]:
+              - listitem [ref=e150]:
+                - link "About Us" [ref=e151] [cursor=pointer]:
+                  - /url: /about
+              - listitem [ref=e152]:
+                - link "FAQ" [ref=e153] [cursor=pointer]:
+                  - /url: /faq
+              - listitem [ref=e154]:
+                - link "Contact" [ref=e155] [cursor=pointer]:
+                  - /url: /contact
+          - generic [ref=e156]:
+            - heading "Visit" [level=3] [ref=e157]
+            - generic [ref=e158]:
+              - paragraph [ref=e159]: 937 Elm Street
+              - paragraph [ref=e160]: Portland, OR 97205
+              - paragraph [ref=e161]:
+                - link "(503) 555-1937" [ref=e162] [cursor=pointer]:
+                  - /url: tel:+15035551937
+              - paragraph [ref=e163]:
+                - link "hello@937yoga.com" [ref=e164] [cursor=pointer]:
+                  - /url: mailto:hello@937yoga.com
+        - generic [ref=e165]:
+          - paragraph [ref=e166]: © 2026 937 Yoga Studio. All rights reserved.
+          - paragraph [ref=e167]:
+            - text: Built with
+            - link "Penn" [ref=e168] [cursor=pointer]:
+              - /url: https://github.com/philscott-dev/penn
+  - status [ref=e169]

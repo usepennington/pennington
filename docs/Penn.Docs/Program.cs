@@ -15,7 +15,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     {
         PrimaryHue = 260,
         ColorSchemeGenerator = i => (i + 180, i - 90, i + 90),
-        BaseColorName = ColorNames.Stone
+        BaseColorName = ColorNames.Zinc
     },
     GitHubUrl = "https://github.com/phil-scott-78/penn",
     CanonicalBaseUrl = "https://phil-scott-78.github.io/penn/",
@@ -46,6 +46,13 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         }
     """,
     SolutionPath = "../../Penn.slnx",
+    Areas =
+    [
+        new ContentArea("Getting Started", "tutorials"),
+        new ContentArea("Guides", "how-to"),
+        new ContentArea("Under the Hood", "explanation"),
+        new ContentArea("Reference", "reference"),
+    ],
 });
 
 // Roslyn integration for :xmldocid and :path code extraction

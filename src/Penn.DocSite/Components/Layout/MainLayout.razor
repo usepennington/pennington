@@ -32,35 +32,60 @@
              aria-hidden="true"></div>
 
         <div class="flex flex-row min-h-screen w-full">
-            <nav id="nav-sidebar" aria-label="Sidebar" data-expanded="false" class="transition-[margin] ease-in-out duration-300 -ml-80 data-[expanded=true]:ml-0 lg:ml-0 w-80 lg:min-w-80 2xl:w-1/4 flex-none border-r border-base-200 dark:border-base-800 fixed lg:static lg:z-auto z-40 h-full lg:h-auto bg-base-100 dark:bg-base-950">
-                <div class="sticky xl:ml-auto xl:w-80 2xl:w-92 p-8  font-display tracking-tight top-0 h-screen overflow-y-auto scrollbar-color scrollbar-thin scrollbar-track-base-100 scrollbar-thumb-base-400 dark:scrollbar-track-base-900 dark:scrollbar-thumb-base-700 ">
-                    <div>
-                        <div>
-                            <div class="flex bg-cu min-w-0 mb-8 font-display shrink items-center  gap-x-2 ">
-                                @if (DocSiteOptions.HeaderIcon != null)
-                                {
-                                    @((MarkupString)DocSiteOptions.HeaderIcon)
-                                }
-                                else
-                                {
-                                    @_defaultHeaderIcon
-                                }
-                                <span class="font-display tracking-tight dark:text-base-50 text-base-900">
-                                    @if (DocSiteOptions.HeaderContent != null)
-                                    {
-                                        @((MarkupString)DocSiteOptions.HeaderContent)
-                                    }
-                                    else
-                                    {
-                                        <a href="/">@DocSiteOptions.SiteTitle</a>
-                                    }
-                                </span>
-                            </div>
-                        </div>
-                        <div>
-                            <TableOfContentsNavigation TableOfContents="_toc"/>
-                        </div>
+            <nav id="nav-sidebar" aria-label="Sidebar" data-expanded="false" class="transition-[margin] ease-in-out duration-300 -ml-80 data-[expanded=true]:ml-0 lg:ml-0 w-80 lg:min-w-80 2xl:w-1/4 flex-none border-r border-base-200 dark:border-base-800 fixed lg:static lg:z-auto z-40 h-full lg:h-auto bg-base-50 dark:bg-base-950">
+                <div class="sticky xl:ml-auto xl:w-80 2xl:w-92 py-6 px-6 font-display tracking-tight top-0 h-screen overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-base-300 dark:scrollbar-thumb-base-700 hover:scrollbar-thumb-base-400 dark:hover:scrollbar-thumb-base-600">
+                    <div class="flex min-w-0 mb-6 items-center gap-x-2">
+                        @if (DocSiteOptions.HeaderIcon != null)
+                        {
+                            @((MarkupString)DocSiteOptions.HeaderIcon)
+                        }
+                        else
+                        {
+                            @_defaultHeaderIcon
+                        }
+                        <span class="font-display font-semibold tracking-tight text-base dark:text-base-50 text-base-900">
+                            @if (DocSiteOptions.HeaderContent != null)
+                            {
+                                @((MarkupString)DocSiteOptions.HeaderContent)
+                            }
+                            else
+                            {
+                                <a href="/" class="hover:text-primary-700 dark:hover:text-primary-400 transition-colors">@DocSiteOptions.SiteTitle</a>
+                            }
+                        </span>
                     </div>
+                    @if (DocSiteOptions.Areas.Count > 0)
+                    {
+                        <AreaNavigation Areas="DocSiteOptions.Areas" ActiveArea="_activeArea" />
+                        @foreach (var area in DocSiteOptions.Areas)
+                        {
+                            var isActive = _activeArea != null
+                                && string.Equals(area.Slug, _activeArea.Slug, StringComparison.OrdinalIgnoreCase);
+                            <div data-area-toc="@area.Slug" @(isActive ? null : "hidden")>
+                                <TableOfContentsNavigation TableOfContents="_areaTocs.GetValueOrDefault(area.Slug)"
+                                    ListGapClass="gap-4"
+                                    ChildListClass="mt-1"
+                                    SectionHeaderStructureClass="text-xs font-semibold uppercase tracking-wider mt-6 first:mt-01 mb-2"
+                                    SectionHeaderColorClass="text-base-400 dark:text-base-500"
+                                    LinkStructureClass="block text-base leading-relaxed border-l pl-3 py-1"
+                                    LinkColorClass="transition-colors duration-150 border-base-200 dark:border-base-800 text-base-500 dark:text-base-400 data-[current=true]:border-primary-500 data-[current=true]:text-primary-700 dark:data-[current=true]:text-primary-400 data-[current=true]:font-medium hover:text-base-900 dark:hover:text-base-200"
+                                    RootLinkStructureClass="block py-1 text-base leading-relaxed"
+                                    RootLinkColorClass="transition-colors duration-150 text-base-600 dark:text-base-400 data-[current=true]:text-primary-700 dark:data-[current=true]:text-primary-400 data-[current=true]:font-medium hover:text-base-900 dark:hover:text-base-200" />
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <TableOfContentsNavigation TableOfContents="_toc"
+                            ListGapClass="gap-0"
+                            ChildListClass="mt-1"
+                            SectionHeaderStructureClass="text-xs font-semibold uppercase tracking-wider mt-5 first:mt-0 mb-1.5"
+                            SectionHeaderColorClass="text-base-400 dark:text-base-500"
+                            LinkStructureClass="block text-[13px] leading-relaxed border-l pl-3 py-[3px]"
+                            LinkColorClass="transition-colors duration-150 border-base-200 dark:border-base-800 text-base-500 dark:text-base-400 data-[current=true]:border-primary-500 data-[current=true]:text-primary-700 dark:data-[current=true]:text-primary-400 data-[current=true]:font-medium hover:text-base-900 dark:hover:text-base-200"
+                            RootLinkStructureClass="block py-[3px] text-[13px] leading-relaxed"
+                            RootLinkColorClass="transition-colors duration-150 text-base-600 dark:text-base-400 data-[current=true]:text-primary-700 dark:data-[current=true]:text-primary-400 data-[current=true]:font-medium hover:text-base-900 dark:hover:text-base-200" />
+                    }
                 </div>
             </nav>
             <div class="flex-1 min-w-0 lg:ml-0">
@@ -81,7 +106,7 @@
                             </div>
 
                             <span
-                                class="font-display dark:text-base-50 text-sm lg:text-base font-light text-base-900 tracking-tighter">
+                                class="font-display dark:text-base-50 text-sm lg:text-base font-medium text-base-900 tracking-tight">
                                 @if (DocSiteOptions.HeaderContent != null)
                                 {
                                     @((MarkupString)DocSiteOptions.HeaderContent)
@@ -184,7 +209,9 @@
 
 @code{
     private ImmutableList<NavigationTreeItem>? _toc;
+    private Dictionary<string, ImmutableList<NavigationTreeItem>> _areaTocs = new();
     private IReadOnlyList<LanguageSwitcher.AlternateLanguageItem> _langSwitcherItems = [];
+    private ContentArea? _activeArea;
 
     private readonly RenderFragment _mobileMenuButton =
         @<button id="menu-toggle" aria-label="Toggle Navigation Menu" aria-controls="nav-sidebar"
@@ -209,14 +236,26 @@
         var currentPath = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath;
         var locale = Localization.IsMultiLocale ? Localization.GetLocaleFromUrl(currentPath) : null;
 
-        var tocItems = await ContentResolver.GetTocItemsAsync(locale);
         var currentRoute = new ContentRoute
         {
             CanonicalPath = new UrlPath(currentPath),
             OutputFile = new FilePath($"{currentPath.TrimStart('/')}/index.html"),
         };
 
-        _toc = NavBuilder.BuildTree(tocItems.ToList(), currentRoute, locale);
+        if (DocSiteOptions.Areas.Count > 0)
+        {
+            _activeArea = ContentResolver.ResolveCurrentArea(currentPath) ?? DocSiteOptions.Areas[0];
+            foreach (var area in DocSiteOptions.Areas)
+            {
+                var areaTocItems = await ContentResolver.GetTocItemsForAreaAsync(locale, area);
+                _areaTocs[area.Slug] = NavBuilder.BuildTree(areaTocItems.ToList(), currentRoute, locale);
+            }
+        }
+        else
+        {
+            var tocItems = await ContentResolver.GetTocItemsForAreaAsync(locale, null);
+            _toc = NavBuilder.BuildTree(tocItems.ToList(), currentRoute, locale);
+        }
 
         // Build language switcher items
         if (Localization.IsMultiLocale)

@@ -24,6 +24,7 @@ public sealed class ContentResolver
     private readonly NavigationBuilder _navBuilder;
     private readonly DiagnosticContext _diagnostics;
     private readonly LocalizationOptions _localization;
+    private readonly DocSiteOptions _docSiteOptions;
 
     public ContentResolver(
         IEnumerable<IContentService> services,
@@ -31,7 +32,8 @@ public sealed class ContentResolver
         IContentRenderer renderer,
         NavigationBuilder navBuilder,
         DiagnosticContext diagnostics,
-        LocalizationOptions localization)
+        LocalizationOptions localization,
+        DocSiteOptions docSiteOptions)
     {
         _services = services;
         _parser = parser;
@@ -39,6 +41,7 @@ public sealed class ContentResolver
         _navBuilder = navBuilder;
         _diagnostics = diagnostics;
         _localization = localization;
+        _docSiteOptions = docSiteOptions;
     }
 
     /// <summary>
@@ -183,6 +186,69 @@ public sealed class ContentResolver
         }
 
         return Task.FromResult(builder.ToImmutable());
+    }
+
+    /// <summary>
+    /// Resolves which content area the given URL belongs to, based on the first path segment
+    /// matching a configured area slug. Returns null if no area matches.
+    /// </summary>
+    public ContentArea? ResolveCurrentArea(string url)
+    {
+        if (_docSiteOptions.Areas.Count == 0) return null;
+
+        var segments = url.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var firstSegment = segments.Length > 0 ? segments[0] : null;
+        if (firstSegment == null) return null;
+
+        // For multi-locale URLs, the first segment is the locale — check the second segment
+        if (_localization.IsMultiLocale
+            && _localization.Locales.ContainsKey(firstSegment))
+        {
+            firstSegment = segments.Length > 1 ? segments[1] : null;
+            if (firstSegment == null) return null;
+        }
+
+        return _docSiteOptions.Areas.FirstOrDefault(a =>
+            string.Equals(a.Slug, firstSegment, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Get TOC items scoped to a specific area. Filters by area slug matching
+    /// HierarchyParts[0] and strips the area prefix, mirroring the locale-stripping
+    /// pattern in NavigationBuilder.
+    /// </summary>
+    public async Task<IReadOnlyList<ContentTocItem>> GetTocItemsForAreaAsync(
+        string? locale, ContentArea? area)
+    {
+        var items = await GetTocItemsAsync(locale);
+        if (area == null) return items;
+
+        return items
+            .Where(i => i.HierarchyParts.Length > 0
+                && string.Equals(i.HierarchyParts[0], area.Slug,
+                    StringComparison.OrdinalIgnoreCase))
+            .Select(i => i with { HierarchyParts = i.HierarchyParts[1..] })
+            .ToList();
+    }
+
+    /// <summary>
+    /// Get navigation info (prev/next/breadcrumbs) scoped to an area.
+    /// When area is null, falls back to the full-site navigation.
+    /// </summary>
+    public async Task<NavigationInfo?> GetNavigationInfoForAreaAsync(
+        string url, ContentArea? area)
+    {
+        url = "/" + url.Trim('/');
+        var locale = _localization.IsMultiLocale ? _localization.GetLocaleFromUrl(url) : null;
+
+        var route = new ContentRoute
+        {
+            CanonicalPath = new UrlPath(url),
+            OutputFile = new FilePath($"{url.TrimStart('/')}/index.html"),
+        };
+
+        var tocItems = await GetTocItemsForAreaAsync(locale, area);
+        return _navBuilder.BuildNavigationInfo(tocItems.ToList(), route, locale);
     }
 
     private async Task<DiscoveredItem?> FindDiscoveredItem(string url)

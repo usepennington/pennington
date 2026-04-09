@@ -1,0 +1,149 @@
+- generic:
+  - generic:
+    - button:
+      - img
+  - banner:
+    - generic:
+      - generic:
+        - link:
+          - /url: /
+          - generic: uihue
+        - heading [level=2]: Tailwind CSS v4 palette generator
+      - navigation:
+        - link:
+          - /url: /
+          - text: Create
+        - link:
+          - /url: /palettes
+          - generic: Your Palettes
+  - separator
+  - main:
+    - generic:
+      - generic:
+        - generic:
+          - heading [level=3]: Adjust the Oklch Chroma
+          - generic:
+            - generic: "Color Gamut:"
+            - generic:
+              - generic: sRGB
+        - generic:
+          - textbox: oklch(70.618% 0.02252 79.046)
+          - generic:
+            - img
+          - generic: Here you may paste a color string
+      - generic:
+        - generic:
+          - button [expanded]:
+            - text: Export Code
+            - img
+          - generic:
+            - generic:
+              - region "Notifications alt+T"
+              - button:
+                - text: Save Palette
+                - img
+          - button:
+            - generic: Share palette
+            - generic:
+              - generic:
+                - img
+    - generic:
+      - region "Notifications alt+T"
+      - generic:
+        - generic: Bronco
+      - generic:
+        - generic:
+          - paragraph: "50"
+        - generic:
+          - paragraph: "100"
+        - generic:
+          - paragraph: "200"
+        - generic:
+          - paragraph: "300"
+        - generic:
+          - generic:
+            - img
+          - generic:
+            - img
+          - paragraph: "400"
+        - generic:
+          - paragraph: "500"
+        - generic:
+          - paragraph: "600"
+        - generic:
+          - paragraph: "700"
+        - generic:
+          - paragraph: "800"
+        - generic:
+          - paragraph: "900"
+        - generic:
+          - paragraph: "950"
+      - generic:
+        - generic: "Nearest Tailwind:"
+        - button:
+          - generic: stone-400
+          - img
+  - contentinfo:
+    - separator
+    - generic:
+      - generic:
+        - paragraph:
+          - generic: uihue
+          - text: is a project by
+          - link:
+            - /url: https://x.com/intent/follow?screen_name=matfrana
+            - text: Matteo Frana
+          - text: .
+        - paragraph: It can be used freely for personal and commercial projects.
+        - generic:
+          - link:
+            - /url: /tailwind-colors-charts
+            - text: Tailwind colors LCH charts
+          - generic: •
+          - link:
+            - /url: https://dev.to/matfrana/the-mystery-of-tailwind-colors-v4-hjh
+            - text: How this was built (article)
+      - generic:
+        - link:
+          - /url: https://www.producthunt.com/posts/uihue?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-uihue
+          - img
+      - generic:
+        - heading [level=3]: Sponsored by
+        - generic:
+          - link:
+            - /url: https://www.reactbricks.com?utm_source=uihue
+            - img
+  - alert
+  - dialog "Export Code Tailwind 4 Tailwind 3" [ref=e346]:
+    - generic [ref=e347]:
+      - heading "Export Code" [level=2] [ref=e348]:
+        - generic [ref=e349]: Export Code
+        - radiogroup [ref=e351]:
+          - generic [ref=e352] [cursor=pointer]:
+            - text: Tailwind 4
+            - radio "Tailwind 4" [checked] [active] [ref=e353]:
+              - img [ref=e355]
+          - generic [ref=e357] [cursor=pointer]:
+            - generic [ref=e358]: Tailwind 3
+            - radio "Tailwind 3" [ref=e359]
+      - generic [ref=e362]:
+        - generic [ref=e363]:
+          - tablist [ref=e364]:
+            - tab "Oklch" [ref=e365] [cursor=pointer]
+            - tab "P3" [ref=e366] [cursor=pointer]
+            - tab "Hex" [selected] [ref=e367] [cursor=pointer]
+            - tab "HSL" [ref=e368] [cursor=pointer]
+            - tab "RGB" [ref=e369] [cursor=pointer]
+          - tabpanel "Hex" [ref=e370]:
+            - generic [ref=e371]:
+              - generic [ref=e372]:
+                - generic [ref=e373]: Gamut mapped to
+                - generic [ref=e375]: sRGB
+              - generic [ref=e376]: "--color-primary-50: #fafaf9; --color-primary-100: #f4f5f2; --color-primary-200: #e9e4df; --color-primary-300: #d8d2c9; --color-primary-400: #a89f91; --color-primary-500: #797163; --color-primary-600: #565347; --color-primary-700: #444037; --color-primary-800: #2a2420; --color-primary-900: #1c1915; --color-primary-950: #0c0a09;"
+        - button "Copy" [ref=e377] [cursor=pointer]:
+          - generic [ref=e378]: Copy
+          - generic [ref=e380]:
+            - img
+    - button "Close" [ref=e381] [cursor=pointer]:
+      - img [ref=e382]
+      - generic [ref=e385]: Close

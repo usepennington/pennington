@@ -27,6 +27,15 @@
     <ProjectReference Include="..\..\examples\SpaNavigationExample\SpaNavigationExample.csproj" />
     <ProjectReference Include="..\..\examples\SearchExample\SearchExample.csproj" />
     <ProjectReference Include="..\..\examples\LocalizationExample\LocalizationExample.csproj" />
+    <ProjectReference Include="..\..\examples\NorthwindHandbookExample\NorthwindHandbookExample.csproj" />
+    <ProjectReference Include="..\..\examples\TempoDocsExample\TempoDocsExample.csproj" />
+    <ProjectReference Include="..\..\examples\AlexBlogExample\AlexBlogExample.csproj" />
+    <ProjectReference Include="..\..\examples\LocalizationTutorialExample\LocalizationTutorialExample.csproj" />
+    <ProjectReference Include="..\..\examples\SpaNavigationTutorialExample\SpaNavigationTutorialExample.csproj" />
+    <ProjectReference Include="..\..\examples\MaraBlogExample\MaraBlogExample.csproj" />
+    <ProjectReference Include="..\..\examples\BeaconDocsExample\BeaconDocsExample.csproj" />
+    <ProjectReference Include="..\..\examples\ForgePortalExample\ForgePortalExample.csproj" />
+    <ProjectReference Include="..\..\examples\PrismDocsExample\PrismDocsExample.csproj" />
     <ProjectReference Include="..\..\src\Penn.BlogSite\Penn.BlogSite.csproj" />
     <ProjectReference Include="..\..\src\Penn.Roslyn\Penn.Roslyn.csproj" />
   </ItemGroup>

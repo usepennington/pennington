@@ -45,7 +45,7 @@ public partial class CssClassCollectorProcessor(
 
         var classMatches = CssClassGatherRegex().Matches(textToScan);
         var allClasses = classMatches
-            .SelectMany(m => m.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            .SelectMany(m => m.Groups[1].Value.Split([' ', '\n', '\r', '\t'], StringSplitOptions.RemoveEmptyEntries))
             .Select(WebUtility.HtmlDecode)
             .Where(c => c is not null)
             .Select(c => c!)

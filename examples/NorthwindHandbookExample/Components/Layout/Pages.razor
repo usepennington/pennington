@@ -1,0 +1,72 @@
+@page "/{*fileName:nonfile}"
+@inject PennOptions PennOptions
+@inject ContentHelper ContentHelper
+
+@if (_html == null || _frontMatter == null)
+{
+    <PageTitle>@PennOptions.SiteTitle</PageTitle>
+    <p>Not found</p>
+    return;
+}
+
+<PageTitle>@PennOptions.SiteTitle - @_frontMatter.Title</PageTitle>
+<article>
+    <header class="mb-6">
+        <h1 class="text-4xl font-bold">@_frontMatter.Title</h1>
+        @if (_frontMatter is ChangelogFrontMatter changelog)
+        {
+            <div class="flex items-center gap-3 mt-3">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-primary-100 text-primary-800">
+                    v@(changelog.Version)
+                </span>
+                @if (changelog.IsBreaking)
+                {
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800">
+                        Breaking Changes
+                    </span>
+                }
+                @if (changelog.Date.HasValue)
+                {
+                    <span class="text-base-500 text-sm">@changelog.Date.Value.ToString("MMMM d, yyyy")</span>
+                }
+            </div>
+            @if (changelog.Tags.Length > 0)
+            {
+                <div class="flex gap-2 mt-2">
+                    @foreach (var tag in changelog.Tags)
+                    {
+                        <Badge>@tag</Badge>
+                    }
+                </div>
+            }
+        }
+    </header>
+    <div class="prose max-w-full">
+        @((MarkupString)_html)
+    </div>
+</article>
+
+@code {
+    private IFrontMatter? _frontMatter;
+    private string? _html;
+
+    [Parameter] public required string FileName { get; init; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var fileName = FileName;
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            fileName = "index";
+        }
+
+        var page = await ContentHelper.GetPageByUrlAsync(fileName);
+        if (page == null)
+        {
+            return;
+        }
+
+        _frontMatter = page.Value.FrontMatter;
+        _html = page.Value.Html;
+    }
+}

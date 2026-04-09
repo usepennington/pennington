@@ -32,4 +32,11 @@ public record DocSiteOptions
 
     /// <summary>Configure localization options (locales, default locale).</summary>
     public Action<LocalizationOptions>? ConfigureLocalization { get; init; }
+
+    /// <summary>
+    /// Content areas for the documentation site.
+    /// When empty or containing a single area, no area selector is shown.
+    /// Each area's slug must match a top-level directory name under ContentRootPath.
+    /// </summary>
+    public IReadOnlyList<ContentArea> Areas { get; init; } = [];
 }

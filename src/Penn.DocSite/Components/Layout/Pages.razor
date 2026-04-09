@@ -111,7 +111,8 @@ else if (_notFound)
 
         if (_resolved != null)
         {
-            _navInfo = await ContentResolver.GetNavigationInfoAsync(url);
+            var area = ContentResolver.ResolveCurrentArea(url);
+            _navInfo = await ContentResolver.GetNavigationInfoForAreaAsync(url, area);
             if (Localization.IsMultiLocale)
             {
                 _alternateLanguages = await ContentResolver.GetAlternateLanguagesAsync(url);

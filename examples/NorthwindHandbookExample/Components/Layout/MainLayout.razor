@@ -1,0 +1,53 @@
+@using Penn.Navigation
+@using Penn.Content
+@using System.Collections.Immutable
+@inherits LayoutComponentBase
+@inject IEnumerable<IContentService> ContentServices
+@inject NavigationBuilder NavigationBuilder
+@inject NavigationManager NavigationManager
+@inject PennOptions PennOptions
+
+<div class="min-h-screen flex flex-col">
+    <header class="border-b border-base-200 bg-base-50 px-6 py-3 flex items-center gap-4">
+        <a href="/" class="text-lg font-bold text-primary-700 hover:text-primary-500 transition">
+            @PennOptions.SiteTitle
+        </a>
+    </header>
+
+    <div class="flex flex-1">
+        <nav class="w-64 border-r border-base-200 bg-base-50 flex-shrink-0">
+            <div class="sticky top-0 h-screen overflow-y-auto p-6">
+                <TableOfContentsNavigation TableOfContents="@_tableOfContents" />
+            </div>
+        </nav>
+
+        <div class="flex-1 min-w-0 p-6 lg:p-10">
+            <main>
+                @Body
+            </main>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ImmutableList<NavigationTreeItem>? _tableOfContents;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var currentPath = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath;
+        var currentRoute = new ContentRoute
+        {
+            CanonicalPath = new UrlPath(currentPath),
+            OutputFile = new FilePath($"{currentPath.TrimStart('/')}/index.html")
+        };
+
+        var tocItems = new List<ContentTocItem>();
+        foreach (var service in ContentServices)
+        {
+            var items = await service.GetContentTocEntriesAsync();
+            tocItems.AddRange(items);
+        }
+
+        _tableOfContents = NavigationBuilder.BuildTree(tocItems, currentRoute);
+    }
+}

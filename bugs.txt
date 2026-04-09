@@ -36,7 +36,7 @@ Code bugs discovered during documentation verification (2026-04-09)
    - Files: src/Penn/Generation/OutputGenerationService.cs
            src/Penn/Generation/BuildReport.cs
 
-6. SitemapBuilder.Build() never called
+6. [FIXED] SitemapBuilder.Build() never called
    - SitemapService builds entries directly from ContentTocItem objects
    - SitemapBuilder.Build(IReadOnlyList<RenderedItem>) is dead code
    - Effect: LastModified, ChangeFrequency, Priority are always null in sitemaps

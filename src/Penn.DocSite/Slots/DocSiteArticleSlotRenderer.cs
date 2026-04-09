@@ -20,7 +20,8 @@ internal class DocSiteArticleSlotRenderer(
         var resolved = await contentResolver.GetContentByUrlAsync(url);
         if (resolved is null) return null;
 
-        var navInfo = await contentResolver.GetNavigationInfoAsync(url);
+        var area = contentResolver.ResolveCurrentArea(url);
+        var navInfo = await contentResolver.GetNavigationInfoForAreaAsync(url, area);
 
         return new Dictionary<string, object?>
         {

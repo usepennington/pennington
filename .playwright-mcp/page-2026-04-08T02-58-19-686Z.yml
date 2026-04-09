@@ -1,0 +1,131 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - link "937 Yoga" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img [ref=e7]
+          - generic [ref=e10]: 937 Yoga
+        - navigation [ref=e11]:
+          - link "Home" [ref=e12] [cursor=pointer]:
+            - /url: /
+          - link "Classes" [ref=e13] [cursor=pointer]:
+            - /url: /schedule
+          - link "Instructors" [ref=e14] [cursor=pointer]:
+            - /url: /instructors
+          - link "Blog" [ref=e15] [cursor=pointer]:
+            - /url: /blog
+          - link "About" [ref=e16] [cursor=pointer]:
+            - /url: /about
+          - link "Pricing" [ref=e17] [cursor=pointer]:
+            - /url: /pricing
+          - link "Contact" [ref=e18] [cursor=pointer]:
+            - /url: /contact
+        - generic [ref=e19]:
+          - button "Ctrl+K" [ref=e20]:
+            - img [ref=e21]
+            - generic [ref=e23]: Ctrl+K
+          - generic [ref=e24]:
+            - button "English" [active] [ref=e25]:
+              - img [ref=e26]
+              - generic [ref=e28]: English
+              - img [ref=e29]
+            - generic [ref=e110]:
+              - link "English" [ref=e111] [cursor=pointer]:
+                - /url: /about
+              - link "Gen Z" [ref=e112] [cursor=pointer]:
+                - /url: /gen-z/about
+    - main [ref=e31]:
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - heading "About 937 Yoga" [level=1] [ref=e37]
+          - paragraph [ref=e38]: Our story, our values, and why we do what we do.
+        - generic [ref=e39]:
+          - heading "Our Story" [level=2] [ref=e40]
+          - paragraph [ref=e41]: 937 Yoga was born in 2019 in a converted warehouse on Elm Street — house number 937. What started as Maya Chen's personal teaching space with room for eight mats has grown into Portland's most welcoming yoga community.
+          - paragraph [ref=e42]: "We kept the name because it reminds us where we started: small, personal, real."
+          - heading "Our Philosophy" [level=2] [ref=e43]
+          - paragraph [ref=e44]: We believe yoga belongs to everyone. Not just the flexible, the athletic, or the Instagram-ready. Every body that walks through our door deserves to feel supported, challenged, and seen.
+          - paragraph [ref=e45]: Our teaching is rooted in tradition but not stuck in it. We honor the lineages that brought yoga to the West while making space for modern bodies, modern stress, and modern science.
+          - heading "What Makes Us Different" [level=2] [ref=e46]
+          - paragraph [ref=e47]:
+            - strong [ref=e48]: No mirrors.
+            - text: We removed them on day one. Your practice should be felt, not watched.
+          - paragraph [ref=e49]:
+            - strong [ref=e50]: Real community.
+            - text: We know our students' names. We celebrate their milestones. We show up for each other.
+          - paragraph [ref=e51]:
+            - strong [ref=e52]: Evidence-based teaching.
+            - text: Our instructors study anatomy, physiology, and current research. Ancient wisdom, modern understanding.
+          - paragraph [ref=e53]:
+            - strong [ref=e54]: Accessible pricing.
+            - text: Because financial barriers shouldn't keep anyone from the mat. See our
+            - link "pricing page" [ref=e55] [cursor=pointer]:
+              - /url: /pricing
+            - text: for details.
+          - heading "The Space" [level=2] [ref=e56]
+          - paragraph [ref=e57]: "Three purpose-built studios in a light-filled, renovated building:"
+          - list [ref=e58]:
+            - listitem [ref=e59]:
+              - strong [ref=e60]: Main Studio
+              - text: — Our largest room (30 mats). Bamboo floors, 14-foot ceilings, natural light.
+            - listitem [ref=e61]:
+              - strong [ref=e62]: Hot Room
+              - text: — Climate-controlled space for heated classes. Radiant floor heating, proper ventilation.
+            - listitem [ref=e63]:
+              - strong [ref=e64]: Zen Room
+              - text: — Our quiet space for yin, restorative, and meditation. Dimmed lights, sound-dampened walls.
+          - paragraph [ref=e65]: Plus a comfortable lobby with tea, filtered water, and changing rooms with showers.
+    - contentinfo [ref=e66]:
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - img [ref=e71]
+              - generic [ref=e74]: 937 Yoga
+            - paragraph [ref=e75]: Find your flow. A modern studio rooted in tradition, open to everyone.
+          - generic [ref=e76]:
+            - heading "Practice" [level=3] [ref=e77]
+            - list [ref=e78]:
+              - listitem [ref=e79]:
+                - link "Class Schedule" [ref=e80] [cursor=pointer]:
+                  - /url: /schedule
+              - listitem [ref=e81]:
+                - link "Instructors" [ref=e82] [cursor=pointer]:
+                  - /url: /instructors
+              - listitem [ref=e83]:
+                - link "Pricing" [ref=e84] [cursor=pointer]:
+                  - /url: /pricing
+              - listitem [ref=e85]:
+                - link "Blog" [ref=e86] [cursor=pointer]:
+                  - /url: /blog
+          - generic [ref=e87]:
+            - heading "Studio" [level=3] [ref=e88]
+            - list [ref=e89]:
+              - listitem [ref=e90]:
+                - link "About Us" [ref=e91] [cursor=pointer]:
+                  - /url: /about
+              - listitem [ref=e92]:
+                - link "FAQ" [ref=e93] [cursor=pointer]:
+                  - /url: /faq
+              - listitem [ref=e94]:
+                - link "Contact" [ref=e95] [cursor=pointer]:
+                  - /url: /contact
+          - generic [ref=e96]:
+            - heading "Visit" [level=3] [ref=e97]
+            - generic [ref=e98]:
+              - paragraph [ref=e99]: 937 Elm Street
+              - paragraph [ref=e100]: Portland, OR 97205
+              - paragraph [ref=e101]:
+                - link "(503) 555-1937" [ref=e102] [cursor=pointer]:
+                  - /url: tel:+15035551937
+              - paragraph [ref=e103]:
+                - link "hello@937yoga.com" [ref=e104] [cursor=pointer]:
+                  - /url: mailto:hello@937yoga.com
+        - generic [ref=e105]:
+          - paragraph [ref=e106]: © 2026 937 Yoga Studio. All rights reserved.
+          - paragraph [ref=e107]:
+            - text: Built with
+            - link "Penn" [ref=e108] [cursor=pointer]:
+              - /url: https://github.com/philscott-dev/penn
+  - status [ref=e109]

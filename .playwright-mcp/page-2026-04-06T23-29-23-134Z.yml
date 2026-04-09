@@ -1,0 +1,470 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e5]:
+    - generic [ref=e8]:
+      - generic [ref=e10]:
+        - img [ref=e11]
+        - link "Penn" [ref=e14] [cursor=pointer]:
+          - /url: /
+      - navigation [ref=e16]:
+        - list [ref=e17]:
+          - listitem [ref=e18]:
+            - generic [ref=e19]: Getting Started
+            - list [ref=e20]:
+              - listitem [ref=e21]:
+                - link "Creating Your First Site" [ref=e22] [cursor=pointer]:
+                  - /url: /getting-started/creating-first-site/
+              - listitem [ref=e23]:
+                - link "Connecting to Roslyn" [ref=e24] [cursor=pointer]:
+                  - /url: /getting-started/connecting-to-roslyn/
+              - listitem [ref=e25]:
+                - link "Using UI Elements" [ref=e26] [cursor=pointer]:
+                  - /url: /getting-started/using-ui-elements/
+              - listitem [ref=e27]:
+                - link "Deploying to GitHub Pages" [ref=e28] [cursor=pointer]:
+                  - /url: /getting-started/deploying-to-github-pages/
+          - listitem [ref=e29]:
+            - generic [ref=e30]: Guides
+            - list [ref=e31]:
+              - listitem [ref=e32]:
+                - link "Working with Multiple Content Sources" [ref=e33] [cursor=pointer]:
+                  - /url: /guides/multiple-content-sources/
+              - listitem [ref=e34]:
+                - link "Link Types and Syntax" [ref=e35] [cursor=pointer]:
+                  - /url: /guides/linking-documents-and-media/
+              - listitem [ref=e36]:
+                - link "Editing Content" [ref=e37] [cursor=pointer]:
+                  - /url: /guides/edit-content-existing-site/
+              - listitem [ref=e38]:
+                - link "Using Markdown Extensions" [ref=e39] [cursor=pointer]:
+                  - /url: /guides/markdown-extensions/
+              - listitem [ref=e40]:
+                - link "Configure Custom Styling" [ref=e41] [cursor=pointer]:
+                  - /url: /guides/configure-custom-styling/
+              - listitem [ref=e42]:
+                - link "Implementing Redirects" [ref=e43] [cursor=pointer]:
+                  - /url: /guides/implementing-redirects/
+              - listitem [ref=e44]:
+                - link "Implement Search Functionality" [ref=e45] [cursor=pointer]:
+                  - /url: /guides/implement-search-functionality/
+              - listitem [ref=e46]:
+                - link "Razor Pages with Metadata" [ref=e47] [cursor=pointer]:
+                  - /url: /guides/razor-pages-with-metadata/
+              - listitem [ref=e48]:
+                - link "Create Custom Content Service" [ref=e49] [cursor=pointer]:
+                  - /url: /guides/custom-content-service/
+              - listitem [ref=e50]:
+                - link "Deploying to Subdirectories" [ref=e51] [cursor=pointer]:
+                  - /url: /guides/deploying-to-subdirectories/
+              - listitem [ref=e52]:
+                - link "Optimizing CSS and JavaScript" [ref=e53] [cursor=pointer]:
+                  - /url: /guides/optimizing-css-and-javascript/
+              - listitem [ref=e54]:
+                - link "Using the BlogSite Package" [ref=e55] [cursor=pointer]:
+                  - /url: /guides/using-blogsite/
+              - listitem [ref=e56]:
+                - link "Using the DocSite Package" [ref=e57] [cursor=pointer]:
+                  - /url: /guides/using-docsite/
+              - listitem [ref=e58]:
+                - link "Adding SPA Navigation" [ref=e59] [cursor=pointer]:
+                  - /url: /guides/adding-spa-navigation/
+          - listitem [ref=e60]:
+            - generic [ref=e61]: Under The Hood
+            - list [ref=e62]:
+              - listitem [ref=e63]:
+                - link "Development vs Deployment Architecture" [ref=e64] [cursor=pointer]:
+                  - /url: /under-the-hood/dev-vs-deployment-architecture/
+              - listitem [ref=e65]:
+                - link "Hot Reload Architecture" [ref=e66] [cursor=pointer]:
+                  - /url: /under-the-hood/hot-reload-architecture/
+              - listitem [ref=e67]:
+                - link "Content Processing Pipeline" [ref=e68] [cursor=pointer]:
+                  - /url: /under-the-hood/content-processing-pipeline/
+              - listitem [ref=e69]:
+                - link "Syntax Highlighting System" [ref=e70] [cursor=pointer]:
+                  - /url: /under-the-hood/syntax-highlighting-system/
+              - listitem [ref=e71]:
+                - link "Table of Contents Generation" [ref=e72] [cursor=pointer]:
+                  - /url: /under-the-hood/table-of-contents-generation/
+              - listitem [ref=e73]:
+                - link "JavaScript Architecture" [ref=e74] [cursor=pointer]:
+                  - /url: /under-the-hood/javascript-architecture/
+              - listitem [ref=e75]:
+                - link "SPA Island Architecture" [ref=e76] [cursor=pointer]:
+                  - /url: /under-the-hood/spa-island-architecture/
+          - listitem [ref=e77]:
+            - generic [ref=e78]: Reference
+            - list [ref=e79]:
+              - listitem [ref=e80]:
+                - link "Front Matter Properties" [ref=e81] [cursor=pointer]:
+                  - /url: /reference/front-matter-properties/
+              - listitem [ref=e82]:
+                - link "XmlDocId Format" [ref=e83] [cursor=pointer]:
+                  - /url: /reference/xmldocid-format/
+              - listitem [ref=e84]:
+                - link "MonorailCSS Configuration" [ref=e85] [cursor=pointer]:
+                  - /url: /reference/monorail-css-configuration/
+              - listitem [ref=e86]:
+                - link "Razor Islands" [ref=e87] [cursor=pointer]:
+                  - /url: /reference/razor-islands/
+    - generic [ref=e88]:
+      - banner [ref=e89]:
+        - navigation [ref=e90]:
+          - button "Search Ctrl K" [ref=e92]:
+            - img [ref=e93]
+            - generic [ref=e95]: Search
+            - generic [ref=e96]: Ctrl K
+          - generic [ref=e97]:
+            - button "Toggle Dark Mode" [ref=e98]:
+              - img [ref=e99]
+            - link "GitHub repository" [ref=e101] [cursor=pointer]:
+              - /url: https://github.com/phil-scott-78/penn
+              - img [ref=e102]
+      - main [ref=e105]:
+        - generic [ref=e106]:
+          - article [ref=e107]:
+            - heading "Using Markdown Extensions" [level=1] [ref=e109]
+            - main [ref=e110]:
+              - paragraph [ref=e111]:
+                - text: Penn uses
+                - link "Markdig" [ref=e112] [cursor=pointer]:
+                  - /url: https://github.com/xoofx/markdig
+                - text: for Markdown processing, extended with its own collection of features that were deemed necessary and sufficient. These extensions generate HTML and CSS classes. If you're using
+                - code [ref=e113]: Penn.MonorailCss
+                - text: ", default styling is provided. If you're not, you'll be writing CSS. Penn won't apologize for either path."
+              - heading "Code Highlighting" [level=2] [ref=e114]
+              - paragraph [ref=e115]:
+                - text: Penn highlights code blocks server-side based on the language specified in the opening fence. The
+                - link "xref:T:Penn.Highlighting.ICodeHighlighter" [ref=e116] [cursor=pointer]:
+                  - /url: xref:T:Penn.Highlighting.ICodeHighlighter
+                - text: "pipeline follows a strict hierarchy, and the first highlighter that claims the language wins:"
+              - list [ref=e117]:
+                - listitem [ref=e118]:
+                  - strong [ref=e119]: TextMateSharp
+                  - text: "-- If the language has a TextMate grammar available,"
+                  - code [ref=e120]: TextMateHighlighter
+                  - text: handles it. This covers most programming languages.
+                - listitem [ref=e121]:
+                  - strong [ref=e122]: Shell highlighter
+                  - text: "-- For"
+                  - code [ref=e123]: bash
+                  - text: and
+                  - code [ref=e124]: shell
+                  - text: code blocks, a built-in
+                  - code [ref=e125]: ShellHighlighter
+                  - text: handles command and option highlighting.
+                - listitem [ref=e126]:
+                  - strong [ref=e127]: Custom highlighters
+                  - text: "-- Any additional"
+                  - code [ref=e128]: ICodeHighlighter
+                  - text: implementations registered via
+                  - code [ref=e129]: PennOptions.Highlighting.AddHighlighter<T>()
+                  - text: .
+                - listitem [ref=e130]:
+                  - strong [ref=e131]: Client-side fallback
+                  - text: "-- If no server-side highlighter claims the block, the language attribute is preserved on the"
+                  - code [ref=e132]: <code>
+                  - text: element for optional client-side highlighting.
+              - paragraph [ref=e133]:
+                - text: You can register additional highlighters in your
+                - code [ref=e134]: AddPenn
+                - text: "configuration:"
+              - code [ref=e139]:
+                - generic [ref=e140]: builder.Services.AddPenn(penn =>
+                - generic [ref=e141]: "{"
+                - generic [ref=e142]: penn.Highlighting.AddHighlighter<MyCustomHighlighter>();
+                - generic [ref=e143]: "});"
+              - heading "Code Tabs" [level=2] [ref=e144]
+              - paragraph [ref=e145]:
+                - text: Tabbed code blocks let you show the same concept in multiple languages or formats. Place
+                - code [ref=e146]: tabs=true
+                - text: on the first code fence, and subsequent consecutive code blocks become tabs. The
+                - code [ref=e147]: TabbedCodeBlocksExtension
+                - text: handles grouping during Markdig's document processing phase.
+              - code [ref=e152]: "```html tabs=true <p>My Content</p> ``` ```xml title=\"My XML Data\" <data>My Data</data> ```"
+              - paragraph [ref=e153]: "This will render as:"
+              - generic [ref=e155]:
+                - tablist [ref=e156]:
+                  - tab "HTML" [selected] [ref=e157]
+                  - tab "My XML Data" [ref=e158]
+                - generic "HTML" [ref=e159]:
+                  - code [ref=e163]:
+                    - generic [ref=e164]: <p>My Content</p>
+              - paragraph [ref=e165]:
+                - text: The
+                - code [ref=e166]: title
+                - text: attribute on individual blocks overrides the default tab label (which is the language name). Code blocks within tabs are highlighted by the same pipeline described above. Penn does not play favorites.
+              - heading "Code Directives" [level=2] [ref=e167]
+              - paragraph [ref=e168]:
+                - text: Penn's
+                - code [ref=e169]: CodeTransformer
+                - text: supports Shiki-style code directives that annotate lines with visual effects. These use special comment notations --
+                - code [ref=e170]: // [!code ...]
+                - text: "-- that are automatically stripped from the rendered output. The comment syntax works with any language's comment markers ("
+                - code [ref=e171]: //
+                - text: ","
+                - code [ref=e172]: "#"
+                - text: ","
+                - code [ref=e173]: "--"
+                - text: ","
+                - code [ref=e174]: <!--
+                - text: ", etc.)."
+              - heading "Line Highlighting" [level=3] [ref=e175]
+              - paragraph [ref=e176]:
+                - text: Draw attention to specific lines with
+                - code [ref=e177]: // [!code highlight]
+                - text: or
+                - code [ref=e178]: // [!code hl]
+                - text: ":"
+              - code [ref=e183]: "```javascript function calculateSum(numbers) { let total = 0; // [!code highlight] for (const num of numbers) { total += num; } return total; // [!code hl] } ```"
+              - paragraph [ref=e184]: "This will render as:"
+              - code [ref=e189]:
+                - generic [ref=e190]: "function calculateSum(numbers) {"
+                - generic [ref=e191]: let total = 0
+                - generic [ref=e192]: "for (const num of numbers) {"
+                - generic [ref=e193]: total += num;
+                - generic [ref=e194]: "}"
+                - generic [ref=e195]: return total
+                - generic [ref=e196]: "}"
+              - heading "Diff Notation" [level=3] [ref=e197]
+              - paragraph [ref=e198]:
+                - text: Show additions and deletions with
+                - code [ref=e199]: // [!code ++]
+                - text: and
+                - code [ref=e200]: // [!code --]
+                - text: ":"
+              - code [ref=e205]: "```javascript function greetUser(name) { console.log(\"Hello \" + name); // [!code --] console.log(`Hello ${name}!`); // [!code ++] } ```"
+              - paragraph [ref=e206]: "This will render as:"
+              - code [ref=e211]:
+                - generic [ref=e212]: "function greetUser(name) {"
+                - generic [ref=e213]: "- console.log(\"Hello \" + name)"
+                - generic [ref=e214]: "+ console.log(`Hello ${name}!`)"
+                - generic [ref=e215]: "}"
+              - heading "Error and Warning Indicators" [level=3] [ref=e216]
+              - paragraph [ref=e217]:
+                - text: Mark problematic lines with
+                - code [ref=e218]: // [!code error]
+                - text: and
+                - code [ref=e219]: // [!code warning]
+                - text: ":"
+              - code [ref=e224]: "```javascript function divide(a, b) { if (b = 0) { // [!code error] console.warn(\"Division by zero detected\"); // [!code warning] return null; } return a / b; } ```"
+              - paragraph [ref=e225]: "This will render as:"
+              - code [ref=e230]:
+                - generic [ref=e231]: "function divide(a, b) {"
+                - generic [ref=e232]: "if (b = 0) {"
+                - generic [ref=e233]: console.warn("Division by zero detected")
+                - generic [ref=e234]: return null;
+                - generic [ref=e235]: "}"
+                - generic [ref=e236]: return a / b;
+                - generic [ref=e237]: "}"
+              - heading "Focus and Blur" [level=3] [ref=e238]
+              - paragraph [ref=e239]:
+                - text: Use
+                - code [ref=e240]: // [!code focus]
+                - text: to highlight specific lines and dim everything else. The
+                - code [ref=e241]: CodeTransformer
+                - text: adds a
+                - code [ref=e242]: has-focused
+                - text: class to the
+                - code [ref=e243]: <pre>
+                - text: element and a
+                - code [ref=e244]: blurred
+                - text: "class to all non-focused lines:"
+              - code [ref=e249]: "```csharp public async Task<User> GetUserAsync(int id) { return await _repository.FindByIdAsync(id); // [!code focus] } ```"
+              - paragraph [ref=e250]: "This will render as:"
+              - code [ref=e255]:
+                - generic [ref=e256]: public async Task<User> GetUserAsync(int id)
+                - generic [ref=e257]: "{"
+                - generic [ref=e258]: returnawait _repository.FindByIdAsync(id);
+                - generic [ref=e259]: "}"
+              - heading "Word Highlighting" [level=3] [ref=e260]
+              - paragraph [ref=e261]:
+                - text: Highlight specific tokens within a line using
+                - code [ref=e262]: // [!code word:token]
+                - text: ". Only the first occurrence on each line is highlighted, which prevents ambiguity:"
+              - code [ref=e267]: "```javascript function processData(input) { const result = transform(input); // [!code word:transform] return result; } ```"
+              - paragraph [ref=e268]: "This will render as:"
+              - code [ref=e273]:
+                - generic [ref=e274]: "function processData(input) {"
+                - generic [ref=e275]:
+                  - text: const result =
+                  - generic [ref=e276]: transform
+                  - text: (input)
+                - generic [ref=e277]: return result;
+                - generic [ref=e278]: "}"
+              - heading "Word Highlighting with Tooltips" [level=4] [ref=e279]
+              - paragraph [ref=e280]:
+                - text: Add explanations using the pipe syntax
+                - code [ref=e281]: // [!code word:word|explanation]
+                - text: ":"
+              - code [ref=e286]: "```csharp public void ConfigureServices(IServiceCollection services) { services.AddScoped<IRepository, Repository>(); // [!code word:AddScoped|Registers service with scoped lifetime] services.AddTransient<IValidator, Validator>(); } ```"
+              - paragraph [ref=e287]: "This will render as:"
+              - code [ref=e292]:
+                - generic [ref=e293]: public void ConfigureServices(IServiceCollection services)
+                - generic [ref=e294]: "{"
+                - generic [ref=e295]:
+                  - text: services.
+                  - generic [ref=e297]:
+                    - text: AddScoped
+                    - generic: Registers service with scoped lifetime
+                  - text: <IRepository, Repository>();
+                - generic [ref=e298]: services.AddTransient<IValidator, Validator>();
+                - generic [ref=e299]: "}"
+              - generic [ref=e300]:
+                - paragraph [ref=e301]:
+                  - img [ref=e302]
+                  - text: Tip
+                - paragraph [ref=e304]: Word highlighting with tooltips is useful for teaching -- draw attention to the method name that matters and explain it without cluttering the code.
+              - heading "Snippet Regions" [level=3] [ref=e305]
+              - paragraph [ref=e306]:
+                - text: The
+                - code [ref=e307]: CodeTransformer
+                - text: also supports include/exclude regions for showing partial code blocks. Use
+                - code [ref=e308]: // [!code include-start]
+                - text: /
+                - code [ref=e309]: // [!code include-end]
+                - text: to show only a region, or
+                - code [ref=e310]: // [!code exclude-start]
+                - text: /
+                - code [ref=e311]: // [!code exclude-end]
+                - text: to hide a region. These are processed before other directives and the directive lines themselves are removed from output.
+              - heading "Enhanced Alerts" [level=2] [ref=e312]
+              - paragraph [ref=e313]:
+                - text: Penn tweaks Markdig's
+                - code [ref=e314]: AlertBlock
+                - text: parsing via
+                - code [ref=e315]: CustomAlertInlineParser
+                - text: to work with MonorailCSS and Tailwind styling. The parser recognizes GitHub-style alert syntax in blockquotes.
+              - heading "Note" [level=3] [ref=e316]
+              - code [ref=e321]: "> [!NOTE] > Highlights information that users should take into account, even when skimming."
+              - generic [ref=e322]:
+                - paragraph [ref=e323]:
+                  - img [ref=e324]
+                  - text: Note
+                - paragraph [ref=e326]: Highlights information that users should take into account, even when skimming.
+              - heading "Tip" [level=3] [ref=e327]
+              - code [ref=e332]: "> [!TIP] > Optional information to help a user be more successful."
+              - generic [ref=e333]:
+                - paragraph [ref=e334]:
+                  - img [ref=e335]
+                  - text: Tip
+                - paragraph [ref=e337]: Optional information to help a user be more successful.
+              - heading "Important" [level=3] [ref=e338]
+              - code [ref=e343]: "> [!IMPORTANT] > Crucial information necessary for users to succeed."
+              - generic [ref=e344]:
+                - paragraph [ref=e345]:
+                  - img [ref=e346]
+                  - text: Important
+                - paragraph [ref=e348]: Crucial information necessary for users to succeed.
+              - heading "Warning" [level=3] [ref=e349]
+              - code [ref=e354]: "> [!WARNING] > Critical content demanding immediate user attention due to potential risks."
+              - generic [ref=e355]:
+                - paragraph [ref=e356]:
+                  - img [ref=e357]
+                  - text: Warning
+                - paragraph [ref=e359]: Critical content demanding immediate user attention due to potential risks.
+              - heading "Caution" [level=3] [ref=e360]
+              - code [ref=e365]: "> [!CAUTION] > Negative potential consequences of an action."
+              - generic [ref=e366]:
+                - paragraph [ref=e367]:
+                  - img [ref=e368]
+                  - text: Caution
+                - paragraph [ref=e370]: Negative potential consequences of an action.
+              - heading "Mermaid Diagrams" [level=2] [ref=e371]
+              - paragraph [ref=e372]:
+                - text: Penn supports
+                - link "Mermaid" [ref=e373] [cursor=pointer]:
+                  - /url: https://mermaid.js.org/
+                - text: diagrams. If your site includes the Mermaid library, fenced code blocks with the
+                - code [ref=e374]: mermaid
+                - text: "language tag will be rendered as diagrams:"
+              - document [ref=e380]:
+                - generic [ref=e383]: FileSystem
+                - generic [ref=e386]: Penn
+                - generic [ref=e389]: User
+                - generic [ref=e393]: FileSystem
+                - generic [ref=e397]: Penn
+                - generic [ref=e401]: User
+                - generic [ref=e402]: Save .md file
+                - generic [ref=e403]: FileWatcher notification
+                - generic [ref=e404]: Invalidate cache
+                - generic [ref=e406]: Browser refresh
+                - generic [ref=e407]: Fresh content
+              - heading "The Markdown Pipeline" [level=2] [ref=e408]
+              - paragraph [ref=e409]:
+                - text: Penn's
+                - code [ref=e410]: MarkdownPipelineFactory.CreateWithExtensions
+                - text: "builds the Markdig pipeline with all extensions pre-configured: auto-identifiers (GitHub-style, required for sidebar heading links), custom alerts, tabbed code blocks, code transformation, and highlighting. You do not need to configure the pipeline manually. Penn has opinions about which extensions belong. You are welcome to have different opinions, elsewhere."
+            - generic [ref=e411]:
+              - generic [ref=e412]:
+                - 'link "Previous: Editing Content" [ref=e413] [cursor=pointer]':
+                  - /url: /guides/edit-content-existing-site/
+                  - img [ref=e415]
+                  - text: Previous
+                - link [ref=e417] [cursor=pointer]:
+                  - /url: /guides/edit-content-existing-site/
+                  - text: Editing Content
+              - generic [ref=e418]:
+                - 'link "Next: Configure Custom Styling" [ref=e419] [cursor=pointer]':
+                  - /url: /guides/configure-custom-styling/
+                  - text: Next
+                  - img [ref=e421]
+                - link [ref=e423] [cursor=pointer]:
+                  - /url: /guides/configure-custom-styling/
+                  - text: Configure Custom Styling
+          - list [ref=e428]:
+            - listitem [ref=e429]:
+              - link "Code Highlighting" [ref=e430] [cursor=pointer]:
+                - /url: "#code-highlighting"
+            - listitem [ref=e431]:
+              - link "Code Tabs" [ref=e432] [cursor=pointer]:
+                - /url: "#code-tabs"
+            - listitem [ref=e433]:
+              - link "Code Directives" [ref=e434] [cursor=pointer]:
+                - /url: "#code-directives"
+            - listitem [ref=e435]:
+              - list [ref=e436]:
+                - listitem [ref=e437]:
+                  - link "Line Highlighting" [ref=e438] [cursor=pointer]:
+                    - /url: "#line-highlighting"
+                - listitem [ref=e439]:
+                  - link "Diff Notation" [ref=e440] [cursor=pointer]:
+                    - /url: "#diff-notation"
+                - listitem [ref=e441]:
+                  - link "Error and Warning Indicators" [ref=e442] [cursor=pointer]:
+                    - /url: "#error-and-warning-indicators"
+                - listitem [ref=e443]:
+                  - link "Focus and Blur" [ref=e444] [cursor=pointer]:
+                    - /url: "#focus-and-blur"
+                - listitem [ref=e445]:
+                  - link "Word Highlighting" [ref=e446] [cursor=pointer]:
+                    - /url: "#word-highlighting"
+                - listitem [ref=e447]:
+                  - link "Snippet Regions" [ref=e448] [cursor=pointer]:
+                    - /url: "#snippet-regions"
+            - listitem [ref=e449]:
+              - link "Enhanced Alerts" [ref=e450] [cursor=pointer]:
+                - /url: "#enhanced-alerts"
+            - listitem [ref=e451]:
+              - list [ref=e452]:
+                - listitem [ref=e453]:
+                  - link "Note" [ref=e454] [cursor=pointer]:
+                    - /url: "#note"
+                - listitem [ref=e455]:
+                  - link "Tip" [ref=e456] [cursor=pointer]:
+                    - /url: "#tip"
+                - listitem [ref=e457]:
+                  - link "Important" [ref=e458] [cursor=pointer]:
+                    - /url: "#important"
+                - listitem [ref=e459]:
+                  - link "Warning" [ref=e460] [cursor=pointer]:
+                    - /url: "#warning"
+                - listitem [ref=e461]:
+                  - link "Caution" [ref=e462] [cursor=pointer]:
+                    - /url: "#caution"
+            - listitem [ref=e463]:
+              - link "Mermaid Diagrams" [ref=e464] [cursor=pointer]:
+                - /url: "#mermaid-diagrams"
+            - listitem [ref=e465]:
+              - link "The Markdown Pipeline" [ref=e466] [cursor=pointer]:
+                - /url: "#the-markdown-pipeline"
+  - status [ref=e467]

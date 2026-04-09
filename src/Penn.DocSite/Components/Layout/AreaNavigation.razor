@@ -1,0 +1,39 @@
+@if (Areas is { Count: > 1 })
+{
+    <nav aria-label="Content areas"
+         class="my-10 -ml-3 px-1 py-3 rounded-lg bg-base-100 dark:bg-base-900/60 ring-1 ring-base-200/70 dark:ring-base-800/70"
+         data-area-nav data-active-area="@(ActiveArea?.Slug ?? "")">
+        <ul class="flex flex-col gap-1">
+            @foreach (var area in Areas)
+            {
+                var isActive = ActiveArea != null
+                    && string.Equals(area.Slug, ActiveArea.Slug, StringComparison.OrdinalIgnoreCase);
+                <li>
+                    <a href="/@area.Slug/"
+                       data-area="@area.Slug"
+                       aria-current="@(isActive ? "true" : "false")"
+                       class="flex items-center px-2 mx-1 py-1.5 rounded-md text-base transition-colors duration-150
+                              aria-[current=true]:bg-base-500/50 dark:aria-[current=true]:bg-base-800/50
+                              aria-[current=true]:text-primary-700 aria-[current=true]:dark:text-primary-400
+                              aria-[current=true]:font-medium
+                              aria-[current=true]:shadow-sm aria-[current=true]:dark:shadow-none
+                              aria-[current=true]:ring-1 aria-[current=true]:ring-base-200/60 aria-[current=true]:dark:ring-base-700/60
+                              aria-[current=false]:text-base-500 aria-[current=false]:dark:text-base-400
+                              aria-[current=false]:hover:text-base-800 aria-[current=false]:dark:hover:text-base-200
+                              aria-[current=false]:hover:bg-base-200/50 aria-[current=false]:dark:hover:bg-base-800/40">
+                        @if (area.Icon != null)
+                        {
+                            <span class="w-4 h-4 shrink-0 opacity-70">@((MarkupString)area.Icon)</span>
+                        }
+                        <span>@area.Title</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+@code {
+    [Parameter] public IReadOnlyList<ContentArea> Areas { get; set; } = [];
+    [Parameter] public ContentArea? ActiveArea { get; set; }
+}
