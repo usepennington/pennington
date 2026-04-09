@@ -1,0 +1,9 @@
+[msbuild]
+project = "../Pennington.slnx"
+
+[github]
+user = "usepennington"
+repo = "pennington"
+
+[changelog]
+owners = ["phil-scott-78"]

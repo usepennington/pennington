@@ -3,6 +3,8 @@
     <TargetFrameworks>net11.0;net10.0</TargetFrameworks>    <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Description>Roslyn-based code analysis and highlighting for Pennington</Description>
+    <PackageTags>dotnet roslyn syntax-highlighting code-analysis</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Pennington.Roslyn.Tests" />

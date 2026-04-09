@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Pennington</RootNamespace>
+    <Description>Content engine for .NET with Markdown processing, front matter, and static site generation</Description>
+    <PackageTags>dotnet markdown static-site-generator content-engine front-matter yaml</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Pennington.Tests" />

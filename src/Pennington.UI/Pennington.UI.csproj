@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <Description>Razor component library for Pennington — navigation, code blocks, and content display</Description>
+    <PackageTags>dotnet blazor razor-components navigation code-highlighting</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <SupportedPlatform Include="browser" />

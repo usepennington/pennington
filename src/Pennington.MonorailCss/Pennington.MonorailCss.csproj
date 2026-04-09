@@ -4,6 +4,8 @@
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Description>MonorailCSS integration for Pennington providing utility-first CSS generation</Description>
+    <PackageTags>dotnet css utility-css monorail tailwind</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
