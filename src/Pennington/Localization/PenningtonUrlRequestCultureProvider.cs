@@ -84,7 +84,8 @@ public sealed class PenningtonUrlRequestCultureProvider : IRequestCultureProvide
             // On Linux/macOS, ICU accepts any string without throwing,
             // synthesizing a culture for unknown tags. Reject those.
             if (culture.LCID == 4096
-                && culture.EnglishName.StartsWith("Unknown Language", StringComparison.Ordinal))
+                && (culture.TwoLetterISOLanguageName.Length > 3
+                    || culture.EnglishName.StartsWith("Unknown Language", StringComparison.Ordinal)))
             {
                 culture = null;
                 return false;
