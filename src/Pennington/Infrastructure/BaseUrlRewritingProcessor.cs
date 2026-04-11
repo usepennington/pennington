@@ -19,7 +19,12 @@ public sealed class BaseUrlRewritingProcessor : IResponseProcessor
         _baseUrl = outputOptions?.BaseUrl.Value.TrimEnd('/') ?? "";
     }
 
-    public int Order => 0;
+    /// <summary>
+    /// Outermost transport layer — runs last among URL rewriters so that
+    /// earlier processors (xref at 10, locale rewriting at 20) can operate on
+    /// logical root-relative paths without having to strip the base URL.
+    /// </summary>
+    public int Order => 30;
 
     public bool ShouldProcess(HttpContext context)
     {

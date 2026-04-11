@@ -16,7 +16,7 @@ public sealed class DiagnosticOverlayProcessor : IResponseProcessor
     private readonly bool _isDevMode = !string.IsNullOrEmpty(
         Environment.GetEnvironmentVariable("DOTNET_WATCH"));
 
-    public int Order => 10000;
+    public int Order => 50;
 
     public bool ShouldProcess(HttpContext context)
     {

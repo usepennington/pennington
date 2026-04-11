@@ -20,6 +20,16 @@ using Pennington.Routing;
 /// </summary>
 public sealed class OutputGenerationService
 {
+    /// <summary>
+    /// Sentinel URL fetched during site generation to produce <c>404.html</c>.
+    /// The path is not a real content route — it exists only to trigger the
+    /// catch-all fallback handler whose rendered HTML is written to disk.
+    /// Other parts of the engine (e.g. <c>LocalizationOptions.GetAlternateLanguages</c>)
+    /// must recognize this sentinel so language switchers on <c>404.html</c>
+    /// don't emit phantom <c>/{locale}/__pennington-404-generator/</c> links.
+    /// </summary>
+    public const string NotFoundGeneratorPath = "/__pennington-404-generator";
+
     private readonly IEnumerable<IContentService> _contentServices;
     private readonly OutputOptions _outputOptions;
     private readonly IWebHostEnvironment _environment;
@@ -104,7 +114,7 @@ public sealed class OutputGenerationService
         // Phase 8: Generate 404.html by fetching a non-existent URL (triggers fallback route)
         try
         {
-            var notFoundResponse = await client.GetAsync("/__pennington-404-generator");
+            var notFoundResponse = await client.GetAsync(NotFoundGeneratorPath);
             var notFoundHtml = await notFoundResponse.Content.ReadAsStringAsync();
             if (!string.IsNullOrWhiteSpace(notFoundHtml))
             {

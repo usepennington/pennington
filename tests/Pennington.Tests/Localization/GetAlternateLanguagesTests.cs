@@ -93,4 +93,31 @@ public class GetAlternateLanguagesTests
 
         alternates.First(a => a.Locale == "en").Url.ShouldBe("/");
     }
+
+    [Fact]
+    public void Returns_Locale_Roots_For_NotFoundGenerator_Sentinel()
+    {
+        // The 404 generator sentinel path is not a real content page. GetAlternateLanguages
+        // must treat it as the landing page so each locale's switcher link points at
+        // that locale's root rather than phantom /{locale}/__pennington-404-generator/ URLs.
+        var options = CreateOptions();
+        var alternates = options.GetAlternateLanguages("/__pennington-404-generator");
+
+        alternates.First(a => a.Locale == "en").Url.ShouldBe("/");
+        alternates.First(a => a.Locale == "fr").Url.ShouldBe("/fr/");
+        alternates.First(a => a.Locale == "gen-z").Url.ShouldBe("/gen-z/");
+        alternates.Select(a => a.Url).ShouldNotContain(u => u.Contains("__pennington-404-generator"));
+    }
+
+    [Fact]
+    public void Returns_Locale_Roots_For_NotFoundGenerator_Sentinel_With_TrailingSlash()
+    {
+        var options = CreateOptions();
+        var alternates = options.GetAlternateLanguages("/__pennington-404-generator/");
+
+        alternates.First(a => a.Locale == "en").Url.ShouldBe("/");
+        alternates.First(a => a.Locale == "fr").Url.ShouldBe("/fr/");
+        alternates.First(a => a.Locale == "gen-z").Url.ShouldBe("/gen-z/");
+        alternates.Select(a => a.Url).ShouldNotContain(u => u.Contains("__pennington-404-generator"));
+    }
 }

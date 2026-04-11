@@ -1,6 +1,7 @@
 @using System.Collections.Immutable
 @using Microsoft.AspNetCore.Components.Sections
 @using Pennington.DocSite.Services
+@using Pennington.Generation
 @using Pennington.Infrastructure
 @using Pennington.Localization
 @using Pennington.UI.Components
@@ -234,6 +235,15 @@
     protected override async Task OnInitializedAsync()
     {
         var currentPath = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath;
+
+        // The 404-generation sentinel produces 404.html, not a real content route.
+        // Normalize it so the TOC "current page" marker and language switcher treat
+        // 404.html as if we were on the landing page.
+        if (string.Equals(currentPath, OutputGenerationService.NotFoundGeneratorPath, StringComparison.Ordinal))
+        {
+            currentPath = "/";
+        }
+
         var locale = Localization.IsMultiLocale ? Localization.GetLocaleFromUrl(currentPath) : null;
 
         var currentRoute = new ContentRoute

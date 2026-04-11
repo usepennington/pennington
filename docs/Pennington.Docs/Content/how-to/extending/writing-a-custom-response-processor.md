@@ -37,17 +37,17 @@ Walk through the three members of `T:Pennington.Infrastructure.IResponseProcesso
 Map out the existing processors and their `Order` values to understand where a custom processor should slot in.
 
 ### What to show
-- The built-in processor chain registered in `M:Pennington.Infrastructure.PenningtonExtensions.AddPennington(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Infrastructure.PenningtonOptions})` at `:path:src/Pennington/Infrastructure/PenningtonExtensions.cs`:
-  - `T:Pennington.Infrastructure.XrefResolvingProcessor` — `Order: -10`. Resolves `xref:uid` links to actual URLs. Runs first so subsequent processors see resolved links
-  - `T:Pennington.Infrastructure.BaseUrlRewritingProcessor` — `Order: 0`. Rewrites root-relative URLs to include the configured base URL (for subdirectory deployments)
-  - `T:Pennington.Localization.LocaleLinkRewritingProcessor` — `Order: 50`. Rewrites internal links to include locale prefix for non-default locales
-  - `T:Pennington.Infrastructure.LiveReloadScriptProcessor` — `Order: 1000`. Injects the live reload WebSocket script (dev mode only)
-  - `T:Pennington.Infrastructure.DiagnosticOverlayProcessor` — `Order: 10000`. Injects the diagnostic overlay widget (dev mode only)
+- The built-in processor chain registered in `M:Pennington.Infrastructure.PenningtonExtensions.AddPennington(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Infrastructure.PenningtonOptions})` at `:path:src/Pennington/Infrastructure/PenningtonExtensions.cs`, listed in execution order (ascending `Order`):
+  - `T:Pennington.Infrastructure.XrefResolvingProcessor` — `Order: 10`. Resolves `xref:uid` links to actual URLs. Runs first so subsequent processors see resolved links
+  - `T:Pennington.Localization.LocaleLinkRewritingProcessor` — `Order: 20`. Rewrites internal links to include locale prefix for non-default locales. Operates on logical (unprefixed) paths so the base-URL processor can apply its prefix afterward
+  - `T:Pennington.Infrastructure.BaseUrlRewritingProcessor` — `Order: 30`. Rewrites root-relative URLs to include the configured base URL (for subdirectory deployments). Runs last among the URL rewriters as the outermost transport layer
+  - `T:Pennington.Infrastructure.LiveReloadScriptProcessor` — `Order: 40`. Injects the live reload WebSocket script (dev mode only)
+  - `T:Pennington.Infrastructure.DiagnosticOverlayProcessor` — `Order: 50`. Injects the diagnostic overlay widget (dev mode only)
 
 ### Key points
-- The ordering forms a logical pipeline: resolve references first (-10), then rewrite URLs (0, 50), then inject dev-mode scripts last (1000, 10000)
-- A feedback widget at `Order: 500` slots after all URL processing but before dev-mode injections — the widget's HTML will have correct URLs and will not interfere with live reload
-- The gap between built-in values (0 to 1000) provides ample room for custom processors
+- The ordering forms a logical pipeline: resolve references first (10), then rewrite locale-aware internal links on logical paths (20), then apply the deployment base URL as the outermost transport layer (30), then inject dev-mode scripts last (40, 50)
+- The built-ins use a uniform ×10 sequence so a custom processor can slot between any two of them using the gaps (e.g., 15, 25, 35, 45) without renumbering
+- Base URL rewriting must run LAST among URL rewriters — it is the deployment-subdirectory envelope, and earlier processors should never have to see or strip the prefix
 
 ## Beat 4: How ResponseProcessingMiddleware Drives the Chain
 
@@ -72,7 +72,7 @@ Implement `T:Pennington.Infrastructure.IResponseProcessor` for the feedback widg
 
 ### What to show
 - Class declaration: `public sealed class FeedbackWidgetProcessor : IResponseProcessor`
-- `P:Pennington.Infrastructure.IResponseProcessor.Order` returns `500` — after xref resolution (-10), base URL rewriting (0), and locale link rewriting (50), but before live reload (1000)
+- `P:Pennington.Infrastructure.IResponseProcessor.Order` returns `35` — after xref resolution (10), locale link rewriting (20), and base URL rewriting (30), but before the dev-mode live-reload (40) and diagnostic overlay (50). The `35` slot is a natural fit for a widget that wants to see the final fully-rewritten HTML but doesn't interfere with dev-mode overlays
 - `M:Pennington.Infrastructure.IResponseProcessor.ShouldProcess(Microsoft.AspNetCore.Http.HttpContext)` implementation:
   - Check `context.Response.ContentType` starts with `"text/html"`
   - Check `context.Response.StatusCode` is `>= 200` and `< 300`
@@ -87,7 +87,7 @@ Implement `T:Pennington.Infrastructure.IResponseProcessor` for the feedback widg
 ### Key points
 - Model the `ShouldProcess` guard on the built-in processors — check content type and status code
 - Use `LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase)` for case-insensitive matching, consistent with `T:Pennington.Infrastructure.LiveReloadScriptProcessor`
-- The processor sees already-resolved HTML (xrefs replaced, URLs rewritten) because it runs at `Order: 500`
+- The processor sees already-resolved HTML (xrefs replaced, locale prefixes applied, base URL applied) because it runs at `Order: 35`
 
 ## Beat 6: Register via DI
 

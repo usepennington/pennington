@@ -10,8 +10,8 @@ public sealed class LiveReloadScriptProcessor : IResponseProcessor
 {
     private readonly bool _isDevMode = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH"));
 
-    // Run after other processors
-    public int Order => 1000;
+    // Run after URL rewriters (10/20/30) but before diagnostic overlay (50).
+    public int Order => 40;
 
     public bool ShouldProcess(HttpContext context)
     {

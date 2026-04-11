@@ -109,6 +109,29 @@ ASP.NET's static asset fingerprinting exposes **both** `scripts.js` and `scripts
 
 ## Phase 2 — Fix `LocaleLinkRewritingProcessor` × `BaseUrlRewritingProcessor` interaction (ENGINE)
 
+> ✅ **Done 2026-04-11.** Delivered via a clean renumbering of all five
+> built-in response processors to a uniform `10/20/30/40/50` sequence (was a
+> mix of `-10, 0, 50, 1000, 10000`), which put `LocaleLinkRewritingProcessor`
+> (20) ahead of `BaseUrlRewritingProcessor` (30) so the base URL acts as the
+> outermost transport layer. Plus a `LocalizationOptions.GetAlternateLanguages`
+> guard that normalizes the `/__pennington-404-generator` sentinel path to
+> `/`, so language switchers on `404.html` emit locale roots instead of
+> phantom per-locale sentinel URLs. Measured impact:
+> `B.NOT_REWRITTEN` **353 → 0**, `T.ORPHAN` **172 → 0**,
+> `LocalizationExample` 507 err/535 warn → **0/0** (both passes ok),
+> `LocalizationTutorialExample` 49/74 → **0/0** (both passes ok),
+> and the 404 language-switcher broken links in `LocalizationExample/404.html`
+> gone. Eight examples now pass cleanly in both passes (up from six):
+> `PrismDocsExample`, `TempoDocsExample`, `SpaNavigationExample`,
+> `SpaNavigationTutorialExample`, `SearchExample`, `UserInterfaceExample`,
+> `LocalizationExample`, `LocalizationTutorialExample`. YogaStudioExample
+> reduced from 534 errors to 272; the residuals are all Phase 7b content
+> bugs (missing `/gen-z/`, `/instructors/<name>`, `/schedule/<id>` pages)
+> that do not depend on this phase. Tests added:
+> `tests/Pennington.Tests/Infrastructure/LocaleAndBaseUrlPipelineTests.cs`
+> (10 cases, including full-chain Order snapshot) and two new sentinel-guard
+> cases in `GetAlternateLanguagesTests.cs`.
+
 **Leverage**: Eliminates the entire `B.NOT_REWRITTEN` category (353 raw → 51 groups across 3 examples) plus the corresponding cascade in `L.BROKEN` for the same URLs in pass B.
 
 ### Symptom

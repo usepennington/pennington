@@ -169,6 +169,15 @@ public sealed class LocalizationOptions
     {
         if (!IsMultiLocale) return [];
 
+        // The 404-generation sentinel is not a real content page. Treat it as
+        // the locale root so language switcher links resolve to each locale's
+        // landing page instead of phantom /<locale>/__pennington-404-generator/.
+        if (url.Equals(Pennington.Generation.OutputGenerationService.NotFoundGeneratorPath, StringComparison.Ordinal)
+            || url.Equals(Pennington.Generation.OutputGenerationService.NotFoundGeneratorPath + "/", StringComparison.Ordinal))
+        {
+            url = "/";
+        }
+
         url = "/" + url.Trim('/');
         if (url.Equals("/index", StringComparison.OrdinalIgnoreCase))
             url = "/";

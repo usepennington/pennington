@@ -17,7 +17,7 @@ public sealed class XrefResolvingProcessor : IResponseProcessor
         _service = service;
     }
 
-    public int Order => -10;
+    public int Order => 10;
 
     public bool ShouldProcess(HttpContext context)
     {

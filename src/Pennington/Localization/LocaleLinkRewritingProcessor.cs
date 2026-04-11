@@ -25,8 +25,14 @@ public sealed class LocaleLinkRewritingProcessor : IResponseProcessor
         _localization = localization;
     }
 
-    /// <summary>Run after other processors but before diagnostic overlay.</summary>
-    public int Order => 50;
+    /// <summary>
+    /// Runs after xref resolution (10) but BEFORE base-URL rewriting (30) so that
+    /// locale detection and prefixing operate on logical root-relative paths
+    /// (<c>/about/</c>), not on paths already prefixed with the deployment base
+    /// URL (<c>/preview/about/</c>). BaseUrlRewritingProcessor is the outermost
+    /// transport layer and must apply last among the URL rewriters.
+    /// </summary>
+    public int Order => 20;
 
     public bool ShouldProcess(HttpContext context)
     {
