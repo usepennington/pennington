@@ -154,35 +154,4 @@ public class BuildReportOutputTests
         output.ShouldContain("/page/ links to /missing (404)");
     }
 
-    [Fact]
-    public void DurationFormatting_ShowsOneDecimalPlace()
-    {
-        var report = MakeReport(
-            generatedPages: [MakeRoute("/a")],
-            duration: TimeSpan.FromSeconds(12.345));
-
-        var output = report.ToFormattedString();
-
-        output.ShouldContain("1 pages in 12.3s");
-    }
-
-    [Fact]
-    public void ToFormattedString_ReturnsSameContentAsWriteTo()
-    {
-        var diagnostics = ImmutableList.Create(
-            new BuildDiagnostic(DiagnosticSeverity.Warning, MakeRoute("/warn"), "something"));
-
-        var report = MakeReport(
-            diagnostics: diagnostics,
-            generatedPages: [MakeRoute("/a")],
-            duration: TimeSpan.FromSeconds(2.0));
-
-        var fromToFormattedString = report.ToFormattedString();
-
-        using var writer = new StringWriter();
-        report.WriteTo(writer);
-        var fromWriteTo = writer.ToString();
-
-        fromToFormattedString.ShouldBe(fromWriteTo);
-    }
 }

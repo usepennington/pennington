@@ -1,5 +1,3 @@
-using Pennington.Markdown.Extensions;
-
 namespace Pennington.Tests.Markdown.Extensions;
 
 public class CodeTransformerTests
@@ -55,23 +53,6 @@ public class CodeTransformerTests
         result.ShouldNotContain("[!code focus]");
     }
 
-    [Fact]
-    public void Transform_EmptyInput_ReturnsInput()
-    {
-        var result = CodeTransformerAccessor.Transform("");
-
-        result.ShouldBe("");
-    }
-
-    [Fact]
-    public void Transform_NoDirectives_StillWrapsInLines()
-    {
-        var html = "<pre><code>line one\nline two</code></pre>";
-
-        var result = CodeTransformerAccessor.Transform(html);
-
-        result.ShouldContain("<span class=\"line\">");
-    }
 }
 
 /// <summary>

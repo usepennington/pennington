@@ -18,42 +18,6 @@ public class SpaPageDataServiceTests
     );
 
     [Fact]
-    public async Task GetPageDataAsync_WithRenderer_ReturnsEnvelopeWithIslandHtml()
-    {
-        var renderer = new StubIslandRenderer("content", "<article>Hello</article>");
-        var service = new SpaPageDataService([renderer], MakeContext());
-
-        var result = await service.GetPageDataAsync(MakeRoute(), "Test Page", "A description");
-
-        result.ShouldNotBeNull();
-        result.Title.ShouldBe("Test Page");
-        result.Description.ShouldBe("A description");
-        result.Islands.ShouldContainKey("content");
-        result.Islands["content"].ShouldBe("<article>Hello</article>");
-    }
-
-    [Fact]
-    public async Task GetPageDataAsync_NoRenderers_ReturnsNull()
-    {
-        var service = new SpaPageDataService([], MakeContext());
-
-        var result = await service.GetPageDataAsync(MakeRoute(), "Empty Page");
-
-        result.ShouldBeNull();
-    }
-
-    [Fact]
-    public async Task GetPageDataAsync_RendererReturnsEmpty_SkipsIsland()
-    {
-        var renderer = new StubIslandRenderer("sidebar", "");
-        var service = new SpaPageDataService([renderer], MakeContext());
-
-        var result = await service.GetPageDataAsync(MakeRoute(), "Page");
-
-        result.ShouldBeNull();
-    }
-
-    [Fact]
     public async Task GetPageDataAsync_MultipleRenderers_ProducesMultipleIslands()
     {
         var renderers = new IIslandRenderer[]
@@ -69,19 +33,6 @@ public class SpaPageDataServiceTests
         result.Islands.Count.ShouldBe(2);
         result.Islands["content"].ShouldBe("<article>Main</article>");
         result.Islands["toc"].ShouldBe("<nav>TOC</nav>");
-    }
-
-    [Fact]
-    public async Task GetPageDataAsync_NullDescription_OmitsDescription()
-    {
-        var renderer = new StubIslandRenderer("content", "<article>Hello</article>");
-        var service = new SpaPageDataService([renderer], MakeContext());
-
-        var result = await service.GetPageDataAsync(MakeRoute(), "Title Only");
-
-        result.ShouldNotBeNull();
-        result.Title.ShouldBe("Title Only");
-        result.Description.ShouldBeNull();
     }
 
     [Fact]

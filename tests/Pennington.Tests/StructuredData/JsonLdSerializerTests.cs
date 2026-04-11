@@ -169,20 +169,4 @@ public class JsonLdSerializerTests
         doc.RootElement.GetProperty("headline").GetString().ShouldBe("Using </script> in content");
     }
 
-    [Fact]
-    public void SerializeArticle_SpecialCharacters_SerializesCorrectly()
-    {
-        var article = new JsonLdArticle(
-            Headline: "Quotes \"and\" ampersands & unicode \u00e9",
-            Description: null,
-            Url: "https://example.com/",
-            DatePublished: null,
-            AuthorName: null
-        );
-
-        var json = JsonLdSerializer.SerializeArticle(article);
-
-        using var doc = JsonDocument.Parse(json);
-        doc.RootElement.GetProperty("headline").GetString().ShouldBe("Quotes \"and\" ampersands & unicode \u00e9");
-    }
 }

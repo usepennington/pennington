@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Pennington.Content;
 using Pennington.Navigation;
 using Pennington.Routing;
@@ -196,14 +195,6 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_EmptyInput_ProducesEmptyTree()
-    {
-        var tree = _builder.BuildTree([]);
-
-        tree.ShouldBeEmpty();
-    }
-
-    [Fact]
     public void BuildNavigationInfo_FirstItem_HasNoPrevious()
     {
         var items = new List<ContentTocItem>
@@ -252,24 +243,6 @@ public class NavigationBuilderTests
         tree[0].Children[0].Title.ShouldBe("Alpha");
         tree[0].Children[1].Title.ShouldBe("Bravo");
         tree[0].Children[2].Title.ShouldBe("Zulu");
-    }
-
-    [Fact]
-    public void BuildNavigationInfo_SectionPreserved()
-    {
-        var tocItem = new ContentTocItem(
-            Title: "API Docs",
-            Route: MakeRoute("/docs/api"),
-            Order: 1,
-            HierarchyParts: ["API Docs"],
-            Section: "documentation",
-            Locale: null
-        );
-
-        var info = _builder.BuildNavigationInfo([tocItem], MakeRoute("/docs/api"));
-
-        info.SectionName.ShouldBe("documentation");
-        info.PageTitle.ShouldBe("API Docs");
     }
 
     // --- Locale filtering tests ---

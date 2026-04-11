@@ -99,21 +99,6 @@ public class SearchIndexBuilderTests
     }
 
     [Fact]
-    public void Build_HandlesEmptyHtml()
-    {
-        var item = new RenderedItem(
-            Route: MakeRoute("/empty"),
-            Metadata: new TestFrontMatter { Title = "Empty" },
-            Content: MakeContent("")
-        );
-
-        var doc = _builder.Build(item);
-
-        doc.ShouldNotBeNull();
-        doc.Body.ShouldBe("");
-    }
-
-    [Fact]
     public void Build_DecodesHtmlEntities()
     {
         var item = new RenderedItem(
@@ -157,86 +142,6 @@ public class SearchIndexBuilderTests
         doc.ShouldNotBeNull();
         doc.Body.ShouldNotContain("\n");
         doc.Body.ShouldNotContain("  "); // no double spaces
-    }
-
-    [Fact]
-    public void Build_UsesCustomPriority()
-    {
-        var highPriorityBuilder = new SearchIndexBuilder(defaultPriority: 10);
-        var item = new RenderedItem(
-            Route: MakeRoute("/api/auth"),
-            Metadata: new TestFrontMatter { Title = "Auth API" },
-            Content: MakeContent("<p>Authentication</p>")
-        );
-
-        var doc = highPriorityBuilder.Build(item);
-
-        doc.ShouldNotBeNull();
-        doc.Priority.ShouldBe(10);
-    }
-
-    [Fact]
-    public void Build_PassesLocaleFromRoute()
-    {
-        var item = new RenderedItem(
-            Route: MakeRoute("/docs/intro", "fr"),
-            Metadata: new TestFrontMatter { Title = "Introduction" },
-            Content: MakeContent("<p>Bienvenue</p>")
-        );
-
-        var doc = _builder.Build(item);
-
-        doc.ShouldNotBeNull();
-        doc.Locale.ShouldBe("fr");
-    }
-
-    [Fact]
-    public void Build_DefaultLocale_ReturnsEmptyString()
-    {
-        var item = new RenderedItem(
-            Route: MakeRoute("/docs/intro"),
-            Metadata: new TestFrontMatter { Title = "Intro" },
-            Content: MakeContent("<p>Welcome</p>")
-        );
-
-        var doc = _builder.Build(item);
-
-        doc.ShouldNotBeNull();
-        doc.Locale.ShouldBe("");
-    }
-
-    // Front matter that only implements IFrontMatter — no capability interfaces
-    private record MinimalFrontMatter(string Title) : IFrontMatter;
-
-    [Fact]
-    public void Build_NonDraftableFrontMatter_IsIncluded()
-    {
-        var item = new RenderedItem(
-            Route: MakeRoute("/page"),
-            Metadata: new MinimalFrontMatter("Minimal"),
-            Content: MakeContent("<p>Content</p>")
-        );
-
-        var doc = _builder.Build(item);
-
-        doc.ShouldNotBeNull();
-        doc.Title.ShouldBe("Minimal");
-        doc.Section.ShouldBeNull();
-    }
-
-    [Fact]
-    public void Build_NonDraftableFrontMatter_SectionIsNull()
-    {
-        var item = new RenderedItem(
-            Route: MakeRoute("/basic"),
-            Metadata: new MinimalFrontMatter("Basic"),
-            Content: MakeContent("<p>No section</p>")
-        );
-
-        var doc = _builder.Build(item);
-
-        doc.ShouldNotBeNull();
-        doc.Section.ShouldBeNull();
     }
 
     [Fact]

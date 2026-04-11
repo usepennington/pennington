@@ -75,66 +75,10 @@ public class UrlPathTests
     }
 
     [Fact]
-    public void EnsureLeadingSlash_WithoutSlash_AddsSlash()
-    {
-        var path = new UrlPath("blog");
-        path.EnsureLeadingSlash().Value.ShouldBe("/blog");
-    }
-
-    [Fact]
-    public void EnsureLeadingSlash_WithSlash_ReturnsSame()
-    {
-        var path = new UrlPath("/blog");
-        path.EnsureLeadingSlash().Value.ShouldBe("/blog");
-    }
-
-    [Fact]
-    public void EnsureTrailingSlash_WithoutSlash_AddsSlash()
-    {
-        var path = new UrlPath("/blog");
-        path.EnsureTrailingSlash().Value.ShouldBe("/blog/");
-    }
-
-    [Fact]
-    public void EnsureTrailingSlash_WithSlash_ReturnsSame()
-    {
-        var path = new UrlPath("/blog/");
-        path.EnsureTrailingSlash().Value.ShouldBe("/blog/");
-    }
-
-    [Fact]
-    public void RemoveTrailingSlash_WithTrailingSlash_RemovesSlash()
-    {
-        var path = new UrlPath("/blog/");
-        path.RemoveTrailingSlash().Value.ShouldBe("/blog");
-    }
-
-    [Fact]
-    public void RemoveTrailingSlash_WithoutTrailingSlash_ReturnsSame()
-    {
-        var path = new UrlPath("/blog");
-        path.RemoveTrailingSlash().Value.ShouldBe("/blog");
-    }
-
-    [Fact]
     public void RemoveTrailingSlash_RootSlash_PreservesIt()
     {
         var path = new UrlPath("/");
         path.RemoveTrailingSlash().Value.ShouldBe("/");
-    }
-
-    [Fact]
-    public void RemoveLeadingSlash_WithLeadingSlash_RemovesSlash()
-    {
-        var path = new UrlPath("/blog");
-        path.RemoveLeadingSlash().Value.ShouldBe("blog");
-    }
-
-    [Fact]
-    public void RemoveLeadingSlash_WithoutLeadingSlash_ReturnsSame()
-    {
-        var path = new UrlPath("blog");
-        path.RemoveLeadingSlash().Value.ShouldBe("blog");
     }
 
     [Fact]

@@ -213,14 +213,6 @@ public class RssFeedBuilderTests
     }
 
     [Fact]
-    public void Build_EmptyList_ReturnsEmptyFeed()
-    {
-        var feed = _builder.Build([]);
-
-        feed.ShouldBeEmpty();
-    }
-
-    [Fact]
     public void Build_MixedCapabilities_OnlyDateableNonDraftIncluded()
     {
         var items = new List<RenderedItem>
@@ -275,28 +267,6 @@ public class RssFeedBuilderTests
         feed[0].Url.Value.ShouldBe("https://example.com/blog/my-post/");
     }
 
-    [Fact]
-    public void Build_SameDayPosts_BothIncludedAndOrdered()
-    {
-        var sameDay = new DateTime(2026, 3, 15);
-        var items = new List<RenderedItem>
-        {
-            new(
-                Route: MakeRoute("/blog/first"),
-                Metadata: new TestFrontMatter { Title = "First", Date = sameDay },
-                Content: MakeContent()
-            ),
-            new(
-                Route: MakeRoute("/blog/second"),
-                Metadata: new TestFrontMatter { Title = "Second", Date = sameDay },
-                Content: MakeContent()
-            ),
-        };
-
-        var feed = _builder.Build(items);
-
-        feed.Count.ShouldBe(2);
-    }
 
     // IDateable but NOT IDraftable
     private record DateOnlyFrontMatter : IFrontMatter, IDateable

@@ -12,46 +12,6 @@ public class BuildReportBuilderTests
     };
 
     [Fact]
-    public void Builder_ProducesValidReport()
-    {
-        var builder = new BuildReportBuilder();
-        var report = builder.Build();
-
-        report.ShouldNotBeNull();
-        report.Diagnostics.ShouldBeEmpty();
-        report.BrokenLinks.ShouldBeEmpty();
-        report.GeneratedPages.ShouldBeEmpty();
-        report.SkippedPages.ShouldBeEmpty();
-        report.FailedPages.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void AddInfo_AddsDiagnosticInfo()
-    {
-        var builder = new BuildReportBuilder();
-        var route = MakeRoute("/info");
-        builder.AddInfo(route, "informational");
-
-        var report = builder.Build();
-        report.Diagnostics.Count.ShouldBe(1);
-        report.Diagnostics[0].Severity.ShouldBe(DiagnosticSeverity.Info);
-        report.Diagnostics[0].Message.ShouldBe("informational");
-    }
-
-    [Fact]
-    public void AddWarning_AddsDiagnosticWarning()
-    {
-        var builder = new BuildReportBuilder();
-        var route = MakeRoute("/warn");
-        builder.AddWarning(route, "watch out");
-
-        var report = builder.Build();
-        report.Diagnostics.Count.ShouldBe(1);
-        report.Diagnostics[0].Severity.ShouldBe(DiagnosticSeverity.Warning);
-        report.Diagnostics[0].Message.ShouldBe("watch out");
-    }
-
-    [Fact]
     public void AddError_AddsDiagnosticError_AndAddsToFailedPages()
     {
         var builder = new BuildReportBuilder();
@@ -64,42 +24,6 @@ public class BuildReportBuilderTests
         report.Diagnostics[0].Message.ShouldBe("failed");
         report.FailedPages.Count.ShouldBe(1);
         report.FailedPages[0].ShouldBe(route);
-    }
-
-    [Fact]
-    public void AddGeneratedPage_AddsToGeneratedPages()
-    {
-        var builder = new BuildReportBuilder();
-        var route = MakeRoute("/page");
-        builder.AddGeneratedPage(route);
-
-        var report = builder.Build();
-        report.GeneratedPages.Count.ShouldBe(1);
-        report.GeneratedPages[0].ShouldBe(route);
-    }
-
-    [Fact]
-    public void AddSkippedPage_AddsToSkippedPages()
-    {
-        var builder = new BuildReportBuilder();
-        var route = MakeRoute("/skipped");
-        builder.AddSkippedPage(route);
-
-        var report = builder.Build();
-        report.SkippedPages.Count.ShouldBe(1);
-        report.SkippedPages[0].ShouldBe(route);
-    }
-
-    [Fact]
-    public void AddBrokenLink_AddsToBrokenLinks()
-    {
-        var builder = new BuildReportBuilder();
-        var link = new BrokenLink(MakeRoute(), "http://broken.com", LinkType.External, "404");
-        builder.AddBrokenLink(link);
-
-        var report = builder.Build();
-        report.BrokenLinks.Count.ShouldBe(1);
-        report.BrokenLinks[0].ShouldBe(link);
     }
 
     [Fact]

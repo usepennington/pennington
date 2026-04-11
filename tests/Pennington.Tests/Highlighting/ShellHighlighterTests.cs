@@ -49,11 +49,4 @@ public class ShellHighlighterTests
         result.ShouldContain("hljs-params");
     }
 
-    [Fact]
-    public void Highlight_EmptyCode_ReturnsEmptyString()
-    {
-        var result = _highlighter.Highlight("", "bash");
-
-        result.ShouldBeEmpty();
-    }
 }

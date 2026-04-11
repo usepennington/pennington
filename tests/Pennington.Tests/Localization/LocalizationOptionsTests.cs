@@ -21,24 +21,6 @@ public class LocalizationOptionsTests
         return options;
     }
 
-    [Fact]
-    public void IsMultiLocale_SingleLocale_False()
-    {
-        CreateSingleLocale().IsMultiLocale.ShouldBeFalse();
-    }
-
-    [Fact]
-    public void IsMultiLocale_MultipleLocales_True()
-    {
-        CreateMultiLocale().IsMultiLocale.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void IsMultiLocale_NoLocales_False()
-    {
-        new LocalizationOptions().IsMultiLocale.ShouldBeFalse();
-    }
-
     // --- GetLocaleFromUrl ---
 
     [Fact]

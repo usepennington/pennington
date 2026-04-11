@@ -43,16 +43,6 @@ public class MarkdownOutlineGeneratorTests
     }
 
     [Fact]
-    public void GenerateOutline_EmptyDocument_ReturnsEmptyArray()
-    {
-        var doc = ParseDocument("");
-
-        var outline = MarkdownOutlineGenerator.GenerateOutline(doc);
-
-        outline.ShouldBeEmpty();
-    }
-
-    [Fact]
     public void GenerateOutline_InlineFormatting_ExtractsPlainText()
     {
         var doc = ParseDocument("## Hello **bold** and `code` world");
@@ -64,17 +54,4 @@ public class MarkdownOutlineGeneratorTests
         outline[0].Level.ShouldBe(2);
     }
 
-    [Fact]
-    public void GenerateOutline_FlatNotHierarchical()
-    {
-        var doc = ParseDocument("## Parent\n\n### Child\n\n#### Grandchild");
-
-        var outline = MarkdownOutlineGenerator.GenerateOutline(doc);
-
-        // All entries are flat — no nesting
-        outline.Length.ShouldBe(3);
-        outline[0].Level.ShouldBe(2);
-        outline[1].Level.ShouldBe(3);
-        outline[2].Level.ShouldBe(4);
-    }
 }

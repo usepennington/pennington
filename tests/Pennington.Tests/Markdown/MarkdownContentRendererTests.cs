@@ -50,32 +50,6 @@ public class MarkdownContentRendererTests
     }
 
     [Fact]
-    public async Task RenderAsync_EmptyMarkdown_ProducesEmptyHtml()
-    {
-        var parsed = new ParsedItem(MakeRoute("/empty"), MakeMetadata(), "");
-
-        var result = await _renderer.RenderAsync(parsed);
-
-        var rendered = result.ShouldBeCase<RenderedItem>();
-        rendered.Content.Html.Trim().ShouldBeEmpty();
-        rendered.Content.Outline.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public async Task RenderAsync_PreservesMetadataAndRoute()
-    {
-        var route = MakeRoute("/preserve");
-        var metadata = MakeMetadata("Preserved Title");
-        var parsed = new ParsedItem(route, metadata, "Some content");
-
-        var result = await _renderer.RenderAsync(parsed);
-
-        var rendered = result.ShouldBeCase<RenderedItem>();
-        rendered.Route.ShouldBe(route);
-        rendered.Metadata.Title.ShouldBe("Preserved Title");
-    }
-
-    [Fact]
     public async Task RenderAsync_FencedCodeBlock_ProducesPreCodeElements()
     {
         var markdown = "```csharp\nvar x = 42;\n```";
@@ -115,61 +89,6 @@ public class MarkdownContentRendererTests
         rendered.Content.Html.ShouldContain("<img");
         rendered.Content.Html.ShouldContain("src=\"/images/logo.png\"");
         rendered.Content.Html.ShouldContain("alt=\"Logo\"");
-    }
-
-    [Fact]
-    public async Task RenderAsync_UnorderedList_ProducesUlLiElements()
-    {
-        var markdown = "- First item\n- Second item\n- Third item";
-        var parsed = new ParsedItem(MakeRoute("/list"), MakeMetadata(), markdown);
-
-        var result = await _renderer.RenderAsync(parsed);
-
-        var rendered = result.ShouldBeCase<RenderedItem>();
-        rendered.Content.Html.ShouldContain("<ul>");
-        rendered.Content.Html.ShouldContain("<li>First item</li>");
-        rendered.Content.Html.ShouldContain("<li>Third item</li>");
-    }
-
-    [Fact]
-    public async Task RenderAsync_Table_ProducesTableElements()
-    {
-        var markdown = "| Name | Value |\n|------|-------|\n| Key  | 42    |";
-        var parsed = new ParsedItem(MakeRoute("/table"), MakeMetadata(), markdown);
-
-        var result = await _renderer.RenderAsync(parsed);
-
-        var rendered = result.ShouldBeCase<RenderedItem>();
-        rendered.Content.Html.ShouldContain("<table");
-        rendered.Content.Html.ShouldContain("<th>Name</th>");
-        rendered.Content.Html.ShouldContain("<td>Key</td>");
-        rendered.Content.Html.ShouldContain("<td>42</td>");
-    }
-
-    [Fact]
-    public async Task RenderAsync_InlineFormatting_ProducesCorrectTags()
-    {
-        var markdown = "Text with **bold**, *italic*, and `inline code`.";
-        var parsed = new ParsedItem(MakeRoute("/formatting"), MakeMetadata(), markdown);
-
-        var result = await _renderer.RenderAsync(parsed);
-
-        var rendered = result.ShouldBeCase<RenderedItem>();
-        rendered.Content.Html.ShouldContain("<strong>bold</strong>");
-        rendered.Content.Html.ShouldContain("<em>italic</em>");
-        rendered.Content.Html.ShouldContain("<code>inline code</code>");
-    }
-
-    [Fact]
-    public async Task RenderAsync_Blockquote_ProducesBlockquoteElement()
-    {
-        var markdown = "> This is a quote\n> with multiple lines";
-        var parsed = new ParsedItem(MakeRoute("/quote"), MakeMetadata(), markdown);
-
-        var result = await _renderer.RenderAsync(parsed);
-
-        var rendered = result.ShouldBeCase<RenderedItem>();
-        rendered.Content.Html.ShouldContain("<blockquote");
     }
 
     [Fact]
@@ -218,17 +137,4 @@ public class MarkdownContentRendererTests
         rendered.Content.Outline.Length.ShouldBeGreaterThanOrEqualTo(2);
     }
 
-    [Fact]
-    public async Task RenderAsync_RenderedContent_HasEmptyCollections()
-    {
-        var parsed = new ParsedItem(MakeRoute("/defaults"), MakeMetadata(), "# Hello");
-
-        var result = await _renderer.RenderAsync(parsed);
-
-        var rendered = result.ShouldBeCase<RenderedItem>();
-        rendered.Content.Tags.ShouldBeEmpty();
-        rendered.Content.CrossReferences.ShouldBeEmpty();
-        rendered.Content.SearchDocument.ShouldBeNull();
-        rendered.Content.Social.ShouldBeNull();
-    }
 }

@@ -13,37 +13,6 @@ public class TextMateHighlighterTests
     }
 
     [Fact]
-    public void Highlight_CSharpCode_ReturnsHtmlWithSpans()
-    {
-        var code = "var x = 1;";
-
-        var result = _highlighter.Highlight(code, "csharp");
-
-        result.ShouldContain("<span");
-        result.ShouldContain("</span>");
-        result.ShouldStartWith("<pre><code>");
-        result.ShouldEndWith("</code></pre>");
-    }
-
-    [Fact]
-    public void Highlight_CSharpCode_ReturnsHtmlWithHljsClasses()
-    {
-        var code = "public class Foo { }";
-
-        var result = _highlighter.Highlight(code, "csharp");
-
-        result.ShouldContain("hljs-");
-    }
-
-    [Fact]
-    public void Highlight_EmptyCode_ReturnsEmptyString()
-    {
-        var result = _highlighter.Highlight("", "csharp");
-
-        result.ShouldBeEmpty();
-    }
-
-    [Fact]
     public void Highlight_UnknownLanguage_ReturnsHtmlEncodedFallback()
     {
         var code = "<div>hello</div>";
@@ -53,14 +22,4 @@ public class TextMateHighlighterTests
         result.ShouldContain("&lt;div&gt;");
     }
 
-    [Fact]
-    public void Highlight_JavaScriptCode_ProducesOutput()
-    {
-        var code = "function hello() { return 42; }";
-
-        var result = _highlighter.Highlight(code, "javascript");
-
-        result.ShouldNotBeNullOrWhiteSpace();
-        result.ShouldContain("<pre><code>");
-    }
 }

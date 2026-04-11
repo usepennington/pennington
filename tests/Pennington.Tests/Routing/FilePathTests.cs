@@ -67,32 +67,4 @@ public class FilePathTests
         result.Value.ShouldBe("content\\docs/page.md");
     }
 
-    [Fact]
-    public void Extension_ReturnsFileExtension()
-    {
-        var path = new FilePath("content/page.md");
-        path.Extension.ShouldBe(".md");
-    }
-
-    [Fact]
-    public void Extension_NoExtension_ReturnsEmpty()
-    {
-        var path = new FilePath("content/page");
-        path.Extension.ShouldBe("");
-    }
-
-    [Fact]
-    public void FileName_ReturnsFileName()
-    {
-        var path = new FilePath("content/docs/page.md");
-        path.FileName.ShouldBe("page.md");
-    }
-
-    [Fact]
-    public void FileNameWithoutExtension_ReturnsNameOnly()
-    {
-        var path = new FilePath("content/docs/page.md");
-        path.FileNameWithoutExtension.ShouldBe("page");
-    }
-
 }

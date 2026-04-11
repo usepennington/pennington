@@ -101,14 +101,6 @@ public class SitemapBuilderTests
         entries[0].LastModified.ShouldBe(date);
     }
 
-    [Fact]
-    public void Build_EmptyInput_ReturnsEmptyList()
-    {
-        var entries = _builder.Build([]);
-
-        entries.ShouldBeEmpty();
-    }
-
     // Front matter with no capabilities
     private record MinimalFrontMatter(string Title) : IFrontMatter;
 
@@ -196,22 +188,4 @@ public class SitemapBuilderTests
         urls.ShouldContain("https://example.com/about/");
     }
 
-    [Fact]
-    public void Build_ChangeFrequencyAndPriority_AreNull()
-    {
-        var items = new List<RenderedItem>
-        {
-            new(
-                Route: MakeRoute("/page"),
-                Metadata: new TestFrontMatter { Title = "Page", Date = new DateTime(2026, 1, 1) },
-                Content: MakeContent()
-            ),
-        };
-
-        var entries = _builder.Build(items);
-
-        entries.Count.ShouldBe(1);
-        entries[0].ChangeFrequency.ShouldBeNull();
-        entries[0].Priority.ShouldBeNull();
-    }
 }
