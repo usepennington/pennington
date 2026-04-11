@@ -437,6 +437,31 @@ Same root cause family: the content enumeration used to build `llms.txt` isn't p
 
 ## Phase 5 — `sitemap.xml` bad URL (ENGINE)
 
+> ✅ **Done 2026-04-11.** Root cause was not in `SitemapBuilder` itself but one
+> layer down in `ContentRoute.AbsoluteUrl`, which naively used
+> `UrlPath`'s path-composition `/` operator to combine the canonical base URL
+> with the route's canonical path. That operator is path-only: when the right
+> operand is empty (`/` after trim), it forces a leading slash on whatever
+> `l` is, turning `https://beacon-docs.example.com` + `/` into
+> `/https://beacon-docs.example.com`. Non-root paths worked because the
+> composed form `l + "/" + r` happened to be correct. Fixed by branching
+> inside `ContentRoute.AbsoluteUrl` on `Uri.TryCreate(baseVal, Absolute, _)` —
+> when the base is an absolute URL, compose via string concatenation with
+> URI semantics; otherwise fall back to the existing `UrlPath / UrlPath`
+> path composition (preserving `/`, `/preview/`, etc. behavior unchanged).
+> Chose this over fixing `UrlPath.op_/` itself because `UrlPath` is
+> documented as representing URL *paths* and `ContentRoute.AbsoluteUrl` is
+> the explicit boundary between "absolute URL base" and "path". Measured
+> impact: `X.BROKEN` **2 → 0**, `BeaconDocsExample` 4 err / 4 warn →
+> **2 err / 4 warn** (the 2 dropped errors are exactly the sitemap pair;
+> the residual 2 errors are Phase 7 missing `beacon-arch.png` image).
+> Total site errors **1448 → 1443** (−5, which also includes a small
+> `R.BUILD_FAILED`/`R.PAGE_FAILED` drop from the cleaner BeaconDocs build).
+> Tests added: `tests/Pennington.Tests/Routing/ContentRouteTests.cs`
+> (10 cases: path base + absolute base × root/non-root/trailing/port/http),
+> plus `SitemapBuilderTests.Build_RootRoute_WithAbsoluteBase_ProducesWellFormedUrl`.
+> All Pennington tests still pass.
+
 **Leverage**: Small (2 occurrences, 1 example), but it's a trivial fix.
 
 ### Symptom

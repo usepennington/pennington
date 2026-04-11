@@ -148,6 +148,30 @@ public class SitemapBuilderTests
     }
 
     [Fact]
+    public void Build_RootRoute_WithAbsoluteBase_ProducesWellFormedUrl()
+    {
+        // Regression for Phase 5 bug: composing `https://example.com` with the
+        // root canonical path `/` used to produce `/https://example.com`
+        // because UrlPath's `/` operator is path-only and forces a leading
+        // slash. The fix in ContentRoute.AbsoluteUrl composes via URI
+        // semantics when the base has a scheme.
+        var rootRoute = new ContentRoute
+        {
+            CanonicalPath = new UrlPath("/"),
+            OutputFile = new FilePath("index.html"),
+        };
+        var candidates = new List<SitemapCandidate>
+        {
+            new(rootRoute, new TestFrontMatter { Title = "Home" }),
+        };
+
+        var entries = _builder.Build(candidates);
+
+        entries.Count.ShouldBe(1);
+        entries[0].Url.Value.ShouldBe("https://example.com/");
+    }
+
+    [Fact]
     public void Build_MultiplePagesWithDrafts_OnlyNonDraftsIncluded()
     {
         var candidates = new List<SitemapCandidate>
