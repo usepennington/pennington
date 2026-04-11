@@ -5,6 +5,7 @@ using System.IO.Abstractions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Pennington.Content;
@@ -119,7 +120,7 @@ public sealed class OutputGenerationService
 
         // Phase 9: Verify internal links across all fetched HTML pages
         var allRoutes = contentPages.Concat(mapGetPages).Select(p => p.Route);
-        var linkVerifier = new LinkVerificationService(allRoutes);
+        var linkVerifier = new LinkVerificationService(allRoutes, _outputOptions.BaseUrl.Value);
         foreach (var result in contentResults.Concat(mapGetResults))
         {
             if (result is { Outcome: FetchOutcome.Generated, HtmlContent: { } html })
@@ -177,11 +178,20 @@ public sealed class OutputGenerationService
             if (httpMethods?.HttpMethods.Contains("GET") != true)
                 continue;
 
+            // Skip endpoints registered by app.MapStaticAssets(). Their DisplayName does not
+            // contain "static files" (that pattern matched the legacy UseStaticFiles middleware),
+            // so the old string filter missed them. Letting these routes through caused Phase 7's
+            // parallel HTTP fetcher to overwrite files that Phase 4 (CopyStaticAssetsAsync) had
+            // already emitted, producing "file is being used by another process" races on Windows
+            // for /_content/<Rcl>/*.js and their fingerprinted aliases.
+            if (routeEndpoint.Metadata.GetMetadata<StaticAssetDescriptor>() is not null)
+                continue;
+
             var rawText = routeEndpoint.RoutePattern.RawText;
             if (string.IsNullOrWhiteSpace(rawText))
                 continue;
 
-            // Skip Blazor component routes, framework routes, static files, and parameterized routes
+            // Skip Blazor component routes, framework routes, legacy static files, and parameterized routes
             if (rawText.Contains("{") ||
                 rawText.Contains("_framework") ||
                 rawText.Contains("_blazor") ||
@@ -226,21 +236,12 @@ public sealed class OutputGenerationService
             }
         }
 
-        // Copy wwwroot static web assets
+        // Copy wwwroot + RCL static web assets. WebRootFileProvider is a CompositeFileProvider
+        // whose GetDirectoryContents already merges every child (physical wwwroot + the RCL
+        // manifest providers that expose _content/<Rcl>/*), so one recursive walk enumerates
+        // every asset exactly once. A previous implementation re-walked each child provider
+        // after the top-level walk, producing duplicate File.Copy calls for every RCL asset.
         CopyFileProvider(_environment.WebRootFileProvider, "", outputDir, reportBuilder);
-
-        // Copy RCL static web assets (Pennington.UI scripts, etc.)
-        // CompositeFileProvider contains all registered static web asset providers
-        if (_environment.WebRootFileProvider is CompositeFileProvider composite)
-        {
-            foreach (var provider in composite.FileProviders)
-            {
-                if (provider != _environment.WebRootFileProvider)
-                {
-                    CopyFileProvider(provider, "", outputDir, reportBuilder);
-                }
-            }
-        }
     }
 
     private async Task CreateContentFilesAsync(string outputDir, BuildReportBuilder reportBuilder)

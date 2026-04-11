@@ -13,15 +13,22 @@ using Pennington.Routing;
 public sealed partial class LinkVerificationService
 {
     private readonly HashSet<string> _knownPaths;
+    private readonly string _basePrefix;
 
     /// <summary>
-    /// Create with the set of all known page canonical paths.
+    /// Create with the set of all known page canonical paths and the base URL the
+    /// surrounding site was rendered with. The base URL is used to strip a common
+    /// prefix (e.g. <c>/preview</c>) from extracted hrefs before comparing against
+    /// the unprefixed canonical <see cref="ContentRoute.CanonicalPath"/>, and before
+    /// applying the framework-asset prefix check for <c>/_content/</c> / <c>/_framework/</c>
+    /// / <c>/_blazor/</c>. Passing <c>"/"</c> (the default) disables prefix stripping.
     /// </summary>
-    public LinkVerificationService(IEnumerable<ContentRoute> knownRoutes)
+    public LinkVerificationService(IEnumerable<ContentRoute> knownRoutes, string baseUrl = "/")
     {
         _knownPaths = new HashSet<string>(
             knownRoutes.Select(r => NormalizePath(r.CanonicalPath.Value)),
             StringComparer.OrdinalIgnoreCase);
+        _basePrefix = (baseUrl ?? "/").TrimEnd('/');
     }
 
     /// <summary>
@@ -83,6 +90,17 @@ public sealed partial class LinkVerificationService
 
         // Strip query string and fragment
         var pathOnly = url.Split('#')[0].Split('?')[0];
+
+        // Strip the site's base URL prefix (if any) so downstream checks can compare
+        // against canonical, unprefixed paths. In pass B (base `/preview/`) this turns
+        // `/preview/_content/Pennington.UI/scripts.js` into `/_content/Pennington.UI/scripts.js`
+        // so the framework-asset bypass below catches it, and turns `/preview/about/`
+        // into `/about/` so the known-paths lookup succeeds.
+        if (_basePrefix.Length > 0 && pathOnly.StartsWith(_basePrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            pathOnly = pathOnly[_basePrefix.Length..];
+            if (pathOnly.Length == 0) pathOnly = "/";
+        }
 
         // Framework-managed static asset paths — not content routes, skip verification
         if (pathOnly.StartsWith("/_content/", StringComparison.OrdinalIgnoreCase) ||

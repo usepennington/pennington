@@ -443,6 +443,53 @@ public class LinkVerificationServiceTests
         results[0].ShouldBe("/docs/page?v=2#section");
     }
 
+    // --- 19a. Base-URL stripping ---
+
+    [Fact]
+    public void BaseUrl_PrefixedInternalLink_ResolvesToCanonicalKnownRoute()
+    {
+        // Pass B scenario: site is rendered with base URL "/preview/" so all internal
+        // hrefs get the prefix, but the known-routes set still holds unprefixed canonical paths.
+        var routes = new[] { MakeRoute("/docs/intro") };
+        var service = new LinkVerificationService(routes, "/preview/");
+        var source = MakeRoute("/docs/intro");
+        var html = """<a href="/preview/docs/intro/">Intro</a>""";
+
+        var results = service.VerifyLinks(source, html);
+
+        results.Count.ShouldBe(1);
+        (results[0] is ValidLink).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void BaseUrl_PrefixedFrameworkAsset_IsStillRecognizedAsValid()
+    {
+        // Previously `/preview/_content/Pennington.UI/scripts.js?v=…` was misclassified as a
+        // broken link because the `/_content/` prefix check didn't know about the base URL.
+        var service = new LinkVerificationService([], "/preview/");
+        var source = MakeRoute("/about");
+        var html = """<script src="/preview/_content/Pennington.UI/scripts.js?v=639115119605337292"></script>""";
+
+        var results = service.VerifyLinks(source, html);
+
+        results.Count.ShouldBe(1);
+        (results[0] is ValidLink).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void BaseUrl_UnprefixedFrameworkAssetStillValidInPassA()
+    {
+        // Pass A (default "/") must keep working as before.
+        var service = new LinkVerificationService([], "/");
+        var source = MakeRoute("/about");
+        var html = """<script src="/_content/Pennington.UI/scripts.js"></script>""";
+
+        var results = service.VerifyLinks(source, html);
+
+        results.Count.ShouldBe(1);
+        (results[0] is ValidLink).ShouldBeTrue();
+    }
+
     // --- 20. Large real-world page ---
 
     [Fact]
