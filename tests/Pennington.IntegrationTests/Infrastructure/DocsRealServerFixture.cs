@@ -2,13 +2,9 @@ namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Pennington.DocSite;
-using Pennington.Generation;
 using Pennington.Roslyn;
-using Pennington.Routing;
 
 /// <summary>
 /// Spins up the Pennington.Docs site under real Kestrel on a random port.
@@ -48,17 +44,6 @@ public sealed class DocsRealServerFixture : IAsyncLifetime
         builder.Services.AddPenningtonRoslyn(roslyn =>
         {
             roslyn.SolutionPath = Path.Combine(docsProjectPath, "..", "..", "Pennington.slnx");
-        });
-
-        // Override OutputOptions with a clean default. AddPennington pulls this
-        // from Environment.GetCommandLineArgs(), which under dotnet test can
-        // pick up test-runner args (temp paths, port flags) and bleed them
-        // into BaseUrlRewritingProcessor, corrupting every <a href>.
-        builder.Services.RemoveAll<OutputOptions>();
-        builder.Services.AddSingleton(new OutputOptions
-        {
-            OutputDirectory = new FilePath("output"),
-            BaseUrl = new UrlPath("/"),
         });
 
         _app = builder.Build();
