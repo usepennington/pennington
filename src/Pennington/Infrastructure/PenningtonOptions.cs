@@ -1,5 +1,6 @@
 namespace Pennington.Infrastructure;
 
+using System.Collections.Immutable;
 using System.Reflection;
 using Pennington.Highlighting;
 using Pennington.Islands;
@@ -59,6 +60,15 @@ public sealed class MarkdownContentOptions
     public string ContentPath { get; set; } = "Content";
     public string BasePageUrl { get; set; } = "/";
     public string? Section { get; set; }
+
+    /// <summary>
+    /// Relative subpaths (from <see cref="ContentPath"/>) to skip during discovery
+    /// and content copying. Set this on a broad catch-all source to carve out a
+    /// subtree that is owned by a more specific markdown source registered nearby.
+    /// See <c>MarkdownContentServiceOptions.ExcludePaths</c> for matching semantics.
+    /// </summary>
+    public ImmutableArray<string> ExcludePaths { get; set; } = ImmutableArray<string>.Empty;
+
     internal Type? FrontMatterType { get; set; }
 }
 

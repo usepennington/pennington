@@ -62,6 +62,16 @@ public sealed class OutputGenerationService
 
         var outputDir = _outputOptions.OutputDirectory.Value;
 
+        // Phase 0: Detect markdown content source overlap (e.g. a catch-all source
+        // whose ContentPath includes a subfolder owned by a more specific source).
+        // Surfaced as warnings so users can see and fix the misconfig; duplicate
+        // routes still flow through and will race in Phase 6 below.
+        var markdownSources = _contentServices.OfType<IMarkdownContentSource>();
+        foreach (var warning in MarkdownSourceOverlapDetector.DetectOverlaps(markdownSources))
+        {
+            reportBuilder.AddWarning(warning);
+        }
+
         // Phase 1: Collect pages from content services
         var contentPages = new List<PageToGenerate>();
         foreach (var service in _contentServices)

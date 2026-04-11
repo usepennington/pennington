@@ -56,12 +56,18 @@ public sealed class NavigationBuilder
     {
         var depth = parentParts.Length;
 
-        // Find items exactly at this level
+        // Find items exactly at this level. DistinctBy(CanonicalPath) is a defensive
+        // pass against two content sources registering overlapping subtrees (e.g. a
+        // catch-all DocFrontMatter source and a specialized ChangelogFrontMatter
+        // source both walking `Content/changelog/`). The pipeline emits a diagnostic
+        // warning for that misconfiguration, but dedup here prevents the visible
+        // symptom (every sidebar listing each overlapping page twice).
         var itemsAtLevel = allItems
             .Where(item => item.HierarchyParts.Length == depth + 1
                         && PartsMatch(item.HierarchyParts, parentParts))
             .OrderBy(item => item.Order)
             .ThenBy(item => item.Title, StringComparer.OrdinalIgnoreCase)
+            .DistinctBy(item => item.Route.CanonicalPath.Value, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
         // Find distinct section names at this depth that have deeper descendants

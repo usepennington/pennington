@@ -116,6 +116,7 @@ public static class PenningtonExtensions
                     ContentPath = new FilePath(resolvedContentPath),
                     BasePageUrl = new UrlPath(capturedSource.BasePageUrl),
                     Section = capturedSource.Section,
+                    ExcludePaths = capturedSource.ExcludePaths,
                 };
 
                 var parser = sp.GetRequiredService<FrontMatterParser>();

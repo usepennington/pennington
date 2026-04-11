@@ -641,6 +641,158 @@ public class MarkdownContentServiceTests
         toCopy.ShouldContain(c => c.OutputPath.Value == "fr/images/logo-fr.png");
     }
 
+    // --- ExcludePaths tests: the outer catch-all source can carve out a subtree
+    // owned by a more specific source registered nearby (Phase 6 of the Pennington
+    // examples remediation plan). Without this, two overlapping sources emit
+    // duplicate routes for the same canonical URLs and race on the same output files.
+
+    private MarkdownContentService<DocFrontMatter> CreateServiceWithExcludes(
+        MockFileSystem fs,
+        params string[] excludePaths)
+    {
+        var options = new MarkdownContentServiceOptions
+        {
+            ContentPath = new FilePath("/content"),
+            BasePageUrl = new UrlPath("/docs"),
+            Section = "Documentation",
+            ExcludePaths = [.. excludePaths],
+        };
+        return new MarkdownContentService<DocFrontMatter>(
+            options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_ExcludePaths_SkipsSubtree()
+    {
+        var fs = CreateFs(
+            ("intro.md", "---\ntitle: Intro\n---\n# Intro"),
+            ("development/setup.md", "---\ntitle: Setup\n---\n# Setup"),
+            ("changelog/v1.md", "---\ntitle: v1\n---\n# v1"),
+            ("changelog/v2.md", "---\ntitle: v2\n---\n# v2"));
+        var service = CreateServiceWithExcludes(fs, "changelog");
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        var routes = items.Select(i => i.Route.CanonicalPath.Value).ToList();
+        routes.ShouldContain("/docs/intro/");
+        routes.ShouldContain("/docs/development/setup/");
+        routes.ShouldNotContain(r => r.Contains("changelog", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_ExcludePaths_SegmentBoundary_DoesNotCatchPrefixMatches()
+    {
+        // "change" should not exclude "changelog" (segment-based matching)
+        var fs = CreateFs(
+            ("changelog/v1.md", "---\ntitle: v1\n---\n# v1"),
+            ("change/notes.md", "---\ntitle: Notes\n---\n# Notes"));
+        var service = CreateServiceWithExcludes(fs, "change");
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        var routes = items.Select(i => i.Route.CanonicalPath.Value).ToList();
+        routes.ShouldContain("/docs/changelog/v1/");
+        routes.ShouldNotContain("/docs/change/notes/");
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_ExcludePaths_NormalizesBackslashesAndCase()
+    {
+        var fs = CreateFs(
+            ("Changelog/v1.md", "---\ntitle: v1\n---\n# v1"),
+            ("guides/setup.md", "---\ntitle: Setup\n---\n# Setup"));
+        // Mixed separator + uppercase in the configured exclude — should still match.
+        var service = CreateServiceWithExcludes(fs, "CHANGELOG\\");
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        var routes = items.Select(i => i.Route.CanonicalPath.Value).ToList();
+        routes.ShouldContain("/docs/guides/setup/");
+        routes.ShouldNotContain(r => r.Contains("changelog", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_ExcludePaths_EmptyEntriesAreIgnored()
+    {
+        // Defensive: a bare "" or "/" must not swallow the whole content root.
+        var fs = CreateFs(
+            ("intro.md", "---\ntitle: Intro\n---\n# Intro"));
+        var service = CreateServiceWithExcludes(fs, "", "/", "   ");
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        items.Count.ShouldBe(1);
+        items[0].Route.CanonicalPath.Value.ShouldBe("/docs/intro/");
+    }
+
+    [Fact]
+    public async Task GetContentToCopyAsync_ExcludePaths_SkipsAssetsInExcludedSubtree()
+    {
+        // Assets under an excluded subpath must also be skipped — otherwise the
+        // more specific source would end up re-copying the same files.
+        var fs = CreateFs(
+            ("intro.md", "---\ntitle: Intro\n---\n# Intro"),
+            ("images/logo.png", "png"),
+            ("changelog/v1.md", "---\ntitle: v1\n---\n# v1"),
+            ("changelog/screenshots/v1.png", "png"));
+        var service = CreateServiceWithExcludes(fs, "changelog");
+
+        var toCopy = await service.GetContentToCopyAsync();
+
+        var paths = toCopy.Select(c => c.OutputPath.Value).ToList();
+        paths.ShouldContain("images/logo.png");
+        paths.ShouldNotContain(p => p.StartsWith("changelog/", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_ExcludePaths_MultiLocale_AppliesToAllLocales()
+    {
+        // An exclude configured as "changelog" should cover both the default locale
+        // and each non-default locale subtree — users shouldn't have to list
+        // "changelog" and "fr/changelog" separately.
+        var fs = CreateMultiLocaleFs(
+            ("intro.md", "---\ntitle: Intro\n---\n# Intro"),
+            ("changelog/v1.md", "---\ntitle: v1\n---\n# v1"),
+            ("fr/intro.md", "---\ntitle: Intro FR\n---\n# Intro FR"),
+            ("fr/changelog/v1.md", "---\ntitle: v1 FR\n---\n# v1 FR"));
+        var options = new MarkdownContentServiceOptions
+        {
+            ContentPath = new FilePath("/content"),
+            BasePageUrl = new UrlPath("/"),
+            ExcludePaths = ["changelog"],
+        };
+        var service = new MarkdownContentService<DocFrontMatter>(
+            options, new FrontMatterParser(), fs, new FileWatcher(fs), CreateMultiLocale());
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        var routes = items.Select(i => i.Route.CanonicalPath.Value).ToList();
+        routes.ShouldNotContain(r => r.Contains("changelog", StringComparison.Ordinal));
+        routes.ShouldContain("/intro/");
+        routes.ShouldContain("/fr/intro/");
+    }
+
+    [Fact]
+    public void ExcludePaths_NormalizedOnOptions_ExposedViaInterface()
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/content");
+        var service = CreateServiceWithExcludes(fs, "CHANGELOG", "DRAFT/posts");
+
+        IMarkdownContentSource source = service;
+        source.ExcludePaths.ShouldBe(["changelog", "draft/posts"]);
+    }
+
     [Fact]
     public async Task DiscoverAsync_MultiLocale_SingleLocaleOptIn_NoExtraDiscovery()
     {

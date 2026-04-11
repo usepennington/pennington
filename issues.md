@@ -1,10 +1,10 @@
 # Pennington Examples Validation Report
 
-Generated: 2026-04-11T20:10:26Z
+Generated: 2026-04-11T20:45:16Z
 Examples discovered: 20
-Examples built successfully: 8 (pass A) / 8 (pass B)
-Total issues: 1443 errors, 1395 warnings, 28 info
-Shown in report: 244 samples (capped at 10 per example/pass/code; full counts preserved in cross-example patterns below).
+Examples built successfully: 9 (pass A) / 9 (pass B)
+Total issues: 1307 errors, 1395 warnings, 28 info
+Shown in report: 234 samples (capped at 10 per example/pass/code; full counts preserved in cross-example patterns below).
 
 ## How to read this report
 
@@ -26,8 +26,8 @@ Shown in report: 244 samples (capped at 10 per example/pass/code; full counts pr
 | LocalizationTutorialExample | ok | ok | 0 | 0 | 0 |
 | MaraBlogExample | fail | fail | 26 | 30 | 2 |
 | MinimalExample | fail | fail | 2 | 8 | 2 |
-| MultipleContentSourceExample | fail | fail | 10 | 0 | 2 |
-| NorthwindHandbookExample | fail | fail | 140 | 0 | 2 |
+| MultipleContentSourceExample | fail | fail | 14 | 0 | 2 |
+| NorthwindHandbookExample | ok | ok | 0 | 0 | 2 |
 | PrismDocsExample | ok | ok | 0 | 0 | 0 |
 | RecipeExample | fail | fail | 46 | 42 | 2 |
 | RoslynIntegrationExample | fail | fail | 2 | 8 | 2 |
@@ -43,10 +43,9 @@ Shown in report: 244 samples (capped at 10 per example/pass/code; full counts pr
 
 Counts below reflect **raw** issue totals (not the truncated samples shown in per-example sections). Codes that appear in multiple examples are likely engine bugs; codes unique to one example are likely example bugs.
 
-- `R.BUILD_FAILED` (error) — 24 occurrences across 12 examples: AlexBlogExample, BeaconDocsExample, BlogExample, ForgePortalExample, MaraBlogExample, MinimalExample, … (+6 more)
+- `R.BUILD_FAILED` (error) — 22 occurrences across 11 examples: AlexBlogExample, BeaconDocsExample, BlogExample, ForgePortalExample, MaraBlogExample, MinimalExample, … (+5 more)
 - `L.BROKEN` (error) — 1276 raw occurrences rolled up into 152 distinct groups across 10 examples: AlexBlogExample, BeaconDocsExample, BlogExample, ForgePortalExample, MaraBlogExample, MinimalExample, … (+4 more)
-- `R.PAGE_FAILED` (error) — 21 occurrences across 5 examples: BlogExample, MultipleContentSourceExample, NorthwindHandbookExample, RecipeExample, YogaStudioExample
-- `T.DUP` (error) — 132 raw occurrences rolled up into 6 distinct groups across 1 example: NorthwindHandbookExample
+- `R.PAGE_FAILED` (error) — 19 occurrences across 4 examples: BlogExample, MultipleContentSourceExample, RecipeExample, YogaStudioExample
 - `R.BROKEN_LINK` (warning) — 1384 raw occurrences rolled up into 162 distinct groups across 10 examples: AlexBlogExample, BeaconDocsExample, BlogExample, ForgePortalExample, MaraBlogExample, MinimalExample, … (+4 more)
 - `B.MISSING_BODY_ATTR` (warning) — 1 occurrence across 1 example: UserInterfaceExample
 - `M.MISSING` (info) — 28 occurrences across 14 examples: AlexBlogExample, BlogExample, ForgePortalExample, MaraBlogExample, MinimalExample, MultipleContentSourceExample, … (+8 more)
@@ -56,8 +55,8 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
 ### AlexBlogExample
 
 - Project: `examples/AlexBlogExample/AlexBlogExample.csproj`
-- Pass A: build failed (exit 1), 3 HTML pages in output, 3.0s
-- Pass B: build failed (exit 1), 3 HTML pages in output, 2.9s
+- Pass A: build failed (exit 1), 3 HTML pages in output, 3.3s
+- Pass B: build failed (exit 1), 3 HTML pages in output, 3.3s
 
 #### ISSUE-0001 · `L.BROKEN` · error · pass A · rolled up (2 occurrences)
 - Affects 2 pages:
@@ -288,17 +287,17 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
 - Excerpt:
   ```
     17 broken links found:
+      /blog/building-a-cli-part-1/ links to /preview/rss.xml (Page not found)
+      /blog/building-a-cli-part-1/ links to /preview/ (Page not found)
+      /blog/building-a-cli-part-1/ links to /preview/tags/dotnet (Page not found)
+      /blog/building-a-cli-part-1/ links to /preview/tags/cli (Page not found)
+      /blog/building-a-cli-part-1/ links to /preview/ (Page not found)
       /blog/building-a-cli-part-2/ links to /preview/rss.xml (Page not found)
       /blog/building-a-cli-part-2/ links to /preview/ (Page not found)
       /blog/building-a-cli-part-2/ links to /preview/blog/2026/03/building-a-cli-part-1 (Page not found)
       /blog/building-a-cli-part-2/ links to /preview/tags/dotnet (Page not found)
       /blog/building-a-cli-part-2/ links to /preview/tags/cli (Page not found)
       /blog/building-a-cli-part-2/ links to /preview/ (Page not found)
-      /blog/building-a-cli-part-1/ links to /preview/rss.xml (Page not found)
-      /blog/building-a-cli-part-1/ links to /preview/ (Page not found)
-      /blog/building-a-cli-part-1/ links to /preview/tags/dotnet (Page not found)
-      /blog/building-a-cli-part-1/ links to /preview/tags/cli (Page not found)
-      /blog/building-a-cli-part-1/ links to /preview/ (Page not found)
       /blog/why-i-switched-to-linux/ links to /preview/rss.xml (Page not found)
       /blog/why-i-switched-to-linux/ links to /preview/ (Page not found)
       /blog/why-i-switched-to-linux/ links to /preview/tags/linux (Page not found)
@@ -311,54 +310,54 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
 
 #### ISSUE-0023 · `R.BROKEN_LINK` · warning · pass B · rolled up (6 occurrences)
 - Affects 3 pages:
-  - `/blog/building-a-cli-part-2/`
   - `/blog/building-a-cli-part-1/`
+  - `/blog/building-a-cli-part-2/`
   - `/blog/why-i-switched-to-linux/`
 - Total raw occurrences: 6 (some pages emit multiple matches)
 - Message: Engine reports broken link to `/preview/` (Page not found).
 - Excerpt:
   ```
-  /blog/building-a-cli-part-2/ links to /preview/ (Page not found)
+  /blog/building-a-cli-part-1/ links to /preview/ (Page not found)
   ```
 
-#### ISSUE-0024 · `R.BROKEN_LINK` · warning · pass B
+#### ISSUE-0024 · `R.BROKEN_LINK` · warning · pass B · rolled up (3 occurrences)
+- Affects 3 pages:
+  - `/blog/building-a-cli-part-1/`
+  - `/blog/building-a-cli-part-2/`
+  - `/blog/why-i-switched-to-linux/`
+- Message: Engine reports broken link to `/preview/rss.xml` (Page not found).
+- Excerpt:
+  ```
+  /blog/building-a-cli-part-1/ links to /preview/rss.xml (Page not found)
+  ```
+
+#### ISSUE-0025 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
+- Affects 2 pages:
+  - `/blog/building-a-cli-part-1/`
+  - `/blog/building-a-cli-part-2/`
+- Message: Engine reports broken link to `/preview/tags/cli` (Page not found).
+- Excerpt:
+  ```
+  /blog/building-a-cli-part-1/ links to /preview/tags/cli (Page not found)
+  ```
+
+#### ISSUE-0026 · `R.BROKEN_LINK` · warning · pass B · rolled up (3 occurrences)
+- Affects 3 pages:
+  - `/blog/building-a-cli-part-1/`
+  - `/blog/building-a-cli-part-2/`
+  - `/blog/why-i-switched-to-linux/`
+- Message: Engine reports broken link to `/preview/tags/dotnet` (Page not found).
+- Excerpt:
+  ```
+  /blog/building-a-cli-part-1/ links to /preview/tags/dotnet (Page not found)
+  ```
+
+#### ISSUE-0027 · `R.BROKEN_LINK` · warning · pass B
 - File: `/blog/building-a-cli-part-2/`
 - Message: Engine reports broken link to `/preview/blog/2026/03/building-a-cli-part-1` (Page not found).
 - Excerpt:
   ```
   /blog/building-a-cli-part-2/ links to /preview/blog/2026/03/building-a-cli-part-1 (Page not found)
-  ```
-
-#### ISSUE-0025 · `R.BROKEN_LINK` · warning · pass B · rolled up (3 occurrences)
-- Affects 3 pages:
-  - `/blog/building-a-cli-part-2/`
-  - `/blog/building-a-cli-part-1/`
-  - `/blog/why-i-switched-to-linux/`
-- Message: Engine reports broken link to `/preview/rss.xml` (Page not found).
-- Excerpt:
-  ```
-  /blog/building-a-cli-part-2/ links to /preview/rss.xml (Page not found)
-  ```
-
-#### ISSUE-0026 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
-- Affects 2 pages:
-  - `/blog/building-a-cli-part-2/`
-  - `/blog/building-a-cli-part-1/`
-- Message: Engine reports broken link to `/preview/tags/cli` (Page not found).
-- Excerpt:
-  ```
-  /blog/building-a-cli-part-2/ links to /preview/tags/cli (Page not found)
-  ```
-
-#### ISSUE-0027 · `R.BROKEN_LINK` · warning · pass B · rolled up (3 occurrences)
-- Affects 3 pages:
-  - `/blog/building-a-cli-part-2/`
-  - `/blog/building-a-cli-part-1/`
-  - `/blog/why-i-switched-to-linux/`
-- Message: Engine reports broken link to `/preview/tags/dotnet` (Page not found).
-- Excerpt:
-  ```
-  /blog/building-a-cli-part-2/ links to /preview/tags/dotnet (Page not found)
   ```
 
 #### ISSUE-0028 · `R.BROKEN_LINK` · warning · pass B
@@ -384,8 +383,8 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
 ### BeaconDocsExample
 
 - Project: `examples/BeaconDocsExample/BeaconDocsExample.csproj`
-- Pass A: build failed (exit 1), 10 HTML pages in output, 3.2s
-- Pass B: build failed (exit 1), 10 HTML pages in output, 3.3s
+- Pass A: build failed (exit 1), 10 HTML pages in output, 3.6s
+- Pass B: build failed (exit 1), 10 HTML pages in output, 3.6s
 
 #### ISSUE-0031 · `R.BUILD_FAILED` · error · pass A
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
@@ -403,7 +402,7 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
         Adding file watch: B:\Penn\examples\BeaconDocsExample\Content with pattern *.*
   info: Microsoft.Hosting.Lifetime[0]
         Application is shutting down...
-  Build Complete — 22 pages in 0.8s
+  Build Complete — 22 pages in 0.9s
     22 pages generated
   
   WARNINGS
@@ -446,7 +445,7 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
         Adding file watch: B:\Penn\examples\BeaconDocsExample\Content with pattern *.*
   info: Microsoft.Hosting.Lifetime[0]
         Application is shutting down...
-  Build Complete — 22 pages in 0.8s
+  Build Complete — 22 pages in 0.9s
     22 pages generated
   
   WARNINGS
@@ -476,8 +475,8 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
 ### BlogExample
 
 - Project: `examples/BlogExample/BlogExample.csproj`
-- Pass A: build failed (exit 1), 8 HTML pages in output, 3.1s
-- Pass B: build failed (exit 1), 8 HTML pages in output, 3.1s
+- Pass A: build failed (exit 1), 8 HTML pages in output, 3.3s
+- Pass B: build failed (exit 1), 8 HTML pages in output, 3.5s
 
 #### ISSUE-0037 · `L.BROKEN` · error · pass A · rolled up (15 occurrences)
 - Affects 8 pages:
@@ -587,19 +586,19 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
       /blog/2024/04/gum-chewing-apparel-guide/ links to /tags/reviews (Page not found)
       /blog/2024/04/gum-chewing-apparel-guide/ links to /tags/equipment (Page not found)
       /blog/2024/04/gum-chewing-apparel-guide/ links to / (Page not found)
+      /blog/2024/03/top-five-gum-brands-analysis/ links to /rss.xml (Page not found)
+      /blog/2024/03/top-five-gum-brands-analysis/ links to / (Page not found)
+      /blog/2024/03/top-five-gum-brands-analysis/ links to /tags/analysis (Page not found)
+      /blog/2024/03/top-five-gum-brands-analysis/ links to /tags/gum-brands (Page not found)
+      /blog/2024/03/top-five-gum-brands-analysis/ links to /tags/science (Page not found)
+      /blog/2024/03/top-five-gum-brands-analysis/ links to /tags/reviews (Page not found)
+      /blog/2024/03/top-five-gum-brands-analysis/ links to / (Page not found)
       /blog/2024/03/chewing-magazine-review/ links to /rss.xml (Page not found)
       /blog/2024/03/chewing-magazine-review/ links to / (Page not found)
       /blog/2024/03/chewing-magazine-review/ links to /tags/reviews (Page not found)
       /blog/2024/03/chewing-magazine-review/ links to /tags/chewing-magazine (Page not found)
       /blog/2024/03/chewing-magazine-review/ links to /tags/gum-culture (Page not found)
       /blog/2024/03/chewing-magazine-review/ links to / (Page not found)
-      /blog/2024/04/mandibular-fitness-regime/ links to /rss.xml (Page not found)
-      /blog/2024/04/mandibular-fitness-regime/ links to / (Page not found)
-      /blog/2024/04/mandibular-fitness-regime/ links to /tags/fitness (Page not found)
-      /blog/2024/04/mandibular-fitness-regime/ links to /tags/jaw-exercises (Page not found)
-      /blog/2024/04/mandibular-fitness-regime/ links to /tags/training (Page not found)
-      /blog/2024/04/mandibular-fitness-regime/ links to /tags/health (Page not found)
-      /blog/2024/04/mandibular-fitness-regime/ links to / (Page not found)
       /about/ links to /rss.xml (Page not found)
       /about/ links to / (Page not found)
   
@@ -610,46 +609,14 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
 - File: `/about/`
 - Message: Engine reported page generation failure for `/about/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\BlogExample\root\about\index.html' because it is being used by another process.
 
-#### ISSUE-0049 · `R.BROKEN_LINK` · warning · pass A
-- File: `/blog/2024/05/bazooka-joe-interview/`
-- Message: Engine reports broken link to `/tags/bazooka-joe` (Page not found).
-- Excerpt:
-  ```
-  /blog/2024/05/bazooka-joe-interview/ links to /tags/bazooka-joe (Page not found)
-  ```
-
-#### ISSUE-0050 · `R.BROKEN_LINK` · warning · pass A
-- File: `/blog/2024/05/bazooka-joe-interview/`
-- Message: Engine reports broken link to `/tags/inspiration` (Page not found).
-- Excerpt:
-  ```
-  /blog/2024/05/bazooka-joe-interview/ links to /tags/inspiration (Page not found)
-  ```
-
-#### ISSUE-0051 · `R.BROKEN_LINK` · warning · pass A
-- File: `/blog/2024/05/bazooka-joe-interview/`
-- Message: Engine reports broken link to `/tags/interview` (Page not found).
-- Excerpt:
-  ```
-  /blog/2024/05/bazooka-joe-interview/ links to /tags/interview (Page not found)
-  ```
-
-#### ISSUE-0052 · `R.BROKEN_LINK` · warning · pass A
-- File: `/blog/2024/05/bazooka-joe-interview/`
-- Message: Engine reports broken link to `/tags/legend` (Page not found).
-- Excerpt:
-  ```
-  /blog/2024/05/bazooka-joe-interview/ links to /tags/legend (Page not found)
-  ```
-
-#### ISSUE-0053 · `R.BROKEN_LINK` · warning · pass A · rolled up (15 occurrences)
+#### ISSUE-0049 · `R.BROKEN_LINK` · warning · pass A · rolled up (15 occurrences)
 - Affects 8 pages:
   - `/blog/2024/05/chewing-data-analytics/`
-  - `/blog/2024/05/bazooka-joe-interview/`
   - `/blog/2024/05/tongue-exercises-bigger-bubbles/`
-  - `/blog/2024/03/top-five-gum-brands-analysis/`
+  - `/blog/2024/04/mandibular-fitness-regime/`
+  - `/blog/2024/05/bazooka-joe-interview/`
   - `/blog/2024/04/gum-chewing-apparel-guide/`
-  - `/blog/2024/03/chewing-magazine-review/`
+  - `/blog/2024/03/top-five-gum-brands-analysis/`
   - … (+2 more)
 - Total raw occurrences: 15 (some pages emit multiple matches)
 - Message: Engine reports broken link to `/` (Page not found).
@@ -658,14 +625,14 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
   /blog/2024/05/chewing-data-analytics/ links to / (Page not found)
   ```
 
-#### ISSUE-0054 · `R.BROKEN_LINK` · warning · pass A · rolled up (8 occurrences)
+#### ISSUE-0050 · `R.BROKEN_LINK` · warning · pass A · rolled up (8 occurrences)
 - Affects 8 pages:
   - `/blog/2024/05/chewing-data-analytics/`
-  - `/blog/2024/05/bazooka-joe-interview/`
   - `/blog/2024/05/tongue-exercises-bigger-bubbles/`
-  - `/blog/2024/03/top-five-gum-brands-analysis/`
+  - `/blog/2024/04/mandibular-fitness-regime/`
+  - `/blog/2024/05/bazooka-joe-interview/`
   - `/blog/2024/04/gum-chewing-apparel-guide/`
-  - `/blog/2024/03/chewing-magazine-review/`
+  - `/blog/2024/03/top-five-gum-brands-analysis/`
   - … (+2 more)
 - Message: Engine reports broken link to `/rss.xml` (Page not found).
 - Excerpt:
@@ -673,7 +640,7 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
   /blog/2024/05/chewing-data-analytics/ links to /rss.xml (Page not found)
   ```
 
-#### ISSUE-0055 · `R.BROKEN_LINK` · warning · pass A
+#### ISSUE-0051 · `R.BROKEN_LINK` · warning · pass A
 - File: `/blog/2024/05/chewing-data-analytics/`
 - Message: Engine reports broken link to `/tags/data-analytics` (Page not found).
 - Excerpt:
@@ -681,7 +648,7 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
   /blog/2024/05/chewing-data-analytics/ links to /tags/data-analytics (Page not found)
   ```
 
-#### ISSUE-0056 · `R.BROKEN_LINK` · warning · pass A
+#### ISSUE-0052 · `R.BROKEN_LINK` · warning · pass A
 - File: `/blog/2024/05/chewing-data-analytics/`
 - Message: Engine reports broken link to `/tags/optimization` (Page not found).
 - Excerpt:
@@ -689,7 +656,7 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
   /blog/2024/05/chewing-data-analytics/ links to /tags/optimization (Page not found)
   ```
 
-#### ISSUE-0057 · `R.BROKEN_LINK` · warning · pass A
+#### ISSUE-0053 · `R.BROKEN_LINK` · warning · pass A
 - File: `/blog/2024/05/chewing-data-analytics/`
 - Message: Engine reports broken link to `/tags/performance-tracking` (Page not found).
 - Excerpt:
@@ -697,12 +664,46 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
   /blog/2024/05/chewing-data-analytics/ links to /tags/performance-tracking (Page not found)
   ```
 
-#### ISSUE-0058 · `R.BROKEN_LINK` · warning · pass A
+#### ISSUE-0054 · `R.BROKEN_LINK` · warning · pass A
 - File: `/blog/2024/05/chewing-data-analytics/`
 - Message: Engine reports broken link to `/tags/python` (Page not found).
 - Excerpt:
   ```
   /blog/2024/05/chewing-data-analytics/ links to /tags/python (Page not found)
+  ```
+
+#### ISSUE-0055 · `R.BROKEN_LINK` · warning · pass A
+- File: `/blog/2024/05/tongue-exercises-bigger-bubbles/`
+- Message: Engine reports broken link to `/tags/bubbles` (Page not found).
+- Excerpt:
+  ```
+  /blog/2024/05/tongue-exercises-bigger-bubbles/ links to /tags/bubbles (Page not found)
+  ```
+
+#### ISSUE-0056 · `R.BROKEN_LINK` · warning · pass A
+- File: `/blog/2024/05/tongue-exercises-bigger-bubbles/`
+- Message: Engine reports broken link to `/tags/exercises` (Page not found).
+- Excerpt:
+  ```
+  /blog/2024/05/tongue-exercises-bigger-bubbles/ links to /tags/exercises (Page not found)
+  ```
+
+#### ISSUE-0057 · `R.BROKEN_LINK` · warning · pass A
+- File: `/blog/2024/05/tongue-exercises-bigger-bubbles/`
+- Message: Engine reports broken link to `/tags/technique` (Page not found).
+- Excerpt:
+  ```
+  /blog/2024/05/tongue-exercises-bigger-bubbles/ links to /tags/technique (Page not found)
+  ```
+
+#### ISSUE-0058 · `R.BROKEN_LINK` · warning · pass A · rolled up (2 occurrences)
+- Affects 2 pages:
+  - `/blog/2024/05/tongue-exercises-bigger-bubbles/`
+  - `/blog/2024/04/mandibular-fitness-regime/`
+- Message: Engine reports broken link to `/tags/training` (Page not found).
+- Excerpt:
+  ```
+  /blog/2024/05/tongue-exercises-bigger-bubbles/ links to /tags/training (Page not found)
   ```
 
 #### ISSUE-0059 · `M.MISSING` · info · pass A
@@ -814,22 +815,22 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
 - Excerpt:
   ```
+      /blog/2024/04/mandibular-fitness-regime/ links to /preview/tags/health (Page not found)
+      /blog/2024/04/mandibular-fitness-regime/ links to /preview/ (Page not found)
+      /blog/2024/05/bazooka-joe-interview/ links to /preview/rss.xml (Page not found)
+      /blog/2024/05/bazooka-joe-interview/ links to /preview/ (Page not found)
+      /blog/2024/05/bazooka-joe-interview/ links to /preview/tags/interview (Page not found)
+      /blog/2024/05/bazooka-joe-interview/ links to /preview/tags/bazooka-joe (Page not found)
+      /blog/2024/05/bazooka-joe-interview/ links to /preview/tags/legend (Page not found)
+      /blog/2024/05/bazooka-joe-interview/ links to /preview/tags/inspiration (Page not found)
+      /blog/2024/05/bazooka-joe-interview/ links to /preview/ (Page not found)
+      /blog/2024/03/top-five-gum-brands-analysis/ links to /preview/rss.xml (Page not found)
+      /blog/2024/03/top-five-gum-brands-analysis/ links to /preview/ (Page not found)
+      /blog/2024/03/top-five-gum-brands-analysis/ links to /preview/tags/analysis (Page not found)
+      /blog/2024/03/top-five-gum-brands-analysis/ links to /preview/tags/gum-brands (Page not found)
       /blog/2024/03/top-five-gum-brands-analysis/ links to /preview/tags/science (Page not found)
       /blog/2024/03/top-five-gum-brands-analysis/ links to /preview/tags/reviews (Page not found)
       /blog/2024/03/top-five-gum-brands-analysis/ links to /preview/ (Page not found)
-      /blog/2024/03/chewing-magazine-review/ links to /preview/rss.xml (Page not found)
-      /blog/2024/03/chewing-magazine-review/ links to /preview/ (Page not found)
-      /blog/2024/03/chewing-magazine-review/ links to /preview/tags/reviews (Page not found)
-      /blog/2024/03/chewing-magazine-review/ links to /preview/tags/chewing-magazine (Page not found)
-      /blog/2024/03/chewing-magazine-review/ links to /preview/tags/gum-culture (Page not found)
-      /blog/2024/03/chewing-magazine-review/ links to /preview/ (Page not found)
-      /blog/2024/05/chewing-data-analytics/ links to /preview/rss.xml (Page not found)
-      /blog/2024/05/chewing-data-analytics/ links to /preview/ (Page not found)
-      /blog/2024/05/chewing-data-analytics/ links to /preview/tags/data-analytics (Page not found)
-      /blog/2024/05/chewing-data-analytics/ links to /preview/tags/python (Page not found)
-      /blog/2024/05/chewing-data-analytics/ links to /preview/tags/performance-tracking (Page not found)
-      /blog/2024/05/chewing-data-analytics/ links to /preview/tags/optimization (Page not found)
-      /blog/2024/05/chewing-data-analytics/ links to /preview/ (Page not found)
       /about/ links to /preview/rss.xml (Page not found)
       /about/ links to /preview/ (Page not found)
   
@@ -867,8 +868,8 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
 #### ISSUE-0075 · `R.BROKEN_LINK` · warning · pass B · rolled up (3 occurrences)
 - Affects 3 pages:
   - `/blog/2024/04/gum-chewing-apparel-guide/`
-  - `/blog/2024/03/top-five-gum-brands-analysis/`
   - `/blog/2024/03/chewing-magazine-review/`
+  - `/blog/2024/03/top-five-gum-brands-analysis/`
 - Message: Engine reports broken link to `/preview/tags/reviews` (Page not found).
 - Excerpt:
   ```
@@ -877,67 +878,65 @@ Counts below reflect **raw** issue totals (not the truncated samples shown in pe
 
 #### ISSUE-0076 · `R.BROKEN_LINK` · warning · pass B · rolled up (15 occurrences)
 - Affects 8 pages:
-  - `/blog/2024/05/tongue-exercises-bigger-bubbles/`
+  - `/blog/2024/05/chewing-data-analytics/`
   - `/blog/2024/04/gum-chewing-apparel-guide/`
+  - `/blog/2024/05/tongue-exercises-bigger-bubbles/`
+  - `/blog/2024/03/chewing-magazine-review/`
   - `/blog/2024/04/mandibular-fitness-regime/`
   - `/blog/2024/05/bazooka-joe-interview/`
-  - `/blog/2024/03/top-five-gum-brands-analysis/`
-  - `/blog/2024/03/chewing-magazine-review/`
   - … (+2 more)
 - Total raw occurrences: 15 (some pages emit multiple matches)
 - Message: Engine reports broken link to `/preview/` (Page not found).
 - Excerpt:
   ```
-  /blog/2024/05/tongue-exercises-bigger-bubbles/ links to /preview/ (Page not found)
+  /blog/2024/05/chewing-data-analytics/ links to /preview/ (Page not found)
   ```
 
 #### ISSUE-0077 · `R.BROKEN_LINK` · warning · pass B · rolled up (8 occurrences)
 - Affects 8 pages:
-  - `/blog/2024/05/tongue-exercises-bigger-bubbles/`
+  - `/blog/2024/05/chewing-data-analytics/`
   - `/blog/2024/04/gum-chewing-apparel-guide/`
+  - `/blog/2024/05/tongue-exercises-bigger-bubbles/`
+  - `/blog/2024/03/chewing-magazine-review/`
   - `/blog/2024/04/mandibular-fitness-regime/`
   - `/blog/2024/05/bazooka-joe-interview/`
-  - `/blog/2024/03/top-five-gum-brands-analysis/`
-  - `/blog/2024/03/chewing-magazine-review/`
   - … (+2 more)
 - Message: Engine reports broken link to `/preview/rss.xml` (Page not found).
 - Excerpt:
   ```
-  /blog/2024/05/tongue-exercises-bigger-bubbles/ links to /preview/rss.xml (Page not found)
+  /blog/2024/05/chewing-data-analytics/ links to /preview/rss.xml (Page not found)
   ```
 
 #### ISSUE-0078 · `R.BROKEN_LINK` · warning · pass B
-- File: `/blog/2024/05/tongue-exercises-bigger-bubbles/`
-- Message: Engine reports broken link to `/preview/tags/bubbles` (Page not found).
+- File: `/blog/2024/05/chewing-data-analytics/`
+- Message: Engine reports broken link to `/preview/tags/data-analytics` (Page not found).
 - Excerpt:
   ```
-  /blog/2024/05/tongue-exercises-bigger-bubbles/ links to /preview/tags/bubbles (Page not found)
+  /blog/2024/05/chewing-data-analytics/ links to /preview/tags/data-analytics (Page not found)
   ```
 
 #### ISSUE-0079 · `R.BROKEN_LINK` · warning · pass B
-- File: `/blog/2024/05/tongue-exercises-bigger-bubbles/`
-- Message: Engine reports broken link to `/preview/tags/exercises` (Page not found).
+- File: `/blog/2024/05/chewing-data-analytics/`
+- Message: Engine reports broken link to `/preview/tags/optimization` (Page not found).
 - Excerpt:
   ```
-  /blog/2024/05/tongue-exercises-bigger-bubbles/ links to /preview/tags/exercises (Page not found)
+  /blog/2024/05/chewing-data-analytics/ links to /preview/tags/optimization (Page not found)
   ```
 
 #### ISSUE-0080 · `R.BROKEN_LINK` · warning · pass B
-- File: `/blog/2024/05/tongue-exercises-bigger-bubbles/`
-- Message: Engine reports broken link to `/preview/tags/technique` (Page not found).
+- File: `/blog/2024/05/chewing-data-analytics/`
+- Message: Engine reports broken link to `/preview/tags/performance-tracking` (Page not found).
 - Excerpt:
   ```
-  /blog/2024/05/tongue-exercises-bigger-bubbles/ links to /preview/tags/technique (Page not found)
+  /blog/2024/05/chewing-data-analytics/ links to /preview/tags/performance-tracking (Page not found)
   ```
 
-#### ISSUE-0081 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
-- Affects 2 pages:
-  - `/blog/2024/05/tongue-exercises-bigger-bubbles/`
-  - `/blog/2024/04/mandibular-fitness-regime/`
-- Message: Engine reports broken link to `/preview/tags/training` (Page not found).
+#### ISSUE-0081 · `R.BROKEN_LINK` · warning · pass B
+- File: `/blog/2024/05/chewing-data-analytics/`
+- Message: Engine reports broken link to `/preview/tags/python` (Page not found).
 - Excerpt:
   ```
-  /blog/2024/05/tongue-exercises-bigger-bubbles/ links to /preview/tags/training (Page not found)
+  /blog/2024/05/chewing-data-analytics/ links to /preview/tags/python (Page not found)
   ```
 
 #### ISSUE-0082 · `M.MISSING` · info · pass B
@@ -954,8 +953,8 @@ _Additional issues not shown (truncated to 10 samples per code):_
 ### ForgePortalExample
 
 - Project: `examples/ForgePortalExample/ForgePortalExample.csproj`
-- Pass A: build failed (exit 1), 10 HTML pages in output, 2.7s
-- Pass B: build failed (exit 1), 10 HTML pages in output, 2.6s
+- Pass A: build failed (exit 1), 10 HTML pages in output, 2.9s
+- Pass B: build failed (exit 1), 10 HTML pages in output, 3.0s
 
 #### ISSUE-0083 · `L.BROKEN` · error · pass A · rolled up (10 occurrences)
 - Affects 10 pages:
@@ -986,32 +985,32 @@ _Additional issues not shown (truncated to 10 samples per code):_
   
   WARNINGS
     9 broken links found:
+      /blog/welcome/ links to / (Page not found)
       /docs/api-keys/ links to / (Page not found)
+      /about/ links to / (Page not found)
       /docs/getting-started/ links to / (Page not found)
       /docs/pipeline-config/ links to / (Page not found)
-      /blog/welcome/ links to / (Page not found)
       /blog/q1-retro/ links to / (Page not found)
-      /about/ links to / (Page not found)
-      /releases/v2-0-1/ links to / (Page not found)
-      /releases/v2-0-0/ links to / (Page not found)
       /releases/v2-1-0/ links to / (Page not found)
+      /releases/v2-0-0/ links to / (Page not found)
+      /releases/v2-0-1/ links to / (Page not found)
   
   
   ```
 
 #### ISSUE-0085 · `R.BROKEN_LINK` · warning · pass A · rolled up (9 occurrences)
 - Affects 9 pages:
+  - `/blog/welcome/`
   - `/docs/api-keys/`
+  - `/about/`
   - `/docs/getting-started/`
   - `/docs/pipeline-config/`
-  - `/blog/welcome/`
   - `/blog/q1-retro/`
-  - `/about/`
   - … (+3 more)
 - Message: Engine reports broken link to `/` (Page not found).
 - Excerpt:
   ```
-  /docs/api-keys/ links to / (Page not found)
+  /blog/welcome/ links to / (Page not found)
   ```
 
 #### ISSUE-0086 · `M.MISSING` · info · pass A
@@ -1047,32 +1046,32 @@ _Additional issues not shown (truncated to 10 samples per code):_
   
   WARNINGS
     9 broken links found:
-      /docs/getting-started/ links to /preview/ (Page not found)
-      /releases/v2-0-0/ links to /preview/ (Page not found)
-      /about/ links to /preview/ (Page not found)
-      /releases/v2-1-0/ links to /preview/ (Page not found)
-      /docs/api-keys/ links to /preview/ (Page not found)
-      /docs/pipeline-config/ links to /preview/ (Page not found)
-      /blog/welcome/ links to /preview/ (Page not found)
-      /blog/q1-retro/ links to /preview/ (Page not found)
       /releases/v2-0-1/ links to /preview/ (Page not found)
+      /releases/v2-1-0/ links to /preview/ (Page not found)
+      /docs/pipeline-config/ links to /preview/ (Page not found)
+      /releases/v2-0-0/ links to /preview/ (Page not found)
+      /blog/q1-retro/ links to /preview/ (Page not found)
+      /blog/welcome/ links to /preview/ (Page not found)
+      /docs/api-keys/ links to /preview/ (Page not found)
+      /docs/getting-started/ links to /preview/ (Page not found)
+      /about/ links to /preview/ (Page not found)
   
   
   ```
 
 #### ISSUE-0089 · `R.BROKEN_LINK` · warning · pass B · rolled up (9 occurrences)
 - Affects 9 pages:
-  - `/docs/getting-started/`
-  - `/releases/v2-0-0/`
-  - `/about/`
+  - `/releases/v2-0-1/`
   - `/releases/v2-1-0/`
-  - `/docs/api-keys/`
   - `/docs/pipeline-config/`
+  - `/releases/v2-0-0/`
+  - `/blog/q1-retro/`
+  - `/blog/welcome/`
   - … (+3 more)
 - Message: Engine reports broken link to `/preview/` (Page not found).
 - Excerpt:
   ```
-  /docs/getting-started/ links to /preview/ (Page not found)
+  /releases/v2-0-1/ links to /preview/ (Page not found)
   ```
 
 #### ISSUE-0090 · `M.MISSING` · info · pass B
@@ -1082,22 +1081,22 @@ _Additional issues not shown (truncated to 10 samples per code):_
 ### LocalizationExample
 
 - Project: `examples/LocalizationExample/LocalizationExample.csproj`
-- Pass A: built ok, 26 HTML pages in output, 3.4s
-- Pass B: built ok, 26 HTML pages in output, 3.5s
+- Pass A: built ok, 26 HTML pages in output, 4.0s
+- Pass B: built ok, 26 HTML pages in output, 3.9s
 - No issues.
 
 ### LocalizationTutorialExample
 
 - Project: `examples/LocalizationTutorialExample/LocalizationTutorialExample.csproj`
-- Pass A: built ok, 7 HTML pages in output, 3.1s
-- Pass B: built ok, 7 HTML pages in output, 3.1s
+- Pass A: built ok, 7 HTML pages in output, 3.5s
+- Pass B: built ok, 7 HTML pages in output, 3.5s
 - No issues.
 
 ### MaraBlogExample
 
 - Project: `examples/MaraBlogExample/MaraBlogExample.csproj`
-- Pass A: build failed (exit 1), 3 HTML pages in output, 3.1s
-- Pass B: build failed (exit 1), 3 HTML pages in output, 3.0s
+- Pass A: build failed (exit 1), 3 HTML pages in output, 3.5s
+- Pass B: build failed (exit 1), 3 HTML pages in output, 3.4s
 
 #### ISSUE-0091 · `L.BROKEN` · error · pass A · rolled up (2 occurrences)
 - Affects 2 pages:
@@ -1164,16 +1163,16 @@ _Additional issues not shown (truncated to 10 samples per code):_
       /blog/allocation-traps/ links to /topics/performance (Page not found)
       /blog/allocation-traps/ links to /topics/dotnet (Page not found)
       /blog/allocation-traps/ links to / (Page not found)
-      /blog/config-pitfalls/ links to /rss.xml (Page not found)
-      /blog/config-pitfalls/ links to / (Page not found)
-      /blog/config-pitfalls/ links to /topics/aspnet (Page not found)
-      /blog/config-pitfalls/ links to /topics/configuration (Page not found)
-      /blog/config-pitfalls/ links to / (Page not found)
       /blog/span-patterns/ links to /rss.xml (Page not found)
       /blog/span-patterns/ links to / (Page not found)
       /blog/span-patterns/ links to /topics/performance (Page not found)
       /blog/span-patterns/ links to /topics/dotnet (Page not found)
       /blog/span-patterns/ links to / (Page not found)
+      /blog/config-pitfalls/ links to /rss.xml (Page not found)
+      /blog/config-pitfalls/ links to / (Page not found)
+      /blog/config-pitfalls/ links to /topics/aspnet (Page not found)
+      /blog/config-pitfalls/ links to /topics/configuration (Page not found)
+      /blog/config-pitfalls/ links to / (Page not found)
   
   
   ```
@@ -1181,8 +1180,8 @@ _Additional issues not shown (truncated to 10 samples per code):_
 #### ISSUE-0097 · `R.BROKEN_LINK` · warning · pass A · rolled up (6 occurrences)
 - Affects 3 pages:
   - `/blog/allocation-traps/`
-  - `/blog/config-pitfalls/`
   - `/blog/span-patterns/`
+  - `/blog/config-pitfalls/`
 - Total raw occurrences: 6 (some pages emit multiple matches)
 - Message: Engine reports broken link to `/` (Page not found).
 - Excerpt:
@@ -1193,8 +1192,8 @@ _Additional issues not shown (truncated to 10 samples per code):_
 #### ISSUE-0098 · `R.BROKEN_LINK` · warning · pass A · rolled up (3 occurrences)
 - Affects 3 pages:
   - `/blog/allocation-traps/`
-  - `/blog/config-pitfalls/`
   - `/blog/span-patterns/`
+  - `/blog/config-pitfalls/`
 - Message: Engine reports broken link to `/rss.xml` (Page not found).
 - Excerpt:
   ```
@@ -1301,69 +1300,26 @@ _Additional issues not shown (truncated to 10 samples per code):_
   
   WARNINGS
     15 broken links found:
-      /blog/config-pitfalls/ links to /preview/rss.xml (Page not found)
-      /blog/config-pitfalls/ links to /preview/ (Page not found)
-      /blog/config-pitfalls/ links to /preview/topics/aspnet (Page not found)
-      /blog/config-pitfalls/ links to /preview/topics/configuration (Page not found)
-      /blog/config-pitfalls/ links to /preview/ (Page not found)
-      /blog/allocation-traps/ links to /preview/rss.xml (Page not found)
-      /blog/allocation-traps/ links to /preview/ (Page not found)
-      /blog/allocation-traps/ links to /preview/topics/performance (Page not found)
-      /blog/allocation-traps/ links to /preview/topics/dotnet (Page not found)
-      /blog/allocation-traps/ links to /preview/ (Page not found)
       /blog/span-patterns/ links to /preview/rss.xml (Page not found)
       /blog/span-patterns/ links to /preview/ (Page not found)
       /blog/span-patterns/ links to /preview/topics/performance (Page not found)
       /blog/span-patterns/ links to /preview/topics/dotnet (Page not found)
       /blog/span-patterns/ links to /preview/ (Page not found)
+      /blog/allocation-traps/ links to /preview/rss.xml (Page not found)
+      /blog/allocation-traps/ links to /preview/ (Page not found)
+      /blog/allocation-traps/ links to /preview/topics/performance (Page not found)
+      /blog/allocation-traps/ links to /preview/topics/dotnet (Page not found)
+      /blog/allocation-traps/ links to /preview/ (Page not found)
+      /blog/config-pitfalls/ links to /preview/rss.xml (Page not found)
+      /blog/config-pitfalls/ links to /preview/ (Page not found)
+      /blog/config-pitfalls/ links to /preview/topics/aspnet (Page not found)
+      /blog/config-pitfalls/ links to /preview/topics/configuration (Page not found)
+      /blog/config-pitfalls/ links to /preview/ (Page not found)
   
   
   ```
 
-#### ISSUE-0110 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
-- Affects 2 pages:
-  - `/blog/allocation-traps/`
-  - `/blog/span-patterns/`
-- Message: Engine reports broken link to `/preview/topics/dotnet` (Page not found).
-- Excerpt:
-  ```
-  /blog/allocation-traps/ links to /preview/topics/dotnet (Page not found)
-  ```
-
-#### ISSUE-0111 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
-- Affects 2 pages:
-  - `/blog/allocation-traps/`
-  - `/blog/span-patterns/`
-- Message: Engine reports broken link to `/preview/topics/performance` (Page not found).
-- Excerpt:
-  ```
-  /blog/allocation-traps/ links to /preview/topics/performance (Page not found)
-  ```
-
-#### ISSUE-0112 · `R.BROKEN_LINK` · warning · pass B · rolled up (6 occurrences)
-- Affects 3 pages:
-  - `/blog/config-pitfalls/`
-  - `/blog/allocation-traps/`
-  - `/blog/span-patterns/`
-- Total raw occurrences: 6 (some pages emit multiple matches)
-- Message: Engine reports broken link to `/preview/` (Page not found).
-- Excerpt:
-  ```
-  /blog/config-pitfalls/ links to /preview/ (Page not found)
-  ```
-
-#### ISSUE-0113 · `R.BROKEN_LINK` · warning · pass B · rolled up (3 occurrences)
-- Affects 3 pages:
-  - `/blog/config-pitfalls/`
-  - `/blog/allocation-traps/`
-  - `/blog/span-patterns/`
-- Message: Engine reports broken link to `/preview/rss.xml` (Page not found).
-- Excerpt:
-  ```
-  /blog/config-pitfalls/ links to /preview/rss.xml (Page not found)
-  ```
-
-#### ISSUE-0114 · `R.BROKEN_LINK` · warning · pass B
+#### ISSUE-0110 · `R.BROKEN_LINK` · warning · pass B
 - File: `/blog/config-pitfalls/`
 - Message: Engine reports broken link to `/preview/topics/aspnet` (Page not found).
 - Excerpt:
@@ -1371,12 +1327,55 @@ _Additional issues not shown (truncated to 10 samples per code):_
   /blog/config-pitfalls/ links to /preview/topics/aspnet (Page not found)
   ```
 
-#### ISSUE-0115 · `R.BROKEN_LINK` · warning · pass B
+#### ISSUE-0111 · `R.BROKEN_LINK` · warning · pass B
 - File: `/blog/config-pitfalls/`
 - Message: Engine reports broken link to `/preview/topics/configuration` (Page not found).
 - Excerpt:
   ```
   /blog/config-pitfalls/ links to /preview/topics/configuration (Page not found)
+  ```
+
+#### ISSUE-0112 · `R.BROKEN_LINK` · warning · pass B · rolled up (6 occurrences)
+- Affects 3 pages:
+  - `/blog/span-patterns/`
+  - `/blog/allocation-traps/`
+  - `/blog/config-pitfalls/`
+- Total raw occurrences: 6 (some pages emit multiple matches)
+- Message: Engine reports broken link to `/preview/` (Page not found).
+- Excerpt:
+  ```
+  /blog/span-patterns/ links to /preview/ (Page not found)
+  ```
+
+#### ISSUE-0113 · `R.BROKEN_LINK` · warning · pass B · rolled up (3 occurrences)
+- Affects 3 pages:
+  - `/blog/span-patterns/`
+  - `/blog/allocation-traps/`
+  - `/blog/config-pitfalls/`
+- Message: Engine reports broken link to `/preview/rss.xml` (Page not found).
+- Excerpt:
+  ```
+  /blog/span-patterns/ links to /preview/rss.xml (Page not found)
+  ```
+
+#### ISSUE-0114 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
+- Affects 2 pages:
+  - `/blog/span-patterns/`
+  - `/blog/allocation-traps/`
+- Message: Engine reports broken link to `/preview/topics/dotnet` (Page not found).
+- Excerpt:
+  ```
+  /blog/span-patterns/ links to /preview/topics/dotnet (Page not found)
+  ```
+
+#### ISSUE-0115 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
+- Affects 2 pages:
+  - `/blog/span-patterns/`
+  - `/blog/allocation-traps/`
+- Message: Engine reports broken link to `/preview/topics/performance` (Page not found).
+- Excerpt:
+  ```
+  /blog/span-patterns/ links to /preview/topics/performance (Page not found)
   ```
 
 #### ISSUE-0116 · `M.MISSING` · info · pass B
@@ -1386,8 +1385,8 @@ _Additional issues not shown (truncated to 10 samples per code):_
 ### MinimalExample
 
 - Project: `examples/MinimalExample/MinimalExample.csproj`
-- Pass A: build failed (exit 1), 6 HTML pages in output, 2.5s
-- Pass B: build failed (exit 1), 6 HTML pages in output, 2.5s
+- Pass A: build failed (exit 1), 6 HTML pages in output, 3.0s
+- Pass B: build failed (exit 1), 6 HTML pages in output, 2.9s
 
 #### ISSUE-0117 · `R.BUILD_FAILED` · error · pass A
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
@@ -1520,31 +1519,31 @@ _Additional issues not shown (truncated to 10 samples per code):_
 ### MultipleContentSourceExample
 
 - Project: `examples/MultipleContentSourceExample/MultipleContentSourceExample.csproj`
-- Pass A: build failed (exit 1), 9 HTML pages in output, 2.6s
-- Pass B: build failed (exit 1), 9 HTML pages in output, 2.7s
+- Pass A: build failed (exit 1), 9 HTML pages in output, 3.6s
+- Pass B: build failed (exit 1), 9 HTML pages in output, 3.3s
 
 #### ISSUE-0129 · `R.BUILD_FAILED` · error · pass A
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
 - Excerpt:
   ```
-    /blog/best-pizza-toppings/
-      The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\root\blog\best-pizza-toppings\index.html' because it is being used by another process.
-      Source: B:\Penn\examples\MultipleContentSourceExample\Content\blog\best-pizza-toppings.md
-    /docs/coffee-brewing-guide/
-      The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\root\docs\coffee-brewing-guide\index.html' because it is being used by another process.
-      Source: B:\Penn\examples\MultipleContentSourceExample\Content\docs\coffee-brewing-guide.md
+      The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\root\docs\home-organization-systems\index.html' because it is being used by another process.
+      Source: B:\Penn\examples\MultipleContentSourceExample\Content\docs\home-organization-systems.md
     /docs/indoor-herb-garden/
       The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\root\docs\indoor-herb-garden\index.html' because it is being used by another process.
       Source: B:\Penn\examples\MultipleContentSourceExample\Content\docs\indoor-herb-garden.md
+    /docs/coffee-brewing-guide/
+      The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\root\docs\coffee-brewing-guide\index.html' because it is being used by another process.
+      Source: B:\Penn\examples\MultipleContentSourceExample\Content\docs\coffee-brewing-guide.md
     /blog/office-plant-survival-guide/
       The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\root\blog\office-plant-survival-guide\index.html' because it is being used by another process.
       Source: B:\Penn\examples\MultipleContentSourceExample\Content\blog\office-plant-survival-guide.md
     /blog/mystery-of-missing-socks/
       The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\root\blog\mystery-of-missing-socks\index.html' because it is being used by another process.
       Source: B:\Penn\examples\MultipleContentSourceExample\Content\blog\mystery-of-missing-socks.md
-    /docs/home-organization-systems/
-      The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\root\docs\home-organization-systems\index.html' because it is being used by another process.
-      Source: B:\Penn\examples\MultipleContentSourceExample\Content\docs\home-organization-systems.md
+  
+  WARNINGS
+    Markdown content source rooted at 'B:\Penn\examples\MultipleContentSourceExample\Content' overlaps a more specific source rooted at 'B:\Penn\examples\MultipleContentSourceExample\Content\blog'. Both will discover files under 'blog', producing duplicate TOC entries and output-file races. Add `ExcludePaths = ["blog"]` to the outer source's options so the inner source owns that subtree.
+    Markdown content source rooted at 'B:\Penn\examples\MultipleContentSourceExample\Content' overlaps a more specific source rooted at 'B:\Penn\examples\MultipleContentSourceExample\Content\docs'. Both will discover files under 'docs', producing duplicate TOC entries and output-file races. Add `ExcludePaths = ["docs"]` to the outer source's options so the inner source owns that subtree.
   
   
   ```
@@ -1581,24 +1580,24 @@ _Additional issues not shown (truncated to 10 samples per code):_
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
 - Excerpt:
   ```
-        Executing endpoint '/{fileName:nonfile} (/{fileName:nonfile})'
-  info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
-        Executed endpoint '/{fileName:nonfile} (/{fileName:nonfile})'
-  info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-        Request finished HTTP/1.1 GET http://localhost:5000/__pennington-404-generator - 200 - text/html;+charset=utf-8 4.5153ms
-  info: Microsoft.Hosting.Lifetime[0]
-        Application is shutting down...
-  Build Complete — 17 pages in 0.6s
-    15 pages generated
-    2 pages failed
-  
-  ERRORS
-    /blog/best-pizza-toppings/
-      The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\prefixed\blog\best-pizza-toppings\index.html' because it is being used by another process.
-      Source: B:\Penn\examples\MultipleContentSourceExample\Content\blog\best-pizza-toppings.md
+      The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\prefixed\docs\home-organization-systems\index.html' because it is being used by another process.
+      Source: B:\Penn\examples\MultipleContentSourceExample\Content\docs\home-organization-systems.md
+    /blog/office-plant-survival-guide/
+      The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\prefixed\blog\office-plant-survival-guide\index.html' because it is being used by another process.
+      Source: B:\Penn\examples\MultipleContentSourceExample\Content\blog\office-plant-survival-guide.md
     /docs/indoor-herb-garden/
       The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\prefixed\docs\indoor-herb-garden\index.html' because it is being used by another process.
       Source: B:\Penn\examples\MultipleContentSourceExample\Content\docs\indoor-herb-garden.md
+    /blog/best-pizza-toppings/
+      The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\prefixed\blog\best-pizza-toppings\index.html' because it is being used by another process.
+      Source: B:\Penn\examples\MultipleContentSourceExample\Content\blog\best-pizza-toppings.md
+    /docs/coffee-brewing-guide/
+      The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\prefixed\docs\coffee-brewing-guide\index.html' because it is being used by another process.
+      Source: B:\Penn\examples\MultipleContentSourceExample\Content\docs\coffee-brewing-guide.md
+  
+  WARNINGS
+    Markdown content source rooted at 'B:\Penn\examples\MultipleContentSourceExample\Content' overlaps a more specific source rooted at 'B:\Penn\examples\MultipleContentSourceExample\Content\blog'. Both will discover files under 'blog', producing duplicate TOC entries and output-file races. Add `ExcludePaths = ["blog"]` to the outer source's options so the inner source owns that subtree.
+    Markdown content source rooted at 'B:\Penn\examples\MultipleContentSourceExample\Content' overlaps a more specific source rooted at 'B:\Penn\examples\MultipleContentSourceExample\Content\docs'. Both will discover files under 'docs', producing duplicate TOC entries and output-file races. Add `ExcludePaths = ["docs"]` to the outer source's options so the inner source owns that subtree.
   
   
   ```
@@ -1608,219 +1607,57 @@ _Additional issues not shown (truncated to 10 samples per code):_
 - Message: Engine reported page generation failure for `/blog/best-pizza-toppings/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\prefixed\blog\best-pizza-toppings\index.html' because it is being used by another process. Source: B:\Penn\examples\MultipleContentSourceExample\Content\blog\best-pizza-toppings.md
 
 #### ISSUE-0139 · `R.PAGE_FAILED` · error · pass B
+- File: `/blog/mystery-of-missing-socks/`
+- Message: Engine reported page generation failure for `/blog/mystery-of-missing-socks/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\prefixed\blog\mystery-of-missing-socks\index.html' because it is being used by another process. Source: B:\Penn\examples\MultipleContentSourceExample\Content\blog\mystery-of-missing-socks.md
+
+#### ISSUE-0140 · `R.PAGE_FAILED` · error · pass B
+- File: `/blog/office-plant-survival-guide/`
+- Message: Engine reported page generation failure for `/blog/office-plant-survival-guide/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\prefixed\blog\office-plant-survival-guide\index.html' because it is being used by another process. Source: B:\Penn\examples\MultipleContentSourceExample\Content\blog\office-plant-survival-guide.md
+
+#### ISSUE-0141 · `R.PAGE_FAILED` · error · pass B
+- File: `/docs/coffee-brewing-guide/`
+- Message: Engine reported page generation failure for `/docs/coffee-brewing-guide/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\prefixed\docs\coffee-brewing-guide\index.html' because it is being used by another process. Source: B:\Penn\examples\MultipleContentSourceExample\Content\docs\coffee-brewing-guide.md
+
+#### ISSUE-0142 · `R.PAGE_FAILED` · error · pass B
+- File: `/docs/home-organization-systems/`
+- Message: Engine reported page generation failure for `/docs/home-organization-systems/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\prefixed\docs\home-organization-systems\index.html' because it is being used by another process. Source: B:\Penn\examples\MultipleContentSourceExample\Content\docs\home-organization-systems.md
+
+#### ISSUE-0143 · `R.PAGE_FAILED` · error · pass B
 - File: `/docs/indoor-herb-garden/`
 - Message: Engine reported page generation failure for `/docs/indoor-herb-garden/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\MultipleContentSourceExample\prefixed\docs\indoor-herb-garden\index.html' because it is being used by another process. Source: B:\Penn\examples\MultipleContentSourceExample\Content\docs\indoor-herb-garden.md
 
-#### ISSUE-0140 · `M.MISSING` · info · pass B
+#### ISSUE-0144 · `M.MISSING` · info · pass B
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
 ### NorthwindHandbookExample
 
 - Project: `examples/NorthwindHandbookExample/NorthwindHandbookExample.csproj`
-- Pass A: build failed (exit 1), 11 HTML pages in output, 3.0s
-- Pass B: build failed (exit 1), 11 HTML pages in output, 2.9s
+- Pass A: built ok, 11 HTML pages in output, 3.0s
+- Pass B: built ok, 11 HTML pages in output, 3.1s
 
-#### ISSUE-0141 · `R.BUILD_FAILED` · error · pass A
-- Message: Build exited with code 1. Validators still ran against whatever made it to disk.
-- Excerpt:
-  ```
-           at System.IO.File.WriteToFileAsync(String path, FileMode mode, ReadOnlyMemory`1 contents, Encoding encoding, CancellationToken cancellationToken)
-           at Pennington.Generation.OutputGenerationService.<>c__DisplayClass13_0.<<FetchPagesAsync>b__0>d.MoveNext() in B:\Penn\src\Pennington\Generation\OutputGenerationService.cs:line 318
-  info: Microsoft.Hosting.Lifetime[0]
-        Application is shutting down...
-  Build Complete — 16 pages in 0.9s
-    13 pages generated
-    3 pages failed
-  
-  ERRORS
-    /changelog/v2-1-0/
-      The process cannot access the file 'B:\Penn\tmp\validate-examples\NorthwindHandbookExample\root\changelog\v2-1-0\index.html' because it is being used by another process.
-      Source: B:\Penn\examples\NorthwindHandbookExample\Content\changelog\v2-1-0.md
-    /changelog/v2-0-1/
-      The process cannot access the file 'B:\Penn\tmp\validate-examples\NorthwindHandbookExample\root\changelog\v2-0-1\index.html' because it is being used by another process.
-      Source: B:\Penn\examples\NorthwindHandbookExample\Content\changelog\v2-0-1.md
-    /changelog/v2-0-0/
-      The process cannot access the file 'B:\Penn\tmp\validate-examples\NorthwindHandbookExample\root\changelog\v2-0-0\index.html' because it is being used by another process.
-      Source: B:\Penn\examples\NorthwindHandbookExample\Content\changelog\v2-0-0.md
-  
-  
-  ```
-
-#### ISSUE-0142 · `R.PAGE_FAILED` · error · pass A
-- File: `/changelog/v2-0-0/`
-- Message: Engine reported page generation failure for `/changelog/v2-0-0/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\NorthwindHandbookExample\root\changelog\v2-0-0\index.html' because it is being used by another process. Source: B:\Penn\examples\NorthwindHandbookExample\Content\changelog\v2-0-0.md
-
-#### ISSUE-0143 · `R.PAGE_FAILED` · error · pass A
-- File: `/changelog/v2-0-1/`
-- Message: Engine reported page generation failure for `/changelog/v2-0-1/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\NorthwindHandbookExample\root\changelog\v2-0-1\index.html' because it is being used by another process. Source: B:\Penn\examples\NorthwindHandbookExample\Content\changelog\v2-0-1.md
-
-#### ISSUE-0144 · `R.PAGE_FAILED` · error · pass A
-- File: `/changelog/v2-1-0/`
-- Message: Engine reported page generation failure for `/changelog/v2-1-0/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\NorthwindHandbookExample\root\changelog\v2-1-0\index.html' because it is being used by another process. Source: B:\Penn\examples\NorthwindHandbookExample\Content\changelog\v2-1-0.md
-
-#### ISSUE-0145 · `T.DUP` · error · pass A · rolled up (22 occurrences)
-- Affects 11 pages:
-  - `404.html`
-  - `index.html`
-  - `development/index.html`
-  - `operations/index.html`
-  - `changelog/v2-0-0/index.html`
-  - `changelog/v2-0-1/index.html`
-  - … (+5 more)
-- Total raw occurrences: 22 (some pages emit multiple matches)
-- Selector: `ul.flex > li.block > ul.mt-4 > li.block > a.block`
-- Message: TOC lists `/changelog/v2-0-0/` more than once.
-- Excerpt:
-  ```
-  <a data-current="false" href="/changelog/v2-0-0/" class="block text-sm w-full border-l pl-3.5 py-1.5 transition-colors transition-300 border-base-300 dark:border-base-800 data-[current=true]:border-primary-400 text-base-500 dark:text-base-4...
-  ```
-
-#### ISSUE-0146 · `T.DUP` · error · pass A · rolled up (22 occurrences)
-- Affects 11 pages:
-  - `404.html`
-  - `index.html`
-  - `development/index.html`
-  - `operations/index.html`
-  - `changelog/v2-0-0/index.html`
-  - `changelog/v2-0-1/index.html`
-  - … (+5 more)
-- Total raw occurrences: 22 (some pages emit multiple matches)
-- Selector: `ul.flex > li.block > ul.mt-4 > li.block > a.block`
-- Message: TOC lists `/changelog/v2-0-1/` more than once.
-- Excerpt:
-  ```
-  <a data-current="false" href="/changelog/v2-0-1/" class="block text-sm w-full border-l pl-3.5 py-1.5 transition-colors transition-300 border-base-300 dark:border-base-800 data-[current=true]:border-primary-400 text-base-500 dark:text-base-4...
-  ```
-
-#### ISSUE-0147 · `T.DUP` · error · pass A · rolled up (22 occurrences)
-- Affects 11 pages:
-  - `404.html`
-  - `index.html`
-  - `development/index.html`
-  - `operations/index.html`
-  - `changelog/v2-0-0/index.html`
-  - `changelog/v2-0-1/index.html`
-  - … (+5 more)
-- Total raw occurrences: 22 (some pages emit multiple matches)
-- Selector: `ul.flex > li.block > ul.mt-4 > li.block > a.block`
-- Message: TOC lists `/changelog/v2-1-0/` more than once.
-- Excerpt:
-  ```
-  <a data-current="false" href="/changelog/v2-1-0/" class="block text-sm w-full border-l pl-3.5 py-1.5 transition-colors transition-300 border-base-300 dark:border-base-800 data-[current=true]:border-primary-400 text-base-500 dark:text-base-4...
-  ```
-
-#### ISSUE-0148 · `M.MISSING` · info · pass A
+#### ISSUE-0145 · `M.MISSING` · info · pass A
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
-#### ISSUE-0149 · `R.BUILD_FAILED` · error · pass B
-- Message: Build exited with code 1. Validators still ran against whatever made it to disk.
-- Excerpt:
-  ```
-           at System.IO.File.WriteToFileAsync(String path, FileMode mode, ReadOnlyMemory`1 contents, Encoding encoding, CancellationToken cancellationToken)
-           at Pennington.Generation.OutputGenerationService.<>c__DisplayClass13_0.<<FetchPagesAsync>b__0>d.MoveNext() in B:\Penn\src\Pennington\Generation\OutputGenerationService.cs:line 318
-  info: Microsoft.Hosting.Lifetime[0]
-        Application is shutting down...
-  Build Complete — 16 pages in 0.6s
-    13 pages generated
-    3 pages failed
-  
-  ERRORS
-    /changelog/v2-0-0/
-      The process cannot access the file 'B:\Penn\tmp\validate-examples\NorthwindHandbookExample\prefixed\changelog\v2-0-0\index.html' because it is being used by another process.
-      Source: B:\Penn\examples\NorthwindHandbookExample\Content\changelog\v2-0-0.md
-    /changelog/v2-1-0/
-      The process cannot access the file 'B:\Penn\tmp\validate-examples\NorthwindHandbookExample\prefixed\changelog\v2-1-0\index.html' because it is being used by another process.
-      Source: B:\Penn\examples\NorthwindHandbookExample\Content\changelog\v2-1-0.md
-    /changelog/v2-0-1/
-      The process cannot access the file 'B:\Penn\tmp\validate-examples\NorthwindHandbookExample\prefixed\changelog\v2-0-1\index.html' because it is being used by another process.
-      Source: B:\Penn\examples\NorthwindHandbookExample\Content\changelog\v2-0-1.md
-  
-  
-  ```
-
-#### ISSUE-0150 · `R.PAGE_FAILED` · error · pass B
-- File: `/changelog/v2-0-0/`
-- Message: Engine reported page generation failure for `/changelog/v2-0-0/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\NorthwindHandbookExample\prefixed\changelog\v2-0-0\index.html' because it is being used by another process. Source: B:\Penn\examples\NorthwindHandbookExample\Content\changelog\v2-0-0.md
-
-#### ISSUE-0151 · `R.PAGE_FAILED` · error · pass B
-- File: `/changelog/v2-0-1/`
-- Message: Engine reported page generation failure for `/changelog/v2-0-1/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\NorthwindHandbookExample\prefixed\changelog\v2-0-1\index.html' because it is being used by another process. Source: B:\Penn\examples\NorthwindHandbookExample\Content\changelog\v2-0-1.md
-
-#### ISSUE-0152 · `R.PAGE_FAILED` · error · pass B
-- File: `/changelog/v2-1-0/`
-- Message: Engine reported page generation failure for `/changelog/v2-1-0/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\NorthwindHandbookExample\prefixed\changelog\v2-1-0\index.html' because it is being used by another process. Source: B:\Penn\examples\NorthwindHandbookExample\Content\changelog\v2-1-0.md
-
-#### ISSUE-0153 · `T.DUP` · error · pass B · rolled up (22 occurrences)
-- Affects 11 pages:
-  - `404.html`
-  - `index.html`
-  - `development/index.html`
-  - `operations/index.html`
-  - `changelog/v2-0-0/index.html`
-  - `changelog/v2-0-1/index.html`
-  - … (+5 more)
-- Total raw occurrences: 22 (some pages emit multiple matches)
-- Selector: `ul.flex > li.block > ul.mt-4 > li.block > a.block`
-- Message: TOC lists `/preview/changelog/v2-0-0/` more than once.
-- Excerpt:
-  ```
-  <a data-current="false" href="/preview/changelog/v2-0-0/" class="block text-sm w-full border-l pl-3.5 py-1.5 transition-colors transition-300 border-base-300 dark:border-base-800 data-[current=true]:border-primary-400 text-base-500 dark:tex...
-  ```
-
-#### ISSUE-0154 · `T.DUP` · error · pass B · rolled up (22 occurrences)
-- Affects 11 pages:
-  - `404.html`
-  - `index.html`
-  - `development/index.html`
-  - `operations/index.html`
-  - `changelog/v2-0-0/index.html`
-  - `changelog/v2-0-1/index.html`
-  - … (+5 more)
-- Total raw occurrences: 22 (some pages emit multiple matches)
-- Selector: `ul.flex > li.block > ul.mt-4 > li.block > a.block`
-- Message: TOC lists `/preview/changelog/v2-0-1/` more than once.
-- Excerpt:
-  ```
-  <a data-current="false" href="/preview/changelog/v2-0-1/" class="block text-sm w-full border-l pl-3.5 py-1.5 transition-colors transition-300 border-base-300 dark:border-base-800 data-[current=true]:border-primary-400 text-base-500 dark:tex...
-  ```
-
-#### ISSUE-0155 · `T.DUP` · error · pass B · rolled up (22 occurrences)
-- Affects 11 pages:
-  - `404.html`
-  - `index.html`
-  - `development/index.html`
-  - `operations/index.html`
-  - `changelog/v2-0-0/index.html`
-  - `changelog/v2-0-1/index.html`
-  - … (+5 more)
-- Total raw occurrences: 22 (some pages emit multiple matches)
-- Selector: `ul.flex > li.block > ul.mt-4 > li.block > a.block`
-- Message: TOC lists `/preview/changelog/v2-1-0/` more than once.
-- Excerpt:
-  ```
-  <a data-current="false" href="/preview/changelog/v2-1-0/" class="block text-sm w-full border-l pl-3.5 py-1.5 transition-colors transition-300 border-base-300 dark:border-base-800 data-[current=true]:border-primary-400 text-base-500 dark:tex...
-  ```
-
-#### ISSUE-0156 · `M.MISSING` · info · pass B
+#### ISSUE-0146 · `M.MISSING` · info · pass B
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
 ### PrismDocsExample
 
 - Project: `examples/PrismDocsExample/PrismDocsExample.csproj`
-- Pass A: built ok, 4 HTML pages in output, 3.9s
-- Pass B: built ok, 4 HTML pages in output, 3.8s
+- Pass A: built ok, 4 HTML pages in output, 4.4s
+- Pass B: built ok, 4 HTML pages in output, 4.2s
 - No issues.
 
 ### RecipeExample
 
 - Project: `examples/RecipeExample/RecipeExample.csproj`
-- Pass A: build failed (exit 1), 7 HTML pages in output, 6.4s
-- Pass B: build failed (exit 1), 7 HTML pages in output, 6.3s
+- Pass A: build failed (exit 1), 7 HTML pages in output, 15.7s
+- Pass B: build failed (exit 1), 7 HTML pages in output, 6.5s
 
-#### ISSUE-0157 · `L.BROKEN` · error · pass A · rolled up (21 occurrences)
+#### ISSUE-0147 · `L.BROKEN` · error · pass A · rolled up (21 occurrences)
 - Affects 7 pages:
   - `recipes/bacon-wrapped-jalapenos/index.html`
   - `recipes/beer-cheese/index.html`
@@ -1837,25 +1674,25 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/" class="flex items-center space-x-3 text-xl text-primary-900 hover:text-primary-600 transition-colors duration-200"><div class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center"><svg class="w-5 h-5 text-white" f...
   ```
 
-#### ISSUE-0158 · `R.BUILD_FAILED` · error · pass A
+#### ISSUE-0148 · `R.BUILD_FAILED` · error · pass A
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
 - Excerpt:
   ```
-      /recipes/bacon-wrapped-jalapenos links to / (Page not found)
-      /recipes/bacon-wrapped-jalapenos links to / (Page not found)
-      /recipes/bacon-wrapped-jalapenos links to / (Page not found)
       /recipes/chex-mix links to / (Page not found)
       /recipes/chex-mix links to / (Page not found)
       /recipes/chex-mix links to / (Page not found)
+      /recipes/chili links to / (Page not found)
+      /recipes/chili links to / (Page not found)
+      /recipes/chili links to / (Page not found)
+      /recipes/beer-cheese links to / (Page not found)
+      /recipes/beer-cheese links to / (Page not found)
+      /recipes/beer-cheese links to / (Page not found)
       /recipes/zuppa-toscana links to / (Page not found)
       /recipes/zuppa-toscana links to / (Page not found)
       /recipes/zuppa-toscana links to / (Page not found)
       /recipes/chicken-piccata links to / (Page not found)
       /recipes/chicken-piccata links to / (Page not found)
       /recipes/chicken-piccata links to / (Page not found)
-      /recipes/beer-cheese links to / (Page not found)
-      /recipes/beer-cheese links to / (Page not found)
-      /recipes/beer-cheese links to / (Page not found)
       /recipes/cajun-chicken-pasta links to / (Page not found)
       /recipes/cajun-chicken-pasta links to / (Page not found)
       /recipes/cajun-chicken-pasta links to / (Page not found)
@@ -1863,31 +1700,31 @@ _Additional issues not shown (truncated to 10 samples per code):_
   
   ```
 
-#### ISSUE-0159 · `R.PAGE_FAILED` · error · pass A
+#### ISSUE-0149 · `R.PAGE_FAILED` · error · pass A
 - File: `/sitemap.xml`
 - Message: Engine reported page generation failure for `/sitemap.xml`: HTTP 500 fetching /sitemap.xml
 
-#### ISSUE-0160 · `R.BROKEN_LINK` · warning · pass A · rolled up (21 occurrences)
+#### ISSUE-0150 · `R.BROKEN_LINK` · warning · pass A · rolled up (21 occurrences)
 - Affects 7 pages:
-  - `/recipes/chili`
   - `/recipes/bacon-wrapped-jalapenos`
   - `/recipes/chex-mix`
+  - `/recipes/chili`
+  - `/recipes/beer-cheese`
   - `/recipes/zuppa-toscana`
   - `/recipes/chicken-piccata`
-  - `/recipes/beer-cheese`
   - … (+1 more)
 - Total raw occurrences: 21 (some pages emit multiple matches)
 - Message: Engine reports broken link to `/` (Page not found).
 - Excerpt:
   ```
-  /recipes/chili links to / (Page not found)
+  /recipes/bacon-wrapped-jalapenos links to / (Page not found)
   ```
 
-#### ISSUE-0161 · `M.MISSING` · info · pass A
+#### ISSUE-0151 · `M.MISSING` · info · pass A
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
-#### ISSUE-0162 · `L.BROKEN` · error · pass B · rolled up (21 occurrences)
+#### ISSUE-0152 · `L.BROKEN` · error · pass B · rolled up (21 occurrences)
 - Affects 7 pages:
   - `recipes/bacon-wrapped-jalapenos/index.html`
   - `recipes/beer-cheese/index.html`
@@ -1904,42 +1741,42 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/" class="flex items-center space-x-3 text-xl text-primary-900 hover:text-primary-600 transition-colors duration-200"><div class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center"><svg class="w-5 h-5 text-...
   ```
 
-#### ISSUE-0163 · `R.BUILD_FAILED` · error · pass B
+#### ISSUE-0153 · `R.BUILD_FAILED` · error · pass B
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
 - Excerpt:
   ```
-      /recipes/cajun-chicken-pasta links to /preview/ (Page not found)
-      /recipes/cajun-chicken-pasta links to /preview/ (Page not found)
-      /recipes/cajun-chicken-pasta links to /preview/ (Page not found)
-      /recipes/zuppa-toscana links to /preview/ (Page not found)
-      /recipes/zuppa-toscana links to /preview/ (Page not found)
-      /recipes/zuppa-toscana links to /preview/ (Page not found)
       /recipes/bacon-wrapped-jalapenos links to /preview/ (Page not found)
       /recipes/bacon-wrapped-jalapenos links to /preview/ (Page not found)
       /recipes/bacon-wrapped-jalapenos links to /preview/ (Page not found)
+      /recipes/chex-mix links to /preview/ (Page not found)
+      /recipes/chex-mix links to /preview/ (Page not found)
+      /recipes/chex-mix links to /preview/ (Page not found)
+      /recipes/chili links to /preview/ (Page not found)
+      /recipes/chili links to /preview/ (Page not found)
+      /recipes/chili links to /preview/ (Page not found)
       /recipes/chicken-piccata links to /preview/ (Page not found)
       /recipes/chicken-piccata links to /preview/ (Page not found)
       /recipes/chicken-piccata links to /preview/ (Page not found)
       /recipes/beer-cheese links to /preview/ (Page not found)
       /recipes/beer-cheese links to /preview/ (Page not found)
       /recipes/beer-cheese links to /preview/ (Page not found)
-      /recipes/chex-mix links to /preview/ (Page not found)
-      /recipes/chex-mix links to /preview/ (Page not found)
-      /recipes/chex-mix links to /preview/ (Page not found)
+      /recipes/cajun-chicken-pasta links to /preview/ (Page not found)
+      /recipes/cajun-chicken-pasta links to /preview/ (Page not found)
+      /recipes/cajun-chicken-pasta links to /preview/ (Page not found)
   
   
   ```
 
-#### ISSUE-0164 · `R.PAGE_FAILED` · error · pass B
+#### ISSUE-0154 · `R.PAGE_FAILED` · error · pass B
 - File: `/sitemap.xml`
 - Message: Engine reported page generation failure for `/sitemap.xml`: HTTP 500 fetching /sitemap.xml
 
-#### ISSUE-0165 · `R.BROKEN_LINK` · warning · pass B · rolled up (21 occurrences)
+#### ISSUE-0155 · `R.BROKEN_LINK` · warning · pass B · rolled up (21 occurrences)
 - Affects 7 pages:
-  - `/recipes/chili`
-  - `/recipes/cajun-chicken-pasta`
   - `/recipes/zuppa-toscana`
   - `/recipes/bacon-wrapped-jalapenos`
+  - `/recipes/chex-mix`
+  - `/recipes/chili`
   - `/recipes/chicken-piccata`
   - `/recipes/beer-cheese`
   - … (+1 more)
@@ -1947,20 +1784,20 @@ _Additional issues not shown (truncated to 10 samples per code):_
 - Message: Engine reports broken link to `/preview/` (Page not found).
 - Excerpt:
   ```
-  /recipes/chili links to /preview/ (Page not found)
+  /recipes/zuppa-toscana links to /preview/ (Page not found)
   ```
 
-#### ISSUE-0166 · `M.MISSING` · info · pass B
+#### ISSUE-0156 · `M.MISSING` · info · pass B
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
 ### RoslynIntegrationExample
 
 - Project: `examples/RoslynIntegrationExample/RoslynIntegrationExample.csproj`
-- Pass A: build failed (exit 1), 6 HTML pages in output, 12.4s
-- Pass B: build failed (exit 1), 6 HTML pages in output, 12.3s
+- Pass A: build failed (exit 1), 6 HTML pages in output, 12.5s
+- Pass B: build failed (exit 1), 6 HTML pages in output, 12.6s
 
-#### ISSUE-0167 · `R.BUILD_FAILED` · error · pass A
+#### ISSUE-0157 · `R.BUILD_FAILED` · error · pass A
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
 - Excerpt:
   ```
@@ -1986,7 +1823,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   
   ```
 
-#### ISSUE-0168 · `L.BROKEN` · warning · pass A
+#### ISSUE-0158 · `L.BROKEN` · warning · pass A
 - File: `sub-folder/sample-post/index.html`
 - Selector: `main.flex-1 > article > div.prose > p > img`
 - Message: Image src `/media/dan-cristian-padure-8cxJzVpGKk8-unsplash.jpg` → missing target `/media/dan-cristian-padure-8cxJzVpGKk8-unsplash.jpg`.
@@ -1995,7 +1832,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <img src="/media/dan-cristian-padure-8cxJzVpGKk8-unsplash.jpg" alt="Unsplash Photo by Dan Cristian Padure">
   ```
 
-#### ISSUE-0169 · `L.BROKEN` · warning · pass A
+#### ISSUE-0159 · `L.BROKEN` · warning · pass A
 - File: `sub-folder/sample-post/index.html`
 - Selector: `main.flex-1 > article > div.prose > p > img`
 - Message: Image src `/sub-folder/kelly-sikkema-rNdkGDOPJLc-unsplash.jpg` → missing target `/sub-folder/kelly-sikkema-rNdkGDOPJLc-unsplash.jpg`.
@@ -2004,7 +1841,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <img src="/sub-folder/kelly-sikkema-rNdkGDOPJLc-unsplash.jpg" alt="Unsplash Photo by Kelly Sikkema">
   ```
 
-#### ISSUE-0170 · `R.BROKEN_LINK` · warning · pass A
+#### ISSUE-0160 · `R.BROKEN_LINK` · warning · pass A
 - File: `/sub-folder/sample-post/`
 - Message: Engine reports broken link to `/media/dan-cristian-padure-8cxJzVpGKk8-unsplash.jpg` (Page not found).
 - Excerpt:
@@ -2012,7 +1849,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   /sub-folder/sample-post/ links to /media/dan-cristian-padure-8cxJzVpGKk8-unsplash.jpg (Page not found)
   ```
 
-#### ISSUE-0171 · `R.BROKEN_LINK` · warning · pass A
+#### ISSUE-0161 · `R.BROKEN_LINK` · warning · pass A
 - File: `/sub-folder/sample-post/`
 - Message: Engine reports broken link to `/sub-folder/kelly-sikkema-rNdkGDOPJLc-unsplash.jpg` (Page not found).
 - Excerpt:
@@ -2020,11 +1857,11 @@ _Additional issues not shown (truncated to 10 samples per code):_
   /sub-folder/sample-post/ links to /sub-folder/kelly-sikkema-rNdkGDOPJLc-unsplash.jpg (Page not found)
   ```
 
-#### ISSUE-0172 · `M.MISSING` · info · pass A
+#### ISSUE-0162 · `M.MISSING` · info · pass A
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
-#### ISSUE-0173 · `R.BUILD_FAILED` · error · pass B
+#### ISSUE-0163 · `R.BUILD_FAILED` · error · pass B
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
 - Excerpt:
   ```
@@ -2039,7 +1876,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
         Adding file watch: B:\Penn with pattern *.cs
   info: Microsoft.Hosting.Lifetime[0]
         Application is shutting down...
-  Build Complete — 8 pages in 10.1s
+  Build Complete — 8 pages in 10.5s
     8 pages generated
   
   WARNINGS
@@ -2050,7 +1887,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   
   ```
 
-#### ISSUE-0174 · `L.BROKEN` · warning · pass B
+#### ISSUE-0164 · `L.BROKEN` · warning · pass B
 - File: `sub-folder/sample-post/index.html`
 - Selector: `main.flex-1 > article > div.prose > p > img`
 - Message: Image src `/preview/media/dan-cristian-padure-8cxJzVpGKk8-unsplash.jpg` → missing target `/media/dan-cristian-padure-8cxJzVpGKk8-unsplash.jpg`.
@@ -2059,7 +1896,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <img src="/preview/media/dan-cristian-padure-8cxJzVpGKk8-unsplash.jpg" alt="Unsplash Photo by Dan Cristian Padure">
   ```
 
-#### ISSUE-0175 · `L.BROKEN` · warning · pass B
+#### ISSUE-0165 · `L.BROKEN` · warning · pass B
 - File: `sub-folder/sample-post/index.html`
 - Selector: `main.flex-1 > article > div.prose > p > img`
 - Message: Image src `/preview/sub-folder/kelly-sikkema-rNdkGDOPJLc-unsplash.jpg` → missing target `/sub-folder/kelly-sikkema-rNdkGDOPJLc-unsplash.jpg`.
@@ -2068,7 +1905,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <img src="/preview/sub-folder/kelly-sikkema-rNdkGDOPJLc-unsplash.jpg" alt="Unsplash Photo by Kelly Sikkema">
   ```
 
-#### ISSUE-0176 · `R.BROKEN_LINK` · warning · pass B
+#### ISSUE-0166 · `R.BROKEN_LINK` · warning · pass B
 - File: `/sub-folder/sample-post/`
 - Message: Engine reports broken link to `/preview/media/dan-cristian-padure-8cxJzVpGKk8-unsplash.jpg` (Page not found).
 - Excerpt:
@@ -2076,7 +1913,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   /sub-folder/sample-post/ links to /preview/media/dan-cristian-padure-8cxJzVpGKk8-unsplash.jpg (Page not found)
   ```
 
-#### ISSUE-0177 · `R.BROKEN_LINK` · warning · pass B
+#### ISSUE-0167 · `R.BROKEN_LINK` · warning · pass B
 - File: `/sub-folder/sample-post/`
 - Message: Engine reports broken link to `/preview/sub-folder/kelly-sikkema-rNdkGDOPJLc-unsplash.jpg` (Page not found).
 - Excerpt:
@@ -2084,28 +1921,28 @@ _Additional issues not shown (truncated to 10 samples per code):_
   /sub-folder/sample-post/ links to /preview/sub-folder/kelly-sikkema-rNdkGDOPJLc-unsplash.jpg (Page not found)
   ```
 
-#### ISSUE-0178 · `M.MISSING` · info · pass B
+#### ISSUE-0168 · `M.MISSING` · info · pass B
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
 ### SearchExample
 
 - Project: `examples/SearchExample/SearchExample.csproj`
-- Pass A: built ok, 1001 HTML pages in output, 123.9s
-- Pass B: built ok, 1001 HTML pages in output, 125.8s
+- Pass A: built ok, 1001 HTML pages in output, 129.0s
+- Pass B: built ok, 1001 HTML pages in output, 131.2s
 - No issues.
 
 ### SpaNavigationExample
 
 - Project: `examples/SpaNavigationExample/SpaNavigationExample.csproj`
 - Pass A: built ok, 5 HTML pages in output, 2.6s
-- Pass B: built ok, 5 HTML pages in output, 2.7s
+- Pass B: built ok, 5 HTML pages in output, 2.5s
 
-#### ISSUE-0179 · `M.MISSING` · info · pass A
+#### ISSUE-0169 · `M.MISSING` · info · pass A
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
-#### ISSUE-0180 · `M.MISSING` · info · pass B
+#### ISSUE-0170 · `M.MISSING` · info · pass B
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
@@ -2115,21 +1952,21 @@ _Additional issues not shown (truncated to 10 samples per code):_
 - Pass A: built ok, 6 HTML pages in output, 2.7s
 - Pass B: built ok, 6 HTML pages in output, 2.6s
 
-#### ISSUE-0181 · `M.MISSING` · info · pass A
+#### ISSUE-0171 · `M.MISSING` · info · pass A
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
-#### ISSUE-0182 · `M.MISSING` · info · pass B
+#### ISSUE-0172 · `M.MISSING` · info · pass B
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
 ### SpectreConsoleExample
 
 - Project: `examples/SpectreConsoleExample/SpectreConsoleExample.csproj`
-- Pass A: build failed (exit 1), 79 HTML pages in output, 4.2s
-- Pass B: build failed (exit 1), 79 HTML pages in output, 4.6s
+- Pass A: build failed (exit 1), 79 HTML pages in output, 4.1s
+- Pass B: build failed (exit 1), 79 HTML pages in output, 4.5s
 
-#### ISSUE-0183 · `L.BROKEN` · error · pass A · rolled up (237 occurrences)
+#### ISSUE-0173 · `L.BROKEN` · error · pass A · rolled up (237 occurrences)
 - Affects 79 pages:
   - `cli/index.html`
   - `console/index.html`
@@ -2146,7 +1983,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/" class="flex items-center space-x-2"><span class="text-2xl font-bold bg-gradient-to-r from-primary-600 to-tertiary-one-600 dark:from-primary-400 dark:to-tertiary-one-400 bg-clip-text text-transparent"> Spectre.Console </span></a>
   ```
 
-#### ISSUE-0184 · `L.BROKEN` · error · pass A · rolled up (163 occurrences)
+#### ISSUE-0174 · `L.BROKEN` · error · pass A · rolled up (163 occurrences)
 - Affects 79 pages:
   - `cli/index.html`
   - `console/index.html`
@@ -2163,69 +2000,69 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/blog" class="px-3 py-2 rounded-md text-sm font-medium text-base-600 dark:text-base-400 hover:text-base-900 dark:hover:text-base-100 hover:bg-base-100 dark:hover:bg-base-800 transition-colors"> Blog </a>
   ```
 
-#### ISSUE-0185 · `R.BUILD_FAILED` · error · pass A
+#### ISSUE-0175 · `R.BUILD_FAILED` · error · pass A
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
 - Excerpt:
   ```
-      /cli/reference/api-reference/ links to /blog (Page not found)
-      /cli/reference/api-reference/ links to / (Page not found)
-      /cli/reference/api-reference/ links to /blog (Page not found)
-      /console/widgets/layout/ links to / (Page not found)
-      /console/widgets/layout/ links to / (Page not found)
-      /console/widgets/layout/ links to /blog (Page not found)
-      /console/widgets/layout/ links to / (Page not found)
-      /console/widgets/layout/ links to /blog (Page not found)
-      /console/reference/emoji-cheat-sheet/ links to / (Page not found)
-      /console/reference/emoji-cheat-sheet/ links to / (Page not found)
-      /console/reference/emoji-cheat-sheet/ links to /blog (Page not found)
-      /console/reference/emoji-cheat-sheet/ links to / (Page not found)
-      /console/reference/emoji-cheat-sheet/ links to /blog (Page not found)
-      /console/how-to/prompting-for-user-input/ links to / (Page not found)
-      /console/how-to/prompting-for-user-input/ links to / (Page not found)
-      /console/how-to/prompting-for-user-input/ links to /blog (Page not found)
-      /console/how-to/prompting-for-user-input/ links to / (Page not found)
-      /console/how-to/prompting-for-user-input/ links to /blog (Page not found)
+      /cli/how--to/intercepting-command-execution/ links to /blog (Page not found)
+      /cli/how--to/intercepting-command-execution/ links to / (Page not found)
+      /cli/how--to/intercepting-command-execution/ links to /blog (Page not found)
+      /console/widgets/padder/ links to / (Page not found)
+      /console/widgets/padder/ links to / (Page not found)
+      /console/widgets/padder/ links to /blog (Page not found)
+      /console/widgets/padder/ links to / (Page not found)
+      /console/widgets/padder/ links to /blog (Page not found)
+      /console/widgets/panel/ links to / (Page not found)
+      /console/widgets/panel/ links to / (Page not found)
+      /console/widgets/panel/ links to /blog (Page not found)
+      /console/widgets/panel/ links to / (Page not found)
+      /console/widgets/panel/ links to /blog (Page not found)
+      /console/how-to/displaying-tables-and-trees/ links to / (Page not found)
+      /console/how-to/displaying-tables-and-trees/ links to / (Page not found)
+      /console/how-to/displaying-tables-and-trees/ links to /blog (Page not found)
+      /console/how-to/displaying-tables-and-trees/ links to / (Page not found)
+      /console/how-to/displaying-tables-and-trees/ links to /blog (Page not found)
   
   
   ```
 
-#### ISSUE-0186 · `R.BROKEN_LINK` · warning · pass A · rolled up (237 occurrences)
+#### ISSUE-0176 · `R.BROKEN_LINK` · warning · pass A · rolled up (237 occurrences)
 - Affects 79 pages:
-  - `/console/tutorials/getting-started-building-rich-console-app/`
-  - `/cli/tutorials/building-a-multi-command-cli-tool/`
-  - `/console/`
-  - `/cli/reference/built-in-command-behaviors/`
-  - `/console/widgets/figlet/`
-  - `/cli/how--to/working-with-multiple-command-hierarchies/`
+  - `/blog/spectre-console-0-49-0-search-positioning-progress/`
+  - `/cli/reference/api-reference/`
+  - `/console/widgets/table/`
+  - `/console/widgets/layout/`
+  - `/console/live/live-display/`
+  - `/cli/tutorials/quick-start-your-first-cli-app/`
   - … (+73 more)
 - Total raw occurrences: 237 (some pages emit multiple matches)
 - Message: Engine reports broken link to `/` (Page not found).
 - Excerpt:
   ```
-  /console/tutorials/getting-started-building-rich-console-app/ links to / (Page not found)
+  /blog/spectre-console-0-49-0-search-positioning-progress/ links to / (Page not found)
   ```
 
-#### ISSUE-0187 · `R.BROKEN_LINK` · warning · pass A · rolled up (163 occurrences)
+#### ISSUE-0177 · `R.BROKEN_LINK` · warning · pass A · rolled up (163 occurrences)
 - Affects 79 pages:
-  - `/console/tutorials/getting-started-building-rich-console-app/`
-  - `/cli/tutorials/building-a-multi-command-cli-tool/`
-  - `/console/`
-  - `/cli/reference/built-in-command-behaviors/`
-  - `/console/widgets/figlet/`
-  - `/cli/how--to/working-with-multiple-command-hierarchies/`
+  - `/blog/spectre-console-0-49-0-search-positioning-progress/`
+  - `/cli/reference/api-reference/`
+  - `/console/widgets/table/`
+  - `/console/widgets/layout/`
+  - `/console/live/live-display/`
+  - `/cli/tutorials/quick-start-your-first-cli-app/`
   - … (+73 more)
 - Total raw occurrences: 163 (some pages emit multiple matches)
 - Message: Engine reports broken link to `/blog` (Page not found).
 - Excerpt:
   ```
-  /console/tutorials/getting-started-building-rich-console-app/ links to /blog (Page not found)
+  /blog/spectre-console-0-49-0-search-positioning-progress/ links to /blog (Page not found)
   ```
 
-#### ISSUE-0188 · `M.MISSING` · info · pass A
+#### ISSUE-0178 · `M.MISSING` · info · pass A
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
-#### ISSUE-0189 · `L.BROKEN` · error · pass B · rolled up (237 occurrences)
+#### ISSUE-0179 · `L.BROKEN` · error · pass B · rolled up (237 occurrences)
 - Affects 79 pages:
   - `cli/index.html`
   - `console/index.html`
@@ -2242,7 +2079,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/" class="flex items-center space-x-2"><span class="text-2xl font-bold bg-gradient-to-r from-primary-600 to-tertiary-one-600 dark:from-primary-400 dark:to-tertiary-one-400 bg-clip-text text-transparent"> Spectre.Console </s...
   ```
 
-#### ISSUE-0190 · `L.BROKEN` · error · pass B · rolled up (163 occurrences)
+#### ISSUE-0180 · `L.BROKEN` · error · pass B · rolled up (163 occurrences)
 - Affects 79 pages:
   - `cli/index.html`
   - `console/index.html`
@@ -2259,101 +2096,101 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/blog" class="px-3 py-2 rounded-md text-sm font-medium text-base-600 dark:text-base-400 hover:text-base-900 dark:hover:text-base-100 hover:bg-base-100 dark:hover:bg-base-800 transition-colors"> Blog </a>
   ```
 
-#### ISSUE-0191 · `R.BUILD_FAILED` · error · pass B
+#### ISSUE-0181 · `R.BUILD_FAILED` · error · pass B
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
 - Excerpt:
   ```
-      /cli/how--to/implementing-command-handlers/ links to /preview/blog (Page not found)
-      /cli/how--to/implementing-command-handlers/ links to /preview/ (Page not found)
-      /cli/how--to/implementing-command-handlers/ links to /preview/blog (Page not found)
-      /cli/explanation/spectre-console-cli-vs-spectre-cli-migration-guide/ links to /preview/ (Page not found)
-      /cli/explanation/spectre-console-cli-vs-spectre-cli-migration-guide/ links to /preview/ (Page not found)
-      /cli/explanation/spectre-console-cli-vs-spectre-cli-migration-guide/ links to /preview/blog (Page not found)
-      /cli/explanation/spectre-console-cli-vs-spectre-cli-migration-guide/ links to /preview/ (Page not found)
-      /cli/explanation/spectre-console-cli-vs-spectre-cli-migration-guide/ links to /preview/blog (Page not found)
+      /console/how-to/testing-console-output/ links to /preview/blog (Page not found)
+      /console/how-to/testing-console-output/ links to /preview/ (Page not found)
+      /console/how-to/testing-console-output/ links to /preview/blog (Page not found)
       /console/live/status/ links to /preview/ (Page not found)
       /console/live/status/ links to /preview/ (Page not found)
       /console/live/status/ links to /preview/blog (Page not found)
       /console/live/status/ links to /preview/ (Page not found)
       /console/live/status/ links to /preview/blog (Page not found)
-      /console/how-to/rendering-ascii-art-and-figlet-text/ links to /preview/ (Page not found)
-      /console/how-to/rendering-ascii-art-and-figlet-text/ links to /preview/ (Page not found)
-      /console/how-to/rendering-ascii-art-and-figlet-text/ links to /preview/blog (Page not found)
-      /console/how-to/rendering-ascii-art-and-figlet-text/ links to /preview/ (Page not found)
-      /console/how-to/rendering-ascii-art-and-figlet-text/ links to /preview/blog (Page not found)
+      /console/how-to/styling-text-with-markup-and-color/ links to /preview/ (Page not found)
+      /console/how-to/styling-text-with-markup-and-color/ links to /preview/ (Page not found)
+      /console/how-to/styling-text-with-markup-and-color/ links to /preview/blog (Page not found)
+      /console/how-to/styling-text-with-markup-and-color/ links to /preview/ (Page not found)
+      /console/how-to/styling-text-with-markup-and-color/ links to /preview/blog (Page not found)
+      /console/explanation/extending-with-custom-renderables/ links to /preview/ (Page not found)
+      /console/explanation/extending-with-custom-renderables/ links to /preview/ (Page not found)
+      /console/explanation/extending-with-custom-renderables/ links to /preview/blog (Page not found)
+      /console/explanation/extending-with-custom-renderables/ links to /preview/ (Page not found)
+      /console/explanation/extending-with-custom-renderables/ links to /preview/blog (Page not found)
   
   
   ```
 
-#### ISSUE-0192 · `R.BROKEN_LINK` · warning · pass B · rolled up (237 occurrences)
+#### ISSUE-0182 · `R.BROKEN_LINK` · warning · pass B · rolled up (237 occurrences)
 - Affects 79 pages:
-  - `/console/tutorials/getting-started-building-rich-console-app/`
-  - `/console/widgets/tree/`
-  - `/console/widgets/padder/`
-  - `/console/widgets/text-path/`
-  - `/console/reference/text-style-reference/`
-  - `/console/how-to/using-canvas-for-pixel-art-and-images/`
+  - `/blog/spectre-console-0-49-1-version-handling-refinements/`
+  - `/console/widgets/table/`
+  - `/console/widgets/panel/`
+  - `/console/widgets/calendar/`
+  - `/console/tutorials/interactive-prompt-and-dashboard-tutorial/`
+  - `/cli/how--to/handling-errors-and-exit-codes/`
   - … (+73 more)
 - Total raw occurrences: 237 (some pages emit multiple matches)
 - Message: Engine reports broken link to `/preview/` (Page not found).
 - Excerpt:
   ```
-  /console/tutorials/getting-started-building-rich-console-app/ links to /preview/ (Page not found)
+  /blog/spectre-console-0-49-1-version-handling-refinements/ links to /preview/ (Page not found)
   ```
 
-#### ISSUE-0193 · `R.BROKEN_LINK` · warning · pass B · rolled up (163 occurrences)
+#### ISSUE-0183 · `R.BROKEN_LINK` · warning · pass B · rolled up (163 occurrences)
 - Affects 79 pages:
-  - `/console/tutorials/getting-started-building-rich-console-app/`
-  - `/console/widgets/tree/`
-  - `/console/widgets/padder/`
-  - `/console/widgets/text-path/`
-  - `/console/reference/text-style-reference/`
-  - `/console/how-to/using-canvas-for-pixel-art-and-images/`
+  - `/blog/spectre-console-0-49-1-version-handling-refinements/`
+  - `/console/widgets/table/`
+  - `/console/widgets/panel/`
+  - `/console/widgets/calendar/`
+  - `/console/tutorials/interactive-prompt-and-dashboard-tutorial/`
+  - `/cli/how--to/handling-errors-and-exit-codes/`
   - … (+73 more)
 - Total raw occurrences: 163 (some pages emit multiple matches)
 - Message: Engine reports broken link to `/preview/blog` (Page not found).
 - Excerpt:
   ```
-  /console/tutorials/getting-started-building-rich-console-app/ links to /preview/blog (Page not found)
+  /blog/spectre-console-0-49-1-version-handling-refinements/ links to /preview/blog (Page not found)
   ```
 
-#### ISSUE-0194 · `M.MISSING` · info · pass B
+#### ISSUE-0184 · `M.MISSING` · info · pass B
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
 ### TempoDocsExample
 
 - Project: `examples/TempoDocsExample/TempoDocsExample.csproj`
-- Pass A: built ok, 5 HTML pages in output, 3.2s
-- Pass B: built ok, 5 HTML pages in output, 3.2s
+- Pass A: built ok, 5 HTML pages in output, 3.1s
+- Pass B: built ok, 5 HTML pages in output, 3.1s
 - No issues.
 
 ### UserInterfaceExample
 
 - Project: `examples/UserInterfaceExample/UserInterfaceExample.csproj`
 - Pass A: built ok, 6 HTML pages in output, 2.6s
-- Pass B: built ok, 6 HTML pages in output, 2.7s
+- Pass B: built ok, 6 HTML pages in output, 2.6s
 
-#### ISSUE-0195 · `M.MISSING` · info · pass A
+#### ISSUE-0185 · `M.MISSING` · info · pass A
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
-#### ISSUE-0196 · `B.MISSING_BODY_ATTR` · warning · pass B
+#### ISSUE-0186 · `B.MISSING_BODY_ATTR` · warning · pass B
 - File: `index.html`
 - Selector: `body`
 - Message: Page body missing `data-base-url` attribute (expected `/preview/`).
 
-#### ISSUE-0197 · `M.MISSING` · info · pass B
+#### ISSUE-0187 · `M.MISSING` · info · pass B
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
 ### YogaStudioExample
 
 - Project: `examples/YogaStudioExample/YogaStudioExample.csproj`
-- Pass A: build failed (exit 1), 18 HTML pages in output, 2.9s
-- Pass B: build failed (exit 1), 18 HTML pages in output, 3.2s
+- Pass A: build failed (exit 1), 18 HTML pages in output, 4.0s
+- Pass B: build failed (exit 1), 18 HTML pages in output, 3.1s
 
-#### ISSUE-0198 · `L.BROKEN` · error · pass A
+#### ISSUE-0188 · `L.BROKEN` · error · pass A
 - File: `blog/index.html`
 - Selector: `div.flex > div.flex > details.relative > div.absolute > a.block`
 - Message: Link `/gen-z/blog/` → missing target `/gen-z/blog/`.
@@ -2362,7 +2199,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/gen-z/blog/" data-spa-reload="" data-locale="gen-z" class="block px-3 py-1.5 text-sm text-base-700 dark:text-base-300 hover:bg-base-100 dark:hover:bg-base-800">Gen Z</a>
   ```
 
-#### ISSUE-0199 · `L.BROKEN` · error · pass A · rolled up (22 occurrences)
+#### ISSUE-0189 · `L.BROKEN` · error · pass A · rolled up (22 occurrences)
 - Affects 8 pages:
   - `index.html`
   - `gen-z/about/index.html`
@@ -2379,7 +2216,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/gen-z/" data-spa-reload="" data-locale="gen-z" class="block px-3 py-1.5 text-sm text-base-700 dark:text-base-300 hover:bg-base-100 dark:hover:bg-base-800">Gen Z</a>
   ```
 
-#### ISSUE-0200 · `L.BROKEN` · error · pass A · rolled up (4 occurrences)
+#### ISSUE-0190 · `L.BROKEN` · error · pass A · rolled up (4 occurrences)
 - Affects 3 pages:
   - `index.html`
   - `schedule/index.html`
@@ -2392,7 +2229,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/schedule/mon-vinyasa-morning" class="yoga-card group"><div class="h-2 bg-gradient-to-r from-primary-500 to-primary-600"></div> <div class="yoga-card-body"><div class="flex items-center justify-between mb-3"><span class="yoga-sched...
   ```
 
-#### ISSUE-0201 · `L.BROKEN` · error · pass A · rolled up (3 occurrences)
+#### ISSUE-0191 · `L.BROKEN` · error · pass A · rolled up (3 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `schedule/index.html`
@@ -2404,7 +2241,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/schedule/tue-ashtanga" class="yoga-card group"><div class="h-2 bg-gradient-to-r from-primary-500 to-primary-600"></div> <div class="yoga-card-body"><div class="flex items-center justify-between mb-3"><span class="yoga-schedule-tim...
   ```
 
-#### ISSUE-0202 · `L.BROKEN` · error · pass A · rolled up (3 occurrences)
+#### ISSUE-0192 · `L.BROKEN` · error · pass A · rolled up (3 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `schedule/index.html`
@@ -2416,7 +2253,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/schedule/wed-vinyasa-morning" class="yoga-card group"><div class="h-2 bg-gradient-to-r from-primary-500 to-primary-600"></div> <div class="yoga-card-body"><div class="flex items-center justify-between mb-3"><span class="yoga-sched...
   ```
 
-#### ISSUE-0203 · `L.BROKEN` · error · pass A · rolled up (2 occurrences)
+#### ISSUE-0193 · `L.BROKEN` · error · pass A · rolled up (2 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `instructors/index.html`
@@ -2427,7 +2264,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/instructors/alex-rivera" class="text-center group"><div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text-2xl font...
   ```
 
-#### ISSUE-0204 · `L.BROKEN` · error · pass A · rolled up (2 occurrences)
+#### ISSUE-0194 · `L.BROKEN` · error · pass A · rolled up (2 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `instructors/index.html`
@@ -2438,7 +2275,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/instructors/james-okafor" class="text-center group"><div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text-2xl fon...
   ```
 
-#### ISSUE-0205 · `L.BROKEN` · error · pass A · rolled up (2 occurrences)
+#### ISSUE-0195 · `L.BROKEN` · error · pass A · rolled up (2 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `instructors/index.html`
@@ -2449,7 +2286,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/instructors/maya-chen" class="text-center group"><div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text-2xl font-b...
   ```
 
-#### ISSUE-0206 · `L.BROKEN` · error · pass A · rolled up (2 occurrences)
+#### ISSUE-0196 · `L.BROKEN` · error · pass A · rolled up (2 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `instructors/index.html`
@@ -2460,7 +2297,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/instructors/priya-sharma" class="text-center group"><div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text-2xl fon...
   ```
 
-#### ISSUE-0207 · `L.BROKEN` · error · pass A · rolled up (2 occurrences)
+#### ISSUE-0197 · `L.BROKEN` · error · pass A · rolled up (2 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `instructors/index.html`
@@ -2471,25 +2308,25 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/instructors/sam-tanaka" class="text-center group"><div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text-2xl font-...
   ```
 
-#### ISSUE-0208 · `R.BUILD_FAILED` · error · pass A
+#### ISSUE-0198 · `R.BUILD_FAILED` · error · pass A
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
 - Excerpt:
   ```
-      /schedule/ links to /schedule/tue-ashtanga (Page not found)
-      /schedule/ links to /schedule/tue-hot-yoga (Page not found)
-      /schedule/ links to /schedule/wed-vinyasa-morning (Page not found)
-      /schedule/ links to /schedule/wed-meditation (Page not found)
-      /schedule/ links to /schedule/wed-restorative (Page not found)
-      /schedule/ links to /js/search.js (Page not found)
-      /schedule/ links to /js/faq.js (Page not found)
-      /about/ links to /js/search.js (Page not found)
       /about/ links to /js/faq.js (Page not found)
-      /blog/yoga-for-beginners/ links to /js/search.js (Page not found)
-      /blog/yoga-for-beginners/ links to /js/faq.js (Page not found)
-      /faq/ links to /js/search.js (Page not found)
-      /faq/ links to /js/faq.js (Page not found)
-      /faq/ links to /js/search.js (Page not found)
-      /faq/ links to /js/faq.js (Page not found)
+      /gen-z/about/ links to /gen-z/ (Page not found)
+      /gen-z/about/ links to /gen-z/ (Page not found)
+      /gen-z/about/ links to /gen-z/schedule (Page not found)
+      /gen-z/about/ links to /gen-z/instructors (Page not found)
+      /gen-z/about/ links to /gen-z/blog (Page not found)
+      /gen-z/about/ links to /gen-z/ (Page not found)
+      /gen-z/about/ links to /gen-z/schedule (Page not found)
+      /gen-z/about/ links to /gen-z/instructors (Page not found)
+      /gen-z/about/ links to /gen-z/blog (Page not found)
+      /gen-z/about/ links to /gen-z/schedule (Page not found)
+      /gen-z/about/ links to /gen-z/instructors (Page not found)
+      /gen-z/about/ links to /gen-z/blog (Page not found)
+      /gen-z/about/ links to /js/search.js (Page not found)
+      /gen-z/about/ links to /js/faq.js (Page not found)
       /blog/ links to /gen-z/blog/ (Page not found)
       /blog/ links to /js/search.js (Page not found)
       /blog/ links to /js/faq.js (Page not found)
@@ -2497,63 +2334,15 @@ _Additional issues not shown (truncated to 10 samples per code):_
   
   ```
 
-#### ISSUE-0209 · `R.PAGE_FAILED` · error · pass A
+#### ISSUE-0199 · `R.PAGE_FAILED` · error · pass A
 - File: `/about/`
 - Message: Engine reported page generation failure for `/about/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\YogaStudioExample\root\about\index.html' because it is being used by another process.
 
-#### ISSUE-0210 · `R.PAGE_FAILED` · error · pass A
+#### ISSUE-0200 · `R.PAGE_FAILED` · error · pass A
 - File: `/contact/`
-- Message: Engine reported page generation failure for `/contact/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\YogaStudioExample\root\contact\index.html' because it is being used by another process.
+- Message: Engine reported page generation failure for `/contact/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\YogaStudioExample\root\contact\index.html' because it is being used by another process. Source: B:\Penn\examples\YogaStudioExample\Content\pages\contact.md
 
-#### ISSUE-0211 · `R.BROKEN_LINK` · warning · pass A · rolled up (22 occurrences)
-- Affects 8 pages:
-  - `/gen-z/blog/breathing-techniques/`
-  - `/gen-z/blog/yoga-for-beginners/`
-  - `/gen-z/blog/morning-yoga-routine/`
-  - `/gen-z/pricing/`
-  - `/gen-z/faq/`
-  - `/gen-z/contact/`
-  - … (+2 more)
-- Total raw occurrences: 22 (some pages emit multiple matches)
-- Message: Engine reports broken link to `/gen-z/` (Page not found).
-- Excerpt:
-  ```
-  /gen-z/blog/breathing-techniques/ links to /gen-z/ (Page not found)
-  ```
-
-#### ISSUE-0212 · `R.BROKEN_LINK` · warning · pass A · rolled up (24 occurrences)
-- Affects 7 pages:
-  - `/gen-z/blog/breathing-techniques/`
-  - `/gen-z/blog/yoga-for-beginners/`
-  - `/gen-z/blog/morning-yoga-routine/`
-  - `/gen-z/pricing/`
-  - `/gen-z/faq/`
-  - `/gen-z/contact/`
-  - … (+1 more)
-- Total raw occurrences: 24 (some pages emit multiple matches)
-- Message: Engine reports broken link to `/gen-z/blog` (Page not found).
-- Excerpt:
-  ```
-  /gen-z/blog/breathing-techniques/ links to /gen-z/blog (Page not found)
-  ```
-
-#### ISSUE-0213 · `R.BROKEN_LINK` · warning · pass A · rolled up (21 occurrences)
-- Affects 7 pages:
-  - `/gen-z/blog/breathing-techniques/`
-  - `/gen-z/blog/yoga-for-beginners/`
-  - `/gen-z/blog/morning-yoga-routine/`
-  - `/gen-z/pricing/`
-  - `/gen-z/faq/`
-  - `/gen-z/contact/`
-  - … (+1 more)
-- Total raw occurrences: 21 (some pages emit multiple matches)
-- Message: Engine reports broken link to `/gen-z/instructors` (Page not found).
-- Excerpt:
-  ```
-  /gen-z/blog/breathing-techniques/ links to /gen-z/instructors (Page not found)
-  ```
-
-#### ISSUE-0214 · `R.BROKEN_LINK` · warning · pass A
+#### ISSUE-0201 · `R.BROKEN_LINK` · warning · pass A
 - File: `/gen-z/blog/breathing-techniques/`
 - Message: Engine reports broken link to `/gen-z/schedule/sun-breathwork` (Page not found).
 - Excerpt:
@@ -2561,55 +2350,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   /gen-z/blog/breathing-techniques/ links to /gen-z/schedule/sun-breathwork (Page not found)
   ```
 
-#### ISSUE-0215 · `R.BROKEN_LINK` · warning · pass A · rolled up (22 occurrences)
-- Affects 7 pages:
-  - `/gen-z/blog/breathing-techniques/`
-  - `/gen-z/blog/yoga-for-beginners/`
-  - `/gen-z/blog/morning-yoga-routine/`
-  - `/gen-z/pricing/`
-  - `/gen-z/faq/`
-  - `/gen-z/contact/`
-  - … (+1 more)
-- Total raw occurrences: 22 (some pages emit multiple matches)
-- Message: Engine reports broken link to `/gen-z/schedule` (Page not found).
-- Excerpt:
-  ```
-  /gen-z/blog/breathing-techniques/ links to /gen-z/schedule (Page not found)
-  ```
-
-#### ISSUE-0216 · `R.BROKEN_LINK` · warning · pass A · rolled up (20 occurrences)
-- Affects 18 pages:
-  - `/gen-z/blog/breathing-techniques/`
-  - `/gen-z/blog/yoga-for-beginners/`
-  - `/gen-z/blog/morning-yoga-routine/`
-  - `/gen-z/pricing/`
-  - `/gen-z/faq/`
-  - `/gen-z/contact/`
-  - … (+12 more)
-- Total raw occurrences: 20 (some pages emit multiple matches)
-- Message: Engine reports broken link to `/js/faq.js` (Page not found).
-- Excerpt:
-  ```
-  /gen-z/blog/breathing-techniques/ links to /js/faq.js (Page not found)
-  ```
-
-#### ISSUE-0217 · `R.BROKEN_LINK` · warning · pass A · rolled up (20 occurrences)
-- Affects 18 pages:
-  - `/gen-z/blog/breathing-techniques/`
-  - `/gen-z/blog/yoga-for-beginners/`
-  - `/gen-z/blog/morning-yoga-routine/`
-  - `/gen-z/pricing/`
-  - `/gen-z/faq/`
-  - `/gen-z/contact/`
-  - … (+12 more)
-- Total raw occurrences: 20 (some pages emit multiple matches)
-- Message: Engine reports broken link to `/js/search.js` (Page not found).
-- Excerpt:
-  ```
-  /gen-z/blog/breathing-techniques/ links to /js/search.js (Page not found)
-  ```
-
-#### ISSUE-0218 · `R.BROKEN_LINK` · warning · pass A
+#### ISSUE-0202 · `R.BROKEN_LINK` · warning · pass A
 - File: `/gen-z/blog/morning-yoga-routine/`
 - Message: Engine reports broken link to `/gen-z/schedule/mon-vinyasa-morning` (Page not found).
 - Excerpt:
@@ -2617,7 +2358,103 @@ _Additional issues not shown (truncated to 10 samples per code):_
   /gen-z/blog/morning-yoga-routine/ links to /gen-z/schedule/mon-vinyasa-morning (Page not found)
   ```
 
-#### ISSUE-0219 · `R.BROKEN_LINK` · warning · pass A
+#### ISSUE-0203 · `R.BROKEN_LINK` · warning · pass A · rolled up (22 occurrences)
+- Affects 8 pages:
+  - `/gen-z/pricing/`
+  - `/gen-z/blog/yoga-for-beginners/`
+  - `/gen-z/blog/morning-yoga-routine/`
+  - `/gen-z/blog/breathing-techniques/`
+  - `/gen-z/faq/`
+  - `/gen-z/contact/`
+  - … (+2 more)
+- Total raw occurrences: 22 (some pages emit multiple matches)
+- Message: Engine reports broken link to `/gen-z/` (Page not found).
+- Excerpt:
+  ```
+  /gen-z/pricing/ links to /gen-z/ (Page not found)
+  ```
+
+#### ISSUE-0204 · `R.BROKEN_LINK` · warning · pass A · rolled up (24 occurrences)
+- Affects 7 pages:
+  - `/gen-z/pricing/`
+  - `/gen-z/blog/yoga-for-beginners/`
+  - `/gen-z/blog/morning-yoga-routine/`
+  - `/gen-z/blog/breathing-techniques/`
+  - `/gen-z/faq/`
+  - `/gen-z/contact/`
+  - … (+1 more)
+- Total raw occurrences: 24 (some pages emit multiple matches)
+- Message: Engine reports broken link to `/gen-z/blog` (Page not found).
+- Excerpt:
+  ```
+  /gen-z/pricing/ links to /gen-z/blog (Page not found)
+  ```
+
+#### ISSUE-0205 · `R.BROKEN_LINK` · warning · pass A · rolled up (21 occurrences)
+- Affects 7 pages:
+  - `/gen-z/pricing/`
+  - `/gen-z/blog/yoga-for-beginners/`
+  - `/gen-z/blog/morning-yoga-routine/`
+  - `/gen-z/blog/breathing-techniques/`
+  - `/gen-z/faq/`
+  - `/gen-z/contact/`
+  - … (+1 more)
+- Total raw occurrences: 21 (some pages emit multiple matches)
+- Message: Engine reports broken link to `/gen-z/instructors` (Page not found).
+- Excerpt:
+  ```
+  /gen-z/pricing/ links to /gen-z/instructors (Page not found)
+  ```
+
+#### ISSUE-0206 · `R.BROKEN_LINK` · warning · pass A · rolled up (22 occurrences)
+- Affects 7 pages:
+  - `/gen-z/pricing/`
+  - `/gen-z/blog/yoga-for-beginners/`
+  - `/gen-z/blog/morning-yoga-routine/`
+  - `/gen-z/blog/breathing-techniques/`
+  - `/gen-z/faq/`
+  - `/gen-z/contact/`
+  - … (+1 more)
+- Total raw occurrences: 22 (some pages emit multiple matches)
+- Message: Engine reports broken link to `/gen-z/schedule` (Page not found).
+- Excerpt:
+  ```
+  /gen-z/pricing/ links to /gen-z/schedule (Page not found)
+  ```
+
+#### ISSUE-0207 · `R.BROKEN_LINK` · warning · pass A · rolled up (20 occurrences)
+- Affects 18 pages:
+  - `/gen-z/pricing/`
+  - `/gen-z/blog/yoga-for-beginners/`
+  - `/gen-z/blog/morning-yoga-routine/`
+  - `/gen-z/blog/breathing-techniques/`
+  - `/gen-z/faq/`
+  - `/gen-z/contact/`
+  - … (+12 more)
+- Total raw occurrences: 20 (some pages emit multiple matches)
+- Message: Engine reports broken link to `/js/faq.js` (Page not found).
+- Excerpt:
+  ```
+  /gen-z/pricing/ links to /js/faq.js (Page not found)
+  ```
+
+#### ISSUE-0208 · `R.BROKEN_LINK` · warning · pass A · rolled up (20 occurrences)
+- Affects 18 pages:
+  - `/gen-z/pricing/`
+  - `/gen-z/blog/yoga-for-beginners/`
+  - `/gen-z/blog/morning-yoga-routine/`
+  - `/gen-z/blog/breathing-techniques/`
+  - `/gen-z/faq/`
+  - `/gen-z/contact/`
+  - … (+12 more)
+- Total raw occurrences: 20 (some pages emit multiple matches)
+- Message: Engine reports broken link to `/js/search.js` (Page not found).
+- Excerpt:
+  ```
+  /gen-z/pricing/ links to /js/search.js (Page not found)
+  ```
+
+#### ISSUE-0209 · `R.BROKEN_LINK` · warning · pass A
 - File: `/instructors/`
 - Message: Engine reports broken link to `/gen-z/instructors/` (Page not found).
 - Excerpt:
@@ -2625,7 +2462,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   /instructors/ links to /gen-z/instructors/ (Page not found)
   ```
 
-#### ISSUE-0220 · `R.BROKEN_LINK` · warning · pass A · rolled up (2 occurrences)
+#### ISSUE-0210 · `R.BROKEN_LINK` · warning · pass A · rolled up (2 occurrences)
 - Affects 2 pages:
   - `/instructors/`
   - `/`
@@ -2635,11 +2472,11 @@ _Additional issues not shown (truncated to 10 samples per code):_
   /instructors/ links to /instructors/maya-chen (Page not found)
   ```
 
-#### ISSUE-0221 · `M.MISSING` · info · pass A
+#### ISSUE-0211 · `M.MISSING` · info · pass A
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 
-#### ISSUE-0222 · `L.BROKEN` · error · pass B
+#### ISSUE-0212 · `L.BROKEN` · error · pass B
 - File: `blog/index.html`
 - Selector: `div.flex > div.flex > details.relative > div.absolute > a.block`
 - Message: Link `/preview/gen-z/blog/` → missing target `/gen-z/blog/`.
@@ -2648,7 +2485,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/gen-z/blog/" data-spa-reload="" data-locale="gen-z" class="block px-3 py-1.5 text-sm text-base-700 dark:text-base-300 hover:bg-base-100 dark:hover:bg-base-800">Gen Z</a>
   ```
 
-#### ISSUE-0223 · `L.BROKEN` · error · pass B · rolled up (22 occurrences)
+#### ISSUE-0213 · `L.BROKEN` · error · pass B · rolled up (22 occurrences)
 - Affects 8 pages:
   - `index.html`
   - `gen-z/about/index.html`
@@ -2665,7 +2502,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/gen-z/" data-spa-reload="" data-locale="gen-z" class="block px-3 py-1.5 text-sm text-base-700 dark:text-base-300 hover:bg-base-100 dark:hover:bg-base-800">Gen Z</a>
   ```
 
-#### ISSUE-0224 · `L.BROKEN` · error · pass B · rolled up (4 occurrences)
+#### ISSUE-0214 · `L.BROKEN` · error · pass B · rolled up (4 occurrences)
 - Affects 3 pages:
   - `index.html`
   - `schedule/index.html`
@@ -2678,7 +2515,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/schedule/mon-vinyasa-morning" class="yoga-card group"><div class="h-2 bg-gradient-to-r from-primary-500 to-primary-600"></div> <div class="yoga-card-body"><div class="flex items-center justify-between mb-3"><span class="yo...
   ```
 
-#### ISSUE-0225 · `L.BROKEN` · error · pass B · rolled up (3 occurrences)
+#### ISSUE-0215 · `L.BROKEN` · error · pass B · rolled up (3 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `schedule/index.html`
@@ -2690,7 +2527,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/schedule/tue-ashtanga" class="yoga-card group"><div class="h-2 bg-gradient-to-r from-primary-500 to-primary-600"></div> <div class="yoga-card-body"><div class="flex items-center justify-between mb-3"><span class="yoga-sche...
   ```
 
-#### ISSUE-0226 · `L.BROKEN` · error · pass B · rolled up (3 occurrences)
+#### ISSUE-0216 · `L.BROKEN` · error · pass B · rolled up (3 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `schedule/index.html`
@@ -2702,7 +2539,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/schedule/wed-vinyasa-morning" class="yoga-card group"><div class="h-2 bg-gradient-to-r from-primary-500 to-primary-600"></div> <div class="yoga-card-body"><div class="flex items-center justify-between mb-3"><span class="yo...
   ```
 
-#### ISSUE-0227 · `L.BROKEN` · error · pass B · rolled up (2 occurrences)
+#### ISSUE-0217 · `L.BROKEN` · error · pass B · rolled up (2 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `instructors/index.html`
@@ -2713,7 +2550,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/instructors/alex-rivera" class="text-center group"><div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text-...
   ```
 
-#### ISSUE-0228 · `L.BROKEN` · error · pass B · rolled up (2 occurrences)
+#### ISSUE-0218 · `L.BROKEN` · error · pass B · rolled up (2 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `instructors/index.html`
@@ -2724,7 +2561,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/instructors/james-okafor" class="text-center group"><div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text...
   ```
 
-#### ISSUE-0229 · `L.BROKEN` · error · pass B · rolled up (2 occurrences)
+#### ISSUE-0219 · `L.BROKEN` · error · pass B · rolled up (2 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `instructors/index.html`
@@ -2735,7 +2572,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/instructors/maya-chen" class="text-center group"><div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text-2x...
   ```
 
-#### ISSUE-0230 · `L.BROKEN` · error · pass B · rolled up (2 occurrences)
+#### ISSUE-0220 · `L.BROKEN` · error · pass B · rolled up (2 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `instructors/index.html`
@@ -2746,7 +2583,7 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/instructors/priya-sharma" class="text-center group"><div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text...
   ```
 
-#### ISSUE-0231 · `L.BROKEN` · error · pass B · rolled up (2 occurrences)
+#### ISSUE-0221 · `L.BROKEN` · error · pass B · rolled up (2 occurrences)
 - Affects 2 pages:
   - `index.html`
   - `instructors/index.html`
@@ -2757,153 +2594,137 @@ _Additional issues not shown (truncated to 10 samples per code):_
   <a href="/preview/instructors/sam-tanaka" class="text-center group"><div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary-200 to-accent-200 dark:from-primary-800 dark:to-accent-800 flex items-center justify-center text-2...
   ```
 
-#### ISSUE-0232 · `R.BUILD_FAILED` · error · pass B
+#### ISSUE-0222 · `R.BUILD_FAILED` · error · pass B
 - Message: Build exited with code 1. Validators still ran against whatever made it to disk.
 - Excerpt:
   ```
-      /gen-z/faq/ links to /preview/gen-z/instructors (Page not found)
-      /gen-z/faq/ links to /preview/gen-z/blog (Page not found)
-      /gen-z/faq/ links to /preview/gen-z/ (Page not found)
-      /gen-z/faq/ links to /preview/gen-z/schedule (Page not found)
-      /gen-z/faq/ links to /preview/gen-z/instructors (Page not found)
-      /gen-z/faq/ links to /preview/gen-z/blog (Page not found)
-      /gen-z/faq/ links to /preview/gen-z/schedule (Page not found)
-      /gen-z/faq/ links to /preview/gen-z/instructors (Page not found)
-      /gen-z/faq/ links to /preview/gen-z/blog (Page not found)
-      /gen-z/faq/ links to /preview/js/search.js (Page not found)
-      /gen-z/faq/ links to /preview/js/faq.js (Page not found)
-      /blog/yoga-for-beginners/ links to /preview/js/search.js (Page not found)
-      /blog/yoga-for-beginners/ links to /preview/js/faq.js (Page not found)
-      /blog/breathing-techniques/ links to /preview/schedule/sun-breathwork (Page not found)
-      /blog/breathing-techniques/ links to /preview/js/search.js (Page not found)
-      /blog/breathing-techniques/ links to /preview/js/faq.js (Page not found)
-      /faq/ links to /preview/js/search.js (Page not found)
-      /faq/ links to /preview/js/faq.js (Page not found)
+      /gen-z/blog/morning-yoga-routine/ links to /preview/gen-z/blog (Page not found)
+      /gen-z/blog/morning-yoga-routine/ links to /preview/js/search.js (Page not found)
+      /gen-z/blog/morning-yoga-routine/ links to /preview/js/faq.js (Page not found)
+      /pricing/ links to /preview/js/search.js (Page not found)
+      /pricing/ links to /preview/js/faq.js (Page not found)
+      /instructors/ links to /preview/gen-z/instructors/ (Page not found)
+      /instructors/ links to /preview/instructors/maya-chen (Page not found)
+      /instructors/ links to /preview/instructors/james-okafor (Page not found)
+      /instructors/ links to /preview/instructors/priya-sharma (Page not found)
+      /instructors/ links to /preview/instructors/alex-rivera (Page not found)
+      /instructors/ links to /preview/instructors/sam-tanaka (Page not found)
+      /instructors/ links to /preview/js/search.js (Page not found)
+      /instructors/ links to /preview/js/faq.js (Page not found)
+      /contact/ links to /preview/js/search.js (Page not found)
+      /contact/ links to /preview/js/faq.js (Page not found)
+      /blog/ links to /preview/gen-z/blog/ (Page not found)
+      /blog/ links to /preview/js/search.js (Page not found)
+      /blog/ links to /preview/js/faq.js (Page not found)
   
   
   ```
 
-#### ISSUE-0233 · `R.PAGE_FAILED` · error · pass B
+#### ISSUE-0223 · `R.PAGE_FAILED` · error · pass B
 - File: `/about/`
-- Message: Engine reported page generation failure for `/about/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\YogaStudioExample\prefixed\about\index.html' because it is being used by another process.
+- Message: Engine reported page generation failure for `/about/`: The process cannot access the file 'B:\Penn\tmp\validate-examples\YogaStudioExample\prefixed\about\index.html' because it is being used by another process. Source: B:\Penn\examples\YogaStudioExample\Content\pages\about.md
 
-#### ISSUE-0234 · `R.BROKEN_LINK` · warning · pass B · rolled up (22 occurrences)
-- Affects 8 pages:
-  - `/`
-  - `/gen-z/pricing/`
-  - `/gen-z/blog/breathing-techniques/`
-  - `/gen-z/about/`
-  - `/gen-z/contact/`
-  - `/gen-z/blog/morning-yoga-routine/`
-  - … (+2 more)
-- Total raw occurrences: 22 (some pages emit multiple matches)
-- Message: Engine reports broken link to `/preview/gen-z/` (Page not found).
+#### ISSUE-0224 · `R.BROKEN_LINK` · warning · pass B
+- File: `/schedule/`
+- Message: Engine reports broken link to `/preview/gen-z/schedule/` (Page not found).
 - Excerpt:
   ```
-  / links to /preview/gen-z/ (Page not found)
+  /schedule/ links to /preview/gen-z/schedule/ (Page not found)
   ```
 
-#### ISSUE-0235 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
-- Affects 2 pages:
-  - `/`
-  - `/instructors/`
-- Message: Engine reports broken link to `/preview/instructors/alex-rivera` (Page not found).
+#### ISSUE-0225 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
+- Affects 1 page:
+  - `/schedule/`
+- Total raw occurrences: 2 (some pages emit multiple matches)
+- Message: Engine reports broken link to `/preview/schedule/mon-power-noon` (Page not found).
 - Excerpt:
   ```
-  / links to /preview/instructors/alex-rivera (Page not found)
+  /schedule/ links to /preview/schedule/mon-power-noon (Page not found)
   ```
 
-#### ISSUE-0236 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
-- Affects 2 pages:
-  - `/`
-  - `/instructors/`
-- Message: Engine reports broken link to `/preview/instructors/james-okafor` (Page not found).
-- Excerpt:
-  ```
-  / links to /preview/instructors/james-okafor (Page not found)
-  ```
-
-#### ISSUE-0237 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
-- Affects 2 pages:
-  - `/`
-  - `/instructors/`
-- Message: Engine reports broken link to `/preview/instructors/maya-chen` (Page not found).
-- Excerpt:
-  ```
-  / links to /preview/instructors/maya-chen (Page not found)
-  ```
-
-#### ISSUE-0238 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
-- Affects 2 pages:
-  - `/`
-  - `/instructors/`
-- Message: Engine reports broken link to `/preview/instructors/priya-sharma` (Page not found).
-- Excerpt:
-  ```
-  / links to /preview/instructors/priya-sharma (Page not found)
-  ```
-
-#### ISSUE-0239 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
-- Affects 2 pages:
-  - `/`
-  - `/instructors/`
-- Message: Engine reports broken link to `/preview/instructors/sam-tanaka` (Page not found).
-- Excerpt:
-  ```
-  / links to /preview/instructors/sam-tanaka (Page not found)
-  ```
-
-#### ISSUE-0240 · `R.BROKEN_LINK` · warning · pass B · rolled up (21 occurrences)
-- Affects 18 pages:
-  - `/`
-  - `/gen-z/pricing/`
-  - `/pricing/`
-  - `/faq/`
-  - `/gen-z/blog/breathing-techniques/`
-  - `/about/`
-  - … (+12 more)
-- Total raw occurrences: 21 (some pages emit multiple matches)
-- Message: Engine reports broken link to `/preview/js/search.js` (Page not found).
-- Excerpt:
-  ```
-  / links to /preview/js/search.js (Page not found)
-  ```
-
-#### ISSUE-0241 · `R.BROKEN_LINK` · warning · pass B · rolled up (4 occurrences)
+#### ISSUE-0226 · `R.BROKEN_LINK` · warning · pass B · rolled up (4 occurrences)
 - Affects 3 pages:
+  - `/schedule/`
   - `/`
   - `/blog/morning-yoga-routine/`
-  - `/schedule/`
 - Total raw occurrences: 4 (some pages emit multiple matches)
 - Message: Engine reports broken link to `/preview/schedule/mon-vinyasa-morning` (Page not found).
 - Excerpt:
   ```
-  / links to /preview/schedule/mon-vinyasa-morning (Page not found)
+  /schedule/ links to /preview/schedule/mon-vinyasa-morning (Page not found)
   ```
 
-#### ISSUE-0242 · `R.BROKEN_LINK` · warning · pass B · rolled up (3 occurrences)
-- Affects 2 pages:
-  - `/`
+#### ISSUE-0227 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
+- Affects 1 page:
   - `/schedule/`
+- Total raw occurrences: 2 (some pages emit multiple matches)
+- Message: Engine reports broken link to `/preview/schedule/mon-yin-evening` (Page not found).
+- Excerpt:
+  ```
+  /schedule/ links to /preview/schedule/mon-yin-evening (Page not found)
+  ```
+
+#### ISSUE-0228 · `R.BROKEN_LINK` · warning · pass B
+- File: `/schedule/`
+- Message: Engine reports broken link to `/preview/schedule/thu-power-morning` (Page not found).
+- Excerpt:
+  ```
+  /schedule/ links to /preview/schedule/thu-power-morning (Page not found)
+  ```
+
+#### ISSUE-0229 · `R.BROKEN_LINK` · warning · pass B · rolled up (3 occurrences)
+- Affects 2 pages:
+  - `/schedule/`
+  - `/`
 - Total raw occurrences: 3 (some pages emit multiple matches)
 - Message: Engine reports broken link to `/preview/schedule/tue-ashtanga` (Page not found).
 - Excerpt:
   ```
-  / links to /preview/schedule/tue-ashtanga (Page not found)
+  /schedule/ links to /preview/schedule/tue-ashtanga (Page not found)
   ```
 
-#### ISSUE-0243 · `R.BROKEN_LINK` · warning · pass B · rolled up (3 occurrences)
-- Affects 2 pages:
-  - `/`
+#### ISSUE-0230 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
+- Affects 1 page:
   - `/schedule/`
+- Total raw occurrences: 2 (some pages emit multiple matches)
+- Message: Engine reports broken link to `/preview/schedule/tue-hot-yoga` (Page not found).
+- Excerpt:
+  ```
+  /schedule/ links to /preview/schedule/tue-hot-yoga (Page not found)
+  ```
+
+#### ISSUE-0231 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
+- Affects 1 page:
+  - `/schedule/`
+- Total raw occurrences: 2 (some pages emit multiple matches)
+- Message: Engine reports broken link to `/preview/schedule/wed-meditation` (Page not found).
+- Excerpt:
+  ```
+  /schedule/ links to /preview/schedule/wed-meditation (Page not found)
+  ```
+
+#### ISSUE-0232 · `R.BROKEN_LINK` · warning · pass B · rolled up (2 occurrences)
+- Affects 1 page:
+  - `/schedule/`
+- Total raw occurrences: 2 (some pages emit multiple matches)
+- Message: Engine reports broken link to `/preview/schedule/wed-restorative` (Page not found).
+- Excerpt:
+  ```
+  /schedule/ links to /preview/schedule/wed-restorative (Page not found)
+  ```
+
+#### ISSUE-0233 · `R.BROKEN_LINK` · warning · pass B · rolled up (3 occurrences)
+- Affects 2 pages:
+  - `/schedule/`
+  - `/`
 - Total raw occurrences: 3 (some pages emit multiple matches)
 - Message: Engine reports broken link to `/preview/schedule/wed-vinyasa-morning` (Page not found).
 - Excerpt:
   ```
-  / links to /preview/schedule/wed-vinyasa-morning (Page not found)
+  /schedule/ links to /preview/schedule/wed-vinyasa-morning (Page not found)
   ```
 
-#### ISSUE-0244 · `M.MISSING` · info · pass B
+#### ISSUE-0234 · `M.MISSING` · info · pass B
 - File: `llms.txt`
 - Message: No llms.txt present (may be intentional for this example).
 

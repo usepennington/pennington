@@ -497,6 +497,62 @@ Check the URL join logic in `SitemapBuilder`. If it's doing `"/" + url` or `Path
 
 ## Phase 6 — TOC duplicates in `NorthwindHandbookExample` (ENGINE or EXAMPLE)
 
+> ✅ **Done 2026-04-11.** Root cause was two overlapping markdown content sources
+> in `examples/NorthwindHandbookExample/Program.cs`: a generic `DocFrontMatter`
+> source rooted at `Content` recursively discovered the same `changelog/*.md`
+> files as the specialized `ChangelogFrontMatter` source rooted at
+> `Content/changelog`. Because `DocFrontMatter` is lax enough to parse the
+> extra changelog-specific fields, both sources emitted routes for the 3
+> canonical URLs, producing 132 raw `T.DUP` occurrences and — a previously
+> hidden cascade — 8 `R.BUILD_FAILED`/`R.PAGE_FAILED` errors from two pipelines
+> racing the same `changelog/v*/index.html` writes. Delivered as four changes:
+>
+> 1. **New `MarkdownContentServiceOptions.ExcludePaths`** (+ matching field on
+>    the user-facing `MarkdownContentOptions` wrapper) — a list of relative
+>    subpaths to skip during discovery and content copy. Normalized on ingest
+>    (forward-slash, lowercase, empty entries dropped) and matched
+>    segment-by-segment so `"change"` never silences `changelog`. Honored in
+>    `MarkdownContentService.DiscoverFiles()` for both default and non-default
+>    locale subtrees, and in `GetContentToCopyAsync()` so assets in excluded
+>    subtrees are skipped too. Exposed on `IMarkdownContentSource` so the
+>    overlap detector can inspect it without touching the generic service type.
+> 2. **New `MarkdownSourceOverlapDetector`** — a static diagnosis pass in
+>    `OutputGenerationService.GenerateAsync` (Phase 0, runs before content
+>    discovery) that walks registered `IMarkdownContentSource` instances,
+>    detects any pair where one's `AbsoluteContentRoot` is a strict descendant
+>    directory of another's, and emits a `BuildReport` warning naming both
+>    sources and the exact `ExcludePaths = ["<relative>"]` line that would
+>    resolve it — unless the outer source already carves out that subtree.
+>    The detector normalizes paths to forward-slash lowercase so Windows and
+>    Linux both match, and strict-descendant prevents `/repo/Content` ≠
+>    `/repo/ContentExtra` false positives.
+> 3. **Defensive `NavigationBuilder.BuildLevel` dedup** — a
+>    `DistinctBy(Route.CanonicalPath, OrdinalIgnoreCase)` pass on
+>    `itemsAtLevel` so that even if two sources silently report the same URL
+>    (e.g. the degenerate same-directory case the overlap detector can't
+>    resolve), the sidebar doesn't double-list.
+> 4. **Example fix**: `NorthwindHandbookExample/Program.cs` DocFrontMatter
+>    source now sets `ExcludePaths = ["changelog"]`. Zero content directory
+>    restructuring, zero URL changes.
+>
+> Measured impact: `T.DUP` **132 → 0** (code dropped from cross-example
+> patterns entirely); `NorthwindHandbookExample` **140 err / 0 warn →
+> 0 err / 0 warn** in both passes; `R.BUILD_FAILED` **26 → 22**;
+> `R.PAGE_FAILED` lost its NorthwindHandbook content-race contribution
+> (content-race pipelines no longer collide because each URL is discovered
+> once); total site errors **1443 → 1307** (−136); clean-in-both-passes
+> examples **8 → 9** with NorthwindHandbookExample joining. Tests added:
+> 6 new cases in `MarkdownContentServiceTests` (exclude subtree, segment
+> boundary, backslash/case normalization, empty entry guard, content-to-copy
+> exclusion, multi-locale exclusion, `IMarkdownContentSource.ExcludePaths`
+> normalization), a new 10-case `MarkdownSourceOverlapDetectorTests`
+> file (disjoint, single source, strict-descendant with/without exclusion,
+> segment-boundary false-negative guard, nested exclusion, same-directory
+> degenerate case, trailing-slash/backslash normalization, prefix false
+> positive), and 2 new `NavigationBuilderTests` cases (duplicate canonical
+> paths deduped, case-insensitive match). All 423 Pennington unit tests +
+> 195 integration tests pass.
+
 **Leverage**: Mid-small — 132 raw occurrences collapsed to 6 groups, all in one example, but indicative of a real bug.
 
 ### Symptom

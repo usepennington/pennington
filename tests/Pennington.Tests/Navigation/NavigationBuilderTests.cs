@@ -314,4 +314,45 @@ public class NavigationBuilderTests
         var tree = _builder.BuildTree(items, locale: null);
         tree.Count.ShouldBe(2);
     }
+
+    [Fact]
+    public void BuildTree_DuplicateCanonicalPaths_DedupedDefensively()
+    {
+        // Shape of the NorthwindHandbookExample misconfiguration: two content
+        // sources both register a TOC entry for /changelog/v2-0-0/. The engine
+        // should warn via MarkdownSourceOverlapDetector, but NavigationBuilder
+        // also collapses the duplicate here so the sidebar isn't double-listed.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Changelog v2.0.0 (generic)", "/changelog/v2-0-0", 1, "changelog", "v2-0-0"),
+            MakeTocItem("Changelog v2.0.0 (specialized)", "/changelog/v2-0-0", 1, "changelog", "v2-0-0"),
+            MakeTocItem("Changelog v2.0.1", "/changelog/v2-0-1", 2, "changelog", "v2-0-1"),
+        };
+
+        var tree = _builder.BuildTree(items);
+
+        // One auto-created "Changelog" section with two children (v2-0-0, v2-0-1),
+        // not three.
+        tree.Count.ShouldBe(1);
+        tree[0].Title.ShouldBe("Changelog");
+        tree[0].Children.Count.ShouldBe(2);
+        tree[0].Children.Select(c => c.Route.CanonicalPath.Value)
+            .ShouldBe(["/changelog/v2-0-0/", "/changelog/v2-0-1/"], ignoreOrder: true);
+    }
+
+    [Fact]
+    public void BuildTree_DuplicateCanonicalPaths_CaseInsensitive_Deduped()
+    {
+        // Canonical paths are compared case-insensitively — the second entry
+        // (capitalized `/Alpha`) should still dedup against the first.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("alpha lower", "/alpha", 1, "alpha"),
+            MakeTocItem("alpha upper", "/Alpha", 2, "Alpha"),
+        };
+
+        var tree = _builder.BuildTree(items);
+
+        tree.Count.ShouldBe(1);
+    }
 }

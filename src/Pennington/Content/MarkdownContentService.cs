@@ -20,6 +20,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
     private readonly IFileSystem _fileSystem;
     private readonly LocalizationOptions _localization;
     private readonly string _absoluteContentPath;
+    private readonly ImmutableArray<string> _normalizedExcludePaths;
     private readonly AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>> _metadataLazy;
 
     public MarkdownContentService(
@@ -34,6 +35,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         _fileSystem = fileSystem;
         _localization = localization;
         _absoluteContentPath = _fileSystem.Path.GetFullPath(options.ContentPath.Value);
+        _normalizedExcludePaths = NormalizeExcludePaths(options.ExcludePaths);
         _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>>(LoadMetadataAsync);
 
         // Register content directory for watching so the central watcher
@@ -47,6 +49,48 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
 
     public string AbsoluteContentRoot => _absoluteContentPath;
     public UrlPath BasePageUrl => _options.BasePageUrl;
+    public ImmutableArray<string> ExcludePaths => _normalizedExcludePaths;
+
+    /// <summary>
+    /// Normalizes user-provided exclude paths to forward-slash, lowercase, trimmed
+    /// of leading/trailing slashes. Empty entries are dropped so a bare
+    /// <c>""</c> or <c>"/"</c> doesn't accidentally exclude the entire root.
+    /// </summary>
+    private static ImmutableArray<string> NormalizeExcludePaths(ImmutableArray<string> raw)
+    {
+        if (raw.IsDefaultOrEmpty) return ImmutableArray<string>.Empty;
+        var builder = ImmutableArray.CreateBuilder<string>(raw.Length);
+        foreach (var entry in raw)
+        {
+            if (string.IsNullOrWhiteSpace(entry)) continue;
+            var normalized = entry.Replace('\\', '/').Trim('/').ToLowerInvariant();
+            if (normalized.Length == 0) continue;
+            builder.Add(normalized);
+        }
+        return builder.ToImmutable();
+    }
+
+    /// <summary>
+    /// True when <paramref name="relativePath"/> (forward-slash, relative to the content
+    /// root) is inside one of the excluded subtrees. Matching is segment-based:
+    /// exclude <c>"a/b"</c> covers <c>a/b</c>, <c>a/b/...</c> but not <c>a/bcd</c>.
+    /// </summary>
+    private bool IsRelativePathExcluded(string relativePath)
+    {
+        if (_normalizedExcludePaths.IsDefaultOrEmpty) return false;
+        var normalized = relativePath.Replace('\\', '/').TrimStart('/').ToLowerInvariant();
+        foreach (var excluded in _normalizedExcludePaths)
+        {
+            if (normalized.Length == excluded.Length
+                && normalized.Equals(excluded, StringComparison.Ordinal))
+                return true;
+            if (normalized.Length > excluded.Length
+                && normalized.StartsWith(excluded, StringComparison.Ordinal)
+                && normalized[excluded.Length] == '/')
+                return true;
+        }
+        return false;
+    }
 
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
@@ -144,6 +188,10 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
             // Skip locale subfolders from the default locale scan — they get their own entries below
             if (IsInLocaleSubfolder(relativePath, localeSubfolders)) continue;
 
+            // Skip subtrees explicitly excluded via MarkdownContentServiceOptions.ExcludePaths
+            // (typically because another content source owns that subtree).
+            if (IsRelativePathExcluded(relativePath)) continue;
+
             builder.Add(new ContentToCopy(new FilePath(file), new FilePath(relativePath)));
         }
 
@@ -188,6 +236,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         {
             var relativePath = _fileSystem.Path.GetRelativePath(contentPath, file).Replace('\\', '/');
             if (IsInLocaleSubfolder(relativePath, localeSubfolders)) continue;
+            if (IsRelativePathExcluded(relativePath)) continue;
 
             var locale = _localization.IsMultiLocale ? _localization.DefaultLocale : _options.Locale;
             results.Add((new FilePath(file), locale));
@@ -201,6 +250,12 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
 
             foreach (var file in _fileSystem.Directory.EnumerateFiles(localePath, _options.FilePattern, SearchOption.AllDirectories))
             {
+                // ExcludePaths apply to the logical content tree, so match against the
+                // path relative to the locale root — "changelog" in the default locale
+                // also means "fr/changelog" in fr (without forcing users to list both).
+                var localeRelative = _fileSystem.Path.GetRelativePath(localePath, file).Replace('\\', '/');
+                if (IsRelativePathExcluded(localeRelative)) continue;
+
                 results.Add((new FilePath(file), locale));
             }
         }

@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using MonorailCss.Theme;
 using NorthwindHandbookExample;
 using NorthwindHandbookExample.Components;
@@ -19,6 +20,10 @@ builder.Services.AddPennington(penn =>
     {
         md.ContentPath = "Content";
         md.BasePageUrl = "";
+        // The `changelog/` subtree is owned by the ChangelogFrontMatter source
+        // registered below — carve it out here so both sources don't both emit
+        // routes for /changelog/v*.
+        md.ExcludePaths = ImmutableArray.Create("changelog");
     });
 
     penn.AddMarkdownContent<ChangelogFrontMatter>(md =>
