@@ -80,7 +80,16 @@ public static class PenningtonExtensions
             MarkdownPipelineFactory.CreateWithExtensions(
                 sp.GetRequiredService<HighlightingService>(),
                 preprocessors: sp.GetServices<ICodeBlockPreprocessor>()));
-        services.AddTransient<IContentRenderer, MarkdownContentRenderer>();
+
+        // Relative-link resolver — factory-managed so it rebuilds its source → URL
+        // index when content files change. Registered under both the concrete type
+        // (for the transient renderer below) and the factory type.
+        services.AddFileWatched<MarkdownLinkResolver>();
+
+        services.AddTransient<IContentRenderer>(sp =>
+            new MarkdownContentRenderer(
+                sp.GetRequiredService<MarkdownPipeline>(),
+                sp.GetService<MarkdownLinkResolver>()));
 
         // Register markdown content services for each configured source
         foreach (var source in options.MarkdownSources)

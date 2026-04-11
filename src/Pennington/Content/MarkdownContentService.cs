@@ -12,7 +12,7 @@ using Pennington.Routing;
 /// When <see cref="LocalizationOptions"/> has multiple locales, also discovers
 /// content from locale subdirectories (e.g., Content/fr/, Content/de/).
 /// </summary>
-public sealed class MarkdownContentService<TFrontMatter> : IContentService
+public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMarkdownContentSource
     where TFrontMatter : IFrontMatter, new()
 {
     private readonly MarkdownContentServiceOptions _options;
@@ -44,6 +44,9 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService
 
     public string DefaultSection => _options.Section ?? "";
     public int SearchPriority => _options.SearchPriority;
+
+    public string AbsoluteContentRoot => _absoluteContentPath;
+    public UrlPath BasePageUrl => _options.BasePageUrl;
 
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {

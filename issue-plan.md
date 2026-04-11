@@ -213,6 +213,40 @@ This affects 5 + 5 = 10 occurrences per pass × 2 passes. Fold it into this phas
 
 ## Phase 3 — Relative-link resolution in markdown (ENGINE)
 
+> ✅ **Done 2026-04-11.** Delivered via a new `MarkdownLinkResolver` service
+> (`src/Pennington/Markdown/MarkdownLinkResolver.cs`) that lazily builds a
+> source-path → canonical-URL index from every registered
+> `IContentService` and exposes a `ResolveAsync(sourceFile, href)` entry
+> point. `MarkdownContentRenderer` now post-processes each rendered HTML
+> fragment with AngleSharp, rewriting `<a href>` / `<img src>` attributes
+> whenever the href is a relative reference (`.md` suffix, bare sibling,
+> or `./image.png`). Registered under `AddFileWatched<MarkdownLinkResolver>()`
+> so the index rebuilds on content change. Two capability-interface fields
+> were added to `MarkdownContentService<T>` via a new
+> `Pennington.Content.IMarkdownContentSource` interface so the resolver can
+> compute asset URLs against the owning source's base URL without reflection.
+> Bundled a related `ContentRouteFactory` fix: nested `index.md` files
+> (e.g. `getting-started/index.md`) now correctly map to the parent
+> directory URL instead of `/getting-started/index/`, which was blocking
+> the Beacon `./beacon-arch.png` resolution and the `/getting-started/`
+> link from `setup.md`. Measured impact:
+> `L.BROKEN` **1304 → 1276** raw (−28), **180 → 152** groups (−28);
+> `R.BROKEN_LINK` **1418 → 1386** raw (−32), **192 → 162** groups (−30);
+> total errors **1482 → 1453**, warnings **1431 → 1399**. Per-example:
+> `MinimalExample` 20/33 → 4/8 (all remaining are missing image files
+> that are Phase 7 example bugs); `BeaconDocsExample` 6/131 → 4/4 (image
+> src and `/getting-started/` link both resolved; remaining are the
+> `https://` sitemap bug and missing `beacon-arch.png` asset);
+> `RoslynIntegrationExample` 18/33 → 2/8; `SpectreConsoleExample`
+> 817/7755 → 802/800 (the 5 `.md`-suffix links × 2 passes are gone; the
+> remaining are Phase 7c `/` and `/blog` header-link bugs). Tests added:
+> `MarkdownLinkResolverTests` (11 cases covering `.md` rewrite, bare
+> sibling, `../` parent, asset fallback, fragment/query preservation,
+> base-URL honour, and external-URL passthrough), two
+> `MarkdownContentRendererTests` end-to-end cases, and a
+> `ContentRouteFactoryTests.FromMarkdownFile_NestedIndexMd_BecomesParentDirectoryUrl`
+> case for the routing fix. All 385 Pennington tests pass.
+
 **Leverage**: Eliminates ~237 + ~163 + several dozen smaller `L.BROKEN` groups, primarily in `SpectreConsoleExample` and `MinimalExample`.
 
 ### Symptom A — `.md` links never rewritten

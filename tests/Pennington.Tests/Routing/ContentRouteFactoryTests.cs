@@ -31,6 +31,20 @@ public class ContentRouteFactoryTests
     }
 
     [Fact]
+    public void FromMarkdownFile_NestedIndexMd_BecomesParentDirectoryUrl()
+    {
+        // A nested index.md (e.g. getting-started/index.md) should map to the
+        // parent directory URL, not include "index" as a trailing segment.
+        var route = ContentRouteFactory.FromMarkdownFile(
+            sourceFile: "Content/Docs/getting-started/index.md",
+            contentRoot: "Content/Docs",
+            basePageUrl: "/docs");
+
+        route.CanonicalPath.Value.ShouldBe("/docs/getting-started/");
+        route.OutputFile.Value.ShouldBe("docs/getting-started/index.html");
+    }
+
+    [Fact]
     public void FromMarkdownFile_WithLocalePrefix()
     {
         var route = ContentRouteFactory.FromMarkdownFile(

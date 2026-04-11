@@ -25,8 +25,22 @@ public static class ContentRouteFactory
         var relative = GetRelativePath(contentRoot.Value, sourceFile.Value);
         var withoutExt = RemoveExtension(relative);
 
-        // Handle index files: "index" becomes "" (just use base URL)
-        var urlSegment = withoutExt.Equals("index", StringComparison.OrdinalIgnoreCase) ? "" : withoutExt;
+        // Handle index files: a bare or trailing "index" segment becomes "" so the
+        // canonical URL is the parent directory. E.g. "index.md" → "/", and
+        // "getting-started/index.md" → "/getting-started/" (not /getting-started/index/).
+        string urlSegment;
+        if (withoutExt.Equals("index", StringComparison.OrdinalIgnoreCase))
+        {
+            urlSegment = "";
+        }
+        else if (withoutExt.EndsWith("/index", StringComparison.OrdinalIgnoreCase))
+        {
+            urlSegment = withoutExt[..^"/index".Length];
+        }
+        else
+        {
+            urlSegment = withoutExt;
+        }
 
         // Build canonical path with locale prefix
         var basePath = basePageUrl.RemoveTrailingSlash();
