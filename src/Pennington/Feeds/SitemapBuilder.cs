@@ -2,11 +2,19 @@ namespace Pennington.Feeds;
 
 using System.Collections.Immutable;
 using Pennington.FrontMatter;
-using Pennington.Pipeline;
 using Pennington.Routing;
 
 /// <summary>
-/// Builds sitemap entries from rendered content.
+/// A candidate row for the sitemap — a route and (optionally) the front matter
+/// metadata that was parsed for it. For markdown sources, metadata carries
+/// <see cref="IDateable"/> (lastmod) and <see cref="IDraftable"/> (filter).
+/// For programmatic / Razor sources we typically have no metadata, which is
+/// fine: those entries are emitted with their URL and no lastmod.
+/// </summary>
+public sealed record SitemapCandidate(ContentRoute Route, IFrontMatter? Metadata);
+
+/// <summary>
+/// Builds sitemap entries from a set of <see cref="SitemapCandidate"/> rows.
 /// </summary>
 public sealed class SitemapBuilder
 {
@@ -20,19 +28,22 @@ public sealed class SitemapBuilder
     }
 
     /// <summary>
-    /// Build sitemap entries from rendered items. Excludes drafts.
+    /// Build sitemap entries from candidate rows. Excludes drafts.
     /// </summary>
-    public ImmutableList<SitemapEntry> Build(IReadOnlyList<RenderedItem> items)
+    public ImmutableList<SitemapEntry> Build(IReadOnlyList<SitemapCandidate> candidates)
     {
         var builder = ImmutableList.CreateBuilder<SitemapEntry>();
 
-        foreach (var item in items)
+        foreach (var candidate in candidates)
         {
-            if (item.Metadata is IDraftable { IsDraft: true })
+            if (candidate.Metadata is IDraftable { IsDraft: true })
+                continue;
+            // Redirects have no sitemap meaning — they aren't canonical URLs.
+            if (candidate.Metadata is IRedirectable { RedirectUrl: { Length: > 0 } })
                 continue;
 
-            var absoluteUrl = item.Route.AbsoluteUrl(_canonicalBase);
-            var lastModified = (item.Metadata as IDateable)?.Date;
+            var absoluteUrl = candidate.Route.AbsoluteUrl(_canonicalBase);
+            var lastModified = (candidate.Metadata as IDateable)?.Date;
 
             builder.Add(new SitemapEntry(
                 Url: absoluteUrl,

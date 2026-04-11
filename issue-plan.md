@@ -321,6 +321,50 @@ The engine already knows every source file → canonical URL mapping (it built t
 
 ## Phase 4 — `search-index.json` and `llms.txt` generation for `SearchExample` and `MinimalExample` (ENGINE)
 
+> ✅ **Done 2026-04-11.** Delivered via three engine changes and one example
+> fix. `MarkdownContentService.GetContentTocEntriesAsync` now filters items
+> where metadata is `IRedirectable` with a non-null `RedirectUrl` AND items
+> with an empty `Title` (defensive: a YAML typo in a frontmatter type that
+> doesn't implement `IRedirectable` — exactly the MinimalExample case — no
+> longer leaks into search / llms / nav). `SitemapService.BuildSitemapAsync`
+> was refactored off the parse→render pipeline entirely: it now collects
+> `SitemapCandidate(ContentRoute, IFrontMatter?)` rows directly from
+> `DiscoverAsync`, parses markdown sources for `IDateable` lastmod metadata,
+> and emits every non-markdown source (programmatic / Razor) with just its
+> route + null metadata. The refactor also added two filters that were
+> implicit in the old render-based flow: non-HTML output extensions (catches
+> `_spa-data/*.json` routes that `SpaNavigationContentService` surfaces) and
+> `ContentSource.RedirectSource` (catches explicit redirects). `SitemapBuilder`
+> was updated to take the candidate list instead of `RenderedItem`. Example
+> fix: `SearchExample.RandomContentService.GetContentTocEntriesAsync` now
+> returns TOC entries for its 1000 programmatic pages (was returning
+> `ImmutableList.Empty`, leaving search/llms blind to the entire content
+> set). Bonus validator fix: `SitemapValidator.Validate` now
+> `Uri.UnescapeDataString`s the sitemap `<loc>` paths before resolving them
+> against the file inventory — without this, SearchExample's URLs (which
+> contain literal spaces like `/random/backing up/…`) reported as 2000
+> false-positive `X.BROKEN` errors because `Uri.AbsolutePath` returns the
+> percent-encoded form but the inventory keys on file-system paths. Measured
+> impact: `M.NO_ENTRIES` **2 → 0**, `S.EMPTY` **2 → 0**, `S.MISSING_FIELD`
+> **2 → 0**, `X.EMPTY` **2 → 0** (warnings). `SearchExample` 4 err / 2 warn
+> → **0/0** (both passes ok). `MinimalExample` 4 err / 8 warn → **2/8**
+> (dropped the 2 S.MISSING_FIELD; remaining 2 errors are Phase 7a missing
+> `_content` images and the build-failed warning cascade). Nine examples
+> now pass cleanly in both passes, up from eight: `PrismDocsExample`,
+> `TempoDocsExample`, `SpaNavigationExample`, `SpaNavigationTutorialExample`,
+> `SearchExample`, `UserInterfaceExample`, `LocalizationExample`,
+> `LocalizationTutorialExample`, plus `SearchExample` now joins. Total site
+> errors **1453 → 1448**, warnings **1399 → 1395**. Tests added:
+> `SitemapBuilderTests` updated to the new `SitemapCandidate` signature with
+> new cases for null metadata + `IRedirectable` exclusion;
+> `SitemapServiceTests` gained three cases for programmatic inclusion,
+> non-HTML exclusion, and `RedirectSource` exclusion;
+> `MarkdownContentServiceTests` gained `SkipsEntriesWithEmptyTitle` and
+> `SkipsRedirects` cases (the latter via a new `RedirectableFrontMatter`
+> test record because core `DocFrontMatter` does not implement
+> `IRedirectable`). All 393 Pennington tests + 56 Roslyn + 195 integration
+> pass.
+
 **Leverage**: Medium — only a few examples affected, but the bugs expose whole content-source types that the search/llms builders aren't indexing.
 
 ### Symptom — empty search index despite 1001 pages

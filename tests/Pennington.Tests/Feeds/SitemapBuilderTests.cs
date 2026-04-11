@@ -1,7 +1,5 @@
-using System.Collections.Immutable;
 using Pennington.Feeds;
 using Pennington.FrontMatter;
-using Pennington.Pipeline;
 using Pennington.Routing;
 
 namespace Pennington.Tests.Feeds;
@@ -15,22 +13,14 @@ public class SitemapBuilderTests
         Locale = locale
     };
 
-    private static RenderedContent MakeContent(string html = "<p>Hello</p>") => new(
-        Html: html,
-        Outline: [],
-        Tags: ImmutableList<Tag>.Empty,
-        CrossReferences: ImmutableList<CrossReference>.Empty,
-        SearchDocument: null,
-        Social: null
-    );
-
-    private record TestFrontMatter : IFrontMatter, IDraftable, ISectionable, IDateable, IDescribable
+    private record TestFrontMatter : IFrontMatter, IDraftable, ISectionable, IDateable, IDescribable, IRedirectable
     {
         public string Title { get; init; } = "Test";
         public bool IsDraft { get; init; }
         public string? Section { get; init; }
         public DateTime? Date { get; init; }
         public string? Description { get; init; }
+        public string? RedirectUrl { get; init; }
     }
 
     private readonly SitemapBuilder _builder = new(new UrlPath("https://example.com"));
@@ -38,21 +28,13 @@ public class SitemapBuilderTests
     [Fact]
     public void Build_CreatesEntriesWithAbsoluteUrls()
     {
-        var items = new List<RenderedItem>
+        var candidates = new List<SitemapCandidate>
         {
-            new(
-                Route: MakeRoute("/about"),
-                Metadata: new TestFrontMatter { Title = "About" },
-                Content: MakeContent()
-            ),
-            new(
-                Route: MakeRoute("/contact"),
-                Metadata: new TestFrontMatter { Title = "Contact" },
-                Content: MakeContent()
-            ),
+            new(MakeRoute("/about"), new TestFrontMatter { Title = "About" }),
+            new(MakeRoute("/contact"), new TestFrontMatter { Title = "Contact" }),
         };
 
-        var entries = _builder.Build(items);
+        var entries = _builder.Build(candidates);
 
         entries.Count.ShouldBe(2);
         entries[0].Url.Value.ShouldBe("https://example.com/about/");
@@ -62,40 +44,43 @@ public class SitemapBuilderTests
     [Fact]
     public void Build_ExcludesDrafts()
     {
-        var items = new List<RenderedItem>
+        var candidates = new List<SitemapCandidate>
         {
-            new(
-                Route: MakeRoute("/published"),
-                Metadata: new TestFrontMatter { Title = "Published" },
-                Content: MakeContent()
-            ),
-            new(
-                Route: MakeRoute("/draft"),
-                Metadata: new TestFrontMatter { Title = "Draft", IsDraft = true },
-                Content: MakeContent()
-            ),
+            new(MakeRoute("/published"), new TestFrontMatter { Title = "Published" }),
+            new(MakeRoute("/draft"), new TestFrontMatter { Title = "Draft", IsDraft = true }),
         };
 
-        var entries = _builder.Build(items);
+        var entries = _builder.Build(candidates);
 
         entries.Count.ShouldBe(1);
         entries[0].Url.Value.ShouldBe("https://example.com/published/");
     }
 
     [Fact]
+    public void Build_ExcludesRedirects()
+    {
+        var candidates = new List<SitemapCandidate>
+        {
+            new(MakeRoute("/canonical"), new TestFrontMatter { Title = "Canonical" }),
+            new(MakeRoute("/legacy"), new TestFrontMatter { Title = "Legacy", RedirectUrl = "/canonical/" }),
+        };
+
+        var entries = _builder.Build(candidates);
+
+        entries.Count.ShouldBe(1);
+        entries[0].Url.Value.ShouldBe("https://example.com/canonical/");
+    }
+
+    [Fact]
     public void Build_UsesDateFromIDateable()
     {
         var date = new DateTime(2026, 3, 15);
-        var items = new List<RenderedItem>
+        var candidates = new List<SitemapCandidate>
         {
-            new(
-                Route: MakeRoute("/post"),
-                Metadata: new TestFrontMatter { Title = "Post", Date = date },
-                Content: MakeContent()
-            ),
+            new(MakeRoute("/post"), new TestFrontMatter { Title = "Post", Date = date }),
         };
 
-        var entries = _builder.Build(items);
+        var entries = _builder.Build(candidates);
 
         entries.Count.ShouldBe(1);
         entries[0].LastModified.ShouldBe(date);
@@ -107,16 +92,12 @@ public class SitemapBuilderTests
     [Fact]
     public void Build_NonDraftableFrontMatter_Included()
     {
-        var items = new List<RenderedItem>
+        var candidates = new List<SitemapCandidate>
         {
-            new(
-                Route: MakeRoute("/page"),
-                Metadata: new MinimalFrontMatter("Minimal Page"),
-                Content: MakeContent()
-            ),
+            new(MakeRoute("/page"), new MinimalFrontMatter("Minimal Page")),
         };
 
-        var entries = _builder.Build(items);
+        var entries = _builder.Build(candidates);
 
         entries.Count.ShouldBe(1);
         entries[0].Url.Value.ShouldBe("https://example.com/page/");
@@ -125,34 +106,42 @@ public class SitemapBuilderTests
     [Fact]
     public void Build_NonDateable_LastModifiedIsNull()
     {
-        var items = new List<RenderedItem>
+        var candidates = new List<SitemapCandidate>
         {
-            new(
-                Route: MakeRoute("/page"),
-                Metadata: new MinimalFrontMatter("No Date"),
-                Content: MakeContent()
-            ),
+            new(MakeRoute("/page"), new MinimalFrontMatter("No Date")),
         };
 
-        var entries = _builder.Build(items);
+        var entries = _builder.Build(candidates);
 
         entries.Count.ShouldBe(1);
         entries[0].LastModified.ShouldBeNull();
     }
 
     [Fact]
-    public void Build_LocaleInRoute_PreservedInUrl()
+    public void Build_NullMetadata_IncludedWithNoLastModified()
     {
-        var items = new List<RenderedItem>
+        // Simulates a programmatic-content candidate that has no front matter.
+        var candidates = new List<SitemapCandidate>
         {
-            new(
-                Route: MakeRoute("/fr/docs/intro", "fr"),
-                Metadata: new TestFrontMatter { Title = "Introduction" },
-                Content: MakeContent()
-            ),
+            new(MakeRoute("/generated"), Metadata: null),
         };
 
-        var entries = _builder.Build(items);
+        var entries = _builder.Build(candidates);
+
+        entries.Count.ShouldBe(1);
+        entries[0].Url.Value.ShouldBe("https://example.com/generated/");
+        entries[0].LastModified.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Build_LocaleInRoute_PreservedInUrl()
+    {
+        var candidates = new List<SitemapCandidate>
+        {
+            new(MakeRoute("/fr/docs/intro", "fr"), new TestFrontMatter { Title = "Introduction" }),
+        };
+
+        var entries = _builder.Build(candidates);
 
         entries.Count.ShouldBe(1);
         entries[0].Url.Value.ShouldBe("https://example.com/fr/docs/intro/");
@@ -161,31 +150,18 @@ public class SitemapBuilderTests
     [Fact]
     public void Build_MultiplePagesWithDrafts_OnlyNonDraftsIncluded()
     {
-        var items = new List<RenderedItem>
+        var candidates = new List<SitemapCandidate>
         {
-            new(
-                Route: MakeRoute("/getting-started"),
-                Metadata: new TestFrontMatter { Title = "Getting Started" },
-                Content: MakeContent()
-            ),
-            new(
-                Route: MakeRoute("/wip"),
-                Metadata: new TestFrontMatter { Title = "WIP", IsDraft = true },
-                Content: MakeContent()
-            ),
-            new(
-                Route: MakeRoute("/about"),
-                Metadata: new MinimalFrontMatter("About"),
-                Content: MakeContent()
-            ),
+            new(MakeRoute("/getting-started"), new TestFrontMatter { Title = "Getting Started" }),
+            new(MakeRoute("/wip"), new TestFrontMatter { Title = "WIP", IsDraft = true }),
+            new(MakeRoute("/about"), new MinimalFrontMatter("About")),
         };
 
-        var entries = _builder.Build(items);
+        var entries = _builder.Build(candidates);
 
         entries.Count.ShouldBe(2);
         var urls = entries.Select(e => e.Url.Value).ToList();
         urls.ShouldContain("https://example.com/getting-started/");
         urls.ShouldContain("https://example.com/about/");
     }
-
 }

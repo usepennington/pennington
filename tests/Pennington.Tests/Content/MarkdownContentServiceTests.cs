@@ -147,6 +147,59 @@ public class MarkdownContentServiceTests
         entries[0].Title.ShouldBe("Published");
     }
 
+    // Captures: a page with empty title (e.g. YAML typo in frontmatter type
+    // that doesn't implement IRedirectable, so `redirectUrl:` is silently
+    // ignored and no title remains) must not leak into the TOC. Otherwise
+    // it produces a search-index entry with empty title + body, which the
+    // validator flags as S.MISSING_FIELD.
+    [Fact]
+    public async Task GetContentTocEntriesAsync_SkipsEntriesWithEmptyTitle()
+    {
+        var fs = CreateFs(
+            ("real.md", "---\ntitle: Real Page\n---\n# Real"),
+            ("orphan.md", "---\nredirectUrl: /elsewhere\n---\n"));
+        var service = CreateTestService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(1);
+        entries[0].Title.ShouldBe("Real Page");
+    }
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_SkipsRedirects()
+    {
+        var fs = CreateFs(
+            ("real.md", "---\ntitle: Real Page\n---\n# Real"),
+            ("legacy.md", "---\ntitle: Legacy URL\nredirectUrl: /real/\n---\n"));
+        var service = CreateRedirectableTestService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(1);
+        entries[0].Title.ShouldBe("Real Page");
+    }
+
+    private record RedirectableFrontMatter : IFrontMatter, IDraftable, IRedirectable
+    {
+        public string Title { get; init; } = "";
+        public bool IsDraft { get; init; }
+        public string? RedirectUrl { get; init; }
+    }
+
+    private MarkdownContentService<RedirectableFrontMatter> CreateRedirectableTestService(MockFileSystem fs)
+    {
+        var options = new MarkdownContentServiceOptions
+        {
+            ContentPath = new FilePath("/content"),
+            BasePageUrl = new UrlPath("/docs"),
+            Section = "Documentation"
+        };
+
+        return new MarkdownContentService<RedirectableFrontMatter>(
+            options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
+    }
+
     [Fact]
     public async Task GetContentTocEntriesAsync_UsesSectionFromOptions()
     {

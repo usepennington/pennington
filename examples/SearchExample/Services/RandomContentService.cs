@@ -61,7 +61,24 @@ public class RandomContentService : IContentService
     }
 
     public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
-        => Task.FromResult(ImmutableList<ContentTocItem>.Empty);
+    {
+        var builder = ImmutableList.CreateBuilder<ContentTocItem>();
+        foreach (var (route, title) in _items)
+        {
+            var hierarchyParts = route.CanonicalPath.Value
+                .Trim('/')
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            builder.Add(new ContentTocItem(
+                Title: title,
+                Route: route,
+                Order: int.MaxValue,
+                HierarchyParts: hierarchyParts,
+                Section: "Random",
+                Locale: null));
+        }
+        return Task.FromResult(builder.ToImmutable());
+    }
 
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
         => Task.FromResult(ImmutableList<ContentToCopy>.Empty);

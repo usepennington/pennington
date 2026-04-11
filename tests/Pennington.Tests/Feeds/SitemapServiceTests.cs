@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Pennington.Content;
 using Pennington.Feeds;
@@ -19,21 +18,13 @@ public class SitemapServiceTests
         Locale = locale,
     };
 
-    private record TestFrontMatter : IFrontMatter, IDateable, IDraftable
+    private record TestFrontMatter : IFrontMatter, IDateable, IDraftable, IRedirectable
     {
         public string Title { get; init; } = "Test";
         public DateTime? Date { get; init; }
         public bool IsDraft { get; init; }
+        public string? RedirectUrl { get; init; }
     }
-
-    private static RenderedContent MakeRenderedContent() => new(
-        Html: "<p>Hello</p>",
-        Outline: [],
-        Tags: ImmutableList<Tag>.Empty,
-        CrossReferences: ImmutableList<CrossReference>.Empty,
-        SearchDocument: null,
-        Social: null
-    );
 
     private class StubContentService(params DiscoveredItem[] items) : IContentService
     {
@@ -59,23 +50,32 @@ public class SitemapServiceTests
                 new ParsedItem(item.Route, metadata, "# Test")));
     }
 
-    private class StubRenderer : IContentRenderer
+    /// <summary>
+    /// Parser that returns a FailedItem for any source it doesn't understand.
+    /// Real-world behavior for non-markdown sources going through the markdown parser.
+    /// </summary>
+    private class FailingParser : IContentParser
     {
-        public Task<ContentItem> RenderAsync(ParsedItem item)
+        public Task<ContentItem> ParseAsync(DiscoveredItem item)
             => Task.FromResult(new ContentItem(
-                new RenderedItem(item.Route, item.Metadata, MakeRenderedContent())));
+                new FailedItem(item.Route, new ContentError("unsupported"))));
+    }
+
+    private class StubProgrammaticGenerator : IProgrammaticContentGenerator
+    {
+        public Task<ProgrammaticContent> GenerateAsync(ContentRoute route)
+            => Task.FromResult(new ProgrammaticContent(
+                new TextProgrammaticContent(null, "<p>gen</p>", "text/html")));
     }
 
     private static SitemapService CreateService(
         IContentService contentService,
         IContentParser parser,
-        IContentRenderer renderer,
         string canonicalBase = "https://example.com")
     {
         var services = new ServiceCollection();
         services.AddSingleton<IContentService>(contentService);
         services.AddSingleton(parser);
-        services.AddSingleton(renderer);
         services.AddSingleton(new LocalizationOptions());
         var sp = services.BuildServiceProvider();
 
@@ -94,8 +94,7 @@ public class SitemapServiceTests
 
         var service = CreateService(
             new StubContentService(discovered),
-            new StubParser(metadata),
-            new StubRenderer());
+            new StubParser(metadata));
 
         var xml = await service.GetSitemapXmlAsync();
 
@@ -112,8 +111,7 @@ public class SitemapServiceTests
 
         var service = CreateService(
             new StubContentService(discovered),
-            new StubParser(metadata),
-            new StubRenderer());
+            new StubParser(metadata));
 
         var xml = await service.GetSitemapXmlAsync();
 
@@ -131,11 +129,96 @@ public class SitemapServiceTests
 
         var service = CreateService(
             new StubContentService(discovered),
-            new StubParser(metadata),
-            new StubRenderer());
+            new StubParser(metadata));
 
         var xml = await service.GetSitemapXmlAsync();
 
         xml.ShouldNotContain("draft-post");
+    }
+
+    [Fact]
+    public async Task GetSitemapXml_IncludesProgrammaticSource_EvenWhenParserRejectsIt()
+    {
+        // Programmatic sources never reach the markdown parser — the service
+        // short-circuits and emits the route directly. This guards against
+        // the regression where search/llms enumerate TOC but sitemap used the
+        // parse pipeline, leaving programmatic content out of sitemap.xml.
+        var route = MakeRoute("/generated/page");
+        var source = new ContentSource(new ProgrammaticSource(new StubProgrammaticGenerator()));
+        var discovered = new DiscoveredItem(route, source);
+
+        var service = CreateService(
+            new StubContentService(discovered),
+            new FailingParser());
+
+        var xml = await service.GetSitemapXmlAsync();
+
+        xml.ShouldContain("https://example.com/generated/page/");
+    }
+
+    [Fact]
+    public async Task GetSitemapXml_ExcludesNonHtmlOutputs()
+    {
+        // SpaNavigationContentService discovers routes for /_spa-data/*.json
+        // pages — they're transport for the SPA shell, not canonical URLs.
+        // The sitemap must skip anything whose output file is not HTML.
+        var jsonRoute = new ContentRoute
+        {
+            CanonicalPath = new UrlPath("/_spa-data/docs/intro.json"),
+            OutputFile = new FilePath("_spa-data/docs/intro.json"),
+        };
+        var htmlRoute = MakeRoute("/docs/intro");
+        var discovered = new[]
+        {
+            new DiscoveredItem(jsonRoute, new ContentSource(new ProgrammaticSource(new StubProgrammaticGenerator()))),
+            new DiscoveredItem(htmlRoute, new ContentSource(new ProgrammaticSource(new StubProgrammaticGenerator()))),
+        };
+
+        var service = CreateService(
+            new StubContentService(discovered),
+            new FailingParser());
+
+        var xml = await service.GetSitemapXmlAsync();
+
+        xml.ShouldNotContain("_spa-data");
+        xml.ShouldContain("https://example.com/docs/intro/");
+    }
+
+    [Fact]
+    public async Task GetSitemapXml_ExcludesRedirectSources()
+    {
+        // Routes backed by RedirectSource — whether explicit redirects or
+        // framework-internal placeholders like SpaNavigationContentService's
+        // /_spa-data pages — should never appear in the sitemap.
+        var route = MakeRoute("/legacy-page");
+        var source = new ContentSource(new RedirectSource(new UrlPath("/new-page/")));
+        var discovered = new DiscoveredItem(route, source);
+
+        var service = CreateService(
+            new StubContentService(discovered),
+            new FailingParser());
+
+        var xml = await service.GetSitemapXmlAsync();
+
+        xml.ShouldNotContain("legacy-page");
+    }
+
+    [Fact]
+    public async Task GetSitemapXml_ExcludesMarkdownPagesWithFailedParse()
+    {
+        // If the markdown parser fails for a MarkdownFileSource (corrupt
+        // front matter etc.) we should skip the entry rather than emit an
+        // unfiltered URL — we can't honour IDraftable without metadata.
+        var route = MakeRoute("/corrupt");
+        var source = new ContentSource(new MarkdownFileSource("content/corrupt.md"));
+        var discovered = new DiscoveredItem(route, source);
+
+        var service = CreateService(
+            new StubContentService(discovered),
+            new FailingParser());
+
+        var xml = await service.GetSitemapXmlAsync();
+
+        xml.ShouldNotContain("/corrupt");
     }
 }

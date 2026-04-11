@@ -1,9 +1,9 @@
 namespace Pennington.Feeds;
 
-using System.Collections.Immutable;
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Pennington.Content;
+using Pennington.FrontMatter;
 using Pennington.Infrastructure;
 using Pennington.Pipeline;
 
@@ -12,6 +12,14 @@ using Pennington.Pipeline;
 /// Uses <see cref="AsyncLazy{T}"/> for lazy, thread-safe computation.
 /// When managed by <see cref="FileWatchDependencyFactory{T}"/>, the instance is
 /// recreated on file changes — trusts IContentService for fresh metadata.
+/// <para>
+/// Enumerates every <see cref="IContentService.DiscoverAsync"/> result. For
+/// markdown sources, the parser is invoked so <see cref="IDateable"/> metadata
+/// (lastmod) and <see cref="IDraftable"/> filtering apply. For programmatic /
+/// Razor page sources, the route is emitted with no extra metadata — those
+/// content types are rarely dateable and forcing every programmatic generator
+/// to run at sitemap-build time would be expensive.
+/// </para>
 /// </summary>
 public sealed class SitemapService
 {
@@ -29,28 +37,62 @@ public sealed class SitemapService
         var contentServices = sp.GetServices<IContentService>();
         var localization = sp.GetRequiredService<LocalizationOptions>();
         var parser = sp.GetRequiredService<IContentParser>();
-        var renderer = sp.GetRequiredService<IContentRenderer>();
-        var renderedItems = new List<RenderedItem>();
+        var candidates = new List<SitemapCandidate>();
 
         foreach (var service in contentServices)
         {
             await foreach (var discovered in service.DiscoverAsync())
             {
-                var parseResult = await parser.ParseAsync(discovered);
-                if (parseResult is not ParsedItem parsed) continue;
+                // Skip non-HTML outputs (SPA page-data JSON, static assets, etc.).
+                // The SPA navigation content service surfaces /_spa-data/*.json
+                // routes through DiscoverAsync — those are transport for the
+                // SPA shell and must not appear as canonical URLs.
+                var outputFile = discovered.Route.OutputFile.Value;
+                var ext = Path.GetExtension(outputFile);
+                if (!string.IsNullOrEmpty(ext)
+                    && !ext.Equals(".html", StringComparison.OrdinalIgnoreCase)
+                    && !ext.Equals(".htm", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
 
-                var renderResult = await renderer.RenderAsync(parsed);
-                if (renderResult is not RenderedItem rendered) continue;
+                // RedirectSource-backed items either are explicit redirects
+                // (no canonical value) or are framework-internal placeholder
+                // routes like /_spa-data/*.json (which the extension check
+                // above already caught). Skip them.
+                if (discovered.Source is RedirectSource) continue;
 
-                renderedItems.Add(rendered);
+                IFrontMatter? metadata = null;
+
+                // Only markdown sources go through the parser — it's the only
+                // source type that parses front matter from the file system.
+                // Programmatic/Razor sources surface metadata at generation /
+                // render time, which is too expensive to run here just for
+                // lastmod. Those entries get emitted with route + no metadata.
+                if (discovered.Source is MarkdownFileSource)
+                {
+                    var parseResult = await parser.ParseAsync(discovered);
+                    if (parseResult is ParsedItem parsed)
+                    {
+                        metadata = parsed.Metadata;
+                    }
+                    else
+                    {
+                        // Parse failed entirely — skip. (The page probably
+                        // won't render either, so omitting it is defensible.)
+                        continue;
+                    }
+                }
+
+                candidates.Add(new SitemapCandidate(discovered.Route, metadata));
             }
         }
 
-        var entries = builder.Build(renderedItems);
+        var entries = builder.Build(candidates);
 
         if (localization.IsMultiLocale)
         {
-            var localeUrlMap = BuildLocaleUrlMap(renderedItems, localization);
+            var localeUrlMap = BuildLocaleUrlMap(candidates, localization);
             return SerializeToXmlWithHreflang(entries, localeUrlMap, localization, builder.CanonicalBase);
         }
 
@@ -134,15 +176,15 @@ public sealed class SitemapService
     /// Builds a map from content-relative URL to list of (locale, URL) pairs.
     /// </summary>
     private static Dictionary<string, List<(string Locale, string Url)>> BuildLocaleUrlMap(
-        List<RenderedItem> items,
+        List<SitemapCandidate> candidates,
         LocalizationOptions localization)
     {
         var map = new Dictionary<string, List<(string, string)>>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var item in items)
+        foreach (var candidate in candidates)
         {
-            var url = item.Route.CanonicalPath.Value;
-            var locale = item.Route.Locale is { Length: > 0 } loc ? loc : localization.DefaultLocale;
+            var url = candidate.Route.CanonicalPath.Value;
+            var locale = candidate.Route.Locale is { Length: > 0 } loc ? loc : localization.DefaultLocale;
             var contentRelative = StripLocalePrefix(url, localization);
 
             if (!map.TryGetValue(contentRelative, out var list))

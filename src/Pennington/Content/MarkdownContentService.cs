@@ -76,6 +76,17 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         foreach (var (route, fm) in metadata)
         {
             if (fm is IDraftable { IsDraft: true }) continue;
+            // Redirects are transport-only — they shouldn't appear in navigation,
+            // search results, or llms.txt (all of which iterate this TOC). The
+            // engine emits a meta-refresh page at the route, which has no
+            // meaningful title or body to index.
+            if (fm is IRedirectable { RedirectUrl: { Length: > 0 } }) continue;
+            // Defensive: a parsed file with no title produces an empty search
+            // entry (title="", body=""). This typically indicates a redirect
+            // whose frontmatter type doesn't implement IRedirectable, or a
+            // file with only frontmatter and no body. Either way, it's not
+            // useful content — skip it.
+            if (string.IsNullOrWhiteSpace(fm.Title)) continue;
 
             var order = fm is IOrderable orderable ? orderable.Order : int.MaxValue;
             var section = fm is ISectionable sectionable ? sectionable.Section : _options.Section;
