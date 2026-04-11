@@ -5,6 +5,7 @@ using System.IO.Abstractions;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
@@ -16,6 +17,11 @@ using Pennington.Routing;
 /// Generates llms.txt index and stripped markdown files.
 /// When managed by <see cref="FileWatchDependencyFactory{T}"/>, the instance is
 /// recreated on file changes — no manual watcher subscription needed.
+/// <para>
+/// Post-pipeline HTML is fetched from the running host via <see cref="RenderedHtmlFetcher"/>
+/// and converted to markdown, so the output reflects Markdig extensions, Razor SSR,
+/// xref resolution, and other middleware transforms.
+/// </para>
 /// </summary>
 public sealed class LlmsTxtService
 {
@@ -25,10 +31,12 @@ public sealed class LlmsTxtService
         IServiceProvider serviceProvider,
         PenningtonOptions pennOptions,
         LlmsTxtOptions llmsTxtOptions,
-        NavigationBuilder navigationBuilder)
+        NavigationBuilder navigationBuilder,
+        RenderedHtmlFetcher fetcher,
+        ILogger<LlmsTxtService> logger)
     {
         _dataLazy = new AsyncLazy<LlmsTxtData>(
-            () => BuildAsync(serviceProvider, pennOptions, llmsTxtOptions, navigationBuilder));
+            () => BuildAsync(serviceProvider, pennOptions, llmsTxtOptions, navigationBuilder, fetcher, logger));
     }
 
     public async Task<string> GetLlmsTxtAsync() => (await _dataLazy.Value).IndexContent;
@@ -41,14 +49,16 @@ public sealed class LlmsTxtService
         IServiceProvider sp,
         PenningtonOptions pennOptions,
         LlmsTxtOptions llmsTxtOptions,
-        NavigationBuilder navigationBuilder)
+        NavigationBuilder navigationBuilder,
+        RenderedHtmlFetcher fetcher,
+        ILogger<LlmsTxtService> logger)
     {
         var contentServices = sp.GetServices<IContentService>();
         var parser = sp.GetRequiredService<IContentParser>();
 
-        // Collect TOC entries and parsed content from all services
+        // Collect TOC entries and parsed metadata from all services
         var allTocItems = new List<ContentTocItem>();
-        var parsedByPath = new Dictionary<string, ParsedItem>(StringComparer.OrdinalIgnoreCase);
+        var metadataByPath = new Dictionary<string, IFrontMatter>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var service in contentServices)
         {
@@ -69,7 +79,7 @@ public sealed class LlmsTxtService
                 if (parsed.Metadata is IRedirectable { RedirectUrl: not null }) continue;
 
                 var key = NormalizePath(parsed.Route.CanonicalPath.Value);
-                parsedByPath[key] = parsed;
+                metadataByPath[key] = parsed.Metadata;
             }
         }
 
@@ -100,7 +110,15 @@ public sealed class LlmsTxtService
         var markdownFiles = ImmutableList.CreateBuilder<MarkdownFile>();
         var fullContentBuilder = llmsTxtOptions.GenerateFullFile ? new StringBuilder() : null;
 
-        WriteTree(tree, sb, markdownFiles, fullContentBuilder, parsedByPath, llmsTxtOptions.OutputDirectory);
+        // Collect the set of leaf paths that will have _llms/*.md files so we
+        // can rewrite intra-site links inside the converted markdown to point
+        // at sibling stripped files.
+        var linkablePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        CollectLeafPaths(tree, linkablePaths);
+        var rewriteHref = BuildLinkRewriter(linkablePaths, llmsTxtOptions.OutputDirectory);
+
+        await WriteTreeAsync(tree, sb, markdownFiles, fullContentBuilder, metadataByPath,
+            llmsTxtOptions, fetcher, rewriteHref, logger);
 
         return new LlmsTxtData(
             sb.ToString().TrimEnd() + "\n",
@@ -108,13 +126,58 @@ public sealed class LlmsTxtService
             fullContentBuilder?.ToString().TrimEnd());
     }
 
-    private static void WriteTree(
+    private static void CollectLeafPaths(ImmutableList<NavigationTreeItem> items, HashSet<string> acc)
+    {
+        foreach (var item in items)
+        {
+            if (item.Children.Count > 0)
+                CollectLeafPaths(item.Children, acc);
+            else
+                acc.Add(NormalizePath(item.Route.CanonicalPath.Value));
+        }
+    }
+
+    private static Func<string, string> BuildLinkRewriter(HashSet<string> linkablePaths, string outputDirectory)
+    {
+        return href =>
+        {
+            // Pass through anything that isn't a path on this site.
+            if (href.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                || href.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                || href.StartsWith("//")
+                || href.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)
+                || href.StartsWith("tel:", StringComparison.OrdinalIgnoreCase))
+            {
+                return href;
+            }
+
+            // Split off query and fragment so we can keep them on the rewritten URL.
+            var fragmentIdx = href.IndexOf('#');
+            var fragment = fragmentIdx >= 0 ? href[fragmentIdx..] : "";
+            var beforeFragment = fragmentIdx >= 0 ? href[..fragmentIdx] : href;
+
+            var queryIdx = beforeFragment.IndexOf('?');
+            var query = queryIdx >= 0 ? beforeFragment[queryIdx..] : "";
+            var pathPart = queryIdx >= 0 ? beforeFragment[..queryIdx] : beforeFragment;
+
+            var key = NormalizePath(pathPart);
+            if (string.IsNullOrEmpty(key) || !linkablePaths.Contains(key))
+                return href;
+
+            return $"{outputDirectory}/{key}.md{query}{fragment}";
+        };
+    }
+
+    private static async Task WriteTreeAsync(
         ImmutableList<NavigationTreeItem> items,
         StringBuilder sb,
         ImmutableList<MarkdownFile>.Builder markdownFiles,
         StringBuilder? fullContent,
-        Dictionary<string, ParsedItem> parsedByPath,
-        string outputDirectory)
+        Dictionary<string, IFrontMatter> metadataByPath,
+        LlmsTxtOptions llmsTxtOptions,
+        RenderedHtmlFetcher fetcher,
+        Func<string, string> rewriteHref,
+        ILogger logger)
     {
         foreach (var item in items)
         {
@@ -125,16 +188,32 @@ public sealed class LlmsTxtService
                 sb.AppendLine();
 
                 // Write leaf entries for this section, then recurse into subsections
-                WriteTree(item.Children, sb, markdownFiles, fullContent, parsedByPath, outputDirectory);
+                await WriteTreeAsync(item.Children, sb, markdownFiles, fullContent, metadataByPath,
+                    llmsTxtOptions, fetcher, rewriteHref, logger);
             }
             else
             {
-                // Leaf node — write entry if we have parsed content
+                // Leaf node — fetch rendered HTML and write entry
                 var key = NormalizePath(item.Route.CanonicalPath.Value);
-                if (!parsedByPath.TryGetValue(key, out var parsed)) continue;
+                if (!metadataByPath.TryGetValue(key, out var metadata))
+                {
+                    // No parsed metadata — this is a Razor page or similar. Still fetch it.
+                    metadata = null!;
+                }
 
-                var mdPath = $"{outputDirectory}/{key}.md";
-                var description = parsed.Metadata is IDescribable { Description: { } desc }
+                var element = await fetcher.FetchContentAsync(
+                    item.Route.CanonicalPath.Value, llmsTxtOptions.ContentSelector);
+
+                if (element is null)
+                {
+                    logger.LogWarning("LlmsTxtService: failed to fetch {Path}, skipping", item.Route.CanonicalPath.Value);
+                    continue;
+                }
+
+                var markdown = HtmlToMarkdownConverter.Convert(element, rewriteHref);
+
+                var mdPath = $"{llmsTxtOptions.OutputDirectory}/{key}.md";
+                var description = metadata is IDescribable { Description: { } desc }
                     ? $": {desc}"
                     : "";
 
@@ -142,13 +221,13 @@ public sealed class LlmsTxtService
 
                 markdownFiles.Add(new MarkdownFile(
                     new FilePath(mdPath),
-                    Encoding.UTF8.GetBytes(parsed.RawMarkdown)));
+                    Encoding.UTF8.GetBytes(markdown)));
 
                 if (fullContent is not null)
                 {
                     fullContent.AppendLine($"# {item.Title}");
                     fullContent.AppendLine();
-                    fullContent.AppendLine(parsed.RawMarkdown);
+                    fullContent.AppendLine(markdown);
                     fullContent.AppendLine();
                     fullContent.AppendLine("---");
                     fullContent.AppendLine();

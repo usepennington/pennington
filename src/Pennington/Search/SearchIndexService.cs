@@ -3,47 +3,64 @@ namespace Pennington.Search;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Pennington.Content;
 using Pennington.Infrastructure;
-using Pennington.Pipeline;
+using Pennington.LlmsTxt;
 
 /// <summary>
 /// Generates search index JSON for the /search-index.json endpoint.
 /// Uses <see cref="AsyncLazy{T}"/> for lazy, thread-safe computation.
 /// When managed by <see cref="FileWatchDependencyFactory{T}"/>, the instance is
 /// recreated on file changes — no manual watcher subscription needed.
+/// <para>
+/// Iterates TOC entries (which covers both markdown and Razor @page content)
+/// and fetches post-pipeline HTML via <see cref="RenderedHtmlFetcher"/>, so the
+/// index reflects what users actually see rather than pre-render markdown.
+/// </para>
 /// </summary>
 public sealed class SearchIndexService
 {
     private readonly AsyncLazy<string> _indexLazy;
 
-    public SearchIndexService(IServiceProvider serviceProvider, SearchIndexBuilder builder)
+    public SearchIndexService(
+        IServiceProvider serviceProvider,
+        SearchIndexBuilder builder,
+        SearchIndexOptions options,
+        RenderedHtmlFetcher fetcher,
+        ILogger<SearchIndexService> logger)
     {
-        _indexLazy = new AsyncLazy<string>(() => BuildSearchIndexAsync(serviceProvider, builder));
+        _indexLazy = new AsyncLazy<string>(() => BuildSearchIndexAsync(serviceProvider, builder, options, fetcher, logger));
     }
 
     public Task<string> GetSearchIndexJsonAsync() => _indexLazy.Value;
 
-    private static async Task<string> BuildSearchIndexAsync(IServiceProvider sp, SearchIndexBuilder builder)
+    private static async Task<string> BuildSearchIndexAsync(
+        IServiceProvider sp,
+        SearchIndexBuilder builder,
+        SearchIndexOptions options,
+        RenderedHtmlFetcher fetcher,
+        ILogger logger)
     {
         var documents = new List<SearchIndexDocument>();
         var contentServices = sp.GetServices<IContentService>();
-        var parser = sp.GetRequiredService<IContentParser>();
-        var renderer = sp.GetRequiredService<IContentRenderer>();
 
         foreach (var service in contentServices)
         {
-            await foreach (var discovered in service.DiscoverAsync())
+            // Skip the LlmsTxtContentService to avoid indexing the llms.txt artifacts themselves.
+            if (service is LlmsTxtContentService) continue;
+
+            var tocItems = await service.GetContentTocEntriesAsync();
+            foreach (var toc in tocItems)
             {
-                var parseResult = await parser.ParseAsync(discovered);
-                if (parseResult is not ParsedItem parsed) continue;
+                var element = await fetcher.FetchContentAsync(toc.Route.CanonicalPath.Value, options.ContentSelector);
+                if (element is null)
+                {
+                    logger.LogWarning("SearchIndexService: failed to fetch {Path}, skipping", toc.Route.CanonicalPath.Value);
+                    continue;
+                }
 
-                var renderResult = await renderer.RenderAsync(parsed);
-                if (renderResult is not RenderedItem rendered) continue;
-
-                var doc = builder.Build(rendered);
-                if (doc != null)
-                    documents.Add(doc);
+                documents.Add(builder.Build(toc, element.InnerHtml));
             }
         }
 

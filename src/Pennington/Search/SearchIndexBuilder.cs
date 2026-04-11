@@ -1,11 +1,11 @@
 namespace Pennington.Search;
 
 using System.Text.RegularExpressions;
-using Pennington.FrontMatter;
-using Pennington.Pipeline;
+using Pennington.Content;
 
 /// <summary>
-/// Builds search index documents from rendered content items.
+/// Builds search index documents from TOC entries plus post-pipeline HTML
+/// fetched from the running host.
 /// </summary>
 public sealed partial class SearchIndexBuilder
 {
@@ -17,24 +17,19 @@ public sealed partial class SearchIndexBuilder
     }
 
     /// <summary>
-    /// Build a SearchIndexDocument from a rendered item.
-    /// Returns null if the item should be excluded (e.g., drafts).
+    /// Build a SearchIndexDocument from a TOC entry and its fetched body HTML.
+    /// Draft filtering is handled upstream by each <c>IContentService</c>'s TOC builder.
     /// </summary>
-    public SearchIndexDocument? Build(RenderedItem item)
+    public SearchIndexDocument Build(ContentTocItem toc, string bodyHtml)
     {
-        // Skip drafts
-        if (item.Metadata is IDraftable { IsDraft: true })
-            return null;
-
-        var body = StripHtml(item.Content.Html);
-        var section = (item.Metadata as ISectionable)?.Section;
+        var body = StripHtml(bodyHtml);
 
         return new SearchIndexDocument(
-            Title: item.Metadata.Title,
+            Title: toc.Title,
             Body: body,
-            Url: item.Route.CanonicalPath.Value,
-            Section: section,
-            Locale: item.Route.Locale,
+            Url: toc.Route.CanonicalPath.Value,
+            Section: toc.Section,
+            Locale: toc.Route.Locale,
             Priority: _defaultPriority
         );
     }

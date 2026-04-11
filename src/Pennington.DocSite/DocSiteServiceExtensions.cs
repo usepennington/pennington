@@ -30,8 +30,10 @@ public static class DocSiteServiceExtensions
                 md.BasePageUrl = "/";
             });
 
-            // llms.txt generation
-            penn.AddLlmsTxt();
+            // llms.txt generation — the DocSite layout puts content inside <article id="main-content">
+            // so both llms.txt output and the search index can scope extraction to that element.
+            penn.AddLlmsTxt(opts => opts.ContentSelector ??= "#main-content");
+            penn.SearchIndex.ContentSelector ??= "#main-content";
 
             // Localization
             options.ConfigureLocalization?.Invoke(penn.Localization);

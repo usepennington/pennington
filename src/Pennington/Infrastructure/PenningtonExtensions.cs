@@ -160,7 +160,16 @@ public static class PenningtonExtensions
         var canonicalBase = new UrlPath(options.CanonicalBaseUrl ?? "/");
         services.AddSingleton(_ => new SitemapBuilder(canonicalBase));
         services.AddSingleton(_ => new RssFeedBuilder(canonicalBase));
-        services.AddSingleton(_ => new SearchIndexBuilder());
+
+        // Shared helper for fetching post-pipeline rendered HTML from the running host.
+        // Used by LlmsTxtService and SearchIndexService so their outputs reflect
+        // Markdig extensions, Razor SSR, xref resolution, etc.
+        services.AddSingleton<RenderedHtmlFetcher>();
+
+        // Search index
+        services.AddSingleton(options.SearchIndex);
+        services.AddSingleton(sp => new SearchIndexBuilder(
+            sp.GetRequiredService<SearchIndexOptions>().DefaultPriority));
 
         // Search index and sitemap services — factory-managed, trust IContentService for fresh data
         services.AddFileWatched<SearchIndexService>();

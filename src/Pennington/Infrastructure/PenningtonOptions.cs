@@ -5,6 +5,7 @@ using Pennington.Highlighting;
 using Pennington.Islands;
 using Pennington.LlmsTxt;
 using Pennington.Localization;
+using Pennington.Search;
 
 /// <summary>Main configuration options for the Pennington content engine.</summary>
 public sealed class PenningtonOptions
@@ -44,6 +45,9 @@ public sealed class PenningtonOptions
     }
 
     public LlmsTxtOptions? LlmsTxt => _llmsTxtOptions;
+
+    /// <summary>Configuration for the search index.</summary>
+    public SearchIndexOptions SearchIndex { get; } = new();
 
     /// <summary>Assemblies to scan for @page Razor components.</summary>
     public Assembly[] AdditionalRoutingAssemblies { get; set; } = [];
