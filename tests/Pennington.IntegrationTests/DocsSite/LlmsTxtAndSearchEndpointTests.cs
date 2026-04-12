@@ -54,7 +54,7 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
     [Fact]
     public async Task SearchIndex_ReturnsJsonArrayOfDocuments()
     {
-        var response = await _fixture.Client.GetAsync("/search-index.json", TestContext.Current.CancellationToken);
+        var response = await _fixture.Client.GetAsync("/search-index-en.json", TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -79,7 +79,7 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
         // Before this fix, bodies came from StripHtml(IContentRenderer.Render(...)),
         // which produced empty bodies for Razor pages and missed code-block text
         // that only materializes after the full pipeline runs.
-        var response = await _fixture.Client.GetAsync("/search-index.json", TestContext.Current.CancellationToken);
+        var response = await _fixture.Client.GetAsync("/search-index-en.json", TestContext.Current.CancellationToken);
         var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         using var doc = JsonDocument.Parse(json);
 

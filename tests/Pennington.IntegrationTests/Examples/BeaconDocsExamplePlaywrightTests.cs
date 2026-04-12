@@ -110,7 +110,7 @@ public class BeaconDocsExamplePlaywrightTests : IClassFixture<BeaconDocsExampleP
     [Fact]
     public async Task SearchIndex_IsServed()
     {
-        var response = await _page.GotoAsync($"{_fixture.BaseUrl}/search-index.json");
+        var response = await _page.GotoAsync($"{_fixture.BaseUrl}/search-index-en.json");
         response!.Status.ShouldBe(200);
     }
 

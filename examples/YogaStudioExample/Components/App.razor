@@ -48,7 +48,7 @@
             });
         })();
 
-        // Search modal: Fuse.js-powered fuzzy search against /search-index.json.
+        // Search modal: Fuse.js-powered fuzzy search against /search-index-@(Locale.Locale).json.
         (function () {
             'use strict';
             var fuseInstance = null;
@@ -118,7 +118,7 @@
                 if (searchData || isLoading) return;
                 isLoading = true;
                 try {
-                    var response = await fetch('/search-index.json');
+                    var response = await fetch('/search-index-@(Locale.Locale).json');
                     searchData = await response.json();
                     if (typeof Fuse === 'undefined') {
                         await loadScript('https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js');

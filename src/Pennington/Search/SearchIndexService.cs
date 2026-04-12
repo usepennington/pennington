@@ -9,7 +9,8 @@ using Pennington.Infrastructure;
 using Pennington.LlmsTxt;
 
 /// <summary>
-/// Generates search index JSON for the /search-index.json endpoint.
+/// Generates per-locale search index JSON. Each configured locale gets its own
+/// document bucket; the client fetches only the index for the active locale.
 /// Uses <see cref="AsyncLazy{T}"/> for lazy, thread-safe computation.
 /// When managed by <see cref="FileWatchDependencyFactory{T}"/>, the instance is
 /// recreated on file changes — no manual watcher subscription needed.
@@ -21,28 +22,50 @@ using Pennington.LlmsTxt;
 /// </summary>
 public sealed class SearchIndexService
 {
-    private readonly AsyncLazy<string> _indexLazy;
+    private readonly AsyncLazy<IReadOnlyDictionary<string, string>> _indexLazy;
+    private readonly LocalizationOptions _localization;
 
     public SearchIndexService(
         IServiceProvider serviceProvider,
         SearchIndexBuilder builder,
         SearchIndexOptions options,
         RenderedHtmlFetcher fetcher,
+        LocalizationOptions localization,
         ILogger<SearchIndexService> logger)
     {
-        _indexLazy = new AsyncLazy<string>(() => BuildSearchIndexAsync(serviceProvider, builder, options, fetcher, logger));
+        _localization = localization;
+        _indexLazy = new AsyncLazy<IReadOnlyDictionary<string, string>>(
+            () => BuildAllAsync(serviceProvider, builder, options, fetcher, localization, logger));
     }
 
-    public Task<string> GetSearchIndexJsonAsync() => _indexLazy.Value;
+    /// <summary>
+    /// Returns the JSON array of search documents for the given locale. Returns
+    /// <c>"[]"</c> when the locale has no indexed content (or is not registered).
+    /// </summary>
+    public async Task<string> GetSearchIndexJsonAsync(string locale)
+    {
+        var all = await _indexLazy.Value;
+        return all.TryGetValue(locale, out var json) ? json : "[]";
+    }
 
-    private static async Task<string> BuildSearchIndexAsync(
+    private static async Task<IReadOnlyDictionary<string, string>> BuildAllAsync(
         IServiceProvider sp,
         SearchIndexBuilder builder,
         SearchIndexOptions options,
         RenderedHtmlFetcher fetcher,
+        LocalizationOptions localization,
         ILogger logger)
     {
-        var documents = new List<SearchIndexDocument>();
+        var groups = new Dictionary<string, List<SearchIndexDocument>>(StringComparer.OrdinalIgnoreCase);
+
+        // Seed an empty bucket for every configured locale so registered-but-empty
+        // locales serve "[]" rather than 404. Fall back to DefaultLocale for
+        // single-locale sites that haven't called AddLocale.
+        var configuredLocales = localization.Locales.Count > 0
+            ? (IEnumerable<string>)localization.Locales.Keys
+            : [localization.DefaultLocale];
+        foreach (var code in configuredLocales) groups[code] = [];
+
         var contentServices = sp.GetServices<IContentService>();
 
         foreach (var service in contentServices)
@@ -61,11 +84,19 @@ public sealed class SearchIndexService
                     continue;
                 }
 
-                documents.Add(builder.Build(toc, element.InnerHtml));
+                var locale = string.IsNullOrEmpty(toc.Route.Locale)
+                    ? localization.DefaultLocale
+                    : toc.Route.Locale;
+                if (!groups.TryGetValue(locale, out var list))
+                    groups[locale] = list = [];
+                list.Add(builder.Build(toc, element.InnerHtml));
             }
         }
 
-        return JsonSerializer.Serialize(documents, SearchIndexJsonContext.Default.ListSearchIndexDocument);
+        return groups.ToDictionary(
+            kv => kv.Key,
+            kv => JsonSerializer.Serialize(kv.Value, SearchIndexJsonContext.Default.ListSearchIndexDocument),
+            StringComparer.OrdinalIgnoreCase);
     }
 }
 

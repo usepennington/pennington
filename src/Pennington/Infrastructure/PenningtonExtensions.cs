@@ -363,9 +363,20 @@ public static class PenningtonExtensions
         // Response processing middleware
         app.UseMiddleware<ResponseProcessingMiddleware>();
 
-        // Search index and sitemap endpoints (auto-discovered by static build)
-        app.MapGet("/search-index.json", async (SearchIndexService service) =>
-            Results.Content(await service.GetSearchIndexJsonAsync(), "application/json"));
+        // Search index and sitemap endpoints (auto-discovered by static build).
+        // One search-index file per configured locale so clients only fetch their
+        // locale's documents. Use concrete URLs (not a {locale} route param) so
+        // OutputGenerationService.DiscoverMapGetRoutes bakes each file.
+        var localization = app.Services.GetRequiredService<LocalizationOptions>();
+        var searchIndexLocales = localization.Locales.Count > 0
+            ? (IEnumerable<string>)localization.Locales.Keys
+            : [localization.DefaultLocale];
+        foreach (var code in searchIndexLocales)
+        {
+            var capture = code;
+            app.MapGet($"/search-index-{capture}.json", async (SearchIndexService service) =>
+                Results.Content(await service.GetSearchIndexJsonAsync(capture), "application/json"));
+        }
         app.MapGet("/sitemap.xml", async (Feeds.SitemapService service) =>
             Results.Content(await service.GetSitemapXmlAsync(), "application/xml"));
 

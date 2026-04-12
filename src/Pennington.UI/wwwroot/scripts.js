@@ -1127,6 +1127,7 @@ class SearchManager {
         this.searchData = null;
         this.FlexSearch = null;
         this.searchIndexFailed = false; // Track if search index loading failed
+        this.loadedLocale = null; // Locale the currently-loaded index was built for
     }
 
     async init() {
@@ -1221,13 +1222,22 @@ class SearchManager {
         this.searchModal.classList.remove('hidden');
         this.modalInput.focus();
         document.body.style.overflow = 'hidden';
-        
+
         // Check if search index loading previously failed
         if (this.searchIndexFailed) {
             this.searchResults.innerHTML = '<div class="search-modal-error">Search is currently unavailable</div>';
             return;
         }
-        
+
+        // If the active locale changed since the index was loaded (SPA nav across
+        // locales), discard the cached index so we re-fetch the correct one.
+        const activeLocale = this.getIndexLocale();
+        if (this.searchData && this.loadedLocale && this.loadedLocale !== activeLocale) {
+            this.searchData = null;
+            this.searchIndex = null;
+            this.loadedLocale = null;
+        }
+
         // Load search index on first open
         if (!this.searchData) {
             this.searchResults.innerHTML = '<div class="search-modal-loading">Loading search index...</div>';
@@ -1265,15 +1275,17 @@ class SearchManager {
             if (baseUrl.endsWith('/')) {
                 baseUrl = baseUrl.slice(0, -1);
             }
-            const searchIndexUrl = baseUrl ? `${baseUrl}/search-index.json` : '/search-index.json';
-            
+            const locale = this.getIndexLocale();
+            const searchIndexUrl = baseUrl ? `${baseUrl}/search-index-${locale}.json` : `/search-index-${locale}.json`;
+
             const response = await fetch(searchIndexUrl);
             if (!response.ok) {
                 throw new Error(`Failed to fetch search index: ${response.status}`);
             }
-            
+
             const indexData = await response.json();
             this.searchData = indexData;
+            this.loadedLocale = locale;
 
             // Create FlexSearch Document index
             this.searchIndex = new this.FlexSearch.Document({
@@ -1415,13 +1427,16 @@ class SearchManager {
     }
 
     /**
-     * Detect the current locale from the URL path.
-     * Reads known locales from a data attribute on the body element.
+     * Resolve the locale code that should be used to fetch the search index for
+     * the current page. Always returns a non-empty code (falls back to
+     * data-default-locale, then "en") so the per-locale URL always resolves.
      */
-    getCurrentLocale() {
+    getIndexLocale() {
         const locales = (document.body.getAttribute('data-locales') || '').split(',').filter(Boolean);
-        const defaultLocale = document.body.getAttribute('data-default-locale') || '';
-        if (locales.length <= 1) return null; // Single-locale site, no filtering
+        const defaultLocale = document.body.getAttribute('data-default-locale') || 'en';
+
+        // Single-locale sites emit an empty data-locales; just use the default.
+        if (locales.length <= 1) return defaultLocale;
 
         const path = window.location.pathname.replace(/^\//, '');
         const firstSegment = path.split('/')[0];
@@ -1429,7 +1444,7 @@ class SearchManager {
         if (firstSegment && locales.includes(firstSegment) && firstSegment !== defaultLocale) {
             return firstSegment;
         }
-        return defaultLocale || null;
+        return defaultLocale;
     }
 
     displayResults(results, query) {
@@ -1439,20 +1454,10 @@ class SearchManager {
         }
 
         // FlexSearch Document API returns array of field results
-        // Combine and score the results from different fields
-        let scoredResults = this.combineFieldResults(results);
-
-        // Filter by current locale when multi-locale
-        const currentLocale = this.getCurrentLocale();
-        if (currentLocale) {
-            scoredResults = scoredResults.filter(({ docId }) => {
-                const doc = this.searchData[parseInt(docId)];
-                if (!doc) return false;
-                const docLocale = doc.locale || '';
-                // Include locale-agnostic (empty) and matching locale results
-                return docLocale === '' || docLocale.toLowerCase() === currentLocale.toLowerCase();
-            });
-        }
+        // Combine and score the results from different fields.
+        // No client-side locale filtering needed — the index we loaded is already
+        // scoped to the active locale.
+        const scoredResults = this.combineFieldResults(results);
 
         if (scoredResults.length === 0) {
             this.searchResults.innerHTML = '<div class="search-modal-no-results">No results found</div>';
