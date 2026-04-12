@@ -104,8 +104,12 @@ else if (_notFound)
 
     protected override async Task OnInitializedAsync()
     {
-        var url = FileName ?? "";
-        if (string.IsNullOrWhiteSpace(url)) url = "index";
+        // Use the full request path (including any locale prefix) rather than the
+        // FileName route parameter — Blazor routing sees a locale-stripped path
+        // because LocaleDetectionMiddleware moves the locale into PathBase, so
+        // FileName alone would cause ContentResolver to miss locale-specific routes.
+        var url = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath;
+        if (string.IsNullOrWhiteSpace(url) || url == "/") url = "index";
 
         _resolved = await ContentResolver.GetContentByUrlAsync(url);
 
