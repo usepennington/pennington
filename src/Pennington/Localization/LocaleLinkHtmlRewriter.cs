@@ -1,57 +1,51 @@
 namespace Pennington.Localization;
 
-using AngleSharp;
 using AngleSharp.Dom;
 using Microsoft.AspNetCore.Http;
 using Pennington.Infrastructure;
 
 /// <summary>
-/// Response processor that rewrites internal page links to include the current
-/// locale prefix. When the user is browsing in a non-default locale, links like
-/// <c>/about</c> become <c>/fr/about</c> automatically, so components don't need
-/// to use explicit locale-aware URL helpers.
+/// Rewrites internal page links to include the current locale prefix.
+/// When the user is browsing in a non-default locale, links like
+/// <c>/about</c> become <c>/fr/about</c> automatically, so components
+/// don't need locale-aware URL helpers.
 /// <para>
-/// Skips links that are external, already locale-prefixed, or point to static
-/// assets (file extensions, <c>/_content/</c>, etc.).
+/// Skips external links, links already carrying a locale prefix, and
+/// paths that look like static assets (file extensions, <c>/_content/</c>, etc.).
+/// </para>
+/// <para>
+/// Runs after xref resolution (<see cref="Order"/> 10) but before
+/// base-URL rewriting (<see cref="Order"/> 30), so locale detection and
+/// prefixing operate on logical root-relative paths (<c>/about/</c>),
+/// not paths already prefixed with the deployment base URL
+/// (<c>/preview/about/</c>). BaseUrl is the outermost transport layer
+/// and must apply last among URL rewriters.
 /// </para>
 /// </summary>
-public sealed class LocaleLinkRewritingProcessor : IResponseProcessor
+public sealed class LocaleLinkHtmlRewriter : IHtmlResponseRewriter
 {
     private readonly LocalizationOptions _localization;
-    private readonly IBrowsingContext _browsingContext = BrowsingContext.New(Configuration.Default);
 
-    public LocaleLinkRewritingProcessor(LocalizationOptions localization)
+    public LocaleLinkHtmlRewriter(LocalizationOptions localization)
     {
         _localization = localization;
     }
 
-    /// <summary>
-    /// Runs after xref resolution (10) but BEFORE base-URL rewriting (30) so that
-    /// locale detection and prefixing operate on logical root-relative paths
-    /// (<c>/about/</c>), not on paths already prefixed with the deployment base
-    /// URL (<c>/preview/about/</c>). BaseUrlRewritingProcessor is the outermost
-    /// transport layer and must apply last among the URL rewriters.
-    /// </summary>
     public int Order => 20;
 
-    public bool ShouldProcess(HttpContext context)
+    public bool ShouldApply(HttpContext context)
     {
         if (!_localization.IsMultiLocale) return false;
 
-        var contentType = context.Response.ContentType ?? "";
-        if (!contentType.Contains("text/html")) return false;
-        if (context.Response.StatusCode is < 200 or >= 300) return false;
-
-        // Only rewrite for non-default locales
+        // Only rewrite when we're serving a non-default locale.
         var locale = context.Items["Pennington.Locale"] as string;
         return locale is not null
             && !string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase);
     }
 
-    public async Task<string> ProcessAsync(string responseBody, HttpContext context)
+    public Task ApplyAsync(IDocument document, HttpContext context)
     {
         var locale = context.Items["Pennington.Locale"] as string ?? _localization.DefaultLocale;
-        var document = await _browsingContext.OpenAsync(req => req.Content(responseBody));
         var baseUri = GetBaseUri(context);
 
         foreach (var anchor in document.QuerySelectorAll("a[href]"))
@@ -59,7 +53,7 @@ public sealed class LocaleLinkRewritingProcessor : IResponseProcessor
             RewriteAnchorHref(anchor, locale, baseUri);
         }
 
-        return document.ToHtml();
+        return Task.CompletedTask;
     }
 
     private void RewriteAnchorHref(IElement anchor, string locale, string baseUri)
@@ -67,10 +61,9 @@ public sealed class LocaleLinkRewritingProcessor : IResponseProcessor
         var href = anchor.GetAttribute("href");
         if (string.IsNullOrEmpty(href)) return;
 
-        // Skip language switcher links — they intentionally point to specific locales
+        // Skip language-switcher links — they intentionally point at specific locales.
         if (anchor.HasAttribute("data-locale")) return;
 
-        // Extract path from the href (handle both absolute URLs and root-relative paths)
         string? path;
         string prefix = "";
 
@@ -79,7 +72,7 @@ public sealed class LocaleLinkRewritingProcessor : IResponseProcessor
 
         if (href.StartsWith("http://") || href.StartsWith("https://"))
         {
-            // Absolute URL — check if it's for our site
+            // Absolute URL — only rewrite if it points at our own site.
             if (!string.IsNullOrEmpty(baseUri) && href.StartsWith(baseUri, StringComparison.OrdinalIgnoreCase))
             {
                 prefix = baseUri;
@@ -88,7 +81,7 @@ public sealed class LocaleLinkRewritingProcessor : IResponseProcessor
             }
             else
             {
-                return; // External link
+                return;
             }
         }
         else if (href.StartsWith('/'))
@@ -97,7 +90,9 @@ public sealed class LocaleLinkRewritingProcessor : IResponseProcessor
         }
         else
         {
-            return; // Relative path — leave as-is
+            // Relative path — leave as-is. MarkdownLinkResolver handles
+            // source-file-relative resolution before we ever see the HTML.
+            return;
         }
 
         if (!ShouldRewritePath(path, locale)) return;
@@ -108,12 +103,13 @@ public sealed class LocaleLinkRewritingProcessor : IResponseProcessor
 
     private bool ShouldRewritePath(string path, string locale)
     {
-        // Already has this locale prefix
+        // Already has this locale prefix.
         if (path.StartsWith($"/{locale}/", StringComparison.OrdinalIgnoreCase)
             || path.Equals($"/{locale}", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        // Already has ANY locale prefix (e.g., link to a different locale from language switcher)
+        // Already has ANY locale prefix (e.g., a language-switcher link that
+        // slipped through without data-locale).
         foreach (var loc in _localization.Locales.Keys)
         {
             if (path.StartsWith($"/{loc}/", StringComparison.OrdinalIgnoreCase)
@@ -121,11 +117,11 @@ public sealed class LocaleLinkRewritingProcessor : IResponseProcessor
                 return false;
         }
 
-        // Framework / internal paths
+        // Framework / internal paths.
         if (path.StartsWith("/_", StringComparison.Ordinal))
             return false;
 
-        // Has a file extension — likely a static asset
+        // Has a file extension — likely a static asset.
         var lastSegment = path.AsSpan();
         var lastSlash = lastSegment.LastIndexOf('/');
         if (lastSlash >= 0) lastSegment = lastSegment[(lastSlash + 1)..];

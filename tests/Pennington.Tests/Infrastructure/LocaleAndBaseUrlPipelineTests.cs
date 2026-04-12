@@ -8,12 +8,13 @@ using Pennington.Routing;
 namespace Pennington.Tests.Infrastructure;
 
 /// <summary>
-/// End-to-end tests that run <see cref="LocaleLinkRewritingProcessor"/> and
-/// <see cref="BaseUrlRewritingProcessor"/> in their registered Order and assert
-/// that href rewriting is correct for a multi-locale site deployed to a base
-/// URL. Regression coverage for Phase 2 of issue-plan.md — the two processors
-/// must run in the order (locale=20, baseUrl=30) so the base URL is the
-/// outermost transport layer.
+/// End-to-end tests that run the unified HTML rewriting pipeline
+/// (xref → locale → base URL, all inside one
+/// <see cref="HtmlResponseRewritingProcessor"/>) and assert that href
+/// rewriting is correct for a multi-locale site deployed to a base URL.
+/// Regression coverage for Phase 2 of issue-plan.md — locale rewriting
+/// (sub-order 20) must run before base-URL rewriting (sub-order 30) so
+/// the base URL is the outermost transport layer.
 /// </summary>
 public class LocaleAndBaseUrlPipelineTests
 {
@@ -42,34 +43,36 @@ public class LocaleAndBaseUrlPipelineTests
         context.Request.Scheme = "http";
         context.Request.Host = new HostString("localhost", 5000);
         context.Items["Pennington.Locale"] = locale;
+        // Minimal services so XrefHtmlRewriter can resolve a DiagnosticContext
+        // — the tests don't hit xref: links so the resolver is never called.
+        var services = new ServiceCollection();
+        services.AddScoped<Diagnostics.DiagnosticContext>();
+        context.RequestServices = services.BuildServiceProvider();
         return context;
     }
 
     /// <summary>
-    /// Runs the two processors in ascending Order, mirroring what
-    /// ResponseProcessingMiddleware does at runtime.
+    /// Runs the HTML rewriting processor with its three built-in rewriters,
+    /// mirroring the production DI registration.
     /// </summary>
     private static async Task<string> RunChainAsync(string inputHtml, string locale)
     {
         var localization = CreateLocalization();
         var outputOptions = CreateOutputOptions();
-        IResponseProcessor[] processors =
+
+        IHtmlResponseRewriter[] rewriters =
         [
-            new LocaleLinkRewritingProcessor(localization),
-            new BaseUrlRewritingProcessor(outputOptions),
+            new XrefHtmlRewriter(new XrefResolvingService(
+                new ServiceCollection().BuildServiceProvider())),
+            new LocaleLinkHtmlRewriter(localization),
+            new BaseUrlHtmlRewriter(outputOptions),
         ];
 
+        var processor = new HtmlResponseRewritingProcessor(rewriters);
         var context = CreateContext(locale);
-        var body = inputHtml;
-        foreach (var processor in processors.OrderBy(p => p.Order))
-        {
-            if (processor.ShouldProcess(context))
-            {
-                body = await processor.ProcessAsync(body, context);
-            }
-        }
 
-        return body;
+        if (!processor.ShouldProcess(context)) return inputHtml;
+        return await processor.ProcessAsync(inputHtml, context);
     }
 
     [Fact]
@@ -101,8 +104,8 @@ public class LocaleAndBaseUrlPipelineTests
     public async Task NonDefaultLocale_AlreadyLocalePrefixedLink_PassesThroughThenBase()
     {
         // Regression B — NavigationBuilder emits /kl/about/ for locale-subtree pages.
-        // The locale processor must detect the existing /kl/ prefix and pass through;
-        // the base URL processor then produces /preview/kl/about/, NOT /preview/kl/kl/about/.
+        // The locale rewriter must detect the existing /kl/ prefix and pass through;
+        // the base URL rewriter then produces /preview/kl/about/, NOT /preview/kl/kl/about/.
         var input = """<html><body><a href="/kl/about/">About</a></body></html>""";
 
         var result = await RunChainAsync(input, locale: "kl");
@@ -130,8 +133,8 @@ public class LocaleAndBaseUrlPipelineTests
     public async Task NonDefaultLocale_AbsoluteSameSiteUrl_LocaleRewrites_BaseSkips()
     {
         // Absolute URLs (http://localhost:5000/about/) get locale-rewritten by the
-        // locale processor (it recognizes the origin and rewrites the path). The
-        // base URL processor skips them because they don't start with '/'.
+        // locale rewriter (it recognizes the origin and rewrites the path). The
+        // base URL rewriter skips them because they don't start with '/'.
         var input = """<html><body><a href="http://localhost:5000/about/">About</a></body></html>""";
 
         var result = await RunChainAsync(input, locale: "kl");
@@ -153,7 +156,7 @@ public class LocaleAndBaseUrlPipelineTests
     public async Task LanguageSwitcherLink_WithDataLocale_SkipsLocaleRewrite_AppliesBase()
     {
         // Language-switcher links are marked with data-locale so the locale
-        // processor leaves them alone (they intentionally point at a specific
+        // rewriter leaves them alone (they intentionally point at a specific
         // locale). Base URL rewriting still applies.
         var input = """<html><body><a href="/pl/" data-locale="pl">Pig Latin</a></body></html>""";
 
@@ -176,34 +179,46 @@ public class LocaleAndBaseUrlPipelineTests
     }
 
     [Fact]
-    public void LocaleLinkRewritingProcessor_RunsBefore_BaseUrlRewritingProcessor()
+    public void LocaleLinkHtmlRewriter_RunsBefore_BaseUrlHtmlRewriter()
     {
-        var localeProcessor = new LocaleLinkRewritingProcessor(CreateLocalization());
-        var baseProcessor = new BaseUrlRewritingProcessor(CreateOutputOptions());
+        var localeRewriter = new LocaleLinkHtmlRewriter(CreateLocalization());
+        var baseRewriter = new BaseUrlHtmlRewriter(CreateOutputOptions());
 
-        localeProcessor.Order.ShouldBeLessThan(baseProcessor.Order);
+        localeRewriter.Order.ShouldBeLessThan(baseRewriter.Order);
+    }
+
+    [Fact]
+    public void HtmlRewriters_FormExpectedOrderChain()
+    {
+        // Locks in the 10/20/30 sub-order sequence inside HtmlResponseRewritingProcessor.
+        // Adding a new rewriter? Slot it at 15, 25, or 35 — don't disturb the sequence.
+        var xref = new XrefHtmlRewriter(new XrefResolvingService(
+            new ServiceCollection().BuildServiceProvider()));
+        var locale = new LocaleLinkHtmlRewriter(CreateLocalization());
+        var baseUrl = new BaseUrlHtmlRewriter(CreateOutputOptions());
+
+        IHtmlResponseRewriter[] rewriters = [xref, locale, baseUrl];
+        var ordered = rewriters.OrderBy(r => r.Order).ToArray();
+
+        ordered[0].ShouldBeOfType<XrefHtmlRewriter>().Order.ShouldBe(10);
+        ordered[1].ShouldBeOfType<LocaleLinkHtmlRewriter>().Order.ShouldBe(20);
+        ordered[2].ShouldBeOfType<BaseUrlHtmlRewriter>().Order.ShouldBe(30);
     }
 
     [Fact]
     public void BuiltInResponseProcessors_FormExpectedOrderChain()
     {
-        // Locks in the 10/20/30/40/50 sequence for the five built-in processors.
-        // Adding a new processor? Slot it at 15, 25, 35, 45, or outside this range —
-        // don't disturb the sequence.
-        var xref = new XrefResolvingProcessor(new XrefResolvingService(
-            new ServiceCollection().BuildServiceProvider()));
-        var locale = new LocaleLinkRewritingProcessor(CreateLocalization());
-        var baseUrl = new BaseUrlRewritingProcessor(CreateOutputOptions());
+        // The three response processors — HTML rewriting (10), live reload (20),
+        // diagnostic overlay (30) — stay in a tidy sequence.
+        var html = new HtmlResponseRewritingProcessor(Array.Empty<IHtmlResponseRewriter>());
         var liveReload = new LiveReloadScriptProcessor();
         var diagOverlay = new DiagnosticOverlayProcessor();
 
-        IResponseProcessor[] processors = [xref, locale, baseUrl, liveReload, diagOverlay];
+        IResponseProcessor[] processors = [html, liveReload, diagOverlay];
         var ordered = processors.OrderBy(p => p.Order).ToArray();
 
-        ordered[0].ShouldBeOfType<XrefResolvingProcessor>().Order.ShouldBe(10);
-        ordered[1].ShouldBeOfType<LocaleLinkRewritingProcessor>().Order.ShouldBe(20);
-        ordered[2].ShouldBeOfType<BaseUrlRewritingProcessor>().Order.ShouldBe(30);
-        ordered[3].ShouldBeOfType<LiveReloadScriptProcessor>().Order.ShouldBe(40);
-        ordered[4].ShouldBeOfType<DiagnosticOverlayProcessor>().Order.ShouldBe(50);
+        ordered[0].ShouldBeOfType<HtmlResponseRewritingProcessor>().Order.ShouldBe(10);
+        ordered[1].ShouldBeOfType<LiveReloadScriptProcessor>().Order.ShouldBe(20);
+        ordered[2].ShouldBeOfType<DiagnosticOverlayProcessor>().Order.ShouldBe(30);
     }
 }

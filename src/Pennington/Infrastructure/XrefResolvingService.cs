@@ -9,11 +9,28 @@ using Microsoft.Extensions.DependencyInjection;
 using Pennington.Diagnostics;
 
 /// <summary>
-/// Resolves xref: cross-reference links in HTML strings.
-/// Used by both the response processor (full HTML pages) and
-/// the SPA data endpoint (island HTML fragments).
-/// Resolves XrefResolver lazily from IServiceProvider so it always
-/// gets the current instance from the FileWatchDependencyFactory.
+/// Resolves xref: cross-reference links in HTML.
+/// <para>
+/// Two phases:
+/// </para>
+/// <list type="number">
+///   <item><see cref="ResolveXrefTagsAsync"/> substitutes raw
+///     <c>&lt;xref:uid&gt;</c> tags via regex. These are not valid HTML,
+///     so they must be rewritten before any DOM parser sees them.</item>
+///   <item><see cref="ResolveXrefLinksAsync"/> walks <c>a[href^='xref:']</c>
+///     on an already-parsed document.</item>
+/// </list>
+/// <para>
+/// The response pipeline calls both phases via <see cref="XrefHtmlRewriter"/>,
+/// reusing the orchestrator's shared document. The SPA data endpoint for
+/// island HTML fragments calls the combined <see cref="ResolveAsync"/>
+/// entrypoint, which performs its own parse/serialize because it receives
+/// raw HTML strings with no caller-owned document.
+/// </para>
+/// <para>
+/// Resolves <see cref="XrefResolver"/> lazily from the service provider
+/// so it always gets the current instance from the file-watch factory.
+/// </para>
 /// </summary>
 public sealed partial class XrefResolvingService
 {
@@ -28,25 +45,28 @@ public sealed partial class XrefResolvingService
     private XrefResolver Resolver => _serviceProvider.GetRequiredService<XrefResolver>();
 
     /// <summary>
-    /// Resolve all xref patterns in an HTML string.
-    /// Returns the resolved HTML.
+    /// Standalone entrypoint for callers that have a raw HTML string and
+    /// no document (SPA island fragments). Returns resolved HTML.
     /// </summary>
     public async Task<string> ResolveAsync(string html, DiagnosticContext? diagnostics = null)
     {
         if (!html.Contains("xref:", StringComparison.OrdinalIgnoreCase))
             return html;
 
-        // Phase 1: Resolve <xref:uid> raw tags via string replacement (not valid HTML elements)
         html = await ResolveXrefTagsAsync(html, diagnostics);
 
-        // Phase 2: Parse with AngleSharp and resolve <a href="xref:..."> links
         var document = await _browsingContext.OpenAsync(req => req.Content(html));
         var modified = await ResolveXrefLinksAsync(document, diagnostics);
 
         return modified ? document.ToHtml() : html;
     }
 
-    private async Task<string> ResolveXrefTagsAsync(string html, DiagnosticContext? diagnostics)
+    /// <summary>
+    /// Phase 1: regex substitution of raw <c>&lt;xref:uid&gt;</c> tags.
+    /// Produces an <c>&lt;a&gt;</c> element that the later DOM phase
+    /// (or any downstream HTML parser) can see as normal markup.
+    /// </summary>
+    public async Task<string> ResolveXrefTagsAsync(string html, DiagnosticContext? diagnostics)
     {
         var matches = XrefTagRegex().Matches(html);
         if (matches.Count == 0) return html;
@@ -74,7 +94,13 @@ public sealed partial class XrefResolvingService
         return html;
     }
 
-    private async Task<bool> ResolveXrefLinksAsync(IDocument document, DiagnosticContext? diagnostics)
+    /// <summary>
+    /// Phase 2: DOM rewrite of <c>a[href^='xref:']</c> links on an
+    /// already-parsed document. Returns true when any link was rewritten
+    /// — callers that used <see cref="ResolveAsync"/> use this to decide
+    /// whether to re-serialize the document.
+    /// </summary>
+    public async Task<bool> ResolveXrefLinksAsync(IDocument document, DiagnosticContext? diagnostics)
     {
         var xrefLinks = document.QuerySelectorAll("a[href^='xref:']")
             .OfType<IHtmlAnchorElement>()

@@ -811,7 +811,7 @@ public class MarkdownContentServiceTests
         // With single locale, original behavior: locale comes from options.Locale (empty by default)
     }
 
-    // --- ISearchable / ILlmsIndexable tests ---
+    // --- Search / Llms opt-out tests ---
 
     [Fact]
     public async Task GetContentTocEntriesAsync_SearchFalse_SetsExcludeFromSearch()

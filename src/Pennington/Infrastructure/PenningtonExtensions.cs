@@ -154,13 +154,16 @@ public static class PenningtonExtensions
         // Xref resolution — factory-managed, recreated on file changes
         services.AddFileWatched<XrefResolver>();
 
-        // Response processors
-        services.AddSingleton<IResponseProcessor>(sp =>
-            new BaseUrlRewritingProcessor(sp.GetRequiredService<OutputOptions>()));
+        // Response processors.
+        // Single HTML rewriting processor that walks the parsed document once
+        // and runs every registered IHtmlResponseRewriter in Order.
         services.AddSingleton<XrefResolvingService>();
-        services.AddSingleton<IResponseProcessor, XrefResolvingProcessor>();
+        services.AddSingleton<IHtmlResponseRewriter, XrefHtmlRewriter>();
+        services.AddSingleton<IHtmlResponseRewriter, LocaleLinkHtmlRewriter>();
+        services.AddSingleton<IHtmlResponseRewriter>(sp =>
+            new BaseUrlHtmlRewriter(sp.GetRequiredService<OutputOptions>()));
+        services.AddSingleton<IResponseProcessor, HtmlResponseRewritingProcessor>();
         services.AddSingleton<IResponseProcessor, LiveReloadScriptProcessor>();
-        services.AddSingleton<IResponseProcessor, LocaleLinkRewritingProcessor>();
         services.AddSingleton<IResponseProcessor, DiagnosticOverlayProcessor>();
 
         // Live reload (only does work when DOTNET_WATCH is set)

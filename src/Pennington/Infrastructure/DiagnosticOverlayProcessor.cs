@@ -16,7 +16,9 @@ public sealed class DiagnosticOverlayProcessor : IResponseProcessor
     private readonly bool _isDevMode = !string.IsNullOrEmpty(
         Environment.GetEnvironmentVariable("DOTNET_WATCH"));
 
-    public int Order => 50;
+    // Last in the response pipeline — runs after the HTML rewriting
+    // pipeline (10) and live-reload injection (20).
+    public int Order => 30;
 
     public bool ShouldProcess(HttpContext context)
     {

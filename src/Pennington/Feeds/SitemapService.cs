@@ -20,6 +20,30 @@ using Pennington.Pipeline;
 /// content types are rarely dateable and forcing every programmatic generator
 /// to run at sitemap-build time would be expensive.
 /// </para>
+/// <para>
+/// <b>Filtering philosophy.</b> Sitemap, search index, and llms.txt each
+/// answer a different question, so they intentionally run different
+/// filtering paths:
+/// </para>
+/// <list type="bullet">
+///   <item><b>Sitemap</b> (this service) — every canonical HTML URL a
+///     crawler should index. Sourced from <see cref="IContentService.DiscoverAsync"/>
+///     because Razor / programmatic routes with no TOC entry still need
+///     to appear. Per-page <c>search:</c> / <c>llms:</c> opt-outs are
+///     <i>not</i> honored here: those are search UX preferences, not
+///     SEO directives.</item>
+///   <item><b>Search index / llms.txt</b> — enumerates
+///     <see cref="IContentService.GetIndexableEntriesAsync"/>, which
+///     carries <see cref="ContentTocItem.ExcludeFromSearch"/> /
+///     <see cref="ContentTocItem.ExcludeFromLlms"/> flags sourced from
+///     <c>search:</c> / <c>llms:</c> front-matter.</item>
+/// </list>
+/// <para>
+/// Keep these two paths distinct — collapsing them would either leak
+/// search opt-outs into the sitemap (bad for SEO) or force every
+/// Razor/programmatic source to grow a TOC entry purely so it shows up
+/// in the sitemap.
+/// </para>
 /// </summary>
 public sealed class SitemapService
 {
