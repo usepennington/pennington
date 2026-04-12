@@ -3,9 +3,7 @@ namespace Pennington.FrontMatter;
 /// <summary>
 /// Covers the BlogSite use case — implements blog capabilities.
 /// </summary>
-public record BlogFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    IDescribable, IDateable, ICrossReferenceable,
-    ISearchable, ILlmsIndexable
+public record BlogFrontMatter : IFrontMatter, ITaggable
 {
     public string Title { get; init; } = "";
     public string? Description { get; init; }

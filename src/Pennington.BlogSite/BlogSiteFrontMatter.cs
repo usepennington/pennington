@@ -5,9 +5,8 @@ using Pennington.FrontMatter;
 /// <summary>
 /// Front matter for blog site posts.
 /// </summary>
-public record BlogSiteFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    IDescribable, IDateable, ICrossReferenceable, ISectionable, IRedirectable,
-    ISearchable, ILlmsIndexable
+public record BlogSiteFrontMatter : IFrontMatter, ITaggable,
+    ISectionable, IRedirectable
 {
     public string Title { get; init; } = "Empty title";
     public string Author { get; init; } = "";

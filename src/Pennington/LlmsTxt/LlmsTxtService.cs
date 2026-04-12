@@ -213,7 +213,7 @@ public sealed class LlmsTxtService
                 var markdown = HtmlToMarkdownConverter.Convert(element, rewriteHref);
 
                 var mdPath = $"{llmsTxtOptions.OutputDirectory}/{key}.md";
-                var description = metadata is IDescribable { Description: { } desc }
+                var description = metadata.Description is { } desc
                     ? $": {desc}"
                     : "";
 

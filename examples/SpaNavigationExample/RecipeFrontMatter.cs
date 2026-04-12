@@ -2,7 +2,7 @@ namespace SpaNavigationExample;
 
 using Pennington.FrontMatter;
 
-public record RecipeFrontMatter : IFrontMatter, IDescribable, IOrderable, ITaggable, IDraftable, ICrossReferenceable, ISectionable
+public record RecipeFrontMatter : IFrontMatter, IOrderable, ITaggable, ISectionable
 {
     public string Title { get; init; } = "";
     public string? Description { get; init; }

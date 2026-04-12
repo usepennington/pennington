@@ -14,8 +14,8 @@ using Pennington.Pipeline;
 /// recreated on file changes — trusts IContentService for fresh metadata.
 /// <para>
 /// Enumerates every <see cref="IContentService.DiscoverAsync"/> result. For
-/// markdown sources, the parser is invoked so <see cref="IDateable"/> metadata
-/// (lastmod) and <see cref="IDraftable"/> filtering apply. For programmatic /
+/// markdown sources, the parser is invoked so <see cref="IFrontMatter.Date"/> metadata
+/// (lastmod) and <see cref="IFrontMatter.IsDraft"/> filtering apply. For programmatic /
 /// Razor page sources, the route is emitted with no extra metadata — those
 /// content types are rarely dateable and forcing every programmatic generator
 /// to run at sitemap-build time would be expensive.

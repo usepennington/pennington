@@ -33,13 +33,13 @@ public class EndToEndBuildTests
 
     private record TestFrontMatter(string Title) : IFrontMatter;
 
-    private record DraftFrontMatter : IFrontMatter, IDraftable
+    private record DraftFrontMatter : IFrontMatter
     {
         public string Title { get; init; } = "Draft";
         public bool IsDraft { get; init; } = true;
     }
 
-    private record BlogTestFrontMatter : IFrontMatter, IDraftable, IDateable, IDescribable
+    private record BlogTestFrontMatter : IFrontMatter
     {
         public string Title { get; init; } = "";
         public bool IsDraft { get; init; }

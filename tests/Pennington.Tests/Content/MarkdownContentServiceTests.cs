@@ -180,7 +180,7 @@ public class MarkdownContentServiceTests
         entries[0].Title.ShouldBe("Real Page");
     }
 
-    private record RedirectableFrontMatter : IFrontMatter, IDraftable, IRedirectable
+    private record RedirectableFrontMatter : IFrontMatter, IRedirectable
     {
         public string Title { get; init; } = "";
         public bool IsDraft { get; init; }

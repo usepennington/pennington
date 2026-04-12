@@ -100,7 +100,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
             {
                 var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
                 var parsed = _parser.Parse<TFrontMatter>(content);
-                if (parsed.Metadata is IDraftable { IsDraft: true })
+                if (parsed.Metadata is { IsDraft: true })
                     continue;
             }
             catch
@@ -119,7 +119,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
 
         foreach (var (route, fm) in metadata)
         {
-            if (fm is IDraftable { IsDraft: true }) continue;
+            if (fm.IsDraft) continue;
             // Redirects are transport-only — they shouldn't appear in navigation,
             // search results, or llms.txt (all of which iterate this TOC). The
             // engine emits a meta-refresh page at the route, which has no
@@ -134,8 +134,8 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
 
             var order = fm is IOrderable orderable ? orderable.Order : int.MaxValue;
             var section = fm is ISectionable sectionable ? sectionable.Section : _options.Section;
-            var excludeFromSearch = fm is ISearchable { Search: false };
-            var excludeFromLlms = fm is ILlmsIndexable { Llms: false };
+            var excludeFromSearch = !fm.Search;
+            var excludeFromLlms = !fm.Llms;
             var hierarchyParts = route.CanonicalPath.Value
                 .Trim('/')
                 .Split('/', StringSplitOptions.RemoveEmptyEntries);
@@ -164,7 +164,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
 
         foreach (var (route, fm) in metadata)
         {
-            if (fm is ICrossReferenceable { Uid: { } uid } && !string.IsNullOrEmpty(uid))
+            if (fm.Uid is { } uid && !string.IsNullOrEmpty(uid))
             {
                 builder.Add(new CrossReference(uid, fm.Title, route));
             }

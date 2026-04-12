@@ -55,7 +55,7 @@ public sealed partial class RazorPageContentService : IContentService
     {
         foreach (var entry in _componentMetadataCache.Value)
         {
-            if (entry.Metadata is IDraftable { IsDraft: true })
+            if (entry.Metadata is { IsDraft: true })
                 continue;
 
             foreach (var route in entry.Routes)
@@ -82,7 +82,7 @@ public sealed partial class RazorPageContentService : IContentService
         foreach (var entry in _componentMetadataCache.Value)
         {
             if (entry.Metadata is null) continue;
-            if (entry.Metadata is IDraftable { IsDraft: true }) continue;
+            if (entry.Metadata is { IsDraft: true }) continue;
 
             var route = entry.Routes[0];
             var hierarchyParts = route.CanonicalPath.Value
@@ -111,7 +111,7 @@ public sealed partial class RazorPageContentService : IContentService
 
         foreach (var entry in _componentMetadataCache.Value)
         {
-            if (entry.Metadata is IDraftable { IsDraft: true })
+            if (entry.Metadata is { IsDraft: true })
                 continue;
 
             var route = entry.Routes[0];
@@ -125,8 +125,8 @@ public sealed partial class RazorPageContentService : IContentService
 
             var order = entry.Metadata is IOrderable orderable ? orderable.Order : int.MaxValue;
             var section = entry.Metadata is ISectionable sectionable ? sectionable.Section : null;
-            var excludeFromSearch = entry.Metadata is ISearchable { Search: false };
-            var excludeFromLlms = entry.Metadata is ILlmsIndexable { Llms: false };
+            var excludeFromSearch = entry.Metadata is { Search: false };
+            var excludeFromLlms = entry.Metadata is { Llms: false };
 
             builder.Add(new ContentTocItem(
                 Title: title,
@@ -151,7 +151,7 @@ public sealed partial class RazorPageContentService : IContentService
 
         foreach (var entry in _componentMetadataCache.Value)
         {
-            if (entry.Metadata is ICrossReferenceable { Uid: { } uid } && !string.IsNullOrEmpty(uid))
+            if (entry.Metadata is { Uid: { } uid } && !string.IsNullOrEmpty(uid))
             {
                 builder.Add(new CrossReference(uid, entry.Metadata.Title, entry.Routes[0]));
             }

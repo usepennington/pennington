@@ -7,7 +7,7 @@ using Pennington.Routing;
 /// <summary>
 /// A candidate row for the sitemap — a route and (optionally) the front matter
 /// metadata that was parsed for it. For markdown sources, metadata carries
-/// <see cref="IDateable"/> (lastmod) and <see cref="IDraftable"/> (filter).
+/// <see cref="IFrontMatter.Date"/> (lastmod) and <see cref="IFrontMatter.IsDraft"/> (filter).
 /// For programmatic / Razor sources we typically have no metadata, which is
 /// fine: those entries are emitted with their URL and no lastmod.
 /// </summary>
@@ -36,14 +36,14 @@ public sealed class SitemapBuilder
 
         foreach (var candidate in candidates)
         {
-            if (candidate.Metadata is IDraftable { IsDraft: true })
+            if (candidate.Metadata is { IsDraft: true })
                 continue;
             // Redirects have no sitemap meaning — they aren't canonical URLs.
             if (candidate.Metadata is IRedirectable { RedirectUrl: { Length: > 0 } })
                 continue;
 
             var absoluteUrl = candidate.Route.AbsoluteUrl(_canonicalBase);
-            var lastModified = (candidate.Metadata as IDateable)?.Date;
+            var lastModified = candidate.Metadata?.Date;
 
             builder.Add(new SitemapEntry(
                 Url: absoluteUrl,

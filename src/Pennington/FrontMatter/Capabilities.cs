@@ -1,11 +1,6 @@
 namespace Pennington.FrontMatter;
 
 /// <summary>
-/// Content that can be marked as draft.
-/// </summary>
-public interface IDraftable { bool IsDraft { get; } }
-
-/// <summary>
 /// Content that supports tags.
 /// </summary>
 public interface ITaggable { string[] Tags { get; } }
@@ -21,31 +16,6 @@ public interface IRedirectable { string? RedirectUrl { get; } }
 public interface ISectionable { string? Section { get; } }
 
 /// <summary>
-/// Content that can be cross-referenced by UID.
-/// </summary>
-public interface ICrossReferenceable { string? Uid { get; } }
-
-/// <summary>
 /// Content that has explicit ordering.
 /// </summary>
 public interface IOrderable { int Order { get; } }
-
-/// <summary>
-/// Content with a description.
-/// </summary>
-public interface IDescribable { string? Description { get; } }
-
-/// <summary>
-/// Content with a publication date.
-/// </summary>
-public interface IDateable { DateTime? Date { get; } }
-
-/// <summary>
-/// Content that can opt out of the search index.
-/// </summary>
-public interface ISearchable { bool Search { get; } }
-
-/// <summary>
-/// Content that can opt out of llms.txt.
-/// </summary>
-public interface ILlmsIndexable { bool Llms { get; } }

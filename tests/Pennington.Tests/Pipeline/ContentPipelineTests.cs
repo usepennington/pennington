@@ -38,7 +38,7 @@ public class ContentPipelineTests
 
     private record TestFrontMatter(string Title) : IFrontMatter;
 
-    private record DraftFrontMatter : IFrontMatter, IDraftable
+    private record DraftFrontMatter : IFrontMatter
     {
         public string Title { get; init; } = "Draft";
         public bool IsDraft { get; init; } = true;
@@ -89,7 +89,7 @@ public class ContentPipelineTests
             => throw new InvalidOperationException("Unexpected parse crash");
     }
 
-    // --- Draft parser (returns ParsedItem with IDraftable metadata) ---
+    // --- Draft parser (returns ParsedItem with draft metadata) ---
 
     private class DraftParser : IContentParser
     {

@@ -24,7 +24,7 @@ public class RssFeedBuilderTests
         Social: null
     );
 
-    private record TestFrontMatter : IFrontMatter, IDraftable, ISectionable, IDateable, IDescribable
+    private record TestFrontMatter : IFrontMatter, ISectionable
     {
         public string Title { get; init; } = "Test";
         public bool IsDraft { get; init; }
@@ -268,8 +268,8 @@ public class RssFeedBuilderTests
     }
 
 
-    // IDateable but NOT IDraftable
-    private record DateOnlyFrontMatter : IFrontMatter, IDateable
+    // Has Date but no explicit IsDraft — defaults to not-draft via IFrontMatter
+    private record DateOnlyFrontMatter : IFrontMatter
     {
         public string Title { get; init; } = "Test";
         public DateTime? Date { get; init; }

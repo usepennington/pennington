@@ -112,7 +112,7 @@ public sealed class ContentPipeline : IContentPipeline
             {
                 case RenderedItem rendered:
                     // Check for drafts
-                    if (rendered.Metadata is IDraftable { IsDraft: true })
+                    if (rendered.Metadata.IsDraft)
                     {
                         reportBuilder.AddSkippedPage(rendered.Route);
                     }

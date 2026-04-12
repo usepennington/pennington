@@ -2,8 +2,8 @@ namespace YogaStudioExample.Models;
 
 using Pennington.FrontMatter;
 
-public record YogaFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    ISectionable, ICrossReferenceable, IOrderable, IDescribable
+public record YogaFrontMatter : IFrontMatter, ITaggable,
+    ISectionable, IOrderable
 {
     public string Title { get; init; } = "";
     public string? Description { get; init; }

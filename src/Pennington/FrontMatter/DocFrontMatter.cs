@@ -3,9 +3,8 @@ namespace Pennington.FrontMatter;
 /// <summary>
 /// Covers the DocSite use case — implements common doc capabilities.
 /// </summary>
-public record DocFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    ISectionable, ICrossReferenceable, IOrderable, IDescribable,
-    ISearchable, ILlmsIndexable
+public record DocFrontMatter : IFrontMatter, ITaggable,
+    ISectionable, IOrderable
 {
     public string Title { get; init; } = "";
     public string? Description { get; init; }

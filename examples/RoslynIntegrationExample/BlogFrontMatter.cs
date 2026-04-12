@@ -5,8 +5,8 @@ using Pennington.FrontMatter;
 /// <summary>
 /// Front matter for the Roslyn integration example site.
 /// </summary>
-public record BlogFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    IDescribable, IDateable, ICrossReferenceable, IRedirectable, ISectionable
+public record BlogFrontMatter : IFrontMatter, ITaggable,
+    IRedirectable, ISectionable
 {
     public string Title { get; init; } = "Empty title";
     public string? Description { get; init; }

@@ -2,8 +2,7 @@ namespace YogaStudioExample.Models;
 
 using Pennington.FrontMatter;
 
-public record YogaBlogFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    IDescribable, IDateable, ICrossReferenceable
+public record YogaBlogFrontMatter : IFrontMatter, ITaggable
 {
     public string Title { get; init; } = "";
     public string? Description { get; init; }

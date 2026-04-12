@@ -5,8 +5,8 @@ using Pennington.FrontMatter;
 /// <summary>
 /// Front matter for general content pages (root-level markdown files).
 /// </summary>
-public record ContentFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    ISectionable, ICrossReferenceable, IOrderable, IRedirectable
+public record ContentFrontMatter : IFrontMatter, ITaggable,
+    ISectionable, IOrderable, IRedirectable
 {
     public string Title { get; init; } = "Untitled";
     public int Order { get; init; }

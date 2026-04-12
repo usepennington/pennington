@@ -18,7 +18,7 @@ public class SitemapServiceTests
         Locale = locale,
     };
 
-    private record TestFrontMatter : IFrontMatter, IDateable, IDraftable, IRedirectable
+    private record TestFrontMatter : IFrontMatter, IRedirectable
     {
         public string Title { get; init; } = "Test";
         public DateTime? Date { get; init; }

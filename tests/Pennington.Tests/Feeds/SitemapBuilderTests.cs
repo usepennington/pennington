@@ -13,7 +13,7 @@ public class SitemapBuilderTests
         Locale = locale
     };
 
-    private record TestFrontMatter : IFrontMatter, IDraftable, ISectionable, IDateable, IDescribable, IRedirectable
+    private record TestFrontMatter : IFrontMatter, ISectionable, IRedirectable
     {
         public string Title { get; init; } = "Test";
         public bool IsDraft { get; init; }

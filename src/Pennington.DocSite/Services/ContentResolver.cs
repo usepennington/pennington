@@ -95,7 +95,7 @@ public sealed class ContentResolver
         return new ResolvedContent(
             Route: rendered.Route,
             Title: rendered.Metadata.Title,
-            Description: (rendered.Metadata as IDescribable)?.Description,
+            Description: rendered.Metadata.Description,
             Html: rendered.Content.Html,
             Outline: rendered.Content.Outline,
             Metadata: rendered.Metadata,

@@ -5,8 +5,8 @@ using Pennington.FrontMatter;
 /// <summary>
 /// Front matter for documentation pages.
 /// </summary>
-public record DocsFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    IDescribable, IOrderable, ICrossReferenceable, IRedirectable
+public record DocsFrontMatter : IFrontMatter, ITaggable,
+    IOrderable, IRedirectable
 {
     public string Title { get; init; } = "Empty title";
     public string? Description { get; init; }

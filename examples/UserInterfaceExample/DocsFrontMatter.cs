@@ -2,8 +2,8 @@ using Pennington.FrontMatter;
 
 namespace UserInterfaceExample;
 
-public record DocsFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    ISectionable, ICrossReferenceable, IOrderable, IDescribable, IRedirectable
+public record DocsFrontMatter : IFrontMatter, ITaggable,
+    ISectionable, IOrderable, IRedirectable
 {
     public string Title { get; init; } = "Empty title";
     public string? Description { get; init; }

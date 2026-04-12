@@ -2,7 +2,7 @@ namespace NorthwindHandbookExample;
 
 using Pennington.FrontMatter;
 
-public record ChangelogFrontMatter : IFrontMatter, IDateable, IOrderable, ITaggable, IDescribable
+public record ChangelogFrontMatter : IFrontMatter, IOrderable, ITaggable
 {
     public string Title { get; init; } = "";
     public string? Description { get; init; }

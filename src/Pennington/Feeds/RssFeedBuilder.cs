@@ -1,7 +1,6 @@
 namespace Pennington.Feeds;
 
 using System.Collections.Immutable;
-using Pennington.FrontMatter;
 using Pennington.Pipeline;
 using Pennington.Routing;
 
@@ -19,7 +18,7 @@ public sealed class RssFeedBuilder
 
     /// <summary>
     /// Build RSS feed items from rendered items.
-    /// Only includes items that are IDateable and not drafts.
+    /// Only includes items that have a Date and are not drafts.
     /// Sorted by date descending.
     /// </summary>
     public ImmutableList<RssFeedItem> Build(IReadOnlyList<RenderedItem> items)
@@ -28,10 +27,10 @@ public sealed class RssFeedBuilder
 
         foreach (var item in items)
         {
-            if (item.Metadata is IDraftable { IsDraft: true })
+            if (item.Metadata.IsDraft)
                 continue;
 
-            if (item.Metadata is IDateable { Date: { } date })
+            if (item.Metadata.Date is { } date)
             {
                 eligible.Add((item, date));
             }
@@ -42,7 +41,7 @@ public sealed class RssFeedBuilder
             .Select(e =>
             {
                 var absoluteUrl = e.Item.Route.AbsoluteUrl(_canonicalBase);
-                var description = (e.Item.Metadata as IDescribable)?.Description;
+                var description = e.Item.Metadata.Description;
 
                 return new RssFeedItem(
                     Title: e.Item.Metadata.Title,

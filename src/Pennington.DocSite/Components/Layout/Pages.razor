@@ -73,7 +73,7 @@ else if (_notFound)
             Headline: _resolved.Title,
             Description: _resolved.Description,
             Url: $"{baseUrl}{_resolved.Route.CanonicalPath.EnsureTrailingSlash().Value}",
-            DatePublished: (_resolved.Metadata as IDateable)?.Date,
+            DatePublished: _resolved.Metadata.Date,
             AuthorName: null
         );
     }

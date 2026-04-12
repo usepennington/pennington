@@ -5,8 +5,8 @@ using Pennington.FrontMatter;
 /// <summary>
 /// Front matter for Spectre.Console and CLI documentation pages.
 /// </summary>
-public record SpectreDocFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    ISectionable, ICrossReferenceable, IOrderable, IDescribable, IRedirectable
+public record SpectreDocFrontMatter : IFrontMatter, ITaggable,
+    ISectionable, IOrderable, IRedirectable
 {
     public string Title { get; init; } = "";
     public string? Description { get; init; }
@@ -21,8 +21,7 @@ public record SpectreDocFrontMatter : IFrontMatter, IDraftable, ITaggable,
 /// <summary>
 /// Front matter for blog posts in the Spectre.Console documentation.
 /// </summary>
-public record SpectreBlogFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    IDescribable, IDateable, ICrossReferenceable
+public record SpectreBlogFrontMatter : IFrontMatter, ITaggable
 {
     public string Title { get; init; } = "";
     public string? Author { get; init; }
