@@ -16,6 +16,7 @@ builder.Services.AddPennington(penn =>
     penn.SiteTitle = "Recipe Collection";
     penn.SiteDescription = "CookLang Recipe Website";
     penn.ContentRootPath = "recipes";
+    penn.AdditionalRoutingAssemblies = [typeof(Program).Assembly];
 });
 
 // Recipe content service

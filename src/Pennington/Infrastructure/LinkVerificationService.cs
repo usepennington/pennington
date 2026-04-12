@@ -16,18 +16,38 @@ public sealed partial class LinkVerificationService
     private readonly string _basePrefix;
 
     /// <summary>
-    /// Create with the set of all known page canonical paths and the base URL the
+    /// Create with the set of all known page canonical paths, the static asset
+    /// paths the engine copied into the output tree, and the base URL the
     /// surrounding site was rendered with. The base URL is used to strip a common
     /// prefix (e.g. <c>/preview</c>) from extracted hrefs before comparing against
     /// the unprefixed canonical <see cref="ContentRoute.CanonicalPath"/>, and before
     /// applying the framework-asset prefix check for <c>/_content/</c> / <c>/_framework/</c>
     /// / <c>/_blazor/</c>. Passing <c>"/"</c> (the default) disables prefix stripping.
+    ///
+    /// <paramref name="copiedAssetPaths"/> are relative output paths produced by
+    /// <see cref="IContentService.GetContentToCopyAsync"/> (e.g. <c>media/sample.svg</c>);
+    /// they get normalized into absolute root-relative URLs (<c>/media/sample.svg</c>)
+    /// and added to the known-paths set so that <c>&lt;img src&gt;</c> references to
+    /// assets the engine just copied aren't flagged as broken.
     /// </summary>
-    public LinkVerificationService(IEnumerable<ContentRoute> knownRoutes, string baseUrl = "/")
+    public LinkVerificationService(
+        IEnumerable<ContentRoute> knownRoutes,
+        IEnumerable<string>? copiedAssetPaths = null,
+        string baseUrl = "/")
     {
         _knownPaths = new HashSet<string>(
             knownRoutes.Select(r => NormalizePath(r.CanonicalPath.Value)),
             StringComparer.OrdinalIgnoreCase);
+        if (copiedAssetPaths != null)
+        {
+            foreach (var asset in copiedAssetPaths)
+            {
+                if (string.IsNullOrWhiteSpace(asset)) continue;
+                var normalized = asset.Replace('\\', '/');
+                if (!normalized.StartsWith('/')) normalized = "/" + normalized;
+                _knownPaths.Add(NormalizePath(normalized));
+            }
+        }
         _basePrefix = (baseUrl ?? "/").TrimEnd('/');
     }
 

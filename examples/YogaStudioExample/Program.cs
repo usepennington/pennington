@@ -25,12 +25,12 @@ builder.Services.AddPennington(penn =>
         md.Section = "Blog";
     });
 
-    penn.AddMarkdownContent<YogaFrontMatter>(md =>
-    {
-        md.ContentPath = "Content/pages";
-        md.BasePageUrl = "";
-        md.Section = "Pages";
-    });
+    // Note: static pages under Content/pages/ are NOT registered as a markdown
+    // content source. The Razor wrapper components (About.razor, Contact.razor,
+    // etc.) each have `@page "/about"` directives, which would collide with
+    // routes emitted by MarkdownContentService and race on `about/index.html`
+    // during parallel static generation. ContentHelper.GetStaticPageAsync reads
+    // the markdown files directly off disk.
 
     penn.Localization.DefaultLocale = "en";
     penn.Localization.AddLocale("en", new LocaleInfo("English"));
@@ -53,7 +53,6 @@ builder.Services.AddMonorailCss(_ => new MonorailCssOptions
             font-family: var(--font-display);
         }
         """,
-    ContentPaths = ["js/search.js"],
     CustomCssFrameworkSettings = settings => settings with
     {
         Applies = settings.Applies.AddRange(YogaComponentApplies.All()),
@@ -68,6 +67,11 @@ builder.Services.AddScoped<ComponentRenderer>();
 builder.Services.AddTransient<ContentHelper>();
 builder.Services.AddSingleton<ScheduleService>();
 builder.Services.AddSingleton<InstructorService>();
+
+// Register the programmatic route enumerator AFTER InstructorService/ScheduleService
+// so it can be resolved with their dependencies. It emits parameterized instructor
+// and class detail routes plus locale-prefixed copies of every Razor @page.
+builder.Services.AddSingleton<Pennington.Content.IContentService, YogaRouteContentService>();
 
 var app = builder.Build();
 app.UsePenningtonLocaleRouting(); // Must be before MapRazorComponents for locale URL rewriting

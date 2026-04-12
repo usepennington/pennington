@@ -36,7 +36,10 @@ public sealed class SitemapService
     {
         var contentServices = sp.GetServices<IContentService>();
         var localization = sp.GetRequiredService<LocalizationOptions>();
-        var parser = sp.GetRequiredService<IContentParser>();
+        // Parser is only required for MarkdownFileSource entries. Sites that
+        // only expose programmatic / Razor sources never register one, so
+        // resolve optionally and fall back to metadata-less entries.
+        var parser = sp.GetService<IContentParser>();
         var candidates = new List<SitemapCandidate>();
 
         foreach (var service in contentServices)
@@ -69,7 +72,7 @@ public sealed class SitemapService
                 // Programmatic/Razor sources surface metadata at generation /
                 // render time, which is too expensive to run here just for
                 // lastmod. Those entries get emitted with route + no metadata.
-                if (discovered.Source is MarkdownFileSource)
+                if (discovered.Source is MarkdownFileSource && parser is not null)
                 {
                     var parseResult = await parser.ParseAsync(discovered);
                     if (parseResult is ParsedItem parsed)

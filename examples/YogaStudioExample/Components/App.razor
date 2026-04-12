@@ -17,7 +17,218 @@
 <body class="bg-base-50 text-base-900 antialiased dark:bg-base-950 dark:text-base-100">
     <Routes/>
     <script src="/_content/Pennington.UI/spa-engine.js" defer></script>
-    <script src="/js/search.js" defer></script>
-    <script src="/js/faq.js" defer></script>
+    <!--
+        Client-side behavior for the search modal and FAQ accordions is inlined
+        here instead of being loaded from /js/*.js. Pennington's static link
+        verifier treats every <script src="..."> as a link to check, and
+        MapStaticAssets-served paths aren't discovered as known routes, so any
+        external /js/*.js reference would be flagged as a broken link. Keeping
+        the JS inline side-steps that without giving up functionality.
+    -->
+    <script>
+        // FAQ accordion behavior.
+        (function () {
+            'use strict';
+            document.addEventListener('click', function (e) {
+                var toggle = e.target.closest('[data-faq-toggle]');
+                if (!toggle) return;
+                var item = toggle.closest('[data-faq-item]');
+                if (!item) return;
+                var content = item.querySelector('[data-faq-content]');
+                var icon = item.querySelector('[data-faq-icon]');
+                if (!content) return;
+                var isOpen = !content.classList.contains('hidden');
+                if (isOpen) {
+                    content.classList.add('hidden');
+                    if (icon) icon.style.transform = '';
+                } else {
+                    content.classList.remove('hidden');
+                    if (icon) icon.style.transform = 'rotate(180deg)';
+                }
+            });
+        })();
+
+        // Search modal: Fuse.js-powered fuzzy search against /search-index.json.
+        (function () {
+            'use strict';
+            var fuseInstance = null;
+            var searchData = null;
+            var isLoading = false;
+            var selectedIndex = -1;
+
+            var modal = document.getElementById('search-modal');
+            var input = document.getElementById('search-input');
+            var results = document.getElementById('search-results');
+            if (!modal || !input || !results) return;
+
+            window.openSearch = openModal;
+            window.closeSearch = closeModal;
+
+            document.addEventListener('keydown', function (e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    openModal();
+                }
+                if (e.key === 'Escape' && modal.style.display !== 'none') {
+                    closeModal();
+                }
+            });
+
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) closeModal();
+            });
+
+            input.addEventListener('input', debounce(function () {
+                performSearch(input.value.trim());
+            }, 200));
+
+            input.addEventListener('keydown', function (e) {
+                var items = results.querySelectorAll('.search-result-item');
+                if (!items.length) return;
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                    updateSelection(items);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, 0);
+                    updateSelection(items);
+                } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                    e.preventDefault();
+                    var link = items[selectedIndex].querySelector('a');
+                    if (link) window.location.href = link.href;
+                }
+            });
+
+            function openModal() {
+                modal.style.display = '';
+                input.value = '';
+                input.focus();
+                selectedIndex = -1;
+                results.innerHTML = '<p class="search-modal-placeholder">Start typing to search...</p>';
+                loadSearchIndex();
+            }
+
+            function closeModal() {
+                modal.style.display = 'none';
+                input.value = '';
+            }
+
+            async function loadSearchIndex() {
+                if (searchData || isLoading) return;
+                isLoading = true;
+                try {
+                    var response = await fetch('/search-index.json');
+                    searchData = await response.json();
+                    if (typeof Fuse === 'undefined') {
+                        await loadScript('https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js');
+                    }
+                    fuseInstance = new Fuse(searchData, {
+                        keys: [
+                            { name: 'title', weight: 3 },
+                            { name: 'body', weight: 1 },
+                            { name: 'section', weight: 0.5 }
+                        ],
+                        threshold: 0.4,
+                        includeScore: true,
+                        includeMatches: true,
+                        minMatchCharLength: 2,
+                        ignoreLocation: true
+                    });
+                } catch (err) {
+                    results.innerHTML = '<p class="search-modal-error">Failed to load search index.</p>';
+                } finally {
+                    isLoading = false;
+                }
+            }
+
+            function performSearch(query) {
+                selectedIndex = -1;
+                if (!query) {
+                    results.innerHTML = '<p class="search-modal-placeholder">Start typing to search...</p>';
+                    return;
+                }
+                if (!fuseInstance) {
+                    results.innerHTML = '<p class="search-modal-loading">Loading search index...</p>';
+                    return;
+                }
+                var matches = fuseInstance.search(query, { limit: 10 });
+                if (matches.length === 0) {
+                    results.innerHTML = '<p class="search-modal-no-results">No results found.</p>';
+                    return;
+                }
+                results.innerHTML = matches.map(function (match) {
+                    var item = match.item;
+                    var snippet = getSnippet(item.body, query, 120);
+                    return '<div class="search-result-item">' +
+                        '<a href="' + escapeHtml(item.url) + '" class="search-result-link" onclick="closeSearch()">' +
+                        '<div class="search-result-header">' +
+                        '<span class="search-result-title">' + highlightMatch(escapeHtml(item.title), query) + '</span>' +
+                        (item.section ? '<span class="search-result-score">' + escapeHtml(item.section) + '</span>' : '') +
+                        '</div>' +
+                        (snippet ? '<p class="search-result-snippet">' + highlightMatch(escapeHtml(snippet), query) + '</p>' : '') +
+                        '<span class="search-result-url">' + escapeHtml(item.url) + '</span>' +
+                        '</a></div>';
+                }).join('');
+            }
+
+            function updateSelection(items) {
+                items.forEach(function (item, i) {
+                    var link = item.querySelector('a');
+                    if (!link) return;
+                    if (i === selectedIndex) {
+                        link.classList.add('bg-base-50', 'dark:bg-base-800');
+                        item.scrollIntoView({ block: 'nearest' });
+                    } else {
+                        link.classList.remove('bg-base-50', 'dark:bg-base-800');
+                    }
+                });
+            }
+
+            function getSnippet(text, query, maxLen) {
+                if (!text) return '';
+                var lower = text.toLowerCase();
+                var qi = lower.indexOf(query.toLowerCase());
+                if (qi === -1) return text.substring(0, maxLen) + (text.length > maxLen ? '...' : '');
+                var start = Math.max(0, qi - 40);
+                var end = Math.min(text.length, qi + query.length + maxLen - 40);
+                return (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '');
+            }
+
+            function highlightMatch(text, query) {
+                if (!query) return text;
+                var regex = new RegExp('(' + escapeRegex(query) + ')', 'gi');
+                return text.replace(regex, '<span class="search-highlight">$1</span>');
+            }
+
+            function escapeHtml(str) {
+                var div = document.createElement('div');
+                div.textContent = str || '';
+                return div.innerHTML;
+            }
+
+            function escapeRegex(str) {
+                return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
+            function debounce(fn, delay) {
+                var timer;
+                return function () {
+                    clearTimeout(timer);
+                    timer = setTimeout(fn, delay);
+                };
+            }
+
+            function loadScript(src) {
+                return new Promise(function (resolve, reject) {
+                    var script = document.createElement('script');
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            }
+        })();
+    </script>
 </body>
 </html>

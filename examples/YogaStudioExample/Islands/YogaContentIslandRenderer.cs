@@ -19,7 +19,7 @@ public class YogaContentIslandRenderer(
         // Try blog content first
         if (url.StartsWith("/blog/", StringComparison.OrdinalIgnoreCase) && url.Length > 6)
         {
-            var result = await contentHelper.GetRenderedPageAsync<YogaBlogFrontMatter>(url);
+            var result = await contentHelper.GetRenderedBlogPostAsync(url);
             if (result.HasValue)
             {
                 return new Dictionary<string, object?>
@@ -32,8 +32,8 @@ public class YogaContentIslandRenderer(
             }
         }
 
-        // Try page content
-        var pageResult = await contentHelper.GetRenderedPageAsync<YogaFrontMatter>(url);
+        // Try static page content (about, contact, faq, pricing, plus locale variants)
+        var pageResult = await contentHelper.GetStaticPageAsync(url);
         if (pageResult.HasValue)
         {
             return new Dictionary<string, object?>

@@ -451,7 +451,7 @@ public class LinkVerificationServiceTests
         // Pass B scenario: site is rendered with base URL "/preview/" so all internal
         // hrefs get the prefix, but the known-routes set still holds unprefixed canonical paths.
         var routes = new[] { MakeRoute("/docs/intro") };
-        var service = new LinkVerificationService(routes, "/preview/");
+        var service = new LinkVerificationService(routes, baseUrl: "/preview/");
         var source = MakeRoute("/docs/intro");
         var html = """<a href="/preview/docs/intro/">Intro</a>""";
 
@@ -466,7 +466,7 @@ public class LinkVerificationServiceTests
     {
         // Previously `/preview/_content/Pennington.UI/scripts.js?v=…` was misclassified as a
         // broken link because the `/_content/` prefix check didn't know about the base URL.
-        var service = new LinkVerificationService([], "/preview/");
+        var service = new LinkVerificationService([], baseUrl: "/preview/");
         var source = MakeRoute("/about");
         var html = """<script src="/preview/_content/Pennington.UI/scripts.js?v=639115119605337292"></script>""";
 
@@ -480,9 +480,53 @@ public class LinkVerificationServiceTests
     public void BaseUrl_UnprefixedFrameworkAssetStillValidInPassA()
     {
         // Pass A (default "/") must keep working as before.
-        var service = new LinkVerificationService([], "/");
+        var service = new LinkVerificationService([], baseUrl: "/");
         var source = MakeRoute("/about");
         var html = """<script src="/_content/Pennington.UI/scripts.js"></script>""";
+
+        var results = service.VerifyLinks(source, html);
+
+        results.Count.ShouldBe(1);
+        (results[0] is ValidLink).ShouldBeTrue();
+    }
+
+    // --- Copied static assets are recognized as valid ---
+
+    [Fact]
+    public void CopiedAssetPath_IsRecognizedAsValidTarget()
+    {
+        // ContentToCopy output paths are relative (e.g. "media/sample.svg"). The
+        // verifier should treat matching absolute src/href values as valid, so that
+        // markdown that references engine-copied assets doesn't trip the link
+        // checker on files the engine itself just wrote.
+        var service = new LinkVerificationService(
+            knownRoutes: [MakeRoute("/sub-folder/sample-post")],
+            copiedAssetPaths: ["media/sample.svg", "sub-folder/sibling-sample.svg"]);
+        var source = MakeRoute("/sub-folder/sample-post");
+        var html = """
+            <img src="/media/sample.svg" alt="">
+            <img src="/sub-folder/sibling-sample.svg" alt="">
+            """;
+
+        var results = service.VerifyLinks(source, html);
+
+        results.Count.ShouldBe(2);
+        (results[0] is ValidLink).ShouldBeTrue();
+        (results[1] is ValidLink).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void CopiedAssetPath_WorksWithBaseUrlPrefix()
+    {
+        // Pass B: site rendered under /preview/, so the HTML reference is
+        // /preview/media/sample.svg. After base-prefix stripping the verifier
+        // should still find media/sample.svg in the known asset set.
+        var service = new LinkVerificationService(
+            knownRoutes: [],
+            copiedAssetPaths: ["media/sample.svg"],
+            baseUrl: "/preview/");
+        var source = MakeRoute("/about");
+        var html = """<img src="/preview/media/sample.svg" alt="">""";
 
         var results = service.VerifyLinks(source, html);
 

@@ -76,7 +76,7 @@ else
     {
         var uri = new Uri(Nav.Uri);
         var url = uri.AbsolutePath;
-        var result = await Content.GetRenderedPageAsync<YogaBlogFrontMatter>(url);
+        var result = await Content.GetRenderedBlogPostAsync(url);
         if (result.HasValue)
         {
             _fm = result.Value.FrontMatter;

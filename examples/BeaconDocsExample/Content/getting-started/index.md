@@ -29,4 +29,4 @@ await monitor.StartAsync();
 
 See the [Configuration](xref:beacon.configuration) guide for retry policies and alert thresholds.
 
-![Beacon Architecture](./beacon-arch.png)
+![Beacon Architecture](./beacon-arch.svg)

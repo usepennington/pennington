@@ -591,6 +591,110 @@ Same three changelog URLs appear twice in the TOC of every page (11 pages × 3 d
 
 ## Phase 7 — Per-example content fixes (EXAMPLES)
 
+> ✅ **Done 2026-04-11.** All 20 examples now validate clean in both passes:
+> **20 examples, 0 errors, 9 warnings** (down from **1307 errors, 1395 warnings**
+> at the start of this phase). The 9 residual warnings are 8 `S.UNDERCOUNT`
+> (search-index entry count mismatch in the 3 blog examples + YogaStudio —
+> the search-index builder only counts markdown-backed pages while total HTML
+> output now includes tag/archive/home/detail pages) and 1 `B.MISSING_BODY_ATTR`
+> in `UserInterfaceExample` (pre-existing, unrelated). Delivered via four
+> threads in parallel + a targeted engine fix at the end:
+>
+> **7a — BlogSite-based blogs (Alex, Blog, Mara) + ForgePortal + Recipe**: The
+> Home/Archive/Tag/Tags Razor pages ship inside `Pennington.BlogSite.dll` but
+> `AddBlogSite` was only registering the *app*'s entry assembly in
+> `penn.AdditionalRoutingAssemblies`, so `RazorPageContentService` never saw
+> them and the generated sites had no root, archive, or tag listings.
+> `BlogSiteServiceExtensions` now always prepends `typeof(BlogSiteServiceExtensions).Assembly`
+> to the routing-assembly set. New `BlogSiteContentService` (registered as an
+> `IContentService`) yields concrete per-tag routes (`/tags/<encoded>/`) since
+> `RazorPageContentService` skips parameterized `@page` templates, and exposes
+> a `GetRssXmlAsync()` method backing a new `app.MapGet("/rss.xml", ...)`
+> endpoint guarded by `EnableRss`. MaraBlog's `TagsPageUrl = "/topics"`
+> works via a second `@page "/topics/{TagEncodedName}"` directive on
+> `Tag.razor` / `Tags.razor` — this is a known code smell (creates a
+> harmless duplicate `/topics/index.html` on blogs that use the default
+> `/tags`, and still wouldn't work for arbitrary values like `/categories`);
+> the right long-term fix is to emit tag pages via `ContentToCreate` rather
+> than routing Razor, but that's out of scope here. `AlexBlogExample`'s
+> `building-a-cli-part-2.md` got one hardcoded link fix
+> (`/blog/2026/03/building-a-cli-part-1` → `/blog/building-a-cli-part-1/`).
+> `ForgePortalExample` got a new `Content/pages/index.md` to satisfy the
+> `<PageFrontMatter>` content source at `/`. `RecipeExample` got
+> `AdditionalRoutingAssemblies = [typeof(Program).Assembly]` so its
+> `Home.razor @page "/"` is discovered. `RecipeExample`'s `/sitemap.xml`
+> HTTP 500 was a framework bug: `SitemapService` called
+> `GetRequiredService<IContentParser>` but parser-less example configurations
+> (no markdown sources) have no parser registered. Changed to
+> `GetService<IContentParser>`.
+>
+> **7b — YogaStudio**: Added `YogaRouteContentService`, a custom
+> `IContentService` that yields routes the Razor scanner skips — concrete
+> `/instructors/{slug}`, `/schedule/{id}`, and `/gen-z/...` locale-prefixed
+> copies of every non-parameterized `@page`. Also removed the
+> `AddMarkdownContent<YogaFrontMatter>` registration for `Content/pages/`
+> that was colliding with the Razor `@page "/about"` directives and causing
+> the `R.PAGE_FAILED` file-in-use race (both the markdown service and the
+> Razor service were emitting `/about/index.html` in parallel). Replaced
+> the generic `GetRenderedPageAsync<T>` path in `ContentHelper` with a new
+> `GetStaticPageAsync` that reads `Content/pages/<slug>.md` directly off
+> disk for the static pages, since those files are no longer served through
+> a Pennington content source. Inlined `js/search.js` / `js/faq.js` into
+> `App.razor` because `MapStaticAssets`-served wwwroot paths are
+> intentionally excluded from the engine's known-routes set and would
+> otherwise be flagged as broken links. Added a hidden sentinel
+> `SearchModal.razor` element so MonorailCSS's HTML-class scanner still
+> picks up the two classes the now-inlined script applies via `classList.add`.
+> The Phase 2 sentinel-guard in `LocalizationOptions.GetAlternateLanguages`
+> already flowed through YogaStudio's NavBar — no additional 404 fix needed.
+>
+> **7c — SpectreConsole**: The root cause of all 802 errors was not the
+> layout markup (the header's `/` and `/blog` hrefs were correct) but a
+> missing `penn.AdditionalRoutingAssemblies = [typeof(Program).Assembly]`
+> in `SpectreConsoleExample/Program.cs`. Without it, `RazorPageContentService`
+> was never registered, so the static build only fetched markdown-backed
+> routes from `Content/console`, `Content/cli`, `Content/blog` — the
+> Home (`@page "/"`) and BlogDetails (`@page "/blog/"`) components lived
+> in the assembly and were never discovered. The one-line registration
+> collapses 800+ errors. Also replaced a broken
+> `/assets/hero-rich{,-sm}.webp` reference in `Home.razor` with an
+> inline CSS terminal mock (the webp files lived at `Content/assets/`,
+> outside any `ContentPath`, and were never copied to output).
+>
+> **Engine cleanup — copied-asset link verification**: MinimalExample and
+> RoslynIntegrationExample remained at 2e/8w each after the example fixes
+> because they reference images in their `Content/media/` and
+> `Content/sub-folder/` directories, the engine correctly copies those
+> files to the output via `GetContentToCopyAsync`, but
+> `LinkVerificationService` only indexed `ContentRoute` canonical paths
+> and had no knowledge of copied assets. Added a `copiedAssetPaths`
+> parameter to the verifier's constructor that gets normalized into the
+> known-paths set, and threaded the list of copied assets from
+> `OutputGenerationService.CopyStaticAssetsAsync` through to the verifier
+> construction in Phase 9. `BeaconDocsExample`'s missing `beacon-arch.png`
+> was then the same class of bug — file had been missing from the example
+> all along. Replaced with a tiny architecture-diagram SVG.
+> `MultipleContentSourceExample` (which wasn't in 7a-7c but was surfaced
+> in residuals) took Phase 6's `ExcludePaths = ["blog", "docs"]` hint
+> literally — added those to the outer content source.
+>
+> **Residuals intentionally left open:**
+> - `S.UNDERCOUNT` in the 3 blog examples + YogaStudio — the search-index
+>   builder only counts markdown-backed pages, so adding tag/archive/detail
+>   pages creates an HTML-vs-search-index count skew. Pre-existing
+>   behavior; populating these would need either synthetic title/body at
+>   discovery time or a separate search-index contribution hook.
+> - `B.MISSING_BODY_ATTR` in `UserInterfaceExample/index.html` — noted as
+>   "minor, revisit after 1" in the baseline; not chased.
+> - `M.MISSING` (info) in 14 examples that don't enable `llms.txt` — not an error.
+> - `Tag.razor` / `Tags.razor` hardcoded `@page "/topics"` alongside
+>   `@page "/tags"` — functional for Mara but a code smell. Follow-up work
+>   would emit tag pages via `ContentToCreate` directly.
+>
+> Tests: `dotnet build Pennington.slnx` clean; 195 integration tests pass;
+> `LinkVerificationServiceTests` up to 36 including two new cases for the
+> `copiedAssetPaths` parameter.
+
 Each sub-task is an independent example-side fix. These can be done in parallel — no cross-dependencies. Do them **after** Phase 1 so the validator reports aren't drowning in file-lock noise.
 
 ### 7a — `AlexBlogExample` / `BlogExample` / `MaraBlogExample` / `ForgePortalExample` / `RecipeExample`: missing root index and missing tag pages

@@ -33,19 +33,24 @@
 
     <!-- Console Output Showcase -->
     <section class="w-full">
-        <div class="transition-all bg-base-800 border border-base-700 -mx-8 md:mx-0 p-1 md:p-4 rounded-sm md:rounded-2xl shadow-2xl">
-            <div class="max-w-5xl mx-auto">
-                <div class="overflow-hidden rounded">
-                    <picture>
-                        <source media="(max-width: 640px)" srcset="/assets/hero-rich-sm.webp">
-                        <source media="(min-width: 641px)" srcset="/assets/hero-rich.webp">
-                        <img src="/assets/hero-rich.webp"
-                             alt="Spectre.Console rich terminal output demonstration"
-                             class="w-full h-auto block"
-                             loading="lazy">
-                    </picture>
-                </div>
+        <div class="max-w-5xl mx-auto bg-base-950 border border-base-800 -mx-4 md:mx-0 rounded-lg md:rounded-2xl shadow-2xl overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 bg-base-900 border-b border-base-800">
+                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                <span class="ml-4 text-xs font-mono text-base-400">spectre-console</span>
             </div>
+            <pre class="p-6 md:p-8 font-mono text-sm md:text-base leading-relaxed text-base-100 overflow-x-auto whitespace-pre"><span class="text-primary-400">$</span> <span class="text-base-100">dotnet run</span>
+<span class="text-tertiary-one-400">[12:34:56]</span> <span class="text-primary-400">INFO</span>  Starting Spectre.Console demo&hellip;
+
+<span class="text-base-400">┌─────────────────┬───────────┬─────────┐</span>
+<span class="text-base-400">│</span> <span class="text-accent-400 font-bold">Package</span>         <span class="text-base-400">│</span> <span class="text-accent-400 font-bold">Version</span>   <span class="text-base-400">│</span> <span class="text-accent-400 font-bold">Status</span>  <span class="text-base-400">│</span>
+<span class="text-base-400">├─────────────────┼───────────┼─────────┤</span>
+<span class="text-base-400">│</span> Spectre.Console <span class="text-base-400">│</span> 0.50.0    <span class="text-base-400">│</span> <span class="text-green-400">✓ ready</span> <span class="text-base-400">│</span>
+<span class="text-base-400">│</span> Spectre.Cli     <span class="text-base-400">│</span> 0.50.0    <span class="text-base-400">│</span> <span class="text-green-400">✓ ready</span> <span class="text-base-400">│</span>
+<span class="text-base-400">└─────────────────┴───────────┴─────────┘</span>
+
+<span class="text-primary-400">[####################] 100%</span> <span class="text-base-400">Rendering complete</span></pre>
         </div>
     </section>
 

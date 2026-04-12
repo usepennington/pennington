@@ -2,8 +2,10 @@ namespace Pennington.BlogSite;
 
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Pennington.BlogSite.Services;
+using Pennington.Content;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
 
@@ -30,11 +32,21 @@ public static class BlogSiteServiceExtensions
                 md.BasePageUrl = options.BlogBaseUrl;
             });
 
+            // The BlogSite ships Home/Archive/Tag/Tags/Blog Razor pages inside
+            // Pennington.BlogSite.dll. Without adding this assembly to the
+            // routing set, RazorPageContentService cannot discover them and the
+            // generated site is missing its root, archive, and tag listings.
+            var blogSiteAssembly = typeof(BlogSiteServiceExtensions).Assembly;
             var appAssembly = Assembly.GetEntryAssembly();
-            var allAssemblies = appAssembly != null
-                ? [appAssembly, .. options.AdditionalRoutingAssemblies]
-                : options.AdditionalRoutingAssemblies;
-            penn.AdditionalRoutingAssemblies = allAssemblies;
+            var assemblies = new List<Assembly> { blogSiteAssembly };
+            if (appAssembly != null && appAssembly != blogSiteAssembly)
+                assemblies.Add(appAssembly);
+            foreach (var extra in options.AdditionalRoutingAssemblies)
+            {
+                if (!assemblies.Contains(extra))
+                    assemblies.Add(extra);
+            }
+            penn.AdditionalRoutingAssemblies = assemblies.ToArray();
         });
 
         services.AddMonorailCss(sp =>
@@ -49,6 +61,14 @@ public static class BlogSiteServiceExtensions
 
         services.AddFileWatched<BlogContentResolver>();
 
+        // Content service that yields per-tag routes and the /rss.xml file.
+        // Reads markdown directly from disk instead of going through
+        // BlogContentResolver so it doesn't take a circular dependency on the
+        // still-initializing IContentService set during DiscoverAsync.
+        services.AddFileWatched<BlogSiteContentService>();
+        services.AddSingleton<IContentService>(sp =>
+            sp.GetRequiredService<BlogSiteContentService>());
+
         return services;
     }
 
@@ -62,6 +82,14 @@ public static class BlogSiteServiceExtensions
             .AddAdditionalAssemblies(options.AdditionalRoutingAssemblies);
         app.UseMonorailCss();
         app.UsePennington();
+
+        if (options.EnableRss)
+        {
+            // Static crawler picks this up via DiscoverMapGetRoutes, so /rss.xml
+            // lands both in dev-server responses and in the generated output.
+            app.MapGet("/rss.xml", async (BlogSiteContentService service) =>
+                Results.Content(await service.GetRssXmlAsync(), "application/xml"));
+        }
 
         return app;
     }

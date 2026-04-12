@@ -12,12 +12,12 @@ This is a sample post located in the sub-folder that demonstrates linking to ima
 
 ## Images from Media Folder
 
-Here's an image from the media folder using a relative path:
+Here's an image from the media folder using an absolute path:
 
-![Unsplash Photo by Dan Cristian Padure](/media/dan-cristian-padure-8cxJzVpGKk8-unsplash.jpg)
+![Sample image from /media](/media/sample.svg)
 
 ## Image from Current Folder
 
 And here's an image from the current sub-folder:
 
-![Unsplash Photo by Kelly Sikkema](kelly-sikkema-rNdkGDOPJLc-unsplash.jpg)
+![Sibling image in sub-folder](sibling-sample.svg)

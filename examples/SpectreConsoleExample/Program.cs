@@ -14,6 +14,7 @@ builder.Services.AddPennington(penn =>
     penn.SiteTitle = "Spectre.Console Documentation";
     penn.SiteDescription = "Beautiful console applications with Spectre.Console";
     penn.ContentRootPath = "Content";
+    penn.AdditionalRoutingAssemblies = [typeof(Program).Assembly];
 
     // Console documentation
     penn.AddMarkdownContent<SpectreDocFrontMatter>(md =>

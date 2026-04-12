@@ -1,4 +1,13 @@
-<!-- Search modal — behavior provided by /js/search.js -->
+<!-- Search modal — behavior provided by inline script in App.razor -->
+@*
+    Hidden sentinel: the inline search script uses classList.add('bg-base-50',
+    'dark:bg-base-800') to highlight the active result row. Those Tailwind
+    utilities are not used statically anywhere else, so MonorailCSS' HTML-class
+    scanner wouldn't emit them. Listing them in a never-rendered class
+    attribute forces the collector to include them in the stylesheet.
+*@
+<span class="hidden bg-base-50 dark:bg-base-800" aria-hidden="true"></span>
+
 <div id="search-modal" class="search-modal-backdrop" style="display:none;">
     <div class="search-modal-content">
         <div class="search-modal-header">

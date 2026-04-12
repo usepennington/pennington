@@ -61,7 +61,7 @@
     protected override async Task OnInitializedAsync()
     {
         var url = new Uri(Nav.Uri).AbsolutePath;
-        var result = await Content.GetRenderedPageAsync<YogaFrontMatter>(url);
+        var result = await Content.GetStaticPageAsync(url);
         if (result.HasValue)
         {
             _html = result.Value.Html;

@@ -7,7 +7,7 @@ tags: ["dotnet", "cli"]
 series: "Building a CLI"
 ---
 
-In [Part 1](/blog/2026/03/building-a-cli-part-1), we set up argument parsing. Now let's make the output look great using Spectre.Console.
+In [Part 1](/blog/building-a-cli-part-1/), we set up argument parsing. Now let's make the output look great using Spectre.Console.
 
 ## Adding Spectre.Console
 

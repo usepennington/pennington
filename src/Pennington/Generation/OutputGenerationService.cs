@@ -94,9 +94,10 @@ public sealed class OutputGenerationService
         _fileSystem.Directory.CreateDirectory(outputDir);
 
         // Phase 4: Copy static assets
+        var copiedAssetPaths = new List<string>();
         try
         {
-            await CopyStaticAssetsAsync(outputDir, reportBuilder);
+            copiedAssetPaths = await CopyStaticAssetsAsync(outputDir, reportBuilder);
         }
         catch (Exception ex)
         {
@@ -140,7 +141,10 @@ public sealed class OutputGenerationService
 
         // Phase 9: Verify internal links across all fetched HTML pages
         var allRoutes = contentPages.Concat(mapGetPages).Select(p => p.Route);
-        var linkVerifier = new LinkVerificationService(allRoutes, _outputOptions.BaseUrl.Value);
+        var linkVerifier = new LinkVerificationService(
+            allRoutes,
+            copiedAssetPaths,
+            _outputOptions.BaseUrl.Value);
         foreach (var result in contentResults.Concat(mapGetResults))
         {
             if (result is { Outcome: FetchOutcome.Generated, HtmlContent: { } html })
@@ -244,8 +248,14 @@ public sealed class OutputGenerationService
         return pages;
     }
 
-    private async Task CopyStaticAssetsAsync(string outputDir, BuildReportBuilder reportBuilder)
+    private async Task<List<string>> CopyStaticAssetsAsync(string outputDir, BuildReportBuilder reportBuilder)
     {
+        // Track the relative output paths of every asset we copied from a content
+        // service. These get handed to LinkVerificationService so it doesn't flag
+        // <img src="/media/foo.svg"> as broken when the engine already copied the
+        // file there itself.
+        var copiedPaths = new List<string>();
+
         // Copy content directory assets (non-markdown files)
         foreach (var service in _contentServices)
         {
@@ -253,6 +263,7 @@ public sealed class OutputGenerationService
             foreach (var item in toCopy)
             {
                 CopyFile(item.SourcePath.Value, _fileSystem.Path.Combine(outputDir, item.OutputPath.Value), reportBuilder);
+                copiedPaths.Add(item.OutputPath.Value);
             }
         }
 
@@ -262,6 +273,8 @@ public sealed class OutputGenerationService
         // every asset exactly once. A previous implementation re-walked each child provider
         // after the top-level walk, producing duplicate File.Copy calls for every RCL asset.
         CopyFileProvider(_environment.WebRootFileProvider, "", outputDir, reportBuilder);
+
+        return copiedPaths;
     }
 
     private async Task CreateContentFilesAsync(string outputDir, BuildReportBuilder reportBuilder)

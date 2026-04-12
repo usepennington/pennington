@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 220" role="img" aria-label="Beacon architecture diagram">
+  <rect width="480" height="220" fill="#f8fafc"/>
+  <rect x="1" y="1" width="478" height="218" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+
+  <g font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">
+    <rect x="30" y="60" width="110" height="50" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="85" y="90" text-anchor="middle">Your App</text>
+
+    <rect x="185" y="60" width="110" height="50" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="240" y="84" text-anchor="middle">Beacon</text>
+    <text x="240" y="100" text-anchor="middle" font-size="11" fill="#475569">Monitors</text>
+
+    <rect x="340" y="30" width="110" height="50" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="395" y="60" text-anchor="middle">Alerts</text>
+
+    <rect x="340" y="100" width="110" height="50" rx="6" fill="#fae8ff" stroke="#a21caf" stroke-width="1.5"/>
+    <text x="395" y="130" text-anchor="middle">Dashboards</text>
+
+    <g stroke="#64748b" stroke-width="1.5" fill="none">
+      <path d="M140 85 L185 85"/>
+      <path d="M295 78 L340 55"/>
+      <path d="M295 92 L340 125"/>
+      <polygon points="185,85 179,82 179,88" fill="#64748b"/>
+      <polygon points="340,55 334,54 335,60" fill="#64748b"/>
+      <polygon points="340,125 334,120 335,128" fill="#64748b"/>
+    </g>
+  </g>
+
+  <text x="240" y="195" font-family="system-ui, sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Beacon observes your app and pushes to alert + dashboard sinks.</text>
+</svg>

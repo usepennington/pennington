@@ -17,6 +17,7 @@ builder.Services.AddPennington(penn =>
     {
         md.ContentPath = "Content";
         md.BasePageUrl = "";
+        md.ExcludePaths = ["blog", "docs"];
     });
 
     penn.AddMarkdownContent<BlogFrontMatter>(md =>
