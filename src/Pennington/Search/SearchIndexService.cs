@@ -50,9 +50,10 @@ public sealed class SearchIndexService
             // Skip the LlmsTxtContentService to avoid indexing the llms.txt artifacts themselves.
             if (service is LlmsTxtContentService) continue;
 
-            var tocItems = await service.GetContentTocEntriesAsync();
+            var tocItems = await service.GetIndexableEntriesAsync();
             foreach (var toc in tocItems)
             {
+                if (toc.ExcludeFromSearch) continue;
                 var element = await fetcher.FetchContentAsync(toc.Route.CanonicalPath.Value, options.ContentSelector);
                 if (element is null)
                 {

@@ -3,6 +3,7 @@ namespace Pennington.Content;
 using System.Collections.Immutable;
 using System.IO.Abstractions;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Pennington.FrontMatter;
@@ -15,7 +16,7 @@ using Pennington.Routing;
 /// non-parameterized [RouteAttribute] routes. Optionally loads metadata
 /// from sidecar .razor.metadata.yml files placed alongside the component.
 /// </summary>
-public sealed class RazorPageContentService : IContentService
+public sealed partial class RazorPageContentService : IContentService
 {
     private readonly Assembly[] _assemblies;
     private readonly IFileSystem _fileSystem;
@@ -99,6 +100,46 @@ public sealed class RazorPageContentService : IContentService
                 Section: section ?? DefaultSection,
                 Locale: null
             ));
+        }
+
+        return Task.FromResult(builder.ToImmutable());
+    }
+
+    public Task<ImmutableList<ContentTocItem>> GetIndexableEntriesAsync()
+    {
+        var builder = ImmutableList.CreateBuilder<ContentTocItem>();
+
+        foreach (var entry in _componentMetadataCache.Value)
+        {
+            if (entry.Metadata is IDraftable { IsDraft: true })
+                continue;
+
+            var route = entry.Routes[0];
+            var hierarchyParts = route.CanonicalPath.Value
+                .Trim('/')
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            var title = entry.Metadata?.Title;
+            if (string.IsNullOrWhiteSpace(title))
+                title = AutoTitle(entry.Component.Name);
+
+            var order = entry.Metadata is IOrderable orderable ? orderable.Order : int.MaxValue;
+            var section = entry.Metadata is ISectionable sectionable ? sectionable.Section : null;
+            var excludeFromSearch = entry.Metadata is ISearchable { Search: false };
+            var excludeFromLlms = entry.Metadata is ILlmsIndexable { Llms: false };
+
+            builder.Add(new ContentTocItem(
+                Title: title,
+                Route: route,
+                Order: order,
+                HierarchyParts: hierarchyParts,
+                Section: section ?? DefaultSection,
+                Locale: null
+            )
+            {
+                ExcludeFromSearch = excludeFromSearch,
+                ExcludeFromLlms = excludeFromLlms,
+            });
         }
 
         return Task.FromResult(builder.ToImmutable());
@@ -294,4 +335,14 @@ public sealed class RazorPageContentService : IContentService
                normalizedPath.Contains("/obj/", StringComparison.OrdinalIgnoreCase) ||
                normalizedPath.Contains("/node_modules/", StringComparison.OrdinalIgnoreCase);
     }
+
+    /// <summary>
+    /// Derive a human-readable title from a PascalCase Razor component name.
+    /// "ClassDetail" → "Class Detail", "FAQPage" → "FAQ Page".
+    /// </summary>
+    internal static string AutoTitle(string componentName) =>
+        AutoTitleRegex().Replace(componentName, " ");
+
+    [GeneratedRegex(@"(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")]
+    private static partial Regex AutoTitleRegex();
 }

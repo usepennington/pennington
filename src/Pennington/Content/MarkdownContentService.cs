@@ -134,6 +134,8 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
 
             var order = fm is IOrderable orderable ? orderable.Order : int.MaxValue;
             var section = fm is ISectionable sectionable ? sectionable.Section : _options.Section;
+            var excludeFromSearch = fm is ISearchable { Search: false };
+            var excludeFromLlms = fm is ILlmsIndexable { Llms: false };
             var hierarchyParts = route.CanonicalPath.Value
                 .Trim('/')
                 .Split('/', StringSplitOptions.RemoveEmptyEntries);
@@ -145,7 +147,11 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
                 HierarchyParts: hierarchyParts,
                 Section: section ?? DefaultSection,
                 Locale: string.IsNullOrEmpty(route.Locale) ? null : route.Locale
-            ));
+            )
+            {
+                ExcludeFromSearch = excludeFromSearch,
+                ExcludeFromLlms = excludeFromLlms,
+            });
         }
 
         return builder.ToImmutable();

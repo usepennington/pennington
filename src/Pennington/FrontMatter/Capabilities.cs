@@ -39,3 +39,13 @@ public interface IDescribable { string? Description { get; } }
 /// Content with a publication date.
 /// </summary>
 public interface IDateable { DateTime? Date { get; } }
+
+/// <summary>
+/// Content that can opt out of the search index.
+/// </summary>
+public interface ISearchable { bool Search { get; } }
+
+/// <summary>
+/// Content that can opt out of llms.txt.
+/// </summary>
+public interface ILlmsIndexable { bool Llms { get; } }

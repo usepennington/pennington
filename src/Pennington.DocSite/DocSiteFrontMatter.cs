@@ -6,7 +6,8 @@ using Pennington.FrontMatter;
 /// Front matter for doc site pages.
 /// </summary>
 public record DocSiteFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    ISectionable, ICrossReferenceable, IOrderable, IDescribable, IRedirectable
+    ISectionable, ICrossReferenceable, IOrderable, IDescribable, IRedirectable,
+    ISearchable, ILlmsIndexable
 {
     public string Title { get; init; } = "";
     public string? Description { get; init; }
@@ -16,4 +17,6 @@ public record DocSiteFrontMatter : IFrontMatter, IDraftable, ITaggable,
     public string? RedirectUrl { get; init; }
     public string? Section { get; init; }
     public string? Uid { get; init; }
+    public bool Search { get; init; } = true;
+    public bool Llms { get; init; } = true;
 }

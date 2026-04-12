@@ -810,4 +810,98 @@ public class MarkdownContentServiceTests
         items.Count.ShouldBe(1);
         // With single locale, original behavior: locale comes from options.Locale (empty by default)
     }
+
+    // --- ISearchable / ILlmsIndexable tests ---
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_SearchFalse_SetsExcludeFromSearch()
+    {
+        var fs = CreateFs(
+            ("visible.md", "---\ntitle: Visible\n---\n# Visible"),
+            ("hidden.md", "---\ntitle: Hidden\nsearch: false\n---\n# Hidden"));
+        var service = CreateTestService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(2);
+        entries.First(e => e.Title == "Visible").ExcludeFromSearch.ShouldBeFalse();
+        entries.First(e => e.Title == "Hidden").ExcludeFromSearch.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_LlmsFalse_SetsExcludeFromLlms()
+    {
+        var fs = CreateFs(
+            ("visible.md", "---\ntitle: Visible\n---\n# Visible"),
+            ("hidden.md", "---\ntitle: Hidden\nllms: false\n---\n# Hidden"));
+        var service = CreateTestService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(2);
+        entries.First(e => e.Title == "Visible").ExcludeFromLlms.ShouldBeFalse();
+        entries.First(e => e.Title == "Hidden").ExcludeFromLlms.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_SearchAndLlmsFalse_BothFlagsSet()
+    {
+        var fs = CreateFs(
+            ("page.md", "---\ntitle: Page\nsearch: false\nllms: false\n---\n# Page"));
+        var service = CreateTestService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(1);
+        entries[0].ExcludeFromSearch.ShouldBeTrue();
+        entries[0].ExcludeFromLlms.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_SearchTrue_DefaultBehavior()
+    {
+        var fs = CreateFs(
+            ("page.md", "---\ntitle: Page\nsearch: true\nllms: true\n---\n# Page"));
+        var service = CreateTestService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(1);
+        entries[0].ExcludeFromSearch.ShouldBeFalse();
+        entries[0].ExcludeFromLlms.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_SearchFalse_StillInTocForNavigation()
+    {
+        // search: false should NOT remove the page from TOC (navigation still needs it)
+        var fs = CreateFs(
+            ("page.md", "---\ntitle: Searchable\n---\n# Searchable"),
+            ("no-search.md", "---\ntitle: Not Searchable\nsearch: false\n---\n# Not Searchable"));
+        var service = CreateTestService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        // Both pages should be in the TOC
+        entries.Count.ShouldBe(2);
+        entries.ShouldContain(e => e.Title == "Searchable");
+        entries.ShouldContain(e => e.Title == "Not Searchable");
+    }
+
+    [Fact]
+    public async Task GetIndexableEntriesAsync_ExcludesSearchFalsePages()
+    {
+        var fs = CreateFs(
+            ("visible.md", "---\ntitle: Visible\n---\n# Visible"),
+            ("hidden.md", "---\ntitle: Hidden\nsearch: false\n---\n# Hidden"));
+        var service = CreateTestService(fs);
+
+        // GetIndexableEntriesAsync uses the DIM which delegates to GetContentTocEntriesAsync
+        IContentService svc = service;
+        var entries = await svc.GetIndexableEntriesAsync();
+
+        // Both are returned (DIM delegates to TOC), but consumer should filter ExcludeFromSearch
+        entries.Count.ShouldBe(2);
+        entries.First(e => e.Title == "Hidden").ExcludeFromSearch.ShouldBeTrue();
+    }
 }

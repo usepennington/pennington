@@ -12,4 +12,11 @@ public record ContentTocItem(
     string[] HierarchyParts,
     string? Section,
     string? Locale
-);
+)
+{
+    /// <summary>When true, excluded from the search index.</summary>
+    public bool ExcludeFromSearch { get; init; }
+
+    /// <summary>When true, excluded from llms.txt.</summary>
+    public bool ExcludeFromLlms { get; init; }
+}

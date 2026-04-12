@@ -65,8 +65,8 @@ public sealed class LlmsTxtService
             // Skip the LlmsTxtContentService to avoid circular queries
             if (service is LlmsTxtContentService) continue;
 
-            var tocItems = await service.GetContentTocEntriesAsync();
-            allTocItems.AddRange(tocItems);
+            var tocItems = await service.GetIndexableEntriesAsync();
+            allTocItems.AddRange(tocItems.Where(t => !t.ExcludeFromLlms));
 
             await foreach (var discovered in service.DiscoverAsync())
             {

@@ -29,6 +29,16 @@ public interface IContentService
     Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync();
 
     /// <summary>
+    /// Entries for search indexing and llms.txt. Defaults to TOC entries.
+    /// Override to include pages not in the navigation TOC
+    /// (e.g., auto-discovered Razor pages without sidecar metadata).
+    /// </summary>
+    async Task<ImmutableList<ContentTocItem>> GetIndexableEntriesAsync()
+    {
+        return await GetContentTocEntriesAsync();
+    }
+
+    /// <summary>
     /// Cross-references for xref resolution.
     /// </summary>
     Task<ImmutableList<CrossReference>> GetCrossReferencesAsync();

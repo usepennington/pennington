@@ -6,7 +6,8 @@ using Pennington.FrontMatter;
 /// Front matter for blog site posts.
 /// </summary>
 public record BlogSiteFrontMatter : IFrontMatter, IDraftable, ITaggable,
-    IDescribable, IDateable, ICrossReferenceable, ISectionable, IRedirectable
+    IDescribable, IDateable, ICrossReferenceable, ISectionable, IRedirectable,
+    ISearchable, ILlmsIndexable
 {
     public string Title { get; init; } = "Empty title";
     public string Author { get; init; } = "";
@@ -19,4 +20,6 @@ public record BlogSiteFrontMatter : IFrontMatter, IDraftable, ITaggable,
     public string? RedirectUrl { get; init; }
     public string? Section { get; init; }
     public string? Uid { get; init; }
+    public bool Search { get; init; } = true;
+    public bool Llms { get; init; } = true;
 }
