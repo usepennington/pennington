@@ -56,7 +56,8 @@ llms: false
 - Outline bullet: Both properties are `init`-only on a `record`; you set them once inside the object initializer, not via later mutation.
 - Outline bullet: No service registration or middleware call is required beyond the existing `AddBlogSite` / `UseBlogSite` pair — the layout reads the options directly via `@inject BlogSiteOptions Options`.
 
-```csharp raw-file="examples/BlogExample/Program.cs"
+```csharp:path
+examples/BlogExample/Program.cs
 ```
 
 - Outline bullet: Snippet source — `BlogExample/Program.cs` shows both `MainSiteLinks` (two `HeaderLink` entries) and `Socials` (four `SocialLink` entries using all four built-in icons) set inside one `BlogSiteOptions` initializer. (Raw-file fence: `Program.cs` is top-level statements with no xmldocid-addressable symbol.)

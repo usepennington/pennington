@@ -43,7 +43,8 @@ The finished code for this tutorial lives in [`examples/AlexBlogExample`](https:
   - Place it alongside `SiteTitle` / `Description` / `AuthorName` for readability.
   - Save — `dotnet watch` (or the dev-loop Pennington live reload) will refresh the browser.
 
-```csharp raw-file="examples/AlexBlogExample/Program.cs"
+```csharp:path
+examples/AlexBlogExample/Program.cs
 ```
 
 - One-line bullet: snippet shows the minimal `AlexBlogExample` wiring — `HeroContent` appears right after `AuthorBio` with a plain headline + single-paragraph intro.
@@ -70,7 +71,8 @@ The finished code for this tutorial lives in [`examples/AlexBlogExample`](https:
   - Encourage listing projects the reader actually wants visible — don't pad.
   - Mention that ordering in the array is the rendered order.
 
-```csharp raw-file="examples/BlogExample/Program.cs"
+```csharp:path
+examples/BlogExample/Program.cs
 ```
 
 - One-line bullet: snippet from `BlogExample/Program.cs` (Calvin's Chewing Chronicles) shows five `Project` entries populating `MyWork` — a denser layout than the `AlexBlogExample` one-project form.
@@ -95,7 +97,8 @@ The finished code for this tutorial lives in [`examples/AlexBlogExample`](https:
   - Pick the icons matching platforms the reader actually uses.
   - Add a `using Pennington.BlogSite.Components;` at the top of `Program.cs` so `SocialIcons` resolves without qualification.
 
-```csharp raw-file="examples/AlexBlogExample/Program.cs"
+```csharp:path
+examples/AlexBlogExample/Program.cs
 ```
 
 - One-line bullet: same file as step 1.1; learners will see the `Socials` array with `SocialIcons.GithubIcon` and `SocialIcons.MastodonIcon` wired in directly below `MyWork`.
@@ -120,7 +123,8 @@ The finished code for this tutorial lives in [`examples/AlexBlogExample`](https:
   - Keep the list short (2–4 entries) so the header doesn't wrap on mobile.
   - If an internal URL points at a page that doesn't exist yet, Pennington's link verification will warn at build time — this is expected; create the page in a later tutorial or ignore for now.
 
-```csharp raw-file="examples/BlogExample/Program.cs"
+```csharp:path
+examples/BlogExample/Program.cs
 ```
 
 - One-line bullet: the `BlogExample/Program.cs` snippet shows `MainSiteLinks` with two entries ("About" and "Sponsor Me") plus the full `Socials` array covering all four built-in icons, giving learners a complete reference of the homepage surface populated at once.

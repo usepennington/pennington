@@ -29,3 +29,44 @@ Uses the Diataxis framework. All articles should be in one of these quadrants an
 - **Structure**: Systematic, complete coverage
 - **Focus**: Facts, parameters, specifications
 - **Language**: Variety of, but not limited to"This parameter...", "Returns...", "Available options..."
+
+## Code-block embedding syntax
+
+Pennington preprocesses fenced code blocks whose info string ends in `:path`, `:xmldocid`, or `:xmldocid-diff`. The language before the colon (`csharp`, `razor`, `text`, etc.) drives highlighting. Do not use `raw-file="…"` — that form is not parsed.
+
+### Embed a whole file — `<lang>:path`
+Body is one file path, relative to the solution directory (where `Pennington.slnx` lives).
+
+````markdown
+```csharp:path
+examples/AlexBlogExample/Program.cs
+```
+````
+
+### Embed a symbol — `<lang>:xmldocid`
+Body is one XmlDocId per line (e.g. `T:Ns.Type`, `M:Ns.Type.Method`, `P:Ns.Type.Prop`). Multiple IDs are concatenated in the output.
+
+````markdown
+```csharp:xmldocid
+M:Pennington.BlogSite.BlogSiteServiceExtensions.AddBlogSite(...)
+```
+````
+
+Add `,bodyonly` to strip the declaration and render only the method/property body:
+
+````markdown
+```csharp:xmldocid,bodyonly
+M:Ns.Type.Method
+```
+````
+
+### Diff two symbols — `<lang>:xmldocid-diff`
+Body must contain exactly 2 XmlDocIds (before/after). Supports the same `,bodyonly` suffix.
+
+### When to use which
+- **`:xmldocid`** — default for C# examples; survives renames, refactors, and line shifts.
+- **`:xmldocid,bodyonly`** — when the declaration is noise (showing what's inside a method).
+- **`:path`** — only when no xmldocid-addressable symbol exists: top-level-statements `Program.cs`, Razor components, markdown/content files, config files.
+- **`:xmldocid-diff`** — before/after comparisons in explanation pages.
+
+Requires `Pennington.Roslyn` wired (`AddPenningtonRoslyn`) and `SolutionPath` set on `RoslynOptions` / `DocSiteOptions`.

@@ -39,7 +39,8 @@ To copy a working setup, see [`examples/MinimalExample`](https://github.com/phil
 - Add `AdditionalRoutingAssemblies` when the host needs to discover your own Razor routes during build and runtime.
 - Keep these site-wide settings together near the top of the callback.
 
-```csharp raw-file="examples/MinimalExample/Program.cs"
+```csharp:path
+examples/MinimalExample/Program.cs
 ```
 
 ### 2. Register markdown content sources
@@ -48,7 +49,8 @@ To copy a working setup, see [`examples/MinimalExample`](https://github.com/phil
 - Pick the front-matter type that matches the shape of that tree.
 - If you need more than one source, add them one at a time and verify the URLs before moving on.
 
-```csharp raw-file="examples/ForgePortalExample/Program.cs"
+```csharp:path
+examples/ForgePortalExample/Program.cs
 ```
 
 ### 3. Add code highlighters via `penn.Highlighting`
@@ -63,7 +65,8 @@ To copy a working setup, see [`examples/MinimalExample`](https://github.com/phil
 - Use one registration per slot name and keep the slot names aligned with your layout markup.
 - Skip this step entirely for a content-only site.
 
-```csharp raw-file="examples/SpaNavigationTutorialExample/Program.cs"
+```csharp:path
+examples/SpaNavigationTutorialExample/Program.cs
 ```
 
 ### 5. Configure localization via `penn.Localization`
@@ -72,7 +75,8 @@ To copy a working setup, see [`examples/MinimalExample`](https://github.com/phil
 - Add locale routing middleware in the app pipeline before your Razor endpoints.
 - Use the dedicated localization how-to if you need the full translated-content flow.
 
-```csharp raw-file="examples/YogaStudioExample/Program.cs"
+```csharp:path
+examples/YogaStudioExample/Program.cs
 ```
 
 - For deeper coverage (per-locale content folders, fallback, translations), see [Enable multiple locales](/how-to/configuration/localization).

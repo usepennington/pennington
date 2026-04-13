@@ -37,7 +37,8 @@ To copy a working setup, see [`examples/SearchExample`](https://github.com/Phil-
 - Leave this alone if the default look is already close to what you want.
 - Verify the result on the home page before you move on to typography and header polish.
 
-```csharp raw-file="examples/TempoDocsExample/Program.cs"
+```csharp:path
+examples/TempoDocsExample/Program.cs
 ```
 
 _This example shows the color scheme configured inline in `Program.cs`._
@@ -54,7 +55,8 @@ _This example shows the color scheme configured inline in `Program.cs`._
 - Add `HeaderContent` for a short badge or status label.
 - Add `FooterContent` for copyright, support links, or other footer-level text.
 
-```csharp raw-file="examples/BeaconDocsExample/Program.cs"
+```csharp:path
+examples/BeaconDocsExample/Program.cs
 ```
 
 _This example shows the icon, header badge, and footer content set together._
@@ -71,7 +73,8 @@ _This example shows the icon, header badge, and footer content set together._
 - Keep the path in the same edit as the Roslyn service registration so the setup stays easy to understand.
 - Skip this step entirely if your site does not use xmldocid-backed snippets.
 
-```csharp raw-file="examples/PrismDocsExample/Program.cs"
+```csharp:path
+examples/PrismDocsExample/Program.cs
 ```
 
 _This example shows `AddDocSite`, `AddPenningtonRoslyn`, and `SolutionPath` together._

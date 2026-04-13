@@ -37,7 +37,8 @@ llms: false
 - Outline bullet: This is a string slot — no Razor component resolution happens. If you need dynamic values, interpolate them in `Program.cs` before passing the string.
 - Outline bullet: Example — fonts and preconnect tags:
 
-```csharp raw-file="examples/SearchExample/Program.cs"
+```csharp:path
+examples/SearchExample/Program.cs
 ```
 
 ### 2. Add CSS with `ExtraStyles` and preload fonts with `FontPreloads`
@@ -53,7 +54,8 @@ llms: false
 - Outline bullet: Your component renders inside `MainLayout` — you get the full shell (header, sidebar, outline nav). If you need a different shell for these pages, set a `@layout` directive on the component.
 - Outline bullet: Example — the `Random` razor page registered via `AdditionalRoutingAssemblies = [typeof(Random).Assembly]`:
 
-```razor raw-file="examples/SearchExample/Services/Random.razor"
+```razor:path
+examples/SearchExample/Services/Random.razor
 ```
 
 - Outline bullet: See `examples/SearchExample/Program.cs` for the matching `DocSiteOptions.AdditionalRoutingAssemblies = [typeof(Random).Assembly]` wiring.

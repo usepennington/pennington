@@ -44,7 +44,8 @@ llms: false
 - Outline bullet: Order is preserved — entries render top-to-bottom exactly as declared, so put flagship projects first.
 - Outline bullet: Use a collection-expression literal inside the `BlogSiteOptions` initializer.
 
-```csharp raw-file="examples/AlexBlogExample/Program.cs"
+```csharp:path
+examples/AlexBlogExample/Program.cs
 ```
 
 - Outline bullet: Snippet source — `AlexBlogExample/Program.cs` shows the minimal single-project case (`MyWork = [ new Project("Tempo", "...", "https://...") ]`). (Raw-file fence: `Program.cs` is top-level statements with no xmldocid-addressable symbol.)
@@ -54,7 +55,8 @@ llms: false
 - Outline bullet: Add additional `new Project(...)` items separated by commas inside the `[ ]`.
 - Outline bullet: There is no hard cap, but the card is sticky in the homepage sidebar — lists beyond ~6 entries start to dominate the viewport at `lg:` breakpoint.
 
-```csharp raw-file="examples/BlogExample/Program.cs"
+```csharp:path
+examples/BlogExample/Program.cs
 ```
 
 - Outline bullet: Snippet source — `BlogExample/Program.cs` shows a three-project `MyWork` array (`gum-performance-benchmark`, `mandible-trainer-pro`, plus a third) alongside `HeroContent` and `Socials`.

@@ -39,7 +39,8 @@ One sentence: change the three host-wiring calls so the BlogSite template compos
 - Outline bullet: Add `using Pennington.BlogSite;` at the top — `BlogSiteOptions`, `HeroContent`, `SocialLink`, `Project`, and `HeaderLink` all live in that namespace.
 - Outline bullet: Note that `AddBlogSite` internally composes `AddPennington` + `AddMonorailCss` plus the file-watched `BlogContentResolver` and `BlogSiteContentService` — you do not register those yourself.
 
-```csharp raw-file="examples/AlexBlogExample/Program.cs"
+```csharp:path
+examples/AlexBlogExample/Program.cs
 ```
 
 - Outline bullet: Snippet source — `examples/AlexBlogExample/Program.cs` is the canonical minimal BlogSite wiring in the examples inventory; it shows every change in context. (Raw-file fence chosen because `Program.cs` is top-level statements with no xmldocid-addressable symbol.)

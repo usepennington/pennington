@@ -39,7 +39,8 @@ _Tell the site it now has more than one language._
 - Add `ConfigureLocalization`.
 - Inside it, set English as the default locale and add Spanish as a second locale.
 
-```text rawfile="examples/LocalizationTutorialExample/Program.cs"
+```text:path
+examples/LocalizationTutorialExample/Program.cs
 ```
 
 _This example shows the minimal two-locale setup._
@@ -68,12 +69,14 @@ _Now add Spanish content so the second locale has something to show._
 - Copy `Content/index.md` to `Content/es/index.md`.
 - Translate the title, description, and body text into Spanish.
 
-```text rawfile="examples/LocalizationTutorialExample/Content/index.md"
+```text:path
+examples/LocalizationTutorialExample/Content/index.md
 ```
 
 _This is the English page you start from._
 
-```text rawfile="examples/LocalizationTutorialExample/Content/es/index.md"
+```text:path
+examples/LocalizationTutorialExample/Content/es/index.md
 ```
 
 _This is the Spanish version of the same page._
@@ -84,7 +87,8 @@ _This is the Spanish version of the same page._
 - Translate that second page too.
 - Keep the overall page structure the same so both locales feel parallel.
 
-```text rawfile="examples/LocalizationTutorialExample/Content/es/getting-started.md"
+```text:path
+examples/LocalizationTutorialExample/Content/es/getting-started.md
 ```
 
 _This example shows the second translated page in place._

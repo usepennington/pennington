@@ -37,7 +37,8 @@ To copy a working setup, see [`examples/AlexBlogExample`](https://github.com/Phi
 - Set `CanonicalBaseUrl` to the production URL you plan to publish at.
 - Keep these three values together near the top of the options block so they are easy to revisit later.
 
-```csharp raw-file="examples/AlexBlogExample/Program.cs"
+```csharp:path
+examples/AlexBlogExample/Program.cs
 ```
 
 _This example shows the three identity fields set together._
@@ -48,7 +49,8 @@ _This example shows the three identity fields set together._
 - Set `BlogContentPath`, `BlogBaseUrl`, and `TagsPageUrl` so the on-disk folders and published URLs line up with each other.
 - If you rename one of these paths, update the others in the same edit so your content model stays obvious.
 
-```csharp raw-file="examples/MaraBlogExample/Program.cs"
+```csharp:path
+examples/MaraBlogExample/Program.cs
 ```
 
 _This example shows relocated post and tag paths._
@@ -71,7 +73,8 @@ _This example shows relocated post and tag paths._
 - Load the actual font assets through `AdditionalHtmlHeadContent` or self-host them and use `FontPreloads`.
 - Verify the final typography in the browser before moving on to smaller tweaks.
 
-```csharp raw-file="examples/BlogExample/Program.cs"
+```csharp:path
+examples/BlogExample/Program.cs
 ```
 
 _This example shows font families and head content set together._

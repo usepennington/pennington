@@ -42,7 +42,8 @@ llms: false
 - Outline bullet: Assign both properties inside the `DocSiteOptions` factory passed to `AddDocSite(...)`.
 - Outline bullet: Order inside the record literal does not matter — the DocSite reads these after the full record is constructed.
 
-```csharp raw-file="examples/SearchExample/Program.cs"
+```csharp:path
+examples/SearchExample/Program.cs
 ```
 
 - Outline bullet: Snippet source — `SearchExample/Program.cs` shows `BodyFontFamily = "Manrope, sans-serif"` and `DisplayFontFamily = "Petrona, serif"` set inside the `DocSiteOptions` factory. (Raw-file fence: `Program.cs` is top-level statements with no xmldocid-addressable symbol.)
