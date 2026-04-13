@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Mdazor;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Localization;
 using Pennington.Content;
@@ -41,6 +42,11 @@ public static class PenningtonExtensions
         // Register options
         services.AddSingleton(options);
         services.AddSingleton(options.Localization);
+
+        // Mdazor: registers IComponentRegistry + Razor HtmlRenderer so Markdig can
+        // inline-render components referenced from markdown. Consumers register
+        // specific components with services.AddMdazorComponent<T>().
+        services.AddMdazor();
 
         // Register output options from CLI args
         var args = Environment.GetCommandLineArgs();
@@ -75,11 +81,14 @@ public static class PenningtonExtensions
         services.AddSingleton<HighlightingService>(sp =>
             new HighlightingService(sp.GetServices<ICodeHighlighter>()));
 
-        // Markdown pipeline — includes highlighting, tabs, custom alerts, and preprocessors
+        // Markdown pipeline — includes highlighting, tabs, custom alerts, Mdazor,
+        // and any consumer-supplied extensions via options.ConfigureMarkdownPipeline.
         services.AddSingleton<MarkdownPipeline>(sp =>
             MarkdownPipelineFactory.CreateWithExtensions(
+                sp,
                 sp.GetRequiredService<HighlightingService>(),
-                preprocessors: sp.GetServices<ICodeBlockPreprocessor>()));
+                preprocessors: sp.GetServices<ICodeBlockPreprocessor>(),
+                configure: options.ConfigureMarkdownPipeline));
 
         // Relative-link resolver — factory-managed so it rebuilds its source → URL
         // index when content files change. Registered under both the concrete type

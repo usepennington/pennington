@@ -1,5 +1,6 @@
 using Markdig;
 using Markdig.Renderers;
+using Microsoft.Extensions.DependencyInjection;
 using Pennington.Highlighting;
 using Pennington.Markdown;
 using Pennington.Markdown.Extensions;
@@ -13,7 +14,9 @@ public class CodeBlockPreprocessorTests
         IEnumerable<ICodeBlockPreprocessor>? preprocessors = null)
     {
         var highlightingService = new HighlightingService([]);
+        using var sp = new ServiceCollection().BuildServiceProvider();
         var pipeline = MarkdownPipelineFactory.CreateWithExtensions(
+            sp,
             highlightingService,
             preprocessors: preprocessors);
 

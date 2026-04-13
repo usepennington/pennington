@@ -1,11 +1,13 @@
 namespace Pennington.DocSite;
 
 using System.Reflection;
+using Mdazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Pennington.Infrastructure;
 using Pennington.Islands;
 using Pennington.MonorailCss;
+using Pennington.UI.Components;
 
 public static class DocSiteServiceExtensions
 {
@@ -45,6 +47,16 @@ public static class DocSiteServiceExtensions
                 : options.AdditionalRoutingAssemblies;
             penn.AdditionalRoutingAssemblies = allAssemblies;
         });
+
+        // Make Pennington.UI components available inline in markdown via Mdazor.
+        services.AddMdazorComponent<Badge>()
+                .AddMdazorComponent<BigTable>()
+                .AddMdazorComponent<Card>()
+                .AddMdazorComponent<CardGrid>()
+                .AddMdazorComponent<CodeBlock>()
+                .AddMdazorComponent<LinkCard>()
+                .AddMdazorComponent<Step>()
+                .AddMdazorComponent<Steps>();
 
         // MonorailCSS
         services.AddMonorailCss(sp =>

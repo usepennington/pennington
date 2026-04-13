@@ -2,6 +2,7 @@ namespace Pennington.Infrastructure;
 
 using System.Collections.Immutable;
 using System.Reflection;
+using Markdig;
 using Pennington.Highlighting;
 using Pennington.Islands;
 using Pennington.LlmsTxt;
@@ -20,6 +21,12 @@ public sealed class PenningtonOptions
     public IslandsOptions Islands { get; } = new();
     public LocalizationOptions Localization { get; } = new();
     public TranslationOptions Translations { get; } = new();
+
+    /// <summary>
+    /// Customize the Markdig pipeline after Pennington's built-in extensions (including Mdazor) are added.
+    /// Runs with the resolved <see cref="IServiceProvider"/> so extensions requiring DI can be wired up.
+    /// </summary>
+    public Action<MarkdownPipelineBuilder, IServiceProvider>? ConfigureMarkdownPipeline { get; set; }
 
     private readonly List<MarkdownContentOptions> _markdownSources = [];
 

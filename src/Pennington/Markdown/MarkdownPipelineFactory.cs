@@ -5,6 +5,8 @@ using Markdig.Extensions.Alerts;
 using Markdig.Parsers.Inlines;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
+using Mdazor;
+using Microsoft.Extensions.DependencyInjection;
 using Pennington.Highlighting;
 using Pennington.Markdown.Extensions;
 using Pennington.Markdown.Extensions.Tabs;
@@ -23,21 +25,31 @@ public static class MarkdownPipelineFactory
     }
 
     /// <summary>
-    /// Creates a pipeline with syntax highlighting, tabbed code blocks, and custom alerts.
+    /// Creates a pipeline with syntax highlighting, tabbed code blocks, custom alerts, and
+    /// Mdazor component rendering. The optional <paramref name="configure"/> hook runs after
+    /// built-in extensions so consumers can add their own.
     /// </summary>
     public static MarkdownPipeline CreateWithExtensions(
+        IServiceProvider serviceProvider,
         HighlightingService highlightingService,
         Func<CodeHighlightRenderOptions>? codeOptions = null,
         Func<TabbedCodeBlockRenderOptions>? tabOptions = null,
-        IEnumerable<ICodeBlockPreprocessor>? preprocessors = null)
+        IEnumerable<ICodeBlockPreprocessor>? preprocessors = null,
+        Action<MarkdownPipelineBuilder, IServiceProvider>? configure = null)
     {
-        return new MarkdownPipelineBuilder()
+        var builder = new MarkdownPipelineBuilder()
             .UseAdvancedExtensions()
             .UseYamlFrontMatter()
             .UseSyntaxHighlighting(highlightingService, codeOptions, preprocessors)
             .UseTabbedCodeBlocks(tabOptions)
-            .UseCustomAlerts()
-            .Build();
+            .UseCustomAlerts();
+
+        // Mdazor wires itself from DI; only enable when AddMdazor() has populated the registry.
+        if (serviceProvider.GetService<IComponentRegistry>() is not null)
+            builder = builder.UseMdazor(serviceProvider);
+
+        configure?.Invoke(builder, serviceProvider);
+        return builder.Build();
     }
 }
 

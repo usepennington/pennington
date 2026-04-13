@@ -1,6 +1,7 @@
 namespace Pennington.BlogSite;
 
 using System.Reflection;
+using Mdazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,7 @@ using Pennington.BlogSite.Services;
 using Pennington.Content;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
+using Pennington.UI.Components;
 
 public static class BlogSiteServiceExtensions
 {
@@ -48,6 +50,16 @@ public static class BlogSiteServiceExtensions
             }
             penn.AdditionalRoutingAssemblies = assemblies.ToArray();
         });
+
+        // Make Pennington.UI components available inline in markdown via Mdazor.
+        services.AddMdazorComponent<Badge>()
+                .AddMdazorComponent<BigTable>()
+                .AddMdazorComponent<Card>()
+                .AddMdazorComponent<CardGrid>()
+                .AddMdazorComponent<CodeBlock>()
+                .AddMdazorComponent<LinkCard>()
+                .AddMdazorComponent<Step>()
+                .AddMdazorComponent<Steps>();
 
         services.AddMonorailCss(sp =>
         {
