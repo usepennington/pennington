@@ -2,10 +2,10 @@ namespace Pennington.Content;
 
 using System.Collections.Immutable;
 using System.IO.Abstractions;
-using Pennington.FrontMatter;
-using Pennington.Infrastructure;
-using Pennington.Pipeline;
-using Pennington.Routing;
+using FrontMatter;
+using Infrastructure;
+using Pipeline;
+using Routing;
 
 /// <summary>
 /// Discovers and provides markdown content from a directory.

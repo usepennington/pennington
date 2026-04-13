@@ -3,7 +3,7 @@ namespace Pennington.Infrastructure;
 using AngleSharp.Dom;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Pennington.Diagnostics;
+using Diagnostics;
 
 /// <summary>
 /// Resolves <c>xref:</c> cross-reference links on the shared response

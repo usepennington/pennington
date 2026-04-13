@@ -2,7 +2,7 @@ namespace Pennington.Islands;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Pennington.Diagnostics;
+using Diagnostics;
 
 /// <summary>JSON serialization for SPA envelopes.</summary>
 public static class SpaEnvelopeSerializer

@@ -2,7 +2,7 @@ namespace Pennington.Highlighting;
 
 using System.Text;
 using System.Text.RegularExpressions;
-using Pennington.Infrastructure;
+using Infrastructure;
 
 /// <summary>
 /// Provides syntax highlighting for shell/bash/batch commands.

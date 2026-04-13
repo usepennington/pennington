@@ -1,6 +1,6 @@
 namespace Pennington.Content;
 
-using Pennington.Routing;
+using Routing;
 
 /// <summary>
 /// A dynamically generated file (e.g., search index, RSS feed).

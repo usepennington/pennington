@@ -6,8 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using Pennington.Infrastructure;
-using Pennington.MonorailCss;
-using Pennington.Roslyn;
+using MonorailCss;
+using Roslyn;
 
 public class RoslynIntegrationExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -38,7 +38,7 @@ public class RoslynIntegrationExamplePlaywrightFixture : IAsyncLifetime
             penn.SiteDescription = "An Inflexible Content Engine for .NET";
             penn.ContentRootPath = "Content";
 
-            penn.AddMarkdownContent<global::RoslynIntegrationExample.BlogFrontMatter>(md =>
+            penn.AddMarkdownContent<RoslynIntegrationExample.BlogFrontMatter>(md =>
             {
                 md.ContentPath = "Content";
                 md.BasePageUrl = "";
@@ -51,11 +51,11 @@ public class RoslynIntegrationExamplePlaywrightFixture : IAsyncLifetime
         });
 
         builder.Services.AddMonorailCss();
-        builder.Services.AddTransient<global::RoslynIntegrationExample.ContentHelper>();
+        builder.Services.AddTransient<RoslynIntegrationExample.ContentHelper>();
 
         _app = builder.Build();
         _app.UseAntiforgery();
-        _app.MapRazorComponents<global::RoslynIntegrationExample.Components.App>();
+        _app.MapRazorComponents<RoslynIntegrationExample.Components.App>();
         _app.UseMonorailCss();
         _app.UsePennington();
 

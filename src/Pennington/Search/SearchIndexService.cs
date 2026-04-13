@@ -4,9 +4,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Pennington.Content;
-using Pennington.Infrastructure;
-using Pennington.LlmsTxt;
+using Content;
+using Infrastructure;
+using LlmsTxt;
 
 /// <summary>
 /// Generates per-locale search index JSON. Each configured locale gets its own

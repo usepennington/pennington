@@ -7,9 +7,9 @@ using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Mdazor;
 using Microsoft.Extensions.DependencyInjection;
-using Pennington.Highlighting;
-using Pennington.Markdown.Extensions;
-using Pennington.Markdown.Extensions.Tabs;
+using Highlighting;
+using Extensions;
+using Extensions.Tabs;
 
 /// <summary>
 /// Creates a configured Markdig MarkdownPipeline.
@@ -120,7 +120,7 @@ internal static class MarkdownPipelineBuilderExtensions
     {
         public void Setup(MarkdownPipelineBuilder pipeline)
         {
-            var existing = pipeline.InlineParsers.Find<Markdig.Extensions.Alerts.AlertInlineParser>();
+            var existing = pipeline.InlineParsers.Find<AlertInlineParser>();
             if (existing is not null)
             {
                 pipeline.InlineParsers.Remove(existing);

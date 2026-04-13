@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Pennington.DocSite;
-using Pennington.Roslyn;
+using DocSite;
+using Roslyn;
 
 public class PrismDocsExamplePlaywrightFixture : IAsyncLifetime
 {

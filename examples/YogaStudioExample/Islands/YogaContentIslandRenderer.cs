@@ -2,9 +2,8 @@ namespace YogaStudioExample.Islands;
 
 using Pennington.Islands;
 using Pennington.Routing;
-using YogaStudioExample.Islands.Components;
-using YogaStudioExample.Models;
-using YogaStudioExample.Services;
+using Components;
+using Services;
 
 public class YogaContentIslandRenderer(
     ContentHelper contentHelper,

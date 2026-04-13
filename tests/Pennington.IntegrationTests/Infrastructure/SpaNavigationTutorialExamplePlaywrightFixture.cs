@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Pennington.FrontMatter;
+using FrontMatter;
 using Pennington.Infrastructure;
-using Pennington.Islands;
-using Pennington.MonorailCss;
+using Islands;
+using MonorailCss;
 
 public class SpaNavigationTutorialExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -46,7 +46,7 @@ public class SpaNavigationTutorialExamplePlaywrightFixture : IAsyncLifetime
         });
 
         builder.Services.AddMonorailCss();
-        builder.Services.AddTransient<global::SpaNavigationTutorialExample.ContentHelper>();
+        builder.Services.AddTransient<SpaNavigationTutorialExample.ContentHelper>();
 
         builder.Services.AddSpaNavigation();
         builder.Services.AddScoped<ComponentRenderer>();
@@ -55,7 +55,7 @@ public class SpaNavigationTutorialExamplePlaywrightFixture : IAsyncLifetime
 
         _app = builder.Build();
         _app.UseAntiforgery();
-        _app.MapRazorComponents<global::SpaNavigationTutorialExample.Components.App>();
+        _app.MapRazorComponents<SpaNavigationTutorialExample.Components.App>();
         _app.UseMonorailCss();
         _app.UseSpaNavigation();
         _app.UsePennington();

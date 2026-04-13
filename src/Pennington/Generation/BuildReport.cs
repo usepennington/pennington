@@ -2,8 +2,8 @@ namespace Pennington.Generation;
 
 using System.Collections.Immutable;
 using System.Linq;
-using Pennington.Diagnostics;
-using Pennington.Routing;
+using Diagnostics;
+using Routing;
 
 public sealed class BuildReport
 {

@@ -3,8 +3,8 @@ namespace Pennington.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
-using Pennington.DocSite;
-using Pennington.Roslyn;
+using DocSite;
+using Roslyn;
 
 /// <summary>
 /// Spins up the Pennington.Docs site under real Kestrel on a random port.

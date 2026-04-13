@@ -5,7 +5,7 @@ using Pennington.FrontMatter;
 using Pennington.Infrastructure;
 using Pennington.Pipeline;
 using Pennington.Routing;
-using YogaStudioExample.Models;
+using Models;
 
 public sealed class ContentHelper
 {

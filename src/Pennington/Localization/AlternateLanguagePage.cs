@@ -1,6 +1,6 @@
 namespace Pennington.Localization;
 
-using Pennington.Routing;
+using Routing;
 
 /// <summary>Links a page to its translation in another locale.</summary>
 public record AlternateLanguagePage(

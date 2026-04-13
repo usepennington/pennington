@@ -1,6 +1,6 @@
 namespace Pennington.Islands;
 
-using Pennington.Routing;
+using Routing;
 
 /// <summary>Context available during island rendering.</summary>
 public record RenderContext(

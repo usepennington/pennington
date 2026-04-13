@@ -1,10 +1,9 @@
 namespace Pennington.Pipeline;
 
-using Pennington.Content;
-using Pennington.FrontMatter;
-using Pennington.Generation;
-using Pennington.Infrastructure;
-using Pennington.Routing;
+using Content;
+using Generation;
+using Infrastructure;
+using Routing;
 
 /// <summary>
 /// Orchestrates the content processing pipeline.

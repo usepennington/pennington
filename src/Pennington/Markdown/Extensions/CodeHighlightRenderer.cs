@@ -5,8 +5,8 @@ using Markdig.Parsers;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
-using Pennington.Highlighting;
-using Pennington.Markdown.Extensions.Tabs;
+using Highlighting;
+using Tabs;
 
 /// <summary>
 /// Custom Markdig renderer for fenced code blocks that:

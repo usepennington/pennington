@@ -1,6 +1,6 @@
 namespace Pennington.BlogSite;
 
-using Pennington.FrontMatter;
+using FrontMatter;
 
 /// <summary>
 /// Front matter for blog site posts.

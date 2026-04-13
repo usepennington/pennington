@@ -1,7 +1,7 @@
 namespace Pennington.Pipeline;
 
 using System.Collections.Immutable;
-using Pennington.Search;
+using Search;
 
 public record RenderedContent(
     string Html,

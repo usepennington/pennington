@@ -1,4 +1,3 @@
-using System.Reflection;
 using Pennington.Content;
 using Pennington.DocSite;
 using Pennington.FrontMatter;

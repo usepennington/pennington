@@ -1,8 +1,8 @@
 namespace Pennington.Feeds;
 
 using System.Collections.Immutable;
-using Pennington.FrontMatter;
-using Pennington.Routing;
+using FrontMatter;
+using Routing;
 
 /// <summary>
 /// A candidate row for the sitemap — a route and (optionally) the front matter

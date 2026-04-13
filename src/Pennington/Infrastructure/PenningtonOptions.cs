@@ -3,11 +3,11 @@ namespace Pennington.Infrastructure;
 using System.Collections.Immutable;
 using System.Reflection;
 using Markdig;
-using Pennington.Highlighting;
-using Pennington.Islands;
-using Pennington.LlmsTxt;
-using Pennington.Localization;
-using Pennington.Search;
+using Highlighting;
+using Islands;
+using LlmsTxt;
+using Localization;
+using Search;
 
 /// <summary>Main configuration options for the Pennington content engine.</summary>
 public sealed class PenningtonOptions
@@ -32,7 +32,7 @@ public sealed class PenningtonOptions
 
     /// <summary>Register a markdown content source with a specific front matter type.</summary>
     public MarkdownContentOptions AddMarkdownContent<TFrontMatter>(Action<MarkdownContentOptions> configure)
-        where TFrontMatter : Pennington.FrontMatter.IFrontMatter
+        where TFrontMatter : FrontMatter.IFrontMatter
     {
         var options = new MarkdownContentOptions { FrontMatterType = typeof(TFrontMatter) };
         configure(options);
@@ -189,8 +189,8 @@ public sealed class LocalizationOptions
         // The 404-generation sentinel is not a real content page. Treat it as
         // the locale root so language switcher links resolve to each locale's
         // landing page instead of phantom /<locale>/__pennington-404-generator/.
-        if (url.Equals(Pennington.Generation.OutputGenerationService.NotFoundGeneratorPath, StringComparison.Ordinal)
-            || url.Equals(Pennington.Generation.OutputGenerationService.NotFoundGeneratorPath + "/", StringComparison.Ordinal))
+        if (url.Equals(Generation.OutputGenerationService.NotFoundGeneratorPath, StringComparison.Ordinal)
+            || url.Equals(Generation.OutputGenerationService.NotFoundGeneratorPath + "/", StringComparison.Ordinal))
         {
             url = "/";
         }

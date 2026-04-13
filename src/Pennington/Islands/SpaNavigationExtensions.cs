@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Pennington.Content;
-using Pennington.Diagnostics;
-using Pennington.Infrastructure;
-using Pennington.Routing;
+using Content;
+using Diagnostics;
+using Infrastructure;
+using Routing;
 
 /// <summary>Extension methods for SPA navigation registration.</summary>
 public static class SpaNavigationExtensions
@@ -53,10 +53,10 @@ public static class SpaNavigationExtensions
                 slug = slug[..^5];
 
             var url = SpaSlug.ToUrl(slug);
-            var route = new Routing.ContentRoute
+            var route = new ContentRoute
             {
-                CanonicalPath = new Routing.UrlPath(url),
-                OutputFile = new Routing.FilePath($"{url.TrimStart('/')}/index.html".TrimStart('/'))
+                CanonicalPath = new UrlPath(url),
+                OutputFile = new FilePath($"{url.TrimStart('/')}/index.html".TrimStart('/'))
             };
 
             // Try to resolve the page title from content services
@@ -64,7 +64,7 @@ public static class SpaNavigationExtensions
             foreach (var svc in contentServices)
             {
                 var tocItems = await svc.GetContentTocEntriesAsync();
-                var match = tocItems.FirstOrDefault(t => t.Route.CanonicalPath.Matches(new Routing.UrlPath(url)));
+                var match = tocItems.FirstOrDefault(t => t.Route.CanonicalPath.Matches(new UrlPath(url)));
                 if (match != null)
                 {
                     title = match.Title;

@@ -90,7 +90,7 @@ else
 @code {
     [Parameter] public string Slug { get; set; } = "";
 
-    private Models.InstructorProfile? Instructor => InstructorSvc.GetBySlug(Slug);
+    private InstructorProfile? Instructor => InstructorSvc.GetBySlug(Slug);
 
     private List<ScheduleEntry> InstructorClasses =>
         Instructor is not null ? ScheduleSvc.GetClassesByInstructor(Instructor.Id) : [];

@@ -1,6 +1,6 @@
 namespace Pennington.Docs.Components.Reference;
 
-using Pennington.Roslyn.Documentation;
+using Roslyn.Documentation;
 
 internal static class MemberOptionParser
 {

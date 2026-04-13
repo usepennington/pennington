@@ -1,7 +1,7 @@
 namespace YogaStudioExample.Services;
 
 using System.Text.Json;
-using YogaStudioExample.Models;
+using Models;
 
 public sealed class ScheduleService
 {

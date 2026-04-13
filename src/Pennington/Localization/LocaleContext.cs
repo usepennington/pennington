@@ -1,6 +1,6 @@
 namespace Pennington.Localization;
 
-using Pennington.Infrastructure;
+using Infrastructure;
 
 /// <summary>
 /// Scoped per-request locale context, set by <see cref="LocaleDetectionMiddleware"/>.

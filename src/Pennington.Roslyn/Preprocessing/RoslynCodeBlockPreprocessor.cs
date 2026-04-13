@@ -3,11 +3,11 @@ namespace Pennington.Roslyn.Preprocessing;
 using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Pennington.Diagnostics;
-using Pennington.Markdown.Extensions;
-using Pennington.Roslyn.Highlighting;
-using Pennington.Roslyn.Symbols;
-using Pennington.Roslyn.Utilities;
+using Diagnostics;
+using Markdown.Extensions;
+using Highlighting;
+using Symbols;
+using Utilities;
 
 /// <summary>
 /// Preprocesses code blocks with :xmldocid, :path, and :xmldocid-diff modifiers.

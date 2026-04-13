@@ -2,10 +2,10 @@ namespace Pennington.Feeds;
 
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Pennington.Content;
-using Pennington.FrontMatter;
-using Pennington.Infrastructure;
-using Pennington.Pipeline;
+using Content;
+using FrontMatter;
+using Infrastructure;
+using Pipeline;
 
 /// <summary>
 /// Generates sitemap XML for the /sitemap.xml endpoint.

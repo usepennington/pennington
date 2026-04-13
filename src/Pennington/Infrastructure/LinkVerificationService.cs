@@ -2,8 +2,8 @@ namespace Pennington.Infrastructure;
 
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
-using Pennington.Generation;
-using Pennington.Routing;
+using Generation;
+using Routing;
 
 /// <summary>
 /// Verifies internal links in rendered HTML against known routes.

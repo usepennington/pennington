@@ -32,18 +32,28 @@ public class ResponsiveImageContentService : IResponsiveImageContentService, ICo
     {
         var maxWidth = size.ToLowerInvariant() switch
         {
-            "lqip" => 40, "xs" => 480, "sm" => 768,
-            "md" => 1024, "lg" => 1440, "xl" => 1920,
-            "full" => 0, _ => 1024
+            "lqip" => 40,
+            "xs" => 480,
+            "sm" => 768,
+            "md" => 1024,
+            "lg" => 1440,
+            "xl" => 1920,
+            "full" => 0,
+            _ => 1024
         };
 
         if (maxWidth == 0 || originalWidth == 0 || originalHeight == 0)
         {
             return size.ToLowerInvariant() switch
             {
-                "lqip" => (40, 30), "xs" => (480, 360), "sm" => (768, 576),
-                "md" => (1024, 768), "lg" => (1440, 1080), "xl" => (1920, 1440),
-                "full" => (0, 0), _ => (1024, 768)
+                "lqip" => (40, 30),
+                "xs" => (480, 360),
+                "sm" => (768, 576),
+                "md" => (1024, 768),
+                "lg" => (1440, 1080),
+                "xl" => (1920, 1440),
+                "full" => (0, 0),
+                _ => (1024, 768)
             };
         }
 

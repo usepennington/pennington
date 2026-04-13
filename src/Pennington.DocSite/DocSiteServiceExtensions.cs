@@ -4,9 +4,9 @@ using System.Reflection;
 using Mdazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Pennington.Infrastructure;
-using Pennington.Islands;
-using Pennington.MonorailCss;
+using Infrastructure;
+using Islands;
+using MonorailCss;
 using Pennington.UI.Components;
 
 public static class DocSiteServiceExtensions

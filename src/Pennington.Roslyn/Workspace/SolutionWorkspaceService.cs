@@ -7,8 +7,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Pennington.Infrastructure;
-using Pennington.Roslyn.Symbols;
+using Infrastructure;
+using Symbols;
 
 /// <summary>
 /// Implementation of <see cref="ISolutionWorkspaceService"/> that manages an MSBuild workspace,

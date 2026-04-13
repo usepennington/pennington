@@ -1,6 +1,6 @@
 namespace Pennington.Pipeline;
 
-using Pennington.Generation;
+using Generation;
 
 /// <summary>
 /// The content processing pipeline.

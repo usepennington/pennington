@@ -1,5 +1,5 @@
 namespace Pennington.Navigation;
 
-using Pennington.Routing;
+using Routing;
 
 public record BreadcrumbItem(string Title, ContentRoute? Route);

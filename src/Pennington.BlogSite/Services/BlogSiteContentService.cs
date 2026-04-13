@@ -3,11 +3,11 @@ namespace Pennington.BlogSite.Services;
 using System.Collections.Immutable;
 using System.Web;
 using System.Xml.Linq;
-using Pennington.Content;
-using Pennington.FrontMatter;
-using Pennington.Infrastructure;
-using Pennington.Pipeline;
-using Pennington.Routing;
+using Content;
+using FrontMatter;
+using Infrastructure;
+using Pipeline;
+using Routing;
 
 /// <summary>
 /// Yields content the stock <see cref="Pennington.Content.RazorPageContentService"/> cannot:

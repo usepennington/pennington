@@ -1,11 +1,10 @@
 namespace SpaNavigationTutorialExample.Islands;
 
-using System.Collections.Immutable;
 using Pennington.Content;
 using Pennington.Islands;
 using Pennington.Navigation;
 using Pennington.Routing;
-using SpaNavigationTutorialExample.Islands.Components;
+using Components;
 
 public class NavIslandRenderer(
     IEnumerable<IContentService> contentServices,

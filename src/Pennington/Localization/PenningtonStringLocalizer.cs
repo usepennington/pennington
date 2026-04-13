@@ -2,7 +2,7 @@ namespace Pennington.Localization;
 
 using System.Globalization;
 using Microsoft.Extensions.Localization;
-using LocalizationOptions = Pennington.Infrastructure.LocalizationOptions;
+using LocalizationOptions = Infrastructure.LocalizationOptions;
 
 /// <summary>
 /// An <see cref="IStringLocalizer"/> backed by <see cref="TranslationOptions"/>.

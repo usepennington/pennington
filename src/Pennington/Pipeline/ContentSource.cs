@@ -1,6 +1,6 @@
 namespace Pennington.Pipeline;
 
-using Pennington.Routing;
+using Routing;
 
 public record MarkdownFileSource(FilePath Path);
 public record RazorPageSource(string ComponentType);

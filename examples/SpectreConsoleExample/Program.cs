@@ -1,5 +1,4 @@
 using MonorailCss.Theme;
-using Pennington.FrontMatter;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
 using SpectreConsoleExample;

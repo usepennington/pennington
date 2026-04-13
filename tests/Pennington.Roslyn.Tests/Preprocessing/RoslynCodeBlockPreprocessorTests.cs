@@ -2,7 +2,7 @@ namespace Pennington.Roslyn.Tests.Preprocessing;
 
 using Microsoft.Extensions.DependencyInjection;
 using Pennington.Highlighting;
-using Pennington.Markdown.Extensions;
+using Markdown.Extensions;
 using Pennington.Roslyn.Highlighting;
 using Pennington.Roslyn.Preprocessing;
 
@@ -175,7 +175,7 @@ public sealed class RoslynCodeBlockPreprocessorTests
         services.AddLogging();
 
         // Register IFileWatcher which SolutionWorkspaceService requires
-        services.AddSingleton<Pennington.Infrastructure.IFileWatcher, StubFileWatcher>();
+        services.AddSingleton<Infrastructure.IFileWatcher, StubFileWatcher>();
 
         services.AddPenningtonRoslyn(opts => opts.SolutionPath = @"C:\fake\solution.sln");
 
@@ -215,7 +215,7 @@ public sealed class RoslynCodeBlockPreprocessorTests
     }
 
     /// <summary>Stub file watcher for DI registration tests.</summary>
-    private sealed class StubFileWatcher : Pennington.Infrastructure.IFileWatcher
+    private sealed class StubFileWatcher : Infrastructure.IFileWatcher
     {
         public void AddPathWatch(string path, string filePattern, Action<string, WatcherChangeTypes> onFileChanged, bool includeSubdirectories = true) { }
         public void SubscribeToChanges(Action onUpdate) { }

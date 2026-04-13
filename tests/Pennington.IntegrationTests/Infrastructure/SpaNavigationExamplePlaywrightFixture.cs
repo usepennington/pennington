@@ -6,8 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using Pennington.Infrastructure;
-using Pennington.Islands;
-using Pennington.MonorailCss;
+using Islands;
+using MonorailCss;
 
 public class SpaNavigationExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -37,7 +37,7 @@ public class SpaNavigationExamplePlaywrightFixture : IAsyncLifetime
             penn.SiteTitle = "My Recipe Book";
             penn.SiteDescription = "A cookbook powered by SPA slots";
             penn.ContentRootPath = "Content";
-            penn.AddMarkdownContent<global::SpaNavigationExample.RecipeFrontMatter>(md =>
+            penn.AddMarkdownContent<SpaNavigationExample.RecipeFrontMatter>(md =>
             {
                 md.ContentPath = "Content";
                 md.BasePageUrl = "";
@@ -45,17 +45,17 @@ public class SpaNavigationExamplePlaywrightFixture : IAsyncLifetime
         });
 
         builder.Services.AddMonorailCss();
-        builder.Services.AddTransient<global::SpaNavigationExample.ContentHelper>();
+        builder.Services.AddTransient<SpaNavigationExample.ContentHelper>();
 
         // SPA navigation
         builder.Services.AddSpaNavigation();
         builder.Services.AddScoped<ComponentRenderer>();
-        builder.Services.AddTransient<IIslandRenderer, global::SpaNavigationExample.Slots.RecipeContentSlotRenderer>();
-        builder.Services.AddTransient<IIslandRenderer, global::SpaNavigationExample.Slots.RecipeInfoSlotRenderer>();
+        builder.Services.AddTransient<IIslandRenderer, SpaNavigationExample.Slots.RecipeContentSlotRenderer>();
+        builder.Services.AddTransient<IIslandRenderer, SpaNavigationExample.Slots.RecipeInfoSlotRenderer>();
 
         _app = builder.Build();
         _app.UseAntiforgery();
-        _app.MapRazorComponents<global::SpaNavigationExample.Components.App>();
+        _app.MapRazorComponents<SpaNavigationExample.Components.App>();
         _app.UseMonorailCss();
         _app.UseSpaNavigation();
         _app.UsePennington();

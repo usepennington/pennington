@@ -6,7 +6,7 @@ using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using Microsoft.Extensions.DependencyInjection;
-using Pennington.Diagnostics;
+using Diagnostics;
 
 /// <summary>
 /// Resolves xref: cross-reference links in HTML.

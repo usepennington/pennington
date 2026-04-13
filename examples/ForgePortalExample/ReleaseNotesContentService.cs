@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Text;
 using System.Text.Json;
 using Pennington.Content;
-using Pennington.FrontMatter;
 using Pennington.Pipeline;
 using Pennington.Routing;
 

@@ -1,7 +1,7 @@
 namespace Pennington.IntegrationTests.Examples;
 
 using Microsoft.Playwright;
-using Pennington.IntegrationTests.Infrastructure;
+using Infrastructure;
 
 public class LocalizationTutorialExamplePlaywrightTests : IClassFixture<LocalizationTutorialExamplePlaywrightFixture>, IAsyncLifetime
 {

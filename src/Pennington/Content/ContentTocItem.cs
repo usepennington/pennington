@@ -1,6 +1,6 @@
 namespace Pennington.Content;
 
-using Pennington.Routing;
+using Routing;
 
 /// <summary>
 /// A table-of-contents entry for navigation.

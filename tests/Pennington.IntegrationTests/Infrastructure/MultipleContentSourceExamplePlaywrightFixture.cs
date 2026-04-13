@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using Pennington.Infrastructure;
-using Pennington.MonorailCss;
+using MonorailCss;
 
 public class MultipleContentSourceExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -37,20 +37,20 @@ public class MultipleContentSourceExamplePlaywrightFixture : IAsyncLifetime
             penn.SiteDescription = "An Inflexible Content Engine for .NET";
             penn.ContentRootPath = "Content";
 
-            penn.AddMarkdownContent<global::MultipleContentSourceExample.ContentFrontMatter>(md =>
+            penn.AddMarkdownContent<MultipleContentSourceExample.ContentFrontMatter>(md =>
             {
                 md.ContentPath = "Content";
                 md.BasePageUrl = "";
             });
 
-            penn.AddMarkdownContent<global::MultipleContentSourceExample.BlogFrontMatter>(md =>
+            penn.AddMarkdownContent<MultipleContentSourceExample.BlogFrontMatter>(md =>
             {
                 md.ContentPath = "Content/blog";
                 md.BasePageUrl = "/blog";
                 md.Section = "blog";
             });
 
-            penn.AddMarkdownContent<global::MultipleContentSourceExample.DocsFrontMatter>(md =>
+            penn.AddMarkdownContent<MultipleContentSourceExample.DocsFrontMatter>(md =>
             {
                 md.ContentPath = "Content/docs";
                 md.BasePageUrl = "/docs";
@@ -58,11 +58,11 @@ public class MultipleContentSourceExamplePlaywrightFixture : IAsyncLifetime
             });
         });
         builder.Services.AddMonorailCss();
-        builder.Services.AddTransient<global::MultipleContentSourceExample.ContentHelper>();
+        builder.Services.AddTransient<MultipleContentSourceExample.ContentHelper>();
 
         _app = builder.Build();
         _app.UseAntiforgery();
-        _app.MapRazorComponents<global::MultipleContentSourceExample.Components.App>();
+        _app.MapRazorComponents<MultipleContentSourceExample.Components.App>();
         _app.UseMonorailCss();
         _app.UsePennington();
 

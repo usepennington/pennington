@@ -1,7 +1,7 @@
 namespace Pennington.Search;
 
 using System.Text.RegularExpressions;
-using Pennington.Content;
+using Content;
 
 /// <summary>
 /// Builds search index documents from TOC entries plus post-pipeline HTML

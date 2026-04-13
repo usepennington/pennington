@@ -3,10 +3,10 @@ namespace Pennington.Markdown;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
-using Pennington.Content;
-using Pennington.Infrastructure;
-using Pennington.Pipeline;
-using Pennington.Routing;
+using Content;
+using Infrastructure;
+using Pipeline;
+using Routing;
 
 /// <summary>
 /// Resolves author-written relative links inside markdown bodies to absolute

@@ -2,9 +2,9 @@ namespace Pennington.Islands;
 
 using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
-using Pennington.Content;
-using Pennington.Pipeline;
-using Pennington.Routing;
+using Content;
+using Pipeline;
+using Routing;
 
 /// <summary>
 /// Content service that registers <c>/_spa-data/{slug}.json</c> pages so the static

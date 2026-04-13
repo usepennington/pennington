@@ -2,7 +2,7 @@ namespace Pennington.Localization;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Pennington.Infrastructure;
+using Infrastructure;
 
 /// <summary>
 /// Middleware that detects the locale from the URL path prefix, populates

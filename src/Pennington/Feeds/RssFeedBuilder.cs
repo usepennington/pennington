@@ -1,8 +1,8 @@
 namespace Pennington.Feeds;
 
 using System.Collections.Immutable;
-using Pennington.Pipeline;
-using Pennington.Routing;
+using Pipeline;
+using Routing;
 
 /// <summary>
 /// Builds RSS feed items from rendered content.

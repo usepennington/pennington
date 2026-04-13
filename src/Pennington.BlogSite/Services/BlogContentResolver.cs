@@ -2,11 +2,11 @@ namespace Pennington.BlogSite.Services;
 
 using System.Collections.Immutable;
 using System.Web;
-using Pennington.Content;
-using Pennington.FrontMatter;
-using Pennington.Infrastructure;
-using Pennington.Pipeline;
-using Pennington.Routing;
+using Content;
+using FrontMatter;
+using Infrastructure;
+using Pipeline;
+using Routing;
 
 /// <summary>
 /// Resolves blog content pages by URL and provides query methods

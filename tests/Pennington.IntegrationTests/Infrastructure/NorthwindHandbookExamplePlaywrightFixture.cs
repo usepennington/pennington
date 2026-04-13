@@ -1,14 +1,14 @@
 namespace Pennington.IntegrationTests.Infrastructure;
 
+using global::MonorailCss.Theme;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using global::MonorailCss.Theme;
-using Pennington.FrontMatter;
+using FrontMatter;
 using Pennington.Infrastructure;
-using Pennington.MonorailCss;
+using MonorailCss;
 
 public class NorthwindHandbookExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -43,7 +43,7 @@ public class NorthwindHandbookExamplePlaywrightFixture : IAsyncLifetime
                 md.ContentPath = "Content";
                 md.BasePageUrl = "";
             });
-            penn.AddMarkdownContent<global::NorthwindHandbookExample.ChangelogFrontMatter>(md =>
+            penn.AddMarkdownContent<NorthwindHandbookExample.ChangelogFrontMatter>(md =>
             {
                 md.ContentPath = "Content/changelog";
                 md.BasePageUrl = "/changelog";
@@ -58,11 +58,11 @@ public class NorthwindHandbookExamplePlaywrightFixture : IAsyncLifetime
                 BaseColorName = ColorNames.Stone,
             },
         });
-        builder.Services.AddTransient<global::NorthwindHandbookExample.ContentHelper>();
+        builder.Services.AddTransient<NorthwindHandbookExample.ContentHelper>();
 
         _app = builder.Build();
         _app.UseAntiforgery();
-        _app.MapRazorComponents<global::NorthwindHandbookExample.Components.App>();
+        _app.MapRazorComponents<NorthwindHandbookExample.Components.App>();
         _app.UseMonorailCss();
         _app.UsePennington();
 

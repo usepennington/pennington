@@ -1,7 +1,7 @@
 namespace Pennington.Pipeline;
 
-using Pennington.FrontMatter;
-using Pennington.Routing;
+using FrontMatter;
+using Routing;
 
 // Case types — each is a standalone record
 public record DiscoveredItem(ContentRoute Route, ContentSource Source);
@@ -16,9 +16,9 @@ public union ContentItem(DiscoveredItem, ParsedItem, RenderedItem, FailedItem)
     public ContentRoute Route => this switch
     {
         DiscoveredItem d => d.Route,
-        ParsedItem p     => p.Route,
-        RenderedItem r   => r.Route,
-        FailedItem f     => f.Route,
+        ParsedItem p => p.Route,
+        RenderedItem r => r.Route,
+        FailedItem f => f.Route,
         null => throw new InvalidOperationException("Uninitialized ContentItem")
     };
 }

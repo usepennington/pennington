@@ -4,7 +4,7 @@ using System.Text;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
-using Pennington.Pipeline;
+using Pipeline;
 
 /// <summary>
 /// Extracts heading outline from a parsed Markdown document.

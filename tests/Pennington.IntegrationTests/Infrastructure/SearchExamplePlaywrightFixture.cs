@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Pennington.Content;
-using Pennington.DocSite;
+using Content;
+using DocSite;
 
 public class SearchExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -35,12 +35,12 @@ public class SearchExamplePlaywrightFixture : IAsyncLifetime
             SiteTitle = "Random Content Site",
             Description = "Random content site for demonstration purposes.",
             CanonicalBaseUrl = "https://mydocs.example.com",
-            AdditionalRoutingAssemblies = [typeof(global::SearchExample.Services.RandomContentService).Assembly],
+            AdditionalRoutingAssemblies = [typeof(SearchExample.Services.RandomContentService).Assembly],
         });
 
-        builder.Services.AddSingleton<global::SearchExample.Services.RandomContentService>();
+        builder.Services.AddSingleton<SearchExample.Services.RandomContentService>();
         builder.Services.AddSingleton<IContentService>(provider =>
-            provider.GetRequiredService<global::SearchExample.Services.RandomContentService>());
+            provider.GetRequiredService<SearchExample.Services.RandomContentService>());
 
         _app = builder.Build();
         _app.UseDocSite();

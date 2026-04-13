@@ -3,15 +3,14 @@ namespace Pennington.Generation;
 using System.Collections.Concurrent;
 using System.IO.Abstractions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
-using Pennington.Content;
-using Pennington.Diagnostics;
-using Pennington.Infrastructure;
-using Pennington.Routing;
+using Content;
+using Diagnostics;
+using Infrastructure;
+using Routing;
 
 /// <summary>
 /// Generates a static site by HTTP-crawling the running app.

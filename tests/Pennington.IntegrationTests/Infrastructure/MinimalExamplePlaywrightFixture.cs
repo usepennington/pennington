@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Pennington.FrontMatter;
+using FrontMatter;
 using Pennington.Infrastructure;
-using Pennington.MonorailCss;
+using MonorailCss;
 
 public class MinimalExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -44,11 +44,11 @@ public class MinimalExamplePlaywrightFixture : IAsyncLifetime
             });
         });
         builder.Services.AddMonorailCss();
-        builder.Services.AddTransient<global::MinimalExample.ContentHelper>();
+        builder.Services.AddTransient<MinimalExample.ContentHelper>();
 
         _app = builder.Build();
         _app.UseAntiforgery();
-        _app.MapRazorComponents<global::MinimalExample.Components.App>();
+        _app.MapRazorComponents<MinimalExample.Components.App>();
         _app.UseMonorailCss();
         _app.UsePennington();
 

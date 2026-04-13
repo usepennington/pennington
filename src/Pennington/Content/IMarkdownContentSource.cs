@@ -1,7 +1,7 @@
 namespace Pennington.Content;
 
 using System.Collections.Immutable;
-using Pennington.Routing;
+using Routing;
 
 /// <summary>
 /// Non-generic capability interface exposing the root directory and base URL of

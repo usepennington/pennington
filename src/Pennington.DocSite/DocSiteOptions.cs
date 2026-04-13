@@ -1,9 +1,9 @@
 namespace Pennington.DocSite;
 
 using System.Reflection;
-using Pennington.Infrastructure;
-using Pennington.MonorailCss;
-using Pennington.Routing;
+using Infrastructure;
+using MonorailCss;
+using Routing;
 
 /// <summary>
 /// Configuration for a documentation site.

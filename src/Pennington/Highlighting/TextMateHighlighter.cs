@@ -2,7 +2,7 @@ namespace Pennington.Highlighting;
 
 using System.Net;
 using System.Text;
-using Pennington.Infrastructure;
+using Infrastructure;
 using TextMateSharp.Grammars;
 using TextMateSharp.Registry;
 

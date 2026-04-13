@@ -2,13 +2,13 @@ namespace Pennington.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Playwright;
-using Pennington.Content;
+using Content;
 using Pennington.Infrastructure;
-using Pennington.MonorailCss;
+using MonorailCss;
 
 public class RecipeExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -43,24 +43,24 @@ public class RecipeExamplePlaywrightFixture : IAsyncLifetime
             penn.ContentRootPath = "recipes";
         });
 
-        var recipeService = new global::RecipeExample.RecipeContentService(recipePath);
-        builder.Services.AddSingleton<global::RecipeExample.IRecipeContentService>(recipeService);
+        var recipeService = new RecipeExample.RecipeContentService(recipePath);
+        builder.Services.AddSingleton<RecipeExample.IRecipeContentService>(recipeService);
         builder.Services.AddSingleton<IContentService>(recipeService);
 
-        var imageService = new global::RecipeExample.ResponsiveImageContentService(recipePath);
-        builder.Services.AddSingleton<global::RecipeExample.IResponsiveImageContentService>(imageService);
+        var imageService = new RecipeExample.ResponsiveImageContentService(recipePath);
+        builder.Services.AddSingleton<RecipeExample.IResponsiveImageContentService>(imageService);
         builder.Services.AddSingleton<IContentService>(imageService);
 
         builder.Services.AddMonorailCss();
 
         _app = builder.Build();
         _app.UseAntiforgery();
-        _app.MapRazorComponents<global::RecipeExample.Components.App>();
+        _app.MapRazorComponents<RecipeExample.Components.App>();
         _app.UseMonorailCss();
         _app.UsePennington();
 
         _app.MapGet("/images/{filename}-{size}.webp",
-            async (string filename, string size, global::RecipeExample.IResponsiveImageContentService imgService) =>
+            async (string filename, string size, RecipeExample.IResponsiveImageContentService imgService) =>
             {
                 var imageData = await imgService.ProcessImageAsync(filename, size);
                 return imageData == null ? Results.NotFound() : Results.File(imageData, "image/webp");

@@ -5,9 +5,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Pennington.Infrastructure;
-using Pennington.Roslyn.Utilities;
-using Pennington.Roslyn.Workspace;
+using Infrastructure;
+using Utilities;
+using Workspace;
 
 /// <summary>
 /// Extracts all symbols from a Roslyn Solution and enables lookup by XML documentation ID.

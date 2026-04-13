@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using Pennington.Infrastructure;
-using Pennington.MonorailCss;
+using MonorailCss;
 
 public class UserInterfaceExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -37,18 +37,18 @@ public class UserInterfaceExamplePlaywrightFixture : IAsyncLifetime
             penn.SiteDescription = "Your everyday life, simplified";
             penn.ContentRootPath = "Content";
 
-            penn.AddMarkdownContent<global::UserInterfaceExample.DocsFrontMatter>(md =>
+            penn.AddMarkdownContent<UserInterfaceExample.DocsFrontMatter>(md =>
             {
                 md.ContentPath = "Content";
                 md.BasePageUrl = "";
             });
         });
         builder.Services.AddMonorailCss();
-        builder.Services.AddTransient<global::UserInterfaceExample.ContentHelper>();
+        builder.Services.AddTransient<UserInterfaceExample.ContentHelper>();
 
         _app = builder.Build();
         _app.UseAntiforgery();
-        _app.MapRazorComponents<global::UserInterfaceExample.Components.App>();
+        _app.MapRazorComponents<UserInterfaceExample.Components.App>();
         _app.UseMonorailCss();
         _app.UsePennington();
 

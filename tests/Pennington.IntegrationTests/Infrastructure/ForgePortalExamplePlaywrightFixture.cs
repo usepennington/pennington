@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Pennington.Content;
-using Pennington.FrontMatter;
+using Content;
+using FrontMatter;
 using Pennington.Infrastructure;
-using Pennington.MonorailCss;
+using MonorailCss;
 
 public class ForgePortalExamplePlaywrightFixture : IAsyncLifetime
 {
@@ -53,24 +53,24 @@ public class ForgePortalExamplePlaywrightFixture : IAsyncLifetime
                 md.Section = "Blog";
             });
 
-            penn.AddMarkdownContent<global::ForgePortalExample.PageFrontMatter>(md =>
+            penn.AddMarkdownContent<ForgePortalExample.PageFrontMatter>(md =>
             {
                 md.ContentPath = "Content/pages";
                 md.BasePageUrl = "";
             });
 
-            penn.Highlighting.AddHighlighter<global::ForgePortalExample.PipelineHighlighter>();
+            penn.Highlighting.AddHighlighter<ForgePortalExample.PipelineHighlighter>();
         });
 
         builder.Services.AddMonorailCss();
-        builder.Services.AddTransient<global::ForgePortalExample.ContentHelper>();
-        builder.Services.AddSingleton<global::ForgePortalExample.ReleaseNotesContentService>();
-        builder.Services.AddSingleton<IContentService>(sp => sp.GetRequiredService<global::ForgePortalExample.ReleaseNotesContentService>());
-        builder.Services.AddSingleton<IResponseProcessor, global::ForgePortalExample.FeedbackWidgetProcessor>();
+        builder.Services.AddTransient<ForgePortalExample.ContentHelper>();
+        builder.Services.AddSingleton<ForgePortalExample.ReleaseNotesContentService>();
+        builder.Services.AddSingleton<IContentService>(sp => sp.GetRequiredService<ForgePortalExample.ReleaseNotesContentService>());
+        builder.Services.AddSingleton<IResponseProcessor, ForgePortalExample.FeedbackWidgetProcessor>();
 
         _app = builder.Build();
         _app.UseAntiforgery();
-        _app.MapRazorComponents<global::ForgePortalExample.Components.App>();
+        _app.MapRazorComponents<ForgePortalExample.Components.App>();
         _app.UseMonorailCss();
         _app.UsePennington();
 

@@ -1,12 +1,12 @@
 namespace Pennington.IntegrationTests.Infrastructure;
 
+using global::MonorailCss.Theme;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using global::MonorailCss.Theme;
-using Pennington.DocSite;
-using Pennington.MonorailCss;
+using DocSite;
+using MonorailCss;
 
 public class TempoDocsExamplePlaywrightFixture : IAsyncLifetime
 {

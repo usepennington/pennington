@@ -1,4 +1,34 @@
-* text=auto
+# Default: auto-detect text files and enforce LF line endings on checkout.
+* text=auto eol=lf
 
-*.cs       text    eol=lf
-*.md       text    eol=lf
+# Text source files (explicit for clarity)
+*.cs       text eol=lf
+*.razor    text eol=lf
+*.cshtml   text eol=lf
+*.md       text eol=lf
+*.json     text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+*.xml      text eol=lf
+*.csproj   text eol=lf
+*.slnx     text eol=lf
+*.editorconfig text eol=lf
+
+# Windows-only: these tools expect CRLF
+*.sln      text eol=crlf
+*.bat      text eol=crlf
+*.cmd      text eol=crlf
+*.ps1      text eol=crlf
+
+# Binary — never touch line endings
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.gif      binary
+*.ico      binary
+*.woff     binary
+*.woff2    binary
+*.ttf      binary
+*.eot      binary
+*.pdf      binary
+*.zip      binary

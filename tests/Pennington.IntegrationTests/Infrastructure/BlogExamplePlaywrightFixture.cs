@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using Pennington.BlogSite;
+using BlogSite;
 
 public class BlogExamplePlaywrightFixture : IAsyncLifetime
 {

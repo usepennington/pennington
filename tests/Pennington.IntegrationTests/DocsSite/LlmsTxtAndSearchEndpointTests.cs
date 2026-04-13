@@ -3,8 +3,8 @@ namespace Pennington.IntegrationTests.DocsSite;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
-using Pennington.IntegrationTests.Infrastructure;
-using Pennington.LlmsTxt;
+using Infrastructure;
+using LlmsTxt;
 
 /// <summary>
 /// Regression tests for the bug where llms.txt and search-index.json were

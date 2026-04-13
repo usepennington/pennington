@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Pennington.Roslyn.Symbols;
+using Symbols;
 
 internal sealed class MemberEnumerator : IMemberEnumerator
 {

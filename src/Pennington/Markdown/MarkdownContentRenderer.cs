@@ -2,11 +2,10 @@ namespace Pennington.Markdown;
 
 using System.Collections.Immutable;
 using AngleSharp;
-using AngleSharp.Dom;
 using Markdig;
 using Markdig.Renderers;
-using Pennington.Pipeline;
-using Pennington.Routing;
+using Pipeline;
+using Routing;
 
 /// <summary>
 /// Renders parsed markdown items to HTML using Markdig.

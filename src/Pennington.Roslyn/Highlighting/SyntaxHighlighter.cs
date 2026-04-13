@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.Text;
-using Pennington.Roslyn.Utilities;
+using Utilities;
 
 /// <summary>
 /// Roslyn Classifier API wrapper that produces HTML with hljs-* and roslyn-* CSS classes.

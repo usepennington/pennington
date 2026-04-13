@@ -1,7 +1,7 @@
 namespace Pennington.Navigation;
 
 using System.Collections.Immutable;
-using Pennington.Routing;
+using Routing;
 
 public record NavigationTreeItem(
     string Title,

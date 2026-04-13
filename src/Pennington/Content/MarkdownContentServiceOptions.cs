@@ -1,7 +1,7 @@
 namespace Pennington.Content;
 
 using System.Collections.Immutable;
-using Pennington.Routing;
+using Routing;
 
 /// <summary>
 /// Configuration for a markdown content source.

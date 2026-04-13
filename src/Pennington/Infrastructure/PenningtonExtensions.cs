@@ -2,31 +2,31 @@ namespace Pennington.Infrastructure;
 
 using System.IO.Abstractions;
 using Markdig;
+using Mdazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Logging;
-using Mdazor;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Localization;
-using Pennington.Content;
-using Pennington.FrontMatter;
-using Pennington.Generation;
-using Pennington.Highlighting;
-using Pennington.Islands;
-using Pennington.Localization;
-using Pennington.Markdown;
-using Pennington.Navigation;
-using Pennington.Pipeline;
-using Pennington.Markdown.Extensions;
-using Pennington.Routing;
-using Pennington.Search;
-using Pennington.Feeds;
-using Pennington.LlmsTxt;
+using Microsoft.Extensions.Logging;
+using Content;
+using Feeds;
+using FrontMatter;
+using Generation;
+using Highlighting;
+using Islands;
+using LlmsTxt;
+using Localization;
+using Markdown;
+using Markdown.Extensions;
+using Navigation;
+using Pipeline;
+using Routing;
+using Search;
 using Testably.Abstractions;
 
 public static class PenningtonExtensions
@@ -195,7 +195,7 @@ public static class PenningtonExtensions
 
         // Search index and sitemap services — factory-managed, trust IContentService for fresh data
         services.AddFileWatched<SearchIndexService>();
-        services.AddFileWatched<Feeds.SitemapService>();
+        services.AddFileWatched<SitemapService>();
 
         // llms.txt generation
         if (options.LlmsTxt is { } llmsTxtOptions)
@@ -386,7 +386,7 @@ public static class PenningtonExtensions
             app.MapGet($"/search-index-{capture}.json", async (SearchIndexService service) =>
                 Results.Content(await service.GetSearchIndexJsonAsync(capture), "application/json"));
         }
-        app.MapGet("/sitemap.xml", async (Feeds.SitemapService service) =>
+        app.MapGet("/sitemap.xml", async (SitemapService service) =>
             Results.Content(await service.GetSitemapXmlAsync(), "application/xml"));
 
         if (app.Services.GetService<LlmsTxtOptions>() is not null)

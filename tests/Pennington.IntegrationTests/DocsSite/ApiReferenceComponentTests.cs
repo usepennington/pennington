@@ -1,6 +1,6 @@
 namespace Pennington.IntegrationTests.DocsSite;
 
-using Pennington.IntegrationTests.Infrastructure;
+using Infrastructure;
 
 public class ApiReferenceComponentTests : IClassFixture<DocsWebApplicationFactory>
 {

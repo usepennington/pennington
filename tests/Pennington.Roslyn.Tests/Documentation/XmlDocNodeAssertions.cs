@@ -13,7 +13,7 @@ internal static class XmlDocNodeAssertions
             return match;
         }
 
-        throw new Shouldly.ShouldAssertException(
+        throw new ShouldAssertException(
             $"Expected XmlDocNode case {typeof(T).Name} but was a different case.");
     }
 

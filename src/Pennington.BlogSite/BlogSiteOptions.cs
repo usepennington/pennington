@@ -2,9 +2,8 @@ namespace Pennington.BlogSite;
 
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
-using Pennington.Infrastructure;
-using Pennington.MonorailCss;
-using Pennington.Routing;
+using Infrastructure;
+using MonorailCss;
 
 /// <summary>
 /// Configuration options for a blog site.

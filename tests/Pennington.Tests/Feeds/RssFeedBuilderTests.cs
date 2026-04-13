@@ -267,7 +267,6 @@ public class RssFeedBuilderTests
         feed[0].Url.Value.ShouldBe("https://example.com/blog/my-post/");
     }
 
-
     // Has Date but no explicit IsDraft — defaults to not-draft via IFrontMatter
     private record DateOnlyFrontMatter : IFrontMatter
     {

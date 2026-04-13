@@ -1,12 +1,12 @@
 namespace Pennington.IntegrationTests.Infrastructure;
 
+using global::MonorailCss.Theme;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using global::MonorailCss.Theme;
-using Pennington.BlogSite;
-using Pennington.MonorailCss;
+using BlogSite;
+using MonorailCss;
 
 public class MaraBlogExamplePlaywrightFixture : IAsyncLifetime
 {

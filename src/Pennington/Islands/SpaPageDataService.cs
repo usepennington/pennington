@@ -1,6 +1,6 @@
 namespace Pennington.Islands;
 
-using Pennington.Routing;
+using Routing;
 
 /// <summary>Assembles SPA page data by coordinating island renderers.</summary>
 public sealed class SpaPageDataService

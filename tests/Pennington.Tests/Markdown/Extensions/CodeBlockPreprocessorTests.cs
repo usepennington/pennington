@@ -1,4 +1,3 @@
-using Markdig;
 using Markdig.Renderers;
 using Microsoft.Extensions.DependencyInjection;
 using Pennington.Highlighting;

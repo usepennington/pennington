@@ -6,12 +6,12 @@ using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Pennington.Content;
-using Pennington.FrontMatter;
-using Pennington.Infrastructure;
-using Pennington.Navigation;
-using Pennington.Pipeline;
-using Pennington.Routing;
+using Content;
+using FrontMatter;
+using Infrastructure;
+using Navigation;
+using Pipeline;
+using Routing;
 
 /// <summary>
 /// Generates llms.txt index and stripped markdown files.

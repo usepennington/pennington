@@ -46,7 +46,7 @@ public class LocaleAndBaseUrlPipelineTests
         // Minimal services so XrefHtmlRewriter can resolve a DiagnosticContext
         // — the tests don't hit xref: links so the resolver is never called.
         var services = new ServiceCollection();
-        services.AddScoped<Diagnostics.DiagnosticContext>();
+        services.AddScoped<DiagnosticContext>();
         context.RequestServices = services.BuildServiceProvider();
         return context;
     }

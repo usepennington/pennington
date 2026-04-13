@@ -1,7 +1,7 @@
 namespace Pennington.Localization;
 
 using Microsoft.Extensions.Localization;
-using LocalizationOptions = Pennington.Infrastructure.LocalizationOptions;
+using LocalizationOptions = Infrastructure.LocalizationOptions;
 
 /// <summary>
 /// An <see cref="IStringLocalizerFactory"/> that returns <see cref="PenningtonStringLocalizer"/>

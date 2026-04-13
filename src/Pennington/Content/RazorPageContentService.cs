@@ -6,9 +6,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
-using Pennington.FrontMatter;
-using Pennington.Pipeline;
-using Pennington.Routing;
+using FrontMatter;
+using Pipeline;
+using Routing;
 
 /// <summary>
 /// Discovers @page Razor components for the content pipeline.

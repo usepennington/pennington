@@ -2,7 +2,7 @@ namespace Pennington.Roslyn.Tests.Workspace;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging.Abstractions;
-using Pennington.Infrastructure;
+using Infrastructure;
 using Pennington.Roslyn.Symbols;
 using Pennington.Roslyn.Workspace;
 

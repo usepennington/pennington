@@ -3,7 +3,6 @@ using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Generation;
 using Pennington.Infrastructure;
-using Pennington.Markdown;
 using Pennington.Pipeline;
 using Pennington.Routing;
 

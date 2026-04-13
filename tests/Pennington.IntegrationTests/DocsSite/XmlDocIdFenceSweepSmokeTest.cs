@@ -1,6 +1,6 @@
 namespace Pennington.IntegrationTests.DocsSite;
 
-using Pennington.IntegrationTests.Infrastructure;
+using Infrastructure;
 
 /// <summary>
 /// Belt-and-suspenders smoke test for the 2026-04-13 fence-syntax migration:

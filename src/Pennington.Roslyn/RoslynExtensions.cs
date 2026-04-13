@@ -2,12 +2,12 @@ namespace Pennington.Roslyn;
 
 using Microsoft.Extensions.DependencyInjection;
 using Pennington.Highlighting;
-using Pennington.Markdown.Extensions;
-using Pennington.Roslyn.Documentation;
-using Pennington.Roslyn.Highlighting;
-using Pennington.Roslyn.Preprocessing;
-using Pennington.Roslyn.Symbols;
-using Pennington.Roslyn.Workspace;
+using Markdown.Extensions;
+using Documentation;
+using Highlighting;
+using Preprocessing;
+using Symbols;
+using Workspace;
 
 public static class RoslynExtensions
 {

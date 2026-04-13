@@ -2,7 +2,7 @@ namespace Pennington.Infrastructure;
 
 using AngleSharp.Dom;
 using Microsoft.AspNetCore.Http;
-using Pennington.Generation;
+using Generation;
 
 /// <summary>
 /// Prefixes root-relative URLs (<c>href</c>, <c>src</c>, <c>action</c>)

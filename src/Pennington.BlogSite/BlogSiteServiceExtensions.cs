@@ -5,10 +5,10 @@ using Mdazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Pennington.BlogSite.Services;
-using Pennington.Content;
-using Pennington.Infrastructure;
-using Pennington.MonorailCss;
+using Services;
+using Content;
+using Infrastructure;
+using MonorailCss;
 using Pennington.UI.Components;
 
 public static class BlogSiteServiceExtensions
