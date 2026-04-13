@@ -1,0 +1,125 @@
+@inject IMemberEnumerator Enumerator
+@inject IXmlDocHtmlRenderer Renderer
+@inject ISymbolExtractionService SymbolService
+@inject SyntaxHighlighter Highlighter
+@inject IHttpContextAccessor HttpContextAccessor
+
+@((MarkupString)_html)
+
+@code {
+    [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
+    [Parameter] public string Kind { get; set; } = "Methods";
+    [Parameter] public string Access { get; set; } = "public";
+    [Parameter] public string Order { get; set; } = "alphabetical";
+    [Parameter] public int HeadingLevel { get; set; } = 3;
+
+    private string _html = string.Empty;
+
+    private DiagnosticContext? Diagnostics =>
+        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
+
+    protected override void OnParametersSet()
+    {
+        _html = BuildHtml();
+    }
+
+    private string BuildHtml()
+    {
+        if (string.IsNullOrWhiteSpace(XmlDocId))
+        {
+            Diagnostics?.AddError("<ApiMemberList> missing XmlDocId");
+            return "<div class=\"diag-error\">&lt;ApiMemberList&gt; missing XmlDocId</div>";
+        }
+
+        var kind = MemberOptionParser.ParseKind(Kind);
+        var access = MemberOptionParser.ParseAccess(Access);
+        var order = MemberOptionParser.ParseOrder(Order);
+
+        IReadOnlyList<MemberDescriptor> members;
+        try
+        {
+            members = AsyncHelpers.RunSync(() => Enumerator.EnumerateAsync(XmlDocId, kind, access, order));
+        }
+        catch (Exception ex)
+        {
+            Diagnostics?.AddError($"<ApiMemberList> failed to enumerate {XmlDocId}: {ex.Message}");
+            return $"<div class=\"diag-error\">Failed to enumerate {WebUtility.HtmlEncode(XmlDocId)}: {WebUtility.HtmlEncode(ex.Message)}</div>";
+        }
+
+        if (members.Count == 0)
+        {
+            Diagnostics?.AddWarning($"<ApiMemberList> no {Kind.ToLowerInvariant()} matched for {XmlDocId}");
+            return $"<p><em>No {WebUtility.HtmlEncode(Kind.ToLowerInvariant())} documented.</em></p>";
+        }
+
+        var headingTag = $"h{Math.Clamp(HeadingLevel, 2, 6)}";
+        var sb = new StringBuilder();
+        foreach (var m in members)
+        {
+            var id = Slugify(m.Name);
+            sb.Append('<').Append(headingTag).Append(" id=\"").Append(id).Append("\">")
+                .Append("<code>").Append(WebUtility.HtmlEncode(m.Name)).Append("</code>")
+                .Append("</").Append(headingTag).Append('>');
+
+            sb.Append(RenderDeclaration(m.XmlDocId));
+
+            if (m.Xmldoc.HasSummary)
+            {
+                sb.Append(Renderer.RenderHtml(m.Xmldoc.Summary));
+            }
+            else
+            {
+                Diagnostics?.AddWarning($"Member {m.XmlDocId} has no <summary>");
+            }
+
+            if (m.Xmldoc.HasReturns)
+            {
+                sb.Append("<p><strong>Returns.</strong> ").Append(Renderer.RenderInlineHtml(m.Xmldoc.Returns)).Append("</p>");
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    private string RenderDeclaration(string xmlDocId)
+    {
+        try
+        {
+            var fragment = AsyncHelpers.RunSync(() => SymbolService.ExtractCodeFragmentAsync(xmlDocId, bodyOnly: false));
+            if (string.IsNullOrEmpty(fragment))
+            {
+                Diagnostics?.AddWarning($"Unresolved xmldocid when rendering declaration: {xmlDocId}");
+                return $"<pre><code class=\"language-csharp\"><span class=\"comment\">// Error: Symbol not found for '{WebUtility.HtmlEncode(xmlDocId)}'</span></code></pre>";
+            }
+
+            return Highlighter.Highlight(fragment, SyntaxHighlighter.Language.CSharp);
+        }
+        catch (Exception ex)
+        {
+            Diagnostics?.AddError($"Failed to render declaration for {xmlDocId}: {ex.Message}");
+            return $"<pre><code><!-- Error: {WebUtility.HtmlEncode(ex.Message)} --></code></pre>";
+        }
+    }
+
+    private static string Slugify(string name)
+    {
+        var sb = new StringBuilder(name.Length);
+        foreach (var ch in name)
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                sb.Append(char.ToLowerInvariant(ch));
+            }
+            else if (ch is '-' or '_')
+            {
+                sb.Append(ch);
+            }
+            else if (ch is ' ' or '.' or ',')
+            {
+                sb.Append('-');
+            }
+        }
+
+        return sb.ToString();
+    }
+}

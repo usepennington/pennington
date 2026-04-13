@@ -3,6 +3,7 @@ namespace Pennington.Roslyn;
 using Microsoft.Extensions.DependencyInjection;
 using Pennington.Highlighting;
 using Pennington.Markdown.Extensions;
+using Pennington.Roslyn.Documentation;
 using Pennington.Roslyn.Highlighting;
 using Pennington.Roslyn.Preprocessing;
 using Pennington.Roslyn.Symbols;
@@ -36,6 +37,10 @@ public static class RoslynExtensions
                 return symbolService;
             });
             services.AddSingleton<ICodeBlockPreprocessor, RoslynCodeBlockPreprocessor>();
+
+            services.AddSingleton<IXmlDocParser, XmlDocParser>();
+            services.AddSingleton<IXmlDocHtmlRenderer, XmlDocHtmlRenderer>();
+            services.AddSingleton<IMemberEnumerator, MemberEnumerator>();
         }
 
         return services;

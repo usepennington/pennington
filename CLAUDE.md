@@ -13,9 +13,13 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - `src/Pennington.UI/` — Razor component library (TableOfContentsNav, OutlineNav, Badge, Card, CodeBlock, etc.)
 - `src/Pennington.MonorailCss/` — MonorailCSS integration (utility-first CSS generation)
 - `src/Pennington.DocSite/` — Documentation site template (layout, pages, content resolver)
-- `docs/Pennington.Docs/` — The actual docs site (29 markdown pages + homepage)
+- `src/Pennington.BlogSite/` — Blog site template (home/archive/tag pages, blog front matter, content service)
+- `src/Pennington.Roslyn/` — Optional Roslyn-based highlighting, symbol extraction, xmldocid code fragment preprocessor
+- `docs/Pennington.Docs/` — The Pennington docs site (Divio-style: tutorials, how-to, reference, explanation)
+- `examples/` — Variety of example sites used for reference and verification across scenarios
 - `tests/Pennington.Tests/` — Unit tests (xunit.v3, Shouldly)
 - `tests/Pennington.IntegrationTests/` — Integration tests (WebApplicationFactory)
+- `tests/Pennington.Roslyn.Tests/` — Tests for the Roslyn package
 
 ## Key Namespaces (Pennington core)
 - `Pennington.Routing` — UrlPath, FilePath, ContentRoute, ContentRouteFactory
@@ -27,12 +31,19 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - `Pennington.Generation` — BuildReport, OutputGenerationService, OutputOptions
 - `Pennington.Navigation` — NavigationBuilder, NavigationTreeItem, NavigationInfo
 - `Pennington.Islands` — SpaPageDataService, SpaNavigationExtensions, IIslandRenderer
-- `Pennington.Infrastructure` — PenningtonExtensions (AddPennington/UsePennington/RunOrBuildAsync), ResponseProcessingMiddleware, IResponseProcessor
+- `Pennington.Localization` — LocaleContext, LocaleDetectionMiddleware, LocaleLinkHtmlRewriter, PenningtonStringLocalizer, TranslationOptions
+- `Pennington.Search` — SearchIndexBuilder, SearchIndexService, SearchIndexOptions (per-locale index from post-pipeline HTML)
+- `Pennington.Feeds` — RssFeedBuilder, SitemapBuilder, SitemapService
+- `Pennington.LlmsTxt` — LlmsTxtService, LlmsTxtContentService (llms.txt index + stripped markdown)
+- `Pennington.StructuredData` — JsonLdSerializer, JsonLdTypes (schema.org)
+- `Pennington.Diagnostics` — Diagnostic, DiagnosticContext, DiagnosticSeverity (per-request diagnostics)
+- `Pennington.Infrastructure` — PenningtonExtensions (AddPennington/UsePennington/RunOrBuildAsync), ResponseProcessingMiddleware, IResponseProcessor, LiveReloadServer
 
 ## DI Wiring
-- `services.AddDocSite(...)` — registers Pennington, MonorailCSS, SPA, Razor components
-- `app.UseDocSite()` — configures middleware pipeline
-- `app.RunDocSiteAsync(args)` — serve or build static site
+- `services.AddPennington(...)` / `app.UsePennington()` / `app.RunOrBuildAsync(args)` — core
+- `services.AddDocSite(...)` / `app.UseDocSite()` / `app.RunDocSiteAsync(args)` — doc site template
+- `services.AddBlogSite(...)` — blog site template
+- `services.AddPenningtonRoslyn(...)` — optional Roslyn highlighting + symbol services
 
 ## Cross-Platform (WSL)
 - When switching between Windows and WSL/Linux, run `dotnet clean Pennington.slnx` first — stale `obj/` artifacts from the other OS cause build failures (NuGet fallback paths, Razor editorconfig paths)
@@ -43,4 +54,3 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - Records for data types, ImmutableList for collections
 - File-scoped namespaces
 - LSP reports false errors on `union` keyword and ASP.NET/Markdig types — the compiler handles them correctly
-- Roslyn highlighting deferred to optional Pennington.Roslyn package (not yet created)

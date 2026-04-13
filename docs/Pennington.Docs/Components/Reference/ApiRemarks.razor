@@ -1,0 +1,44 @@
+@inject ISymbolExtractionService SymbolService
+@inject IXmlDocParser Parser
+@inject IXmlDocHtmlRenderer Renderer
+@inject IHttpContextAccessor HttpContextAccessor
+
+@((MarkupString)_html)
+
+@code {
+    [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
+
+    private string _html = string.Empty;
+
+    private DiagnosticContext? Diagnostics =>
+        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
+
+    protected override void OnParametersSet()
+    {
+        _html = BuildHtml();
+    }
+
+    private string BuildHtml()
+    {
+        if (string.IsNullOrWhiteSpace(XmlDocId))
+        {
+            Diagnostics?.AddError("<ApiRemarks> missing XmlDocId");
+            return "<div class=\"diag-error\">&lt;ApiRemarks&gt; missing XmlDocId</div>";
+        }
+
+        var info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(XmlDocId));
+        if (info is null)
+        {
+            Diagnostics?.AddError($"<ApiRemarks> unresolved xmldocid: {XmlDocId}");
+            return $"<div class=\"diag-error\">Unresolved xmldocid: <code>{WebUtility.HtmlEncode(XmlDocId)}</code></div>";
+        }
+
+        var parsed = Parser.Parse(info.Symbol.GetDocumentationCommentXml());
+        if (!parsed.HasRemarks)
+        {
+            return string.Empty;
+        }
+
+        return Renderer.RenderHtml(parsed.Remarks);
+    }
+}

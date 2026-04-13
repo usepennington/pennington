@@ -1,4 +1,6 @@
+using Mdazor;
 using MonorailCss.Theme;
+using Pennington.Docs.Components.Reference;
 using Pennington.DocSite;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
@@ -60,6 +62,16 @@ builder.Services.AddPenningtonRoslyn(roslyn =>
 {
     roslyn.SolutionPath = "../../Pennington.slnx";
 });
+
+// Reference-doc Mdazor components: generate property tables, member lists, and
+// xmldoc content directly from the source via Roslyn.
+builder.Services
+    .AddMdazorComponent<ApiMemberTable>()
+    .AddMdazorComponent<ApiMemberList>()
+    .AddMdazorComponent<ApiParameterTable>()
+    .AddMdazorComponent<ApiReturns>()
+    .AddMdazorComponent<ApiRemarks>()
+    .AddMdazorComponent<ApiSeeAlso>();
 
 var app = builder.Build();
 app.UseDocSite();

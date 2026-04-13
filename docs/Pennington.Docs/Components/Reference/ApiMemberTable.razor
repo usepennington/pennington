@@ -1,0 +1,75 @@
+@inject IMemberEnumerator Enumerator
+@inject IXmlDocHtmlRenderer Renderer
+@inject IHttpContextAccessor HttpContextAccessor
+
+@((MarkupString)_html)
+
+@code {
+    [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
+    [Parameter] public string Kind { get; set; } = "Properties";
+    [Parameter] public string Access { get; set; } = "public";
+    [Parameter] public string Order { get; set; } = "alphabetical";
+
+    private string _html = string.Empty;
+
+    private DiagnosticContext? Diagnostics =>
+        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
+
+    protected override void OnParametersSet()
+    {
+        _html = BuildHtml();
+    }
+
+    private string BuildHtml()
+    {
+        if (string.IsNullOrWhiteSpace(XmlDocId))
+        {
+            Diagnostics?.AddError("<ApiMemberTable> missing XmlDocId");
+            return "<div class=\"diag-error\">&lt;ApiMemberTable&gt; missing XmlDocId</div>";
+        }
+
+        var kind = MemberOptionParser.ParseKind(Kind);
+        var access = MemberOptionParser.ParseAccess(Access);
+        var order = MemberOptionParser.ParseOrder(Order);
+
+        IReadOnlyList<MemberDescriptor> members;
+        try
+        {
+            members = AsyncHelpers.RunSync(() => Enumerator.EnumerateAsync(XmlDocId, kind, access, order));
+        }
+        catch (Exception ex)
+        {
+            Diagnostics?.AddError($"<ApiMemberTable> failed to enumerate {XmlDocId}: {ex.Message}");
+            return $"<div class=\"diag-error\">Failed to enumerate {WebUtility.HtmlEncode(XmlDocId)}: {WebUtility.HtmlEncode(ex.Message)}</div>";
+        }
+
+        if (members.Count == 0)
+        {
+            Diagnostics?.AddWarning($"<ApiMemberTable> no {Kind.ToLowerInvariant()} matched for {XmlDocId}");
+            return $"<p><em>No {WebUtility.HtmlEncode(Kind.ToLowerInvariant())} documented.</em></p>";
+        }
+
+        var sb = new StringBuilder();
+        sb.Append("<table><thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>");
+        foreach (var m in members)
+        {
+            var description = Renderer.RenderInlineHtml(m.Xmldoc.Summary);
+            if (!m.Xmldoc.HasSummary)
+            {
+                Diagnostics?.AddWarning($"Member {m.XmlDocId} has no <summary>");
+            }
+
+            sb.Append("<tr>")
+                .Append("<td><code>").Append(WebUtility.HtmlEncode(m.Name)).Append("</code></td>")
+                .Append("<td><code>").Append(WebUtility.HtmlEncode(m.TypeDisplay)).Append("</code></td>")
+                .Append("<td>")
+                    .Append(m.DefaultValue is null ? "—" : $"<code>{WebUtility.HtmlEncode(m.DefaultValue)}</code>")
+                .Append("</td>")
+                .Append("<td>").Append(description).Append("</td>")
+                .Append("</tr>");
+        }
+
+        sb.Append("</tbody></table>");
+        return sb.ToString();
+    }
+}

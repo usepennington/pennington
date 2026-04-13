@@ -1,7 +1,7 @@
 namespace Pennington.Roslyn.Utilities;
 
 /// <summary>Run async code synchronously without deadlocks.</summary>
-internal static class AsyncHelpers
+public static class AsyncHelpers
 {
     private static readonly TaskFactory TaskFactory = new(
         CancellationToken.None,

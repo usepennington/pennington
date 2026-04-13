@@ -1,0 +1,77 @@
+@inject ISymbolExtractionService SymbolService
+@inject IXmlDocParser Parser
+@inject IXmlDocHtmlRenderer Renderer
+@inject IHttpContextAccessor HttpContextAccessor
+
+@((MarkupString)_html)
+
+@code {
+    [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
+
+    private string _html = string.Empty;
+
+    private DiagnosticContext? Diagnostics =>
+        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
+
+    protected override void OnParametersSet()
+    {
+        _html = BuildHtml();
+    }
+
+    private string BuildHtml()
+    {
+        if (string.IsNullOrWhiteSpace(XmlDocId))
+        {
+            Diagnostics?.AddError("<ApiParameterTable> missing XmlDocId");
+            return "<div class=\"diag-error\">&lt;ApiParameterTable&gt; missing XmlDocId</div>";
+        }
+
+        SymbolInfo? info;
+        try
+        {
+            info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(XmlDocId));
+        }
+        catch (Exception ex)
+        {
+            Diagnostics?.AddError($"<ApiParameterTable> resolution failed for {XmlDocId}: {ex.Message}");
+            return $"<div class=\"diag-error\">Resolution failed: {WebUtility.HtmlEncode(ex.Message)}</div>";
+        }
+
+        if (info?.Symbol is not Microsoft.CodeAnalysis.IMethodSymbol method)
+        {
+            Diagnostics?.AddError($"<ApiParameterTable> expected a method xmldocid (M:...), got {XmlDocId}");
+            return $"<div class=\"diag-error\">Expected a method xmldocid (M:...), got <code>{WebUtility.HtmlEncode(XmlDocId)}</code></div>";
+        }
+
+        if (method.Parameters.Length == 0)
+        {
+            return "<p><em>This method takes no parameters.</em></p>";
+        }
+
+        var parsed = Parser.Parse(method.GetDocumentationCommentXml());
+
+        var sb = new StringBuilder();
+        sb.Append("<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>");
+        foreach (var p in method.Parameters)
+        {
+            var typeDisplay = p.Type.ToDisplayString(new Microsoft.CodeAnalysis.SymbolDisplayFormat(
+                genericsOptions: Microsoft.CodeAnalysis.SymbolDisplayGenericsOptions.IncludeTypeParameters,
+                miscellaneousOptions: Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.UseSpecialTypes
+                    | Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier,
+                typeQualificationStyle: Microsoft.CodeAnalysis.SymbolDisplayTypeQualificationStyle.NameAndContainingTypes));
+
+            var description = parsed.Params.TryGetValue(p.Name, out var nodes)
+                ? Renderer.RenderInlineHtml(nodes)
+                : string.Empty;
+
+            sb.Append("<tr>")
+                .Append("<td><code>").Append(WebUtility.HtmlEncode(p.Name)).Append("</code></td>")
+                .Append("<td><code>").Append(WebUtility.HtmlEncode(typeDisplay)).Append("</code></td>")
+                .Append("<td>").Append(description).Append("</td>")
+                .Append("</tr>");
+        }
+
+        sb.Append("</tbody></table>");
+        return sb.ToString();
+    }
+}

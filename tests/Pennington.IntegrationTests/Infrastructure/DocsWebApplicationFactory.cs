@@ -17,6 +17,10 @@ public class DocsWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.UseContentRoot(docsProjectPath);
 
+        // Ensure relative paths in the docs project's configuration (e.g., RoslynOptions.SolutionPath = "../../Pennington.slnx")
+        // resolve the same way they would under `dotnet run` from the docs folder.
+        Directory.SetCurrentDirectory(docsProjectPath);
+
         builder.ConfigureLogging(logging =>
         {
             logging.ClearProviders();
