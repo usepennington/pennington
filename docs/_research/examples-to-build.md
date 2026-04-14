@@ -105,7 +105,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 8. `BlogSiteFirstPostExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** Tutorial §1.3.20 `/tutorials/blogsite/first-post`
 - **Goal:** Post authored with `BlogSiteFrontMatter` (title, description, date, author, tags, series, repository, section, redirectUrl), post appears on blog index, built-in RSS enabled. `AddBlogSite` wires `BlogSiteFrontMatter` (not `BlogFrontMatter`) — the tutorial teaches this record.
 - **Shape:**

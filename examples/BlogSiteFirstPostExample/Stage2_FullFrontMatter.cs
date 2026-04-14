@@ -1,0 +1,44 @@
+namespace BlogSiteFirstPostExample;
+
+/// <summary>
+/// Stage 2 — the fully-populated front matter taught by tutorial §1.3.20.
+/// Every field on <see cref="Pennington.BlogSite.BlogSiteFrontMatter"/> that
+/// a post author will ever touch is populated: <c>title</c>, <c>description</c>,
+/// <c>date</c>, <c>author</c>, <c>tags</c>, <c>series</c>, <c>repository</c>,
+/// <c>section</c>, and <c>redirectUrl</c>. Tutorial prose extracts the body
+/// of <see cref="Source"/> via <c>csharp:xmldocid,bodyonly</c>. This mirrors
+/// the markdown that actually ships in
+/// <c>Content/Blog/my-first-post.md</c>. This class is never instantiated.
+/// </summary>
+public static class Stage2
+{
+    /// <summary>The stage-2 markdown — every BlogSiteFrontMatter field populated.</summary>
+    public static string Source() => """
+        ---
+        title: Shipping a tiny content engine for weekend projects
+        description: Notes from the first month of building Pennington — why Markdig plus Razor components plus a little YAML beats reaching for a heavier framework.
+        date: 2026-04-10
+        author: Author Name
+        tags:
+          - pennington
+          - dotnet
+          - blogging
+        series: Pennington Field Notes
+        repository: https://github.com/example/pennington-field-notes
+        section: field-notes
+        redirectUrl:
+        ---
+
+        Welcome to the first real post on this blog. The scaffold from the
+        previous tutorial gave us a running BlogSite with one placeholder
+        post; this post replaces it with something the BlogSite template
+        actually has opinions about.
+
+        ## What the front matter is doing
+
+        Each field in the block above lights up a different surface — the
+        archive card, the post header, the /tags/<tag> listings, the RSS
+        channel, the JSON-LD metadata — and walking through them in order
+        is the point of this tutorial.
+        """;
+}

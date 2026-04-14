@@ -2567,11 +2567,26 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/AlexBlogExample/Content/Blog/building-a-cli-part-1.md'
-        - 'examples/AlexBlogExample/Program.cs'
+        - 'examples/BlogSiteFirstPostExample/Program.cs'
+        - 'examples/BlogSiteFirstPostExample/Content/Blog/my-first-post.md'
+        - 'M:BlogSiteFirstPostExample.Stage1.Source'
+        - 'M:BlogSiteFirstPostExample.Stage2.Source'
       production_files:
         - 'src/Pennington.BlogSite/BlogSiteFrontMatter.cs'
-      production_symbols: []
+        - 'src/Pennington.BlogSite/BlogSiteOptions.cs'
+      production_symbols:
+        - 'T:Pennington.BlogSite.BlogSiteFrontMatter'
+        - 'P:Pennington.BlogSite.BlogSiteFrontMatter.Title'
+        - 'P:Pennington.BlogSite.BlogSiteFrontMatter.Description'
+        - 'P:Pennington.BlogSite.BlogSiteFrontMatter.Date'
+        - 'P:Pennington.BlogSite.BlogSiteFrontMatter.Author'
+        - 'P:Pennington.BlogSite.BlogSiteFrontMatter.Tags'
+        - 'P:Pennington.BlogSite.BlogSiteFrontMatter.Series'
+        - 'P:Pennington.BlogSite.BlogSiteFrontMatter.Repository'
+        - 'P:Pennington.BlogSite.BlogSiteFrontMatter.Section'
+        - 'P:Pennington.BlogSite.BlogSiteFrontMatter.RedirectUrl'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.EnableRss'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.EnableSitemap'
       architecture:
         - '_research/site-architecture.md'
       blockers: []

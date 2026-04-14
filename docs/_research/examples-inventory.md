@@ -363,3 +363,62 @@ via `csharp:xmldocid,bodyonly`.
 
 - `examples/BlogSiteScaffoldExample/Program.cs` (top-level statements, no xmldocid)
 - `examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md`
+
+## `examples/BlogSiteFirstPostExample`
+
+Backs tutorial §1.3.20 `/tutorials/blogsite/first-post`. Extends the
+`BlogSiteScaffoldExample` host with a fully-populated post that lights up
+every field on `BlogSiteFrontMatter` a post author will touch — `title`,
+`description`, `date`, `author`, `tags`, `series`, `repository`,
+`section`, and `redirectUrl`. `EnableRss = true` is specified explicitly
+in `Program.cs` (redundant because the default is already `true`) so the
+tutorial has a symbol to point at when it introduces the RSS feed. The
+post replaces the scaffold's placeholder `hello-world.md`; `/`, `/archive`,
+`/blog/my-first-post/`, `/tags/<tag>/`, and `/rss.xml` all surface the
+populated front-matter fields. The post page shows the series banner,
+the tag chips, and a "Source Code" link driven by `repository:`. The RSS
+item carries `<title>`, `<link>`, `<guid>`, `<description>`, `<pubDate>`,
+and `<author>`.
+
+**Files**
+
+- `examples/BlogSiteFirstPostExample/Program.cs` — canonical final state (AddBlogSite with explicit `EnableRss = true`, no placeholder post)
+- `examples/BlogSiteFirstPostExample/Content/Blog/my-first-post.md` — the fully-populated post
+- `examples/BlogSiteFirstPostExample/Stage1_BareFrontMatter.cs` — stage 1 markdown source (title + description + date only)
+- `examples/BlogSiteFirstPostExample/Stage2_FullFrontMatter.cs` — stage 2 markdown source (every BlogSiteFrontMatter field populated)
+
+**Symbols**
+
+- `T:BlogSiteFirstPostExample.Stage1`
+- `M:BlogSiteFirstPostExample.Stage1.Source` (short)
+- `T:BlogSiteFirstPostExample.Stage2`
+- `M:BlogSiteFirstPostExample.Stage2.Source` (short)
+
+Production symbols the tutorial leans on (live in `src/Pennington.BlogSite`):
+
+- `T:Pennington.BlogSite.BlogSiteFrontMatter`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Title`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Description`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Date`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Author`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Tags`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Series`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Repository`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Section`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.RedirectUrl`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.IsDraft`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Uid`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Search`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Llms`
+- `P:Pennington.BlogSite.BlogSiteOptions.EnableRss`
+- `P:Pennington.BlogSite.BlogSiteOptions.EnableSitemap`
+
+Each `Source()` is a static method whose return value encodes the
+tutorial's markdown at that stage — none is invoked at runtime. The
+final stage mirrors the markdown that actually ships in
+`Content/Blog/my-first-post.md`.
+
+**Raw-file fence candidates**
+
+- `examples/BlogSiteFirstPostExample/Program.cs` (top-level statements, no xmldocid)
+- `examples/BlogSiteFirstPostExample/Content/Blog/my-first-post.md`
