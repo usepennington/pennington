@@ -22,5 +22,6 @@
     <Project Path="examples/DocSiteScaffoldExample/DocSiteScaffoldExample.csproj" />
     <Project Path="examples/DocSiteAuthorExample/DocSiteAuthorExample.csproj" />
     <Project Path="examples/DocSiteSectionsExample/DocSiteSectionsExample.csproj" />
+    <Project Path="examples/BlogSiteScaffoldExample/BlogSiteScaffoldExample.csproj" />
   </Folder>
 </Solution>

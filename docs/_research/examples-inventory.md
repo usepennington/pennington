@@ -304,3 +304,62 @@ markdown at that stage — none is invoked at runtime.
 - `examples/DocSiteSectionsExample/Content/reference/core-api/content-pipeline.md`
 - `examples/DocSiteSectionsExample/Content/reference/extensions/markdown-extensions.md`
 - `examples/DocSiteSectionsExample/Content/reference/extensions/content-services.md`
+
+## `examples/BlogSiteScaffoldExample`
+
+Backs tutorial §1.3.10 `/tutorials/blogsite/scaffold`. Swaps the bare
+`AddPennington` host from app #1 for the BlogSite template: `AddBlogSite`
+populates a `BlogSiteOptions` (site title, description, canonical base
+URL, content paths, author name/bio) in one call; `UseBlogSite` mounts the
+full Razor-component chrome (Home listing, `/archive`, `/blog/<slug>`,
+`/tags`, `/tags/<name>`, `/topics` aliases) plus the `/rss.xml` endpoint;
+`RunBlogSiteAsync` delegates to `RunOrBuildAsync` so the same host serves
+dev and static build. Posts live under `Content/Blog/` (default
+`BlogContentPath`, under default `ContentRootPath = "Content"`); a single
+placeholder post `hello-world.md` keeps the Home listing and RSS feed
+non-empty until tutorial §1.3.20 teaches the real `BlogSiteFrontMatter`
+fields. `AddBlogSite` internally calls `AddPennington`, `AddMonorailCss`,
+`AddRazorComponents`, and registers the Pennington.UI Mdazor components —
+later BlogSite apps must not re-register these.
+
+**Files**
+
+- `examples/BlogSiteScaffoldExample/Program.cs` — canonical final state (AddBlogSite + UseBlogSite + RunBlogSiteAsync, single placeholder post)
+- `examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md` — placeholder post keeping the pipeline happy (title, description, date, author)
+- `examples/BlogSiteScaffoldExample/Stage1_BeforeAddBlogSite.cs` — tutorial stage 1 (pre-BlogSite bare AddPennington host)
+- `examples/BlogSiteScaffoldExample/Stage2_AfterAddBlogSite.cs` — tutorial stage 2 (final; matches `Program.cs`)
+
+**Symbols**
+
+- `T:BlogSiteScaffoldExample.Stage1`
+- `M:BlogSiteScaffoldExample.Stage1.Run(System.String[])`
+- `T:BlogSiteScaffoldExample.Stage2`
+- `M:BlogSiteScaffoldExample.Stage2.Run(System.String[])` (short)
+
+Production symbols the tutorial leans on (live in `src/Pennington.BlogSite`):
+
+- `T:Pennington.BlogSite.BlogSiteOptions`
+- `P:Pennington.BlogSite.BlogSiteOptions.SiteTitle`
+- `P:Pennington.BlogSite.BlogSiteOptions.Description`
+- `P:Pennington.BlogSite.BlogSiteOptions.CanonicalBaseUrl`
+- `P:Pennington.BlogSite.BlogSiteOptions.ContentRootPath`
+- `P:Pennington.BlogSite.BlogSiteOptions.BlogContentPath`
+- `P:Pennington.BlogSite.BlogSiteOptions.BlogBaseUrl`
+- `P:Pennington.BlogSite.BlogSiteOptions.TagsPageUrl`
+- `P:Pennington.BlogSite.BlogSiteOptions.AuthorName`
+- `P:Pennington.BlogSite.BlogSiteOptions.AuthorBio`
+- `P:Pennington.BlogSite.BlogSiteOptions.EnableRss`
+- `P:Pennington.BlogSite.BlogSiteOptions.EnableSitemap`
+- `T:Pennington.BlogSite.BlogSiteServiceExtensions`
+- `M:Pennington.BlogSite.BlogSiteServiceExtensions.AddBlogSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.BlogSite.BlogSiteOptions})`
+- `M:Pennington.BlogSite.BlogSiteServiceExtensions.UseBlogSite(Microsoft.AspNetCore.Builder.WebApplication)`
+- `M:Pennington.BlogSite.BlogSiteServiceExtensions.RunBlogSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])`
+
+Each `Run` is a static method whose body captures the tutorial's state at
+that stage. Neither is invoked at runtime — the tutorial pulls each body
+via `csharp:xmldocid,bodyonly`.
+
+**Raw-file fence candidates**
+
+- `examples/BlogSiteScaffoldExample/Program.cs` (top-level statements, no xmldocid)
+- `examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md`

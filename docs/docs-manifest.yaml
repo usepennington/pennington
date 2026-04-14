@@ -2626,9 +2626,25 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/AlexBlogExample/Program.cs'
-      production_files: []
-      production_symbols: []
+        - 'examples/BlogSiteScaffoldExample/Program.cs'
+        - 'examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md'
+        - 'M:BlogSiteScaffoldExample.Stage1.Run(System.String[])'
+        - 'M:BlogSiteScaffoldExample.Stage2.Run(System.String[])'
+      production_files:
+        - 'src/Pennington.BlogSite/BlogSiteOptions.cs'
+        - 'src/Pennington.BlogSite/BlogSiteServiceExtensions.cs'
+      production_symbols:
+        - 'T:Pennington.BlogSite.BlogSiteOptions'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.SiteTitle'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.Description'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.CanonicalBaseUrl'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.ContentRootPath'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.BlogContentPath'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.BlogBaseUrl'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.AuthorName'
+        - 'M:Pennington.BlogSite.BlogSiteServiceExtensions.AddBlogSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.BlogSite.BlogSiteOptions})'
+        - 'M:Pennington.BlogSite.BlogSiteServiceExtensions.UseBlogSite(Microsoft.AspNetCore.Builder.WebApplication)'
+        - 'M:Pennington.BlogSite.BlogSiteServiceExtensions.RunBlogSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])'
       architecture:
         - '_research/site-architecture.md'
       blockers: []

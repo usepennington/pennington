@@ -94,7 +94,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 7. `BlogSiteScaffoldExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** Tutorial §1.3.10 `/tutorials/blogsite/scaffold`
 - **Goal:** `AddBlogSite` + `UseBlogSite` + `RunBlogSiteAsync`, core `BlogSiteOptions` (`SiteTitle`, `AuthorName`, `CanonicalBaseUrl`, content paths). Show the difference vs DocSite defaults.
 - **Shape:**
