@@ -2807,10 +2807,22 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/MinimalExample/Components/Layout/MainLayout.razor'
-        - 'examples/MinimalExample/Program.cs'
-      production_files: []
-      production_symbols: []
+        - 'examples/GettingStartedStylingExample/Program.cs'
+        - 'examples/GettingStartedStylingExample/Layout.cs'
+        - 'examples/GettingStartedStylingExample/Content/index.md'
+        - 'examples/GettingStartedStylingExample/Content/about.md'
+        - 'examples/GettingStartedStylingExample/Content/contact.md'
+        - 'M:GettingStartedStylingExample.Stage1.Run(System.String[])'
+        - 'M:GettingStartedStylingExample.Stage2.Run(System.String[])'
+        - 'M:GettingStartedStylingExample.Stage3.Run(System.String[])'
+        - 'M:GettingStartedStylingExample.Layout.Render(System.String,System.Collections.Generic.IReadOnlyList{Pennington.Navigation.NavigationTreeItem},System.String)'
+      production_files:
+        - 'src/Pennington.MonorailCss/MonorailServiceExtensions.cs'
+        - 'src/Pennington.MonorailCss/MonorailCssOptions.cs'
+      production_symbols:
+        - 'M:Pennington.MonorailCss.MonorailServiceExtensions.AddMonorailCss(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{System.IServiceProvider,Pennington.MonorailCss.MonorailCssOptions})'
+        - 'M:Pennington.MonorailCss.MonorailServiceExtensions.UseMonorailCss(Microsoft.AspNetCore.Builder.WebApplication,System.String)'
+        - 'T:Pennington.MonorailCss.NamedColorScheme'
       architecture:
         - '_research/site-architecture.md'
       blockers: []

@@ -54,7 +54,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 3. `GettingStartedStylingExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** Tutorial §1.1.30 `/tutorials/getting-started/styling`
 - **Goal:** Register `AddMonorailCss` + `UseMonorailCss`, pick a `NamedColorScheme`, add a utility class to a layout, stylesheet regenerates on demand.
 - **Shape:**
