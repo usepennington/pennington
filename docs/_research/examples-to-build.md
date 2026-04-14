@@ -43,7 +43,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 2. `GettingStartedFirstPageExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** Tutorial §1.1.20 `/tutorials/getting-started/first-page`
 - **Goal:** Write a YAML front-matter block, required `title` key, file path → URL, nav auto-assembles as a second and third file are added.
 - **Shape:**

@@ -47,3 +47,42 @@ focused snippet with `csharp:xmldocid,bodyonly`.
 
 - `examples/GettingStartedMinimalSiteExample/Program.cs` (top-level statements, no xmldocid)
 - `examples/GettingStartedMinimalSiteExample/Content/index.md`
+
+## `examples/GettingStartedFirstPageExample`
+
+Backs tutorial §1.1.20 `/tutorials/getting-started/first-page`. Three-page
+markdown site that demonstrates the required `title:` front-matter key, the
+file-path-to-URL mapping, and navigation auto-assembling as more files land
+on disk. Same bare `AddPennington` host shape as the minimal example plus a
+`NavigationBuilder` call so the nav strip on each page shows the current TOC.
+
+**Files**
+
+- `examples/GettingStartedFirstPageExample/Program.cs` — canonical final state (three pages wired)
+- `examples/GettingStartedFirstPageExample/Content/index.md` — home page, title "Welcome", URL `/`
+- `examples/GettingStartedFirstPageExample/Content/about.md` — second page, title "About", URL `/about`, `order: 20`
+- `examples/GettingStartedFirstPageExample/Content/contact.md` — third page, title "Contact", URL `/contact`, `order: 30`
+- `examples/GettingStartedFirstPageExample/Stage1_OneFile.cs` — tutorial stage 1 (one markdown file on disk)
+- `examples/GettingStartedFirstPageExample/Stage2_AddAboutPage.cs` — tutorial stage 2 (two files; host code unchanged)
+- `examples/GettingStartedFirstPageExample/Stage3_AddContactPage.cs` — tutorial stage 3 (three files; host code unchanged)
+
+**Symbols**
+
+- `T:GettingStartedFirstPageExample.Stage1`
+- `M:GettingStartedFirstPageExample.Stage1.Run(System.String[])`
+- `T:GettingStartedFirstPageExample.Stage2`
+- `M:GettingStartedFirstPageExample.Stage2.Run(System.String[])` (short)
+- `T:GettingStartedFirstPageExample.Stage3`
+- `M:GettingStartedFirstPageExample.Stage3.Run(System.String[])` (short)
+
+Each `Run` is a static method whose body captures the tutorial's state at that
+stage. Stages 2 and 3 intentionally delegate to `Stage1.Run` — the tutorial's
+point is that adding markdown files does **not** change the host code, so the
+stage bodies reflect that by not diverging.
+
+**Raw-file fence candidates**
+
+- `examples/GettingStartedFirstPageExample/Program.cs` (top-level statements, no xmldocid)
+- `examples/GettingStartedFirstPageExample/Content/index.md`
+- `examples/GettingStartedFirstPageExample/Content/about.md`
+- `examples/GettingStartedFirstPageExample/Content/contact.md`

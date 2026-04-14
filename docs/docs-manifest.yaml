@@ -2742,9 +2742,13 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/MinimalExample/Content/index.md'
-        - 'examples/MinimalExample/Content/sub-folder/page-one.md'
-        - 'examples/MinimalExample/Content/sub-folder/page-two.md'
+        - 'examples/GettingStartedFirstPageExample/Program.cs'
+        - 'examples/GettingStartedFirstPageExample/Content/index.md'
+        - 'examples/GettingStartedFirstPageExample/Content/about.md'
+        - 'examples/GettingStartedFirstPageExample/Content/contact.md'
+        - 'M:GettingStartedFirstPageExample.Stage1.Run(System.String[])'
+        - 'M:GettingStartedFirstPageExample.Stage2.Run(System.String[])'
+        - 'M:GettingStartedFirstPageExample.Stage3.Run(System.String[])'
       production_files: []
       production_symbols: []
       architecture:
