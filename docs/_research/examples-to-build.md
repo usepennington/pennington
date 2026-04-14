@@ -200,7 +200,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 14. `BlogKitchenSinkExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** blog-specific §2.2 Configuration how-tos
 - **Shape:** `AddBlogSite` host with fully-populated homepage surfaces (more varied than tutorial app 9: multiple projects, multiple socials, multiple header links), three dated posts, RSS + sitemap enabled.
 - **Structure:**

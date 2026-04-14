@@ -896,3 +896,127 @@ is `Program.cs` (top-level statements, no xmldocid).
 - `examples/DocSiteKitchenSinkExample/Content/api/reference-example.md`
 - `examples/DocSiteKitchenSinkExample/Content/fr/main/index.md`
 - `examples/DocSiteKitchenSinkExample/Content/fr/main/alerts.md`
+
+## `examples/BlogKitchenSinkExample`
+
+Backs the two blog-specific how-tos under §2.2 Configuration —
+2.2.70 `/how-to/configuration/rss` and 2.2.90
+`/how-to/configuration/blogsite-homepage` — and is the primary fixture for
+the reference pages §3.1 `/reference/options/blogsite-options` and §3.8
+`/reference/blogsite/social-icons`. One `AddBlogSite` call wires a
+fully-populated `BlogSiteOptions` (hero, five `Project` entries, all four
+built-in social icons, four `HeaderLink` entries, explicit `EnableRss` and
+`EnableSitemap`, canonical base URL, author name and bio). Three dated
+posts under `Content/Blog/` populate the recent-posts card, the archive,
+the tag pages, and the RSS channel. Configuration lives in a small
+`ServiceConfiguration` static class with one helper method per surface
+(`BuildHero`, `BuildMyWork`, `BuildSocials`, `BuildMainSiteLinks`,
+`BuildBlogSiteOptions`) so each how-to and reference page can fence into
+one helper via `M:...,bodyonly`. `Program.cs` stays at five lines and is
+itself a `:path`-addressable fence candidate.
+
+### Files
+
+- `examples/BlogKitchenSinkExample/BlogKitchenSinkExample.csproj` — Web SDK, references only `src/Pennington.BlogSite/`
+- `examples/BlogKitchenSinkExample/Program.cs` — top-level statements; five-line host that calls `ServiceConfiguration.BuildBlogSiteOptions`
+- `examples/BlogKitchenSinkExample/ServiceConfiguration.cs` — one helper method per option surface
+- `examples/BlogKitchenSinkExample/Content/Blog/2024-01-15-getting-started-with-pennington.md` — full `BlogSiteFrontMatter` with series + repository + section
+- `examples/BlogKitchenSinkExample/Content/Blog/2024-02-20-authoring-with-front-matter.md` — series-linked second post, no repository
+- `examples/BlogKitchenSinkExample/Content/Blog/2024-03-10-wiring-the-homepage.md` — non-series standalone post
+
+### `ServiceConfiguration` helper symbols (how-to fence targets)
+
+- `T:BlogKitchenSinkExample.ServiceConfiguration`
+- `M:BlogKitchenSinkExample.ServiceConfiguration.BuildHero` (short) — returns `HeroContent`
+- `M:BlogKitchenSinkExample.ServiceConfiguration.BuildMyWork` (short) — returns `Project[]`
+- `M:BlogKitchenSinkExample.ServiceConfiguration.BuildSocials` (short) — returns `SocialLink[]` wired to all four `SocialIcons.*Icon` fields
+- `M:BlogKitchenSinkExample.ServiceConfiguration.BuildMainSiteLinks` (short) — returns `HeaderLink[]`
+- `M:BlogKitchenSinkExample.ServiceConfiguration.BuildBlogSiteOptions` (short) — returns the populated `BlogSiteOptions`, wiring every other helper
+
+All five helpers are parameterless static methods whose bodies are the full
+option surface a how-to or reference page fences. None are called outside
+`Program.cs` (which uses `BuildBlogSiteOptions` only); the other four are
+entirely for documentation reach.
+
+### Production symbols the reference pages lean on
+
+`BlogSiteOptions` (complete surface, for §3.1 `/reference/options/blogsite-options`):
+
+- `T:Pennington.BlogSite.BlogSiteOptions`
+- `P:Pennington.BlogSite.BlogSiteOptions.SiteTitle`
+- `P:Pennington.BlogSite.BlogSiteOptions.Description`
+- `P:Pennington.BlogSite.BlogSiteOptions.CanonicalBaseUrl`
+- `P:Pennington.BlogSite.BlogSiteOptions.ColorScheme`
+- `P:Pennington.BlogSite.BlogSiteOptions.ContentRootPath`
+- `P:Pennington.BlogSite.BlogSiteOptions.BlogContentPath`
+- `P:Pennington.BlogSite.BlogSiteOptions.BlogBaseUrl`
+- `P:Pennington.BlogSite.BlogSiteOptions.TagsPageUrl`
+- `P:Pennington.BlogSite.BlogSiteOptions.ExtraStyles`
+- `P:Pennington.BlogSite.BlogSiteOptions.DisplayFontFamily`
+- `P:Pennington.BlogSite.BlogSiteOptions.BodyFontFamily`
+- `P:Pennington.BlogSite.BlogSiteOptions.AdditionalHtmlHeadContent`
+- `P:Pennington.BlogSite.BlogSiteOptions.FontPreloads`
+- `P:Pennington.BlogSite.BlogSiteOptions.AdditionalRoutingAssemblies`
+- `P:Pennington.BlogSite.BlogSiteOptions.AuthorName`
+- `P:Pennington.BlogSite.BlogSiteOptions.AuthorBio`
+- `P:Pennington.BlogSite.BlogSiteOptions.EnableRss`
+- `P:Pennington.BlogSite.BlogSiteOptions.EnableSitemap`
+- `P:Pennington.BlogSite.BlogSiteOptions.HeroContent`
+- `P:Pennington.BlogSite.BlogSiteOptions.MyWork`
+- `P:Pennington.BlogSite.BlogSiteOptions.Socials`
+- `P:Pennington.BlogSite.BlogSiteOptions.MainSiteLinks`
+- `P:Pennington.BlogSite.BlogSiteOptions.SocialMediaImageUrlFactory`
+
+Helper records on the same page (all positional records in `src/Pennington.BlogSite/BlogSiteOptions.cs`):
+
+- `T:Pennington.BlogSite.HeroContent` — `HeroContent(string Title, string Description)`
+- `T:Pennington.BlogSite.Project` — `Project(string Title, string Description, string Url)`
+- `T:Pennington.BlogSite.SocialLink` — `SocialLink(RenderFragment Icon, string Url)`
+- `T:Pennington.BlogSite.HeaderLink` — `HeaderLink(string Title, string Url)`
+
+Service-extension entry points:
+
+- `T:Pennington.BlogSite.BlogSiteServiceExtensions`
+- `M:Pennington.BlogSite.BlogSiteServiceExtensions.AddBlogSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.BlogSite.BlogSiteOptions})`
+- `M:Pennington.BlogSite.BlogSiteServiceExtensions.UseBlogSite(Microsoft.AspNetCore.Builder.WebApplication)`
+- `M:Pennington.BlogSite.BlogSiteServiceExtensions.RunBlogSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])`
+
+Built-in `SocialIcons` fragments (for §3.8 `/reference/blogsite/social-icons`):
+
+- `T:Pennington.BlogSite.Components.SocialIcons`
+- `F:Pennington.BlogSite.Components.SocialIcons.GithubIcon`
+- `F:Pennington.BlogSite.Components.SocialIcons.BlueskyIcon`
+- `F:Pennington.BlogSite.Components.SocialIcons.LinkedInIcon`
+- `F:Pennington.BlogSite.Components.SocialIcons.MastodonIcon`
+
+All four are `public static readonly RenderFragment` fields on the
+`SocialIcons` Razor component. Each is a 24x24 viewBox SVG that inherits
+`currentColor` (`stroke="currentColor"`, `fill="none"`). The path counts,
+verified against source, are: `GithubIcon` 1, `BlueskyIcon` 1,
+`LinkedInIcon` 4, `MastodonIcon` 2. The field syntax is the only way to
+reference them — they are `RenderFragment` values, not component tags.
+
+`BlogSiteFrontMatter` surface the posts populate (also cited by the RSS
+how-to):
+
+- `T:Pennington.BlogSite.BlogSiteFrontMatter`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Title`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Author`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Description`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Repository`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Date`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.IsDraft`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Tags`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Series`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.RedirectUrl`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Section`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Uid`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Search`
+- `P:Pennington.BlogSite.BlogSiteFrontMatter.Llms`
+
+### Raw-file fence candidates
+
+- `examples/BlogKitchenSinkExample/Program.cs` (top-level statements, no xmldocid)
+- `examples/BlogKitchenSinkExample/Content/Blog/2024-01-15-getting-started-with-pennington.md`
+- `examples/BlogKitchenSinkExample/Content/Blog/2024-02-20-authoring-with-front-matter.md`
+- `examples/BlogKitchenSinkExample/Content/Blog/2024-03-10-wiring-the-homepage.md`

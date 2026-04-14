@@ -436,10 +436,22 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/AlexBlogExample/Program.cs'
-        - 'examples/BlogExample/Program.cs'
+        - 'M:BlogKitchenSinkExample.ServiceConfiguration.BuildHero'
+        - 'M:BlogKitchenSinkExample.ServiceConfiguration.BuildMyWork'
+        - 'M:BlogKitchenSinkExample.ServiceConfiguration.BuildSocials'
+        - 'M:BlogKitchenSinkExample.ServiceConfiguration.BuildMainSiteLinks'
+        - 'M:BlogKitchenSinkExample.ServiceConfiguration.BuildBlogSiteOptions'
+        - 'examples/BlogKitchenSinkExample/Program.cs'
       production_files: []
-      production_symbols: []
+      production_symbols:
+        - 'P:Pennington.BlogSite.BlogSiteOptions.HeroContent'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.MainSiteLinks'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.MyWork'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.Socials'
+        - 'T:Pennington.BlogSite.HeaderLink'
+        - 'T:Pennington.BlogSite.HeroContent'
+        - 'T:Pennington.BlogSite.Project'
+        - 'T:Pennington.BlogSite.SocialLink'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
@@ -623,9 +635,16 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'T:AlexBlogExample.Program'
+        - 'M:BlogKitchenSinkExample.ServiceConfiguration.BuildBlogSiteOptions'
+        - 'examples/BlogKitchenSinkExample/Content/Blog/2024-01-15-getting-started-with-pennington.md'
+        - 'examples/BlogKitchenSinkExample/Content/Blog/2024-02-20-authoring-with-front-matter.md'
+        - 'examples/BlogKitchenSinkExample/Content/Blog/2024-03-10-wiring-the-homepage.md'
+        - 'examples/BlogKitchenSinkExample/Program.cs'
       production_files: []
-      production_symbols: []
+      production_symbols:
+        - 'P:Pennington.BlogSite.BlogSiteFrontMatter.Date'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.CanonicalBaseUrl'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.EnableRss'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
@@ -1508,9 +1527,16 @@ pages:
     front_matter_uid: 'reference.blogsite.social-icons'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'M:BlogKitchenSinkExample.ServiceConfiguration.BuildSocials'
       production_files: []
-      production_symbols: []
+      production_symbols:
+        - 'F:Pennington.BlogSite.Components.SocialIcons.BlueskyIcon'
+        - 'F:Pennington.BlogSite.Components.SocialIcons.GithubIcon'
+        - 'F:Pennington.BlogSite.Components.SocialIcons.LinkedInIcon'
+        - 'F:Pennington.BlogSite.Components.SocialIcons.MastodonIcon'
+        - 'T:Pennington.BlogSite.Components.SocialIcons'
+        - 'T:Pennington.BlogSite.SocialLink'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
@@ -2081,9 +2107,38 @@ pages:
     front_matter_uid: 'reference.options.blogsite-options'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'M:BlogKitchenSinkExample.ServiceConfiguration.BuildBlogSiteOptions'
+        - 'M:BlogKitchenSinkExample.ServiceConfiguration.BuildHero'
+        - 'M:BlogKitchenSinkExample.ServiceConfiguration.BuildMainSiteLinks'
+        - 'M:BlogKitchenSinkExample.ServiceConfiguration.BuildMyWork'
+        - 'M:BlogKitchenSinkExample.ServiceConfiguration.BuildSocials'
+        - 'examples/BlogKitchenSinkExample/Program.cs'
       production_files: []
       production_symbols:
+        - 'P:Pennington.BlogSite.BlogSiteOptions.AdditionalHtmlHeadContent'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.AdditionalRoutingAssemblies'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.AuthorBio'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.AuthorName'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.BlogBaseUrl'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.BlogContentPath'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.BodyFontFamily'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.CanonicalBaseUrl'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.ColorScheme'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.ContentRootPath'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.Description'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.DisplayFontFamily'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.EnableRss'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.EnableSitemap'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.ExtraStyles'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.FontPreloads'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.HeroContent'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.MainSiteLinks'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.MyWork'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.SiteTitle'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.SocialMediaImageUrlFactory'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.Socials'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.TagsPageUrl'
         - 'T:Pennington.BlogSite.BlogSiteOptions'
         - 'T:Pennington.BlogSite.HeaderLink'
         - 'T:Pennington.BlogSite.HeroContent'
