@@ -148,7 +148,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 12. `BeyondCustomRazorComponentExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** Tutorial §1.4.30 `/tutorials/beyond-basics/custom-razor-component`
 - **Goal:** Build a Razor component, register with `AddMdazorComponent<T>()`, render from markdown.
 - **Shape:**

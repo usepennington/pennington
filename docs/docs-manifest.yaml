@@ -2563,11 +2563,21 @@ pages:
     front_matter_uid: 'tutorials.beyond-basics.custom-razor-component'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'T:BeyondCustomRazorComponentExample.Components.PricingCard'
+        - 'P:BeyondCustomRazorComponentExample.Components.PricingCard.Tier'
+        - 'P:BeyondCustomRazorComponentExample.Components.PricingCard.Price'
+        - 'P:BeyondCustomRazorComponentExample.Components.PricingCard.Features'
+        - 'P:BeyondCustomRazorComponentExample.Components.PricingCard.Highlighted'
+        - 'T:BeyondCustomRazorComponentExample.Stage1'
+        - 'M:BeyondCustomRazorComponentExample.Stage1.Source'
+        - 'T:BeyondCustomRazorComponentExample.Stage2'
+        - 'M:BeyondCustomRazorComponentExample.Stage2.Run(System.String[])'
       production_files:
-        - 'docs/Pennington.Docs/Components/Reference/ApiMemberTable.razor'
-        - 'docs/Pennington.Docs/Content/reference/options/roslyn-options.md'
-        - 'docs/Pennington.Docs/Program.cs'
+        - 'examples/BeyondCustomRazorComponentExample/Program.cs'
+        - 'examples/BeyondCustomRazorComponentExample/Components/PricingCard.razor'
+        - 'examples/BeyondCustomRazorComponentExample/_Imports.razor'
+        - 'examples/BeyondCustomRazorComponentExample/Content/pricing.md'
       production_symbols: []
       architecture:
         - '_research/site-architecture.md'

@@ -28,5 +28,6 @@
     <Project Path="examples/BeyondLocaleExample/BeyondLocaleExample.csproj" />
     <Project Path="examples/BeyondRoslynExample/BeyondRoslynExample.csproj" />
     <Project Path="examples/BeyondRoslynExample/Sample/BeyondRoslynExample.Sample.csproj" />
+    <Project Path="examples/BeyondCustomRazorComponentExample/BeyondCustomRazorComponentExample.csproj" />
   </Folder>
 </Solution>

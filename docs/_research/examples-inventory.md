@@ -675,3 +675,75 @@ Multiple XmlDocIds on separate lines in one fence are concatenated.
 - `examples/BeyondRoslynExample/Content/api-pulls.md`
 - `examples/BeyondRoslynExample/Sample/Calculator.cs`
 - `examples/BeyondRoslynExample/Sample/Greeter.cs`
+
+## `examples/BeyondCustomRazorComponentExample`
+
+Backs tutorial §1.4.30 `/tutorials/beyond-basics/custom-razor-component`.
+Same DocSite host shape as the other beyond-basics tutorials (app #10, #11)
+with one extra DI line — `services.AddMdazorComponent<PricingCard>()` — that
+registers a Razor component authored in the example's own assembly with
+Mdazor's component registry. The markdown page at `Content/pricing.md`
+consumes the component twice (`<PricingCard Tier="Basic" ... />` and
+`<PricingCard Tier="Pro" ... Highlighted="true" />`) so the two visual
+variants are both exercised.
+
+The csproj uses `Microsoft.NET.Sdk.Web` (the same SDK every other DocSite
+example uses) — the Web SDK pulls in Razor tooling transitively, so no
+SDK swap is required to author `.razor` files in an example app. A
+top-level `_Imports.razor` pulls in `Microsoft.AspNetCore.Components` +
+`Microsoft.AspNetCore.Components.Web` so the component file can use
+`[Parameter]` without per-file `@using` directives.
+
+**Files**
+
+- `examples/BeyondCustomRazorComponentExample/BeyondCustomRazorComponentExample.csproj` — DocSite-only reference (Mdazor comes transitively)
+- `examples/BeyondCustomRazorComponentExample/Program.cs` — canonical final state
+- `examples/BeyondCustomRazorComponentExample/_Imports.razor` — component + component.web usings
+- `examples/BeyondCustomRazorComponentExample/Components/PricingCard.razor` — the custom component
+- `examples/BeyondCustomRazorComponentExample/Content/index.md` — landing page
+- `examples/BeyondCustomRazorComponentExample/Content/pricing.md` — consumes `<PricingCard />` twice
+- `examples/BeyondCustomRazorComponentExample/Stage1_ComponentAuthored.cs` — stage 1: component exists, Mdazor unaware
+- `examples/BeyondCustomRazorComponentExample/Stage2_RegisterMdazorComponent.cs` — stage 2: `AddMdazorComponent<T>()` wired
+
+**Symbols (component)**
+
+- `T:BeyondCustomRazorComponentExample.Components.PricingCard`
+- `P:BeyondCustomRazorComponentExample.Components.PricingCard.Tier`
+- `P:BeyondCustomRazorComponentExample.Components.PricingCard.Price`
+- `P:BeyondCustomRazorComponentExample.Components.PricingCard.Features`
+- `P:BeyondCustomRazorComponentExample.Components.PricingCard.Highlighted`
+
+**Symbols (stage files — host)**
+
+- `T:BeyondCustomRazorComponentExample.Stage1`
+- `M:BeyondCustomRazorComponentExample.Stage1.Source` (short)
+- `T:BeyondCustomRazorComponentExample.Stage2`
+- `M:BeyondCustomRazorComponentExample.Stage2.Run(System.String[])` (short)
+
+**Production symbols the tutorial leans on** (Mdazor NuGet package):
+
+- `M:Mdazor.ServiceCollectionExtensions.AddMdazorComponent``1(Microsoft.Extensions.DependencyInjection.IServiceCollection)` — the generic extension that registers a component type with the Mdazor registry; returns the `IServiceCollection` so it chains.
+
+**Tag matching (verified against Mdazor README + `MdazorIntegrationTests`)**
+
+- Component tag-name matching is **case-sensitive on the leading character
+  (capital required)** and then matched by **component type name** against
+  registered types. Unknown tags fall through as literal HTML with an HTML
+  comment carrying the error.
+- Attribute → parameter binding is **case-insensitive via reflection**
+  (`Tier="Pro"` binds to `[Parameter] public string Tier`).
+- Supported parameter types in markdown-driven binding are simple strings,
+  numbers, and booleans — complex types are not supported from markdown
+  attributes. The example sidesteps this by shipping the feature list as a
+  pipe-delimited string and splitting it inside the component.
+- Both **self-closing** (`<PricingCard ... />`) and **open/close**
+  (`<PricingCard ...></PricingCard>`) forms are supported; the open/close
+  form can carry `ChildContent` (markdown between the tags).
+
+**Raw-file fence candidates**
+
+- `examples/BeyondCustomRazorComponentExample/Program.cs` (top-level statements, no xmldocid)
+- `examples/BeyondCustomRazorComponentExample/_Imports.razor`
+- `examples/BeyondCustomRazorComponentExample/Components/PricingCard.razor`
+- `examples/BeyondCustomRazorComponentExample/Content/index.md`
+- `examples/BeyondCustomRazorComponentExample/Content/pricing.md`

@@ -1,0 +1,67 @@
+@* PricingCard — a custom Mdazor component authored inside this example app
+   and registered with services.AddMdazorComponent<PricingCard>() in Program.cs.
+   Consumed from markdown as <PricingCard Tier="Pro" Price="49" Features="..." />.
+
+   Parameters are populated by Mdazor via reflection with case-insensitive
+   matching. Only simple types (string, bool, numbers) are supported — the
+   Features list arrives as a single pipe-delimited string and is split here. *@
+<div class="not-prose my-6">
+    <div class="@CardClasses">
+        @if (Highlighted)
+        {
+            <div class="mb-3 inline-block rounded-full bg-primary-500 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+                Most Popular
+            </div>
+        }
+        <h3 class="text-xl font-bold text-base-900 dark:text-base-50">@Tier</h3>
+        <div class="mt-2 flex items-baseline gap-1">
+            <span class="text-4xl font-extrabold text-base-900 dark:text-base-50">$@Price</span>
+            <span class="text-sm text-base-500 dark:text-base-400">/ month</span>
+        </div>
+        <ul class="mt-4 space-y-2 text-sm text-base-700 dark:text-base-300">
+            @foreach (var feature in ParsedFeatures)
+            {
+                <li class="flex items-start gap-2">
+                    <span class="mt-1 inline-block size-1.5 rounded-full bg-primary-500"></span>
+                    <span>@feature</span>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Tier label shown at the top of the card (e.g. "Basic", "Pro", "Team").
+    /// </summary>
+    [Parameter] public string Tier { get; set; } = "Basic";
+
+    /// <summary>
+    /// Monthly price rendered as "$Price / month". Kept as a string so the
+    /// markdown author can write <c>Price="49"</c> or <c>Price="Free"</c>.
+    /// </summary>
+    [Parameter] public string Price { get; set; } = "0";
+
+    /// <summary>
+    /// Pipe-delimited feature list (e.g. <c>Features="A|B|C"</c>). Mdazor
+    /// only binds primitive parameter types from markdown attributes, so the
+    /// list is shipped as a single string and split for display.
+    /// </summary>
+    [Parameter] public string Features { get; set; } = string.Empty;
+
+    /// <summary>
+    /// When <c>true</c> the card renders with a prominent ring and a
+    /// "Most Popular" badge. Boolean attribute values from markdown bind
+    /// with case-insensitive <c>true</c>/<c>false</c>.
+    /// </summary>
+    [Parameter] public bool Highlighted { get; set; }
+
+    private IEnumerable<string> ParsedFeatures =>
+        string.IsNullOrWhiteSpace(Features)
+            ? Array.Empty<string>()
+            : Features.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    private string CardClasses => Highlighted
+        ? "rounded-xl border-2 border-primary-500 bg-primary-50 p-6 shadow-lg ring-4 ring-primary-500/10 dark:bg-primary-950/40"
+        : "rounded-xl border border-base-200 bg-white p-6 shadow-sm dark:border-base-800 dark:bg-base-900";
+}
