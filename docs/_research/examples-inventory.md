@@ -581,3 +581,97 @@ via `csharp:xmldocid,bodyonly`.
 - `examples/BeyondLocaleExample/Content/es/index.md`
 - `examples/BeyondLocaleExample/Content/es/about.md`
 - `examples/BeyondLocaleExample/Content/es/getting-started.md`
+
+## `examples/BeyondRoslynExample`
+
+Backs tutorial §1.4.20 `/tutorials/beyond-basics/connect-roslyn`. This is
+the first example app with a **dual-project structure**: the DocSite host
+(`BeyondRoslynExample.csproj`) lives at the folder root, and a sibling
+`Sample/BeyondRoslynExample.Sample.csproj` class library holds the types
+that the tutorial's markdown pages fence via `csharp:xmldocid`. The two
+csprojs don't reference each other at compile time — Pennington.Roslyn
+loads the Sample library through an **inner slnx**
+(`BeyondRoslynExample.slnx`) that `RoslynOptions.SolutionPath` points at.
+Both csprojs are registered in the main `Pennington.slnx` under
+`/examples/` so `dotnet build Pennington.slnx` compiles them. The host
+csproj sets `DefaultItemExcludes` to skip `Sample\**` so the two projects
+don't fight over the same `.cs` files.
+
+`AddPenningtonRoslyn(options => options.SolutionPath = "BeyondRoslynExample.slnx")`
+is the single DI line that registers `RoslynCodeBlockPreprocessor` as an
+`ICodeBlockPreprocessor`. Markdown fences whose info string ends in
+`:xmldocid`, `:xmldocid,bodyonly`, or `:xmldocid-diff` (body contains one
+XmlDocId per line; two IDs for `-diff`) resolve against the loaded
+solution and render real source highlighted via `SyntaxHighlighter`.
+
+**Files**
+
+- `examples/BeyondRoslynExample/BeyondRoslynExample.csproj` — docs host (references `Pennington.DocSite` + `Pennington.Roslyn`; excludes `Sample\**` from its globs)
+- `examples/BeyondRoslynExample/BeyondRoslynExample.slnx` — inner slnx registering only the Sample library; `SolutionPath` points at it
+- `examples/BeyondRoslynExample/Program.cs` — canonical final state (DocSite + AddPenningtonRoslyn)
+- `examples/BeyondRoslynExample/Stage1_NoRoslyn.cs` — stage 1 host (DocSite only; xmldocid fences render raw)
+- `examples/BeyondRoslynExample/Stage2_AddRoslyn.cs` — stage 2 host (adds `AddPenningtonRoslyn`; fences resolve)
+- `examples/BeyondRoslynExample/Content/index.md` — landing page, links to `api-pulls`
+- `examples/BeyondRoslynExample/Content/api-pulls.md` — five xmldocid fences (`T:`, `M:`, bodyonly, multi-symbol)
+- `examples/BeyondRoslynExample/Sample/BeyondRoslynExample.Sample.csproj` — sibling library (`GenerateDocumentationFile=true`)
+- `examples/BeyondRoslynExample/Sample/Calculator.cs` — fence target with `Add`, `Multiply`, `Mean`
+- `examples/BeyondRoslynExample/Sample/Greeter.cs` — fence target with `Prefix` + `Greet`
+
+**Symbols (stage files — host)**
+
+- `T:BeyondRoslynExample.Stage1`
+- `M:BeyondRoslynExample.Stage1.Run(System.String[])` (short)
+- `T:BeyondRoslynExample.Stage2`
+- `M:BeyondRoslynExample.Stage2.Run(System.String[])` (short)
+
+**Symbols (Sample library — xmldocid fence targets)**
+
+- `T:BeyondRoslynExample.Sample.Calculator`
+- `M:BeyondRoslynExample.Sample.Calculator.Add(System.Int32,System.Int32)` (short)
+- `M:BeyondRoslynExample.Sample.Calculator.Multiply(System.Int32,System.Int32)` (short)
+- `M:BeyondRoslynExample.Sample.Calculator.Mean(System.Collections.Generic.IReadOnlyList{System.Int32})`
+- `T:BeyondRoslynExample.Sample.Greeter`
+- `P:BeyondRoslynExample.Sample.Greeter.Prefix` (short)
+- `M:BeyondRoslynExample.Sample.Greeter.#ctor(System.String)` (short)
+- `M:BeyondRoslynExample.Sample.Greeter.Greet(System.String)` (short)
+
+**Production symbols the tutorial leans on** (live in
+`src/Pennington.Roslyn`):
+
+- `T:Pennington.Roslyn.RoslynOptions`
+- `P:Pennington.Roslyn.RoslynOptions.SolutionPath`
+- `P:Pennington.Roslyn.RoslynOptions.ProjectFilter`
+- `T:Pennington.Roslyn.ProjectFilter`
+- `T:Pennington.Roslyn.RoslynExtensions`
+- `M:Pennington.Roslyn.RoslynExtensions.AddPenningtonRoslyn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Roslyn.RoslynOptions})`
+- `T:Pennington.Roslyn.Preprocessing.RoslynCodeBlockPreprocessor`
+- `T:Pennington.Roslyn.Workspace.SolutionWorkspaceService`
+- `T:Pennington.Roslyn.Symbols.SymbolExtractionService`
+
+**xmldocid fence syntax — verified in source**
+
+The preprocessor (`RoslynCodeBlockPreprocessor.ParseLanguageId`) scans the
+fence info string for the substrings `:xmldocid-diff`, `:xmldocid`, or
+`:path`. The **base language** is everything before the colon (`csharp`,
+`razor`, `text`, …); the **modifier** is `xmldocid`, `xmldocid,bodyonly`,
+`xmldocid-diff`, `xmldocid-diff,bodyonly`, or `path`. The **fence body** is
+one XmlDocId per line (two for `-diff`), *not* a `key="value"` attribute
+on the fence. So the canonical form is:
+
+```` text
+```csharp:xmldocid
+T:BeyondRoslynExample.Sample.Calculator
+```
+````
+
+Append `,bodyonly` to strip declarations and render method bodies only.
+Multiple XmlDocIds on separate lines in one fence are concatenated.
+
+**Raw-file fence candidates**
+
+- `examples/BeyondRoslynExample/Program.cs` (top-level statements, no xmldocid)
+- `examples/BeyondRoslynExample/BeyondRoslynExample.slnx`
+- `examples/BeyondRoslynExample/Content/index.md`
+- `examples/BeyondRoslynExample/Content/api-pulls.md`
+- `examples/BeyondRoslynExample/Sample/Calculator.cs`
+- `examples/BeyondRoslynExample/Sample/Greeter.cs`

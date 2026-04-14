@@ -26,5 +26,7 @@
     <Project Path="examples/BlogSiteFirstPostExample/BlogSiteFirstPostExample.csproj" />
     <Project Path="examples/BlogSiteHeroProjectsSocialsExample/BlogSiteHeroProjectsSocialsExample.csproj" />
     <Project Path="examples/BeyondLocaleExample/BeyondLocaleExample.csproj" />
+    <Project Path="examples/BeyondRoslynExample/BeyondRoslynExample.csproj" />
+    <Project Path="examples/BeyondRoslynExample/Sample/BeyondRoslynExample.Sample.csproj" />
   </Folder>
 </Solution>

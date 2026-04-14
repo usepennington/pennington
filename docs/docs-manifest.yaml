@@ -2521,12 +2521,24 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'M:Spectre.Console.Examples.Console.Tutorials.GettingStartedExample.ShowColoredHelloWorld'
-        - 'M:Spectre.Console.Examples.Console.Tutorials.GettingStartedExample.ShowDataTable'
-        - 'T:RoslynIntegrationExample.BlogFrontMatter'
-        - 'T:Spectre.Console.Examples.Console.Tutorials.GettingStartedExample'
-      production_files: []
-      production_symbols: []
+        - 'T:BeyondRoslynExample.Stage1'
+        - 'M:BeyondRoslynExample.Stage1.Run(System.String[])'
+        - 'T:BeyondRoslynExample.Stage2'
+        - 'M:BeyondRoslynExample.Stage2.Run(System.String[])'
+        - 'T:BeyondRoslynExample.Sample.Calculator'
+        - 'M:BeyondRoslynExample.Sample.Calculator.Add(System.Int32,System.Int32)'
+        - 'M:BeyondRoslynExample.Sample.Calculator.Multiply(System.Int32,System.Int32)'
+        - 'T:BeyondRoslynExample.Sample.Greeter'
+        - 'M:BeyondRoslynExample.Sample.Greeter.Greet(System.String)'
+      production_files:
+        - 'examples/BeyondRoslynExample/BeyondRoslynExample.slnx'
+        - 'examples/BeyondRoslynExample/Program.cs'
+        - 'examples/BeyondRoslynExample/Content/api-pulls.md'
+      production_symbols:
+        - 'T:Pennington.Roslyn.RoslynOptions'
+        - 'P:Pennington.Roslyn.RoslynOptions.SolutionPath'
+        - 'M:Pennington.Roslyn.RoslynExtensions.AddPenningtonRoslyn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Roslyn.RoslynOptions})'
+        - 'T:Pennington.Roslyn.Preprocessing.RoslynCodeBlockPreprocessor'
       architecture:
         - '_research/site-architecture.md'
       blockers: []

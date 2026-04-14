@@ -136,7 +136,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 11. `BeyondRoslynExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** Tutorial §1.4.20 `/tutorials/beyond-basics/connect-roslyn`
 - **Goal:** Point Pennington at a `.sln`/`.slnx` via `SolutionPath`, use `xmldocid` code fences to pull method/class snippets straight from source, hot reload updates docs when source changes.
 - **Shape:**
