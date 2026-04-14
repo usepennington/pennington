@@ -2,7 +2,7 @@
 title: "LocalizationOptions"
 description: "Locale registry and URL math for multi-locale Pennington sites — default locale, registered locales, and the URL helpers that drive routing and language switchers."
 sectionLabel: "Configuration Options"
-order: 50
+order: 401050
 tags: [options, localization, routing, urls]
 uid: reference.options.localization-options
 ---

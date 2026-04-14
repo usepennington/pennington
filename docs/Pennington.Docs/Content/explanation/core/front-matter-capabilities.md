@@ -2,7 +2,7 @@
 title: "The front-matter capability system"
 description: "Why six capability interfaces collapsed into default members on IFrontMatter, what that buys authors, and which four capabilities stayed separate."
 sectionLabel: "Core Architecture"
-order: 30
+order: 301030
 tags: [front-matter, capabilities, design, interfaces]
 uid: explanation.core.front-matter-capabilities
 ---

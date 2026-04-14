@@ -2,7 +2,7 @@
 title: "Add your first markdown page"
 description: "Write front-matter-driven markdown files and watch Pennington turn them into URLs and navigation on its own."
 sectionLabel: "Getting Started with Pennington"
-order: 20
+order: 101020
 tags:
   - front-matter
   - markdown

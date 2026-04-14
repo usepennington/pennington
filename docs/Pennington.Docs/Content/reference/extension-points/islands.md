@@ -2,7 +2,7 @@
 title: "Island rendering interfaces"
 description: "The contracts that produce island HTML for the SPA envelope — IIslandRenderer, RazorIslandRenderer<T>, SpaEnvelope, RenderContext — plus the data-spa-* attribute surface the client engine reads."
 sectionLabel: "Extension Points"
-order: 40
+order: 405040
 tags: [islands, spa, extension-points, rendering]
 uid: reference.extension-points.islands
 ---

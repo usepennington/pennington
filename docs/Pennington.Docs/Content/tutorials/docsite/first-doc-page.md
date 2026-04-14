@@ -2,7 +2,7 @@
 title: "Author a documentation page with DocFrontMatter"
 description: "Write a DocSite page end-to-end: populate DocSiteFrontMatter, add a GitHub-style alert, and group code samples into a tabbed block with a live outline nav."
 sectionLabel: "Getting Started with DocSite"
-order: 20
+order: 102020
 tags:
   - docsite
   - front-matter

@@ -2,7 +2,7 @@
 title: "Add alerts and callouts"
 description: "Drop GitHub-style `[!NOTE]` / `[!TIP]` / `[!IMPORTANT]` / `[!WARNING]` / `[!CAUTION]` blocks into markdown and let Pennington paint them as coloured callouts."
 uid: how-to.content-authoring.alerts
-order: 70
+order: 201070
 sectionLabel: Content Authoring
 tags: [authoring, alerts, markdown, callouts]
 ---

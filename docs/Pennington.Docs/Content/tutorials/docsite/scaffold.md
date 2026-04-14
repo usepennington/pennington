@@ -2,7 +2,7 @@
 title: "Scaffold a documentation site with DocSite"
 description: "Swap the bare Pennington host for the DocSite template and map content areas to top-level folders."
 sectionLabel: Getting Started with DocSite
-order: 10
+order: 102010
 tags: [docsite, template, areas, scaffold]
 uid: tutorials.docsite.scaffold
 ---

@@ -2,7 +2,7 @@
 title: "Dev mode and build mode share one code path"
 description: "Why the static build is an HTTP crawler against the running app, not a second renderer — keeping dev fidelity and publish output in lockstep."
 sectionLabel: "Core Architecture"
-order: 20
+order: 301020
 tags: [build, architecture, static-site, invariants]
 uid: explanation.core.dev-vs-build
 ---

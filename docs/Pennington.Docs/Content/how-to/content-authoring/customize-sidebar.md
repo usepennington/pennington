@@ -2,7 +2,7 @@
 title: "Customize the sidebar"
 description: "Reorder, promote, rename, and hide pages in the auto-built sidebar using folder layout and front-matter keys."
 uid: how-to.content-authoring.customize-sidebar
-order: 30
+order: 201030
 sectionLabel: Content Authoring
 tags: [navigation, sidebar, sections, ordering]
 ---

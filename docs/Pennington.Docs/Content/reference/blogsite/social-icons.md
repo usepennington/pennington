@@ -2,7 +2,7 @@
 title: "Built-in SocialIcons RenderFragments"
 description: "The four static RenderFragment fields on Pennington.BlogSite.Components.SocialIcons and the syntax for plugging them into SocialLink.Icon."
 sectionLabel: "BlogSite Built-ins"
-order: 20
+order: 408020
 tags: [blogsite, icons, render-fragment]
 uid: reference.blogsite.social-icons
 ---

@@ -2,7 +2,7 @@
 title: "MarkdownContentOptions<T>"
 description: "Per-source configuration record passed to PenningtonOptions.AddMarkdownContent<TFrontMatter> — content root, URL prefix, section label, and excluded subpaths."
 sectionLabel: "Configuration Options"
-order: 40
+order: 401040
 tags: [options, markdown, content-sources, configuration]
 uid: reference.options.markdown-content-options
 ---

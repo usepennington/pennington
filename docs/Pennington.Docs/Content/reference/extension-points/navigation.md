@@ -2,7 +2,7 @@
 title: "Navigation types"
 description: "The navigation construction surface — NavigationBuilder with its BuildTree and BuildNavigationInfo static methods, and the NavigationInfo, NavigationTreeItem, and BreadcrumbItem data records produced by them."
 sectionLabel: "Extension Points"
-order: 60
+order: 405060
 tags: [navigation, sidebar, breadcrumbs, extension-points]
 uid: reference.extension-points.navigation
 ---

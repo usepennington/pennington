@@ -2,7 +2,7 @@
 title: "Add a custom syntax highlighter"
 description: "Implement ICodeHighlighter for a new language, claim it via SupportedLanguages, tune priority, and register with HighlightingOptions.AddHighlighter."
 uid: how-to.extensibility.custom-highlighter
-order: 30
+order: 203030
 sectionLabel: Extensibility
 tags: [highlighting, extensibility, textmate, code-blocks]
 ---

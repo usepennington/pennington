@@ -2,7 +2,7 @@
 title: "Content components"
 description: "Parameter and usage reference for the eight Pennington.UI content components — Card, CardGrid, LinkCard, Badge, Step, Steps, CodeBlock, and BigTable."
 sectionLabel: "UI Components"
-order: 20
+order: 404020
 tags: [ui, components, mdazor, razor]
 uid: reference.ui.content
 ---

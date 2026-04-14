@@ -2,7 +2,7 @@
 title: "Annotate code blocks"
 description: "Apply highlight, diff, focus, and error/warning line classes to fenced code with trailing `[!code ...]` comment directives."
 uid: how-to.content-authoring.code-annotations
-order: 60
+order: 201060
 sectionLabel: Content Authoring
 tags: [authoring, code, highlighting, annotations]
 ---

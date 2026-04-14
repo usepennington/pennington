@@ -2,7 +2,7 @@
 title: "Generate an llms.txt"
 description: "Expose a stripped-markdown /llms.txt index so LLM crawlers and agents can ingest your site without scraping HTML."
 uid: how-to.configuration.llms-txt
-order: 60
+order: 202060
 sectionLabel: Configuration
 tags: [configuration, llms-txt, discovery, front-matter]
 ---

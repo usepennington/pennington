@@ -2,7 +2,7 @@
 title: "Configure the BlogSite homepage"
 description: "Populate the four BlogSite homepage surfaces — HeroContent, MyWork, Socials, and MainSiteLinks — on BlogSiteOptions in one pass."
 uid: how-to.configuration.blogsite-homepage
-order: 90
+order: 202090
 sectionLabel: Configuration
 tags: [blogsite, homepage, socials, hero]
 ---

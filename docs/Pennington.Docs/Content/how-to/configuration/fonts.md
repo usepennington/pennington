@@ -2,7 +2,7 @@
 title: "Configure fonts and typography"
 description: "Set display and body font families on DocSiteOptions, declare preload hints, and serve the font files from wwwroot."
 uid: how-to.configuration.fonts
-order: 40
+order: 202040
 sectionLabel: Configuration
 tags: [fonts, typography, preload, docsite]
 ---

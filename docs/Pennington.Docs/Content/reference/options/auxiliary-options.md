@@ -2,7 +2,7 @@
 title: "HighlightingOptions, IslandsOptions, SearchIndexOptions, LlmsTxtOptions, OutputOptions"
 description: "Catalog of the remaining nested option bags on PenningtonOptions plus the build-time OutputOptions, each with properties, defaults, and registration methods."
 uid: reference.options.auxiliary-options
-order: 70
+order: 401070
 sectionLabel: Configuration Options
 tags: [options, configuration, reference]
 ---

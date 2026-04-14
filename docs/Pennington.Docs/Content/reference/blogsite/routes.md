@@ -2,7 +2,7 @@
 title: "Built-in BlogSite routes"
 description: "Catalog of the routes the Pennington.BlogSite package ships out of the box, keyed to the BlogSiteOptions knobs that control them."
 sectionLabel: "BlogSite Built-ins"
-order: 10
+order: 408010
 tags: [blogsite, routes, razor-pages, rss]
 uid: reference.blogsite.routes
 ---

@@ -2,7 +2,7 @@
 title: "Add a second locale to your site"
 description: "Turn a single-language DocSite into a bilingual one by registering a second locale, translating three pages, and letting the built-in LanguageSwitcher appear in the header."
 sectionLabel: "Beyond the Basics"
-order: 10
+order: 104010
 tags:
   - localization
   - i18n

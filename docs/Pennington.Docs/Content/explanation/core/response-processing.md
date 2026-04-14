@@ -2,7 +2,7 @@
 title: "The response-processing pipeline"
 description: "Why Pennington splits response rewriting into generic body processors and HTML-DOM rewriters that share one AngleSharp pass."
 uid: explanation.core.response-processing
-order: 40
+order: 301040
 sectionLabel: "Core Architecture"
 tags: [response-processing, rewriters, anglesharp, middleware]
 ---

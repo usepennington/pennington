@@ -2,7 +2,7 @@
 title: "JSON-LD schema types"
 description: "The record types in Pennington.StructuredData.JsonLdTypes and the JsonLdSerializer static methods that project them to JSON-LD strings."
 uid: reference.structured-data.types
-order: 10
+order: 409010
 sectionLabel: Structured Data
 tags: [structured-data, json-ld, schema-org, seo]
 ---

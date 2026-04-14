@@ -2,7 +2,7 @@
 title: "Navigation-tree construction"
 description: "How Pennington folds a flat list of ContentTocItems into the sidebar tree using HierarchyParts, folder-derived sections, and min-of-children ordering."
 uid: explanation.routing.navigation-tree
-order: 20
+order: 303020
 sectionLabel: "Routing and Navigation"
 tags: [navigation, routing, hierarchy]
 ---

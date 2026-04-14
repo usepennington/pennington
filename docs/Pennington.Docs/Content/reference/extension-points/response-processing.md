@@ -2,7 +2,7 @@
 title: "Response processing interfaces"
 description: "The two response-rewriting contracts (IResponseProcessor, IHtmlResponseRewriter) with execution order and the three built-in rewriters that ship in Pennington."
 sectionLabel: "Extension Points"
-order: 30
+order: 405030
 tags: [response-processing, html-rewriting, extension-points, middleware]
 uid: reference.extension-points.response-processing
 ---

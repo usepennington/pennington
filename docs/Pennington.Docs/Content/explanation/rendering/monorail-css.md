@@ -2,7 +2,7 @@
 title: "MonorailCSS integration"
 description: "Why Pennington scans classes off the wire during the response and generates the stylesheet on demand instead of pre-building a static CSS file."
 uid: explanation.rendering.monorail-css
-order: 10
+order: 302010
 sectionLabel: "Rendering and Theming"
 tags: [monorail, css, theming, oklch]
 ---

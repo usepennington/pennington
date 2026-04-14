@@ -2,7 +2,7 @@
 title: "Hot reload and file watching"
 description: "Why Pennington layers its own content watcher and WebSocket reload on top of dotnet watch, and how the dev-only script is kept out of published builds."
 sectionLabel: "Developer Experience"
-order: 10
+order: 306010
 tags: [live-reload, file-watching, dev-loop, websockets]
 uid: explanation.dev-experience.hot-reload
 ---

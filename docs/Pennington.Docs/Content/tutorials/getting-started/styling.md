@@ -2,7 +2,7 @@
 title: "Style the site with MonorailCSS"
 description: "Wire up MonorailCSS, pick a color scheme, and watch Pennington regenerate the stylesheet as you add utility classes."
 sectionLabel: "Getting Started with Pennington"
-order: 30
+order: 101030
 tags: [monorailcss, styling, color-scheme, utility-css]
 uid: tutorials.getting-started.styling
 ---

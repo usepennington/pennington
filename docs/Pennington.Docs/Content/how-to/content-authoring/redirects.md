@@ -2,7 +2,7 @@
 title: "Configure redirects"
 description: "Set redirectUrl in DocSiteFrontMatter to emit a meta-refresh stub page that sends visitors to a new URL."
 uid: how-to.content-authoring.redirects
-order: 120
+order: 201120
 sectionLabel: Content Authoring
 tags: [redirects, front-matter, routing]
 ---

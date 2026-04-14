@@ -2,7 +2,7 @@
 title: "Connect to a Roslyn solution for live API snippets"
 description: "Point Pennington at a .sln, pull method and class source into markdown with xmldocid fences, and watch hot reload refresh snippets when the source changes."
 sectionLabel: Beyond the Basics
-order: 20
+order: 104020
 tags: [roslyn, api-docs, xmldocid, hot-reload]
 uid: tutorials.beyond-basics.connect-roslyn
 ---

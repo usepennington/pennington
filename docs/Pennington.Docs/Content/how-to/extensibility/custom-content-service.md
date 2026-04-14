@@ -2,7 +2,7 @@
 title: "Implement a custom IContentService"
 description: "Adapt a non-markdown source — JSON, a database, a remote API — into the pipeline by implementing IContentService and yielding DiscoveredItems, TOC entries, and cross-references."
 uid: how-to.extensibility.custom-content-service
-order: 10
+order: 203010
 sectionLabel: Extensibility
 tags: [extensibility, content-service, pipeline, cross-references]
 ---

@@ -2,7 +2,7 @@
 title: "Highlighting interfaces"
 description: "The two highlighting extension contracts — ICodeHighlighter and ICodeBlockPreprocessor — plus the HighlightingService dispatcher and the TextMateLanguageRegistry grammar registry."
 sectionLabel: "Extension Points"
-order: 50
+order: 405050
 tags: [highlighting, extension-points, code-blocks, textmate]
 uid: reference.extension-points.highlighting
 ---

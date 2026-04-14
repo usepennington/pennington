@@ -2,7 +2,7 @@
 title: "Configure search indexing"
 description: "Scope the client-side search index, tune priority, and exclude pages per-locale without replacing the search backend."
 uid: how-to.configuration.search
-order: 20
+order: 202020
 sectionLabel: Configuration
 tags: [search, front-matter, localization, configuration]
 ---

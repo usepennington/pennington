@@ -2,7 +2,7 @@
 title: "Create tabbed code groups"
 description: "Collapse adjacent fenced code blocks into one tabbed widget and customize the rendered CSS class names."
 uid: how-to.content-authoring.tabbed-code
-order: 50
+order: 201050
 sectionLabel: Content Authoring
 tags: [markdown, tabs, code-blocks, extensions]
 ---

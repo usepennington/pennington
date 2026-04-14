@@ -2,7 +2,7 @@
 title: "Adapt the deploy workflow for other hosts"
 description: "Port the canonical GitHub Pages recipe to Azure Static Web Apps, Cloudflare Pages, or Netlify by swapping four shared values and dropping in one host-specific config file."
 uid: how-to.deployment.adapt-for-other-hosts
-order: 30
+order: 204030
 sectionLabel: Publishing & Deployment
 tags: [deployment, azure-static-web-apps, cloudflare-pages, netlify]
 ---

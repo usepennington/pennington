@@ -2,7 +2,7 @@
 title: "Customize MonorailCSS"
 description: "Swap color schemes, inject custom framework settings, append extra styles, and widen class collection on a Pennington site."
 uid: how-to.configuration.monorail-css
-order: 30
+order: 202030
 sectionLabel: Configuration
 tags: [monorailcss, color-scheme, styling, theming]
 ---

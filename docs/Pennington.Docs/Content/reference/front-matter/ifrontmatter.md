@@ -2,7 +2,7 @@
 title: "IFrontMatter and capability defaults"
 description: "The IFrontMatter contract — its required Title, six default members, and the four remaining capability interfaces that pattern-match separately."
 sectionLabel: "Front Matter"
-order: 20
+order: 402020
 tags: [front-matter, capabilities, interfaces]
 uid: reference.front-matter.ifrontmatter
 ---

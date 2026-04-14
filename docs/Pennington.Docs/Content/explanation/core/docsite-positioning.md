@@ -2,7 +2,7 @@
 title: "When is DocSite the right starting point?"
 description: "Why AddDocSite is a template-style fast path with a fixed skeleton — and the narrow set of shapes that push you down to bare AddPennington instead."
 uid: explanation.core.docsite-positioning
-order: 50
+order: 301050
 sectionLabel: "Core Architecture"
 tags: [docsite, templates, architecture]
 ---

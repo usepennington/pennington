@@ -2,7 +2,7 @@
 title: "Manage drafts, tags, and ordering"
 description: "Hide unfinished pages, group related pages with tags, and choose their sidebar position with three front-matter keys."
 uid: how-to.content-authoring.drafts-tags-ordering
-order: 20
+order: 201020
 sectionLabel: Content Authoring
 tags: [front-matter, drafts, tags, ordering]
 ---

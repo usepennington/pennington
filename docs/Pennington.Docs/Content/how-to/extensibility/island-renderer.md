@@ -2,7 +2,7 @@
 title: "Register an island renderer"
 description: "Wire a server-rendered SPA island by implementing IIslandRenderer (or subclassing RazorIslandRenderer<T>), registering it on IslandsOptions, and marking the target region with data-spa-island in your content."
 uid: how-to.extensibility.island-renderer
-order: 60
+order: 203060
 sectionLabel: Extensibility
 tags: [extensibility, islands, spa, razor-components]
 ---

@@ -2,7 +2,7 @@
 title: "Register a code-block preprocessor"
 description: "Intercept fenced code blocks by language modifier and return pre-highlighted HTML before Pennington's default highlighter chain runs."
 uid: how-to.extensibility.code-block-preprocessor
-order: 20
+order: 203020
 sectionLabel: Extensibility
 tags: [extensibility, markdown, highlighting, preprocessor]
 ---

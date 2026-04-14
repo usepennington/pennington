@@ -2,7 +2,7 @@
 title: "PenningtonOptions"
 description: "Top-level configuration surface passed to AddPennington — site metadata, content sources, and nested subsystem option bags."
 sectionLabel: "Configuration Options"
-order: 10
+order: 401010
 tags: [options, configuration, infrastructure]
 uid: reference.options.pennington-options
 ---

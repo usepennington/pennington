@@ -2,7 +2,7 @@
 title: "Embed diagrams"
 description: "Author Mermaid diagrams in markdown with a fenced `mermaid` block and let the DocSite render them client-side with theme awareness."
 uid: how-to.content-authoring.diagrams
-order: 80
+order: 201080
 sectionLabel: Content Authoring
 tags: [markdown, mermaid, diagrams, client-side]
 ---

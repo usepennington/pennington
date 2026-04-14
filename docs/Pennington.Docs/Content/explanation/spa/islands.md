@@ -2,7 +2,7 @@
 title: "SPA navigation and island architecture"
 description: "Why Pennington ships a JSON envelope at a data path and selectively hydrates server-rendered islands instead of swapping full pages or going full SPA."
 sectionLabel: "SPA and Islands"
-order: 10
+order: 304010
 tags: [spa, islands, architecture, hydration]
 uid: explanation.spa.islands
 ---

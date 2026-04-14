@@ -2,7 +2,7 @@
 title: "Built-in front-matter types"
 description: "The four front-matter records Pennington ships — DocFrontMatter, BlogFrontMatter, DocSiteFrontMatter, and BlogSiteFrontMatter — with keys, capabilities, and which template wires each."
 sectionLabel: "Front Matter"
-order: 30
+order: 402030
 tags: [front-matter, records, templates]
 uid: reference.front-matter.built-in-types
 ---

@@ -2,7 +2,7 @@
 title: "Work with front matter"
 description: "Declare YAML front matter, pick a built-in record, or define your own for custom keys."
 uid: how-to.content-authoring.front-matter
-order: 10
+order: 201010
 sectionLabel: Content Authoring
 tags: [front-matter, authoring, yaml]
 ---

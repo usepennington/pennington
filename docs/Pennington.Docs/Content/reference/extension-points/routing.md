@@ -2,7 +2,7 @@
 title: "Routing types"
 description: "The four types in Pennington.Routing that own URL math, filesystem paths, canonical routes, and route construction across every content source."
 sectionLabel: "Extension Points"
-order: 20
+order: 405020
 tags: [routing, url-path, content-route, extension-points]
 uid: reference.extension-points.routing
 ---

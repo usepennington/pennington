@@ -2,7 +2,7 @@
 title: "Navigation components"
 description: "Parameters, slots, and NavigationInfo bindings for TableOfContentsNavigation and OutlineNavigation."
 uid: reference.ui.navigation
-order: 10
+order: 404010
 sectionLabel: UI Components
 tags: [ui, navigation, razor, components]
 ---

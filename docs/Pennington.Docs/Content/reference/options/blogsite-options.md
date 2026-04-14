@@ -2,7 +2,7 @@
 title: "BlogSiteOptions"
 description: "Configuration surface passed to AddBlogSite — blog metadata, content paths, author chrome, homepage data, and feed toggles."
 sectionLabel: "Configuration Options"
-order: 30
+order: 401030
 tags: [options, blog, configuration]
 uid: reference.options.blogsite-options
 ---

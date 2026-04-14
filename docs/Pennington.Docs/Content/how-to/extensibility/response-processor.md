@@ -2,7 +2,7 @@
 title: "Write a response processor"
 description: "Implement IResponseProcessor to mutate the full HTTP response body, gate work with ShouldProcess, and slot into the built-in Order chain."
 uid: how-to.extensibility.response-processor
-order: 40
+order: 203040
 sectionLabel: Extensibility
 tags: [response-pipeline, extensibility, middleware, html-injection]
 ---

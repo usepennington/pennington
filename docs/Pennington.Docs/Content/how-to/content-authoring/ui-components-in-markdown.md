@@ -2,7 +2,7 @@
 title: "Use UI components inside markdown"
 description: "Drop Pennington.UI components (and your own Razor components) straight into markdown through Mdazor-backed rendering."
 uid: how-to.content-authoring.ui-components-in-markdown
-order: 90
+order: 201090
 sectionLabel: Content Authoring
 tags: [authoring, components, mdazor, razor]
 ---

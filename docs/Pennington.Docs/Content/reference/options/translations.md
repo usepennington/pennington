@@ -2,7 +2,7 @@
 title: "TranslationOptions"
 description: "In-memory per-locale string registry populated on PenningtonOptions.Translations and read by IStringLocalizer."
 sectionLabel: "Configuration Options"
-order: 60
+order: 401060
 tags: [options, localization, translations, istringlocalizer]
 uid: reference.options.translations
 ---

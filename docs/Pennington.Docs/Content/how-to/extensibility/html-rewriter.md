@@ -2,7 +2,7 @@
 title: "Write an HTML rewriter"
 description: "Implement IHtmlResponseRewriter to mutate rendered HTML — pick PreParseAsync for non-HTML tokens, ApplyAsync for DOM edits, and slot your Order into the shared AngleSharp pass."
 uid: how-to.extensibility.html-rewriter
-order: 50
+order: 203050
 sectionLabel: Extensibility
 tags: [html-rewriting, extensibility, anglesharp, response-pipeline]
 ---

@@ -2,7 +2,7 @@
 title: "Build a static site"
 description: "Produce a deployable `output/` directory by running the same app in build mode and reading the `BuildReport` for failures."
 uid: how-to.deployment.static-build
-order: 10
+order: 204010
 sectionLabel: Publishing & Deployment
 tags: [build, deployment, output-generation, build-report]
 ---

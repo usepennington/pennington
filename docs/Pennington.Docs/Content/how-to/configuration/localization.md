@@ -2,7 +2,7 @@
 title: "Enable multiple locales"
 description: "Populate LocalizationOptions, lay out translated content in locale subdirectories, register UI translations, and wire the locale-routing middleware."
 uid: how-to.configuration.localization
-order: 50
+order: 202050
 sectionLabel: Configuration
 tags: [localization, locales, translations, routing]
 ---

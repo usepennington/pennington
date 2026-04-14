@@ -2,7 +2,7 @@
 title: "Customize DocSite layouts and components"
 description: "Inject head content, extra CSS, header/footer HTML, and extra @page assemblies through DocSiteOptions without forking the template."
 uid: how-to.extensibility.override-docsite-components
-order: 70
+order: 203070
 sectionLabel: Extensibility
 tags: [docsite, theming, slots, routing]
 ---

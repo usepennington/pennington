@@ -2,7 +2,7 @@
 title: "Cross-reference pages by uid"
 description: "Give a page a stable `uid:` and link to it with `<xref:uid>` or `[text](xref:uid)` so links survive renames and moves."
 uid: how-to.content-authoring.cross-references
-order: 100
+order: 201100
 sectionLabel: Content Authoring
 tags: [xref, uid, linking, front-matter]
 ---

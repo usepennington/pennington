@@ -2,7 +2,7 @@
 title: "Generate a sitemap"
 description: "Expose an auto-built /sitemap.xml that enumerates every canonical URL, skips drafts and redirects, and uses front-matter dates for lastmod."
 uid: how-to.configuration.sitemap
-order: 80
+order: 202080
 sectionLabel: Configuration
 tags: [sitemap, seo, canonical-base-url, front-matter]
 ---

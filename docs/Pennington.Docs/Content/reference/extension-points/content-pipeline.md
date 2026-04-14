@@ -2,7 +2,7 @@
 title: "Content pipeline interfaces"
 description: "The five pipeline contracts — IContentService, IContentParser, IContentRenderer, IContentPipeline — together with the ContentItem and ContentSource union types and every case."
 sectionLabel: "Extension Points"
-order: 10
+order: 405010
 tags: [pipeline, content-service, unions, extension-points]
 uid: reference.extension-points.content-pipeline
 ---

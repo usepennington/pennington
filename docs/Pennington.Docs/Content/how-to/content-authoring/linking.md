@@ -2,7 +2,7 @@
 title: "Link between pages and assets"
 description: "Write relative, absolute, fragment, and external links in markdown and let Pennington rewrite them for sub-path deployments."
 uid: how-to.content-authoring.linking
-order: 110
+order: 201110
 sectionLabel: Content Authoring
 tags: [linking, routing, base-url, authoring]
 ---

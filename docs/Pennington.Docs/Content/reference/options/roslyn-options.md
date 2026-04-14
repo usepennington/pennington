@@ -2,7 +2,7 @@
 title: "RoslynOptions"
 description: "Configuration passed to AddPenningtonRoslyn — solution path and an optional project filter that scope Roslyn-backed symbol extraction and xmldocid preprocessing."
 sectionLabel: "Configuration Options"
-order: 90
+order: 401090
 tags: [options, roslyn, xmldocid]
 uid: reference.options.roslyn-options
 ---

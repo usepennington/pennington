@@ -2,7 +2,7 @@
 title: "Place images and static assets"
 description: "Colocate images with markdown or share them from wwwroot, and reference each from a page."
 uid: how-to.content-authoring.images-and-assets
-order: 40
+order: 201040
 sectionLabel: Content Authoring
 tags: [images, assets, wwwroot, authoring]
 ---

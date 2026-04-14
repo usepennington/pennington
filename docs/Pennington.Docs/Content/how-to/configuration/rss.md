@@ -2,7 +2,7 @@
 title: "Generate RSS feeds"
 description: "Turn on /rss.xml for a BlogSite, make sure posts carry a date, and point CanonicalBaseUrl at your production origin so feed links resolve."
 uid: how-to.configuration.rss
-order: 70
+order: 202070
 sectionLabel: Configuration
 tags: [configuration, rss, blogsite, feeds]
 ---

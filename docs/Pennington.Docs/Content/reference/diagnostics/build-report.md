@@ -2,7 +2,7 @@
 title: "Build report fields"
 description: "Field-by-field catalog of BuildReport, BuildDiagnostic, and BrokenLink — the record OutputGenerationService returns after a static build."
 uid: reference.diagnostics.build-report
-order: 10
+order: 407010
 sectionLabel: Diagnostics
 tags: [diagnostics, build, reference]
 ---
