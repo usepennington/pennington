@@ -235,3 +235,72 @@ the markdown that actually ships in `Content/guides/authoring.md`.
 - `examples/DocSiteAuthorExample/Program.cs` (top-level statements, no xmldocid)
 - `examples/DocSiteAuthorExample/Content/guides/index.md`
 - `examples/DocSiteAuthorExample/Content/guides/authoring.md`
+
+## `examples/DocSiteSectionsExample`
+
+Backs tutorial §1.2.30 `/tutorials/docsite/sections-and-areas`. Same
+`AddDocSite` + `UseDocSite` + `RunDocSiteAsync` host shape as apps #4 and #5
+— the focus here is the **structure** of `Content/`. Two areas (`Guides`,
+`Reference`), each split into two subfolder-backed sections, with 2–3
+ordered pages per section (nine content pages plus two area index pages,
+eleven total). `NavigationBuilder` — invoked implicitly by the DocSite
+`MainLayout` component — auto-creates a non-navigable section header for
+each subfolder under an area and sorts the children by `order:` (tiebreaker:
+title). The section header's own order is the minimum `order:` among its
+children, so bumping a page's number early in a section pulls the whole
+section toward the top. The `section:` front-matter key is carried through
+to `ContentTocItem.Section` and surfaced on `NavigationInfo.SectionName`
+for prev/next breadcrumbs, but **does not** drive sidebar grouping — the
+subfolder is what groups.
+
+**Files**
+
+- `examples/DocSiteSectionsExample/Program.cs` — canonical final state (two areas, no other wiring)
+- `examples/DocSiteSectionsExample/Content/guides/index.md` — Guides area landing page (order 0)
+- `examples/DocSiteSectionsExample/Content/guides/getting-started/installation.md` — order 10
+- `examples/DocSiteSectionsExample/Content/guides/getting-started/first-project.md` — order 20
+- `examples/DocSiteSectionsExample/Content/guides/getting-started/configuration.md` — order 30
+- `examples/DocSiteSectionsExample/Content/guides/advanced/custom-layouts.md` — order 40
+- `examples/DocSiteSectionsExample/Content/guides/advanced/response-pipeline.md` — order 50
+- `examples/DocSiteSectionsExample/Content/reference/index.md` — Reference area landing page (order 0)
+- `examples/DocSiteSectionsExample/Content/reference/core-api/pennington-options.md` — order 10
+- `examples/DocSiteSectionsExample/Content/reference/core-api/content-pipeline.md` — order 20
+- `examples/DocSiteSectionsExample/Content/reference/extensions/markdown-extensions.md` — order 30
+- `examples/DocSiteSectionsExample/Content/reference/extensions/content-services.md` — order 40
+- `examples/DocSiteSectionsExample/Stage1_FlatArea.cs` — stage 1 markdown source (no `section:`/`order:` front matter, page lives directly under area folder)
+- `examples/DocSiteSectionsExample/Stage2_SectionAndOrder.cs` — stage 2 markdown source (same page moved under `getting-started/` with `section:` + `order: 10`)
+
+**Symbols**
+
+- `T:DocSiteSectionsExample.Stage1`
+- `M:DocSiteSectionsExample.Stage1.Source` (short)
+- `T:DocSiteSectionsExample.Stage2`
+- `M:DocSiteSectionsExample.Stage2.Source` (short)
+
+Production symbols the tutorial leans on (live in `src/Pennington/Navigation`
+and `src/Pennington.DocSite`):
+
+- `T:Pennington.Navigation.NavigationBuilder`
+- `M:Pennington.Navigation.NavigationBuilder.BuildTree(System.Collections.Generic.IReadOnlyList{Pennington.Content.ContentTocItem},Pennington.Routing.ContentRoute,System.String)`
+- `T:Pennington.Navigation.NavigationTreeItem`
+- `T:Pennington.Content.ContentTocItem`
+- `P:Pennington.DocSite.DocSiteFrontMatter.Section`
+- `P:Pennington.DocSite.DocSiteFrontMatter.Order`
+
+Each `Source()` is a static method whose return value encodes the tutorial's
+markdown at that stage — none is invoked at runtime.
+
+**Raw-file fence candidates**
+
+- `examples/DocSiteSectionsExample/Program.cs` (top-level statements, no xmldocid)
+- `examples/DocSiteSectionsExample/Content/guides/index.md`
+- `examples/DocSiteSectionsExample/Content/guides/getting-started/installation.md`
+- `examples/DocSiteSectionsExample/Content/guides/getting-started/first-project.md`
+- `examples/DocSiteSectionsExample/Content/guides/getting-started/configuration.md`
+- `examples/DocSiteSectionsExample/Content/guides/advanced/custom-layouts.md`
+- `examples/DocSiteSectionsExample/Content/guides/advanced/response-pipeline.md`
+- `examples/DocSiteSectionsExample/Content/reference/index.md`
+- `examples/DocSiteSectionsExample/Content/reference/core-api/pennington-options.md`
+- `examples/DocSiteSectionsExample/Content/reference/core-api/content-pipeline.md`
+- `examples/DocSiteSectionsExample/Content/reference/extensions/markdown-extensions.md`
+- `examples/DocSiteSectionsExample/Content/reference/extensions/content-services.md`

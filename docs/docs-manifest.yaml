@@ -2737,10 +2737,27 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/BeaconDocsExample/Content/getting-started/index.md'
-      production_files:
-        - 'docs/Pennington.Docs/Program.cs'
-      production_symbols: []
+        - 'examples/DocSiteSectionsExample/Program.cs'
+        - 'examples/DocSiteSectionsExample/Content/guides/index.md'
+        - 'examples/DocSiteSectionsExample/Content/guides/getting-started/installation.md'
+        - 'examples/DocSiteSectionsExample/Content/guides/getting-started/first-project.md'
+        - 'examples/DocSiteSectionsExample/Content/guides/getting-started/configuration.md'
+        - 'examples/DocSiteSectionsExample/Content/guides/advanced/custom-layouts.md'
+        - 'examples/DocSiteSectionsExample/Content/guides/advanced/response-pipeline.md'
+        - 'examples/DocSiteSectionsExample/Content/reference/index.md'
+        - 'examples/DocSiteSectionsExample/Content/reference/core-api/pennington-options.md'
+        - 'examples/DocSiteSectionsExample/Content/reference/core-api/content-pipeline.md'
+        - 'examples/DocSiteSectionsExample/Content/reference/extensions/markdown-extensions.md'
+        - 'examples/DocSiteSectionsExample/Content/reference/extensions/content-services.md'
+        - 'M:DocSiteSectionsExample.Stage1.Source'
+        - 'M:DocSiteSectionsExample.Stage2.Source'
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Navigation.NavigationBuilder'
+        - 'M:Pennington.Navigation.NavigationBuilder.BuildTree(System.Collections.Generic.IReadOnlyList{Pennington.Content.ContentTocItem},Pennington.Routing.ContentRoute,System.String)'
+        - 'T:Pennington.Content.ContentTocItem'
+        - 'P:Pennington.DocSite.DocSiteFrontMatter.Section'
+        - 'P:Pennington.DocSite.DocSiteFrontMatter.Order'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
@@ -2750,7 +2767,7 @@ pages:
         - '/tutorials/docsite/scaffold'
       xrefs: []
     acceptance_checks:
-      - 'Grounds sections on approved example content and areas on the docs-site Program.cs'
+      - 'Grounds sections on approved example content and areas on the DocSiteSectionsExample Program.cs'
       - 'Explains the area/section distinction without drifting into custom content services'
 
   - path: 'Pennington.Docs/Content/tutorials/getting-started/first-page.md'

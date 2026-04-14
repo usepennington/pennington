@@ -85,7 +85,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 6. `DocSiteSectionsExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** Tutorial §1.2.30 `/tutorials/docsite/sections-and-areas`
 - **Goal:** Structure `Content/` into areas and sections, use `section:` / `order:` in front matter, `NavigationBuilder` turns the flat tree into a sidebar.
 - **Shape:**
