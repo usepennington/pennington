@@ -58,7 +58,7 @@
                         {
                             var isActive = _activeArea != null
                                 && string.Equals(area.Slug, _activeArea.Slug, StringComparison.OrdinalIgnoreCase);
-                            <div data-area-toc="@area.Slug" @(isActive ? null : "hidden")>
+                            <div data-area-toc="@area.Slug" class="@(isActive ? null : "hidden")">
                                 <TableOfContentsNavigation TableOfContents="_areaTocs.GetValueOrDefault(area.Slug)"
                                     ListGapClass="gap-4"
                                     ChildListClass="mt-1"

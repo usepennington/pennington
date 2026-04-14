@@ -1058,8 +1058,8 @@ class SidebarToggleManager {
 
 /**
  * Area Nav Manager - Handles client-side content area switching in the sidebar.
- * Progressive enhancement: without JS, all area TOCs are visible.
- * With JS, only the active area's TOC is shown and pills switch areas client-side.
+ * The server renders the active-only TOC via a `hidden` CSS class; JS re-applies
+ * the same class for pill switching and SPA area transitions.
  */
 class AreaNavManager {
     init() {
@@ -1073,7 +1073,7 @@ class AreaNavManager {
     hideInactiveAreas() {
         const activeSlug = this.nav.dataset.activeArea;
         for (const toc of document.querySelectorAll('[data-area-toc]')) {
-            toc.hidden = toc.dataset.areaToc !== activeSlug;
+            toc.classList.toggle('hidden', toc.dataset.areaToc !== activeSlug);
         }
     }
 
@@ -1095,7 +1095,7 @@ class AreaNavManager {
 
         // Show/hide TOCs
         for (const toc of document.querySelectorAll('[data-area-toc]')) {
-            toc.hidden = toc.dataset.areaToc !== slug;
+            toc.classList.toggle('hidden', toc.dataset.areaToc !== slug);
         }
 
         this.nav.dataset.activeArea = slug;
