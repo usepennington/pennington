@@ -495,3 +495,89 @@ via `csharp:xmldocid,bodyonly`.
 
 - `examples/BlogSiteHeroProjectsSocialsExample/Program.cs` (top-level statements, no xmldocid)
 - `examples/BlogSiteHeroProjectsSocialsExample/Content/Blog/weekend-content-engine.md`
+
+## `examples/BeyondLocaleExample`
+
+Backs tutorial §1.4.10 `/tutorials/beyond-basics/add-a-locale`. Same
+`AddDocSite` + `UseDocSite` + `RunDocSiteAsync` host shape as apps #4–#6 —
+the focus here is **localization**. A single `ConfigureLocalization` action
+on `DocSiteOptions` registers two locales (`en` default, `es` secondary)
+and the rest of the site behavior follows: `UseDocSite` already calls
+`UsePenningtonLocaleRouting` first thing, so the locale detection middleware
+rewrites `/es/about` to `/about` inside `PathBase` before endpoint routing;
+the built-in `LanguageSwitcher` in `MainLayout.razor` lights up as soon as
+`LocalizationOptions.IsMultiLocale` is true; and `ContentResolver` reads
+translated markdown from `Content/<locale>/` subfolders, falling back to the
+default locale when a translation is missing. Three English pages live
+directly under `Content/` (the default locale owns the URL root — `/`,
+`/about/`, `/getting-started/`); three Spanish translations live under
+`Content/es/` and serve at `/es/`, `/es/about/`, `/es/getting-started/`.
+No manual layout edits — the switcher is baked into DocSite's chrome.
+
+**Files**
+
+- `examples/BeyondLocaleExample/Program.cs` — canonical final state (DocSite host with two locales)
+- `examples/BeyondLocaleExample/Content/index.md` — English home (default locale, no prefix)
+- `examples/BeyondLocaleExample/Content/about.md` — English about page
+- `examples/BeyondLocaleExample/Content/getting-started.md` — English walkthrough
+- `examples/BeyondLocaleExample/Content/es/index.md` — Spanish home (served at `/es/`)
+- `examples/BeyondLocaleExample/Content/es/about.md` — Spanish about page (served at `/es/about/`)
+- `examples/BeyondLocaleExample/Content/es/getting-started.md` — Spanish walkthrough
+- `examples/BeyondLocaleExample/Stage1_EnglishOnly.cs` — stage 1 host (single-locale DocSite, switcher hidden)
+- `examples/BeyondLocaleExample/Stage2_AddSecondLocale.cs` — stage 2 host (adds `ConfigureLocalization`; switcher appears)
+- `examples/BeyondLocaleExample/Stage3_SwitcherAppears.cs` — stage 3 host (final; matches `Program.cs`)
+
+**Symbols**
+
+- `T:BeyondLocaleExample.Stage1`
+- `M:BeyondLocaleExample.Stage1.Run(System.String[])` (short)
+- `T:BeyondLocaleExample.Stage2`
+- `M:BeyondLocaleExample.Stage2.Run(System.String[])` (short)
+- `T:BeyondLocaleExample.Stage3`
+- `M:BeyondLocaleExample.Stage3.Run(System.String[])` (short)
+
+Production symbols the tutorial leans on (live in `src/Pennington`,
+`src/Pennington.UI`, and `src/Pennington.DocSite`):
+
+- `T:Pennington.Infrastructure.LocalizationOptions`
+- `P:Pennington.Infrastructure.LocalizationOptions.DefaultLocale`
+- `P:Pennington.Infrastructure.LocalizationOptions.Locales`
+- `P:Pennington.Infrastructure.LocalizationOptions.IsMultiLocale`
+- `M:Pennington.Infrastructure.LocalizationOptions.AddLocale(System.String,Pennington.Localization.LocaleInfo)`
+- `M:Pennington.Infrastructure.LocalizationOptions.AddLocale(System.String,System.String)`
+- `T:Pennington.Localization.LocaleInfo`
+- `T:Pennington.Localization.LocaleContext`
+- `T:Pennington.Localization.LocaleDetectionMiddleware`
+- `M:Pennington.Infrastructure.PenningtonExtensions.UsePenningtonLocaleRouting(Microsoft.AspNetCore.Builder.WebApplication)`
+- `T:Pennington.UI.Components.LanguageSwitcher`
+- `P:Pennington.DocSite.DocSiteOptions.ConfigureLocalization`
+
+Each `Run` is a static method whose body captures the tutorial's state at
+that stage. None are invoked at runtime — tutorial prose pulls each body
+via `csharp:xmldocid,bodyonly`.
+
+**Locale URL scheme — locked for app #13**
+
+- **Default locale lives at the URL root.** With `DefaultLocale = "en"`
+  and English markdown under `Content/`, English pages serve from `/`,
+  `/about/`, `/getting-started/` — no `/en/` prefix, no redirect.
+- **Every non-default locale gets a code prefix.** Spanish markdown under
+  `Content/es/` serves from `/es/`, `/es/about/`, `/es/getting-started/`.
+  The prefix string is exactly the locale code passed to `AddLocale`.
+- **`LocaleDetectionMiddleware` rewrites paths into `PathBase`** so Blazor
+  routing (`@page "/{*fileName:nonfile}"` in `Pages.razor`) sees the
+  locale-stripped path. `ContentResolver` re-reads the full request path
+  from `NavigationManager.Uri` to pick the right translation.
+- **Content fallback on missing translations.** If a Spanish file is
+  absent, `ContentResolver` falls back to the English copy and renders a
+  fallback banner naming the requested and default locales.
+
+**Raw-file fence candidates**
+
+- `examples/BeyondLocaleExample/Program.cs` (top-level statements, no xmldocid)
+- `examples/BeyondLocaleExample/Content/index.md`
+- `examples/BeyondLocaleExample/Content/about.md`
+- `examples/BeyondLocaleExample/Content/getting-started.md`
+- `examples/BeyondLocaleExample/Content/es/index.md`
+- `examples/BeyondLocaleExample/Content/es/about.md`
+- `examples/BeyondLocaleExample/Content/es/getting-started.md`

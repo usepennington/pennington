@@ -125,7 +125,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 10. `BeyondLocaleExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** Tutorial §1.4.10 `/tutorials/beyond-basics/add-a-locale`
 - **Goal:** Enable `LocalizationOptions` (`DefaultLocale`, `Locales`), create a locale subdirectory with translated markdown, wire `UsePenningtonLocaleRouting`, add `LanguageSwitcher` component.
 - **Shape:**

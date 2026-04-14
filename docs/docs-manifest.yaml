@@ -2474,12 +2474,28 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/LocalizationTutorialExample/Content/es/getting-started.md'
-        - 'examples/LocalizationTutorialExample/Content/es/index.md'
-        - 'examples/LocalizationTutorialExample/Content/index.md'
-        - 'examples/LocalizationTutorialExample/Program.cs'
-      production_files: []
-      production_symbols: []
+        - 'examples/BeyondLocaleExample/Content/about.md'
+        - 'examples/BeyondLocaleExample/Content/es/about.md'
+        - 'examples/BeyondLocaleExample/Content/es/getting-started.md'
+        - 'examples/BeyondLocaleExample/Content/es/index.md'
+        - 'examples/BeyondLocaleExample/Content/getting-started.md'
+        - 'examples/BeyondLocaleExample/Content/index.md'
+        - 'examples/BeyondLocaleExample/Program.cs'
+        - 'M:BeyondLocaleExample.Stage1.Run(System.String[])'
+        - 'M:BeyondLocaleExample.Stage2.Run(System.String[])'
+        - 'M:BeyondLocaleExample.Stage3.Run(System.String[])'
+      production_files:
+        - 'src/Pennington.UI/Components/LanguageSwitcher.razor'
+      production_symbols:
+        - 'M:Pennington.Infrastructure.LocalizationOptions.AddLocale(System.String,Pennington.Localization.LocaleInfo)'
+        - 'M:Pennington.Infrastructure.LocalizationOptions.AddLocale(System.String,System.String)'
+        - 'M:Pennington.Infrastructure.PenningtonExtensions.UsePenningtonLocaleRouting(Microsoft.AspNetCore.Builder.WebApplication)'
+        - 'P:Pennington.DocSite.DocSiteOptions.ConfigureLocalization'
+        - 'P:Pennington.Infrastructure.LocalizationOptions.DefaultLocale'
+        - 'P:Pennington.Infrastructure.LocalizationOptions.Locales'
+        - 'T:Pennington.Infrastructure.LocalizationOptions'
+        - 'T:Pennington.Localization.LocaleInfo'
+        - 'T:Pennington.UI.Components.LanguageSwitcher'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
