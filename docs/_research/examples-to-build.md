@@ -75,7 +75,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 5. `DocSiteAuthorExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** Tutorial §1.2.20 `/tutorials/docsite/first-doc-page`
 - **Goal:** Write a page with `DocSiteFrontMatter` (title, description, tags, section, order), add an alert + a tabbed code group, outline nav populates.
 - **Shape:**

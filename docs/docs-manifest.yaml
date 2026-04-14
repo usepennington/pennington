@@ -2653,11 +2653,24 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/BeaconDocsExample/Content/getting-started/index.md'
-        - 'examples/BeaconDocsExample/Content/getting-started/install.md'
-        - 'examples/BeaconDocsExample/Content/guides/configuration.md'
-      production_files: []
-      production_symbols: []
+        - 'examples/DocSiteAuthorExample/Program.cs'
+        - 'examples/DocSiteAuthorExample/Content/guides/index.md'
+        - 'examples/DocSiteAuthorExample/Content/guides/authoring.md'
+        - 'M:DocSiteAuthorExample.Stage1.Source'
+        - 'M:DocSiteAuthorExample.Stage2.Source'
+        - 'M:DocSiteAuthorExample.Stage3.Source'
+      production_files:
+        - 'src/Pennington.DocSite/DocSiteFrontMatter.cs'
+        - 'src/Pennington/Markdown/Extensions/CustomAlertInlineParser.cs'
+        - 'src/Pennington/Markdown/Extensions/Tabs/TabbedCodeBlocksExtension.cs'
+        - 'src/Pennington/Markdown/Extensions/Tabs/TabbedCodeBlockRenderer.cs'
+      production_symbols:
+        - 'T:Pennington.DocSite.DocSiteFrontMatter'
+        - 'P:Pennington.DocSite.DocSiteFrontMatter.Title'
+        - 'P:Pennington.DocSite.DocSiteFrontMatter.Description'
+        - 'P:Pennington.DocSite.DocSiteFrontMatter.Tags'
+        - 'P:Pennington.DocSite.DocSiteFrontMatter.Section'
+        - 'P:Pennington.DocSite.DocSiteFrontMatter.Order'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
