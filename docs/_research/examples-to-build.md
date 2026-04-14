@@ -237,7 +237,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 16. `SubPathDeployableExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** all of how-to §2.4 Publishing & Deployment
 - **Shape:** minimal `AddDocSite` host, deliberately tiny so `BaseUrlHtmlRewriter` behaviour is observable without noise. Workflow and host-config fixtures live in the repo as sibling files embedded via `path:` fences.
 - **Structure:**

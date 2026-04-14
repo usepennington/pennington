@@ -1,0 +1,36 @@
+# Netlify configuration for a Pennington static site.
+#
+# Netlify serves `publish = "output"` verbatim. Set `BASE_URL` in the
+# Netlify dashboard (Site configuration → Environment variables) if you
+# need a sub-path; for a root-served site leave it as the default `/`.
+#
+# The 404 fallback uses Netlify's conditional `status = 404` rewrite so
+# deep-link misses return the generated `output/404.html` page body
+# instead of Netlify's default 404 shell.
+
+[build]
+  command = "dotnet run --project examples/SubPathDeployableExample -- build ${BASE_URL:-/}"
+  publish = "output"
+
+[build.environment]
+  DOTNET_VERSION = "11.0.x"
+  BASE_URL = "/"
+
+[[headers]]
+  for = "/_content/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Pretty-URL fallback: Pennington's DocSite emits `<slug>/index.html`,
+# which Netlify already serves at `/<slug>/`. The explicit 404 rule
+# below only fires when nothing else matches.
+[[redirects]]
+  from = "/*"
+  to = "/404.html"
+  status = 404

@@ -1,0 +1,71 @@
+# Canonical GitHub Pages workflow for a Pennington static site.
+#
+# Assumes the site is served under a repository sub-path — the typical
+# project-Pages URL is `https://<user>.github.io/<repo>/`, which requires
+# a matching `baseUrl` argument at build time so internal anchors, CSS,
+# JS, and data URLs all resolve under `/<repo>/`.
+#
+# The workflow:
+#   1. Derives the base URL from `${{ github.event.repository.name }}` so
+#      the same file works on any fork or renamed repo.
+#   2. Runs `dotnet run --project … -- build /<repo>` to emit `output/`.
+#   3. Drops a `.nojekyll` marker so GitHub Pages serves `_content/*`
+#      folders verbatim (Jekyll would silently strip underscore paths).
+#   4. Uploads `output/` as a Pages artifact and deploys it.
+#
+# If your site sits at a custom domain (root `/`), replace the `BASE_URL`
+# calculation with an empty string and strip the `/` from the build arg.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 11.0.x
+
+      - name: Build static site
+        env:
+          BASE_URL: /${{ github.event.repository.name }}
+        run: |
+          dotnet run \
+            --project examples/SubPathDeployableExample \
+            --configuration Release \
+            -- build "$BASE_URL"
+
+      - name: Disable Jekyll processing
+        run: touch output/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: output
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

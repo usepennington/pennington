@@ -1112,9 +1112,18 @@ pages:
     front_matter_uid: 'how-to.deployment.adapt-for-other-hosts'
     front_matter_is_draft: true
     evidence:
-      examples: []
-      production_files: []
-      production_symbols: []
+      examples:
+        - 'examples/SubPathDeployableExample/staticwebapp.config.json'
+        - 'examples/SubPathDeployableExample/netlify.toml'
+        - 'examples/SubPathDeployableExample/.github/workflows/deploy.yml'
+        - 'examples/SubPathDeployableExample/Program.cs'
+      production_files:
+        - 'src/Pennington/Generation/OutputOptions.cs'
+        - 'src/Pennington/Infrastructure/BaseUrlHtmlRewriter.cs'
+      production_symbols:
+        - 'T:Pennington.Generation.OutputOptions'
+        - 'P:Pennington.Generation.OutputOptions.BaseUrl'
+        - 'T:Pennington.Infrastructure.BaseUrlHtmlRewriter'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
@@ -1142,9 +1151,21 @@ pages:
     front_matter_uid: 'how-to.deployment.base-url'
     front_matter_is_draft: true
     evidence:
-      examples: []
-      production_files: []
-      production_symbols: []
+      examples:
+        - 'examples/SubPathDeployableExample/Program.cs'
+        - 'examples/SubPathDeployableExample/Content/index.md'
+        - 'examples/SubPathDeployableExample/Content/guides/first-page.md'
+        - 'M:SubPathDeployableExample.ServiceConfiguration.BuildDocSiteOptions'
+      production_files:
+        - 'src/Pennington/Infrastructure/BaseUrlHtmlRewriter.cs'
+        - 'src/Pennington/Generation/OutputOptions.cs'
+        - 'src/Pennington/Infrastructure/PenningtonExtensions.cs'
+      production_symbols:
+        - 'T:Pennington.Infrastructure.BaseUrlHtmlRewriter'
+        - 'T:Pennington.Generation.OutputOptions'
+        - 'P:Pennington.Generation.OutputOptions.BaseUrl'
+        - 'M:Pennington.Generation.OutputOptions.FromArgs(System.String[])'
+        - 'M:Pennington.Infrastructure.PenningtonExtensions.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
@@ -1173,9 +1194,17 @@ pages:
     front_matter_uid: 'how-to.deployment.github-pages'
     front_matter_is_draft: true
     evidence:
-      examples: []
-      production_files: []
-      production_symbols: []
+      examples:
+        - 'examples/SubPathDeployableExample/.github/workflows/deploy.yml'
+        - 'examples/SubPathDeployableExample/Program.cs'
+        - 'M:SubPathDeployableExample.ServiceConfiguration.BuildDocSiteOptions'
+      production_files:
+        - 'src/Pennington/Generation/OutputOptions.cs'
+        - 'src/Pennington/Generation/BuildReport.cs'
+      production_symbols:
+        - 'T:Pennington.Generation.OutputOptions'
+        - 'M:Pennington.Generation.OutputOptions.FromArgs(System.String[])'
+        - 'T:Pennington.Generation.BuildReport'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
@@ -1205,9 +1234,14 @@ pages:
     front_matter_uid: 'how-to.deployment.self-host'
     front_matter_is_draft: true
     evidence:
-      examples: []
-      production_files: []
-      production_symbols: []
+      examples:
+        - 'examples/SubPathDeployableExample/nginx.conf'
+        - 'examples/SubPathDeployableExample/web.config'
+        - 'examples/SubPathDeployableExample/Program.cs'
+      production_files:
+        - 'src/Pennington/Generation/OutputGenerationService.cs'
+      production_symbols:
+        - 'T:Pennington.Generation.OutputGenerationService'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
@@ -1234,9 +1268,26 @@ pages:
     front_matter_uid: 'how-to.deployment.static-build'
     front_matter_is_draft: true
     evidence:
-      examples: []
-      production_files: []
-      production_symbols: []
+      examples:
+        - 'examples/SubPathDeployableExample/Program.cs'
+        - 'examples/SubPathDeployableExample/Content/index.md'
+        - 'examples/SubPathDeployableExample/Content/guides/first-page.md'
+        - 'M:SubPathDeployableExample.ServiceConfiguration.BuildDocSiteOptions'
+      production_files:
+        - 'src/Pennington/Generation/OutputGenerationService.cs'
+        - 'src/Pennington/Generation/OutputOptions.cs'
+        - 'src/Pennington/Generation/BuildReport.cs'
+        - 'src/Pennington/Infrastructure/PenningtonExtensions.cs'
+      production_symbols:
+        - 'T:Pennington.Generation.OutputGenerationService'
+        - 'T:Pennington.Generation.OutputOptions'
+        - 'M:Pennington.Generation.OutputOptions.FromArgs(System.String[])'
+        - 'T:Pennington.Generation.BuildReport'
+        - 'P:Pennington.Generation.BuildReport.GeneratedPages'
+        - 'P:Pennington.Generation.BuildReport.FailedPages'
+        - 'P:Pennington.Generation.BuildReport.BrokenLinks'
+        - 'P:Pennington.Generation.BuildReport.HasErrors'
+        - 'M:Pennington.Infrastructure.PenningtonExtensions.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])'
       architecture:
         - '_research/site-architecture.md'
       blockers: []

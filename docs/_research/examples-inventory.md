@@ -1147,3 +1147,62 @@ marker survives into the HTML on disk.
 - `examples/ExtensibilityLabExample/Content/lowercase-demo.md`
 - `examples/ExtensibilityLabExample/Content/releases/v1.0.0.json`
 - `examples/ExtensibilityLabExample/Content/releases/v1.1.0.json`
+
+## `examples/SubPathDeployableExample`
+
+Backs how-to §2.4 Publishing & Deployment — five recipes (`/how-to/deployment/static-build`,
+`/how-to/deployment/github-pages`, `/how-to/deployment/adapt-for-other-hosts`,
+`/how-to/deployment/self-host`, `/how-to/deployment/base-url`). Deliberately
+tiny `AddDocSite` host: one area (`Guides`), one home page, one nested page so
+sub-path rewriting is observable on a deep link. The teaching artefacts are
+the **sibling fixture files** of the csproj — workflow YAML and host configs
+that the how-to pages embed via `path:` fences.
+
+### Files
+
+- `examples/SubPathDeployableExample/SubPathDeployableExample.csproj` — Web SDK, references only `Pennington.DocSite`
+- `examples/SubPathDeployableExample/Program.cs` — top-level statements; minimal `AddDocSite(ServiceConfiguration.BuildDocSiteOptions)` + `UseDocSite()` + `RunDocSiteAsync(args)`
+- `examples/SubPathDeployableExample/ServiceConfiguration.cs` — `BuildDocSiteOptions` factory (named so the §2.4 how-tos can fence it via xmldocid)
+- `examples/SubPathDeployableExample/Content/index.md` — landing page, links to `/guides/first-page/` so base-url rewriting is observable on a content-authored anchor
+- `examples/SubPathDeployableExample/Content/guides/first-page.md` — nested route under the `Guides` area
+- `examples/SubPathDeployableExample/.github/workflows/deploy.yml` — GitHub Pages workflow (setup-dotnet@v4, upload-pages-artifact@v3, deploy-pages@v4, `.nojekyll`, base URL derived from `${{ github.event.repository.name }}`)
+- `examples/SubPathDeployableExample/staticwebapp.config.json` — Azure Static Web Apps routes, `navigationFallback`, MIME map, cache headers
+- `examples/SubPathDeployableExample/netlify.toml` — Netlify build command, publish dir, environment, headers, 404 fallback
+- `examples/SubPathDeployableExample/nginx.conf` — self-host server block with `try_files $uri $uri/ /404.html`, immutable cache for `_content/`, MIME for sitemap/llms
+- `examples/SubPathDeployableExample/web.config` — IIS staticContent + httpErrors + rewrite + custom headers
+
+### Helper symbols
+
+- `T:SubPathDeployableExample.ServiceConfiguration`
+- `M:SubPathDeployableExample.ServiceConfiguration.BuildDocSiteOptions` (short)
+
+Helper is compile-only on the call path — `Program.cs` invokes it via the
+`AddDocSite` factory, so the body is also reachable via `bodyonly` for
+how-to fences that need the configuration shape inline.
+
+### Production surfaces the §2.4 how-tos point at
+
+- `T:Pennington.Generation.OutputOptions` — base-URL + output-directory record materialized from the CLI
+- `P:Pennington.Generation.OutputOptions.BaseUrl`
+- `P:Pennington.Generation.OutputOptions.OutputDirectory`
+- `P:Pennington.Generation.OutputOptions.CleanOutput`
+- `M:Pennington.Generation.OutputOptions.FromArgs(System.String[])` — single source of truth for how `build [baseUrl] [outputDirectory]` is parsed
+- `T:Pennington.Generation.BuildReport` — what the static build prints to stdout
+- `P:Pennington.Generation.BuildReport.GeneratedPages`
+- `P:Pennington.Generation.BuildReport.FailedPages`
+- `P:Pennington.Generation.BuildReport.BrokenLinks`
+- `P:Pennington.Generation.BuildReport.HasErrors`
+- `T:Pennington.Generation.OutputGenerationService` — the HTTP crawler that drives the static build
+- `T:Pennington.Infrastructure.BaseUrlHtmlRewriter` — the rewriter that prefixes `href`/`src`/`action` and stamps `data-base-url` on `<body>`
+- `M:Pennington.Infrastructure.PenningtonExtensions.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])` — the `dotnet run` vs `dotnet run -- build …` switch
+
+### Raw-file fence candidates
+
+- `examples/SubPathDeployableExample/Program.cs` (top-level statements, no xmldocid) — primary fence target for §2.4.10
+- `examples/SubPathDeployableExample/Content/index.md`
+- `examples/SubPathDeployableExample/Content/guides/first-page.md`
+- `examples/SubPathDeployableExample/.github/workflows/deploy.yml` — primary fence target for §2.4.20
+- `examples/SubPathDeployableExample/staticwebapp.config.json` — primary fence target for §2.4.30 (Azure)
+- `examples/SubPathDeployableExample/netlify.toml` — primary fence target for §2.4.30 (Netlify)
+- `examples/SubPathDeployableExample/nginx.conf` — primary fence target for §2.4.40 (Nginx)
+- `examples/SubPathDeployableExample/web.config` — primary fence target for §2.4.40 (IIS)
