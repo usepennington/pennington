@@ -491,3 +491,6 @@ output/
 
 # Claude Code
 .claude/
+
+# Playwright MCP runtime logs
+.playwright-mcp/
