@@ -131,3 +131,56 @@ top-level `Program.cs`, closing the loop with `app.UseMonorailCss()`.
 - `examples/GettingStartedStylingExample/Content/index.md`
 - `examples/GettingStartedStylingExample/Content/about.md`
 - `examples/GettingStartedStylingExample/Content/contact.md`
+
+## `examples/DocSiteScaffoldExample`
+
+Backs tutorial §1.2.10 `/tutorials/docsite/scaffold`. Swaps the bare
+`AddPennington` host from app #1 for the DocSite template: `AddDocSite`
+populates a `DocSiteOptions` (site title, description, GitHub URL, header /
+footer content, two `ContentArea` entries) in one call, `UseDocSite` mounts
+the full Razor-component chrome (sidebar area selector, header with search +
+dark-mode + GitHub icon, footer, outline nav), and `RunDocSiteAsync` delegates
+to `RunOrBuildAsync` so the same host handles dev and static build. Each area
+slug maps to a top-level folder under `Content/` — `Content/guides/` and
+`Content/reference/` — with one markdown page each.
+
+**Files**
+
+- `examples/DocSiteScaffoldExample/Program.cs` — canonical final state (AddDocSite + UseDocSite + RunDocSiteAsync, two areas)
+- `examples/DocSiteScaffoldExample/Content/guides/index.md` — Guides area landing page
+- `examples/DocSiteScaffoldExample/Content/reference/index.md` — Reference area landing page
+- `examples/DocSiteScaffoldExample/Stage1_PenningtonOnly.cs` — tutorial stage 1 (pre-DocSite shape from tutorial 1)
+- `examples/DocSiteScaffoldExample/Stage2_AddDocSite.cs` — tutorial stage 2 (DI call only, no `UseDocSite` yet)
+- `examples/DocSiteScaffoldExample/Stage3_UseDocSite.cs` — tutorial stage 3 (final; matches `Program.cs`)
+
+**Symbols**
+
+- `T:DocSiteScaffoldExample.Stage1`
+- `M:DocSiteScaffoldExample.Stage1.Run(System.String[])`
+- `T:DocSiteScaffoldExample.Stage2`
+- `M:DocSiteScaffoldExample.Stage2.Run(System.String[])` (short)
+- `T:DocSiteScaffoldExample.Stage3`
+- `M:DocSiteScaffoldExample.Stage3.Run(System.String[])` (short)
+
+Production symbols the tutorial leans on (live in `src/Pennington.DocSite`):
+
+- `T:Pennington.DocSite.DocSiteOptions`
+- `P:Pennington.DocSite.DocSiteOptions.SiteTitle`
+- `P:Pennington.DocSite.DocSiteOptions.Description`
+- `P:Pennington.DocSite.DocSiteOptions.GitHubUrl`
+- `P:Pennington.DocSite.DocSiteOptions.HeaderContent`
+- `P:Pennington.DocSite.DocSiteOptions.FooterContent`
+- `P:Pennington.DocSite.DocSiteOptions.Areas`
+- `T:Pennington.DocSite.ContentArea`
+- `M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})`
+- `M:Pennington.DocSite.DocSiteServiceExtensions.UseDocSite(Microsoft.AspNetCore.Builder.WebApplication)`
+- `M:Pennington.DocSite.DocSiteServiceExtensions.RunDocSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])`
+
+Each `Run` is static, never invoked at runtime — the tutorial pulls each body
+via `csharp:xmldocid,bodyonly`.
+
+**Raw-file fence candidates**
+
+- `examples/DocSiteScaffoldExample/Program.cs` (top-level statements, no xmldocid)
+- `examples/DocSiteScaffoldExample/Content/guides/index.md`
+- `examples/DocSiteScaffoldExample/Content/reference/index.md`

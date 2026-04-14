@@ -65,7 +65,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 4. `DocSiteScaffoldExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** Tutorial §1.2.10 `/tutorials/docsite/scaffold`
 - **Goal:** Replace barebones setup with `AddDocSite` + `UseDocSite` + `RunDocSiteAsync`, configure `DocSiteOptions` (site title, GitHub URL, header/footer), demonstrate areas mapping to top-level folders.
 - **Shape:**

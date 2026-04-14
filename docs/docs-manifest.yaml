@@ -2683,10 +2683,22 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/BeaconDocsExample/Program.cs'
-        - 'examples/TempoDocsExample/Program.cs'
-      production_files: []
-      production_symbols: []
+        - 'examples/DocSiteScaffoldExample/Program.cs'
+        - 'examples/DocSiteScaffoldExample/Content/guides/index.md'
+        - 'examples/DocSiteScaffoldExample/Content/reference/index.md'
+        - 'M:DocSiteScaffoldExample.Stage1.Run(System.String[])'
+        - 'M:DocSiteScaffoldExample.Stage2.Run(System.String[])'
+        - 'M:DocSiteScaffoldExample.Stage3.Run(System.String[])'
+      production_files:
+        - 'src/Pennington.DocSite/DocSiteOptions.cs'
+        - 'src/Pennington.DocSite/ContentArea.cs'
+        - 'src/Pennington.DocSite/DocSiteServiceExtensions.cs'
+      production_symbols:
+        - 'T:Pennington.DocSite.DocSiteOptions'
+        - 'T:Pennington.DocSite.ContentArea'
+        - 'M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})'
+        - 'M:Pennington.DocSite.DocSiteServiceExtensions.UseDocSite(Microsoft.AspNetCore.Builder.WebApplication)'
+        - 'M:Pennington.DocSite.DocSiteServiceExtensions.RunDocSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
