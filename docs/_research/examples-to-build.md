@@ -115,7 +115,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 9. `BlogSiteHeroProjectsSocialsExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** Tutorial §1.3.30 `/tutorials/blogsite/hero-projects-socials`
 - **Goal:** Populate `HeroContent`, `Project[]` for "my work", `SocialLink[]` (with built-in `BlueskyIcon`/`GithubIcon`), `HeaderLink[]` for top-nav.
 - **Shape:**

@@ -24,5 +24,6 @@
     <Project Path="examples/DocSiteSectionsExample/DocSiteSectionsExample.csproj" />
     <Project Path="examples/BlogSiteScaffoldExample/BlogSiteScaffoldExample.csproj" />
     <Project Path="examples/BlogSiteFirstPostExample/BlogSiteFirstPostExample.csproj" />
+    <Project Path="examples/BlogSiteHeroProjectsSocialsExample/BlogSiteHeroProjectsSocialsExample.csproj" />
   </Folder>
 </Solution>

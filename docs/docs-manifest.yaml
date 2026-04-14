@@ -2612,10 +2612,28 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/AlexBlogExample/Program.cs'
-        - 'examples/BlogExample/Program.cs'
-      production_files: []
-      production_symbols: []
+        - 'examples/BlogSiteHeroProjectsSocialsExample/Program.cs'
+        - 'examples/BlogSiteHeroProjectsSocialsExample/Content/Blog/weekend-content-engine.md'
+        - 'M:BlogSiteHeroProjectsSocialsExample.Stage1.Run(System.String[])'
+        - 'M:BlogSiteHeroProjectsSocialsExample.Stage2.Run(System.String[])'
+        - 'M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])'
+      production_files:
+        - 'src/Pennington.BlogSite/BlogSiteOptions.cs'
+        - 'src/Pennington.BlogSite/Components/SocialIcons.razor'
+      production_symbols:
+        - 'T:Pennington.BlogSite.HeroContent'
+        - 'T:Pennington.BlogSite.Project'
+        - 'T:Pennington.BlogSite.SocialLink'
+        - 'T:Pennington.BlogSite.HeaderLink'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.HeroContent'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.MyWork'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.Socials'
+        - 'P:Pennington.BlogSite.BlogSiteOptions.MainSiteLinks'
+        - 'T:Pennington.BlogSite.Components.SocialIcons'
+        - 'F:Pennington.BlogSite.Components.SocialIcons.GithubIcon'
+        - 'F:Pennington.BlogSite.Components.SocialIcons.BlueskyIcon'
+        - 'F:Pennington.BlogSite.Components.SocialIcons.LinkedInIcon'
+        - 'F:Pennington.BlogSite.Components.SocialIcons.MastodonIcon'
       architecture:
         - '_research/site-architecture.md'
       blockers: []

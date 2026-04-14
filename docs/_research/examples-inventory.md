@@ -422,3 +422,76 @@ final stage mirrors the markdown that actually ships in
 
 - `examples/BlogSiteFirstPostExample/Program.cs` (top-level statements, no xmldocid)
 - `examples/BlogSiteFirstPostExample/Content/Blog/my-first-post.md`
+
+## `examples/BlogSiteHeroProjectsSocialsExample`
+
+Backs tutorial §1.3.30 `/tutorials/blogsite/hero-projects-socials`. Extends
+the tutorial-8 host by populating the four homepage surfaces on
+`BlogSiteOptions`: `HeroContent` (headline block at the top of `/`),
+`MyWork` (a `Project[]` rendered as the "My Work" sidebar card), `Socials`
+(a `SocialLink[]` rendered as an icon row under the card), and
+`MainSiteLinks` (a `HeaderLink[]` rendered in the site top-nav and the
+footer). The four built-in icon `RenderFragment`s live as `static
+readonly` fields on the `Pennington.BlogSite.Components.SocialIcons`
+component — `GithubIcon`, `BlueskyIcon`, `LinkedInIcon`, `MastodonIcon`
+— and are passed to `SocialLink` directly (no wrapper type). One post
+(`weekend-content-engine.md`) populates the recent-posts slot.
+
+**Files**
+
+- `examples/BlogSiteHeroProjectsSocialsExample/Program.cs` — canonical final state (all four surfaces populated, four social icons wired)
+- `examples/BlogSiteHeroProjectsSocialsExample/Content/Blog/weekend-content-engine.md` — single post keeping the recent-posts list non-empty
+- `examples/BlogSiteHeroProjectsSocialsExample/Stage1_HeroOnly.cs` — stage 1 (HeroContent populated, projects and socials still empty)
+- `examples/BlogSiteHeroProjectsSocialsExample/Stage2_AddProjects.cs` — stage 2 (adds `MyWork = [Project, Project, Project]`)
+- `examples/BlogSiteHeroProjectsSocialsExample/Stage3_AddSocialsAndHeader.cs` — stage 3 (adds `Socials` + `MainSiteLinks`; matches `Program.cs`)
+
+**Symbols**
+
+- `T:BlogSiteHeroProjectsSocialsExample.Stage1`
+- `M:BlogSiteHeroProjectsSocialsExample.Stage1.Run(System.String[])`
+- `T:BlogSiteHeroProjectsSocialsExample.Stage2`
+- `M:BlogSiteHeroProjectsSocialsExample.Stage2.Run(System.String[])`
+- `T:BlogSiteHeroProjectsSocialsExample.Stage3`
+- `M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])`
+
+Production symbols the tutorial leans on (live in `src/Pennington.BlogSite`):
+
+- `T:Pennington.BlogSite.BlogSiteOptions`
+- `P:Pennington.BlogSite.BlogSiteOptions.HeroContent`
+- `P:Pennington.BlogSite.BlogSiteOptions.MyWork`
+- `P:Pennington.BlogSite.BlogSiteOptions.Socials`
+- `P:Pennington.BlogSite.BlogSiteOptions.MainSiteLinks`
+- `T:Pennington.BlogSite.HeroContent`
+- `T:Pennington.BlogSite.Project`
+- `T:Pennington.BlogSite.SocialLink`
+- `T:Pennington.BlogSite.HeaderLink`
+- `T:Pennington.BlogSite.Components.SocialIcons`
+- `F:Pennington.BlogSite.Components.SocialIcons.GithubIcon`
+- `F:Pennington.BlogSite.Components.SocialIcons.BlueskyIcon`
+- `F:Pennington.BlogSite.Components.SocialIcons.LinkedInIcon`
+- `F:Pennington.BlogSite.Components.SocialIcons.MastodonIcon`
+
+Each `Run` is a static method whose body captures the tutorial's state at
+that stage. None are invoked at runtime — the tutorial pulls each body
+via `csharp:xmldocid,bodyonly`.
+
+**Record shapes — locked for app #14**
+
+- `HeroContent(string Title, string Description)` — two positional
+  parameters. The `Description` is rendered as `MarkupString` in
+  `Home.razor`, so light HTML is OK (the tutorial sticks to plain prose).
+- `Project(string Title, string Description, string Url)` — three
+  positional parameters. `Url` is used as an `<a href>` wrapping the
+  `<dt>`/`<dd>` pair.
+- `SocialLink(RenderFragment Icon, string Url)` — `Icon` is a
+  `Microsoft.AspNetCore.Components.RenderFragment`, NOT a component
+  type / generic / string name. The icon ships as a `static readonly
+  RenderFragment` field on the `SocialIcons` Razor component. `Url`
+  is used as the `<a href>` target; the fragment renders inside.
+- `HeaderLink(string Title, string Url)` — two positional parameters.
+  Rendered both in the top-nav and the footer nav of `MainLayout.razor`.
+
+**Raw-file fence candidates**
+
+- `examples/BlogSiteHeroProjectsSocialsExample/Program.cs` (top-level statements, no xmldocid)
+- `examples/BlogSiteHeroProjectsSocialsExample/Content/Blog/weekend-content-engine.md`
