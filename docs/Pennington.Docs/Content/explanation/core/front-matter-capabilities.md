@@ -66,7 +66,7 @@ Adding a new capability is a three-line move: define the interface (`public inte
 
 ## Further reading
 
-- Reference: [Front-matter properties](/reference/front-matter/properties)
-- Reference: [`IFrontMatter` and capability interfaces](/reference/api/pennington-frontmatter)
-- How-to: [Define a custom front-matter type](/how-to/content/custom-front-matter)
+- Reference: [Front matter key reference](/reference/front-matter/keys)
+- Reference: [`IFrontMatter` and capability defaults](/reference/front-matter/ifrontmatter)
+- How-to: [Work with front matter](/how-to/content-authoring/front-matter)
 - External: [C# default interface methods proposal](https://learn.microsoft.com/dotnet/csharp/language-reference/proposals/csharp-8.0/default-interface-methods)

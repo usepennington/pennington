@@ -1,10 +1,10 @@
 ---
 title: "Generate RSS feeds"
 description: "Enable RSS on a blog source, use BlogFrontMatter.Date, and locate the generated feed file."
-section: "deployment"
-order: 80
+section: "configuration"
+order: 70
 tags: []
-uid: how-to.deployment.rss
+uid: how-to.configuration.rss
 isDraft: true
 search: false
 llms: false
@@ -24,7 +24,7 @@ llms: false
 - You have an existing Pennington `BlogSite` wired with `AddBlogSite` / `UseBlogSite` / `RunBlogSiteAsync`.
 - Posts already render at `/blog/...` using `BlogSiteFrontMatter` (or equivalent `BlogFrontMatter`).
 - You know the public URL of the site (you will set `CanonicalBaseUrl` so feed links are absolute).
-- To copy a working setup, see [`examples/AlexBlogExample`](https://github.com/Phil-Scott-78/Pennington/tree/main/examples/AlexBlogExample).
+- To copy a working setup, see [`examples/AlexBlogExample`](https://github.com/usepennington/pennington/tree/main/examples/AlexBlogExample).
 
 ---
 
@@ -73,6 +73,6 @@ tags: [cli, dotnet]
 
 ## Related
 
-- Reference: [Blog site options](/reference/blog-site/options)
-- Reference: [Front matter — `BlogFrontMatter`](/reference/front-matter/blog)
-- Background: [Feeds and the unified dev/build path](/explanation/feeds)
+- Reference: [`BlogSiteOptions`](/reference/options/blogsite-options)
+- Reference: [Built-in front-matter types](/reference/front-matter/built-in-types)
+- Related reference: [Built-in BlogSite routes](/reference/blogsite/routes)

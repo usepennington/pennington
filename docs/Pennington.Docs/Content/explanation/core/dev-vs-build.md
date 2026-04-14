@@ -64,7 +64,7 @@ Why does Pennington refuse to ship a separate "offline build" renderer and inste
 
 ## Further reading
 
-- Reference: [Static build CLI arguments](/reference/generation/output-options)
-- Reference: [Response processors and HTML rewriters](/reference/infrastructure/response-processors)
-- How-to: [Publish a site to static output](/how-to/generation/publish-static-output)
+- Reference: [`OutputOptions` (CLI arguments)](/reference/options/auxiliary-options)
+- Reference: [Response processing interfaces](/reference/extension-points/response-processing)
+- How-to: [Build a static site](/how-to/deployment/static-build)
 - Explanation: [The content pipeline](/explanation/core/content-pipeline)

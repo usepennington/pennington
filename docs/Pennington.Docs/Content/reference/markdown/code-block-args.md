@@ -163,7 +163,7 @@ The curly-brace forms `{1,3}`, `{+1}`, `{-1}`, `{focus 1-3}`, `{error …}` are 
 
 ## See also
 
-- Reference: [Markdown pipeline extensions](/reference/markdown/pipeline-extensions)
-- Reference: [Tabbed code blocks](/reference/markdown/tabbed-code-blocks)
-- How-to: [Highlight and annotate code samples](/how-to/markdown/annotate-code)
-- Background: [Why Pennington uses comment-directive annotations](/explanation/markdown/annotation-design)
+- Reference: [Markdown extensions catalog](/reference/markdown/extensions)
+- How-to: [Annotate code blocks](/how-to/content-authoring/code-annotations)
+- How-to: [Create tabbed code groups](/how-to/content-authoring/tabbed-code)
+- Background: [The syntax-highlighting cascade](/explanation/rendering/highlighting)

@@ -77,7 +77,6 @@ Minimal `DocSiteOptions` wiring from `examples/BeaconDocsExample/Program.cs`.
 
 ## See also
 
-- How-to: [Configure DocSite](/how-to/configuration/docsite-options)
 - Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
 - Related reference: [`BlogSiteOptions`](/reference/options/blogsite-options)
 - Related reference: [`MonorailCssOptions`](/reference/options/monorail-css-options)

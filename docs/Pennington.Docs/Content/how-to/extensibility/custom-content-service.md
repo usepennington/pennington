@@ -25,7 +25,7 @@ llms: false
 - You are comfortable defining an `IFrontMatter` record (see [_Work with front matter_](/how-to/content-authoring/front-matter) if not).
 - You know whether each route delegates to an existing handler (Razor @page, markdown file) or produces its own bytes — that determines which `ContentSource` case to yield.
 
-To copy a working setup, see [`examples/RecipeExample`](https://github.com/phil-scott-78/Pennington/tree/main/examples/RecipeExample), [`examples/ForgePortalExample`](https://github.com/phil-scott-78/Pennington/tree/main/examples/ForgePortalExample), and [`examples/YogaStudioExample`](https://github.com/phil-scott-78/Pennington/tree/main/examples/YogaStudioExample). Each takes a different pattern — file-format-backed, JSON-backed programmatic HTML, and parameterized route fan-out — do not walk any example end-to-end; this is a recipe, not a tour.
+To copy a working setup, see [`examples/RecipeExample`](https://github.com/usepennington/pennington/tree/main/examples/RecipeExample), [`examples/ForgePortalExample`](https://github.com/usepennington/pennington/tree/main/examples/ForgePortalExample), and [`examples/YogaStudioExample`](https://github.com/usepennington/pennington/tree/main/examples/YogaStudioExample). Each takes a different pattern — file-format-backed, JSON-backed programmatic HTML, and parameterized route fan-out — do not walk any example end-to-end; this is a recipe, not a tour.
 
 ---
 
@@ -119,6 +119,6 @@ builder.Services.AddSingleton<Pennington.Content.IContentService, YogaRouteConte
 
 ## Related
 
-- Reference: [`IContentService`](/reference/content/icontentservice)
-- Reference: [`ContentRouteFactory`](/reference/routing/content-route-factory)
-- Background: [How the content pipeline processes sources](/explanation/content-pipeline)
+- Reference: [Content pipeline interfaces](/reference/extension-points/content-pipeline)
+- Reference: [Routing types](/reference/extension-points/routing)
+- Background: [The content pipeline and union types](/explanation/core/content-pipeline)

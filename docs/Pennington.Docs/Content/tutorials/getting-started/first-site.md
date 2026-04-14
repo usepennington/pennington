@@ -24,7 +24,7 @@ llms: false
 - Bullets: .NET 11 SDK installed (verified by `dotnet --version` reporting 11.x).
 - Bullets: a shell and text editor / IDE of choice — no prior Pennington knowledge required.
 - Bullets: no prior tutorials — this is the first one.
-- Pointer line: the finished code lives in [`examples/MinimalExample`](https://github.com/Phil-Scott-Msft/Pennington/tree/main/examples/MinimalExample).
+- Pointer line: the finished code lives in [`examples/MinimalExample`](https://github.com/usepennington/pennington/tree/main/examples/MinimalExample).
 
 ---
 
@@ -91,7 +91,7 @@ llms: false
 ## 3. Add a `Content/` folder with one markdown page
 
 - Unit intent: create the folder `ContentRootPath` points at, drop in a single markdown file with YAML front matter, and confirm Pennington discovers it.
-- Teaches the minimum front-matter shape — `title:` is the only required key on `IFrontMatter`; `description`, `date`, `tags`, `isDraft` come from `BlogFrontMatter` via the default members on `IFrontMatter` and `ITaggable`.
+- Teaches the minimum front-matter shape — `title:` is the only required key; `description`, `date`, `tags`, and `isDraft` come along with `BlogFrontMatter`.
 - No mention of custom capability interfaces, localization, or draft handling rules beyond "`isDraft: false` means published."
 
 ### Step 3.1 — Create `Content/index.md`
@@ -108,15 +108,15 @@ llms: false
 
 - Bullet: `Content/index.md` exists at the project root.
 - Bullet: the front matter starts and ends with `---` on its own line.
-- Bullet: `isDraft: false` is present (drafts are skipped by `RenderedItem` handling in the pipeline, which would make verification fail).
+- Bullet: `isDraft: false` is present (drafts are skipped by the pipeline, which would make verification fail).
 
 ---
 
 ## 4. Run in dev mode and verify the page renders
 
 - Unit intent: start the site under `dotnet watch`, visit the URL, see the title from front matter as the `<h1>` and the body converted to HTML, then edit the markdown file and watch the browser reload.
-- Introduces the `UsePennington` live-reload path — `LiveReloadScriptProcessor` injects the reconnect script when `DOTNET_WATCH` is set, and `LiveReloadServer` broadcasts `"reload"` on file changes.
-- Reinforces that `ContentHelper` is just a thin wrapper around `IContentService.DiscoverAsync`, `FrontMatterParser.Parse<BlogFrontMatter>`, and `IContentRenderer.RenderAsync`.
+- Introduces live reload: in dev mode the browser reconnects to Pennington's reload endpoint and refreshes when content changes.
+- Reinforces that `ContentHelper` is a thin wrapper around the discover/parse/render path Pennington exposes.
 
 ### Step 4.1 — Start the watch loop
 
@@ -134,19 +134,19 @@ llms: false
 M:MinimalExample.ContentHelper.GetPageByUrlAsync(System.String)
 ```
 
-- Fence slot: method body. Example project `MinimalExample`. Demonstrates how one file is rendered on demand: discover via `IContentService`, parse with `FrontMatterParser`, render with `IContentRenderer`.
+- Fence slot: method body. Example project `MinimalExample`. Demonstrates how one file is rendered on demand through Pennington's discover, parse, and render pipeline.
 
 ### Step 4.3 — Edit the markdown and watch hot reload
 
 - Bullet: change the `title:` in `Content/index.md` to something new and save.
 - Bullet: the browser tab reloads automatically; the new `<h1>` appears without restarting `dotnet watch`.
-- Bullet: note that this is the live-reload WebSocket at `/__pennington/reload` doing its job.
+- Bullet: note that Pennington's live-reload WebSocket is doing the refresh.
 
 ### Checkpoint — the site is alive
 
 - Bullet: `http://localhost:5000/` renders the title from front matter.
 - Bullet: editing `Content/index.md` and saving refreshes the page without a manual reload.
-- Bullet: the console shows no warnings from `BuildReport` — the page is discovered, parsed, and rendered cleanly.
+- Bullet: the console shows no warnings — the page is discovered, parsed, and rendered cleanly.
 
 ---
 
@@ -155,6 +155,6 @@ M:MinimalExample.ContentHelper.GetPageByUrlAsync(System.String)
 - You have a running Pennington site that discovers markdown under `Content/` and renders it through the same pipeline used for production static builds.
 - You can wire `AddPennington` with a `ContentRootPath` and at least one `AddMarkdownContent<TFrontMatter>` source.
 - You can run `dotnet watch` for hot reload and confirm changes land in the browser without restarting.
-- You can identify the three services doing the work — `IContentService`, `FrontMatterParser`, `IContentRenderer` — and where they live in a minimal host.
+- You can trace how a page moves through Pennington's discover, parse, and render steps in a minimal host.
 
 > Navigation to the next tutorial is generated automatically from `order` — do not write a "what's next" section.

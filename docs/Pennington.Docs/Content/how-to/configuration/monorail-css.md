@@ -2,7 +2,7 @@
 title: Customize MonorailCSS
 description: Swap between NamedColorScheme and AlgorithmicColorScheme, inject CustomCssFrameworkSettings, add ExtraStyles, and configure ContentPaths for class collection.
 section: configuration
-order: 50
+order: 30
 tags: []
 uid: how-to.configuration.monorail-css
 isDraft: true
@@ -25,7 +25,7 @@ llms: false
 - You are using the core Pennington package directly (or willing to drop the factory argument into `AddMonorailCss` even when the site template — `AddDocSite` / `AddBlogSite` — configures it for you).
 - You know which `MonorailCss.Theme.ColorNames` values you want (e.g. `Sky`, `Slate`, `Zinc`) or have a primary hue in mind (0–360).
 
-To copy a working setup, see [`examples/YogaStudioExample`](https://github.com/Pennington/Pennington/tree/main/examples/YogaStudioExample) (full customization — custom `IColorScheme`, `ExtraStyles`, `CustomCssFrameworkSettings`) or [`examples/SpectreConsoleExample`](https://github.com/Pennington/Pennington/tree/main/examples/SpectreConsoleExample) (minimal `NamedColorScheme` swap). Do not walk through the whole example — this page is a recipe, not a tour.
+To copy a working setup, see [`examples/YogaStudioExample`](https://github.com/usepennington/pennington/tree/main/examples/YogaStudioExample) (full customization — custom `IColorScheme`, `ExtraStyles`, `CustomCssFrameworkSettings`) or [`examples/SpectreConsoleExample`](https://github.com/usepennington/pennington/tree/main/examples/SpectreConsoleExample) (minimal `NamedColorScheme` swap). Do not walk through the whole example — this page is a recipe, not a tour.
 
 ---
 

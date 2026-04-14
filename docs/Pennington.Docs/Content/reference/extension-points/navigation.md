@@ -106,6 +106,6 @@ T:Pennington.Navigation.BreadcrumbItem
 
 ## See also
 
-- Related reference: [ContentTocItem](/reference/content/content-toc-item)
-- Related reference: [ContentRoute](/reference/routing/content-route)
-- UI: [TableOfContentsNavigation component](/reference/ui/table-of-contents-navigation)
+- Related reference: [Content pipeline interfaces](/reference/extension-points/content-pipeline)
+- Related reference: [Routing types](/reference/extension-points/routing)
+- UI: [Navigation components](/reference/ui/navigation)

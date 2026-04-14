@@ -54,3 +54,8 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - Records for data types, ImmutableList for collections
 - File-scoped namespaces
 - LSP reports false errors on `union` keyword and ASP.NET/Markdig types — the compiler handles them correctly
+
+
+## Absolute Paths
+
+Trust the working directory. Use paths relative to the root of the site as a priority, do not prefix with drive and folder unless absolutely nescassary. Do not cd into the folder superfulously. Trust your working directory.

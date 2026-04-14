@@ -85,7 +85,7 @@ T:Pennington.Highlighting.ICodeHighlighter
 
 ## Further reading
 
-- Reference: [ICodeHighlighter and HighlightingService](/reference/highlighting)
-- How-to: [Add a custom highlighter](/how-to/highlighting/add-a-custom-highlighter)
-- How-to: [Enable Roslyn highlighting](/how-to/highlighting/enable-roslyn)
+- Reference: [Highlighting interfaces](/reference/extension-points/highlighting)
+- How-to: [Add a custom syntax highlighter](/how-to/extensibility/custom-highlighter)
+- Tutorial: [Connect to a Roslyn solution for live API snippets](/tutorials/beyond-basics/connect-roslyn)
 - External: [TextMateSharp](https://github.com/danipen/TextMateSharp)

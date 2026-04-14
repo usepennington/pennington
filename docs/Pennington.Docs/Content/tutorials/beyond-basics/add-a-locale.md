@@ -25,7 +25,7 @@ llms: false
 - Completed [Scaffold a documentation site with DocSite](/tutorials/docsite/scaffold)
 - A running DocSite with at least one page under `Content/`
 
-The finished code lives in [`examples/LocalizationTutorialExample`](https://github.com/PhilJollans/Pennington/tree/main/examples/LocalizationTutorialExample).
+The finished code lives in [`examples/LocalizationTutorialExample`](https://github.com/usepennington/pennington/tree/main/examples/LocalizationTutorialExample).
 
 ---
 

@@ -24,7 +24,7 @@ llms: false
 - Outline bullet: .NET 11 SDK installed.
 - Outline bullet: Completed the "Getting Started with Pennington" tutorials through "Create your first Pennington site" (`/tutorials/getting-started/first-site`) — you should already have a working Pennington project with `AddPennington` + `UsePennington`.
 - Outline bullet: A terminal open at the root of that project and the project already runs under `dotnet run`.
-- Outline bullet: Finished-code pointer — this tutorial's end state matches [`examples/AlexBlogExample`](https://github.com/Phil-Scott-Thomas/Pennington/tree/main/examples/AlexBlogExample).
+- Outline bullet: Finished-code pointer — this tutorial's end state matches [`examples/AlexBlogExample`](https://github.com/usepennington/pennington/tree/main/examples/AlexBlogExample).
 
 ---
 
@@ -35,9 +35,9 @@ One sentence: change the three host-wiring calls so the BlogSite template compos
 ### Step 1.1 — Replace service registration with `AddBlogSite`
 
 - Outline bullet: Open `Program.cs` and delete the `builder.Services.AddPennington(...)` call.
-- Outline bullet: Replace it with `builder.Services.AddBlogSite(() => new BlogSiteOptions { ... })`, noting the factory signature `Func<BlogSiteOptions>` (verified in `src/Pennington.BlogSite/BlogSiteServiceExtensions.cs`).
+- Outline bullet: Replace it with `builder.Services.AddBlogSite(() => new BlogSiteOptions { ... })`, noting the factory signature `Func<BlogSiteOptions>`.
 - Outline bullet: Add `using Pennington.BlogSite;` at the top — `BlogSiteOptions`, `HeroContent`, `SocialLink`, `Project`, and `HeaderLink` all live in that namespace.
-- Outline bullet: Note that `AddBlogSite` internally composes `AddPennington` + `AddMonorailCss` plus the file-watched `BlogContentResolver` and `BlogSiteContentService` — you do not register those yourself.
+- Outline bullet: Note that `AddBlogSite` internally composes `AddPennington` + `AddMonorailCss` plus the blog content and post services — you do not register those yourself.
 
 ```csharp:path
 examples/AlexBlogExample/Program.cs
@@ -70,7 +70,7 @@ One sentence: `BlogSiteOptions` has two `required` properties and a cluster of c
 
 ### Step 2.1 — Set `SiteTitle` and `Description`
 
-- Outline bullet: These two properties are marked `required` on the `BlogSiteOptions` record (verified in `src/Pennington.BlogSite/BlogSiteOptions.cs`) — the compiler will refuse to build without them.
+- Outline bullet: These two properties are marked `required` on the `BlogSiteOptions` record — the compiler will refuse to build without them.
 - Outline bullet: Pick a short site title (shows up in the `<title>` tag and header) and a one-sentence description (used in feed metadata and the default meta description).
 
 ### Step 2.2 — Set the author fields
@@ -104,7 +104,7 @@ One sentence: BlogSite and DocSite are both built on `AddPennington` but expose 
 
 ### Step 3.1 — Compare the required fields
 
-- Outline bullet: Both `BlogSiteOptions` (in `src/Pennington.BlogSite/BlogSiteOptions.cs`) and `DocSiteOptions` (in `src/Pennington.DocSite/DocSiteOptions.cs`) require `SiteTitle` and `Description`.
+- Outline bullet: Both `BlogSiteOptions` and `DocSiteOptions` require `SiteTitle` and `Description`.
 - Outline bullet: `DocSiteOptions` adds `SolutionPath` and `Areas` and `ConfigureLocalization`; `BlogSiteOptions` does not carry those.
 - Outline bullet: `BlogSiteOptions` adds `BlogContentPath`, `BlogBaseUrl`, `TagsPageUrl`, `AuthorName`, `AuthorBio`, `HeroContent`, `MyWork`, `Socials`, `MainSiteLinks`, and `SocialMediaImageUrlFactory`; `DocSiteOptions` does not carry those.
 - Outline bullet: Both share `CanonicalBaseUrl`, `ColorScheme`, `ContentRootPath`, `ExtraStyles`, font options, `FontPreloads`, and `AdditionalRoutingAssemblies`.
@@ -113,7 +113,7 @@ One sentence: BlogSite and DocSite are both built on `AddPennington` but expose 
 
 - Outline bullet: `ContentRootPath` default is `"Content"` in both; in BlogSite, posts live under `BlogContentPath` (default `"Blog"`) inside that root.
 - Outline bullet: `EnableRss` and `EnableSitemap` default to `true` on `BlogSiteOptions` — the blog template wires `/rss.xml` automatically when `EnableRss` is true; DocSite has no equivalent option.
-- Outline bullet: Static-file handling, MonorailCSS registration, and `MapRazorComponents<App>` are identical — both templates delegate to the core `UsePennington` middleware for the response-processor pipeline.
+- Outline bullet: Static-file handling, MonorailCSS registration, and `MapRazorComponents<App>` are identical — both templates delegate to the core `UsePennington` middleware for the response pipeline.
 
 ### Checkpoint — What you should see now
 

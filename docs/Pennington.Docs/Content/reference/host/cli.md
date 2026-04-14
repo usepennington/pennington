@@ -87,4 +87,4 @@ Invocation shapes accepted by `RunOrBuildAsync`:
 
 - Related reference: [`OutputOptions`](/reference/options/auxiliary-options)
 - Related reference: [Host integration extensions](/reference/host/extensions)
-- Background: [Unified dev-and-build code path](/explanation/unified-build-path)
+- Background: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build)

@@ -2,7 +2,7 @@
 title: "Enable multiple locales"
 description: "Populate LocalizationOptions with a default locale and additional locales, organize content in locale subdirectories, add UI translations, and wire UsePenningtonLocaleRouting."
 section: "configuration"
-order: 70
+order: 50
 tags: []
 uid: how-to.configuration.localization
 isDraft: true
@@ -26,7 +26,7 @@ llms: false
 - You are comfortable editing `Program.cs` and moving markdown files into subfolders.
 - Not required: understanding `LocaleDetectionMiddleware` internals or `PenningtonUrlRequestCultureProvider` — link out to Reference if you want that.
 
-To copy a working setup, see [`examples/LocalizationExample`](https://github.com/phil-scott-78/Pennington/tree/main/examples/LocalizationExample). It ships a `DocSite` with five locales and parallel `Content/<code>/` subfolders. Do not walk the whole example — this page is a recipe.
+To copy a working setup, see [`examples/LocalizationExample`](https://github.com/usepennington/pennington/tree/main/examples/LocalizationExample). It ships a `DocSite` with five locales and parallel `Content/<code>/` subfolders. Do not walk the whole example — this page is a recipe.
 
 ---
 
@@ -121,6 +121,6 @@ await app.RunDocSiteAsync(args);
 
 ## Related
 
-- Reference: [`LocalizationOptions` keys and locale-prefix URL math](/reference/options/localization)
-- Reference: [`PenningtonUrlRequestCultureProvider`](/reference/infrastructure/pennington-url-request-culture-provider)
-- Background: [How locale detection and link rewriting fit together](/explanation/localization/locale-pipeline)
+- Reference: [`LocalizationOptions`](/reference/options/localization-options)
+- Reference: [`TranslationOptions`](/reference/options/translations)
+- Background: [Locale-aware URLs and content fallback](/explanation/localization/urls-and-fallback)

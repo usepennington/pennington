@@ -28,7 +28,7 @@ _Keep this list to **tools installed** and **prior tutorials completed** — not
 - Completed [_Prior tutorial title_](/_path_) (or have an equivalent Pennington project ready)
 - _Additional tool prerequisite if any_
 
-The finished code for this tutorial lives in [`examples/_ExampleProjectName_`](https://github.com/_org_/_repo_/tree/main/examples/_ExampleProjectName_).
+The finished code for this tutorial lives in [`examples/_ExampleProjectName_`](https://github.com/usepennington/pennington/tree/main/examples/_ExampleProjectName_).
 
 ---
 

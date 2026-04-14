@@ -138,6 +138,6 @@ P:Pennington.Diagnostics.DiagnosticContext.HasErrors
 
 ## See also
 
-- Related reference: [Build report fields](xref:reference.diagnostics.build-report)
-- Related reference: [Response processing interfaces](xref:reference.extension-points.response-processing)
-- Related reference: [Host integration extensions](xref:reference.host.extensions)
+- Related reference: [Build report fields](/reference/diagnostics/build-report)
+- Related reference: [Response processing interfaces](/reference/extension-points/response-processing)
+- Related reference: [DI and middleware extension methods](/reference/host/extensions)

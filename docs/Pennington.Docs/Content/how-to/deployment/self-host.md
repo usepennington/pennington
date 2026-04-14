@@ -2,7 +2,7 @@
 title: "Self-host behind Nginx or IIS"
 description: "Serve the generated output/ directory from Nginx or IIS with default-extension rules and the generated 404.html."
 section: "deployment"
-order: 60
+order: 40
 tags: []
 uid: how-to.deployment.self-host
 isDraft: true
@@ -26,7 +26,7 @@ llms: false
 - You built with the correct `BaseUrl` — the site lives at `/` unless you passed a sub-path to `dotnet run -- build /sub/ ./output`.
 - You are shipping the build artifact directly, not proxying back to the ASP.NET host. For an origin-server setup, see the separate how-to.
 
-To copy a working build output, see [`examples/MinimalExample`](https://github.com/Phil-Scott-DEV/Pennington/tree/main/examples/MinimalExample) and run `dotnet run --project examples/MinimalExample -- build` first.
+To copy a working build output, see [`examples/MinimalExample`](https://github.com/usepennington/pennington/tree/main/examples/MinimalExample) and run `dotnet run --project examples/MinimalExample -- build` first.
 
 ---
 
@@ -153,5 +153,6 @@ If you built with `dotnet run -- build /pennington/ ./output`, mount the directo
 
 ## Related
 
-- Reference: [OutputOptions and CLI arguments](/reference/generation/output-options/)
-- Background: [Why dev-serve and build share one HTTP path](/explanation/architecture/unified-build-pipeline/)
+- How-to: [Build a static site](/how-to/deployment/static-build)
+- Reference: [`OutputOptions` and CLI arguments](/reference/options/auxiliary-options)
+- Background: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build)

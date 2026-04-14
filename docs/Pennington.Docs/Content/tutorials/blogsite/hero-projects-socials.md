@@ -25,14 +25,14 @@ llms: false
 - Completed [Author your first post with BlogFrontMatter](/tutorials/blogsite/first-post) (or have a BlogSite project with at least one published post).
 - A decision already made about which socials and links you want to list (URLs, project names) — the tutorial assumes you bring the content; it teaches the wiring.
 
-The finished code for this tutorial lives in [`examples/AlexBlogExample`](https://github.com/PhilScott/Pennington/tree/main/examples/AlexBlogExample) (minimal, two socials, one project) with a fuller reference configuration in [`examples/BlogExample`](https://github.com/PhilScott/Pennington/tree/main/examples/BlogExample).
+The finished code for this tutorial lives in [`examples/AlexBlogExample`](https://github.com/usepennington/pennington/tree/main/examples/AlexBlogExample) (minimal, two socials, one project) with a fuller reference configuration in [`examples/BlogExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogExample).
 
 ---
 
 ## 1. Add a hero block
 
 - Bullets:
-  - Introduce `HeroContent` as a two-field record: `Title` and `Description`, defined in `Pennington.BlogSite.BlogSiteOptions.cs`.
+  - Introduce `HeroContent` as a two-field record: `Title` and `Description`.
   - Explain that `Description` accepts inline HTML (see the `<strong>` usage in `BlogExample/Program.cs`), so readers can emphasize a name or role without reaching for a custom component.
   - Note that if `HeroContent` is left `null` (its default), the homepage falls back to just the recent-posts list — the hero is opt-in.
 
@@ -41,7 +41,7 @@ The finished code for this tutorial lives in [`examples/AlexBlogExample`](https:
 - Bullets:
   - Inside the existing `AddBlogSite(() => new BlogSiteOptions { ... })` call, add a `HeroContent = new HeroContent("<headline>", "<intro>")` line.
   - Place it alongside `SiteTitle` / `Description` / `AuthorName` for readability.
-  - Save — `dotnet watch` (or the dev-loop Pennington live reload) will refresh the browser.
+  - Save — `dotnet watch` (or Pennington's dev-mode live reload) will refresh the browser.
 
 ```csharp:path
 examples/AlexBlogExample/Program.cs

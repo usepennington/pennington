@@ -76,6 +76,6 @@ A built-in rewriter implements `IHtmlResponseRewriter` with an explicit `Order`,
 
 ## See also
 
-- Related reference: [Options classes catalog](/reference/options)
-- Related reference: [Localization surfaces](/reference/localization)
-- Background: [The unified HTML rewriting pass](/explanation/response-pipeline)
+- Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
+- Related reference: [`LocalizationOptions`](/reference/options/localization-options)
+- Background: [The response-processing pipeline](/explanation/core/response-processing)

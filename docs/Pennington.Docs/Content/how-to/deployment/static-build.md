@@ -1,6 +1,6 @@
 ---
 title: "Build a static site"
-description: "Run the build verb, understand the crawler-based OutputGenerationService, and read the BuildReport for broken links and failed pages."
+description: "Run the build verb, let OutputGenerationService crawl the running host, and read the BuildReport for broken links and failed pages."
 section: "deployment"
 order: 10
 tags: []
@@ -10,9 +10,9 @@ search: false
 llms: false
 ---
 
-> **In this page.** Running the app with `build [baseUrl] [outputDirectory]`, understanding the crawler-based `OutputGenerationService`, and reading the `BuildReport` for broken links and failed pages.
+> **In this page.** Running the app with `build [baseUrl] [outputDirectory]`, what `OutputGenerationService` crawls, and reading the `BuildReport` for broken links and failed pages.
 >
-> **Not in this page.** Platform-specific upload steps (see the per-host pages in this section).
+> **Not in this page.** Platform-specific upload steps — see [Deploy to GitHub Pages](/how-to/deployment/github-pages) and [Adapt the deploy workflow for other hosts](/how-to/deployment/adapt-for-other-hosts).
 
 ## When to use this
 
@@ -25,7 +25,7 @@ llms: false
 - You can run `dotnet run --project <yourSite>` and the site serves locally without errors.
 - You understand that every page is produced by a real HTTP round-trip against the running host, so whatever works in dev is what ships.
 
-To copy a working setup, see [`examples/MinimalExample`](https://github.com/Phil-Scott-DEV/Pennington/tree/main/examples/MinimalExample). Do not walk through the whole example — this page is a recipe, not a tour.
+To copy a working setup, see [`examples/MinimalExample`](https://github.com/usepennington/pennington/tree/main/examples/MinimalExample). Do not walk through the whole example — this page is a recipe, not a tour.
 
 ---
 
@@ -49,11 +49,11 @@ From the project directory, run:
 dotnet run --project <yourSite> -- build
 ```
 
-Positional arguments are parsed by `OutputOptions.FromArgs`:
+Positional arguments after `--`:
 
-- `args[0]` must equal `build` (case-insensitive). Anything else returns a no-op `OutputOptions` so `dotnet test` and `dotnet watch` don't misread positional args.
-- `args[1]` is `BaseUrl` (default `"/"`). Use a sub-path like `/pennington/` when hosting under a prefix.
-- `args[2]` is `OutputDirectory` (default `"output"`).
+- First token must be `build` (case-insensitive). Anything else is a no-op so `dotnet test` and `dotnet watch` don't misread positional args.
+- Second token is `BaseUrl` (default `/`). Use a sub-path like `/pennington/` when hosting under a prefix.
+- Third token is `OutputDirectory` (default `output`).
 
 ### 3. Supply a base URL and output directory when needed
 
@@ -65,15 +65,15 @@ The same invocation under `dotnet watch` or tests would be ignored — the `buil
 
 ### 4. Understand what the crawler does
 
-`RunOrBuildAsync` calls `app.StartAsync()` so the full ASP.NET host comes up exactly as in `dotnet run`, then resolves `OutputGenerationService` and calls `GenerateAsync(app.Urls.First())`. Phases executed against the running host:
+`RunOrBuildAsync` starts the full ASP.NET host exactly as in `dotnet run`, then `OutputGenerationService` crawls it:
 
-- Discover content pages via every `IContentService.DiscoverAsync()` and MapGet routes via `EndpointDataSource`.
-- Clean the output directory when `CleanOutput` is true, then copy content assets and wwwroot/RCL static web assets.
-- HTTP-fetch all HTML content pages in parallel, then MapGet routes (e.g. `/styles.css`) last so CSS class collectors see every HTML page first.
-- Fetch the sentinel `/__pennington-404-generator` to materialize `404.html`.
-- Run `LinkVerificationService` over every generated HTML page to collect broken internal links.
+- Discovers every content page and `MapGet` route.
+- Cleans the output directory (when `CleanOutput` is true), copies content assets and static web assets.
+- Fetches every HTML page over HTTP in parallel, then fetches asset routes (e.g. `/styles.css`) last so CSS class collection sees every page first.
+- Fetches `/__pennington-404-generator` to materialize `404.html`.
+- Verifies internal links across every generated page.
 
-Because output is produced by real HTTP responses, response processors, `IHtmlResponseRewriter`s, Razor SSR, Markdig extensions, and `MonorailCSS` class collection all run identically to dev serve.
+Dev serve and build share one pipeline — whatever works in `dotnet run` is what ships. See [Unified dev and build path](/explanation/core/dev-vs-build) for the why.
 
 ### 5. Read the `BuildReport` written to stdout
 
@@ -93,7 +93,7 @@ WARNINGS
 Check for:
 
 - `N pages failed` — fatal render/fetch errors. Each failure is listed under `ERRORS` with source file and message.
-- `N broken links found` — `LinkVerificationService` couldn't match an internal `href` to any generated route or copied asset.
+- `N broken links found` — an internal `href` didn't match any generated route or copied asset.
 - `N pages skipped (draft)` — pages whose front matter has `isDraft: true`; this is informational.
 
 ### 6. Check the process exit code in CI
@@ -116,6 +116,8 @@ A non-zero exit means the build artifact is unsafe to publish.
 
 ## Related
 
-- Reference: [OutputOptions and CLI arguments](/reference/generation/output-options/)
-- Reference: [BuildReport fields](/reference/generation/build-report/)
-- Background: [Why dev-serve and build share one HTTP path](/explanation/architecture/unified-build-pipeline/)
+- How-to: [Deploy to GitHub Pages](/how-to/deployment/github-pages)
+- How-to: [Adapt the deploy workflow for other hosts](/how-to/deployment/adapt-for-other-hosts)
+- Reference: [`OutputOptions` and CLI arguments](/reference/options/auxiliary-options)
+- Reference: [Build report fields](/reference/diagnostics/build-report)
+- Background: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build)

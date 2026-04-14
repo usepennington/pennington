@@ -117,5 +117,5 @@ T:Pennington.Diagnostics.DiagnosticSeverity
 ## See also
 
 - Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
-- How-to: [Run a static build and read the report](/how-to/build/run-static-build)
-- Background: [Diagnostics and the build pipeline](/explanation/diagnostics/build-pipeline)
+- How-to: [Build a static site](/how-to/deployment/static-build)
+- Background: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build)

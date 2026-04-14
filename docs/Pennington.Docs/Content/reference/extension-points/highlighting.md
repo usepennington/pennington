@@ -106,7 +106,7 @@ T:ForgePortalExample.PipelineHighlighter
 
 ## See also
 
-- Related reference: [Options: HighlightingOptions](/reference/options/highlighting-options)
-- Related reference: [Options: PenningtonOptions](/reference/options/pennington-options)
-- How-to: [Add a custom code highlighter](/how-to/add-custom-highlighter)
-- Background: [How highlighting fits the Markdown pipeline](/explanation/highlighting-pipeline)
+- Related reference: [Auxiliary options classes (`HighlightingOptions`)](/reference/options/auxiliary-options)
+- Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
+- How-to: [Add a custom syntax highlighter](/how-to/extensibility/custom-highlighter)
+- Background: [The syntax-highlighting cascade](/explanation/rendering/highlighting)

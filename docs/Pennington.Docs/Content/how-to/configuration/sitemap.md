@@ -1,10 +1,10 @@
 ---
 title: "Generate a sitemap"
 description: "Enable sitemap generation, serve /sitemap.xml, and filter drafts and redirects."
-section: "deployment"
-order: 90
+section: "configuration"
+order: 80
 tags: []
-uid: how-to.deployment.sitemap
+uid: how-to.configuration.sitemap
 isDraft: true
 search: false
 llms: false
@@ -16,8 +16,8 @@ llms: false
 
 ## When to use this
 
-- Outline bullet: You already have a Pennington site running and need a `/sitemap.xml` for SEO / crawlers before deployment.
-- Outline bullet: Use before the host-specific recipes in this section — the static build output should already contain `sitemap.xml` when you upload it.
+- Outline bullet: You already have a Pennington site running and need a `/sitemap.xml` for SEO / crawlers.
+- Outline bullet: Configure this once; the same endpoint serves dev-serve and static build, so deployment just uploads the generated file.
 
 ## Assumptions
 
@@ -76,7 +76,7 @@ llms: false
 
 ## Related
 
-- Reference: [PenningtonOptions (CanonicalBaseUrl)](/reference/options/pennington-options)
-- Reference: [BlogSiteOptions (EnableSitemap)](/reference/options/blogsite-options)
-- Background: [How static build mirrors dev-serve](/explanation/architecture/dev-build-unified-path)
-- Neighbor how-to: [Build a static site](/how-to/deployment/static-build)
+- Reference: [`PenningtonOptions` (`CanonicalBaseUrl`)](/reference/options/pennington-options)
+- Reference: [`BlogSiteOptions` (`EnableSitemap`)](/reference/options/blogsite-options)
+- Background: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build)
+- How-to: [Build a static site](/how-to/deployment/static-build)

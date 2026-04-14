@@ -25,9 +25,7 @@ llms: false
 - Completed [Create your first Pennington site](/tutorials/getting-started/first-site) and [Add your first markdown page](/tutorials/getting-started/first-page)
 - A running Pennington site with a `MainLayout.razor` you can edit
 
-The finished code for this tutorial lives in [`examples/MinimalExample`](https://github.com/scottsauber/Penn/tree/main/examples/MinimalExample) — the smallest Pennington site that still wires MonorailCSS.
-
-> **Grounding note.** Every example today wires `AddMonorailCss` / `UseMonorailCss` from top-level `Program.cs` statements, so there are no xmldocid-addressable symbols for each step. The outline below groups the steps around `Program.cs` as a whole; when the `MinimalExample` gains a `Startup.AddStyling` / `Startup.UseStyling` pair of methods, individual steps can be switched to xmldocid fences (see `docs/_research/blockers.md`).
+The finished code for this tutorial lives in [`examples/MinimalExample`](https://github.com/usepennington/pennington/tree/main/examples/MinimalExample) — the smallest Pennington site that still wires MonorailCSS.
 
 ---
 
@@ -35,7 +33,7 @@ The finished code for this tutorial lives in [`examples/MinimalExample`](https:/
 
 - Bullets to cover under this unit:
 - Explain that MonorailCSS is a utility-first CSS generator that runs inside the Pennington host; no Node.js, no build step.
-- The stylesheet is produced at response time by `CssClassCollectorProcessor` scanning the HTML for utility-class tokens and asking the `MonorailCss` generator for matching CSS.
+- The stylesheet is produced at response time by scanning the rendered HTML for utility-class tokens and generating matching CSS on the fly.
 - The generator runs behind an HTTP endpoint mapped by `UseMonorailCss` (default `/css/tailwind.css`), so the stylesheet is always the current set of utility classes actually in use.
 
 ### Step 1.1 — Register `AddMonorailCss`
@@ -52,7 +50,7 @@ The finished code for this tutorial lives in [`examples/MinimalExample`](https:/
 ### Step 1.2 — Call `UseMonorailCss` on the pipeline
 
 - After `app.UsePennington()`, add `app.UseMonorailCss()`.
-- This maps the stylesheet endpoint and wires the response processor that collects utility-class tokens.
+- This maps the stylesheet endpoint and turns on the utility-class scanner that feeds it.
 
 ### Checkpoint — the stylesheet endpoint is live
 

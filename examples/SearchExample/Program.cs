@@ -20,7 +20,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         PrimaryHue = 235, // Blue theme (0-360)
         BaseColorName = ColorNames.Slate // Base color palette
     },
-    GitHubUrl = "https://github.com/Pennington/Pennington",
+    GitHubUrl = "https://github.com/usepennington/pennington",
 
     // Custom header with logo and branding
     HeaderContent = """

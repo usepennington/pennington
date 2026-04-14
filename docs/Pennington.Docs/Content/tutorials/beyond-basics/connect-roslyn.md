@@ -25,13 +25,13 @@ llms: false
 - Completed [Build your first Pennington site](/tutorials/getting-started/first-site) (or have a running Pennington site with at least one markdown source)
 - A sibling C# project in the same repo that contains the symbols you want to embed (this tutorial uses `examples/Spectre.Console.Examples/` as that project)
 
-The finished code for this tutorial lives in [`examples/SpectreConsoleExample`](https://github.com/Phil-Scott-DotNet/Pennington/tree/main/examples/SpectreConsoleExample), which pulls snippets from the sibling [`examples/Spectre.Console.Examples`](https://github.com/Phil-Scott-DotNet/Pennington/tree/main/examples/Spectre.Console.Examples) project.
+The finished code for this tutorial lives in [`examples/SpectreConsoleExample`](https://github.com/usepennington/pennington/tree/main/examples/SpectreConsoleExample), which pulls snippets from the sibling [`examples/Spectre.Console.Examples`](https://github.com/usepennington/pennington/tree/main/examples/Spectre.Console.Examples) project.
 
 ---
 
 ## 1. Add the Roslyn package and point it at a solution
 
-- One-sentence framing: Pennington's core pipeline doesn't know about C# symbols; the optional `Pennington.Roslyn` package layers on a workspace, a preprocessor for `xmldocid` fences, and a `RoslynHighlighter`.
+- One-sentence framing: Pennington's core pipeline doesn't know about C# symbols; the optional `Pennington.Roslyn` package layers on a solution workspace, support for `xmldocid` fences, and a Roslyn-powered highlighter.
 - We'll land on a working `Program.cs` that calls `AddPennington` and then `AddPenningtonRoslyn` with a `SolutionPath` pointing at our own `.sln`.
 
 ### Step 1.1 — Reference the Pennington.Roslyn package
@@ -43,7 +43,7 @@ The finished code for this tutorial lives in [`examples/SpectreConsoleExample`](
 ### Step 1.2 — Wire AddPenningtonRoslyn in Program.cs
 
 - Call `builder.Services.AddPenningtonRoslyn(...)` after `AddPennington` and set `options.SolutionPath` to a path relative to the site's content root.
-- This registers `SolutionWorkspaceService`, `SymbolExtractionService`, and the `RoslynCodeBlockPreprocessor` that resolves `xmldocid` fences. It also registers `RoslynHighlighter` into the `HighlightingService` chain so unresolved C# still gets semantic colouring.
+- This turns on the solution workspace, symbol resolution for `xmldocid` fences, and the Roslyn highlighter so plain C# fences also get semantic colouring.
 - Reference the sibling solution using a relative path from the docs project (e.g., `"../../Pennington.slnx"`).
 
 ```csharp:xmldocid
@@ -55,21 +55,21 @@ T:RoslynIntegrationExample.BlogFrontMatter
 ### Checkpoint — Roslyn is active
 
 - Run `dotnet run` and open any markdown page that contains a plain ` ```csharp` fence.
-- In the browser, view source on a code block: C# keywords should now be wrapped in `<span class="hljs-keyword">…</span>` style tokens emitted by `RoslynHighlighter` rather than the TextMate fallback.
-- If `SolutionPath` is wrong the dev overlay shows a warning from `DiagnosticContext` — fix the path before continuing.
+- In the browser, view source on a code block: C# keywords should now be wrapped in highlighter spans emitted by the Roslyn highlighter rather than the TextMate fallback.
+- If `SolutionPath` is wrong the dev overlay shows a diagnostic warning — fix the path before continuing.
 
 ---
 
 ## 2. Embed a method snippet with an xmldocid fence
 
-- One-sentence framing: the `xmldocid` fence tells `RoslynCodeBlockPreprocessor` to look up a symbol by its documentation ID and splice the source text into the rendered page.
+- One-sentence framing: the `xmldocid` fence tells Pennington to look up a symbol by its documentation ID and splice the source text into the rendered page.
 - We'll add one fence that targets a single method in the sibling project.
 
 ### Step 2.1 — Pick a method and write the fence
 
 - Open a markdown file in `Content/` (any page will do) and add a fenced block using the form ` ```csharp:xmldocid` with the symbol ID on the next line.
 - Method IDs start with `M:`, fully-qualified by namespace, type, and parameter list.
-- When the preprocessor resolves the ID it reads the `SyntaxTree` from the workspace and emits the full method declaration including signature and body.
+- When the ID resolves, Pennington reads the source from the workspace and emits the full method declaration including signature and body.
 
 ```csharp:xmldocid
 M:Spectre.Console.Examples.Console.Tutorials.GettingStartedExample.ShowDataTable
@@ -79,7 +79,7 @@ M:Spectre.Console.Examples.Console.Tutorials.GettingStartedExample.ShowDataTable
 
 ### Step 2.2 — Verify the fence resolved
 
-- Save the markdown file and watch the terminal: `SolutionWorkspaceService` logs `Loading solution from {SolutionPath}` on first hit.
+- Save the markdown file and watch the terminal: the workspace loads on first hit, so look for the solution-load line in the output.
 - Reload the page — you should see the method body rendered as highlighted C#.
 - If the fence renders as a comment like `<!-- Unresolved xmldocid: ... -->` the symbol ID is wrong; cross-check the namespace and parameter signature (generic methods use ``` ``1 ``` and backticks for arity).
 
@@ -98,7 +98,7 @@ M:Spectre.Console.Examples.Console.Tutorials.GettingStartedExample.ShowDataTable
 ### Step 3.1 — Add a type-level fence
 
 - Use the `T:` prefix followed by the fully-qualified type name.
-- The preprocessor returns the entire class declaration including XML doc comments if present.
+- Pennington returns the entire class declaration including XML doc comments if present.
 
 ```csharp:xmldocid
 T:Spectre.Console.Examples.Console.Tutorials.GettingStartedExample
@@ -126,7 +126,7 @@ M:Spectre.Console.Examples.Console.Tutorials.GettingStartedExample.ShowColoredHe
 
 ## 4. Edit the source and watch the docs update
 
-- One-sentence framing: because `SolutionWorkspaceService` registers with `IFileWatcher`, changing a `.cs` file invalidates the cached workspace and forces the next render to re-read the symbol.
+- One-sentence framing: the Roslyn workspace watches your source files, so changing a `.cs` file invalidates the cached workspace and forces the next render to re-read the symbol.
 - This is the same live-reload path the rest of Pennington uses for markdown, so no extra configuration is needed.
 
 ### Step 4.1 — Run under dotnet watch
@@ -138,21 +138,21 @@ M:Spectre.Console.Examples.Console.Tutorials.GettingStartedExample.ShowColoredHe
 
 - Open `examples/Spectre.Console.Examples/console/tutorials/GettingStartedExample.cs` in your editor.
 - Change a string literal inside `ShowColoredHelloWorld` and save.
-- The browser live-reload connection (`/__pennington/reload` WebSocket) fires; the page re-renders with the new text pulled from the updated source.
+- The browser live-reload connection fires; the page re-renders with the new text pulled from the updated source.
 
 ### Checkpoint — the edit round-trips
 
 - Without restarting the host, the page now reflects the new string literal.
-- The terminal shows `SolutionWorkspaceService` reloading the affected project.
+- The terminal shows the Roslyn workspace reloading the affected project.
 - Revert the edit to leave the example project clean.
 
 ---
 
 ## Summary
 
-- You connected a docs site to a real `.sln` with `AddPenningtonRoslyn` + `SolutionPath`, wiring in the workspace, symbol extraction, and `RoslynHighlighter`.
+- You connected a docs site to a real `.sln` with `AddPenningtonRoslyn` + `SolutionPath`, turning on the workspace, symbol lookup, and Roslyn-powered highlighting.
 - You can embed any C# method or type in a markdown page via a `csharp:xmldocid` fence and pick between the full declaration and `bodyonly` form.
-- You rely on `IFileWatcher` to keep rendered snippets in sync with the source without restarting the host.
+- You rely on Pennington's file watching to keep rendered snippets in sync with the source without restarting the host.
 - You know how to read the dev overlay for `Unresolved xmldocid` diagnostics and correct symbol IDs when they drift.
 
 > Navigation to the next tutorial is generated automatically from `order` — do not write a "what's next" section.

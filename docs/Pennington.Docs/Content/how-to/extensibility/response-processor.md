@@ -26,7 +26,7 @@ llms: false
 - You understand that `ResponseProcessingMiddleware` buffers the whole response body into memory before processors run.
 - You know the three built-in `IResponseProcessor` orders (`10` HTML rewriting, `20` live-reload, `30` diagnostic overlay) so you can slot yours in.
 
-To copy a working setup, see [`examples/ForgePortalExample`](https://github.com/Phillip-Haydon/Penn/tree/main/examples/ForgePortalExample) — it registers `FeedbackWidgetProcessor` that inserts a floating button before `</body>`.
+To copy a working setup, see [`examples/ForgePortalExample`](https://github.com/usepennington/pennington/tree/main/examples/ForgePortalExample) — it registers `FeedbackWidgetProcessor` that inserts a floating button before `</body>`.
 
 ---
 

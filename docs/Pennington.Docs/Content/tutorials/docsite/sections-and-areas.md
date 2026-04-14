@@ -1,6 +1,6 @@
 ---
 title: "Organize content with sections and areas"
-description: "Structure Content/ into areas and sections, use section and order in front matter, and see how NavigationBuilder turns a flat file tree into a sidebar."
+description: "Structure Content/ into areas and sections, use section and order in front matter, and see how Pennington turns a flat file tree into a sidebar."
 section: "docsite"
 order: 30
 tags: []
@@ -10,9 +10,9 @@ search: false
 llms: false
 ---
 
-> **In this page.** Structuring `Content/` into areas and sections, using `section` / `order` in front matter, and how `NavigationBuilder` turns a flat file tree into a sidebar.
+> **In this page.** Structuring `Content/` into areas and sections, using `section` / `order` in front matter, and how Pennington turns a flat file tree into a sidebar.
 >
-> **Not in this page.** Locale-prefixed navigation, Razor-page integration, or custom `IContentService` implementations.
+> **Not in this page.** Locale-prefixed navigation, Razor-page integration, or custom content source implementations.
 
 ## What you'll do
 
@@ -25,16 +25,14 @@ llms: false
 - Completed [Scaffold a documentation site with DocSite](/tutorials/docsite/scaffold) and [Author a documentation page with DocFrontMatter](/tutorials/docsite/first-doc-page)
 - A running DocSite with at least one rendered page
 
-The finished sections pattern can be studied in [`examples/BeaconDocsExample`](https://github.com/scottsauber/Penn/tree/main/examples/BeaconDocsExample), [`examples/NorthwindHandbookExample`](https://github.com/scottsauber/Penn/tree/main/examples/NorthwindHandbookExample), and [`examples/SpectreConsoleExample`](https://github.com/scottsauber/Penn/tree/main/examples/SpectreConsoleExample).
-
-> **Grounding note on areas.** No example project under `examples/` wires `DocSiteOptions.Areas` today; only `docs/Pennington.Docs/Program.cs` demonstrates it. Sections can be grounded fully from the example projects above, but the `Areas` section of this tutorial (step 3) points at the docs-site host until an example ships (tracked in `docs/_research/blockers.md`).
+The finished sections pattern can be studied in [`examples/BeaconDocsExample`](https://github.com/usepennington/pennington/tree/main/examples/BeaconDocsExample), [`examples/NorthwindHandbookExample`](https://github.com/usepennington/pennington/tree/main/examples/NorthwindHandbookExample), and [`examples/SpectreConsoleExample`](https://github.com/usepennington/pennington/tree/main/examples/SpectreConsoleExample).
 
 ---
 
 ## 1. Use `section` to group pages inside one content tree
 
 - Bullets to cover under this unit:
-- The `section:` key groups pages for `NavigationBuilder` so the sidebar shows them together.
+- The `section:` key groups pages so the sidebar shows them together.
 - Two common patterns:
   1. Folder-only: create `Content/guides/` and set `section: "guides"` in every page inside; the folder name becomes the navigation group.
   2. Explicit: set `section: "Getting Started"` on loose pages in `Content/` so they group together even if they live in different folders.
@@ -69,7 +67,7 @@ The finished sections pattern can be studied in [`examples/BeaconDocsExample`](h
 
 - Bullets to cover under this unit:
 - A section group is usually clickable. That landing page is an ordinary page whose `section:` matches the group name and whose `order:` is `0` (or the smallest in that group).
-- Pennington's `NavigationBuilder` promotes that page to the group-level anchor.
+- Pennington promotes that page to the group-level anchor in the sidebar.
 
 ### Step 2.1 — Add a section-level index page
 
@@ -110,7 +108,7 @@ The finished sections pattern can be studied in [`examples/BeaconDocsExample`](h
 ```csharp file="docs/Pennington.Docs/Program.cs"
 ```
 
-- _This is the only Pennington project that currently wires `Areas`; use it as the reference for the options shape. Once an example adds `Areas`, this snippet will be swapped for it._
+- _Use this as the reference for the options shape._
 
 ### Step 3.3 — Verify the navigation shows one area at a time
 
@@ -132,6 +130,6 @@ The finished sections pattern can be studied in [`examples/BeaconDocsExample`](h
 - You grouped pages into sections using `section:` and `order:` front-matter keys.
 - You added a section-level landing page by setting `order: 0` on an index page that shares the section.
 - You split the site into two areas via `DocSiteOptions.Areas`, each rooted at a top-level folder under `Content/`.
-- You know how `NavigationBuilder` folds a flat file tree plus front-matter hints into the sidebar structure.
+- You know how Pennington folds a flat file tree plus front-matter hints into the sidebar structure.
 
 > Navigation to the next tutorial is generated automatically from `order` — do not write a "what's next" section.

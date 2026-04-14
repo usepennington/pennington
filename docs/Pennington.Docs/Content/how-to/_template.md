@@ -25,7 +25,7 @@ _Bulleted list of what the page assumes is already true. Keep it short — long 
 - You have an existing Pennington site (see [_Getting Started tutorial_](/_path_) if not)
 - _Other assumptions_
 
-To copy a working setup, see [`examples/_ExampleProjectName_`](https://github.com/_org_/_repo_/tree/main/examples/_ExampleProjectName_). Do not walk through the whole example — this page is a recipe, not a tour.
+To copy a working setup, see [`examples/_ExampleProjectName_`](https://github.com/usepennington/pennington/tree/main/examples/_ExampleProjectName_). Do not walk through the whole example — this page is a recipe, not a tour.
 
 ---
 

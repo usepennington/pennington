@@ -26,7 +26,7 @@ llms: false
 - `MapRazorComponents<App>()` is in your `UsePennington` pipeline.
 - A target Razor component exists (or you will create one) with `[Parameter]` properties.
 
-To copy a working setup, see [`examples/SpaNavigationExample`](https://github.com/philsavvy/Pennington/tree/main/examples/SpaNavigationExample) or [`examples/SpaNavigationTutorialExample`](https://github.com/philsavvy/Pennington/tree/main/examples/SpaNavigationTutorialExample). Do not walk through the whole example — this page is a recipe, not a tour.
+To copy a working setup, see [`examples/SpaNavigationExample`](https://github.com/usepennington/pennington/tree/main/examples/SpaNavigationExample) or [`examples/SpaNavigationTutorialExample`](https://github.com/usepennington/pennington/tree/main/examples/SpaNavigationTutorialExample). Do not walk through the whole example — this page is a recipe, not a tour.
 
 ---
 

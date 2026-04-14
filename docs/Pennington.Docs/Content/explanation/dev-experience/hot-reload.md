@@ -75,7 +75,7 @@ T:Pennington.Infrastructure.FileWatcher
 
 ## Further reading
 
-- Reference: [Infrastructure API catalog](/reference/api/infrastructure)
-- Explanation: [Response processing pipeline](/explanation/rendering/response-processing)
-- Explanation: [Unified dev and build code path](/explanation/core/dev-and-build)
+- Reference: [DI and middleware extension methods](/reference/host/extensions)
+- Explanation: [The response-processing pipeline](/explanation/core/response-processing)
+- Explanation: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build)
 - External: [dotnet watch documentation](https://learn.microsoft.com/dotnet/core/tools/dotnet-watch)

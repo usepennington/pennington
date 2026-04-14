@@ -2,7 +2,7 @@
 title: "Use multiple content sources"
 description: "Chain PenningtonOptions.AddMarkdownContent<TFrontMatter> calls with different ContentPath/BasePageUrl/Section/ExcludePaths, and how overlap detection warns on misconfiguration."
 section: "configuration"
-order: 30
+order: 10
 tags: []
 uid: how-to.configuration.multiple-sources
 isDraft: true
@@ -25,7 +25,7 @@ llms: false
 - You already know how to define an `IFrontMatter` record (see [_Work with front matter_](/how-to/content-authoring/front-matter) if not).
 - You understand that each registered source runs through the same pipeline — discovery, parse, render, generate — with only its `MarkdownContentOptions` differing.
 
-To copy a working setup, see [`examples/MultipleContentSourceExample`](https://github.com/phil-scott-78/Pennington/tree/main/examples/MultipleContentSourceExample). It wires three parallel sources (root pages, `/blog`, `/docs`) with three front-matter records. Do not walk the whole example — this page is a recipe, not a tour.
+To copy a working setup, see [`examples/MultipleContentSourceExample`](https://github.com/usepennington/pennington/tree/main/examples/MultipleContentSourceExample). It wires three parallel sources (root pages, `/blog`, `/docs`) with three front-matter records. Do not walk the whole example — this page is a recipe, not a tour.
 
 ---
 
@@ -121,4 +121,4 @@ M:MultipleContentSourceExample.ContentHelper.GetNavigationAsync(System.String,Sy
 ## Related
 
 - Reference: [`MarkdownContentOptions<T>`](/reference/options/markdown-content-options)
-- Background: [How the content pipeline processes sources](/explanation/content-pipeline)
+- Background: [The content pipeline and union types](/explanation/core/content-pipeline)

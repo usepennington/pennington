@@ -24,7 +24,7 @@ llms: false
 - Outline bullet: You have a working DocSite (see `/tutorials/getting-started/first-site` if not).
 - Outline bullet: You can edit `Program.cs` and have a `new DocSiteOptions { ... }` factory in place.
 - Outline bullet: You understand that `DocSiteOptions` is verified at `src/Pennington.DocSite/DocSiteOptions.cs` and that the layout lives at `src/Pennington.DocSite/Components/Layout/MainLayout.razor` — it is not configurable at runtime.
-- Outline bullet: To copy a working setup, see [`examples/SearchExample`](https://github.com/phil-scott-78/Pennington/tree/main/examples/SearchExample) (most override knobs set in one place — head content, styles, routing assembly, custom `@page`). Do not walk the example end-to-end; this is a recipe.
+- Outline bullet: To copy a working setup, see [`examples/SearchExample`](https://github.com/usepennington/pennington/tree/main/examples/SearchExample) (most override knobs set in one place — head content, styles, routing assembly, custom `@page`). Do not walk the example end-to-end; this is a recipe.
 
 ---
 
@@ -83,9 +83,7 @@ T:SpaNavigationExample.Slots.RecipeContentSlotRenderer
 
 ### 6. If none of these slots are enough, fork to `AddPennington`
 
-- Outline bullet: The DocSite layout (`MainLayout.razor`) references `TableOfContentsNavigation`, `OutlineNavigation`, `LanguageSwitcher`, and `StructuredData` as **static Razor element references**, not DI-injected services. There is no DI seam to substitute these components — a `services.AddTransient<TableOfContentsNavigation, MyNav>()` registration has no effect.
-- Outline bullet: If you need to replace those components, or restructure the shell (multi-column grids, different header, custom sidebar ordering), drop `AddDocSite`/`UseDocSite` entirely and compose the pieces with plain `AddPennington` + `UsePennington`. You lose the DocSite's turnkey layout but keep the full engine (Markdig pipeline, response processors, search, llms.txt, sitemap, localization, feeds).
-- Outline bullet: Starting points for a hand-rolled site: `examples/SpaNavigationExample/Program.cs` (markdown + SPA islands, no DocSite) and `examples/MultipleContentSourceExample/Program.cs` (three content sources with hand-written layouts).
+If these slots aren't enough, drop `AddDocSite`/`UseDocSite` and compose the pipeline yourself with `AddPennington` + `UsePennington`. You keep the engine (Markdig pipeline, response processors, search, llms.txt, sitemap, localization, feeds) but have to hand-roll the shell. See `examples/SpaNavigationExample/Program.cs` and `examples/MultipleContentSourceExample/Program.cs` for hand-rolled starting points.
 
 ---
 
@@ -97,7 +95,6 @@ T:SpaNavigationExample.Slots.RecipeContentSlotRenderer
 
 ## Related
 
-- Reference: [_DocSiteOptions_](/reference/docsite/options) — every field on `DocSiteOptions` with types and defaults.
-- Reference: [_Islands and SPA navigation_](/reference/islands/options) — `IIslandRenderer`, `RazorIslandRenderer<T>`, `SpaNavigationOptions`.
-- Background: [_How DocSite composes the pipeline_](/explanation/docsite/composition) — why `AddDocSite` is a thin composition over `AddPennington` and what that implies for override freedom.
-- Background: [_The response-processor pipeline_](/explanation/response-processors) — when to reach for `IResponseProcessor` vs `IHtmlResponseRewriter`.
+- Reference: [`DocSiteOptions`](/reference/options/docsite-options) — every field on `DocSiteOptions` with types and defaults.
+- Reference: [Island rendering interfaces](/reference/extension-points/islands) — `IIslandRenderer`, `RazorIslandRenderer<T>`, `SpaEnvelope`.
+- Background: [The response-processing pipeline](/explanation/core/response-processing) — when to reach for `IResponseProcessor` vs `IHtmlResponseRewriter`.

@@ -1,0 +1,252 @@
+schema_version: 1
+mode: prototype
+content_root: Pennington.Docs/Content
+
+authority:
+  workflow: docs-manifest.yaml
+  syntax: Pennington.Docs/CLAUDE.md
+  voice: docs-voice.md
+  scope: docs-toc.md
+  architecture: _research/site-architecture.md
+  examples: _research/examples-inventory.md
+  blockers: _research/blockers.md
+
+allowed_statuses:
+  - outline_only
+  - drafting
+  - needs_revision
+  - blocked
+  - ready_to_publish
+  - published
+
+quadrants:
+  tutorial:
+    path_prefix: Pennington.Docs/Content/tutorials/
+    required_headings:
+      - What you'll do
+      - Prerequisites
+      - Summary
+  how-to:
+    path_prefix: Pennington.Docs/Content/how-to/
+    required_headings:
+      - When to use this
+      - Assumptions
+      - Steps
+      - Verify
+      - Related
+  reference:
+    path_prefix: Pennington.Docs/Content/reference/
+    required_headings:
+      - Summary
+      - Declaration
+      - See also
+  explanation:
+    path_prefix: Pennington.Docs/Content/explanation/
+    required_headings:
+      - The question
+      - Context
+      - How it works
+      - Trade-offs
+      - Further reading
+
+pages:
+  - path: Pennington.Docs/Content/tutorials/getting-started/first-site.md
+    url: /tutorials/getting-started/first-site
+    quadrant: tutorial
+    status: needs_revision
+    scope_source: docs-toc.md
+    evidence:
+      examples:
+        - examples/MinimalExample/Program.cs
+        - examples/MinimalExample/Components/Layout/Pages.razor
+        - examples/MinimalExample/Content/index.md
+        - M:MinimalExample.ContentHelper.GetPageByUrlAsync(System.String)
+      architecture:
+        - _research/site-architecture.md
+      blockers: []
+    known_issues:
+      - Uses unsupported fence syntax with file="..."
+      - Contains outline artifacts such as "Bullets:" and "Fence slot:"
+    acceptance_checks:
+      - Uses only :path or :xmldocid fences
+      - Removes outline artifact prose
+      - Keeps scope limited to minimal host wiring and one markdown page
+
+  - path: Pennington.Docs/Content/tutorials/getting-started/first-page.md
+    url: /tutorials/getting-started/first-page
+    quadrant: tutorial
+    status: needs_revision
+    scope_source: docs-toc.md
+    evidence:
+      examples:
+        - examples/MinimalExample/Content/index.md
+        - examples/MinimalExample/Content/sub-folder/page-one.md
+        - examples/MinimalExample/Content/sub-folder/page-two.md
+      architecture:
+        - _research/site-architecture.md
+      blockers: []
+    known_issues:
+      - Uses unsupported fence syntax with file="..."
+    acceptance_checks:
+      - Uses approved :path fences for markdown files
+      - Covers only front matter and file-to-URL mapping
+
+  - path: Pennington.Docs/Content/tutorials/docsite/sections-and-areas.md
+    url: /tutorials/docsite/sections-and-areas
+    quadrant: tutorial
+    status: blocked
+    scope_source: docs-toc.md
+    blocked_by:
+      - No approved example project demonstrates DocSite Areas
+      - Current draft relies on a docs-local Program.cs outside the approved examples inventory
+    evidence:
+      examples:
+        - examples/BeaconDocsExample/Content/index.md
+      architecture:
+        - _research/site-architecture.md
+      blockers:
+        - _research/blockers.md
+    acceptance_checks:
+      - Add or approve an example project with DocSite Areas before drafting
+
+  - path: Pennington.Docs/Content/how-to/content-authoring/front-matter.md
+    url: /how-to/content-authoring/front-matter
+    quadrant: how-to
+    status: drafting
+    scope_source: docs-toc.md
+    evidence:
+      examples:
+        - examples/MultipleContentSourceExample/BlogFrontMatter.cs
+        - examples/MultipleContentSourceExample/DocsFrontMatter.cs
+        - examples/ForgePortalExample/PageFrontMatter.cs
+      architecture:
+        - _research/site-architecture.md
+      blockers: []
+    acceptance_checks:
+      - Keeps explanation of capability architecture out of the recipe
+      - Links to reference and explanation neighbors
+
+  - path: Pennington.Docs/Content/how-to/content-authoring/cross-references.md
+    url: /how-to/content-authoring/cross-references
+    quadrant: how-to
+    status: drafting
+    scope_source: docs-toc.md
+    evidence:
+      examples:
+        - examples/BeaconDocsExample/Content/guides/configuration.md
+        - examples/BeaconDocsExample/Content/api/index.md
+      architecture:
+        - _research/site-architecture.md
+      blockers:
+        - _research/blockers.md
+    acceptance_checks:
+      - Documents only the supported syntaxes: <xref:uid> and [text](xref:uid)
+      - Does not mention unsupported element syntax
+
+  - path: Pennington.Docs/Content/how-to/content-authoring/ui-components-in-markdown.md
+    url: /how-to/content-authoring/ui-components-in-markdown
+    quadrant: how-to
+    status: blocked
+    scope_source: docs-toc.md
+    blocked_by:
+      - Product does not render Razor components from markdown today
+      - Approved examples do not demonstrate this as a working feature
+    evidence:
+      examples: []
+      architecture:
+        - _research/site-architecture.md
+      blockers:
+        - _research/blockers.md
+    acceptance_checks:
+      - Do not draft beyond a blocked stub until product support exists
+
+  - path: Pennington.Docs/Content/how-to/extensibility/code-block-preprocessor.md
+    url: /how-to/extensibility/code-block-preprocessor
+    quadrant: how-to
+    status: blocked
+    scope_source: docs-toc.md
+    blocked_by:
+      - No approved example project implements a custom ICodeBlockPreprocessor
+    evidence:
+      examples: []
+      architecture:
+        - _research/site-architecture.md
+      blockers:
+        - _research/blockers.md
+    acceptance_checks:
+      - Add or approve an example project before drafting
+
+  - path: Pennington.Docs/Content/reference/options/pennington-options.md
+    url: /reference/options/pennington-options
+    quadrant: reference
+    status: drafting
+    scope_source: docs-toc.md
+    evidence:
+      examples:
+        - examples/MinimalExample/Program.cs
+      architecture:
+        - _research/site-architecture.md
+      blockers: []
+    acceptance_checks:
+      - Declaration points at production symbol, not an example type
+      - Property list matches verified architecture notes
+
+  - path: Pennington.Docs/Content/reference/ui/content.md
+    url: /reference/ui/content
+    quadrant: reference
+    status: blocked
+    scope_source: docs-toc.md
+    blocked_by:
+      - No approved example project contains working Razor call sites for the documented UI components
+    evidence:
+      examples: []
+      architecture:
+        - _research/site-architecture.md
+      blockers:
+        - _research/blockers.md
+    acceptance_checks:
+      - Add or approve sample component call sites before drafting
+
+  - path: Pennington.Docs/Content/reference/markdown/extensions.md
+    url: /reference/markdown/extensions
+    quadrant: reference
+    status: drafting
+    scope_source: docs-toc.md
+    evidence:
+      examples:
+        - examples/BeaconDocsExample/Content/guides/configuration.md
+      architecture:
+        - _research/site-architecture.md
+      blockers: []
+    acceptance_checks:
+      - Catalog includes only supported markdown extensions
+      - Cross-reference syntax matches verified implementation
+
+  - path: Pennington.Docs/Content/explanation/core/content-pipeline.md
+    url: /explanation/core/content-pipeline
+    quadrant: explanation
+    status: needs_revision
+    scope_source: docs-toc.md
+    evidence:
+      examples: []
+      architecture:
+        - _research/site-architecture.md
+      blockers: []
+    known_issues:
+      - Contains unresolved "link once the Reference page exists" text
+    acceptance_checks:
+      - Keeps to one question about union-typed pipeline design
+      - Resolves placeholder future-link text
+
+  - path: Pennington.Docs/Content/explanation/core/dev-vs-build.md
+    url: /explanation/core/dev-vs-build
+    quadrant: explanation
+    status: drafting
+    scope_source: docs-toc.md
+    evidence:
+      examples: []
+      architecture:
+        - _research/site-architecture.md
+      blockers: []
+    acceptance_checks:
+      - Explains unified code path without drifting into CLI reference details

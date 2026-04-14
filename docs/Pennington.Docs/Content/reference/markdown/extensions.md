@@ -39,13 +39,33 @@ M:Pennington.Markdown.MarkdownPipelineFactory.CreateWithExtensions(Pennington.Hi
 
 ### 1. GitHub-style alerts
 
-_Quote-block opens with a bracketed keyword on its first line. The keyword becomes the alert kind (lowercased) as a CSS class on the rendered block._
+_Quote-block opens with a bracketed keyword on its first line. The keyword becomes the alert kind (lowercased) as a CSS class on the rendered block. Parsed by `CustomAlertInlineParser`; rendered by Markdig's default `AlertBlockRenderer` via `MarkdownPipelineFactory.UseCustomAlerts`._
 
 - **Syntax.** `> [!KEYWORD]` on the first line of a block-quote, then the alert body on subsequent `>` lines.
-- **Keywords recognized.** Any alphabetic run is accepted as a kind; Markdig's `AlertBlockRenderer` renders the standard GitHub set. Conventional keywords: `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`.
 - **Arguments.** None.
-- **Output.** `<div class="markdown-alert markdown-alert-{kind-lowercase}">…</div>` (classes attached by `CustomAlertInlineParser`).
-- **Constraint.** The alert marker must be the first inline content of the first paragraph inside a quote block; nested alerts are rejected.
+- **Output.** `<div class="markdown-alert markdown-alert-{kind-lowercase}">…</div>` containing a `<p class="markdown-alert-title"><svg …></svg>{Kind}</p>` title element.
+- **Constraint.** The marker must be the first inline of the first paragraph inside a `>` blockquote — anything before it causes the parser to bail and the blockquote renders as a normal quote. The kind token is matched by `StringSlice.IsAlpha` (letters only; no digits or hyphens). The blockquote must not already be an `AlertBlock` (re-entry guard in `CustomAlertInlineParser.Match`).
+
+#### Kinds
+
+Any alpha kind is accepted; only the five below carry built-in MonorailCSS styling. Unstyled kinds render as a bare `.markdown-alert` wrapper with no color theme.
+
+| Kind | Syntax | Emitted CSS class | Default icon | Color theme |
+|---|---|---|---|---|
+| `NOTE` | `> [!NOTE]` | `markdown-alert markdown-alert-note` | GitHub `info` octicon (filled circle with `i`) | Emerald (`fill-emerald-700 … bg-emerald-100/75 …`) |
+| `TIP` | `> [!TIP]` | `markdown-alert markdown-alert-tip` | GitHub `light-bulb` octicon | Blue (`fill-blue-700 … bg-blue-100/75 …`) |
+| `CAUTION` | `> [!CAUTION]` | `markdown-alert markdown-alert-caution` | GitHub `stop` octicon | Amber (`fill-amber-700 … bg-amber-100/75 …`) |
+| `WARNING` | `> [!WARNING]` | `markdown-alert markdown-alert-warning` | GitHub `alert` octicon (triangle with `!`) | Rose (`fill-rose-700 … bg-rose-100/75 …`) |
+| `IMPORTANT` | `> [!IMPORTANT]` | `markdown-alert markdown-alert-important` | GitHub `report` octicon | Sky (`fill-sky-700 … bg-sky-100/75 …`) |
+
+Icons come from Markdig's `AlertBlockRenderer.DefaultRenderKind`. The MonorailCSS style table lives at `src/Pennington.MonorailCss/MonorailCssOptions.cs` (lines 477-485).
+
+#### Shared styles
+
+- `.markdown-alert` → `my-6 px-4 flex flex-row gap-2.5 rounded-2xl border text-sm items-center`.
+- `.markdown-alert a` → `underline`.
+- `.markdown-alert-title` → `text-[0px]` (hides the kind label text but preserves the icon).
+- `.markdown-alert svg` → `h-4 w-4 mt-0.5`.
 
 ```markdown
 > [!NOTE]

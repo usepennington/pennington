@@ -2,7 +2,7 @@
 title: Generate an llms.txt
 description: Enable `LlmsTxtOptions`, set `OutputDirectory` and `GenerateFullFile`, and opt pages out with `llms: false`.
 section: configuration
-order: 80
+order: 60
 tags: []
 uid: how-to.configuration.llms-txt
 isDraft: true
@@ -113,6 +113,5 @@ Drop an `llms.txt` file in the content root to replace the default `# {SiteTitle
 
 ## Related
 
-- Reference: [`LlmsTxtOptions`](/reference/llms-txt/llms-txt-options)
-- Reference: [`IFrontMatter`](/reference/front-matter/ifrontmatter)
-- Background: [Why Pennington ships llms.txt](/explanation/llms-txt)
+- Reference: [`LlmsTxtOptions`](/reference/options/auxiliary-options)
+- Reference: [`IFrontMatter` and capability defaults](/reference/front-matter/ifrontmatter)

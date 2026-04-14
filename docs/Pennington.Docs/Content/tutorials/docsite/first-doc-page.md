@@ -25,7 +25,7 @@ llms: false
 - Completed [Scaffold a documentation site with DocSite](/tutorials/docsite/scaffold/)
 - A running DocSite project with a `Content/` folder and at least one page already rendering
 
-The finished code for this tutorial lives in [`examples/BeaconDocsExample`](https://github.com/Phil-Scott-Msft/Pennington/tree/main/examples/BeaconDocsExample).
+The finished code for this tutorial lives in [`examples/BeaconDocsExample`](https://github.com/usepennington/pennington/tree/main/examples/BeaconDocsExample).
 
 ---
 

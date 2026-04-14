@@ -80,6 +80,6 @@ Budget: 500–1,500 words, single concept (JSON envelope + island hydration + lo
 
 ## Further reading
 
-- How-to: Register an island renderer — `/how-to/spa/register-island`.
-- Reference: SPA attribute list and envelope schema — `/reference/spa/attributes`.
-- Explanation: Dev-vs-build unified code path — explains why the JSON endpoint is discovered, served, and built through the same HTTP pipeline.
+- How-to: [Register an island renderer](/how-to/extensibility/island-renderer)
+- Reference: [Island rendering interfaces](/reference/extension-points/islands)
+- Explanation: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build)

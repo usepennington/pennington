@@ -2,7 +2,7 @@
 title: "Add alerts and callouts"
 description: "GitHub-style alert syntax (`> [!NOTE]`, `[!TIP]`, `[!CAUTION]`, `[!WARNING]`, `[!IMPORTANT]`) and how they render."
 section: content-authoring
-order: 50
+order: 70
 uid: how-to.content-authoring.alerts
 isDraft: true
 search: false
@@ -16,35 +16,27 @@ tags: []
 
 ## When to use this
 
-- Outline: one sentence — reader has a markdown page and wants to flag a note, tip, caveat, warning, or imperative aside.
-- Outline: one sentence — do not retread front matter or the Markdig pipeline; link out if reader is too early.
+When a markdown page needs to flag a note, tip, caveat, warning, or imperative aside, write it as a GitHub-style alert blockquote. No component import or code-behind is required — alerts travel with the default markdown pipeline.
 
 ## Assumptions
 
-- Bullet: existing Pennington site with markdown content (link to Getting Started tutorial).
-- Bullet: `AddPennington` / `AddDocSite` already registered so `MarkdownPipelineFactory.CreateWithExtensions` is in effect (this is what wires `UseCustomAlerts`).
-- Bullet: reader is comfortable editing a `.md` file under the configured `ContentPath`.
-- Bullet: pointer to `examples/BeaconDocsExample` as a working copy-from site.
+- You have an existing Pennington site with markdown content (see the [Getting Started tutorial](/tutorials/getting-started/first-site) if not).
+- `AddPennington` or `AddDocSite` is already registered.
+- You are comfortable editing a `.md` file under the configured `ContentPath`.
+
+To copy a working setup, see [`examples/BeaconDocsExample`](https://github.com/usepennington/pennington/tree/main/examples/BeaconDocsExample).
 
 ---
 
 ## Steps
 
-### 1. Open (or create) a markdown page under your content root
+### 1. Open a markdown page under your content root
 
-- Bullet: pick any `.md` page served by a `MarkdownContentService` (e.g. `examples/BeaconDocsExample/Content/guides/migration-v3.md`).
-- Bullet: link to the front-matter how-to — this page assumes valid front matter already exists.
-- Bullet: fence slot — reference the raw file that already uses alerts.
-
-```markdown file="examples/BeaconDocsExample/Content/guides/migration-v3.md"
-```
+Pick any `.md` page served by your site — for example `examples/BeaconDocsExample/Content/guides/migration-v3.md`. This page assumes valid front matter already exists; see [Work with front matter](/how-to/content-authoring/front-matter) if it doesn't.
 
 ### 2. Write an alert as a blockquote whose first line is `[!KIND]`
 
-- Bullet: syntax rule — the alert marker must be the first non-blank child of a `>` blockquote (parser in `src/Pennington/Markdown/Extensions/CustomAlertInlineParser.cs` rejects anything else).
-- Bullet: the five supported kinds are `NOTE`, `TIP`, `CAUTION`, `WARNING`, `IMPORTANT` (case-insensitive in the parser; uppercase is the GitHub convention).
-- Bullet: body text goes on the following blockquote lines — standard markdown inlines work inside.
-- Bullet: show a minimal raw example for each kind in one plain fence (not xmldocid, not raw file — these are authoring snippets).
+The alert marker must be the first non-blank child of a `>` blockquote. The five supported kinds are `NOTE`, `TIP`, `CAUTION`, `WARNING`, and `IMPORTANT` (case-insensitive; uppercase is the GitHub convention). Body text goes on the following blockquote lines, and standard markdown inlines work inside.
 
 ```markdown
 > [!NOTE]
@@ -63,22 +55,20 @@ tags: []
 > Key content the reader needs in order to succeed.
 ```
 
-### 3. Confirm the rendered HTML carries the expected classes
+### 3. Confirm the rendered classes
 
-- Bullet: rendered output is a `<div>` with classes `markdown-alert` and `markdown-alert-{kind}` (lowercased), emitted by the `AlertBlockRenderer` registered in `MarkdownPipelineFactory.CreateWithExtensions` via `UseCustomAlerts`.
-- Bullet: the five class variants styled out of the box live in `src/Pennington.MonorailCss/MonorailCssOptions.cs`: `.markdown-alert-note` (emerald), `.markdown-alert-tip` (blue), `.markdown-alert-caution` (amber), `.markdown-alert-warning` (rose), `.markdown-alert-important` (sky).
-- Bullet: no component import, no code-behind — alerts travel with your default markdown pipeline.
+The rendered output is a `<div>` with classes `markdown-alert` and `markdown-alert-{kind}` (lowercased). The five class variants ship with default colors: `.markdown-alert-note` (emerald), `.markdown-alert-tip` (blue), `.markdown-alert-caution` (amber), `.markdown-alert-warning` (rose), and `.markdown-alert-important` (sky).
 
 ---
 
 ## Verify
 
-- Bullet: run `dotnet run --project examples/BeaconDocsExample` and visit `/guides/migration-v3`.
-- Bullet: expect five distinct colored callout boxes (or however many you authored), each prefixed with its kind label.
-- Bullet: inspect the page source — each alert is a `<div class="markdown-alert markdown-alert-{kind}">`.
+- Run `dotnet run --project examples/BeaconDocsExample` and visit `/guides/migration-v3`.
+- Expect a distinct colored callout box for each alert, prefixed with its kind label.
+- Inspect the page source — each alert is a `<div class="markdown-alert markdown-alert-{kind}">`.
 
 ## Related
 
-- Reference: Markdown extensions reference (covers `UseCustomAlerts` and surrounding pipeline hooks).
-- Reference: `MonorailCssOptions` color mapping for the five alert classes.
-- Background: Explanation of the Markdig extension pipeline and why Pennington replaces the built-in alert inline parser.
+- Reference: [Markdown extensions](/reference/markdown/extensions)
+- Reference: [`MonorailCssOptions`](/reference/monorailcss/options) — the color mapping for the five alert classes.
+- Background: [MonorailCSS integration](/explanation/rendering/monorail-css)

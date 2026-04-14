@@ -25,7 +25,7 @@ llms: false
 - Completed [Create your first Pennington site](/tutorials/getting-started/first-site/)
 - A running site with `Content/index.md` already rendering
 
-The finished state of this tutorial lives in [`examples/MinimalExample`](https://github.com/Phil-Scott-Msft/Pennington/tree/main/examples/MinimalExample).
+The finished state of this tutorial lives in [`examples/MinimalExample`](https://github.com/usepennington/pennington/tree/main/examples/MinimalExample).
 
 ---
 

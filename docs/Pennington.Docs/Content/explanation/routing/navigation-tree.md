@@ -86,7 +86,7 @@ T:Pennington.Navigation.NavigationBuilder
 
 ## Further reading
 
-- Reference: [`NavigationBuilder` API](/reference/api/navigation/navigation-builder)
-- Reference: [`TableOfContentsNavigation` component](/reference/api/ui/table-of-contents-navigation)
-- How-to: [Customize sidebar ordering for a doc site](/how-to/sites/customize-sidebar-ordering)
-- Explanation: [Locale routing and URL stripping](/explanation/routing/locales)
+- Reference: [Navigation types](/reference/extension-points/navigation)
+- Reference: [Navigation components](/reference/ui/navigation)
+- How-to: [Customize the sidebar](/how-to/content-authoring/customize-sidebar)
+- Explanation: [Locale-aware URLs and content fallback](/explanation/localization/urls-and-fallback)

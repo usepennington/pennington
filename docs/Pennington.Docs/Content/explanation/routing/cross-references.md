@@ -82,5 +82,5 @@ Because the rewriter emits the warning regardless of whether the request came fr
 
 - Reference: [Diagnostics — request context](/reference/diagnostics/request-context)
 - Reference: [Build report](/reference/diagnostics/build-report)
-- How-to: [Add cross-references between pages](/how-to/content/add-cross-references)
+- How-to: [Cross-reference pages by `uid`](/how-to/content-authoring/cross-references)
 - Explanation: [Response processing](/explanation/core/response-processing)

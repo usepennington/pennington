@@ -10,7 +10,7 @@ search: false
 llms: false
 ---
 
-> **In this page.** A ready-to-copy GitHub Actions workflow that runs the Pennington static build and publishes the output to GitHub Pages, including the `.nojekyll` marker.
+> **In this page.** A ready-to-copy GitHub Actions workflow that runs the Pennington static build and publishes the output to GitHub Pages, including the `.nojekyll` marker. This is the canonical full deploy recipe; [Adapt the deploy workflow for other hosts](/how-to/deployment/adapt-for-other-hosts) reuses its shape for Azure Static Web Apps, Cloudflare Pages, and Netlify.
 >
 > **Not in this page.** Custom-domain DNS setup beyond ticking the GitHub Pages checkbox — point your DNS at GitHub's documented Pages IPs yourself.
 
@@ -18,6 +18,7 @@ llms: false
 
 - You have a Pennington site that already builds locally via `dotnet run -- build` and you want it hosted on GitHub Pages under the repository's `github.io` URL or a project sub-path.
 - You want a canonical workflow to drop into `.github/workflows/` without researching which action versions are current.
+- For other static hosts, start here and then see [Adapt the deploy workflow for other hosts](/how-to/deployment/adapt-for-other-hosts).
 
 ## Assumptions
 
@@ -26,7 +27,7 @@ llms: false
 - The repository is hosted on GitHub and you have admin access to enable Pages.
 - You know whether the site ships at the repo root (`https://user.github.io/repo/`) or at a user/organisation root (`https://user.github.io/`) — the first needs a base URL, the second does not.
 
-To copy a working setup, see [`examples/MinimalExample`](https://github.com/Pennington/Pennington/tree/main/examples/MinimalExample). Do not walk through the whole example — this page is a recipe, not a tour.
+To copy a working setup, see [`examples/MinimalExample`](https://github.com/usepennington/pennington/tree/main/examples/MinimalExample). Do not walk through the whole example — this page is a recipe, not a tour.
 
 ---
 
@@ -41,7 +42,7 @@ To copy a working setup, see [`examples/MinimalExample`](https://github.com/Penn
 
 ### 2. Decide the base URL your workflow will pass
 
-- Project site at `https://user.github.io/repo/` — pass `/repo/` as `[baseUrl]` so `BaseUrlHtmlRewriter` prefixes every internal link and asset.
+- Project site at `https://user.github.io/repo/` — pass `/repo/` as `[baseUrl]` so internal links and assets are prefixed at build time. See [Host under a sub-path (base URL)](/how-to/deployment/base-url).
 - User or organisation site at `https://user.github.io/` — pass `/` (the default).
 - The value must match the path segment Pages serves from; getting this wrong produces broken asset links and a blank page.
 
@@ -108,7 +109,7 @@ jobs:
 
 ### 5. Match the output path in every step
 
-- The build writes to `<project>/output` by default (from `OutputOptions.FromArgs` — `args[2]` is the output directory).
+- The build writes to `<project>/output` by default; the third positional argument to `-- build` overrides it.
 - The `touch`, `upload-pages-artifact`, and any later workflow steps must all point at the same directory.
 - If you pass a third argument to `-- build`, update every path in the workflow to match.
 
@@ -128,6 +129,7 @@ jobs:
 
 ## Related
 
-- Reference: [CLI and build arguments](/reference/host/cli)
+- How-to: [Adapt the deploy workflow for other hosts](/how-to/deployment/adapt-for-other-hosts)
 - How-to: [Host under a sub-path (base URL)](/how-to/deployment/base-url)
-- Background: [Unified dev and build path](/explanation/unified-build-path)
+- Reference: [CLI and build arguments](/reference/host/cli)
+- Background: [Unified dev and build path](/explanation/core/dev-vs-build)

@@ -62,100 +62,34 @@ Enables llms.txt generation and returns the configured `LlmsTxtOptions`. Sets th
 
 ## Highlighting
 
-Type: `HighlightingOptions` (nested in `PenningtonOptions.cs`).
-
-| Name | Type | Default | Description |
-|---|---|---|---|
-| `Highlighters` | `IReadOnlyList<ICodeHighlighter>` | empty | Registered highlighters in registration order. |
-
-### Methods
-
-| Name | Signature | Description |
-|---|---|---|
-| `AddHighlighter<T>` | `void AddHighlighter<T>() where T : ICodeHighlighter, new()` | Instantiates and registers `T`. |
-| `AddHighlighter` | `void AddHighlighter(ICodeHighlighter highlighter)` | Registers an existing instance. |
+Type: `HighlightingOptions`. See [Auxiliary options classes](/reference/options/auxiliary-options) for the full member listing.
 
 ## Islands
 
-Type: `IslandsOptions` (nested in `PenningtonOptions.cs`).
-
-| Name | Type | Default | Description |
-|---|---|---|---|
-| `RegisteredIslands` | `IReadOnlyDictionary<string, Type>` | empty | Island name to `IIslandRenderer` type map. |
-
-### Methods
-
-| Name | Signature | Description |
-|---|---|---|
-| `Register<T>` | `void Register<T>(string name) where T : IIslandRenderer` | Registers type `T` under `name`. |
+Type: `IslandsOptions`. See [Auxiliary options classes](/reference/options/auxiliary-options) for the full member listing.
 
 ## Localization
 
-Type: `LocalizationOptions` (nested in `PenningtonOptions.cs`).
-
-| Name | Type | Default | Description |
-|---|---|---|---|
-| `DefaultLocale` | `string` | `"en"` | Locale code used when no prefix is present in the URL. |
-| `IsMultiLocale` | `bool` | `false` | `true` when more than one locale is configured. |
-| `Locales` | `IReadOnlyDictionary<string, LocaleInfo>` | empty | Registered locale code to `LocaleInfo` map. |
-
-### Methods
-
-| Name | Signature | Description |
-|---|---|---|
-| `AddLocale` | `void AddLocale(string code, LocaleInfo info)` | Registers a locale with an explicit `LocaleInfo`. |
-| `AddLocale` | `void AddLocale(string code, string displayName)` | Registers a locale, constructing `LocaleInfo` from `displayName`. |
-| `GetLocaleFromUrl` | `string GetLocaleFromUrl(string url)` | Returns the locale code for a URL, or `DefaultLocale` when no known non-default prefix matches. |
-| `StripLocalePrefix` | `string StripLocalePrefix(string url, string locale)` | Returns the URL with the locale prefix removed; unchanged for the default locale. |
-| `BuildLocaleUrl` | `string BuildLocaleUrl(string contentPath, string locale)` | Builds a full URL for a content path in the specified locale. |
-| `GetAlternateLanguages` | `IReadOnlyList<AlternateLanguage> GetAlternateLanguages(string url)` | Returns `AlternateLanguage` records for every configured locale. |
+Type: `LocalizationOptions`. See [`LocalizationOptions`](/reference/options/localization-options) for the full member listing.
 
 ## Translations
 
-Type: `TranslationOptions` — see `src/Pennington/Localization/TranslationOptions.cs`.
-
-In-memory per-locale key/value dictionary backing `PenningtonStringLocalizer`. Documented on its own reference page.
+Type: `TranslationOptions`. See [`TranslationOptions`](/reference/options/translations) for the full member listing.
 
 ## SearchIndex
 
-Type: `SearchIndexOptions` — see `src/Pennington/Search/SearchIndexOptions.cs`.
-
-| Name | Type | Default | Description |
-|---|---|---|---|
-| `ContentSelector` | (see source) | (see source) | CSS selector identifying the body region to index. |
-| `DefaultPriority` | (see source) | (see source) | Default priority applied when a source does not set one. |
-
-Full definition documented on its own reference page.
+Type: `SearchIndexOptions`. See [Auxiliary options classes](/reference/options/auxiliary-options) for the full member listing.
 
 ## LlmsTxt
 
-Type: `LlmsTxtOptions?` — see `src/Pennington/LlmsTxt/LlmsTxtOptions.cs`. `null` until `AddLlmsTxt(...)` is called.
-
-| Name | Type | Default | Description |
-|---|---|---|---|
-| `OutputDirectory` | `string` | `"_llms"` | Directory under the output root for per-page markdown sidecars. |
-| `GenerateFullFile` | `bool` | (see source) | Whether to emit the concatenated `llms-full.txt`. |
-| `ContentSelector` | (see source) | (see source) | CSS selector identifying the body region to strip. |
-
-Full definition documented on its own reference page.
+Type: `LlmsTxtOptions?`. See [Auxiliary options classes](/reference/options/auxiliary-options) for the full member listing.
 
 ## MarkdownSources
 
-Type: `IReadOnlyList<MarkdownContentOptions>`. Populated via `AddMarkdownContent<TFrontMatter>(...)`.
-
-### `MarkdownContentOptions`
-
-| Name | Type | Default | Description |
-|---|---|---|---|
-| `BasePageUrl` | `string` | `"/"` | URL prefix applied to pages from this source. |
-| `ContentPath` | `string` | `"Content"` | Filesystem path for the source's markdown files. |
-| `ExcludePaths` | `ImmutableArray<string>` | empty | Relative subpaths (from `ContentPath`) to skip during discovery and content copying. |
-| `Section` | `string?` | `null` | Default `Section` applied to pages from this source. |
-
-Full definition documented on its own reference page.
+Type: `IReadOnlyList<MarkdownContentOptions>`. Populated via `AddMarkdownContent<TFrontMatter>(...)`. See [MarkdownContentOptions<T>](/reference/options/markdown-content-options) for property details.
 
 ## See also
 
-- Related reference: [`DocSiteOptions`](/reference/options/doc-site-options)
-- Related reference: [`BlogSiteOptions`](/reference/options/blog-site-options)
+- Related reference: [`DocSiteOptions`](/reference/options/docsite-options)
+- Related reference: [`BlogSiteOptions`](/reference/options/blogsite-options)
 - Related reference: [`MarkdownContentOptions`](/reference/options/markdown-content-options)

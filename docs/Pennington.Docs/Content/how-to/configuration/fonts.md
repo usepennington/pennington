@@ -2,7 +2,7 @@
 title: "Configure fonts and typography"
 description: "Set DisplayFontFamily/BodyFontFamily on DocSiteOptions, declare FontPreloads, and serve font assets."
 section: "configuration"
-order: 60
+order: 40
 tags: []
 uid: how-to.configuration.fonts
 isDraft: true
@@ -24,7 +24,7 @@ llms: false
 - Outline bullet: You have a working DocSite (see `/tutorials/getting-started/first-site` if not).
 - Outline bullet: You can find `Program.cs` and already have a `new DocSiteOptions { SiteTitle = ..., Description = ... }` factory in place.
 - Outline bullet: `DisplayFontFamily`, `BodyFontFamily`, and `FontPreloads` are verified on `DocSiteOptions` in `src/Pennington.DocSite/DocSiteOptions.cs`; `FontPreload` is `record FontPreload(string Href, string Type = "font/woff2")` in `src/Pennington/Infrastructure/FontPreload.cs`.
-- Outline bullet: To copy a working setup, see [`examples/SearchExample`](https://github.com/Phil-Scott-Thomas/Pennington/tree/main/examples/SearchExample) — a DocSite that sets both font families plus a Google Fonts stylesheet via `AdditionalHtmlHeadContent`. Do not walk through it end-to-end — this is a recipe, not a tour.
+- Outline bullet: To copy a working setup, see [`examples/SearchExample`](https://github.com/usepennington/pennington/tree/main/examples/SearchExample) — a DocSite that sets both font families plus a Google Fonts stylesheet via `AdditionalHtmlHeadContent`. Do not walk through it end-to-end — this is a recipe, not a tour.
 
 ---
 
@@ -85,6 +85,6 @@ FontPreloads =
 
 ## Related
 
-- Reference: [DocSiteOptions](/reference/options/docsite-options) — full property list including `DisplayFontFamily`, `BodyFontFamily`, `FontPreloads`, `AdditionalHtmlHeadContent`, `ExtraStyles`.
-- Reference: [MonorailCssOptions](/reference/options/monorailcss-options) — how generated CSS consumes the family values.
-- Background: [DocSite architecture](/explanation/docsite-architecture) — why font wiring lives on `DocSiteOptions` rather than a separate typography record.
+- Reference: [`DocSiteOptions`](/reference/options/docsite-options) — full property list including `DisplayFontFamily`, `BodyFontFamily`, `FontPreloads`, `AdditionalHtmlHeadContent`, `ExtraStyles`.
+- Reference: [`MonorailCssOptions`](/reference/options/monorail-css-options) — how generated CSS consumes the family values.
+- Background: [MonorailCSS integration](/explanation/rendering/monorail-css) — how the class collector and stylesheet endpoint work together.

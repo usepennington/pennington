@@ -46,8 +46,7 @@ T:Pennington.Infrastructure.IHtmlResponseRewriter
 
 - Use `ApplyAsync` for anything expressible in the DOM: attributes, element insertion, query selectors, text-node edits. This is the default; most rewriters only override `ApplyAsync`.
 - Use `PreParseAsync` only when the input is **not** valid HTML and therefore cannot survive AngleSharp parsing intact. The canonical case is the raw `<xref:uid>` tag that `XrefHtmlRewriter` substitutes before parsing.
-- Both phases receive the same `HttpContext`; `PreParseAsync` returns the mutated string, `ApplyAsync` mutates the shared `IDocument` in place.
-- Every rewriter's `PreParseAsync` runs first (in `Order`), then every rewriter's `ApplyAsync` runs (in `Order`) against the single parsed document.
+- Both phases receive the same `HttpContext`; `PreParseAsync` returns the mutated string, `ApplyAsync` mutates the shared `IDocument` in place. See [Response processing and rewriter ordering](/explanation/core/response-processing) for how the two phases compose across rewriters.
 
 ```csharp:xmldocid
 T:Pennington.Infrastructure.XrefHtmlRewriter
@@ -103,5 +102,5 @@ services.AddSingleton<IHtmlResponseRewriter, MyHtmlRewriter>();
 
 ## Related
 
-- Reference: [`IHtmlResponseRewriter`](xref:reference.namespaces.infrastructure) — members, default implementations, built-in registrations.
-- Background: [Response processing and rewriter ordering](xref:explanation.response-processing) — why xref/locale/base-URL are 10/20/30 and what "outermost transport layer" means.
+- Reference: [`IHtmlResponseRewriter`](/reference/extension-points/response-processing) — members, default implementations, built-in registrations.
+- Background: [Response processing and rewriter ordering](/explanation/core/response-processing) — why xref/locale/base-URL are 10/20/30 and what "outermost transport layer" means.

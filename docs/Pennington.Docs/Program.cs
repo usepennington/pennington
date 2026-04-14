@@ -19,7 +19,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         ColorSchemeGenerator = i => (i + 180, i - 90, i + 90),
         BaseColorName = ColorNames.Zinc
     },
-    GitHubUrl = "https://github.com/phil-scott-78/pennington",
+    GitHubUrl = "https://github.com/usepennington/pennington",
     CanonicalBaseUrl = "https://phil-scott-78.github.io/pennington/",
     DisplayFontFamily = "Lexend, sans-serif",
     BodyFontFamily = "'Noto Sans', sans-serif",

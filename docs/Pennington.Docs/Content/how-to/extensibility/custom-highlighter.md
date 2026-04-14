@@ -26,7 +26,7 @@ llms: false
 - You know which language identifier(s) the fenced code blocks declare (e.g., ```` ```pipeline ````).
 - You are comfortable emitting `<pre><code>...</code></pre>` with `hljs-*` class spans.
 
-To copy a working setup, see [`examples/ForgePortalExample`](https://github.com/scottsauber/Penn/tree/main/examples/ForgePortalExample) — a `PipelineHighlighter` registered for the `pipeline`/`pipe` fences.
+To copy a working setup, see [`examples/ForgePortalExample`](https://github.com/usepennington/pennington/tree/main/examples/ForgePortalExample) — a `PipelineHighlighter` registered for the `pipeline`/`pipe` fences.
 
 ---
 
@@ -96,6 +96,6 @@ transform select .body
 
 ## Related
 
-- Reference: [`Pennington.Highlighting`](xref:reference.namespaces.highlighting) — `ICodeHighlighter`, `HighlightingService`, built-ins.
-- Reference: [`HighlightingOptions`](xref:reference.options.highlighting) — `AddHighlighter<T>()` / `AddHighlighter(instance)`.
-- Background: [How Pennington dispatches highlighters](xref:explanation.highlighting-dispatch) — priority ordering and the `"*"` fallback.
+- Reference: [`Pennington.Highlighting`](/reference/extension-points/highlighting) — `ICodeHighlighter`, `HighlightingService`, built-ins.
+- Reference: [`HighlightingOptions`](/reference/options/auxiliary-options) — `AddHighlighter<T>()` / `AddHighlighter(instance)`.
+- Background: [How Pennington dispatches highlighters](/explanation/rendering/highlighting) — priority ordering and the `"*"` fallback.

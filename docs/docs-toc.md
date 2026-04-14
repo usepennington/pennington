@@ -4,6 +4,8 @@ Organized by the Diataxis framework. Two levels deep within each quadrant (quadr
 
 Synthesis sources: Astro docs, VitePress docs, GitBook docs, the Diataxis framework, MyLittleContentEngine (the Pennington precursor), and a feature audit of the current `B:\Penn` codebase.
 
+Revised 2026-04-13 after the outline review pass: duplicated / miscast pages removed, blog-homepage config collapsed to one page, deployment flattened to a canonical GitHub Pages page plus a per-host adaptation sheet, RSS / sitemap regrouped as configuration, and two coverage-gap how-tos added (images and sidebar).
+
 ---
 
 ## 1. Tutorials
@@ -28,13 +30,7 @@ Does not cover: custom front-matter types, capability interfaces, or non-markdow
 |---|---|---|
 | **Style the site with MonorailCSS** | `/tutorials/getting-started/styling` | 30 |
 Covers: registering `AddMonorailCss` + `UseMonorailCss`, picking a `NamedColorScheme`, adding a utility class to a layout, and watching the stylesheet regenerate on demand.
-Does not cover: algorithmic color schemes, custom `CssFrameworkSettings`, or dark-mode wiring — see the how-to on theme customization.
-
-| Title | URL | Order |
-|---|---|---|
-| **Ship it: build and deploy to GitHub Pages** | `/tutorials/getting-started/deploy-github-pages` | 40 |
-Covers: running the static build via `RunOrBuildAsync(args)` with `build [baseUrl] [output]`, inspecting the `BuildReport`, writing a GitHub Actions workflow, and pushing `.nojekyll`-safe output.
-Does not cover: subdirectory hosting gotchas, other hosts (Netlify, Azure, Docker), or custom base-URL rewriting — each is its own how-to.
+Does not cover: algorithmic color schemes, custom `CssFrameworkSettings`, or dark-mode wiring — see the how-to on theme customization. For deployment, see the GitHub Pages how-to (`/how-to/deployment/github-pages`).
 
 ### 1.2 Getting Started with DocSite
 
@@ -74,7 +70,7 @@ Does not cover: customizing the post template or adding a tag-index page.
 |---|---|---|
 | **Add a hero, projects, and social links** | `/tutorials/blogsite/hero-projects-socials` | 30 |
 Covers: populating `HeroContent`, a list of `Project` entries for a "my work" section, `SocialLink` entries (with the built-in `BlueskyIcon`/`GithubIcon`), and `HeaderLink` entries for top-nav items.
-Does not cover: custom icon components or deep homepage layout overrides — covered in the Extensibility how-tos.
+Does not cover: custom icon components — covered in the Extensibility how-tos. When you need a compact lookup version of the same options surface, see the BlogSite homepage configuration how-to (`/how-to/configuration/blogsite-homepage`).
 
 ### 1.4 Beyond the Basics
 
@@ -88,13 +84,7 @@ Does not cover: per-locale search index internals or UI string translation plumb
 |---|---|---|
 | **Connect to a Roslyn solution for live API snippets** | `/tutorials/beyond-basics/connect-roslyn` | 20 |
 Covers: pointing Pennington at a `.sln` via `SolutionPath`, using `xmldocid` code fences (e.g., ` ```csharp xmldocid="M:Ns.Type.Method"`) to pull method/class snippets straight from source, and letting hot reload update the docs when the source changes.
-Does not cover: generating full API-reference pages — that requires the planned `Pennington.Roslyn` package.
-
-| Title | URL | Order |
-|---|---|---|
-| **Author a custom Razor component for your content** | `/tutorials/beyond-basics/custom-razor-component` | 30 |
-Covers: creating a Razor component for Pennington's Mdazor-based markdown flow, keeping its parameters simple, and linking to the Mdazor project for the underlying tag syntax and parser behavior.
-Does not cover: writing an `IIslandRenderer` for SPA-interactive regions, Mdazor internals, or authoring brand-new Markdig extensions.
+Does not cover: generating full API-reference pages — that requires the planned `Pennington.Roslyn` package. Authoring a custom Razor component for markdown use is covered in the content-authoring how-tos (`/how-to/content-authoring/ui-components-in-markdown`), not here.
 
 ---
 
@@ -107,8 +97,8 @@ Does not cover: writing an `IIslandRenderer` for SPA-interactive regions, Mdazor
 | Title | URL | Order |
 |---|---|---|
 | **Work with front matter** | `/how-to/content-authoring/front-matter` | 10 |
-Covers: declaring front matter in YAML, the baseline `IFrontMatter` keys (`title`, `description`, `tags`, `section`, `order`, `isDraft`, `uid`, `date`, `search`, `llms`), and defining your own front-matter record.
-Does not cover: the full key reference (see Reference) or the capability-interface architecture (see Explanation).
+Covers: declaring front matter in YAML, picking a built-in front-matter record that fits, and defining your own.
+Does not cover: the full key catalog — see `/reference/front-matter/keys`. The capability-interface architecture belongs in Explanation.
 
 | Title | URL | Order |
 |---|---|---|
@@ -118,49 +108,61 @@ Does not cover: tag-index pages or custom taxonomy generation — those require 
 
 | Title | URL | Order |
 |---|---|---|
-| **Create tabbed code groups** | `/how-to/content-authoring/tabbed-code` | 30 |
+| **Customize the sidebar** | `/how-to/content-authoring/customize-sidebar` | 30 |
+Covers: reordering pages within a section, promoting a page to a section landing (index file with matching `section:` plus low `order:`), overriding the displayed section title, and hiding a page from the sidebar.
+Does not cover: replacing the `TableOfContentsNavigation` component itself — that's an extensibility topic.
+
+| Title | URL | Order |
+|---|---|---|
+| **Place images and static assets** | `/how-to/content-authoring/images-and-assets` | 40 |
+Covers: where image files live next to content, how to reference them relatively from markdown, and how they land in the published output. Covers `Content/`-colocated assets and `wwwroot/` shared assets.
+Does not cover: image optimization pipelines or responsive-image helpers (out of scope).
+
+| Title | URL | Order |
+|---|---|---|
+| **Create tabbed code groups** | `/how-to/content-authoring/tabbed-code` | 50 |
 Covers: marking a fenced block with `tabs=true title="…"`, grouping adjacent blocks into a single tabbed widget, and customizing the rendered CSS classes via `TabbedCodeBlockRenderOptions`.
 Does not cover: the UI-component `<Tabs>` equivalent from Pennington.UI or per-tab analytics.
 
 | Title | URL | Order |
 |---|---|---|
-| **Annotate code blocks** | `/how-to/content-authoring/code-annotations` | 40 |
-Covers: line-highlight ranges (`{1,3}`), diff add/remove (`{+1}`/`{-1}`), focus (`{focus 1-3}`), and error/warning markers on fenced blocks.
+| **Annotate code blocks** | `/how-to/content-authoring/code-annotations` | 60 |
+Covers: the `[!code highlight]`, `[!code ++]` / `[!code --]`, `[!code focus]`, and `[!code error]` / `[!code warning]` trailing-comment directives on fenced blocks.
 Does not cover: writing a custom `ICodeBlockPreprocessor` — see the extensibility how-to.
 
 | Title | URL | Order |
 |---|---|---|
-| **Add alerts and callouts** | `/how-to/content-authoring/alerts` | 50 |
+| **Add alerts and callouts** | `/how-to/content-authoring/alerts` | 70 |
 Covers: GitHub-style alert syntax (`> [!NOTE]`, `[!TIP]`, `[!CAUTION]`, `[!WARNING]`, `[!IMPORTANT]`) and how they render.
 Does not cover: custom alert styles, Mermaid diagrams, or the `<Card>` component — those live on separate pages.
 
 | Title | URL | Order |
 |---|---|---|
-| **Embed diagrams** | `/how-to/content-authoring/diagrams` | 60 |
+| **Embed diagrams** | `/how-to/content-authoring/diagrams` | 80 |
 Covers: authoring Mermaid blocks with `mermaid` fences and how the diagram renders client-side with theme awareness.
 Does not cover: server-side diagram rendering, non-Mermaid diagram systems, or embedding raw SVG.
 
 | Title | URL | Order |
 |---|---|---|
-| **Use UI components inside markdown** | `/how-to/content-authoring/ui-components-in-markdown` | 70 |
+| **Use UI components inside markdown** | `/how-to/content-authoring/ui-components-in-markdown` | 90 |
 Covers: using Pennington.UI components inside markdown through Pennington's Mdazor-based component support, and linking to the Mdazor project for the deeper syntax, nesting rules, and limitations.
 Does not cover: authoring your own Razor component or documenting Mdazor internals in full.
 
 | Title | URL | Order |
 |---|---|---|
-| **Cross-reference pages by `uid`** | `/how-to/content-authoring/cross-references` | 80 |
-Covers: setting `uid:` in front matter, linking via `<xref uid="…">text</xref>` or `[text](xref:uid)`, and letting `XrefHtmlRewriter` resolve links at request/build time.
+| **Cross-reference pages by `uid`** | `/how-to/content-authoring/cross-references` | 100 |
+Covers: setting `uid:` in front matter, linking via `<xref:uid>` or `[text](xref:uid)`, and letting `XrefHtmlRewriter` resolve links at request/build time.
 Does not cover: cross-referencing Roslyn symbols by xmldocid — that is a planned separate package (Pennington.Roslyn).
 
 | Title | URL | Order |
 |---|---|---|
-| **Link between pages and assets** | `/how-to/content-authoring/linking` | 90 |
+| **Link between pages and assets** | `/how-to/content-authoring/linking` | 110 |
 Covers: relative links, anchor fragments, external links, and how `BaseUrlHtmlRewriter` handles sub-path deployments.
 Does not cover: cross-references by uid (see previous) or programmatic URL construction (see Reference → Routing).
 
 | Title | URL | Order |
 |---|---|---|
-| **Configure redirects** | `/how-to/content-authoring/redirects` | 100 |
+| **Configure redirects** | `/how-to/content-authoring/redirects` | 120 |
 Covers: setting `redirectUrl:` in `DocSiteFrontMatter` to emit a meta-refresh stub page with `noindex`.
 Does not cover: HTTP 301 responses at the hosting layer or batch redirects from a sidecar file.
 
@@ -168,75 +170,57 @@ Does not cover: HTTP 301 responses at the hosting layer or batch redirects from 
 
 | Title | URL | Order |
 |---|---|---|
-| **Configure `PenningtonOptions`** | `/how-to/configuration/pennington-options` | 10 |
-Covers: setting `SiteTitle`, `SiteDescription`, `CanonicalBaseUrl`, `ContentRootPath`, and the nested option groups (`Highlighting`, `Islands`, `Localization`, `SearchIndex`, `LlmsTxt`).
-Does not cover: each option's full schema (see Reference) or DocSite-specific options.
-
-| Title | URL | Order |
-|---|---|---|
-| **Configure DocSite** | `/how-to/configuration/docsite-options` | 20 |
-Covers: filling out `DocSiteOptions` (fonts, colors, header/footer content, GitHub URL, social image, solution path, areas).
-Does not cover: runtime Razor overrides of DocSite layouts — see the customization how-to.
-
-| Title | URL | Order |
-|---|---|---|
-| **Use multiple content sources** | `/how-to/configuration/multiple-sources` | 30 |
-Covers: chaining `WithMarkdownContentService<T>` calls with different `ContentPath`/`BasePageUrl`/`Section`/`ExcludePaths`, and how overlap detection warns on misconfiguration.
+| **Use multiple content sources** | `/how-to/configuration/multiple-sources` | 10 |
+Covers: chaining `AddMarkdownContent<T>` calls with different `ContentPath`/`BasePageUrl`/`Section`/`ExcludePaths`, and how overlap detection warns on misconfiguration.
 Does not cover: implementing a non-markdown `IContentService` — see the extensibility section.
 
 | Title | URL | Order |
 |---|---|---|
-| **Configure search indexing** | `/how-to/configuration/search` | 40 |
+| **Configure search indexing** | `/how-to/configuration/search` | 20 |
 Covers: tuning `SearchIndexOptions.ContentSelector`, setting `DefaultPriority`, opting pages out via `search: false` or Razor-page sidecar metadata, and per-locale output files.
 Does not cover: replacing the FlexSearch client or building a server-side search backend.
 
 | Title | URL | Order |
 |---|---|---|
-| **Customize MonorailCSS** | `/how-to/configuration/monorail-css` | 50 |
+| **Customize MonorailCSS** | `/how-to/configuration/monorail-css` | 30 |
 Covers: swapping between `NamedColorScheme` and `AlgorithmicColorScheme`, injecting `CustomCssFrameworkSettings`, adding `ExtraStyles`, and configuring `ContentPaths` for class collection.
-Does not cover: the `CssClassCollectorProcessor` internals (Explanation) or writing a standalone color scheme (advanced customization).
+Does not cover: the class-collector internals (Explanation) or writing a standalone color scheme (advanced customization).
 
 | Title | URL | Order |
 |---|---|---|
-| **Configure fonts and typography** | `/how-to/configuration/fonts` | 60 |
+| **Configure fonts and typography** | `/how-to/configuration/fonts` | 40 |
 Covers: setting `DisplayFontFamily`/`BodyFontFamily` on `DocSiteOptions`, declaring `FontPreloads`, and serving font assets.
 Does not cover: self-hosting vs. Google Fonts trade-offs (out of scope).
 
 | Title | URL | Order |
 |---|---|---|
-| **Enable multiple locales** | `/how-to/configuration/localization` | 70 |
+| **Enable multiple locales** | `/how-to/configuration/localization` | 50 |
 Covers: populating `LocalizationOptions` with `DefaultLocale` and `Locales`, organizing content in locale subdirectories, adding UI translations, and wiring `UsePenningtonLocaleRouting`.
-Does not cover: implementing a custom culture provider — the built-in `PenningtonUrlRequestCultureProvider` is explained in Reference.
+Does not cover: implementing a custom culture provider — the built-in URL culture provider is documented in Reference.
 
 | Title | URL | Order |
 |---|---|---|
-| **Generate an llms.txt** | `/how-to/configuration/llms-txt` | 80 |
+| **Generate an llms.txt** | `/how-to/configuration/llms-txt` | 60 |
 Covers: enabling `LlmsTxtOptions`, setting `OutputDirectory` and `GenerateFullFile`, and opting pages out with `llms: false`.
 Does not cover: the LLM-training implications of your output or MCP server generation.
 
 | Title | URL | Order |
 |---|---|---|
-| **Configure the BlogSite package** | `/how-to/configuration/blogsite` | 90 |
-Covers: a tour of every `BlogSiteOptions` knob — site metadata, content paths (`BlogContentPath`, `BlogBaseUrl`, `TagsPageUrl`), author bio, color scheme, fonts, and feature toggles (`EnableRss`, `EnableSitemap`).
-Does not cover: the hero/projects/socials data shapes (see the next three pages) or the low-level markdown pipeline (see Core Pennington How-Tos).
+| **Generate RSS feeds** | `/how-to/configuration/rss` | 70 |
+Covers: enabling RSS on a BlogSite, making sure posts carry a `date:`, setting `CanonicalBaseUrl` so feed links are absolute, and finding the generated feed.
+Does not cover: JSON Feed, Atom format selection, or multi-source feed merging.
 
 | Title | URL | Order |
 |---|---|---|
-| **Customize the BlogSite hero** | `/how-to/configuration/blogsite-hero` | 100 |
-Covers: filling out `HeroContent` (headline, intro paragraph, CTA) and how the homepage layout renders it above the recent-posts list.
-Does not cover: replacing the hero component entirely — see Extensibility.
+| **Generate a sitemap** | `/how-to/configuration/sitemap` | 80 |
+Covers: enabling sitemap generation, the `/sitemap.xml` route, and how drafts and redirects are filtered.
+Does not cover: submitting the sitemap to search consoles.
 
 | Title | URL | Order |
 |---|---|---|
-| **Showcase projects with "my work"** | `/how-to/configuration/blogsite-projects` | 110 |
-Covers: populating `MyWork` with `Project` entries (title, description, URL, color/icon) and how the list renders on the homepage.
-Does not cover: per-project landing pages — use ordinary markdown content for those.
-
-| Title | URL | Order |
-|---|---|---|
-| **Add social links and header navigation** | `/how-to/configuration/blogsite-socials` | 120 |
-Covers: adding `SocialLink` entries with the built-in icons (`BlueskyIcon`, `GithubIcon`, etc.), populating `MainSiteLinks` with `HeaderLink` entries, and where each surfaces in the rendered chrome.
-Does not cover: custom icon components — see the Razor-component how-to in Extensibility.
+| **Configure the BlogSite homepage** | `/how-to/configuration/blogsite-homepage` | 90 |
+Covers: as a single recipe, the four BlogSite homepage surfaces — `HeroContent`, `MyWork` (`Project` entries), `Socials` (`SocialLink` + the built-in icon fragments), and `MainSiteLinks` (`HeaderLink` entries for the top nav).
+Does not cover: full options catalog (see `/reference/options/blogsite-options`) or custom icon render fragments — see Extensibility.
 
 ### 2.3 Extensibility
 
@@ -279,7 +263,7 @@ Does not cover: the full SPA data envelope — see Explanation.
 | Title | URL | Order |
 |---|---|---|
 | **Customize DocSite layouts and components** | `/how-to/extensibility/override-docsite-components` | 70 |
-Covers: replacing a Pennington.UI component by registering your own in DI, overriding slots, and adding content to `AdditionalHtmlHeadContent`.
+Covers: the DocSite override seams — `AdditionalHtmlHeadContent`, `ExtraStyles`, string-HTML slots, routing your own `@page` via `AdditionalRoutingAssemblies`, and replacing the SPA content island renderer.
 Does not cover: forking DocSite wholesale — use plain `AddPennington` if you need that freedom.
 
 ### 2.4 Publishing & Deployment
@@ -287,56 +271,32 @@ Does not cover: forking DocSite wholesale — use plain `AddPennington` if you n
 | Title | URL | Order |
 |---|---|---|
 | **Build a static site** | `/how-to/deployment/static-build` | 10 |
-Covers: running the app with `build [baseUrl] [outputDirectory]`, understanding the crawler-based `OutputGenerationService`, and reading the `BuildReport` for broken links and failed pages.
+Covers: running the app with `build [baseUrl] [outputDirectory]`, understanding the crawler-based output generator, and reading the `BuildReport` for broken links and failed pages.
 Does not cover: platform-specific upload steps (see the per-host pages).
 
 | Title | URL | Order |
 |---|---|---|
 | **Deploy to GitHub Pages** | `/how-to/deployment/github-pages` | 20 |
-Covers: a ready-to-copy Actions workflow with `setup-dotnet@v4`, `upload-pages-artifact@v3`, `deploy-pages@v4`, and the `.nojekyll` marker.
+Covers: a ready-to-copy Actions workflow with `setup-dotnet@v4`, `upload-pages-artifact@v3`, `deploy-pages@v4`, and the `.nojekyll` marker. The canonical host recipe other hosts adapt from.
 Does not cover: custom-domain DNS setup beyond the GitHub Pages checkbox.
 
 | Title | URL | Order |
 |---|---|---|
-| **Deploy to Azure Static Web Apps** | `/how-to/deployment/azure-static-web-apps` | 30 |
-Covers: configuring the SWA pipeline, `app_location`/`output_location`, and handling routes and redirects with `staticwebapp.config.json`.
-Does not cover: Azure Functions API backends.
+| **Adapt the deploy workflow for other hosts** | `/how-to/deployment/adapt-for-other-hosts` | 30 |
+Covers: the shared shape (build command, publish directory, .NET SDK pin, base URL) plus a per-host table of deltas for Azure Static Web Apps, Cloudflare Pages, and Netlify. Inlines only the platform-specific snippets (`staticwebapp.config.json`, `netlify.toml`).
+Does not cover: the shared steps themselves — those live on the GitHub Pages page.
 
 | Title | URL | Order |
 |---|---|---|
-| **Deploy to Netlify** | `/how-to/deployment/netlify` | 40 |
-Covers: the build command, publish directory, and a minimal `netlify.toml`.
-Does not cover: Netlify Functions or edge middleware.
-
-| Title | URL | Order |
-|---|---|---|
-| **Deploy to Cloudflare Pages** | `/how-to/deployment/cloudflare-pages` | 50 |
-Covers: the Cloudflare Pages build settings and environment variables the static build reads.
-Does not cover: Workers-based dynamic augmentation.
-
-| Title | URL | Order |
-|---|---|---|
-| **Self-host behind Nginx or IIS** | `/how-to/deployment/self-host` | 60 |
+| **Self-host behind Nginx or IIS** | `/how-to/deployment/self-host` | 40 |
 Covers: serving the `output/` directory as static files, setting default-extension rules, and handling 404s with the generated `404.html`.
 Does not cover: running the live Pennington app as an origin (a valid but separate topic).
 
 | Title | URL | Order |
 |---|---|---|
-| **Host under a sub-path (base URL)** | `/how-to/deployment/base-url` | 70 |
+| **Host under a sub-path (base URL)** | `/how-to/deployment/base-url` | 50 |
 Covers: passing `[baseUrl]` to the build command and how `BaseUrlHtmlRewriter` rewrites anchors, assets, and scripts.
 Does not cover: client-side-router base handling outside the built-in SPA island system.
-
-| Title | URL | Order |
-|---|---|---|
-| **Generate RSS feeds** | `/how-to/deployment/rss` | 80 |
-Covers: enabling RSS on a blog source, using `BlogFrontMatter.Date`, and where the feed is written.
-Does not cover: JSON Feed, Atom format selection, or multi-source feed merging.
-
-| Title | URL | Order |
-|---|---|---|
-| **Generate a sitemap** | `/how-to/deployment/sitemap` | 90 |
-Covers: enabling sitemap generation, the `/sitemap.xml` route, and how drafts/redirects are filtered.
-Does not cover: submitting the sitemap to search consoles.
 
 ---
 
@@ -349,7 +309,7 @@ Does not cover: submitting the sitemap to search consoles.
 | Title | URL | Order |
 |---|---|---|
 | **`PenningtonOptions`** | `/reference/options/pennington-options` | 10 |
-Covers: every property on `PenningtonOptions` — `SiteTitle`, `SiteDescription`, `CanonicalBaseUrl`, `ContentRootPath`, `Highlighting`, `Islands`, `Localization`, `Translations`, `SearchIndex`, `LlmsTxt`, `AdditionalRoutingAssemblies` — with types and defaults.
+Covers: every property on `PenningtonOptions` — `SiteTitle`, `SiteDescription`, `CanonicalBaseUrl`, `ContentRootPath`, `Highlighting`, `Islands`, `Localization`, `Translations`, `SearchIndex`, `LlmsTxt`, `AdditionalRoutingAssemblies` — with types and defaults. Nested types (`HighlightingOptions`, `IslandsOptions`, `LocalizationOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `MarkdownContentOptions`) are pointer-only — each has its own dedicated reference page below.
 Does not cover: task recipes that use these options (see How-Tos).
 
 | Title | URL | Order |
@@ -361,7 +321,7 @@ Does not cover: `PenningtonOptions` (the base) — see the preceding page.
 | Title | URL | Order |
 |---|---|---|
 | **`BlogSiteOptions`** | `/reference/options/blogsite-options` | 30 |
-Covers: every property on `BlogSiteOptions` — metadata (`SiteTitle`, `Description`, `CanonicalBaseUrl`), content paths (`ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, `TagsPageUrl`), styling (`PrimaryHue`, `BaseColorName`, fonts, `ExtraStyles`, `AdditionalHtmlHeadContent`), author chrome (`AuthorName`, `AuthorBio`), homepage data (`HeroContent`, `MyWork`, `Socials`, `MainSiteLinks`), feature toggles (`EnableRss`, `EnableSitemap`), and integration hooks (`SolutionPath`, `SocialMediaImageUrlFactory`, `AdditionalRoutingAssemblies`) — plus the helper records `HeroContent`, `Project`, `SocialLink`, and `HeaderLink`.
+Covers: every property on `BlogSiteOptions` — metadata (`SiteTitle`, `Description`, `CanonicalBaseUrl`), content paths (`ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, `TagsPageUrl`), styling (color scheme, fonts, `ExtraStyles`, `AdditionalHtmlHeadContent`), author chrome (`AuthorName`, `AuthorBio`), homepage data (`HeroContent`, `MyWork`, `Socials`, `MainSiteLinks`), feature toggles (`EnableRss`, `EnableSitemap`), and integration hooks (`SocialMediaImageUrlFactory`, `AdditionalRoutingAssemblies`) — plus the helper records `HeroContent`, `Project`, `SocialLink`, and `HeaderLink`.
 Does not cover: `DocSiteOptions` or `PenningtonOptions` (preceding pages).
 
 | Title | URL | Order |
@@ -378,8 +338,8 @@ Does not cover: authoring translated content (see How-Tos).
 
 | Title | URL | Order |
 |---|---|---|
-| **`TranslationOptions` and `PenningtonStringLocalizer`** | `/reference/options/translations` | 60 |
-Covers: the `TranslationOptions.Add(locale, key, value)` / `Add(locale, dictionary)` overloads, how `PenningtonOptions.Translations` is populated, and how `PenningtonStringLocalizer` resolves UI strings against the current `LocaleContext` with fallback to the default locale.
+| **`TranslationOptions`** | `/reference/options/translations` | 60 |
+Covers: the `TranslationOptions.Add(locale, key, value)` / `Add(locale, dictionary)` overloads and how `PenningtonOptions.Translations` is populated. Consuming code reads translations via `IStringLocalizer`; the specific localizer implementation is internal wiring.
 Does not cover: enabling multiple locales at the routing layer (see `LocalizationOptions`).
 
 | Title | URL | Order |
@@ -425,20 +385,14 @@ Does not cover: defining custom front-matter types (see How-Tos).
 | Title | URL | Order |
 |---|---|---|
 | **Markdown extensions catalog** | `/reference/markdown/extensions` | 10 |
-Covers: every non-CommonMark feature in one scannable page — tabs, alerts, code annotations, cross-reference tags — with syntax, arguments, and a minimal example each.
+Covers: every non-CommonMark feature in one scannable page — tabs, alerts (including the five built-in kinds' emitted CSS classes), code annotations, cross-reference tags — with syntax, arguments, and a minimal example each.
 Does not cover: Markdig core syntax (tables, footnotes, etc.) — those follow Markdig's own docs.
 
 | Title | URL | Order |
 |---|---|---|
 | **Code-block argument reference** | `/reference/markdown/code-block-args` | 20 |
-Covers: the fence info-string grammar — language token, key/value attributes, quoted values — and the line-annotation syntax (`{1,3}`, `{+1}`, `{-1}`, `{focus …}`, `{error …}`).
+Covers: the fence info-string grammar — language token, key/value attributes, quoted values — and the trailing-comment `[!code …]` directive grammar used for line annotations.
 Does not cover: theme selection at render time (see Explanation).
-
-| Title | URL | Order |
-|---|---|---|
-| **Alert blocks** | `/reference/markdown/alerts` | 30 |
-Covers: the five alert kinds (`NOTE`, `TIP`, `CAUTION`, `WARNING`, `IMPORTANT`), their emitted CSS classes, and default icons.
-Does not cover: defining new alert kinds (would require a Markdig extension).
 
 ### 3.4 UI Components (Pennington.UI)
 
@@ -503,7 +457,7 @@ Does not cover: replacing the default sidebar (UI component topic).
 | Title | URL | Order |
 |---|---|---|
 | **DI and middleware extension methods** | `/reference/host/extensions` | 10 |
-Covers: every `IServiceCollection` and `WebApplication` extension — `AddPennington`, `AddDocSite`, `AddMonorailCss`, `UsePennington`, `UseDocSite`, `UsePenningtonLocaleRouting`, `UsePenningtonLiveReload`, `UseMonorailCss`, `RunOrBuildAsync`, `RunDocSiteAsync`.
+Covers: the at-a-glance summary of every `IServiceCollection` and `WebApplication` extension — `AddPennington`, `AddDocSite`, `AddBlogSite`, `AddMonorailCss`, `AddPenningtonRoslyn`, `AddSpaNavigation`, `AddFileWatched`, `UsePennington`, `UseDocSite`, `UseBlogSite`, `UseMonorailCss`, `UsePenningtonLocaleRouting`, `UsePenningtonLiveReload`, `UseSpaNavigation`, `RunOrBuildAsync`, `RunDocSiteAsync`, `RunBlogSiteAsync`. Each extension's configuration surface lives on the matching options page; this page is the index, not a duplicate catalog.
 Does not cover: underlying services the extensions wire up.
 
 | Title | URL | Order |
@@ -585,7 +539,7 @@ Does not cover: writing a rewriter (see How-Tos).
 | Title | URL | Order |
 |---|---|---|
 | **MonorailCSS integration** | `/explanation/rendering/monorail-css` | 10 |
-Covers: how classes are collected at response time (`CssClassCollectorProcessor`), how the stylesheet is generated on demand, and the color-scheme model (named vs. algorithmic with OKLCH palette generation).
+Covers: how classes are collected at response time, how the stylesheet is generated on demand, and the color-scheme model (named vs. algorithmic with OKLCH palette generation).
 Does not cover: MonorailCSS's own syntax (upstream docs).
 
 | Title | URL | Order |
@@ -635,7 +589,7 @@ Does not cover: `LocalizationOptions` API specifics (see Reference).
 | Title | URL | Order |
 |---|---|---|
 | **Hot reload and file watching** | `/explanation/dev-experience/hot-reload` | 10 |
-Covers: how `FileWatcher` observes content and asset directories, how `LiveReloadServer` pushes change events over WebSocket, and how `LiveReloadScriptProcessor` keeps the script out of production builds.
+Covers: how the file watcher observes content and asset directories, how change events reach the browser over WebSocket, and how the live-reload script is kept out of production builds.
 Does not cover: ASP.NET's own `dotnet watch` hot reload (upstream feature).
 
 ---
@@ -646,7 +600,8 @@ Does not cover: ASP.NET's own `dotnet watch` hot reload (upstream feature).
 - **Two levels deep, no more.** Every quadrant has 4–8 sections; every section has 3–10 leaves. No three-level nesting; if a topic wants to grow, split into two sibling sections instead of nesting deeper.
 - **Order numbers are sequential multiples of 10** within each section so new pages can be slotted in without renumbering siblings.
 - **VitePress-style one-page catalogs** are used for dense areas (markdown extensions, front-matter keys, UI components) to keep search-by-ctrl-F viable.
-- **Astro-style per-platform deployment pages** — one short page per host under How-To → Deployment — beat one mega-guide, and invite community contributions.
-- **GitBook-inspired coverage of "publishing" concerns** — redirects, base URLs, sitemap, RSS, llms.txt — because a content-engine audience cares about those as much as a SaaS-docs audience does.
+- **One canonical deploy recipe, not per-platform duplicates.** GitHub Pages carries the full workflow; a sibling page tables up the deltas for Azure Static Web Apps, Cloudflare Pages, and Netlify. Self-host and sub-path hosting remain their own pages because they diverge from the shared shape.
+- **Publishing concerns group by intent, not by phase.** RSS, sitemap, and llms.txt live under Configuration (they're things you enable on the site) rather than Deployment (things you do to ship).
+- **Reference is the catalog, how-to is the recipe.** If a "how-to" has no steps of its own and just lists properties, it's reference pretending. Those pages were removed; readers follow the dedicated options reference pages instead.
 - **Explanation tier stays small and opinionated**, ~10 pages total. Concept pages that duplicate the reference get killed; concept pages that justify non-obvious design choices (unified dev/build path, capability consolidation, single-AngleSharp rewriting pass) stay.
 - **Every "does not cover" line names a neighboring page** so readers bounce between quadrants instead of getting stuck or demanding a one-stop-shop page.

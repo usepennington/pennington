@@ -52,7 +52,7 @@ llms: false
 ## 2. Fill in the `BlogSiteFrontMatter` header
 
 - Bullets to cover under this unit:
-- `BlogSiteFrontMatter` is the record `AddBlogSite` binds YAML front matter into for every post; its members map one-to-one to YAML keys via `CamelCaseNamingConvention`.
+- `BlogSiteFrontMatter` is the record `AddBlogSite` binds YAML front matter into for every post; its members map one-to-one to YAML keys using camelCase.
 - Name this explicitly against the core `BlogFrontMatter`: `BlogFrontMatter` is the generic blog record for direct `AddMarkdownContent<BlogFrontMatter>` use; `BlogSiteFrontMatter` is the template-specific superset `AddBlogSite` wires up and is what this tutorial teaches.
 - Show the full list of supported keys and their types:
   - `title` (string, default `"Empty title"`)
@@ -61,9 +61,9 @@ llms: false
   - `date` (`DateTime?`, optional — drives ordering and RSS `<pubDate>`)
   - `tags` (string list, optional — routed to the tags index)
   - `series` (string, default `""` — groups posts in a named series)
-  - `repository` (string, default `""` — when non-empty, renders a "source repository" link card on the post via `BlogPost.razor`)
-  - `section` (string?, optional — participates in `ISectionable` grouping)
-  - `redirectUrl` (string?, optional — emits a redirect stub via `IRedirectable`)
+  - `repository` (string, default `""` — when non-empty, renders a "source repository" link card on the post)
+  - `section` (string?, optional — participates in section grouping)
+  - `redirectUrl` (string?, optional — emits a redirect stub at the old URL)
   - `uid` (string?, optional — cross-reference target)
   - `isDraft` (bool, default `false` — drafts are skipped during `build`)
   - `search` (bool, default `true`)
@@ -106,7 +106,7 @@ repository: "https://github.com/your-handle/your-repo"
 
 - Run `dotnet run` and visit `http://localhost:5000/blog/hello-world`.
 - You should see the post title, date, author, and rendered Markdown body.
-- If `repository` is set, a "source repository" link card appears near the footer of the post (rendered by `BlogPost.razor`).
+- If `repository` is set, a "source repository" link card appears near the footer of the post.
 - Visit `http://localhost:5000/blog` and confirm the post appears in the chronological index, sorted by `date` descending.
 - Visit `http://localhost:5000/archive` and confirm the post appears in the full archive listing.
 
@@ -116,7 +116,7 @@ repository: "https://github.com/your-handle/your-repo"
 
 - Bullets to cover under this unit:
 - `BlogSiteOptions.EnableRss` is `true` by default, so an RSS feed ships for free — but it relies on `CanonicalBaseUrl` being set to produce absolute URLs.
-- `UseBlogSite` maps `/rss.xml` as a minimal API endpoint that serializes every non-draft post via `BlogSiteContentService.GetRssXmlAsync`.
+- `UseBlogSite` maps `/rss.xml` as a minimal API endpoint that serializes every non-draft post.
 - The feed's `<pubDate>` comes from the post's `date` field — omit it and the post will still render but won't syndicate cleanly.
 - `BlogSite` also injects `<link rel="alternate" type="application/rss+xml" href="/rss.xml" />` into every page `<head>`, so feed readers can auto-discover it.
 

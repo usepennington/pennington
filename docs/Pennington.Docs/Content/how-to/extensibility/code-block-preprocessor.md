@@ -29,7 +29,7 @@ llms: false
 - You know which fenced form (`language`, `language:modifier`, or a stand-alone language like `mermaid`) you want to intercept.
 - You are comfortable emitting wrapped `<pre><code>…</code></pre>` HTML and setting the final `class` names yourself.
 
-To study a working implementation, read [`src/Pennington.Roslyn/Preprocessing/RoslynCodeBlockPreprocessor.cs`](https://github.com/scottsauber/Penn/blob/main/src/Pennington.Roslyn/Preprocessing/RoslynCodeBlockPreprocessor.cs) — it demonstrates modifier parsing, priority, and DI-backed services.
+To study a working implementation, read [`src/Pennington.Roslyn/Preprocessing/RoslynCodeBlockPreprocessor.cs`](https://github.com/usepennington/pennington/blob/main/src/Pennington.Roslyn/Preprocessing/RoslynCodeBlockPreprocessor.cs) — it demonstrates modifier parsing, priority, and DI-backed services.
 
 ---
 

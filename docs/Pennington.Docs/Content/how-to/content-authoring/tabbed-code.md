@@ -1,8 +1,8 @@
 ---
 title: "Create tabbed code groups"
-description: "Mark adjacent fenced blocks with `tabs=true title=\"…\"` so Pennington groups them into a single tabbed widget, and customize the rendered CSS classes via `TabbedCodeBlockRenderOptions`."
+description: "Mark adjacent fenced blocks with `tabs=true title=\"…\"` so Pennington groups them into a single tabbed widget."
 section: content-authoring
-order: 30
+order: 50
 uid: how-to.content-authoring.tabbed-code
 isDraft: true
 search: false
@@ -16,15 +16,14 @@ tags: []
 
 ## When to use this
 
-- Outline: one sentence — reader has a markdown page and wants the same code example presented in several languages/configs inside one visual tab strip.
-- Outline: one sentence — do not retread the markdown pipeline setup; link to the alerts how-to for the parallel recipe.
+When a page needs the same example presented in several languages or configs inside one visual tab strip — one C# snippet alongside the matching `appsettings.json` and `values.yaml`, for example.
 
 ## Assumptions
 
-- Bullet: existing Pennington site with at least one markdown content source (link to Getting Started tutorial).
-- Bullet: `AddPennington` / `AddDocSite` already registered so `MarkdownPipelineFactory.CreateWithExtensions` is in effect — this is what wires `UseTabbedCodeBlocks` on top of the default Markdig pipeline.
-- Bullet: reader is comfortable authoring fenced code blocks with Markdig attribute syntax (the same `{.lang key=value}` info-string shape used by `UseAdvancedExtensions`).
-- Bullet: CSS for the default class names (`tab-container`, `tab-list`, `tab-button`, `tab-panel`) is supplied automatically if the site is using `Pennington.MonorailCss`; otherwise the reader provides their own.
+- You have an existing Pennington site with at least one markdown content source (see the [Getting Started tutorial](/tutorials/getting-started/first-site) if not).
+- `AddPennington` or `AddDocSite` is already registered.
+- You are comfortable authoring fenced code blocks with Markdig attribute syntax (`{.lang key=value}`).
+- If the site uses `Pennington.MonorailCss`, CSS for the default class names (`tab-container`, `tab-list`, `tab-button`, `tab-panel`) is supplied automatically; otherwise you provide your own.
 
 ---
 
@@ -32,9 +31,7 @@ tags: []
 
 ### 1. Mark the first fence with `tabs=true` and a `title`
 
-- Bullet: the attribute pair is parsed by `CodeBlockExtensions.GetArgumentPairs` — it accepts `key=value` and `key="value with spaces"` only; bracketed labels like `[C#]` are not recognized.
-- Bullet: `tabs=true` is the opt-in flag that `TabbedCodeBlocksExtension` scans for during `DocumentProcessed`; blocks without it pass through as ordinary highlighted code.
-- Bullet: `title="..."` is the tab label; if omitted, `LanguageNormalizer.GetLanguageName(codeBlock.Info)` falls back to the language name derived from the fence's language identifier.
+Set `tabs=true` as the opt-in flag and `title="…"` as the tab label. Attributes use `key=value` or `key="value with spaces"`. If `title` is omitted, the tab label falls back to the language name derived from the fence.
 
 ```markdown
 ```csharp tabs=true title="C#"
@@ -45,12 +42,11 @@ builder.Services.AddBeacon(options =>
 ```
 ```
 
-### 2. Place additional fences directly after it (no blank separator needed)
+### 2. Place additional fences directly after it
 
-- Bullet: `TabbedCodeBlocksExtension` groups *consecutive* `FencedCodeBlock`s — any non-code block (paragraph, heading, blank line rendered as a paragraph break) terminates the group.
-- Bullet: only the *first* fence needs `tabs=true`; subsequent fences are absorbed automatically regardless of their own attributes.
-- Bullet: each subsequent fence should carry its own `title="…"`; otherwise every tab button falls back to a language-derived label.
-- Bullet: if only one fence carries `tabs=true` (no adjacent followup), the block is emitted as a plain highlighted code block — no empty tab widget is rendered.
+Consecutive fences are grouped automatically — any non-code block (paragraph, heading, blank line rendered as a paragraph break) terminates the group. Only the first fence needs `tabs=true`; subsequent fences are absorbed regardless of their own attributes. Give each fence its own `title="…"` or it falls back to a language-derived label.
+
+If no adjacent fence follows, the block renders as a plain highlighted code block — no empty tab widget.
 
 ```markdown
 ```csharp tabs=true title="C#"
@@ -67,12 +63,9 @@ beacon:
 ```
 ```
 
-### 3. (Optional) Override the emitted CSS classes
+### 3. Override the emitted CSS classes
 
-- Bullet: `TabbedCodeBlockRenderOptions` is a public record in `Pennington.Markdown.Extensions.Tabs` with five required `init` properties — `OuterWrapperCss`, `ContainerCss`, `TabListCss`, `TabButtonCss`, `TabPanelCss`.
-- Bullet: the defaults (`TabbedCodeBlockRenderOptions.Default`) are `not-prose` / `tab-container` / `tab-list` / `tab-button` / `tab-panel` — these match the utility classes `Pennington.MonorailCss` bundles via `MonorailCssOptions.TabApplies`.
-- Bullet: there is currently no `PenningtonOptions` surface for these render options; to customize, re-register `MarkdownPipeline` after `AddPennington` and pass a `tabOptions` factory to `MarkdownPipelineFactory.CreateWithExtensions`.
-- Bullet: plain C# snippet illustrating the replacement — this does not point at an existing example project because no shipped sample overrides the defaults.
+`TabbedCodeBlockRenderOptions` is a public record with five `init` properties — `OuterWrapperCss`, `ContainerCss`, `TabListCss`, `TabButtonCss`, `TabPanelCss`. Defaults are `not-prose` / `tab-container` / `tab-list` / `tab-button` / `tab-panel`, matching the utility classes `Pennington.MonorailCss` bundles. To customize, register a custom `MarkdownPipeline` after `AddPennington` that passes a `tabOptions` factory through the pipeline factory.
 
 ```csharp
 using Pennington.Highlighting;
@@ -100,12 +93,12 @@ builder.Services.AddSingleton<MarkdownPipeline>(sp =>
 
 ## Verify
 
-- Bullet: run `dotnet run --project examples/BeaconDocsExample` and open a page containing adjacent fences marked `tabs=true` — expect one panel with a tab button per fence.
-- Bullet: inspect the HTML — the group is one `<div class="not-prose">` wrapping `<div class="tab-container">`, a `<div role="tablist">`, and one `<div ... class="tab-panel">` per fence; the first tab has `aria-selected="true"` and `data-state="active"`.
-- Bullet: if only one fence is present, the output is a normal `<pre>` block rather than a tab widget — confirming the "needs ≥ 2 adjacent fences" rule.
+- Run `dotnet run --project examples/BeaconDocsExample` and open a page containing adjacent fences marked `tabs=true` — expect one panel with a tab button per fence.
+- Inspect the HTML — the group is one `<div class="not-prose">` wrapping `<div class="tab-container">`, a `<div role="tablist">`, and one `<div ... class="tab-panel">` per fence. The first tab carries `aria-selected="true"` and `data-state="active"`.
+- With only one fence, the output is a normal `<pre>` block — confirming the "needs ≥ 2 adjacent fences" rule.
 
 ## Related
 
-- Reference: Markdown extensions reference entry for `UseTabbedCodeBlocks` and the `tabs=true` / `title` attributes parsed by `CodeBlockExtensions.GetArgumentPairs`.
-- Reference: `TabbedCodeBlockRenderOptions` record — default values and the five `*Css` members.
-- Background: Explanation of how `MarkdownPipelineFactory.CreateWithExtensions` composes the Pennington-specific Markdig extensions on top of `UseAdvancedExtensions`.
+- Reference: [Markdown extensions](/reference/markdown/extensions) — the `tabs=true` / `title` attributes.
+- Reference: [Code-block argument reference](/reference/markdown/code-block-args)
+- Background: [Syntax highlighting](/explanation/rendering/highlighting)

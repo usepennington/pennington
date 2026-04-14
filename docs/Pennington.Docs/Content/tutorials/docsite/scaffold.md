@@ -25,7 +25,7 @@ llms: false
 - Completed [Create your first Pennington site](/tutorials/getting-started/first-site)
 - A shell and text editor or IDE
 
-The finished code for this tutorial lives in [`examples/TempoDocsExample`](https://github.com/Phil-Scott-Msft/Pennington/tree/main/examples/TempoDocsExample) and, for the richer header/footer variation, [`examples/BeaconDocsExample`](https://github.com/Phil-Scott-Msft/Pennington/tree/main/examples/BeaconDocsExample).
+The finished code for this tutorial lives in [`examples/TempoDocsExample`](https://github.com/usepennington/pennington/tree/main/examples/TempoDocsExample) and, for the richer header/footer variation, [`examples/BeaconDocsExample`](https://github.com/usepennington/pennington/tree/main/examples/BeaconDocsExample).
 
 ---
 

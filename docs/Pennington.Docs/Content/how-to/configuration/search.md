@@ -2,7 +2,7 @@
 title: Configure search indexing
 description: Tune the FlexSearch index — content selector, default priority, per-page opt-outs, and per-locale output files.
 section: configuration
-order: 40
+order: 20
 tags: []
 uid: how-to.configuration.search
 isDraft: true
@@ -26,7 +26,7 @@ llms: false
 - You already reach the built-in client at `/search-index-{locale}.json` through `UsePennington()`.
 - You know which front matter type each content source uses (`DocFrontMatter`, `BlogFrontMatter`, or your own `IFrontMatter`).
 
-To copy a working setup, see [`examples/SearchExample`](https://github.com/Pennington/Pennington/tree/main/examples/SearchExample). Do not walk through the whole example — this page is a recipe, not a tour.
+To copy a working setup, see [`examples/SearchExample`](https://github.com/usepennington/pennington/tree/main/examples/SearchExample). Do not walk through the whole example — this page is a recipe, not a tour.
 
 ---
 
@@ -100,6 +100,5 @@ One file per configured locale is mapped by `UsePennington()`; registered-but-em
 
 ## Related
 
-- Reference: [`SearchIndexOptions`](/reference/search/search-index-options)
-- Reference: [`IContentService`](/reference/content/icontentservice)
-- Background: [Search index architecture](/explanation/search-index)
+- Reference: [`SearchIndexOptions`](/reference/options/auxiliary-options)
+- Reference: [Content pipeline interfaces](/reference/extension-points/content-pipeline)

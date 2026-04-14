@@ -130,6 +130,6 @@ A `RazorIslandRenderer<T>` subclass naming the island `"article"` and rendering 
 
 ## See also
 
-- How-to: [Add SPA navigation to a doc site](/how-to/add-spa-navigation)
-- Related reference: [SpaNavigationOptions](/reference/options/spa-navigation)
-- Background: [Why islands, not a full SPA](/explanation/islands-architecture)
+- How-to: [Register an island renderer](/how-to/extensibility/island-renderer)
+- Related reference: [DI and middleware extension methods](/reference/host/extensions)
+- Background: [SPA navigation and island architecture](/explanation/spa/islands)
