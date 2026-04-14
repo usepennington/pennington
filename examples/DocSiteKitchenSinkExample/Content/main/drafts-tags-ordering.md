@@ -2,7 +2,7 @@
 title: Drafts, tags, and ordering
 description: Front-matter keys for hiding pages and controlling sidebar position.
 tags: [authoring, drafts, tags, ordering]
-section: authoring
+sectionLabel: authoring
 order: 30
 uid: kitchen-sink.main.drafts-tags-ordering
 ---

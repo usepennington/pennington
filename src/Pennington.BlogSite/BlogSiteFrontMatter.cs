@@ -17,7 +17,7 @@ public record BlogSiteFrontMatter : IFrontMatter, ITaggable,
     public string[] Tags { get; init; } = [];
     public string Series { get; init; } = "";
     public string? RedirectUrl { get; init; }
-    public string? Section { get; init; }
+    public string? SectionLabel { get; init; }
     public string? Uid { get; init; }
     public bool Search { get; init; } = true;
     public bool Llms { get; init; } = true;

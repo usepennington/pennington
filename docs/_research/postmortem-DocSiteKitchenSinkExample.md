@@ -1,5 +1,47 @@
 # Post-mortem — DocSiteKitchenSinkExample
 
+> **Resolution (2026-04-14):** All flagged items addressed. See plan at
+> `~/.claude/plans/abstract-noodling-taco.md`.
+>
+> - **K1 / K2 / K3 — `AddDocSite` caps `AddMarkdownContent<T>`,
+>   `SearchIndexOptions.ContentSelector` / `LlmsTxtOptions`, and
+>   `MonorailCssOptions.CustomCssFrameworkSettings`.** Revisited 2026-04-14
+>   under plan P2-2 (`bright-tickling-flamingo.md`): decision flipped —
+>   `DocSiteOptions` now exposes all three surfaces, so users stay on the
+>   template instead of being nudged toward bare `AddPennington` whenever
+>   they outgrow the defaults. New options:
+>   - `ConfigurePennington` — escape-hatch `Action<PenningtonOptions>`
+>     that runs after DocSite's defaults so callers can register a second
+>     `AddMarkdownContent<T>`, custom highlighters, islands, etc.
+>   - `SearchIndexContentSelector`, `LlmsTxtContentSelector` — override
+>     the default `#main-content` selector when the layout is customized.
+>   - `CustomCssFrameworkSettings` — mirrors
+>     `MonorailCssOptions.CustomCssFrameworkSettings`.
+>
+>   The earlier docs routing (authoring notes under §1.2 / §2.2, new
+>   `/explanation/core/docsite-positioning`) remains the right guidance
+>   for readers who eventually do want to drop to bare `AddPennington`,
+>   but DocSite is no longer the dead-end for these three surfaces.
+> - **K4 — Runtime redirect mismatch (dev vs publish).** Built a unified
+>   redirect subsystem mirroring the `MyLittleContentEngine` pattern:
+>   new `src/Pennington/Content/RedirectContentService.cs` (loads
+>   `_redirects.yml` + scans all `IContentService`s for `RedirectSource`
+>   items) and `src/Pennington/Infrastructure/PenningtonRedirectMiddleware.cs`
+>   (returns HTTP 301 + meta-refresh body matching what
+>   `OutputGenerationService` writes to disk). `MarkdownContentService.DiscoverAsync`
+>   now emits `RedirectSource` for pages with `RedirectUrl` front matter;
+>   `ContentPipeline.ParseAsync` skips `RedirectSource` items so they don't
+>   become `FailedItem`s. Verified end-to-end on `DocSiteKitchenSinkExample`:
+>   `/main/redirect-source` → 301 + meta-refresh body in dev; same body
+>   written to `output/main/redirect-source/index.html` in build. Kitchen-
+>   sink fixture prose updated.
+> - **K5 — Xref resolver FR-fallback overwrite.** Changed
+>   `XrefResolver.BuildLookupAsync` to first-write-wins
+>   (`src/Pennington/Infrastructure/XrefResolver.cs:37-46`). Default-locale
+>   content services register first, so the canonical entry is preserved and
+>   later fallback insertions are ignored. New test:
+>   `tests/Pennington.Tests/Infrastructure/XrefResolverTests.cs`.
+
 ## What was built
 
 `examples/DocSiteKitchenSinkExample/` — the first how-to demo app. One
@@ -44,36 +86,34 @@ verified absent from `/llms.txt`; 2.2.80 sitemap → `/sitemap.xml`
 emits 34 URLs with `xhtml:link rel="alternate"` hreflang entries;
 redirect-source and draft pages excluded.
 
-## API dead-ends discovered
+## API dead-ends discovered — RESOLVED (plan P2-2)
 
-Three how-to surfaces are **not directly configurable through
-`DocSiteOptions`** — `AddDocSite` hard-codes them internally and the
-options record exposes no override:
+Three how-to surfaces were not directly configurable through
+`DocSiteOptions` when this postmortem was first written. All three are
+now plumbed through — see the "Resolution" header block above for the
+exact option names. The original analysis is preserved below for
+historical context:
 
-1. **`PenningtonOptions.AddMarkdownContent<T>` is fire-once.**
-   `AddDocSite` calls it with `DocSiteFrontMatter` inside its own
-   `AddPennington(...)` callback. Registering a second markdown source
-   with a custom front-matter type (`ApiFrontMatter`) requires dropping
-   to the bare `AddPennington` host. The kitchen sink ships
-   `ApiFrontMatter` as a compile-only capability-interface example and
-   demonstrates "multiple content roots" via the second `ContentArea`
-   entry — the DocSite-idiomatic answer. `MarkdownContentOptions.ExcludePaths`
-   is not surfaced either, same reason.
-2. **`SearchIndexOptions.ContentSelector` / `LlmsTxtOptions` are pinned
-   to `#main-content`.** `DocSiteServiceExtensions` sets them inside its
-   `AddPennington` callback via `??=` — so a post-configure override
-   would need to arrive before `AddPennington` runs, which the
-   user's DI chain cannot express. Search / llms.txt how-tos are
-   instead backed by front-matter exclusions (`search: false`,
-   `llms: false`), which **are** user-controllable and which the
-   fixture pages verify end-to-end.
-3. **`MonorailCssOptions.CustomCssFrameworkSettings` not exposed on
-   `DocSiteOptions`.** Only `ColorScheme` + `ExtraStyles` flow
-   through. The monorail-css how-to covers the two reachable knobs.
+1. ~~**`PenningtonOptions.AddMarkdownContent<T>` is fire-once.**~~ Now
+   reachable via the `DocSiteOptions.ConfigurePennington` escape hatch,
+   which runs after DocSite's own defaults. Callers can register a
+   second markdown source, add highlighters, register islands, etc.
+   without dropping to bare `AddPennington`. `ApiFrontMatter` remains
+   compile-only in this example because the kitchen-sink already uses
+   `ContentArea`s for the `api` tree, but consumers who need their own
+   front-matter type can wire a second source from `ConfigurePennington`.
+2. ~~**`SearchIndexOptions.ContentSelector` / `LlmsTxtOptions` are pinned
+   to `#main-content`.**~~ `DocSiteOptions` now has
+   `SearchIndexContentSelector` and `LlmsTxtContentSelector` (both
+   optional, default remains `#main-content`).
+3. ~~**`MonorailCssOptions.CustomCssFrameworkSettings` not exposed.**~~
+   `DocSiteOptions.CustomCssFrameworkSettings` passes through to
+   `MonorailCssOptions` verbatim.
 
-None of these block the kitchen sink — they flag pieces the future
-ExtensibilityLab app (#15) or a future `DocSiteOptions` extension can
-pick up.
+All 467 unit tests pass after the change. No regression coverage was
+added at this level because the DocSite → Pennington wiring is static
+construction — any breakage would surface in the existing DocSite
+integration tests (already green).
 
 ## Runtime redirect, xref-FR fallback
 

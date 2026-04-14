@@ -7,7 +7,7 @@ tags:
   - pennington
   - blogsite
   - homepage
-section: field-notes
+sectionLabel: field-notes
 ---
 
 `BlogSiteOptions` exposes four homepage surfaces — `HeroContent`, `MyWork`,

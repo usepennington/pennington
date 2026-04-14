@@ -40,7 +40,7 @@ public sealed class NavigationBuilder
         var currentItem = currentIndex >= 0 ? flatList[currentIndex] : null;
 
         return new NavigationInfo(
-            SectionName: currentItem?.Section,
+            SectionName: currentItem?.SectionLabel,
             SectionRoute: null,
             Breadcrumbs: breadcrumbs,
             PageTitle: currentItem?.Title ?? "",
@@ -70,6 +70,15 @@ public sealed class NavigationBuilder
             .DistinctBy(item => item.Route.CanonicalPath.Value, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
+        // At the tree root, an item with empty HierarchyParts represents the
+        // "overview" page for the tree — typically an area's index.md whose
+        // hierarchy was stripped by GetTocItemsForAreaAsync. Include it so the
+        // landing page is reachable from the sidebar, not only from the area
+        // tab in the top nav.
+        var overviewItem = depth == 0
+            ? allItems.FirstOrDefault(item => item.HierarchyParts.Length == 0)
+            : null;
+
         // Find distinct section names at this depth that have deeper descendants
         // but no direct item (auto-create folder nodes)
         var sectionsWithDescendants = allItems
@@ -82,6 +91,23 @@ public sealed class NavigationBuilder
             .ToList();
 
         var builder = ImmutableList.CreateBuilder<NavigationTreeItem>();
+
+        // Add the overview entry first (area index) so it lands at the top of
+        // the sidebar regardless of other items' Order values.
+        if (overviewItem is not null)
+        {
+            var overviewSelected = currentRoute != null
+                && overviewItem.Route.CanonicalPath.Matches(currentRoute.CanonicalPath);
+            builder.Add(new NavigationTreeItem(
+                Title: overviewItem.Title,
+                Route: overviewItem.Route,
+                Order: int.MinValue,
+                SectionLabel: overviewItem.SectionLabel,
+                IsSelected: overviewSelected,
+                IsExpanded: false,
+                Children: []
+            ));
+        }
 
         // Add auto-created section nodes first
         foreach (var section in sectionsWithDescendants)
@@ -107,7 +133,7 @@ public sealed class NavigationBuilder
                 Title: sectionTitle,
                 Route: sectionRoute,
                 Order: minOrder,
-                Section: null,
+                SectionLabel: null,
                 IsSelected: false,
                 IsExpanded: isExpanded,
                 Children: children
@@ -126,7 +152,7 @@ public sealed class NavigationBuilder
                 Title: item.Title,
                 Route: item.Route,
                 Order: item.Order,
-                Section: item.Section,
+                SectionLabel: item.SectionLabel,
                 IsSelected: isSelected,
                 IsExpanded: isExpanded,
                 Children: children

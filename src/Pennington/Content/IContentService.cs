@@ -65,6 +65,6 @@ public interface IContentService
     /// </summary>
     Task<ImmutableList<CrossReference>> GetCrossReferencesAsync();
 
-    string DefaultSection { get; }
+    string DefaultSectionLabel { get; }
     int SearchPriority { get; }
 }

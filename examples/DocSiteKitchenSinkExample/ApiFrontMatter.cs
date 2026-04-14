@@ -24,7 +24,7 @@ public record ApiFrontMatter : IFrontMatter, ITaggable, ISectionable, IOrderable
     public string[] Tags { get; init; } = [];
     public int Order { get; init; } = int.MaxValue;
     public string? RedirectUrl { get; init; }
-    public string? Section { get; init; }
+    public string? SectionLabel { get; init; }
     public string? Uid { get; init; }
     public bool Search { get; init; } = true;
     public bool Llms { get; init; } = true;

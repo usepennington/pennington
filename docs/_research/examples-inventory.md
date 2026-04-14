@@ -248,9 +248,15 @@ eleven total). `NavigationBuilder` — invoked implicitly by the DocSite
 each subfolder under an area and sorts the children by `order:` (tiebreaker:
 title). The section header's own order is the minimum `order:` among its
 children, so bumping a page's number early in a section pulls the whole
-section toward the top. The `section:` front-matter key is carried through
-to `ContentTocItem.Section` and surfaced on `NavigationInfo.SectionName`
-for prev/next breadcrumbs, but **does not** drive sidebar grouping — the
+section toward the top. **Author tie-break gotcha:** when two sibling
+sections share their minimum `order:`, the tie breaks alphabetically on the
+title-cased folder name — `advanced/` with 10/20 sorts before
+`getting-started/` with 10/20 because both minima are 10. Stagger numbers
+across sibling sections (e.g. 10/20 for one, 40/50 for the next) so the
+minima don't collide. The page tutorial at §1.2.30 must surface this rule
+in prose. The `section:` front-matter key is carried through to
+`ContentTocItem.Section` and surfaced on `NavigationInfo.SectionName` for
+prev/next breadcrumbs, but **does not** drive sidebar grouping — the
 subfolder is what groups.
 
 **Files**
@@ -1175,10 +1181,15 @@ that the how-to pages embed via `path:` fences.
 
 - `T:SubPathDeployableExample.ServiceConfiguration`
 - `M:SubPathDeployableExample.ServiceConfiguration.BuildDocSiteOptions` (short)
+- `T:SubPathDeployableExample.BuildHost` — addressable wrappers for `RunOrBuildAsync` / `BuildReport` so §2.4.20 can fence small copy-pasteable snippets
+- `M:SubPathDeployableExample.BuildHost.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])` — primary fence target for the dev-vs-build switch on the GitHub Pages how-to
+- `M:SubPathDeployableExample.BuildHost.PrintBuildReport(Pennington.Generation.BuildReport)` — primary fence target for the "inspect the BuildReport in CI" paragraph on the GitHub Pages how-to
 
-Helper is compile-only on the call path — `Program.cs` invokes it via the
-`AddDocSite` factory, so the body is also reachable via `bodyonly` for
-how-to fences that need the configuration shape inline.
+Helpers are compile-only on the call path — `Program.cs` invokes
+`ServiceConfiguration.BuildDocSiteOptions` via the `AddDocSite` factory and
+calls the extension `app.RunDocSiteAsync(args)` rather than `BuildHost`
+itself, so every helper body is also reachable via `,bodyonly` for how-to
+fences that need the logic inline.
 
 ### Production surfaces the §2.4 how-tos point at
 

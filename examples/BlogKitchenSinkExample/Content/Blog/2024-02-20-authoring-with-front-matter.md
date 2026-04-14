@@ -8,7 +8,7 @@ tags:
   - authoring
   - front-matter
 series: Pennington Field Notes
-section: field-notes
+sectionLabel: field-notes
 ---
 
 The `BlogSiteFrontMatter` record is the contract between a markdown file and

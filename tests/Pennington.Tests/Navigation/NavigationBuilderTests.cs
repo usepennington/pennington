@@ -17,11 +17,63 @@ public class NavigationBuilderTests
         Route: MakeRoute(path),
         Order: order,
         HierarchyParts: hierarchy,
-        Section: null,
+        SectionLabel: null,
         Locale: null
     );
 
     private readonly NavigationBuilder _builder = new();
+
+    [Fact]
+    public void BuildTree_AreaIndexWithEmptyHierarchy_AppearsFirstAsOverview()
+    {
+        // Simulates GetTocItemsForAreaAsync for area="guides":
+        // guides/index.md has HierarchyParts stripped to [], while peers retain
+        // their depth-1 paths. The overview entry must appear first in the sidebar
+        // regardless of its Order value or child Order values.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Guides Overview", "/guides/", 0),
+            MakeTocItem("Installation", "/guides/installation", 10, "installation"),
+            MakeTocItem("First Project", "/guides/first-project", 20, "first-project"),
+        };
+
+        var tree = _builder.BuildTree(items);
+
+        tree.Count.ShouldBe(3);
+        tree[0].Title.ShouldBe("Guides Overview");
+        tree[0].Route.CanonicalPath.Value.ShouldBe("/guides/");
+        tree[1].Title.ShouldBe("Installation");
+        tree[2].Title.ShouldBe("First Project");
+    }
+
+    [Fact]
+    public void BuildTree_AreaIndexSelected_MarksOverviewAsCurrent()
+    {
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Guides Overview", "/guides/", 0),
+            MakeTocItem("Installation", "/guides/installation", 10, "installation"),
+        };
+
+        var tree = _builder.BuildTree(items, MakeRoute("/guides/"));
+
+        tree[0].IsSelected.ShouldBeTrue();
+        tree[1].IsSelected.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void BuildTree_NoAreaIndex_OmitsOverview()
+    {
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Installation", "/guides/installation", 10, "installation"),
+        };
+
+        var tree = _builder.BuildTree(items);
+
+        tree.Count.ShouldBe(1);
+        tree[0].Title.ShouldBe("Installation");
+    }
 
     [Fact]
     public void BuildTree_SimpleFlatList_ReturnsNoNesting()
@@ -257,7 +309,7 @@ public class NavigationBuilderTests
         },
         Order: order,
         HierarchyParts: hierarchy,
-        Section: null,
+        SectionLabel: null,
         Locale: locale
     );
 

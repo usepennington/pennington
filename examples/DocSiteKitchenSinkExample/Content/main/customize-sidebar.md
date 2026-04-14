@@ -2,7 +2,7 @@
 title: Customize the sidebar
 description: Shape the generated sidebar through folder structure and front-matter keys.
 tags: [authoring, navigation]
-section: authoring
+sectionLabel: authoring
 order: 40
 uid: kitchen-sink.main.customize-sidebar
 ---

@@ -44,16 +44,20 @@ Append `,bodyonly` → `csharp:xmldocid,bodyonly` to strip declarations
 and render just the block/expression body. Multiple XmlDocIds in one
 fence are concatenated with a blank line between each fragment.
 
-## `:path` quirk (found during verification)
+## `:path` quirk — FIXED (plan P0-1)
 
-`ProcessPath` computes `Path.GetDirectoryName(SolutionPath)`; when
+~~`ProcessPath` computes `Path.GetDirectoryName(SolutionPath)`; when
 `SolutionPath` is a bare filename (`"BeyondRoslynExample.slnx"`) this
 returns empty string and the preprocessor emits "Solution directory not
-found". Docs site dodges this by using `"../../Pennington.slnx"`. For
-this example I dropped the `:path` fence — the tutorial's teaching
-surface is `xmldocid`, not `path`. Future app should either prefix
-`SolutionPath` with `./` (doesn't help — still empty dir) or a real
-`../` parent.
+found".~~
+
+Fixed in `src/Pennington.Roslyn/Preprocessing/RoslynCodeBlockPreprocessor.cs`
+`ProcessPath` by normalizing via `Path.GetFullPath` before taking
+`GetDirectoryName`. Bare filenames now resolve against the process CWD,
+matching how `SolutionPath` is interpreted everywhere else at runtime.
+Regression coverage: `ProcessPath_Accepts_Bare_Filename_SolutionPath` +
+`ProcessPath_Resolves_File_Relative_To_SolutionPath_Directory` in
+`tests/Pennington.Roslyn.Tests/Preprocessing/RoslynCodeBlockPreprocessorTests.cs`.
 
 ## Verification
 

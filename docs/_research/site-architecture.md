@@ -234,7 +234,7 @@ Dev serve and static build share one rendering path. In build mode (`dotnet run 
 3. `OutputGenerationService` constructs an `HttpClient` with `AllowAutoRedirect = false` pointed at the running host, discovers pages via `IContentService.DiscoverAsync` and `DiscoverMapGetRoutes` from `EndpointDataSource`, issues HTTP GETs, and writes each response to `OutputOptions.OutputDirectory`. The sentinel `NotFoundGeneratorPath` (`"/__pennington-404-generator"`) is fetched to materialize `404.html`.
 4. Because every page is produced by a real HTTP round-trip, the response processors, `IHtmlResponseRewriter` pipeline, Razor SSR, Markdig extensions, `MonorailCSS` class collection, and search-index/llms.txt endpoints all run identically to dev serve. The only thing that changes between modes is the output target (stdout/socket vs. disk).
 
-CLI argument surface is parsed in `OutputOptions.FromArgs`: `args[0]` must equal `build`; `args[1]` is `BaseUrl` (default `"/"`); `args[2]` is `OutputDirectory` (default `"output"`). Non-`build` invocations return a no-op `OutputOptions` so integration tests and `dotnet watch` don't misread positional args.
+CLI argument surface is parsed in `OutputOptions.FromArgs`: `args[0]` must equal `build`. Named flags `--base-url` and `--output` (space- or `=`-joined value) are the preferred form; legacy positional `args[1] = BaseUrl`, `args[2] = OutputDirectory` still works as a back-compat fallback. Defaults: `BaseUrl = "/"`, `OutputDirectory = "output"`. Non-`build` invocations return a no-op `OutputOptions` so integration tests and `dotnet watch` don't misread positional args.
 
 This unification is a deliberate invariant — do not propose designs that add a separate "offline build" renderer that bypasses the HTTP pipeline.
 

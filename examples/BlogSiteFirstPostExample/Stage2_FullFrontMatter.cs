@@ -25,7 +25,7 @@ public static class Stage2
           - blogging
         series: Pennington Field Notes
         repository: https://github.com/example/pennington-field-notes
-        section: field-notes
+        sectionLabel: field-notes
         redirectUrl:
         ---
 

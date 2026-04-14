@@ -2,7 +2,7 @@
 title: Diagrams
 description: Mermaid fences render client-side with theme awareness.
 tags: [authoring, diagrams]
-section: authoring
+sectionLabel: authoring
 order: 90
 uid: kitchen-sink.main.diagrams
 ---

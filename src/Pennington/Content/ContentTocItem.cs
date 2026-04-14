@@ -10,7 +10,7 @@ public record ContentTocItem(
     ContentRoute Route,
     int Order,
     string[] HierarchyParts,
-    string? Section,
+    string? SectionLabel,
     string? Locale
 )
 {

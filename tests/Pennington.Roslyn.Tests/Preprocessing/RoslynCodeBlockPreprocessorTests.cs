@@ -127,6 +127,62 @@ public sealed class RoslynCodeBlockPreprocessorTests
     }
 
     [Fact]
+    public void ProcessPath_Accepts_Bare_Filename_SolutionPath()
+    {
+        // Regression: ProcessPath used to call Path.GetDirectoryName directly on
+        // SolutionPath. A bare filename (no directory component) returns empty,
+        // which triggered a spurious "Solution directory not found" error — even
+        // though the rest of Pennington resolves SolutionPath against the process
+        // CWD. See postmortem-BeyondRoslynExample.md.
+        var preprocessor = new RoslynCodeBlockPreprocessor(
+            new StubSymbolExtractionService(),
+            new SyntaxHighlighter(),
+            new RoslynOptions { SolutionPath = "bare-filename.slnx" },
+            new NullHttpContextAccessor());
+
+        var result = preprocessor.TryProcess("nonexistent-file-for-test.cs", "csharp:path");
+
+        result.ShouldNotBeNull();
+        result.HighlightedHtml.ShouldNotContain("Solution directory not found");
+        // File doesn't exist — we expect a clean "File not found" error, proving
+        // the preprocessor got past the directory-resolution step.
+        result.HighlightedHtml.ShouldContain("File not found");
+    }
+
+    [Fact]
+    public void ProcessPath_Resolves_File_Relative_To_SolutionPath_Directory()
+    {
+        // End-to-end: a :path fence body resolves relative to the SolutionPath's
+        // directory. This covers the happy path for the bare-filename fix.
+        var tempDir = Path.Combine(Path.GetTempPath(), $"penn-roslyn-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            var solutionFile = Path.Combine(tempDir, "fake.slnx");
+            File.WriteAllText(solutionFile, "<Solution />");
+            var contentFile = Path.Combine(tempDir, "sample.cs");
+            File.WriteAllText(contentFile, "var sentinel = 42;");
+
+            var preprocessor = new RoslynCodeBlockPreprocessor(
+                new StubSymbolExtractionService(),
+                new SyntaxHighlighter(),
+                new RoslynOptions { SolutionPath = solutionFile },
+                new NullHttpContextAccessor());
+
+            var result = preprocessor.TryProcess("sample.cs", "csharp:path");
+
+            result.ShouldNotBeNull();
+            result.HighlightedHtml.ShouldNotContain("File not found");
+            result.HighlightedHtml.ShouldNotContain("Solution directory not found");
+            result.HighlightedHtml.ShouldContain("sentinel");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
     public void AddPenningtonRoslyn_Registers_ICodeHighlighter()
     {
         var services = new ServiceCollection();

@@ -2,7 +2,7 @@
 title: Tabbed code groups
 description: Adjacent code fences collapse into an ARIA tablist.
 tags: [authoring, code]
-section: authoring
+sectionLabel: authoring
 order: 60
 uid: kitchen-sink.main.tabbed-code
 ---

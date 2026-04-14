@@ -38,6 +38,7 @@ var app = builder.Build();
 // maps `/rss.xml` so the static crawler picks the feed up.
 app.UseBlogSite();
 
-// `RunBlogSiteAsync` delegates to `RunOrBuildAsync`, so `dotnet run` serves
-// the blog live and `dotnet run -- build <outputDir>` generates static HTML.
+// `RunBlogSiteAsync` delegates to `RunOrBuildAsync`, so `dotnet run` serves the
+// blog live and `dotnet run -- build <baseUrl> <outputDir>` generates static
+// HTML. Both positional args are optional (defaults: `/` and `output`).
 await app.RunBlogSiteAsync(args);

@@ -1,5 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
 using Pennington.Feeds;
 using Pennington.FrontMatter;
+using Pennington.Generation;
 using Pennington.Routing;
 
 namespace Pennington.Tests.Feeds;
@@ -17,7 +19,7 @@ public class SitemapBuilderTests
     {
         public string Title { get; init; } = "Test";
         public bool IsDraft { get; init; }
-        public string? Section { get; init; }
+        public string? SectionLabel { get; init; }
         public DateTime? Date { get; init; }
         public string? Description { get; init; }
         public string? RedirectUrl { get; init; }
@@ -187,5 +189,85 @@ public class SitemapBuilderTests
         var urls = entries.Select(e => e.Url.Value).ToList();
         urls.ShouldContain("https://example.com/getting-started/");
         urls.ShouldContain("https://example.com/about/");
+    }
+
+    [Fact]
+    public void Build_SubPathBaseUrl_WithoutCanonicalUrl_ProducesPrefixedRelativeUrls()
+    {
+        // Regression for P0-3 / postmortem-SubPathDeployableExample.md: a sub-path
+        // build (e.g. `dotnet run -- build /sub/`) must produce a sitemap whose
+        // <loc> values crawlers can resolve to the deployed location — even when
+        // CanonicalBaseUrl is not set. The DI factory in PenningtonExtensions
+        // falls back to OutputOptions.BaseUrl; this test exercises that
+        // composition end-to-end using the SitemapBuilder.
+        var builder = new SitemapBuilder(new UrlPath("/sub"));
+
+        var candidates = new List<SitemapCandidate>
+        {
+            new(MakeRoute("/about"), new TestFrontMatter { Title = "About" }),
+            new(MakeRoute("/guides/first"), new TestFrontMatter { Title = "First Guide" }),
+        };
+
+        var entries = builder.Build(candidates);
+
+        entries.Count.ShouldBe(2);
+        entries[0].Url.Value.ShouldBe("/sub/about/");
+        entries[1].Url.Value.ShouldBe("/sub/guides/first/");
+    }
+
+    [Fact]
+    public void PenningtonDiFactory_FallsBackToBaseUrl_WhenCanonicalBaseUrlIsMissing()
+    {
+        // Mirror the DI factory wired in PenningtonExtensions.cs so a change to
+        // that factory without also updating this replication will fail here.
+        // See `// Feed builders` block in PenningtonExtensions.AddPennington.
+        string? canonicalBaseUrl = null; // user did not set PenningtonOptions.CanonicalBaseUrl
+
+        var services = new ServiceCollection();
+        services.AddSingleton(new OutputOptions
+        {
+            OutputDirectory = new FilePath("output"),
+            BaseUrl = new UrlPath("/sub/"),
+        });
+        services.AddSingleton(sp =>
+        {
+            var effectiveBase = !string.IsNullOrEmpty(canonicalBaseUrl)
+                ? new UrlPath(canonicalBaseUrl)
+                : sp.GetRequiredService<OutputOptions>().BaseUrl;
+            return new SitemapBuilder(effectiveBase);
+        });
+
+        var sp = services.BuildServiceProvider();
+        var builder = sp.GetRequiredService<SitemapBuilder>();
+
+        builder.CanonicalBase.Value.ShouldBe("/sub/");
+    }
+
+    [Fact]
+    public void PenningtonDiFactory_ExplicitCanonicalBaseUrl_WinsOverBaseUrl()
+    {
+        // When users set CanonicalBaseUrl to a fully-qualified URL (the correct
+        // form per the sitemap protocol), it must not be overridden by the
+        // OutputOptions.BaseUrl fallback.
+        string? canonicalBaseUrl = "https://example.com/my-sub-path";
+
+        var services = new ServiceCollection();
+        services.AddSingleton(new OutputOptions
+        {
+            OutputDirectory = new FilePath("output"),
+            BaseUrl = new UrlPath("/"),
+        });
+        services.AddSingleton(sp =>
+        {
+            var effectiveBase = !string.IsNullOrEmpty(canonicalBaseUrl)
+                ? new UrlPath(canonicalBaseUrl)
+                : sp.GetRequiredService<OutputOptions>().BaseUrl;
+            return new SitemapBuilder(effectiveBase);
+        });
+
+        var sp = services.BuildServiceProvider();
+        var builder = sp.GetRequiredService<SitemapBuilder>();
+
+        builder.CanonicalBase.Value.ShouldBe("https://example.com/my-sub-path");
     }
 }

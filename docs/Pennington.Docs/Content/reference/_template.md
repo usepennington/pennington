@@ -1,7 +1,7 @@
 ---
 title: "TEMPLATE — Reference"
 description: "Template for reference pages. Duplicate, rename, and replace every placeholder before publishing."
-section: "Template"
+sectionLabel: "Template"
 order: 9999
 tags: []
 uid: template.reference

@@ -27,12 +27,14 @@ tutorial pulls each body via `csharp:xmldocid,bodyonly`.
 
 ## API surprises / follow-ups
 
-- **`OutputOptions.FromArgs` positional layout.** `build <baseUrl> <outputDir>`
-  with only two args sends `_testoutput` into `BaseUrl` and defaults the output
-  to `output/`. The static build still works — the baked-in `<body data-base-url>`
-  just ends up as `_testoutput`. Later-app agents running the same verification
-  command should expect the output at `output/`, not at the name they pass, and
-  clean both paths.
+- **`OutputOptions.FromArgs` positional layout** — FIXED (plan P2-3).
+  `FromArgs` now accepts named flags alongside legacy positional: prefer
+  `dotnet run -- build --base-url /sub --output dist` (or `=`-joined
+  forms) over the old `build <baseUrl> <outputDir>` positional shape.
+  Positional stays supported for back-compat; flags win when both appear
+  and also let you fill one slot by flag and the other positional
+  (`build --base-url=/sub dist`). Regression coverage: eight new cases
+  in `tests/Pennington.Tests/Generation/OutputOptionsTests.cs`.
 - **Core `AddPennington` does not wire a content-page route handler.** The
   DocSite and BlogSite templates add Razor routing on top. A bare host has to
   bring its own endpoint — this example's `MapGet` fallback is the minimum

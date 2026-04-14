@@ -1,7 +1,7 @@
 ---
 title: Configure your site
 description: Tour the PenningtonOptions knobs you will reach for on day one.
-section: Getting Started
+sectionLabel: Getting Started
 order: 30
 ---
 

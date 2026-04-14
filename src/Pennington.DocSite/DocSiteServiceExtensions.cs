@@ -32,10 +32,13 @@ public static class DocSiteServiceExtensions
                 md.BasePageUrl = "/";
             });
 
-            // llms.txt generation — the DocSite layout puts content inside <article id="main-content">
-            // so both llms.txt output and the search index can scope extraction to that element.
-            penn.AddLlmsTxt(opts => opts.ContentSelector ??= "#main-content");
-            penn.SearchIndex.ContentSelector ??= "#main-content";
+            // llms.txt generation and search index. The stock DocSite layout wraps
+            // page body inside <article id="main-content">, so both outputs scope
+            // extraction there by default. Both selectors are overridable via
+            // DocSiteOptions when the layout has been customized.
+            var llmsSelector = options.LlmsTxtContentSelector ?? "#main-content";
+            penn.AddLlmsTxt(opts => opts.ContentSelector ??= llmsSelector);
+            penn.SearchIndex.ContentSelector ??= options.SearchIndexContentSelector ?? "#main-content";
 
             // Localization
             options.ConfigureLocalization?.Invoke(penn.Localization);
@@ -46,6 +49,11 @@ public static class DocSiteServiceExtensions
                 ? [appAssembly, .. options.AdditionalRoutingAssemblies]
                 : options.AdditionalRoutingAssemblies;
             penn.AdditionalRoutingAssemblies = allAssemblies;
+
+            // Last: give the app a chance to wire additional content sources,
+            // highlighters, islands, etc. Runs after DocSite's own defaults so
+            // users can still override anything DocSite set above.
+            options.ConfigurePennington?.Invoke(penn);
         });
 
         // Make Pennington.UI components available inline in markdown via Mdazor.
@@ -67,6 +75,7 @@ public static class DocSiteServiceExtensions
             {
                 ColorScheme = options.ColorScheme ?? new MonorailCssOptions().ColorScheme,
                 ExtraStyles = options.ExtraStyles ?? string.Empty,
+                CustomCssFrameworkSettings = options.CustomCssFrameworkSettings ?? (settings => settings),
             };
 
             return monoOptions;
@@ -75,8 +84,8 @@ public static class DocSiteServiceExtensions
         // SPA navigation
         services.AddSpaNavigation();
 
-        // Component renderer for SPA islands
-        services.AddScoped<ComponentRenderer>();
+        // ComponentRenderer is registered by AddPennington (required by
+        // RazorIslandRenderer<T> on any host, not just DocSite).
 
         // Register the article island renderer
         services.AddTransient<IIslandRenderer, Slots.DocSiteArticleSlotRenderer>();

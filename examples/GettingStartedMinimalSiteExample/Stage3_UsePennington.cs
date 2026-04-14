@@ -6,7 +6,8 @@ using Pennington.Infrastructure;
 /// <summary>
 /// Stage 3 — add the Pennington middleware and hand control to
 /// <c>RunOrBuildAsync</c> so the same host serves live in dev mode and
-/// generates static HTML when invoked as <c>dotnet run -- build &lt;dir&gt;</c>.
+/// generates static HTML when invoked as <c>dotnet run -- build &lt;baseUrl&gt; &lt;outputDir&gt;</c>
+/// (both args optional — default to <c>/</c> and <c>output</c>).
 /// Page rendering arrives in <c>Program.cs</c>. Tutorial prose extracts the
 /// body of <see cref="Run"/> via <c>xmldocid,bodyonly</c>. This class is never
 /// instantiated.

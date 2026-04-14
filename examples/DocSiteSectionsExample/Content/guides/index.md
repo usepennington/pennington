@@ -1,7 +1,7 @@
 ---
 title: Guides
 description: Walk-throughs for getting productive with Pennington, grouped by skill level.
-section: Guides
+sectionLabel: Guides
 order: 0
 ---
 

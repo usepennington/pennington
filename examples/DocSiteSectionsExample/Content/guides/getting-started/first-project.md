@@ -1,7 +1,7 @@
 ---
 title: Create your first project
 description: Wire AddPennington and UsePennington into Program.cs and drop in a markdown page.
-section: Getting Started
+sectionLabel: Getting Started
 order: 20
 ---
 

@@ -12,7 +12,7 @@ public class FrontMatterParserTests
         description: How to get started with Pennington
         isDraft: false
         tags: [routing, setup]
-        section: Documentation
+        sectionLabel: Documentation
         order: 1
         ---
         # Getting Started
@@ -44,7 +44,7 @@ public class FrontMatterParserTests
         result.Metadata.Description.ShouldBe("How to get started with Pennington");
         result.Metadata.IsDraft.ShouldBeFalse();
         result.Metadata.Tags.ShouldBe(new[] { "routing", "setup" });
-        result.Metadata.Section.ShouldBe("Documentation");
+        result.Metadata.SectionLabel.ShouldBe("Documentation");
         result.Metadata.Order.ShouldBe(1);
         result.Body.ShouldContain("# Getting Started");
         result.Body.ShouldContain("Welcome to Pennington.");

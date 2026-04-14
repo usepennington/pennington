@@ -9,7 +9,7 @@ tags:
   - getting-started
 series: Pennington Field Notes
 repository: https://github.com/example/pennington-field-notes
-section: field-notes
+sectionLabel: field-notes
 ---
 
 Pennington is a content engine for .NET 11 that treats a folder of markdown

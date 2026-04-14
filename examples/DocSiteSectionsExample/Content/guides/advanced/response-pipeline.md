@@ -1,7 +1,7 @@
 ---
 title: Hook into the response pipeline
 description: Intercept rendered HTML before it reaches the browser with IResponseProcessor.
-section: Advanced
+sectionLabel: Advanced
 order: 50
 ---
 

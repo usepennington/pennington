@@ -5,7 +5,7 @@ tags:
   - authoring
   - front-matter
   - markdown
-section: Guides
+sectionLabel: Guides
 order: 20
 ---
 

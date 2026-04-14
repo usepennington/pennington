@@ -34,6 +34,8 @@ Does not cover: algorithmic color schemes, custom `CssFrameworkSettings`, or dar
 
 ### 1.2 Getting Started with DocSite
 
+> **Authoring note (scope of DocSite).** `AddDocSite` is a template-style starting point, not a configuration surface for every Pennington knob. It hard-codes three things the reader cannot override through `DocSiteOptions`: a single `AddMarkdownContent<DocSiteFrontMatter>` registration (no second content type), `SearchIndexOptions.ContentSelector = "#main-content"` and `LlmsTxtOptions.*`, and `MonorailCssOptions.CustomCssFrameworkSettings`. Tutorials in §1.2 should teach DocSite as the fast path; readers who need those surfaces overridden are directed to the bare `AddPennington` path (see the Explanation page *When is DocSite the right starting point?* and `ExtensibilityLabExample`). Do not bolt workarounds for these caps into the tutorials.
+
 | Title | URL | Order |
 |---|---|---|
 | **Scaffold a documentation site with DocSite** | `/tutorials/docsite/scaffold` | 10 |
@@ -49,7 +51,7 @@ Does not cover: cross-references, snippets, or diagram blocks — those are per-
 | Title | URL | Order |
 |---|---|---|
 | **Organize content with sections and areas** | `/tutorials/docsite/sections-and-areas` | 30 |
-Covers: structuring `Content/` into areas and sections, using `section`/`order` in front matter, and how `NavigationBuilder` turns a flat file tree into a sidebar.
+Covers: structuring `Content/` into areas and sections, using `section`/`order` in front matter, and how `NavigationBuilder` turns a flat file tree into a sidebar. Must teach that `section:` is metadata (breadcrumb/prev-next label), the **subfolder** drives grouping, and section sort order = `min(order:)` of the section's children with alphabetic tie-break on folder title — so authors should stagger `order:` values across sibling sections (10/20 for one, 40/50 for the next) to avoid surprises.
 Does not cover: locale-prefixed navigation, Razor-page integration, or custom `IContentService` implementations.
 
 ### 1.3 Getting Started with BlogSite
@@ -177,19 +179,19 @@ Does not cover: HTTP 301 responses at the hosting layer or batch redirects from 
 | Title | URL | Order |
 |---|---|---|
 | **Use multiple content sources** | `/how-to/configuration/multiple-sources` | 10 |
-Covers: chaining `AddMarkdownContent<T>` calls with different `ContentPath`/`BasePageUrl`/`Section`/`ExcludePaths`, and how overlap detection warns on misconfiguration.
+Covers: chaining `AddMarkdownContent<T>` calls with different `ContentPath`/`BasePageUrl`/`Section`/`ExcludePaths`, and how overlap detection warns on misconfiguration. Must note that `AddDocSite` owns its own single `AddMarkdownContent<DocSiteFrontMatter>` registration — chaining a second front-matter type requires dropping to bare `AddPennington` (link the Explanation page *When is DocSite the right starting point?*).
 Does not cover: implementing a non-markdown `IContentService` — see the extensibility section.
 
 | Title | URL | Order |
 |---|---|---|
 | **Configure search indexing** | `/how-to/configuration/search` | 20 |
-Covers: tuning `SearchIndexOptions.ContentSelector`, setting `DefaultPriority`, opting pages out via `search: false` or Razor-page sidecar metadata, and per-locale output files.
+Covers: tuning `SearchIndexOptions.ContentSelector`, setting `DefaultPriority`, opting pages out via `search: false` or Razor-page sidecar metadata, and per-locale output files. Must note that under `AddDocSite` the `ContentSelector` is pinned to `#main-content` and is not overridable through `DocSiteOptions` — teach `search: false` as the DocSite-idiomatic knob and link to the bare-`AddPennington` path for users who need a custom selector.
 Does not cover: replacing the FlexSearch client or building a server-side search backend.
 
 | Title | URL | Order |
 |---|---|---|
 | **Customize MonorailCSS** | `/how-to/configuration/monorail-css` | 30 |
-Covers: swapping between `NamedColorScheme` and `AlgorithmicColorScheme`, injecting `CustomCssFrameworkSettings`, adding `ExtraStyles`, and configuring `ContentPaths` for class collection.
+Covers: swapping between `NamedColorScheme` and `AlgorithmicColorScheme`, injecting `CustomCssFrameworkSettings`, adding `ExtraStyles`, and configuring `ContentPaths` for class collection. Must note that `DocSiteOptions` only forwards `ColorScheme` + `ExtraStyles`; `CustomCssFrameworkSettings` is not exposed. Readers who need it drop to bare `AddPennington` + `AddMonorailCss`.
 Does not cover: the class-collector internals (Explanation) or writing a standalone color scheme (advanced customization).
 
 | Title | URL | Order |
@@ -207,7 +209,7 @@ Does not cover: implementing a custom culture provider — the built-in URL cult
 | Title | URL | Order |
 |---|---|---|
 | **Generate an llms.txt** | `/how-to/configuration/llms-txt` | 60 |
-Covers: enabling `LlmsTxtOptions`, setting `OutputDirectory` and `GenerateFullFile`, and opting pages out with `llms: false`.
+Covers: enabling `LlmsTxtOptions`, setting `OutputDirectory` and `GenerateFullFile`, and opting pages out with `llms: false`. Must note that under `AddDocSite` the `LlmsTxtOptions` content selector is pinned alongside search (to `#main-content`) — teach `llms: false` as the DocSite-idiomatic knob and route users wanting a custom selector to the bare-`AddPennington` path.
 Does not cover: the LLM-training implications of your output or MCP server generation.
 
 | Title | URL | Order |
@@ -539,6 +541,12 @@ Does not cover: key-by-key documentation (see Reference).
 | **The response-processing pipeline** | `/explanation/core/response-processing` | 40 |
 Covers: why HTML rewriting is consolidated into a single AngleSharp pass, how `IResponseProcessor` differs from `IHtmlResponseRewriter`, and the order the built-in rewriters run.
 Does not cover: writing a rewriter (see How-Tos).
+
+| Title | URL | Order |
+|---|---|---|
+| **When is DocSite the right starting point?** | `/explanation/core/docsite-positioning` | 50 |
+Covers: `AddDocSite` is a template-style fast path, not a configuration surface for every knob. Names the three surfaces that DocSite caps — (1) one `AddMarkdownContent<DocSiteFrontMatter>` registration, (2) `SearchIndexOptions.ContentSelector` / `LlmsTxtOptions` pinned to `#main-content`, (3) `MonorailCssOptions.CustomCssFrameworkSettings` not exposed — and the signal to drop to bare `AddPennington` + DocSite's source as reference. Cross-links to `ExtensibilityLabExample` for the bare-host pattern.
+Does not cover: a feature-by-feature comparison with `AddPennington` (the bullet list in this page is the menu).
 
 ### 4.2 Rendering and Theming
 

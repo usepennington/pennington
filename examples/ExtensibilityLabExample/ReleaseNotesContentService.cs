@@ -35,7 +35,7 @@ public sealed class ReleaseNotesContentService : IContentService
         _entriesLazy = new Lazy<ImmutableList<ReleaseEntry>>(LoadEntries);
     }
 
-    public string DefaultSection => "Releases";
+    public string DefaultSectionLabel => "Releases";
     public int SearchPriority => 20;
 
     /// <summary>The full set of release entries this service knows about.</summary>
@@ -87,7 +87,7 @@ public sealed class ReleaseNotesContentService : IContentService
             Route: ContentRouteFactory.FromUrl(new UrlPath("/releases/")),
             Order: 100,
             HierarchyParts: ["releases"],
-            Section: DefaultSection,
+            SectionLabel: DefaultSectionLabel,
             Locale: null));
 
         var order = 110;
@@ -98,7 +98,7 @@ public sealed class ReleaseNotesContentService : IContentService
                 Route: ContentRouteFactory.FromUrl(new UrlPath($"/releases/{entry.Version}/")),
                 Order: order,
                 HierarchyParts: ["releases", entry.Version],
-                Section: DefaultSection,
+                SectionLabel: DefaultSectionLabel,
                 Locale: null));
             order += 10;
         }

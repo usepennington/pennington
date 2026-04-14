@@ -23,7 +23,7 @@ public class MarkdownContentServiceTests
         {
             ContentPath = new FilePath("/content"),
             BasePageUrl = basePageUrl ?? new UrlPath("/docs"),
-            Section = section
+            SectionLabel = section
         };
 
         return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs), localization ?? DefaultLocalization);
@@ -193,10 +193,10 @@ public class MarkdownContentServiceTests
         {
             ContentPath = new FilePath("/content"),
             BasePageUrl = new UrlPath("/docs"),
-            Section = "Documentation"
+            SectionLabel = "Documentation"
         };
 
-        return new MarkdownContentService<RedirectableFrontMatter>(
+return new MarkdownContentService<RedirectableFrontMatter>(
             options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
     }
 
@@ -210,20 +210,20 @@ public class MarkdownContentServiceTests
         var entries = await service.GetContentTocEntriesAsync();
 
         entries.Count.ShouldBe(1);
-        entries[0].Section.ShouldBe("Guides");
+        entries[0].SectionLabel.ShouldBe("Guides");
     }
 
     [Fact]
     public async Task GetContentTocEntriesAsync_UsesSectionFromFrontMatter()
     {
         var fs = CreateFs(
-            ("page.md", "---\ntitle: A Page\nsection: OverriddenSection\n---\n# A Page"));
+            ("page.md", "---\ntitle: A Page\nsectionLabel: OverriddenSection\n---\n# A Page"));
         var service = CreateTestService(fs, section: "DefaultSection");
 
         var entries = await service.GetContentTocEntriesAsync();
 
         entries.Count.ShouldBe(1);
-        entries[0].Section.ShouldBe("OverriddenSection");
+        entries[0].SectionLabel.ShouldBe("OverriddenSection");
     }
 
     [Fact]
@@ -325,7 +325,7 @@ public class MarkdownContentServiceTests
         {
             ContentPath = new FilePath("/nonexistent"),
             BasePageUrl = new UrlPath("/docs"),
-            Section = "Test"
+            SectionLabel = "Test"
         };
         var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
 
@@ -346,12 +346,12 @@ public class MarkdownContentServiceTests
     }
 
     [Fact]
-    public void DefaultSection_ReturnsEmptyWhenNull()
+    public void DefaultSectionLabel_ReturnsEmptyWhenNull()
     {
         var fs = new MockFileSystem();
         fs.Directory.CreateDirectory("/content");
         var service = CreateTestService(fs, section: null);
-        service.DefaultSection.ShouldBe("");
+        service.DefaultSectionLabel.ShouldBe("");
     }
 
     [Fact]
@@ -433,7 +433,7 @@ public class MarkdownContentServiceTests
         {
             ContentPath = new FilePath("/content"),
             BasePageUrl = basePageUrl ?? new UrlPath("/blog"),
-            Section = section
+            SectionLabel = section
         };
 
         return new MarkdownContentService<BlogFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
@@ -654,7 +654,7 @@ public class MarkdownContentServiceTests
         {
             ContentPath = new FilePath("/content"),
             BasePageUrl = new UrlPath("/docs"),
-            Section = "Documentation",
+            SectionLabel = "Documentation",
             ExcludePaths = [.. excludePaths],
         };
         return new MarkdownContentService<DocFrontMatter>(

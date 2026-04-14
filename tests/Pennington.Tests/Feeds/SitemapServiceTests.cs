@@ -28,7 +28,7 @@ public class SitemapServiceTests
 
     private class StubContentService(params DiscoveredItem[] items) : IContentService
     {
-        public string DefaultSection => "Test";
+        public string DefaultSectionLabel => "Test";
         public int SearchPriority => 5;
 
         public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()

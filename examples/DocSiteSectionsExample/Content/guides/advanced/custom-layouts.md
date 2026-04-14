@@ -1,7 +1,7 @@
 ---
 title: Swap in a custom layout
 description: Override the default DocSite layout with your own Razor component.
-section: Advanced
+sectionLabel: Advanced
 order: 40
 ---
 

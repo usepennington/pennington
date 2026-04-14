@@ -2,7 +2,7 @@
 title: UI components in markdown
 description: Render a Razor component inline from markdown via Mdazor.
 tags: [authoring, components]
-section: authoring
+sectionLabel: authoring
 order: 100
 uid: kitchen-sink.main.ui-components-in-markdown
 ---

@@ -1,7 +1,7 @@
 ---
 title: Guides
 description: The Guides area landing page.
-section: Guides
+sectionLabel: Guides
 order: 10
 ---
 

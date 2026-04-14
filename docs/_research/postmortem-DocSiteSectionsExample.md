@@ -1,5 +1,28 @@
 # Post-mortem — DocSiteSectionsExample
 
+> **Resolution (2026-04-14):** All flagged items addressed. See plan at
+> `~/.claude/plans/abstract-noodling-taco.md`.
+>
+> - **SE1 — `section:` is metadata, not a grouping key.** Hard-renamed
+>   `ISectionable.Section` → `SectionLabel` across the capability interface,
+>   `ContentTocItem`, `NavigationTreeItem`, `SearchIndexDocument`,
+>   `DocSiteFrontMatter`, `BlogSiteFrontMatter`, `DocFrontMatter`,
+>   `ApiFrontMatter`, `MarkdownContentServiceOptions`, `MarkdownContentOptions`,
+>   `IContentService.DefaultSection` → `DefaultSectionLabel` (+ all 6
+>   implementers), and the `TableOfContentsNavigation.Section` Razor param.
+>   YAML front matter key `section:` → `sectionLabel:` across 40 example
+>   and template files.
+> - **SE2 — Section sort rule (min-of-children + alphabetic tie-break).**
+>   Baked into `docs/_research/examples-inventory.md` DocSiteSectionsExample
+>   prose and into the §1.2.30 entry in `docs/docs-toc.md` as authoring
+>   guidance (stagger `order:` across sibling sections, e.g. 10/20 + 40/50).
+> - **SE3 — Area index not in its own sidebar TOC.** Fixed in
+>   `NavigationBuilder.BuildLevel`: at tree root, items with empty
+>   `HierarchyParts` (area index after `GetTocItemsForAreaAsync` strips the
+>   prefix) are inserted first as the "overview" entry with
+>   `Order = int.MinValue`. Verified on `DocSiteSectionsExample` — "Guides"
+>   now lands at the top of its sidebar linking to `/guides/`.
+
 ## What was built
 
 `examples/DocSiteSectionsExample/` — the third DocSite app. Same host shape

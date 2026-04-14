@@ -39,8 +39,11 @@ public sealed class XrefResolver
             var refs = await service.GetCrossReferencesAsync();
             foreach (var xref in refs)
             {
-                if (!string.IsNullOrWhiteSpace(xref.Uid))
-                    builder[xref.Uid] = xref;
+                // First-write-wins: default-locale routes are discovered before
+                // fallback routes emitted by MarkdownContentService.DiscoverRoutesWithFallbacks,
+                // so the canonical entry is preserved and later fallback insertions are ignored.
+                if (!string.IsNullOrWhiteSpace(xref.Uid) && !builder.ContainsKey(xref.Uid))
+                    builder.Add(xref.Uid, xref);
             }
         }
 

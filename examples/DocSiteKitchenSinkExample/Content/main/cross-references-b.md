@@ -2,7 +2,7 @@
 title: Cross-references (target)
 description: Target page demonstrating uid-based linking.
 tags: [authoring, linking]
-section: authoring
+sectionLabel: authoring
 order: 120
 uid: kitchen-sink.main.cross-references-b
 ---

@@ -71,18 +71,56 @@ public sealed class OutputGenerationService
             reportBuilder.AddWarning(warning);
         }
 
-        // Phase 1: Collect pages from content services
+        // Phase 1: Collect pages from content services. Deduplicate by output file
+        // so Phase 6's parallel fetcher cannot race on the same path. When two
+        // services emit the same output file (a common misconfiguration when a
+        // custom IContentService overlaps the primary markdown source), the first
+        // discovery wins and the duplicate is reported as a warning.
         var contentPages = new List<PageToGenerate>();
+        var claimedOutputFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var service in _contentServices)
         {
             await foreach (var item in service.DiscoverAsync())
             {
+                var outputFile = item.Route.OutputFile.Value;
+                if (!claimedOutputFiles.Add(outputFile))
+                {
+                    reportBuilder.AddWarning(
+                        $"Duplicate route: output file '{outputFile}' is emitted by more than one " +
+                        $"content service (URL: {item.Route.CanonicalPath.Value}). Keeping the first " +
+                        $"discovery; the duplicate would otherwise race on the output file during parallel fetch.",
+                        sourceFile: outputFile);
+                    continue;
+                }
+
                 contentPages.Add(new PageToGenerate(item.Route));
             }
         }
 
-        // Phase 2: Discover MapGet routes (includes /styles.css)
-        var mapGetPages = DiscoverMapGetRoutes();
+        // Phase 2: Discover MapGet routes (includes /styles.css). A MapGet handler
+        // whose URL is already claimed by a content-service discovery is dropped —
+        // the content-service version wins. Without this, a route emitted as both
+        // a DiscoveredItem AND a dedicated MapGet would be fetched twice (once in
+        // Phase 6, once in Phase 7), wasting work and producing duplicate writes
+        // to the same output file. The common fix at the call site is to serve
+        // non-markdown content from a single catch-all MapGet("/{*path}") rather
+        // than a dedicated endpoint that shadows the content service.
+        var mapGetPages = new List<PageToGenerate>();
+        foreach (var page in DiscoverMapGetRoutes())
+        {
+            if (!claimedOutputFiles.Add(page.OutputFile.Value))
+            {
+                reportBuilder.AddWarning(
+                    $"Duplicate route: '{page.Url}' is emitted by both a content service and a MapGet handler. " +
+                    $"The content-service discovery wins; the MapGet handler is skipped for static build. " +
+                    $"Prefer serving this route from only one source — a catch-all MapGet(\"/{{*path}}\") is " +
+                    $"the usual fix when custom endpoints need to coexist with content discovery.",
+                    sourceFile: page.Url);
+                continue;
+            }
+
+            mapGetPages.Add(page);
+        }
 
         _logger.LogDebug("Static generation: {ContentCount} content pages, {MapGetCount} MapGet routes",
             contentPages.Count, mapGetPages.Count);

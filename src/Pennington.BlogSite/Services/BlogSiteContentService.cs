@@ -31,7 +31,7 @@ public sealed class BlogSiteContentService : IContentService
         _posts = new AsyncLazy<ImmutableList<BlogPostDescriptor>>(LoadPostsAsync);
     }
 
-    public string DefaultSection => "";
+    public string DefaultSectionLabel => "";
     public int SearchPriority => 0;
 
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()

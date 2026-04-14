@@ -1,7 +1,7 @@
 ---
 title: ContentPipeline
 description: The discovery/parse/render pipeline every content source flows through.
-section: Core API
+sectionLabel: Core API
 order: 20
 ---
 

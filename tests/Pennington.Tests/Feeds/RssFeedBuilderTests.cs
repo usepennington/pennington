@@ -28,7 +28,7 @@ public class RssFeedBuilderTests
     {
         public string Title { get; init; } = "Test";
         public bool IsDraft { get; init; }
-        public string? Section { get; init; }
+        public string? SectionLabel { get; init; }
         public DateTime? Date { get; init; }
         public string? Description { get; init; }
     }

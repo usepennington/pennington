@@ -27,19 +27,32 @@ reproduce the prefix on dynamic links.
 
 **Not rewritten — gaps worth knowing:**
 
-- **`sitemap.xml`** — `<loc>` stays unprefixed.
-  `SitemapBuilder.CanonicalBase` reads `PenningtonOptions.CanonicalBaseUrl`,
-  not `OutputOptions.BaseUrl`. Sub-path-deployed sites that need a
-  sitemap must set `CanonicalBaseUrl = "https://host/my-sub-path"` on
-  `DocSiteOptions` to get correct loc values.
-- **`search-index-en.json`** — page `url` fields stay root-relative.
-  Works at runtime because the SPA navigator stitches in `data-base-url`
-  at click time; static analyzers reading the JSON would see unprefixed paths.
+- **`sitemap.xml`** — FIXED (plan P0-3). Previously `<loc>` stayed unprefixed
+  unless `CanonicalBaseUrl` was set. The feed-builder DI factory in
+  `PenningtonExtensions.cs` now falls back to `OutputOptions.BaseUrl` when
+  `CanonicalBaseUrl` is missing, so `dotnet run -- build /sub/` produces
+  `<loc>/sub/page/</loc>` — a crawler-resolvable URL. Users who want
+  fully-qualified `<loc>` values continue to set `CanonicalBaseUrl =
+  "https://host/my-sub-path"` (the correct form per the sitemap protocol);
+  that path still wins over the BaseUrl fallback. `RssFeedBuilder` gets
+  the same fallback. Regression coverage:
+  `Build_SubPathBaseUrl_WithoutCanonicalUrl_ProducesPrefixedRelativeUrls`,
+  `PenningtonDiFactory_FallsBackToBaseUrl_WhenCanonicalBaseUrlIsMissing`,
+  and `PenningtonDiFactory_ExplicitCanonicalBaseUrl_WinsOverBaseUrl` in
+  `tests/Pennington.Tests/Feeds/SitemapBuilderTests.cs`.
+- **`search-index-en.json`** — **intentionally not rewritten**. The page
+  `url` fields stay root-relative because the client-side search UI in
+  `src/Pennington.UI/wwwroot/scripts.js` stitches in `data-base-url` at
+  click time (`baseUrl ? ${baseUrl}${doc.url} : doc.url`). Prefixing
+  server-side would double-prefix at runtime. Static analyzers reading
+  the JSON as a standalone artifact will see unprefixed paths — by
+  design, not a bug.
 - **`llms.txt`** — link targets written relative (`_llms/...`, no leading
   `/`), so they resolve under any deploy mount. Intentional, no fix needed.
-- **Root cause:** `HtmlResponseRewritingProcessor.ShouldProcess` gates
-  on `text/html` (line 32), so XML/JSON/text outputs bypass the rewriter
-  chain. Document this in 2.4.50.
+- **Note on `HtmlResponseRewritingProcessor`**: still gates on `text/html`
+  (line 32). That is correct — sitemap is fixed at the source above, and
+  search-index is intentionally not rewritten. Non-HTML outputs no longer
+  need the HTML rewriter chain.
 
 ## GitHub Actions base-URL approach
 

@@ -1,7 +1,7 @@
 ---
 title: PenningtonOptions
 description: Core configuration surface handed to AddPennington.
-section: Core API
+sectionLabel: Core API
 order: 10
 ---
 

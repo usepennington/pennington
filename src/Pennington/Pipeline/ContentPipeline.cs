@@ -48,6 +48,11 @@ public sealed class ContentPipeline : IContentPipeline
 
             if (item is DiscoveredItem discovered)
             {
+                // RedirectSource items are handled by PenningtonRedirectMiddleware at
+                // request time (dev) and captured as 301 responses by the build crawler;
+                // they don't participate in parse/render and must not reach the parser.
+                if (discovered.Source is RedirectSource) continue;
+
                 ContentItem result;
                 try
                 {

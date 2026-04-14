@@ -1,5 +1,9 @@
 # Post-mortem — DocSiteAuthorExample
 
+> **Resolution (2026-04-14):** No actionable items — this postmortem reported
+> "No blockers" and its findings are pure convention notes still valid for
+> future DocSite apps.
+
 ## What was built
 
 `examples/DocSiteAuthorExample/` — the second DocSite app. Same host shape as

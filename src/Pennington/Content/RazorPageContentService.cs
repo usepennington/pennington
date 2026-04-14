@@ -48,7 +48,7 @@ public sealed partial class RazorPageContentService : IContentService
     /// </summary>
     public IReadOnlyList<(string Template, string TypeName)> MissingTrailingSlashPages => _missingTrailingSlashPages;
 
-    public string DefaultSection => "";
+    public string DefaultSectionLabel => "";
     public int SearchPriority => 5;
 
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
@@ -90,14 +90,14 @@ public sealed partial class RazorPageContentService : IContentService
                 .Split('/', StringSplitOptions.RemoveEmptyEntries);
 
             var order = entry.Metadata is IOrderable orderable ? orderable.Order : int.MaxValue;
-            var section = entry.Metadata is ISectionable sectionable ? sectionable.Section : null;
+            var sectionLabel = entry.Metadata is ISectionable sectionable ? sectionable.SectionLabel : null;
 
             builder.Add(new ContentTocItem(
                 Title: entry.Metadata.Title,
                 Route: route,
                 Order: order,
                 HierarchyParts: hierarchyParts,
-                Section: section ?? DefaultSection,
+                SectionLabel: sectionLabel ?? DefaultSectionLabel,
                 Locale: null
             ));
         }
@@ -124,7 +124,7 @@ public sealed partial class RazorPageContentService : IContentService
                 title = AutoTitle(entry.Component.Name);
 
             var order = entry.Metadata is IOrderable orderable ? orderable.Order : int.MaxValue;
-            var section = entry.Metadata is ISectionable sectionable ? sectionable.Section : null;
+            var sectionLabel = entry.Metadata is ISectionable sectionable ? sectionable.SectionLabel : null;
             var excludeFromSearch = entry.Metadata is { Search: false };
             var excludeFromLlms = entry.Metadata is { Llms: false };
 
@@ -133,7 +133,7 @@ public sealed partial class RazorPageContentService : IContentService
                 Route: route,
                 Order: order,
                 HierarchyParts: hierarchyParts,
-                Section: section ?? DefaultSection,
+                SectionLabel: sectionLabel ?? DefaultSectionLabel,
                 Locale: null
             )
             {

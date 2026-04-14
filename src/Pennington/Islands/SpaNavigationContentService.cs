@@ -16,7 +16,7 @@ internal sealed class SpaNavigationContentService(
     IServiceProvider serviceProvider,
     SpaNavigationOptions options) : IContentService
 {
-    public string DefaultSection => "";
+    public string DefaultSectionLabel => "";
     public int SearchPriority => 0;
 
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()

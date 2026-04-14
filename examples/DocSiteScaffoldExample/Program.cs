@@ -32,6 +32,7 @@ var app = builder.Build();
 // SPA navigation, and the core Pennington middleware in the right order.
 app.UseDocSite();
 
-// `RunDocSiteAsync` delegates to `RunOrBuildAsync`, so `dotnet run` serves
-// live and `dotnet run -- build <baseUrl>` generates static HTML.
+// `RunDocSiteAsync` delegates to `RunOrBuildAsync`, so `dotnet run` serves live
+// and `dotnet run -- build <baseUrl> <outputDir>` generates static HTML. Both
+// positional args are optional (defaults: `/` and `output`).
 await app.RunDocSiteAsync(args);

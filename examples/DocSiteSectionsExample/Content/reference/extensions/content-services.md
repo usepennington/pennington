@@ -1,7 +1,7 @@
 ---
 title: Custom content services
 description: Teach Pennington a new content source by implementing IContentService.
-section: Extensions
+sectionLabel: Extensions
 order: 40
 ---
 

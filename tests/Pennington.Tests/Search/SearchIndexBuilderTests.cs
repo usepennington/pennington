@@ -13,13 +13,13 @@ public class SearchIndexBuilderTests
         Locale = locale
     };
 
-    private static ContentTocItem MakeToc(string title, string path, string? section = null, string locale = "") =>
+    private static ContentTocItem MakeToc(string title, string path, string? sectionLabel = null, string locale = "") =>
         new(
             Title: title,
             Route: MakeRoute(path, locale),
             Order: 0,
             HierarchyParts: [],
-            Section: section,
+            SectionLabel: sectionLabel,
             Locale: string.IsNullOrEmpty(locale) ? null : locale
         );
 
@@ -50,9 +50,9 @@ public class SearchIndexBuilderTests
     [Fact]
     public void Build_IncludesSectionFromToc()
     {
-        var doc = _builder.Build(MakeToc("Auth", "/api/auth", section: "api"), "<p>body</p>");
+        var doc = _builder.Build(MakeToc("Auth", "/api/auth", sectionLabel: "api"), "<p>body</p>");
 
-        doc.Section.ShouldBe("api");
+        doc.SectionLabel.ShouldBe("api");
     }
 
     [Fact]

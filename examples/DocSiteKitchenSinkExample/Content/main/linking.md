@@ -2,7 +2,7 @@
 title: Linking between pages and assets
 description: Relative links, absolute links, and asset references.
 tags: [authoring, linking]
-section: authoring
+sectionLabel: authoring
 order: 130
 uid: kitchen-sink.main.linking
 ---

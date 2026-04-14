@@ -2,7 +2,7 @@
 title: Images and assets
 description: Two ways to place static assets next to content.
 tags: [authoring, assets]
-section: authoring
+sectionLabel: authoring
 order: 50
 uid: kitchen-sink.main.images-and-assets
 ---

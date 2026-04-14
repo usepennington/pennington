@@ -2,7 +2,7 @@
 title: Alertes et encadrés
 description: Blocs d'alerte au style GitHub avec cinq variantes intégrées.
 tags: [rédaction, alertes]
-section: authoring
+sectionLabel: authoring
 order: 80
 uid: kitchen-sink.main.alerts.fr
 ---

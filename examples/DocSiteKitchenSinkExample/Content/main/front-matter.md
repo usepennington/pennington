@@ -2,7 +2,7 @@
 title: Front matter
 description: The YAML block at the top of every markdown page.
 tags: [authoring, front-matter]
-section: authoring
+sectionLabel: authoring
 order: 20
 uid: kitchen-sink.main.front-matter
 ---

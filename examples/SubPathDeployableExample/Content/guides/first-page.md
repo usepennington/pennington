@@ -1,7 +1,7 @@
 ---
 title: First guide page
 description: A nested route so base-URL rewriting is observable on both the incoming and outgoing anchor.
-section: Guides
+sectionLabel: Guides
 order: 10
 ---
 

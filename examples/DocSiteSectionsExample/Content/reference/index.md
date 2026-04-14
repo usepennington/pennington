@@ -1,7 +1,7 @@
 ---
 title: Reference
 description: API surface for the Pennington library, split into core and extension packages.
-section: Reference
+sectionLabel: Reference
 order: 0
 ---
 

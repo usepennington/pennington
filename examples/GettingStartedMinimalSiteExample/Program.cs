@@ -72,6 +72,7 @@ app.MapGet("/{*path}", async (
     return Results.NotFound();
 });
 
-// 4. Dev mode (`dotnet run`) serves live; build mode (`dotnet run -- build <dir>`)
-//    crawls the running app and writes static HTML to <dir>.
+// 4. Dev mode (`dotnet run`) serves live; build mode
+//    (`dotnet run -- build <baseUrl> <outputDir>`) crawls the running app and
+//    writes static HTML. Both args are optional; defaults are `/` and `output`.
 await app.RunOrBuildAsync(args);

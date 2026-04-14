@@ -9,7 +9,8 @@ using Pennington.Infrastructure;
 /// MonorailCSS, SPA navigation, Pennington core) and `RunDocSiteAsync`
 /// delegates to <see cref="PenningtonExtensions.RunOrBuildAsync"/> so the
 /// same host serves live in dev and generates static HTML when invoked as
-/// <c>dotnet run -- build &lt;baseUrl&gt;</c>. Tutorial prose extracts the
+/// <c>dotnet run -- build &lt;baseUrl&gt; &lt;outputDir&gt;</c> (both args optional;
+/// defaults <c>/</c> and <c>output</c>). Tutorial prose extracts the
 /// body of <see cref="Run"/> via <c>xmldocid,bodyonly</c>. This class is
 /// never instantiated.
 /// </summary>

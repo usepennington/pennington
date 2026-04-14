@@ -1,7 +1,7 @@
 ---
 title: Install Pennington
 description: Add the Pennington package to a new or existing ASP.NET project.
-section: Getting Started
+sectionLabel: Getting Started
 order: 10
 ---
 

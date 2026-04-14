@@ -2,7 +2,7 @@
 title: Cross-references (source)
 description: Link to another page by `uid:` instead of by file path.
 tags: [authoring, linking]
-section: authoring
+sectionLabel: authoring
 order: 110
 uid: kitchen-sink.main.cross-references-a
 ---

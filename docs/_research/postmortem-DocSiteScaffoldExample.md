@@ -1,5 +1,16 @@
 # Post-mortem — DocSiteScaffoldExample
 
+> **Resolution (2026-04-14):** All flagged items addressed. See plan at
+> `~/.claude/plans/abstract-noodling-taco.md`.
+>
+> - **S1 — `build output` BaseUrl quirk.** Engine arg parsing was already
+>   correct (`OutputOptions.FromArgs` at `src/Pennington/Generation/OutputOptions.cs:25-26`
+>   — `args[1]` is BaseUrl, `args[2]` is output dir). Fixed the misleading
+>   comments in `examples/DocSiteScaffoldExample/Program.cs`, `Stage3_UseDocSite.cs`,
+>   `examples/GettingStartedMinimalSiteExample/`, and `examples/BlogSiteScaffoldExample/Program.cs`
+>   to the canonical `build <baseUrl> <outputDir>` form (both optional;
+>   defaults `/` and `output`).
+
 ## What was built
 
 `examples/DocSiteScaffoldExample/` — the first DocSite-template app. `Program.cs`

@@ -1,7 +1,7 @@
 ---
 title: Not in search
 description: This page is intentionally excluded from the search index.
-section: authoring
+sectionLabel: authoring
 order: 220
 search: false
 uid: kitchen-sink.main.hidden

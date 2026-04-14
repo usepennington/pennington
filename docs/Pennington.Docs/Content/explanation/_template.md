@@ -1,7 +1,7 @@
 ---
 title: "TEMPLATE — Explanation"
 description: "Template for explanation pages. Duplicate, rename, and replace every placeholder before publishing."
-section: "Template"
+sectionLabel: "Template"
 order: 9999
 tags: []
 uid: template.explanation

@@ -1,7 +1,7 @@
 ---
 title: Reference
 description: The Reference area introduction.
-section: Reference
+sectionLabel: Reference
 order: 10
 ---
 

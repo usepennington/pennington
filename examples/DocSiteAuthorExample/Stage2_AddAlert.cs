@@ -20,7 +20,7 @@ public static class Stage2
           - authoring
           - front-matter
           - markdown
-        section: Guides
+        sectionLabel: Guides
         order: 20
         ---
 

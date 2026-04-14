@@ -2,7 +2,7 @@
 title: Reference example
 description: A sample API reference page in the second content area.
 tags: [api, reference]
-section: reference
+sectionLabel: reference
 order: 20
 uid: kitchen-sink.api.reference-example
 ---

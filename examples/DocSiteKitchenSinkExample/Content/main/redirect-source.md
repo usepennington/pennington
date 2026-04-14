@@ -8,6 +8,7 @@ uid: kitchen-sink.main.redirect-source
 
 # This page has moved
 
-If you see this body the redirect did not fire — in static output the
-engine emits a meta-refresh page that forwards browsers to the
-`redirectUrl` target automatically.
+A visit to this URL is intercepted by the Pennington redirect middleware
+and returns HTTP 301 with a meta-refresh body pointing at `redirectUrl`.
+The static build captures the same 301 and writes the meta-refresh file
+to disk at this page's output path — one code path for dev and publish.

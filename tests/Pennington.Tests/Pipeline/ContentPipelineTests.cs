@@ -50,7 +50,7 @@ public class ContentPipelineTests
     {
         private readonly List<DiscoveredItem> _items;
         public StubContentService(params DiscoveredItem[] items) => _items = [.. items];
-        public string DefaultSection => "Test";
+        public string DefaultSectionLabel => "Test";
         public int SearchPriority => 5;
 
         public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()

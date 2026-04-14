@@ -193,7 +193,7 @@ public class XrefResolvingServiceTests
         public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync() =>
             Task.FromResult(refs);
 
-        public string DefaultSection => "";
+        public string DefaultSectionLabel => "";
         public int SearchPriority => 0;
     }
 }

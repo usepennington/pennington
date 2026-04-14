@@ -66,7 +66,7 @@ public sealed class MarkdownContentOptions
 {
     public string ContentPath { get; set; } = "Content";
     public string BasePageUrl { get; set; } = "/";
-    public string? Section { get; set; }
+    public string? SectionLabel { get; set; }
 
     /// <summary>
     /// Relative subpaths (from <see cref="ContentPath"/>) to skip during discovery

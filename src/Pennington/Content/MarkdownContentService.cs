@@ -44,7 +44,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         fileWatcher.AddPathWatch(_absoluteContentPath, "*.*", (_, _) => { });
     }
 
-    public string DefaultSection => _options.Section ?? "";
+    public string DefaultSectionLabel => _options.SectionLabel ?? "";
     public int SearchPriority => _options.SearchPriority;
 
     public string AbsoluteContentRoot => _absoluteContentPath;
@@ -96,16 +96,27 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
     {
         foreach (var (route, sourceFile) in DiscoverRoutesWithFallbacks())
         {
+            TFrontMatter? frontMatter = default;
             try
             {
                 var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
                 var parsed = _parser.Parse<TFrontMatter>(content);
                 if (parsed.Metadata is { IsDraft: true })
                     continue;
+                frontMatter = parsed.Metadata;
             }
             catch
             {
-                // If front matter can't be parsed, include the file
+                // If front matter can't be parsed, include the file as a markdown source.
+            }
+
+            // Pages with RedirectUrl front matter are surfaced as RedirectSource so the
+            // unified redirect middleware handles them at dev time and the static build
+            // crawler captures the 301 response (written as a meta-refresh HTML file).
+            if (frontMatter is IRedirectable { RedirectUrl: { Length: > 0 } redirectTarget })
+            {
+                yield return new DiscoveredItem(route, new RedirectSource(new UrlPath(redirectTarget)));
+                continue;
             }
 
             yield return new DiscoveredItem(route, new MarkdownFileSource(sourceFile));
@@ -133,7 +144,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
             if (string.IsNullOrWhiteSpace(fm.Title)) continue;
 
             var order = fm is IOrderable orderable ? orderable.Order : int.MaxValue;
-            var section = fm is ISectionable sectionable ? sectionable.Section : _options.Section;
+            var sectionLabel = fm is ISectionable sectionable ? sectionable.SectionLabel : _options.SectionLabel;
             var excludeFromSearch = !fm.Search;
             var excludeFromLlms = !fm.Llms;
             var hierarchyParts = route.CanonicalPath.Value
@@ -145,7 +156,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
                 Route: route,
                 Order: order,
                 HierarchyParts: hierarchyParts,
-                Section: section ?? DefaultSection,
+                SectionLabel: sectionLabel ?? DefaultSectionLabel,
                 Locale: string.IsNullOrEmpty(route.Locale) ? null : route.Locale
             )
             {

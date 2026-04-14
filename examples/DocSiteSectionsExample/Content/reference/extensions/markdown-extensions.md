@@ -1,7 +1,7 @@
 ---
 title: Markdown extensions
 description: The Markdig extensions Pennington ships with — alerts, tabbed code, highlighting.
-section: Extensions
+sectionLabel: Extensions
 order: 30
 ---
 

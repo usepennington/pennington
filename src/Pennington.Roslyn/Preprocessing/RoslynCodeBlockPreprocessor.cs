@@ -214,7 +214,11 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
                 return new CodeBlockPreprocessResult(errorHtml, baseLanguage, SkipTransform: true);
             }
 
-            var solutionDir = Path.GetDirectoryName(_options.SolutionPath);
+            // Path.GetDirectoryName returns empty for bare filenames ("foo.slnx") with
+            // no directory component. Normalize via GetFullPath so a bare SolutionPath —
+            // which the runtime resolves against the process CWD — produces the same
+            // directory we'd use at runtime.
+            var solutionDir = Path.GetDirectoryName(Path.GetFullPath(_options.SolutionPath));
             if (string.IsNullOrEmpty(solutionDir))
             {
                 Diagnostics?.AddError("Solution directory not found for :path code block");

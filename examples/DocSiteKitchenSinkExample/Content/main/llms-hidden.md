@@ -1,7 +1,7 @@
 ---
 title: Not in llms.txt
 description: This page is intentionally excluded from llms.txt.
-section: authoring
+sectionLabel: authoring
 order: 230
 llms: false
 uid: kitchen-sink.main.llms-hidden

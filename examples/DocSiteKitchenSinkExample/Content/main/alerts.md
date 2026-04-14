@@ -2,7 +2,7 @@
 title: Alerts and callouts
 description: GitHub-style alert blocks with five built-in flavours.
 tags: [authoring, alerts]
-section: authoring
+sectionLabel: authoring
 order: 80
 uid: kitchen-sink.main.alerts
 ---

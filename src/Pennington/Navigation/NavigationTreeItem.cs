@@ -7,7 +7,7 @@ public record NavigationTreeItem(
     string Title,
     ContentRoute Route,
     int Order,
-    string? Section,
+    string? SectionLabel,
     bool IsSelected,
     bool IsExpanded,
     ImmutableList<NavigationTreeItem> Children

@@ -28,7 +28,7 @@ public sealed partial class SearchIndexBuilder
             Title: toc.Title,
             Body: body,
             Url: toc.Route.CanonicalPath.Value,
-            Section: toc.Section,
+            SectionLabel: toc.SectionLabel,
             Locale: toc.Route.Locale,
             Priority: _defaultPriority
         );

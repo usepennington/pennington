@@ -69,6 +69,6 @@ public sealed class LlmsTxtContentService : IContentService
     public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
         => Task.FromResult(ImmutableList<CrossReference>.Empty);
 
-    public string DefaultSection => "";
+    public string DefaultSectionLabel => "";
     public int SearchPriority => 0;
 }

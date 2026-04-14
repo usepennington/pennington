@@ -78,4 +78,76 @@ public class OutputOptionsTests
         options.BaseUrl.Value.ShouldBe("/");
         options.OutputDirectory.Value.ShouldBe("output");
     }
+
+    [Fact]
+    public void FromArgs_BaseUrlFlag_EqualsForm_ParsesValue()
+    {
+        var options = OutputOptions.FromArgs(["build", "--base-url=/sub"]);
+
+        options.BaseUrl.Value.ShouldBe("/sub");
+        options.OutputDirectory.Value.ShouldBe("output");
+    }
+
+    [Fact]
+    public void FromArgs_BaseUrlFlag_SpaceForm_ParsesValue()
+    {
+        var options = OutputOptions.FromArgs(["build", "--base-url", "/sub"]);
+
+        options.BaseUrl.Value.ShouldBe("/sub");
+    }
+
+    [Fact]
+    public void FromArgs_OutputFlag_EqualsForm_ParsesValue()
+    {
+        var options = OutputOptions.FromArgs(["build", "--output=dist"]);
+
+        options.OutputDirectory.Value.ShouldBe("dist");
+        options.BaseUrl.Value.ShouldBe("/");
+    }
+
+    [Fact]
+    public void FromArgs_OutputFlag_SpaceForm_ParsesValue()
+    {
+        var options = OutputOptions.FromArgs(["build", "--output", "dist"]);
+
+        options.OutputDirectory.Value.ShouldBe("dist");
+    }
+
+    [Fact]
+    public void FromArgs_BothFlags_AnyOrder_ParsesBoth()
+    {
+        var options = OutputOptions.FromArgs(["build", "--output=dist", "--base-url=/sub"]);
+
+        options.BaseUrl.Value.ShouldBe("/sub");
+        options.OutputDirectory.Value.ShouldBe("dist");
+    }
+
+    [Fact]
+    public void FromArgs_FlagsMixedWithPositional_FlagsWin()
+    {
+        // User passed positional baseUrl `/pos` and named flag `--base-url=/flag`.
+        // The named flag should win — positional is the legacy fallback only.
+        var options = OutputOptions.FromArgs(["build", "/pos", "--base-url=/flag"]);
+
+        options.BaseUrl.Value.ShouldBe("/flag");
+    }
+
+    [Fact]
+    public void FromArgs_FlagForBaseUrl_PositionalProvidesOutput()
+    {
+        // Covers the intended `build --base-url /sub dist` shape: flag for baseUrl,
+        // positional for output directory.
+        var options = OutputOptions.FromArgs(["build", "--base-url=/sub", "dist"]);
+
+        options.BaseUrl.Value.ShouldBe("/sub");
+        options.OutputDirectory.Value.ShouldBe("dist");
+    }
+
+    [Fact]
+    public void FromArgs_BaseUrlFlagCaseInsensitive()
+    {
+        var options = OutputOptions.FromArgs(["build", "--BASE-URL=/sub"]);
+
+        options.BaseUrl.Value.ShouldBe("/sub");
+    }
 }

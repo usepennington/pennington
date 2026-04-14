@@ -59,6 +59,12 @@ public static class PenningtonExtensions
             services.AddTransient(typeof(IIslandRenderer), islandType);
         }
 
+        // Component renderer for SPA islands. RazorIslandRenderer<T> depends on
+        // this; registering it here (rather than in AddDocSite only) means bare
+        // AddPennington hosts can consume RazorIslandRenderer without having to
+        // hand-wire the dependency. See postmortem-ExtensibilityLabExample.md.
+        services.AddScoped<ComponentRenderer>();
+
         // Core services
         services.AddSingleton<FrontMatterParser>();
         services.AddSingleton<NavigationBuilder>();
@@ -124,7 +130,7 @@ public static class PenningtonExtensions
                 {
                     ContentPath = new FilePath(resolvedContentPath),
                     BasePageUrl = new UrlPath(capturedSource.BasePageUrl),
-                    Section = capturedSource.Section,
+                    SectionLabel = capturedSource.SectionLabel,
                     ExcludePaths = capturedSource.ExcludePaths,
                 };
 
@@ -160,6 +166,12 @@ public static class PenningtonExtensions
         // Pipeline
         services.AddTransient<IContentPipeline, ContentPipeline>();
 
+        // Unified redirect map (from _redirects.yml + per-page redirectUrl front matter).
+        // Registered as both a concrete service (for the middleware) and an IContentService
+        // (so the build crawler hits the YAML-defined redirect sources and captures 301s).
+        services.AddSingleton<RedirectContentService>();
+        services.AddSingleton<IContentService>(sp => sp.GetRequiredService<RedirectContentService>());
+
         // Xref resolution — factory-managed, recreated on file changes
         services.AddFileWatched<XrefResolver>();
 
@@ -178,10 +190,29 @@ public static class PenningtonExtensions
         // Live reload (only does work when DOTNET_WATCH is set)
         services.AddSingleton<LiveReloadServer>();
 
-        // Feed builders
-        var canonicalBase = new UrlPath(options.CanonicalBaseUrl ?? "/");
-        services.AddSingleton(_ => new SitemapBuilder(canonicalBase));
-        services.AddSingleton(_ => new RssFeedBuilder(canonicalBase));
+        // Feed builders. When CanonicalBaseUrl is set (typically a fully-qualified
+        // https://host/sub URL) we respect it verbatim — that's the correct form
+        // per sitemap / RSS protocol. When CanonicalBaseUrl is not set but the
+        // static build is targeting a sub-path (e.g. `build /sub/`), fall back
+        // to OutputOptions.BaseUrl so the generated sitemap produces
+        // `<loc>/sub/page/</loc>` instead of root-relative `<loc>/page/</loc>`.
+        // Crawlers resolve the relative URL against the sitemap.xml's own URL,
+        // so this still produces a reachable target.
+        var explicitCanonicalBase = options.CanonicalBaseUrl;
+        services.AddSingleton(sp =>
+        {
+            var effectiveBase = !string.IsNullOrEmpty(explicitCanonicalBase)
+                ? new UrlPath(explicitCanonicalBase)
+                : sp.GetRequiredService<Generation.OutputOptions>().BaseUrl;
+            return new SitemapBuilder(effectiveBase);
+        });
+        services.AddSingleton(sp =>
+        {
+            var effectiveBase = !string.IsNullOrEmpty(explicitCanonicalBase)
+                ? new UrlPath(explicitCanonicalBase)
+                : sp.GetRequiredService<Generation.OutputOptions>().BaseUrl;
+            return new RssFeedBuilder(effectiveBase);
+        });
 
         // Shared helper for fetching post-pipeline rendered HTML from the running host.
         // Used by LlmsTxtService and SearchIndexService so their outputs reflect
@@ -371,6 +402,12 @@ public static class PenningtonExtensions
 
         // Response processing middleware
         app.UseMiddleware<ResponseProcessingMiddleware>();
+
+        // Redirect middleware — checks the unified redirect map before any content
+        // routing, returning 301 + meta-refresh body. The static build crawler sees
+        // the same 301 and OutputGenerationService writes the body to disk, so dev
+        // and publish share one code path for redirects.
+        app.UseMiddleware<PenningtonRedirectMiddleware>();
 
         // Search index and sitemap endpoints (auto-discovered by static build).
         // One search-index file per configured locale so clients only fetch their

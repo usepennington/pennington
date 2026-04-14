@@ -2,7 +2,7 @@
 title: Code annotations
 description: Trailing `[!code …]` directives for highlights, diffs, focus, and errors.
 tags: [authoring, code]
-section: authoring
+sectionLabel: authoring
 order: 70
 uid: kitchen-sink.main.code-annotations
 ---
