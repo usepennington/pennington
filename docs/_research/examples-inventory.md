@@ -747,3 +747,152 @@ top-level `_Imports.razor` pulls in `Microsoft.AspNetCore.Components` +
 - `examples/BeyondCustomRazorComponentExample/Components/PricingCard.razor`
 - `examples/BeyondCustomRazorComponentExample/Content/index.md`
 - `examples/BeyondCustomRazorComponentExample/Content/pricing.md`
+
+## `examples/DocSiteKitchenSinkExample`
+
+Kitchen-sink DocSite host backing **eighteen how-to pages** across §2.1
+(Content Authoring) and the DocSite-flavoured subset of §2.2
+(Configuration). One `AddDocSite` call, one `AddMdazorComponent` call.
+Configuration is pushed down into small static helper methods on
+`DocSiteKitchenSinkExample.ServiceConfiguration` so individual how-tos
+can `xmldocid,bodyonly` fence the exact surface they teach — areas,
+locales, colour scheme, font preloads, extra styles, footer HTML.
+
+Each how-to's target page sits in `Content/main/` (or `Content/api/`
+for the secondary area) and is named after the how-to slug so authors
+can `path:` fence it directly. A single custom Mdazor component —
+`<FeatureCallout>` — ships under `Components/` and is consumed on
+`Content/main/ui-components-in-markdown.md`.
+
+### Host design — targeting configuration surfaces
+
+The how-to bible calls for `xmldocid` fences that lift one configuration
+surface out of a shared Program.cs. Rather than wrap each surface in a
+`#region` block, this app splits configuration into small static methods
+on `ServiceConfiguration` — each method is an xmldocid-addressable unit,
+so a how-to can pull just the locale setup, just the font preloads, or
+just the footer HTML without hand-clipping line ranges. `Program.cs`
+itself stays at five lines of DI plumbing so the "minimal shape" fence
+is `Program.cs` (top-level statements, no xmldocid).
+
+### What is NOT demonstrated (by design)
+
+- **`AddMarkdownContent<T>()` with a second front-matter type.**
+  `AddDocSite` internally registers **one** markdown source using
+  `DocSiteFrontMatter`; its public option surface does not expose
+  `PenningtonOptions.AddMarkdownContent` or `MarkdownContentOptions.ExcludePaths`.
+  The `ApiFrontMatter` record ships as a **compile-only** example of
+  the capability-interface pattern (the "define your own front matter"
+  half of §2.1.10), and the secondary `Content/api/` area demonstrates
+  the "multiple content roots" half of §2.2.10 at the DocSite-idiomatic
+  level — two `ContentArea` entries, one markdown pipeline.
+- **`SearchIndexOptions.ContentSelector` / `LlmsTxtOptions.GenerateFullFile`.**
+  `AddDocSite` pins `ContentSelector = "#main-content"` internally and
+  exposes no override. The §2.2.20 search and §2.2.60 llms.txt how-tos
+  are backed here by **front-matter exclusions** (`search: false`,
+  `llms: false`) plus the verified output at `/search-index-en.json`
+  and `/llms.txt`; consumers who need a different `ContentSelector`
+  drop to bare `AddPennington`.
+- **`MonorailCssOptions.CustomCssFrameworkSettings`.**
+  `AddDocSite` wires MonorailCSS internally and exposes only
+  `ColorScheme` + `ExtraStyles` via `DocSiteOptions`. The §2.2.30
+  monorail-css how-to is backed by `AlgorithmicColorScheme` +
+  `ExtraStyles` here.
+
+### Files
+
+- `examples/DocSiteKitchenSinkExample/DocSiteKitchenSinkExample.csproj`
+- `examples/DocSiteKitchenSinkExample/Program.cs` — 5-line host: `AddDocSite(ServiceConfiguration.BuildDocSiteOptions)` + `AddMdazorComponent<FeatureCallout>()` + `UseDocSite()` + `RunDocSiteAsync(args)`
+- `examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs` — small configuration helpers, one per surface
+- `examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs` — custom front-matter record (compile-only demo)
+- `examples/DocSiteKitchenSinkExample/_Imports.razor`
+- `examples/DocSiteKitchenSinkExample/Components/FeatureCallout.razor` — custom Mdazor component
+- `examples/DocSiteKitchenSinkExample/wwwroot/shared.png` — shared asset demo target
+- `examples/DocSiteKitchenSinkExample/Content/main/index.md` — Main area landing
+- `examples/DocSiteKitchenSinkExample/Content/main/front-matter.md` — backs §2.1.10
+- `examples/DocSiteKitchenSinkExample/Content/main/drafts-tags-ordering.md` — backs §2.1.20
+- `examples/DocSiteKitchenSinkExample/Content/main/customize-sidebar.md` — backs §2.1.30
+- `examples/DocSiteKitchenSinkExample/Content/main/images-and-assets.md` — backs §2.1.40
+- `examples/DocSiteKitchenSinkExample/Content/main/assets/colocated.png` — colocated asset demo target
+- `examples/DocSiteKitchenSinkExample/Content/main/tabbed-code.md` — backs §2.1.50
+- `examples/DocSiteKitchenSinkExample/Content/main/code-annotations.md` — backs §2.1.60
+- `examples/DocSiteKitchenSinkExample/Content/main/alerts.md` — backs §2.1.70 (one of each kind)
+- `examples/DocSiteKitchenSinkExample/Content/main/diagrams.md` — backs §2.1.80 (two mermaid fences)
+- `examples/DocSiteKitchenSinkExample/Content/main/ui-components-in-markdown.md` — backs §2.1.90 (three FeatureCallout instances plus a Badge)
+- `examples/DocSiteKitchenSinkExample/Content/main/cross-references-a.md` — backs §2.1.100 (source)
+- `examples/DocSiteKitchenSinkExample/Content/main/cross-references-b.md` — backs §2.1.100 (target)
+- `examples/DocSiteKitchenSinkExample/Content/main/linking.md` — backs §2.1.110
+- `examples/DocSiteKitchenSinkExample/Content/main/redirect-source.md` — backs §2.1.120 (`redirectUrl:` front matter)
+- `examples/DocSiteKitchenSinkExample/Content/main/hidden.md` — `search: false` fixture for §2.2.20
+- `examples/DocSiteKitchenSinkExample/Content/main/llms-hidden.md` — `llms: false` fixture for §2.2.60
+- `examples/DocSiteKitchenSinkExample/Content/api/index.md` — API area landing (second area for §2.2.10)
+- `examples/DocSiteKitchenSinkExample/Content/api/reference-example.md` — API area reference page
+- `examples/DocSiteKitchenSinkExample/Content/fr/main/index.md` — FR locale root (backs §2.2.50)
+- `examples/DocSiteKitchenSinkExample/Content/fr/main/alerts.md` — FR translation of alerts.md (backs §2.2.50)
+
+### Symbols (configuration helpers)
+
+- `T:DocSiteKitchenSinkExample.ServiceConfiguration`
+- `M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions` — full `DocSiteOptions` record literal (top-level surface for §2.2.30 / §2.2.40 / any option-shape how-to)
+- `M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildAreas` — `ContentArea[]` literal for §2.2.10 multiple-sources (short)
+- `M:DocSiteKitchenSinkExample.ServiceConfiguration.ConfigureLocalization(Pennington.Infrastructure.LocalizationOptions)` — `LocalizationOptions` setup for §2.2.50 localization (short)
+- `M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildColorScheme` — `AlgorithmicColorScheme` for §2.2.30 monorail-css (short)
+- `M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildFontPreloads` — `FontPreload[]` literal for §2.2.40 fonts (short)
+- `M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildExtraStyles` — `@font-face` + extra CSS for §2.2.40 fonts / §2.2.30 monorail-css
+- `M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildFooter` — footer HTML string (short)
+
+### Symbols (custom types)
+
+- `T:DocSiteKitchenSinkExample.ApiFrontMatter` — custom front-matter record for §2.1.10 (compile-only)
+- `P:DocSiteKitchenSinkExample.ApiFrontMatter.Namespace`
+- `P:DocSiteKitchenSinkExample.ApiFrontMatter.Stability`
+- `T:DocSiteKitchenSinkExample.Components.FeatureCallout` — custom Mdazor component for §2.1.90
+- `P:DocSiteKitchenSinkExample.Components.FeatureCallout.Title`
+- `P:DocSiteKitchenSinkExample.Components.FeatureCallout.Kind`
+- `P:DocSiteKitchenSinkExample.Components.FeatureCallout.Icon`
+- `P:DocSiteKitchenSinkExample.Components.FeatureCallout.ChildContent`
+
+### Production symbols the how-tos lean on
+
+- `T:Pennington.DocSite.DocSiteOptions`
+- `P:Pennington.DocSite.DocSiteOptions.Areas`
+- `P:Pennington.DocSite.DocSiteOptions.ConfigureLocalization`
+- `P:Pennington.DocSite.DocSiteOptions.ColorScheme`
+- `P:Pennington.DocSite.DocSiteOptions.ExtraStyles`
+- `P:Pennington.DocSite.DocSiteOptions.DisplayFontFamily`
+- `P:Pennington.DocSite.DocSiteOptions.BodyFontFamily`
+- `P:Pennington.DocSite.DocSiteOptions.FontPreloads`
+- `P:Pennington.DocSite.DocSiteOptions.HeaderContent`
+- `P:Pennington.DocSite.DocSiteOptions.FooterContent`
+- `P:Pennington.DocSite.DocSiteOptions.GitHubUrl`
+- `P:Pennington.DocSite.DocSiteOptions.CanonicalBaseUrl`
+- `T:Pennington.DocSite.ContentArea`
+- `T:Pennington.DocSite.DocSiteFrontMatter`
+- `T:Pennington.Infrastructure.FontPreload`
+- `T:Pennington.MonorailCss.AlgorithmicColorScheme`
+- `T:Pennington.MonorailCss.NamedColorScheme`
+
+### Raw-file fence candidates
+
+- `examples/DocSiteKitchenSinkExample/Program.cs` (top-level statements, no xmldocid)
+- `examples/DocSiteKitchenSinkExample/Components/FeatureCallout.razor`
+- `examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs`
+- `examples/DocSiteKitchenSinkExample/Content/main/front-matter.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/drafts-tags-ordering.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/customize-sidebar.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/images-and-assets.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/tabbed-code.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/code-annotations.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/alerts.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/diagrams.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/ui-components-in-markdown.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/cross-references-a.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/cross-references-b.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/linking.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/redirect-source.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/hidden.md`
+- `examples/DocSiteKitchenSinkExample/Content/main/llms-hidden.md`
+- `examples/DocSiteKitchenSinkExample/Content/api/index.md`
+- `examples/DocSiteKitchenSinkExample/Content/api/reference-example.md`
+- `examples/DocSiteKitchenSinkExample/Content/fr/main/index.md`
+- `examples/DocSiteKitchenSinkExample/Content/fr/main/alerts.md`

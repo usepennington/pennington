@@ -29,5 +29,6 @@
     <Project Path="examples/BeyondRoslynExample/BeyondRoslynExample.csproj" />
     <Project Path="examples/BeyondRoslynExample/Sample/BeyondRoslynExample.Sample.csproj" />
     <Project Path="examples/BeyondCustomRazorComponentExample/BeyondCustomRazorComponentExample.csproj" />
+    <Project Path="examples/DocSiteKitchenSinkExample/DocSiteKitchenSinkExample.csproj" />
   </Folder>
 </Solution>

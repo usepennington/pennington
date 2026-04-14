@@ -1,0 +1,56 @@
+@* FeatureCallout — custom Mdazor component demonstrating how a site can extend
+   markdown with its own Razor tags. Backs the "UI components in markdown"
+   how-to. Consumed from markdown as:
+
+     <FeatureCallout Title="Fast" Kind="tip" Icon="bolt">
+       Pages render in a single SSR pass.
+     </FeatureCallout>
+
+   Attribute → parameter binding is case-insensitive via reflection. Only simple
+   primitive parameter types bind from markdown attributes — the markdown
+   between the open/close tags becomes `ChildContent`. *@
+<div class="not-prose my-6 flex gap-4 rounded-xl border p-5 @KindClasses">
+    <div class="shrink-0 mt-0.5">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/50 text-lg font-bold dark:bg-black/30">@IconGlyph</span>
+    </div>
+    <div class="flex-1">
+        <h4 class="text-sm font-bold uppercase tracking-wide mb-1">@Title</h4>
+        <div class="text-sm leading-relaxed">@ChildContent</div>
+    </div>
+</div>
+
+@code {
+    /// <summary>Heading shown at the top of the callout.</summary>
+    [Parameter] public string Title { get; set; } = "Note";
+
+    /// <summary>
+    /// Callout flavour — "tip" (primary), "info" (accent), or "warn" (amber).
+    /// Drives the colour scheme applied to the card.
+    /// </summary>
+    [Parameter] public string Kind { get; set; } = "info";
+
+    /// <summary>
+    /// Icon keyword (e.g. "bolt", "book", "shield") mapped to a single-char
+    /// glyph. Kept as a string so the markdown author can type a friendly name.
+    /// </summary>
+    [Parameter] public string Icon { get; set; } = "info";
+
+    /// <summary>Markdown between the open and close tags, rendered inline.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string KindClasses => Kind?.ToLowerInvariant() switch
+    {
+        "tip" => "border-primary-500/30 bg-primary-50 text-primary-900 dark:bg-primary-950/40 dark:text-primary-100",
+        "warn" => "border-amber-500/40 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-100",
+        _ => "border-accent-500/30 bg-accent-50 text-accent-900 dark:bg-accent-950/40 dark:text-accent-100",
+    };
+
+    private string IconGlyph => Icon?.ToLowerInvariant() switch
+    {
+        "bolt" => "\u26A1",
+        "book" => "\U0001F4D8",
+        "shield" => "\U0001F6E1",
+        "rocket" => "\U0001F680",
+        _ => "\u2139",
+    };
+}

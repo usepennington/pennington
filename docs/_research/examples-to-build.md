@@ -163,7 +163,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 13. `DocSiteKitchenSinkExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** most of how-to §2.1 Content Authoring + DocSite-flavoured §2.2 Configuration
 - **Shape:** `AddDocSite` host. Configuration is deliberately layered (fonts, monorail, search, multi-source, llms-txt, sitemap, localization). Some features coexist; some are kept on isolated content slices so each how-to snippet has a targetable symbol.
 - **Structure:**

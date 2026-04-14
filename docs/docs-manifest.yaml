@@ -469,7 +469,9 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/SearchExample/Program.cs'
+        - 'M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildFontPreloads'
+        - 'M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildExtraStyles'
+        - 'M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions'
       production_files: []
       production_symbols: []
       architecture:
@@ -498,7 +500,8 @@ pages:
     front_matter_uid: 'how-to.configuration.llms-txt'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'examples/DocSiteKitchenSinkExample/Content/main/llms-hidden.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -526,7 +529,9 @@ pages:
     front_matter_uid: 'how-to.configuration.localization'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'M:DocSiteKitchenSinkExample.ServiceConfiguration.ConfigureLocalization(Pennington.Infrastructure.LocalizationOptions)'
+        - 'examples/DocSiteKitchenSinkExample/Content/fr/main/alerts.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -555,7 +560,9 @@ pages:
     front_matter_uid: 'how-to.configuration.monorail-css'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildColorScheme'
+        - 'M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildExtraStyles'
       production_files: []
       production_symbols: []
       architecture:
@@ -585,11 +592,8 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'M:MultipleContentSourceExample.ContentHelper.GetNavigationAsync(System.String,System.String)'
-        - 'T:MultipleContentSourceExample.BlogFrontMatter'
-        - 'T:MultipleContentSourceExample.ContentFrontMatter'
-        - 'T:MultipleContentSourceExample.ContentHelper'
-        - 'T:MultipleContentSourceExample.DocsFrontMatter'
+        - 'M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildAreas'
+        - 'T:DocSiteKitchenSinkExample.ApiFrontMatter'
       production_files: []
       production_symbols: []
       architecture:
@@ -649,7 +653,7 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'T:SearchExample.Services.RandomContentService'
+        - 'examples/DocSiteKitchenSinkExample/Content/main/hidden.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -677,7 +681,9 @@ pages:
     front_matter_uid: 'how-to.configuration.sitemap'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'examples/DocSiteKitchenSinkExample/Content/main/redirect-source.md'
+        - 'examples/DocSiteKitchenSinkExample/Program.cs'
       production_files: []
       production_symbols: []
       architecture:
@@ -707,7 +713,8 @@ pages:
     front_matter_uid: 'how-to.content-authoring.alerts'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'examples/DocSiteKitchenSinkExample/Content/main/alerts.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -738,7 +745,8 @@ pages:
     front_matter_uid: 'how-to.content-authoring.code-annotations'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'examples/DocSiteKitchenSinkExample/Content/main/code-annotations.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -769,8 +777,8 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/BeaconDocsExample/Content/api/index.md'
-        - 'examples/BeaconDocsExample/Content/guides/configuration.md'
+        - 'examples/DocSiteKitchenSinkExample/Content/main/cross-references-a.md'
+        - 'examples/DocSiteKitchenSinkExample/Content/main/cross-references-b.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -802,7 +810,8 @@ pages:
     front_matter_uid: 'how-to.content-authoring.customize-sidebar'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'examples/DocSiteKitchenSinkExample/Content/main/customize-sidebar.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -832,7 +841,8 @@ pages:
     front_matter_uid: 'how-to.content-authoring.diagrams'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'examples/DocSiteKitchenSinkExample/Content/main/diagrams.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -862,8 +872,7 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'T:MultipleContentSourceExample.DocsFrontMatter'
-        - 'T:UserInterfaceExample.DocsFrontMatter'
+        - 'examples/DocSiteKitchenSinkExample/Content/main/drafts-tags-ordering.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -892,11 +901,9 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/ForgePortalExample/PageFrontMatter.cs'
-        - 'examples/MultipleContentSourceExample/BlogFrontMatter.cs'
-        - 'examples/MultipleContentSourceExample/DocsFrontMatter.cs'
-        - 'T:ForgePortalExample.PageFrontMatter'
-        - 'T:MultipleContentSourceExample.DocsFrontMatter'
+        - 'examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs'
+        - 'T:DocSiteKitchenSinkExample.ApiFrontMatter'
+        - 'examples/DocSiteKitchenSinkExample/Content/main/front-matter.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -925,7 +932,8 @@ pages:
     front_matter_uid: 'how-to.content-authoring.images-and-assets'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'examples/DocSiteKitchenSinkExample/Content/main/images-and-assets.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -955,7 +963,8 @@ pages:
     front_matter_uid: 'how-to.content-authoring.linking'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'examples/DocSiteKitchenSinkExample/Content/main/linking.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -988,7 +997,7 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'T:MultipleContentSourceExample.DocsFrontMatter'
+        - 'examples/DocSiteKitchenSinkExample/Content/main/redirect-source.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -1017,7 +1026,8 @@ pages:
     front_matter_uid: 'how-to.content-authoring.tabbed-code'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'examples/DocSiteKitchenSinkExample/Content/main/tabbed-code.md'
       production_files: []
       production_symbols: []
       architecture:
@@ -1048,7 +1058,9 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/BeaconDocsExample/Content/index.md'
+        - 'examples/DocSiteKitchenSinkExample/Components/FeatureCallout.razor'
+        - 'examples/DocSiteKitchenSinkExample/Content/main/ui-components-in-markdown.md'
+        - 'T:DocSiteKitchenSinkExample.Components.FeatureCallout'
       production_files:
         - 'docs/Pennington.Docs/Program.cs'
         - 'src/Pennington.BlogSite/BlogSiteServiceExtensions.cs'
