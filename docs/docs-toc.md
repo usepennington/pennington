@@ -84,7 +84,13 @@ Does not cover: per-locale search index internals or UI string translation plumb
 |---|---|---|
 | **Connect to a Roslyn solution for live API snippets** | `/tutorials/beyond-basics/connect-roslyn` | 20 |
 Covers: pointing Pennington at a `.sln` via `SolutionPath`, using `xmldocid` code fences (e.g., ` ```csharp xmldocid="M:Ns.Type.Method"`) to pull method/class snippets straight from source, and letting hot reload update the docs when the source changes.
-Does not cover: generating full API-reference pages — that requires the planned `Pennington.Roslyn` package. Authoring a custom Razor component for markdown use is covered in the content-authoring how-tos (`/how-to/content-authoring/ui-components-in-markdown`), not here.
+Does not cover: generating full API-reference pages — that requires the planned `Pennington.Roslyn` package. Authoring a custom Razor component for markdown use is the next tutorial.
+
+| Title | URL | Order |
+|---|---|---|
+| **Author a custom Razor component for markdown** | `/tutorials/beyond-basics/custom-razor-component` | 30 |
+Covers: building a Razor component, registering it with `AddMdazorComponent<T>()`, and rendering it from markdown in a Pennington site.
+Does not cover: packaging reusable component libraries or Mdazor internals in full — the content-authoring how-to covers the built-in components and the reference pages cover the APIs.
 
 ---
 
@@ -145,8 +151,8 @@ Does not cover: server-side diagram rendering, non-Mermaid diagram systems, or e
 | Title | URL | Order |
 |---|---|---|
 | **Use UI components inside markdown** | `/how-to/content-authoring/ui-components-in-markdown` | 90 |
-Covers: using Pennington.UI components inside markdown through Pennington's Mdazor-based component support, and linking to the Mdazor project for the deeper syntax, nesting rules, and limitations.
-Does not cover: authoring your own Razor component or documenting Mdazor internals in full.
+Covers: using Pennington.UI components inside markdown through Mdazor-backed rendering, and the registration shape needed when you are on a custom `AddPennington` host.
+Does not cover: documenting Mdazor internals in full or broader DocSite layout customization.
 
 | Title | URL | Order |
 |---|---|---|
@@ -232,9 +238,9 @@ Does not cover: parsing/rendering — those are separate interfaces covered belo
 
 | Title | URL | Order |
 |---|---|---|
-| **Add a custom code-block preprocessor** | `/how-to/extensibility/code-block-preprocessor` | 20 |
-Covers: implementing `ICodeBlockPreprocessor`, setting a priority, and returning `HighlightedHtml` with `SkipTransform` when needed.
-Does not cover: writing a new highlighter (next page) or customizing the rendered CSS wrapper.
+| **Register a code-block preprocessor** | `/how-to/extensibility/code-block-preprocessor` | 20 |
+Covers: the `ICodeBlockPreprocessor` contract, priority ordering, `CodeBlockPreprocessResult`, and the shipped Roslyn preprocessor as the concrete model.
+Does not cover: writing a new highlighter (next page) or a standalone example project for a custom preprocessor.
 
 | Title | URL | Order |
 |---|---|---|
@@ -405,7 +411,7 @@ Does not cover: rendering custom navigation shapes (a Razor authoring topic).
 | Title | URL | Order |
 |---|---|---|
 | **Content components** | `/reference/ui/content` | 20 |
-Covers: `Card`, `CardGrid`, `LinkCard`, `Badge`, `Step`, `Steps`, `CodeBlock`, and `BigTable` — parameters, render behavior, and the Pennington-facing component surface used from Mdazor-backed markdown content.
+Covers: `Card`, `CardGrid`, `LinkCard`, `Badge`, `Step`, `Steps`, `CodeBlock`, and `BigTable` — parameters, render behavior, and the component surface used from Mdazor-backed markdown content and Razor pages.
 Does not cover: Mdazor parser internals or step-by-step authoring workflow (see the authoring how-to).
 
 | Title | URL | Order |

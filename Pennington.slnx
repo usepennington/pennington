@@ -15,27 +15,5 @@
   <Folder Name="/docs/">
     <Project Path="docs/Pennington.Docs/Pennington.Docs.csproj" />
   </Folder>
-  <Folder Name="/examples/">
-    <Project Path="examples/MinimalExample/MinimalExample.csproj" />
-    <Project Path="examples/RecipeExample/RecipeExample.csproj" />
-    <Project Path="examples/BlogExample/BlogExample.csproj" />
-    <Project Path="examples/SpectreConsoleExample/SpectreConsoleExample.csproj" />
-    <Project Path="examples/Spectre.Console.Examples/Spectre.Console.Examples.csproj" />
-    <Project Path="examples/UserInterfaceExample/UserInterfaceExample.csproj" />
-    <Project Path="examples/MultipleContentSourceExample/MultipleContentSourceExample.csproj" />
-    <Project Path="examples/RoslynIntegrationExample/RoslynIntegrationExample.csproj" />
-    <Project Path="examples/SearchExample/SearchExample.csproj" />
-    <Project Path="examples/SpaNavigationExample/SpaNavigationExample.csproj" />
-    <Project Path="examples/LocalizationExample/LocalizationExample.csproj" />
-    <Project Path="examples/YogaStudioExample/YogaStudioExample.csproj" />
-    <Project Path="examples/NorthwindHandbookExample/NorthwindHandbookExample.csproj" />
-    <Project Path="examples/TempoDocsExample/TempoDocsExample.csproj" />
-    <Project Path="examples/AlexBlogExample/AlexBlogExample.csproj" />
-    <Project Path="examples/LocalizationTutorialExample/LocalizationTutorialExample.csproj" />
-    <Project Path="examples/SpaNavigationTutorialExample/SpaNavigationTutorialExample.csproj" />
-    <Project Path="examples/MaraBlogExample/MaraBlogExample.csproj" />
-    <Project Path="examples/BeaconDocsExample/BeaconDocsExample.csproj" />
-    <Project Path="examples/ForgePortalExample/ForgePortalExample.csproj" />
-    <Project Path="examples/PrismDocsExample/PrismDocsExample.csproj" />
-  </Folder>
+  <Folder Name="/examples/" />
 </Solution>

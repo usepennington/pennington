@@ -1,252 +1,2820 @@
 schema_version: 1
-mode: prototype
-content_root: Pennington.Docs/Content
+mode: 'generated'
+generated_by: 'tools/sync-docs-manifest.ps1'
+content_root: 'Pennington.Docs/Content'
 
 authority:
-  workflow: docs-manifest.yaml
-  syntax: Pennington.Docs/CLAUDE.md
-  voice: docs-voice.md
-  scope: docs-toc.md
-  architecture: _research/site-architecture.md
-  examples: _research/examples-inventory.md
-  blockers: _research/blockers.md
+  workflow: 'docs-manifest.yaml'
+  syntax: 'Pennington.Docs/CLAUDE.md'
+  voice: 'docs-voice.md'
+  scope: 'docs-toc.md'
+  architecture: '_research/site-architecture.md'
+  examples: '_research/examples-inventory.md'
+  blockers: '_research/blockers.md'
 
 allowed_statuses:
-  - outline_only
-  - drafting
-  - needs_revision
-  - blocked
-  - ready_to_publish
-  - published
+  - 'outline_only'
+  - 'drafting'
+  - 'needs_revision'
+  - 'blocked'
+  - 'ready_to_publish'
+  - 'published'
 
 quadrants:
   tutorial:
-    path_prefix: Pennington.Docs/Content/tutorials/
+    path_prefix: 'Pennington.Docs/Content/tutorials/'
     required_headings:
-      - What you'll do
-      - Prerequisites
-      - Summary
+      - 'What you''ll do'
+      - 'Prerequisites'
+      - 'Summary'
   how-to:
-    path_prefix: Pennington.Docs/Content/how-to/
+    path_prefix: 'Pennington.Docs/Content/how-to/'
     required_headings:
-      - When to use this
-      - Assumptions
-      - Steps
-      - Verify
-      - Related
+      - 'When to use this'
+      - 'Assumptions'
+      - 'Steps'
+      - 'Verify'
+      - 'Related'
   reference:
-    path_prefix: Pennington.Docs/Content/reference/
+    path_prefix: 'Pennington.Docs/Content/reference/'
     required_headings:
-      - Summary
-      - Declaration
-      - See also
+      - 'Summary'
+      - 'Declaration'
+      - 'See also'
   explanation:
-    path_prefix: Pennington.Docs/Content/explanation/
+    path_prefix: 'Pennington.Docs/Content/explanation/'
     required_headings:
-      - The question
-      - Context
-      - How it works
-      - Trade-offs
-      - Further reading
+      - 'The question'
+      - 'Context'
+      - 'How it works'
+      - 'Trade-offs'
+      - 'Further reading'
 
 pages:
-  - path: Pennington.Docs/Content/tutorials/getting-started/first-site.md
-    url: /tutorials/getting-started/first-site
-    quadrant: tutorial
-    status: needs_revision
-    scope_source: docs-toc.md
-    evidence:
-      examples:
-        - examples/MinimalExample/Program.cs
-        - examples/MinimalExample/Components/Layout/Pages.razor
-        - examples/MinimalExample/Content/index.md
-        - M:MinimalExample.ContentHelper.GetPageByUrlAsync(System.String)
-      architecture:
-        - _research/site-architecture.md
-      blockers: []
-    known_issues:
-      - Uses unsupported fence syntax with file="..."
-      - Contains outline artifacts such as "Bullets:" and "Fence slot:"
-    acceptance_checks:
-      - Uses only :path or :xmldocid fences
-      - Removes outline artifact prose
-      - Keeps scope limited to minimal host wiring and one markdown page
-
-  - path: Pennington.Docs/Content/tutorials/getting-started/first-page.md
-    url: /tutorials/getting-started/first-page
-    quadrant: tutorial
-    status: needs_revision
-    scope_source: docs-toc.md
-    evidence:
-      examples:
-        - examples/MinimalExample/Content/index.md
-        - examples/MinimalExample/Content/sub-folder/page-one.md
-        - examples/MinimalExample/Content/sub-folder/page-two.md
-      architecture:
-        - _research/site-architecture.md
-      blockers: []
-    known_issues:
-      - Uses unsupported fence syntax with file="..."
-    acceptance_checks:
-      - Uses approved :path fences for markdown files
-      - Covers only front matter and file-to-URL mapping
-
-  - path: Pennington.Docs/Content/tutorials/docsite/sections-and-areas.md
-    url: /tutorials/docsite/sections-and-areas
-    quadrant: tutorial
-    status: blocked
-    scope_source: docs-toc.md
-    blocked_by:
-      - No approved example project demonstrates DocSite Areas
-      - Current draft relies on a docs-local Program.cs outside the approved examples inventory
-    evidence:
-      examples:
-        - examples/BeaconDocsExample/Content/index.md
-      architecture:
-        - _research/site-architecture.md
-      blockers:
-        - _research/blockers.md
-    acceptance_checks:
-      - Add or approve an example project with DocSite Areas before drafting
-
-  - path: Pennington.Docs/Content/how-to/content-authoring/front-matter.md
-    url: /how-to/content-authoring/front-matter
-    quadrant: how-to
-    status: drafting
-    scope_source: docs-toc.md
-    evidence:
-      examples:
-        - examples/MultipleContentSourceExample/BlogFrontMatter.cs
-        - examples/MultipleContentSourceExample/DocsFrontMatter.cs
-        - examples/ForgePortalExample/PageFrontMatter.cs
-      architecture:
-        - _research/site-architecture.md
-      blockers: []
-    acceptance_checks:
-      - Keeps explanation of capability architecture out of the recipe
-      - Links to reference and explanation neighbors
-
-  - path: Pennington.Docs/Content/how-to/content-authoring/cross-references.md
-    url: /how-to/content-authoring/cross-references
-    quadrant: how-to
-    status: drafting
-    scope_source: docs-toc.md
-    evidence:
-      examples:
-        - examples/BeaconDocsExample/Content/guides/configuration.md
-        - examples/BeaconDocsExample/Content/api/index.md
-      architecture:
-        - _research/site-architecture.md
-      blockers:
-        - _research/blockers.md
-    acceptance_checks:
-      - Documents only the supported syntaxes: <xref:uid> and [text](xref:uid)
-      - Does not mention unsupported element syntax
-
-  - path: Pennington.Docs/Content/how-to/content-authoring/ui-components-in-markdown.md
-    url: /how-to/content-authoring/ui-components-in-markdown
-    quadrant: how-to
-    status: blocked
-    scope_source: docs-toc.md
-    blocked_by:
-      - Product does not render Razor components from markdown today
-      - Approved examples do not demonstrate this as a working feature
+  - path: 'Pennington.Docs/Content/explanation/core/content-pipeline.md'
+    page_title: 'The content pipeline and union types'
+    url: '/explanation/core/content-pipeline'
+    quadrant: 'explanation'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Why `ContentItem` and `ContentSource` are union types, how items move from `DiscoveredItem` through `ParsedItem` to `RenderedItem` (or `FailedItem`), and what the union affords over a class hierarchy.'
+    excludes: 'The specific interfaces that parsers and renderers implement — see the Reference section for `IContentParser`, `IContentRenderer`, and `IContentPipeline`.'
+    front_matter_section: 'core'
+    front_matter_order: 10
+    front_matter_uid: 'explanation.core.content-pipeline'
+    front_matter_is_draft: true
     evidence:
       examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Pipeline.ContentItem'
       architecture:
-        - _research/site-architecture.md
-      blockers:
-        - _research/blockers.md
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/front-matter-capabilities'
+        - '/reference/extension-points/content-pipeline'
+        - '/reference/extension-points/routing'
+      xrefs: []
     acceptance_checks:
-      - Do not draft beyond a blocked stub until product support exists
+      - 'Keeps to one question about union-typed pipeline design'
+      - 'Links outward to adjacent reference and explanation pages'
 
-  - path: Pennington.Docs/Content/how-to/extensibility/code-block-preprocessor.md
-    url: /how-to/extensibility/code-block-preprocessor
-    quadrant: how-to
-    status: blocked
-    scope_source: docs-toc.md
-    blocked_by:
-      - No approved example project implements a custom ICodeBlockPreprocessor
+  - path: 'Pennington.Docs/Content/explanation/core/dev-vs-build.md'
+    page_title: 'Dev mode and build mode share one code path'
+    url: '/explanation/core/dev-vs-build'
+    quadrant: 'explanation'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The deliberate decision to run the same HTTP pipeline whether serving live or generating static output — the static build is a crawler driven by `OutputGenerationService` hitting the running app — and why this keeps dev fidelity and publish output in lockstep.'
+    excludes: 'Static-build CLI arguments (see Reference).'
+    front_matter_section: 'core'
+    front_matter_order: 20
+    front_matter_uid: 'explanation.core.dev-vs-build'
+    front_matter_is_draft: true
     evidence:
       examples: []
+      production_files: []
+      production_symbols: []
       architecture:
-        - _research/site-architecture.md
-      blockers:
-        - _research/blockers.md
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/content-pipeline'
+        - '/how-to/deployment/static-build'
+        - '/reference/extension-points/response-processing'
+        - '/reference/options/auxiliary-options'
+      xrefs: []
     acceptance_checks:
-      - Add or approve an example project before drafting
+      - 'Explains the unified code path without drifting into CLI reference details'
+      - 'Links outward to adjacent reference and how-to pages'
 
-  - path: Pennington.Docs/Content/reference/options/pennington-options.md
-    url: /reference/options/pennington-options
-    quadrant: reference
-    status: drafting
-    scope_source: docs-toc.md
+  - path: 'Pennington.Docs/Content/explanation/core/front-matter-capabilities.md'
+    page_title: 'The front-matter capability system'
+    url: '/explanation/core/front-matter-capabilities'
+    quadrant: 'explanation'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Why capability interfaces (`ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`) were collapsed into `IFrontMatter` default members, what that buys users, and how to extend with custom keys.'
+    excludes: 'Key-by-key documentation of every front-matter property — see the Reference quadrant.'
+    front_matter_section: 'core'
+    front_matter_order: 30
+    front_matter_uid: 'explanation.core.front-matter-capabilities'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.FrontMatter.IFrontMatter'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/how-to/content-authoring/front-matter'
+        - '/reference/front-matter/ifrontmatter'
+        - '/reference/front-matter/keys'
+      xrefs: []
+    acceptance_checks:
+      - 'Stays focused on one conceptual question from docs-toc.md'
+      - 'Links outward to adjacent reference or how-to pages'
+
+  - path: 'Pennington.Docs/Content/explanation/core/response-processing.md'
+    page_title: 'The response-processing pipeline'
+    url: '/explanation/core/response-processing'
+    quadrant: 'explanation'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Why HTML rewriting is consolidated into a single AngleSharp pass, how `IResponseProcessor` differs from `IHtmlResponseRewriter`, and the order the built-in rewriters run.'
+    excludes: 'Writing a rewriter — see the How-Tos.'
+    front_matter_section: 'core'
+    front_matter_order: 40
+    front_matter_uid: 'explanation.core.response-processing'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Infrastructure.IHtmlResponseRewriter'
+        - 'T:Pennington.Infrastructure.IResponseProcessor'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/dev-and-build'
+        - '/how-to/extensibility/html-rewriter'
+        - '/how-to/extensibility/response-processor'
+        - '/reference/extension-points/response-processing'
+      xrefs:
+        - 'some.uid'
+        - 'uid'
+    acceptance_checks:
+      - 'Stays focused on one conceptual question from docs-toc.md'
+      - 'Links outward to adjacent reference or how-to pages'
+
+  - path: 'Pennington.Docs/Content/explanation/dev-experience/hot-reload.md'
+    page_title: 'Hot reload and file watching'
+    url: '/explanation/dev-experience/hot-reload'
+    quadrant: 'explanation'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'How `FileWatcher` observes content and asset directories, how `LiveReloadServer` pushes change events over WebSocket, and how `LiveReloadScriptProcessor` keeps the script out of production builds.'
+    excludes: 'ASP.NET''s own `dotnet watch` hot reload is an upstream feature with its own documentation; this page only covers Pennington''s browser refresh loop layered on top of it.'
+    front_matter_section: 'dev-experience'
+    front_matter_order: 10
+    front_matter_uid: 'explanation.dev-experience.hot-reload'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Infrastructure.FileWatcher'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/dev-vs-build'
+        - '/explanation/core/response-processing'
+        - '/reference/host/extensions'
+      xrefs: []
+    acceptance_checks:
+      - 'Stays focused on one conceptual question from docs-toc.md'
+      - 'Links outward to adjacent reference or how-to pages'
+
+  - path: 'Pennington.Docs/Content/explanation/localization/urls-and-fallback.md'
+    page_title: 'Locale-aware URLs and content fallback'
+    url: '/explanation/localization/urls-and-fallback'
+    quadrant: 'explanation'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'How the URL prefix feeds into `ContentResolver` to reach the correct localized content, the fallback rules when a locale lacks a page, and why the search index is split per locale.'
+    excludes: 'The `LocalizationOptions` API specifics — see the reference page for the full member list.'
+    front_matter_section: 'localization'
+    front_matter_order: 10
+    front_matter_uid: 'explanation.localization.urls-and-fallback'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/content-pipeline'
+        - '/how-to/localization/add-locale'
+        - '/reference/options/localization-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Stays focused on one conceptual question from docs-toc.md'
+      - 'Links outward to adjacent reference or how-to pages'
+
+  - path: 'Pennington.Docs/Content/explanation/rendering/highlighting.md'
+    page_title: 'The syntax-highlighting cascade'
+    url: '/explanation/rendering/highlighting'
+    quadrant: 'explanation'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The priority-ordered highlighter chain (custom -> ShellHighlighter -> TextMateHighlighter -> PlainTextHighlighter), why TextMateSharp was chosen, and where deferred Roslyn support fits in.'
+    excludes: 'How to add a highlighter (see How-Tos).'
+    front_matter_section: 'rendering'
+    front_matter_order: 20
+    front_matter_uid: 'explanation.rendering.highlighting'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Highlighting.ICodeHighlighter'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/how-to/extensibility/custom-highlighter'
+        - '/reference/extension-points/highlighting'
+        - '/tutorials/beyond-basics/connect-roslyn'
+      xrefs: []
+    acceptance_checks:
+      - 'Stays focused on one conceptual question from docs-toc.md'
+      - 'Links outward to adjacent reference or how-to pages'
+
+  - path: 'Pennington.Docs/Content/explanation/rendering/monorail-css.md'
+    page_title: 'MonorailCSS integration'
+    url: '/explanation/rendering/monorail-css'
+    quadrant: 'explanation'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'How classes are collected at response time (`CssClassCollectorProcessor`), how the stylesheet is generated on demand, and the color-scheme model (named vs. algorithmic with OKLCH palette generation).'
+    excludes: 'MonorailCSS''s own syntax — utility names, variants, arbitrary values — lives in the upstream MonorailCSS documentation.'
+    front_matter_section: 'rendering'
+    front_matter_order: 10
+    front_matter_uid: 'explanation.rendering.monorail-css'
+    front_matter_is_draft: true
     evidence:
       examples:
-        - examples/MinimalExample/Program.cs
+        - 'M:YogaStudioExample.Models.YogaColorScheme.ApplyToTheme(MonorailCss.Theme.Theme)'
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.MonorailCss.CssClassCollectorProcessor'
       architecture:
-        - _research/site-architecture.md
+        - '_research/site-architecture.md'
       blockers: []
+    links:
+      internal:
+        - '/explanation/core/dev-vs-build'
+        - '/how-to/styling/algorithmic-color-scheme'
+        - '/reference/monorail-css/options'
+      xrefs: []
     acceptance_checks:
-      - Declaration points at production symbol, not an example type
-      - Property list matches verified architecture notes
+      - 'Stays focused on one conceptual question from docs-toc.md'
+      - 'Links outward to adjacent reference or how-to pages'
 
-  - path: Pennington.Docs/Content/reference/ui/content.md
-    url: /reference/ui/content
-    quadrant: reference
-    status: blocked
-    scope_source: docs-toc.md
-    blocked_by:
-      - No approved example project contains working Razor call sites for the documented UI components
+  - path: 'Pennington.Docs/Content/explanation/routing/cross-references.md'
+    page_title: 'Cross-reference resolution'
+    url: '/explanation/routing/cross-references'
+    quadrant: 'explanation'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'How `uid`s are gathered during the content phase, how `XrefHtmlRewriter` resolves tags at request time, and how broken xrefs surface in the build report.'
+    excludes: 'Authoring cross-references (see How-Tos).'
+    front_matter_section: 'routing'
+    front_matter_order: 30
+    front_matter_uid: 'explanation.routing.cross-references'
+    front_matter_is_draft: true
     evidence:
       examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Infrastructure.XrefHtmlRewriter'
+        - 'T:Pennington.Infrastructure.XrefResolver'
+        - 'T:Pennington.Pipeline.CrossReference'
       architecture:
-        - _research/site-architecture.md
-      blockers:
-        - _research/blockers.md
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/response-processing'
+        - '/how-to/content-authoring/cross-references'
+        - '/reference/diagnostics/build-report'
+        - '/reference/diagnostics/request-context'
+      xrefs:
+        - '([^'
+        - 'some.uid'
     acceptance_checks:
-      - Add or approve sample component call sites before drafting
+      - 'Stays focused on one conceptual question from docs-toc.md'
+      - 'Links outward to adjacent reference or how-to pages'
 
-  - path: Pennington.Docs/Content/reference/markdown/extensions.md
-    url: /reference/markdown/extensions
-    quadrant: reference
-    status: drafting
-    scope_source: docs-toc.md
+  - path: 'Pennington.Docs/Content/explanation/routing/navigation-tree.md'
+    page_title: 'Navigation-tree construction'
+    url: '/explanation/routing/navigation-tree'
+    quadrant: 'explanation'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'How `NavigationBuilder` folds flat `ContentTocItem`s into a tree via `HierarchyParts`, what happens when a section has no direct content, and how locale prefixes are stripped for ordering.'
+    excludes: 'The UI that renders the tree — see the Reference entries for `TableOfContentsNavigation` and `OutlineNavigation`.'
+    front_matter_section: 'routing'
+    front_matter_order: 20
+    front_matter_uid: 'explanation.routing.navigation-tree'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Content.ContentTocItem'
+        - 'T:Pennington.Navigation.NavigationBuilder'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/localization/urls-and-fallback'
+        - '/how-to/content-authoring/customize-sidebar'
+        - '/reference/extension-points/navigation'
+        - '/reference/ui/navigation'
+      xrefs: []
+    acceptance_checks:
+      - 'Stays focused on one conceptual question from docs-toc.md'
+      - 'Links outward to adjacent reference or how-to pages'
+
+  - path: 'Pennington.Docs/Content/explanation/routing/url-paths.md'
+    page_title: 'URL paths and content routes'
+    url: '/explanation/routing/url-paths'
+    quadrant: 'explanation'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The `UrlPath`/`FilePath` value-type design, how `ContentRoute` carries canonical vs. output paths, and why path handling avoids string-typing.'
+    excludes: 'Member-level API details (see Reference).'
+    front_matter_section: 'routing'
+    front_matter_order: 10
+    front_matter_uid: 'explanation.routing.url-paths'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Routing.ContentRoute'
+        - 'T:Pennington.Routing.FilePath'
+        - 'T:Pennington.Routing.UrlPath'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/extension-points/routing'
+        - '/reference/host/extensions'
+      xrefs: []
+    acceptance_checks:
+      - 'Stays focused on one conceptual question from docs-toc.md'
+      - 'Links outward to adjacent reference or how-to pages'
+
+  - path: 'Pennington.Docs/Content/explanation/spa/islands.md'
+    page_title: 'SPA navigation and island architecture'
+    url: '/explanation/spa/islands'
+    quadrant: 'explanation'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Why Pennington serves a JSON envelope at a `_spa-data` path instead of full page HTML on navigation, how islands are hydrated selectively, and the skeleton/loading lifecycle (`data-spa-loading` modes).'
+    excludes: 'Registering an island (see How-Tos) or the raw attribute list (see Reference).'
+    front_matter_section: 'spa'
+    front_matter_order: 10
+    front_matter_uid: 'explanation.spa.islands'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/dev-vs-build'
+        - '/how-to/extensibility/island-renderer'
+        - '/reference/extension-points/islands'
+      xrefs: []
+    acceptance_checks:
+      - 'Stays focused on one conceptual question from docs-toc.md'
+      - 'Links outward to adjacent reference or how-to pages'
+
+  - path: 'Pennington.Docs/Content/how-to/configuration/blogsite-homepage.md'
+    page_title: 'Configure the BlogSite homepage'
+    url: '/how-to/configuration/blogsite-homepage'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The four BlogSite homepage surfaces — `HeroContent`, `MyWork`, `Socials`, and `MainSiteLinks` — set in one pass on `BlogSiteOptions`.'
+    excludes: 'The end-to-end build of these surfaces (see the tutorial) or the full options catalog (see Reference).'
+    front_matter_section: 'configuration'
+    front_matter_order: 90
+    front_matter_uid: 'how-to.configuration.blogsite-homepage'
+    front_matter_is_draft: true
     evidence:
       examples:
-        - examples/BeaconDocsExample/Content/guides/configuration.md
+        - 'examples/AlexBlogExample/Program.cs'
+        - 'examples/BlogExample/Program.cs'
+      production_files: []
+      production_symbols: []
       architecture:
-        - _research/site-architecture.md
+        - '_research/site-architecture.md'
       blockers: []
+    links:
+      internal:
+        - '/reference/blogsite/routes'
+        - '/reference/blogsite/social-icons'
+        - '/reference/options/blogsite-options'
+        - '/tutorials/blogsite/hero-projects-socials'
+        - '/tutorials/blogsite/scaffold'
+      xrefs: []
     acceptance_checks:
-      - Catalog includes only supported markdown extensions
-      - Cross-reference syntax matches verified implementation
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
 
-  - path: Pennington.Docs/Content/explanation/core/content-pipeline.md
-    url: /explanation/core/content-pipeline
-    quadrant: explanation
-    status: needs_revision
-    scope_source: docs-toc.md
+  - path: 'Pennington.Docs/Content/how-to/configuration/fonts.md'
+    page_title: 'Configure fonts and typography'
+    url: '/how-to/configuration/fonts'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Setting `DisplayFontFamily`/`BodyFontFamily` on `DocSiteOptions`, declaring `FontPreloads`, and serving font assets.'
+    excludes: 'Self-hosting vs. Google Fonts trade-offs (out of scope).'
+    front_matter_section: 'configuration'
+    front_matter_order: 40
+    front_matter_uid: 'how-to.configuration.fonts'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/SearchExample/Program.cs'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/rendering/monorail-css'
+        - '/reference/options/docsite-options'
+        - '/reference/options/monorail-css-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/configuration/llms-txt.md'
+    page_title: 'Generate an llms.txt'
+    url: '/how-to/configuration/llms-txt'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Enabling `LlmsTxtOptions`, setting `OutputDirectory` and `GenerateFullFile`, and opting pages out with `llms: false`.'
+    excludes: 'The LLM-training implications of your output or MCP server generation.'
+    front_matter_section: 'configuration'
+    front_matter_order: 60
+    front_matter_uid: 'how-to.configuration.llms-txt'
+    front_matter_is_draft: true
     evidence:
       examples: []
+      production_files: []
+      production_symbols: []
       architecture:
-        - _research/site-architecture.md
+        - '_research/site-architecture.md'
       blockers: []
-    known_issues:
-      - Contains unresolved "link once the Reference page exists" text
+    links:
+      internal:
+        - '/reference/front-matter/ifrontmatter'
+        - '/reference/options/auxiliary-options'
+      xrefs: []
     acceptance_checks:
-      - Keeps to one question about union-typed pipeline design
-      - Resolves placeholder future-link text
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
 
-  - path: Pennington.Docs/Content/explanation/core/dev-vs-build.md
-    url: /explanation/core/dev-vs-build
-    quadrant: explanation
-    status: drafting
-    scope_source: docs-toc.md
+  - path: 'Pennington.Docs/Content/how-to/configuration/localization.md'
+    page_title: 'Enable multiple locales'
+    url: '/how-to/configuration/localization'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Populating `LocalizationOptions` with `DefaultLocale` and `Locales`, organizing content in locale subdirectories, adding UI translations, and wiring `UsePenningtonLocaleRouting`.'
+    excludes: 'Implementing a custom culture provider — the built-in `PenningtonUrlRequestCultureProvider` is explained in Reference.'
+    front_matter_section: 'configuration'
+    front_matter_order: 50
+    front_matter_uid: 'how-to.configuration.localization'
+    front_matter_is_draft: true
     evidence:
       examples: []
+      production_files: []
+      production_symbols: []
       architecture:
-        - _research/site-architecture.md
+        - '_research/site-architecture.md'
       blockers: []
+    links:
+      internal:
+        - '/explanation/localization/urls-and-fallback'
+        - '/reference/options/localization-options'
+        - '/reference/options/translations'
+      xrefs: []
     acceptance_checks:
-      - Explains unified code path without drifting into CLI reference details
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/configuration/monorail-css.md'
+    page_title: 'Customize MonorailCSS'
+    url: '/how-to/configuration/monorail-css'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Swap between `NamedColorScheme` and `AlgorithmicColorScheme`, inject `CustomCssFrameworkSettings`, add `ExtraStyles`, and configure `ContentPaths` for class collection.'
+    excludes: 'The `CssClassCollectorProcessor` internals (Explanation) or writing a standalone color scheme (advanced customization).'
+    front_matter_section: 'configuration'
+    front_matter_order: 30
+    front_matter_uid: 'how-to.configuration.monorail-css'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/rendering/monorail-css'
+        - '/reference/host/extensions'
+        - '/reference/options/monorail-css-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/configuration/multiple-sources.md'
+    page_title: 'Use multiple content sources'
+    url: '/how-to/configuration/multiple-sources'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Chaining `PenningtonOptions.AddMarkdownContent<TFrontMatter>` calls with different `ContentPath`/`BasePageUrl`/`Section`/`ExcludePaths`, and how overlap detection warns on misconfiguration.'
+    excludes: 'Implementing a non-markdown `IContentService` — see the extensibility section.'
+    front_matter_section: 'configuration'
+    front_matter_order: 10
+    front_matter_uid: 'how-to.configuration.multiple-sources'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'M:MultipleContentSourceExample.ContentHelper.GetNavigationAsync(System.String,System.String)'
+        - 'T:MultipleContentSourceExample.BlogFrontMatter'
+        - 'T:MultipleContentSourceExample.ContentFrontMatter'
+        - 'T:MultipleContentSourceExample.ContentHelper'
+        - 'T:MultipleContentSourceExample.DocsFrontMatter'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/content-pipeline'
+        - '/how-to/content-authoring/front-matter'
+        - '/reference/options/markdown-content-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/configuration/rss.md'
+    page_title: 'Generate RSS feeds'
+    url: '/how-to/configuration/rss'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Enable RSS on a blog source, populate `BlogFrontMatter.Date`, and find where the feed is written.'
+    excludes: 'JSON Feed, Atom format selection, and multi-source feed merging.'
+    front_matter_section: 'configuration'
+    front_matter_order: 70
+    front_matter_uid: 'how-to.configuration.rss'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'T:AlexBlogExample.Program'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/blogsite/routes'
+        - '/reference/front-matter/built-in-types'
+        - '/reference/options/blogsite-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/configuration/search.md'
+    page_title: 'Configure search indexing'
+    url: '/how-to/configuration/search'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Tuning `SearchIndexOptions.ContentSelector`, setting `DefaultPriority`, opting pages out via `search: false` or Razor-page sidecar metadata, and per-locale output files.'
+    excludes: 'Replacing the FlexSearch client or building a server-side search backend.'
+    front_matter_section: 'configuration'
+    front_matter_order: 20
+    front_matter_uid: 'how-to.configuration.search'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'T:SearchExample.Services.RandomContentService'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/extension-points/content-pipeline'
+        - '/reference/options/auxiliary-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/configuration/sitemap.md'
+    page_title: 'Generate a sitemap'
+    url: '/how-to/configuration/sitemap'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Enabling sitemap generation, the `/sitemap.xml` route, and how drafts/redirects are filtered.'
+    excludes: 'Submitting the sitemap to search consoles.'
+    front_matter_section: 'configuration'
+    front_matter_order: 80
+    front_matter_uid: 'how-to.configuration.sitemap'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/dev-vs-build'
+        - '/how-to/deployment/static-build'
+        - '/reference/options/blogsite-options'
+        - '/reference/options/pennington-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/content-authoring/alerts.md'
+    page_title: 'Add alerts and callouts'
+    url: '/how-to/content-authoring/alerts'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'GitHub-style alert syntax (`> [!NOTE]`, `[!TIP]`, `[!CAUTION]`, `[!WARNING]`, `[!IMPORTANT]`) and how they render.'
+    excludes: 'Custom alert styles, Mermaid diagrams, or the `<Card>` component — those live on separate pages.'
+    front_matter_section: 'content-authoring'
+    front_matter_order: 70
+    front_matter_uid: 'how-to.content-authoring.alerts'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/rendering/monorail-css'
+        - '/how-to/content-authoring/front-matter'
+        - '/reference/markdown/extensions'
+        - '/reference/monorailcss/options'
+        - '/tutorials/getting-started/first-site'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/content-authoring/code-annotations.md'
+    page_title: 'Annotate code blocks'
+    url: '/how-to/content-authoring/code-annotations'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The `[!code highlight]`, `[!code ++]` / `[!code --]`, `[!code focus]`, and `[!code error]` / `[!code warning]` trailing-comment directives on fenced blocks.'
+    excludes: 'Working with code-block preprocessors — see the extensibility how-to.'
+    front_matter_section: 'content-authoring'
+    front_matter_order: 60
+    front_matter_uid: 'how-to.content-authoring.code-annotations'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/rendering/highlighting'
+        - '/how-to/extensibility/code-block-preprocessor'
+        - '/reference/markdown/code-block-args'
+        - '/tutorials/getting-started/first-site'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/content-authoring/cross-references.md'
+    page_title: 'Cross-reference pages by uid'
+    url: '/how-to/content-authoring/cross-references'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Setting `uid:` in front matter, linking via `<xref:uid>` or `[text](xref:uid)`, and letting `XrefHtmlRewriter` resolve links at request/build time.'
+    excludes: 'Cross-referencing Roslyn symbols by xmldocid — that is a planned separate package (`Pennington.Roslyn`).'
+    front_matter_section: 'content-authoring'
+    front_matter_order: 100
+    front_matter_uid: 'how-to.content-authoring.cross-references'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/BeaconDocsExample/Content/api/index.md'
+        - 'examples/BeaconDocsExample/Content/guides/configuration.md'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers:
+        - '_research/blockers.md'
+    links:
+      internal:
+        - '/explanation/routing/cross-references'
+        - '/reference/extension-points/response-processing'
+        - '/reference/front-matter/keys'
+      xrefs:
+        - 'beacon.api-reference'
+        - 'uid'
+    acceptance_checks:
+      - 'Documents only the supported syntaxes: <xref:uid> and [text](xref:uid)'
+      - 'Does not mention unsupported element syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/content-authoring/customize-sidebar.md'
+    page_title: 'Customize the sidebar'
+    url: '/how-to/content-authoring/customize-sidebar'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Reordering pages with `order:`, promoting a page to be its section''s landing, overriding the auto-derived section title, and hiding a page from navigation.'
+    excludes: 'Replacing `TableOfContentsNavigation` with a custom component — that lives under the extensibility quadrant.'
+    front_matter_section: 'content-authoring'
+    front_matter_order: 30
+    front_matter_uid: 'how-to.content-authoring.customize-sidebar'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/routing/navigation-tree'
+        - '/how-to/content-authoring/drafts-tags-ordering'
+        - '/reference/front-matter/keys'
+        - '/reference/ui/navigation'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/content-authoring/diagrams.md'
+    page_title: 'Embed diagrams'
+    url: '/how-to/content-authoring/diagrams'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Authoring Mermaid blocks with `mermaid` fences and how the diagram renders client-side with theme awareness.'
+    excludes: 'Server-side diagram rendering, non-Mermaid diagram systems, or embedding raw SVG.'
+    front_matter_section: 'content-authoring'
+    front_matter_order: 80
+    front_matter_uid: 'how-to.content-authoring.diagrams'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/rendering/monorail-css'
+        - '/reference/markdown/extensions'
+        - '/reference/ui/utility'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/content-authoring/drafts-tags-ordering.md'
+    page_title: 'Manage drafts, tags, and ordering'
+    url: '/how-to/content-authoring/drafts-tags-ordering'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Hiding pages with `isDraft: true`, using `tags` for grouping, and using `order` to control sidebar position within a section.'
+    excludes: 'Tag-index pages or custom taxonomy generation — those require a custom content service.'
+    front_matter_section: 'content-authoring'
+    front_matter_order: 20
+    front_matter_uid: 'how-to.content-authoring.drafts-tags-ordering'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'T:MultipleContentSourceExample.DocsFrontMatter'
+        - 'T:UserInterfaceExample.DocsFrontMatter'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/front-matter-capabilities'
+        - '/reference/front-matter/keys'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/content-authoring/front-matter.md'
+    page_title: 'Work with front matter'
+    url: '/how-to/content-authoring/front-matter'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Declaring front matter in YAML, picking a built-in front-matter record that fits, and defining your own.'
+    excludes: 'The full key catalog — see [front matter key reference](/reference/front-matter/keys). The capability-interface architecture belongs in [Explanation](/explanation/core/front-matter-capabilities).'
+    front_matter_section: 'content-authoring'
+    front_matter_order: 10
+    front_matter_uid: 'how-to.content-authoring.front-matter'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/ForgePortalExample/PageFrontMatter.cs'
+        - 'examples/MultipleContentSourceExample/BlogFrontMatter.cs'
+        - 'examples/MultipleContentSourceExample/DocsFrontMatter.cs'
+        - 'T:ForgePortalExample.PageFrontMatter'
+        - 'T:MultipleContentSourceExample.DocsFrontMatter'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/front-matter-capabilities'
+        - '/reference/front-matter/keys'
+      xrefs:
+        - 'your-uid'
+    acceptance_checks:
+      - 'Keeps explanation of capability architecture out of the recipe'
+      - 'Links to reference and explanation neighbors'
+
+  - path: 'Pennington.Docs/Content/how-to/content-authoring/images-and-assets.md'
+    page_title: 'Place images and static assets'
+    url: '/how-to/content-authoring/images-and-assets'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Placing image and binary assets, referencing them from markdown, the two directory patterns (`Content/`-colocated vs `wwwroot/`-shared), and how each lands in `output/`.'
+    excludes: 'Image optimization pipelines, responsive-image helpers, or CDN wiring — none of those are built-in.'
+    front_matter_section: 'content-authoring'
+    front_matter_order: 40
+    front_matter_uid: 'how-to.content-authoring.images-and-assets'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/how-to/content-authoring/linking'
+        - '/logo.svg'
+        - '/reference/diagnostics/build-report'
+        - '/reference/options/markdown-content-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/content-authoring/linking.md'
+    page_title: 'Link between pages and assets'
+    url: '/how-to/content-authoring/linking'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Relative links, anchor fragments, external links, and how `BaseUrlHtmlRewriter` handles sub-path deployments.'
+    excludes: 'Cross-references by `uid` (see [cross-references](/how-to/content-authoring/cross-references)) or programmatic URL construction (see Reference → Routing).'
+    front_matter_section: 'content-authoring'
+    front_matter_order: 110
+    front_matter_uid: 'how-to.content-authoring.linking'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '//cdn.example.com/x.js'
+        - '/explanation/routing/url-paths'
+        - '/how-to/content-authoring/cross-references'
+        - '/how-to/content-authoring/front-matter'
+        - '/reference/extension-points/response-processing'
+        - '/reference/extension-points/routing'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/content-authoring/redirects.md'
+    page_title: 'Configure redirects'
+    url: '/how-to/content-authoring/redirects'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Setting `redirectUrl:` in `DocSiteFrontMatter` to emit a meta-refresh stub page with `noindex`.'
+    excludes: 'HTTP 301 responses at the hosting layer or batch redirects from a sidecar file.'
+    front_matter_section: 'content-authoring'
+    front_matter_order: 120
+    front_matter_uid: 'how-to.content-authoring.redirects'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'T:MultipleContentSourceExample.DocsFrontMatter'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/front-matter-capabilities'
+        - '/getting-started/'
+        - '/reference/front-matter/keys'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/content-authoring/tabbed-code.md'
+    page_title: 'Create tabbed code groups'
+    url: '/how-to/content-authoring/tabbed-code'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Marking a fenced block with `tabs=true title="…"`, grouping adjacent blocks into a single tabbed widget, and customizing the rendered CSS classes via `TabbedCodeBlockRenderOptions`.'
+    excludes: 'The UI-component `<Tabs>` equivalent from Pennington.UI or per-tab analytics.'
+    front_matter_section: 'content-authoring'
+    front_matter_order: 50
+    front_matter_uid: 'how-to.content-authoring.tabbed-code'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/rendering/highlighting'
+        - '/reference/markdown/code-block-args'
+        - '/reference/markdown/extensions'
+        - '/tutorials/getting-started/first-site'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/content-authoring/ui-components-in-markdown.md'
+    page_title: 'Use UI components inside markdown'
+    url: '/how-to/content-authoring/ui-components-in-markdown'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Using Pennington.UI components such as `LinkCard`, `CardGrid`, `Badge`, `Steps`, `Step`, and `BigTable` directly inside markdown through Mdazor-backed rendering.'
+    excludes: 'Mdazor internals or every detail of custom component authoring. This page stays focused on the built-in content components and the registration shape you need on custom hosts.'
+    front_matter_section: 'content-authoring'
+    front_matter_order: 90
+    front_matter_uid: 'how-to.content-authoring.ui-components-in-markdown'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/BeaconDocsExample/Content/index.md'
+      production_files:
+        - 'docs/Pennington.Docs/Program.cs'
+        - 'src/Pennington.BlogSite/BlogSiteServiceExtensions.cs'
+        - 'src/Pennington.DocSite/DocSiteServiceExtensions.cs'
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/how-to/extensibility/override-docsite-components'
+        - '/reference/ui/content'
+        - '/reference/ui/navigation'
+        - '/reference/ui/utility'
+      xrefs: []
+    acceptance_checks:
+      - 'Explains that DocSite and BlogSite register the built-in content components for Mdazor-backed markdown'
+      - 'Shows the AddMdazorComponent registration shape for custom AddPennington hosts'
+
+  - path: 'Pennington.Docs/Content/how-to/deployment/adapt-for-other-hosts.md'
+    page_title: 'Adapt the deploy workflow for other hosts'
+    url: '/how-to/deployment/adapt-for-other-hosts'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'How to port the [GitHub Pages recipe](/how-to/deployment/github-pages) to Azure Static Web Apps, Cloudflare Pages, and Netlify — the shared shape, a per-host delta table, and one short snippet per host.'
+    excludes: 'Full walkthroughs of each provider''s dashboard, Azure Functions API backends, Cloudflare Workers in front of the static output, or Netlify Functions — Pennington emits a static site and stops there.'
+    front_matter_section: 'deployment'
+    front_matter_order: 30
+    front_matter_uid: 'how-to.deployment.adapt-for-other-hosts'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/how-to/deployment/base-url'
+        - '/how-to/deployment/github-pages'
+        - '/how-to/deployment/static-build'
+        - '/reference/options/auxiliary-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/deployment/base-url.md'
+    page_title: 'Host under a sub-path (base URL)'
+    url: '/how-to/deployment/base-url'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Passing `[baseUrl]` to the build command so internal anchors, assets, and scripts are prefixed automatically.'
+    excludes: 'Client-side-router base handling outside the built-in SPA island system.'
+    front_matter_section: 'deployment'
+    front_matter_order: 50
+    front_matter_uid: 'how-to.deployment.base-url'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/dev-vs-build'
+        - '/how-to/deployment/adapt-for-other-hosts'
+        - '/how-to/deployment/github-pages'
+        - '/how-to/deployment/static-build'
+        - '/reference/options/auxiliary-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/deployment/github-pages.md'
+    page_title: 'Deploy to GitHub Pages'
+    url: '/how-to/deployment/github-pages'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'A ready-to-copy GitHub Actions workflow that runs the Pennington static build and publishes the output to GitHub Pages, including the `.nojekyll` marker. This is the canonical full deploy recipe; [Adapt the deploy workflow for other hosts](/how-to/deployment/adapt-for-other-hosts) reuses its shape for Azure Static Web Apps, Cloudflare Pages, and Netlify.'
+    excludes: 'Custom-domain DNS setup beyond ticking the GitHub Pages checkbox — point your DNS at GitHub''s documented Pages IPs yourself.'
+    front_matter_section: 'deployment'
+    front_matter_order: 20
+    front_matter_uid: 'how-to.deployment.github-pages'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/dev-vs-build'
+        - '/how-to/deployment/adapt-for-other-hosts'
+        - '/how-to/deployment/base-url'
+        - '/how-to/deployment/static-build'
+        - '/reference/host/cli'
+        - '/tutorials/getting-started/first-site'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/deployment/self-host.md'
+    page_title: 'Self-host behind Nginx or IIS'
+    url: '/how-to/deployment/self-host'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Serving the `output/` directory as static files, setting default-extension rules, and handling 404s with the generated `404.html`.'
+    excludes: 'Running the live Pennington app as an origin (a valid but separate topic).'
+    front_matter_section: 'deployment'
+    front_matter_order: 40
+    front_matter_uid: 'how-to.deployment.self-host'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/dev-vs-build'
+        - '/how-to/deployment/static-build'
+        - '/reference/options/auxiliary-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/deployment/static-build.md'
+    page_title: 'Build a static site'
+    url: '/how-to/deployment/static-build'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Running the app with `build [baseUrl] [outputDirectory]`, what `OutputGenerationService` crawls, and reading the `BuildReport` for broken links and failed pages.'
+    excludes: 'Platform-specific upload steps — see [Deploy to GitHub Pages](/how-to/deployment/github-pages) and [Adapt the deploy workflow for other hosts](/how-to/deployment/adapt-for-other-hosts).'
+    front_matter_section: 'deployment'
+    front_matter_order: 10
+    front_matter_uid: 'how-to.deployment.static-build'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/dev-vs-build'
+        - '/how-to/deployment/adapt-for-other-hosts'
+        - '/how-to/deployment/github-pages'
+        - '/reference/diagnostics/build-report'
+        - '/reference/options/auxiliary-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/extensibility/code-block-preprocessor.md'
+    page_title: 'Register a code-block preprocessor'
+    url: '/how-to/extensibility/code-block-preprocessor'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The `ICodeBlockPreprocessor` contract, how priority and `CodeBlockPreprocessResult` work, and how Pennington wires the shipped Roslyn preprocessor for `:xmldocid`, `:path`, and `:xmldocid-diff`.'
+    excludes: 'Writing a new `ICodeHighlighter` (see the next how-to) or a standalone example project for a custom preprocessor. The docs site does not ship one yet, so this page grounds on the production contract and the built-in Roslyn implementation.'
+    front_matter_section: 'extensibility'
+    front_matter_order: 20
+    front_matter_uid: 'how-to.extensibility.code-block-preprocessor'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/RoslynIntegrationExample/Program.cs'
+      production_files: []
+      production_symbols:
+        - 'M:Pennington.Roslyn.Preprocessing.RoslynCodeBlockPreprocessor.TryProcess(System.String,System.String)'
+        - 'P:Pennington.Roslyn.Preprocessing.RoslynCodeBlockPreprocessor.Priority'
+        - 'T:Pennington.Markdown.Extensions.CodeBlockPreprocessResult'
+        - 'T:Pennington.Markdown.Extensions.ICodeBlockPreprocessor'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/rendering/highlighting'
+        - '/how-to/extensibility/custom-highlighter'
+        - '/reference/extension-points/highlighting'
+        - '/tutorials/beyond-basics/connect-roslyn'
+      xrefs: []
+    acceptance_checks:
+      - 'Uses the shipped Roslyn preprocessor as the concrete grounding example'
+      - 'Does not fabricate a user-authored example project that does not exist'
+
+  - path: 'Pennington.Docs/Content/how-to/extensibility/custom-content-service.md'
+    page_title: 'Implement a custom IContentService'
+    url: '/how-to/extensibility/custom-content-service'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Discovering custom sources, yielding `DiscoveredItem`s and `ContentToCopy`/`ContentToCreate`, and emitting `ContentTocItem`s and cross-references.'
+    excludes: 'Parsing/rendering — those are separate interfaces covered below.'
+    front_matter_section: 'extensibility'
+    front_matter_order: 10
+    front_matter_uid: 'how-to.extensibility.custom-content-service'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'M:ForgePortalExample.ReleaseNotesContentService.DiscoverAsync'
+        - 'M:ForgePortalExample.ReleaseNotesContentService.GetCrossReferencesAsync'
+        - 'M:RecipeExample.RecipeContentService.GetContentTocEntriesAsync'
+        - 'M:YogaStudioExample.Services.YogaRouteContentService.DiscoverAsync'
+        - 'T:RecipeExample.RecipeContentService'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/content-pipeline'
+        - '/how-to/content-authoring/front-matter'
+        - '/reference/extension-points/content-pipeline'
+        - '/reference/extension-points/routing'
+      xrefs:
+        - 'uid'
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/extensibility/custom-highlighter.md'
+    page_title: 'Add a custom syntax highlighter'
+    url: '/how-to/extensibility/custom-highlighter'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Implement `ICodeHighlighter`, declare `SupportedLanguages`, set priority, and register via `HighlightingOptions.AddHighlighter`.'
+    excludes: 'Authoring TextMate grammars from scratch — see the upstream TextMateSharp docs.'
+    front_matter_section: 'extensibility'
+    front_matter_order: 30
+    front_matter_uid: 'how-to.extensibility.custom-highlighter'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'P:ForgePortalExample.PipelineHighlighter.Priority'
+        - 'P:ForgePortalExample.PipelineHighlighter.SupportedLanguages'
+        - 'T:ForgePortalExample.PipelineHighlighter'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/rendering/highlighting'
+        - '/reference/extension-points/highlighting'
+        - '/reference/options/auxiliary-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/extensibility/html-rewriter.md'
+    page_title: 'Write an HTML rewriter'
+    url: '/how-to/extensibility/html-rewriter'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Implementing `IHtmlResponseRewriter`, when to use `PreParseAsync` vs `ApplyAsync`, and how rewriters share one AngleSharp pass.'
+    excludes: 'Creating brand-new Markdig extensions.'
+    front_matter_section: 'extensibility'
+    front_matter_order: 50
+    front_matter_uid: 'how-to.extensibility.html-rewriter'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Infrastructure.BaseUrlHtmlRewriter'
+        - 'T:Pennington.Infrastructure.IHtmlResponseRewriter'
+        - 'T:Pennington.Infrastructure.XrefHtmlRewriter'
+        - 'T:Pennington.Localization.LocaleLinkHtmlRewriter'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/response-processing'
+        - '/reference/extension-points/response-processing'
+      xrefs:
+        - 'uid'
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/extensibility/island-renderer.md'
+    page_title: 'Register an island renderer'
+    url: '/how-to/extensibility/island-renderer'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Implementing `IIslandRenderer` (or subclassing `RazorIslandRenderer`), configuring `IslandsOptions.Register<T>("islandName")`, and adding matching `data-spa-island` markup.'
+    excludes: 'The full SPA data envelope — see Explanation.'
+    front_matter_section: 'extensibility'
+    front_matter_order: 60
+    front_matter_uid: 'how-to.extensibility.island-renderer'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'M:SpaNavigationExample.Program.Main'
+        - 'T:SpaNavigationTutorialExample.Islands.ArticleIslandRenderer'
+        - 'T:SpaNavigationTutorialExample.Islands.Components.ArticleContent'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/spa/islands'
+        - '/reference/extension-points/islands'
+        - '/reference/options/auxiliary-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/extensibility/override-docsite-components.md'
+    page_title: 'Customize DocSite layouts and components'
+    url: '/how-to/extensibility/override-docsite-components'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The honest surface DocSite exposes for customization: `AdditionalHtmlHeadContent`, `ExtraStyles`, the string-HTML slots (`HeaderIcon`, `HeaderContent`, `FooterContent`), overriding specific URLs via `AdditionalRoutingAssemblies`, and replacing the SPA `"content"` island renderer for client-side navigation.'
+    excludes: 'Forking DocSite wholesale — if you need to swap Razor components inside `MainLayout.razor` (`TableOfContentsNavigation`, `OutlineNavigation`, `LanguageSwitcher`), drop `AddDocSite`/`UseDocSite` and compose the pieces yourself with plain `AddPennington` + `UsePennington`. There is no DI seam for substituting those components.'
+    front_matter_section: 'extensibility'
+    front_matter_order: 70
+    front_matter_uid: 'how-to.extensibility.override-docsite-components'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/SearchExample/Program.cs'
+        - 'examples/SearchExample/Services/Random.razor'
+        - 'T:SpaNavigationExample.Slots.RecipeContentSlotRenderer'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/response-processing'
+        - '/reference/extension-points/islands'
+        - '/reference/options/docsite-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/how-to/extensibility/response-processor.md'
+    page_title: 'Write a response processor'
+    url: '/how-to/extensibility/response-processor'
+    quadrant: 'how-to'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Implementing `IResponseProcessor`, deciding an `Order`, using `ShouldProcess` to gate work, and mutating the HTTP response body.'
+    excludes: 'HTML-specific rewriting — prefer `IHtmlResponseRewriter` (next).'
+    front_matter_section: 'extensibility'
+    front_matter_order: 40
+    front_matter_uid: 'how-to.extensibility.response-processor'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'M:ForgePortalExample.FeedbackWidgetProcessor.ProcessAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)'
+        - 'M:ForgePortalExample.FeedbackWidgetProcessor.ShouldProcess(Microsoft.AspNetCore.Http.HttpContext)'
+        - 'T:ForgePortalExample.FeedbackWidgetProcessor'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/response-processing'
+        - '/how-to/extensibility/html-rewriter'
+        - '/reference/extension-points/response-processing'
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps to task-oriented recipe scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/reference/blogsite/routes.md'
+    page_title: 'Built-in BlogSite routes'
+    url: '/reference/blogsite/routes'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The routes the `Pennington.BlogSite` package ships out of the box — `/`, `/archive`, `/tags` and its alias `/topics`, `/tags/{TagEncodedName}` and its alias `/topics/{TagEncodedName}`, `/blog/{*fileName}`, and `/rss.xml` when `EnableRss` is on — plus which `BlogSiteOptions` knobs each route honors.'
+    excludes: 'Customizing the Razor page bodies themselves (see the "Customize DocSite layouts and components" how-to, which applies symmetrically to BlogSite).'
+    front_matter_section: 'blogsite'
+    front_matter_order: 10
+    front_matter_uid: 'reference.blogsite.routes'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.BlogSite.BlogSiteServiceExtensions'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/blogsite/social-icons'
+        - '/reference/options/blogsite-options'
+        - '/tutorials/blogsite/scaffold'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/blogsite/social-icons.md'
+    page_title: 'Built-in SocialIcons RenderFragments'
+    url: '/reference/blogsite/social-icons'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The four static `RenderFragment` fields on `Pennington.BlogSite.Components.SocialIcons` — `GithubIcon`, `LinkedInIcon`, `BlueskyIcon`, `MastodonIcon` — their SVG viewBoxes, the `currentColor` / `stroke` conventions they follow, and how to reference them directly (not as components) when populating `SocialLink.Icon`.'
+    excludes: 'Authoring new icon fragments — that is a Razor-component authoring topic (see Extensibility).'
+    front_matter_section: 'blogsite'
+    front_matter_order: 20
+    front_matter_uid: 'reference.blogsite.social-icons'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/how-to/configuration/blogsite-socials'
+        - '/reference/blogsite/routes'
+        - '/reference/options/blogsite-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/diagnostics/build-report.md'
+    page_title: 'Build report fields'
+    url: '/reference/diagnostics/build-report'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: '`BuildReport`, `BuildDiagnostic`, `BrokenLink`, severity levels, and how to read `Duration`/`GeneratedPages`/`FailedPages`.'
+    excludes: 'What each warning means at the per-rule level.'
+    front_matter_section: 'diagnostics'
+    front_matter_order: 10
+    front_matter_uid: 'reference.diagnostics.build-report'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'M:Pennington.Generation.BuildReport.ToFormattedString'
+        - 'M:Pennington.Generation.BuildReport.WriteTo(System.IO.TextWriter)'
+        - 'T:Pennington.Diagnostics.DiagnosticSeverity'
+        - 'T:Pennington.Generation.BrokenLink'
+        - 'T:Pennington.Generation.BuildDiagnostic'
+        - 'T:Pennington.Generation.BuildReport'
+        - 'T:Pennington.Generation.LinkType'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/dev-vs-build'
+        - '/how-to/deployment/static-build'
+        - '/reference/options/pennington-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/diagnostics/request-context.md'
+    page_title: 'Request-scoped diagnostics'
+    url: '/reference/diagnostics/request-context'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: '`DiagnosticContext`, `Diagnostic`, `DiagnosticSeverity`, and how the dev-mode overlay surfaces them.'
+    excludes: 'Wiring custom log sinks.'
+    front_matter_section: 'diagnostics'
+    front_matter_order: 20
+    front_matter_uid: 'reference.diagnostics.request-context'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'M:Pennington.Diagnostics.DiagnosticContext.Add(Pennington.Diagnostics.Diagnostic)'
+        - 'M:Pennington.Diagnostics.DiagnosticContext.AddError(System.String,System.String)'
+        - 'M:Pennington.Diagnostics.DiagnosticContext.AddInfo(System.String,System.String)'
+        - 'M:Pennington.Diagnostics.DiagnosticContext.AddWarning(System.String,System.String)'
+        - 'P:Pennington.Diagnostics.DiagnosticContext.Diagnostics'
+        - 'P:Pennington.Diagnostics.DiagnosticContext.HasAny'
+        - 'P:Pennington.Diagnostics.DiagnosticContext.HasErrors'
+        - 'T:Pennington.Diagnostics.Diagnostic'
+        - 'T:Pennington.Diagnostics.DiagnosticContext'
+        - 'T:Pennington.Diagnostics.DiagnosticSeverity'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/diagnostics/build-report'
+        - '/reference/extension-points/response-processing'
+        - '/reference/host/extensions'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/extension-points/content-pipeline.md'
+    page_title: 'Content pipeline interfaces'
+    url: '/reference/extension-points/content-pipeline'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: '`IContentService`, `IContentParser`, `IContentRenderer`, `IContentPipeline`, and the `ContentItem`/`ContentSource` union types with every case.'
+    excludes: 'Implementation examples — see How-Tos.'
+    front_matter_section: 'extension-points'
+    front_matter_order: 10
+    front_matter_uid: 'reference.extension-points.content-pipeline'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Content.IContentService'
+        - 'T:Pennington.Pipeline.ContentItem'
+        - 'T:Pennington.Pipeline.ContentSource'
+        - 'T:Pennington.Pipeline.IContentParser'
+        - 'T:Pennington.Pipeline.IContentPipeline'
+        - 'T:Pennington.Pipeline.IContentRenderer'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/how-to/extensibility/custom-content-service'
+        - '/reference/front-matter/ifrontmatter'
+        - '/reference/options/pennington-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/extension-points/highlighting.md'
+    page_title: 'Highlighting interfaces'
+    url: '/reference/extension-points/highlighting'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Covers `ICodeHighlighter`, `ICodeBlockPreprocessor`, `HighlightingService`, and `TextMateLanguageRegistry`.'
+    excludes: 'Does not cover: writing TextMate grammars.'
+    front_matter_section: 'extension-points'
+    front_matter_order: 50
+    front_matter_uid: 'reference.extension-points.highlighting'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'T:ForgePortalExample.PipelineHighlighter'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/rendering/highlighting'
+        - '/how-to/extensibility/custom-highlighter'
+        - '/reference/options/auxiliary-options'
+        - '/reference/options/pennington-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/extension-points/islands.md'
+    page_title: 'Island rendering interfaces'
+    url: '/reference/extension-points/islands'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Covers: `IIslandRenderer`, `RazorIslandRenderer<T>`, `SpaEnvelope`, `RenderContext`, and the `data-spa-*` attribute surface.'
+    excludes: 'Does not cover: the SPA client-side script (see Explanation).'
+    front_matter_section: 'extension-points'
+    front_matter_order: 40
+    front_matter_uid: 'reference.extension-points.islands'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'T:SpaNavigationTutorialExample.Islands.ArticleIslandRenderer'
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Islands.IIslandRenderer'
+        - 'T:Pennington.Islands.RazorIslandRenderer`1'
+        - 'T:Pennington.Islands.RenderContext'
+        - 'T:Pennington.Islands.SpaEnvelope'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/spa/islands'
+        - '/how-to/extensibility/island-renderer'
+        - '/reference/host/extensions'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/extension-points/navigation.md'
+    page_title: 'Navigation types'
+    url: '/reference/extension-points/navigation'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: '`NavigationBuilder`, `NavigationInfo`, `NavigationTreeItem`, and `BreadcrumbItem`.'
+    excludes: 'Replacing the default sidebar is a UI-component topic covered separately.'
+    front_matter_section: 'extension-points'
+    front_matter_order: 60
+    front_matter_uid: 'reference.extension-points.navigation'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'M:Pennington.Navigation.NavigationBuilder.BuildNavigationInfo(System.Collections.Generic.IReadOnlyList{Pennington.Content.ContentTocItem},Pennington.Routing.ContentRoute,System.String)'
+        - 'M:Pennington.Navigation.NavigationBuilder.BuildTree(System.Collections.Generic.IReadOnlyList{Pennington.Content.ContentTocItem},Pennington.Routing.ContentRoute,System.String)'
+        - 'T:Pennington.Navigation.BreadcrumbItem'
+        - 'T:Pennington.Navigation.NavigationBuilder'
+        - 'T:Pennington.Navigation.NavigationInfo'
+        - 'T:Pennington.Navigation.NavigationTreeItem'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/extension-points/content-pipeline'
+        - '/reference/extension-points/routing'
+        - '/reference/ui/navigation'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/extension-points/response-processing.md'
+    page_title: 'Response processing interfaces'
+    url: '/reference/extension-points/response-processing'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The `IResponseProcessor` and `IHtmlResponseRewriter` contracts, their execution order, and the three built-in HTML rewriters (`XrefHtmlRewriter`, `LocaleLinkHtmlRewriter`, `BaseUrlHtmlRewriter`).'
+    excludes: 'ASP.NET middleware ordering at large — see the ASP.NET Core documentation.'
+    front_matter_section: 'extension-points'
+    front_matter_order: 30
+    front_matter_uid: 'reference.extension-points.response-processing'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Infrastructure.IHtmlResponseRewriter'
+        - 'T:Pennington.Infrastructure.IResponseProcessor'
+        - 'T:Pennington.Infrastructure.XrefHtmlRewriter'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/response-processing'
+        - '/reference/options/localization-options'
+        - '/reference/options/pennington-options'
+      xrefs:
+        - 'uid'
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/extension-points/routing.md'
+    page_title: 'Routing types'
+    url: '/reference/extension-points/routing'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: '`UrlPath`, `FilePath`, `ContentRoute`, and `ContentRouteFactory` — constructors, operators, and helper methods (`EnsureLeadingSlash`, `WithBaseUrl`, `AbsoluteUrl`, `IsDefaultLocale`).'
+    excludes: 'The broader URL design philosophy (see Explanation).'
+    front_matter_section: 'extension-points'
+    front_matter_order: 20
+    front_matter_uid: 'reference.extension-points.routing'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'T:MultipleContentSourceExample.ContentFrontMatter'
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Routing.ContentRoute'
+        - 'T:Pennington.Routing.ContentRouteFactory'
+        - 'T:Pennington.Routing.FilePath'
+        - 'T:Pennington.Routing.UrlPath'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/routing/url-paths'
+        - '/reference/extension-points/content-pipeline'
+        - '/reference/extension-points/navigation'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/front-matter/built-in-types.md'
+    page_title: 'Built-in front-matter types'
+    url: '/reference/front-matter/built-in-types'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: '`DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, and `BlogSiteFrontMatter` — which keys each supports, which template wires each one, and when to choose which.'
+    excludes: 'Defining custom front-matter types (see How-Tos).'
+    front_matter_section: 'front-matter'
+    front_matter_order: 30
+    front_matter_uid: 'reference.front-matter.built-in-types'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.BlogSite.BlogSiteFrontMatter'
+        - 'T:Pennington.DocSite.DocSiteFrontMatter'
+        - 'T:Pennington.FrontMatter.BlogFrontMatter'
+        - 'T:Pennington.FrontMatter.DocFrontMatter'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/how-to/content-authoring/front-matter'
+        - '/reference/front-matter/ifrontmatter'
+        - '/reference/front-matter/keys'
+        - '/reference/options/blogsite-options'
+      xrefs:
+        - 'uid'
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/front-matter/ifrontmatter.md'
+    page_title: 'IFrontMatter and capability defaults'
+    url: '/reference/front-matter/ifrontmatter'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The `IFrontMatter` contract, which keys have default implementations, and how the consolidated capabilities (`ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`) surface as default members.'
+    excludes: 'The rationale for consolidation — see Explanation.'
+    front_matter_section: 'front-matter'
+    front_matter_order: 20
+    front_matter_uid: 'reference.front-matter.ifrontmatter'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'T:MultipleContentSourceExample.ContentFrontMatter'
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.FrontMatter.IFrontMatter'
+        - 'T:Pennington.FrontMatter.IOrderable'
+        - 'T:Pennington.FrontMatter.IRedirectable'
+        - 'T:Pennington.FrontMatter.ISectionable'
+        - 'T:Pennington.FrontMatter.ITaggable'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/front-matter-capabilities'
+        - '/reference/front-matter/built-in-types'
+        - '/reference/front-matter/keys'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/front-matter/keys.md'
+    page_title: 'Front matter key reference'
+    url: '/reference/front-matter/keys'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Every built-in key — `title`, `description`, `isDraft`, `search`, `llms`, `uid`, `date`, `tags`, `section`, `order`, `redirectUrl`, `author`, `series`, `repository` — with type, default, and applicable front-matter type.'
+    excludes: 'Authoring practice (see How-Tos).'
+    front_matter_section: 'front-matter'
+    front_matter_order: 10
+    front_matter_uid: 'reference.front-matter.keys'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/front-matter-capabilities'
+        - '/how-to/content-authoring/front-matter'
+        - '/reference/front-matter/built-in-types'
+        - '/reference/front-matter/ifrontmatter'
+      xrefs:
+        - 'uid'
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/host/cli.md'
+    page_title: 'CLI and build arguments'
+    url: '/reference/host/cli'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The `build [baseUrl] [outputDirectory]` arguments, dev-mode behavior, and environment variables consulted (e.g., `DOTNET_WATCH`).'
+    excludes: 'Platform-specific deployment (see How-Tos).'
+    front_matter_section: 'host'
+    front_matter_order: 20
+    front_matter_uid: 'reference.host.cli'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'M:Pennington.Generation.OutputOptions.FromArgs(System.String[])'
+        - 'M:Pennington.Infrastructure.PenningtonExtensions.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/dev-vs-build'
+        - '/reference/host/extensions'
+        - '/reference/options/auxiliary-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/host/extensions.md'
+    page_title: 'DI and middleware extension methods'
+    url: '/reference/host/extensions'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Every `IServiceCollection` and `WebApplication` extension method shipped by Pennington, grouped by package, with one-line purposes and links to the relevant options or reference pages.'
+    excludes: 'The underlying services these extensions wire up — see the individual reference pages for `PenningtonOptions`, `DocSiteOptions`, `BlogSiteOptions`, `MonorailCssOptions`, `RoslynOptions`, and the content pipeline.'
+    front_matter_section: 'host'
+    front_matter_order: 10
+    front_matter_uid: 'reference.host.extensions'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/AlexBlogExample/Program.cs'
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Infrastructure.PenningtonExtensions'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/core/dev-vs-build'
+        - '/reference/extension-points/islands'
+        - '/reference/options/blogsite-options'
+        - '/reference/options/docsite-options'
+        - '/reference/options/localization-options'
+        - '/reference/options/monorail-css-options'
+        - '/reference/options/pennington-options'
+        - '/reference/options/roslyn-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/markdown/code-block-args.md'
+    page_title: 'Code-block argument reference'
+    url: '/reference/markdown/code-block-args'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The fence info-string grammar — language token, key/value attributes, quoted values — and the line-annotation syntax (`{1,3}`, `{+1}`, `{-1}`, `{focus …}`, `{error …}`).'
+    excludes: 'Theme selection at render time (see Explanation).'
+    front_matter_section: 'markdown'
+    front_matter_order: 20
+    front_matter_uid: 'reference.markdown.code-block-args'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Markdown.Extensions.CodeBlockExtensions'
+        - 'T:Pennington.Markdown.Extensions.CodeTransformer'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/rendering/highlighting'
+        - '/how-to/content-authoring/code-annotations'
+        - '/how-to/content-authoring/tabbed-code'
+        - '/reference/markdown/extensions'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/markdown/extensions.md'
+    page_title: 'Markdown extensions catalog'
+    url: '/reference/markdown/extensions'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Every non-CommonMark feature in one scannable page — tabs, alerts, code annotations, cross-reference tags — with syntax, arguments, and a minimal example each.'
+    excludes: 'Markdig core syntax (tables, footnotes, etc.) — those follow Markdig''s own docs.'
+    front_matter_section: 'markdown'
+    front_matter_order: 10
+    front_matter_uid: 'reference.markdown.extensions'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/BeaconDocsExample/Content/guides/configuration.md'
+      production_files: []
+      production_symbols:
+        - 'M:Pennington.Markdown.MarkdownPipelineFactory.CreateWithExtensions(Pennington.Highlighting.HighlightingService,System.Func{Pennington.Markdown.Extensions.CodeHighlightRenderOptions},System.Func{Pennington.Markdown.Extensions.Tabs.TabbedCodeBlockRenderOptions},System.Collections.Generic.IEnumerable{Pennington.Markdown.Extensions.ICodeBlockPreprocessor})'
+        - 'T:Pennington.Markdown.MarkdownPipelineFactory'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/front-matter/'
+        - '/reference/options/'
+      xrefs:
+        - 'reference.markdown.extensions'
+        - 'uid'
+    acceptance_checks:
+      - 'Catalog includes only supported markdown extensions'
+      - 'Cross-reference syntax matches verified implementation'
+
+  - path: 'Pennington.Docs/Content/reference/options/auxiliary-options.md'
+    page_title: 'Auxiliary options classes'
+    url: '/reference/options/auxiliary-options'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The remaining option classes on `PenningtonOptions` with properties, defaults, and what each controls.'
+    excludes: 'MonorailCSS options (separate page).'
+    front_matter_section: 'options'
+    front_matter_order: 60
+    front_matter_uid: 'reference.options.auxiliary-options'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Generation.OutputOptions'
+        - 'T:Pennington.Infrastructure.HighlightingOptions'
+        - 'T:Pennington.Infrastructure.IslandsOptions'
+        - 'T:Pennington.LlmsTxt.LlmsTxtOptions'
+        - 'T:Pennington.Search.SearchIndexOptions'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/options/blogsite-options'
+        - '/reference/options/docsite-options'
+        - '/reference/options/pennington-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/options/blogsite-options.md'
+    page_title: 'BlogSiteOptions'
+    url: '/reference/options/blogsite-options'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Every property on `BlogSiteOptions` — metadata (`SiteTitle`, `Description`, `CanonicalBaseUrl`), content paths (`ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, `TagsPageUrl`), styling (`PrimaryHue`, `BaseColorName`, fonts, `ExtraStyles`, `AdditionalHtmlHeadContent`), author chrome (`AuthorName`, `AuthorBio`), homepage data (`HeroContent`, `MyWork`, `Socials`, `MainSiteLinks`), feature toggles (`EnableRss`, `EnableSitemap`), and integration hooks (`SolutionPath`, `SocialMediaImageUrlFactory`, `AdditionalRoutingAssemblies`) — plus the helper records `HeroContent`, `Project`, `SocialLink`, and `HeaderLink`.'
+    excludes: '`DocSiteOptions` or `PenningtonOptions` (preceding pages).'
+    front_matter_section: 'options'
+    front_matter_order: 30
+    front_matter_uid: 'reference.options.blogsite-options'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.BlogSite.BlogSiteOptions'
+        - 'T:Pennington.BlogSite.HeaderLink'
+        - 'T:Pennington.BlogSite.HeroContent'
+        - 'T:Pennington.BlogSite.Project'
+        - 'T:Pennington.BlogSite.SocialLink'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/options/docsite-options'
+        - '/reference/options/pennington-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/options/docsite-options.md'
+    page_title: 'DocSiteOptions'
+    url: '/reference/options/docsite-options'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Every property on `DocSiteOptions` (title, description, color scheme, fonts, header/footer, GitHub URL, social image, solution path, areas, etc.).'
+    excludes: '`PenningtonOptions` (the base) — see the preceding page.'
+    front_matter_section: 'options'
+    front_matter_order: 20
+    front_matter_uid: 'reference.options.docsite-options'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'F:Program.<Main>$'
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.DocSite.ContentArea'
+        - 'T:Pennington.DocSite.DocSiteOptions'
+        - 'T:Pennington.Infrastructure.FontPreload'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/options/blogsite-options'
+        - '/reference/options/monorail-css-options'
+        - '/reference/options/pennington-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/options/localization-options.md'
+    page_title: 'LocalizationOptions'
+    url: '/reference/options/localization-options'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: '`DefaultLocale`, `Locales`, `IsMultiLocale`, and the URL helpers `GetLocaleFromUrl`, `StripLocalePrefix`, `BuildLocaleUrl`, `GetAlternateLanguages`.'
+    excludes: 'Authoring translated content (see How-Tos).'
+    front_matter_section: 'options'
+    front_matter_order: 50
+    front_matter_uid: 'reference.options.localization-options'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'M:Pennington.Infrastructure.LocalizationOptions.AddLocale(System.String,Pennington.Localization.LocaleInfo)'
+        - 'M:Pennington.Infrastructure.LocalizationOptions.AddLocale(System.String,System.String)'
+        - 'M:Pennington.Infrastructure.LocalizationOptions.BuildLocaleUrl(System.String,System.String)'
+        - 'M:Pennington.Infrastructure.LocalizationOptions.GetAlternateLanguages(System.String)'
+        - 'M:Pennington.Infrastructure.LocalizationOptions.GetLocaleFromUrl(System.String)'
+        - 'M:Pennington.Infrastructure.LocalizationOptions.StripLocalePrefix(System.String,System.String)'
+        - 'T:Pennington.Infrastructure.AlternateLanguage'
+        - 'T:Pennington.Infrastructure.LocalizationOptions'
+        - 'T:Pennington.Localization.LocaleInfo'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/how-to/configuration/localization'
+        - '/reference/options/pennington-options'
+        - '/tutorials/beyond-basics/add-a-locale'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/options/markdown-content-options.md'
+    page_title: 'MarkdownContentOptions<T>'
+    url: '/reference/options/markdown-content-options'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: '`ContentPath`, `BasePageUrl`, `Section`, `ExcludePaths`, and their interaction with multi-source setups.'
+    excludes: 'The content-pipeline interfaces that consume the options.'
+    front_matter_section: 'options'
+    front_matter_order: 40
+    front_matter_uid: 'reference.options.markdown-content-options'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'M:MultipleContentSourceExample.Program.<Main>$(System.String[])'
+      production_files: []
+      production_symbols:
+        - 'M:Pennington.Infrastructure.PenningtonOptions.AddMarkdownContent``1(System.Action{Pennington.Infrastructure.MarkdownContentOptions})'
+        - 'T:Pennington.Infrastructure.MarkdownContentOptions'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/how-to/configuration/multiple-sources'
+        - '/reference/options/blogsite-options'
+        - '/reference/options/docsite-options'
+        - '/reference/options/pennington-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/options/monorail-css-options.md'
+    page_title: 'MonorailCssOptions'
+    url: '/reference/options/monorail-css-options'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: '`ColorScheme`, `CustomCssFrameworkSettings`, `ExtraStyles`, `ContentPaths`, and the two built-in color-scheme types (`NamedColorScheme`, `AlgorithmicColorScheme`).'
+    excludes: 'The generator internals — see Explanation.'
+    front_matter_section: 'options'
+    front_matter_order: 70
+    front_matter_uid: 'reference.options.monorail-css-options'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'M:Pennington.MonorailCss.AlgorithmicColorScheme.ApplyToTheme(MonorailCss.Theme.Theme)'
+        - 'M:Pennington.MonorailCss.IColorScheme.ApplyToTheme(MonorailCss.Theme.Theme)'
+        - 'M:Pennington.MonorailCss.NamedColorScheme.ApplyToTheme(MonorailCss.Theme.Theme)'
+        - 'T:Pennington.MonorailCss.AlgorithmicColorScheme'
+        - 'T:Pennington.MonorailCss.IColorScheme'
+        - 'T:Pennington.MonorailCss.MonorailCssOptions'
+        - 'T:Pennington.MonorailCss.NamedColorScheme'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/options/blogsite-options'
+        - '/reference/options/docsite-options'
+        - '/reference/options/pennington-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/options/pennington-options.md'
+    page_title: 'PenningtonOptions'
+    url: '/reference/options/pennington-options'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Every property on `PenningtonOptions` — `SiteTitle`, `SiteDescription`, `CanonicalBaseUrl`, `ContentRootPath`, `Highlighting`, `Islands`, `Localization`, `Translations`, `SearchIndex`, `LlmsTxt`, `AdditionalRoutingAssemblies` — with types and defaults.'
+    excludes: 'Task recipes that use these options (see How-Tos).'
+    front_matter_section: 'options'
+    front_matter_order: 10
+    front_matter_uid: 'reference.options.pennington-options'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/MinimalExample/Program.cs'
+      production_files: []
+      production_symbols:
+        - 'M:Pennington.Infrastructure.PenningtonOptions.AddLlmsTxt(System.Action{Pennington.LlmsTxt.LlmsTxtOptions})'
+        - 'M:Pennington.Infrastructure.PenningtonOptions.AddMarkdownContent``1(System.Action{Pennington.Infrastructure.MarkdownContentOptions})'
+        - 'T:Pennington.Infrastructure.PenningtonOptions'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/options/auxiliary-options'
+        - '/reference/options/blogsite-options'
+        - '/reference/options/docsite-options'
+        - '/reference/options/localization-options'
+        - '/reference/options/markdown-content-options'
+        - '/reference/options/translations'
+      xrefs: []
+    acceptance_checks:
+      - 'Declaration points at production symbols, not example types'
+      - 'Property list matches verified architecture notes'
+
+  - path: 'Pennington.Docs/Content/reference/options/roslyn-options.md'
+    page_title: 'RoslynOptions'
+    url: '/reference/options/roslyn-options'
+    quadrant: 'reference'
+    status: 'published'
+    scope_source: 'docs-toc.md'
+    covers: '`SolutionPath` (path to `.sln` / `.slnx`), the optional `ProjectFilter` with `IncludedProjects` / `ExcludedProjects`, and how `AddPenningtonRoslyn` wires the options into the symbol-extraction and `xmldocid` preprocessing services shipped in `Pennington.Roslyn`.'
+    excludes: 'Authoring `xmldocid` code fences (see the Roslyn tutorial) or writing a custom `ICodeBlockPreprocessor` (see the Extensibility how-to).'
+    front_matter_section: 'options'
+    front_matter_order: 90
+    front_matter_uid: 'reference.options.roslyn-options'
+    front_matter_is_draft: false
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.Roslyn.ProjectFilter'
+        - 'T:Pennington.Roslyn.RoslynOptions'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/how-to/extensibility/code-block-preprocessor'
+        - '/reference/extension-points/highlighting'
+        - '/reference/options/pennington-options'
+        - '/tutorials/beyond-basics/connect-roslyn'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/options/translations.md'
+    page_title: 'TranslationOptions'
+    url: '/reference/options/translations'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The `TranslationOptions.Add(locale, key, value)` and `Add(locale, dictionary)` overloads, plus the internal runtime access methods that back `PenningtonOptions.Translations`.'
+    excludes: 'Enabling multiple locales at the routing layer (see `LocalizationOptions`) or authoring translated page content (see the Localization how-to).'
+    front_matter_section: 'options'
+    front_matter_order: 60
+    front_matter_uid: 'reference.options.translations'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'M:Pennington.Localization.TranslationOptions.Add(System.String,System.Collections.Generic.Dictionary{System.String,System.String})'
+        - 'M:Pennington.Localization.TranslationOptions.Add(System.String,System.String,System.String)'
+        - 'T:Pennington.Localization.TranslationOptions'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/localization/urls-and-fallback'
+        - '/how-to/configuration/localization'
+        - '/reference/options/localization-options'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/structured-data/types.md'
+    page_title: 'JSON-LD schema types'
+    url: '/reference/structured-data/types'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'The record types in `Pennington.StructuredData.JsonLdTypes` — `JsonLdArticle`, `JsonLdBreadcrumbList`, its `JsonLdBreadcrumbItem`, and `JsonLdWebSite` — plus the `JsonLdSerializer` helpers (`SerializeArticle`, `SerializeBreadcrumbList`, `SerializeWebSite`) and how these feed the `<StructuredData>` UI component.'
+    excludes: 'The schema.org vocabulary itself (out of scope) or the `<StructuredData>` component parameters (see `reference/ui/utility`).'
+    front_matter_section: 'structured-data'
+    front_matter_order: 10
+    front_matter_uid: 'reference.structured-data.types'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files: []
+      production_symbols:
+        - 'T:Pennington.StructuredData.JsonLdArticle'
+        - 'T:Pennington.StructuredData.JsonLdBreadcrumbItem'
+        - 'T:Pennington.StructuredData.JsonLdBreadcrumbList'
+        - 'T:Pennington.StructuredData.JsonLdSerializer'
+        - 'T:Pennington.StructuredData.JsonLdWebSite'
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/ui/utility'
+        - '/reference/ui/utility#structureddata'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/ui/content.md'
+    page_title: 'Content components'
+    url: '/reference/ui/content'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: '`Card`, `CardGrid`, `LinkCard`, `Badge`, `Step`, `Steps`, `CodeBlock`, and `BigTable` — parameters, render behavior, and the component surface Pennington exposes for markdown and Razor.'
+    excludes: 'Mdazor parser internals or the step-by-step authoring recipe. See the neighboring how-to for usage guidance.'
+    front_matter_section: 'ui'
+    front_matter_order: 20
+    front_matter_uid: 'reference.ui.content'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/BeaconDocsExample/Content/index.md'
+      production_files:
+        - 'src/Pennington.BlogSite/BlogSiteServiceExtensions.cs'
+        - 'src/Pennington.DocSite/DocSiteServiceExtensions.cs'
+        - 'src/Pennington.UI/Components/Card.razor'
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/how-to/content-authoring/ui-components-in-markdown'
+        - '/how-to/extensibility/override-docsite-components'
+        - '/reference/ui/navigation'
+        - '/reference/ui/utility'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents the components as surfaces available to Mdazor-backed markdown and Razor pages'
+      - 'Uses approved markdown examples without overstating Mdazor internals'
+
+  - path: 'Pennington.Docs/Content/reference/ui/navigation.md'
+    page_title: 'Navigation components'
+    url: '/reference/ui/navigation'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: '`TableOfContentsNavigation` and `OutlineNavigation` — parameters, slots, and how they bind to `NavigationInfo`.'
+    excludes: 'Rendering custom navigation shapes (a Razor authoring topic).'
+    front_matter_section: 'ui'
+    front_matter_order: 10
+    front_matter_uid: 'reference.ui.navigation'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'M:UserInterfaceExample.ContentHelper.GetNavigationTocAsync(System.String)'
+      production_files:
+        - 'src/Pennington.UI/Components/Navigation/TableOfContentsNavigation.razor'
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/explanation/routing/navigation-tree'
+        - '/how-to/configuration/sections-and-order'
+        - '/reference/extension-points/navigation'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/reference/ui/utility.md'
+    page_title: 'Utility components'
+    url: '/reference/ui/utility'
+    quadrant: 'reference'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: '`LanguageSwitcher`, `StructuredData`, and `FallbackNotice` — parameters and render behavior.'
+    excludes: 'Authoring your own Razor components.'
+    front_matter_section: 'ui'
+    front_matter_order: 30
+    front_matter_uid: 'reference.ui.utility'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files:
+        - 'src/Pennington.UI/Components/FallbackNotice.razor'
+        - 'src/Pennington.UI/Components/LanguageSwitcher.razor'
+        - 'src/Pennington.UI/Components/StructuredData.razor'
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/reference/options/localization'
+        - '/reference/structured-data/types'
+        - '/reference/ui/content'
+        - '/reference/ui/navigation'
+      xrefs: []
+    acceptance_checks:
+      - 'Documents production surfaces without tutorializing'
+      - 'Uses declaration forms backed by production symbols or approved :path files'
+
+  - path: 'Pennington.Docs/Content/tutorials/beyond-basics/add-a-locale.md'
+    page_title: 'Add a second locale to your site'
+    url: '/tutorials/beyond-basics/add-a-locale'
+    quadrant: 'tutorial'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Enabling `LocalizationOptions`, creating a locale subdirectory with translated markdown, wiring `UsePenningtonLocaleRouting`, and adding the `LanguageSwitcher` component.'
+    excludes: 'Per-locale search index internals or UI string translation plumbing — those are reference pages.'
+    front_matter_section: 'beyond-basics'
+    front_matter_order: 10
+    front_matter_uid: 'tutorials.beyond-basics.add-a-locale'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/LocalizationTutorialExample/Content/es/getting-started.md'
+        - 'examples/LocalizationTutorialExample/Content/es/index.md'
+        - 'examples/LocalizationTutorialExample/Content/index.md'
+        - 'examples/LocalizationTutorialExample/Program.cs'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/tutorials/docsite/scaffold'
+      xrefs: []
+    acceptance_checks:
+      - 'Follows tutorial scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/tutorials/beyond-basics/connect-roslyn.md'
+    page_title: 'Connect to a Roslyn solution for live API snippets'
+    url: '/tutorials/beyond-basics/connect-roslyn'
+    quadrant: 'tutorial'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Pointing Pennington at a `.sln` via `SolutionPath`, using `xmldocid` code fences (e.g., ` ```csharp:xmldocid ` on one line followed by the id `M:Ns.Type.Method`) to pull method/class snippets straight from source, and letting hot reload update the docs when the source changes.'
+    excludes: 'Generating full API-reference pages — that requires the planned `Pennington.Roslyn` package.'
+    front_matter_section: 'beyond-basics'
+    front_matter_order: 20
+    front_matter_uid: 'tutorials.beyond-basics.connect-roslyn'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'M:Spectre.Console.Examples.Console.Tutorials.GettingStartedExample.ShowColoredHelloWorld'
+        - 'M:Spectre.Console.Examples.Console.Tutorials.GettingStartedExample.ShowDataTable'
+        - 'T:RoslynIntegrationExample.BlogFrontMatter'
+        - 'T:Spectre.Console.Examples.Console.Tutorials.GettingStartedExample'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/tutorials/getting-started/first-site'
+      xrefs: []
+    acceptance_checks:
+      - 'Follows tutorial scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/tutorials/beyond-basics/custom-razor-component.md'
+    page_title: 'Author a custom Razor component for markdown'
+    url: '/tutorials/beyond-basics/custom-razor-component'
+    quadrant: 'tutorial'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Building a Razor component, registering it with `AddMdazorComponent<T>()`, and rendering it from markdown in a Pennington site.'
+    excludes: 'Packaging a reusable component library, documenting every Mdazor feature, or replacing the surrounding DocSite layout.'
+    front_matter_section: 'beyond-basics'
+    front_matter_order: 30
+    front_matter_uid: 'tutorials.beyond-basics.custom-razor-component'
+    front_matter_is_draft: true
+    evidence:
+      examples: []
+      production_files:
+        - 'docs/Pennington.Docs/Components/Reference/ApiMemberTable.razor'
+        - 'docs/Pennington.Docs/Content/reference/options/roslyn-options.md'
+        - 'docs/Pennington.Docs/Program.cs'
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/tutorials/docsite/scaffold'
+        - '/tutorials/getting-started/first-site'
+      xrefs: []
+    acceptance_checks:
+      - 'Follows tutorial scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/tutorials/blogsite/first-post.md'
+    page_title: 'Author your first post with BlogSiteFrontMatter'
+    url: '/tutorials/blogsite/first-post'
+    quadrant: 'tutorial'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Writing a post with `BlogSiteFrontMatter` (title, description, date, author, tags, series, repository, section, redirectUrl), seeing the post appear on the blog index, and enabling the built-in RSS feed. `AddBlogSite` binds posts through `AddMarkdownContent<BlogSiteFrontMatter>` — not the core `BlogFrontMatter` — so this is the record the tutorial teaches.'
+    excludes: 'Customizing the post template or adding a tag-index page.'
+    front_matter_section: 'blogsite'
+    front_matter_order: 20
+    front_matter_uid: 'tutorials.blogsite.first-post'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/AlexBlogExample/Content/Blog/building-a-cli-part-1.md'
+        - 'examples/AlexBlogExample/Program.cs'
+      production_files:
+        - 'src/Pennington.BlogSite/BlogSiteFrontMatter.cs'
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/tutorials/blogsite/scaffold'
+      xrefs: []
+    acceptance_checks:
+      - 'Follows tutorial scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/tutorials/blogsite/hero-projects-socials.md'
+    page_title: 'Add a hero, projects, and social links'
+    url: '/tutorials/blogsite/hero-projects-socials'
+    quadrant: 'tutorial'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Populating `HeroContent`, a list of `Project` entries for a "my work" section, `SocialLink` entries (with the built-in `BlueskyIcon`/`GithubIcon`), and `HeaderLink` entries for top-nav items.'
+    excludes: 'Custom icon components or deep homepage layout overrides — covered in the Extensibility how-tos.'
+    front_matter_section: 'blogsite'
+    front_matter_order: 30
+    front_matter_uid: 'tutorials.blogsite.hero-projects-socials'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/AlexBlogExample/Program.cs'
+        - 'examples/BlogExample/Program.cs'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/tutorials/blogsite/first-post'
+      xrefs: []
+    acceptance_checks:
+      - 'Follows tutorial scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/tutorials/blogsite/scaffold.md'
+    page_title: 'Scaffold a blog with BlogSite'
+    url: '/tutorials/blogsite/scaffold'
+    quadrant: 'tutorial'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Replacing `AddPennington` with `AddBlogSite` + `UseBlogSite` + `RunBlogSiteAsync`, configuring the core `BlogSiteOptions` (site title, author, canonical base URL, content paths), and understanding the difference between `DocSite` and `BlogSite` defaults.'
+    excludes: 'Authoring individual posts (next page) or customizing the homepage hero (see the final page in this section).'
+    front_matter_section: 'blogsite'
+    front_matter_order: 10
+    front_matter_uid: 'tutorials.blogsite.scaffold'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/AlexBlogExample/Program.cs'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal: []
+      xrefs: []
+    acceptance_checks:
+      - 'Follows tutorial scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/tutorials/docsite/first-doc-page.md'
+    page_title: 'Author a documentation page with DocFrontMatter'
+    url: '/tutorials/docsite/first-doc-page'
+    quadrant: 'tutorial'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Writing a page with `DocSiteFrontMatter` (`title`, `description`, `tags`, `section`, `order`), adding alerts and a tabbed code group, and seeing the outline navigation populate.'
+    excludes: 'Cross-references, snippets, or diagram blocks — those are per-feature how-tos.'
+    front_matter_section: 'docsite'
+    front_matter_order: 20
+    front_matter_uid: 'tutorials.docsite.first-doc-page'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/BeaconDocsExample/Content/getting-started/index.md'
+        - 'examples/BeaconDocsExample/Content/getting-started/install.md'
+        - 'examples/BeaconDocsExample/Content/guides/configuration.md'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/tutorials/docsite/scaffold/'
+      xrefs: []
+    acceptance_checks:
+      - 'Follows tutorial scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/tutorials/docsite/scaffold.md'
+    page_title: 'Scaffold a documentation site with DocSite'
+    url: '/tutorials/docsite/scaffold'
+    quadrant: 'tutorial'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Replacing the barebones setup with `AddDocSite` + `UseDocSite` + `RunDocSiteAsync`, configuring `DocSiteOptions` (site title, GitHub URL, header/footer), and understanding how areas map to top-level folders.'
+    excludes: 'Authoring markdown content (covered next) or overriding the DocSite layout — treated as a customization how-to.'
+    front_matter_section: 'docsite'
+    front_matter_order: 10
+    front_matter_uid: 'tutorials.docsite.scaffold'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/BeaconDocsExample/Program.cs'
+        - 'examples/TempoDocsExample/Program.cs'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/tutorials/getting-started/first-site'
+      xrefs: []
+    acceptance_checks:
+      - 'Follows tutorial scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+
+  - path: 'Pennington.Docs/Content/tutorials/docsite/sections-and-areas.md'
+    page_title: 'Organize content with sections and areas'
+    url: '/tutorials/docsite/sections-and-areas'
+    quadrant: 'tutorial'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Structuring `Content/` into areas and sections, using `section` / `order` in front matter, and how Pennington turns a flat file tree into a sidebar.'
+    excludes: 'Locale-prefixed navigation, Razor-page integration, or custom content source implementations.'
+    front_matter_section: 'docsite'
+    front_matter_order: 30
+    front_matter_uid: 'tutorials.docsite.sections-and-areas'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/BeaconDocsExample/Content/getting-started/index.md'
+      production_files:
+        - 'docs/Pennington.Docs/Program.cs'
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/tutorials/docsite/first-doc-page'
+        - '/tutorials/docsite/scaffold'
+      xrefs: []
+    acceptance_checks:
+      - 'Grounds sections on approved example content and areas on the docs-site Program.cs'
+      - 'Explains the area/section distinction without drifting into custom content services'
+
+  - path: 'Pennington.Docs/Content/tutorials/getting-started/first-page.md'
+    page_title: 'Add your first markdown page'
+    url: '/tutorials/getting-started/first-page'
+    quadrant: 'tutorial'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Writing a YAML front-matter block, the required `title` key, how the file path becomes a URL, and seeing navigation auto-assemble as you add a second and third file.'
+    excludes: 'Custom front-matter types, capability interfaces, or non-markdown content sources.'
+    front_matter_section: 'getting-started'
+    front_matter_order: 20
+    front_matter_uid: 'tutorials.getting-started.first-page'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/MinimalExample/Content/index.md'
+        - 'examples/MinimalExample/Content/sub-folder/page-one.md'
+        - 'examples/MinimalExample/Content/sub-folder/page-two.md'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/tutorials/getting-started/first-site/'
+      xrefs: []
+    acceptance_checks:
+      - 'Covers only front matter and file-to-URL mapping'
+      - 'Uses approved :path fences for markdown files'
+
+  - path: 'Pennington.Docs/Content/tutorials/getting-started/first-site.md'
+    page_title: 'Create your first Pennington site'
+    url: '/tutorials/getting-started/first-site'
+    quadrant: 'tutorial'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Bootstrapping a minimal ASP.NET host with `AddPennington` + `UsePennington`, pointing `ContentRootPath` at a folder of markdown, running in dev mode with hot reload, and verifying a page renders with front matter.'
+    excludes: 'The DocSite template, styling, or deployment — those arrive in later tutorials.'
+    front_matter_section: 'getting-started'
+    front_matter_order: 10
+    front_matter_uid: 'tutorials.getting-started.first-site'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/MinimalExample/Components/Layout/Pages.razor'
+        - 'examples/MinimalExample/Content/index.md'
+        - 'examples/MinimalExample/Program.cs'
+        - 'M:MinimalExample.ContentHelper.GetPageByUrlAsync(System.String)'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal: []
+      xrefs: []
+    acceptance_checks:
+      - 'Keeps scope limited to minimal host wiring and one markdown page'
+      - 'Uses only supported :path or :xmldocid fences'
+
+  - path: 'Pennington.Docs/Content/tutorials/getting-started/styling.md'
+    page_title: 'Style the site with MonorailCSS'
+    url: '/tutorials/getting-started/styling'
+    quadrant: 'tutorial'
+    status: 'drafting'
+    scope_source: 'docs-toc.md'
+    covers: 'Registering `AddMonorailCss` + `UseMonorailCss`, picking a `NamedColorScheme`, adding a utility class to a layout, and watching the stylesheet regenerate on demand.'
+    excludes: 'Algorithmic color schemes, custom `CssFrameworkSettings`, or dark-mode wiring — see the how-to on theme customization.'
+    front_matter_section: 'getting-started'
+    front_matter_order: 30
+    front_matter_uid: 'tutorials.getting-started.styling'
+    front_matter_is_draft: true
+    evidence:
+      examples:
+        - 'examples/MinimalExample/Components/Layout/MainLayout.razor'
+        - 'examples/MinimalExample/Program.cs'
+      production_files: []
+      production_symbols: []
+      architecture:
+        - '_research/site-architecture.md'
+      blockers: []
+    links:
+      internal:
+        - '/tutorials/getting-started/first-page'
+        - '/tutorials/getting-started/first-site'
+      xrefs: []
+    acceptance_checks:
+      - 'Follows tutorial scope from docs-toc.md'
+      - 'Uses only supported Pennington fence syntax'
+

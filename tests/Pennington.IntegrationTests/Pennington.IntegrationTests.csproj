@@ -18,24 +18,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\docs\Pennington.Docs\Pennington.Docs.csproj" />
-    <ProjectReference Include="..\..\examples\MinimalExample\MinimalExample.csproj" />
-    <ProjectReference Include="..\..\examples\RecipeExample\RecipeExample.csproj" />
-    <ProjectReference Include="..\..\examples\BlogExample\BlogExample.csproj" />
-    <ProjectReference Include="..\..\examples\MultipleContentSourceExample\MultipleContentSourceExample.csproj" />
-    <ProjectReference Include="..\..\examples\UserInterfaceExample\UserInterfaceExample.csproj" />
-    <ProjectReference Include="..\..\examples\RoslynIntegrationExample\RoslynIntegrationExample.csproj" />
-    <ProjectReference Include="..\..\examples\SpaNavigationExample\SpaNavigationExample.csproj" />
-    <ProjectReference Include="..\..\examples\SearchExample\SearchExample.csproj" />
-    <ProjectReference Include="..\..\examples\LocalizationExample\LocalizationExample.csproj" />
-    <ProjectReference Include="..\..\examples\NorthwindHandbookExample\NorthwindHandbookExample.csproj" />
-    <ProjectReference Include="..\..\examples\TempoDocsExample\TempoDocsExample.csproj" />
-    <ProjectReference Include="..\..\examples\AlexBlogExample\AlexBlogExample.csproj" />
-    <ProjectReference Include="..\..\examples\LocalizationTutorialExample\LocalizationTutorialExample.csproj" />
-    <ProjectReference Include="..\..\examples\SpaNavigationTutorialExample\SpaNavigationTutorialExample.csproj" />
-    <ProjectReference Include="..\..\examples\MaraBlogExample\MaraBlogExample.csproj" />
-    <ProjectReference Include="..\..\examples\BeaconDocsExample\BeaconDocsExample.csproj" />
-    <ProjectReference Include="..\..\examples\ForgePortalExample\ForgePortalExample.csproj" />
-    <ProjectReference Include="..\..\examples\PrismDocsExample\PrismDocsExample.csproj" />
     <ProjectReference Include="..\..\src\Pennington.BlogSite\Pennington.BlogSite.csproj" />
     <ProjectReference Include="..\..\src\Pennington.Roslyn\Pennington.Roslyn.csproj" />
   </ItemGroup>

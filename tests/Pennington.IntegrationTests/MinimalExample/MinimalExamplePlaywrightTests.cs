@@ -1,1 +1,0 @@
-// Tests moved to Pennington.IntegrationTests.Examples.MinimalExamplePlaywrightTests

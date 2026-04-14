@@ -1,9 +1,0 @@
-@using System.Collections.Immutable
-@using Pennington.Navigation
-@using Pennington.UI.Components.Navigation
-
-<TableOfContentsNavigation TableOfContents="@NavItems" />
-
-@code {
-    [Parameter] public ImmutableList<NavigationTreeItem>? NavItems { get; set; }
-}

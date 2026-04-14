@@ -1,1 +1,0 @@
-internal partial class Program;
