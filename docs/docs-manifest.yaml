@@ -2772,10 +2772,11 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/MinimalExample/Components/Layout/Pages.razor'
-        - 'examples/MinimalExample/Content/index.md'
-        - 'examples/MinimalExample/Program.cs'
-        - 'M:MinimalExample.ContentHelper.GetPageByUrlAsync(System.String)'
+        - 'examples/GettingStartedMinimalSiteExample/Program.cs'
+        - 'examples/GettingStartedMinimalSiteExample/Content/index.md'
+        - 'M:GettingStartedMinimalSiteExample.Stage1.Run(System.String[])'
+        - 'M:GettingStartedMinimalSiteExample.Stage2.Run(System.String[])'
+        - 'M:GettingStartedMinimalSiteExample.Stage3.Run(System.String[])'
       production_files: []
       production_symbols: []
       architecture:

@@ -15,5 +15,7 @@
   <Folder Name="/docs/">
     <Project Path="docs/Pennington.Docs/Pennington.Docs.csproj" />
   </Folder>
-  <Folder Name="/examples/" />
+  <Folder Name="/examples/">
+    <Project Path="examples/GettingStartedMinimalSiteExample/GettingStartedMinimalSiteExample.csproj" />
+  </Folder>
 </Solution>
