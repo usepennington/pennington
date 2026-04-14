@@ -19,9 +19,9 @@ _Two sentences. Frame the arrival state: the reader has a DocSite with multiple 
 
 _Keep to 3 bullets. The reader must already have at least one subfolder under their area so grouping exists to customize._
 
-- You have a Pennington DocSite with markdown under `Content/<area>/` and at least one subfolder (the subfolder is what creates a sidebar group — see [Work with front matter](/how-to/content-authoring/front-matter) if not)
+- You have a Pennington DocSite with markdown under `Content/<area>/` and at least one subfolder (the subfolder is what creates a sidebar group — see [Work with front matter](xref:how-to.content-authoring.front-matter) if not)
 - Your pages use `DocSiteFrontMatter` or another type that implements `IOrderable` + `ISectionable`
-- You understand the basics of `order:` and `isDraft:` — if not, start with [Manage drafts, tags, and ordering](/how-to/content-authoring/drafts-tags-ordering)
+- You understand the basics of `order:` and `isDraft:` — if not, start with [Manage drafts, tags, and ordering](xref:how-to.content-authoring.drafts-tags-ordering)
 
 To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample) — `Content/main/customize-sidebar.md` exercises the same keys. Do not walk through the whole example — this page is a recipe, not a tour.
 
@@ -113,6 +113,6 @@ _Terse. Three bullets, one per outcome so the reader can confirm each independen
 
 _Three cross-quadrant links. Point at the Reference page for the full front-matter key catalog, the UI-component reference so readers can see what `TableOfContentsNavigation` consumes, and the Explanation page on navigation shape for background. Do not link to the next how-to in this section — generated automatically._
 
-- Reference: [Front matter key reference](/reference/front-matter/keys)
-- Reference: [Navigation UI components](/reference/ui/navigation)
-- Background: [How the sidebar is built](/explanation/rendering/navigation-shape)
+- Reference: [Front matter key reference](xref:reference.front-matter.keys)
+- Reference: [Navigation UI components](xref:reference.ui.navigation)
+- Background: [How the sidebar is built](xref:explanation.routing.navigation-tree)

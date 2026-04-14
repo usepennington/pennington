@@ -26,8 +26,8 @@ _**Skill** (one sentence): the reader walks away knowing that a top-level folder
 _Keep this list to tools and prior tutorials. The `AddDocSite` / `UseDocSite` / `RunDocSiteAsync` host is identical to the scaffolding tutorial — link back to it rather than re-explaining it. No Razor or custom-service knowledge is needed._
 
 - .NET 11 SDK installed
-- Completed [Scaffold a documentation site with DocSite](/tutorials/docsite/scaffold) (provides the single-area host shape this tutorial extends)
-- Completed [Author a documentation page with DocFrontMatter](/tutorials/docsite/first-doc-page) (so `DocSiteFrontMatter` keys like `sectionLabel:` and `order:` are already familiar)
+- Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the single-area host shape this tutorial extends)
+- Completed [Author a documentation page with DocFrontMatter](xref:tutorials.docsite.first-doc-page) (so `DocSiteFrontMatter` keys like `sectionLabel:` and `order:` are already familiar)
 
 The finished code for this tutorial lives in [`examples/DocSiteSectionsExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteSectionsExample).
 

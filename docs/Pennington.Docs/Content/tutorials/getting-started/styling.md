@@ -9,7 +9,7 @@ uid: tutorials.getting-started.styling
 
 > **In this page.** _One sentence: writer paraphrases the TOC "Covers" line — registering `AddMonorailCss` + `UseMonorailCss`, picking a `NamedColorScheme`, adding a utility class to a layout, and watching the stylesheet regenerate on demand. Keep it to one sentence; this is the pitch, not a scope document._
 >
-> **Not in this page.** _One sentence pointing outward. Mention that algorithmic color schemes, custom `CssFrameworkSettings`, and dark-mode wiring belong to the [Customize MonorailCSS](/how-to/configuration/monorail-css) how-to, and that deployment lives in the [Deploy to GitHub Pages](/how-to/deployment/github-pages) how-to. Paste links exactly as shown._
+> **Not in this page.** _One sentence pointing outward. Mention that algorithmic color schemes, custom `CssFrameworkSettings`, and dark-mode wiring belong to the [Customize MonorailCSS](xref:how-to.configuration.monorail-css) how-to, and that deployment lives in the [Deploy to GitHub Pages](xref:how-to.deployment.github-pages) how-to. Paste links exactly as shown._
 
 ## What you'll do
 
@@ -22,7 +22,7 @@ _**Skill** (one sentence): name the capability — the reader will know how to r
 _Two-sentence lead-in: this tutorial picks up where the first-page tutorial left off — same three-markdown-page scaffold, same bare `AddPennington` host. If the reader hasn't done that one, point them back; don't re-teach host bootstrapping here._
 
 - .NET 11 SDK installed
-- Completed [Add your first markdown page](/tutorials/getting-started/first-page) (or have a Pennington project with three markdown pages and a working `MapGet` endpoint)
+- Completed [Add your first markdown page](xref:tutorials.getting-started.first-page) (or have a Pennington project with three markdown pages and a working `MapGet` endpoint)
 
 The finished code for this tutorial lives in [`examples/GettingStartedStylingExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedStylingExample).
 

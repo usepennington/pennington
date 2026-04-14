@@ -73,20 +73,20 @@ P:Pennington.Search.SearchIndexOptions.DefaultPriority
 
 _Note: under `AddDocSite` this property is reachable through the `ConfigurePennington` escape hatch — `opts.SearchIndex.DefaultPriority = …` — so DocSite users do not have to drop down to bare `AddPennington` for this knob._
 
-### 4. Override the content selector (bare `AddPennington` only)
+### 4. Override the content selector on DocSite
 
-_Two sentences. The selector scopes which HTML element's text becomes the search body — pick an id or tag that excludes chrome, nav, and footer. Under `AddDocSite` this is pinned to `#main-content` to match the stock `MainLayout.razor`; consumers who need a different selector should drop to bare `AddPennington` (see the positioning explanation linked below)._
+_Two sentences. The selector scopes which HTML element's text becomes the search body — pick an id or tag that excludes chrome, nav, and footer. `DocSiteOptions.SearchIndexContentSelector` defaults to `#main-content` to match the stock `MainLayout.razor` but is user-overridable; set it when you've replaced the layout or want to widen the indexed region. See [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning) for the authoritative list of caps that still require dropping to bare `AddPennington`._
 
 ```csharp:xmldocid
-P:Pennington.Search.SearchIndexOptions.ContentSelector
+P:Pennington.DocSite.DocSiteOptions.SearchIndexContentSelector
 ```
 
 _Show the assignment shape (plain C# fence — no symbol body to quote):_
 
 ```csharp
-services.AddPennington(opts =>
+services.AddDocSite(opts =>
 {
-    opts.SearchIndex.ContentSelector = "article.prose";
+    opts.SearchIndexContentSelector = "article.prose";
 });
 ```
 
@@ -104,7 +104,7 @@ _Terse. Three bullets — one per knob the reader just turned._
 
 _Two to four cross-quadrant links: the reference page for the index record shape, the positioning explanation for the bare-`AddPennington` drop-down path, and the sibling how-to on `llms.txt` since `search:`/`llms:` are symmetric front-matter flags. Do not link to the next how-to in this section — auto-generated._
 
-- Reference: [Front matter key reference](/reference/front-matter/keys)
-- Reference: [`HighlightingOptions`, `IslandsOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `OutputOptions`](/reference/options/auxiliary-options)
-- Background: [When is DocSite the right starting point?](/explanation/core/docsite-positioning)
-- How-to: [Generate an llms.txt](/how-to/configuration/llms-txt)
+- Reference: [Front matter key reference](xref:reference.front-matter.keys)
+- Reference: [`HighlightingOptions`, `IslandsOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `OutputOptions`](xref:reference.options.auxiliary-options)
+- Background: [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning)
+- How-to: [Generate an llms.txt](xref:how-to.configuration.llms-txt)

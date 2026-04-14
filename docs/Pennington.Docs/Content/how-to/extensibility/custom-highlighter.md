@@ -13,13 +13,13 @@ tags: [highlighting, extensibility, textmate, code-blocks]
 
 ## When to use this
 
-_Two sentences. Frame the reader's goal: they have fences with a language token (DSL, config format, or domain notation) that TextMateSharp does not cover, and they want coloured output without shipping a full TextMate grammar. Point out the cheaper alternatives so nobody lands here by accident — link to [Annotate code blocks](/how-to/content-authoring/code-annotations) for line-level callouts on existing languages, and to [Register a code-block preprocessor](/how-to/extensibility/code-block-preprocessor) when the goal is transforming fence bodies (e.g. xmldocid embedding) rather than colouring tokens._
+_Two sentences. Frame the reader's goal: they have fences with a language token (DSL, config format, or domain notation) that TextMateSharp does not cover, and they want coloured output without shipping a full TextMate grammar. Point out the cheaper alternatives so nobody lands here by accident — link to [Annotate code blocks](xref:how-to.content-authoring.code-annotations) for line-level callouts on existing languages, and to [Register a code-block preprocessor](xref:how-to.extensibility.code-block-preprocessor) when the goal is transforming fence bodies (e.g. xmldocid embedding) rather than colouring tokens._
 
 ## Assumptions
 
 _Three bullets. Each is realistic prior state, not a tutorial step._
 
-- You have an existing Pennington site rendering markdown fences (see the [Getting Started tutorial](/tutorials/getting-started/first-site) if not).
+- You have an existing Pennington site rendering markdown fences (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - The language you want to highlight is not already served by `TextMateHighlighter` (priority 50) or `ShellHighlighter` (priority 75) — confirm by rendering a fence and inspecting the emitted HTML for the built-in token spans.
 - You are comfortable producing HTML for a fence body yourself — `ICodeHighlighter.Highlight` returns a raw HTML string, so your implementation owns escaping and the outer `<pre><code>` wrapper.
 
@@ -89,6 +89,6 @@ source "orders" -> filter where=paid | transform total=sum | sink "warehouse"
 
 ## Related
 
-- Reference: [Highlighting interfaces](/reference/extension-points/highlighting)
-- Background: [The syntax-highlighting cascade](/explanation/rendering/highlighting)
-- Related how-to: [Register a code-block preprocessor](/how-to/extensibility/code-block-preprocessor)
+- Reference: [Highlighting interfaces](xref:reference.extension-points.highlighting)
+- Background: [The syntax-highlighting cascade](xref:explanation.rendering.highlighting)
+- Related how-to: [Register a code-block preprocessor](xref:how-to.extensibility.code-block-preprocessor)

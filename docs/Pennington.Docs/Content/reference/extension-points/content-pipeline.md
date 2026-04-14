@@ -9,7 +9,7 @@ uid: reference.extension-points.content-pipeline
 
 > **In this page.** `IContentService`, `IContentParser`, `IContentRenderer`, `IContentPipeline`, and the `ContentItem`/`ContentSource` union types with every case.
 >
-> **Not in this page.** Implementation examples — see the how-to [Implement a custom `IContentService`](/how-to/extensibility/custom-content-service).
+> **Not in this page.** Implementation examples — see the how-to [Implement a custom `IContentService`](xref:how-to.extensibility.custom-content-service).
 
 ## Summary
 
@@ -155,7 +155,7 @@ _Reference shape for a custom `IContentService` that yields `DiscoveredItem`s fr
 
 ## See also
 
-- How-to: [Implement a custom `IContentService`](/how-to/extensibility/custom-content-service)
-- Related reference: [Routing types](/reference/extension-points/routing)
-- Related reference: [Markdown content options](/reference/options/markdown-content-options)
-- Background: [The content pipeline and union types](/explanation/core/content-pipeline)
+- How-to: [Implement a custom `IContentService`](xref:how-to.extensibility.custom-content-service)
+- Related reference: [Routing types](xref:reference.extension-points.routing)
+- Related reference: [Markdown content options](xref:reference.options.markdown-content-options)
+- Background: [The content pipeline and union types](xref:explanation.core.content-pipeline)

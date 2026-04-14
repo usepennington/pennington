@@ -9,7 +9,7 @@ uid: tutorials.blogsite.hero-projects-socials
 
 > **In this page.** Populate `HeroContent`, a list of `Project` entries for a "My Work" section, `SocialLink` entries (with the built-in `BlueskyIcon`/`GithubIcon`), and `HeaderLink` entries for top-nav items.
 >
-> **Not in this page.** Custom icon components — covered in the Extensibility how-tos. When you need a compact lookup version of the same options surface, see the [BlogSite homepage configuration how-to](/how-to/configuration/blogsite-homepage).
+> **Not in this page.** Custom icon components — covered in the Extensibility how-tos. When you need a compact lookup version of the same options surface, see the [BlogSite homepage configuration how-to](xref:how-to.configuration.blogsite-homepage).
 
 ## What you'll do
 
@@ -22,8 +22,8 @@ _**Skill** (one sentence): describe what the reader walks away able to do — re
 _Keep this list to tools and prior tutorials only. The reader arrives with the BlogSite host from the previous two tutorials in section 1.3 — scaffold sets up `AddBlogSite`, first-post lands one markdown post in `Content/Blog/` so the recent-posts card isn't empty._
 
 - .NET 11 SDK installed
-- Completed [Scaffold a blog with BlogSite](/tutorials/blogsite/scaffold)
-- Completed [Author your first post with BlogSiteFrontMatter](/tutorials/blogsite/first-post)
+- Completed [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold)
+- Completed [Author your first post with BlogSiteFrontMatter](xref:tutorials.blogsite.first-post)
 
 The finished code for this tutorial lives in [`examples/BlogSiteHeroProjectsSocialsExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteHeroProjectsSocialsExample).
 

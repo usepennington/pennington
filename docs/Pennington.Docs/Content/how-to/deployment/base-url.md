@@ -19,10 +19,10 @@ _Two sentences. Frame the arrival state: the reader has a site that builds and s
 
 _Three or four bullets. Keep it tight — anything longer signals the reader is still on a tutorial._
 
-- You have a working Pennington site that builds locally with `dotnet run -- build` (see [_Build a static site_](/how-to/deployment/static-build) if not).
+- You have a working Pennington site that builds locally with `dotnet run -- build` (see [_Build a static site_](xref:how-to.deployment.static-build) if not).
 - You know the sub-path the host will serve you under — for example `/docs` for `https://example.com/docs/` or `/<repo>` for a GitHub Pages project site.
 - Internal links are authored as root-relative (`/guides/first-page/`) — the rewriter keys off the leading `/`.
-- Your host is already configured to serve `output/` at that sub-path (see [_Deploy to GitHub Pages_](/how-to/deployment/github-pages) or [_Self-host behind Nginx or IIS_](/how-to/deployment/self-host)).
+- Your host is already configured to serve `output/` at that sub-path (see [_Deploy to GitHub Pages_](xref:how-to.deployment.github-pages) or [_Self-host behind Nginx or IIS_](xref:how-to.deployment.self-host)).
 
 To copy a working setup, see [`examples/SubPathDeployableExample`](https://github.com/usepennington/pennington/tree/main/examples/SubPathDeployableExample). The nested `/guides/first-page/` route is deliberate: it makes sub-path rewriting observable on a deep link. Do not walk through the whole example — this page is a recipe, not a tour.
 
@@ -89,7 +89,7 @@ _Terse. Three bullets; no rereading required._
 
 _Two to four cross-quadrant links. Point at the reference surface for the CLI and at the explanation for why the rewriter is ordered last. Do not link to the next how-to in this section — nav is auto-generated from `order:`._
 
-- Reference: [_CLI and build arguments_](/reference/host/cli) — the `build [baseUrl] [outputDirectory]` surface this page drives.
+- Reference: [_CLI and build arguments_](xref:reference.host.cli) — the `build [baseUrl] [outputDirectory]` surface this page drives.
 - Reference: TODO — `BaseUrlHtmlRewriter` API page if one exists under `/reference/infrastructure/` (grep `docs-toc.md` before publishing; if absent, drop this bullet).
-- Background: [_The response-processing pipeline_](/explanation/core/response-processing) — why base-URL rewriting runs at `Order => 30`, after xref and locale rewriters.
-- Background: [_Dev mode and build mode share one code path_](/explanation/core/dev-vs-build) — why the same rewriter runs identically in `dotnet run` and `dotnet run -- build`.
+- Background: [_The response-processing pipeline_](xref:explanation.core.response-processing) — why base-URL rewriting runs at `Order => 30`, after xref and locale rewriters.
+- Background: [_Dev mode and build mode share one code path_](xref:explanation.core.dev-vs-build) — why the same rewriter runs identically in `dotnet run` and `dotnet run -- build`.

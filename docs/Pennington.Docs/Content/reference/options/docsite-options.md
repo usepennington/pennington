@@ -9,7 +9,7 @@ tags: [docsite, options, configuration, reference]
 
 > **In this page.** _Every property on `DocSiteOptions` — site title and description, color scheme, display/body fonts, header/footer content, GitHub URL, social image, solution path, content areas, and the Pennington/MonorailCSS escape-hatch callbacks._
 >
-> **Not in this page.** _`PenningtonOptions` (the base engine options) — see the preceding page [PenningtonOptions](/reference/options/pennington-options)._
+> **Not in this page.** _`PenningtonOptions` (the base engine options) — see the preceding page [PenningtonOptions](xref:reference.options.pennington-options)._
 
 ## Summary
 
@@ -83,8 +83,8 @@ _One sentence of context: this is the factory passed to `AddDocSite` in the kitc
 
 ## See also
 
-- Related reference: [PenningtonOptions](/reference/options/pennington-options) — the base engine options `DocSiteOptions` configures through `ConfigurePennington`.
-- Related reference: [MonorailCssOptions](/reference/options/monorail-css-options) — the `ColorScheme`, `ExtraStyles`, and `CustomCssFrameworkSettings` target surface.
-- Related reference: [LocalizationOptions](/reference/options/localization-options) — the type mutated by the `ConfigureLocalization` callback.
-- How-to: [Customize DocSite layouts and components](/how-to/extensibility/override-docsite-components) — task-oriented walkthrough of `AdditionalHtmlHeadContent`, `ExtraStyles`, slots, and `AdditionalRoutingAssemblies`.
-- Background: [When is DocSite the right starting point?](/explanation/core/docsite-positioning) — the positioning rationale and the three surfaces DocSite caps.
+- Related reference: [PenningtonOptions](xref:reference.options.pennington-options) — the base engine options `DocSiteOptions` configures through `ConfigurePennington`.
+- Related reference: [MonorailCssOptions](xref:reference.options.monorail-css-options) — the `ColorScheme`, `ExtraStyles`, and `CustomCssFrameworkSettings` target surface.
+- Related reference: [LocalizationOptions](xref:reference.options.localization-options) — the type mutated by the `ConfigureLocalization` callback.
+- How-to: [Customize DocSite layouts and components](xref:how-to.extensibility.override-docsite-components) — task-oriented walkthrough of `AdditionalHtmlHeadContent`, `ExtraStyles`, slots, and `AdditionalRoutingAssemblies`.
+- Background: [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning) — the positioning rationale and the three surfaces DocSite caps.

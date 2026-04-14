@@ -13,7 +13,7 @@ uid: tutorials.beyond-basics.custom-razor-component
 
 > **In this page.** _One sentence paraphrasing the Covers line: the reader builds a `PricingCard.razor` component under `Components/`, registers it with `services.AddMdazorComponent<PricingCard>()`, and consumes it twice from a markdown page so Mdazor binds the attributes to `[Parameter]` properties and inlines the rendered HTML into the Pennington site._
 >
-> **Not in this page.** _One sentence paraphrasing the Does-not-cover line: point the reader at [Use UI components inside markdown](/how-to/content-authoring/ui-components-in-markdown) for the built-in Pennington.UI components and at the reference pages under `/reference/ui/` for full component APIs — packaging reusable Razor component libraries and the full internals of Mdazor's parser are out of scope here._
+> **Not in this page.** _One sentence paraphrasing the Does-not-cover line: point the reader at [Use UI components inside markdown](xref:how-to.content-authoring.ui-components-in-markdown) for the built-in Pennington.UI components and at the reference pages under `/reference/ui/` for full component APIs — packaging reusable Razor component libraries and the full internals of Mdazor's parser are out of scope here._
 
 ## What you'll do
 
@@ -26,8 +26,8 @@ _**Skill** (one sentence): the reader walks away knowing how to author a Razor c
 _Keep this list to tools and prior tutorials. Razor familiarity is assumed — this tutorial does not teach `@code`, `[Parameter]`, or Blazor render semantics. DocSite hosting is identical to the scaffolding tutorial so link back rather than re-explain._
 
 - .NET 11 SDK installed
-- Completed [Scaffold a documentation site with DocSite](/tutorials/docsite/scaffold) (provides the `AddDocSite` / `UseDocSite` / `RunDocSiteAsync` host shape this tutorial extends)
-- Completed [Connect to a Roslyn solution for live API snippets](/tutorials/beyond-basics/connect-roslyn) (previous tutorial in the Beyond the Basics section)
+- Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the `AddDocSite` / `UseDocSite` / `RunDocSiteAsync` host shape this tutorial extends)
+- Completed [Connect to a Roslyn solution for live API snippets](xref:tutorials.beyond-basics.connect-roslyn) (previous tutorial in the Beyond the Basics section)
 - Basic Razor familiarity — you have written a `.razor` file with `@code {}` and `[Parameter]` properties before
 
 The finished code for this tutorial lives in [`examples/BeyondCustomRazorComponentExample`](https://github.com/usepennington/pennington/tree/main/examples/BeyondCustomRazorComponentExample).

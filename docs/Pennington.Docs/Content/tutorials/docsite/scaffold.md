@@ -9,7 +9,7 @@ uid: tutorials.docsite.scaffold
 
 > **In this page.** Replace the barebones setup with `AddDocSite` + `UseDocSite` + `RunDocSiteAsync`, configure `DocSiteOptions` (site title, GitHub URL, header/footer), and see how areas map to top-level folders.
 >
-> **Not in this page.** Authoring markdown content (covered in [Author a documentation page with DocFrontMatter](/tutorials/docsite/first-doc-page)) or overriding the DocSite layout (treated as a customization how-to).
+> **Not in this page.** Authoring markdown content (covered in [Author a documentation page with DocFrontMatter](xref:tutorials.docsite.first-doc-page)) or overriding the DocSite layout (treated as a customization how-to).
 
 ## What you'll do
 
@@ -22,8 +22,8 @@ _**Skill** (one sentence): describe what the reader walks away able to do — sw
 _Keep this list to tools and prior tutorials only. The reader arrives here with the bare `AddPennington` host from tutorial 1 and a `Content/` folder of markdown already in place._
 
 - .NET 11 SDK installed
-- Completed [Create your first Pennington site](/tutorials/getting-started/first-site)
-- Completed [Add your first markdown page](/tutorials/getting-started/first-page) (so `Content/` already has at least one page)
+- Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site)
+- Completed [Add your first markdown page](xref:tutorials.getting-started.first-page) (so `Content/` already has at least one page)
 
 The finished code for this tutorial lives in [`examples/DocSiteScaffoldExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteScaffoldExample).
 
@@ -64,7 +64,7 @@ M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.De
 
 ### Step 2.2 — Populate `DocSiteOptions`
 
-_Walk through the five knobs this tutorial exercises: `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, `FooterContent`. Keep it mechanical — the reader copies each line and sees it surface in the rendered chrome. The options record carries many more fields; point forward to [Positioning DocSite as a fast path](/explanation/core/docsite-positioning) for the full surface and for the caps DocSite hard-codes (single `AddMarkdownContent<DocSiteFrontMatter>` registration, `SearchIndexOptions.ContentSelector`, `LlmsTxtOptions`, `MonorailCssOptions.CustomCssFrameworkSettings`)._
+_Walk through the five knobs this tutorial exercises: `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, `FooterContent`. Keep it mechanical — the reader copies each line and sees it surface in the rendered chrome. The options record carries many more fields; point forward to [Positioning DocSite as a fast path](xref:explanation.core.docsite-positioning) for the full surface and for the caps DocSite hard-codes (single `AddMarkdownContent<DocSiteFrontMatter>` registration, `SearchIndexOptions.ContentSelector`, `LlmsTxtOptions`, `MonorailCssOptions.CustomCssFrameworkSettings`)._
 
 ```csharp:xmldocid
 T:Pennington.DocSite.DocSiteOptions
@@ -160,4 +160,4 @@ _The final `Areas` block in stage 3 has exactly two `ContentArea` entries. The s
 - You replaced the bare `AddPennington` host with `AddDocSite` + `UseDocSite` + `RunDocSiteAsync` and saw the full Razor chrome render.
 - You populated `DocSiteOptions` with `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent` and watched each field appear in the rendered layout.
 - You configured two `ContentArea` entries and saw how slugs bind top-level folders under `Content/` to URL prefixes and to sidebar tabs.
-- You now know DocSite is a fast-path template — for the knobs it hard-codes, see [Positioning DocSite as a fast path](/explanation/core/docsite-positioning).
+- You now know DocSite is a fast-path template — for the knobs it hard-codes, see [Positioning DocSite as a fast path](xref:explanation.core.docsite-positioning).

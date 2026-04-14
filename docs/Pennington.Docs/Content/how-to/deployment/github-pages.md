@@ -13,13 +13,13 @@ tags: [deployment, github-pages, ci, base-url]
 
 ## When to use this
 
-_Two sentences. Trigger: you have a working Pennington site committed to a GitHub repo and want Pages to build-and-deploy it on every push to `main`. Do not reach for this page if the site still only runs under `dotnet run` — land on [_Build a static site_](/how-to/deployment/static-build) first so you know what `output/` should look like before you automate producing it._
+_Two sentences. Trigger: you have a working Pennington site committed to a GitHub repo and want Pages to build-and-deploy it on every push to `main`. Do not reach for this page if the site still only runs under `dotnet run` — land on [_Build a static site_](xref:how-to.deployment.static-build) first so you know what `output/` should look like before you automate producing it._
 
 ## Assumptions
 
 _Short bulleted list. No more than four bullets — if the list grows, the reader should be back on a tutorial._
 
-- You have a Pennington site that builds locally with `dotnet run --project <your-project> -- build` (see [_Build a static site_](/how-to/deployment/static-build) if not).
+- You have a Pennington site that builds locally with `dotnet run --project <your-project> -- build` (see [_Build a static site_](xref:how-to.deployment.static-build) if not).
 - The repo is pushed to GitHub and Pages is enabled under **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 - The site will be served under a repository sub-path like `https://<user>.github.io/<repo>/` — root-domain deployments are called out in Step 5.
 - You are comfortable with GitHub Actions YAML at the "copy, commit, inspect the run log" level.
@@ -52,7 +52,7 @@ _One to two sentences. GitHub Pages runs content through Jekyll by default, whic
 
 ### 5. Match the build `baseUrl` to the Pages URL
 
-_Two sentences. Project Pages sites serve at `https://<user>.github.io/<repo>/`, so the workflow passes `/<repo>` as the first positional `build` argument and `BaseUrlHtmlRewriter` prefixes every internal `href`, `src`, and `action` on the way out. If your site sits at an org-level `<user>.github.io` root or a custom apex domain, replace the `BASE_URL` env with an empty string and drop the argument entirely — sub-path wiring has its own how-to at [_Host under a sub-path (base URL)_](/how-to/deployment/base-url)._
+_Two sentences. Project Pages sites serve at `https://<user>.github.io/<repo>/`, so the workflow passes `/<repo>` as the first positional `build` argument and `BaseUrlHtmlRewriter` prefixes every internal `href`, `src`, and `action` on the way out. If your site sits at an org-level `<user>.github.io` root or a custom apex domain, replace the `BASE_URL` env with an empty string and drop the argument entirely — sub-path wiring has its own how-to at [_Host under a sub-path (base URL)_](xref:how-to.deployment.base-url)._
 
 ```csharp:xmldocid
 T:Pennington.Infrastructure.BaseUrlHtmlRewriter
@@ -80,8 +80,8 @@ M:SubPathDeployableExample.BuildHost.PrintBuildReport(Pennington.Generation.Buil
 
 ## Related
 
-- Recipe: [_Build a static site_](/how-to/deployment/static-build) — what `build [baseUrl] [outputDirectory]` produces before you automate it.
-- Recipe: [_Host under a sub-path (base URL)_](/how-to/deployment/base-url) — how `BaseUrlHtmlRewriter` handles the `/<repo>/` prefix for non-GitHub-Pages hosts.
-- Recipe: [_Adapt the deploy workflow for other hosts_](/how-to/deployment/adapt-for-other-hosts) — Azure Static Web Apps, Cloudflare Pages, and Netlify deltas against this workflow.
-- Reference: [_CLI and build arguments_](/reference/host/cli) — the `build [baseUrl] [outputDirectory]` surface this workflow drives.
-- Reference: [_Build report fields_](/reference/diagnostics/build-report) — `BuildReport`, `BuildDiagnostic`, and `BrokenLink` semantics for the CI step above.
+- Recipe: [_Build a static site_](xref:how-to.deployment.static-build) — what `build [baseUrl] [outputDirectory]` produces before you automate it.
+- Recipe: [_Host under a sub-path (base URL)_](xref:how-to.deployment.base-url) — how `BaseUrlHtmlRewriter` handles the `/<repo>/` prefix for non-GitHub-Pages hosts.
+- Recipe: [_Adapt the deploy workflow for other hosts_](xref:how-to.deployment.adapt-for-other-hosts) — Azure Static Web Apps, Cloudflare Pages, and Netlify deltas against this workflow.
+- Reference: [_CLI and build arguments_](xref:reference.host.cli) — the `build [baseUrl] [outputDirectory]` surface this workflow drives.
+- Reference: [_Build report fields_](xref:reference.diagnostics.build-report) — `BuildReport`, `BuildDiagnostic`, and `BrokenLink` semantics for the CI step above.

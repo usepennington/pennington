@@ -9,7 +9,7 @@ uid: explanation.spa.islands
 
 > **In this page.** Why Pennington serves a JSON envelope at a `_spa-data` path instead of full page HTML on navigation, how islands are hydrated selectively, and the skeleton/loading lifecycle (`data-spa-loading` modes).
 >
-> **Not in this page.** Registering an island — see the [how-to](/how-to/extensibility/island-renderer). The raw attribute list and renderer interfaces — see the [reference](/reference/extension-points/islands).
+> **Not in this page.** Registering an island — see the [how-to](xref:how-to.extensibility.island-renderer). The raw attribute list and renderer interfaces — see the [reference](xref:reference.extension-points.islands).
 
 ## The question
 
@@ -61,6 +61,6 @@ _A few sentences closing the loop. Because every page is fully server-rendered o
 
 ## Further reading
 
-- Reference: [Island rendering interfaces](/reference/extension-points/islands)
-- How-to: [Register an island renderer](/how-to/extensibility/island-renderer)
+- Reference: [Island rendering interfaces](xref:reference.extension-points.islands)
+- How-to: [Register an island renderer](xref:how-to.extensibility.island-renderer)
 - External: [Islands Architecture (Jason Miller)](https://jasonformat.com/islands-architecture/)

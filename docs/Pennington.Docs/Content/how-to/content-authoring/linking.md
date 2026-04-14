@@ -19,9 +19,9 @@ _Two sentences. Name the trigger: you are authoring a page and want to link to a
 
 _Short bulleted list. Keep prerequisites terse so the page reads as a recipe._
 
-- You have an existing Pennington site with at least two markdown pages (see [_Add your first markdown page_](/tutorials/getting-started/first-page) if not).
+- You have an existing Pennington site with at least two markdown pages (see [_Add your first markdown page_](xref:tutorials.getting-started.first-page) if not).
 - You know the URL of the page or asset you want to link to (the sidebar or the rendered page's address bar are the quickest sources).
-- You are not using `uid:` cross-references — those have their own page at [_Cross-reference pages by `uid`_](/how-to/content-authoring/cross-references).
+- You are not using `uid:` cross-references — those have their own page at [_Cross-reference pages by `uid`_](xref:how-to.content-authoring.cross-references).
 
 To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample). The `Content/main/linking.md` fixture shows every link shape this page describes. Do not walk through the whole example — this page is a recipe, not a tour.
 
@@ -47,7 +47,7 @@ _One sentence: append `#slug` to a link target to scroll to a specific heading; 
 
 ### 4. Link to colocated and shared assets
 
-_One to two sentences: reference assets under `Content/` with a relative path (`./assets/colocated.png`) and assets under `wwwroot/` with a site-absolute path (`/shared.png`). The content copy pass and the static-file pipeline place the files at matching URLs, so the two rules map cleanly to where the file lives on disk. Point readers who need more background to [_Place images and static assets_](/how-to/content-authoring/images-and-assets)._
+_One to two sentences: reference assets under `Content/` with a relative path (`./assets/colocated.png`) and assets under `wwwroot/` with a site-absolute path (`/shared.png`). The content copy pass and the static-file pipeline place the files at matching URLs, so the two rules map cleanly to where the file lives on disk. Point readers who need more background to [_Place images and static assets_](xref:how-to.content-authoring.images-and-assets)._
 
 ### 5. Link to an external site
 
@@ -73,6 +73,5 @@ T:Pennington.Infrastructure.BaseUrlHtmlRewriter
 
 ## Related
 
-- Reference: [_`OutputOptions`_](/reference/options/output-options) — `BaseUrl` and the rest of the build-output surface.
-- Reference: [_Response rewriters_](/reference/infrastructure/response-rewriters) — rewriter order (`XrefHtmlRewriter` → `LocaleLinkHtmlRewriter` → `BaseUrlHtmlRewriter`) and how they compose.
-- Background: [_How links are resolved_](/explanation/routing/link-resolution) — why authors write root-relative paths and the rewriter owns the transport-layer prefix.
+- Reference: [_`OutputOptions`_](xref:reference.options.auxiliary-options) — `BaseUrl` and the rest of the build-output surface.
+- Reference: [_Response rewriters_](xref:reference.extension-points.response-processing) — rewriter order (`XrefHtmlRewriter` → `LocaleLinkHtmlRewriter` → `BaseUrlHtmlRewriter`) and how they compose.

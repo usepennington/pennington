@@ -9,7 +9,7 @@ uid: reference.options.monorail-css-options
 
 > **In this page.** `ColorScheme`, `CustomCssFrameworkSettings`, `ExtraStyles`, and `ContentPaths` on `MonorailCssOptions`, plus the two built-in `IColorScheme` implementations (`NamedColorScheme`, `AlgorithmicColorScheme`).
 >
-> **Not in this page.** The MonorailCSS generator internals — how classes are collected, how the framework is constructed, and how palettes are derived — see [MonorailCSS integration](/explanation/rendering/monorail-css).
+> **Not in this page.** The MonorailCSS generator internals — how classes are collected, how the framework is constructed, and how palettes are derived — see [MonorailCSS integration](xref:explanation.rendering.monorail-css).
 
 ## Summary
 
@@ -81,7 +81,7 @@ _A single sentence of context: the returned scheme is assigned to `DocSiteOption
 
 ## See also
 
-- How-to: [Customize MonorailCSS](/how-to/configuration/monorail-css)
-- Related reference: [`DocSiteOptions`](/reference/options/docsite-options)
-- Related reference: [`BlogSiteOptions`](/reference/options/blogsite-options)
-- Background: [MonorailCSS integration](/explanation/rendering/monorail-css)
+- How-to: [Customize MonorailCSS](xref:how-to.configuration.monorail-css)
+- Related reference: [`DocSiteOptions`](xref:reference.options.docsite-options)
+- Related reference: [`BlogSiteOptions`](xref:reference.options.blogsite-options)
+- Background: [MonorailCSS integration](xref:explanation.rendering.monorail-css)

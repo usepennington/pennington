@@ -80,8 +80,8 @@ M:GettingStartedMinimalSiteExample.Stage3.Run(System.String[])
 
 ## See also
 
-- Related reference: [DI and middleware extension methods](/reference/host/extensions)
-- Related reference: [Build report fields](/reference/diagnostics/build-report)
-- How-to: [Build a static site](/how-to/deployment/static-build)
-- How-to: [Host under a sub-path (base URL)](/how-to/deployment/base-url)
-- Background: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build)
+- Related reference: [DI and middleware extension methods](xref:reference.host.extensions)
+- Related reference: [Build report fields](xref:reference.diagnostics.build-report)
+- How-to: [Build a static site](xref:how-to.deployment.static-build)
+- How-to: [Host under a sub-path (base URL)](xref:how-to.deployment.base-url)
+- Background: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build)

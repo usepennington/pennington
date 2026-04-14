@@ -47,7 +47,7 @@ _One sentence. Registers a single markdown source with `DocFrontMatter`, `Conten
 
 ## See also
 
-- How-to: [Use multiple content sources](/how-to/configuration/multiple-sources)
-- Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
-- Related reference: [`DocSiteOptions`](/reference/options/docsite-options)
-- Background: [When is DocSite the right starting point?](/explanation/core/docsite-positioning)
+- How-to: [Use multiple content sources](xref:how-to.configuration.multiple-sources)
+- Related reference: [`PenningtonOptions`](xref:reference.options.pennington-options)
+- Related reference: [`DocSiteOptions`](xref:reference.options.docsite-options)
+- Background: [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning)

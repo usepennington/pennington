@@ -9,7 +9,7 @@ uid: reference.front-matter.ifrontmatter
 
 > **In this page.** The `IFrontMatter` contract, which keys have default implementations, and how the consolidated capabilities (`ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`) surface as default members.
 >
-> **Not in this page.** The rationale for consolidation — see the Explanation page [The front-matter capability system](/explanation/core/front-matter-capabilities).
+> **Not in this page.** The rationale for consolidation — see the Explanation page [The front-matter capability system](xref:explanation.core.front-matter-capabilities).
 
 ## Summary
 
@@ -74,7 +74,7 @@ T:Pennington.FrontMatter.ISectionable
 
 | Name | Type | Description |
 |---|---|---|
-| `SectionLabel` | `string?` | _One-sentence: human-readable section label surfaced on breadcrumbs and prev/next navigation — it does **not** drive sidebar grouping (the content subfolder does; see [Navigation types](/reference/extension-points/navigation))._ |
+| `SectionLabel` | `string?` | _One-sentence: human-readable section label surfaced on breadcrumbs and prev/next navigation — it does **not** drive sidebar grouping (the content subfolder does; see [Navigation types](xref:reference.extension-points.navigation))._ |
 
 _Implemented by `DocFrontMatter` and `DocSiteFrontMatter`._
 
@@ -88,7 +88,7 @@ T:Pennington.FrontMatter.IRedirectable
 |---|---|---|
 | `RedirectUrl` | `string?` | _One-sentence: when non-null, the page is emitted as a meta-refresh stub pointing at the target URL with `<meta name="robots" content="noindex">` applied._ |
 
-_Implemented by `DocSiteFrontMatter` and `BlogSiteFrontMatter`; the how-to [Configure redirects](/how-to/content-authoring/redirects) covers authoring practice._
+_Implemented by `DocSiteFrontMatter` and `BlogSiteFrontMatter`; the how-to [Configure redirects](xref:how-to.content-authoring.redirects) covers authoring practice._
 
 ## Example
 
@@ -102,7 +102,7 @@ _A single sentence of context: this is the reference shape for declaring a custo
 
 ## See also
 
-- How-to: [Work with front matter](/how-to/content-authoring/front-matter)
-- Related reference: [Front matter key reference](/reference/front-matter/keys)
-- Related reference: [Built-in front-matter types](/reference/front-matter/built-in-types)
-- Background: [The front-matter capability system](/explanation/core/front-matter-capabilities)
+- How-to: [Work with front matter](xref:how-to.content-authoring.front-matter)
+- Related reference: [Front matter key reference](xref:reference.front-matter.keys)
+- Related reference: [Built-in front-matter types](xref:reference.front-matter.built-in-types)
+- Background: [The front-matter capability system](xref:explanation.core.front-matter-capabilities)

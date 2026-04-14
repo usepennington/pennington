@@ -109,7 +109,7 @@ _One sentence: `OutlineNavigation` does not read `NavigationInfo` at all — it 
 
 ## See also
 
-- How-to: [Customize the sidebar](/how-to/content-authoring/customize-sidebar)
-- Related reference: [Navigation types](/reference/extension-points/navigation)
-- Related reference: [Content components](/reference/ui/content)
+- How-to: [Customize the sidebar](xref:how-to.content-authoring.customize-sidebar)
+- Related reference: [Navigation types](xref:reference.extension-points.navigation)
+- Related reference: [Content components](xref:reference.ui.content)
 - Background: TODO — explanation page on the navigation model (not yet authored in TOC)

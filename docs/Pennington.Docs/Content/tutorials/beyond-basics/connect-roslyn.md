@@ -9,7 +9,7 @@ uid: tutorials.beyond-basics.connect-roslyn
 
 > **In this page.** Point Pennington at a `.sln` via `SolutionPath`, use `xmldocid` code fences to pull method and class snippets straight from source, and let hot reload update the docs when the source changes.
 >
-> **Not in this page.** Generating full API-reference pages (that requires the planned surface beyond the current `Pennington.Roslyn` package) and authoring a custom Razor component for markdown — that is the next tutorial, [Author a custom Razor component for markdown](/tutorials/beyond-basics/custom-razor-component).
+> **Not in this page.** Generating full API-reference pages (that requires the planned surface beyond the current `Pennington.Roslyn` package) and authoring a custom Razor component for markdown — that is the next tutorial, [Author a custom Razor component for markdown](xref:tutorials.beyond-basics.custom-razor-component).
 
 ## What you'll do
 
@@ -22,7 +22,7 @@ _**Skill** (one sentence): you'll know how to register `Pennington.Roslyn`, set 
 _Keep this list to tools and prior tutorials only. The reader arrives with a working DocSite host from the docsite section — they're about to add one DI call and one sibling class library._
 
 - .NET 11 SDK installed
-- Completed [Scaffold a documentation site with DocSite](/tutorials/docsite/scaffold) (or have an equivalent DocSite host ready)
+- Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (or have an equivalent DocSite host ready)
 - A C# project or class library you want to fence into docs (we'll build a tiny one in unit 1)
 
 The finished code for this tutorial lives in [`examples/BeyondRoslynExample`](https://github.com/usepennington/pennington/tree/main/examples/BeyondRoslynExample).

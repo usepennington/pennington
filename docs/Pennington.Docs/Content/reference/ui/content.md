@@ -9,7 +9,7 @@ uid: reference.ui.content
 
 > **In this page.** `Card`, `CardGrid`, `LinkCard`, `Badge`, `Step`, `Steps`, `CodeBlock`, and `BigTable` — parameters, render behavior, and the component surface used from Mdazor-backed markdown content and Razor pages.
 >
-> **Not in this page.** Mdazor parser internals or step-by-step authoring workflow — see [Use UI components inside markdown](/how-to/content-authoring/ui-components-in-markdown).
+> **Not in this page.** Mdazor parser internals or step-by-step authoring workflow — see [Use UI components inside markdown](xref:how-to.content-authoring.ui-components-in-markdown).
 
 ## Summary
 
@@ -20,7 +20,7 @@ _**One sentence: where it lives.** Namespace `Pennington.UI.Components` (project
 
 | Component | Purpose | Razor usage | Markdown (Mdazor) usage |
 |---|---|---|---|
-| `Badge` | Inline pill rendering a short label in one of five variants. | `<Badge Text="New" Variant="tip" />` | `<Badge>New</Badge>` or `<Badge Text="New" Variant="tip" />` |
+| `Badge` | Inline pill rendering a short label in one of five variants. | `<Badge Text="New" Variant="tip" />` | `<Badge Text="New" Variant="tip" />` |
 | `BigTable` | Wraps a wide table in a horizontal-scroll container. | `<BigTable>@ChildContent</BigTable>` | `<BigTable>` ... markdown table ... `</BigTable>` |
 | `Card` | Static callout card with optional icon and title. | `<Card Title="..." Color="primary">@ChildContent</Card>` | `<Card Title="..." Color="primary">` ... `</Card>` |
 | `CardGrid` | Responsive grid container for Card / LinkCard children. | `<CardGrid Columns="3">@ChildContent</CardGrid>` | `<CardGrid Columns="3">` ... `</CardGrid>` |
@@ -241,7 +241,6 @@ For sites that do not use `AddDocSite` (for example, `AddBlogSite` or a hand-rol
 
 ## See also
 
-- How-to: [Use UI components inside markdown](/how-to/content-authoring/ui-components-in-markdown)
-- Related reference: [Navigation components](/reference/ui/navigation)
-- Related reference: [Utility components](/reference/ui/utility)
-- Background: [Why Pennington ships Razor components for markdown content](/explanation/ui/mdazor-components) _TODO: confirm final explanation URL once wave 4 is authored._
+- How-to: [Use UI components inside markdown](xref:how-to.content-authoring.ui-components-in-markdown)
+- Related reference: [Navigation components](xref:reference.ui.navigation)
+- Related reference: [Utility components](xref:reference.ui.utility)

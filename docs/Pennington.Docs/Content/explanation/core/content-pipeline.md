@@ -74,6 +74,6 @@ _Two to four bullets. Name the real costs, not stylistic preferences. Required b
 
 _Two to four cross-quadrant links, one per line. Do NOT include a sibling explanation link (those auto-generate). Suggested set:_
 
-- Reference: [Content pipeline interfaces](/reference/extension-points/content-pipeline/) — the catalog of `IContentService`, `IContentParser`, `IContentRenderer`, and every case record with members.
-- How-to: [Implement a custom `IContentService`](/how-to/extensibility/custom-content-service/) — how to plug a new source into the Discovery stage.
+- Reference: [Content pipeline interfaces](xref:reference.extension-points.content-pipeline) — the catalog of `IContentService`, `IContentParser`, `IContentRenderer`, and every case record with members.
+- How-to: [Implement a custom `IContentService`](xref:how-to.extensibility.custom-content-service) — how to plug a new source into the Discovery stage.
 - External: _TODO — cite the C# 11/15 unions design note or an Ekblad/Eric Lippert post on discriminated unions if one is on record; otherwise drop this bullet._

@@ -16,13 +16,13 @@ tags: [localization, locales, translations, routing]
 _Two sentences. Frame the realistic arrival: the reader already has a working single-locale site (DocSite or bare `AddPennington`) and needs to ship a second language. Point back to the tutorial for first-time readers so they do not land here before they have ever touched a locale._
 
 > [!TIP]
-> If this is your first locale, start with the tutorial [Add a second locale to your site](/tutorials/beyond-basics/add-a-locale) — it walks through the same moving parts at a teaching pace.
+> If this is your first locale, start with the tutorial [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale) — it walks through the same moving parts at a teaching pace.
 
 ## Assumptions
 
 _Keep to 3 bullets. The reader must already have a working site; translating content and enabling routing belongs on top of that, not alongside a first-time setup._
 
-- You have an existing Pennington site with at least one markdown page (see [Create your first Pennington site](/tutorials/getting-started/first-site) if not)
+- You have an existing Pennington site with at least one markdown page (see [Create your first Pennington site](xref:tutorials.getting-started.first-site) if not)
 - You are on either an `AddDocSite` host (which accepts a `ConfigureLocalization` callback) or a bare `AddPennington` host (which exposes `LocalizationOptions` directly on `PenningtonOptions.Localization`)
 - Your default-locale content already lives directly under `ContentRootPath` (not in a locale subfolder) — Pennington treats the default locale as URL-root and every other locale as URL-prefixed
 
@@ -112,7 +112,7 @@ _Terse. Four bullets, one per moving part so each can be checked independently._
 
 _Three cross-quadrant links. Reference for the exhaustive options surface, Reference for translation plumbing, Explanation for the routing model, plus the tutorial cross-link for first-time readers._
 
-- Tutorial: [Add a second locale to your site](/tutorials/beyond-basics/add-a-locale)
-- Reference: [`LocalizationOptions`](/reference/options/localization-options)
-- Reference: [`TranslationOptions`](/reference/options/translations)
+- Tutorial: [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale)
+- Reference: [`LocalizationOptions`](xref:reference.options.localization-options)
+- Reference: [`TranslationOptions`](xref:reference.options.translations)
 - Background: TODO — Explanation page on locale routing and content fallback (not yet written in TOC)

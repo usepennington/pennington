@@ -93,6 +93,6 @@ _Three to four bullets. Name the real costs, not stylistic preferences._
 
 _Three cross-quadrant links, one per line. Do NOT include the sibling explanation link (highlighting) — that is auto-generated._
 
-- Reference: [`MonorailCssOptions`](/reference/options/monorail-css-options/) — the full option surface with defaults.
-- How-to: [Customize MonorailCSS](/how-to/configuration/monorail-css/) — swapping schemes, injecting `CustomCssFrameworkSettings`, and wiring `ContentPaths`.
+- Reference: [`MonorailCssOptions`](xref:reference.options.monorail-css-options) — the full option surface with defaults.
+- How-to: [Customize MonorailCSS](xref:how-to.configuration.monorail-css) — swapping schemes, injecting `CustomCssFrameworkSettings`, and wiring `ContentPaths`.
 - External: [MonorailCSS upstream documentation](https://monorailcss.com/) — TODO confirm the canonical MonorailCSS docs URL before publish; currently a placeholder.

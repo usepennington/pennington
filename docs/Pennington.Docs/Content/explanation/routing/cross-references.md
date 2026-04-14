@@ -69,8 +69,8 @@ _During a static build, the unified dev-and-build code path pays off. `OutputGen
 
 ## Further reading
 
-- Reference: [Response processing interfaces](/reference/extension-points/response-processing) — the member catalog for `IHtmlResponseRewriter`, `XrefHtmlRewriter`, and execution order.
-- Reference: [Markdown extensions catalog](/reference/markdown/extensions) — cross-reference tag and attribute syntax alongside the other non-CommonMark features.
-- How-to: [Cross-reference pages by `uid`](/how-to/content-authoring/cross-references) — the authoring recipe for setting `uid:` and linking with `<xref:uid>` or `[text](xref:uid)`.
-- Related explanation: [The response-processing pipeline](/explanation/core/response-processing) — why xref resolution lives inside the shared AngleSharp pass and runs first in the rewriter order.
-- Related explanation: [URL paths and content routes](/explanation/routing/url-paths) — the `UrlPath`/`ContentRoute` value types that `CrossReference` carries into the resolver.
+- Reference: [Response processing interfaces](xref:reference.extension-points.response-processing) — the member catalog for `IHtmlResponseRewriter`, `XrefHtmlRewriter`, and execution order.
+- Reference: [Markdown extensions catalog](xref:reference.markdown.extensions) — cross-reference tag and attribute syntax alongside the other non-CommonMark features.
+- How-to: [Cross-reference pages by `uid`](xref:how-to.content-authoring.cross-references) — the authoring recipe for setting `uid:` and linking with `<xref:uid>` or `[text](xref:uid)`.
+- Related explanation: [The response-processing pipeline](xref:explanation.core.response-processing) — why xref resolution lives inside the shared AngleSharp pass and runs first in the rewriter order.
+- Related explanation: [URL paths and content routes](xref:explanation.routing.url-paths) — the `UrlPath`/`ContentRoute` value types that `CrossReference` carries into the resolver.

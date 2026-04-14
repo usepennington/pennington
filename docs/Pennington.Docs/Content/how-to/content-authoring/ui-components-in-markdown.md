@@ -9,7 +9,7 @@ tags: [authoring, components, mdazor, razor]
 
 > **In this page.** _Paraphrase TOC "Covers": dropping Pennington.UI components into markdown through Mdazor-backed rendering, plus the one-line `AddMdazorComponent<T>()` registration shape needed when you are on a bare `AddPennington` host instead of `AddDocSite`/`AddBlogSite` (which register the eight built-ins for you)._
 >
-> **Not in this page.** _Paraphrase TOC "Does not cover": the full Mdazor parser internals and broader DocSite layout customization. Point to [Customize DocSite layouts and components](/how-to/extensibility/override-docsite-components) and to the [Author a custom Razor component for markdown](/tutorials/beyond-basics/custom-razor-component) tutorial when the reader wants to write a new component._
+> **Not in this page.** _Paraphrase TOC "Does not cover": the full Mdazor parser internals and broader DocSite layout customization. Point to [Customize DocSite layouts and components](xref:how-to.extensibility.override-docsite-components) and to the [Author a custom Razor component for markdown](xref:tutorials.beyond-basics.custom-razor-component) tutorial when the reader wants to write a new component._
 
 ## When to use this
 
@@ -19,7 +19,7 @@ _Two sentences. Frame the realistic arrival state: the reader already has a DocS
 
 _Three bullets. Each is realistic prior state, not a tutorial step. Keep to the minimum the recipe depends on._
 
-- You have a working Pennington site that renders markdown (see the [Getting Started tutorial](/tutorials/getting-started/minimal-site) if not).
+- You have a working Pennington site that renders markdown (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - Your host calls `AddDocSite`, `AddBlogSite`, or `AddPennington` — the first two register the eight Pennington.UI components for you; the last requires the one-line registration shown in step 4.
 - Component tag names start with an uppercase letter and match the Razor component type name — case-sensitive on the leading character (e.g. `<Card>`, not `<card>`).
 
@@ -99,6 +99,6 @@ _Three bullets. Each is one observable check the reader can run without reading 
 
 _Three cross-quadrant links. Reference for the component parameter catalog, the custom-component tutorial for authoring a new component, and the override how-to for layout-level changes. Do not link to the next how-to in this section — generated automatically._
 
-- Reference: [Content components](/reference/ui/content) — parameters and render behaviour for `Card`, `CardGrid`, `LinkCard`, `Badge`, `Step`, `Steps`, `CodeBlock`, and `BigTable`.
-- Tutorial: [Author a custom Razor component for markdown](/tutorials/beyond-basics/custom-razor-component) — write your own `<PricingCard>`-style component and wire it through `AddMdazorComponent<T>()`.
-- How-to: [Customize DocSite layouts and components](/how-to/extensibility/override-docsite-components) — when you need to change the surrounding page, not just embed a tag inside markdown.
+- Reference: [Content components](xref:reference.ui.content) — parameters and render behaviour for `Card`, `CardGrid`, `LinkCard`, `Badge`, `Step`, `Steps`, `CodeBlock`, and `BigTable`.
+- Tutorial: [Author a custom Razor component for markdown](xref:tutorials.beyond-basics.custom-razor-component) — write your own `<PricingCard>`-style component and wire it through `AddMdazorComponent<T>()`.
+- How-to: [Customize DocSite layouts and components](xref:how-to.extensibility.override-docsite-components) — when you need to change the surrounding page, not just embed a tag inside markdown.

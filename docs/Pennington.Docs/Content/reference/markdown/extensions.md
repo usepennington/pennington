@@ -22,10 +22,10 @@ _Single scannable table listing every extension covered below. Keep rows in the 
 
 | Extension | Syntax | Controlled by | Doc page |
 |---|---|---|---|
-| Tabs | Adjacent fences with `tabs=true` | `UseTabbedCodeBlocks` | [Tabbed code](/how-to/content-authoring/tabbed-code) |
-| Alerts | `> [!KIND]` inside blockquote | `UseCustomAlerts` | [Alerts](/how-to/content-authoring/alerts) |
-| Code annotations | Trailing-comment `[!code …]` directive | `UseSyntaxHighlighting` | [Code annotations](/how-to/content-authoring/code-annotations) |
-| Cross-reference tags | `<xref:uid>` or `href="xref:uid"` | `XrefHtmlRewriter` (response stage) | [Cross-references](/how-to/content-authoring/cross-references) |
+| Tabs | Adjacent fences with `tabs=true` | `UseTabbedCodeBlocks` | [Tabbed code](xref:how-to.content-authoring.tabbed-code) |
+| Alerts | `> [!KIND]` inside blockquote | `UseCustomAlerts` | [Alerts](xref:how-to.content-authoring.alerts) |
+| Code annotations | Trailing-comment `[!code …]` directive | `UseSyntaxHighlighting` | [Code annotations](xref:how-to.content-authoring.code-annotations) |
+| Cross-reference tags | `<xref:uid>` or `href="xref:uid"` | `XrefHtmlRewriter` (response stage) | [Cross-references](xref:how-to.content-authoring.cross-references) |
 
 ## Tabs
 
@@ -52,7 +52,7 @@ _One sentence: each fenced block in the consecutive run becomes a tab panel; onl
 | `tabs` | `true` | — (absent) | First fence in the group | Marks a fenced block as the start of a tabbed run; consecutive subsequent fences join the same group. |
 | `title` | string (optionally quoted) | Pretty language name derived from the info string | Each fence in the group | Overrides the label shown on the tab button. |
 
-_Argument parsing is `key=value` pairs, quoted values allowed; see [Code-block argument reference](/reference/markdown/code-block-args) for the full grammar._
+_Argument parsing is `key=value` pairs, quoted values allowed; see [Code-block argument reference](xref:reference.markdown.code-block-args) for the full grammar._
 
 ### Emitted CSS classes
 
@@ -164,11 +164,15 @@ _Summary of the classes listed above: line-level classes (`highlight`, `diff-add
 
 ### Minimal example
 
-_One sentence: TODO — pick one short annotated fence from an examples project (likely the content-authoring how-to backing example) that exercises `[!code highlight]` and `[!code ++]`._
+_One sentence: an annotated fence exercising `[!code highlight]` on one line and `[!code ++]` / `[!code --]` on others — the `<pre>` inherits `has-highlighted` and `has-diff` and the trailing comments are stripped from the emitted output._
 
-```text
-TODO: xmldocid for a short code-annotations snippet from examples/ (content-authoring how-to example), bodyonly.
+````markdown
+```csharp
+var message = "hello";   // [!code highlight]
+var added = "added";     // [!code ++]
+var removed = "gone";    // [!code --]
 ```
+````
 
 ## Cross-reference tags
 
@@ -194,10 +198,12 @@ _The rewriter emits a standard `<a href="…">` element with no added class — 
 
 ### Minimal example
 
-_One sentence: TODO — identify whether an examples/ project carries an `xref:` sample; otherwise cite the how-to page directly as the canonical example._
+_One sentence: both surface forms resolving the same uid — the tag form derives its link text from the target page's title, the attribute form uses the supplied label verbatim._
 
-```text
-TODO: xmldocid for a markdown snippet that includes an xref link, or drop this code fence and link to /how-to/content-authoring/cross-references.
+```markdown
+See <xref:reference.options.pennington-options> for the full options catalog.
+
+Configure MonorailCSS through [the options record](xref:reference.options.monorail-css-options).
 ```
 
 _Backing rewriter:_
@@ -208,8 +214,8 @@ T:Pennington.Infrastructure.XrefHtmlRewriter
 
 ## See also
 
-- How-to: [Tabbed code](/how-to/content-authoring/tabbed-code)
-- How-to: [Alerts](/how-to/content-authoring/alerts)
-- How-to: [Code annotations](/how-to/content-authoring/code-annotations)
-- How-to: [Cross-references](/how-to/content-authoring/cross-references)
-- Related reference: [Code-block argument reference](/reference/markdown/code-block-args)
+- How-to: [Tabbed code](xref:how-to.content-authoring.tabbed-code)
+- How-to: [Alerts](xref:how-to.content-authoring.alerts)
+- How-to: [Code annotations](xref:how-to.content-authoring.code-annotations)
+- How-to: [Cross-references](xref:how-to.content-authoring.cross-references)
+- Related reference: [Code-block argument reference](xref:reference.markdown.code-block-args)

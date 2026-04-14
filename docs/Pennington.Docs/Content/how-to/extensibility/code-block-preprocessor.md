@@ -13,13 +13,13 @@ tags: [extensibility, markdown, highlighting, preprocessor]
 
 ## When to use this
 
-_Two sentences. Frame the goal: the reader has a fence info string they want to claim (e.g. a custom `:modifier` or a whole language id) and they need to bypass the highlighter chain with pre-rendered HTML — picture a plaintext wrapper, a chart block, or the shipped xmldocid resolution. Call out that trailing-comment directives (see [Annotate code blocks](/how-to/content-authoring/code-annotations)) are the right tool when all you need is line classes._
+_Two sentences. Frame the goal: the reader has a fence info string they want to claim (e.g. a custom `:modifier` or a whole language id) and they need to bypass the highlighter chain with pre-rendered HTML — picture a plaintext wrapper, a chart block, or the shipped xmldocid resolution. Call out that trailing-comment directives (see [Annotate code blocks](xref:how-to.content-authoring.code-annotations)) are the right tool when all you need is line classes._
 
 ## Assumptions
 
 _Three bullets. Realistic prior state only — no tutorial-style setup._
 
-- You have an existing Pennington site with markdown rendering already wired (see the [Getting Started tutorial](/tutorials/getting-started/minimal-site) if not).
+- You have an existing Pennington site with markdown rendering already wired (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - You have picked the fence identifier your preprocessor will claim — either a full `languageId` (`linecount`) or a `:modifier` suffix (`csharp:xmldocid`) — and you know the other preprocessors currently registered so you can pick a `Priority`.
 - You are comfortable producing HTML yourself: the preprocessor owns the rendered `<pre><code>…</code></pre>` when it returns a result, the default highlighter does not run again on that block.
 
@@ -83,6 +83,6 @@ _Three bullets. Observable checks, no prose._
 
 ## Related
 
-- Reference: [Highlighting interfaces](/reference/extension-points/highlighting) — full signatures for `ICodeHighlighter`, `ICodeBlockPreprocessor`, `HighlightingService`, and `TextMateLanguageRegistry`
-- How-to: [Annotate code blocks](/how-to/content-authoring/code-annotations) — use trailing-comment directives when you just need line classes and do not need to take over rendering
-- Background: [The syntax-highlighting cascade](/explanation/rendering/highlighting) — why preprocessors run before the highlighter and how `CodeTransformer` interacts with `SkipTransform`
+- Reference: [Highlighting interfaces](xref:reference.extension-points.highlighting) — full signatures for `ICodeHighlighter`, `ICodeBlockPreprocessor`, `HighlightingService`, and `TextMateLanguageRegistry`
+- How-to: [Annotate code blocks](xref:how-to.content-authoring.code-annotations) — use trailing-comment directives when you just need line classes and do not need to take over rendering
+- Background: [The syntax-highlighting cascade](xref:explanation.rendering.highlighting) — why preprocessors run before the highlighter and how `CodeTransformer` interacts with `SkipTransform`

@@ -19,7 +19,7 @@ _Two sentences. Frame the arrival state: the reader already has a DocSite with s
 
 _Keep to 3 bullets. Prior state must already include a working DocSite with at least two pages so the uid lookup is meaningful._
 
-- You have a working Pennington site with markdown under `Content/` (see [Work with front matter](/how-to/content-authoring/front-matter) if not)
+- You have a working Pennington site with markdown under `Content/` (see [Work with front matter](xref:how-to.content-authoring.front-matter) if not)
 - Your pages use `DocSiteFrontMatter` (or another type whose base `IFrontMatter` default member for `Uid` is preserved)
 - You are on the standard response-processing pipeline — i.e. `UsePennington` / `UseDocSite` is wired so `XrefHtmlRewriter` runs on every HTML response
 
@@ -106,6 +106,6 @@ _Terse. One bullet per form plus one for the failure path, so the reader can con
 
 _Two to four cross-quadrant links. Point at Reference for the full rewriter catalog and the front-matter key table, and at Explanation for the resolution model. Do not link to the next how-to in this section — generated automatically._
 
-- Reference: [Response processing interfaces](/reference/extension-points/response-processing)
-- Reference: [Front matter key reference](/reference/front-matter/keys)
-- Background: [Cross-reference resolution](/explanation/routing/cross-references)
+- Reference: [Response processing interfaces](xref:reference.extension-points.response-processing)
+- Reference: [Front matter key reference](xref:reference.front-matter.keys)
+- Background: [Cross-reference resolution](xref:explanation.routing.cross-references)

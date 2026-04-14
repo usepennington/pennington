@@ -79,7 +79,7 @@ _Required section. Two to four bullets. Name real costs — not "it's more compl
 
 _Two to four cross-quadrant links, one per line. Do NOT link to the sibling explanation page on URL paths — that is auto-generated as prev/next. Suggested set:_
 
-- Reference: [Navigation components (`TableOfContentsNavigation`, `OutlineNavigation`)](/reference/ui-components/navigation/) — the UI that consumes the tree `NavigationBuilder` returns.
-- How-to: [Customize the sidebar](/how-to/content-authoring/customize-sidebar/) — the recipe that leans on the ordering rules this page explains.
-- How-to: [Organize content with sections and areas](/tutorials/docsite/sections-and-areas/) — the tutorial that introduces folder-driven grouping for new authors. _TODO: swap to a how-to link if a Wave-2 page on sidebar organization exists._
+- Reference: [Navigation components (`TableOfContentsNavigation`, `OutlineNavigation`)](xref:reference.ui.navigation) — the UI that consumes the tree `NavigationBuilder` returns.
+- How-to: [Customize the sidebar](xref:how-to.content-authoring.customize-sidebar) — the recipe that leans on the ordering rules this page explains.
+- How-to: [Organize content with sections and areas](xref:tutorials.docsite.sections-and-areas) — the tutorial that introduces folder-driven grouping for new authors. _TODO: swap to a how-to link if a Wave-2 page on sidebar organization exists._
 - External: _TODO — cite the MyLittleContentEngine or VitePress sidebar-derivation docs if an equivalent write-up exists; otherwise drop this bullet._

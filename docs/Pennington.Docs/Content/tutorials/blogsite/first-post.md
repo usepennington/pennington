@@ -26,7 +26,7 @@ _**Skill** (one sentence): you'll know every `BlogSiteFrontMatter` field a post 
 _Keep this list short. The scaffold tutorial established the `AddBlogSite` + `UseBlogSite` + `RunBlogSiteAsync` host. This tutorial does not re-register content services — it only edits a markdown file and sets one explicit flag. Don't explain the host shape again; link back to the scaffold tutorial._
 
 - .NET 11 SDK installed
-- Completed [Scaffold a blog with BlogSite](/tutorials/blogsite/scaffold) (or have that example's `Program.cs` and a single placeholder post ready to reuse)
+- Completed [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold) (or have that example's `Program.cs` and a single placeholder post ready to reuse)
 - A code editor that renders YAML front matter cleanly (VS Code, Rider, etc.)
 
 The finished code for this tutorial lives in [`examples/BlogSiteFirstPostExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteFirstPostExample).

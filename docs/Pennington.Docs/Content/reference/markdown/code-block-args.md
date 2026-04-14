@@ -9,7 +9,7 @@ uid: reference.markdown.code-block-args
 
 > **In this page.** _One sentence paraphrased from `docs-toc.md`: the fence info-string grammar — language token, key/value attributes, quoted values — and the trailing-comment `[!code …]` directive grammar used for line annotations._
 >
-> **Not in this page.** _One sentence paraphrased from `docs-toc.md`: theme selection at render time belongs to the syntax-highlighting cascade — see Explanation [The syntax-highlighting cascade](/explanation/rendering/highlighting)._
+> **Not in this page.** _One sentence paraphrased from `docs-toc.md`: theme selection at render time belongs to the syntax-highlighting cascade — see Explanation [The syntax-highlighting cascade](xref:explanation.rendering.highlighting)._
 
 ## Summary
 
@@ -80,7 +80,7 @@ M:Pennington.Markdown.Extensions.CodeTransformer.Transform(System.String)
 
 ## See also
 
-- How-to: [Annotate code blocks](/how-to/content-authoring/code-annotations)
-- How-to: [Create tabbed code groups](/how-to/content-authoring/tabbed-code)
-- Related reference: [Markdown extensions catalog](/reference/markdown/extensions)
-- Background: [The syntax-highlighting cascade](/explanation/rendering/highlighting)
+- How-to: [Annotate code blocks](xref:how-to.content-authoring.code-annotations)
+- How-to: [Create tabbed code groups](xref:how-to.content-authoring.tabbed-code)
+- Related reference: [Markdown extensions catalog](xref:reference.markdown.extensions)
+- Background: [The syntax-highlighting cascade](xref:explanation.rendering.highlighting)

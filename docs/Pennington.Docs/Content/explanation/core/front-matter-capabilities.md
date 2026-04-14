@@ -9,7 +9,7 @@ uid: explanation.core.front-matter-capabilities
 
 > **In this page.** Why capability interfaces (`ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`) were collapsed into `IFrontMatter` default members, what that buys users, and how to extend with custom keys.
 >
-> **Not in this page.** Key-by-key documentation — see the [Front matter key reference](/reference/front-matter/keys).
+> **Not in this page.** Key-by-key documentation — see the [Front matter key reference](xref:reference.front-matter.keys).
 
 ## The question
 
@@ -64,6 +64,6 @@ _Three to four bullets. Name what the consolidation costs, what it ruled out, an
 
 _Three cross-quadrant links. Do not link to the neighboring explanation (`dev-vs-build`, `response-processing`) — those are auto-linked. Point outward to the reference catalog, the authoring how-to, and (optionally) external writing on default interface members._
 
-- Reference: [IFrontMatter and capability defaults](/reference/front-matter/ifrontmatter)
-- Reference: [Front matter key reference](/reference/front-matter/keys)
-- How-to: [Work with front matter](/how-to/content-authoring/front-matter)
+- Reference: [IFrontMatter and capability defaults](xref:reference.front-matter.ifrontmatter)
+- Reference: [Front matter key reference](xref:reference.front-matter.keys)
+- How-to: [Work with front matter](xref:how-to.content-authoring.front-matter)

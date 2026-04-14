@@ -9,7 +9,7 @@ tags: [diagnostics, build, reference]
 
 > **In this page.** _One sentence. Field-by-field catalog of `BuildReport`, `BuildDiagnostic`, `BrokenLink`, and the `DiagnosticSeverity` levels they carry, plus how to read `Duration`, `GeneratedPages`, and `FailedPages`._
 >
-> **Not in this page.** _One sentence. The meaning of individual warning messages at the per-rule level is not covered here; nor is the request-scoped `DiagnosticContext` used during rendering — see [Request-scoped diagnostics](/reference/diagnostics/request-context)._
+> **Not in this page.** _One sentence. The meaning of individual warning messages at the per-rule level is not covered here; nor is the request-scoped `DiagnosticContext` used during rendering — see [Request-scoped diagnostics](xref:reference.diagnostics.request-context)._
 
 ## Summary
 
@@ -139,7 +139,7 @@ _One sentence: minimal post-build handler that prints the report via `WriteTo(Co
 
 ## See also
 
-- Related reference: [Request-scoped diagnostics](/reference/diagnostics/request-context)
-- Related reference: [CLI and build arguments](/reference/host/cli)
-- How-to: [Build a static site](/how-to/deployment/static-build)
+- Related reference: [Request-scoped diagnostics](xref:reference.diagnostics.request-context)
+- Related reference: [CLI and build arguments](xref:reference.host.cli)
+- How-to: [Build a static site](xref:how-to.deployment.static-build)
 - Background: TODO — the Diagnostics explanation page on why `BuildReport` and the request-scoped `DiagnosticContext` are split surfaces is not yet in the TOC.

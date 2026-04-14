@@ -19,7 +19,7 @@ _Two sentences. Cover the two triggers: you want to embed an image that belongs 
 
 _Short bulleted list. Do not re-teach setup._
 
-- You have an existing Pennington site with at least one markdown page (see [_Add your first markdown page_](/tutorials/getting-started/first-page) if not).
+- You have an existing Pennington site with at least one markdown page (see [_Add your first markdown page_](xref:tutorials.getting-started.first-page) if not).
 - You know which markdown file you want the image to appear on.
 - Your project has a `wwwroot/` folder for shared static files (the default for Web SDK projects).
 
@@ -69,6 +69,6 @@ M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions
 
 ## Related
 
-- Reference: [_`MarkdownContentServiceOptions`_](/reference/options/markdown-content-service-options) — `ContentPath`, `ExcludePaths`, `FilePattern`.
-- Reference: [_Front matter key reference_](/reference/front-matter/keys) — when an image is set as a social card or cover image via front matter.
-- Background: [_How Pennington builds the output directory_](/explanation/pipeline/build-output) — how `GetContentToCopyAsync` fits the content pipeline.
+- Reference: [_`MarkdownContentServiceOptions`_](xref:reference.options.markdown-content-options) — `ContentPath`, `ExcludePaths`, `FilePattern`.
+- Reference: [_Front matter key reference_](xref:reference.front-matter.keys) — when an image is set as a social card or cover image via front matter.
+- Background: [_How Pennington builds the output directory_](xref:explanation.core.dev-vs-build) — how `GetContentToCopyAsync` fits the content pipeline.

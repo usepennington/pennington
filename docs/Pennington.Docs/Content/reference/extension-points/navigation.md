@@ -9,14 +9,14 @@ uid: reference.extension-points.navigation
 
 > **In this page.** `NavigationBuilder`, `NavigationInfo`, `NavigationTreeItem`, and `BreadcrumbItem`.
 >
-> **Not in this page.** Replacing the default sidebar — see the UI-component reference [Navigation components](/reference/ui/navigation).
+> **Not in this page.** Replacing the default sidebar — see the UI-component reference [Navigation components](xref:reference.ui.navigation).
 
 ## Summary
 
 _**One sentence: what it is.** The builder plus three record types that fold a flat `IReadOnlyList<ContentTocItem>` into the hierarchical navigation shapes (tree, prev/next, breadcrumbs) the DocSite layout and `TableOfContentsNavigation` / `OutlineNavigation` components consume._
 _**One sentence: where it lives.** Namespace `Pennington.Navigation` (`src/Pennington/Navigation/`); `NavigationBuilder` is registered by `AddPennington` and injected wherever a request needs to render navigation._
 
-_No "why" sentences — the rationale for auto-created section nodes and locale-prefix stripping lives in the explanation [Navigation-tree construction](/explanation/routing/navigation-tree). TODO: confirm injection scope (singleton vs. scoped) when filling this in._
+_No "why" sentences — the rationale for auto-created section nodes and locale-prefix stripping lives in the explanation [Navigation-tree construction](xref:explanation.routing.navigation-tree). TODO: confirm injection scope (singleton vs. scoped) when filling this in._
 
 ## Overview
 
@@ -127,7 +127,7 @@ _Reference shape for consuming `NavigationBuilder` from a minimal ASP.NET host; 
 
 ## See also
 
-- How-to: [Customize the sidebar](/how-to/content-authoring/customize-sidebar)
-- Related reference: [Navigation components](/reference/ui/navigation)
-- Related reference: [Content pipeline interfaces](/reference/extension-points/content-pipeline)
-- Background: [Navigation-tree construction](/explanation/routing/navigation-tree)
+- How-to: [Customize the sidebar](xref:how-to.content-authoring.customize-sidebar)
+- Related reference: [Navigation components](xref:reference.ui.navigation)
+- Related reference: [Content pipeline interfaces](xref:reference.extension-points.content-pipeline)
+- Background: [Navigation-tree construction](xref:explanation.routing.navigation-tree)

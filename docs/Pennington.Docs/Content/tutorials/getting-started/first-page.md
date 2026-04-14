@@ -13,7 +13,7 @@ uid: tutorials.getting-started.first-page
 
 > **In this page.** _One sentence paraphrasing the Covers line: the reader will write a YAML front-matter block with the required `title` key, see how a file path under `Content/` becomes a URL, and watch the nav strip auto-assemble as a second and third markdown file land on disk._
 >
-> **Not in this page.** _One sentence paraphrasing the Does-not-cover line: point to the explanation on custom front-matter types and capability interfaces at `/explanation/front-matter-model`, and to the how-to on non-markdown content sources at `/how-to/content/add-non-markdown-source` — those are out of scope here._
+> **Not in this page.** _One sentence paraphrasing the Does-not-cover line: point to the explanation on capability interfaces at `xref:explanation.core.front-matter-capabilities`, and to the how-to on non-markdown content sources at `xref:how-to.extensibility.custom-content-service` — those are out of scope here._
 
 ## What you'll do
 
@@ -26,7 +26,7 @@ _**Skill** (one sentence): what the reader walks away knowing — how Pennington
 _Keep this list short. The Stage1 host code uses `AddPennington`, `UsePennington`, and a minimal `MapGet` — that's why the previous tutorial is required. Don't explain the bare host here; link back to it._
 
 - .NET 11 SDK installed
-- Completed [Spin up a minimal Pennington site](/tutorials/getting-started/first-site) (or have that example's Program.cs ready to reuse)
+- Completed [Spin up a minimal Pennington site](xref:tutorials.getting-started.first-site) (or have that example's Program.cs ready to reuse)
 - A code editor that renders YAML front matter cleanly (VS Code, Rider, etc.)
 
 The finished code for this tutorial lives in [`examples/GettingStartedFirstPageExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedFirstPageExample).

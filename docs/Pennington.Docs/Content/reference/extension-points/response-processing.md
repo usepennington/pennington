@@ -109,7 +109,7 @@ _Reference shape for a custom `IHtmlResponseRewriter` that participates in the s
 
 ## See also
 
-- How-to: [Write a response processor](/how-to/extensibility/response-processor)
-- How-to: [Write an HTML rewriter](/how-to/extensibility/html-rewriter)
-- Related reference: [Routing types](/reference/extension-points/routing)
-- Background: [The response-processing pipeline](/explanation/core/response-processing)
+- How-to: [Write a response processor](xref:how-to.extensibility.response-processor)
+- How-to: [Write an HTML rewriter](xref:how-to.extensibility.html-rewriter)
+- Related reference: [Routing types](xref:reference.extension-points.routing)
+- Background: [The response-processing pipeline](xref:explanation.core.response-processing)

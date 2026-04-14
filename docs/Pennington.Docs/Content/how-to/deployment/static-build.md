@@ -9,7 +9,7 @@ tags: [build, deployment, output-generation, build-report]
 
 > **In this page.** _Paraphrase TOC "Covers": invoking the host with `build [baseUrl] [outputDirectory]`, what the crawler-based `OutputGenerationService` actually does, and how to read the `BuildReport` it prints to stdout. Two sentences max._
 >
-> **Not in this page.** _Paraphrase TOC "Does not cover": platform-specific upload steps live on the per-host how-to pages — link out to [Deploy to GitHub Pages](/how-to/deployment/github-pages) as the canonical next step and [Host under a sub-path (base URL)](/how-to/deployment/base-url) for non-root deployments._
+> **Not in this page.** _Paraphrase TOC "Does not cover": platform-specific upload steps live on the per-host how-to pages — link out to [Deploy to GitHub Pages](xref:how-to.deployment.github-pages) as the canonical next step and [Host under a sub-path (base URL)](xref:how-to.deployment.base-url) for non-root deployments._
 
 ## When to use this
 
@@ -19,7 +19,7 @@ _Two sentences. Frame the arrival state: reader has a working Pennington site ru
 
 _Three bullets. Keep prerequisites minimal — if the list grows, the page is a tutorial._
 
-- You have a working Pennington site that serves under `dotnet run` (see [Create your first Pennington site](/tutorials/getting-started/first-site) if not)
+- You have a working Pennington site that serves under `dotnet run` (see [Create your first Pennington site](xref:tutorials.getting-started.first-site) if not)
 - Your host composes `RunOrBuildAsync` (directly, or via `RunDocSiteAsync` / `RunBlogSiteAsync`)
 - You can write to a local directory — the build deletes and re-creates `output/` by default
 
@@ -74,7 +74,7 @@ _Two sentences. `OutputGenerationService` starts the real ASP.NET host, opens an
 T:Pennington.Generation.OutputGenerationService
 ```
 
-_Cross-link: the deeper reasoning lives in [Dev mode and build mode share one code path](/explanation/core/dev-vs-build). Do not describe a separate offline renderer; there is none._
+_Cross-link: the deeper reasoning lives in [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build). Do not describe a separate offline renderer; there is none._
 
 ### 4. Read the `BuildReport` printed to stdout
 
@@ -114,6 +114,6 @@ _Terse. Three bullets the reader can eyeball without rereading the steps._
 
 _Three cross-quadrant links. Reference for the CLI surface and the report shape, background for why dev and build share a code path. Do not link the next how-to in this section — generated automatically from `order:`._
 
-- Reference: [CLI and build arguments](/reference/host/cli)
-- Reference: [Build report fields](/reference/diagnostics/build-report)
-- Background: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build)
+- Reference: [CLI and build arguments](xref:reference.host.cli)
+- Reference: [Build report fields](xref:reference.diagnostics.build-report)
+- Background: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build)

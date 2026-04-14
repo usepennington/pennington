@@ -7,7 +7,7 @@ sectionLabel: Content Authoring
 tags: [redirects, front-matter, routing]
 ---
 
-> **In this page.** _Paraphrase the TOC "Covers" line: setting `redirectUrl:` in `DocSiteFrontMatter` so the page is emitted as a meta-refresh stub with `noindex`._
+> **In this page.** _Paraphrase the TOC "Covers" line: setting `redirectUrl:` in `DocSiteFrontMatter` so the page is emitted as a meta-refresh stub that forwards to the new URL._
 >
 > **Not in this page.** _Paraphrase "Does not cover": HTTP 301 responses configured at the hosting layer, and batch redirects defined in a sidecar `_redirects.yml` file — link those out to Reference for `RedirectContentService` once that page exists (TODO: confirm target ref page)._
 
@@ -19,7 +19,7 @@ _Two sentences. Frame the reader's goal: they renamed or deleted a page, the old
 
 _Three bullets max. Realistic prior state, not tutorial steps._
 
-- You have an existing Pennington doc site using `AddDocSite` (see the [Getting Started tutorial](/tutorials/getting-started/minimal-site) if not).
+- You have an existing Pennington doc site using `AddDocSite` (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - You know the old URL (the page being retired) and the new URL (the canonical destination).
 - Your front-matter type implements `IRedirectable` — `DocSiteFrontMatter` and `BlogSiteFrontMatter` both do.
 
@@ -72,11 +72,11 @@ dotnet run --project src/YourDocSite
 ## Verify
 
 - Visit the old URL in a browser: expect an immediate redirect to the target set in `redirectUrl`.
-- View the old URL's source: expect `<meta http-equiv="refresh" ...>` and a `<meta name="robots" content="noindex">` tag (TODO: confirm `noindex` is emitted — TOC says yes, example page wording does not mention it).
+- View the old URL's source: expect `<meta http-equiv="refresh" content="0;url=...">` and a `<link rel="canonical" href="...">` tag pointing at the redirect target.
 - Check `/sitemap.xml` and `/llms.txt`: the old URL must not appear (redirects are filtered by `SitemapBuilder` and `LlmsTxtService`).
 
 ## Related
 
-- Reference: [Front matter key reference](/reference/front-matter/keys) — the row for `redirectUrl` (type, default, which records support it).
-- Reference: [`IFrontMatter` and capability defaults](/reference/front-matter/ifrontmatter) — how `IRedirectable` fits alongside the other capability interfaces.
-- Background: [The front-matter capability system](/explanation/core/front-matter-capabilities) — why `IRedirectable` stayed a separate capability instead of collapsing into `IFrontMatter`.
+- Reference: [Front matter key reference](xref:reference.front-matter.keys) — the row for `redirectUrl` (type, default, which records support it).
+- Reference: [`IFrontMatter` and capability defaults](xref:reference.front-matter.ifrontmatter) — how `IRedirectable` fits alongside the other capability interfaces.
+- Background: [The front-matter capability system](xref:explanation.core.front-matter-capabilities) — why `IRedirectable` stayed a separate capability instead of collapsing into `IFrontMatter`.

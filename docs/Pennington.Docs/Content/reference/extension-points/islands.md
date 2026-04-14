@@ -9,7 +9,7 @@ uid: reference.extension-points.islands
 
 > **In this page.** `IIslandRenderer`, `RazorIslandRenderer<T>`, `SpaEnvelope`, `RenderContext`, and the `data-spa-*` attribute surface.
 >
-> **Not in this page.** The SPA client-side script — see the explanation [SPA navigation and island architecture](/explanation/spa/islands).
+> **Not in this page.** The SPA client-side script — see the explanation [SPA navigation and island architecture](xref:explanation.spa.islands).
 
 ## Summary
 
@@ -115,7 +115,7 @@ _Reference shape for a Razor-backed island renderer; implementation walkthrough 
 
 ## See also
 
-- How-to: [Register an island renderer](/how-to/extensibility/island-renderer)
-- Related reference: [`HighlightingOptions`, `IslandsOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `OutputOptions`](/reference/options/auxiliary-options)
-- Related reference: [Routing types](/reference/extension-points/routing)
-- Background: [SPA navigation and island architecture](/explanation/spa/islands)
+- How-to: [Register an island renderer](xref:how-to.extensibility.island-renderer)
+- Related reference: [`HighlightingOptions`, `IslandsOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `OutputOptions`](xref:reference.options.auxiliary-options)
+- Related reference: [Routing types](xref:reference.extension-points.routing)
+- Background: [SPA navigation and island architecture](xref:explanation.spa.islands)

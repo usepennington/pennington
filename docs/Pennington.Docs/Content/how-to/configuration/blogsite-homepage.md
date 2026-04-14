@@ -9,18 +9,18 @@ tags: [blogsite, homepage, socials, hero]
 
 > **In this page.** The four BlogSite homepage surfaces as a single recipe: `HeroContent`, `MyWork` (`Project` entries), `Socials` (`SocialLink` + the built-in icon fragments on `SocialIcons`), and `MainSiteLinks` (`HeaderLink` entries for the top nav).
 >
-> **Not in this page.** The full `BlogSiteOptions` catalog — see [_`BlogSiteOptions`_](/reference/options/blogsite-options). Writing custom icon `RenderFragment`s — see the Extensibility how-tos.
+> **Not in this page.** The full `BlogSiteOptions` catalog — see [_`BlogSiteOptions`_](xref:reference.options.blogsite-options). Writing custom icon `RenderFragment`s — see the Extensibility how-tos.
 
 ## When to use this
 
-_Two sentences. Reader has a running BlogSite (post scaffold + first-post tutorials) and wants to wire all four homepage surfaces in one pass — the hero block, "My Work" card, social-icon row, and top-nav links. Point anyone who wants the hand-held walkthrough back to the tutorial [Add a hero, projects, and social links](/tutorials/blogsite/hero-projects-socials); this is the compact lookup form._
+_Two sentences. Reader has a running BlogSite (post scaffold + first-post tutorials) and wants to wire all four homepage surfaces in one pass — the hero block, "My Work" card, social-icon row, and top-nav links. Point anyone who wants the hand-held walkthrough back to the tutorial [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials); this is the compact lookup form._
 
 ## Assumptions
 
 _Three bullets. Keep prerequisites tight — this is a configuration recipe, not an onboarding ramp. Do not re-teach `AddBlogSite` wiring or markdown authoring; link out instead._
 
-- You have a running BlogSite built with `AddBlogSite` / `UseBlogSite` (see [Scaffold a blog with BlogSite](/tutorials/blogsite/scaffold) if not).
-- You have at least one post under `BlogContentPath` so the recent-posts slot is not empty (see [Author your first post with BlogSiteFrontMatter](/tutorials/blogsite/first-post)).
+- You have a running BlogSite built with `AddBlogSite` / `UseBlogSite` (see [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold) if not).
+- You have at least one post under `BlogContentPath` so the recent-posts slot is not empty (see [Author your first post with BlogSiteFrontMatter](xref:tutorials.blogsite.first-post)).
 - You are editing the single `AddBlogSite(() => new BlogSiteOptions { ... })` call — the four surfaces are init-only properties on that same record literal.
 
 To copy a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteHeroProjectsSocialsExample). Do not walk through the whole example — this page is a recipe, not a tour.
@@ -88,6 +88,6 @@ _Terse. Three bullets, one per surface cluster so each wiring mistake is individ
 
 ## Related
 
-- Tutorial: [_Add a hero, projects, and social links_](/tutorials/blogsite/hero-projects-socials) — the hand-held walkthrough of the same four surfaces.
-- Reference: [_`BlogSiteOptions`_](/reference/options/blogsite-options) — the full property catalog (site metadata, content paths, feeds, fonts).
-- Background: [_When is DocSite the right starting point?_](/explanation/core/docsite-positioning) — for the DocSite-vs-BlogSite trade-off behind these templates.
+- Tutorial: [_Add a hero, projects, and social links_](xref:tutorials.blogsite.hero-projects-socials) — the hand-held walkthrough of the same four surfaces.
+- Reference: [_`BlogSiteOptions`_](xref:reference.options.blogsite-options) — the full property catalog (site metadata, content paths, feeds, fonts).
+- Background: [_When is DocSite the right starting point?_](xref:explanation.core.docsite-positioning) — for the DocSite-vs-BlogSite trade-off behind these templates.

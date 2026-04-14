@@ -59,6 +59,6 @@ Shape of a DocSite host that wires `AddPenningtonRoslyn` with a `SolutionPath` p
 
 ## See also
 
-- Tutorial: [Connect to a Roslyn solution for live API snippets](/tutorials/beyond-basics/connect-roslyn)
-- How-to: [Annotate code blocks](/how-to/content-authoring/code-annotations)
-- Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
+- Tutorial: [Connect to a Roslyn solution for live API snippets](xref:tutorials.beyond-basics.connect-roslyn)
+- How-to: [Annotate code blocks](xref:how-to.content-authoring.code-annotations)
+- Related reference: [`PenningtonOptions`](xref:reference.options.pennington-options)

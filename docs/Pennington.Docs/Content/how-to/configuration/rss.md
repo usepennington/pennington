@@ -13,13 +13,13 @@ tags: [configuration, rss, blogsite, feeds]
 
 ## When to use this
 
-_Two to three sentences. The reader already has a BlogSite rendering posts and now wants the feed surface reachable at `/rss.xml` for readers and aggregators. Name the realistic state: `EnableRss = true` is already the default, so this page is mostly about the two things that go wrong — missing `date:` front matter (post is skipped from the channel) and an unset `CanonicalBaseUrl` (feed links emit relative URLs that break in aggregators). If the reader is on bare `AddPennington` without `AddBlogSite`, point them at [_Scaffold a BlogSite in one command_](/tutorials/blogsite/scaffold) — the `/rss.xml` endpoint is wired by `UseBlogSite`, not by core Pennington._
+_Two to three sentences. The reader already has a BlogSite rendering posts and now wants the feed surface reachable at `/rss.xml` for readers and aggregators. Name the realistic state: `EnableRss = true` is already the default, so this page is mostly about the two things that go wrong — missing `date:` front matter (post is skipped from the channel) and an unset `CanonicalBaseUrl` (feed links emit relative URLs that break in aggregators). If the reader is on bare `AddPennington` without `AddBlogSite`, point them at [_Scaffold a BlogSite in one command_](xref:tutorials.blogsite.scaffold) — the `/rss.xml` endpoint is wired by `UseBlogSite`, not by core Pennington._
 
 ## Assumptions
 
 _Keep to 3 bullets. The non-obvious one is the BlogSite-only scope — the `/rss.xml` endpoint ships with `Pennington.BlogSite`, not with bare `AddPennington`._
 
-- You have a working BlogSite (see [_Scaffold a BlogSite in one command_](/tutorials/blogsite/scaffold) if not)
+- You have a working BlogSite (see [_Scaffold a BlogSite in one command_](xref:tutorials.blogsite.scaffold) if not)
 - Your posts live under `Content/Blog/` and parse as `BlogSiteFrontMatter`
 - You know your production origin (e.g. `https://blog.example.com`) — `CanonicalBaseUrl` must match it exactly, with scheme and no trailing slash
 
@@ -96,6 +96,6 @@ _Three terse bullets — one per thing that commonly breaks. The reader should c
 
 _Three cross-quadrant links. Reference for the full options surface, reference for the route catalog (so the reader can audit every BlogSite endpoint at once), and the front-matter key reference for the exact `date:` contract. Do not link to the next how-to in this section — generated automatically._
 
-- Reference: [_`BlogSiteOptions`_](/reference/options/blogsite-options)
-- Reference: [_Built-in BlogSite routes_](/reference/blogsite/routes)
-- Reference: [_Front matter key reference_](/reference/front-matter/keys)
+- Reference: [_`BlogSiteOptions`_](xref:reference.options.blogsite-options)
+- Reference: [_Built-in BlogSite routes_](xref:reference.blogsite.routes)
+- Reference: [_Front matter key reference_](xref:reference.front-matter.keys)

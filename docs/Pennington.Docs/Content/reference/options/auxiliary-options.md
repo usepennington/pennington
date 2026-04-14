@@ -9,7 +9,7 @@ tags: [options, configuration, reference]
 
 > **In this page.** _One sentence. Five option classes reached from `PenningtonOptions` or the `build` CLI — `HighlightingOptions`, `IslandsOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `OutputOptions` — with every public property, default, and registration method._
 >
-> **Not in this page.** _One sentence. MonorailCSS options live on their own page — see [`MonorailCssOptions`](/reference/options/monorail-css-options)._
+> **Not in this page.** _One sentence. MonorailCSS options live on their own page — see [`MonorailCssOptions`](xref:reference.options.monorail-css-options)._
 
 ## Summary
 
@@ -65,16 +65,19 @@ _Two sentences: appends an already-constructed highlighter instance to `Highligh
 
 ### Example
 
-```csharp:xmldocid,bodyonly
-M:Program.$Main(System.String[])
+```csharp
+builder.Services.AddPennington(penn =>
+{
+    penn.Highlighting.AddHighlighter<MyAsciiDocHighlighter>();
+    penn.Highlighting.AddHighlighter(new ShellHighlighter());
+    // ...
+});
 ```
-
-_One sentence: TODO — pull a focused `penn.Highlighting.AddHighlighter(...)` snippet via xmldocid once `ExtensibilityLabExample/Program.cs` is addressable (currently top-level statements); fall back to `:path` fence of `examples/ExtensibilityLabExample/Program.cs` if the symbol cannot be named._
 
 ### See also
 
-- How-to: [Add a custom syntax highlighter](/how-to/extensibility/custom-highlighter)
-- Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
+- How-to: [Add a custom syntax highlighter](xref:how-to.extensibility.custom-highlighter)
+- Related reference: [`PenningtonOptions`](xref:reference.options.pennington-options)
 
 ## `IslandsOptions`
 
@@ -107,16 +110,18 @@ _Two to three sentences: associates `name` with a renderer type `T` that must im
 
 ### Example
 
-```csharp:xmldocid,bodyonly
-M:Program.$Main(System.String[])
+```csharp
+builder.Services.AddPennington(penn =>
+{
+    penn.Islands.Register<ChartIslandRenderer>("chart");
+    // ...
+});
 ```
-
-_One sentence: TODO — same blocker as `HighlightingOptions` (top-level-statements `Program.cs` in `ExtensibilityLabExample`); the line to pull is `penn.Islands.Register<ChartIslandRenderer>("chart")`. Use a `:path` fence if xmldocid cannot name it._
 
 ### See also
 
-- How-to: [Register an island renderer](/how-to/extensibility/island-renderer)
-- Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
+- How-to: [Register an island renderer](xref:how-to.extensibility.island-renderer)
+- Related reference: [`PenningtonOptions`](xref:reference.options.pennington-options)
 
 ## `SearchIndexOptions`
 
@@ -144,9 +149,9 @@ _One to two sentences: under `AddDocSite` this selector is pinned to `#main-cont
 
 ### See also
 
-- How-to: [Configure search indexing](/how-to/configuration/search)
-- Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
-- Background: [When is DocSite the right starting point?](/explanation/core/docsite-positioning)
+- How-to: [Configure search indexing](xref:how-to.configuration.search)
+- Related reference: [`PenningtonOptions`](xref:reference.options.pennington-options)
+- Background: [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning)
 
 ## `LlmsTxtOptions`
 
@@ -175,9 +180,9 @@ _One to two sentences: registration is through `PenningtonOptions.AddLlmsTxt(Act
 
 ### See also
 
-- How-to: [Generate an llms.txt](/how-to/configuration/llms-txt)
-- Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
-- Background: [When is DocSite the right starting point?](/explanation/core/docsite-positioning)
+- How-to: [Generate an llms.txt](xref:how-to.configuration.llms-txt)
+- Related reference: [`PenningtonOptions`](xref:reference.options.pennington-options)
+- Background: [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning)
 
 ## `OutputOptions`
 
@@ -214,6 +219,6 @@ _Three to four sentences: parses a `build`-shaped argv into an `OutputOptions`. 
 
 ### See also
 
-- How-to: [Build a static site](/how-to/deployment/static-build)
-- How-to: [Host under a sub-path (base URL)](/how-to/deployment/base-url)
-- Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
+- How-to: [Build a static site](xref:how-to.deployment.static-build)
+- How-to: [Host under a sub-path (base URL)](xref:how-to.deployment.base-url)
+- Related reference: [`PenningtonOptions`](xref:reference.options.pennington-options)

@@ -51,10 +51,10 @@ _Ceremonial grouping — metadata → content paths → styling → author → h
 |---|---|---|---|
 | `AdditionalHtmlHeadContent` | `string?` | `null` | _One-sentence: raw HTML injected into `<head>` on every page — used for analytics, fonts from external CDNs, or favicons._ |
 | `BodyFontFamily` | `string?` | `null` | _One-sentence: CSS `font-family` value applied to body text via MonorailCSS typography tokens._ |
-| `ColorScheme` | `IColorScheme?` | `null` | _One-sentence: the MonorailCSS color scheme passed through to `MonorailCssOptions.ColorScheme`; see [`MonorailCssOptions`](/reference/options/monorail-css-options)._ |
+| `ColorScheme` | `IColorScheme?` | `null` | _One-sentence: the MonorailCSS color scheme passed through to `MonorailCssOptions.ColorScheme`; see [`MonorailCssOptions`](xref:reference.options.monorail-css-options)._ |
 | `DisplayFontFamily` | `string?` | `null` | _One-sentence: CSS `font-family` value applied to display-style headings via MonorailCSS typography tokens._ |
 | `ExtraStyles` | `string?` | `null` | _One-sentence: additional CSS appended to the generated MonorailCSS stylesheet; forwarded to `MonorailCssOptions.ExtraStyles`._ |
-| `FontPreloads` | `FontPreload[]` | `[]` | _One-sentence: font files emitted as `<link rel="preload" as="font">` tags in `<head>`; see [`FontPreload`](/reference/options/auxiliary-options)._ |
+| `FontPreloads` | `FontPreload[]` | `[]` | _One-sentence: font files emitted as `<link rel="preload" as="font">` tags in `<head>`; see [`FontPreload`](xref:reference.options.auxiliary-options)._ |
 
 ### Author chrome
 
@@ -147,7 +147,7 @@ _A single sentence of context: every homepage surface, feed toggle, and author f
 
 ## See also
 
-- How-to: [Configure the BlogSite homepage](/how-to/configuration/blogsite-homepage)
-- Related reference: [`DocSiteOptions`](/reference/options/docsite-options)
-- Related reference: [Built-in BlogSite routes](/reference/blogsite/routes)
-- Background: [When is DocSite the right starting point?](/explanation/architecture/when-docsite) <!-- TODO verify explanation URL once the page lands -->
+- How-to: [Configure the BlogSite homepage](xref:how-to.configuration.blogsite-homepage)
+- Related reference: [`DocSiteOptions`](xref:reference.options.docsite-options)
+- Related reference: [Built-in BlogSite routes](xref:reference.blogsite.routes)
+- Background: [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning) <!-- TODO verify explanation URL once the page lands -->

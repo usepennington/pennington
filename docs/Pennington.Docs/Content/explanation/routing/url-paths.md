@@ -64,7 +64,7 @@ _Second paragraph. The same separation drives the build crawler: `OutputGenerati
 
 ## Further reading
 
-- Reference: [Routing types](/reference/extension-points/routing)
-- How-to: [Host under a sub-path (base URL)](/how-to/deployment/base-url)
-- Explanation: [Response processing and rewriters](/explanation/core/response-processing)
+- Reference: [Routing types](xref:reference.extension-points.routing)
+- How-to: [Host under a sub-path (base URL)](xref:how-to.deployment.base-url)
+- Explanation: [Response processing and rewriters](xref:explanation.core.response-processing)
 - External: [_TODO: add prior-art link — e.g., F#'s typed URLs in Giraffe, or a "Parse, don't validate" essay that motivates value-typed paths._]

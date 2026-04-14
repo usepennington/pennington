@@ -90,7 +90,7 @@ _One sentence: shape of a `ConfigureLocalization` action that sets `DefaultLocal
 
 ## See also
 
-- How-to: [Enable multiple locales](/how-to/configuration/localization)
-- Related reference: [`TranslationOptions`](/reference/options/translations)
-- Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
-- Background: [Locale-aware URLs and content fallback](/explanation/localization/urls-and-fallback)
+- How-to: [Enable multiple locales](xref:how-to.configuration.localization)
+- Related reference: [`TranslationOptions`](xref:reference.options.translations)
+- Related reference: [`PenningtonOptions`](xref:reference.options.pennington-options)
+- Background: [Locale-aware URLs and content fallback](xref:explanation.localization.urls-and-fallback)

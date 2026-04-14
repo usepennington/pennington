@@ -122,7 +122,7 @@ _Reference shape for a custom `ICodeHighlighter`: a `SupportedLanguages` set, a 
 
 ## See also
 
-- How-to: [Add a custom syntax highlighter](/how-to/extensibility/custom-highlighter)
-- How-to: [Register a code-block preprocessor](/how-to/extensibility/code-block-preprocessor)
-- Related reference: [`HighlightingOptions`, `IslandsOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `OutputOptions`](/reference/options/auxiliary-options)
-- Background: [The syntax-highlighting cascade](/explanation/rendering/highlighting)
+- How-to: [Add a custom syntax highlighter](xref:how-to.extensibility.custom-highlighter)
+- How-to: [Register a code-block preprocessor](xref:how-to.extensibility.code-block-preprocessor)
+- Related reference: [`HighlightingOptions`, `IslandsOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `OutputOptions`](xref:reference.options.auxiliary-options)
+- Background: [The syntax-highlighting cascade](xref:explanation.rendering.highlighting)

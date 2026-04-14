@@ -9,7 +9,7 @@ tags: [ui, components, localization, structured-data]
 
 > **In this page.** _One sentence pulled from `docs-toc.md`: `LanguageSwitcher`, `StructuredData`, and `FallbackNotice` — parameters and a one-line "use when" row for each._
 >
-> **Not in this page.** _One sentence pulled from `docs-toc.md`: authoring your own Razor components — see the tutorial [Author a custom Razor component for markdown](/tutorials/beyond-basics/custom-razor-component) and the extensibility how-to._
+> **Not in this page.** _One sentence pulled from `docs-toc.md`: authoring your own Razor components — see the tutorial [Author a custom Razor component for markdown](xref:tutorials.beyond-basics.custom-razor-component) and the extensibility how-to._
 
 ## Summary
 
@@ -119,7 +119,7 @@ _One sentence of context: fallback detection itself is owned by `ContentResolver
 
 ## See also
 
-- Related reference: [Navigation components](/reference/ui/navigation) — sibling `Pennington.UI` reference page for `TableOfContentsNavigation` and `OutlineNavigation`.
-- Related reference: [Content components](/reference/ui/content) — sibling `Pennington.UI` reference page for `Card`, `Badge`, `CodeBlock`, and the rest of the content-authoring surface.
-- Related reference: [JSON-LD schema types](/reference/structured-data/types) — the record types (`JsonLdArticle`, `JsonLdBreadcrumbList`, `JsonLdWebSite`) that `StructuredData` serializes.
-- How-to: [Add a second locale to your site](/tutorials/beyond-basics/add-a-locale) — tutorial that wires `LanguageSwitcher` and `FallbackNotice` end-to-end via `AddDocSite`.
+- Related reference: [Navigation components](xref:reference.ui.navigation) — sibling `Pennington.UI` reference page for `TableOfContentsNavigation` and `OutlineNavigation`.
+- Related reference: [Content components](xref:reference.ui.content) — sibling `Pennington.UI` reference page for `Card`, `Badge`, `CodeBlock`, and the rest of the content-authoring surface.
+- Related reference: [JSON-LD schema types](xref:reference.structured-data.types) — the record types (`JsonLdArticle`, `JsonLdBreadcrumbList`, `JsonLdWebSite`) that `StructuredData` serializes.
+- How-to: [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale) — tutorial that wires `LanguageSwitcher` and `FallbackNotice` end-to-end via `AddDocSite`.

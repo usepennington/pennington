@@ -9,7 +9,7 @@ uid: reference.extension-points.routing
 
 > **In this page.** `UrlPath`, `FilePath`, `ContentRoute`, and `ContentRouteFactory` — constructors, operators, and helper methods (`EnsureLeadingSlash`, `WithBaseUrl`, `AbsoluteUrl`, `IsDefaultLocale`).
 >
-> **Not in this page.** The broader URL design philosophy — why paths are value types, what invariants `ContentRoute` preserves, how the pipeline treats canonical vs. output paths — lives in [URL paths and content routes](/explanation/routing/url-paths).
+> **Not in this page.** The broader URL design philosophy — why paths are value types, what invariants `ContentRoute` preserves, how the pipeline treats canonical vs. output paths — lives in [URL paths and content routes](xref:explanation.routing.url-paths).
 
 ## Summary
 
@@ -250,7 +250,7 @@ _Reference shape for constructing `ContentRoute`s from a custom `IContentService
 
 ## See also
 
-- How-to: [Implement a custom `IContentService`](/how-to/extensibility/custom-content-service)
-- Related reference: [Content pipeline interfaces](/reference/extension-points/content-pipeline)
-- Related reference: [Navigation types](/reference/extension-points/navigation)
-- Background: [URL paths and content routes](/explanation/routing/url-paths)
+- How-to: [Implement a custom `IContentService`](xref:how-to.extensibility.custom-content-service)
+- Related reference: [Content pipeline interfaces](xref:reference.extension-points.content-pipeline)
+- Related reference: [Navigation types](xref:reference.extension-points.navigation)
+- Background: [URL paths and content routes](xref:explanation.routing.url-paths)

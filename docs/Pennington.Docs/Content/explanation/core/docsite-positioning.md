@@ -92,7 +92,7 @@ _Three bullets. Name what the template-vs-bare split actually costs, not a gener
 
 _Three to four cross-quadrant links. Do NOT link to the next explanation in the same section — auto-generated. Suggested set:_
 
-- Reference: [`DocSiteOptions` reference](/reference/docsite/options/) — the full list of tweak points with defaults and forwarding semantics. _TODO — confirm final URL from docs-toc before publish._
-- How-to: [Use multiple content sources](/how-to/configuration/multiple-sources/) — the canonical how-to for the "two front-matter types" case, which either uses `ConfigurePennington` or drops to bare `AddPennington`.
-- How-to: [Override DocSite components](/how-to/extensibility/override-docsite-components/) — the template-compatible extension path for layout tweaks before dropping a level.
+- Reference: [`DocSiteOptions` reference](xref:reference.options.docsite-options) — the full list of tweak points with defaults and forwarding semantics. _TODO — confirm final URL from docs-toc before publish._
+- How-to: [Use multiple content sources](xref:how-to.configuration.multiple-sources) — the canonical how-to for the "two front-matter types" case, which either uses `ConfigurePennington` or drops to bare `AddPennington`.
+- How-to: [Override DocSite components](xref:how-to.extensibility.override-docsite-components) — the template-compatible extension path for layout tweaks before dropping a level.
 - Example: [`ExtensibilityLabExample`](https://github.com/philsnotes/Pennington/tree/main/examples/ExtensibilityLabExample) — the canonical bare-`AddPennington` host that pairs with this page. _TODO — confirm repo URL before publish._

@@ -72,7 +72,7 @@ _Keep the fence — the `DOTNET_WATCH` check in the field initializer and the `O
 
 ## Further reading
 
-- Reference: [DI and middleware extension methods](/reference/host/extensions)
-- Reference: [Response processing interfaces](/reference/extension-points/response-processing)
-- Explanation: [The response-processing pipeline](/explanation/core/response-processing)
-- Explanation: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build)
+- Reference: [DI and middleware extension methods](xref:reference.host.extensions)
+- Reference: [Response processing interfaces](xref:reference.extension-points.response-processing)
+- Explanation: [The response-processing pipeline](xref:explanation.core.response-processing)
+- Explanation: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build)

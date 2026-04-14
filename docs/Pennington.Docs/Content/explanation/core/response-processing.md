@@ -69,7 +69,7 @@ _Close the subsection by noting that reversing any two of these breaks one of th
 
 ## Further reading
 
-- Reference: [Response processing interfaces](/reference/extension-points/response-processing) — the member-by-member catalog of `IResponseProcessor`, `IHtmlResponseRewriter`, and the three built-in rewriters.
-- How-to: [Write a response processor](/how-to/extensibility/response-processor) — when you need to touch the raw body.
-- How-to: [Write an HTML rewriter](/how-to/extensibility/html-rewriter) — when you need the shared DOM pass.
-- Related explanation: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build) — why the same processor chain runs against both live requests and the static-build crawler.
+- Reference: [Response processing interfaces](xref:reference.extension-points.response-processing) — the member-by-member catalog of `IResponseProcessor`, `IHtmlResponseRewriter`, and the three built-in rewriters.
+- How-to: [Write a response processor](xref:how-to.extensibility.response-processor) — when you need to touch the raw body.
+- How-to: [Write an HTML rewriter](xref:how-to.extensibility.html-rewriter) — when you need the shared DOM pass.
+- Related explanation: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build) — why the same processor chain runs against both live requests and the static-build crawler.

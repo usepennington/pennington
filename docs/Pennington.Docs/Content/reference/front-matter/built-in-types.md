@@ -9,7 +9,7 @@ uid: reference.front-matter.built-in-types
 
 > **In this page.** _One sentence: the four built-in front-matter records (`DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter`), the keys each supports, the capability interfaces each implements, the template that wires it, and the one-line "pick X when" decision rows._
 >
-> **Not in this page.** _One sentence: defining your own front-matter type is a task recipe — see the How-To [Work with front matter](/how-to/content-authoring/front-matter)._
+> **Not in this page.** _One sentence: defining your own front-matter type is a task recipe — see the How-To [Work with front matter](xref:how-to.content-authoring.front-matter)._
 
 ## Summary
 
@@ -152,7 +152,7 @@ _Shape of a populated `BlogSiteFrontMatter` YAML block and the keys a post autho
 
 ## See also
 
-- How-to: [Work with front matter](/how-to/content-authoring/front-matter)
-- Related reference: [Front matter key reference](/reference/front-matter/keys)
-- Related reference: [`IFrontMatter` and capability defaults](/reference/front-matter/ifrontmatter)
-- Background: [The front-matter capability system](/explanation/core/front-matter-capabilities)
+- How-to: [Work with front matter](xref:how-to.content-authoring.front-matter)
+- Related reference: [Front matter key reference](xref:reference.front-matter.keys)
+- Related reference: [`IFrontMatter` and capability defaults](xref:reference.front-matter.ifrontmatter)
+- Background: [The front-matter capability system](xref:explanation.core.front-matter-capabilities)

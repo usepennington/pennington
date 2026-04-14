@@ -9,7 +9,7 @@ tags: [response-pipeline, extensibility, middleware, html-injection]
 
 > **In this page.** _Paraphrase the TOC "Covers" line: implementing `IResponseProcessor`, picking an `Order` that slots cleanly into the built-in 10/20/30 chain, gating expensive work with `ShouldProcess`, and mutating the response body inside `ProcessAsync`._
 >
-> **Not in this page.** _Paraphrase the TOC "Does not cover": HTML-structured edits. When the goal is DOM work — anchor rewrites, attribute additions, element injection at a selector — implement `IHtmlResponseRewriter` instead so every rewriter shares one AngleSharp pass. See [Write an HTML rewriter](/how-to/extensibility/html-rewriter)._
+> **Not in this page.** _Paraphrase the TOC "Does not cover": HTML-structured edits. When the goal is DOM work — anchor rewrites, attribute additions, element injection at a selector — implement `IHtmlResponseRewriter` instead so every rewriter shares one AngleSharp pass. See [Write an HTML rewriter](xref:how-to.extensibility.html-rewriter)._
 
 ## When to use this
 
@@ -19,7 +19,7 @@ _Two sentences. Frame the reader's goal: they need to transform the whole respon
 
 _Three bullets. Each is realistic prior state, not a tutorial step._
 
-- You have an existing Pennington site (see the [Getting Started tutorial](/tutorials/getting-started/first-site) if not).
+- You have an existing Pennington site (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - You understand that `ResponseProcessingMiddleware` buffers the full response body before your processor runs — this is fine for HTML pages but unsuitable for large binary streams, so gate those out in `ShouldProcess`.
 - You know which of the built-in processors your work needs to run before or after: `HtmlResponseRewritingProcessor` at `Order` 10, `LiveReloadScriptProcessor` at 20, `DiagnosticOverlayProcessor` at 30.
 
@@ -83,6 +83,6 @@ builder.Services.AddSingleton<IResponseProcessor, FeedbackWidgetProcessor>();
 
 ## Related
 
-- Reference: [Response processing interfaces](/reference/extension-points/response-processing)
-- Background: [The response-processing pipeline](/explanation/core/response-processing)
-- Related how-to: [Write an HTML rewriter](/how-to/extensibility/html-rewriter)
+- Reference: [Response processing interfaces](xref:reference.extension-points.response-processing)
+- Background: [The response-processing pipeline](xref:explanation.core.response-processing)
+- Related how-to: [Write an HTML rewriter](xref:how-to.extensibility.html-rewriter)

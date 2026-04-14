@@ -9,7 +9,7 @@ uid: tutorials.blogsite.scaffold
 
 > **In this page.** Replace `AddPennington` with `AddBlogSite` + `UseBlogSite` + `RunBlogSiteAsync`, configure the core `BlogSiteOptions` (site title, description, canonical base URL, content paths, author), and see how the BlogSite defaults differ from the `DocSite` template.
 >
-> **Not in this page.** Authoring individual posts — covered in [Author your first post with BlogSiteFrontMatter](/tutorials/blogsite/first-post). Customizing the homepage hero, projects, or social links — covered in [Add a hero, projects, and social links](/tutorials/blogsite/hero-projects-socials).
+> **Not in this page.** Authoring individual posts — covered in [Author your first post with BlogSiteFrontMatter](xref:tutorials.blogsite.first-post). Customizing the homepage hero, projects, or social links — covered in [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials).
 
 ## What you'll do
 
@@ -22,8 +22,8 @@ _**Skill** (one sentence): describe what the reader walks away able to do — sw
 _Keep this list to tools and prior tutorials only. The reader arrives with the bare `AddPennington` host and a `Content/Blog/` folder of markdown already in place from §1.1. No DocSite experience required._
 
 - .NET 11 SDK installed
-- Completed [Create your first Pennington site](/tutorials/getting-started/first-site)
-- Completed [Add your first markdown page](/tutorials/getting-started/first-page) (so `Content/` already has at least one markdown file)
+- Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site)
+- Completed [Add your first markdown page](xref:tutorials.getting-started.first-page) (so `Content/` already has at least one markdown file)
 
 The finished code for this tutorial lives in [`examples/BlogSiteScaffoldExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteScaffoldExample).
 
@@ -62,7 +62,7 @@ M:Pennington.BlogSite.BlogSiteServiceExtensions.AddBlogSite(Microsoft.Extensions
 
 ### Step 2.2 — Populate the core `BlogSiteOptions`
 
-_Walk through the nine knobs this tutorial exercises, in two groups. First the identity trio: `SiteTitle`, `Description`, `CanonicalBaseUrl` (used by the RSS channel, sitemap, and JSON-LD). Then the content-path quartet: `ContentRootPath` ("Content"), `BlogContentPath` ("Blog" — relative to `ContentRootPath`), `BlogBaseUrl` ("/blog"), `TagsPageUrl` ("/tags"). Finish with `AuthorName` / `AuthorBio`, which feed the RSS channel, JSON-LD article markup, and any post that omits its own `author:` front-matter value. Point forward to [`BlogSiteOptions` reference](/reference/options/blogsite-options) for the full surface — the homepage-specific knobs (`HeroContent`, `MyWork`, `Socials`, `MainSiteLinks`) are deliberately skipped here and covered in the third tutorial of this section._
+_Walk through the nine knobs this tutorial exercises, in two groups. First the identity trio: `SiteTitle`, `Description`, `CanonicalBaseUrl` (used by the RSS channel, sitemap, and JSON-LD). Then the content-path quartet: `ContentRootPath` ("Content"), `BlogContentPath` ("Blog" — relative to `ContentRootPath`), `BlogBaseUrl` ("/blog"), `TagsPageUrl` ("/tags"). Finish with `AuthorName` / `AuthorBio`, which feed the RSS channel, JSON-LD article markup, and any post that omits its own `author:` front-matter value. Point forward to [`BlogSiteOptions` reference](xref:reference.options.blogsite-options) for the full surface — the homepage-specific knobs (`HeroContent`, `MyWork`, `Socials`, `MainSiteLinks`) are deliberately skipped here and covered in the third tutorial of this section._
 
 ```csharp:xmldocid
 T:Pennington.BlogSite.BlogSiteOptions
@@ -70,7 +70,7 @@ T:Pennington.BlogSite.BlogSiteOptions
 
 ### Step 2.3 — Contrast with `DocSite` defaults
 
-_Two-to-four sentences, no code fence. Stress the two template-level differences the reader should internalize: (1) `AddBlogSite` binds `AddMarkdownContent<BlogSiteFrontMatter>` (not `DocSiteFrontMatter`, not the core `BlogFrontMatter`), and (2) BlogSite's content-path defaults are `ContentRootPath = "Content"` + `BlogContentPath = "Blog"` serving at `BlogBaseUrl = "/blog"`, whereas DocSite drives URLs from `ContentArea` slugs under `ContentRootPath`. Everything else that diverges (hard-coded chrome, RSS-first layout, no area switcher) falls out of those two choices. Link to [Choosing between DocSite and BlogSite](/explanation/templates/docsite-vs-blogsite) TODO-confirm-URL if an explanation page exists — otherwise drop this sentence._
+_Two-to-four sentences, no code fence. Stress the two template-level differences the reader should internalize: (1) `AddBlogSite` binds `AddMarkdownContent<BlogSiteFrontMatter>` (not `DocSiteFrontMatter`, not the core `BlogFrontMatter`), and (2) BlogSite's content-path defaults are `ContentRootPath = "Content"` + `BlogContentPath = "Blog"` serving at `BlogBaseUrl = "/blog"`, whereas DocSite drives URLs from `ContentArea` slugs under `ContentRootPath`. Everything else that diverges (hard-coded chrome, RSS-first layout, no area switcher) falls out of those two choices._
 
 ### Checkpoint — Services registered, middleware not yet mounted
 

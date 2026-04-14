@@ -13,13 +13,13 @@ tags: [sitemap, seo, canonical-base-url, front-matter]
 
 ## When to use this
 
-_Two to three sentences. Frame the realistic arrival state: the reader has a Pennington site serving HTML and wants crawlers to find every canonical URL with a correct absolute `<loc>` and, where available, a `<lastmod>` from the page's `date:` front matter. Note that the work is almost entirely configuration, not code: `/sitemap.xml` is already mapped by `UsePennington`, so the only real knob is making sure `CanonicalBaseUrl` is set and that drafts and redirects are using the right front-matter keys. If the reader has no site yet, point back to [_Your first Pennington site_](/tutorials/getting-started/first-site)._
+_Two to three sentences. Frame the realistic arrival state: the reader has a Pennington site serving HTML and wants crawlers to find every canonical URL with a correct absolute `<loc>` and, where available, a `<lastmod>` from the page's `date:` front matter. Note that the work is almost entirely configuration, not code: `/sitemap.xml` is already mapped by `UsePennington`, so the only real knob is making sure `CanonicalBaseUrl` is set and that drafts and redirects are using the right front-matter keys. If the reader has no site yet, point back to [_Your first Pennington site_](xref:tutorials.getting-started.first-site)._
 
 ## Assumptions
 
 _Keep to three bullets. The non-obvious one is the `CanonicalBaseUrl`/build-BaseUrl fallback — it is the only thing that meaningfully changes the emitted XML._
 
-- You have a working Pennington site (see [_Your first Pennington site_](/tutorials/getting-started/first-site) if not)
+- You have a working Pennington site (see [_Your first Pennington site_](xref:tutorials.getting-started.first-site) if not)
 - Your pages use an `IFrontMatter` implementation — `DocFrontMatter`, `BlogFrontMatter`, or your own — so `IsDraft` and (optionally) `Date` flow through to the sitemap builder
 - You know whether you are publishing at a fully-qualified URL (set `CanonicalBaseUrl`) or under a sub-path via `dotnet run -- build /sub/` (the sitemap falls back to `OutputOptions.BaseUrl`)
 
@@ -90,6 +90,6 @@ _Terse. Three bullets — one per filter path plus one for the base-URL behaviou
 
 _Three cross-quadrant links: the reference page for the auxiliary options catalogue (where `OutputOptions.BaseUrl` lives), the sibling RSS how-to (same `CanonicalBaseUrl` story), and the redirects how-to (the other side of the redirect-filter behaviour). Do not link to the next how-to in this section — auto-generated._
 
-- Reference: [_`HighlightingOptions`, `IslandsOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `OutputOptions`_](/reference/options/auxiliary-options)
-- How-to: [_Generate RSS feeds_](/how-to/configuration/rss)
-- How-to: [_Configure redirects_](/how-to/content-authoring/redirects)
+- Reference: [_`HighlightingOptions`, `IslandsOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `OutputOptions`_](xref:reference.options.auxiliary-options)
+- How-to: [_Generate RSS feeds_](xref:how-to.configuration.rss)
+- How-to: [_Configure redirects_](xref:how-to.content-authoring.redirects)

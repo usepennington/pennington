@@ -24,7 +24,7 @@ uid: tutorials.docsite.first-doc-page
 ## Prerequisites
 
 - .NET 11 SDK installed
-- Completed [Scaffold a DocSite](/tutorials/docsite/scaffold) (or have an equivalent single-area DocSite project ready with a `Guides` area pointed at `Content/guides/`)
+- Completed [Scaffold a DocSite](xref:tutorials.docsite.scaffold) (or have an equivalent single-area DocSite project ready with a `Guides` area pointed at `Content/guides/`)
 
 The finished code for this tutorial lives in [`examples/DocSiteAuthorExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteAuthorExample).
 

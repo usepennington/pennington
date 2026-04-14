@@ -60,7 +60,7 @@ _A few sentences. Walk the reader through the alternative that was on the table:
 
 ## Further reading
 
-- Reference: [Build report fields](/reference/diagnostics/build-report)
-- Reference: [CLI and build arguments](/reference/host/cli)
-- How-to: [Build a static site](/how-to/deployment/static-build)
-- How-to: [Host under a sub-path (base URL)](/how-to/deployment/base-url)
+- Reference: [Build report fields](xref:reference.diagnostics.build-report)
+- Reference: [CLI and build arguments](xref:reference.host.cli)
+- How-to: [Build a static site](xref:how-to.deployment.static-build)
+- How-to: [Host under a sub-path (base URL)](xref:how-to.deployment.base-url)

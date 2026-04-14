@@ -9,7 +9,7 @@ tags: [extensibility, islands, spa, razor-components]
 
 > **In this page.** Implement `IIslandRenderer` (or subclass `RazorIslandRenderer<TComponent>`), register it with `IslandsOptions.Register<T>("islandName")`, and author matching `data-spa-island="islandName"` markup so the island is server-rendered on first hit and swapped in on SPA navigation.
 >
-> **Not in this page.** The full SPA data envelope — how `SpaPageDataService` builds `_spa-data/{slug}.json`, which islands map to which slots, and how the client hydrates them. See [_SPA navigation and island architecture_](/explanation/spa/islands) for that.
+> **Not in this page.** The full SPA data envelope — how `SpaPageDataService` builds `_spa-data/{slug}.json`, which islands map to which slots, and how the client hydrates them. See [_SPA navigation and island architecture_](xref:explanation.spa.islands) for that.
 
 ## When to use this
 
@@ -19,10 +19,10 @@ _Two to three sentences. The reader has a content page that already renders and 
 
 _Short list. The reader already has a working Pennington host and understands that SPA navigation is opt-in via `AddSpaNavigation` / `UseSpaNavigation`. This page does not re-teach that wiring — it assumes the infrastructure is in place._
 
-- You have a working Pennington site (see [_Create your first Pennington site_](/tutorials/getting-started/first-site) if not)
+- You have a working Pennington site (see [_Create your first Pennington site_](xref:tutorials.getting-started.first-site) if not)
 - SPA navigation is already wired: `builder.Services.AddSpaNavigation()` plus `app.UseSpaNavigation()`, and your layout emits the `data-spa-*` attributes the client script expects
 - You have a Razor component (or plain HTML string) ready to render into the island slot
-- You understand the four-stage content pipeline at a conceptual level ([_The content pipeline and union types_](/explanation/core/content-pipeline))
+- You understand the four-stage content pipeline at a conceptual level ([_The content pipeline and union types_](xref:explanation.core.content-pipeline))
 
 To copy a working setup, see [`examples/ExtensibilityLabExample`](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample) — `ChartIslandRenderer`, `Components/ChartIsland.razor`, and `Content/chart-demo.md` together form the minimal island. Do not walk through the whole example — this page is a recipe, not a tour.
 
@@ -40,7 +40,7 @@ examples/ExtensibilityLabExample/Components/ChartIsland.razor
 
 ### 2. Subclass `RazorIslandRenderer<TComponent>`
 
-_Derive from [`RazorIslandRenderer<T>`](/reference/extension-points/islands) rather than implementing [`IIslandRenderer`](/reference/extension-points/islands) directly — the base class wires the `ComponentRenderer` call for you, leaving `IslandName` and `BuildParametersAsync` as the only members you override. Override `IIslandRenderer.RenderAsync` yourself only when you need to emit a non-Razor HTML fragment (a pre-rendered string, a cached snippet, a remote include)._
+_Derive from [`RazorIslandRenderer<T>`](xref:reference.extension-points.islands) rather than implementing [`IIslandRenderer`](xref:reference.extension-points.islands) directly — the base class wires the `ComponentRenderer` call for you, leaving `IslandName` and `BuildParametersAsync` as the only members you override. Override `IIslandRenderer.RenderAsync` yourself only when you need to emit a non-Razor HTML fragment (a pre-rendered string, a cached snippet, a remote include)._
 
 ```csharp:xmldocid
 T:ExtensibilityLabExample.ChartIslandRenderer
@@ -48,7 +48,7 @@ T:ExtensibilityLabExample.ChartIslandRenderer
 
 ### 3. Expose `IslandName` and gate parameters on the route
 
-_`IslandName` is the string the SPA envelope keys islands by, and it must match the `data-spa-island` attribute on the markup. `BuildParametersAsync` receives the [`ContentRoute`](/reference/extension-points/routing) for the page being rendered — inspect `CanonicalPath` and return `null` for any route that does not carry this island so the base class skips rendering entirely. Returning parameters on every route wastes work and can produce orphan HTML in pages that have no slot to hold it._
+_`IslandName` is the string the SPA envelope keys islands by, and it must match the `data-spa-island` attribute on the markup. `BuildParametersAsync` receives the [`ContentRoute`](xref:reference.extension-points.routing) for the page being rendered — inspect `CanonicalPath` and return `null` for any route that does not carry this island so the base class skips rendering entirely. Returning parameters on every route wastes work and can produce orphan HTML in pages that have no slot to hold it._
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.ChartIslandRenderer.BuildParametersAsync(Pennington.Routing.ContentRoute)
@@ -88,7 +88,7 @@ examples/ExtensibilityLabExample/Program.cs
 
 ## Related
 
-- Reference: [_Island rendering interfaces_](/reference/extension-points/islands)
-- Reference: [_Routing types_](/reference/extension-points/routing)
-- Background: [_SPA navigation and island architecture_](/explanation/spa/islands)
-- Background: [_The content pipeline and union types_](/explanation/core/content-pipeline)
+- Reference: [_Island rendering interfaces_](xref:reference.extension-points.islands)
+- Reference: [_Routing types_](xref:reference.extension-points.routing)
+- Background: [_SPA navigation and island architecture_](xref:explanation.spa.islands)
+- Background: [_The content pipeline and union types_](xref:explanation.core.content-pipeline)

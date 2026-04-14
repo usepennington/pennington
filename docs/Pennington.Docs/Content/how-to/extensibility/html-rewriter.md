@@ -9,17 +9,17 @@ tags: [html-rewriting, extensibility, anglesharp, response-pipeline]
 
 > **In this page.** _Paraphrase the TOC "Covers" line: implementing `IHtmlResponseRewriter`, choosing between `PreParseAsync` (raw string pass, for non-HTML tokens like `<xref:uid>`) and `ApplyAsync` (DOM pass over the shared AngleSharp document), and picking an `Order` that cooperates with the three built-in rewriters (`XrefHtmlRewriter` at 10, `LocaleLinkHtmlRewriter` at 20, `BaseUrlHtmlRewriter` at 30)._
 >
-> **Not in this page.** _Paraphrase the TOC "Does not cover" line: building a brand-new Markdig extension to alter markdown rendering at parse time — this recipe only covers post-render HTML mutation. For earlier-phase transforms see [Register a code-block preprocessor](/how-to/extensibility/code-block-preprocessor) or author a Markdig extension directly against [MarkdownPipelineFactory]._
+> **Not in this page.** _Paraphrase the TOC "Does not cover" line: building a brand-new Markdig extension to alter markdown rendering at parse time — this recipe only covers post-render HTML mutation. For earlier-phase transforms see [Register a code-block preprocessor](xref:how-to.extensibility.code-block-preprocessor) or author a Markdig extension directly against [MarkdownPipelineFactory]._
 
 ## When to use this
 
-_Two sentences. Frame the goal: the reader wants to mutate HTML that has already been rendered — rewrite anchors, inject attributes, normalise URLs, strip sentinels — without reparsing the document themselves. Cross-link, do not re-teach: for non-HTML response types (JSON, plain text) or passes that must see the final byte stream after every rewriter has run, use [Write a response processor](/how-to/extensibility/response-processor) instead — that's the wider `IResponseProcessor` seam this rewriter plugs into._
+_Two sentences. Frame the goal: the reader wants to mutate HTML that has already been rendered — rewrite anchors, inject attributes, normalise URLs, strip sentinels — without reparsing the document themselves. Cross-link, do not re-teach: for non-HTML response types (JSON, plain text) or passes that must see the final byte stream after every rewriter has run, use [Write a response processor](xref:how-to.extensibility.response-processor) instead — that's the wider `IResponseProcessor` seam this rewriter plugs into._
 
 ## Assumptions
 
 _Three bullets. Each is realistic prior state, not a tutorial step._
 
-- You have an existing Pennington site rendering HTML pages (see the [Getting Started tutorial](/tutorials/getting-started/first-site) if not).
+- You have an existing Pennington site rendering HTML pages (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - You understand that the `HtmlResponseRewritingProcessor` parses each response body with AngleSharp exactly once and invokes every registered rewriter against that shared `IDocument` — so your `ApplyAsync` mutates the same tree the xref, locale, and base-URL rewriters already touched.
 - You know which phase fits your edit: a non-HTML token (something that is not valid HTML structure, like `<xref:uid>` or a sentinel comment) belongs in `PreParseAsync`; anything queryable by selectors belongs in `ApplyAsync`.
 
@@ -87,6 +87,6 @@ examples/ExtensibilityLabExample/Program.cs
 
 ## Related
 
-- Reference: [Response processing interfaces](/reference/extension-points/response-processing)
-- Background: [The response-processing pipeline](/explanation/core/response-processing)
-- Related how-to: [Write a response processor](/how-to/extensibility/response-processor)
+- Reference: [Response processing interfaces](xref:reference.extension-points.response-processing)
+- Background: [The response-processing pipeline](xref:explanation.core.response-processing)
+- Related how-to: [Write a response processor](xref:how-to.extensibility.response-processor)

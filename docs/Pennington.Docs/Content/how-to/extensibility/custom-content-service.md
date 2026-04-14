@@ -9,16 +9,16 @@ tags: [extensibility, content-service, pipeline, cross-references]
 
 > **In this page.** Discover custom sources by implementing `IContentService`, yield one `DiscoveredItem` per page, publish side-car files through `ContentToCopy` / `ContentToCreate`, and surface the pages in navigation and xref with `ContentTocItem`s plus `CrossReference`s.
 >
-> **Not in this page.** Parsing the raw source into a `ParsedItem` or rendering it to HTML — those are `IContentParser` and `IContentRenderer` concerns. For markdown, both are already wired; for a brand-new format see the parser and renderer how-tos (TODO — not yet written). Code-block preprocessing, highlighters, response processors, HTML rewriters, island renderers, and DocSite overrides each have their own how-to under [`/how-to/extensibility/`](/how-to/extensibility/code-block-preprocessor).
+> **Not in this page.** Parsing the raw source into a `ParsedItem` or rendering it to HTML — those are `IContentParser` and `IContentRenderer` concerns. For markdown, both are already wired; for a brand-new format see the parser and renderer how-tos (TODO — not yet written). Code-block preprocessing, highlighters, response processors, HTML rewriters, island renderers, and DocSite overrides each have their own how-to under [`/how-to/extensibility/`](xref:how-to.extensibility.code-block-preprocessor).
 
 ## When to use this
 
-_Two to three sentences. Readers arrive here when their content lives somewhere `MarkdownContentService<T>` can't reach — a folder of JSON release notes, a SQL table, a GitHub API, generated API reference — and they need those pages to appear in navigation, cross-references, search, and the static build the same way markdown pages do. The recipe below uses the [`ReleaseNotesContentService`](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample/ReleaseNotesContentService.cs) example, which turns `Content/releases/*.json` into `/releases/{version}/` routes. If you just want a second markdown tree with a different front-matter type, use chained `AddMarkdownContent<T>` instead — see [_Use multiple content sources_](/how-to/configuration/multiple-sources)._
+_Two to three sentences. Readers arrive here when their content lives somewhere `MarkdownContentService<T>` can't reach — a folder of JSON release notes, a SQL table, a GitHub API, generated API reference — and they need those pages to appear in navigation, cross-references, search, and the static build the same way markdown pages do. The recipe below uses the [`ReleaseNotesContentService`](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample/ReleaseNotesContentService.cs) example, which turns `Content/releases/*.json` into `/releases/{version}/` routes. If you just want a second markdown tree with a different front-matter type, use chained `AddMarkdownContent<T>` instead — see [_Use multiple content sources_](xref:how-to.configuration.multiple-sources)._
 
 ## Assumptions
 
-- You have a working Pennington site on bare `AddPennington` (see [_Create your first Pennington site_](/tutorials/getting-started/first-site) if not) — `AddDocSite` pins its own markdown service, so adding a second content service on top works but the concepts below assume you understand the un-wrapped host
-- You understand the four-stage pipeline at a conceptual level ([_The content pipeline and union types_](/explanation/core/content-pipeline))
+- You have a working Pennington site on bare `AddPennington` (see [_Create your first Pennington site_](xref:tutorials.getting-started.first-site) if not) — `AddDocSite` pins its own markdown service, so adding a second content service on top works but the concepts below assume you understand the un-wrapped host
+- You understand the four-stage pipeline at a conceptual level ([_The content pipeline and union types_](xref:explanation.core.content-pipeline))
 - Your source data can be enumerated synchronously or asynchronously on startup — `DiscoverAsync` runs both at build time and on demand for live requests
 
 To copy a working setup, see [`examples/ExtensibilityLabExample`](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample) — the `ReleaseNotesContentService` file is self-contained. Do not walk through the whole example — this page is a recipe, not a tour.
@@ -37,7 +37,7 @@ T:ExtensibilityLabExample.ReleaseEntry
 
 ### 2. Implement `IContentService` and load the records once
 
-_Create a sealed class that implements [`IContentService`](/reference/extension-points/content-pipeline), inject whatever you need to read the source (here, `IWebHostEnvironment` for `ContentRootPath`), and cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source._
+_Create a sealed class that implements [`IContentService`](xref:reference.extension-points.content-pipeline), inject whatever you need to read the source (here, `IWebHostEnvironment` for `ContentRootPath`), and cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source._
 
 ```csharp:xmldocid
 T:ExtensibilityLabExample.ReleaseNotesContentService
@@ -45,7 +45,7 @@ T:ExtensibilityLabExample.ReleaseNotesContentService
 
 ### 3. Yield one `DiscoveredItem` per page from `DiscoverAsync`
 
-_Build each item's `ContentRoute` through [`ContentRouteFactory.FromUrl`](/reference/extension-points/routing) (synthetic URL, no backing file) or `ContentRouteFactory.FromCustom` (URL plus an on-disk `FilePath` so file-watching picks up edits), and pair it with a `ContentSource` case — a `RedirectSource` is the right placeholder when an endpoint elsewhere in `Program.cs` produces the actual HTML. Yield an index route plus one route per record._
+_Build each item's `ContentRoute` through [`ContentRouteFactory.FromUrl`](xref:reference.extension-points.routing) (synthetic URL, no backing file) or `ContentRouteFactory.FromCustom` (URL plus an on-disk `FilePath` so file-watching picks up edits), and pair it with a `ContentSource` case — a `RedirectSource` is the right placeholder when an endpoint elsewhere in `Program.cs` produces the actual HTML. Yield an index route plus one route per record._
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.ReleaseNotesContentService.DiscoverAsync
@@ -97,7 +97,7 @@ examples/ExtensibilityLabExample/Program.cs
 
 ## Related
 
-- Reference: [_Content pipeline interfaces_](/reference/extension-points/content-pipeline)
-- Reference: [_Routing types_](/reference/extension-points/routing)
-- Background: [_The content pipeline and union types_](/explanation/core/content-pipeline)
-- Background: [_When is DocSite the right starting point?_](/explanation/core/docsite-positioning)
+- Reference: [_Content pipeline interfaces_](xref:reference.extension-points.content-pipeline)
+- Reference: [_Routing types_](xref:reference.extension-points.routing)
+- Background: [_The content pipeline and union types_](xref:explanation.core.content-pipeline)
+- Background: [_When is DocSite the right starting point?_](xref:explanation.core.docsite-positioning)

@@ -22,12 +22,12 @@ _Register services into the DI container. Each row points to the options page th
 
 | Method | Signature | Package | Options surface | Notes |
 |---|---|---|---|---|
-| `AddPennington` | `IServiceCollection AddPennington(this IServiceCollection, Action<PenningtonOptions>)` | `Pennington` | [`PenningtonOptions`](/reference/options/pennington-options) | Core registration: content sources, pipeline, rewriters, feeds, search, llms.txt, diagnostics. |
-| `AddDocSite` | `IServiceCollection AddDocSite(this IServiceCollection, Func<DocSiteOptions>)` | `Pennington.DocSite` | [`DocSiteOptions`](/reference/options/docsite-options) | Composes `AddPennington` + `AddMonorailCss` + `AddSpaNavigation`; wires `ContentResolver` and the DocSite article slot renderer. |
-| `AddBlogSite` | `IServiceCollection AddBlogSite(this IServiceCollection, Func<BlogSiteOptions>)` | `Pennington.BlogSite` | [`BlogSiteOptions`](/reference/options/blogsite-options) | Composes `AddPennington` + `AddMonorailCss`; wires file-watched `BlogContentResolver` and `BlogSiteContentService`. |
-| `AddMonorailCss` | `IServiceCollection AddMonorailCss(this IServiceCollection, Func<IServiceProvider, MonorailCssOptions>? = null)` | `Pennington.MonorailCss` | [`MonorailCssOptions`](/reference/options/monorail-css-options) | Registers `CssClassCollector`, the stylesheet service, and the `CssClassCollectorProcessor` as `IResponseProcessor`. |
-| `AddPenningtonRoslyn` | `IServiceCollection AddPenningtonRoslyn(this IServiceCollection, Action<RoslynOptions>? = null)` | `Pennington.Roslyn` | [`RoslynOptions`](/reference/options/roslyn-options) | Always registers `RoslynHighlighter`; when `SolutionPath` is set, adds workspace + symbol services + the xmldocid code-block preprocessor. |
-| `AddSpaNavigation` | `IServiceCollection AddSpaNavigation(this IServiceCollection, Action<SpaNavigationOptions>? = null)` | `Pennington` | [`SpaNavigationOptions`](/reference/options/auxiliary-options) | Registers the SPA envelope services backing the `_spa-data` JSON endpoint; `UseSpaNavigation` maps the endpoint. |
+| `AddPennington` | `IServiceCollection AddPennington(this IServiceCollection, Action<PenningtonOptions>)` | `Pennington` | [`PenningtonOptions`](xref:reference.options.pennington-options) | Core registration: content sources, pipeline, rewriters, feeds, search, llms.txt, diagnostics. |
+| `AddDocSite` | `IServiceCollection AddDocSite(this IServiceCollection, Func<DocSiteOptions>)` | `Pennington.DocSite` | [`DocSiteOptions`](xref:reference.options.docsite-options) | Composes `AddPennington` + `AddMonorailCss` + `AddSpaNavigation`; wires `ContentResolver` and the DocSite article slot renderer. |
+| `AddBlogSite` | `IServiceCollection AddBlogSite(this IServiceCollection, Func<BlogSiteOptions>)` | `Pennington.BlogSite` | [`BlogSiteOptions`](xref:reference.options.blogsite-options) | Composes `AddPennington` + `AddMonorailCss`; wires file-watched `BlogContentResolver` and `BlogSiteContentService`. |
+| `AddMonorailCss` | `IServiceCollection AddMonorailCss(this IServiceCollection, Func<IServiceProvider, MonorailCssOptions>? = null)` | `Pennington.MonorailCss` | [`MonorailCssOptions`](xref:reference.options.monorail-css-options) | Registers `CssClassCollector`, the stylesheet service, and the `CssClassCollectorProcessor` as `IResponseProcessor`. |
+| `AddPenningtonRoslyn` | `IServiceCollection AddPenningtonRoslyn(this IServiceCollection, Action<RoslynOptions>? = null)` | `Pennington.Roslyn` | [`RoslynOptions`](xref:reference.options.roslyn-options) | Always registers `RoslynHighlighter`; when `SolutionPath` is set, adds workspace + symbol services + the xmldocid code-block preprocessor. |
+| `AddSpaNavigation` | `IServiceCollection AddSpaNavigation(this IServiceCollection, Action<SpaNavigationOptions>? = null)` | `Pennington` | [`SpaNavigationOptions`](xref:reference.options.auxiliary-options) | Registers the SPA envelope services backing the `_spa-data` JSON endpoint; `UseSpaNavigation` maps the endpoint. |
 | `AddFileWatched<T>` | `IServiceCollection AddFileWatched<T>(this IServiceCollection) where T : class` | `Pennington` | _none_ | Registers `T` as a singleton behind `FileWatchDependencyFactory<T>` that recreates on watched-file changes. A two-parameter overload `AddFileWatched<TService, TImplementation>` exists for interface/implementation pairs. |
 
 ### `AddPennington`
@@ -36,7 +36,7 @@ _Register services into the DI container. Each row points to the options page th
 M:Pennington.Infrastructure.PenningtonExtensions.AddPennington(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Infrastructure.PenningtonOptions})
 ```
 
-_Core entry point; callers configure a `PenningtonOptions` via the delegate. See [`PenningtonOptions`](/reference/options/pennington-options) for the full property catalog._
+_Core entry point; callers configure a `PenningtonOptions` via the delegate. See [`PenningtonOptions`](xref:reference.options.pennington-options) for the full property catalog._
 
 ### `AddDocSite`
 
@@ -44,7 +44,7 @@ _Core entry point; callers configure a `PenningtonOptions` via the delegate. See
 M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})
 ```
 
-_Template-style composition over `AddPennington`. Takes a `Func<DocSiteOptions>` (not `Action<T>`) because the options instance is constructed by the caller. See [`DocSiteOptions`](/reference/options/docsite-options)._
+_Template-style composition over `AddPennington`. Takes a `Func<DocSiteOptions>` (not `Action<T>`) because the options instance is constructed by the caller. See [`DocSiteOptions`](xref:reference.options.docsite-options)._
 
 ### `AddBlogSite`
 
@@ -52,7 +52,7 @@ _Template-style composition over `AddPennington`. Takes a `Func<DocSiteOptions>`
 M:Pennington.BlogSite.BlogSiteServiceExtensions.AddBlogSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.BlogSite.BlogSiteOptions})
 ```
 
-_Template-style composition over `AddPennington` tuned for blogs. See [`BlogSiteOptions`](/reference/options/blogsite-options)._
+_Template-style composition over `AddPennington` tuned for blogs. See [`BlogSiteOptions`](xref:reference.options.blogsite-options)._
 
 ### `AddMonorailCss`
 
@@ -60,7 +60,7 @@ _Template-style composition over `AddPennington` tuned for blogs. See [`BlogSite
 M:Pennington.MonorailCss.MonorailServiceExtensions.AddMonorailCss(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{System.IServiceProvider,Pennington.MonorailCss.MonorailCssOptions})
 ```
 
-_Paired with `UseMonorailCss`. The options factory receives the resolved `IServiceProvider`. See [`MonorailCssOptions`](/reference/options/monorail-css-options)._
+_Paired with `UseMonorailCss`. The options factory receives the resolved `IServiceProvider`. See [`MonorailCssOptions`](xref:reference.options.monorail-css-options)._
 
 ### `AddPenningtonRoslyn`
 
@@ -68,7 +68,7 @@ _Paired with `UseMonorailCss`. The options factory receives the resolved `IServi
 M:Pennington.Roslyn.RoslynExtensions.AddPenningtonRoslyn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Roslyn.RoslynOptions})
 ```
 
-_The Roslyn-backed highlighter is registered unconditionally; symbol extraction and xmldocid preprocessing activate only when `SolutionPath` is configured. See [`RoslynOptions`](/reference/options/roslyn-options)._
+_The Roslyn-backed highlighter is registered unconditionally; symbol extraction and xmldocid preprocessing activate only when `SolutionPath` is configured. See [`RoslynOptions`](xref:reference.options.roslyn-options)._
 
 ### `AddSpaNavigation`
 
@@ -76,7 +76,7 @@ _The Roslyn-backed highlighter is registered unconditionally; symbol extraction 
 M:Pennington.Islands.SpaNavigationExtensions.AddSpaNavigation(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Islands.SpaNavigationOptions})
 ```
 
-_Paired with `UseSpaNavigation` (an `IEndpointRouteBuilder` extension). Already called by `AddDocSite`; bare `AddPennington` hosts call it explicitly when they need the SPA envelope. See [`SpaNavigationOptions`](/reference/options/auxiliary-options)._
+_Paired with `UseSpaNavigation` (an `IEndpointRouteBuilder` extension). Already called by `AddDocSite`; bare `AddPennington` hosts call it explicitly when they need the SPA envelope. See [`SpaNavigationOptions`](xref:reference.options.auxiliary-options)._
 
 ### `AddFileWatched<T>`
 
@@ -162,7 +162,7 @@ _Entry points that decide between dev-serve and static-build based on `args[0]`.
 
 | Method | Signature | Package | Dispatches to | Notes |
 |---|---|---|---|---|
-| `RunOrBuildAsync` | `Task RunOrBuildAsync(this WebApplication, string[] args)` | `Pennington` | `app.RunAsync()` or `OutputGenerationService.GenerateAsync` | Dev-serve on plain `dotnet run`; on `build [baseUrl] [output]` starts the host, crawls it, writes output, sets the exit code on diagnostics. See [CLI and build arguments](/reference/host/cli). |
+| `RunOrBuildAsync` | `Task RunOrBuildAsync(this WebApplication, string[] args)` | `Pennington` | `app.RunAsync()` or `OutputGenerationService.GenerateAsync` | Dev-serve on plain `dotnet run`; on `build [baseUrl] [output]` starts the host, crawls it, writes output, sets the exit code on diagnostics. See [CLI and build arguments](xref:reference.host.cli). |
 | `RunDocSiteAsync` | `Task RunDocSiteAsync(this WebApplication, string[] args)` | `Pennington.DocSite` | `RunOrBuildAsync` | Thin delegate; exists so DocSite hosts do not need to import `Pennington.Infrastructure` just to reach `RunOrBuildAsync`. |
 | `RunBlogSiteAsync` | `Task RunBlogSiteAsync(this WebApplication, string[] args)` | `Pennington.BlogSite` | `RunOrBuildAsync` | Thin delegate for the blog template; same behavior as `RunOrBuildAsync`. |
 
@@ -202,7 +202,7 @@ The same three-call shape holds for every template: `Add*` builds the service gr
 
 ## See also
 
-- Reference: [CLI and build arguments](/reference/host/cli)
-- Reference: [`PenningtonOptions`](/reference/options/pennington-options)
-- Reference: [`DocSiteOptions`](/reference/options/docsite-options)
-- Background: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build)
+- Reference: [CLI and build arguments](xref:reference.host.cli)
+- Reference: [`PenningtonOptions`](xref:reference.options.pennington-options)
+- Reference: [`DocSiteOptions`](xref:reference.options.docsite-options)
+- Background: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build)

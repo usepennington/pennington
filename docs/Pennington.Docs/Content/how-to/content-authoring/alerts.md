@@ -9,7 +9,7 @@ tags: [authoring, alerts, markdown, callouts]
 
 > **In this page.** _Paraphrase the TOC "Covers" line: authoring the five GitHub-style alert blocks (`> [!NOTE]`, `[!TIP]`, `[!CAUTION]`, `[!WARNING]`, `[!IMPORTANT]`) in a standard blockquote and understanding the CSS classes the renderer emits so your stylesheet can pick them up._
 >
-> **Not in this page.** _Paraphrase "Does not cover": restyling the alerts beyond the default palette, Mermaid diagrams (see [Embed diagrams](/how-to/content-authoring/diagrams)), or the Pennington.UI `<Card>` component surfaced inside markdown (see [Use UI components inside markdown](/how-to/content-authoring/ui-components-in-markdown))._
+> **Not in this page.** _Paraphrase "Does not cover": restyling the alerts beyond the default palette, Mermaid diagrams (see [Embed diagrams](xref:how-to.content-authoring.diagrams)), or the Pennington.UI `<Card>` component surfaced inside markdown (see [Use UI components inside markdown](xref:how-to.content-authoring.ui-components-in-markdown))._
 
 ## When to use this
 
@@ -19,7 +19,7 @@ _Two sentences. Frame the reader's goal: they have a working Pennington page and
 
 _Three bullets. Keep each to a single realistic prior state._
 
-- You have an existing Pennington site rendering markdown (see the [Getting Started tutorial](/tutorials/getting-started/minimal-site) if not).
+- You have an existing Pennington site rendering markdown (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - Your pipeline was built through `AddPennington` / `AddDocSite` / `AddBlogSite`, so `UseCustomAlerts()` is already wired into the default `MarkdownPipelineFactory` — you do not need to register the extension yourself.
 - You are using the default MonorailCSS integration or a stylesheet that targets the `markdown-alert` / `markdown-alert-{kind}` classes — the parser only emits classes, not colours.
 
@@ -99,7 +99,7 @@ _Three bullets. One observable check each._
 
 ## Related
 
-- Reference: [Markdown extensions catalog](/reference/markdown/extensions) — the full list of non-CommonMark features including alerts and their emitted CSS classes
-- How-to: [Embed diagrams](/how-to/content-authoring/diagrams) — Mermaid fences for when a callout isn't the right shape
-- How-to: [Use UI components inside markdown](/how-to/content-authoring/ui-components-in-markdown) — reach for `<Card>` or a custom component when you need more than the five built-in kinds
-- Background: [The content pipeline and union types](/explanation/core/content-pipeline) — where the Markdig pipeline (and the alert extension) sits in the render chain
+- Reference: [Markdown extensions catalog](xref:reference.markdown.extensions) — the full list of non-CommonMark features including alerts and their emitted CSS classes
+- How-to: [Embed diagrams](xref:how-to.content-authoring.diagrams) — Mermaid fences for when a callout isn't the right shape
+- How-to: [Use UI components inside markdown](xref:how-to.content-authoring.ui-components-in-markdown) — reach for `<Card>` or a custom component when you need more than the five built-in kinds
+- Background: [The content pipeline and union types](xref:explanation.core.content-pipeline) — where the Markdig pipeline (and the alert extension) sits in the render chain

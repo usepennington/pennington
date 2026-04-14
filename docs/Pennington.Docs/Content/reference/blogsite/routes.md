@@ -9,7 +9,7 @@ uid: reference.blogsite.routes
 
 > **In this page.** The routes the `Pennington.BlogSite` package ships out of the box — `/` (home), `/archive`, `/tags` and its alias `/topics`, `/tags/{TagEncodedName}` and its alias `/topics/{TagEncodedName}`, `/blog/{*fileName}` for individual posts, and `/rss.xml` when `EnableRss` is on — plus which `BlogSiteOptions` knobs (`TagsPageUrl`, `BlogBaseUrl`, `EnableRss`, `EnableSitemap`) each route honors.
 >
-> **Not in this page.** Customizing the Razor page bodies themselves — see [Customize DocSite layouts and components](/how-to/extensibility/override-docsite-components), which applies symmetrically to BlogSite.
+> **Not in this page.** Customizing the Razor page bodies themselves — see [Customize DocSite layouts and components](xref:how-to.extensibility.override-docsite-components), which applies symmetrically to BlogSite.
 
 ## Summary
 
@@ -41,7 +41,7 @@ _Every TOC-listed route must have a row. Columns: Path / Method / Option control
 | `/blog/{*fileName}` | `GET` | `BlogBaseUrl` (see note) | _One-sentence: post-rendering Razor page at `src/Pennington.BlogSite/Components/Pages/Blog.razor`; catch-all that looks up the post by `{BlogBaseUrl}/{fileName}` via `BlogContentResolver.GetPostByUrlAsync` and renders it through `BlogPost` with OpenGraph and structured-data head tags._ |
 | `/rss.xml` | `GET` | `EnableRss` | _One-sentence: plain `MapGet` endpoint in `UseBlogSite` that delegates to `BlogSiteContentService.GetRssXmlAsync`; omitted entirely when `EnableRss` is `false`._ |
 
-> **Note on `TagsPageUrl` and `BlogBaseUrl`.** The `@page` directives on `Tags.razor`, `Tag.razor`, and `Blog.razor` are string literals (`"/tags"`, `"/topics"`, `"/blog/{*fileName}"`) and are not templated from `BlogSiteOptions`. `TagsPageUrl` (default `"/tags"`) and `BlogBaseUrl` (default `"/blog"`) are used by `BlogContentResolver` / `BlogSiteContentService` to build tag and post URLs that match these page routes; changing them away from the defaults requires supplying replacement Razor pages via `AdditionalRoutingAssemblies`. See [`BlogSiteOptions`](/reference/options/blogsite-options).
+> **Note on `TagsPageUrl` and `BlogBaseUrl`.** The `@page` directives on `Tags.razor`, `Tag.razor`, and `Blog.razor` are string literals (`"/tags"`, `"/topics"`, `"/blog/{*fileName}"`) and are not templated from `BlogSiteOptions`. `TagsPageUrl` (default `"/tags"`) and `BlogBaseUrl` (default `"/blog"`) are used by `BlogContentResolver` / `BlogSiteContentService` to build tag and post URLs that match these page routes; changing them away from the defaults requires supplying replacement Razor pages via `AdditionalRoutingAssemblies`. See [`BlogSiteOptions`](xref:reference.options.blogsite-options).
 
 ## Option-to-route matrix
 
@@ -66,7 +66,7 @@ _One-sentence context: the example boots `Pennington.BlogSite` with the scaffold
 
 ## See also
 
-- Reference: [`BlogSiteOptions`](/reference/options/blogsite-options)
-- Reference: [Built-in `SocialIcons` `RenderFragment`s](/reference/blogsite/social-icons)
-- How-to: [Customize DocSite layouts and components](/how-to/extensibility/override-docsite-components)
-- How-to: [Configure the BlogSite homepage](/how-to/configuration/blogsite-homepage)
+- Reference: [`BlogSiteOptions`](xref:reference.options.blogsite-options)
+- Reference: [Built-in `SocialIcons` `RenderFragment`s](xref:reference.blogsite.social-icons)
+- How-to: [Customize DocSite layouts and components](xref:how-to.extensibility.override-docsite-components)
+- How-to: [Configure the BlogSite homepage](xref:how-to.configuration.blogsite-homepage)

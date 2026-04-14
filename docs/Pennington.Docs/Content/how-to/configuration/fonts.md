@@ -19,7 +19,7 @@ _Two sentences. Readers arrive wanting a site that uses their chosen display and
 
 _Short bulleted list. Do not re-teach DocSite setup or MonorailCSS wiring._
 
-- You have a running DocSite built with `AddDocSite` / `UseDocSite` (see [_Create your first Pennington site_](/tutorials/getting-started/first-site) if not).
+- You have a running DocSite built with `AddDocSite` / `UseDocSite` (see [_Create your first Pennington site_](xref:tutorials.getting-started.first-site) if not).
 - You have chosen a delivery strategy (self-hosted `.woff2` files in `wwwroot/fonts/`, or an external provider) and have the files or URLs on hand.
 - You know the CSS `font-family` name each face registers under.
 
@@ -31,9 +31,7 @@ To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://gith
 
 ### 1. Drop font files into `wwwroot/fonts/`
 
-_One sentence: put each `.woff2` under `wwwroot/fonts/` so `UseStaticFiles` (wired by `UsePennington`) serves it at `/fonts/<file>.woff2`. For the kitchen-sink example this is `wwwroot/fonts/display.woff2` and `wwwroot/fonts/body.woff2`._
-
-<!-- TODO confirm DocSiteKitchenSinkExample ships actual .woff2 files in wwwroot/fonts/, or note in body that the preload paths are illustrative. -->
+_One sentence: put each `.woff2` under `wwwroot/fonts/` so `UseStaticFiles` (wired by `UsePennington`) serves it at `/fonts/<file>.woff2`. The kitchen-sink example references `/fonts/display.woff2` and `/fonts/body.woff2` in its preload and `@font-face` wiring — supply your own files at those paths (the example does not ship font binaries)._
 
 ### 2. Register `@font-face` rules via `ExtraStyles`
 
@@ -61,7 +59,7 @@ M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions
 
 ### 5. (Optional) Match MonorailCSS utilities to your stacks
 
-_One sentence: if you drive prose styling with MonorailCSS utility classes (e.g. `font-sans`, `font-display`), adjust the theme or `ExtraStyles` so those utilities resolve to the same `font-family` stacks — otherwise utility-styled text will disagree with the layout chrome. Link out to [_Customize MonorailCSS_](/how-to/configuration/monorail-css) for how to pass `CustomCssFrameworkSettings` to the bare-`AddPennington` host when you need that._
+_One sentence: if you drive prose styling with MonorailCSS utility classes (e.g. `font-sans`, `font-display`), adjust the theme or `ExtraStyles` so those utilities resolve to the same `font-family` stacks — otherwise utility-styled text will disagree with the layout chrome. Link out to [_Customize MonorailCSS_](xref:how-to.configuration.monorail-css) for how to pass `CustomCssFrameworkSettings` to the bare-`AddPennington` host when you need that._
 
 ---
 
@@ -73,6 +71,6 @@ _One sentence: if you drive prose styling with MonorailCSS utility classes (e.g.
 
 ## Related
 
-- Reference: [_`DocSiteOptions`_](/reference/options/docsite-options) — the full property list including `DisplayFontFamily`, `BodyFontFamily`, `FontPreloads`, and `ExtraStyles`.
-- Reference: [_`FontPreload`_](/reference/options/docsite-options) — the `Href` / `Type` record shape (defaults to `font/woff2`).
-- How-to: [_Customize MonorailCSS_](/how-to/configuration/monorail-css) — for aligning utility-class font stacks with your new families.
+- Reference: [_`DocSiteOptions`_](xref:reference.options.docsite-options) — the full property list including `DisplayFontFamily`, `BodyFontFamily`, `FontPreloads`, and `ExtraStyles`.
+- Reference: [_`FontPreload`_](xref:reference.options.docsite-options) — the `Href` / `Type` record shape (defaults to `font/woff2`).
+- How-to: [_Customize MonorailCSS_](xref:how-to.configuration.monorail-css) — for aligning utility-class font stacks with your new families.

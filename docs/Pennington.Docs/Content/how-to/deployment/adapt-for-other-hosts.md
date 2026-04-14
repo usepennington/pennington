@@ -9,7 +9,7 @@ tags: [deployment, azure-static-web-apps, cloudflare-pages, netlify]
 
 > **In this page.** The shared shape every host needs (build command, publish directory, .NET SDK pin, base URL) plus a per-host table of deltas for Azure Static Web Apps, Cloudflare Pages, and Netlify — with inline `staticwebapp.config.json` and `netlify.toml` snippets so you can copy the routing and fallback rules verbatim.
 >
-> **Not in this page.** The shared CI steps themselves — those live on [_Deploy to GitHub Pages_](/how-to/deployment/github-pages), which is the canonical recipe this page diffs against. Self-hosting behind Nginx or IIS has its own how-to at [_Self-host behind Nginx or IIS_](/how-to/deployment/self-host).
+> **Not in this page.** The shared CI steps themselves — those live on [_Deploy to GitHub Pages_](xref:how-to.deployment.github-pages), which is the canonical recipe this page diffs against. Self-hosting behind Nginx or IIS has its own how-to at [_Self-host behind Nginx or IIS_](xref:how-to.deployment.self-host).
 
 ## When to use this
 
@@ -19,7 +19,7 @@ _Two sentences. Trigger: you have read the GitHub Pages how-to and understand th
 
 _Bulleted list. Four bullets max. Keep it tight; if this grows, readers should be on a tutorial._
 
-- You have already worked through [_Deploy to GitHub Pages_](/how-to/deployment/github-pages) and the canonical workflow builds cleanly against your project.
+- You have already worked through [_Deploy to GitHub Pages_](xref:how-to.deployment.github-pages) and the canonical workflow builds cleanly against your project.
 - You have a deploy target account created (SWA resource, Cloudflare Pages project, or Netlify site) and the repo connected.
 - Your site either serves at the host's domain root (`baseUrl = "/"`) or you know the exact sub-path you need to pass as the first positional argument to `build`.
 - You are comfortable editing one host config file per target — the snippets below are complete, not starting points.
@@ -75,7 +75,7 @@ _Two sentences. Cloudflare Pages does not ship a first-party config file equival
 
 ### 6. Pass the right `baseUrl` for the host's URL shape
 
-_Two sentences. GitHub Pages defaults to a sub-path; Azure Static Web Apps, Cloudflare Pages, and Netlify default to the apex, so the build argument you pass is usually different. For apex deploys pass nothing (or `/`); for a sub-path pass `/<path>` and let `BaseUrlHtmlRewriter` prefix every internal href, src, and action on the way out — detailed handling lives in [_Host under a sub-path (base URL)_](/how-to/deployment/base-url)._
+_Two sentences. GitHub Pages defaults to a sub-path; Azure Static Web Apps, Cloudflare Pages, and Netlify default to the apex, so the build argument you pass is usually different. For apex deploys pass nothing (or `/`); for a sub-path pass `/<path>` and let `BaseUrlHtmlRewriter` prefix every internal href, src, and action on the way out — detailed handling lives in [_Host under a sub-path (base URL)_](xref:how-to.deployment.base-url)._
 
 ```csharp:xmldocid
 T:Pennington.Infrastructure.BaseUrlHtmlRewriter
@@ -91,7 +91,7 @@ T:Pennington.Infrastructure.BaseUrlHtmlRewriter
 
 ## Related
 
-- Recipe: [_Deploy to GitHub Pages_](/how-to/deployment/github-pages) — the canonical workflow this page diffs against.
-- Recipe: [_Self-host behind Nginx or IIS_](/how-to/deployment/self-host) — for hosts where you own the web server config instead of a managed platform.
-- Recipe: [_Host under a sub-path (base URL)_](/how-to/deployment/base-url) — how `BaseUrlHtmlRewriter` prefixes internal URLs when the host serves under `/<path>/`.
-- Reference: [_CLI and build arguments_](/reference/host/cli) — the `build [baseUrl] [outputDirectory]` surface every host command above invokes.
+- Recipe: [_Deploy to GitHub Pages_](xref:how-to.deployment.github-pages) — the canonical workflow this page diffs against.
+- Recipe: [_Self-host behind Nginx or IIS_](xref:how-to.deployment.self-host) — for hosts where you own the web server config instead of a managed platform.
+- Recipe: [_Host under a sub-path (base URL)_](xref:how-to.deployment.base-url) — how `BaseUrlHtmlRewriter` prefixes internal URLs when the host serves under `/<path>/`.
+- Reference: [_CLI and build arguments_](xref:reference.host.cli) — the `build [baseUrl] [outputDirectory]` surface every host command above invokes.

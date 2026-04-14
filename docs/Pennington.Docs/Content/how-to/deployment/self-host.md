@@ -9,19 +9,19 @@ tags: [deployment, self-host, nginx, iis]
 
 > **In this page.** _Paraphrase TOC "Covers": serving `output/` as static files from Nginx or IIS, wiring the directory-index / default-document rules Pennington's trailing-slash URLs expect, and routing misses to the generated `404.html`. Two sentences max, pitched at a reader who already has a built `output/` directory on the server._
 >
-> **Not in this page.** _Paraphrase TOC "Does not cover": running the live Pennington ASP.NET host (the `dotnet run` origin) behind Nginx or IIS as a reverse proxy is a separate topic — link out to [Build a static site](/how-to/deployment/static-build) as the shape this page assumes and note that the reverse-proxy recipe is not yet documented (TODO: add once covered)._
+> **Not in this page.** _Paraphrase TOC "Does not cover": running the live Pennington ASP.NET host (the `dotnet run` origin) behind Nginx or IIS as a reverse proxy is a separate topic — link out to [Build a static site](xref:how-to.deployment.static-build) as the shape this page assumes and note that the reverse-proxy recipe is not yet documented (TODO: add once covered)._
 
 ## When to use this
 
-_Two sentences. Trigger: you already produce an `output/` directory via `dotnet run -- build` and need to serve it from a server you control — typically a VPS running Nginx or a Windows host running IIS — rather than a managed static platform. If you are still deciding between this and a managed host, start on [Deploy to GitHub Pages](/how-to/deployment/github-pages); this page is for when that route is not available._
+_Two sentences. Trigger: you already produce an `output/` directory via `dotnet run -- build` and need to serve it from a server you control — typically a VPS running Nginx or a Windows host running IIS — rather than a managed static platform. If you are still deciding between this and a managed host, start on [Deploy to GitHub Pages](xref:how-to.deployment.github-pages); this page is for when that route is not available._
 
 ## Assumptions
 
 _Four bullets. Keep prerequisites minimal — if the list grows, the page is a tutorial._
 
-- You have a built `output/` directory (see [Build a static site](/how-to/deployment/static-build) if not) and can copy it onto the target server.
+- You have a built `output/` directory (see [Build a static site](xref:how-to.deployment.static-build) if not) and can copy it onto the target server.
 - You have root / administrator access to install a config file and reload the web server.
-- The site will serve from the domain root; sub-path deployments (`https://host/docs/`) still work but require building with `dotnet run -- build /docs` — see [Host under a sub-path (base URL)](/how-to/deployment/base-url).
+- The site will serve from the domain root; sub-path deployments (`https://host/docs/`) still work but require building with `dotnet run -- build /docs` — see [Host under a sub-path (base URL)](xref:how-to.deployment.base-url).
 - You are comfortable editing one `nginx.conf` server block or one `web.config` file — this page does not wrap either in a deployment tool.
 
 To copy a working setup, see [`examples/SubPathDeployableExample`](https://github.com/usepennington/pennington/tree/main/examples/SubPathDeployableExample). The `nginx.conf` and `web.config` siblings of the csproj are the teaching artefacts; do not walk through the whole example.
@@ -74,7 +74,7 @@ _Two to three sentences. Nginx's default `mime.types` usually covers everything 
 
 ## Related
 
-- Recipe: [Build a static site](/how-to/deployment/static-build) — what `build [baseUrl] [outputDirectory]` produces before you copy `output/` onto the server.
-- Recipe: [Host under a sub-path (base URL)](/how-to/deployment/base-url) — how `BaseUrlHtmlRewriter` handles a `/docs/` prefix when your Nginx or IIS site does not own the domain root.
-- Reference: [CLI and build arguments](/reference/host/cli) — the `build [baseUrl] [outputDirectory]` surface that produces the `output/` directory this page serves.
+- Recipe: [Build a static site](xref:how-to.deployment.static-build) — what `build [baseUrl] [outputDirectory]` produces before you copy `output/` onto the server.
+- Recipe: [Host under a sub-path (base URL)](xref:how-to.deployment.base-url) — how `BaseUrlHtmlRewriter` handles a `/docs/` prefix when your Nginx or IIS site does not own the domain root.
+- Reference: [CLI and build arguments](xref:reference.host.cli) — the `build [baseUrl] [outputDirectory]` surface that produces the `output/` directory this page serves.
 - Background: TODO — add link to the "Unified dev-and-build path" explanation page once published, since it motivates why `404.html` is generated as a real HTTP response rather than a static template.

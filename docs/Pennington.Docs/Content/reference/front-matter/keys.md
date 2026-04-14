@@ -75,7 +75,7 @@ _One sentence of context. A `DocSiteFrontMatter` page populating `title`, `descr
 
 _Two to four cross-quadrant links. One pointer to the capability contract reference, one to the record-catalog reference, one to the authoring how-to, one to the design-rationale explanation._
 
-- Related reference: [`IFrontMatter` and capability defaults](/reference/front-matter/ifrontmatter)
-- Related reference: [Built-in front-matter types](/reference/front-matter/built-in-types)
-- How-to: [Work with front matter](/how-to/content-authoring/front-matter)
-- Background: [The front-matter capability system](/explanation/core/front-matter-capabilities)
+- Related reference: [`IFrontMatter` and capability defaults](xref:reference.front-matter.ifrontmatter)
+- Related reference: [Built-in front-matter types](xref:reference.front-matter.built-in-types)
+- How-to: [Work with front matter](xref:how-to.content-authoring.front-matter)
+- Background: [The front-matter capability system](xref:explanation.core.front-matter-capabilities)

@@ -19,7 +19,7 @@ _One to two sentences. Frame the realistic arrival state: the reader already has
 
 _Keep to 3 bullets. Prior state must already include a working DocSite with at least two pages in one section so "ordering" is meaningful._
 
-- You have a working Pennington site with markdown under `Content/` (see [Work with front matter](/how-to/content-authoring/front-matter) if not)
+- You have a working Pennington site with markdown under `Content/` (see [Work with front matter](xref:how-to.content-authoring.front-matter) if not)
 - Your pages use `DocSiteFrontMatter` (the default when you called `AddDocSite`) or another type that implements `ITaggable` + `IOrderable`
 - The sidebar currently renders in file-order and you have not customized `TableOfContentsNavigation`
 
@@ -98,6 +98,6 @@ _Terse. One bullet per key so the reader can confirm each independently without 
 
 _Two to four cross-quadrant links. Point at Reference for the full key table, the sibling how-to for sidebar shaping, and the Explanation page for the capability-interface background. Do not link to the next how-to in this section — generated automatically._
 
-- Reference: [Front matter key reference](/reference/front-matter/keys)
-- How-to: [Customize the sidebar](/how-to/content-authoring/customize-sidebar)
-- Background: [The front-matter capability system](/explanation/core/front-matter-capabilities)
+- Reference: [Front matter key reference](xref:reference.front-matter.keys)
+- How-to: [Customize the sidebar](xref:how-to.content-authoring.customize-sidebar)
+- Background: [The front-matter capability system](xref:explanation.core.front-matter-capabilities)

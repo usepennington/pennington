@@ -9,7 +9,7 @@ tags: [authoring, code, highlighting, annotations]
 
 > **In this page.** _Paraphrase the TOC "Covers" line: applying `[!code highlight]`, `[!code ++]` / `[!code --]`, `[!code focus]`, and `[!code error]` / `[!code warning]` as trailing comments inside fenced code blocks so the rendered HTML gets the matching line classes._
 >
-> **Not in this page.** _Paraphrase "Does not cover": writing your own `ICodeBlockPreprocessor` to transform fence bodies before highlighting — that belongs in [Register a code-block preprocessor](/how-to/extensibility/code-block-preprocessor)._
+> **Not in this page.** _Paraphrase "Does not cover": writing your own `ICodeBlockPreprocessor` to transform fence bodies before highlighting — that belongs in [Register a code-block preprocessor](xref:how-to.extensibility.code-block-preprocessor)._
 
 ## When to use this
 
@@ -19,7 +19,7 @@ _Two sentences. Frame the goal: the reader already has a working fenced code blo
 
 _Three bullets. Each is realistic prior state, not a tutorial step._
 
-- You have an existing Pennington site rendering markdown with highlighted code fences (see the [Getting Started tutorial](/tutorials/getting-started/minimal-site) if not).
+- You have an existing Pennington site rendering markdown with highlighted code fences (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - The fenced language supports a comment syntax the transformer recognises — `//`, `#`, `--`, `<!-- -->`, `*`, `%`, `'`, `REM`, `;`, or `/* */`.
 - You are authoring in plain markdown, not injecting HTML directly — the directives are parsed from the rendered highlighter output, so they must travel through the fence as comments.
 
@@ -104,6 +104,6 @@ _Three bullets. Each is one observable check._
 
 ## Related
 
-- Reference: [Highlighting interfaces](/reference/extension-points/highlighting) — `ICodeHighlighter`, `ICodeBlockPreprocessor`, `HighlightingService`, and `TextMateLanguageRegistry`
-- How-to: [Register a code-block preprocessor](/how-to/extensibility/code-block-preprocessor) — when a trailing-comment directive isn't enough and you need to transform fence bodies
-- Background: [The syntax-highlighting cascade](/explanation/rendering/highlighting) — why the transformer runs after the highlighter and where custom highlighters plug in
+- Reference: [Highlighting interfaces](xref:reference.extension-points.highlighting) — `ICodeHighlighter`, `ICodeBlockPreprocessor`, `HighlightingService`, and `TextMateLanguageRegistry`
+- How-to: [Register a code-block preprocessor](xref:how-to.extensibility.code-block-preprocessor) — when a trailing-comment directive isn't enough and you need to transform fence bodies
+- Background: [The syntax-highlighting cascade](xref:explanation.rendering.highlighting) — why the transformer runs after the highlighter and where custom highlighters plug in

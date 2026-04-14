@@ -13,7 +13,7 @@ uid: tutorials.beyond-basics.add-a-locale
 
 > **In this page.** _One sentence paraphrasing the Covers line: the reader enables `LocalizationOptions` via `DocSiteOptions.ConfigureLocalization`, creates a `Content/es/` subdirectory with translated markdown mirroring the English pages, relies on `UseDocSite`'s built-in `UsePenningtonLocaleRouting` call to route locale-prefixed URLs, and watches the built-in `LanguageSwitcher` component light up in the DocSite header once `IsMultiLocale` flips to true._
 >
-> **Not in this page.** _One sentence paraphrasing the Does-not-cover line: this tutorial does not dig into per-locale search index internals (see [the `LocalizationOptions` reference](/reference/options/localization-options) and [`Enable multiple locales`](/how-to/configuration/localization) for UI string translation plumbing) and it does not explain the content-fallback mechanics in depth (see the [Locale-aware URLs and content fallback explanation](/explanation/localization/urls-and-fallback))._
+> **Not in this page.** _One sentence paraphrasing the Does-not-cover line: this tutorial does not dig into per-locale search index internals (see [the `LocalizationOptions` reference](xref:reference.options.localization-options) and [`Enable multiple locales`](xref:how-to.configuration.localization) for UI string translation plumbing) and it does not explain the content-fallback mechanics in depth (see the [Locale-aware URLs and content fallback explanation](xref:explanation.localization.urls-and-fallback))._
 
 ## What you'll do
 
@@ -26,8 +26,8 @@ _**Skill** (one sentence): the reader walks away knowing that a single `Configur
 _Keep this list to tools and prior tutorials. The starting host shape is identical to the DocSite scaffolding tutorial — link back to it rather than re-explaining `AddDocSite` / `UseDocSite` / `RunDocSiteAsync`. No Razor, no custom services, no Roslyn._
 
 - .NET 11 SDK installed
-- Completed [Scaffold a documentation site with DocSite](/tutorials/docsite/scaffold) (provides the single-locale DocSite host this tutorial extends)
-- Completed [Author a documentation page with DocFrontMatter](/tutorials/docsite/first-doc-page) (so the front-matter shape of each page is already familiar)
+- Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the single-locale DocSite host this tutorial extends)
+- Completed [Author a documentation page with DocFrontMatter](xref:tutorials.docsite.first-doc-page) (so the front-matter shape of each page is already familiar)
 
 The finished code for this tutorial lives in [`examples/BeyondLocaleExample`](https://github.com/usepennington/pennington/tree/main/examples/BeyondLocaleExample).
 
@@ -45,7 +45,7 @@ _Show the Stage 1 host body. Call out that there is no `ConfigureLocalization` a
 M:BeyondLocaleExample.Stage1.Run(System.String[])
 ```
 
-_Explain one non-obvious line: `UseDocSite()` internally calls [`UsePenningtonLocaleRouting`](/reference/host/extensions) first thing; the reader does not need to invoke it explicitly. Delete this paragraph if the code speaks for itself._
+_Explain one non-obvious line: `UseDocSite()` internally calls [`UsePenningtonLocaleRouting`](xref:reference.host.extensions) first thing; the reader does not need to invoke it explicitly. Delete this paragraph if the code speaks for itself._
 
 ### Step 1.2 — Drop the three English pages into `Content/`
 
@@ -85,7 +85,7 @@ _Show the Stage 2 host body. Walk the reader through each line of the new action
 M:BeyondLocaleExample.Stage2.Run(System.String[])
 ```
 
-_One sentence on the practical rule: once `Locales` contains more than one entry, [`LocalizationOptions.IsMultiLocale`](/reference/options/localization-options) flips to `true` — that single boolean gates the switcher, the locale detection middleware, and the per-locale search index._
+_One sentence on the practical rule: once `Locales` contains more than one entry, [`LocalizationOptions.IsMultiLocale`](xref:reference.options.localization-options) flips to `true` — that single boolean gates the switcher, the locale detection middleware, and the per-locale search index._
 
 ### Step 2.2 — Do not touch `UseDocSite()`
 
@@ -137,7 +137,7 @@ _Concrete verification. Every Spanish URL should now return its translation; the
 
 ## 4. Use the built-in `LanguageSwitcher` to move between locales
 
-_One sentence: the reader verifies that the [`LanguageSwitcher`](/reference/ui/utility) component — already baked into DocSite's `MainLayout.razor` — swaps locales in place by rewriting the current URL, so the reader lands on the same page in the other language rather than getting bounced to the home page._
+_One sentence: the reader verifies that the [`LanguageSwitcher`](xref:reference.ui.utility) component — already baked into DocSite's `MainLayout.razor` — swaps locales in place by rewriting the current URL, so the reader lands on the same page in the other language rather than getting bounced to the home page._
 
 ### Step 4.1 — Confirm the final host shape matches `Program.cs`
 

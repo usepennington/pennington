@@ -9,7 +9,7 @@ tags: [front-matter, authoring, yaml]
 
 > **In this page.** _Paraphrase the TOC "Covers" line: declaring front matter in YAML, picking a built-in front-matter record that fits, and defining your own._
 >
-> **Not in this page.** _Paraphrase "Does not cover": the full catalog of built-in keys lives at [Front matter key reference](/reference/front-matter/keys); the capability-interface design is in [The front-matter capability system](/explanation/core/front-matter-capabilities)._
+> **Not in this page.** _Paraphrase "Does not cover": the full catalog of built-in keys lives at [Front matter key reference](xref:reference.front-matter.keys); the capability-interface design is in [The front-matter capability system](xref:explanation.core.front-matter-capabilities)._
 
 ## When to use this
 
@@ -19,7 +19,7 @@ _Two sentences. Frame the goal: the reader has a markdown page and wants the rig
 
 _Keep the list to three bullets. Each should be realistic prior state, not a tutorial step._
 
-- You have an existing Pennington site with markdown content under a `Content/` folder (see the [Getting Started tutorial](/tutorials/getting-started/minimal-site) if not).
+- You have an existing Pennington site with markdown content under a `Content/` folder (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - You know which host template you are on — `AddDocSite`, `AddBlogSite`, or bare `AddPennington` with `AddMarkdownContent<T>`.
 - You have a markdown file open and want to fill in (or extend) its YAML block.
 
@@ -71,7 +71,7 @@ T:DocSiteKitchenSinkExample.ApiFrontMatter
 
 ### 5. Register the custom record with a markdown source
 
-_One sentence: pass the record type to `AddMarkdownContent<T>` so the pipeline knows how to deserialize the YAML. Note inline that `AddDocSite` / `AddBlogSite` already register one source each — chaining a second record requires bare `AddPennington` (link to [Use multiple content sources](/how-to/configuration/multiple-sources))._
+_One sentence: pass the record type to `AddMarkdownContent<T>` so the pipeline knows how to deserialize the YAML. Note inline that `AddDocSite` / `AddBlogSite` already register one source each — chaining a second record requires bare `AddPennington` (link to [Use multiple content sources](xref:how-to.configuration.multiple-sources))._
 
 ```yaml
 ---
@@ -94,7 +94,7 @@ _Three bullets. Each is one observable check._
 
 ## Related
 
-- Reference: [Front matter key reference](/reference/front-matter/keys) — every built-in key, type, and default
-- Reference: [Built-in front-matter types](/reference/front-matter/built-in-types) — `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter`
-- Reference: [`IFrontMatter` and capability defaults](/reference/front-matter/ifrontmatter) — the capability interfaces you can add to a custom record
-- Background: [The front-matter capability system](/explanation/core/front-matter-capabilities) — why the design collapsed ten interfaces into default members
+- Reference: [Front matter key reference](xref:reference.front-matter.keys) — every built-in key, type, and default
+- Reference: [Built-in front-matter types](xref:reference.front-matter.built-in-types) — `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter`
+- Reference: [`IFrontMatter` and capability defaults](xref:reference.front-matter.ifrontmatter) — the capability interfaces you can add to a custom record
+- Background: [The front-matter capability system](xref:explanation.core.front-matter-capabilities) — why the design collapsed ten interfaces into default members
