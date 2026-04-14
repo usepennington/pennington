@@ -4,14 +4,13 @@
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>ExtensibilityLabExample</RootNamespace>
+    <RootNamespace>DocSiteChromeOverridesExample</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Pennington\Pennington.csproj" />
-    <ProjectReference Include="..\..\src\Pennington.MonorailCss\Pennington.MonorailCss.csproj" />
-    <ProjectReference Include="..\..\src\Pennington.UI\Pennington.UI.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.DocSite\Pennington.DocSite.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Watch Include="Content\**\*.*" />
+    <Watch Include="Components\**\*.razor" />
   </ItemGroup>
 </Project>

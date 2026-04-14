@@ -93,6 +93,7 @@ public static class PenningtonExtensions
             MarkdownPipelineFactory.CreateWithExtensions(
                 sp,
                 sp.GetRequiredService<HighlightingService>(),
+                tabOptions: options.TabbedCodeBlockOptions,
                 preprocessors: sp.GetServices<ICodeBlockPreprocessor>(),
                 configure: options.ConfigureMarkdownPipeline));
 

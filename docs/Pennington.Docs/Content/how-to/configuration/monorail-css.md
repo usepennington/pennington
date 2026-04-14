@@ -7,21 +7,21 @@ sectionLabel: Configuration
 tags: [monorailcss, color-scheme, styling, theming]
 ---
 
-> **In this page.** _One sentence paraphrasing the TOC "Covers" line: swapping between `NamedColorScheme` and `AlgorithmicColorScheme`, injecting `CustomCssFrameworkSettings`, appending `ExtraStyles`, and widening class collection through `ContentPaths`. Call out explicitly that `DocSiteOptions` only forwards `ColorScheme` + `ExtraStyles`._
+> **In this page.** _One sentence paraphrasing the TOC "Covers" line: swapping between `NamedColorScheme` and `AlgorithmicColorScheme`, injecting `CustomCssFrameworkSettings`, appending `ExtraStyles`, and widening class collection through `ContentPaths`. Note that `DocSiteOptions` forwards `ColorScheme`, `ExtraStyles`, and `CustomCssFrameworkSettings`; `ContentPaths` remains a bare-`AddPennington` knob._
 >
 > **Not in this page.** _One sentence paraphrasing the TOC "Does not cover": the class-collector internals (Explanation) and writing a standalone `IColorScheme` implementation (advanced customization)._
 
 ## When to use this
 
-_Two sentences. Frame the arrival state: reader already has a working DocSite or BlogSite rendering through MonorailCSS and wants to re-skin it — change the palette, tweak prose rules, or add site-wide CSS. Clarify that every knob here lives on `MonorailCssOptions` and that DocSite/BlogSite hosts expose a deliberate subset; deeper customization requires dropping to the bare-`AddPennington` + `AddMonorailCss` path._
+_Two sentences. Frame the arrival state: reader already has a working DocSite or BlogSite rendering through MonorailCSS and wants to re-skin it — change the palette, tweak prose rules, or add site-wide CSS. Clarify that every knob here lives on `MonorailCssOptions` and that DocSite/BlogSite forward most of them (`ColorScheme`, `ExtraStyles`, `CustomCssFrameworkSettings`); only `ContentPaths` and other non-CSS caps still require the bare-`AddPennington` + `AddMonorailCss` path — see [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning)._
 
 ## Assumptions
 
 _Three bullets. Keep prerequisites tight — this is configuration, not authoring._
 
-- You have a running Pennington site (see [_Get started with DocSite_](/tutorials/getting-started/installation) if not)
+- You have a running Pennington site (see [_Get started with DocSite_](xref:tutorials.getting-started.first-site) if not)
 - You are on `AddDocSite` or `AddBlogSite` (which already call `AddMonorailCss` internally) — if you are wiring `AddPennington` directly, also call `AddMonorailCss` yourself
-- You understand the `NamedColorScheme` defaults baked into `MonorailCssOptions` — if not, read the [MonorailCssOptions reference](/reference/options/monorail-css-options) first
+- You understand the `NamedColorScheme` defaults baked into `MonorailCssOptions` — if not, read the [MonorailCssOptions reference](xref:reference.options.monorail-css-options) first
 
 To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample) — the `ServiceConfiguration` helpers below back this page end-to-end. Do not walk through the whole example — this page is a recipe, not a tour.
 
@@ -69,12 +69,24 @@ _Pass it through on the DocSite options:_
 P:Pennington.DocSite.DocSiteOptions.ExtraStyles
 ```
 
-### 5. Drop to `AddPennington` + `AddMonorailCss` for `CustomCssFrameworkSettings` or `ContentPaths`
+### 5. Tweak prose rules with `CustomCssFrameworkSettings`
 
-_Three sentences. `DocSiteOptions` forwards **only** `ColorScheme` and `ExtraStyles` — `CustomCssFrameworkSettings` (the delegate that post-processes `MonorailCss.CssFrameworkSettings` to tweak prose rules, apply maps, etc.) and `ContentPaths` (the glob list scanned at startup for classes used in non-HTML files) are not exposed by the DocSite template. To reach them you build `MonorailCssOptions` yourself and pass a factory to `AddMonorailCss`; see [When is DocSite the right starting point?](/explanation/core/docsite-positioning) for the trade-off. TODO: add a concrete bare-host fixture under `examples/` (e.g. `examples/MonorailCssBareExample/Program.cs`) that registers `AddPennington` + `AddMonorailCss(sp => new MonorailCssOptions { CustomCssFrameworkSettings = settings => settings, ContentPaths = ["wwwroot/app.js"] })`; until it lands, fall back to the options type itself._
+_Two sentences. `DocSiteOptions.CustomCssFrameworkSettings` mirrors the `MonorailCssOptions` delegate — it post-processes the `CssFrameworkSettings` after the DocSite theme is applied, so use it to tweak prose rules, apply colour maps, or register apply directives without leaving DocSite. For `ContentPaths` (the glob list scanned at startup for classes used in non-HTML files) and the other genuine caps — notably the single `AddMarkdownContent<DocSiteFrontMatter>` registration baked into `AddDocSite` — you still drop to bare `AddPennington` + `AddMonorailCss`. See [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning) for the authoritative caps menu._
+
+```csharp:xmldocid
+P:Pennington.DocSite.DocSiteOptions.CustomCssFrameworkSettings
+```
+
+_Backing options type for the delegate signature and the bare-host escape:_
 
 ```csharp:xmldocid
 T:Pennington.MonorailCss.MonorailCssOptions
+```
+
+_For a bare `AddPennington` host the same knob sits on `MonorailCssOptions` directly — see the Lab's helper:_
+
+```csharp:xmldocid,bodyonly
+M:ExtensibilityLabExample.MonorailCssCustomization.BuildOptions
 ```
 
 ---
@@ -91,6 +103,6 @@ _Terse. Three bullets, one per outcome so each swap can be confirmed independent
 
 _Three cross-quadrant links. Point at the options reference for the full property catalog, the bare-host Explanation page that sets up the escape-hatch trade-off, and the rendering explanation for the class-collector internals deliberately deferred here._
 
-- Reference: [`MonorailCssOptions`](/reference/options/monorail-css-options)
-- Background: [When is DocSite the right starting point?](/explanation/core/docsite-positioning)
-- Background: [MonorailCSS integration](/explanation/rendering/monorail-css)
+- Reference: [`MonorailCssOptions`](xref:reference.options.monorail-css-options)
+- Background: [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning)
+- Background: [MonorailCSS integration](xref:explanation.rendering.monorail-css)

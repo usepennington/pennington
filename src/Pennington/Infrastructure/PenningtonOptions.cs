@@ -7,6 +7,7 @@ using Highlighting;
 using Islands;
 using LlmsTxt;
 using Localization;
+using Markdown.Extensions.Tabs;
 using Search;
 
 /// <summary>Main configuration options for the Pennington content engine.</summary>
@@ -27,6 +28,14 @@ public sealed class PenningtonOptions
     /// Runs with the resolved <see cref="IServiceProvider"/> so extensions requiring DI can be wired up.
     /// </summary>
     public Action<MarkdownPipelineBuilder, IServiceProvider>? ConfigureMarkdownPipeline { get; set; }
+
+    /// <summary>
+    /// Override the CSS class names emitted by the tabbed-code-block renderer.
+    /// When set, the returned <see cref="TabbedCodeBlockRenderOptions"/> replaces the
+    /// <see cref="TabbedCodeBlockRenderOptions.Default"/> shape on the pipeline's
+    /// single registration of the tabbed extension.
+    /// </summary>
+    public Func<TabbedCodeBlockRenderOptions>? TabbedCodeBlockOptions { get; set; }
 
     private readonly List<MarkdownContentOptions> _markdownSources = [];
 

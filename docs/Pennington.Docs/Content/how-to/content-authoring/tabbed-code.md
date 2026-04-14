@@ -9,17 +9,17 @@ tags: [markdown, tabs, code-blocks, extensions]
 
 > **In this page.** _Paraphrase TOC "Covers": marking a fenced block with `tabs=true title="…"`, grouping adjacent blocks into one tabbed widget, and customizing the rendered CSS classes via `TabbedCodeBlockRenderOptions`._
 >
-> **Not in this page.** _Paraphrase TOC "Does not cover": the UI-component `<Tabs>` equivalent from Pennington.UI is a separate surface (see [Content components reference](/reference/ui/content)), and per-tab analytics are out of scope._
+> **Not in this page.** _Paraphrase TOC "Does not cover": the UI-component `<Tabs>` equivalent from Pennington.UI is a separate surface (see [Content components reference](xref:reference.ui.content)), and per-tab analytics are out of scope._
 
 ## When to use this
 
-_Two sentences. Frame the goal: the reader has two or three code variants that show the same thing (bash vs. PowerShell, csproj vs. CLI, C# vs. F#) and wants them to share a single tablist instead of stacking. Do not re-teach markdown fences — link to [Code-block argument reference](/reference/markdown/code-block-args) for the info-string grammar._
+_Two sentences. Frame the goal: the reader has two or three code variants that show the same thing (bash vs. PowerShell, csproj vs. CLI, C# vs. F#) and wants them to share a single tablist instead of stacking. Do not re-teach markdown fences — link to [Code-block argument reference](xref:reference.markdown.code-block-args) for the info-string grammar._
 
 ## Assumptions
 
 _Keep to three bullets. Each is a realistic prior state, not a tutorial step._
 
-- You have an existing Pennington site rendering markdown (see the [Getting Started tutorial](/tutorials/getting-started/first-site) if not).
+- You have an existing Pennington site rendering markdown (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - You know the fence info-string shape (language token plus key/value attributes) — the reference page above covers the grammar.
 - Your host wires the default Pennington markdown pipeline, which already enables `UseTabbedCodeBlocks` under `AddDocSite`, `AddBlogSite`, or bare `AddPennington`.
 
@@ -57,12 +57,10 @@ T:Pennington.Markdown.Extensions.Tabs.TabbedCodeBlockRenderOptions
 
 ### 4. Override the class names when you need custom CSS
 
-_Two sentences: pass a `Func<TabbedCodeBlockRenderOptions>` into `UseTabbedCodeBlocks` (or supply one to `MarkdownPipelineFactory.CreateWithExtensions` via the `tabOptions` parameter) so the renderer picks up your values on every render. On an `AddPennington` host, do the override inside `ConfigureMarkdownPipeline` where you already have access to the `MarkdownPipelineBuilder`._
+_Two sentences: set `PenningtonOptions.TabbedCodeBlockOptions` to a `Func<TabbedCodeBlockRenderOptions>` returning a modified `with` expression — the factory replaces the `Default` shape on the pipeline's single registration of the tabbed extension, so every rendered page picks up your class names. Works identically on `AddPennington`, `AddDocSite`, and `AddBlogSite` because each surface plumbs the same property through to the pipeline factory._
 
-<!-- TODO: no existing example helper in examples/ configures TabbedCodeBlockRenderOptions — the DocSiteKitchenSinkExample.ServiceConfiguration surface does not cover it. Add a `ConfigureTabbedCodeBlockRenderOptions` helper (or similar) to an existing example (likely DocSiteKitchenSinkExample or ExtensibilityLabExample), then replace this fence with its xmldocid. -->
-
-```csharp:xmldocid
-TODO:M:DocSiteKitchenSinkExample.ServiceConfiguration.ConfigureTabbedCodeBlockRenderOptions
+```csharp:xmldocid,bodyonly
+M:ExtensibilityLabExample.TabbedCodeBlockStyling.ConfigureTabbedCodeBlocksOverride(Pennington.Infrastructure.PenningtonOptions)
 ```
 
 ---
@@ -77,7 +75,7 @@ _Three terse bullets. Each is one observable check._
 
 ## Related
 
-- Reference: [Markdown extensions catalog](/reference/markdown/extensions) — the tabs extension alongside every other non-CommonMark feature
-- Reference: [Code-block argument reference](/reference/markdown/code-block-args) — the info-string grammar that carries `tabs=true title="…"`
-- Reference: [Content components](/reference/ui/content) — the Pennington.UI `<Tabs>` component for non-code tabsets
-- Background: [Dev mode and build mode share one code path](/explanation/core/dev-vs-build) — why the render options flow through one pipeline in both modes
+- Reference: [Markdown extensions catalog](xref:reference.markdown.extensions) — the tabs extension alongside every other non-CommonMark feature
+- Reference: [Code-block argument reference](xref:reference.markdown.code-block-args) — the info-string grammar that carries `tabs=true title="…"`
+- Reference: [Content components](xref:reference.ui.content) — the Pennington.UI `<Tabs>` component for non-code tabsets
+- Background: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build) — why the render options flow through one pipeline in both modes

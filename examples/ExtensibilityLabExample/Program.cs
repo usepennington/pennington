@@ -1,5 +1,4 @@
 using ExtensibilityLabExample;
-using MonorailCss.Theme;
 using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Highlighting;
@@ -34,6 +33,14 @@ builder.Services.AddPennington(penn =>
 
     // 2.3.60 Island renderer — name matches data-spa-island="chart".
     penn.Islands.Register<ChartIslandRenderer>("chart");
+
+    // 2.2.50 Tabbed-code class-name override — swap the default tab-*
+    // classes for the lab-tabs-* variants styled via MonorailCssCustomization.
+    TabbedCodeBlockStyling.ConfigureTabbedCodeBlocksOverride(penn);
+
+    // 2.2.60 llms.txt on bare host — DocSite auto-wires this; bare
+    // AddPennington consumers must opt in explicitly.
+    penn.AddLlmsTxt(LlmsTxtConfiguration.Configure);
 });
 
 // 2.3.10 Custom IContentService — JSON-backed release notes.
@@ -50,6 +57,11 @@ builder.Services.AddSingleton<ICodeBlockPreprocessor, LineCountPreprocessor>();
 // 2.3.40 Response processor — injects the feedback widget.
 builder.Services.AddSingleton<IResponseProcessor, FeedbackWidgetProcessor>();
 
+// 2.3.45 Diagnostics-emitting response processor — injects DiagnosticContext
+// and records a warning when a page lacks a canonical link; every diagnostic
+// surfaces in the X-Pennington-Diagnostic header and the dev overlay.
+builder.Services.AddScoped<IResponseProcessor, DiagnosticsEmittingProcessor>();
+
 // 2.3.50 HTML response rewriter — PreParseAsync strips a sentinel comment,
 // ApplyAsync lowercases marked anchor text.
 builder.Services.AddSingleton<IHtmlResponseRewriter, AnchorLowercaseRewriter>();
@@ -61,18 +73,10 @@ builder.Services.AddSpaNavigation();
 
 // 2.2.30 MonorailCSS — utility CSS registers an endpoint the Playwright
 // smoke test can fetch, and gives the injected chart/feedback HTML a
-// place to theme.
-builder.Services.AddMonorailCss(_ => new MonorailCssOptions
-{
-    ColorScheme = new NamedColorScheme
-    {
-        PrimaryColorName = ColorNames.Sky,
-        AccentColorName = ColorNames.Emerald,
-        TertiaryOneColorName = ColorNames.Amber,
-        TertiaryTwoColorName = ColorNames.Violet,
-        BaseColorName = ColorNames.Slate,
-    },
-});
+// place to theme. MonorailCssCustomization.BuildOptions pairs the color
+// scheme with a CustomCssFrameworkSettings delegate fenced by
+// how-to/configuration/monorail-css.
+builder.Services.AddMonorailCss(_ => MonorailCssCustomization.BuildOptions());
 
 var app = builder.Build();
 

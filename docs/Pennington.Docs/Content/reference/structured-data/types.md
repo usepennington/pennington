@@ -9,7 +9,7 @@ tags: [structured-data, json-ld, schema-org, seo]
 
 > **In this page.** _One sentence pulled from `docs-toc.md`: the record types in `Pennington.StructuredData.JsonLdTypes` — `JsonLdArticle`, `JsonLdBreadcrumbList` and its `JsonLdBreadcrumbItem`, `JsonLdWebSite` — plus `JsonLdSerializer` and how they feed the `<StructuredData>` UI component._
 >
-> **Not in this page.** _One sentence pulled from `docs-toc.md`: the schema.org vocabulary itself is out of scope; the `<StructuredData>` component parameters live on [`reference/ui/utility`](/reference/ui/utility)._
+> **Not in this page.** _One sentence pulled from `docs-toc.md`: the schema.org vocabulary itself is out of scope; the `<StructuredData>` component parameters live on [`reference/ui/utility`](xref:reference.ui.utility)._
 
 ## Summary
 
@@ -130,18 +130,23 @@ _Two sentences: emits the `@context`/`@type`/`name`/`url` keys unconditionally a
 
 ## Feeds into `<StructuredData>`
 
-_One sentence: `Pennington.UI.Components.StructuredData` takes `Article`, `Breadcrumbs`, and `WebSite` parameters of these record types, invokes the matching `JsonLdSerializer.Serialize*` method in `OnParametersSet`, and injects each non-null result into a `<script type="application/ld+json">` tag via `<HeadContent>` — see [`reference/ui/utility`](/reference/ui/utility) for the component-level parameter table._
+_One sentence: `Pennington.UI.Components.StructuredData` takes `Article`, `Breadcrumbs`, and `WebSite` parameters of these record types, invokes the matching `JsonLdSerializer.Serialize*` method in `OnParametersSet`, and injects each non-null result into a `<script type="application/ld+json">` tag via `<HeadContent>` — see [`reference/ui/utility`](xref:reference.ui.utility) for the component-level parameter table._
 
 ## Example
 
-_One sentence of context: TODO — no example project currently constructs these records directly; the live reference is `Pennington.UI.Components.StructuredData.OnParametersSet` which dispatches to the three `JsonLdSerializer` methods, and DocSite's `Pages` component (see [`reference/ui/utility` § `StructuredData`](/reference/ui/utility#structureddata)) is the only production caller wiring values in. When an `examples/` project adds direct usage (e.g. a bare-host site building its own `JsonLdArticle`), replace this placeholder with an `xmldocid,bodyonly` fence referencing that symbol._
+_Construct the record directly and hand it to `JsonLdSerializer`, or pass it as a parameter to the `<StructuredData>` component — the serializer emits a `<script type="application/ld+json">`-safe string and skips any optional field left `null`. The `examples/BlogKitchenSinkExample` project projects a `BlogSiteFrontMatter` into a `JsonLdArticle` via the helper below:_
 
 ```csharp:xmldocid,bodyonly
-M:Pennington.UI.Components.StructuredData.OnParametersSet
+M:BlogKitchenSinkExample.StructuredDataBuilder.BuildArticle(Pennington.BlogSite.BlogSiteFrontMatter,System.String)
+```
+
+_And serializes it to the script-tag-safe string:_
+
+```csharp:xmldocid,bodyonly
+M:BlogKitchenSinkExample.StructuredDataBuilder.BuildArticleJson(Pennington.BlogSite.BlogSiteFrontMatter,System.String)
 ```
 
 ## See also
 
-- Related reference: [Utility components](/reference/ui/utility) — the `<StructuredData>` component that consumes these records and emits `<script type="application/ld+json">` tags.
-- Related reference: [`DocSiteOptions`](/reference/options/docsite-options) — `CanonicalBaseUrl` gates structured-data emission in DocSite.
-- Background: [SEO and discoverability](/explanation/content/seo) — TODO verify slug; cross-link to the explanation page that justifies JSON-LD emission if one exists, otherwise drop this bullet.
+- Related reference: [Utility components](xref:reference.ui.utility) — the `<StructuredData>` component that consumes these records and emits `<script type="application/ld+json">` tags.
+- Related reference: [`DocSiteOptions`](xref:reference.options.docsite-options) — `CanonicalBaseUrl` gates structured-data emission in DocSite.

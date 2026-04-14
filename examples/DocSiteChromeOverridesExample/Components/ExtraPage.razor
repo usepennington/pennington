@@ -1,0 +1,19 @@
+@page "/extra"
+@namespace DocSiteChromeOverridesExample.Components
+
+@* A plain routed Razor component that sits next to Program.cs. The only
+   reason it resolves under DocSite's router is because
+   SiteChromeOverrides.BuildAdditionalRoutingAssemblies returns this
+   project's assembly, which DocSiteOptions.AdditionalRoutingAssemblies
+   then feeds into the router. Remove that seam and /extra 404s. *@
+
+<PageTitle>Extra Page</PageTitle>
+
+<article class="prose mx-auto py-12">
+    <h1>Extra Page</h1>
+    <p>
+        This route lives in a Razor component inside the example's own
+        assembly. <code>DocSiteOptions.AdditionalRoutingAssemblies</code>
+        widens the DocSite router to cover it.
+    </p>
+</article>

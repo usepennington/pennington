@@ -7,21 +7,21 @@ sectionLabel: Configuration
 tags: [configuration, content-sources, areas, overlap-detection]
 ---
 
-> **In this page.** Chain `AddMarkdownContent<T>` calls with distinct `ContentPath` / `BasePageUrl` / `SectionLabel` / `ExcludePaths`, and read the overlap-detection warning when two roots collide. `AddDocSite` owns a single `AddMarkdownContent<DocSiteFrontMatter>` registration, so splitting one DocSite into multiple markdown trees is done through `ContentArea` entries on `DocSiteOptions.Areas`; pairing a second front-matter type with DocSite requires dropping to bare `AddPennington` — see [_When is DocSite the right starting point?_](/explanation/core/docsite-positioning).
+> **In this page.** Chain `AddMarkdownContent<T>` calls with distinct `ContentPath` / `BasePageUrl` / `SectionLabel` / `ExcludePaths`, and read the overlap-detection warning when two roots collide. `AddDocSite` owns a single `AddMarkdownContent<DocSiteFrontMatter>` registration, so splitting one DocSite into multiple markdown trees is done through `ContentArea` entries on `DocSiteOptions.Areas`; pairing a second front-matter type with DocSite requires dropping to bare `AddPennington` — see [_When is DocSite the right starting point?_](xref:explanation.core.docsite-positioning).
 >
-> **Not in this page.** Implementing a non-markdown content service (JSON, database, remote API) — see [_Implement a custom content service_](/how-to/extensibility/custom-content-service).
+> **Not in this page.** Implementing a non-markdown content service (JSON, database, remote API) — see [_Implement a custom content service_](xref:how-to.extensibility.custom-content-service).
 
 ## When to use this
 
-_Two to three sentences. Readers arrive here when one markdown tree has outgrown a single root: they want a `/docs/` section and a separate `/blog/` section, or a catch-all root plus a specialised subtree (e.g., auto-generated API pages). Point out that the right recipe depends on whether the host is `AddDocSite` (one front-matter type, multiple `ContentArea` slugs) or bare `AddPennington` (any number of `AddMarkdownContent<T>` calls with independent front-matter types). If the reader has not yet stood up a site, redirect them to [_Your first Pennington site_](/tutorials/getting-started-core/first-page)._
+_Two to three sentences. Readers arrive here when one markdown tree has outgrown a single root: they want a `/docs/` section and a separate `/blog/` section, or a catch-all root plus a specialised subtree (e.g., auto-generated API pages). Point out that the right recipe depends on whether the host is `AddDocSite` (one front-matter type, multiple `ContentArea` slugs) or bare `AddPennington` (any number of `AddMarkdownContent<T>` calls with independent front-matter types). If the reader has not yet stood up a site, redirect them to [_Your first Pennington site_](xref:tutorials.getting-started.first-page)._
 
 ## Assumptions
 
-- You have a working Pennington site (see [_Your first Pennington site_](/tutorials/getting-started-core/first-page) if not)
-- You know which host extension you are using — `AddDocSite` vs bare `AddPennington` — and why ([_When is DocSite the right starting point?_](/explanation/core/docsite-positioning))
-- You understand `IFrontMatter` basics ([_Use a custom front-matter record_](/how-to/content-authoring/custom-front-matter))
+- You have a working Pennington site (see [_Your first Pennington site_](xref:tutorials.getting-started.first-page) if not)
+- You know which host extension you are using — `AddDocSite` vs bare `AddPennington` — and why ([_When is DocSite the right starting point?_](xref:explanation.core.docsite-positioning))
+- You understand `IFrontMatter` basics ([_Use a custom front-matter record_](xref:how-to.content-authoring.front-matter))
 
-To copy a working DocSite multi-area setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample). The bare `AddPennington` chained-sources recipe is not yet backed by a dedicated example — the shape is shown inline below.
+To copy a working DocSite multi-area setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample). For the bare `AddPennington` chained-sources recipe, see [`examples/MultipleSourcesExample`](https://github.com/usepennington/pennington/tree/main/examples/MultipleSourcesExample) — the helpers on `ServiceConfiguration` back each step below.
 
 ---
 
@@ -53,56 +53,24 @@ Skip to **Verify**.
 
 _One sentence. Call `AddMarkdownContent<TFrontMatter>` inside `AddPennington` with a `ContentPath` that roots the first tree, a distinct `BasePageUrl`, and an optional `SectionLabel` that groups the source's pages in navigation._
 
-TODO — no example yet demonstrates two chained `AddMarkdownContent<T>` calls with different front-matter types. Until an example is added, use this inline shape:
-
-```csharp
-builder.Services.AddPennington(penn =>
-{
-    penn.ContentRootPath = "Content";
-
-    penn.AddMarkdownContent<DocFrontMatter>(md =>
-    {
-        md.ContentPath = "Content/docs";
-        md.BasePageUrl = "/docs";
-        md.SectionLabel = "Documentation";
-    });
-});
+```csharp:xmldocid,bodyonly
+M:MultipleSourcesExample.ServiceConfiguration.RegisterDocSource(Pennington.Infrastructure.MarkdownContentOptions)
 ```
 
 ### 5. (Bare Pennington) Register the second markdown source
 
 _One sentence. Point the second `AddMarkdownContent<T>` at a different `ContentPath` and `BasePageUrl`; the front-matter type can differ._
 
-TODO — inline shape until an example lands:
-
-```csharp
-penn.AddMarkdownContent<BlogFrontMatter>(md =>
-{
-    md.ContentPath = "Content/blog";
-    md.BasePageUrl = "/blog";
-    md.SectionLabel = "Blog";
-});
+```csharp:xmldocid,bodyonly
+M:MultipleSourcesExample.ServiceConfiguration.RegisterBlogSource(Pennington.Infrastructure.MarkdownContentOptions)
 ```
 
 ### 6. (Optional) Carve out an overlapping subtree with `ExcludePaths`
 
 _One or two sentences. When one source's `ContentPath` is a parent of another's, Pennington emits an overlap warning at startup because both pipelines would discover the inner tree and race each other's outputs. Add `ExcludePaths` on the broader source so the specialised source owns that subtree._
 
-TODO — inline shape until an example lands:
-
-```csharp
-penn.AddMarkdownContent<DocFrontMatter>(md =>
-{
-    md.ContentPath = "Content";
-    md.BasePageUrl = "/";
-    md.ExcludePaths = ["blog"]; // blog source below owns Content/blog
-});
-
-penn.AddMarkdownContent<BlogFrontMatter>(md =>
-{
-    md.ContentPath = "Content/blog";
-    md.BasePageUrl = "/blog";
-});
+```csharp:xmldocid,bodyonly
+M:MultipleSourcesExample.ServiceConfiguration.RegisterOverlappingDocSource(Pennington.Infrastructure.MarkdownContentOptions)
 ```
 
 ---
@@ -115,7 +83,7 @@ penn.AddMarkdownContent<BlogFrontMatter>(md =>
 
 ## Related
 
-- Reference: [_`PenningtonOptions.AddMarkdownContent<T>`_](/reference/core/pennington-options) _(confirm path)_
-- Reference: [_`DocSiteOptions.Areas` / `ContentArea`_](/reference/docsite/docsite-options) _(confirm path)_
-- Background: [_When is DocSite the right starting point?_](/explanation/core/docsite-positioning)
-- Extensibility: [_Implement a custom content service_](/how-to/extensibility/custom-content-service)
+- Reference: [_`PenningtonOptions.AddMarkdownContent<T>`_](xref:reference.options.pennington-options) _(confirm path)_
+- Reference: [_`DocSiteOptions.Areas` / `ContentArea`_](xref:reference.options.docsite-options) _(confirm path)_
+- Background: [_When is DocSite the right starting point?_](xref:explanation.core.docsite-positioning)
+- Extensibility: [_Implement a custom content service_](xref:how-to.extensibility.custom-content-service)

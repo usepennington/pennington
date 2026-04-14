@@ -131,13 +131,14 @@ _Two transports surface the accumulated diagnostics, both wired inside `UsePenni
 
 ## Example
 
-_No `examples/` project exercises `DiagnosticContext` directly today; the canonical in-repo consumer is `XrefResolvingService` reporting unresolved uids. A minimal xmldocid-backed example belongs in an extensibility sample before this page lands._
+_The canonical in-repo consumer is `XrefResolvingService` reporting unresolved uids. Inject `DiagnosticContext` into your own service or response processor and call `AddWarning` / `AddError` / `AddInfo` during request handling; every entry flows into the `X-Pennington-Diagnostic` response header and the dev overlay without further wiring. The `examples/ExtensibilityLabExample` lab registers a scoped `IResponseProcessor` that follows exactly this shape:_
 
-TODO: add an example method under `examples/ExtensibilityLabExample/` that injects `DiagnosticContext` and calls `AddWarning`, then replace this block with a `csharp:xmldocid,bodyonly` fence targeting it.
+```csharp:xmldocid
+T:ExtensibilityLabExample.DiagnosticsEmittingProcessor
+```
 
 ## See also
 
-- Related reference: [Build report fields](/reference/diagnostics/build-report)
-- Related reference: [Response processing interfaces](/reference/extension-points/response-processing)
-- How-to: [Write a response processor](/how-to/extensibility/response-processor)
-- Background: [Diagnostics and the dev overlay](/explanation/operations/diagnostics)
+- Related reference: [Build report fields](xref:reference.diagnostics.build-report)
+- Related reference: [Response processing interfaces](xref:reference.extension-points.response-processing)
+- How-to: [Write a response processor](xref:how-to.extensibility.response-processor)

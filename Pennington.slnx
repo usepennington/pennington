@@ -30,8 +30,10 @@
     <Project Path="examples/BeyondRoslynExample/Sample/BeyondRoslynExample.Sample.csproj" />
     <Project Path="examples/BeyondCustomRazorComponentExample/BeyondCustomRazorComponentExample.csproj" />
     <Project Path="examples/DocSiteKitchenSinkExample/DocSiteKitchenSinkExample.csproj" />
+    <Project Path="examples/MultipleSourcesExample/MultipleSourcesExample.csproj" />
     <Project Path="examples/BlogKitchenSinkExample/BlogKitchenSinkExample.csproj" />
     <Project Path="examples/ExtensibilityLabExample/ExtensibilityLabExample.csproj" />
+    <Project Path="examples/DocSiteChromeOverridesExample/DocSiteChromeOverridesExample.csproj" />
     <Project Path="examples/SubPathDeployableExample/SubPathDeployableExample.csproj" />
   </Folder>
 </Solution>

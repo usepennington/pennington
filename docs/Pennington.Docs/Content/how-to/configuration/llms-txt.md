@@ -13,14 +13,14 @@ tags: [configuration, llms-txt, discovery, front-matter]
 
 ## When to use this
 
-_Two to three sentences. The reader already has a Pennington site rendering HTML and now wants a machine-readable surface at `/llms.txt` (plus per-page stripped-markdown sidecars). Name the two realistic arrival paths: `AddDocSite` users get llms.txt wired automatically and steer the output through front matter; bare-`AddPennington` users call `AddLlmsTxt(...)` explicitly and set the content selector themselves. If the reader has no site yet, point back to [_Your first Pennington site_](/tutorials/getting-started-core/first-page)._
+_Two to three sentences. The reader already has a Pennington site rendering HTML and now wants a machine-readable surface at `/llms.txt` (plus per-page stripped-markdown sidecars). Name the two realistic arrival paths: `AddDocSite` users get llms.txt wired automatically and steer the output through front matter; bare-`AddPennington` users call `AddLlmsTxt(...)` explicitly and set the content selector themselves. If the reader has no site yet, point back to [_Your first Pennington site_](xref:tutorials.getting-started.first-page)._
 
 ## Assumptions
 
 _Keep to 3 bullets. The non-obvious one is the DocSite vs. bare split, which decides which step the reader follows._
 
-- You have a working Pennington site (see [_Your first Pennington site_](/tutorials/getting-started-core/first-page) if not)
-- You know which host extension you are using — `AddDocSite` vs bare `AddPennington` — and why ([_When is DocSite the right starting point?_](/explanation/core/docsite-positioning))
+- You have a working Pennington site (see [_Your first Pennington site_](xref:tutorials.getting-started.first-page) if not)
+- You know which host extension you are using — `AddDocSite` vs bare `AddPennington` — and why ([_When is DocSite the right starting point?_](xref:explanation.core.docsite-positioning))
 - The pages you want indexed are reachable over HTTP in dev mode (llms.txt generation fetches each rendered page through the running host)
 
 To copy a working DocSite setup with one opted-out page, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample) — specifically `Content/main/llms-hidden.md`, which sets `llms: false`. Do not walk through the whole example — this page is a recipe, not a tour.
@@ -33,7 +33,7 @@ _Four steps. Step 1 orients the reader on their host shape. Steps 2–3 are the 
 
 ### 1. Decide: DocSite front matter, or bare `AddLlmsTxt`?
 
-_One or two sentences. `AddDocSite` already calls `AddLlmsTxt` internally and pins `ContentSelector = "#main-content"` alongside the search index, so on DocSite you only touch per-page front matter (step 2). On a bare `AddPennington` host nothing is wired by default — you must call `AddLlmsTxt(...)` yourself and choose your own `ContentSelector` (step 3)._
+_One or two sentences. `AddDocSite` already calls `AddLlmsTxt` internally and defaults `ContentSelector` to `#main-content` (overridable through `DocSiteOptions.LlmsTxtContentSelector`), so on DocSite you touch per-page front matter (step 2) and optionally flip the selector through options. On a bare `AddPennington` host nothing is wired by default — you must call `AddLlmsTxt(...)` yourself and choose your own `ContentSelector` (step 3)._
 
 ### 2. (DocSite) Opt a page out with `llms: false`
 
@@ -49,32 +49,14 @@ _Show the backing property for completeness:_
 P:Pennington.DocSite.DocSiteFrontMatter.Llms
 ```
 
-_Callout: if you need a custom `ContentSelector` (different article wrapper, a non-DocSite layout), `DocSiteOptions` does not expose that knob — drop to bare `AddPennington` and follow step 3. Link: [_When is DocSite the right starting point?_](/explanation/core/docsite-positioning)._
+_Callout: if you need a custom `ContentSelector` (different article wrapper, a non-DocSite layout), set `DocSiteOptions.LlmsTxtContentSelector` — it defaults to `#main-content` but is overridable without leaving DocSite. See [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning) for the authoritative list of caps that do still require bare `AddPennington`._
 
 ### 3. (Bare Pennington) Enable `LlmsTxtOptions` with `AddLlmsTxt`
 
 _One sentence. On a bare host nothing is wired until you call `penn.AddLlmsTxt(...)`; the options surface is small — `OutputDirectory` (where the per-page stripped-markdown sidecars land under the publish output, defaults to `_llms`), `GenerateFullFile`, and `ContentSelector` (CSS selector that scopes HTML→markdown extraction; null means "whole `<body>`")._
 
-TODO — no example currently shows a bare `AddPennington` host calling `AddLlmsTxt` directly. Until one lands, use this inline shape and link the options class for verification:
-
-```csharp
-builder.Services.AddPennington(penn =>
-{
-    penn.ContentRootPath = "Content";
-
-    penn.AddMarkdownContent<DocFrontMatter>(md =>
-    {
-        md.ContentPath = "Content";
-        md.BasePageUrl = "/";
-    });
-
-    penn.AddLlmsTxt(opts =>
-    {
-        opts.OutputDirectory = "_llms";     // default
-        opts.ContentSelector = "article";   // adjust to your layout
-        opts.GenerateFullFile = false;      // flip to true for step 4
-    });
-});
+```csharp:xmldocid,bodyonly
+M:ExtensibilityLabExample.LlmsTxtConfiguration.Configure(Pennington.LlmsTxt.LlmsTxtOptions)
 ```
 
 _Show the backing options record so the reader can cross-check every property:_
@@ -105,6 +87,6 @@ _Three terse bullets — one per output surface. The reader should confirm each 
 
 _Two to four cross-quadrant links. Reference for the exhaustive option catalogue, the sibling search how-to (same `#main-content` pinning story), and the Explanation page that explains why DocSite pins selectors. Do not link to the next how-to in this section — generated automatically._
 
-- Reference: [_`LlmsTxtOptions` and auxiliary options_](/reference/options/auxiliary-options)
-- How-to: [_Configure search indexing_](/how-to/configuration/search)
-- Background: [_When is DocSite the right starting point?_](/explanation/core/docsite-positioning)
+- Reference: [_`LlmsTxtOptions` and auxiliary options_](xref:reference.options.auxiliary-options)
+- How-to: [_Configure search indexing_](xref:how-to.configuration.search)
+- Background: [_When is DocSite the right starting point?_](xref:explanation.core.docsite-positioning)

@@ -4,12 +4,10 @@
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>ExtensibilityLabExample</RootNamespace>
+    <RootNamespace>MultipleSourcesExample</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pennington\Pennington.csproj" />
-    <ProjectReference Include="..\..\src\Pennington.MonorailCss\Pennington.MonorailCss.csproj" />
-    <ProjectReference Include="..\..\src\Pennington.UI\Pennington.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Watch Include="Content\**\*.*" />

@@ -1,22 +1,18 @@
-namespace ExtensibilityLabExample;
+namespace DocSiteChromeOverridesExample;
 
 using System.Reflection;
-using ExtensibilityLabExample.Components;
 using Pennington.DocSite;
 using Pennington.Routing;
 
 /// <summary>
 /// Static helpers that show how the <see cref="DocSiteOptions"/> slot
 /// seams are wired. Each method body is a fence target for how-to
-/// 2.3.70 <c>/how-to/extensibility/override-docsite-components</c>.
+/// <c>/how-to/extensibility/override-docsite-components</c>.
 /// <para>
-/// These helpers are <b>compile-only</b>. The main <c>Program.cs</c> in
-/// this app uses the bare <c>AddPennington</c> host so the other six
-/// extension points are visible raw; <see cref="DocSiteOptions"/> does
-/// not apply to that host shape. A real DocSite app would call
-/// <see cref="BuildDocSiteOptions"/> from its <c>AddDocSite(...)</c>
-/// factory — see <c>examples/DocSiteKitchenSinkExample</c> for a
-/// running example.
+/// The companion <c>Program.cs</c> in this project calls
+/// <see cref="BuildDocSiteOptions"/> from its <c>AddDocSite</c> factory, so
+/// the overrides actually render in a running site — the how-to's step 6
+/// fences that file directly.
 /// </para>
 /// </summary>
 public static class SiteChromeOverrides
@@ -31,24 +27,27 @@ public static class SiteChromeOverrides
     /// </summary>
     public static DocSiteOptions BuildDocSiteOptions() => new()
     {
-        SiteTitle = "Extensibility Lab (DocSite variant)",
-        Description = "DocSite wiring shape referenced by the bare-host sibling.",
+        SiteTitle = "DocSite Chrome Overrides",
+        Description = "Running DocSite that exercises every override seam on DocSiteOptions.",
+        HeaderContent = """<span class="chrome-header" data-chrome-overrides="docsite-header">Chrome Overrides</span>""",
+        FooterContent = """<span class="chrome-footer" data-chrome-overrides="docsite-footer">(c) 2026 Pennington</span>""",
         AdditionalHtmlHeadContent = BuildHtmlHeadContent(),
         ExtraStyles = BuildExtraStyles(),
-        HeaderContent = """<span class="chrome-header" data-extensibility-lab="docsite-header">Custom header chrome</span>""",
-        FooterContent = """<span class="chrome-footer" data-extensibility-lab="docsite-footer">Custom footer chrome</span>""",
         AdditionalRoutingAssemblies = BuildAdditionalRoutingAssemblies(),
+        Areas =
+        [
+            new ContentArea("Guides", "guides"),
+        ],
     };
 
     /// <summary>
     /// The HTML string that ends up inside <c>&lt;head&gt;</c> on every
-    /// page. In this example it is a hand-authored fragment — a
-    /// <see cref="ExtraHeadFragment"/> Razor component's serialized
-    /// output — so a how-to can show both the literal-string pattern
-    /// and a component-rendered variation.
+    /// page. Kept hand-authored so the how-to can show both the literal-string
+    /// pattern and a component-rendered variation via
+    /// <see cref="Components.ExtraHeadFragment"/>.
     /// </summary>
     public static string BuildHtmlHeadContent() => """
-        <meta name="x-extensibility-lab-head" content="extra-head-fragment">
+        <meta name="x-chrome-overrides-head" content="extra-head-fragment">
         <link rel="preconnect" href="https://example.com">
         """;
 
@@ -66,7 +65,7 @@ public static class SiteChromeOverrides
     /// <summary>
     /// Assemblies beyond the DocSite template that carry additional
     /// <c>@@page</c> Razor components. Adding the app's entry assembly
-    /// is what makes <see cref="ExtraPage"/> visible to the router.
+    /// is what makes <see cref="Components.ExtraPage"/> visible to the router.
     /// </summary>
     public static Assembly[] BuildAdditionalRoutingAssemblies() =>
         [typeof(SiteChromeOverrides).Assembly];

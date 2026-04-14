@@ -1,3 +1,4 @@
+using BeyondLocaleExample;
 using Pennington.DocSite;
 using Pennington.Localization;
 
@@ -29,6 +30,11 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         loc.AddLocale("en", new LocaleInfo("English"));
         loc.AddLocale("es", new LocaleInfo("Español", HtmlLang: "es"));
     },
+
+    // Translations sit on PenningtonOptions, not DocSiteOptions, so they
+    // are registered through the ConfigurePennington escape hatch. The
+    // helper owns both TranslationOptions.Add overloads.
+    ConfigurePennington = penn => TranslationRegistration.Register(penn.Translations),
 });
 
 var app = builder.Build();

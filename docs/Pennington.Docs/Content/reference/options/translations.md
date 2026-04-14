@@ -9,7 +9,7 @@ uid: reference.options.translations
 
 > **In this page.** The `TranslationOptions.Add(locale, key, value)` / `Add(locale, dictionary)` overloads and how `PenningtonOptions.Translations` is populated; consuming code reads translations via `IStringLocalizer`, and the specific localizer implementation is internal wiring.
 >
-> **Not in this page.** Enabling multiple locales at the routing layer — see [`LocalizationOptions`](/reference/options/localization-options).
+> **Not in this page.** Enabling multiple locales at the routing layer — see [`LocalizationOptions`](xref:reference.options.localization-options).
 
 ## Summary
 
@@ -48,11 +48,15 @@ _One sentence. Registered entries are read at request time through `Microsoft.Ex
 
 ## Example
 
-_TODO: no `examples/` project currently exercises `TranslationOptions.Add`; the inline snippet in [how-to: Enable multiple locales](/how-to/configuration/localization) is the closest reference. When an example project is added, replace this block with a `csharp:xmldocid,bodyonly` fence pointing at the `Run` body that populates `options.Translations`._
+_The `examples/BeyondLocaleExample` project registers both `Add` overloads through the `DocSiteOptions.ConfigurePennington` escape hatch so the call sites live in one helper:_
+
+```csharp:xmldocid,bodyonly
+M:BeyondLocaleExample.TranslationRegistration.Register(Pennington.Localization.TranslationOptions)
+```
 
 ## See also
 
-- How-to: [Enable multiple locales](/how-to/configuration/localization)
-- Related reference: [`LocalizationOptions`](/reference/options/localization-options)
-- Related reference: [`PenningtonOptions`](/reference/options/pennington-options)
-- Background: [Locale-aware URLs and content fallback](/explanation/localization/urls-and-fallback)
+- How-to: [Enable multiple locales](xref:how-to.configuration.localization)
+- Related reference: [`LocalizationOptions`](xref:reference.options.localization-options)
+- Related reference: [`PenningtonOptions`](xref:reference.options.pennington-options)
+- Background: [Locale-aware URLs and content fallback](xref:explanation.localization.urls-and-fallback)
