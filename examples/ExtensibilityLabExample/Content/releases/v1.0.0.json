@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "date": "2025-06-01",
+  "title": "Release 1.0.0 — first stable cut",
+  "highlights": [
+    "Initial stable API for content services and the rendering pipeline",
+    "Markdig extension stack baked in",
+    "Static-build output via `dotnet run -- build`"
+  ]
+}

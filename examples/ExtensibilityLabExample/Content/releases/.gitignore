@@ -1,0 +1,4 @@
+# Root .gitignore excludes [Rr]eleases/ as an MSBuild output folder, but
+# this directory holds JSON fixtures that the ReleaseNotesContentService
+# reads at runtime. Un-ignore them so they travel with the example.
+!*.json

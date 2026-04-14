@@ -1266,7 +1266,9 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/RoslynIntegrationExample/Program.cs'
+        - 'M:ExtensibilityLabExample.LineCountPreprocessor.TryProcess(System.String,System.String)'
+        - 'P:ExtensibilityLabExample.LineCountPreprocessor.Priority'
+        - 'T:ExtensibilityLabExample.LineCountPreprocessor'
       production_files: []
       production_symbols:
         - 'M:Pennington.Roslyn.Preprocessing.RoslynCodeBlockPreprocessor.TryProcess(System.String,System.String)'
@@ -1301,13 +1303,16 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'M:ForgePortalExample.ReleaseNotesContentService.DiscoverAsync'
-        - 'M:ForgePortalExample.ReleaseNotesContentService.GetCrossReferencesAsync'
-        - 'M:RecipeExample.RecipeContentService.GetContentTocEntriesAsync'
-        - 'M:YogaStudioExample.Services.YogaRouteContentService.DiscoverAsync'
-        - 'T:RecipeExample.RecipeContentService'
+        - 'M:ExtensibilityLabExample.ReleaseNotesContentService.DiscoverAsync'
+        - 'M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentTocEntriesAsync'
+        - 'M:ExtensibilityLabExample.ReleaseNotesContentService.GetCrossReferencesAsync'
+        - 'T:ExtensibilityLabExample.ReleaseNotesContentService'
       production_files: []
-      production_symbols: []
+      production_symbols:
+        - 'T:Pennington.Content.IContentService'
+        - 'T:Pennington.Pipeline.DiscoveredItem'
+        - 'T:Pennington.Content.ContentTocItem'
+        - 'T:Pennington.Pipeline.CrossReference'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
@@ -1337,11 +1342,13 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'P:ForgePortalExample.PipelineHighlighter.Priority'
-        - 'P:ForgePortalExample.PipelineHighlighter.SupportedLanguages'
-        - 'T:ForgePortalExample.PipelineHighlighter'
+        - 'M:ExtensibilityLabExample.PipelineHighlighter.Highlight(System.String,System.String)'
+        - 'P:ExtensibilityLabExample.PipelineHighlighter.Priority'
+        - 'P:ExtensibilityLabExample.PipelineHighlighter.SupportedLanguages'
+        - 'T:ExtensibilityLabExample.PipelineHighlighter'
       production_files: []
-      production_symbols: []
+      production_symbols:
+        - 'T:Pennington.Highlighting.ICodeHighlighter'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
@@ -1368,7 +1375,10 @@ pages:
     front_matter_uid: 'how-to.extensibility.html-rewriter'
     front_matter_is_draft: true
     evidence:
-      examples: []
+      examples:
+        - 'M:ExtensibilityLabExample.AnchorLowercaseRewriter.ApplyAsync(AngleSharp.Dom.IDocument,Microsoft.AspNetCore.Http.HttpContext)'
+        - 'M:ExtensibilityLabExample.AnchorLowercaseRewriter.PreParseAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)'
+        - 'T:ExtensibilityLabExample.AnchorLowercaseRewriter'
       production_files: []
       production_symbols:
         - 'T:Pennington.Infrastructure.BaseUrlHtmlRewriter'
@@ -1402,11 +1412,15 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'M:SpaNavigationExample.Program.Main'
-        - 'T:SpaNavigationTutorialExample.Islands.ArticleIslandRenderer'
-        - 'T:SpaNavigationTutorialExample.Islands.Components.ArticleContent'
+        - 'M:ExtensibilityLabExample.ChartIslandRenderer.BuildParametersAsync(Pennington.Routing.ContentRoute)'
+        - 'P:ExtensibilityLabExample.ChartIslandRenderer.IslandName'
+        - 'T:ExtensibilityLabExample.ChartIslandRenderer'
+        - 'T:ExtensibilityLabExample.Components.ChartIsland'
       production_files: []
-      production_symbols: []
+      production_symbols:
+        - 'T:Pennington.Islands.IIslandRenderer'
+        - 'T:Pennington.Islands.RazorIslandRenderer`1'
+        - 'T:Pennington.Infrastructure.IslandsOptions'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
@@ -1434,11 +1448,20 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'examples/SearchExample/Program.cs'
-        - 'examples/SearchExample/Services/Random.razor'
-        - 'T:SpaNavigationExample.Slots.RecipeContentSlotRenderer'
+        - 'M:ExtensibilityLabExample.SiteChromeOverrides.BuildDocSiteOptions'
+        - 'M:ExtensibilityLabExample.SiteChromeOverrides.BuildExtraStyles'
+        - 'M:ExtensibilityLabExample.SiteChromeOverrides.BuildHtmlHeadContent'
+        - 'M:ExtensibilityLabExample.SiteChromeOverrides.BuildAdditionalRoutingAssemblies'
+        - 'T:ExtensibilityLabExample.SiteChromeOverrides'
+        - 'T:ExtensibilityLabExample.Components.ExtraHeadFragment'
       production_files: []
-      production_symbols: []
+      production_symbols:
+        - 'T:Pennington.DocSite.DocSiteOptions'
+        - 'P:Pennington.DocSite.DocSiteOptions.AdditionalHtmlHeadContent'
+        - 'P:Pennington.DocSite.DocSiteOptions.ExtraStyles'
+        - 'P:Pennington.DocSite.DocSiteOptions.HeaderContent'
+        - 'P:Pennington.DocSite.DocSiteOptions.FooterContent'
+        - 'P:Pennington.DocSite.DocSiteOptions.AdditionalRoutingAssemblies'
       architecture:
         - '_research/site-architecture.md'
       blockers: []
@@ -1466,11 +1489,13 @@ pages:
     front_matter_is_draft: true
     evidence:
       examples:
-        - 'M:ForgePortalExample.FeedbackWidgetProcessor.ProcessAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)'
-        - 'M:ForgePortalExample.FeedbackWidgetProcessor.ShouldProcess(Microsoft.AspNetCore.Http.HttpContext)'
-        - 'T:ForgePortalExample.FeedbackWidgetProcessor'
+        - 'M:ExtensibilityLabExample.FeedbackWidgetProcessor.ProcessAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)'
+        - 'M:ExtensibilityLabExample.FeedbackWidgetProcessor.ShouldProcess(Microsoft.AspNetCore.Http.HttpContext)'
+        - 'P:ExtensibilityLabExample.FeedbackWidgetProcessor.Order'
+        - 'T:ExtensibilityLabExample.FeedbackWidgetProcessor'
       production_files: []
-      production_symbols: []
+      production_symbols:
+        - 'T:Pennington.Infrastructure.IResponseProcessor'
       architecture:
         - '_research/site-architecture.md'
       blockers: []

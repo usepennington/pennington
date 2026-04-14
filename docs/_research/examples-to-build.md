@@ -214,7 +214,7 @@ Update the **Status** line on each entry as work progresses:
 
 ### 15. `ExtensibilityLabExample`
 
-- **Status:** not_started
+- **Status:** complete
 - **Backs:** all of how-to §2.3 Extensibility
 - **Shape:** `AddPennington` host (not `AddDocSite`) so extension points are visible raw. Each extension lives in its own `.cs` file named for the how-to it backs — xmldocid targets are predictable.
 - **Structure:**

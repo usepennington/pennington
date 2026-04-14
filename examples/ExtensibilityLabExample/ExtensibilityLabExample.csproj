@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>ExtensibilityLabExample</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Pennington\Pennington.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.MonorailCss\Pennington.MonorailCss.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.UI\Pennington.UI.csproj" />
+    <!-- Referenced only by SiteChromeOverrides.cs, the compile-only helper backing
+         how-to 2.3.70. Main Program.cs uses AddPennington raw. -->
+    <ProjectReference Include="..\..\src\Pennington.DocSite\Pennington.DocSite.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Watch Include="Content\**\*.*" />
+  </ItemGroup>
+</Project>

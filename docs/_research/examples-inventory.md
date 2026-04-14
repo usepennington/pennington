@@ -1020,3 +1020,130 @@ how-to):
 - `examples/BlogKitchenSinkExample/Content/Blog/2024-01-15-getting-started-with-pennington.md`
 - `examples/BlogKitchenSinkExample/Content/Blog/2024-02-20-authoring-with-front-matter.md`
 - `examples/BlogKitchenSinkExample/Content/Blog/2024-03-10-wiring-the-homepage.md`
+
+## `examples/ExtensibilityLabExample`
+
+Backs all seven how-tos under §2.3 Extensibility (2.3.10 through 2.3.70).
+One bare-`AddPennington` host wires six extension points raw — each lives
+in its own `.cs` file named for the how-to it backs, so xmldocid targets
+are predictable: one interface implementation per file, no shared
+`ServiceConfiguration` helper (unlike apps #13 and #14). A seventh file,
+`SiteChromeOverrides.cs`, is a compile-only static helper that returns a
+populated `DocSiteOptions` — the how-to that backs
+`override-docsite-components` needs a DocSite host to exercise its slot
+seams, so the file is shape-accurate but never invoked by this app's
+`Program.cs`.
+
+Runtime verification (Playwright + curl on `localhost:5555`): the
+release-notes index and the two per-version pages resolve;
+`.pipeline-keyword`, `.pipeline-arrow`, `.pipeline-pipe`, and
+`.pipeline-string` spans all present on `/pipeline-demo/`;
+`<figure class="linecount">` carries `Line count: 5` on
+`/line-count-demo/`; every rendered page carries
+`<aside class="feedback-widget" data-extensibility-lab="feedback-widget">`;
+`<a data-lowercase>` text reads `home`, `pipeline demo`,
+`line-count demo` post-rewrite on `/lowercase-demo/` with the raw
+`<!--LOWERCASE-SENTINEL-->` comment stripped; `<div data-spa-island="chart">`
+is present on `/chart-demo/` and `/_spa-data/chart-demo.json` carries
+`islands.chart` with a `figcaption>Quarterly widgets` figure.
+
+Static build: `dotnet run -- build output` emits 16/16 pages; each
+marker survives into the HTML on disk.
+
+### Files
+
+- `examples/ExtensibilityLabExample/ExtensibilityLabExample.csproj` — Web SDK, references `Pennington`, `Pennington.MonorailCss`, `Pennington.UI`, and `Pennington.DocSite` (last only so `SiteChromeOverrides.cs` can build)
+- `examples/ExtensibilityLabExample/Program.cs` — top-level statements; bare `AddPennington` + `AddMonorailCss` + `AddSpaNavigation` + seven DI registrations, one per extension
+- `examples/ExtensibilityLabExample/ReleaseNotesContentService.cs` — backs §2.3.10
+- `examples/ExtensibilityLabExample/LineCountPreprocessor.cs` — backs §2.3.20
+- `examples/ExtensibilityLabExample/PipelineHighlighter.cs` — backs §2.3.30
+- `examples/ExtensibilityLabExample/FeedbackWidgetProcessor.cs` — backs §2.3.40
+- `examples/ExtensibilityLabExample/AnchorLowercaseRewriter.cs` — backs §2.3.50
+- `examples/ExtensibilityLabExample/ChartIslandRenderer.cs` — backs §2.3.60
+- `examples/ExtensibilityLabExample/SiteChromeOverrides.cs` — backs §2.3.70 (compile-only)
+- `examples/ExtensibilityLabExample/Components/ChartIsland.razor` — Razor component the chart island renders
+- `examples/ExtensibilityLabExample/Components/ExtraHeadFragment.razor` — head-slot fence target paired with `SiteChromeOverrides.BuildHtmlHeadContent`
+- `examples/ExtensibilityLabExample/Content/index.md` — landing page, links to every demo
+- `examples/ExtensibilityLabExample/Content/pipeline-demo.md` — consumes the `pipeline` fenced code block
+- `examples/ExtensibilityLabExample/Content/line-count-demo.md` — consumes the `linecount` fenced code block
+- `examples/ExtensibilityLabExample/Content/chart-demo.md` — embeds `data-spa-island="chart"`
+- `examples/ExtensibilityLabExample/Content/lowercase-demo.md` — carries `<a data-lowercase>` anchors plus the sentinel comment
+- `examples/ExtensibilityLabExample/Content/releases/v1.0.0.json`
+- `examples/ExtensibilityLabExample/Content/releases/v1.1.0.json`
+
+### Extension symbols (how-to fence targets)
+
+2.3.10 custom-content-service:
+
+- `T:ExtensibilityLabExample.ReleaseNotesContentService`
+- `M:ExtensibilityLabExample.ReleaseNotesContentService.DiscoverAsync`
+- `M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentTocEntriesAsync`
+- `M:ExtensibilityLabExample.ReleaseNotesContentService.GetCrossReferencesAsync`
+- `M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentToCopyAsync` (short)
+- `M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentToCreateAsync` (short)
+- `T:ExtensibilityLabExample.ReleaseEntry`
+- Contract: `T:Pennington.Content.IContentService`
+- Related production types: `T:Pennington.Pipeline.DiscoveredItem`, `T:Pennington.Content.ContentToCopy`, `T:Pennington.Content.ContentToCreate`, `T:Pennington.Content.ContentTocItem`, `T:Pennington.Pipeline.CrossReference`, `M:Pennington.Routing.ContentRouteFactory.FromUrl(Pennington.Routing.UrlPath,System.String)`, `M:Pennington.Routing.ContentRouteFactory.FromCustom(Pennington.Routing.UrlPath,Pennington.Routing.FilePath,System.String)`
+
+2.3.20 code-block-preprocessor:
+
+- `T:ExtensibilityLabExample.LineCountPreprocessor`
+- `M:ExtensibilityLabExample.LineCountPreprocessor.TryProcess(System.String,System.String)` (short)
+- `P:ExtensibilityLabExample.LineCountPreprocessor.Priority` (short)
+- Contract: `T:Pennington.Markdown.Extensions.ICodeBlockPreprocessor`
+- Related production types: `T:Pennington.Markdown.Extensions.CodeBlockPreprocessResult`
+
+2.3.30 custom-highlighter:
+
+- `T:ExtensibilityLabExample.PipelineHighlighter`
+- `M:ExtensibilityLabExample.PipelineHighlighter.Highlight(System.String,System.String)`
+- `P:ExtensibilityLabExample.PipelineHighlighter.SupportedLanguages` (short)
+- `P:ExtensibilityLabExample.PipelineHighlighter.Priority` (short)
+- Contract: `T:Pennington.Highlighting.ICodeHighlighter`
+- Registration shape: `M:Pennington.Infrastructure.HighlightingOptions.AddHighlighter(Pennington.Highlighting.ICodeHighlighter)`
+
+2.3.40 response-processor:
+
+- `T:ExtensibilityLabExample.FeedbackWidgetProcessor`
+- `M:ExtensibilityLabExample.FeedbackWidgetProcessor.ShouldProcess(Microsoft.AspNetCore.Http.HttpContext)` (short)
+- `M:ExtensibilityLabExample.FeedbackWidgetProcessor.ProcessAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)`
+- `P:ExtensibilityLabExample.FeedbackWidgetProcessor.Order` (short)
+- Contract: `T:Pennington.Infrastructure.IResponseProcessor`
+
+2.3.50 html-rewriter:
+
+- `T:ExtensibilityLabExample.AnchorLowercaseRewriter`
+- `M:ExtensibilityLabExample.AnchorLowercaseRewriter.ShouldApply(Microsoft.AspNetCore.Http.HttpContext)` (short)
+- `M:ExtensibilityLabExample.AnchorLowercaseRewriter.PreParseAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)` (short)
+- `M:ExtensibilityLabExample.AnchorLowercaseRewriter.ApplyAsync(AngleSharp.Dom.IDocument,Microsoft.AspNetCore.Http.HttpContext)` (short)
+- `P:ExtensibilityLabExample.AnchorLowercaseRewriter.Order` (short)
+- Contract: `T:Pennington.Infrastructure.IHtmlResponseRewriter`
+
+2.3.60 island-renderer:
+
+- `T:ExtensibilityLabExample.ChartIslandRenderer`
+- `M:ExtensibilityLabExample.ChartIslandRenderer.BuildParametersAsync(Pennington.Routing.ContentRoute)`
+- `P:ExtensibilityLabExample.ChartIslandRenderer.IslandName` (short)
+- `T:ExtensibilityLabExample.Components.ChartIsland`
+- Contract / base: `T:Pennington.Islands.IIslandRenderer`, `T:Pennington.Islands.RazorIslandRenderer\`1`
+- Registration: `options.Islands.Register<ChartIslandRenderer>("chart")` via `P:Pennington.Infrastructure.PenningtonOptions.Islands` and `M:Pennington.Infrastructure.IslandsOptions.Register\`\`1(System.String)`
+
+2.3.70 override-docsite-components (compile-only helper):
+
+- `T:ExtensibilityLabExample.SiteChromeOverrides`
+- `M:ExtensibilityLabExample.SiteChromeOverrides.BuildDocSiteOptions` (short)
+- `M:ExtensibilityLabExample.SiteChromeOverrides.BuildHtmlHeadContent` (short)
+- `M:ExtensibilityLabExample.SiteChromeOverrides.BuildExtraStyles` (short)
+- `M:ExtensibilityLabExample.SiteChromeOverrides.BuildAdditionalRoutingAssemblies` (short)
+- `T:ExtensibilityLabExample.Components.ExtraHeadFragment`
+- Production surfaces the helper leans on: `T:Pennington.DocSite.DocSiteOptions`, `P:Pennington.DocSite.DocSiteOptions.AdditionalHtmlHeadContent`, `P:Pennington.DocSite.DocSiteOptions.ExtraStyles`, `P:Pennington.DocSite.DocSiteOptions.HeaderContent`, `P:Pennington.DocSite.DocSiteOptions.FooterContent`, `P:Pennington.DocSite.DocSiteOptions.AdditionalRoutingAssemblies`
+
+### Raw-file fence candidates
+
+- `examples/ExtensibilityLabExample/Program.cs` (top-level statements, no xmldocid)
+- `examples/ExtensibilityLabExample/Content/pipeline-demo.md`
+- `examples/ExtensibilityLabExample/Content/line-count-demo.md`
+- `examples/ExtensibilityLabExample/Content/chart-demo.md`
+- `examples/ExtensibilityLabExample/Content/lowercase-demo.md`
+- `examples/ExtensibilityLabExample/Content/releases/v1.0.0.json`
+- `examples/ExtensibilityLabExample/Content/releases/v1.1.0.json`

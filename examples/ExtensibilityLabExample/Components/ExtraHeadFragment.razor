@@ -1,0 +1,12 @@
+@namespace ExtensibilityLabExample.Components
+
+@* Rendered into the <head> of every page when passed to
+   DocSiteOptions.AdditionalHtmlHeadContent (or the BlogSite equivalent).
+   This component exists as the slot-override fence target for
+   how-to 2.3.70 /how-to/extensibility/override-docsite-components.
+
+   The static-HTML text is a MarkupString that the caller can render via
+   ToHtmlString() to embed in DocSiteOptions. See SiteChromeOverrides.cs. *@
+
+<meta name="x-extensibility-lab-head" content="extra-head-fragment">
+<link rel="preconnect" href="https://example.com">

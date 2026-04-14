@@ -1,0 +1,10 @@
+{
+  "version": "1.1.0",
+  "date": "2025-09-15",
+  "title": "Release 1.1.0 — extension points",
+  "highlights": [
+    "Public `ICodeHighlighter` contract with priority-based dispatch",
+    "`IResponseProcessor` + `IHtmlResponseRewriter` split",
+    "SPA islands via `IslandsOptions.Register<T>` and `data-spa-island` markup"
+  ]
+}

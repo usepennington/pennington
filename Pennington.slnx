@@ -31,5 +31,6 @@
     <Project Path="examples/BeyondCustomRazorComponentExample/BeyondCustomRazorComponentExample.csproj" />
     <Project Path="examples/DocSiteKitchenSinkExample/DocSiteKitchenSinkExample.csproj" />
     <Project Path="examples/BlogKitchenSinkExample/BlogKitchenSinkExample.csproj" />
+    <Project Path="examples/ExtensibilityLabExample/ExtensibilityLabExample.csproj" />
   </Folder>
 </Solution>
