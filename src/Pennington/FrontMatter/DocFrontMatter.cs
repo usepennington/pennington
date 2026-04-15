@@ -1,7 +1,12 @@
 namespace Pennington.FrontMatter;
 
 /// <summary>
-/// Covers the DocSite use case — implements common doc capabilities.
+/// Core-library front matter for documentation pages on bare
+/// <see cref="Infrastructure.PenningtonExtensions.AddPennington"/> hosts.
+/// Implements <see cref="IFrontMatter"/>, <see cref="ITaggable"/>, <see cref="ISectionable"/>,
+/// and <see cref="IOrderable"/> — the default capability shape for doc content without the
+/// DocSite template. Hosts using <c>AddDocSite</c> bind
+/// <see cref="DocSite.DocSiteFrontMatter"/> instead.
 /// </summary>
 public record DocFrontMatter : IFrontMatter, ITaggable,
     ISectionable, IOrderable

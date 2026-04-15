@@ -223,16 +223,73 @@ internal sealed class MemberEnumerator : IMemberEnumerator
                     return propInit.ToString();
                 }
 
-                return null;
+                if (property.ContainingType.TypeKind == TypeKind.Interface)
+                {
+                    // Interface default implementation — `bool IsDraft => false;` — the
+                    // expression body IS the effective default, but only for literals.
+                    if (propertyDecl.ExpressionBody?.Expression is LiteralExpressionSyntax literal)
+                    {
+                        return literal.ToString();
+                    }
+
+                    // Interface property without a default impl — the interface itself
+                    // carries no default value to report.
+                    return null;
+                }
+
+                // Concrete expression-bodied properties are computed getters, not
+                // defaults. Declining to emit a value here keeps `IsDefaultLocale =>
+                // string.IsNullOrEmpty(Locale)` out of the Default column.
+                if (propertyDecl.ExpressionBody is not null)
+                {
+                    return null;
+                }
+
+                return FallbackClrDefault(property);
             }
 
             if (syntax is ParameterSyntax parameterSyntax)
             {
-                return parameterSyntax.Default?.Value.ToString();
+                if (parameterSyntax.Default?.Value is { } paramDefault)
+                {
+                    return paramDefault.ToString();
+                }
+
+                return FallbackClrDefault(property);
             }
         }
 
         return null;
+    }
+
+    private static string? FallbackClrDefault(IPropertySymbol property)
+    {
+        if (property.IsRequired)
+        {
+            return null;
+        }
+
+        if (property.NullableAnnotation == NullableAnnotation.Annotated)
+        {
+            return "null";
+        }
+
+        return property.Type.SpecialType switch
+        {
+            SpecialType.System_Boolean => "false",
+            SpecialType.System_SByte
+                or SpecialType.System_Byte
+                or SpecialType.System_Int16
+                or SpecialType.System_UInt16
+                or SpecialType.System_Int32
+                or SpecialType.System_UInt32
+                or SpecialType.System_Int64
+                or SpecialType.System_UInt64
+                or SpecialType.System_Single
+                or SpecialType.System_Double
+                or SpecialType.System_Decimal => "0",
+            _ => null,
+        };
     }
 
     private static string? ExtractFieldDefault(IFieldSymbol field)

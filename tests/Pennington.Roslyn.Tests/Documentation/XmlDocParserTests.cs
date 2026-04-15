@@ -41,9 +41,26 @@ public sealed class XmlDocParserTests
         var parsed = _parser.Parse(xml);
 
         parsed.Summary.Length.ShouldBe(3);
-        parsed.Summary[0].ShouldBeCase<TextNode>().Text.ShouldBe("Use");
+        parsed.Summary[0].ShouldBeCase<TextNode>().Text.ShouldBe("Use ");
         parsed.Summary[1].ShouldBeCase<InlineCodeNode>().Text.ShouldBe("AddPennington");
-        parsed.Summary[2].ShouldBeCase<TextNode>().Text.ShouldBe("to register.");
+        parsed.Summary[2].ShouldBeCase<TextNode>().Text.ShouldBe(" to register.");
+    }
+
+    [Fact]
+    public void Preserves_Whitespace_Around_Cref_In_Mixed_Content()
+    {
+        var xml = """
+            <member name="T:Foo">
+                <summary>See <see cref="T:System.String"/> for details.</summary>
+            </member>
+            """;
+
+        var parsed = _parser.Parse(xml);
+
+        parsed.Summary.Length.ShouldBe(3);
+        parsed.Summary[0].ShouldBeCase<TextNode>().Text.ShouldBe("See ");
+        parsed.Summary[1].ShouldBeCase<CrefNode>().CrefId.ShouldBe("T:System.String");
+        parsed.Summary[2].ShouldBeCase<TextNode>().Text.ShouldBe(" for details.");
     }
 
     [Fact]

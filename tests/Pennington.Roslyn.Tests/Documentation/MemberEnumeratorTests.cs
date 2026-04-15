@@ -38,6 +38,22 @@ public sealed class MemberEnumeratorTests
             /// <summary>Does something.</summary>
             void Do();
         }
+
+        public sealed record RequiredOptions
+        {
+            public required string Name { get; init; }
+            public required string Description { get; init; }
+            public bool EnableFeature { get; init; }
+            public int RetryCount { get; init; }
+            public string? Nickname { get; init; }
+            public string Description2 => "computed";
+        }
+
+        public interface IDefaults
+        {
+            bool IsDraft => false;
+            int Priority { get; }
+        }
         """;
 
     private static async Task<IMemberEnumerator> BuildEnumeratorAsync()
@@ -96,8 +112,10 @@ public sealed class MemberEnumeratorTests
         var title = members.Single(m => m.Name == "Title");
         title.DefaultValue.ShouldBe("\"Untitled\"");
 
+        // Nullable reference without an initializer falls back to the literal "null"
+        // default so the Default column shows something useful instead of "—".
         var baseUrl = members.Single(m => m.Name == "BaseUrl");
-        baseUrl.DefaultValue.ShouldBeNull();
+        baseUrl.DefaultValue.ShouldBe("null");
     }
 
     [Fact]
@@ -180,6 +198,67 @@ public sealed class MemberEnumeratorTests
             MemberOrder.Alphabetical);
 
         methods.Single().Name.ShouldBe("Do");
+    }
+
+    [Fact]
+    public async Task Required_Property_Is_Marked_Required_With_Null_Default()
+    {
+        var enumerator = await BuildEnumeratorAsync();
+
+        var members = await enumerator.EnumerateAsync(
+            "T:Fixtures.RequiredOptions",
+            MemberKind.Properties,
+            AccessFilter.Public,
+            MemberOrder.Alphabetical);
+
+        var name = members.Single(m => m.Name == "Name");
+        name.IsRequired.ShouldBeTrue();
+        name.DefaultValue.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Auto_Property_Without_Initializer_Falls_Back_To_Clr_Default()
+    {
+        var enumerator = await BuildEnumeratorAsync();
+
+        var members = await enumerator.EnumerateAsync(
+            "T:Fixtures.RequiredOptions",
+            MemberKind.Properties,
+            AccessFilter.Public,
+            MemberOrder.Alphabetical);
+
+        members.Single(m => m.Name == "EnableFeature").DefaultValue.ShouldBe("false");
+        members.Single(m => m.Name == "RetryCount").DefaultValue.ShouldBe("0");
+        members.Single(m => m.Name == "Nickname").DefaultValue.ShouldBe("null");
+    }
+
+    [Fact]
+    public async Task Concrete_Expression_Bodied_Property_Reports_No_Default()
+    {
+        var enumerator = await BuildEnumeratorAsync();
+
+        var members = await enumerator.EnumerateAsync(
+            "T:Fixtures.RequiredOptions",
+            MemberKind.Properties,
+            AccessFilter.Public,
+            MemberOrder.Alphabetical);
+
+        members.Single(m => m.Name == "Description2").DefaultValue.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Interface_Expression_Bodied_Literal_Is_Reported_As_Default()
+    {
+        var enumerator = await BuildEnumeratorAsync();
+
+        var members = await enumerator.EnumerateAsync(
+            "T:Fixtures.IDefaults",
+            MemberKind.Properties,
+            AccessFilter.Public,
+            MemberOrder.Alphabetical);
+
+        members.Single(m => m.Name == "IsDraft").DefaultValue.ShouldBe("false");
+        members.Single(m => m.Name == "Priority").DefaultValue.ShouldBeNull();
     }
 
     private sealed class StubWorkspaceService(Solution solution) : ISolutionWorkspaceService

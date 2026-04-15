@@ -60,7 +60,12 @@
             }
 
             sb.Append("<tr>")
-                .Append("<td><code>").Append(WebUtility.HtmlEncode(m.Name)).Append("</code></td>")
+                .Append("<td><code>").Append(WebUtility.HtmlEncode(m.Name)).Append("</code>");
+            if (m.IsRequired)
+            {
+                sb.Append(" <span class=\"api-required\">(required)</span>");
+            }
+            sb.Append("</td>")
                 .Append("<td><code>").Append(WebUtility.HtmlEncode(m.TypeDisplay)).Append("</code></td>")
                 .Append("<td>")
                     .Append(m.DefaultValue is null ? "—" : $"<code>{WebUtility.HtmlEncode(m.DefaultValue)}</code>")

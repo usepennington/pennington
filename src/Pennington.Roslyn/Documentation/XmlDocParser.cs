@@ -90,7 +90,7 @@ public sealed class XmlDocParser : IXmlDocParser
             }
         }
 
-        return CollapseText(builder.ToImmutable());
+        return CollapseText(TrimBoundaryWhitespace(builder.ToImmutable()));
     }
 
     private static XmlDocNode? ParseNode(XNode node)
@@ -168,6 +168,17 @@ public sealed class XmlDocParser : IXmlDocParser
 
     private static string NormalizeWhitespace(string text)
     {
+        if (string.IsNullOrEmpty(text))
+        {
+            return string.Empty;
+        }
+
+        // Sample the original string's boundary whitespace before we strip indentation,
+        // so mixed-content siblings like "foo <c>bar</c> baz" keep their word boundaries.
+        // ParseChildren trims the leading/trailing edges of the whole block.
+        var hasLeadingWs = char.IsWhiteSpace(text[0]);
+        var hasTrailingWs = char.IsWhiteSpace(text[^1]);
+
         var normalized = text.Replace("\r\n", "\n").Replace('\r', '\n');
         var lines = normalized.Split('\n');
         for (var i = 0; i < lines.Length; i++)
@@ -175,7 +186,13 @@ public sealed class XmlDocParser : IXmlDocParser
             lines[i] = lines[i].TrimStart();
         }
 
-        return string.Join(" ", lines).Trim();
+        var trimmed = string.Join(" ", lines).Trim();
+        if (trimmed.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        return (hasLeadingWs ? " " : string.Empty) + trimmed + (hasTrailingWs ? " " : string.Empty);
     }
 
     private static string TrimCodeBlock(string text)
@@ -237,31 +254,52 @@ public sealed class XmlDocParser : IXmlDocParser
         {
             if (node is TextNode t)
             {
-                pendingText = pendingText is null ? t.Text : $"{pendingText} {t.Text}";
+                // Concatenate directly — boundary whitespace is already carried on each
+                // TextNode by NormalizeWhitespace, so we must not inject an extra space.
+                pendingText = pendingText is null ? t.Text : pendingText + t.Text;
                 continue;
             }
 
-            if (pendingText is not null)
+            if (pendingText is { Length: > 0 })
             {
-                var trimmed = pendingText.Trim();
-                if (trimmed.Length > 0)
-                {
-                    builder.Add(new XmlDocNode(new TextNode(trimmed)));
-                }
-
-                pendingText = null;
+                builder.Add(new XmlDocNode(new TextNode(pendingText)));
             }
 
+            pendingText = null;
             builder.Add(node);
         }
 
-        if (pendingText is not null)
+        if (pendingText is { Length: > 0 })
         {
-            var trimmed = pendingText.Trim();
-            if (trimmed.Length > 0)
-            {
-                builder.Add(new XmlDocNode(new TextNode(trimmed)));
-            }
+            builder.Add(new XmlDocNode(new TextNode(pendingText)));
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static ImmutableArray<XmlDocNode> TrimBoundaryWhitespace(ImmutableArray<XmlDocNode> nodes)
+    {
+        if (nodes.Length == 0)
+        {
+            return nodes;
+        }
+
+        var builder = nodes.ToBuilder();
+
+        if (builder[0] is TextNode first && first.Text.Length > 0 && char.IsWhiteSpace(first.Text[0]))
+        {
+            var trimmed = first.Text.TrimStart();
+            builder[0] = trimmed.Length > 0
+                ? new XmlDocNode(new TextNode(trimmed))
+                : new XmlDocNode(new TextNode(string.Empty));
+        }
+
+        if (builder[^1] is TextNode last && last.Text.Length > 0 && char.IsWhiteSpace(last.Text[^1]))
+        {
+            var trimmed = last.Text.TrimEnd();
+            builder[^1] = trimmed.Length > 0
+                ? new XmlDocNode(new TextNode(trimmed))
+                : new XmlDocNode(new TextNode(string.Empty));
         }
 
         return builder.ToImmutable();

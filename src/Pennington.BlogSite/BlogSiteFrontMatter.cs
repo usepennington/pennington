@@ -3,7 +3,11 @@ namespace Pennington.BlogSite;
 using FrontMatter;
 
 /// <summary>
-/// Front matter for blog site posts.
+/// Front matter bound by <see cref="BlogSiteServiceExtensions.AddBlogSite"/>. Consolidates all
+/// post-authoring fields (<see cref="Author"/>, <see cref="Repository"/>, <see cref="Series"/>,
+/// <see cref="Date"/>, <see cref="RedirectUrl"/>) in one contract. Implements
+/// <see cref="IFrontMatter"/>, <see cref="ITaggable"/>, <see cref="ISectionable"/>, and
+/// <see cref="IRedirectable"/>.
 /// </summary>
 public record BlogSiteFrontMatter : IFrontMatter, ITaggable,
     ISectionable, IRedirectable

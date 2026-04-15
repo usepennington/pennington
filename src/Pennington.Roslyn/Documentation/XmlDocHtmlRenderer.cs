@@ -160,6 +160,11 @@ public sealed class XmlDocHtmlRenderer : IXmlDocHtmlRenderer
         }
 
         var lastDot = cleaned.LastIndexOf('.');
-        return lastDot >= 0 ? cleaned[(lastDot + 1)..] : cleaned;
+        var name = lastDot >= 0 ? cleaned[(lastDot + 1)..] : cleaned;
+
+        // Strip generic-arity markers Roslyn emits in crefIds: `N for type arity,
+        // ``N for method arity (e.g. "List`1" → "List", "AddMarkdownContent``1" → "AddMarkdownContent").
+        var backtickIndex = name.IndexOf('`');
+        return backtickIndex >= 0 ? name[..backtickIndex] : name;
     }
 }

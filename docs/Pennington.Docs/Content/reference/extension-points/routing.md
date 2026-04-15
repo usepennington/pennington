@@ -147,13 +147,7 @@ The universal route coordinate carried by every `ContentItem` case (`DiscoveredI
 
 ### Properties
 
-| Name | Type | Default | Description |
-|---|---|---|---|
-| `CanonicalPath` | `UrlPath` | _required_ | The in-app URL for this route, including any locale prefix and always in directory form (trailing slash); this is the path `ContentResolver` compares against the incoming request. |
-| `IsFallback` | `bool` | `false` | True when this route serves default-locale content as a stand-in for a missing translation; surfaced by the UI via `FallbackNotice`. |
-| `Locale` | `string` | `""` | Empty for default-locale routes, otherwise the locale code (for example, `"es"`); `IsDefaultLocale` reports `string.IsNullOrEmpty(Locale)`. |
-| `OutputFile` | `FilePath` | _required_ | The on-disk path, relative to `OutputOptions.OutputDirectory`, where the static build writes this route; always ends in `index.html`. |
-| `SourceFile` | `FilePath?` | `null` | The backing source file when one exists (markdown pages, custom `FromCustom` routes); `null` for Razor pages, programmatic routes, and redirects. |
+<ApiMemberTable XmlDocId="T:Pennington.Routing.ContentRoute" />
 
 ### `WithBaseUrl`
 

@@ -17,15 +17,7 @@ T:Pennington.FrontMatter.IFrontMatter
 
 ## Members
 
-| Name | Type | Default | Description |
-|---|---|---|---|
-| `Title` | `string` (required) | — | The only abstract member; every implementation must supply a human-readable page title surfaced in `<title>`, navigation, breadcrumbs, and feed entries. |
-| `Date` | `DateTime?` | `null` | Publication timestamp consumed by RSS, sitemap, and blog post ordering; when `null` the page is treated as undated. |
-| `Description` | `string?` | `null` | Short summary emitted into `<meta name="description">`, social cards, and feed entries. |
-| `IsDraft` | `bool` | `false` | When `true`, `ContentPipeline.GenerateAsync` skips the page so it does not appear in the output tree, sitemap, search index, or llms.txt. |
-| `Llms` | `bool` | `true` | When `false`, `LlmsTxtService` excludes the page from both the `llms.txt` index and the stripped-markdown sidecar output. |
-| `Search` | `bool` | `true` | When `false`, `SearchIndexBuilder` excludes the page from the per-locale search index JSON emitted at `/search-index-{code}.json`. |
-| `Uid` | `string?` | `null` | Stable cross-reference identifier; when set, the page is registered with `XrefResolver` and can be linked via `<xref:uid>` or `[text](xref:uid)`. |
+<ApiMemberTable XmlDocId="T:Pennington.FrontMatter.IFrontMatter" />
 
 ## Capability interfaces
 
@@ -37,9 +29,7 @@ The four remaining capability interfaces stay separate from `IFrontMatter` becau
 T:Pennington.FrontMatter.ITaggable
 ```
 
-| Name | Type | Description |
-|---|---|---|
-| `Tags` | `string[]` | Non-null array of tag slugs used to group content in tag-index pages and surface tags in RSS and structured data. |
+<ApiMemberTable XmlDocId="T:Pennington.FrontMatter.ITaggable" />
 
 Implemented by `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, and `BlogSiteFrontMatter`.
 
@@ -49,9 +39,7 @@ Implemented by `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, and `B
 T:Pennington.FrontMatter.IOrderable
 ```
 
-| Name | Type | Description |
-|---|---|---|
-| `Order` | `int` | Sort key consumed by `NavigationBuilder.BuildTree` to order siblings within a sidebar group; lower values render first, with ties falling back to alphabetic title order. |
+<ApiMemberTable XmlDocId="T:Pennington.FrontMatter.IOrderable" />
 
 Implemented by `DocFrontMatter` and `DocSiteFrontMatter`, both defaulting to `int.MaxValue` so unset pages sort last.
 
@@ -61,9 +49,7 @@ Implemented by `DocFrontMatter` and `DocSiteFrontMatter`, both defaulting to `in
 T:Pennington.FrontMatter.ISectionable
 ```
 
-| Name | Type | Description |
-|---|---|---|
-| `SectionLabel` | `string?` | Human-readable section label surfaced on breadcrumbs and prev/next navigation; it does **not** drive sidebar grouping (the content subfolder does — see <xref:reference.extension-points.navigation>). |
+<ApiMemberTable XmlDocId="T:Pennington.FrontMatter.ISectionable" />
 
 Implemented by `DocFrontMatter` and `DocSiteFrontMatter`.
 
@@ -73,9 +59,7 @@ Implemented by `DocFrontMatter` and `DocSiteFrontMatter`.
 T:Pennington.FrontMatter.IRedirectable
 ```
 
-| Name | Type | Description |
-|---|---|---|
-| `RedirectUrl` | `string?` | When non-null, the page is emitted as a meta-refresh stub pointing at the target URL with `<meta name="robots" content="noindex">` applied. |
+<ApiMemberTable XmlDocId="T:Pennington.FrontMatter.IRedirectable" />
 
 Implemented by `DocSiteFrontMatter` and `BlogSiteFrontMatter`; see <xref:how-to.content-authoring.redirects> for authoring practice.
 

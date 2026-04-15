@@ -58,8 +58,12 @@
         {
             var id = Slugify(m.Name);
             sb.Append('<').Append(headingTag).Append(" id=\"").Append(id).Append("\">")
-                .Append("<code>").Append(WebUtility.HtmlEncode(m.Name)).Append("</code>")
-                .Append("</").Append(headingTag).Append('>');
+                .Append("<code>").Append(WebUtility.HtmlEncode(m.Name)).Append("</code>");
+            if (m.IsRequired)
+            {
+                sb.Append(" <span class=\"api-required\">(required)</span>");
+            }
+            sb.Append("</").Append(headingTag).Append('>');
 
             sb.Append(RenderDeclaration(m.XmlDocId));
 
@@ -85,7 +89,7 @@
     {
         try
         {
-            var fragment = AsyncHelpers.RunSync(() => SymbolService.ExtractCodeFragmentAsync(xmlDocId, bodyOnly: false));
+            var fragment = AsyncHelpers.RunSync(() => SymbolService.ExtractCodeFragmentAsync(xmlDocId, bodyOnly: false, includeLeadingTrivia: false));
             if (string.IsNullOrEmpty(fragment))
             {
                 Diagnostics?.AddWarning($"Unresolved xmldocid when rendering declaration: {xmlDocId}");

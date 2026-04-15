@@ -13,16 +13,19 @@ internal static class CodeFragmentExtractor
 {
     /// <summary>
     /// Extracts a code fragment from the given syntax node.
+    /// When <paramref name="includeLeadingTrivia"/> is false, leading comments/xmldoc
+    /// attached to the node as leading trivia are stripped — useful when the caller
+    /// renders parsed xmldoc separately and does not want a duplicate comment block.
     /// </summary>
-    public static Task<string> ExtractCodeFragmentAsync(SyntaxNode node, string fullText, bool bodyOnly)
+    public static Task<string> ExtractCodeFragmentAsync(SyntaxNode node, string fullText, bool bodyOnly, bool includeLeadingTrivia = true)
     {
         if (!bodyOnly)
         {
-            return Task.FromResult(node.ToFullString());
+            return Task.FromResult(includeLeadingTrivia ? node.ToFullString() : node.ToString());
         }
 
         var body = ExtractBody(node);
-        return Task.FromResult(body ?? node.ToFullString());
+        return Task.FromResult(body ?? (includeLeadingTrivia ? node.ToFullString() : node.ToString()));
     }
 
     private static string? ExtractBody(SyntaxNode node)

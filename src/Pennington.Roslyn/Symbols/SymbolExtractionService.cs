@@ -160,7 +160,7 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
         return null;
     }
 
-    public async Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false)
+    public async Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true)
     {
         var symbolInfo = await FindSymbolAsync(xmlDocId);
         if (symbolInfo is null)
@@ -182,16 +182,10 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
             return string.Empty;
         }
 
-        // Extend span to include leading whitespace trivia
-        var leadingTrivia = node.GetLeadingTrivia();
-        var extendedSpan = leadingTrivia.Count > 0
-            ? TextSpan.FromBounds(leadingTrivia.FullSpan.Start, node.Span.End)
-            : node.Span;
-
         var sourceText = await symbolInfo.Document.GetTextAsync();
         var fullText = sourceText.ToString();
 
-        var fragment = await CodeFragmentExtractor.ExtractCodeFragmentAsync(node, fullText, bodyOnly);
+        var fragment = await CodeFragmentExtractor.ExtractCodeFragmentAsync(node, fullText, bodyOnly, includeLeadingTrivia);
         return TextFormatter.NormalizeIndents(fragment);
     }
 

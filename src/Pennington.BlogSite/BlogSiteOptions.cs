@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Components;
 using MonorailCss;
 
 /// <summary>
-/// Configuration options for a blog site.
+/// Options record passed to <see cref="BlogSiteServiceExtensions.AddBlogSite"/> that configures
+/// the BlogSite template: site identity, content paths, typography, author chrome, homepage
+/// composition (hero, project cards, social links, nav), and feed toggles (RSS, sitemap).
 /// </summary>
 public record BlogSiteOptions
 {

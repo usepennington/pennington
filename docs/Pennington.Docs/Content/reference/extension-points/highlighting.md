@@ -28,11 +28,7 @@ The per-language highlighter contract, registered via `HighlightingOptions.AddHi
 
 ### Members
 
-| Name | Signature | Description |
-|---|---|---|
-| `Highlight` | `string Highlight(string code, string language)` | Returns HTML for the supplied source, with token `<span>` wrappers carrying the `hljs-*` CSS classes consumed by the stylesheet. |
-| `Priority` | `int { get; }` | Dispatcher ranking; higher values win when multiple highlighters claim the same language. `ShellHighlighter` uses 75, `TextMateHighlighter` uses 50, `PlainTextHighlighter` uses 0. |
-| `SupportedLanguages` | `IReadOnlySet<string> { get; }` | The language identifiers this highlighter claims (for example, `"csharp"`, `"python"`). Returning a set that contains `"*"` matches every language. |
+<ApiMemberList XmlDocId="T:Pennington.Highlighting.ICodeHighlighter" Kind="All" HeadingLevel="4" />
 
 ## `ICodeBlockPreprocessor`
 
@@ -44,10 +40,7 @@ Runs before `HighlightingService` for every fenced block. Implementations inspec
 
 ### Members
 
-| Name | Signature | Description |
-|---|---|---|
-| `Priority` | `int { get; }` | Run-order ranking; higher values are consulted first. |
-| `TryProcess` | `CodeBlockPreprocessResult? TryProcess(string code, string languageId)` | Returns a `CodeBlockPreprocessResult` to take over the block or `null` to pass through to the next preprocessor and ultimately `HighlightingService`. |
+<ApiMemberList XmlDocId="T:Pennington.Markdown.Extensions.ICodeBlockPreprocessor" Kind="All" HeadingLevel="4" />
 
 ### Related type: `CodeBlockPreprocessResult`
 
@@ -57,11 +50,7 @@ T:Pennington.Markdown.Extensions.CodeBlockPreprocessResult
 
 Record returned by a successful `TryProcess` call.
 
-| Name | Type | Default | Description |
-|---|---|---|---|
-| `BaseLanguage` | `string` | — | The language identifier used for the output block's CSS class (such as `csharp`) so stylesheet rules key off the base language rather than the modifier. |
-| `HighlightedHtml` | `string` | — | The fully highlighted HTML, wrapped in the `<pre><code>` tags the renderer emits directly. |
-| `SkipTransform` | `bool` | `false` | When `true`, bypasses `CodeTransformer` (tab stripping, empty-line normalization) on the output. |
+<ApiMemberTable XmlDocId="T:Pennington.Markdown.Extensions.CodeBlockPreprocessResult" />
 
 ## `HighlightingService`
 
@@ -73,10 +62,7 @@ Registered as a singleton by `AddPennington`. The constructor accepts `IEnumerab
 
 ### Members
 
-| Name | Signature | Description |
-|---|---|---|
-| `HasHighlighter` | `bool HasHighlighter(string language)` | Returns `true` when at least one non-fallback highlighter's `SupportedLanguages` contains the supplied identifier; wildcard `"*"` entries are not consulted by this probe. |
-| `Highlight` | `string Highlight(string code, string language)` | Selects the highest-priority `ICodeHighlighter` whose `SupportedLanguages` contains `language` (or `"*"`) and returns its output; falls back to `PlainTextHighlighter` (HTML-encoded code, no token spans) when none match. |
+<ApiMemberList XmlDocId="T:Pennington.Highlighting.HighlightingService" Kind="Methods" HeadingLevel="4" />
 
 ## `TextMateLanguageRegistry`
 
@@ -88,10 +74,7 @@ Backs the built-in `TextMateHighlighter` with a grammar lookup and mutable scope
 
 ### Members
 
-| Name | Signature | Description |
-|---|---|---|
-| `AddGrammar` | `TextMateLanguageRegistry AddGrammar(string languageId, string scopeName)` | Registers a language id → TextMate scope name mapping so a built-in or previously loaded grammar can be selected by the supplied `languageId`. Returns `this` for chaining. |
-| `AddGrammarFromJson` | `TextMateLanguageRegistry AddGrammarFromJson(string languageId, string grammarJson)` | Loads a TextMate grammar from a JSON string, reads its `scopeName` (falling back to `source.{languageId}`), and registers both the grammar and the id-to-scope mapping. Returns `this` for chaining. |
+<ApiMemberList XmlDocId="T:Pennington.Highlighting.TextMateLanguageRegistry" Kind="Methods" HeadingLevel="4" />
 
 ## Example
 

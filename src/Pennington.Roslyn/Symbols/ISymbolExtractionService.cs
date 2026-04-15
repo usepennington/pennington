@@ -6,6 +6,6 @@ public interface ISymbolExtractionService
 {
     Task<IReadOnlyDictionary<string, SymbolInfo>> ExtractSymbolsAsync(Solution solution);
     Task<SymbolInfo?> FindSymbolAsync(string xmlDocId);
-    Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false);
+    Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true);
     void ClearCache();
 }

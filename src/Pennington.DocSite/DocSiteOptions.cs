@@ -6,7 +6,10 @@ using MonorailCss;
 using Routing;
 
 /// <summary>
-/// Configuration for a documentation site.
+/// Options record passed to <see cref="DocSiteServiceExtensions.AddDocSite"/> that configures
+/// the DocSite template: site chrome, typography, color scheme, content areas, and escape-hatch
+/// callbacks for the underlying <see cref="PenningtonOptions"/> and
+/// <see cref="Pennington.MonorailCss.MonorailCssOptions"/>.
 /// </summary>
 public record DocSiteOptions
 {

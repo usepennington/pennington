@@ -1,7 +1,12 @@
 namespace Pennington.FrontMatter;
 
 /// <summary>
-/// Covers the BlogSite use case — implements blog capabilities.
+/// Core-library front matter for blog posts on bare
+/// <see cref="Infrastructure.PenningtonExtensions.AddPennington"/> hosts.
+/// Carries <see cref="Date"/>, <see cref="Author"/>, and <see cref="Series"/> alongside the
+/// <see cref="IFrontMatter"/> defaults, and implements <see cref="IFrontMatter"/> and
+/// <see cref="ITaggable"/>. Not the record bound by <c>AddBlogSite</c> — see
+/// <see cref="BlogSite.BlogSiteFrontMatter"/> for that.
 /// </summary>
 public record BlogFrontMatter : IFrontMatter, ITaggable
 {

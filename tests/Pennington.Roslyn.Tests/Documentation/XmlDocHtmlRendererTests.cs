@@ -41,6 +41,30 @@ public sealed class XmlDocHtmlRendererTests
     }
 
     [Fact]
+    public void Inline_Strips_Method_Generic_Arity_From_Cref()
+    {
+        var nodes = ImmutableArray.Create(new XmlDocNode(new CrefNode("M:Ns.Type.AddMarkdownContent``1", null)));
+
+        _renderer.RenderInlineHtml(nodes).ShouldBe("<code>AddMarkdownContent</code>");
+    }
+
+    [Fact]
+    public void Inline_Strips_Type_Generic_Arity_From_Cref()
+    {
+        var nodes = ImmutableArray.Create(new XmlDocNode(new CrefNode("T:System.Collections.Generic.List`1", null)));
+
+        _renderer.RenderInlineHtml(nodes).ShouldBe("<code>List</code>");
+    }
+
+    [Fact]
+    public void Inline_Preserves_Whitespace_Around_Cref()
+    {
+        var parsed = _parser.Parse("""<member><summary>See <see cref="T:System.String"/> for details.</summary></member>""");
+
+        _renderer.RenderInlineHtml(parsed.Summary).ShouldBe("See <code>String</code> for details.");
+    }
+
+    [Fact]
     public void Block_Wraps_Text_In_Paragraph()
     {
         var parsed = _parser.Parse("""<member><summary>Hello world.</summary></member>""");

@@ -79,4 +79,46 @@ public sealed class CodeFragmentExtractorTests
         result.ShouldContain("public class Foo");
         result.ShouldContain("public int X { get; }");
     }
+
+    [Fact]
+    public async Task Declaration_Strips_Leading_Xmldoc_When_IncludeLeadingTrivia_False()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var code = """
+            public class Foo
+            {
+                /// <summary>Do the thing.</summary>
+                public void Bar() { }
+            }
+            """;
+        var tree = CSharpSyntaxTree.ParseText(code, cancellationToken: ct);
+        var root = await tree.GetRootAsync(ct);
+        var method = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First();
+
+        var result = await CodeFragmentExtractor.ExtractCodeFragmentAsync(method, code, bodyOnly: false, includeLeadingTrivia: false);
+
+        result.ShouldNotContain("<summary>");
+        result.ShouldContain("public void Bar()");
+    }
+
+    [Fact]
+    public async Task Declaration_Keeps_Leading_Xmldoc_By_Default()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var code = """
+            public class Foo
+            {
+                /// <summary>Do the thing.</summary>
+                public void Bar() { }
+            }
+            """;
+        var tree = CSharpSyntaxTree.ParseText(code, cancellationToken: ct);
+        var root = await tree.GetRootAsync(ct);
+        var method = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First();
+
+        var result = await CodeFragmentExtractor.ExtractCodeFragmentAsync(method, code, bodyOnly: false);
+
+        result.ShouldContain("<summary>Do the thing.</summary>");
+        result.ShouldContain("public void Bar()");
+    }
 }

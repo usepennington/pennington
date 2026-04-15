@@ -139,7 +139,7 @@ public sealed class SolutionWorkspaceServiceTests
         public Task<Pennington.Roslyn.Symbols.SymbolInfo?> FindSymbolAsync(string xmlDocId)
             => Task.FromResult<Pennington.Roslyn.Symbols.SymbolInfo?>(null);
 
-        public Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false)
+        public Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true)
             => Task.FromResult(string.Empty);
 
         public void ClearCache() => ClearCacheCallCount++;

@@ -3,7 +3,10 @@ namespace Pennington.DocSite;
 using FrontMatter;
 
 /// <summary>
-/// Front matter for doc site pages.
+/// Front matter bound by <see cref="DocSiteServiceExtensions.AddDocSite"/>. Extends the
+/// <see cref="FrontMatter.DocFrontMatter"/> shape with <see cref="RedirectUrl"/> via
+/// <see cref="IRedirectable"/>. Implements <see cref="IFrontMatter"/>, <see cref="ITaggable"/>,
+/// <see cref="ISectionable"/>, <see cref="IOrderable"/>, and <see cref="IRedirectable"/>.
 /// </summary>
 public record DocSiteFrontMatter : IFrontMatter, ITaggable,
     ISectionable, IOrderable, IRedirectable
