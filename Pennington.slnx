@@ -35,5 +35,6 @@
     <Project Path="examples/ExtensibilityLabExample/ExtensibilityLabExample.csproj" />
     <Project Path="examples/DocSiteChromeOverridesExample/DocSiteChromeOverridesExample.csproj" />
     <Project Path="examples/SubPathDeployableExample/SubPathDeployableExample.csproj" />
+    <Project Path="examples/FocusedCodeSamplesExample/FocusedCodeSamplesExample.csproj" />
   </Folder>
 </Solution>
