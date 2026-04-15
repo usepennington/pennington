@@ -7,7 +7,8 @@ internal static class TextFormatter
 {
     /// <summary>
     /// Strips common leading whitespace from all non-empty lines,
-    /// preserving relative indentation between lines.
+    /// preserving relative indentation between lines, and trims
+    /// leading/trailing blank lines.
     /// </summary>
     public static string NormalizeIndents(string code)
     {
@@ -18,14 +19,24 @@ internal static class TextFormatter
 
         var lines = code.Split('\n');
         var minIndent = int.MaxValue;
+        var first = -1;
+        var last = -1;
 
-        // Find the minimum indentation among non-empty lines
-        foreach (var line in lines)
+        // Find the minimum indentation and the first/last non-empty lines
+        for (var i = 0; i < lines.Length; i++)
         {
+            var line = lines[i];
             if (string.IsNullOrWhiteSpace(line))
             {
                 continue;
             }
+
+            if (first < 0)
+            {
+                first = i;
+            }
+
+            last = i;
 
             var indent = 0;
             foreach (var ch in line)
@@ -43,23 +54,28 @@ internal static class TextFormatter
             minIndent = Math.Min(minIndent, indent);
         }
 
-        if (minIndent is 0 or int.MaxValue)
+        if (first < 0)
         {
+            // No non-empty lines — return unchanged so callers can distinguish
             return code;
         }
 
-        // Strip the common indentation from each line
-        var result = new string[lines.Length];
-        for (var i = 0; i < lines.Length; i++)
+        // Dedent (when minIndent > 0) and trim leading/trailing blank lines.
+        // Body-only extraction starts with "\n<indent>..." and ends with the
+        // close-brace indent, so stripping the surrounding blanks produces a
+        // clean block.
+        var kept = last - first + 1;
+        var result = new string[kept];
+        for (var i = 0; i < kept; i++)
         {
-            var line = lines[i];
+            var line = lines[first + i];
             if (string.IsNullOrWhiteSpace(line))
             {
-                result[i] = line;
+                result[i] = string.Empty;
             }
             else
             {
-                result[i] = line.Length > minIndent ? line[minIndent..] : string.Empty;
+                result[i] = minIndent > 0 && line.Length > minIndent ? line[minIndent..] : line;
             }
         }
 

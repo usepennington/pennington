@@ -3,6 +3,7 @@ namespace Pennington.Roslyn.Tests.Symbols;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Pennington.Roslyn.Symbols;
+using Pennington.Roslyn.Utilities;
 
 public sealed class CodeFragmentExtractorTests
 {
@@ -120,5 +121,77 @@ public sealed class CodeFragmentExtractorTests
 
         result.ShouldContain("<summary>Do the thing.</summary>");
         result.ShouldContain("public void Bar()");
+    }
+
+    [Fact]
+    public async Task BodyOnly_Method_DedentsCleanly()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var code = """
+            public class Foo
+            {
+                public void Bar()
+                {
+                    Console.WriteLine();
+                    DoMore();
+                }
+            }
+            """;
+        var tree = CSharpSyntaxTree.ParseText(code, cancellationToken: ct);
+        var root = await tree.GetRootAsync(ct);
+        var method = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First();
+
+        var result = await CodeFragmentExtractor.ExtractCodeFragmentAsync(method, code, bodyOnly: true);
+        var normalized = TextFormatter.NormalizeIndents(result);
+
+        normalized.ShouldBe("Console.WriteLine();\nDoMore();");
+    }
+
+    [Fact]
+    public async Task Declaration_WithoutLeadingTrivia_DedentsCleanly()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var code = """
+            public class Foo
+            {
+                /// <summary>Do.</summary>
+                public void Bar()
+                {
+                    Console.WriteLine();
+                }
+            }
+            """;
+        var tree = CSharpSyntaxTree.ParseText(code, cancellationToken: ct);
+        var root = await tree.GetRootAsync(ct);
+        var method = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First();
+
+        var result = await CodeFragmentExtractor.ExtractCodeFragmentAsync(method, code, bodyOnly: false, includeLeadingTrivia: false);
+        var normalized = TextFormatter.NormalizeIndents(result);
+
+        normalized.ShouldBe("public void Bar()\n{\n    Console.WriteLine();\n}");
+    }
+
+    [Fact]
+    public async Task BodyOnly_TypeBraceContent_DedentsCleanly()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var code = """
+            namespace Foo
+            {
+                public class Bar
+                {
+                    public int X { get; }
+                    public int Y { get; }
+                }
+            }
+            """;
+        var tree = CSharpSyntaxTree.ParseText(code, cancellationToken: ct);
+        var root = await tree.GetRootAsync(ct);
+        var classDecl = root.DescendantNodes().OfType<ClassDeclarationSyntax>().First();
+
+        var result = await CodeFragmentExtractor.ExtractCodeFragmentAsync(classDecl, code, bodyOnly: true);
+        var normalized = TextFormatter.NormalizeIndents(result);
+
+        normalized.ShouldBe("public int X { get; }\npublic int Y { get; }");
     }
 }

@@ -59,4 +59,14 @@ public sealed class TextFormatterTests
 
         result.ShouldBeNull();
     }
+
+    [Fact]
+    public void Trims_Leading_And_Trailing_Blank_Lines()
+    {
+        var code = "\n    foo\n    bar\n    ";
+
+        var result = TextFormatter.NormalizeIndents(code);
+
+        result.ShouldBe("foo\nbar");
+    }
 }

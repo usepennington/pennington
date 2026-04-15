@@ -21,11 +21,28 @@ internal static class CodeFragmentExtractor
     {
         if (!bodyOnly)
         {
-            return Task.FromResult(includeLeadingTrivia ? node.ToFullString() : node.ToString());
+            return Task.FromResult(includeLeadingTrivia ? node.ToFullString() : ToStringWithLineIndent(node, fullText));
         }
 
         var body = ExtractBody(node);
-        return Task.FromResult(body ?? (includeLeadingTrivia ? node.ToFullString() : node.ToString()));
+        return Task.FromResult(body ?? (includeLeadingTrivia ? node.ToFullString() : ToStringWithLineIndent(node, fullText)));
+    }
+
+    // When leading trivia is stripped, node.ToString() drops the first line's
+    // leading whitespace too, leaving the first line at column 0 while subsequent
+    // lines keep their source indent. Walk back over ' '/'\t' (stopping at a newline
+    // or any non-whitespace so same-line xmldoc/comments stay excluded) and prepend
+    // that whitespace so every line shares a baseline for downstream dedent.
+    private static string ToStringWithLineIndent(SyntaxNode node, string fullText)
+    {
+        var spanStart = node.SpanStart;
+        var lineStart = spanStart;
+        while (lineStart > 0 && fullText[lineStart - 1] is ' ' or '\t')
+        {
+            lineStart--;
+        }
+
+        return fullText[lineStart..spanStart] + node.ToString();
     }
 
     private static string? ExtractBody(SyntaxNode node)
@@ -50,7 +67,7 @@ internal static class CodeFragmentExtractor
     {
         if (method.ExpressionBody is { } expressionBody)
         {
-            return expressionBody.Expression.ToFullString().Trim();
+            return expressionBody.Expression.ToFullString().TrimEnd();
         }
 
         return ExtractBlockBody(method.Body);
@@ -60,7 +77,7 @@ internal static class CodeFragmentExtractor
     {
         if (expressionBody is not null)
         {
-            return expressionBody.Expression.ToFullString().Trim();
+            return expressionBody.Expression.ToFullString().TrimEnd();
         }
 
         return ExtractBlockBody(body);
@@ -86,14 +103,14 @@ internal static class CodeFragmentExtractor
         }
 
         var fullText = block.SyntaxTree.GetText().ToString();
-        return fullText[start..end].Trim();
+        return fullText[start..end].TrimEnd();
     }
 
     private static string? ExtractPropertyBody(PropertyDeclarationSyntax property)
     {
         if (property.ExpressionBody is { } expressionBody)
         {
-            return expressionBody.Expression.ToFullString().Trim();
+            return expressionBody.Expression.ToFullString().TrimEnd();
         }
 
         if (property.AccessorList is not null)
@@ -120,6 +137,6 @@ internal static class CodeFragmentExtractor
         }
 
         var fullText = openBrace.SyntaxTree!.GetText().ToString();
-        return fullText[start..end].Trim();
+        return fullText[start..end].TrimEnd();
     }
 }
