@@ -38,6 +38,10 @@ public sealed class PenningtonRedirectMiddleware
         {
             context.Response.StatusCode = StatusCodes.Status301MovedPermanently;
             context.Response.Headers.Location = target;
+            // Browsers cache 301s indefinitely by URL. Force revalidation so a
+            // bad redirect (e.g., one shipped accidentally) can be corrected
+            // without asking users to clear site data.
+            context.Response.Headers.CacheControl = "no-cache";
             context.Response.ContentType = "text/html; charset=utf-8";
             var body = BuildRedirectHtml(target);
             await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(body));
