@@ -130,23 +130,25 @@ Helpers being `public` is part of the trade — `internal` methods do not surfac
 
 ## Show a delta with `xmldocid-diff`
 
-When the article's point is that one version replaces another — a refactor, a migration, a before/after — fence both versions together with `xmldocid-diff`. The preprocessor renders a diff so the reader sees what changed without reading both fences independently and comparing by eye.
+When the article's point is that one version replaces another — a small refactor, a migration, a perf tweak — fence both versions together with `xmldocid-diff`. The preprocessor emits a diff so the reader sees the two or three lines that moved, rather than reading both fences independently and comparing them by eye. The fence shines when the delta is small; whole-method rewrites render every line as changed and lose their teaching value.
+
+`ModularWordCounter.FormatV2` is deliberately a one-change variant of `Format` — the `StringBuilder` is rented from a pool instead of constructed fresh, with the matching `Return` call at the end. Everything else is identical, so the diff collapses to those lines.
 
 ````markdown
 ```csharp:xmldocid-diff,bodyonly
-M:FocusedCodeSamplesExample.MonolithWordCounter.CountWords(System.String,System.Int32)
-M:FocusedCodeSamplesExample.ModularWordCounter.CountWords(System.String,System.Int32)
+M:FocusedCodeSamplesExample.ModularWordCounter.Format(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Int32}})
+M:FocusedCodeSamplesExample.ModularWordCounter.FormatV2(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Int32}})
 ```
 ````
 
 Which renders as:
 
 ```csharp:xmldocid-diff,bodyonly
-M:FocusedCodeSamplesExample.MonolithWordCounter.CountWords(System.String,System.Int32)
-M:FocusedCodeSamplesExample.ModularWordCounter.CountWords(System.String,System.Int32)
+M:FocusedCodeSamplesExample.ModularWordCounter.Format(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Int32}})
+M:FocusedCodeSamplesExample.ModularWordCounter.FormatV2(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Int32}})
 ```
 
-The fence body must hold exactly two xmldocids, one per line, in before → after order. `,bodyonly` applies to both sides, so the diff compares implementations without the xmldoc boilerplate drowning out the change.
+The fence body must hold exactly two xmldocids, one per line, in before → after order. `,bodyonly` applies to both sides, so the diff compares implementations without xmldoc boilerplate drowning out the change.
 
 ## Reach for `:path` only when no xmldocid exists
 

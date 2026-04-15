@@ -78,4 +78,26 @@ public static class ModularWordCounter
         }
         return sb.ToString();
     }
+
+    /// <summary>
+    /// Same output as <see cref="Format"/>, but rents its
+    /// <see cref="StringBuilder"/> from <see cref="StringBuilderPool"/>
+    /// instead of allocating a fresh one each call. Exists to pair with
+    /// <see cref="Format"/> inside an <c>xmldocid-diff</c> fence so the
+    /// delta is small and focused on one mechanical change.
+    /// </summary>
+    public static string FormatV2(List<KeyValuePair<string, int>> ranked)
+    {
+        var sb = StringBuilderPool.Get();
+        sb.AppendLine($"Top {ranked.Count} words:");
+        foreach (var kv in ranked)
+        {
+            sb.Append(kv.Key.PadRight(12));
+            sb.Append(' ');
+            sb.AppendLine(kv.Value.ToString());
+        }
+        var result = sb.ToString();
+        StringBuilderPool.Return(sb);
+        return result;
+    }
 }
