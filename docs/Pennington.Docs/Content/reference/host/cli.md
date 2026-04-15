@@ -17,12 +17,6 @@ The command-line surface `RunOrBuildAsync` dispatches on — one positional verb
 | `build` | `[baseUrl] [outputDirectory]` positional, or `--base-url` / `--output` named flags | Static build: `app.StartAsync()`, resolve `OutputGenerationService`, HTTP-crawl the running host, write each response to `OutputOptions.OutputDirectory`, print `BuildReport`, set `Environment.ExitCode = 1` on errors, `app.StopAsync()`. |
 | _anything else_ | — | Dev-serve fallback. Non-`build` `args[0]` is treated as unknown; positional args are not interpreted as a base URL or output directory (guards against `dotnet test` / `dotnet watch` emitting stray positional args). |
 
-## Declaration
-
-```csharp:xmldocid
-M:Pennington.Generation.OutputOptions.FromArgs(System.String[])
-```
-
 ## Positional arguments
 
 | Position | Name | Default | Description |

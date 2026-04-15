@@ -56,35 +56,21 @@ dotnet run -- build /my-site dist
 dotnet run -- build --base-url=/my-site --output=dist
 ```
 
-`FromArgs` is the single source of truth for the CLI surface:
-
-```csharp:xmldocid
-M:Pennington.Generation.OutputOptions.FromArgs(System.String[])
-```
+`OutputOptions.FromArgs` is the single source of truth for the CLI surface; see <xref:reference.host.cli> for the full grammar.
 
 </Step>
 <Step StepNumber="3">
 
 **Understand what the crawler does**
 
-`OutputGenerationService` starts the real ASP.NET host, opens an `HttpClient` against the first bound URL, and issues a GET for every route discovered by `IContentService.DiscoverAsync` plus every `MapGet` endpoint. Every page passes through the live response-processor pipeline — xref resolution, locale prefixing, base-URL rewriting, MonorailCSS class collection, and diagnostics behave identically in dev and build. This is a deliberate invariant.
-
-```csharp:xmldocid
-T:Pennington.Generation.OutputGenerationService
-```
-
-The reasoning behind the unified code path is covered in <xref:explanation.core.dev-vs-build>.
+`OutputGenerationService` starts the real ASP.NET host, opens an `HttpClient` against the first bound URL, and issues a GET for every route discovered by `IContentService.DiscoverAsync` plus every `MapGet` endpoint. Every page passes through the live response-processor pipeline — xref resolution, locale prefixing, base-URL rewriting, MonorailCSS class collection, and diagnostics behave identically in dev and build. This is a deliberate invariant — the reasoning is covered in <xref:explanation.core.dev-vs-build>.
 
 </Step>
 <Step StepNumber="4">
 
 **Read the `BuildReport` printed to stdout**
 
-When the crawl finishes, `RunOrBuildAsync` writes a human-readable report and exits with a non-zero code when `HasErrors` is true — triggered by any error diagnostic, failed page, or broken internal link. The key collections are `GeneratedPages`, `SkippedPages` (drafts), `FailedPages`, `BrokenLinks`, and `Diagnostics`.
-
-```csharp:xmldocid
-T:Pennington.Generation.BuildReport
-```
+When the crawl finishes, `RunOrBuildAsync` writes a human-readable report and exits with a non-zero code when `HasErrors` is true — triggered by any error diagnostic, failed page, or broken internal link. The key collections are `GeneratedPages`, `SkippedPages` (drafts), `FailedPages`, `BrokenLinks`, and `Diagnostics`; see <xref:reference.diagnostics.build-report> for the full field list.
 
 For a custom CI presentation such as a GitHub Actions summary, print the report directly:
 
@@ -98,12 +84,6 @@ M:SubPathDeployableExample.BuildHost.PrintBuildReport(Pennington.Generation.Buil
 **Fix what the report flags before shipping**
 
 `BrokenLinks` surfaces internal hrefs that did not resolve to a generated page — usually a typo or a moved file that no xref caught. `FailedPages` surfaces routes whose parse or render raised an exception, each carrying the originating `ContentRoute` so the source is easy to locate. Warnings are advisory and do not set `HasErrors` on their own, but a warning that represents a broken link flips the flag.
-
-```csharp:xmldocid
-P:Pennington.Generation.BuildReport.BrokenLinks
-P:Pennington.Generation.BuildReport.FailedPages
-P:Pennington.Generation.BuildReport.HasErrors
-```
 
 </Step>
 </Steps>

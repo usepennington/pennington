@@ -11,75 +11,19 @@ The scoped accumulator and record types that collect per-request warnings, error
 
 ## `DiagnosticContext`
 
-```csharp:xmldocid
-T:Pennington.Diagnostics.DiagnosticContext
-```
-
 Scoped accumulator registered in DI as `Scoped` — a fresh instance per HTTP request, backed by a private `List<Diagnostic>` with no thread-safety. Consumers resolve it via `context.RequestServices.GetService<DiagnosticContext>()` (or constructor injection) and call one of the `Add*` methods; the middleware and overlay read `Diagnostics`, `HasAny`, and `HasErrors` during response flush.
 
 ### Members
 
-### `Add`
-
-```csharp:xmldocid
-M:Pennington.Diagnostics.DiagnosticContext.Add(Pennington.Diagnostics.Diagnostic)
-```
-
-Appends a pre-constructed `Diagnostic` to the request's list. Used when the caller already has a `Diagnostic` instance (for example, one forwarded from a helper service).
-
-### `AddError`
-
-```csharp:xmldocid
-M:Pennington.Diagnostics.DiagnosticContext.AddError(System.String,System.String)
-```
-
-Appends a new `Diagnostic` with `Severity = DiagnosticSeverity.Error` and the supplied `message` / optional `source`. An error causes `HasErrors` to return `true` for the remainder of the request.
-
-### `AddInfo`
-
-```csharp:xmldocid
-M:Pennington.Diagnostics.DiagnosticContext.AddInfo(System.String,System.String)
-```
-
-Appends a new `Diagnostic` with `Severity = DiagnosticSeverity.Info` and the supplied `message` / optional `source`. Info entries surface in the overlay and headers but do not flip `HasErrors`.
-
-### `AddWarning`
-
-```csharp:xmldocid
-M:Pennington.Diagnostics.DiagnosticContext.AddWarning(System.String,System.String)
-```
-
-Appends a new `Diagnostic` with `Severity = DiagnosticSeverity.Warning` and the supplied `message` / optional `source`. Warnings count toward the overlay badge's warning total but do not flip `HasErrors`.
-
-### `Diagnostics`
-
-```csharp:xmldocid
-P:Pennington.Diagnostics.DiagnosticContext.Diagnostics
-```
-
-Read-only view of the diagnostics accumulated so far, in insertion order. Read by `ResponseProcessingMiddleware.WriteDiagnosticHeaders` and `DiagnosticOverlayProcessor.ProcessAsync`.
-
-### `HasAny`
-
-```csharp:xmldocid
-P:Pennington.Diagnostics.DiagnosticContext.HasAny
-```
-
-Returns `true` when at least one diagnostic has been appended during this request. The middleware uses this as a gate before enumerating the list to emit `X-Pennington-Diagnostic` headers.
-
-### `HasErrors`
-
-```csharp:xmldocid
-P:Pennington.Diagnostics.DiagnosticContext.HasErrors
-```
-
-Returns `true` when at least one appended diagnostic has `Severity = DiagnosticSeverity.Error`. Independent of `HasAny`; a context with only warnings/info returns `true` from `HasAny` and `false` from `HasErrors`.
+- **`Add(Diagnostic diagnostic)`** — appends a pre-constructed `Diagnostic` to the request's list. Used when the caller already has a `Diagnostic` instance (for example, one forwarded from a helper service).
+- **`AddError(string message, string? source = null)`** — appends a new `Diagnostic` with `Severity = DiagnosticSeverity.Error`. Causes `HasErrors` to return `true` for the remainder of the request.
+- **`AddWarning(string message, string? source = null)`** — appends a new `Diagnostic` with `Severity = DiagnosticSeverity.Warning`. Contributes to the overlay warning count but does not flip `HasErrors`.
+- **`AddInfo(string message, string? source = null)`** — appends a new `Diagnostic` with `Severity = DiagnosticSeverity.Info`. Surfaces in the overlay and headers but does not flip `HasErrors`.
+- **`Diagnostics`** (property) — read-only view of the diagnostics accumulated so far, in insertion order. Read by `ResponseProcessingMiddleware.WriteDiagnosticHeaders` and `DiagnosticOverlayProcessor.ProcessAsync`.
+- **`HasAny`** (property) — `true` when at least one diagnostic has been appended. Gate before enumerating the list to emit `X-Pennington-Diagnostic` headers.
+- **`HasErrors`** (property) — `true` when at least one appended diagnostic has `Severity = Error`. A context with only warnings/info returns `true` from `HasAny` and `false` from `HasErrors`.
 
 ## `Diagnostic`
-
-```csharp:xmldocid
-T:Pennington.Diagnostics.Diagnostic
-```
 
 Immutable record carrying one diagnostic event. Route-agnostic — the request that produced it supplies the route context via `HttpContext`; the record itself only carries severity, message, and an optional `Source` label used as the overlay pill subtitle and the third pipe-delimited segment of the `X-Pennington-Diagnostic` header.
 
@@ -92,10 +36,6 @@ Immutable record carrying one diagnostic event. Route-agnostic — the request t
 | `Source` | `string?` | `null` | Optional label identifying the producer (for example, `"XrefResolver"`); rendered as the small subtitle next to the severity pill in the overlay and appended after a second pipe in the header value when non-null. |
 
 ## `DiagnosticSeverity`
-
-```csharp:xmldocid
-T:Pennington.Diagnostics.DiagnosticSeverity
-```
 
 Three-value enum in ascending severity order. The overlay's aggregate badge color picks the highest present severity (`Error` > `Warning` > `Info`); `DiagnosticContext.HasErrors` fires only on `Error`.
 
@@ -120,7 +60,7 @@ Two transports surface the accumulated diagnostics, both wired inside `UsePennin
 
 The canonical in-repo consumer is `XrefResolvingService`, which reports unresolved uids. Any service or response processor that resolves `DiagnosticContext` and calls `AddWarning` / `AddError` / `AddInfo` during request handling flows entries into the `X-Pennington-Diagnostic` response header and the dev overlay without further wiring. The `examples/ExtensibilityLabExample` lab registers a scoped `IResponseProcessor` that follows this shape:
 
-```csharp:xmldocid
+```csharp:xmldocid,bodyonly
 T:ExtensibilityLabExample.DiagnosticsEmittingProcessor
 ```
 

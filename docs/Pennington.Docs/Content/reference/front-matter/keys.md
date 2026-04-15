@@ -9,13 +9,7 @@ uid: reference.front-matter.keys
 
 The flat catalog of YAML keys parsed into the four shipped `IFrontMatter` records — `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter` — via `FrontMatterParser` with `CamelCaseNamingConvention`. Keys are declared as `init`-only properties on records in `Pennington.FrontMatter` (core), `Pennington.DocSite`, and `Pennington.BlogSite`.
 
-## Declaration
-
-```csharp:xmldocid
-T:Pennington.FrontMatter.IFrontMatter
-```
-
-The base interface every front-matter record implements; default interface members supply the opt-out values (`IsDraft = false`, `Search = true`, `Llms = true`, `Uid = null`, `Description = null`, `Date = null`) so records only declare what they parse.
+The base `IFrontMatter` interface every front-matter record implements supplies default member values (`IsDraft = false`, `Search = true`, `Llms = true`, `Uid = null`, `Description = null`, `Date = null`) so records only declare what they parse. See <xref:reference.front-matter.ifrontmatter> for the interface surface.
 
 ## Keys
 

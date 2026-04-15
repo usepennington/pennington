@@ -26,11 +26,7 @@ For a working setup, see [`examples/ExtensibilityLabExample`](https://github.com
 
 **Implement `ICodeHighlighter`**
 
-The contract requires three members: `SupportedLanguages`, `Priority`, and `Highlight(code, language)`. The example below wraps keywords, arrows, and string literals in classed `<span>` elements and HTML-encodes everything else.
-
-```csharp:xmldocid
-T:ExtensibilityLabExample.PipelineHighlighter
-```
+The contract requires three members: `SupportedLanguages`, `Priority`, and `Highlight(code, language)`. The next three steps fence each of those members separately from the example `PipelineHighlighter` at `examples/ExtensibilityLabExample/PipelineHighlighter.cs`, which wraps keywords, arrows, and string literals in classed `<span>` elements and HTML-encodes everything else.
 
 </Step>
 <Step StepNumber="2">
@@ -59,11 +55,7 @@ P:ExtensibilityLabExample.PipelineHighlighter.Priority
 
 **Produce the fence HTML in `Highlight`**
 
-`Highlight` receives the raw fence body and the language token and returns the full HTML for the block, including the outer `<pre><code>` wrapper — the same convention the built-in highlighters follow. HTML-encode every character not explicitly wrapped in a span; the pipeline example uses `WebUtility.HtmlEncode` on every literal path to prevent injection.
-
-```csharp:xmldocid
-M:ExtensibilityLabExample.PipelineHighlighter.Highlight(System.String,System.String)
-```
+`Highlight` receives the raw fence body and the language token and returns the full HTML for the block, including the outer `<pre><code>` wrapper — the same convention the built-in highlighters follow. HTML-encode every character not explicitly wrapped in a span; the pipeline example uses `WebUtility.HtmlEncode` on every literal path to prevent injection. Full implementation: `examples/ExtensibilityLabExample/PipelineHighlighter.cs`.
 
 </Step>
 <Step StepNumber="5">

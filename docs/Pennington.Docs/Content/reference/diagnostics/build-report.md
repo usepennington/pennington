@@ -20,12 +20,6 @@ tags: [diagnostics, build, reference]
 
 ## `BuildReport`
 
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.Generation.BuildReport
-```
-
 Sealed record with read-only `ImmutableList<T>` collections and a `TimeSpan` duration; instances are produced only by `BuildReportBuilder.Build()` at the end of `OutputGenerationService.GenerateAsync`.
 
 ### Properties
@@ -43,29 +37,15 @@ Sealed record with read-only `ImmutableList<T>` collections and a `TimeSpan` dur
 
 ### Methods
 
-#### `WriteTo(TextWriter)`
-
-```csharp:xmldocid
-M:Pennington.Generation.BuildReport.WriteTo(System.IO.TextWriter)
-```
+#### `WriteTo(TextWriter writer)`
 
 Writes a human-readable summary to the supplied `TextWriter` — a one-line `Build Complete — N pages in X.Xs` header, followed by per-category counts, then an `ERRORS` section (each entry prefixed with its `ContentRoute.CanonicalPath` and source file where available) and a `WARNINGS` section including the broken-link rollup. This is the format `PenningtonExtensions.RunOrBuildAsync` prints to `Console.Out` at the end of a build.
 
 #### `ToFormattedString()`
 
-```csharp:xmldocid
-M:Pennington.Generation.BuildReport.ToFormattedString
-```
-
 Convenience wrapper around `WriteTo` that renders to a `StringWriter` and returns the resulting string, suitable for embedding the report in test assertions or CI log artifacts.
 
 ## `BuildDiagnostic`
-
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.Generation.BuildDiagnostic
-```
 
 Positional record with one required severity/message pair and three optional fields; instances are appended by `BuildReportBuilder.AddInfo`, `AddWarning`, and `AddError`, or synthesized externally and passed to `AddDiagnostic`.
 
@@ -81,12 +61,6 @@ Positional record with one required severity/message pair and three optional fie
 
 ## `BrokenLink`
 
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.Generation.BrokenLink
-```
-
 Positional record describing one failed link-verification finding; instances are appended by `BuildReportBuilder.AddBrokenLink` after `LinkVerificationService` inspects each rendered page.
 
 ### Properties
@@ -100,19 +74,9 @@ Positional record describing one failed link-verification finding; instances are
 
 ### Related enum — `LinkType`
 
-```csharp:xmldocid
-T:Pennington.Generation.LinkType
-```
-
 Enum with `Internal`, `External`, `Anchor`, and `Image` members; populated by `LinkVerificationService` when it classifies each `<a href>` or `<img src>` it inspects.
 
 ## `DiagnosticSeverity`
-
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.Diagnostics.DiagnosticSeverity
-```
 
 ### Values
 

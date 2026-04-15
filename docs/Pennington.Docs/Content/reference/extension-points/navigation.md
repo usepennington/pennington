@@ -16,33 +16,17 @@ uid: reference.extension-points.navigation
 
 ## `NavigationBuilder`
 
-```csharp:xmldocid
-T:Pennington.Navigation.NavigationBuilder
-```
-
 `NavigationBuilder` exposes two static methods that consume `IContentService.GetContentTocEntriesAsync` output; both accept an optional `locale` that filters out off-locale items and strips the locale prefix from each item's `HierarchyParts` before tree construction. Folders that contain descendants but no direct page produce auto-created section nodes whose `Title` is the kebab-to-title-case folder name and whose `Route` is an empty `ContentRoute` to signal "not navigable".
 
-### `BuildTree`
-
-```csharp:xmldocid
-M:Pennington.Navigation.NavigationBuilder.BuildTree(System.Collections.Generic.IReadOnlyList{Pennington.Content.ContentTocItem},Pennington.Routing.ContentRoute,System.String)
-```
+### `BuildTree(IReadOnlyList<ContentTocItem> items, ContentRoute currentRoute, string locale)`
 
 Returns an `ImmutableList<NavigationTreeItem>` representing the full sidebar tree, with items grouped by `HierarchyParts`, sorted by `Order` then `Title` (case-insensitive), and deduplicated by canonical path. The `currentRoute` parameter controls the `IsSelected` and `IsExpanded` flags on returned nodes; passing `null` yields a tree where every node is unselected and collapsed.
 
-### `BuildNavigationInfo`
-
-```csharp:xmldocid
-M:Pennington.Navigation.NavigationBuilder.BuildNavigationInfo(System.Collections.Generic.IReadOnlyList{Pennington.Content.ContentTocItem},Pennington.Routing.ContentRoute,System.String)
-```
+### `BuildNavigationInfo(IReadOnlyList<ContentTocItem> items, ContentRoute currentRoute, string locale)`
 
 Returns a single `NavigationInfo` for `currentRoute` by building the tree, flattening it depth-first to derive `PreviousPage` and `NextPage`, and walking the tree to produce the `Breadcrumbs` trail from root to current. Returns a `NavigationInfo` with `PageTitle = ""` and null neighbours when `currentRoute` is not found in the tree.
 
 ## `NavigationInfo`
-
-```csharp:xmldocid
-T:Pennington.Navigation.NavigationInfo
-```
 
 Per-page navigation bundle produced by `NavigationBuilder.BuildNavigationInfo`, consumed by `TableOfContentsNavigation`, `OutlineNavigation`, and DocSite layout components for prev/next footers and breadcrumb rendering.
 
@@ -58,10 +42,6 @@ Per-page navigation bundle produced by `NavigationBuilder.BuildNavigationInfo`, 
 | `NextPage` | `NavigationTreeItem?` | Item immediately after the current one in the depth-first flattening of the tree, or `null` at the end / when not found. |
 
 ## `NavigationTreeItem`
-
-```csharp:xmldocid
-T:Pennington.Navigation.NavigationTreeItem
-```
 
 One node in the sidebar tree returned by `BuildTree`; records are either auto-created section headers (non-navigable, empty `Route`, `SectionLabel = null`) or direct content entries (populated `Route`, `SectionLabel` from the source `ContentTocItem`).
 
@@ -79,10 +59,6 @@ One node in the sidebar tree returned by `BuildTree`; records are either auto-cr
 
 ## `BreadcrumbItem`
 
-```csharp:xmldocid
-T:Pennington.Navigation.BreadcrumbItem
-```
-
 One step in the root-to-current breadcrumb trail produced by `BuildNavigationInfo`; auto-created section headers contribute a `BreadcrumbItem` whose `Route` points at the empty placeholder `ContentRoute` from the tree node.
 
 ### Members
@@ -94,9 +70,7 @@ One step in the root-to-current breadcrumb trail produced by `BuildNavigationInf
 
 ## Example
 
-```csharp:path
-examples/GettingStartedFirstPageExample/Program.cs
-```
+`examples/GettingStartedFirstPageExample/Program.cs` wires `NavigationBuilder.BuildTree` into a MapGet endpoint to render a simple navigation strip alongside each page.
 
 ## See also
 

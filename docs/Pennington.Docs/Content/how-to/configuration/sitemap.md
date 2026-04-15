@@ -26,10 +26,6 @@ Pennington registers and serves `/sitemap.xml` automatically on any `AddPenningt
 
 `AddPennington` registers `SitemapService` and `UsePennington` maps `GET /sitemap.xml` to it. There is no `AddSitemap(...)` call to make and no toggle on `PenningtonOptions`. The service walks every registered `IContentService.DiscoverAsync` result, skipping non-HTML outputs and `RedirectSource` placeholders before the builder applies its own filters.
 
-```csharp:xmldocid
-T:Pennington.Feeds.SitemapService
-```
-
 </Step>
 <Step StepNumber="2">
 
@@ -41,11 +37,7 @@ When `CanonicalBaseUrl` is set on `PenningtonOptions`, `DocSiteOptions`, or `Blo
 M:BlogKitchenSinkExample.ServiceConfiguration.BuildBlogSiteOptions
 ```
 
-The backing property on `BlogSiteOptions`:
-
-```csharp:xmldocid
-P:Pennington.BlogSite.BlogSiteOptions.CanonicalBaseUrl
-```
+See <xref:reference.options.blogsite-options> for the backing `CanonicalBaseUrl` property.
 
 </Step>
 <Step StepNumber="3">
@@ -58,12 +50,7 @@ P:Pennington.BlogSite.BlogSiteOptions.CanonicalBaseUrl
 M:Pennington.Feeds.SitemapBuilder.Build(System.Collections.Generic.IReadOnlyList{Pennington.Feeds.SitemapCandidate})
 ```
 
-The two front-matter members that drive the filter:
-
-```csharp:xmldocid
-P:Pennington.FrontMatter.IFrontMatter.IsDraft
-P:Pennington.FrontMatter.IRedirectable.RedirectUrl
-```
+The two front-matter members that drive the filter are `IFrontMatter.IsDraft` and `IRedirectable.RedirectUrl`; see <xref:reference.front-matter.ifrontmatter>.
 
 </Step>
 <Step StepNumber="4">
@@ -71,10 +58,6 @@ P:Pennington.FrontMatter.IRedirectable.RedirectUrl
 **(BlogSite only) Set `EnableSitemap = false` to turn it off**
 
 On an `AddBlogSite` host, `BlogSiteOptions.EnableSitemap` (default `true`) is the one knob that unregisters the `/sitemap.xml` endpoint. Set it to `false` when the host environment owns its own sitemap. On a bare `AddPennington` or `AddDocSite` host the endpoint is always mapped; there is no equivalent toggle because the sitemap has no per-request cost when nothing fetches it.
-
-```csharp:xmldocid
-P:Pennington.BlogSite.BlogSiteOptions.EnableSitemap
-```
 
 </Step>
 </Steps>

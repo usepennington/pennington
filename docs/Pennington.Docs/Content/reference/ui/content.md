@@ -26,11 +26,7 @@ Each component is listed alphabetically below with its declaration fence, parame
 
 ## `Badge`
 
-```razor:path
-src/Pennington.UI/Components/Badge.razor
-```
-
-Inline pill with ring and tinted background, variant-mapped to a MonorailCSS color palette; renders a `<span>` and is safe inside flowing prose and table cells.
+Declared at `src/Pennington.UI/Components/Badge.razor`. Inline pill with ring and tinted background, variant-mapped to a MonorailCSS color palette; renders a `<span>` and is safe inside flowing prose and table cells.
 
 ### Parameters
 
@@ -48,11 +44,7 @@ Inline pill with ring and tinted background, variant-mapped to a MonorailCSS col
 
 ## `BigTable`
 
-```razor:path
-src/Pennington.UI/Components/BigTable.razor
-```
-
-Overflow wrapper for tables wider than the main column; emits a `<div>` with horizontal scroll and reduced text size, with the table supplied as `ChildContent`.
+Declared at `src/Pennington.UI/Components/BigTable.razor`. Overflow wrapper for tables wider than the main column; emits a `<div>` with horizontal scroll and reduced text size, with the table supplied as `ChildContent`.
 
 ### Parameters
 
@@ -70,11 +62,7 @@ Overflow wrapper for tables wider than the main column; emits a `<div>` with hor
 
 ## `Card`
 
-```razor:path
-src/Pennington.UI/Components/Card.razor
-```
-
-Static non-clickable callout card; renders a rounded, tinted panel with an optional icon region and bold heading, with `not-prose` applied inside so surrounding prose styles do not affect card body content.
+Declared at `src/Pennington.UI/Components/Card.razor`. Static non-clickable callout card; renders a rounded, tinted panel with an optional icon region and bold heading, with `not-prose` applied inside so surrounding prose styles do not affect card body content.
 
 ### Parameters
 
@@ -95,11 +83,7 @@ Static non-clickable callout card; renders a rounded, tinted panel with an optio
 
 ## `CardGrid`
 
-```razor:path
-src/Pennington.UI/Components/CardGrid.razor
-```
-
-Responsive grid container for `Card` or `LinkCard` children; renders one column on small viewports and a `Columns`-wide grid from the `sm` breakpoint up, with `Columns` interpolated into a MonorailCSS class.
+Declared at `src/Pennington.UI/Components/CardGrid.razor`. Responsive grid container for `Card` or `LinkCard` children; renders one column on small viewports and a `Columns`-wide grid from the `sm` breakpoint up, with `Columns` interpolated into a MonorailCSS class.
 
 ### Parameters
 
@@ -120,11 +104,7 @@ Responsive grid container for `Card` or `LinkCard` children; renders one column 
 
 ## `CodeBlock`
 
-```razor:path
-src/Pennington.UI/Components/CodeBlock.razor
-```
-
-Razor-level wrapper around `ICodeHighlighter`; accepts code via `Code` or `ChildContent`, normalizes leading whitespace from `ChildContent`, delegates to the injected highlighter, and emits output as a `MarkupString`. An empty or missing `Language` renders an inline error element.
+Declared at `src/Pennington.UI/Components/CodeBlock.razor`. Razor-level wrapper around `ICodeHighlighter`; accepts code via `Code` or `ChildContent`, normalizes leading whitespace from `ChildContent`, delegates to the injected highlighter, and emits output as a `MarkupString`. An empty or missing `Language` renders an inline error element.
 
 ### Parameters
 
@@ -145,11 +125,7 @@ Razor-level wrapper around `ICodeHighlighter`; accepts code via `Code` or `Child
 
 ## `LinkCard`
 
-```razor:path
-src/Pennington.UI/Components/LinkCard.razor
-```
-
-Clickable variant of `Card`; wraps the entire card body in an `<a>` bound to `Href`, with hover states tinting the background using the `Color` palette.
+Declared at `src/Pennington.UI/Components/LinkCard.razor`. Clickable variant of `Card`; wraps the entire card body in an `<a>` bound to `Href`, with hover states tinting the background using the `Color` palette.
 
 ### Parameters
 
@@ -171,11 +147,7 @@ Clickable variant of `Card`; wraps the entire card body in an `<a>` bound to `Hr
 
 ## `Step`
 
-```razor:path
-src/Pennington.UI/Components/Step.razor
-```
-
-One numbered item inside a `Steps` list; renders an `<li>` with an absolute-positioned number badge pinned to the left rail and must be nested directly inside `<Steps>` for the rail border to align.
+Declared at `src/Pennington.UI/Components/Step.razor`. One numbered item inside a `Steps` list; renders an `<li>` with an absolute-positioned number badge pinned to the left rail and must be nested directly inside `<Steps>` for the rail border to align.
 
 ### Parameters
 
@@ -195,11 +167,7 @@ One numbered item inside a `Steps` list; renders an `<li>` with an absolute-posi
 
 ## `Steps`
 
-```razor:path
-src/Pennington.UI/Components/Steps.razor
-```
-
-Container for a vertical numbered-step list; emits a `<div>` wrapping an `<ol>` with a left border as the connecting rail, populated by `Step` children.
+Declared at `src/Pennington.UI/Components/Steps.razor`. Container for a vertical numbered-step list; emits a `<div>` wrapping an `<ol>` with a left border as the connecting rail, populated by `Step` children.
 
 ### Parameters
 
@@ -222,8 +190,15 @@ Container for a vertical numbered-step list; emits a `<div>` wrapping an `<ol>` 
 
 All eight components are pre-registered with Mdazor by `DocSiteServiceExtensions.AddDocSite`, which means any site built on `AddDocSite` can invoke these tags directly inside markdown without calling `AddMdazorComponent<T>()` manually:
 
-```csharp:xmldocid,bodyonly
-M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})
+```csharp
+services.AddMdazorComponent<Badge>()
+        .AddMdazorComponent<BigTable>()
+        .AddMdazorComponent<Card>()
+        .AddMdazorComponent<CardGrid>()
+        .AddMdazorComponent<CodeBlock>()
+        .AddMdazorComponent<LinkCard>()
+        .AddMdazorComponent<Step>()
+        .AddMdazorComponent<Steps>();
 ```
 
 For sites that do not use `AddDocSite` (for example, `AddBlogSite` or a hand-rolled `AddPennington` host), call `AddMdazorComponent<T>()` for each of the eight types to match the doc-site surface.

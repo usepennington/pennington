@@ -27,11 +27,7 @@ For a working setup, see [`examples/SubPathDeployableExample`](https://github.co
 
 **Lock in the four shared values**
 
-Every host configuration shares four knobs: the **build command** (`dotnet run --project <your-project> -- build "$BASE_URL"`), the **publish directory** (`output/`, the default from `OutputOptions`), the **.NET SDK pin** (`11.0.x`, matching `setup-dotnet@v4` in the GitHub Pages workflow), and the **base URL** (`/` for apex domains, `/<path>` for sub-path hosting). Settle on these four values before opening any host dashboard — the per-host files below are each those same four values expressed in that host's syntax.
-
-```csharp:xmldocid
-M:Pennington.Generation.OutputOptions.FromArgs(System.String[])
-```
+Every host configuration shares four knobs: the **build command** (`dotnet run --project <your-project> -- build "$BASE_URL"`), the **publish directory** (`output/`, the default from `OutputOptions`), the **.NET SDK pin** (`11.0.x`, matching `setup-dotnet@v4` in the GitHub Pages workflow), and the **base URL** (`/` for apex domains, `/<path>` for sub-path hosting). Settle on these four values before opening any host dashboard — the per-host files below are each those same four values expressed in that host's syntax. See <xref:reference.host.cli> for the `OutputOptions.FromArgs` grammar.
 
 </Step>
 <Step StepNumber="2">
@@ -86,10 +82,6 @@ Cloudflare Pages has no first-party config file equivalent to SWA or Netlify, so
 **Pass the right `baseUrl` for the host's URL shape**
 
 GitHub Pages defaults to a sub-path; Azure Static Web Apps, Cloudflare Pages, and Netlify default to the apex — so the build argument is usually different. For apex deploys pass nothing (or `/`); for a sub-path pass `/<path>` and `BaseUrlHtmlRewriter` prefixes every internal href, src, and action on the way out. Full details are in [Host under a sub-path (base URL)](xref:how-to.deployment.base-url).
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.BaseUrlHtmlRewriter
-```
 
 </Step>
 </Steps>

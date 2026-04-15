@@ -37,11 +37,7 @@ T:ExtensibilityLabExample.ReleaseEntry
 
 **Implement `IContentService` and load the records once**
 
-Create a sealed class implementing <xref:reference.extension-points.content-pipeline>, inject whatever reads the source (here, `IWebHostEnvironment` for `ContentRootPath`), and cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source.
-
-```csharp:xmldocid
-T:ExtensibilityLabExample.ReleaseNotesContentService
-```
+Create a sealed class implementing <xref:reference.extension-points.content-pipeline>, inject whatever reads the source (here, `IWebHostEnvironment` for `ContentRootPath`), and cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source. The full example lives in `examples/ExtensibilityLabExample/ReleaseNotesContentService.cs`; the subsequent steps fence each member in turn.
 
 </Step>
 <Step StepNumber="3">
@@ -98,8 +94,10 @@ M:ExtensibilityLabExample.ReleaseNotesContentService.GetCrossReferencesAsync
 
 `AddPennington` does not auto-discover `IContentService` implementations — register directly on `IServiceCollection`. When an endpoint in `Program.cs` needs the concrete type to render detail pages, register it once by concrete type and forward `IContentService` to the same instance so the container does not create a second copy.
 
-```csharp:path
-examples/ExtensibilityLabExample/Program.cs
+```csharp
+builder.Services.AddSingleton<ReleaseNotesContentService>();
+builder.Services.AddSingleton<IContentService>(sp =>
+    sp.GetRequiredService<ReleaseNotesContentService>());
 ```
 
 </Step>

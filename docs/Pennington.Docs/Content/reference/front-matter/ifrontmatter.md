@@ -9,12 +9,6 @@ uid: reference.front-matter.ifrontmatter
 
 `IFrontMatter` is the universal front-matter contract that every Pennington content page implements, declaring one required `Title` property and six default members covering drafts, indexing opt-outs, uid, description, and date. It is declared in `Pennington.FrontMatter`; the four remaining capability interfaces (`ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`) are in the same namespace.
 
-## Declaration
-
-```csharp:xmldocid
-T:Pennington.FrontMatter.IFrontMatter
-```
-
 ## Members
 
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.IFrontMatter" />
@@ -25,19 +19,11 @@ The four remaining capability interfaces stay separate from `IFrontMatter` becau
 
 ### `ITaggable`
 
-```csharp:xmldocid
-T:Pennington.FrontMatter.ITaggable
-```
-
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.ITaggable" />
 
 Implemented by `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, and `BlogSiteFrontMatter`.
 
 ### `IOrderable`
-
-```csharp:xmldocid
-T:Pennington.FrontMatter.IOrderable
-```
 
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.IOrderable" />
 
@@ -45,19 +31,11 @@ Implemented by `DocFrontMatter` and `DocSiteFrontMatter`, both defaulting to `in
 
 ### `ISectionable`
 
-```csharp:xmldocid
-T:Pennington.FrontMatter.ISectionable
-```
-
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.ISectionable" />
 
 Implemented by `DocFrontMatter` and `DocSiteFrontMatter`.
 
 ### `IRedirectable`
-
-```csharp:xmldocid
-T:Pennington.FrontMatter.IRedirectable
-```
 
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.IRedirectable" />
 

@@ -23,19 +23,11 @@ The mechanism is a single chain: content files change, cached services drop thei
 
 The reason for the abstraction sits at two levels. In tests, a `MockFileSystem` drives the same interface without touching the real filesystem. In production, the seam also contains the behaviour differences between filesystem event delivery on WSL and on Windows — quirks that would otherwise leak through every consumer.
 
-```csharp:xmldocid
-T:Pennington.Infrastructure.FileWatcher
-```
-
 ### `FileWatchDependencyFactory` reconstructs services on change
 
 Several services build expensive lookup tables from disk on startup: link resolvers, cross-reference uid maps, search indexes, sitemaps, and blog content resolvers. Rather than giving each service its own cache-bust logic, Pennington registers them through `AddFileWatched<T>`. That extension wires a singleton `FileWatchDependencyFactory<T>` that subscribes to `IFileWatcher.SubscribeToChanges`, alongside a transient front that resolves to whatever instance the factory currently holds.
 
 When a change notification arrives, the factory drops its cached instance — disposing it if it implements `IDisposable` — and lets it be rebuilt on the next resolution via `ActivatorUtilities.CreateInstance<T>`. The mental model here is structural invalidation rather than explicit cache-busting: no service needs to know when to flush itself, because the factory discards and reconstructs the whole instance when the underlying content moves.
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.FileWatchDependencyFactory`1
-```
 
 ### `LiveReloadServer` broadcasts over WebSocket
 
@@ -43,19 +35,11 @@ T:Pennington.Infrastructure.FileWatchDependencyFactory`1
 
 The browser-side script wires `ws.onmessage` to `location.reload()` and `ws.onclose` to a one-second reconnect loop. This is what makes the experience feel seamless after `dotnet watch` restarts Kestrel: the browser reconnects automatically on the next tick, receives the next `"reload"` from the refreshed server, and no manual F5 is needed.
 
-```csharp:xmldocid
-T:Pennington.Infrastructure.LiveReloadServer
-```
-
 ### Script injection is `DOTNET_WATCH`-gated
 
 `LiveReloadScriptProcessor` is an `IResponseProcessor` at `Order = 20`, positioned between the HTML rewriting pipeline at `Order = 10` and the diagnostic overlay at `Order = 30`. Its dev-mode flag is evaluated once at field initialisation — `!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH"))` — and `ShouldProcess` returns `false` whenever it is false. When the flag is true, the processor finds the last `</body>` tag and inserts a short inline script that opens a WebSocket to `/__pennington/reload`.
 
 The same `DOTNET_WATCH` check gates `UsePenningtonLiveReload` itself. If the environment variable is absent the middleware never maps the endpoint, so the socket path does not exist and could not be reached even if a script tried. This means there is no publish-time stripping step, no build configuration to set, and no dev-only flag to forget. Running `dotnet run` without `watch` and publishing via `dotnet build` both evaluate the gate the same way — `false` — and the result is identical: no script, no endpoint, no trace of the dev loop in the output.
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.LiveReloadScriptProcessor
-```
 
 ## Trade-offs
 

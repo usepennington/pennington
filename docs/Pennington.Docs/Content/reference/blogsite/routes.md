@@ -9,13 +9,7 @@ uid: reference.blogsite.routes
 
 `UseBlogSite` mounts five Razor pages from `Pennington.BlogSite.Components.Pages` — discovered via `RazorPageContentService` because `AddBlogSite` adds the BlogSite assembly to `PenningtonOptions.AdditionalRoutingAssemblies` — plus an optional `/rss.xml` `MapGet` endpoint that renders the homepage, archive, tag index, per-tag listings, individual posts, and the RSS feed.
 
-## Declaration
-
-The entry point that mounts the built-in Razor pages and the optional `/rss.xml` endpoint.
-
-```csharp:xmldocid
-M:Pennington.BlogSite.BlogSiteServiceExtensions.UseBlogSite(Microsoft.AspNetCore.Builder.WebApplication)
-```
+## Entry point
 
 `UseBlogSite` calls `MapRazorComponents<App>`, which discovers every `@page`-annotated component in `Pennington.BlogSite.dll`; when `BlogSiteOptions.EnableRss` is `true` it additionally maps a `MapGet("/rss.xml", …)` endpoint that delegates to `BlogSiteContentService.GetRssXmlAsync`. The `/sitemap.xml` endpoint is mounted by `UsePennington` via `SitemapService`, not by `UseBlogSite`.
 

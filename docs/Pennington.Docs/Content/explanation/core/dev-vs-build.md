@@ -21,10 +21,6 @@ Pennington keeps one host. Dev mode is that host serving requests; build mode is
 
 Running `dotnet run` causes `RunOrBuildAsync` to detect the absence of a `build` argument and call `app.RunAsync()`. Every request that lands at `localhost:5000` flows through the full middleware stack: locale routing, live reload, `ResponseProcessingMiddleware` capturing and rewriting the body, Blazor SSR for any island components, and the Markdig extensions inside `MarkdownContentRenderer`. The rendered HTML that arrives in the browser is the pipeline output, unchanged.
 
-```csharp:xmldocid
-M:Pennington.Infrastructure.PenningtonExtensions.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])
-```
-
 Nothing in this path is marked "dev-only." The diagnostic overlay and live-reload script injection are response processors ordered behind environment gates — not separate code paths. The renderer behind `localhost:5000` is the renderer, full stop.
 
 ### Build mode: a crawler pointed at the same host
@@ -34,10 +30,6 @@ When `args[0] == "build"`, `RunOrBuildAsync` calls `app.StartAsync()` instead �
 URL discovery comes from two sources. Every registered `IContentService` exposes `DiscoverAsync`, which returns the set of content routes it knows about. The live `EndpointDataSource` covers `MapGet` handlers — `/styles.css`, `/sitemap.xml`, the per-locale `/search-index-{code}.json` endpoints, and anything else the host has wired up explicitly. Each response is written to `OutputOptions.OutputDirectory` using the route's `OutputFile` mapping.
 
 The 404 page is a small special case: the service fetches a sentinel URL (`"/__pennington-404-generator"`) that no route matches, so the catch-all fallback fires and its output is written as `404.html`. The mechanism remains an HTTP GET against the same pipeline.
-
-```csharp:xmldocid
-T:Pennington.Generation.OutputGenerationService
-```
 
 ### The shared pipeline
 

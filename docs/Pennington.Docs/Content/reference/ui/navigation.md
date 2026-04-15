@@ -40,11 +40,7 @@ This component has no `RenderFragment` slots; all customization is performed thr
 
 ### Example
 
-```razor:path
-src/Pennington.DocSite/Components/Layout/MainLayout.razor
-```
-
-The DocSite `MainLayout` instantiates `TableOfContentsNavigation` twice — once per area when `DocSiteOptions.Areas` is populated and once against the root tree otherwise — passing the tree produced by `NavigationBuilder.BuildTree`.
+The DocSite `MainLayout` (`src/Pennington.DocSite/Components/Layout/MainLayout.razor`) instantiates `TableOfContentsNavigation` twice — once per area when `DocSiteOptions.Areas` is populated and once against the root tree otherwise — passing the tree produced by `NavigationBuilder.BuildTree`.
 
 ## `OutlineNavigation`
 
@@ -76,10 +72,6 @@ Emits a `data-role="page-outline"` container and an empty `<ul>` whose items are
 This component has no `RenderFragment` slots; the outline list is populated at runtime by the companion client script.
 
 ### Example
-
-```razor:path
-src/Pennington.DocSite/Components/Layout/MainLayout.razor
-```
 
 The DocSite `MainLayout` drops a single `<OutlineNavigation ContentSelector="article main" />` into the right-hand rail so the script binds to headings inside the rendered article.
 

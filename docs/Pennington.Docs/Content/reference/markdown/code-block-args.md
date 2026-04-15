@@ -26,10 +26,6 @@ quoted-value  := any chars up to the matching quote
 
 `CodeBlockExtensions.GetArgumentPairs` returns a case-insensitive `Dictionary<string, string>` containing only the `key=value` attributes — it does not return the language or suffix, which Markdig exposes separately on `FencedCodeBlock.Info` and `FencedCodeBlock.Arguments`.
 
-```csharp:xmldocid
-M:Pennington.Markdown.Extensions.CodeBlockExtensions.GetArgumentPairs(Markdig.Syntax.FencedCodeBlock)
-```
-
 ## Attributes
 
 The table below lists the `key=value` attributes Pennington's built-in extensions consume from the info string; custom extensions registered via `ICodeBlockPreprocessor` or a Markdig extension may read additional keys from the same dictionary.
@@ -53,10 +49,6 @@ The four colon-suffix forms switch a fenced block from literal content to a code
 ## `[!code …]` directives
 
 A directive is the literal text `[!code <notation>]` wrapped in a line-trailing comment marker recognised for the block's language (`//`, `#`, `--`, `<!--`, `*`, `%`, `'`, `REM`, `;`, `/*`), matched by `CodeTransformer.FindDirective` after highlighting. The comment marker is stripped when the directive consumes the whole comment and preserved when trailing content remains; the directive itself is always removed from the rendered line.
-
-```csharp:xmldocid
-M:Pennington.Markdown.Extensions.CodeTransformer.Transform(System.String)
-```
 
 | Directive | Behavior | Example |
 |---|---|---|

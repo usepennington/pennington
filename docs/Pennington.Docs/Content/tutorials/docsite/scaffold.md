@@ -57,22 +57,14 @@ Everything the DocSite template adds — sidebar, header chrome, MonorailCSS, SP
 
 **Replace the registration call**
 
-`AddDocSite` takes a `Func<DocSiteOptions>` rather than an `Action`, so the call constructs and returns a fresh options record. The `AddMarkdownContent` call can also go — the template registers it internally.
-
-```csharp:xmldocid
-M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})
-```
+`AddDocSite` takes a `Func<DocSiteOptions>` rather than an `Action`, so the call constructs and returns a fresh options record. The `AddMarkdownContent` call can also go — the template registers it internally. See <xref:reference.host.extensions> for the full signature.
 
 </Step>
 <Step StepNumber="2">
 
 **Populate `DocSiteOptions`**
 
-This tutorial uses five fields: `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`. Each one surfaces in the rendered chrome as soon as it's set. `DocSiteOptions` carries many more fields; for the full surface — and for what DocSite hard-codes, such as the single `AddMarkdownContent<DocSiteFrontMatter>` registration, `SearchIndexOptions.ContentSelector`, `LlmsTxtOptions`, and `MonorailCssOptions.CustomCssFrameworkSettings` — see [Positioning DocSite as a fast path](xref:explanation.core.docsite-positioning).
-
-```csharp:xmldocid
-T:Pennington.DocSite.DocSiteOptions
-```
+This tutorial uses five fields: `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`. Each one surfaces in the rendered chrome as soon as it's set. `DocSiteOptions` carries many more fields; see <xref:reference.options.docsite-options> for the full surface, and [Positioning DocSite as a fast path](xref:explanation.core.docsite-positioning) for what the template hard-codes.
 
 </Step>
 <Step StepNumber="3">
@@ -106,8 +98,8 @@ M:DocSiteScaffoldExample.Stage2.Run(System.String[])
 
 This single call replaces both the old `UsePennington` line and the hand-written `MapGet` fallback from stage 1. The Razor `Pages.razor` component owns the `/{*fileName:nonfile}` route and resolves pages through `ContentResolver`.
 
-```csharp:xmldocid
-M:Pennington.DocSite.DocSiteServiceExtensions.UseDocSite(Microsoft.AspNetCore.Builder.WebApplication)
+```csharp
+app.UseDocSite();
 ```
 
 </Step>
@@ -117,8 +109,8 @@ M:Pennington.DocSite.DocSiteServiceExtensions.UseDocSite(Microsoft.AspNetCore.Bu
 
 `RunDocSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves pages live in development and generates static HTML when invoked as `dotnet run -- build <baseUrl> <outputDir>` — one code path for both modes.
 
-```csharp:xmldocid
-M:Pennington.DocSite.DocSiteServiceExtensions.RunDocSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])
+```csharp
+await app.RunDocSiteAsync(args);
 ```
 
 </Step>
@@ -153,8 +145,8 @@ M:DocSiteScaffoldExample.Stage3.Run(System.String[])
 
 `ContentArea` has two fields: a human-readable label that appears in the area selector, and a slug that matches the folder name and URL prefix. The order of entries in `Areas` drives the order of tabs in the sidebar.
 
-```csharp:xmldocid
-T:Pennington.DocSite.ContentArea
+```csharp
+public record ContentArea(string Label, string Slug);
 ```
 
 </Step>

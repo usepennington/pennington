@@ -75,11 +75,7 @@ Every line after the marker is regular markdown — inline formatting, links, li
 
 **Know the classes the renderer emits**
 
-The parser rewrites the quote block into an `AlertBlock` and stamps it with two classes: `markdown-alert` (always present) and `markdown-alert-{kind}` where `{kind}` is the lower-cased token. The production parser type below is the place to look for edge cases or extension points.
-
-```csharp:xmldocid
-T:Pennington.Markdown.Extensions.CustomAlertInlineParser
-```
+The parser rewrites the quote block into an `AlertBlock` and stamps it with two classes: `markdown-alert` (always present) and `markdown-alert-{kind}` where `{kind}` is the lower-cased token. See `CustomAlertInlineParser` in `Pennington.Markdown.Extensions` for edge cases and extension points.
 
 </Step>
 <Step StepNumber="5">

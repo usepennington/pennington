@@ -11,12 +11,6 @@ tags: [structured-data, json-ld, schema-org, seo]
 
 ## `JsonLdArticle`
 
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.StructuredData.JsonLdArticle
-```
-
 Positional record modeling the schema.org `Article` schema emitted on content pages, with five constructor-positional fields ordered required-then-nullable.
 
 ### Properties
@@ -31,12 +25,6 @@ Positional record modeling the schema.org `Article` schema emitted on content pa
 
 ## `JsonLdBreadcrumbList`
 
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.StructuredData.JsonLdBreadcrumbList
-```
-
 Positional record wrapping an ordered collection of `JsonLdBreadcrumbItem` entries, modeling the schema.org `BreadcrumbList` emitted on interior pages.
 
 ### Properties
@@ -48,12 +36,6 @@ Positional record wrapping an ordered collection of `JsonLdBreadcrumbItem` entri
 > **Note:** When `Items.Count == 0`, `JsonLdSerializer.SerializeBreadcrumbList` returns `null` rather than emitting an empty schema; the component uses that sentinel to skip the script tag entirely.
 
 ## `JsonLdBreadcrumbItem`
-
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.StructuredData.JsonLdBreadcrumbItem
-```
 
 Positional record modeling a single rung of a `BreadcrumbList` (schema.org `ListItem`), carrying its 1-based position, visible name, and optional URL.
 
@@ -67,12 +49,6 @@ Positional record modeling a single rung of a `BreadcrumbList` (schema.org `List
 
 ## `JsonLdWebSite`
 
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.StructuredData.JsonLdWebSite
-```
-
 Positional record modeling the schema.org `WebSite` schema emitted once on the site homepage.
 
 ### Properties
@@ -85,37 +61,19 @@ Positional record modeling the schema.org `WebSite` schema emitted once on the s
 
 ## `JsonLdSerializer`
 
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.StructuredData.JsonLdSerializer
-```
-
 Static class that projects each record type to a JSON string embeddable inside a `<script type="application/ld+json">` tag. The internal `JsonSerializerOptions` set `DefaultIgnoreCondition = WhenWritingNull`, `WriteIndented = false`, and `Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping`; a post-serialize pass rewrites `</` as `<\/` to prevent a literal from prematurely closing the surrounding script tag.
 
 ### Methods
 
-#### `SerializeArticle(JsonLdArticle)`
-
-```csharp:xmldocid
-M:Pennington.StructuredData.JsonLdSerializer.SerializeArticle(Pennington.StructuredData.JsonLdArticle)
-```
+#### `SerializeArticle(JsonLdArticle article)`
 
 Emits `@context`, `@type`, `headline`, and `url` unconditionally, then conditionally adds `description`, `datePublished` (ISO-8601 UTC), and a nested `Person`-typed `author` object for any non-null optional fields. Returns the escaped JSON string; never returns null.
 
-#### `SerializeBreadcrumbList(JsonLdBreadcrumbList)`
-
-```csharp:xmldocid
-M:Pennington.StructuredData.JsonLdSerializer.SerializeBreadcrumbList(Pennington.StructuredData.JsonLdBreadcrumbList)
-```
+#### `SerializeBreadcrumbList(JsonLdBreadcrumbList list)`
 
 Returns `null` when `Items` is empty so callers can skip the script tag; otherwise projects each `JsonLdBreadcrumbItem` into a schema.org `ListItem` (setting `item` only when the rung's `Url` is non-null) and wraps the elements in a `BreadcrumbList` under `itemListElement`. Returns the escaped JSON string, or `null` for the empty-list sentinel.
 
-#### `SerializeWebSite(JsonLdWebSite)`
-
-```csharp:xmldocid
-M:Pennington.StructuredData.JsonLdSerializer.SerializeWebSite(Pennington.StructuredData.JsonLdWebSite)
-```
+#### `SerializeWebSite(JsonLdWebSite site)`
 
 Emits `@context`, `@type`, `name`, and `url` unconditionally and adds `description` when non-null. Returns the escaped JSON string; never returns null.
 

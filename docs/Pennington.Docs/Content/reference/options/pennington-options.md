@@ -9,12 +9,6 @@ uid: reference.options.pennington-options
 
 The top-level options class supplied to `services.AddPennington(Action<PenningtonOptions>)`. Declared in namespace `Pennington.Infrastructure` at `src/Pennington/Infrastructure/PenningtonOptions.cs`.
 
-## Declaration
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.PenningtonOptions
-```
-
 ## Properties
 
 | Name | Type | Default | Description |

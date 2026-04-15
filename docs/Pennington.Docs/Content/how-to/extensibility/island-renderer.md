@@ -62,8 +62,12 @@ M:ExtensibilityLabExample.ChartIslandRenderer.BuildParametersAsync(Pennington.Ro
 
 Call `options.Islands.Register<TRenderer>("islandName")` inside the `AddPennington` configuration. The generic type argument is the renderer; the string is both the `data-spa-island` attribute value and the key `SpaPageDataService` writes into the `islands` slot of the JSON envelope — the two have to agree exactly. Register one entry per island. The dictionary is keyed by name, so registering twice with the same name replaces the earlier entry.
 
-```csharp:path
-examples/ExtensibilityLabExample/Program.cs
+```csharp
+builder.Services.AddPennington(penn =>
+{
+    penn.Islands.Register<ChartIslandRenderer>("chart");
+    // ...
+});
 ```
 
 </Step>
@@ -84,8 +88,13 @@ examples/ExtensibilityLabExample/Content/chart-demo.md
 
 Islands run because `SpaNavigationContentService` emits per-page envelopes at `/_spa-data/{slug}.json`, and the `ComponentRenderer` the renderer depends on is registered as a scoped service alongside it. If either line is missing from `Program.cs` the renderer never runs — even on first load — because the DocSite content island short-circuits without its services.
 
-```csharp:path
-examples/ExtensibilityLabExample/Program.cs
+```csharp
+builder.Services.AddScoped<ComponentRenderer>();
+builder.Services.AddSpaNavigation();
+
+// …
+
+app.UseSpaNavigation();
 ```
 
 </Step>

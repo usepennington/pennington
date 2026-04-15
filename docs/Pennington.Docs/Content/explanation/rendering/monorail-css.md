@@ -23,17 +23,9 @@ Pennington's answer is to move class collection onto the response path. Every HT
 
 The reason this matters is that any mutation of the response body would interact badly with downstream processors and with content-length headers. Keeping the processor strictly read-only means it can sit anywhere in the chain without coordination overhead.
 
-```csharp:xmldocid
-T:Pennington.MonorailCss.CssClassCollectorProcessor
-```
+Three details about `CssClassCollectorProcessor` are worth holding onto. The `Order => 100` places it after the rewriting processors, so it observes final HTML rather than a pre-transform draft — if a processor upstream adds a class, this one sees it. The collector is keyed by string, so duplicates across pages cost nothing beyond a hash lookup. And the processor emits a trace log per response, which means "why is my class missing?" debugging usually ends at a log line rather than a breakpoint.
 
-Three details are worth holding onto. The `Order => 100` places it after the rewriting processors, so it observes final HTML rather than a pre-transform draft — if a processor upstream adds a class, this one sees it. The collector is keyed by string, so duplicates across pages cost nothing beyond a hash lookup. And the processor emits a trace log per response, which means "why is my class missing?" debugging usually ends at a log line rather than a breakpoint.
-
-```csharp:xmldocid
-T:Pennington.MonorailCss.CssClassCollector
-```
-
-The collector is a singleton protected by a `ReaderWriterLockSlim`, and it deliberately never clears at runtime — stale classes are harmless because MonorailCSS ignores tokens it does not recognize, and a fresh build starts from an empty set anyway.
+The shared `CssClassCollector` is a singleton protected by a `ReaderWriterLockSlim`, and it deliberately never clears at runtime — stale classes are harmless because MonorailCSS ignores tokens it does not recognize, and a fresh build starts from an empty set anyway.
 
 ### The stylesheet generates on demand
 
@@ -41,17 +33,9 @@ The collector is a singleton protected by a `ReaderWriterLockSlim`, and it delib
 
 The on-demand approach has a pleasant property: there is no configuration file mapping source paths to output. The stylesheet's contents are always a direct consequence of what the HTTP pipeline emitted, which makes the system self-auditing — if a class appears in the stylesheet, it was in a response.
 
-```csharp:xmldocid
-M:Pennington.MonorailCss.MonorailCssService.GetStyleSheet
-```
+The edge case that `ContentPaths` exists to solve is classes that live only in client-side JavaScript — a template literal in a search-modal script, for instance. These never appear in an HTML `class=` attribute, so the response-processor pass cannot see them. `MonorailCssOptions.ContentPaths` accepts a list of static-file paths that `UseMonorailCss` scans once at startup with a broader token-extractor, seeding the collector before the first request arrives. See <xref:reference.options.monorail-css-options> for the full options surface.
 
-The edge case that `ContentPaths` exists to solve is classes that live only in client-side JavaScript — a template literal in a search-modal script, for instance. These never appear in an HTML `class=` attribute, so the response-processor pass cannot see them. `MonorailCssOptions.ContentPaths` accepts a list of static-file paths that `UseMonorailCss` scans once at startup with a broader token-extractor, seeding the collector before the first request arrives.
-
-```csharp:xmldocid
-T:Pennington.MonorailCss.MonorailCssOptions
-```
-
-`ColorScheme` on this options type is the hook that feeds the MonorailCSS theme, and it comes in two distinct flavors.
+`ColorScheme` on `MonorailCssOptions` is the hook that feeds the MonorailCSS theme, and it comes in two distinct flavors.
 
 ### Color schemes: named vs algorithmic
 
@@ -59,28 +43,15 @@ A `NamedColorScheme` maps five role names — `primary`, `accent`, `tertiary-one
 
 An `AlgorithmicColorScheme` takes a single `PrimaryHue` number in degrees plus a `ColorSchemeGenerator` function — defaulting to complement, split-complement-left, and split-complement-right — and synthesizes all four non-base palettes from scratch. This second shape is what makes "my brand color is hue 214, derive everything from that" viable without hand-authoring a full palette table.
 
-```csharp:xmldocid
-T:Pennington.MonorailCss.NamedColorScheme
-T:Pennington.MonorailCss.AlgorithmicColorScheme
-```
-
 The two schemes are not a legacy/modern pair or a simple/advanced pair — they occupy different spots on the designer-versus-programmer axis. Named is the choice when a designer says "I want Tailwind Purple for primary"; Algorithmic is the choice when the starting point is a brand hue expressed in degrees and the palette needs to be coherent rather than cherry-picked.
 
 ### OKLCH palette generation
 
 The algorithmic scheme delegates to `ColorPaletteGenerator.GenerateFromHue`, which produces a dictionary keyed by the familiar `50` through `950` shade names. The generator walks three tables in parallel — a chroma curve, a lightness curve, and a palette-key list — and emits one OKLCH color per shade. Two nonlinearities make the output match the hand-tuned Tailwind v4 reference: a per-hue lightness adjustment (yellows and greens are lighter in the mid-range to match perceptual brightness) and a per-hue chroma multiplier (yellows sit at 78% of base chroma because a full-chroma yellow reads as lemon highlighter rather than a design color). A hue-shift curve also rotates the darker shades slightly toward an adjacent family — blues drift toward violet, reds toward orange — because that is what Tailwind's designers do by eye.
 
-```csharp:xmldocid
-T:Pennington.MonorailCss.ColorPaletteGenerator
-```
-
 The key property that earns OKLCH its spot here is perceptual uniformity. Stepping lightness by a fixed amount produces steps that look evenly spaced regardless of hue, which is not true of HSL — a 500-weight green at HSL lightness 40% looks brighter than a 500-weight blue at the same value. OKLCH makes the generated scheme feel visually coherent without per-hue handwork from the caller, which is what makes "give me a palette from hue 214" a reasonable thing to ask.
 
-```csharp:xmldocid
-M:Pennington.MonorailCss.ColorPaletteGenerator.GenerateFromHue(System.Double)
-```
-
-The generator is a plain static method, so nothing in the color story depends on DI — a test or a small designer tool can call it directly to preview a palette before committing to a hue.
+`ColorPaletteGenerator.GenerateFromHue` is a plain static method, so nothing in the color story depends on DI — a test or a small designer tool can call it directly to preview a palette before committing to a hue.
 
 ## Trade-offs
 

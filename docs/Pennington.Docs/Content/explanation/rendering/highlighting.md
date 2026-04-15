@@ -21,17 +21,9 @@ Pennington renders code in three very different shapes: shell sessions that want
 
 The cascade is specificity-ordered, not quality-ordered. Shell wins over TextMate for bash not because it produces better HTML in the abstract, but because it knows the one thing worth styling in a command fence — the command itself versus its flags. TextMate wins over plain because it has a real tokenizer. Roslyn wins over TextMate for C# because it can classify semantics the grammar cannot see. A new custom highlighter slots in by announcing a higher priority for the languages it cares about; it does not have to replace or remove anything that is already there.
 
-```csharp:xmldocid
-T:Pennington.Highlighting.HighlightingService
-```
+The `HighlightingService` dispatcher is stateless past construction, so adding a highlighter via `HighlightingOptions.AddHighlighter` in DI is enough — no registry mutation, no re-sorting at runtime, no ordering surprise that depends on registration order. Priority is the only tiebreaker that matters.
 
-The dispatcher is stateless past construction, so adding a highlighter via `HighlightingOptions.AddHighlighter` in DI is enough — no registry mutation, no re-sorting at runtime, no ordering surprise that depends on registration order. Priority is the only tiebreaker that matters.
-
-```csharp:xmldocid
-T:Pennington.Highlighting.ICodeHighlighter
-```
-
-The contract is three members — `SupportedLanguages`, `Priority`, and `Highlight(code, language)` — which is the narrowest shape that still lets the dispatcher make a correct choice without asking a highlighter to render first and regret later.
+The `ICodeHighlighter` contract is three members — `SupportedLanguages`, `Priority`, and `Highlight(code, language)` — which is the narrowest shape that still lets the dispatcher make a correct choice without asking a highlighter to render first and regret later. See <xref:reference.extension-points.highlighting> for the interface surface.
 
 ### Why TextMateSharp
 
@@ -39,21 +31,13 @@ The broad middle of the chain — every language that is not bash and not C# —
 
 The alternatives that were considered and rejected make the choice clearer. A Roslyn-only story covers two languages out of eighty and ships a heavy compiler dependency for zero value on the rest. A Prism or highlight.js port would require either a JavaScript runtime at build time or a reimplementation of dozens of grammars in C#; TextMateSharp inherits VS Code's grammar corpus for free. A hand-rolled regex-per-language table scales linearly with language count and loses the "paste a new fence, it works" property the first time someone wants Kotlin. TextMate's cost is real — it is a regex state machine, so it does not know that `Foo` on line 40 refers to the `class Foo` on line 2 — but that cost is precisely what the Roslyn corner is shaped to address.
 
-```csharp:xmldocid
-T:Pennington.Highlighting.TextMateHighlighter
-```
-
-The `"*"` entry in `SupportedLanguages` is load-bearing — it is how TextMate claims every language it can find a grammar for without having to enumerate the list at registration time, and it is what lets a new grammar added to the registry light up automatically.
+The `"*"` entry in `TextMateHighlighter.SupportedLanguages` is load-bearing — it is how TextMate claims every language it can find a grammar for without having to enumerate the list at registration time, and it is what lets a new grammar added to the registry light up automatically.
 
 ### The Roslyn corner (deferred)
 
 The optional `Pennington.Roslyn` package registers `RoslynHighlighter` at priority 100, which beats TextMate at 50 for `csharp`/`cs`/`c#`/`vb`/`vbnet`. Unlike the TextMate case, Roslyn's advantage is not grammar coverage — TextMate already has a C# grammar — it is semantic classification. Roslyn's classifier can tell a type name apart from a method name apart from a local, can resolve generic arguments, and can annotate references to types that live in other files. That is the quality jump xmldocid fences need: when the Markdown preprocessor pulls a real method body out of a loaded solution via `RoslynCodeBlockPreprocessor`, the same package is already there to classify it properly.
 
-This highlighter is described as "deferred" because that is the user-facing shape of the feature. Pennington core does not take a Roslyn dependency; the base package ships with the three tokenizers and a plain-text fallback that together cover every site that does not need C#-specific treatment. The Roslyn corner is opt-in via `AddPenningtonRoslyn`, and when opted in, the only change to the cascade is that C# rises from "TextMate handles it" to "Roslyn handles it" — every other language keeps its previous highlighter. The cascade is the extension mechanism; Roslyn is its most prominent user.
-
-```csharp:xmldocid
-T:Pennington.Roslyn.Highlighting.RoslynHighlighter
-```
+This highlighter is described as "deferred" because that is the user-facing shape of the feature. Pennington core does not take a Roslyn dependency; the base package ships with the three tokenizers and a plain-text fallback that together cover every site that does not need C#-specific treatment. The Roslyn corner is opt-in via `AddPenningtonRoslyn`, and when opted in, the only change to the cascade is that C# rises from "TextMate handles it" to "Roslyn handles it" — every other language keeps its previous highlighter. The cascade is the extension mechanism; `RoslynHighlighter` is its most prominent user.
 
 This is the same pattern a third-party highlighter would follow — declare the relevant languages, pick a priority that beats whatever is currently handling them, register. The cascade does not know or care where a highlighter came from.
 

@@ -96,8 +96,9 @@ Reference `Pennington.Roslyn` from the host csproj. It brings in the MSBuild wor
 
 Point it at the inner `.slnx`. That's the whole wire-up — no middleware call, no extra endpoint.
 
-```csharp:xmldocid
-M:Pennington.Roslyn.RoslynExtensions.AddPenningtonRoslyn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Roslyn.RoslynOptions})
+```csharp
+builder.Services.AddPenningtonRoslyn(opts =>
+    opts.SolutionPath = "path/to/your.slnx");
 ```
 
 </Step>
@@ -105,11 +106,7 @@ M:Pennington.Roslyn.RoslynExtensions.AddPenningtonRoslyn(Microsoft.Extensions.De
 
 **See the options surface**
 
-`RoslynOptions` carries `SolutionPath` (required for fence resolution) and `ProjectFilter` (narrows the workspace when the `.slnx` lists more than the docs need). For this tutorial, only `SolutionPath` matters.
-
-```csharp:xmldocid
-T:Pennington.Roslyn.RoslynOptions
-```
+`RoslynOptions` carries `SolutionPath` (required for fence resolution) and `ProjectFilter` (narrows the workspace when the `.slnx` lists more than the docs need). For this tutorial, only `SolutionPath` matters. See <xref:reference.options.roslyn-options> for the full surface.
 
 </Step>
 <Step StepNumber="4">

@@ -9,12 +9,6 @@ uid: reference.options.roslyn-options
 
 The options class supplied to `services.AddPenningtonRoslyn(Action<RoslynOptions>)` in the optional `Pennington.Roslyn` package. Declared in namespace `Pennington.Roslyn` at `src/Pennington.Roslyn/RoslynOptions.cs`.
 
-## Declaration
-
-```csharp:xmldocid
-T:Pennington.Roslyn.RoslynOptions
-```
-
 ## Properties
 
 | Name | Type | Default | Description |
@@ -24,10 +18,6 @@ T:Pennington.Roslyn.RoslynOptions
 
 ## `ProjectFilter`
 
-```csharp:xmldocid
-T:Pennington.Roslyn.ProjectFilter
-```
-
 Record that scopes the set of projects loaded from the solution; applied as include-then-exclude against each project's `Project.Name`.
 
 | Name | Type | Default | Description |
@@ -36,10 +26,6 @@ Record that scopes the set of projects loaded from the solution; applied as incl
 | `IncludedProjects` | `HashSet<string>?` | `null` | Project names to include; null or empty means every project in the solution is considered. |
 
 ## Services registered by `AddPenningtonRoslyn`
-
-```csharp:xmldocid
-M:Pennington.Roslyn.RoslynExtensions.AddPenningtonRoslyn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Roslyn.RoslynOptions})
-```
 
 Registers the configured `RoslynOptions` as a singleton and always registers `SyntaxHighlighter` and `ICodeHighlighter` → `RoslynHighlighter`. When `SolutionPath` is non-empty it additionally registers `ISolutionWorkspaceService` → `SolutionWorkspaceService`, `ISymbolExtractionService` → `SymbolExtractionService`, `ICodeBlockPreprocessor` → `RoslynCodeBlockPreprocessor`, `IXmlDocParser`, `IXmlDocHtmlRenderer`, and `IMemberEnumerator`.
 

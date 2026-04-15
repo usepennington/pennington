@@ -22,10 +22,6 @@ The four interfaces and two union types that make up Pennington's content proces
 
 ## `IContentService`
 
-```csharp:xmldocid
-T:Pennington.Content.IContentService
-```
-
 The adapter contract that plugs a content source into the pipeline; every registered `IContentService` is consulted during discovery and for the auxiliary outputs (static copies, generated files, TOC entries, search/llms indexing, xref registration). Built-in implementations: `MarkdownContentService<TFrontMatter>`, `RazorPageContentService`, `LlmsTxtContentService`, `BlogSiteContentService`. `GetIndexableEntriesAsync` is the only member with a default implementation (returning `GetContentTocEntriesAsync`).
 
 ### Members
@@ -43,10 +39,6 @@ The adapter contract that plugs a content source into the pipeline; every regist
 
 ## `IContentParser`
 
-```csharp:xmldocid
-T:Pennington.Pipeline.IContentParser
-```
-
 The single-method parse contract invoked by `ContentPipeline.ParseAsync` for every `DiscoveredItem`. Implementations are responsible for catching their own exceptions and returning a `FailedItem`; the pipeline's wrapper catch block is a safety net, not the primary error path.
 
 ### Members
@@ -57,10 +49,6 @@ The single-method parse contract invoked by `ContentPipeline.ParseAsync` for eve
 
 ## `IContentRenderer`
 
-```csharp:xmldocid
-T:Pennington.Pipeline.IContentRenderer
-```
-
 The single-method render contract invoked by `ContentPipeline.RenderAsync` for every `ParsedItem`. Produces `RenderedContent` (HTML plus outline, tags, cross-references, optional search document, optional social metadata).
 
 ### Members
@@ -70,10 +58,6 @@ The single-method render contract invoked by `ContentPipeline.RenderAsync` for e
 | `RenderAsync` | `Task<ContentItem> RenderAsync(ParsedItem item)` | Returns `RenderedItem(Route, Metadata, RenderedContent)` on success or `FailedItem(Route, ContentError)` on failure; the return type is the `ContentItem` union so both outcomes propagate without throwing. |
 
 ## `IContentPipeline`
-
-```csharp:xmldocid
-T:Pennington.Pipeline.IContentPipeline
-```
 
 The four-stage orchestrator; the shipped `ContentPipeline` implementation fans in every registered `IContentService` at `DiscoverAsync`, delegates parsing and rendering to `IContentParser` / `IContentRenderer`, and closes with `GenerateAsync`. Items already at a later stage pass through each transform unchanged, and `FailedItem` is never re-processed.
 
@@ -128,11 +112,7 @@ Discriminates the origin of a `DiscoveredItem` across exactly four cases. `ICont
 
 ## Example
 
-A custom `IContentService` that yields `DiscoveredItem`s from a non-markdown source (JSON release notes) and supplies all remaining `IContentService` members.
-
-```csharp:xmldocid,bodyonly
-T:ExtensibilityLabExample.ReleaseNotesContentService
-```
+For a complete custom `IContentService` implementation that yields `DiscoveredItem`s from a non-markdown source (JSON release notes) and supplies TOC entries, content-to-copy, and cross-references, see `examples/ExtensibilityLabExample/ReleaseNotesContentService.cs`. The how-to at <xref:how-to.extensibility.custom-content-service> walks through it step by step.
 
 ## See also
 

@@ -25,21 +25,13 @@ The built-in processors illustrate why the tier exists. `HtmlResponseRewritingPr
 
 Three of those four are pure string operations — a targeted string insert, a before-`</body>` append, a regex scan. Routing them through AngleSharp would parse and serialize the document for no benefit. The tier boundary exists because "touches the body" is a broader category than "cares about HTML structure."
 
-```csharp:xmldocid
-T:Pennington.Infrastructure.IResponseProcessor
-```
-
 ### Tier B: `IHtmlResponseRewriter` (shared AngleSharp pass)
 
 Tier B lives entirely inside `HtmlResponseRewritingProcessor`. The orchestrator calls each rewriter's `ShouldApply(HttpContext)` first. If none return `true`, the body comes back untouched and AngleSharp never fires — the fast path for non-HTML content types, error pages, and opted-out endpoints. If at least one applies, the orchestrator runs all of them through a two-phase pipeline.
 
 The first phase, `PreParseAsync`, operates on the raw HTML string. This handles constructs AngleSharp cannot represent cleanly — the `<xref:uid>` tag syntax is not valid HTML, so it needs to be rewritten into something the parser can consume before the document is built. The second phase, `ApplyAsync`, receives a single shared `IDocument` that every rewriter mutates in turn. The document is serialized once at the end.
 
-The invariant worth internalizing: N rewriters, one parse, one serialize, one DOM. Adding a new DOM-shaped concern — a heading-anchor normalizer, an image lazy-loader, a table classifier — costs a method call, not another parse/serialize round trip.
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.IHtmlResponseRewriter
-```
+The invariant worth internalizing: N rewriters, one parse, one serialize, one DOM. Adding a new DOM-shaped concern — a heading-anchor normalizer, an image lazy-loader, a table classifier — costs a method call, not another parse/serialize round trip. See <xref:reference.extension-points.response-processing> for the `IResponseProcessor` and `IHtmlResponseRewriter` contracts.
 
 ### Why two tiers, not one
 

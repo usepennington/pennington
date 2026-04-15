@@ -26,15 +26,7 @@ The `ExtensibilityLabExample` project provides a working reference — `Feedback
 
 **Implement `IResponseProcessor`**
 
-The contract is three members — `Order`, `ShouldProcess(HttpContext)`, and `ProcessAsync(string responseBody, HttpContext)` — and the shipped example injects a feedback widget before `</body>`, falling back to append when the closing tag is missing.
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.IResponseProcessor
-```
-
-```csharp:xmldocid
-T:ExtensibilityLabExample.FeedbackWidgetProcessor
-```
+The contract is three members — `Order`, `ShouldProcess(HttpContext)`, and `ProcessAsync(string responseBody, HttpContext)` — and the shipped example at `examples/ExtensibilityLabExample/FeedbackWidgetProcessor.cs` injects a feedback widget before `</body>`, falling back to append when the closing tag is missing. The next three steps fence each member in turn.
 
 </Step>
 <Step StepNumber="2">

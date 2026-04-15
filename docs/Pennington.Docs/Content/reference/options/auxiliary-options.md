@@ -25,12 +25,6 @@ Four nested bags exposed on `PenningtonOptions` and one build-time record constr
 
 The nested option bag exposed as `PenningtonOptions.Highlighting` that holds `ICodeHighlighter` instances consulted by `HighlightingService` in registration order. Declared in namespace `Pennington.Infrastructure` at `src/Pennington/Infrastructure/PenningtonOptions.cs`; highlighter contracts live in `Pennington.Highlighting`.
 
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.HighlightingOptions
-```
-
 ### Properties
 
 | Name | Type | Default | Description |
@@ -77,12 +71,6 @@ builder.Services.AddPennington(penn =>
 
 The nested option bag exposed as `PenningtonOptions.Islands` that maps island names to `IIslandRenderer` types for the SPA-style partial rendering pipeline. Declared in namespace `Pennington.Infrastructure` at `src/Pennington/Infrastructure/PenningtonOptions.cs`; `IIslandRenderer` contract and SPA wiring live in `Pennington.Islands`.
 
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.IslandsOptions
-```
-
 ### Properties
 
 | Name | Type | Default | Description |
@@ -120,12 +108,6 @@ builder.Services.AddPennington(penn =>
 
 The per-site search-index tuning bag exposed as `PenningtonOptions.SearchIndex`, consumed by `SearchIndexBuilder` when it projects post-pipeline HTML into the per-locale index files served at `/search-index-{locale}.json`. Declared in namespace `Pennington.Search` at `src/Pennington/Search/SearchIndexOptions.cs`.
 
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.Search.SearchIndexOptions
-```
-
 ### Properties
 
 | Name | Type | Default | Description |
@@ -148,12 +130,6 @@ Under `AddDocSite`, `ContentSelector` is pinned to `#main-content` via `DocSiteO
 ### Summary
 
 The opt-in configuration bag for `llms.txt` generation, materialized only after `PenningtonOptions.AddLlmsTxt(...)` is called and thereafter accessible via `PenningtonOptions.LlmsTxt`. Declared in namespace `Pennington.LlmsTxt` at `src/Pennington/LlmsTxt/LlmsTxtOptions.cs`.
-
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.LlmsTxt.LlmsTxtOptions
-```
 
 ### Properties
 
@@ -179,12 +155,6 @@ Registration is through `PenningtonOptions.AddLlmsTxt(Action<LlmsTxtOptions>)`, 
 
 The build-time record passed to `OutputGenerationService.GenerateAsync` describing where the crawler writes static output, the base URL it rewrites into emitted links, and whether it clears the target directory first. Declared in namespace `Pennington.Generation` at `src/Pennington/Generation/OutputOptions.cs`; constructed inside `RunOrBuildAsync` via the static `FromArgs` factory, never wired through DI.
 
-### Declaration
-
-```csharp:xmldocid
-T:Pennington.Generation.OutputOptions
-```
-
 Init-only record with one `required` property (`OutputDirectory`) and two optional ones; in practice every instance comes from `FromArgs`.
 
 ### Properties
@@ -199,8 +169,8 @@ Init-only record with one `required` property (`OutputDirectory`) and two option
 
 #### `FromArgs(string[] args)`
 
-```csharp:xmldocid
-M:Pennington.Generation.OutputOptions.FromArgs(System.String[])
+```csharp
+public static OutputOptions FromArgs(string[] args);
 ```
 
 Parses a `build`-shaped argv into an `OutputOptions`. Returns a no-op default (`OutputDirectory = "output"`, `BaseUrl = "/"`) when `args[0]` is not the literal `"build"`, so dev runs, xunit invocations, and `dotnet watch` do not misread positional args. When `args[0]` is `"build"`, it accepts `--base-url` and `--output` (as `--flag value` or `--flag=value`) with positional fallback; named flags take precedence when both are present.

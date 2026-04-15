@@ -57,11 +57,7 @@ M:BlogSiteScaffoldExample.Stage1.Run(System.String[])
 
 **Replace the registration call**
 
-`AddBlogSite` takes a `Func<BlogSiteOptions>` — the delegate constructs and returns a fresh options record rather than mutating one through an `Action`. Remove the earlier `AddMarkdownContent<DocFrontMatter>` call; the template registers `AddMarkdownContent<BlogSiteFrontMatter>` internally, and the next tutorial walks through that front-matter record. `AddBlogSite` also calls `AddPennington`, `AddMonorailCss`, and `AddRazorComponents` under the hood, so a BlogSite project does not register those separately.
-
-```csharp:xmldocid
-M:Pennington.BlogSite.BlogSiteServiceExtensions.AddBlogSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.BlogSite.BlogSiteOptions})
-```
+`AddBlogSite` takes a `Func<BlogSiteOptions>` — the delegate constructs and returns a fresh options record rather than mutating one through an `Action`. Remove the earlier `AddMarkdownContent<DocFrontMatter>` call; the template registers `AddMarkdownContent<BlogSiteFrontMatter>` internally, and the next tutorial walks through that front-matter record. `AddBlogSite` also calls `AddPennington`, `AddMonorailCss`, and `AddRazorComponents` under the hood, so a BlogSite project does not register those separately. See <xref:reference.host.extensions> for the full signature.
 
 </Step>
 <Step StepNumber="2">
@@ -77,10 +73,6 @@ The content-path quartet controls where posts live on disk and what URLs they pr
 `AuthorName` and `AuthorBio` provide site-wide author defaults. They populate the RSS channel, JSON-LD article markup, and any post that omits its own `author:` front-matter field.
 
 The full options surface — including the homepage-specific knobs `HeroContent`, `MyWork`, `Socials`, and `MainSiteLinks` — is covered in <xref:reference.options.blogsite-options>. Those knobs are skipped here and introduced in the third tutorial of this section.
-
-```csharp:xmldocid
-T:Pennington.BlogSite.BlogSiteOptions
-```
 
 </Step>
 <Step StepNumber="3">
@@ -110,8 +102,8 @@ Two differences distinguish BlogSite from DocSite at the template level. First, 
 
 This single call replaces both the `UsePennington` line and the hand-written `MapGet` fallback from stage 1. After it runs, the BlogSite Razor components own `/`, `/archive`, `/blog/{*fileName}`, `/tags`, `/tags/{TagEncodedName}`, and the `/topics` aliases, with `BlogContentResolver` handling per-request rendering.
 
-```csharp:xmldocid
-M:Pennington.BlogSite.BlogSiteServiceExtensions.UseBlogSite(Microsoft.AspNetCore.Builder.WebApplication)
+```csharp
+app.UseBlogSite();
 ```
 
 </Step>
@@ -121,8 +113,8 @@ M:Pennington.BlogSite.BlogSiteServiceExtensions.UseBlogSite(Microsoft.AspNetCore
 
 `RunBlogSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves live in development and generates static HTML when invoked as `dotnet run -- build <baseUrl> <outputDir>`. Both positional arguments are optional and default to `/` and `output` respectively. For the full explanation of how unified dev and build paths work, see <xref:explanation.core.dev-vs-build>.
 
-```csharp:xmldocid
-M:Pennington.BlogSite.BlogSiteServiceExtensions.RunBlogSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])
+```csharp
+await app.RunBlogSiteAsync(args);
 ```
 
 </Step>

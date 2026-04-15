@@ -9,12 +9,6 @@ tags: [docsite, options, configuration, reference]
 
 `DocSiteOptions` is the options record passed to `AddDocSite` that configures the documentation-site template: site chrome, typography, color scheme, content areas, and escape-hatch callbacks for the underlying `PenningtonOptions` and `MonorailCssOptions`. Defined in namespace `Pennington.DocSite` and consumed by `DocSiteServiceExtensions.AddDocSite(IServiceCollection, Func<DocSiteOptions>)`.
 
-## Declaration
-
-```csharp:xmldocid
-T:Pennington.DocSite.DocSiteOptions
-```
-
 A `public record` with two required `init`-only properties (`SiteTitle`, `Description`); all remaining properties are optional `init`-only and default to `null` or empty collections.
 
 ## Properties
@@ -23,19 +17,11 @@ A `public record` with two required `init`-only properties (`SiteTitle`, `Descri
 
 ### `ContentArea`
 
-```csharp:xmldocid
-T:Pennington.DocSite.ContentArea
-```
-
 Record describing a top-level section of the documentation site. `Slug` doubles as the URL prefix and the top-level directory name under `ContentRootPath` — `new ContentArea("Guides", "guides")` maps `/guides/…` to `Content/guides/…`.
 
 <ApiMemberTable XmlDocId="T:Pennington.DocSite.ContentArea" />
 
 ### `FontPreload`
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.FontPreload
-```
 
 Record describing a font file to preload via `<link rel="preload">`, with `Href` and `Type` (defaults to `font/woff2`).
 

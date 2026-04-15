@@ -26,10 +26,6 @@ tags: [configuration, rss, blogsite, feeds]
 
 `BlogSiteOptions.EnableRss` defaults to `true`. Setting it explicitly in the options builder makes the intent visible and guards against a future default change.
 
-```csharp:xmldocid
-P:Pennington.BlogSite.BlogSiteOptions.EnableRss
-```
-
 The kitchen-sink example wires `EnableRss`, `CanonicalBaseUrl`, and `AuthorName` together in one place:
 
 ```csharp:xmldocid,bodyonly
@@ -42,10 +38,6 @@ M:BlogKitchenSinkExample.ServiceConfiguration.BuildBlogSiteOptions
 **Give every post a `date:`**
 
 `BlogSiteContentService` builds the channel from posts where `Date` is non-null, ordered by descending date. A post without `date:` renders normally at its URL but does not appear in the feed. Use ISO-8601 (`2024-01-15`) so YAML parses the value as a `DateTimeOffset`.
-
-```csharp:xmldocid
-P:Pennington.BlogSite.BlogSiteFrontMatter.Date
-```
 
 Minimal front matter for a post that appears in the feed:
 
@@ -63,17 +55,6 @@ tags: [pennington, getting-started]
 **Set `CanonicalBaseUrl` to your production origin**
 
 `RssFeedBuilder` prefixes every `<link>` and `<guid>` with the canonical base. Without it, aggregators receive relative URLs that do not resolve. Use the production scheme and host with no trailing slash, even when running locally.
-
-```csharp:xmldocid
-P:Pennington.BlogSite.BlogSiteOptions.CanonicalBaseUrl
-```
-
-The underlying feed builder and item record:
-
-```csharp:xmldocid
-T:Pennington.Feeds.RssFeedBuilder
-T:Pennington.Feeds.RssFeedItem
-```
 
 </Step>
 <Step StepNumber="4">

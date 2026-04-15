@@ -35,13 +35,7 @@ On a DocSite host, set `DefaultLocale` and call `AddLocale` once per additional 
 M:BeyondLocaleExample.Stage3.Run(System.String[])
 ```
 
-```csharp:xmldocid
-T:Pennington.Infrastructure.LocalizationOptions
-P:Pennington.Infrastructure.LocalizationOptions.DefaultLocale
-P:Pennington.Infrastructure.LocalizationOptions.Locales
-M:Pennington.Infrastructure.LocalizationOptions.AddLocale(System.String,Pennington.Localization.LocaleInfo)
-T:Pennington.Localization.LocaleInfo
-```
+See <xref:reference.options.localization-options> for the `LocalizationOptions` members (`DefaultLocale`, `Locales`, `AddLocale`, `LocaleInfo`).
 
 </Step>
 <Step StepNumber="2">
@@ -61,8 +55,8 @@ examples/BeyondLocaleExample/Content/es/about.md
 
 `UseDocSite` and `UseBlogSite` already register `UsePenningtonLocaleRouting` as the first middleware — template hosts need no extra call. On a bare `AddPennington` host, insert it before `UseRouting` so `LocaleDetectionMiddleware` can strip the locale prefix into `PathBase` ahead of endpoint matching.
 
-```csharp:xmldocid
-M:Pennington.Infrastructure.PenningtonExtensions.UsePenningtonLocaleRouting(Microsoft.AspNetCore.Builder.WebApplication)
+```csharp
+app.UsePenningtonLocaleRouting();
 ```
 
 </Step>
@@ -72,7 +66,6 @@ M:Pennington.Infrastructure.PenningtonExtensions.UsePenningtonLocaleRouting(Micr
 
 UI strings rendered by Razor components flow through `IStringLocalizer`, which Pennington backs with the in-memory `TranslationOptions` on `PenningtonOptions.Translations`. Register one entry per locale/key pair inside the `AddPennington` or `AddDocSite` configuration. Keys are free-form, and missing keys fall back to the default locale automatically.
 
-<!-- TODO: xmldocid needed -->
 ```csharp
 builder.Services.AddPennington(options =>
 {
@@ -81,26 +74,20 @@ builder.Services.AddPennington(options =>
 });
 ```
 
-```csharp:xmldocid
-T:Pennington.Localization.TranslationOptions
-M:Pennington.Localization.TranslationOptions.Add(System.String,System.String,System.String)
-T:Pennington.Localization.PenningtonStringLocalizer
-```
+See <xref:reference.options.translations> for the full `TranslationOptions` surface.
 
 </Step>
 <Step StepNumber="5">
 
 **Surface the language switcher**
 
-On DocSite, the `LanguageSwitcher` component is already wired into `MainLayout.razor` and activates automatically when `LocalizationOptions.IsMultiLocale` is true; no extra markup required. On a bare host, drop `<LanguageSwitcher />` into the layout wherever the locale picker should appear.
+On DocSite, the `LanguageSwitcher` component is already wired into `MainLayout.razor` and activates automatically when `LocalizationOptions.IsMultiLocale` is true; no extra markup required. On a bare host, drop `<LanguageSwitcher />` into the layout wherever the locale picker should appear:
 
-```razor:path
-src/Pennington.UI/Components/LanguageSwitcher.razor
+```razor
+<LanguageSwitcher />
 ```
 
-```csharp:xmldocid
-P:Pennington.Infrastructure.LocalizationOptions.IsMultiLocale
-```
+See <xref:reference.ui.utility> for the `LanguageSwitcher` parameter surface.
 
 </Step>
 </Steps>

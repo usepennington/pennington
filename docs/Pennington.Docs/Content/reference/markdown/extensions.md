@@ -53,11 +53,7 @@ Arguments are `key=value` pairs; quoted values are allowed. See [Code-block argu
 | `TabButtonCss` | `tab-button` | `role="tab"` `<button>` (carries `data-state="active"|"inactive"`). |
 | `TabPanelCss` | `tab-panel` | `aria-labelledby`-bound panel wrapping the rendered code block. |
 
-Classes are configurable via `TabbedCodeBlockRenderOptions` passed to `UseTabbedCodeBlocks`:
-
-```csharp:xmldocid
-T:Pennington.Markdown.Extensions.Tabs.TabbedCodeBlockRenderOptions
-```
+Classes are configurable via `TabbedCodeBlockRenderOptions` passed to `UseTabbedCodeBlocks`.
 
 ### Minimal example
 
@@ -96,11 +92,7 @@ Every alert receives two classes: `markdown-alert` (constant) and `markdown-aler
 | `WARNING` | `markdown-alert-warning` | Something likely to go wrong. |
 | `IMPORTANT` | `markdown-alert-important` | Must-read information. |
 
-Backing parser and class-emission logic:
-
-```csharp:xmldocid
-T:Pennington.Markdown.Extensions.CustomAlertInlineParser
-```
+Backing parser and class-emission logic live in `CustomAlertInlineParser` (`Pennington.Markdown.Extensions`).
 
 ### Minimal example
 
@@ -141,11 +133,7 @@ The directive must appear inside a recognized comment marker for the language (`
 | `include-start` / `include-end` | — (structural) | — | Keep only lines between the matching start/end markers; markers are removed. |
 | `exclude-start` / `exclude-end` | — (structural) | — | Drop lines between the matching start/end markers; markers are removed. |
 
-Backing transformer:
-
-```csharp:xmldocid
-T:Pennington.Markdown.Extensions.CodeTransformer
-```
+The backing transformer is `CodeTransformer` in `Pennington.Markdown.Extensions`.
 
 ### Emitted CSS classes
 
@@ -195,11 +183,7 @@ See <xref:reference.options.pennington-options> for the full options catalog.
 Configure MonorailCSS through [the options record](xref:reference.options.monorail-css-options).
 ```
 
-Backing rewriter:
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.XrefHtmlRewriter
-```
+The backing rewriter is `XrefHtmlRewriter` in `Pennington.Infrastructure`.
 
 ## See also
 

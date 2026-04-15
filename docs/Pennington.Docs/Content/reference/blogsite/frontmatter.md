@@ -9,12 +9,6 @@ uid: reference.blogsite.frontmatter
 
 `BlogSiteFrontMatter` is the front-matter record `Pennington.BlogSite` binds every post to. It lives in namespace `Pennington.BlogSite` and implements `IFrontMatter`, `ITaggable`, `ISectionable`, and `IRedirectable`, so posts participate in navigation, tagging, section grouping, and redirect rules alongside regular Pennington content.
 
-## Declaration
-
-```csharp:xmldocid
-T:Pennington.BlogSite.BlogSiteFrontMatter
-```
-
 ## Fields
 
 | Key | Type | Default | Description |

@@ -23,32 +23,15 @@ A single `AddDocSite` call wires quite a bit: the Pennington engine with site ti
 
 The payoff is not the feature count. It is that every one of those registrations lands in a compatible order with the others. Getting that ordering right — especially between the pipeline, the response processor, and the search index scoping — is most of what trips up a hand-rolled host on the first attempt.
 
-```csharp:xmldocid
-M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})
-```
-
-The extension method reads top-to-bottom as the specification for what "a DocSite" means. When a question arises about exactly what DocSite decides on a host's behalf, that method is the source of truth — more reliable than any page of prose that can drift over time.
+The `DocSiteServiceExtensions.AddDocSite` method reads top-to-bottom as the specification for what "a DocSite" means. When a question arises about exactly what DocSite decides on a host's behalf, that method is the source of truth — more reliable than any page of prose that can drift over time.
 
 ### What DocSite caps
 
 DocSite owns exactly one `AddMarkdownContent<DocSiteFrontMatter>` registration. Wiring a second front-matter type — say, a blog post shape alongside docs — is not reachable by setting a `DocSiteOptions` property. It takes either the `ConfigurePennington` escape hatch, which hands back the underlying `PenningtonOptions` after DocSite's defaults land, or dropping to bare `AddPennington` outright. The escape hatch is enough for adding one more source. It falls short when the extra source needs different theming, a different layout, or a different slot renderer.
 
-```csharp:xmldocid
-P:Pennington.DocSite.DocSiteOptions.ConfigurePennington
-```
-
 `DocSiteOptions.ColorScheme`, `DisplayFontFamily`, `BodyFontFamily`, `ExtraStyles`, and `CustomCssFrameworkSettings` offer tweak points against MonorailCSS, but the theme composition itself — `AddMonorailCss` plus the DocSite `App` component plus the article slot renderer — is fixed. Replacing the `App` component or introducing a non-article layout means registering extra routing assemblies via `AdditionalRoutingAssemblies` and accepting that custom components ride alongside DocSite's, not in place of them.
 
-```csharp:xmldocid
-T:Pennington.DocSite.DocSiteOptions
-```
-
 Earlier versions of DocSite pinned `SearchIndexOptions.ContentSelector` and `LlmsTxtOptions.ContentSelector` to `#main-content` with no override. The current shape exposes `SearchIndexContentSelector` and `LlmsTxtContentSelector` on `DocSiteOptions`; both default to `#main-content` (because that is what the stock layout wraps the article in) but accept any CSS selector, including the empty string to index the full body when the layout has been replaced. Older how-tos and TOC notes still describe these as hard caps — they are now soft defaults that happen to match the stock layout.
-
-```csharp:xmldocid
-P:Pennington.DocSite.DocSiteOptions.SearchIndexContentSelector
-P:Pennington.DocSite.DocSiteOptions.LlmsTxtContentSelector
-```
 
 To summarize the current caps precisely: one markdown source registration, extendable via `ConfigurePennington` or by dropping a level; a fixed theme composition (`AddMonorailCss` plus the DocSite layout shell) that is tweakable but not swappable; and a fixed slot renderer and `App` component that can only be extended through additional routing assemblies, not replaced.
 
@@ -56,11 +39,7 @@ To summarize the current caps precisely: one markdown source registration, exten
 
 When the caps start to bind, the productive move is not to fight `DocSiteOptions` but to copy the pattern out of `DocSiteServiceExtensions.AddDocSite` and paste what is needed into a bare `AddPennington` host. That method runs around 60 lines of composition with no hidden state: the service registrations, the option forwarding, and the middleware order are all visible. Reading it gives a checklist of what a Pennington-shaped host needs, one that can be freely subsetted or extended.
 
-The `ExtensibilityLabExample` project serves as the canonical bare-host reference. It wires extension points directly against `AddPennington`, uses its own markdown rendering via `MapGet`, and demonstrates that the engine runs happily without the DocSite template. For hosts whose shape the template does not fit, that example is a better starting skeleton than a blank `WebApplication.CreateBuilder`.
-
-```csharp:path
-examples/ExtensibilityLabExample/Program.cs
-```
+The `ExtensibilityLabExample` project serves as the canonical bare-host reference. It wires extension points directly against `AddPennington`, uses its own markdown rendering via `MapGet`, and demonstrates that the engine runs happily without the DocSite template. For hosts whose shape the template does not fit, `examples/ExtensibilityLabExample/Program.cs` is a better starting skeleton than a blank `WebApplication.CreateBuilder`.
 
 The example host is intentionally minimal — no Razor layout, no slot renderer, hand-written HTML strings. It demonstrates the engine surface, not a production layout pattern. The DocSite extension method is the right place to look for the layout recipe.
 

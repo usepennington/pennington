@@ -27,25 +27,13 @@ The `/` operator handles path composition. It trims a trailing slash from the le
 
 The `Matches` method is load-bearing for the resolver and link checker: it treats `/foo/`, `/foo/index.html`, and `/foo` as the same directory page. That behavior centralizes a subtle normalization rule that would otherwise have to be replicated — slightly differently each time — wherever route matching happens.
 
-```csharp:xmldocid
-T:Pennington.Routing.UrlPath
-```
-
-`FilePath` is the filesystem-shaped peer — same value-record shape, same `/` composition operator, with `Extension`, `FileName`, and `FileNameWithoutExtension` standing in for the URL normalization helpers. The two types are deliberately not interchangeable: a URL is a logical address, a file path is a disk location, and the boundary between them is crossed explicitly through `ContentRoute` rather than accidentally through an untyped string.
-
-```csharp:xmldocid
-T:Pennington.Routing.FilePath
-```
+`FilePath` is the filesystem-shaped peer — same value-record shape, same `/` composition operator, with `Extension`, `FileName`, and `FileNameWithoutExtension` standing in for the URL normalization helpers. The two types are deliberately not interchangeable: a URL is a logical address, a file path is a disk location, and the boundary between them is crossed explicitly through `ContentRoute` rather than accidentally through an untyped string. See <xref:reference.extension-points.routing> for the full member surface of both.
 
 The ceremony — implicit conversions from string literals, operators for composition — keeps call-site code short while the type system does the policing.
 
 ### `ContentRoute`: canonical versus output
 
 Every page has two different identities that happen to look similar. The canonical identity is the URL the reader bookmarks, the URL the xref resolver writes into cross-links, the URL the sitemap lists. The output location is where the static build writes HTML on disk. For a page served at `/docs/getting-started/`, canonical identity is `UrlPath("/docs/getting-started/")` and output location is `FilePath("docs/getting-started/index.html")`. Those differ by a trailing slash and a filename, and the difference matters: conflating them is how sitemaps end up listing on-disk paths or xrefs emit `/index.html` into bookmarked URLs.
-
-```csharp:xmldocid
-T:Pennington.Routing.ContentRoute
-```
 
 `ContentRoute` holds several fields alongside the canonical and output paths. `SourceFile` points back at the Markdown file on disk, or is absent for programmatic routes. `Locale` annotates which translation this route serves. `IsFallback` flags routes that serve default-locale content where a translation is missing. The composition methods — `WithBaseUrl` and `AbsoluteUrl` — are deliberate one-line operations rather than automatic transforms: one produces a base-URL-prefixed path for sub-path hosting scenarios, the other produces a fully qualified URL for feeds and structured data. Locale prefixing, base-URL application, and absolute-URL composition are all separate call sites, each composing the canonical path rather than quietly mutating it.
 

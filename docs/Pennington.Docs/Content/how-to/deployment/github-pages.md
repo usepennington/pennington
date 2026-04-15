@@ -61,10 +61,6 @@ GitHub Pages runs content through Jekyll by default, which silently strips any p
 
 Project Pages sites serve at `https://<user>.github.io/<repo>/`, so the workflow passes `/<repo>` as the first positional `build` argument and `BaseUrlHtmlRewriter` prefixes every internal `href`, `src`, and `action` on the way out. For sites at an org-level root or a custom apex domain, replace the `BASE_URL` env with an empty string and drop the argument entirely. Sub-path wiring is covered in <xref:how-to.deployment.base-url>.
 
-```csharp:xmldocid
-T:Pennington.Infrastructure.BaseUrlHtmlRewriter
-```
-
 </Step>
 <Step StepNumber="6">
 

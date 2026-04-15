@@ -22,10 +22,6 @@ Pennington ships four ready-made `IFrontMatter` records covering the doc and blo
 
 ## `DocFrontMatter`
 
-```csharp:xmldocid
-T:Pennington.FrontMatter.DocFrontMatter
-```
-
 The core-library doc-page record for bare `AddPennington` hosts. Implements `IFrontMatter`, `ITaggable`, `ISectionable`, and `IOrderable`.
 
 ### Properties
@@ -33,10 +29,6 @@ The core-library doc-page record for bare `AddPennington` hosts. Implements `IFr
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.DocFrontMatter" />
 
 ## `BlogFrontMatter`
-
-```csharp:xmldocid
-T:Pennington.FrontMatter.BlogFrontMatter
-```
 
 The core-library blog-post record for author-wired blog hosts. Carries `Date`, `Author`, and `Series` alongside the `IFrontMatter` defaults. Implements `IFrontMatter` and `ITaggable`. Not the record bound by `AddBlogSite`.
 
@@ -46,10 +38,6 @@ The core-library blog-post record for author-wired blog hosts. Carries `Date`, `
 
 ## `DocSiteFrontMatter`
 
-```csharp:xmldocid
-T:Pennington.DocSite.DocSiteFrontMatter
-```
-
 The record bound by `AddDocSite`. Extends the `DocFrontMatter` shape with `RedirectUrl` via `IRedirectable`. Implements `IFrontMatter`, `ITaggable`, `ISectionable`, `IOrderable`, and `IRedirectable`.
 
 ### Properties
@@ -57,10 +45,6 @@ The record bound by `AddDocSite`. Extends the `DocFrontMatter` shape with `Redir
 <ApiMemberTable XmlDocId="T:Pennington.DocSite.DocSiteFrontMatter" />
 
 ## `BlogSiteFrontMatter`
-
-```csharp:xmldocid
-T:Pennington.BlogSite.BlogSiteFrontMatter
-```
 
 The record bound by `AddBlogSite`. Consolidates all post-authoring fields (`Author`, `Repository`, `Series`, `Date`, `RedirectUrl`) in one contract. Implements `IFrontMatter`, `ITaggable`, `ISectionable`, and `IRedirectable`.
 

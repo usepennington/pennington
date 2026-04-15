@@ -9,12 +9,6 @@ uid: reference.options.markdown-content-options
 
 `MarkdownContentOptions` is the per-source options record supplied to `PenningtonOptions.AddMarkdownContent<TFrontMatter>`, describing one markdown content root. It is declared in namespace `Pennington.Infrastructure`; the internal sibling `MarkdownContentServiceOptions` in `Pennington.Content` extends it with `FilePattern`, `Locale`, and `SearchPriority` when the public options flow into `MarkdownContentService<T>`.
 
-## Declaration
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.MarkdownContentOptions
-```
-
 Each call to `AddMarkdownContent<TFrontMatter>` constructs one instance, stamps the generic argument onto the internal `FrontMatterType`, and appends it to `PenningtonOptions.MarkdownSources`.
 
 ## Properties

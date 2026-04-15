@@ -11,10 +11,6 @@ The two interfaces that rewrite outgoing HTTP response bodies: `IResponseProcess
 
 ## `IResponseProcessor`
 
-```csharp:xmldocid
-T:Pennington.Infrastructure.IResponseProcessor
-```
-
 The outer tier: a full-response string rewriter invoked by `ResponseProcessingMiddleware` for every response that passes `ShouldProcess`. Implementations are sorted by `Order` ascending; each receives the complete response body produced by earlier processors. `HtmlResponseRewritingProcessor` (Order 10), `LiveReloadScriptProcessor` (Order 20, dev only), `DiagnosticOverlayProcessor` (Order 30, dev only), and `CssClassCollectorProcessor` (from `Pennington.MonorailCss`) are the built-ins.
 
 ### Members
@@ -26,10 +22,6 @@ The outer tier: a full-response string rewriter invoked by `ResponseProcessingMi
 | `ShouldProcess` | `bool ShouldProcess(HttpContext context)` | Cheap pre-capture gate; when every registered processor returns `false`, `ResponseProcessingMiddleware` does not buffer the response at all. |
 
 ## `IHtmlResponseRewriter`
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.IHtmlResponseRewriter
-```
 
 The inner tier: a participant in the unified HTML rewriting pipeline owned by `HtmlResponseRewritingProcessor`. Every registered rewriter shares one `IDocument` per response — the DOM is parsed once, each rewriter mutates it in `Order` sequence, then the document is serialized once. The two-phase shape separates non-HTML constructs (handled by `PreParseAsync` before the parser runs) from DOM mutations (`ApplyAsync`).
 
@@ -54,25 +46,13 @@ One row per built-in `IHtmlResponseRewriter`, in execution order. Each is regist
 
 ### `XrefHtmlRewriter`
 
-```csharp:xmldocid
-T:Pennington.Infrastructure.XrefHtmlRewriter
-```
-
 Runs first so the canonical paths it emits are visible to the later locale and base-URL rewriters. `ShouldApply` returns `true` unconditionally; unresolved uids are recorded on the request's `DiagnosticContext` and surface in the dev overlay.
 
 ### `LocaleLinkHtmlRewriter`
 
-```csharp:xmldocid
-T:Pennington.Localization.LocaleLinkHtmlRewriter
-```
-
 Runs second so it operates on the logical root-relative paths xref emits, before base-URL prefixing transforms them. `ShouldApply` returns `true` only when `LocalizationOptions.IsMultiLocale` and the current request's locale differs from `DefaultLocale`; anchors carrying `data-locale`, external links, paths with existing locale prefixes, framework paths (`/_content/…`), and paths ending in a file extension are skipped.
 
 ### `BaseUrlHtmlRewriter`
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.BaseUrlHtmlRewriter
-```
 
 Runs last so xref resolution and locale prefixing both operate on paths without a deployment prefix. `ShouldApply` returns `true` only when `OutputOptions.BaseUrl` is set to a non-empty value other than `/`; it rewrites every `href`, `src`, and `action` attribute that starts with `/` (but not `//`) and stamps `data-base-url` on `<body>` for client-side use.
 

@@ -72,8 +72,8 @@ P:ExtensibilityLabExample.LineCountPreprocessor.Priority
 
 Pennington collects every `ICodeBlockPreprocessor` from DI. Register with `AddSingleton<ICodeBlockPreprocessor, TPreprocessor>()` anywhere after `AddPennington` — there is no `PenningtonOptions` knob; the DI registration is the entire wiring step. (`AddPenningtonRoslyn` performs the equivalent registration for `RoslynCodeBlockPreprocessor`.)
 
-```csharp:path
-examples/ExtensibilityLabExample/Program.cs
+```csharp
+builder.Services.AddSingleton<ICodeBlockPreprocessor, LineCountPreprocessor>();
 ```
 
 </Step>

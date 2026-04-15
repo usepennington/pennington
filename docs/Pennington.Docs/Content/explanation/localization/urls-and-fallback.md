@@ -19,19 +19,11 @@ A multilingual site has to pick a locale signal early enough that routing, conte
 
 `LocaleDetectionMiddleware` reads `HttpContext.Request.Path`, asks `LocalizationOptions.GetLocaleFromUrl` which locale the first path segment maps to, and populates the scoped `LocaleContext`. When the detected locale is not the default, the middleware rewrites the request path to strip the prefix and pushes that prefix onto `PathBase` so URL generation stays correct. The net effect is that Blazor routing and every downstream consumer see `/guides/intro` rather than `/fr/guides/intro`, which means a single `@page "/guides/intro"` directive serves every locale without duplication.
 
-```csharp:xmldocid
-T:Pennington.Localization.LocaleDetectionMiddleware
-```
-
 The middleware never consults `Accept-Language`. The culture provider (`PenningtonUrlRequestCultureProvider`) also derives its answer from the URL, so the entire request pipeline agrees on the same locale code without any negotiation step. The Accept-Language header is advisory at most, never authoritative. Prefix-first means the same link produces the same page for everyone who clicks it, regardless of their browser settings or location.
 
 ### ContentResolver normalizes then searches
 
 `ContentResolver.GetContentByUrlAsync` takes the full URL — locale prefix intact — and runs two passes. The first pass asks every `IContentService` for a `DiscoveredItem` whose route matches the exact URL. This catches locale-specific markdown (`/fr/guides/intro`) and any `IsFallback` route a service pre-computed at startup. The second pass is the runtime fallback: when the first pass misses and the site is multi-locale and the active locale is not the default, the resolver strips the prefix via `LocalizationOptions.StripLocalePrefix` and searches again against the content-relative path. Either a localized file wins or the default-locale file stands in.
-
-```csharp:xmldocid
-M:Pennington.DocSite.Services.ContentResolver.GetContentByUrlAsync(System.String)
-```
 
 When the second pass succeeds, the resolver sets `IsFallback: true` and records `RequestedLocale` so the view layer can render a "this page has not been translated yet" notice via `FallbackNotice`. The resolver never rewrites URLs — the URL the reader typed stays in the address bar, only the content source changes.
 
@@ -41,19 +33,11 @@ There is exactly one fallback rung: the default locale. A missing `/es/guides/in
 
 The default locale is not a special kind of locale — it is the locale that owns the unprefixed URL space. `StripLocalePrefix` is a no-op for the default locale, `BuildLocaleUrl` emits unprefixed URLs for it, and content authored at `Content/guides/intro.md` is default-locale content by virtue of sitting outside every locale subdirectory. The fallback rule is a consequence of those URL-math rules, not a separate "fallback locale" setting.
 
-```csharp:xmldocid
-M:Pennington.Infrastructure.LocalizationOptions.StripLocalePrefix(System.String,System.String)
-```
-
-`StripLocalePrefix` is pure URL math with no file-system knowledge. `ContentResolver` decides whether the stripped path resolves to a file on disk, and that separation is what lets the same helper serve both request-time fallback and build-time URL generation.
+`StripLocalePrefix` (see <xref:reference.options.localization-options>) is pure URL math with no file-system knowledge. `ContentResolver` decides whether the stripped path resolves to a file on disk, and that separation is what lets the same helper serve both request-time fallback and build-time URL generation.
 
 ### Per-locale search indices
 
 `SearchIndexService` emits one JSON bucket per configured locale, keyed by each TOC item's route locale (or `DefaultLocale` when the route has none). `UsePennington` maps a per-locale endpoint — `/search-index-{code}.json` — and the client fetches only the index for the active locale. This keeps the client payload small on multilingual sites: a reader browsing `/es/` never downloads French or Japanese documents. More importantly, it keeps search semantics scoped. A query typed into the Spanish UI ranks against Spanish content, not against a mixed-language pool where term frequencies across languages distort each other's results.
-
-```csharp:xmldocid
-T:Pennington.Search.SearchIndexService
-```
 
 A page that exists only in the default locale appears once, in the default-locale index — fallback is a rendering-time courtesy, not an indexing decision. That asymmetry is deliberate. When a French reader searches for a term that only exists in English content, the right answer is "no results in French" rather than silently returning English hits the reader cannot read. The same per-locale split flows through sitemap construction and `hreflang` alternate-language tags, so every discovery channel agrees on what lives in which locale.
 

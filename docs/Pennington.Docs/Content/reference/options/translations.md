@@ -11,12 +11,6 @@ uid: reference.options.translations
 
 > **Note:** To enable multiple locales at the routing layer, see <xref:reference.options.localization-options>.
 
-## Declaration
-
-```csharp:xmldocid
-T:Pennington.Localization.TranslationOptions
-```
-
 Sealed class backed by a `Dictionary<string, Dictionary<string, string>>` keyed by locale code (case-insensitive); locale buckets are created lazily on first `Add`.
 
 ## Methods

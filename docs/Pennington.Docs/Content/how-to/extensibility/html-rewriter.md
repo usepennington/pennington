@@ -26,11 +26,7 @@ For a working setup, see [`examples/ExtensibilityLabExample`](https://github.com
 
 **Implement `IHtmlResponseRewriter`**
 
-The contract requires four members: `Order`, `ShouldApply(HttpContext)`, `PreParseAsync(string, HttpContext)`, and `ApplyAsync(IDocument, HttpContext)` — the example class below demonstrates all four in one sealed type.
-
-```csharp:xmldocid
-T:ExtensibilityLabExample.AnchorLowercaseRewriter
-```
+The contract requires four members: `Order`, `ShouldApply(HttpContext)`, `PreParseAsync(string, HttpContext)`, and `ApplyAsync(IDocument, HttpContext)`. The example at `examples/ExtensibilityLabExample/AnchorLowercaseRewriter.cs` demonstrates all four in one sealed type; the subsequent steps fence each member.
 
 </Step>
 <Step StepNumber="2">
@@ -83,9 +79,11 @@ P:ExtensibilityLabExample.AnchorLowercaseRewriter.Order
 
 `HtmlResponseRewritingProcessor` resolves every registered `IHtmlResponseRewriter` from the container and sorts by `Order`, so a single `AddSingleton<IHtmlResponseRewriter, T>()` next to the host wiring is sufficient.
 
-```csharp:path
-examples/ExtensibilityLabExample/Program.cs
+```csharp
+builder.Services.AddSingleton<IHtmlResponseRewriter, AnchorLowercaseRewriter>();
 ```
+
+See `examples/ExtensibilityLabExample/Program.cs` for the full host this registration sits in.
 
 </Step>
 </Steps>

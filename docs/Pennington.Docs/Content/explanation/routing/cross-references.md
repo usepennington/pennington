@@ -23,11 +23,7 @@ When the host starts, `XrefResolver` asks every registered `IContentService` for
 
 Uid collection is a content-service concern, not a markdown concern. `MarkdownContentService<T>` contributes uids by reading the optional `Uid` member on `IFrontMatter` for each discovered page; `RazorPageContentService` contributes none by default; a custom `IContentService` can synthesize `CrossReference` records for rows in a JSON feed or entries in a database. The resolver does not care where the uid came from — it only sees `(uid, title, route)` triples and picks the first one it encounters for each uid. That first-write-wins rule is what lets a default-locale route shadow later fallback duplicates without any special handling.
 
-```csharp:xmldocid
-T:Pennington.Infrastructure.XrefResolver
-```
-
-Every resolver instance sees a single snapshot of the uid table, and replacing the instance is the only way the table changes — there is no `Refresh()` method.
+Every `XrefResolver` instance sees a single snapshot of the uid table, and replacing the instance is the only way the table changes — there is no `Refresh()` method.
 
 ### Pre-parse tag pass (`<xref:uid>`)
 
@@ -35,19 +31,11 @@ Every resolver instance sees a single snapshot of the uid table, and replacing t
 
 The tag form is the one to reach for when you want the engine to supply both the URL and the link text. `<xref:explanation.routing.url-paths>` renders as an anchor whose visible text is the target page's title with no additional markup from the author. If the uid is missing, the substitution still happens but the anchor carries `data-xref-error` and `data-xref-uid` attributes, making the broken link visible in dev-tools and stylable in CSS. A `DiagnosticContext` warning is accumulated on the request in parallel so the problem surfaces in both the dev overlay and the build report.
 
-```csharp:xmldocid
-M:Pennington.Infrastructure.XrefResolvingService.ResolveXrefTagsAsync(System.String,Pennington.Diagnostics.DiagnosticContext)
-```
-
 ### DOM attribute pass (`href="xref:uid"`)
 
 The second form is the markdown-native `[text](xref:uid)`. Markdig renders it as an ordinary `<a href="xref:uid">text</a>`, which AngleSharp parses without complaint. `XrefHtmlRewriter.ApplyAsync` selects `a[href^='xref:']` on the shared document, resolves each uid, and rewrites only the `href` — the anchor's existing text content is preserved because the author chose it. The one exception is the rare case where the text and the href are the same literal `xref:uid` string, which happens when `<xref:foo>` is used as a bare markdown link with no `[text]` wrapper; in that case the resolver substitutes the stored title so the anchor renders meaningfully.
 
 This pass operates on the same `IDocument` that `LocaleLinkHtmlRewriter` and `BaseUrlHtmlRewriter` will mutate next — the three rewriters share one AngleSharp parse/serialize round trip owned by `HtmlResponseRewritingProcessor`. Ordering is load-bearing: xref resolution runs at `Order => 10` so the canonical paths it emits are visible to the locale prefixer, which must see real URLs rather than symbolic ones. The two-phase split exists because the two link forms are genuinely different syntactic problems. One is not parseable HTML and has to be rewritten as a string; the other is parseable HTML and is cleaner to rewrite on the DOM. Merging them into a single pass would require parsing the document first, which would defeat the purpose of the pre-parse stage.
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.XrefHtmlRewriter
-```
 
 ### Broken xrefs as diagnostics
 

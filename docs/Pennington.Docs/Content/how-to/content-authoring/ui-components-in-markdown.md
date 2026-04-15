@@ -73,11 +73,7 @@ Pages render in a single SSR pass.
 examples/DocSiteKitchenSinkExample/Program.cs
 ```
 
-For the shape DocSite uses internally (all eight built-ins registered on one call chain):
-
-```csharp:xmldocid,bodyonly
-M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})
-```
+For the shape DocSite uses internally, see the Mdazor chain under <xref:reference.ui.content>.
 
 </Step>
 <Step StepNumber="5">

@@ -62,13 +62,7 @@ Write the full URL directly: `[Markdig](https://github.com/xoofx/markdig)`. Penn
 
 **Deploy under a sub-path and let `BaseUrlHtmlRewriter` prepend the prefix**
 
-Set `OutputOptions.BaseUrl` (for example `/docs/`) so every rendered response has its `href`, `src`, and `action` attributes prefixed at response time. Write root-relative links like `/api/` in markdown, and the rewriter turns them into `/docs/api/` on the way out. Avoid hard-coding the prefix in markdown.
-
-```csharp:xmldocid
-T:Pennington.Infrastructure.BaseUrlHtmlRewriter
-```
-
-<!-- TODO confirm the xmldocid resolves — `T:Pennington.Infrastructure.BaseUrlHtmlRewriter` is listed in site-architecture.md and present at src/Pennington/Infrastructure/BaseUrlHtmlRewriter.cs. -->
+Set `OutputOptions.BaseUrl` (for example `/docs/`) so every rendered response has its `href`, `src`, and `action` attributes prefixed at response time. Write root-relative links like `/api/` in markdown, and the rewriter turns them into `/docs/api/` on the way out. Avoid hard-coding the prefix in markdown. See <xref:reference.extension-points.response-processing> for the rewriter chain.
 
 </Step>
 </Steps>
