@@ -7,14 +7,7 @@ tags: [response-processing, html-rewriting, extension-points, middleware]
 uid: reference.extension-points.response-processing
 ---
 
-> **In this page.** `IResponseProcessor`, `IHtmlResponseRewriter`, execution order, and the three built-in rewriters (`XrefHtmlRewriter`, `LocaleLinkHtmlRewriter`, `BaseUrlHtmlRewriter`).
->
-> **Not in this page.** Middleware ordering in ASP.NET at large.
-
-## Summary
-
-_**One sentence: what it is.** The two interfaces that rewrite outgoing HTTP response bodies — `IResponseProcessor` captures the full body as a string, `IHtmlResponseRewriter` participates in a shared single-parse AngleSharp pipeline — together with the three built-in rewriters that resolve xrefs, add locale prefixes, and apply the deployment base URL._
-_**One sentence: where it lives.** Namespace `Pennington.Infrastructure` (`src/Pennington/Infrastructure/`) for the two contracts, `HtmlResponseRewritingProcessor`, `XrefHtmlRewriter`, and `BaseUrlHtmlRewriter`; `Pennington.Localization` (`src/Pennington/Localization/`) for `LocaleLinkHtmlRewriter`._
+The two interfaces that rewrite outgoing HTTP response bodies: `IResponseProcessor` captures the full body as a string, `IHtmlResponseRewriter` participates in a shared single-parse AngleSharp pipeline. The contracts live in `Pennington.Infrastructure`; `LocaleLinkHtmlRewriter` lives in `Pennington.Localization`.
 
 ## `IResponseProcessor`
 
@@ -22,11 +15,9 @@ _**One sentence: where it lives.** Namespace `Pennington.Infrastructure` (`src/P
 T:Pennington.Infrastructure.IResponseProcessor
 ```
 
-_The outer tier: a full-response string rewriter invoked by `ResponseProcessingMiddleware` for every response that survives `ShouldProcess`. Implementations are sorted by `Order` ascending and each receives the complete response body produced by earlier processors. `HtmlResponseRewritingProcessor` is one such processor (Order 10); `LiveReloadScriptProcessor` (Order 20, dev only), `DiagnosticOverlayProcessor` (Order 30, dev only), and `CssClassCollectorProcessor` (from `Pennington.MonorailCss`) are the other built-ins._
+The outer tier: a full-response string rewriter invoked by `ResponseProcessingMiddleware` for every response that passes `ShouldProcess`. Implementations are sorted by `Order` ascending; each receives the complete response body produced by earlier processors. `HtmlResponseRewritingProcessor` (Order 10), `LiveReloadScriptProcessor` (Order 20, dev only), `DiagnosticOverlayProcessor` (Order 30, dev only), and `CssClassCollectorProcessor` (from `Pennington.MonorailCss`) are the built-ins.
 
 ### Members
-
-_Alphabetical._
 
 | Name | Signature | Description |
 |---|---|---|
@@ -40,11 +31,9 @@ _Alphabetical._
 T:Pennington.Infrastructure.IHtmlResponseRewriter
 ```
 
-_The inner tier: a participant in the unified HTML rewriting pipeline owned by `HtmlResponseRewritingProcessor`. Every registered rewriter shares one `IDocument` per response — the DOM is parsed once, each rewriter mutates it in `Order`, then the document is serialized once. A two-phase shape separates non-HTML constructs (handled by `PreParseAsync` before the parser runs) from DOM mutations (`ApplyAsync`)._
+The inner tier: a participant in the unified HTML rewriting pipeline owned by `HtmlResponseRewritingProcessor`. Every registered rewriter shares one `IDocument` per response — the DOM is parsed once, each rewriter mutates it in `Order` sequence, then the document is serialized once. The two-phase shape separates non-HTML constructs (handled by `PreParseAsync` before the parser runs) from DOM mutations (`ApplyAsync`).
 
 ### Members
-
-_Alphabetical._
 
 | Name | Signature | Description |
 |---|---|---|
@@ -55,12 +44,12 @@ _Alphabetical._
 
 ## Built-in rewriters
 
-_One row per built-in `IHtmlResponseRewriter`, in execution order. Each is registered inside `AddPennington` and picked up by `HtmlResponseRewritingProcessor` via constructor injection._
+One row per built-in `IHtmlResponseRewriter`, in execution order. Each is registered inside `AddPennington` and picked up by `HtmlResponseRewritingProcessor` via constructor injection.
 
 | Rewriter | Order | Purpose |
 |---|---|---|
 | `XrefHtmlRewriter` | 10 | Resolves `<xref:uid>` tags in `PreParseAsync` and `href="xref:uid"` attributes in `ApplyAsync`, delegating both phases to `XrefResolvingService`. |
-| `LocaleLinkHtmlRewriter` | 20 | Prefixes internal anchor `href`s with the active locale (e.g. `/about` → `/fr/about`) when the request is serving a non-default locale. |
+| `LocaleLinkHtmlRewriter` | 20 | Prefixes internal anchor `href`s with the active locale (for example, `/about` → `/fr/about`) when the request is serving a non-default locale. |
 | `BaseUrlHtmlRewriter` | 30 | Prefixes root-relative `href`, `src`, and `action` attributes with the configured base URL and stamps `data-base-url` on `<body>`. |
 
 ### `XrefHtmlRewriter`
@@ -69,7 +58,7 @@ _One row per built-in `IHtmlResponseRewriter`, in execution order. Each is regis
 T:Pennington.Infrastructure.XrefHtmlRewriter
 ```
 
-_Runs first so the canonical paths it emits (e.g. `/about/`) are visible to the later locale and base-URL rewriters. `ShouldApply` returns `true` unconditionally; unresolved uids are recorded on the request's `DiagnosticContext` and surface in the dev overlay._
+Runs first so the canonical paths it emits are visible to the later locale and base-URL rewriters. `ShouldApply` returns `true` unconditionally; unresolved uids are recorded on the request's `DiagnosticContext` and surface in the dev overlay.
 
 ### `LocaleLinkHtmlRewriter`
 
@@ -77,7 +66,7 @@ _Runs first so the canonical paths it emits (e.g. `/about/`) are visible to the 
 T:Pennington.Localization.LocaleLinkHtmlRewriter
 ```
 
-_Runs second so it operates on the logical root-relative paths xref emits, before base-URL prefixing transforms them. `ShouldApply` returns `true` only when `LocalizationOptions.IsMultiLocale` and the current request's locale differs from `DefaultLocale`; anchors carrying `data-locale` (language switchers), external links, paths with existing locale prefixes, framework paths (`/_content/…`), and static-asset paths (paths ending in a file extension) are skipped._
+Runs second so it operates on the logical root-relative paths xref emits, before base-URL prefixing transforms them. `ShouldApply` returns `true` only when `LocalizationOptions.IsMultiLocale` and the current request's locale differs from `DefaultLocale`; anchors carrying `data-locale`, external links, paths with existing locale prefixes, framework paths (`/_content/…`), and paths ending in a file extension are skipped.
 
 ### `BaseUrlHtmlRewriter`
 
@@ -85,27 +74,27 @@ _Runs second so it operates on the logical root-relative paths xref emits, befor
 T:Pennington.Infrastructure.BaseUrlHtmlRewriter
 ```
 
-_Runs last — the outermost transport layer — so xref resolution and locale prefixing both operate on paths without a deployment prefix. `ShouldApply` returns `true` only when `OutputOptions.BaseUrl` is set to a non-empty value other than `/`; it rewrites every `href`, `src`, and `action` attribute that starts with `/` (but not `//`) and stamps `data-base-url` on `<body>` so client-side code can apply the same prefix to dynamically-generated links._
+Runs last so xref resolution and locale prefixing both operate on paths without a deployment prefix. `ShouldApply` returns `true` only when `OutputOptions.BaseUrl` is set to a non-empty value other than `/`; it rewrites every `href`, `src`, and `action` attribute that starts with `/` (but not `//`) and stamps `data-base-url` on `<body>` for client-side use.
 
 ## Execution order
 
-_Lookup table of the built-in `Order` values. Lower runs first; ties are broken by DI registration order._
+Lower `Order` values run first; ties are broken by DI registration order.
 
 1. `XrefHtmlRewriter` — `Order = 10`.
 2. `LocaleLinkHtmlRewriter` — `Order = 20`.
 3. `BaseUrlHtmlRewriter` — `Order = 30`.
 
-_The orchestrator `HtmlResponseRewritingProcessor` itself has `Order = 10` within the outer `IResponseProcessor` pipeline and sits alongside `LiveReloadScriptProcessor` (20, dev only) and `DiagnosticOverlayProcessor` (30, dev only)._
+`HtmlResponseRewritingProcessor` itself has `Order = 10` within the outer `IResponseProcessor` pipeline, alongside `LiveReloadScriptProcessor` (20, dev only) and `DiagnosticOverlayProcessor` (30, dev only).
 
 ## Example
 
-_One minimal example pulled from `examples/ExtensibilityLabExample/AnchorLowercaseRewriter.cs` — the canonical custom `IHtmlResponseRewriter` used by the extensibility how-tos. Shown at the type level so a reader recognizes the full interface surface (`Order`, `ShouldApply`, `PreParseAsync`, `ApplyAsync`) in one place. Implementation walkthrough lives in the how-to._
+The canonical custom `IHtmlResponseRewriter` from the extensibility lab, showing the full interface surface (`Order`, `ShouldApply`, `PreParseAsync`, `ApplyAsync`) in one type.
 
 ```csharp:xmldocid,bodyonly
 T:ExtensibilityLabExample.AnchorLowercaseRewriter
 ```
 
-_Reference shape for a custom `IHtmlResponseRewriter` that participates in the shared AngleSharp pass. For a custom outer-tier `IResponseProcessor`, see `T:ExtensibilityLabExample.FeedbackWidgetProcessor`._
+For a custom outer-tier `IResponseProcessor`, see `T:ExtensibilityLabExample.FeedbackWidgetProcessor`.
 
 ## See also
 

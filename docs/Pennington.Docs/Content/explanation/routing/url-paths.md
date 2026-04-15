@@ -7,53 +7,53 @@ sectionLabel: "Routing and Navigation"
 tags: [routing, value-types, urls, canonical]
 ---
 
-> **In this page.** _Paraphrase the Covers line: why `UrlPath` and `FilePath` are value-type records with composition operators, how `ContentRoute` carries a canonical URL plus an output file as distinct fields, and what that shape buys over string paths threaded through method signatures. One sentence._
->
-> **Not in this page.** _Paraphrase the Does-not-cover line: pointer to the full member catalog at `/reference/extension-points/routing` for readers who want every operator and helper. One sentence._
-
-## The question
-
-_Ask the reader's question in one sentence, something like: "Why does Pennington wrap paths in `UrlPath` and `FilePath` structs and track a separate `CanonicalPath` and `OutputFile` on every route, instead of just passing strings around the way most static site generators do?" Do not answer yet — the rest of the page is the answer._
+Why does Pennington wrap paths in `UrlPath` and `FilePath` records and track a separate canonical path and output file on every route, rather than passing strings around the way most static site generators do?
 
 ## Context
 
-_Three to five sentences. Open by noting that the hard bugs in a content engine are almost never in the Markdown parser — they cluster around the seams where a URL becomes a file, a file becomes a URL, or one URL is rewritten into another (locale prefix, base URL, canonical link, sitemap entry). Sketch the string-typed version of this world: a method takes `string path` and you squint at the parameter name to guess whether it has a leading slash, a trailing slash, backslashes, a `.html`, a locale prefix, or the base URL already applied. Mention that the alternatives on the table were a single `string` convention (document the expected shape and hope), a `Uri`-based shape (too loose — absolute URLs aren't what we want on disk), or typed records per concern. End the section by previewing the shape the rest of the page unfolds — paths are records, composition is an operator, and every route carries canonical identity separate from its output location._
+The hard bugs in a content engine are almost never in the Markdown parser. They cluster around seams: where a URL becomes a file path, where a file path becomes a URL, where one URL is rewritten into another — locale prefix applied, base URL prepended, canonical link emitted, sitemap entry assembled. Each of those seams is a place where the wrong kind of string silently passes through and the error surfaces somewhere completely unrelated.
+
+In a string-typed world, a method receives `string path` and the reader squints at the parameter name to guess whether it carries a leading slash, a trailing slash, backslashes on Windows, a `.html` extension, a locale prefix, or the deployment base URL already folded in. The answer is almost never written down in the signature. It lives in a comment, a convention document, or the hard-won knowledge of whoever wrote the method. None of those survive a refactor.
+
+The alternatives Pennington considered were a single `string` convention with documented normalization rules (document the expected shape and hope everyone remembers), a `System.Uri`-based shape (too broad — absolute URLs carry scheme and host concerns that belong to the transport layer, not the content model), and typed records per concern. The typed-record approach won, and the rest of this page explains why the shape holds up in practice — paths as value types, composition as an operator, and canonical identity separated from output location at every level.
 
 ## How it works
 
-_Three subsections, narrative continuity across them. The first two describe the two moves: model paths as value types, then separate canonical identity from output. The third ties the shape to the rewriter pipeline so the reader sees the payoff in situ. Anchor each subsection with one xmldocid fence — no more — and only when the type signature makes the prose land harder._
-
 ### `UrlPath` and `FilePath` as value types
 
-_Two or three paragraphs. Start with `UrlPath`: a `readonly record struct` wrapping a single string, with an implicit conversion from `string` so call sites read cleanly but every parameter that means "URL" is typed that way. Describe the `/` operator — composition, not division — that trims a trailing slash from the left and a leading slash from the right and joins them. Point out `EnsureLeadingSlash`, `EnsureTrailingSlash`, `RemoveTrailingSlash`, `RemoveLeadingSlash` as the normalization vocabulary every call site shares, so that "does this have a leading slash?" is never a guess. Note that `Matches` does the right thing for `/foo/`, `/foo/index.html`, and `/foo` — the three representations of the same directory page — which is load-bearing for the link checker and the resolver._
+`UrlPath` is a `readonly record struct` wrapping a single string. The implicit conversion from `string` keeps call sites readable — you can pass a string literal where a `UrlPath` is expected — but every parameter that means "URL" is typed that way rather than typed as `string`. That distinction is what lets the compiler catch the class of bugs that unit tests used to catch: a file path going into a URL slot, or a URL going into a file slot.
+
+The `/` operator handles path composition. It trims a trailing slash from the left operand and a leading slash from the right, then joins them. The reason that operator exists, rather than a helper method named `Combine` or `Join`, is that composition is the dominant operation on paths in this codebase, and infix notation makes the intent read naturally at call sites. The normalization methods — `EnsureLeadingSlash`, `EnsureTrailingSlash`, `RemoveTrailingSlash`, `RemoveLeadingSlash` — share vocabulary across every call site so that "does this path have a leading slash?" is never a judgment call at the use site; it is answered once by the type.
+
+The `Matches` method is load-bearing for the resolver and link checker: it treats `/foo/`, `/foo/index.html`, and `/foo` as the same directory page. That behavior centralizes a subtle normalization rule that would otherwise have to be replicated — slightly differently each time — wherever route matching happens.
 
 ```csharp:xmldocid
 T:Pennington.Routing.UrlPath
 ```
 
-_After the fence, observe that `FilePath` is the filesystem-shaped peer — same value-record shape, same `/` composition operator, with `Extension`, `FileName`, and `FileNameWithoutExtension` standing in for the URL helpers. The two types are deliberately not interchangeable: a URL is a logical address, a file path is a disk location, and you cross the boundary explicitly through `ContentRoute` rather than by accident through `string`._
+`FilePath` is the filesystem-shaped peer — same value-record shape, same `/` composition operator, with `Extension`, `FileName`, and `FileNameWithoutExtension` standing in for the URL normalization helpers. The two types are deliberately not interchangeable: a URL is a logical address, a file path is a disk location, and the boundary between them is crossed explicitly through `ContentRoute` rather than accidentally through an untyped string.
 
 ```csharp:xmldocid
 T:Pennington.Routing.FilePath
 ```
 
-_One sentence reinforcing that the ceremony — implicit conversions from literal strings, operators for composition — keeps the call-site prose short while the type system polices direction and shape._
+The ceremony — implicit conversions from string literals, operators for composition — keeps call-site code short while the type system does the policing.
 
 ### `ContentRoute`: canonical versus output
 
-_The center of the page, two or three paragraphs. Open by naming the distinction: every page has a canonical identity — the URL the reader bookmarks, the URL the xref resolver writes, the URL the sitemap lists — and a separate output location — where the static build writes the HTML on disk. For a page served at `/docs/getting-started/`, canonical identity is `UrlPath("/docs/getting-started/")` and output is `FilePath("docs/getting-started/index.html")`. These are close, but conflating them is how you end up with bugs where the sitemap lists the on-disk path or the xref emits `/index.html` URLs._
+Every page has two different identities that happen to look similar. The canonical identity is the URL the reader bookmarks, the URL the xref resolver writes into cross-links, the URL the sitemap lists. The output location is where the static build writes HTML on disk. For a page served at `/docs/getting-started/`, canonical identity is `UrlPath("/docs/getting-started/")` and output location is `FilePath("docs/getting-started/index.html")`. Those differ by a trailing slash and a filename, and the difference matters: conflating them is how sitemaps end up listing on-disk paths or xrefs emit `/index.html` into bookmarked URLs.
 
 ```csharp:xmldocid
 T:Pennington.Routing.ContentRoute
 ```
 
-_After the fence, walk the reader through the remaining fields: `SourceFile` points back at the markdown on disk (or is null for programmatic routes), `Locale` annotates which translation this route serves, and `IsFallback` flags routes that serve default-locale content in place of a missing translation. Then introduce the composition methods — `WithBaseUrl` and `AbsoluteUrl` — as deliberate one-line operations: one produces a base-URL-prefixed path for sub-path hosting, the other produces a fully qualified URL for feeds and structured data. The point is that locale prefixing, base-URL application, and absolute-URL composition are all separate methods with separate call sites — they compose the canonical path rather than mutate it._
+`ContentRoute` holds several fields alongside the canonical and output paths. `SourceFile` points back at the Markdown file on disk, or is absent for programmatic routes. `Locale` annotates which translation this route serves. `IsFallback` flags routes that serve default-locale content where a translation is missing. The composition methods — `WithBaseUrl` and `AbsoluteUrl` — are deliberate one-line operations rather than automatic transforms: one produces a base-URL-prefixed path for sub-path hosting scenarios, the other produces a fully qualified URL for feeds and structured data. Locale prefixing, base-URL application, and absolute-URL composition are all separate call sites, each composing the canonical path rather than quietly mutating it.
 
 ### Why this matters for locale and base-URL rewriting
 
-_Two paragraphs. This is where the separation pays rent. The `IHtmlResponseRewriter` chain runs three rewriters in order — `XrefHtmlRewriter`, then `LocaleLinkHtmlRewriter`, then `BaseUrlHtmlRewriter` — each transforming the rendered HTML before it reaches the wire. Xref resolution emits canonical paths from uids. Locale rewriting prefixes internal links with the active locale. Base-URL rewriting prepends the deployment prefix last so it is the outermost transport layer. None of these rewriters would compose cleanly if the canonical URL were conflated with the output URL; the canonical path stays stable while transforms layer on, and the output file is computed once, at route construction, and never touched by rewriters._
+This is where the canonical-versus-output separation pays its rent. The `IHtmlResponseRewriter` chain runs three rewriters in order: `XrefHtmlRewriter`, then `LocaleLinkHtmlRewriter`, then `BaseUrlHtmlRewriter`. Each transforms rendered HTML before it reaches the wire. Xref resolution emits canonical paths from uids. Locale rewriting prefixes internal links with the active locale. Base-URL rewriting prepends the deployment prefix last, as the outermost transport concern. None of these rewriters compose cleanly if the canonical URL is conflated with the output URL — the canonical path needs to stay stable as transforms layer on, and the output file needs to be computed once at route construction and then left alone.
 
-_Second paragraph. The same separation drives the build crawler: `OutputGenerationService` fetches `CanonicalPath` over HTTP and writes the response to `OutputOptions.OutputDirectory / OutputFile`. If the two were one string, every rewriter would have to know whether it was rewriting "for display" or "for disk" and keep those modes in sync. Because they are two fields on one record, rewriters only ever see canonical paths, and the crawler only ever writes output files — the two worlds never have to negotiate._
+The same separation drives the build crawler. `OutputGenerationService` fetches `CanonicalPath` over HTTP and writes the response body to `OutputOptions.OutputDirectory / OutputFile`. If canonical and output were a single string, every rewriter in the chain would need to know whether it was rewriting "for display" or "for disk" — and those two modes would have to stay in sync across every contributor and every future extension. Because they are two distinct fields on one record, rewriters only ever touch canonical paths and the crawler only ever writes output files. The two worlds do not need to negotiate.
 
 ## Trade-offs
 
@@ -67,4 +67,4 @@ _Second paragraph. The same separation drives the build crawler: `OutputGenerati
 - Reference: [Routing types](xref:reference.extension-points.routing)
 - How-to: [Host under a sub-path (base URL)](xref:how-to.deployment.base-url)
 - Explanation: [Response processing and rewriters](xref:explanation.core.response-processing)
-- External: [_TODO: add prior-art link — e.g., F#'s typed URLs in Giraffe, or a "Parse, don't validate" essay that motivates value-typed paths._]
+- External: [Parse, don't validate (Alexis King)](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/)

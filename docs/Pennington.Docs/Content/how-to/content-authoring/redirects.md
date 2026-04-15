@@ -7,17 +7,11 @@ sectionLabel: Content Authoring
 tags: [redirects, front-matter, routing]
 ---
 
-> **In this page.** _Paraphrase the TOC "Covers" line: setting `redirectUrl:` in `DocSiteFrontMatter` so the page is emitted as a meta-refresh stub that forwards to the new URL._
->
-> **Not in this page.** _Paraphrase "Does not cover": HTTP 301 responses configured at the hosting layer, and batch redirects defined in a sidecar `_redirects.yml` file — link those out to Reference for `RedirectContentService` once that page exists (TODO: confirm target ref page)._
+When you rename or delete a published page, the old URL needs to forward visitors and search engines to the new location. Setting `redirectUrl:` in the page's front matter causes Pennington to emit a meta-refresh stub at the old path — the body is not rendered or indexed.
 
-## When to use this
-
-_Two sentences. Frame the reader's goal: they renamed or deleted a page, the old URL is already published, and they want visitors and search engines to land on the new location. Note that the page's body will not render — the output is a stub, so do not put content here you want indexed._
+This covers front-matter-based redirects only. HTTP 301 responses and batch redirects via a sidecar file are handled at the hosting layer and are outside this guide's scope.
 
 ## Assumptions
-
-_Three bullets max. Realistic prior state, not tutorial steps._
 
 - You have an existing Pennington doc site using `AddDocSite` (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - You know the old URL (the page being retired) and the new URL (the canonical destination).
@@ -29,11 +23,9 @@ To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://gith
 
 ## Steps
 
-_Four steps. Each imperative, one sentence of prose max before the fence._
-
 ### 1. Add `redirectUrl:` to the old page's front matter
 
-_Open the markdown file at the old URL and set `redirectUrl:` to the new absolute path. Keep `title:` so diagnostics remain readable; the body will not be rendered._
+Open the markdown file at the old URL and set `redirectUrl:` to the new absolute path. Keep `title:` so diagnostics remain readable; the body will not be rendered.
 
 ```markdown:path
 examples/DocSiteKitchenSinkExample/Content/main/redirect-source.md
@@ -41,7 +33,7 @@ examples/DocSiteKitchenSinkExample/Content/main/redirect-source.md
 
 ### 2. Confirm your front-matter record implements `IRedirectable`
 
-_The engine looks for the `RedirectUrl` property via `IRedirectable` pattern-matching; `DocSiteFrontMatter` already declares it. If you use a custom front-matter record, add the interface so the pipeline will surface the page as a redirect._
+The engine looks for the `RedirectUrl` property via `IRedirectable` pattern-matching; `DocSiteFrontMatter` already declares it. If you use a custom front-matter record, add the interface so the pipeline will surface the page as a redirect.
 
 ```csharp:xmldocid
 T:Pennington.DocSite.DocSiteFrontMatter
@@ -53,7 +45,7 @@ T:Pennington.FrontMatter.IRedirectable
 
 ### 3. Understand what the pipeline emits
 
-_During discovery, `MarkdownContentService` detects `RedirectUrl` and yields a `RedirectSource` instead of a `MarkdownFileSource`, so the page skips parse/render and the redirect middleware handles it uniformly at dev serve and `build` time._
+During discovery, `MarkdownContentService` detects `RedirectUrl` and yields a `RedirectSource` instead of a `MarkdownFileSource`, so the page skips parse/render and the redirect middleware handles it uniformly at dev serve and `build` time.
 
 ```csharp:xmldocid
 M:Pennington.Content.MarkdownContentService`1.DiscoverAsync
@@ -61,7 +53,7 @@ M:Pennington.Content.MarkdownContentService`1.DiscoverAsync
 
 ### 4. Run the site and follow the old URL
 
-_Start the site with `dotnet run`. The old URL responds with a meta-refresh stub that forwards to `redirectUrl`; the static build writes the same stub to disk at the old page's output path._
+Start the site with `dotnet run`. The old URL responds with a meta-refresh stub that forwards to `redirectUrl`; the static build writes the same stub to disk at the old page's output path.
 
 ```bash
 dotnet run --project src/YourDocSite

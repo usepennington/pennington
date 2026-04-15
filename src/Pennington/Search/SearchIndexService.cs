@@ -2,11 +2,11 @@ namespace Pennington.Search;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Content;
 using Infrastructure;
 using LlmsTxt;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Generates per-locale search index JSON. Each configured locale gets its own

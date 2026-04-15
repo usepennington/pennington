@@ -7,12 +7,6 @@ tags: [options, configuration, infrastructure]
 uid: reference.options.pennington-options
 ---
 
-> **In this page.** Every property on `PenningtonOptions` — `SiteTitle`, `SiteDescription`, `CanonicalBaseUrl`, `ContentRootPath`, `Highlighting`, `Islands`, `Localization`, `Translations`, `SearchIndex`, `LlmsTxt`, `AdditionalRoutingAssemblies` — with types and defaults.
->
-> **Not in this page.** Task recipes that use these options — see the How-To quadrant. Nested types (`HighlightingOptions`, `IslandsOptions`, `LocalizationOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `MarkdownContentOptions`) are pointer-only — each has its own dedicated reference page under `/reference/options/`.
-
-## Summary
-
 The top-level options class supplied to `services.AddPennington(Action<PenningtonOptions>)`. Declared in namespace `Pennington.Infrastructure` at `src/Pennington/Infrastructure/PenningtonOptions.cs`.
 
 ## Declaration

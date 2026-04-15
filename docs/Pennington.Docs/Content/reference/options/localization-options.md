@@ -7,14 +7,7 @@ tags: [options, localization, routing, urls]
 uid: reference.options.localization-options
 ---
 
-> **In this page.** `DefaultLocale`, `Locales`, `IsMultiLocale`, and the URL helpers `GetLocaleFromUrl`, `StripLocalePrefix`, `BuildLocaleUrl`, `GetAlternateLanguages`.
->
-> **Not in this page.** Authoring translated content and organizing locale subdirectories — see the How-To quadrant.
-
-## Summary
-
-_One sentence: what it is. E.g., "The options bag that registers locales and computes locale-prefixed URLs for a Pennington site."_
-_One sentence: where it lives. E.g., "Exposed as `PenningtonOptions.Localization`; declared in namespace `Pennington.Infrastructure` at `src/Pennington/Infrastructure/PenningtonOptions.cs`."_
+The options bag that registers locales and computes locale-prefixed URLs for a Pennington site. Exposed as `PenningtonOptions.Localization`; declared in namespace `Pennington.Infrastructure` at `src/Pennington/Infrastructure/PenningtonOptions.cs`.
 
 ## Declaration
 
@@ -26,9 +19,9 @@ T:Pennington.Infrastructure.LocalizationOptions
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `DefaultLocale` | `string` | `"en"` | _One sentence: locale code that serves at the URL root with no prefix; all other registered locales are served under `/<code>/`._ |
-| `IsMultiLocale` | `bool` | `false` | _One sentence: `true` when more than one locale has been registered; the middleware pipeline short-circuits locale detection and URL rewriting when this is `false`._ |
-| `Locales` | `IReadOnlyDictionary<string, LocaleInfo>` | empty | _One sentence: read-only view of registered locales keyed by locale code, populated exclusively through the `AddLocale` overloads._ |
+| `DefaultLocale` | `string` | `"en"` | Locale code that serves at the URL root with no prefix; all other registered locales are served under `/<code>/`. |
+| `IsMultiLocale` | `bool` | `false` | Returns `true` when more than one locale has been registered; the middleware pipeline short-circuits locale detection and URL rewriting when this is `false`. |
+| `Locales` | `IReadOnlyDictionary<string, LocaleInfo>` | empty | Read-only view of registered locales keyed by locale code, populated exclusively through the `AddLocale` overloads. |
 
 ## Methods
 
@@ -38,7 +31,7 @@ T:Pennington.Infrastructure.LocalizationOptions
 M:Pennington.Infrastructure.LocalizationOptions.AddLocale(System.String,Pennington.Localization.LocaleInfo)
 ```
 
-_1-3 sentences: registers a locale with explicit `LocaleInfo` metadata (`DisplayName`, `Direction`, `HtmlLang`). Overwrites any existing entry for the same code. No return value; callers observe the registration via the `Locales` dictionary._
+Registers a locale with explicit `LocaleInfo` metadata (`DisplayName`, `Direction`, `HtmlLang`). Overwrites any existing entry for the same code. Callers observe the registration via the `Locales` dictionary.
 
 ### `AddLocale(string, string)`
 
@@ -46,7 +39,7 @@ _1-3 sentences: registers a locale with explicit `LocaleInfo` metadata (`Display
 M:Pennington.Infrastructure.LocalizationOptions.AddLocale(System.String,System.String)
 ```
 
-_1-3 sentences: convenience overload that constructs a `LocaleInfo` from a display name using default direction (`"ltr"`) and no explicit `HtmlLang`. Overwrites any existing entry for the same code._
+Convenience overload that constructs a `LocaleInfo` from a display name using default direction (`"ltr"`) and no explicit `HtmlLang`. Overwrites any existing entry for the same code.
 
 ### `GetLocaleFromUrl`
 
@@ -54,7 +47,7 @@ _1-3 sentences: convenience overload that constructs a `LocaleInfo` from a displ
 M:Pennington.Infrastructure.LocalizationOptions.GetLocaleFromUrl(System.String)
 ```
 
-_1-3 sentences: extracts the locale code from the first path segment of `url`, returning that code only when it matches a registered non-default locale. Returns `DefaultLocale` in every other case, including single-locale configurations and default-locale URLs that carry no prefix._
+Extracts the locale code from the first path segment of `url`, returning that code only when it matches a registered non-default locale. Returns `DefaultLocale` in every other case, including single-locale configurations and default-locale URLs that carry no prefix.
 
 ### `StripLocalePrefix`
 
@@ -62,7 +55,7 @@ _1-3 sentences: extracts the locale code from the first path segment of `url`, r
 M:Pennington.Infrastructure.LocalizationOptions.StripLocalePrefix(System.String,System.String)
 ```
 
-_1-3 sentences: removes the `/<locale>/` prefix from `url` and returns the content-relative path. Returns the URL unchanged when `locale` equals `DefaultLocale` (default-locale URLs have no prefix); a bare `/<locale>` with no trailing segment collapses to `"/"`._
+Removes the `/<locale>/` prefix from `url` and returns the content-relative path. Returns the URL unchanged when `locale` equals `DefaultLocale` (default-locale URLs carry no prefix); a bare `/<locale>` with no trailing segment collapses to `"/"`.
 
 ### `BuildLocaleUrl`
 
@@ -70,7 +63,7 @@ _1-3 sentences: removes the `/<locale>/` prefix from `url` and returns the conte
 M:Pennington.Infrastructure.LocalizationOptions.BuildLocaleUrl(System.String,System.String)
 ```
 
-_1-3 sentences: builds a canonical site URL for `contentPath` under the given `locale`, returning `/<path>/` for the default locale and `/<locale>/<path>/` otherwise. Empty content paths collapse to the locale landing page (`/` or `/<locale>/`)._
+Builds a canonical site URL for `contentPath` under the given `locale`, returning `/<path>/` for the default locale and `/<locale>/<path>/` otherwise. Empty content paths collapse to the locale landing page (`/` or `/<locale>/`).
 
 ### `GetAlternateLanguages`
 
@@ -78,7 +71,7 @@ _1-3 sentences: builds a canonical site URL for `contentPath` under the given `l
 M:Pennington.Infrastructure.LocalizationOptions.GetAlternateLanguages(System.String)
 ```
 
-_1-3 sentences: returns one `AlternateLanguage` entry per registered locale for the same content path, used by language switchers and hreflang emitters. Returns an empty list when `IsMultiLocale` is `false`; performs pure URL math and does not check whether the target content exists (fallback resolution handles missing translations)._
+Returns one `AlternateLanguage` entry per registered locale for the same content path, used by language switchers and hreflang emitters. Returns an empty list when `IsMultiLocale` is `false`; performs pure URL math and does not verify whether the target content exists.
 
 ## Example
 
@@ -86,7 +79,7 @@ _1-3 sentences: returns one `AlternateLanguage` entry per registered locale for 
 M:BeyondLocaleExample.Stage2.Run(System.String[])
 ```
 
-_One sentence: shape of a `ConfigureLocalization` action that sets `DefaultLocale` and registers two locales via `AddLocale`._
+Demonstrates a `ConfigureLocalization` action that sets `DefaultLocale` and registers two locales via `AddLocale`.
 
 ## See also
 

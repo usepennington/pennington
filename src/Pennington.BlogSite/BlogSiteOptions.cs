@@ -1,8 +1,8 @@
 namespace Pennington.BlogSite;
 
 using System.Reflection;
-using Microsoft.AspNetCore.Components;
 using Infrastructure;
+using Microsoft.AspNetCore.Components;
 using MonorailCss;
 
 /// <summary>

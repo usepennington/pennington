@@ -7,17 +7,9 @@ sectionLabel: Publishing & Deployment
 tags: [deployment, github-pages, ci, base-url]
 ---
 
-> **In this page.** A ready-to-copy GitHub Actions workflow using `actions/setup-dotnet@v4`, `actions/upload-pages-artifact@v3`, and `actions/deploy-pages@v4`, plus the `.nojekyll` marker that keeps Pennington's `_content/` folders intact. This is the canonical host recipe that the other deployment how-tos adapt.
->
-> **Not in this page.** Custom-domain DNS setup beyond ticking the GitHub Pages "custom domain" checkbox — configure that in the repository's Pages settings once the workflow is green.
-
-## When to use this
-
-_Two sentences. Trigger: you have a working Pennington site committed to a GitHub repo and want Pages to build-and-deploy it on every push to `main`. Do not reach for this page if the site still only runs under `dotnet run` — land on [_Build a static site_](xref:how-to.deployment.static-build) first so you know what `output/` should look like before you automate producing it._
+Use this guide when you have a working Pennington site committed to a GitHub repo and want Pages to build and deploy it automatically on every push to `main`. If the site still only runs under `dotnet run`, complete <xref:how-to.deployment.static-build> first so you know what `output/` should look like before automating it.
 
 ## Assumptions
-
-_Short bulleted list. No more than four bullets — if the list grows, the reader should be back on a tutorial._
 
 - You have a Pennington site that builds locally with `dotnet run --project <your-project> -- build` (see [_Build a static site_](xref:how-to.deployment.static-build) if not).
 - The repo is pushed to GitHub and Pages is enabled under **Settings → Pages → Build and deployment → Source: GitHub Actions**.
@@ -32,11 +24,11 @@ To copy a working setup, see [`examples/SubPathDeployableExample`](https://githu
 
 ### 1. Enable GitHub Pages with the Actions source
 
-_One to two sentences. In the repo settings switch **Pages → Build and deployment → Source** to **GitHub Actions** so the deploy workflow below is authorized to publish. Also confirm the three workflow permissions the deploy action needs — `contents: read`, `pages: write`, `id-token: write` — are not blocked at the organization level; the workflow declares them explicitly but an org-wide deny will still win._
+In the repo settings, switch **Pages → Build and deployment → Source** to **GitHub Actions** so the deploy workflow is authorized to publish. Also confirm the three workflow permissions the deploy action needs — `contents: read`, `pages: write`, `id-token: write` — are not blocked at the organization level; the workflow declares them explicitly, but an org-wide deny overrides that.
 
 ### 2. Drop in the canonical workflow
 
-_Two sentences. Commit the YAML below to `.github/workflows/deploy.yml` at the repo root. It pins `actions/setup-dotnet@v4` to .NET 11, derives the base URL from `${{ github.event.repository.name }}` so the same file works on forks and renames, runs `dotnet run -- build "$BASE_URL"`, writes `.nojekyll`, and hands `output/` to `actions/upload-pages-artifact@v3` and `actions/deploy-pages@v4`._
+Commit the YAML below to `.github/workflows/deploy.yml` at the repo root. It pins `actions/setup-dotnet@v4` to .NET 11, derives the base URL from `${{ github.event.repository.name }}` so the same file works on forks and renames, runs `dotnet run -- build "$BASE_URL"`, writes `.nojekyll`, and hands `output/` to `actions/upload-pages-artifact@v3` and `actions/deploy-pages@v4`.
 
 ```yaml:path
 examples/SubPathDeployableExample/.github/workflows/deploy.yml
@@ -44,15 +36,15 @@ examples/SubPathDeployableExample/.github/workflows/deploy.yml
 
 ### 3. Point the `--project` path at your site
 
-_One to two sentences. The template targets `examples/SubPathDeployableExample`; edit the `--project` argument and any `working-directory` references so the `dotnet run` step points at your csproj. If your repo hosts multiple buildable projects, also consider pinning `--configuration Release` (already set) and adding `actions/cache@v4` over `~/.nuget/packages` — skip both if your restore already takes under a minute._
+The template targets `examples/SubPathDeployableExample`; edit the `--project` argument and any `working-directory` references so the `dotnet run` step points at your csproj. For repos that host multiple buildable projects, add `actions/cache@v4` over `~/.nuget/packages` if NuGet restore takes more than a minute — `--configuration Release` is already set.
 
 ### 4. Keep `.nojekyll` in the artifact
 
-_One to two sentences. GitHub Pages runs content through Jekyll by default, which silently strips any path starting with an underscore — that would eat Pennington's `_content/` copy folder and SPA `_spa-data/` payloads. The `touch output/.nojekyll` step in the workflow disables Jekyll processing; leave it in unless you have a documented reason to remove it._
+GitHub Pages runs content through Jekyll by default, which silently strips any path starting with an underscore — that would remove Pennington's `_content/` copy folder and SPA `_spa-data/` payloads. The `touch output/.nojekyll` step in the workflow disables Jekyll processing; leave it in place.
 
 ### 5. Match the build `baseUrl` to the Pages URL
 
-_Two sentences. Project Pages sites serve at `https://<user>.github.io/<repo>/`, so the workflow passes `/<repo>` as the first positional `build` argument and `BaseUrlHtmlRewriter` prefixes every internal `href`, `src`, and `action` on the way out. If your site sits at an org-level `<user>.github.io` root or a custom apex domain, replace the `BASE_URL` env with an empty string and drop the argument entirely — sub-path wiring has its own how-to at [_Host under a sub-path (base URL)_](xref:how-to.deployment.base-url)._
+Project Pages sites serve at `https://<user>.github.io/<repo>/`, so the workflow passes `/<repo>` as the first positional `build` argument and `BaseUrlHtmlRewriter` prefixes every internal `href`, `src`, and `action` on the way out. For sites at an org-level root or a custom apex domain, replace the `BASE_URL` env with an empty string and drop the argument entirely — sub-path wiring is covered in <xref:how-to.deployment.base-url>.
 
 ```csharp:xmldocid
 T:Pennington.Infrastructure.BaseUrlHtmlRewriter
@@ -60,7 +52,7 @@ T:Pennington.Infrastructure.BaseUrlHtmlRewriter
 
 ### 6. (Optional) Fail CI on a bad `BuildReport`
 
-_One to two sentences. The default `RunOrBuildAsync` already sets a non-zero exit code on errors, so the workflow fails fast on broken pages. If you want stricter semantics — for example, failing the main-branch build on broken xrefs while letting warnings pass on feature branches — wrap the call yourself and write the report to stdout._
+`RunOrBuildAsync` already sets a non-zero exit code on errors, so the workflow fails fast on broken pages. For stricter semantics — failing the main-branch build on broken xrefs while letting warnings pass on feature branches — wrap the call and write the report to stdout.
 
 ```csharp:xmldocid,bodyonly
 M:SubPathDeployableExample.BuildHost.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])

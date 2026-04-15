@@ -7,17 +7,10 @@ sectionLabel: Configuration
 tags: [blogsite, homepage, socials, hero]
 ---
 
-> **In this page.** The four BlogSite homepage surfaces as a single recipe: `HeroContent`, `MyWork` (`Project` entries), `Socials` (`SocialLink` + the built-in icon fragments on `SocialIcons`), and `MainSiteLinks` (`HeaderLink` entries for the top nav).
->
-> **Not in this page.** The full `BlogSiteOptions` catalog — see [_`BlogSiteOptions`_](xref:reference.options.blogsite-options). Writing custom icon `RenderFragment`s — see the Extensibility how-tos.
-
-## When to use this
-
-_Two sentences. Reader has a running BlogSite (post scaffold + first-post tutorials) and wants to wire all four homepage surfaces in one pass — the hero block, "My Work" card, social-icon row, and top-nav links. Point anyone who wants the hand-held walkthrough back to the tutorial [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials); this is the compact lookup form._
+When you have a running BlogSite and want to wire all four homepage surfaces — the hero block, "My Work" card, social-icon row, and top-nav links — in one pass, this is the recipe. For the hand-held walkthrough, see [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials).
 
 ## Assumptions
 
-_Three bullets. Keep prerequisites tight — this is a configuration recipe, not an onboarding ramp. Do not re-teach `AddBlogSite` wiring or markdown authoring; link out instead._
 
 - You have a running BlogSite built with `AddBlogSite` / `UseBlogSite` (see [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold) if not).
 - You have at least one post under `BlogContentPath` so the recent-posts slot is not empty (see [Author your first post with BlogSiteFrontMatter](xref:tutorials.blogsite.first-post)).
@@ -29,11 +22,10 @@ To copy a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](htt
 
 ## Steps
 
-_Four verb-first steps, one per homepage surface. Each step names the `BlogSiteOptions` property, the record shape it takes, and drops an `xmldocid` fence that shows the final state of that property populated._
 
 ### 1. Set `HeroContent` for the headline block
 
-_Two sentences. `HeroContent` is a two-field positional record (`Title`, `Description`) rendered at the top of `/`. The `Description` is emitted as `MarkupString` in `Home.razor`, so light HTML is permitted — plain prose is fine for most sites._
+`HeroContent` is a two-field positional record (`Title`, `Description`) rendered at the top of `/`. `Description` is emitted as a `MarkupString` in `Home.razor`, so light HTML is permitted — plain prose works for most sites.
 
 ```csharp:xmldocid
 T:Pennington.BlogSite.HeroContent
@@ -45,7 +37,7 @@ M:BlogSiteHeroProjectsSocialsExample.Stage1.Run(System.String[])
 
 ### 2. Fill `MyWork` with `Project` entries
 
-_Two sentences. `MyWork` takes a `Project[]`, where each `Project(Title, Description, Url)` renders as a linked entry in the "My Work" sidebar card on the home page. Order matters — the array is rendered verbatim, top to bottom._
+`MyWork` takes a `Project[]`, where each `Project(Title, Description, Url)` renders as a linked entry in the "My Work" sidebar card. The array is rendered verbatim, so ordering entries in the initializer controls their display order.
 
 ```csharp:xmldocid
 T:Pennington.BlogSite.Project
@@ -57,16 +49,19 @@ M:BlogSiteHeroProjectsSocialsExample.Stage2.Run(System.String[])
 
 ### 3. Wire `Socials` with the built-in icon fragments
 
-_Two sentences. `Socials` takes a `SocialLink[]`, where `SocialLink(Icon, Url)` pairs a `RenderFragment` with an `<a href>` target. The four built-in fragments live as `static readonly` fields on `Pennington.BlogSite.Components.SocialIcons` — `GithubIcon`, `BlueskyIcon`, `LinkedInIcon`, `MastodonIcon` — and are passed directly (no wrapper type, no component registration)._
+`Socials` takes a `SocialLink[]`, where `SocialLink(Icon, Url)` pairs a `RenderFragment` with an `<a href>` target. The four built-in fragments — `GithubIcon`, `BlueskyIcon`, `LinkedInIcon`, `MastodonIcon` — are `static readonly` fields on `Pennington.BlogSite.Components.SocialIcons` and are passed directly without any wrapper type or component registration.
 
 ```csharp:xmldocid
 T:Pennington.BlogSite.SocialLink
-T:Pennington.BlogSite.Components.SocialIcons
+```
+
+```razor:path
+src/Pennington.BlogSite/Components/SocialIcons.razor
 ```
 
 ### 4. Populate `MainSiteLinks` for the top nav
 
-_Two sentences. `MainSiteLinks` takes a `HeaderLink[]`, where `HeaderLink(Title, Url)` is rendered in both the site header and footer by `MainLayout.razor`. Use relative URLs (`/`, `/archive`, `/tags`) so `BaseUrlHtmlRewriter` can prefix them on sub-path deployments._
+`MainSiteLinks` takes a `HeaderLink[]`, where each `HeaderLink(Title, Url)` appears in both the site header and footer via `MainLayout.razor`. Use relative URLs (`/`, `/archive`, `/tags`) so `BaseUrlHtmlRewriter` can prefix them correctly on sub-path deployments.
 
 ```csharp:xmldocid
 T:Pennington.BlogSite.HeaderLink
@@ -79,8 +74,6 @@ M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])
 ---
 
 ## Verify
-
-_Terse. Three bullets, one per surface cluster so each wiring mistake is individually diagnosable._
 
 - Run `dotnet run` and open `/` — the hero title and description appear at the top, and the "My Work" card lists each `Project` entry with a working link.
 - The social-icon row under the card renders one icon per `SocialLink`, each linking to its `Url`; the top-nav and footer list every `HeaderLink`.

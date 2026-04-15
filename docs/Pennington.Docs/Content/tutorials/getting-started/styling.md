@@ -7,19 +7,13 @@ tags: [monorailcss, styling, color-scheme, utility-css]
 uid: tutorials.getting-started.styling
 ---
 
-> **In this page.** _One sentence: writer paraphrases the TOC "Covers" line — registering `AddMonorailCss` + `UseMonorailCss`, picking a `NamedColorScheme`, adding a utility class to a layout, and watching the stylesheet regenerate on demand. Keep it to one sentence; this is the pitch, not a scope document._
->
-> **Not in this page.** _One sentence pointing outward. Mention that algorithmic color schemes, custom `CssFrameworkSettings`, and dark-mode wiring belong to the [Customize MonorailCSS](xref:how-to.configuration.monorail-css) how-to, and that deployment lives in the [Deploy to GitHub Pages](xref:how-to.deployment.github-pages) how-to. Paste links exactly as shown._
+By the end of this tutorial you'll have a three-page Pennington site whose HTML layout is styled with MonorailCSS utility classes, served from a `/styles.css` endpoint that regenerates whenever a new class appears in the response HTML.
 
-## What you'll do
-
-_**Artifact** (one sentence): describe what the reader will have running at the end — a three-page Pennington site whose HTML layout is styled with MonorailCSS utility classes, served from a `/styles.css` endpoint that regenerates whenever a new class appears in the response HTML._
-
-_**Skill** (one sentence): name the capability — the reader will know how to register `AddMonorailCss`, point it at a `NamedColorScheme`, mount the generated stylesheet with `UseMonorailCss`, and trust the class-collector to keep the CSS file in sync with whatever utility classes their HTML emits._
+You'll know how to register `AddMonorailCss`, point it at a `NamedColorScheme`, mount the generated stylesheet with `UseMonorailCss`, and trust the class-collector to keep the CSS file in sync with whatever utility classes your HTML emits.
 
 ## Prerequisites
 
-_Two-sentence lead-in: this tutorial picks up where the first-page tutorial left off — same three-markdown-page scaffold, same bare `AddPennington` host. If the reader hasn't done that one, point them back; don't re-teach host bootstrapping here._
+This tutorial picks up where [Add your first markdown page](xref:tutorials.getting-started.first-page) left off. You'll need the same three-markdown-page scaffold and bare `AddPennington` host from that tutorial — if you haven't completed it yet, start there before continuing.
 
 - .NET 11 SDK installed
 - Completed [Add your first markdown page](xref:tutorials.getting-started.first-page) (or have a Pennington project with three markdown pages and a working `MapGet` endpoint)
@@ -30,11 +24,11 @@ The finished code for this tutorial lives in [`examples/GettingStartedStylingExa
 
 ## 1. See the starting point
 
-_One sentence: the reader begins with an unstyled three-page site — same shape they built in the previous tutorial — and the first unit just confirms that baseline before anything changes._
+Let's confirm the baseline before touching anything. You're starting with an unstyled three-page site — the same shape you built in the previous tutorial.
 
 ### Step 1.1 — Run the pre-styling host
 
-_Two sentences: point at the `Stage1.Run` body as the current state, and tell the reader to `dotnet run` and load `/` to see the bare, unstyled HTML. No class-based styling has entered the picture yet._
+Here's the host as it stands at the start of this tutorial. Run it and load `/` to see the bare, unstyled HTML — no class-based styling has entered the picture yet.
 
 ```csharp:xmldocid,bodyonly
 M:GettingStartedStylingExample.Stage1.Run(System.String[])
@@ -49,17 +43,17 @@ M:GettingStartedStylingExample.Stage1.Run(System.String[])
 
 ## 2. Add a utility-class layout
 
-_One sentence: before wiring MonorailCSS itself, introduce the shared `Layout.Render` helper whose HTML is sprayed with utility classes — this is what the class-collector will read on each response, and it's what MonorailCSS will style once it's registered._
+Before wiring MonorailCSS itself, you'll create the shared `Layout.Render` helper. Its HTML carries the utility classes the class-collector will read on each response, and MonorailCSS will style them once it's registered.
 
 ### Step 2.1 — Create the layout helper
 
-_One sentence: drop the `Layout` class next to `Program.cs`; show the full type so the reader can see both the signature and the utility-class shell it emits._
+Drop the `Layout` class next to `Program.cs`. The full type shows both the signature and the utility-class shell it emits.
 
 ```csharp:xmldocid
 T:GettingStartedStylingExample.Layout
 ```
 
-_Explain one non-obvious line: the `<link rel="stylesheet" href="/styles.css">` points at an endpoint that doesn't exist yet — that's fine; `UseMonorailCss` will mount it in unit 4. Classes like `text-primary-700`, `bg-base-50`, and `border-base-200` come from the named color palette you'll pick in the next unit._
+Notice that `<link rel="stylesheet" href="/styles.css">` points at an endpoint that doesn't exist yet — that's intentional. `UseMonorailCss` will mount it in section 4. Classes like `text-primary-700`, `bg-base-50`, and `border-base-200` come from the named color palette you'll configure in the next section.
 
 ### Checkpoint — Layout file compiles
 
@@ -70,11 +64,11 @@ _Explain one non-obvious line: the `<link rel="stylesheet" href="/styles.css">` 
 
 ## 3. Register MonorailCSS in DI
 
-_One sentence: this unit adds the MonorailCSS service registration and the named color scheme, and updates the route handler to wrap every response in `Layout.Render`. The stylesheet endpoint still isn't mounted, so pages stay unstyled — that's deliberate, to isolate DI wiring from endpoint wiring._
+Now let's add the MonorailCSS service registration, pick a named color scheme, and update the route handler to wrap every response in `Layout.Render`. The stylesheet endpoint still won't be mounted yet, so pages will stay unstyled — that's deliberate. Keeping DI wiring separate from endpoint wiring makes it easier to pinpoint problems.
 
 ### Step 3.1 — Call `AddMonorailCss` with a `NamedColorScheme`
 
-_Two sentences: show the Stage 2 `Run` body. Call out that `PrimaryColorName`, `AccentColorName`, `TertiaryOneColorName`, `TertiaryTwoColorName`, and `BaseColorName` each take a `ColorNames` value, and that the tutorial uses indigo/pink/cyan/amber/slate; any `ColorNames` constant works._
+Here's the updated host. Each of `PrimaryColorName`, `AccentColorName`, `TertiaryOneColorName`, `TertiaryTwoColorName`, and `BaseColorName` takes a `ColorNames` value. This tutorial uses indigo/pink/cyan/amber/slate, but any `ColorNames` constant works — swap freely.
 
 ```csharp:xmldocid,bodyonly
 M:GettingStartedStylingExample.Stage2.Run(System.String[])
@@ -89,11 +83,11 @@ M:GettingStartedStylingExample.Stage2.Run(System.String[])
 
 ## 4. Mount the stylesheet with `UseMonorailCss`
 
-_One sentence: the final wiring step — add a single line to the middleware pipeline so `/styles.css` becomes a real endpoint backed by the class-collector._
+You're one line away from a live stylesheet. Adding `UseMonorailCss` to the middleware pipeline turns `/styles.css` into a real endpoint backed by the class-collector.
 
 ### Step 4.1 — Call `app.UseMonorailCss()`
 
-_Two sentences: show the Stage 3 `Run` body — it's Stage 2 plus one line, `app.UseMonorailCss()`. Mention that the default path is `/styles.css`, matching the `<link>` tag already in `Layout.Render`._
+The updated host is Stage 2 with one line added: `app.UseMonorailCss()`. The default path is `/styles.css`, which already matches the `<link>` tag in `Layout.Render`.
 
 ```csharp:xmldocid,bodyonly
 M:GettingStartedStylingExample.Stage3.Run(System.String[])
@@ -109,15 +103,21 @@ M:GettingStartedStylingExample.Stage3.Run(System.String[])
 
 ## 5. Watch the stylesheet regenerate
 
-_One sentence: prove to the reader that the class-collector is live — add a new utility class, reload, and watch it appear in the generated CSS without restarting anything._
+Let's prove the class-collector is live. You'll add a new utility class to a markdown file, reload the browser, and watch a new CSS rule appear without restarting the server.
 
 ### Step 5.1 — Add a new utility class to a page
 
-_Two sentences: instruct the reader to open `Content/about.md` and add a paragraph like `<p class="text-accent-600 italic">Hello MonorailCSS</p>`. The class `text-accent-600` wasn't in the layout, so it doesn't yet exist in the stylesheet._
+Open `Content/about.md` and add the following line anywhere in the body:
+
+```html
+<p class="text-accent-600 italic">Hello MonorailCSS</p>
+```
+
+The class `text-accent-600` wasn't in the layout, so it doesn't yet exist in the stylesheet.
 
 ### Step 5.2 — Reload and confirm the new rule
 
-_Two sentences: reload `/about` in the browser — the paragraph should render in pink italic, because MonorailCSS regenerated the stylesheet on the next `/styles.css` request after the new class flowed through the collector. Reload `/styles.css` directly to see the `text-accent-600` rule present._
+Now reload `/about` in the browser. The paragraph renders in pink italic because MonorailCSS regenerated the stylesheet on the next `/styles.css` request after the new class flowed through the collector. Reload `/styles.css` directly and you'll see the `text-accent-600` rule present.
 
 ### Checkpoint — New class, new rule, no restart
 
@@ -129,11 +129,7 @@ _Two sentences: reload `/about` in the browser — the paragraph should render i
 
 ## Summary
 
-_Three to five bullets. Each names a capability, not a topic. Suggested shape:_
-
 - You registered MonorailCSS with `AddMonorailCss` and picked a five-color `NamedColorScheme`.
 - You mounted the generated stylesheet at `/styles.css` with `UseMonorailCss`.
 - You built a utility-class layout and saw the class-collector discover every token on its way through the response pipeline.
 - You added a new utility class at runtime and watched the stylesheet regenerate without a restart.
-
-> Navigation to the next tutorial is generated automatically from `order` — do not write a "what's next" section.

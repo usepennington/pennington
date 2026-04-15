@@ -1,9 +1,9 @@
 namespace Pennington.IntegrationTests.DocsSite;
 
 using System.Text;
-using Microsoft.Extensions.DependencyInjection;
 using Infrastructure;
 using LlmsTxt;
+using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Eyeball smoke test — emits a sample of actual converted markdown so the

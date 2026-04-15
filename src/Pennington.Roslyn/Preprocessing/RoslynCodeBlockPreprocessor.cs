@@ -1,11 +1,11 @@
 namespace Pennington.Roslyn.Preprocessing;
 
 using System.Net;
+using Diagnostics;
+using Highlighting;
+using Markdown.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Diagnostics;
-using Markdown.Extensions;
-using Highlighting;
 using Symbols;
 using Utilities;
 

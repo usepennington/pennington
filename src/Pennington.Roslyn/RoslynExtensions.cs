@@ -1,10 +1,10 @@
 namespace Pennington.Roslyn;
 
-using Microsoft.Extensions.DependencyInjection;
-using Pennington.Highlighting;
-using Markdown.Extensions;
 using Documentation;
 using Highlighting;
+using Markdown.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Pennington.Highlighting;
 using Preprocessing;
 using Symbols;
 using Workspace;

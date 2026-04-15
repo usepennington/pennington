@@ -26,13 +26,14 @@ public class FileWatcherTests : IDisposable
     [Fact]
     public async Task FileWatcher_NotifiesOnChange()
     {
+        var ct = TestContext.Current.CancellationToken;
         var fs = new RealFileSystem();
         using var watcher = new FileWatcher(fs);
         var changedFile = "";
         var tcs = new TaskCompletionSource<bool>();
 
         var filePath = Path.Combine(_tempDir, "test.txt");
-        await File.WriteAllTextAsync(filePath, "initial");
+        await File.WriteAllTextAsync(filePath, "initial", ct);
 
         watcher.AddPathWatch(_tempDir, "*.txt", (path, type) =>
         {
@@ -40,9 +41,9 @@ public class FileWatcherTests : IDisposable
             tcs.TrySetResult(true);
         });
 
-        await File.WriteAllTextAsync(filePath, "modified");
+        await File.WriteAllTextAsync(filePath, "modified", ct);
 
-        var completed = await Task.WhenAny(tcs.Task, Task.Delay(5000));
+        var completed = await Task.WhenAny(tcs.Task, Task.Delay(5000, ct));
         completed.ShouldBe(tcs.Task, "FileWatcher callback should have fired");
         changedFile.ShouldContain("test.txt");
     }
@@ -50,13 +51,14 @@ public class FileWatcherTests : IDisposable
     [Fact]
     public async Task SubscribeToChanges_NotifiesSubscribers()
     {
+        var ct = TestContext.Current.CancellationToken;
         var fs = new RealFileSystem();
         using var watcher = new FileWatcher(fs);
         var subscriberCalled = false;
         var tcs = new TaskCompletionSource<bool>();
 
         var filePath = Path.Combine(_tempDir, "sub.txt");
-        await File.WriteAllTextAsync(filePath, "initial");
+        await File.WriteAllTextAsync(filePath, "initial", ct);
 
         watcher.AddPathWatch(_tempDir, "*.txt", (_, _) => { });
         watcher.SubscribeToChanges(() =>
@@ -65,9 +67,9 @@ public class FileWatcherTests : IDisposable
             tcs.TrySetResult(true);
         });
 
-        await File.WriteAllTextAsync(filePath, "changed");
+        await File.WriteAllTextAsync(filePath, "changed", ct);
 
-        var completed = await Task.WhenAny(tcs.Task, Task.Delay(5000));
+        var completed = await Task.WhenAny(tcs.Task, Task.Delay(5000, ct));
         completed.ShouldBe(tcs.Task, "Subscriber should have been notified");
         subscriberCalled.ShouldBeTrue();
     }

@@ -1,9 +1,9 @@
 namespace Pennington.Localization;
 
 using System.Globalization;
+using Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
-using Infrastructure;
 
 /// <summary>
 /// An <see cref="IRequestCultureProvider"/> that reads the locale from the URL

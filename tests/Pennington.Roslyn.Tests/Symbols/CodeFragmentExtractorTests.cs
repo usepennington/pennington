@@ -9,9 +9,10 @@ public sealed class CodeFragmentExtractorTests
     [Fact]
     public async Task Extracts_Full_Method_Declaration()
     {
+        var ct = TestContext.Current.CancellationToken;
         var code = "public class Foo { public void Bar() { Console.WriteLine(); } }";
-        var tree = CSharpSyntaxTree.ParseText(code);
-        var root = await tree.GetRootAsync();
+        var tree = CSharpSyntaxTree.ParseText(code, cancellationToken: ct);
+        var root = await tree.GetRootAsync(ct);
         var method = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First();
 
         var result = await CodeFragmentExtractor.ExtractCodeFragmentAsync(method, code, bodyOnly: false);
@@ -23,9 +24,10 @@ public sealed class CodeFragmentExtractorTests
     [Fact]
     public async Task Extracts_Method_Body_Only()
     {
+        var ct = TestContext.Current.CancellationToken;
         var code = "public class Foo { public void Bar() { Console.WriteLine(); } }";
-        var tree = CSharpSyntaxTree.ParseText(code);
-        var root = await tree.GetRootAsync();
+        var tree = CSharpSyntaxTree.ParseText(code, cancellationToken: ct);
+        var root = await tree.GetRootAsync(ct);
         var method = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First();
 
         var result = await CodeFragmentExtractor.ExtractCodeFragmentAsync(method, code, bodyOnly: true);
@@ -37,9 +39,10 @@ public sealed class CodeFragmentExtractorTests
     [Fact]
     public async Task Extracts_Expression_Body()
     {
+        var ct = TestContext.Current.CancellationToken;
         var code = "public class Foo { public int Bar() => 42; }";
-        var tree = CSharpSyntaxTree.ParseText(code);
-        var root = await tree.GetRootAsync();
+        var tree = CSharpSyntaxTree.ParseText(code, cancellationToken: ct);
+        var root = await tree.GetRootAsync(ct);
         var method = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First();
 
         var result = await CodeFragmentExtractor.ExtractCodeFragmentAsync(method, code, bodyOnly: true);
@@ -50,9 +53,10 @@ public sealed class CodeFragmentExtractorTests
     [Fact]
     public async Task Extracts_Class_Body_Only()
     {
+        var ct = TestContext.Current.CancellationToken;
         var code = "public class Foo { public int X { get; } }";
-        var tree = CSharpSyntaxTree.ParseText(code);
-        var root = await tree.GetRootAsync();
+        var tree = CSharpSyntaxTree.ParseText(code, cancellationToken: ct);
+        var root = await tree.GetRootAsync(ct);
         var classDecl = root.DescendantNodes().OfType<ClassDeclarationSyntax>().First();
 
         var result = await CodeFragmentExtractor.ExtractCodeFragmentAsync(classDecl, code, bodyOnly: true);
@@ -64,9 +68,10 @@ public sealed class CodeFragmentExtractorTests
     [Fact]
     public async Task Full_Declaration_Returns_Complete_Text()
     {
+        var ct = TestContext.Current.CancellationToken;
         var code = "public class Foo { public int X { get; } }";
-        var tree = CSharpSyntaxTree.ParseText(code);
-        var root = await tree.GetRootAsync();
+        var tree = CSharpSyntaxTree.ParseText(code, cancellationToken: ct);
+        var root = await tree.GetRootAsync(ct);
         var classDecl = root.DescendantNodes().OfType<ClassDeclarationSyntax>().First();
 
         var result = await CodeFragmentExtractor.ExtractCodeFragmentAsync(classDecl, code, bodyOnly: false);

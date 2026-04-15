@@ -7,17 +7,9 @@ sectionLabel: Content Authoring
 tags: [authoring, alerts, markdown, callouts]
 ---
 
-> **In this page.** _Paraphrase the TOC "Covers" line: authoring the five GitHub-style alert blocks (`> [!NOTE]`, `[!TIP]`, `[!CAUTION]`, `[!WARNING]`, `[!IMPORTANT]`) in a standard blockquote and understanding the CSS classes the renderer emits so your stylesheet can pick them up._
->
-> **Not in this page.** _Paraphrase "Does not cover": restyling the alerts beyond the default palette, Mermaid diagrams (see [Embed diagrams](xref:how-to.content-authoring.diagrams)), or the Pennington.UI `<Card>` component surfaced inside markdown (see [Use UI components inside markdown](xref:how-to.content-authoring.ui-components-in-markdown))._
-
-## When to use this
-
-_Two sentences. Frame the reader's goal: they have a working Pennington page and want to flag a note, tip, or warning in the flow of prose without reaching for a Razor component or custom CSS. Point out that the five kinds are fixed by the parser — pick one that matches the signal the callout is sending rather than inventing new ones._
+When you need to surface a note, tip, or warning inside flowing prose without reaching for a Razor component or custom CSS, Pennington's alert extension is the right tool. The five kinds — `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, and `CAUTION` — are fixed by the parser, so pick the one whose signal strength matches what you are communicating rather than trying to invent new ones.
 
 ## Assumptions
-
-_Three bullets. Keep each to a single realistic prior state._
 
 - You have an existing Pennington site rendering markdown (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - Your pipeline was built through `AddPennington` / `AddDocSite` / `AddBlogSite`, so `UseCustomAlerts()` is already wired into the default `MarkdownPipelineFactory` — you do not need to register the extension yourself.
@@ -29,11 +21,9 @@ To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://gith
 
 ## Steps
 
-_Five steps. Each is one imperative action. Snippets are plain markdown fences because the feature is a pure markdown syntax — the xmldocid fence only appears when pointing at the production parser type._
-
 ### 1. Open a blockquote with an alert marker
 
-_One sentence: start a standard `>` blockquote whose very first non-whitespace line is `[!KIND]` in uppercase. The `CustomAlertInlineParser` only fires when the marker is the first inline on the first paragraph of a quote block, so no leading text is allowed._
+Start a standard `>` blockquote whose very first line is `[!KIND]` in uppercase — the `CustomAlertInlineParser` only fires when the marker is the first inline on the first paragraph of the quote block, so no leading text before it is allowed.
 
 ````markdown
 > [!NOTE]
@@ -42,7 +32,7 @@ _One sentence: start a standard `>` blockquote whose very first non-whitespace l
 
 ### 2. Pick one of the five built-in kinds
 
-_Two sentences: choose from `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, or `CAUTION` based on signal strength — note (neutral fact) → tip (smart default) → important (load-bearing) → warning (avoidable problem) → caution (destructive / irreversible). Any other token fails the parse and the block renders as a plain blockquote._
+Choose from `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, or `CAUTION` based on signal strength: note (neutral fact) → tip (smart default) → important (load-bearing) → warning (avoidable problem) → caution (destructive or irreversible). Any other token fails the parse and the block renders as a plain `<blockquote>` with no alert styling.
 
 ````markdown
 > [!TIP]
@@ -60,7 +50,7 @@ _Two sentences: choose from `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, or `CAUTION` 
 
 ### 3. Write the body as normal markdown
 
-_One sentence: every line after the marker is regular markdown — inline formatting, links, lists, and code spans all work because the rest of the blockquote is parsed through the standard Markdig pipeline._
+Every line after the marker is regular markdown — inline formatting, links, lists, and code spans all work because the rest of the blockquote passes through the standard Markdig pipeline unchanged.
 
 ````markdown
 > [!NOTE]
@@ -73,7 +63,7 @@ _One sentence: every line after the marker is regular markdown — inline format
 
 ### 4. Know the classes the renderer emits
 
-_Two sentences: the parser rewrites the quote block into an `AlertBlock` and stamps it with `markdown-alert` plus `markdown-alert-{kind}` (lower-cased). The production parser below is the authoritative source if you need to reason about edge cases._
+The parser rewrites the quote block into an `AlertBlock` and stamps it with two classes: `markdown-alert` (always present) and `markdown-alert-{kind}` where `{kind}` is the lower-cased token. Refer to the production parser type below if you need to reason about edge cases or extend the behavior.
 
 ```csharp:xmldocid
 T:Pennington.Markdown.Extensions.CustomAlertInlineParser
@@ -81,7 +71,7 @@ T:Pennington.Markdown.Extensions.CustomAlertInlineParser
 
 ### 5. Embed the reference fixture to mirror the rendered output
 
-_One sentence: embed the kitchen-sink fixture so you can compare your authored markdown against the canonical "one of each kind" page the docs site renders._
+Embed the kitchen-sink fixture below to compare your authored markdown against the canonical page that exercises one of each alert kind.
 
 ```markdown:path
 examples/DocSiteKitchenSinkExample/Content/main/alerts.md
@@ -90,8 +80,6 @@ examples/DocSiteKitchenSinkExample/Content/main/alerts.md
 ---
 
 ## Verify
-
-_Three bullets. One observable check each._
 
 - Run `dotnet run` and visit the page — each alert renders as a coloured callout (emerald / blue / sky / rose / amber for `NOTE` / `TIP` / `IMPORTANT` / `WARNING` / `CAUTION`) with no `[!KIND]` text visible in the body.
 - View source on the rendered HTML — the outer element carries `class="markdown-alert markdown-alert-note"` (or the matching kind) so your stylesheet can target it.

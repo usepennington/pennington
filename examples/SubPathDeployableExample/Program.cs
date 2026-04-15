@@ -1,5 +1,4 @@
 using Pennington.DocSite;
-using Pennington.Infrastructure;
 using SubPathDeployableExample;
 
 var builder = WebApplication.CreateBuilder(args);

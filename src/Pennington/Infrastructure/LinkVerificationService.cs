@@ -138,28 +138,39 @@ public sealed partial class LinkVerificationService
     }
 
     /// <summary>
-    /// Extract all href and src URLs from HTML.
+    /// Extract all href and src URLs from HTML. Strips <c>&lt;code&gt;</c> and
+    /// <c>&lt;pre&gt;</c> content first so href/src patterns that appear as
+    /// text inside syntax-highlighted code samples are not mistaken for real
+    /// links — the highlighter splits long string literals across span
+    /// boundaries, and the attribute regex would otherwise match across them.
     /// </summary>
     internal static List<(string Url, LinkType Type)> ExtractLinks(string html)
     {
+        var stripped = StripCodeAndPre(html);
         var results = new List<(string, LinkType)>();
 
-        foreach (var match in HrefRegex().EnumerateMatches(html))
+        foreach (var match in HrefRegex().EnumerateMatches(stripped))
         {
-            var url = ExtractAttributeValue(html, match);
+            var url = ExtractAttributeValue(stripped, match);
             if (!string.IsNullOrWhiteSpace(url))
                 results.Add((url, LinkType.Internal));
         }
 
-        foreach (var match in SrcRegex().EnumerateMatches(html))
+        foreach (var match in SrcRegex().EnumerateMatches(stripped))
         {
-            var url = ExtractAttributeValue(html, match);
+            var url = ExtractAttributeValue(stripped, match);
             if (!string.IsNullOrWhiteSpace(url))
                 results.Add((url, LinkType.Image));
         }
 
         return results;
     }
+
+    private static string StripCodeAndPre(string html)
+        => CodeAndPreRegex().Replace(html, "");
+
+    [GeneratedRegex("""<(code|pre|script|style)\b[^>]*>.*?</\1\s*>""", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    private static partial Regex CodeAndPreRegex();
 
     private static string ExtractAttributeValue(string html, ValueMatch match)
     {

@@ -7,14 +7,7 @@ sectionLabel: Configuration Options
 tags: [docsite, options, configuration, reference]
 ---
 
-> **In this page.** _Every property on `DocSiteOptions` — site title and description, color scheme, display/body fonts, header/footer content, GitHub URL, social image, solution path, content areas, and the Pennington/MonorailCSS escape-hatch callbacks._
->
-> **Not in this page.** _`PenningtonOptions` (the base engine options) — see the preceding page [PenningtonOptions](xref:reference.options.pennington-options)._
-
-## Summary
-
-_**One sentence: what it is.** `DocSiteOptions` is the options record passed to `AddDocSite` that configures the documentation-site template: site chrome, typography, color scheme, content areas, and escape-hatch callbacks for customizing the underlying `PenningtonOptions` and `MonorailCssOptions`._
-_**One sentence: where it lives.** Namespace `Pennington.DocSite`, file `src/Pennington.DocSite/DocSiteOptions.cs`, consumed by `DocSiteServiceExtensions.AddDocSite(IServiceCollection, Func<DocSiteOptions>)`._
+`DocSiteOptions` is the options record passed to `AddDocSite` that configures the documentation-site template: site chrome, typography, color scheme, content areas, and escape-hatch callbacks for the underlying `PenningtonOptions` and `MonorailCssOptions`. Defined in namespace `Pennington.DocSite` and consumed by `DocSiteServiceExtensions.AddDocSite(IServiceCollection, Func<DocSiteOptions>)`.
 
 ## Declaration
 
@@ -22,37 +15,37 @@ _**One sentence: where it lives.** Namespace `Pennington.DocSite`, file `src/Pen
 T:Pennington.DocSite.DocSiteOptions
 ```
 
-_One sentence: a `public record` with two required init-only properties (`SiteTitle`, `Description`) and the rest optional. Every property is `init`-only — configure once in the factory passed to `AddDocSite` and treat as immutable afterward._
+A `public record` with two required `init`-only properties (`SiteTitle`, `Description`); all remaining properties are optional `init`-only and default to `null` or empty collections.
 
 ## Properties
 
-_Alphabetical. Two required properties (`SiteTitle`, `Description`) are marked in the Default column. Nested type references link out to their own reference pages; do not duplicate their surface here._
+Properties are listed alphabetically. The two required properties (`SiteTitle`, `Description`) are marked with **(required)** in the Name column; all others are optional.
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `AdditionalHtmlHeadContent` | `string?` | `null` | _One sentence: raw HTML string injected into every page's `<head>` element, rendered as `MarkupString`._ |
-| `AdditionalRoutingAssemblies` | `Assembly[]` | `[]` | _One sentence: extra assemblies scanned for Razor `@page` components so custom pages outside `Pennington.DocSite` participate in routing._ |
-| `Areas` | `IReadOnlyList<ContentArea>` | `[]` | _One sentence: content areas shown in the DocSite area selector; each `ContentArea.Slug` must match a top-level directory under `ContentRootPath`, and an empty or single-element list suppresses the selector. See [ContentArea](#contentarea) below._ |
-| `BodyFontFamily` | `string?` | `null` | _One sentence: CSS `font-family` value applied to body text; pair with `FontPreloads` and `ExtraStyles` for self-hosted faces._ |
-| `CanonicalBaseUrl` | `string?` | `null` | _One sentence: absolute canonical origin used for social meta tags, sitemap entries, RSS links, and structured-data URLs._ |
-| `ColorScheme` | `IColorScheme?` | `null` | _One sentence: MonorailCSS color scheme forwarded to `MonorailCssOptions.ColorScheme`; accepts `NamedColorScheme` or `AlgorithmicColorScheme`._ |
-| `ConfigureLocalization` | `Action<LocalizationOptions>?` | `null` | _One sentence: callback invoked against the underlying `LocalizationOptions` to register locales and set `DefaultLocale`._ |
-| `ConfigurePennington` | `Action<PenningtonOptions>?` | `null` | _One sentence: escape-hatch callback run against the underlying `PenningtonOptions` after DocSite's defaults are applied, used to register extra `AddMarkdownContent<T>` sources, highlighters, or islands without dropping to bare `AddPennington`._ |
-| `ContentRootPath` | `FilePath` | `new("Content")` | _One sentence: root directory scanned for markdown content; each `ContentArea.Slug` resolves as a subfolder of this path._ |
-| `CustomCssFrameworkSettings` | `Func<CssFrameworkSettings, CssFrameworkSettings>?` | `null` | _One sentence: callback that transforms the MonorailCSS framework settings after the DocSite theme has been applied, mirroring `MonorailCssOptions.CustomCssFrameworkSettings`._ |
-| `Description` **(required)** | `string` | — | _One sentence: site-wide description used as the default `<meta name="description">` and in structured data when a page does not supply its own._ |
-| `DisplayFontFamily` | `string?` | `null` | _One sentence: CSS `font-family` value applied to heading/display text._ |
-| `ExtraStyles` | `string?` | `null` | _One sentence: raw CSS emitted above the generated MonorailCSS stylesheet, forwarded to `MonorailCssOptions.ExtraStyles`; typical use is `@font-face` rules paired with `FontPreloads`._ |
-| `FooterContent` | `string?` | `null` | _One sentence: raw HTML rendered as the page footer via `MarkupString`._ |
-| `FontPreloads` | `FontPreload[]` | `[]` | _One sentence: font files emitted as `<link rel="preload">` hints in the `<head>`; each entry carries an `Href` and MIME `Type` (default `font/woff2`)._ |
-| `GitHubUrl` | `string?` | `null` | _One sentence: repository URL linked from the header GitHub icon; setting `null` hides the icon._ |
-| `HeaderContent` | `string?` | `null` | _One sentence: raw HTML rendered inside the site header region via `MarkupString`, typically the site wordmark or home link._ |
-| `HeaderIcon` | `string?` | `null` | _One sentence: raw SVG or HTML markup rendered as the header logo/icon._ |
-| `LlmsTxtContentSelector` | `string?` | `null` (effective `"#main-content"`) | _One sentence: CSS selector scoping llms.txt raw-markdown extraction to a page region; empty string indexes the whole body, same conventions as `SearchIndexContentSelector`._ |
-| `SearchIndexContentSelector` | `string?` | `null` (effective `"#main-content"`) | _One sentence: CSS selector scoping the search index to a page region; empty string indexes the whole body, custom selector supports replaced layouts._ |
-| `SiteTitle` **(required)** | `string` | — | _One sentence: site name shown in the header, `<title>` suffix, RSS/sitemap metadata, and structured data._ |
-| `SocialImageUrl` | `string?` | `null` | _One sentence: URL used as the default Open Graph / Twitter card image on pages that do not supply a per-page override._ |
-| `SolutionPath` | `string?` | `null` | _One sentence: path to a `.sln` or `.slnx` file enabling Roslyn-backed xmldocid code fences; requires the `Pennington.Roslyn` package and its `AddPenningtonRoslyn` registration._ |
+| `AdditionalHtmlHeadContent` | `string?` | `null` | Raw HTML string injected into every page's `<head>` element, rendered as `MarkupString`. |
+| `AdditionalRoutingAssemblies` | `Assembly[]` | `[]` | Extra assemblies scanned for Razor `@page` components so custom pages outside `Pennington.DocSite` participate in routing. |
+| `Areas` | `IReadOnlyList<ContentArea>` | `[]` | Content areas shown in the DocSite area selector; each `ContentArea.Slug` must match a top-level directory under `ContentRootPath`, and an empty or single-element list suppresses the selector. See [ContentArea](#contentarea) below. |
+| `BodyFontFamily` | `string?` | `null` | CSS `font-family` value applied to body text. |
+| `CanonicalBaseUrl` | `string?` | `null` | Absolute canonical origin used for social meta tags, sitemap entries, RSS links, and structured-data URLs. |
+| `ColorScheme` | `IColorScheme?` | `null` | MonorailCSS color scheme forwarded to `MonorailCssOptions.ColorScheme`; accepts `NamedColorScheme` or `AlgorithmicColorScheme`. |
+| `ConfigureLocalization` | `Action<LocalizationOptions>?` | `null` | Callback invoked against the underlying `LocalizationOptions` to register locales and set `DefaultLocale`. |
+| `ConfigurePennington` | `Action<PenningtonOptions>?` | `null` | Escape-hatch callback run against the underlying `PenningtonOptions` after DocSite's defaults are applied, allowing registration of extra `AddMarkdownContent<T>` sources, highlighters, or islands without dropping to bare `AddPennington`. |
+| `ContentRootPath` | `FilePath` | `new("Content")` | Root directory scanned for markdown content; each `ContentArea.Slug` resolves as a subfolder of this path. |
+| `CustomCssFrameworkSettings` | `Func<CssFrameworkSettings, CssFrameworkSettings>?` | `null` | Callback that transforms the MonorailCSS framework settings after the DocSite theme has been applied, mirroring `MonorailCssOptions.CustomCssFrameworkSettings`. |
+| `Description` **(required)** | `string` | — | Site-wide description used as the default `<meta name="description">` and in structured data when a page does not supply its own. |
+| `DisplayFontFamily` | `string?` | `null` | CSS `font-family` value applied to heading and display text. |
+| `ExtraStyles` | `string?` | `null` | Raw CSS emitted above the generated MonorailCSS stylesheet, forwarded to `MonorailCssOptions.ExtraStyles`. |
+| `FooterContent` | `string?` | `null` | Raw HTML rendered as the page footer via `MarkupString`. |
+| `FontPreloads` | `FontPreload[]` | `[]` | Font files emitted as `<link rel="preload">` hints in the `<head>`; each entry carries an `Href` and MIME `Type` (default `font/woff2`). |
+| `GitHubUrl` | `string?` | `null` | Repository URL linked from the header GitHub icon; `null` hides the icon. |
+| `HeaderContent` | `string?` | `null` | Raw HTML rendered inside the site header region via `MarkupString`. |
+| `HeaderIcon` | `string?` | `null` | Raw SVG or HTML markup rendered as the header logo/icon. |
+| `LlmsTxtContentSelector` | `string?` | `null` (effective `"#main-content"`) | CSS selector scoping llms.txt raw-markdown extraction to a page region; an empty string indexes the whole body. |
+| `SearchIndexContentSelector` | `string?` | `null` (effective `"#main-content"`) | CSS selector scoping the search index to a page region; an empty string indexes the whole body. |
+| `SiteTitle` **(required)** | `string` | — | Site name shown in the header, `<title>` suffix, RSS/sitemap metadata, and structured data. |
+| `SocialImageUrl` | `string?` | `null` | URL used as the default Open Graph and Twitter card image on pages that do not supply a per-page override. |
+| `SolutionPath` | `string?` | `null` | Path to a `.sln` or `.slnx` file enabling Roslyn-backed xmldocid code fences; requires the `Pennington.Roslyn` package and `AddPenningtonRoslyn` registration. |
 
 ### `ContentArea`
 
@@ -60,8 +53,7 @@ _Alphabetical. Two required properties (`SiteTitle`, `Description`) are marked i
 T:Pennington.DocSite.ContentArea
 ```
 
-_One sentence: record describing a top-level section of the documentation site with `Title`, `Slug`, and optional `Icon`._
-_One sentence: `Slug` doubles as the URL prefix and the top-level directory name under `ContentRootPath`, so `new ContentArea("Guides", "guides")` maps `/guides/…` to `Content/guides/…`._
+Record describing a top-level section of the documentation site. `Slug` doubles as the URL prefix and the top-level directory name under `ContentRootPath` — `new ContentArea("Guides", "guides")` maps `/guides/…` to `Content/guides/…`.
 
 ### `FontPreload`
 
@@ -69,17 +61,17 @@ _One sentence: `Slug` doubles as the URL prefix and the top-level directory name
 T:Pennington.Infrastructure.FontPreload
 ```
 
-_One sentence: record describing a font file to preload via `<link rel="preload">`, with `Href` and `Type` (default `font/woff2`)._
+Record describing a font file to preload via `<link rel="preload">`, with `Href` and `Type` (defaults to `font/woff2`).
 
 ## Example
 
-_One sentence: the `BuildDocSiteOptions` helper in `DocSiteKitchenSinkExample` wires every optional surface in one place — site metadata, color scheme, fonts, header/footer, localization callback, and areas — so each `init` property shows up next to its sibling in one readable block._
+The `BuildDocSiteOptions` helper in `DocSiteKitchenSinkExample` configures every optional surface in one factory method, covering site metadata, color scheme, fonts, header/footer, localization, and areas.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions
 ```
 
-_One sentence of context: this is the factory passed to `AddDocSite` in the kitchen-sink example's `Program.cs`._
+This factory is passed to `AddDocSite` in the kitchen-sink example's `Program.cs`.
 
 ## See also
 

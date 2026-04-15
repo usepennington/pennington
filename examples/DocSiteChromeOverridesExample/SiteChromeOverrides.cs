@@ -2,7 +2,6 @@ namespace DocSiteChromeOverridesExample;
 
 using System.Reflection;
 using Pennington.DocSite;
-using Pennington.Routing;
 
 /// <summary>
 /// Static helpers that show how the <see cref="DocSiteOptions"/> slot

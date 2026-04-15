@@ -3,8 +3,8 @@ using Pennington.Content;
 using Pennington.Infrastructure;
 using Pennington.Pipeline;
 using Pennington.Routing;
-using DocFrontMatter = Pennington.FrontMatter.DocFrontMatter;
 using BlogFrontMatter = MultipleSourcesExample.BlogFrontMatter;
+using DocFrontMatter = Pennington.FrontMatter.DocFrontMatter;
 
 var builder = WebApplication.CreateBuilder(args);
 

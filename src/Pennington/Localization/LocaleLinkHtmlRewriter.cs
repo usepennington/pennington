@@ -1,8 +1,8 @@
 namespace Pennington.Localization;
 
 using AngleSharp.Dom;
-using Microsoft.AspNetCore.Http;
 using Infrastructure;
+using Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Rewrites internal page links to include the current locale prefix.

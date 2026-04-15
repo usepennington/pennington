@@ -7,14 +7,7 @@ tags: [ui, components, mdazor, razor]
 uid: reference.ui.content
 ---
 
-> **In this page.** `Card`, `CardGrid`, `LinkCard`, `Badge`, `Step`, `Steps`, `CodeBlock`, and `BigTable` — parameters, render behavior, and the component surface used from Mdazor-backed markdown content and Razor pages.
->
-> **Not in this page.** Mdazor parser internals or step-by-step authoring workflow — see [Use UI components inside markdown](xref:how-to.content-authoring.ui-components-in-markdown).
-
-## Summary
-
-_**One sentence: what it is.** The content-oriented subset of the `Pennington.UI.Components` Razor component library — eight components covering callout cards, numbered steps, syntax-highlighted code, and wide-table overflow handling._
-_**One sentence: where it lives.** Namespace `Pennington.UI.Components` (project `src/Pennington.UI/`); pre-registered with Mdazor by `DocSiteServiceExtensions.AddDocSite` so markdown pages can invoke the same tags used from Razor._
+The content-oriented subset of the `Pennington.UI.Components` Razor component library, covering callout cards, numbered steps, syntax-highlighted code, and wide-table overflow handling. Components live in namespace `Pennington.UI.Components` (`src/Pennington.UI/`) and are pre-registered with Mdazor by `DocSiteServiceExtensions.AddDocSite`, making them available as tags inside markdown without additional wiring.
 
 ## Overview
 
@@ -29,15 +22,15 @@ _**One sentence: where it lives.** Namespace `Pennington.UI.Components` (project
 | `Step` | Single numbered list item inside a `Steps` container. | `<Step StepNumber="1">@ChildContent</Step>` | `<Step StepNumber="1">` ... `</Step>` |
 | `Steps` | Vertical numbered-step list container for `Step` children. | `<Steps>@ChildContent</Steps>` | `<Steps>` ... `</Steps>` |
 
-_Each component is listed alphabetically below with its declaration fence, parameter table, and a minimal usage example. All eight are pre-registered with Mdazor by `AddDocSite` and therefore usable as tags inside markdown content without further wiring._
+Each component is listed alphabetically below with its declaration fence, parameter table, and a minimal usage example.
 
 ## `Badge`
 
-```csharp:xmldocid
-T:Pennington.UI.Components.Badge
+```razor:path
+src/Pennington.UI/Components/Badge.razor
 ```
 
-_Inline pill with ring + tinted background, variant-mapped to a MonorailCSS color palette. Renders a `<span>` (inline), so it is safe inside flowing prose and table cells._
+Inline pill with ring and tinted background, variant-mapped to a MonorailCSS color palette; renders a `<span>` and is safe inside flowing prose and table cells.
 
 ### Parameters
 
@@ -53,15 +46,13 @@ _Inline pill with ring + tinted background, variant-mapped to a MonorailCSS colo
 <Badge Text="New" Variant="tip" Size="small" />
 ```
 
-_TODO: confirm whether `Text` and `ChildContent` are both supported at runtime — the current component reads only `Text`; markdown usage of `<Badge>Kitchen sink</Badge>` in `examples/DocSiteKitchenSinkExample/Content/main/ui-components-in-markdown.md` may rely on Mdazor mapping the inner text to `Text`._
-
 ## `BigTable`
 
-```csharp:xmldocid
-T:Pennington.UI.Components.BigTable
+```razor:path
+src/Pennington.UI/Components/BigTable.razor
 ```
 
-_Overflow wrapper for tables wider than the main column. Emits a single `<div>` with `overflow-x-scroll` and `text-sm`; the caller is expected to place a `<table>` (or markdown table) as `ChildContent`._
+Overflow wrapper for tables wider than the main column; emits a `<div>` with horizontal scroll and reduced text size, with the table supplied as `ChildContent`.
 
 ### Parameters
 
@@ -79,11 +70,11 @@ _Overflow wrapper for tables wider than the main column. Emits a single `<div>` 
 
 ## `Card`
 
-```csharp:xmldocid
-T:Pennington.UI.Components.Card
+```razor:path
+src/Pennington.UI/Components/Card.razor
 ```
 
-_Static non-clickable callout card. Renders a rounded, tinted panel with an optional icon region and a bold heading; body content flows through `ChildContent` with `not-prose` applied so surrounding prose styles are suppressed inside the card._
+Static non-clickable callout card; renders a rounded, tinted panel with an optional icon region and bold heading, with `not-prose` applied inside so surrounding prose styles do not affect card body content.
 
 ### Parameters
 
@@ -104,11 +95,11 @@ _Static non-clickable callout card. Renders a rounded, tinted panel with an opti
 
 ## `CardGrid`
 
-```csharp:xmldocid
-T:Pennington.UI.Components.CardGrid
+```razor:path
+src/Pennington.UI/Components/CardGrid.razor
 ```
 
-_Responsive grid container for `Card` or `LinkCard` children. Renders a one-column grid on small viewports and a `Columns`-wide grid from the `sm` breakpoint up; the `Columns` value is interpolated into a MonorailCSS class (e.g. `sm:grid-cols-3`)._
+Responsive grid container for `Card` or `LinkCard` children; renders one column on small viewports and a `Columns`-wide grid from the `sm` breakpoint up, with `Columns` interpolated into a MonorailCSS class.
 
 ### Parameters
 
@@ -129,11 +120,11 @@ _Responsive grid container for `Card` or `LinkCard` children. Renders a one-colu
 
 ## `CodeBlock`
 
-```csharp:xmldocid
-T:Pennington.UI.Components.CodeBlock
+```razor:path
+src/Pennington.UI/Components/CodeBlock.razor
 ```
 
-_Razor-level wrapper around `ICodeHighlighter`. Accepts code via either the `Code` parameter or `ChildContent`, normalizes common leading whitespace from `ChildContent`, then delegates to the injected highlighter; output is emitted as a `MarkupString`. An empty or missing `Language` renders an inline error div._
+Razor-level wrapper around `ICodeHighlighter`; accepts code via `Code` or `ChildContent`, normalizes leading whitespace from `ChildContent`, delegates to the injected highlighter, and emits output as a `MarkupString`. An empty or missing `Language` renders an inline error element.
 
 ### Parameters
 
@@ -150,15 +141,15 @@ _Razor-level wrapper around `ICodeHighlighter`. Accepts code via either the `Cod
 <CodeBlock Language="csharp" Code="var x = 1;" />
 ```
 
-_For fenced-code-block authoring inside markdown prose, prefer the standard triple-backtick fence with an info string — `<CodeBlock>` is intended for Razor pages and Mdazor tag invocations where a fence is awkward._
+`<CodeBlock>` is intended for Razor pages and Mdazor tag invocations; for fenced-code-block authoring inside markdown prose, use the standard triple-backtick fence with an info string instead.
 
 ## `LinkCard`
 
-```csharp:xmldocid
-T:Pennington.UI.Components.LinkCard
+```razor:path
+src/Pennington.UI/Components/LinkCard.razor
 ```
 
-_Clickable variant of `Card`. The entire card body is wrapped in an `<a>` whose `href` is bound to `Href`; hover states tint the background using the `Color` palette._
+Clickable variant of `Card`; wraps the entire card body in an `<a>` bound to `Href`, with hover states tinting the background using the `Color` palette.
 
 ### Parameters
 
@@ -180,18 +171,18 @@ _Clickable variant of `Card`. The entire card body is wrapped in an `<a>` whose 
 
 ## `Step`
 
-```csharp:xmldocid
-T:Pennington.UI.Components.Step
+```razor:path
+src/Pennington.UI/Components/Step.razor
 ```
 
-_One numbered item inside a `Steps` list. Renders an `<li>` with an absolute-positioned number badge pinned to the list's left rail; expects to be nested directly inside `<Steps>` so the parent's `<ol>` and rail border align._
+One numbered item inside a `Steps` list; renders an `<li>` with an absolute-positioned number badge pinned to the left rail and must be nested directly inside `<Steps>` for the rail border to align.
 
 ### Parameters
 
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `ChildContent` | `RenderFragment?` | `null` | Step body content, rendered to the right of the numbered badge. |
-| `StepNumber` | `string` | `"1"` | Label shown inside the circular badge — a string so non-numeric markers (e.g. `"A"`, `"i"`) are possible. |
+| `StepNumber` | `string` | `"1"` | Label shown inside the circular badge — a string so non-numeric markers (for example, `"A"`, `"i"`) are possible. |
 
 ### Example
 
@@ -204,18 +195,18 @@ _One numbered item inside a `Steps` list. Renders an `<li>` with an absolute-pos
 
 ## `Steps`
 
-```csharp:xmldocid
-T:Pennington.UI.Components.Steps
+```razor:path
+src/Pennington.UI/Components/Steps.razor
 ```
 
-_Container for a vertical numbered-step list. Emits a `<div>` wrapping an `<ol>` with a left border acting as the connecting rail; `Step` children provide the numbered items._
+Container for a vertical numbered-step list; emits a `<div>` wrapping an `<ol>` with a left border as the connecting rail, populated by `Step` children.
 
 ### Parameters
 
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `ChildContent` | `RenderFragment?` | `null` | One or more `<Step>` children. |
-| `Type` | `string` | `"primary"` | _TODO: parameter is declared but not currently read by the rendered markup; confirm whether it is reserved for future theming or should be removed._ |
+| `Type` | `string` | `"primary"` | Declared parameter reserved for future theming; not currently applied to rendered markup. |
 
 ### Example
 
@@ -234,8 +225,6 @@ All eight components are pre-registered with Mdazor by `DocSiteServiceExtensions
 ```csharp:xmldocid,bodyonly
 M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})
 ```
-
-_TODO: confirm the exact xmldocid signature for `AddDocSite` — the overload above matches the public signature in `src/Pennington.DocSite/DocSiteServiceExtensions.cs`; adjust parameter types if the source file diverges._
 
 For sites that do not use `AddDocSite` (for example, `AddBlogSite` or a hand-rolled `AddPennington` host), call `AddMdazorComponent<T>()` for each of the eight types to match the doc-site surface.
 

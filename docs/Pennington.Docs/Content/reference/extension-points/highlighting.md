@@ -7,18 +7,9 @@ tags: [highlighting, extension-points, code-blocks, textmate]
 uid: reference.extension-points.highlighting
 ---
 
-> **In this page.** `ICodeHighlighter`, `ICodeBlockPreprocessor`, `HighlightingService`, and `TextMateLanguageRegistry`.
->
-> **Not in this page.** Writing TextMate grammars — see the upstream TextMateSharp documentation.
-
-## Summary
-
-_**One sentence: what it is.** The four extension points that together control Pennington's code-block highlighting: the `ICodeHighlighter` contract that every language handler implements, the `ICodeBlockPreprocessor` contract that intercepts fences before highlighting, the `HighlightingService` dispatcher that picks a highlighter by priority, and the `TextMateLanguageRegistry` that owns grammar/scope mappings for the built-in `TextMateHighlighter`._
-_**One sentence: where it lives.** Namespaces `Pennington.Highlighting` (`src/Pennington/Highlighting/`) for the highlighter contract, dispatcher, and grammar registry; `Pennington.Markdown.Extensions` (`src/Pennington/Markdown/Extensions/`) for the preprocessor contract._
+The four extension points controlling Pennington's code-block highlighting: `ICodeHighlighter` (the per-language handler contract), `ICodeBlockPreprocessor` (fence interception before highlighting), `HighlightingService` (priority-based dispatcher), and `TextMateLanguageRegistry` (grammar/scope registry for the built-in TextMate highlighter). The highlighter types live in `Pennington.Highlighting`; the preprocessor contract lives in `Pennington.Markdown.Extensions`.
 
 ## Overview
-
-_Four-row table keyed by type. Columns: **Type**, **Namespace**, **Kind**, **Purpose**. One-sentence purposes only — this is the landing index for the four types bundled on this page. Alphabetical within each kind grouping (interfaces, then classes)._
 
 | Type | Namespace | Kind | Purpose |
 |---|---|---|---|
@@ -33,17 +24,15 @@ _Four-row table keyed by type. Columns: **Type**, **Namespace**, **Kind**, **Pur
 T:Pennington.Highlighting.ICodeHighlighter
 ```
 
-_The per-language highlighter contract. Implementations are registered via `HighlightingOptions.AddHighlighter<T>` or `HighlightingOptions.AddHighlighter(instance)` and dispatched by `HighlightingService` in descending `Priority` order. Built-in implementations: `ShellHighlighter` (priority 75), `TextMateHighlighter` (priority 50), `PlainTextHighlighter` (priority 0 fallback)._
+The per-language highlighter contract, registered via `HighlightingOptions.AddHighlighter<T>` or `HighlightingOptions.AddHighlighter(instance)` and dispatched by `HighlightingService` in descending `Priority` order. Built-in implementations: `ShellHighlighter` (priority 75), `TextMateHighlighter` (priority 50), `PlainTextHighlighter` (priority 0 fallback).
 
 ### Members
-
-_Alphabetical._
 
 | Name | Signature | Description |
 |---|---|---|
 | `Highlight` | `string Highlight(string code, string language)` | Returns HTML for the supplied source, with token `<span>` wrappers carrying the `hljs-*` CSS classes consumed by the stylesheet. |
 | `Priority` | `int { get; }` | Dispatcher ranking; higher values win when multiple highlighters claim the same language. `ShellHighlighter` uses 75, `TextMateHighlighter` uses 50, `PlainTextHighlighter` uses 0. |
-| `SupportedLanguages` | `IReadOnlySet<string> { get; }` | The language identifiers this highlighter claims (e.g., `"csharp"`, `"python"`). Returning a set that contains `"*"` matches every language. |
+| `SupportedLanguages` | `IReadOnlySet<string> { get; }` | The language identifiers this highlighter claims (for example, `"csharp"`, `"python"`). Returning a set that contains `"*"` matches every language. |
 
 ## `ICodeBlockPreprocessor`
 
@@ -51,11 +40,9 @@ _Alphabetical._
 T:Pennington.Markdown.Extensions.ICodeBlockPreprocessor
 ```
 
-_Runs before `HighlightingService` for every fenced block. Implementations inspect the fence's language modifier (e.g., `csharp:xmldocid`, `csharp:path`) and may return a `CodeBlockPreprocessResult` with already-highlighted HTML, or `null` to pass the block through to the dispatcher. Preprocessors are ordered by descending `Priority`; the first non-null result wins. The shipped implementation is `RoslynCodeBlockPreprocessor` in `Pennington.Roslyn`._
+Runs before `HighlightingService` for every fenced block. Implementations inspect the fence's language modifier (such as `csharp:xmldocid` or `csharp:path`) and may return a `CodeBlockPreprocessResult` with already-highlighted HTML, or `null` to pass the block through to the dispatcher. Preprocessors are ordered by descending `Priority`; the first non-null result wins. The shipped implementation is `RoslynCodeBlockPreprocessor` in `Pennington.Roslyn`.
 
 ### Members
-
-_Alphabetical._
 
 | Name | Signature | Description |
 |---|---|---|
@@ -68,13 +55,13 @@ _Alphabetical._
 T:Pennington.Markdown.Extensions.CodeBlockPreprocessResult
 ```
 
-_Record returned by a successful `TryProcess` call._
+Record returned by a successful `TryProcess` call.
 
-| Name | Type | Description |
-|---|---|---|
-| `BaseLanguage` | `string` | The language identifier used for the output block's CSS class (e.g., `csharp`) so stylesheet rules key off the base language rather than the modifier. |
-| `HighlightedHtml` | `string` | The fully highlighted HTML, wrapped in the `<pre><code>` tags the renderer will emit directly. |
-| `SkipTransform` | `bool` | When `true`, bypasses `CodeTransformer` (tab stripping, empty-line normalization) on the output; defaults to `false`. |
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `BaseLanguage` | `string` | — | The language identifier used for the output block's CSS class (such as `csharp`) so stylesheet rules key off the base language rather than the modifier. |
+| `HighlightedHtml` | `string` | — | The fully highlighted HTML, wrapped in the `<pre><code>` tags the renderer emits directly. |
+| `SkipTransform` | `bool` | `false` | When `true`, bypasses `CodeTransformer` (tab stripping, empty-line normalization) on the output. |
 
 ## `HighlightingService`
 
@@ -82,11 +69,9 @@ _Record returned by a successful `TryProcess` call._
 T:Pennington.Highlighting.HighlightingService
 ```
 
-_The dispatcher registered as a singleton by `AddPennington`. Constructor takes `IEnumerable<ICodeHighlighter>` (supplied by DI from every highlighter registered through `HighlightingOptions`) and sorts them by descending `Priority` once at construction. Dispatching falls back to `PlainTextHighlighter` when no registered highlighter claims the requested language._
+Registered as a singleton by `AddPennington`. The constructor accepts `IEnumerable<ICodeHighlighter>` (supplied by DI from every highlighter registered through `HighlightingOptions`) and sorts them by descending `Priority` once at construction. Dispatching falls back to `PlainTextHighlighter` when no registered highlighter claims the requested language.
 
 ### Members
-
-_Alphabetical._
 
 | Name | Signature | Description |
 |---|---|---|
@@ -99,11 +84,9 @@ _Alphabetical._
 T:Pennington.Highlighting.TextMateLanguageRegistry
 ```
 
-_Backs the built-in `TextMateHighlighter` with a grammar lookup and mutable scope registry. Registered as a singleton by `AddPennington` and resolvable from DI for post-registration mutation. The constructor accepts an optional `Action<TextMateLanguageRegistry>` configuration callback. Custom scope mappings and grammars take precedence over the built-in `TextMateSharp` registry when resolving a language id._
+Backs the built-in `TextMateHighlighter` with a grammar lookup and mutable scope registry. Registered as a singleton by `AddPennington` and resolvable from DI for post-registration mutation. The constructor accepts an optional `Action<TextMateLanguageRegistry>` configuration callback. Custom scope mappings and grammars take precedence over the built-in `TextMateSharp` registry when resolving a language identifier.
 
 ### Members
-
-_Alphabetical._
 
 | Name | Signature | Description |
 |---|---|---|
@@ -112,13 +95,11 @@ _Alphabetical._
 
 ## Example
 
-_One minimal example pulled from `examples/ExtensibilityLabExample/PipelineHighlighter.cs` — a custom `ICodeHighlighter` shown at the type level so a reader recognizes the full contract surface (language set, priority, highlight method) in one place. Registration and walkthrough live in the how-to._
+A custom `ICodeHighlighter` showing the full contract surface: a `SupportedLanguages` set, a `Priority` value higher than any built-in highlighter it overrides, and a `Highlight` method returning HTML with `<span class="hljs-*">` tokens.
 
 ```csharp:xmldocid,bodyonly
 T:ExtensibilityLabExample.PipelineHighlighter
 ```
-
-_Reference shape for a custom `ICodeHighlighter`: a `SupportedLanguages` set, a `Priority` higher than the built-in highlighters it overrides, and a `Highlight` method that returns HTML with `<span class="hljs-*">` tokens._
 
 ## See also
 

@@ -3,12 +3,12 @@ namespace Pennington.LlmsTxt;
 using System.Collections.Immutable;
 using System.IO.Abstractions;
 using System.Text;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Content;
 using FrontMatter;
 using Infrastructure;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Navigation;
 using Pipeline;
 using Routing;
@@ -195,11 +195,8 @@ public sealed class LlmsTxtService
             {
                 // Leaf node — fetch rendered HTML and write entry
                 var key = NormalizePath(item.Route.CanonicalPath.Value);
-                if (!metadataByPath.TryGetValue(key, out var metadata))
-                {
-                    // No parsed metadata — this is a Razor page or similar. Still fetch it.
-                    metadata = null!;
-                }
+                // May be absent for Razor pages or synthetic nav leaves — treat as no metadata.
+                metadataByPath.TryGetValue(key, out var metadata);
 
                 var element = await fetcher.FetchContentAsync(
                     item.Route.CanonicalPath.Value, llmsTxtOptions.ContentSelector);
@@ -213,7 +210,7 @@ public sealed class LlmsTxtService
                 var markdown = HtmlToMarkdownConverter.Convert(element, rewriteHref);
 
                 var mdPath = $"{llmsTxtOptions.OutputDirectory}/{key}.md";
-                var description = metadata.Description is { } desc
+                var description = metadata?.Description is { } desc
                     ? $": {desc}"
                     : "";
 

@@ -7,14 +7,7 @@ tags: [islands, spa, extension-points, rendering]
 uid: reference.extension-points.islands
 ---
 
-> **In this page.** `IIslandRenderer`, `RazorIslandRenderer<T>`, `SpaEnvelope`, `RenderContext`, and the `data-spa-*` attribute surface.
->
-> **Not in this page.** The SPA client-side script — see the explanation [SPA navigation and island architecture](xref:explanation.spa.islands).
-
-## Summary
-
-_**One sentence: what it is.** The four types in `Pennington.Islands` that implementers touch when adding a server-rendered island — the `IIslandRenderer` contract, the `RazorIslandRenderer<T>` convenience base, the `SpaEnvelope` record describing the per-route payload, and the `RenderContext` handed to renderers — together with the `data-spa-*` attribute surface the browser engine reads to locate and hydrate those islands._
-_**One sentence: where it lives.** Namespace `Pennington.Islands` (`src/Pennington/Islands/`); registered through `PenningtonOptions.Islands.Register<T>(name)` and exposed to the browser by `SpaNavigationExtensions.AddSpaNavigation` / `UseSpaNavigation`._
+`Pennington.Islands` defines the four types implementers touch when adding a server-rendered island: the `IIslandRenderer` contract, the `RazorIslandRenderer<T>` convenience base, the `SpaEnvelope` record describing the per-route payload, and the `RenderContext` handed to renderers, together with the `data-spa-*` attribute surface the browser engine reads to locate and hydrate those islands. The namespace is registered through `PenningtonOptions.Islands.Register<T>(name)` and exposed to the browser by `SpaNavigationExtensions.AddSpaNavigation` / `UseSpaNavigation`.
 
 ## `IIslandRenderer`
 
@@ -22,11 +15,9 @@ _**One sentence: where it lives.** Namespace `Pennington.Islands` (`src/Penningt
 T:Pennington.Islands.IIslandRenderer
 ```
 
-_The root contract: one property naming the island, one method that returns rendered HTML for a given `ContentRoute` and `RenderContext`. Returning an empty string signals "no island on this page" — `SpaPageDataService` drops empties before keying the `SpaEnvelope.Islands` dictionary._
+The root contract exposes one property that names the island and one method that returns rendered HTML for a given `ContentRoute` and `RenderContext`; returning an empty string signals no island for that route, and `SpaPageDataService` drops empty results before keying the `SpaEnvelope.Islands` dictionary.
 
 ### Members
-
-_Alphabetical._
 
 | Name | Signature | Description |
 |---|---|---|
@@ -39,11 +30,9 @@ _Alphabetical._
 T:Pennington.Islands.RazorIslandRenderer`1
 ```
 
-_Abstract base that implements `IIslandRenderer` for the common case of rendering a Razor component `TComponent`. Subclasses override `IslandName` and `BuildParametersAsync`; the base resolves parameters to HTML through the scoped `ComponentRenderer`. Returning `null` from `BuildParametersAsync` skips the island for that route (the base returns an empty string, which `SpaPageDataService` filters out)._
+Abstract base that implements `IIslandRenderer` for the common case of rendering a Razor component `TComponent`; subclasses override `IslandName` and `BuildParametersAsync`, and the base resolves parameters to HTML through the scoped `ComponentRenderer`. Returning `null` from `BuildParametersAsync` skips the island for that route, causing the base to return an empty string that `SpaPageDataService` filters out.
 
 ### Members
-
-_Alphabetical; `IslandName` restated here because every subclass must override it._
 
 | Name | Signature | Description |
 |---|---|---|
@@ -57,11 +46,9 @@ _Alphabetical; `IslandName` restated here because every subclass must override i
 T:Pennington.Islands.RenderContext
 ```
 
-_Record supplied to every `IIslandRenderer.RenderAsync` call; the scoped `SpaPageDataService` injects a single instance per request. Carries the pieces of request state islands typically need — base URL for building links, site title for titling, active locale for locale-aware content — without pulling in the full `HttpContext`._
+Record supplied to every `IIslandRenderer.RenderAsync` call; the scoped `SpaPageDataService` injects a single instance per request carrying the base URL, site title, and active locale without requiring access to the full `HttpContext`.
 
 ### Members
-
-_Declaration order matches the record's positional constructor._
 
 | Name | Type | Description |
 |---|---|---|
@@ -75,11 +62,9 @@ _Declaration order matches the record's positional constructor._
 T:Pennington.Islands.SpaEnvelope
 ```
 
-_Record describing the server-side shape of the per-route payload — title, optional description, optional `SocialMetadata`, and the `ImmutableDictionary<string, string>` of island-name → HTML. The JSON served at `SpaNavigationOptions.DataPath` (default `/_spa-data`) is the serialized form of the sibling `SpaEnvelopeDto` (`Pennington.Islands.SpaEnvelopeDto`), which flattens the dictionary and carries `Diagnostics` plus an optional `Reload` flag — consult that type for the wire contract, not this one._
+Record describing the server-side shape of the per-route payload, holding the page title, optional description, optional `SocialMetadata`, and the `ImmutableDictionary<string, string>` of island-name to HTML. The JSON served at `SpaNavigationOptions.DataPath` (default `/_spa-data`) is the serialized form of the sibling `SpaEnvelopeDto` (`Pennington.Islands.SpaEnvelopeDto`), which flattens the dictionary and carries `Diagnostics` and an optional `Reload` flag; consult that type for the wire contract.
 
 ### Members
-
-_Declaration order matches the record's positional constructor._
 
 | Name | Type | Description |
 |---|---|---|
@@ -90,7 +75,7 @@ _Declaration order matches the record's positional constructor._
 
 ## `data-spa-*` attribute reference
 
-_Lookup table for the attribute surface the client engine (`src/Pennington.UI/wwwroot/spa-engine.js`) reads. Attributes are grouped by the element that carries them and ordered alphabetically within each group._
+Lookup table for the attribute surface the client engine reads (`src/Pennington.UI/wwwroot/spa-engine.js`), grouped by the element that carries them and ordered alphabetically within each group.
 
 | Attribute | Applies to | Values | Description |
 |---|---|---|---|
@@ -105,13 +90,13 @@ _Lookup table for the attribute surface the client engine (`src/Pennington.UI/ww
 
 ## Example
 
-_The canonical subclass of `RazorIslandRenderer<TComponent>` from the extensibility lab — overrides `IslandName`, implements `BuildParametersAsync`, and returns `null` to skip the island on routes that do not carry a matching `data-spa-island` slot. Registered via `options.Islands.Register<ChartIslandRenderer>("chart")`._
+The canonical subclass of `RazorIslandRenderer<TComponent>` from the extensibility lab overrides `IslandName`, implements `BuildParametersAsync`, and returns `null` to skip the island on routes that do not carry a matching `data-spa-island` slot; registered via `options.Islands.Register<ChartIslandRenderer>("chart")`.
 
 ```csharp:xmldocid,bodyonly
 T:ExtensibilityLabExample.ChartIslandRenderer
 ```
 
-_Reference shape for a Razor-backed island renderer; implementation walkthrough lives in the how-to._
+Reference shape for a Razor-backed island renderer; the implementation walkthrough lives in the how-to guide at <xref:how-to.extensibility.island-renderer>.
 
 ## See also
 

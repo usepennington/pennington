@@ -7,23 +7,15 @@ sectionLabel: Extensibility
 tags: [response-pipeline, extensibility, middleware, html-injection]
 ---
 
-> **In this page.** _Paraphrase the TOC "Covers" line: implementing `IResponseProcessor`, picking an `Order` that slots cleanly into the built-in 10/20/30 chain, gating expensive work with `ShouldProcess`, and mutating the response body inside `ProcessAsync`._
->
-> **Not in this page.** _Paraphrase the TOC "Does not cover": HTML-structured edits. When the goal is DOM work — anchor rewrites, attribute additions, element injection at a selector — implement `IHtmlResponseRewriter` instead so every rewriter shares one AngleSharp pass. See [Write an HTML rewriter](xref:how-to.extensibility.html-rewriter)._
+Implement `IResponseProcessor` when you need to transform the full response body as a string — injecting a pre-serialized HTML fragment, logging an outgoing payload, or appending a non-HTML footer. When the goal is DOM work such as anchor rewrites, attribute additions, or element injection at a CSS selector, implement `IHtmlResponseRewriter` instead so every rewriter shares one AngleSharp parse. See [Write an HTML rewriter](xref:how-to.extensibility.html-rewriter).
 
-## When to use this
+## Before you begin
 
-_Two sentences. Frame the reader's goal: they need to transform the whole response body as a string — inject a pre-serialized HTML fragment, log an outgoing payload, or append a non-HTML footer — where parsing the DOM would be overkill or actively wrong (non-HTML responses). Point them sideways to `IHtmlResponseRewriter` for selector-driven HTML edits so nobody lands here to write a regex over `<a href>`._
+- You have an existing Pennington site. See the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not.
+- `ResponseProcessingMiddleware` buffers the full response body before your processor runs. This is fine for HTML pages but unsuitable for large binary streams — gate those out in `ShouldProcess`.
+- The built-in processors and their `Order` values: `HtmlResponseRewritingProcessor` at 10, `LiveReloadScriptProcessor` at 20 (dev only), `DiagnosticOverlayProcessor` at 30 (dev only).
 
-## Assumptions
-
-_Three bullets. Each is realistic prior state, not a tutorial step._
-
-- You have an existing Pennington site (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
-- You understand that `ResponseProcessingMiddleware` buffers the full response body before your processor runs — this is fine for HTML pages but unsuitable for large binary streams, so gate those out in `ShouldProcess`.
-- You know which of the built-in processors your work needs to run before or after: `HtmlResponseRewritingProcessor` at `Order` 10, `LiveReloadScriptProcessor` at 20, `DiagnosticOverlayProcessor` at 30.
-
-To copy a working setup, see [`examples/ExtensibilityLabExample`](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample) — `FeedbackWidgetProcessor.cs` injects a "Was this helpful?" aside before `</body>` and is registered against a bare `AddPennington` host in `Program.cs`.
+The `ExtensibilityLabExample` project provides a working reference — `FeedbackWidgetProcessor.cs` injects a "Was this helpful?" aside before `</body>` and is registered in `Program.cs` against a bare `AddPennington` host.
 
 ---
 
@@ -31,7 +23,7 @@ To copy a working setup, see [`examples/ExtensibilityLabExample`](https://github
 
 ### 1. Implement `IResponseProcessor`
 
-_One sentence. The contract is three members: `Order`, `ShouldProcess(HttpContext)`, and `ProcessAsync(string responseBody, HttpContext)` returning the replacement body. Start from the shipped example — it injects a feedback widget before `</body>` and falls back to appending when the closing tag is missing._
+The contract is three members — `Order`, `ShouldProcess(HttpContext)`, and `ProcessAsync(string responseBody, HttpContext)` — and the shipped example injects a feedback widget before `</body>`, falling back to append when the closing tag is missing.
 
 ```csharp:xmldocid
 T:Pennington.Infrastructure.IResponseProcessor
@@ -43,7 +35,7 @@ T:ExtensibilityLabExample.FeedbackWidgetProcessor
 
 ### 2. Pick an `Order`
 
-_Two sentences. The built-ins occupy 10 (`HtmlResponseRewritingProcessor`), 20 (`LiveReloadScriptProcessor`, dev-only), and 30 (`DiagnosticOverlayProcessor`, dev-only). Slot yours using the same tidy 10/20/30/40/50 sequence — `40` runs after all three built-ins so your output is not subject to further rewriting, while a value below `10` would see the un-resolved `<xref:...>` placeholders that `HtmlResponseRewritingProcessor` expands._
+The built-ins occupy 10 (`HtmlResponseRewritingProcessor`), 20 (`LiveReloadScriptProcessor`, dev-only), and 30 (`DiagnosticOverlayProcessor`, dev-only). Slot yours into the same 10/20/30/40/50 sequence — `40` runs after all three built-ins so your output is not rewritten further, while anything below `10` would see the un-resolved `<xref:...>` placeholders that `HtmlResponseRewritingProcessor` expands.
 
 ```csharp:xmldocid
 P:ExtensibilityLabExample.FeedbackWidgetProcessor.Order
@@ -51,7 +43,7 @@ P:ExtensibilityLabExample.FeedbackWidgetProcessor.Order
 
 ### 3. Gate work with `ShouldProcess`
 
-_Two sentences. `ShouldProcess` runs before the body is buffered; returning `false` skips body capture entirely, so this is where you filter by status code, content type, or request path. The example accepts only 2xx HTML responses — static assets, JSON endpoints, and redirects pass through untouched._
+`ShouldProcess` runs before the body is buffered — returning `false` skips body capture entirely, so this is where you filter by status code, content type, or request path. The example accepts only 2xx HTML responses, letting static assets, JSON endpoints, and redirects pass through untouched.
 
 ```csharp:xmldocid
 M:ExtensibilityLabExample.FeedbackWidgetProcessor.ShouldProcess(Microsoft.AspNetCore.Http.HttpContext)
@@ -59,7 +51,7 @@ M:ExtensibilityLabExample.FeedbackWidgetProcessor.ShouldProcess(Microsoft.AspNet
 
 ### 4. Mutate the body in `ProcessAsync`
 
-_Two sentences. `ProcessAsync` receives the full captured body as a string and must return the replacement string — an empty return will empty the response. The example finds the last `</body>` with `LastIndexOf` and splices the widget HTML in, falling back to append-at-end when the tag is absent so the content still reaches the browser._
+`ProcessAsync` receives the full captured body as a string and must return the replacement string — an empty return will empty the response. The example locates the last `</body>` with `LastIndexOf` and splices the widget HTML in, falling back to append-at-end when the tag is absent so content still reaches the browser.
 
 ```csharp:xmldocid
 M:ExtensibilityLabExample.FeedbackWidgetProcessor.ProcessAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)
@@ -67,7 +59,7 @@ M:ExtensibilityLabExample.FeedbackWidgetProcessor.ProcessAsync(System.String,Mic
 
 ### 5. Register the processor with DI
 
-_One sentence. Add a singleton registration for `IResponseProcessor` — `ResponseProcessingMiddleware` resolves every registered implementation and sorts by `Order` on each request._
+Add a singleton registration against `IResponseProcessor` — `ResponseProcessingMiddleware` resolves every registered implementation and sorts by `Order` on each request.
 
 ```csharp
 builder.Services.AddSingleton<IResponseProcessor, FeedbackWidgetProcessor>();

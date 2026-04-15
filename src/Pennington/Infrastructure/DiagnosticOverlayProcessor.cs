@@ -1,9 +1,9 @@
 namespace Pennington.Infrastructure;
 
 using System.Text.Json;
+using Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Diagnostics;
 
 /// <summary>
 /// Injects a diagnostic overlay widget into HTML responses during development.

@@ -1,9 +1,9 @@
 namespace Pennington.IntegrationTests.Infrastructure;
 
+using DocSite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
-using DocSite;
 using Roslyn;
 
 /// <summary>

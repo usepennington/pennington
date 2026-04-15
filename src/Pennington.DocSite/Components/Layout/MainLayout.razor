@@ -53,7 +53,7 @@
                     </div>
                     @if (DocSiteOptions.Areas.Count > 0)
                     {
-                        <AreaNavigation Areas="DocSiteOptions.Areas" ActiveArea="_activeArea" />
+                        <AreaNavigation Areas="DocSiteOptions.Areas" ActiveArea="_activeArea" AreaHrefs="_areaHrefs" />
                         @foreach (var area in DocSiteOptions.Areas)
                         {
                             var isActive = _activeArea != null
@@ -207,8 +207,21 @@
 @code{
     private ImmutableList<NavigationTreeItem>? _toc;
     private Dictionary<string, ImmutableList<NavigationTreeItem>> _areaTocs = new();
+    private Dictionary<string, string> _areaHrefs = new();
     private IReadOnlyList<LanguageSwitcher.AlternateLanguageItem> _langSwitcherItems = [];
     private ContentArea? _activeArea;
+
+    private static string? FirstLeafUrl(ImmutableList<NavigationTreeItem> items)
+    {
+        foreach (var item in items)
+        {
+            if (item.Children.Count == 0)
+                return item.Route.CanonicalPath.Value;
+            if (FirstLeafUrl(item.Children) is { } childUrl)
+                return childUrl;
+        }
+        return null;
+    }
 
     private readonly RenderFragment _mobileMenuButton =
         @<button id="menu-toggle" aria-label="Toggle Navigation Menu" aria-controls="nav-sidebar"
@@ -254,7 +267,10 @@
             foreach (var area in DocSiteOptions.Areas)
             {
                 var areaTocItems = await ContentResolver.GetTocItemsForAreaAsync(locale, area);
-                _areaTocs[area.Slug] = NavBuilder.BuildTree(areaTocItems.ToList(), currentRoute, locale);
+                var tree = NavBuilder.BuildTree(areaTocItems.ToList(), currentRoute, locale);
+                _areaTocs[area.Slug] = tree;
+                if (FirstLeafUrl(tree) is { } firstUrl)
+                    _areaHrefs[area.Slug] = firstUrl;
             }
         }
         else

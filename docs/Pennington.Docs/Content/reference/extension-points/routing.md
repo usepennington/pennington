@@ -7,18 +7,9 @@ tags: [routing, url-path, content-route, extension-points]
 uid: reference.extension-points.routing
 ---
 
-> **In this page.** `UrlPath`, `FilePath`, `ContentRoute`, and `ContentRouteFactory` — constructors, operators, and helper methods (`EnsureLeadingSlash`, `WithBaseUrl`, `AbsoluteUrl`, `IsDefaultLocale`).
->
-> **Not in this page.** The broader URL design philosophy — why paths are value types, what invariants `ContentRoute` preserves, how the pipeline treats canonical vs. output paths — lives in [URL paths and content routes](xref:explanation.routing.url-paths).
-
-## Summary
-
-_**One sentence: what it is.** The four types that together form Pennington's canonical route coordinate system — two value-type path wrappers (`UrlPath`, `FilePath`), the `ContentRoute` record that every pipeline stage carries, and the `ContentRouteFactory` static that constructs routes from each supported content origin._
-_**One sentence: where it lives.** Namespace `Pennington.Routing` (`src/Pennington/Routing/`); every downstream namespace depends on these types, so every `ContentItem`, every `IContentService`, and every rewriter ultimately speaks in `ContentRoute`._
+The four types in `Pennington.Routing` that form Pennington's canonical route coordinate system: two value-type path wrappers (`UrlPath`, `FilePath`), the `ContentRoute` record carried through every pipeline stage, and the `ContentRouteFactory` static that constructs routes from each supported content origin. Every `ContentItem`, `IContentService`, and rewriter operates in terms of these types.
 
 ## Overview
-
-_Four-row table keyed by type. Columns: **Type**, **Kind**, **Purpose**. One-sentence purposes only — this is the landing index for the four types bundled on this page. Ordered by dependency: the two path value types first, then the route record, then the factory._
 
 | Type | Kind | Purpose |
 |---|---|---|
@@ -33,7 +24,7 @@ _Four-row table keyed by type. Columns: **Type**, **Kind**, **Purpose**. One-sen
 T:Pennington.Routing.UrlPath
 ```
 
-_The URL value type used throughout Pennington for everything that represents a URL path: canonical page paths, base URLs, locale prefixes, xref targets, link attributes. `Normalize` (internal) treats a trailing `/index.html` or `/index.htm` as equivalent to the directory form, which is why `Matches` considers `/docs/` and `/docs/index.html` equal._
+The URL value type used throughout Pennington for canonical page paths, base URLs, locale prefixes, xref targets, and link attributes. The internal `Normalize` method treats a trailing `/index.html` or `/index.htm` as equivalent to the directory form, so `Matches` considers `/docs/` and `/docs/index.html` equal.
 
 ### Constructor
 
@@ -41,7 +32,7 @@ _The URL value type used throughout Pennington for everything that represents a 
 M:Pennington.Routing.UrlPath.#ctor(System.String)
 ```
 
-_Primary constructor on the record struct. Takes a single `string Value`; no validation is performed on the input, so callers that need a leading slash must route the result through `EnsureLeadingSlash`._
+Primary constructor on the record struct; accepts a single `string Value` with no validation, so callers that require a leading slash must pass the result through `EnsureLeadingSlash`.
 
 ### `implicit operator UrlPath(string)`
 
@@ -49,7 +40,7 @@ _Primary constructor on the record struct. Takes a single `string Value`; no val
 M:Pennington.Routing.UrlPath.op_Implicit(System.String)~Pennington.Routing.UrlPath
 ```
 
-_Implicit conversion from `string` — every `string` literal or variable in a context expecting `UrlPath` is wrapped without an explicit `new`. Match the implicit conversion when writing overloads that accept `UrlPath`: do not add a separate `string` overload._
+Implicit conversion from `string`; any `string` literal or variable in a `UrlPath` context is wrapped without an explicit `new`, so a separate `string` overload is unnecessary.
 
 ### `operator /(UrlPath, UrlPath)`
 
@@ -57,7 +48,7 @@ _Implicit conversion from `string` — every `string` literal or variable in a c
 M:Pennington.Routing.UrlPath.op_Division(Pennington.Routing.UrlPath,Pennington.Routing.UrlPath)
 ```
 
-_Path-composition operator. Trims trailing slashes from the left, leading slashes from the right, and joins with exactly one `/`. Empty operands collapse: `new UrlPath("") / "/x"` returns `/x`, and `new UrlPath("/a") / ""` returns `/a`. The result always has a leading slash._
+Path-composition operator that trims trailing slashes from the left operand and leading slashes from the right, joins them with exactly one `/`, collapses empty operands to the non-empty side, and always produces a result with a leading slash.
 
 ### `EnsureLeadingSlash`
 
@@ -65,7 +56,7 @@ _Path-composition operator. Trims trailing slashes from the left, leading slashe
 M:Pennington.Routing.UrlPath.EnsureLeadingSlash
 ```
 
-_Returns `this` if `Value` already starts with `/`, otherwise a new `UrlPath` with one prepended. Idempotent; pairs with `EnsureTrailingSlash` to produce the directory-form canonical path that `ContentRoute.CanonicalPath` is documented to carry._
+Returns `this` if `Value` already starts with `/`; otherwise returns a new `UrlPath` with one prepended. Idempotent.
 
 ### `EnsureTrailingSlash`
 
@@ -73,7 +64,7 @@ _Returns `this` if `Value` already starts with `/`, otherwise a new `UrlPath` wi
 M:Pennington.Routing.UrlPath.EnsureTrailingSlash
 ```
 
-_Returns `this` if `Value` already ends with `/`, otherwise a new `UrlPath` with one appended. Idempotent; every path produced by `ContentRouteFactory` passes through this method before being stored on `ContentRoute.CanonicalPath`._
+Returns `this` if `Value` already ends with `/`; otherwise returns a new `UrlPath` with one appended. Idempotent; every path produced by `ContentRouteFactory` passes through this method before being stored on `ContentRoute.CanonicalPath`.
 
 ### `RemoveTrailingSlash`
 
@@ -81,7 +72,7 @@ _Returns `this` if `Value` already ends with `/`, otherwise a new `UrlPath` with
 M:Pennington.Routing.UrlPath.RemoveTrailingSlash
 ```
 
-_Returns `this` if `Value.Length <= 1` or does not end with `/`; otherwise a new `UrlPath` with the trailing slash stripped. The length guard preserves the root `/` as a special case so `new UrlPath("/").RemoveTrailingSlash()` still yields `/`._
+Returns `this` if `Value.Length <= 1` or does not end with `/`; otherwise returns a new `UrlPath` with the trailing slash stripped. The length guard preserves the root `/` so `new UrlPath("/").RemoveTrailingSlash()` still yields `/`.
 
 ### `RemoveLeadingSlash`
 
@@ -89,7 +80,7 @@ _Returns `this` if `Value.Length <= 1` or does not end with `/`; otherwise a new
 M:Pennington.Routing.UrlPath.RemoveLeadingSlash
 ```
 
-_Returns `this` if `Value` does not start with `/`; otherwise a new `UrlPath` with the leading slash stripped. Used by `ContentRouteFactory.BuildOutputFile` when converting a canonical URL path into an on-disk `OutputFile` path._
+Returns `this` if `Value` does not start with `/`; otherwise returns a new `UrlPath` with the leading slash stripped. Used by `ContentRouteFactory.BuildOutputFile` when converting a canonical URL path into an on-disk `OutputFile` path.
 
 ### `Matches`
 
@@ -97,7 +88,7 @@ _Returns `this` if `Value` does not start with `/`; otherwise a new `UrlPath` wi
 M:Pennington.Routing.UrlPath.Matches(Pennington.Routing.UrlPath)
 ```
 
-_Case-insensitive equality check after normalization. Normalization strips a trailing `/`, then strips a trailing `/index.html` or `/index.htm`, then lowercases; the empty result is re-normalized to `/`. This is the comparison every request-time route lookup should use._
+Case-insensitive equality after normalization: strips a trailing `/`, then strips a trailing `/index.html` or `/index.htm`, then lowercases; the empty result is re-normalized to `/`. This is the comparison every request-time route lookup should use.
 
 ### Properties
 
@@ -111,7 +102,7 @@ _Case-insensitive equality check after normalization. Normalization strips a tra
 T:Pennington.Routing.FilePath
 ```
 
-_The filesystem path value type used wherever Pennington holds a path that may be read from disk or written to the output tree: `DiscoveredItem` sources, `ContentRoute.OutputFile`, `ContentRoute.SourceFile`, `ContentToCopy` entries. Unlike `UrlPath`, `FilePath` retains whatever slash form the caller supplied — it does not normalize to `/` or `\`._
+The filesystem path value type used wherever Pennington holds a path that may be read from disk or written to the output tree: `DiscoveredItem` sources, `ContentRoute.OutputFile`, `ContentRoute.SourceFile`, and `ContentToCopy` entries. Unlike `UrlPath`, `FilePath` retains whatever slash form the caller supplied and does not normalize to `/` or `\`.
 
 ### Constructor
 
@@ -119,7 +110,7 @@ _The filesystem path value type used wherever Pennington holds a path that may b
 M:Pennington.Routing.FilePath.#ctor(System.String)
 ```
 
-_Primary constructor on the record struct. Takes a single `string Value`; no validation or normalization is performed. Callers constructing paths cross-platform should pass already-normalized strings (Pennington stores forward slashes in-process and relies on `Path` APIs to read/write)._
+Primary constructor on the record struct; accepts a single `string Value` with no validation or normalization. Pennington stores forward slashes in-process and relies on `Path` APIs to read and write, so cross-platform callers should pass already-normalized strings.
 
 ### `implicit operator FilePath(string)`
 
@@ -127,7 +118,7 @@ _Primary constructor on the record struct. Takes a single `string Value`; no val
 M:Pennington.Routing.FilePath.op_Implicit(System.String)~Pennington.Routing.FilePath
 ```
 
-_Implicit conversion from `string`; any `string` literal or variable passed where a `FilePath` is expected is wrapped without ceremony. Used heavily in examples that construct `DiscoveredItem`s with paths rooted at the content directory._
+Implicit conversion from `string`; any `string` literal or variable in a `FilePath` context is wrapped without an explicit `new`.
 
 ### `operator /(FilePath, FilePath)`
 
@@ -135,7 +126,7 @@ _Implicit conversion from `string`; any `string` literal or variable passed wher
 M:Pennington.Routing.FilePath.op_Division(Pennington.Routing.FilePath,Pennington.Routing.FilePath)
 ```
 
-_Composition operator. Trims trailing `/` and `\` from the left, leading `/` and `\` from the right, and joins with a forward slash. Empty operands collapse to the non-empty side; unlike `UrlPath.op_Division` the result does not force a leading slash._
+Composition operator that trims trailing `/` and `\` from the left operand and leading `/` and `\` from the right, joins them with a forward slash, and collapses empty operands to the non-empty side. Unlike `UrlPath.op_Division`, the result does not force a leading slash.
 
 ### Properties
 
@@ -152,17 +143,15 @@ _Composition operator. Trims trailing `/` and `\` from the left, leading `/` and
 T:Pennington.Routing.ContentRoute
 ```
 
-_The universal route coordinate. Every `ContentItem` case (`DiscoveredItem`, `ParsedItem`, `RenderedItem`, `FailedItem`) carries one, and every content service, navigation entry, cross-reference, search document, RSS item, and sitemap entry is keyed off one. `CanonicalPath` is the in-app URL (with locale prefix and trailing slash); `OutputFile` is the path relative to `OutputOptions.OutputDirectory` that `OutputGenerationService` writes to._
+The universal route coordinate carried by every `ContentItem` case (`DiscoveredItem`, `ParsedItem`, `RenderedItem`, `FailedItem`) and referenced by every content service, navigation entry, cross-reference, search document, RSS item, and sitemap entry. `CanonicalPath` is the in-app URL including any locale prefix and a trailing slash; `OutputFile` is the path relative to `OutputOptions.OutputDirectory` that `OutputGenerationService` writes to.
 
 ### Properties
-
-_Alphabetical. All five are init-only; `CanonicalPath` and `OutputFile` are required, the remaining three have defaults._
 
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `CanonicalPath` | `UrlPath` | _required_ | The in-app URL for this route, including any locale prefix and always in directory form (trailing slash); this is the path `ContentResolver` compares against the incoming request. |
 | `IsFallback` | `bool` | `false` | True when this route serves default-locale content as a stand-in for a missing translation; surfaced by the UI via `FallbackNotice`. |
-| `Locale` | `string` | `""` | Empty for default-locale routes, otherwise the locale code (e.g., `"es"`); `IsDefaultLocale` reports `string.IsNullOrEmpty(Locale)`. |
+| `Locale` | `string` | `""` | Empty for default-locale routes, otherwise the locale code (for example, `"es"`); `IsDefaultLocale` reports `string.IsNullOrEmpty(Locale)`. |
 | `OutputFile` | `FilePath` | _required_ | The on-disk path, relative to `OutputOptions.OutputDirectory`, where the static build writes this route; always ends in `index.html`. |
 | `SourceFile` | `FilePath?` | `null` | The backing source file when one exists (markdown pages, custom `FromCustom` routes); `null` for Razor pages, programmatic routes, and redirects. |
 
@@ -172,7 +161,7 @@ _Alphabetical. All five are init-only; `CanonicalPath` and `OutputFile` are requ
 M:Pennington.Routing.ContentRoute.WithBaseUrl(Pennington.Routing.UrlPath)
 ```
 
-_Returns `baseUrl / CanonicalPath` using `UrlPath.op_Division`. Produces an app-relative URL prefixed with a plain base path (e.g., `/preview/`); for absolute URLs with a scheme use `AbsoluteUrl` instead._
+Returns `baseUrl / CanonicalPath` using `UrlPath.op_Division`. Produces an app-relative URL prefixed with a plain base path (such as `/preview/`); for absolute URLs with a scheme use `AbsoluteUrl` instead.
 
 ### `AbsoluteUrl`
 
@@ -180,7 +169,7 @@ _Returns `baseUrl / CanonicalPath` using `UrlPath.op_Division`. Produces an app-
 M:Pennington.Routing.ContentRoute.AbsoluteUrl(Pennington.Routing.UrlPath)
 ```
 
-_Composes `CanonicalPath` with the site's canonical base URL. Detects schemes via `Uri.TryCreate(..., UriKind.Absolute, out _)`: absolute bases (e.g., `https://site.com`) are joined by trimmed string concatenation so the scheme is preserved, while plain-path bases defer to `UrlPath.op_Division`. Root-path edge case: an absolute base with `CanonicalPath == "/"` yields `<base>/` (trailing slash preserved)._
+Composes `CanonicalPath` with the site's canonical base URL. Schemes are detected via `Uri.TryCreate(..., UriKind.Absolute, out _)`: absolute bases (such as `https://site.com`) are joined by trimmed string concatenation to preserve the scheme, while plain-path bases defer to `UrlPath.op_Division`. When `CanonicalPath` is `/`, the result is `<base>/` with the trailing slash preserved.
 
 ### `IsDefaultLocale`
 
@@ -188,7 +177,7 @@ _Composes `CanonicalPath` with the site's canonical base URL. Detects schemes vi
 P:Pennington.Routing.ContentRoute.IsDefaultLocale
 ```
 
-_Computed property returning `string.IsNullOrEmpty(Locale)`. The canonical way to test whether a route belongs to the default locale; consumers must not compare `Locale` against `""` directly._
+Computed property returning `string.IsNullOrEmpty(Locale)`. Consumers must use this property to test for the default locale rather than comparing `Locale` against `""` directly.
 
 ## `ContentRouteFactory`
 
@@ -196,7 +185,7 @@ _Computed property returning `string.IsNullOrEmpty(Locale)`. The canonical way t
 T:Pennington.Routing.ContentRouteFactory
 ```
 
-_The static class that constructs every `ContentRoute` in the codebase. Each method normalizes its inputs (leading slash, trailing slash, locale prefix) and builds the matching `OutputFile` via the shared internal `BuildOutputFile` helper, so every constructed route satisfies the invariants `CanonicalPath` ends with `/` and `OutputFile` ends with `index.html`._
+The static class that constructs every `ContentRoute` in the codebase. Each method normalizes its inputs (leading slash, trailing slash, locale prefix) and builds the matching `OutputFile` via the shared internal `BuildOutputFile` helper, guaranteeing that `CanonicalPath` always ends with `/` and `OutputFile` always ends with `index.html`.
 
 ### `FromMarkdownFile`
 
@@ -204,7 +193,7 @@ _The static class that constructs every `ContentRoute` in the codebase. Each met
 M:Pennington.Routing.ContentRouteFactory.FromMarkdownFile(Pennington.Routing.FilePath,Pennington.Routing.FilePath,Pennington.Routing.UrlPath,System.String)
 ```
 
-_Builds the route for a markdown file relative to a content root. Resolves both paths via `Path.GetFullPath` and throws `ArgumentException` if `sourceFile` escapes `contentRoot`. Index-file collapse: a bare `index.md` maps to the base URL, and a nested `.../index.md` maps to its parent directory (not `.../index/`). Segment normalization lowercases and replaces backslashes; locale prefix is applied to `CanonicalPath` when non-empty._
+Builds the route for a markdown file relative to a content root. Resolves both paths via `Path.GetFullPath` and throws `ArgumentException` if `sourceFile` escapes `contentRoot`. A bare `index.md` maps to the base URL; a nested `.../index.md` maps to its parent directory rather than `.../index/`. Segment normalization lowercases and replaces backslashes; a non-empty locale prefix is prepended to `CanonicalPath`.
 
 ### `FromRazorPage`
 
@@ -212,7 +201,7 @@ _Builds the route for a markdown file relative to a content root. Resolves both 
 M:Pennington.Routing.ContentRouteFactory.FromRazorPage(System.String,System.String)
 ```
 
-_Builds the route for a Razor `@page` directive. Ensures a leading slash, strips any trailing slash, prepends the locale prefix when non-empty, and ends the canonical path with a trailing slash. `SourceFile` is left `null` — Razor pages do not have a single backing file from the route's perspective._
+Builds the route for a Razor `@page` directive. Ensures a leading slash, strips any trailing slash, prepends a non-empty locale prefix, and appends a trailing slash to the final canonical path. `SourceFile` is `null` because Razor pages do not have a single backing file from the route's perspective.
 
 ### `FromUrl`
 
@@ -220,7 +209,7 @@ _Builds the route for a Razor `@page` directive. Ensures a leading slash, strips
 M:Pennington.Routing.ContentRouteFactory.FromUrl(Pennington.Routing.UrlPath,System.String)
 ```
 
-_Builds the route for an explicit, programmatic URL. Same normalization as `FromRazorPage`: leading slash, strip trailing slash, optional locale prefix, trailing slash on the final canonical path. `SourceFile` is `null`. This is the primary factory used by `IContentService` implementations that synthesize pages (feeds, llms.txt sidecars, custom index pages)._
+Builds the route for an explicit, programmatic URL. Applies the same normalization as `FromRazorPage` (leading slash, stripped trailing slash, optional locale prefix, trailing slash on the final canonical path). `SourceFile` is `null`. This is the primary factory for `IContentService` implementations that synthesize pages such as feeds, llms.txt sidecars, and custom index pages.
 
 ### `FromCustom`
 
@@ -228,7 +217,7 @@ _Builds the route for an explicit, programmatic URL. Same normalization as `From
 M:Pennington.Routing.ContentRouteFactory.FromCustom(Pennington.Routing.UrlPath,System.Nullable{Pennington.Routing.FilePath},System.String)
 ```
 
-_Builds the route for a non-markdown content service where a backing source file still exists (e.g., JSON release notes, YAML data files). Same URL normalization as `FromUrl`; `sourceFile` is stored on the resulting route so file-watching and cross-reference resolution can track the origin._
+Builds the route for a non-markdown content service where a backing source file still exists (such as JSON release notes or YAML data files). Applies the same URL normalization as `FromUrl`; `sourceFile` is stored on the resulting route so file-watching and cross-reference resolution can track the origin.
 
 ### `ForRedirect`
 
@@ -236,17 +225,15 @@ _Builds the route for a non-markdown content service where a backing source file
 M:Pennington.Routing.ContentRouteFactory.ForRedirect(Pennington.Routing.UrlPath)
 ```
 
-_Builds the route for a redirect stub. Takes only the source URL (the URL that will redirect); the destination lives on the corresponding `RedirectSource`. Locale is always empty — redirects are resolved before locale routing. `SourceFile` is `null`._
+Builds the route for a redirect stub from the source URL (the URL that redirects); the destination lives on the corresponding `RedirectSource`. Locale is always empty because redirects are resolved before locale routing. `SourceFile` is `null`.
 
 ## Example
 
-_One minimal example pulled from `examples/ExtensibilityLabExample/ReleaseNotesContentService.cs` — the `IContentService.DiscoverAsync` method that constructs a route via `ContentRouteFactory.FromUrl` for the index page and a second via `ContentRouteFactory.FromCustom` for each release. Shown as the method body so the two factory calls, the `UrlPath` constructors, and the `FilePath` constructor are all visible in one place._
+The following shows `IContentService.DiscoverAsync` from a custom content service, demonstrating `ContentRouteFactory.FromUrl` for the index page and `ContentRouteFactory.FromCustom` for each individual item.
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.ReleaseNotesContentService.DiscoverAsync
 ```
-
-_Reference shape for constructing `ContentRoute`s from a custom `IContentService`: wrap the URL strings in `UrlPath`, wrap the source path in `FilePath`, call the matching `ContentRouteFactory` method._
 
 ## See also
 

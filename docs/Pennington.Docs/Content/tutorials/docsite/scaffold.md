@@ -7,19 +7,11 @@ tags: [docsite, template, areas, scaffold]
 uid: tutorials.docsite.scaffold
 ---
 
-> **In this page.** Replace the barebones setup with `AddDocSite` + `UseDocSite` + `RunDocSiteAsync`, configure `DocSiteOptions` (site title, GitHub URL, header/footer), and see how areas map to top-level folders.
->
-> **Not in this page.** Authoring markdown content (covered in [Author a documentation page with DocFrontMatter](xref:tutorials.docsite.first-doc-page)) or overriding the DocSite layout (treated as a customization how-to).
+By the end of this tutorial you'll have a running DocSite host with a "Scaffold Docs" title, GitHub icon, header/footer chrome, and two content areas — Guides and Reference — each serving an index page from its own top-level folder.
 
-## What you'll do
-
-_**Artifact** (one sentence): describe the concrete output — a running DocSite host with a "Scaffold Docs" title, GitHub icon, header/footer chrome, and two areas (Guides, Reference) each serving an index page from its own top-level folder._
-
-_**Skill** (one sentence): describe what the reader walks away able to do — swap a plain Pennington host for the DocSite template, populate `DocSiteOptions`, and reason about the area → folder → URL-prefix mapping._
+You'll know how to swap a plain Pennington host for the DocSite template, populate `DocSiteOptions`, and reason about how area slugs bind top-level folders to URL prefixes and sidebar tabs.
 
 ## Prerequisites
-
-_Keep this list to tools and prior tutorials only. The reader arrives here with the bare `AddPennington` host from tutorial 1 and a `Content/` folder of markdown already in place._
 
 - .NET 11 SDK installed
 - Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site)
@@ -31,17 +23,17 @@ The finished code for this tutorial lives in [`examples/DocSiteScaffoldExample`]
 
 ## 1. Start from the bare Pennington host
 
-_One sentence: remind the reader what their host currently looks like — `AddPennington`, `UsePennington`, and a hand-written `MapGet` fallback that walks `IContentService` to render pages — so the diff in the next unit is visible._
+Your host currently wires `AddPennington`, `UsePennington`, and a hand-written `MapGet` fallback that walks `IContentService` to render pages. The DocSite template replaces all of that.
 
 ### Step 1.1 — Review the pre-DocSite host shape
 
-_Show the starting state verbatim. Call out the three moving parts (DI registration, middleware, fallback endpoint) without explaining why — this is the shape they already built._
+Here's the starting state — three moving parts: DI registration, middleware, and the fallback endpoint.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteScaffoldExample.Stage1.Run(System.String[])
 ```
 
-_One sentence: note that everything the DocSite template adds — sidebar, header chrome, MonorailCSS, SPA navigation, the Razor component layout — is missing here, and the next unit will replace these ~30 lines with a single DI call._
+Everything the DocSite template adds — sidebar, header chrome, MonorailCSS, SPA navigation, the Razor component layout — is absent here. The next step collapses those ~30 lines into a single DI call.
 
 ### Checkpoint — The bare host runs
 
@@ -52,11 +44,11 @@ _One sentence: note that everything the DocSite template adds — sidebar, heade
 
 ## 2. Swap `AddPennington` for `AddDocSite`
 
-_One sentence: introduce the DocSite template as a single DI call that registers Pennington core, MonorailCSS, SPA navigation, the `ContentResolver`, and the `DocSiteArticleSlotRenderer` Razor island — all driven from one options object._
+`AddDocSite` is a single DI call that registers Pennington core, MonorailCSS, SPA navigation, the `ContentResolver`, and the `DocSiteArticleSlotRenderer` Razor island — all driven from one options object.
 
 ### Step 2.1 — Replace the registration call
 
-_Point the reader at the signature: `AddDocSite` takes a `Func<DocSiteOptions>` (not an `Action`), so they construct and return a fresh options record. No need to keep the `AddMarkdownContent` block — the template registers it internally._
+`AddDocSite` takes a `Func<DocSiteOptions>` rather than an `Action`, so you construct and return a fresh options record. You can also drop the `AddMarkdownContent` call — the template registers it internally.
 
 ```csharp:xmldocid
 M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})
@@ -64,7 +56,7 @@ M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.De
 
 ### Step 2.2 — Populate `DocSiteOptions`
 
-_Walk through the five knobs this tutorial exercises: `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, `FooterContent`. Keep it mechanical — the reader copies each line and sees it surface in the rendered chrome. The options record carries many more fields; point forward to [Positioning DocSite as a fast path](xref:explanation.core.docsite-positioning) for the full surface and for the caps DocSite hard-codes (single `AddMarkdownContent<DocSiteFrontMatter>` registration, `SearchIndexOptions.ContentSelector`, `LlmsTxtOptions`, `MonorailCssOptions.CustomCssFrameworkSettings`)._
+This tutorial uses five fields: `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`. Set each one and you'll see it surface in the rendered chrome immediately. `DocSiteOptions` carries many more fields; for the full surface — and for what DocSite hard-codes, such as the single `AddMarkdownContent<DocSiteFrontMatter>` registration, `SearchIndexOptions.ContentSelector`, `LlmsTxtOptions`, and `MonorailCssOptions.CustomCssFrameworkSettings` — see [Positioning DocSite as a fast path](xref:explanation.core.docsite-positioning).
 
 ```csharp:xmldocid
 T:Pennington.DocSite.DocSiteOptions
@@ -72,7 +64,7 @@ T:Pennington.DocSite.DocSiteOptions
 
 ### Step 2.3 — See the registration-only state
 
-_Show the stage 2 body: `AddDocSite` is wired but `UseDocSite` is not yet called, so the host builds but the middleware stack is still ASP.NET default. The `await app.RunAsync()` line is a placeholder the next unit replaces._
+At this point `AddDocSite` is wired but `UseDocSite` hasn't been called yet. The host builds, but the middleware stack is still the ASP.NET default. The `await app.RunAsync()` call is a placeholder you'll replace in the next section.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteScaffoldExample.Stage2.Run(System.String[])
@@ -87,11 +79,11 @@ M:DocSiteScaffoldExample.Stage2.Run(System.String[])
 
 ## 3. Mount the DocSite middleware
 
-_One sentence: `UseDocSite` is the middleware counterpart to `AddDocSite` — one call mounts locale routing, antiforgery, static files, Razor component routing, MonorailCSS, SPA navigation, and core Pennington middleware in the right order._
+`UseDocSite` is the middleware counterpart to `AddDocSite` — one call mounts locale routing, antiforgery, static files, Razor component routing, MonorailCSS, SPA navigation, and core Pennington middleware in the correct order.
 
 ### Step 3.1 — Call `UseDocSite` after `Build()`
 
-_Show the signature. Emphasize that this single call replaces the old `UsePennington` line and the hand-written `MapGet` fallback from stage 1 — the Razor `Pages.razor` component now owns `/{*fileName:nonfile}` and resolves pages via `ContentResolver`._
+This single call replaces both the old `UsePennington` line and the hand-written `MapGet` fallback from stage 1. The Razor `Pages.razor` component now owns the `/{*fileName:nonfile}` route and resolves pages through `ContentResolver`.
 
 ```csharp:xmldocid
 M:Pennington.DocSite.DocSiteServiceExtensions.UseDocSite(Microsoft.AspNetCore.Builder.WebApplication)
@@ -99,7 +91,7 @@ M:Pennington.DocSite.DocSiteServiceExtensions.UseDocSite(Microsoft.AspNetCore.Bu
 
 ### Step 3.2 — Swap `RunAsync` for `RunDocSiteAsync`
 
-_`RunDocSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves live in dev and generates static HTML when invoked as `dotnet run -- build <baseUrl> <outputDir>`. Don't explain the unified-path invariant here — link to the dev-vs-build explanation if you need to reference it._
+`RunDocSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves pages live in development and generates static HTML when invoked as `dotnet run -- build <baseUrl> <outputDir>` — one code path for both modes.
 
 ```csharp:xmldocid
 M:Pennington.DocSite.DocSiteServiceExtensions.RunDocSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])
@@ -107,7 +99,7 @@ M:Pennington.DocSite.DocSiteServiceExtensions.RunDocSiteAsync(Microsoft.AspNetCo
 
 ### Step 3.3 — See the fully-wired host
 
-_Show stage 3 — this is the canonical final shape and it matches `Program.cs` verbatim. Three calls: `AddDocSite`, `UseDocSite`, `RunDocSiteAsync`._
+Here's the canonical final shape — three calls that match `Program.cs` verbatim: `AddDocSite`, `UseDocSite`, `RunDocSiteAsync`.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteScaffoldExample.Stage3.Run(System.String[])
@@ -122,11 +114,11 @@ M:DocSiteScaffoldExample.Stage3.Run(System.String[])
 
 ## 4. Map content to areas
 
-_One sentence: `DocSiteOptions.Areas` is a list of `ContentArea(Label, Slug)` pairs; each slug binds a top-level folder under `ContentRootPath` to a URL prefix and to its own sidebar tab._
+`DocSiteOptions.Areas` is a list of `ContentArea(Label, Slug)` pairs. Each slug binds a top-level folder under `ContentRootPath` to a URL prefix and to its own sidebar tab.
 
 ### Step 4.1 — Review the `ContentArea` contract
 
-_Show the type. Two fields: the human-readable label (appears in the area selector) and the slug (matches folder name and URL prefix). Order in `Areas` drives order in the sidebar._
+`ContentArea` has two fields: a human-readable label that appears in the area selector, and a slug that matches the folder name and URL prefix. The order of entries in `Areas` drives the order of tabs in the sidebar.
 
 ```csharp:xmldocid
 T:Pennington.DocSite.ContentArea
@@ -134,7 +126,7 @@ T:Pennington.DocSite.ContentArea
 
 ### Step 4.2 — Create the area folders
 
-_Walk through the filesystem. Under `Content/` create `guides/` and `reference/`, each with an `index.md`. The `guides` slug in `DocSiteOptions.Areas` binds `Content/guides/` to `/guides/` and to the Guides sidebar tab; same story for `reference`._
+Under `Content/` you need two folders — `guides/` and `reference/` — each with an `index.md`. The `guides` slug in `DocSiteOptions.Areas` binds `Content/guides/` to the `/guides/` URL prefix and to the Guides sidebar tab. The `reference` slug works the same way.
 
 ```text:path
 examples/DocSiteScaffoldExample/Content/guides/index.md
@@ -146,7 +138,7 @@ examples/DocSiteScaffoldExample/Content/reference/index.md
 
 ### Step 4.3 — Confirm the two-area `Areas` list
 
-_The final `Areas` block in stage 3 has exactly two `ContentArea` entries. The sidebar only shows the area selector when more than one area is configured — with two entries, the reader sees the tab switcher appear._
+The `Areas` block in the stage 3 host has exactly two `ContentArea` entries. The sidebar only shows the area selector when more than one area is configured, so with both entries in place you'll see the tab switcher appear for the first time.
 
 ### Checkpoint — Both areas resolve and switch independently
 

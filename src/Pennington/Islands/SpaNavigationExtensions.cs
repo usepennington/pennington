@@ -1,12 +1,12 @@
 namespace Pennington.Islands;
 
+using Content;
+using Diagnostics;
+using Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Content;
-using Diagnostics;
-using Infrastructure;
 using Routing;
 
 /// <summary>Extension methods for SPA navigation registration.</summary>

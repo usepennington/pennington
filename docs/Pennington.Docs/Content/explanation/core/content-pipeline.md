@@ -7,73 +7,68 @@ sectionLabel: "Core Architecture"
 tags: [pipeline, unions, architecture]
 ---
 
-> **In this page.** _Paraphrase the Covers line: why `ContentItem` and `ContentSource` are unions, how items advance `DiscoveredItem` → `ParsedItem` → `RenderedItem` (or divert to `FailedItem`), and what that shape buys over a class hierarchy. One sentence._
->
-> **Not in this page.** _Paraphrase the Does-not-cover line: pointer readers needing the interface catalog at `/reference/extension-points/content-pipeline`. One sentence._
-
-## The question
-
-_Ask the reader's question in one sentence, something like: "Why does Pennington model its content flow as a union of four records instead of a single `ContentItem` class with a status field or a polymorphic base class?" Do not answer yet; the rest of the page is the answer._
+Why does Pennington model its content flow as a union of four records instead of a single `ContentItem` class with a status field or a polymorphic base class?
 
 ## Context
 
-_Two to five sentences. Set up the problem: a content engine needs to move a page through discovery, parsing, rendering, and emission, and each stage legitimately carries different data — a discovered file has a `ContentSource` but no parsed body, a parsed item has metadata but no HTML, a rendered item has both plus an outline. Contrast the alternatives briefly: a single mutable `ContentItem` class with nullable `Metadata`/`Html`/`Error` fields invites "is it safe to touch this property yet?" checks at every call site; a traditional inheritance hierarchy (`ContentItem` → `ParsedItem` → `RenderedItem`) forces the failure case to either throw or squat inside every subclass. End the section hinting that C# 15 unions let the pipeline carry exactly one state per item with the compiler enforcing exhaustive handling._
+A content engine has to move each page through at least four distinct phases — discovery, parsing, rendering, and emission — and each phase legitimately knows different things about the item. A discovered file has a source location and a route, but no parsed front matter or markdown body. A parsed item has structured metadata and text, but no HTML. A rendered item has HTML and an outline, ready to write to disk. These are not the same data at different points in time; they are genuinely different shapes.
+
+The conventional escape routes both have a cost. A single `ContentItem` class with nullable `Metadata`, `Html`, and `Error` fields invites "is it safe to touch this yet?" checks at every call site, and the compiler has no way to enforce which combination of fields is populated at which stage. A traditional inheritance hierarchy — `ContentItem` → `ParsedItem` → `RenderedItem` — puts discovery-stage code and render-stage code in a subtyping relationship that does not reflect how they are actually used, and forces the failure case into either a parallel branch that breaks `is`-checks downstream or a nullable error field on every subclass. C# 15 discriminated unions offer a third path: the compiler tracks which case you hold, pattern matching is exhaustive, and each case carries exactly the fields that exist at that stage.
 
 ## How it works
 
 ### The union shape
 
-_One or two paragraphs. Describe the four-case shape: each case is a plain record carrying only the fields that exist at that stage, and the union itself exposes a `Route` that every case shares. Note that the Route projection lives on the union so call sites that only need the route avoid pattern matching — this is the one shared property, because the invariant "every item, even a failed one, belongs to a route" is real._
+`ContentItem` is a union of four record cases: `DiscoveredItem`, `ParsedItem`, `RenderedItem`, and `FailedItem`. Each case is a plain record holding only the fields that make sense at its stage — there is no base class, no status enum, and no nullable placeholder for data that has not arrived yet. The union itself exposes a single `Route` property that all four cases share, because "every content item, even a failed one, belongs to a route" is a genuine invariant. Call sites that only need to know the route never have to pattern-match; call sites that need the rendered HTML must match and will get a compile error if they forget a case.
 
-```csharp:xmldocid
-T:Pennington.Pipeline.ContentItem
+```csharp:path
+src/Pennington/Pipeline/ContentItem.cs
 ```
 
-_After the fence, point out the four case records are siblings — there is no base class and no status enum — and that the `Route` property is the only thing lifted onto the union itself._
+The four case records are siblings in the same union — none inherits from another, and there is no `Stage` or `Status` field anywhere. `Route` is the one projection lifted onto the union, and that narrowness is deliberate: every additional lifted property would need a sensible value for all four cases, which is exactly the nullable-field trap the union is meant to avoid.
 
 ### `ContentSource` discriminates where an item came from
 
-_One short paragraph. A `DiscoveredItem` pairs a `ContentRoute` with a second union, `ContentSource`, which records the origin: a file on disk, a Razor `@page`, a redirect, or a programmatic generator. Explain briefly that this keeps discovery pluggable without polluting later stages — once an item parses, its source has done its job and the parser and renderer only see the already-resolved metadata and markdown text._
+A `DiscoveredItem` pairs a `ContentRoute` with a second union, `ContentSource`, which records where the item came from: a file on disk, a Razor `@page`, a redirect definition, or a programmatic generator. The reason this is a separate union rather than a field on `DiscoveredItem` is that discovery is itself a pluggable step — different sources need to carry different data (a file path, a Razor component type, a target URL) without forcing later stages to care. Once an item has been parsed, its source has already done its job; the parser and renderer work entirely against the resolved front matter and content text, and `ContentSource` disappears from the picture.
 
-```csharp:xmldocid
-T:Pennington.Pipeline.ContentSource
+```csharp:path
+src/Pennington/Pipeline/ContentSource.cs
 ```
 
-_One sentence after the fence reinforcing that the four `ContentSource` cases cover the shipped origins and that downstream stages do not pattern match on source — they work against the parsed shape instead._
+The four cases cover every origin Pennington ships, and downstream stages — parsers, renderers, the output writer — never pattern-match on `ContentSource`; by the time they run, the source has been replaced by the parsed shape.
 
 ### Stage transitions replace the item
 
-_Two or three paragraphs, this is the heart of the page. Walk through the three transitions: `ParseAsync` receives `DiscoveredItem` and yields `ParsedItem`, `RenderAsync` receives `ParsedItem` and yields `RenderedItem`, `GenerateAsync` pattern-matches the union and records the outcome in a `BuildReport`. Emphasize the replacement invariant: a `ParsedItem` flowing through `RenderAsync` gets replaced by a `RenderedItem`; a `RenderedItem` flowing through either earlier stage passes through unchanged. This is what makes the pipeline re-entrant and composable — you can hand it a half-processed stream and it picks up where the stream left off. Consider pulling the `ParseAsync` body to show the replacement in code._
+Each stage in the pipeline works by replacing the incoming union case with the next one. `ParseAsync` pulls a stream of `ContentItem` values and, for each `DiscoveredItem`, hands its content to the registered `IContentParser`. When the parser succeeds, the `DiscoveredItem` is replaced by a `ParsedItem` carrying the resolved front matter and text. `RenderAsync` does the same thing one level further: each `ParsedItem` is handed to the `IContentRenderer`, and on success a `RenderedItem` takes its place, now carrying the HTML output and a navigation outline. The final stage, `GenerateAsync`, pattern-matches on the full union to write output files and accumulate the build report.
+
+The replacement invariant is what gives the pipeline its composability. A `RenderedItem` flowing into `ParseAsync` is already past that stage, so `ParseAsync` passes it through unchanged. A `ParsedItem` flowing into `RenderAsync` gets rendered; a `RenderedItem` in the same stream passes through. This means you can hand the pipeline a partially-processed stream — one that mixes discovered and already-parsed items — and it will do the right thing for each. There is no need to coordinate which stage ran last; the case type carries that information.
 
 ```csharp:xmldocid,bodyonly
 M:Pennington.Pipeline.ContentPipeline.ParseAsync(System.Collections.Generic.IAsyncEnumerable{Pennington.Pipeline.ContentItem})
 ```
 
-_After the fence, point out the three explicit branches: `FailedItem` passes through, `DiscoveredItem` is handed to the parser inside a try/catch that demotes exceptions to `FailedItem`, and any already-advanced item (`ParsedItem`, `RenderedItem`) passes through unchanged. Note the `RedirectSource` guard as an aside — it is the one origin that deliberately leaves the pipeline early because redirects are served by middleware at request time._
+The implementation has three explicit branches: a `FailedItem` passes through without touching the parser, a `DiscoveredItem` is handed to `IContentParser.ParseAsync` inside a try/catch that demotes any exception to a `FailedItem`, and a `ParsedItem` or `RenderedItem` passes through unchanged because the work for that stage is already done. There is also a guard for `RedirectSource`: items whose source is a redirect skip the parser entirely, because a redirect has no body to parse and is served by middleware at request time rather than written as an HTML file.
 
 ### `FailedItem` as a peer case, not an exception
 
-_Two short paragraphs. Exceptions thrown inside `IContentParser.ParseAsync` or `IContentRenderer.RenderAsync` are caught at the pipeline boundary and rewritten as a `FailedItem` that carries the route and a `ContentError`. From that point on the failed item rides the same stream as the successful items; downstream stages check `is FailedItem` and short-circuit. The payoff lands in `GenerateAsync`, which routes `FailedItem` to `BuildReportBuilder.AddError` so every parse or render exception shows up in the build report instead of aborting the crawl. One failure does not fail the build prematurely — it is one reported error among many._
+Exceptions thrown inside `IContentParser.ParseAsync` or `IContentRenderer.RenderAsync` are caught at the pipeline boundary and rewritten as a `FailedItem` carrying the route and a `ContentError` that describes what went wrong. From that point on, the failed item rides the same async stream as the successful ones. Downstream stages check `is FailedItem` and short-circuit without touching the error or trying to make sense of absent fields.
+
+The payoff arrives in `GenerateAsync`. Because `FailedItem` is a peer case in the union, the exhaustive pattern match there routes it to `BuildReportBuilder.AddError` — every parse or render exception ends up as a named entry in the build report rather than an unhandled exception that aborts the crawl. One broken markdown file does not prevent the other four hundred from rendering. This is the concrete benefit of treating failure as data: the "sad path" and the "happy path" have identical shape in the stream, which means the final aggregation step sees them through the same lens.
 
 ```csharp:xmldocid
 T:Pennington.Pipeline.FailedItem
 ```
 
-_After the fence, make the mental-model point: treating failure as a data case means the "happy path" and the "sad path" have the same shape, which is exactly what makes exhaustive pattern matching inside `GenerateAsync` a meaningful check rather than a formality._
+Treating failure as a data case is what makes the exhaustive match in `GenerateAsync` meaningful rather than ceremonial. If `FailedItem` were an exception that escaped the pipeline, there would be no case to match — and no way for the compiler to confirm that every outcome was handled.
 
 ## Trade-offs
 
-_Two to four bullets. Name the real costs, not stylistic preferences. Required bullets:_
-
-- **Cost:** _Adding a fifth stage or a new terminal state means touching every `switch` that matches on `ContentItem` — the compiler will nag, which is a feature, but it does mean the union is a change-amplification point. Mention also that unions are a C# 15 feature and LSP tooling still flags false errors on the `union` keyword._
-- **Alternative considered — discriminator property:** _A `ContentItem` class with a `Stage` enum and nullable `Metadata`/`Html`/`Error` fields was rejected because every consumer ends up null-checking the same three or four properties and the compiler cannot prove which combination is valid at which stage._
-- **Alternative considered — inheritance hierarchy:** _An abstract `ContentItem` with `ParsedItem : ContentItem`, `RenderedItem : ParsedItem` was rejected because it forces `FailedItem` into either a parallel branch that breaks `is` checks downstream or a nullable error field on every subclass, which puts us back in the discriminator-property bind._
-- **Consequence:** _Downstream code that only needs the `ContentRoute` still pays a pattern match unless it goes through the lifted `Route` property on the union — so the pipeline exposes that one projection and resists the temptation to lift more. Adding another lifted property is a real design decision, not a convenience._
+- **Cost:** The union is a change-amplification point. Adding a fifth stage or a new terminal case means every `switch` on `ContentItem` across the codebase must be updated — the compiler will surface all the gaps, which is the feature, but it is still a broad change. The `union` keyword is also a C# 15 feature, and LSP tooling in some editors still flags false errors on the declaration; the compiler handles it correctly, but the red squiggles are real until tooling catches up.
+- **Alternative considered — discriminator property:** A `ContentItem` class with a `Stage` enum and nullable `Metadata`, `Html`, and `Error` fields was rejected because every consumer ends up writing the same null-check sequence, and the compiler has no way to prove which combination of fields is actually populated at any given call site. The safety that pattern matching provides would have to be replicated manually everywhere.
+- **Alternative considered — inheritance hierarchy:** An abstract `ContentItem` with `ParsedItem : ContentItem` and `RenderedItem : ParsedItem` was rejected because it creates a subtyping relationship that does not reflect how the cases are actually used, and because it forces `FailedItem` into either a parallel branch that breaks `is`-checks downstream or a nullable error field on every subclass — which leads straight back to the nullable-field problem.
+- **Consequence:** Downstream code that only needs the `ContentRoute` still pays a pattern match unless it goes through the `Route` property lifted onto the union. That one projection is why the design resists lifting anything else: each additional shared property needs a sensible value for all four cases, and "sensible for all four cases" is the definition of the nullable-field trap. Adding another lifted property is a deliberate design decision, not a convenience shortcut.
 
 ## Further reading
 
-_Two to four cross-quadrant links, one per line. Do NOT include a sibling explanation link (those auto-generate). Suggested set:_
-
 - Reference: [Content pipeline interfaces](xref:reference.extension-points.content-pipeline) — the catalog of `IContentService`, `IContentParser`, `IContentRenderer`, and every case record with members.
-- How-to: [Implement a custom `IContentService`](xref:how-to.extensibility.custom-content-service) — how to plug a new source into the Discovery stage.
-- External: _TODO — cite the C# 11/15 unions design note or an Ekblad/Eric Lippert post on discriminated unions if one is on record; otherwise drop this bullet._
+- How-to: [Implement a custom `IContentService`](xref:how-to.extensibility.custom-content-service) — how to plug a new source into the discovery stage.

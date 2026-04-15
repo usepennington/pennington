@@ -1,15 +1,15 @@
 namespace Pennington.BlogSite;
 
 using System.Reflection;
+using Content;
+using Infrastructure;
 using Mdazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Services;
-using Content;
-using Infrastructure;
 using MonorailCss;
 using Pennington.UI.Components;
+using Services;
 
 public static class BlogSiteServiceExtensions
 {

@@ -1,11 +1,11 @@
 namespace Pennington.Markdown.Extensions;
 
 using System.Text;
+using Highlighting;
 using Markdig.Parsers;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
-using Highlighting;
 using Tabs;
 
 /// <summary>

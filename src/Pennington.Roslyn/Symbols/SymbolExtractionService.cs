@@ -1,11 +1,11 @@
 namespace Pennington.Roslyn.Symbols;
 
 using System.Collections.Concurrent;
+using Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Infrastructure;
 using Utilities;
 using Workspace;
 
@@ -34,6 +34,7 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
     public async Task<IReadOnlyDictionary<string, SymbolInfo>> ExtractSymbolsAsync(Solution solution)
     {
         var symbols = new ConcurrentDictionary<string, SymbolInfo>(StringComparer.Ordinal);
+        var documentByPath = new ConcurrentDictionary<string, (Document Document, Project Project)>(StringComparer.Ordinal);
 
         await Parallel.ForEachAsync(solution.Projects, async (project, ct) =>
         {
@@ -48,6 +49,8 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
             {
                 try
                 {
+                    if (document.FilePath is { Length: > 0 } path)
+                        documentByPath[path] = (document, project);
                     await ExtractDocumentSymbolsAsync(document, compilation, project, symbols, ct2);
                 }
                 catch (Exception ex)
@@ -55,10 +58,92 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
                     _logger.LogWarning(ex, "Failed to extract symbols from {DocumentPath}", document.FilePath);
                 }
             });
+
+            // Fallback pass — walk compilation symbols for types the syntax-only
+            // pass missed (e.g. C# 15 unions whose declaration node is not a
+            // TypeDeclarationSyntax, or members synthesized from primary-constructor
+            // parameter lists like record `#ctor` overloads).
+            try
+            {
+                await ExtractCompilationSymbolsAsync(compilation, documentByPath, symbols);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to extract compilation-level symbols for {ProjectName}", project.Name);
+            }
         });
 
         _logger.LogDebug("Extracted {Count} symbols from solution", symbols.Count);
         return symbols;
+    }
+
+    private async Task ExtractCompilationSymbolsAsync(
+        Compilation compilation,
+        ConcurrentDictionary<string, (Document Document, Project Project)> documentByPath,
+        ConcurrentDictionary<string, SymbolInfo> symbols)
+    {
+        var visited = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        var queue = new Queue<INamespaceOrTypeSymbol>();
+        queue.Enqueue(compilation.Assembly.GlobalNamespace);
+
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            foreach (var member in current.GetMembers())
+            {
+                if (member is INamespaceSymbol ns)
+                {
+                    queue.Enqueue(ns);
+                }
+                else if (member is INamedTypeSymbol type)
+                {
+                    if (!visited.Add(type)) continue;
+                    await TryAddSymbolFromCompilationAsync(type, documentByPath, symbols);
+                    foreach (var typeMember in type.GetMembers())
+                    {
+                        await TryAddSymbolFromCompilationAsync(typeMember, documentByPath, symbols);
+                    }
+                    foreach (var nested in type.GetTypeMembers())
+                    {
+                        queue.Enqueue(nested);
+                    }
+                }
+            }
+        }
+    }
+
+    private async Task TryAddSymbolFromCompilationAsync(
+        ISymbol symbol,
+        ConcurrentDictionary<string, (Document Document, Project Project)> documentByPath,
+        ConcurrentDictionary<string, SymbolInfo> symbols)
+    {
+        var docId = symbol.GetDocumentationCommentId();
+        if (string.IsNullOrEmpty(docId)) return;
+
+        var normalizedId = XmlDocIdNormalizer.Normalize(docId);
+        if (symbols.ContainsKey(normalizedId)) return;
+
+        var syntaxRef = symbol.DeclaringSyntaxReferences.FirstOrDefault();
+        if (syntaxRef is null) return;
+
+        var path = syntaxRef.SyntaxTree.FilePath;
+        if (string.IsNullOrEmpty(path) || !documentByPath.TryGetValue(path, out var entry)) return;
+
+        var node = await syntaxRef.GetSyntaxAsync();
+        var sourceText = await entry.Document.GetTextAsync();
+        var xmlDoc = symbol.GetDocumentationCommentXml();
+
+        var info = new SymbolInfo(
+            Symbol: symbol,
+            Document: entry.Document,
+            SyntaxNode: node,
+            SourceText: sourceText,
+            TextSpan: node.Span,
+            XmlDocumentation: string.IsNullOrWhiteSpace(xmlDoc) ? null : xmlDoc,
+            Project: entry.Project
+        );
+
+        symbols.TryAdd(normalizedId, info);
     }
 
     public async Task<SymbolInfo?> FindSymbolAsync(string xmlDocId)

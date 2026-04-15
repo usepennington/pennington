@@ -7,38 +7,26 @@ sectionLabel: Publishing & Deployment
 tags: [deployment, self-host, nginx, iis]
 ---
 
-> **In this page.** _Paraphrase TOC "Covers": serving `output/` as static files from Nginx or IIS, wiring the directory-index / default-document rules Pennington's trailing-slash URLs expect, and routing misses to the generated `404.html`. Two sentences max, pitched at a reader who already has a built `output/` directory on the server._
->
-> **Not in this page.** _Paraphrase TOC "Does not cover": running the live Pennington ASP.NET host (the `dotnet run` origin) behind Nginx or IIS as a reverse proxy is a separate topic — link out to [Build a static site](xref:how-to.deployment.static-build) as the shape this page assumes and note that the reverse-proxy recipe is not yet documented (TODO: add once covered)._
-
-## When to use this
-
-_Two sentences. Trigger: you already produce an `output/` directory via `dotnet run -- build` and need to serve it from a server you control — typically a VPS running Nginx or a Windows host running IIS — rather than a managed static platform. If you are still deciding between this and a managed host, start on [Deploy to GitHub Pages](xref:how-to.deployment.github-pages); this page is for when that route is not available._
+Use this page when you have an `output/` directory produced by `dotnet run -- build` and need to serve it from a server you control — a VPS running Nginx or a Windows host running IIS. When a managed static host is an option, see [Deploy to GitHub Pages](xref:how-to.deployment.github-pages) first; this page is for when that route is unavailable.
 
 ## Assumptions
 
-_Four bullets. Keep prerequisites minimal — if the list grows, the page is a tutorial._
-
-- You have a built `output/` directory (see [Build a static site](xref:how-to.deployment.static-build) if not) and can copy it onto the target server.
-- You have root / administrator access to install a config file and reload the web server.
-- The site will serve from the domain root; sub-path deployments (`https://host/docs/`) still work but require building with `dotnet run -- build /docs` — see [Host under a sub-path (base URL)](xref:how-to.deployment.base-url).
-- You are comfortable editing one `nginx.conf` server block or one `web.config` file — this page does not wrap either in a deployment tool.
-
-To copy a working setup, see [`examples/SubPathDeployableExample`](https://github.com/usepennington/pennington/tree/main/examples/SubPathDeployableExample). The `nginx.conf` and `web.config` siblings of the csproj are the teaching artefacts; do not walk through the whole example.
+- You have a built `output/` directory (see [Build a static site](xref:how-to.deployment.static-build)) and can copy it onto the target server.
+- You have root or administrator access to install a config file and reload the web server.
+- The site will serve from the domain root. Sub-path deployments (`https://host/docs/`) require building with `dotnet run -- build /docs` — see [Host under a sub-path (base URL)](xref:how-to.deployment.base-url).
+- You are comfortable editing one `nginx.conf` server block or one `web.config` file.
 
 ---
 
 ## Steps
 
-_Five steps, Nginx and IIS snippets shown side by side per step rather than forking into two pages. Every step should apply to both servers; where the mechanics diverge, the Nginx fence comes first, the IIS fence second, and the prose names both._
-
 ### 1. Upload `output/` to the web root
 
-_Two sentences. Copy the full contents of `output/` to the directory the web server will serve — `/var/www/pennington/output` in the Nginx example, the IIS site's **Physical path** in the web.config example. Keep the `_content/` and `_spa-data/` folders intact — Pennington's fingerprinted assets and island payloads live under those underscore-prefixed paths and need to ship verbatim._
+Copy the full contents of `output/` to the directory the web server will serve — `/var/www/pennington/` for Nginx or the IIS site's **Physical path** for IIS. Keep the `_content/` and `_spa-data/` folders intact; fingerprinted assets and island payloads live under those underscore-prefixed paths and must ship verbatim.
 
 ### 2. Install the server config
 
-_One to two sentences. Drop the snippet below next to (or inside) the web root: Nginx reads its `server` block from `/etc/nginx/sites-enabled/…` or `conf.d/…`, IIS reads `web.config` from the site root alongside `index.html`. Reload after writing — `nginx -s reload` for Nginx, `iisreset` or an app-pool recycle for IIS._
+Drop the snippet below into your server's config location: Nginx reads its `server` block from `/etc/nginx/sites-enabled/` or `conf.d/`; IIS reads `web.config` from the site root alongside `index.html`. Reload after writing — `nginx -s reload` for Nginx, `iisreset` or an app-pool recycle for IIS.
 
 ```nginx:path
 examples/SubPathDeployableExample/nginx.conf
@@ -50,11 +38,11 @@ examples/SubPathDeployableExample/web.config
 
 ### 3. Serve directory indexes for trailing-slash URLs
 
-_Two to three sentences. Pennington emits every content page as `<slug>/index.html` and every internal link with a trailing slash, so the server must resolve `/guides/first-page/` by serving `/guides/first-page/index.html`. Nginx handles this with `try_files $uri $uri/ /404.html` plus `index index.html` (already in the snippet above); IIS needs both `<defaultDocument>` to name `index.html` and the rewrite rule that 301-redirects `/guides/first-page` to `/guides/first-page/` so the default-document rule can fire. Without either piece the reader sees a raw directory listing or a 404 on canonical URLs._
+Pennington emits every content page as `<slug>/index.html` and every internal link with a trailing slash, so the server must resolve `/guides/first-page/` by serving `/guides/first-page/index.html`. Nginx handles this with `try_files $uri $uri/ /404.html` and `index index.html` — both are already in the snippet above. IIS needs `<defaultDocument>` naming `index.html` plus a rewrite rule that 301-redirects `/guides/first-page` to `/guides/first-page/` so the default-document rule can fire. Without either piece, visitors see a raw directory listing or a 404 on canonical URLs.
 
 ### 4. Wire `404.html` as the miss fallback
 
-_Two to three sentences. `OutputGenerationService` fetches its sentinel `NotFoundGeneratorPath` during `build` to materialize a real `404.html` at the root of `output/`, so the only job left to the web server is to hand that file back with a 404 status on misses. Nginx does this with `try_files … /404.html;` plus `error_page 404 /404.html;`; IIS uses `<httpErrors errorMode="Custom" existingResponse="Replace">` with `<error statusCode="404" path="/404.html" responseMode="File" />`. Both snippets above already include the wiring — verify by hitting a bogus URL and confirming the 404 body is the styled Pennington page, not the server's default._
+During `build`, `OutputGenerationService` materializes a real `404.html` at the root of `output/` by rendering the path identified by `NotFoundGeneratorPath`. The web server's only job is to return that file with a 404 status on misses. Nginx does this with `try_files … /404.html;` and `error_page 404 /404.html;`; IIS uses `<httpErrors errorMode="Custom" existingResponse="Replace">` with `<error statusCode="404" path="/404.html" responseMode="File" />`. Both snippets already include this wiring.
 
 ```csharp:xmldocid
 F:Pennington.Generation.OutputGenerationService.NotFoundGeneratorPath
@@ -62,7 +50,7 @@ F:Pennington.Generation.OutputGenerationService.NotFoundGeneratorPath
 
 ### 5. Fix MIME types and cache headers for fingerprinted assets
 
-_Two to three sentences. Nginx's default `mime.types` usually covers everything Pennington emits, but IIS ships without entries for `.webmanifest` and (on some Windows SKUs) `.woff2`, so the `web.config` above registers them explicitly. Both snippets also mark `/\_content/` fingerprinted assets as `public, immutable` with a one-year expiry — that cache contract is the whole reason `_content/` paths include content hashes, so preserve it even if you trim the rest of the snippet. Sitemap and llms.txt are served as top-level files; the Nginx snippet sets `default_type` for them, IIS's built-in `.xml` and `.txt` MIME entries cover them with no extra config._
+Nginx's default `mime.types` usually covers everything Pennington emits, but IIS ships without entries for `.webmanifest` and on some Windows SKUs `.woff2`, so the `web.config` above registers them explicitly. Both snippets also mark `/_content/` fingerprinted assets as `public, immutable` with a one-year expiry — that cache contract is the reason `_content/` paths include content hashes, so preserve it even if you trim the rest of the snippet. The sitemap and `llms.txt` are top-level files; the Nginx snippet sets `default_type` for them, and IIS's built-in `.xml` and `.txt` MIME entries cover them with no extra config.
 
 ---
 

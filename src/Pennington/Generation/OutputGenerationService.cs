@@ -2,14 +2,14 @@ namespace Pennington.Generation;
 
 using System.Collections.Concurrent;
 using System.IO.Abstractions;
+using Content;
+using Diagnostics;
+using Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
-using Content;
-using Diagnostics;
-using Infrastructure;
 using Routing;
 
 /// <summary>

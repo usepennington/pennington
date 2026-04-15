@@ -7,62 +7,50 @@ tags: [front-matter, capabilities, design, interfaces]
 uid: explanation.core.front-matter-capabilities
 ---
 
-> **In this page.** Why capability interfaces (`ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`) were collapsed into `IFrontMatter` default members, what that buys users, and how to extend with custom keys.
->
-> **Not in this page.** Key-by-key documentation — see the [Front matter key reference](xref:reference.front-matter.keys).
-
-## The question
-
-_One sentence, framing the design question: "If every page needs a title, a draft flag, and a uid, but only doc pages need an order and only a handful of pages need a redirect target, where do you put the line between 'universal contract' and 'opt-in capability'?" Keep it a single sentence so the rest of the page has one thread to pull on._
+Where do you draw the line between "every page needs this" and "only some pages need this" when those two categories share a base interface?
 
 ## Context
 
-_Three to four sentences. Explain that Pennington started with a strict capability-interface model — one interface per front-matter concern — so the engine could ask "does this page implement `IDraftable`?" before honoring the `isDraft` flag, and a page that didn't implement the interface simply could not be a draft. Note the ten-interface pre-commit-`984dc7a` roster: `IFrontMatter`, `IDraftable`, `IDescribable`, `IDateable`, `ICrossReferenceable`, `ISearchable`, `ILlmsIndexable`, `ITaggable`, `ISectionable`, `IOrderable`, `IRedirectable`. Point out that in practice every shipped front-matter record implemented the first six, so the "capability query" was a ritual that never failed — each new record had to re-declare the same six properties as the one before it, and authors writing a custom front-matter type had to know the whole taxonomy before they could put a page on disk. Do not start explaining the consolidation here; this is just the stage._
+Pennington originally modeled front-matter capabilities as a strict interface-per-concern taxonomy. The engine asked "does this page implement `IDraftable`?" before honoring the `isDraft` flag; a record that omitted the interface could not be a draft, by design. At its peak the roster ran to ten interfaces: `IFrontMatter`, `IDraftable`, `IDescribable`, `IDateable`, `ICrossReferenceable`, `ISearchable`, `ILlmsIndexable`, `ITaggable`, `ISectionable`, `IOrderable`, and `IRedirectable`. The intent was principled — each capability was explicit and query-able. The practice was less tidy: every shipped front-matter record implemented the first six interfaces identically, so the "capability query" was a ritual that never actually failed. A developer writing a custom front-matter type had to absorb the whole taxonomy before they could get a single page rendered, and any new record started with seven boilerplate declarations before it expressed a single domain-specific property.
 
 ## How it works
 
-_The mechanism section. Keep the narrative moving forward: the "zoo" framing, the default-member fix, the four capabilities that deliberately did not consolidate, and a short pointer at writing custom front matter. Prose first; drop to a code fence only where the type's shape says something words can't._
-
 ### Before: a capability zoo
 
-_Two to three sentences. Sketch what the old world looked like: a new `BlogFrontMatter` record was seven interface declarations and seven property bodies before the first blog-specific property; reviewers had to scan for a missing interface rather than a missing property; and the engine code used `if (page is IDraftable d && d.IsDraft)` everywhere, which read as a type check but was really a "did the author remember to implement `IDraftable`?" check. End with the observation that this treated "universal" and "opt-in" capabilities as the same shape even though they had opposite adoption curves._
+A new `BlogFrontMatter` record required six or seven interface declarations and a matching property body for each before it could describe its first blog-specific field. Code reviewers checking front-matter records learned to scan for missing interfaces rather than missing properties — the discipline became "did the author remember `IDraftable`?" rather than "does the record carry the data it needs?" Engine code reflected this too: `if (page is IDraftable d && d.IsDraft)` reads like a type test, but it was really a guard against an authoring omission. The pattern treated universal and selective capabilities as having the same shape even though their adoption curves were opposite — the first six were always present, the last four were genuinely conditional.
 
 ### After: default-member consolidation
 
-_Three to four sentences. Explain that commit `984dc7a` merged the six universally-implemented interfaces into `IFrontMatter` as default-implemented members, so every front-matter record now inherits sensible defaults (`IsDraft => false`, `Search => true`, `Llms => true`, `Uid => null`, `Description => null`, `Date => null`) without declaring them. Point at the declaration and let it speak for itself — one required member, six defaulted members, nothing optional about which pages "participate" in drafts or indexing. Call out that engine code simplified too: `if (page.IsDraft)` works on every `IFrontMatter`, replacing the pattern-match ceremony._
+Commit `984dc7a` folded the six universally-implemented interfaces into `IFrontMatter` as default-implemented members. Every front-matter record now inherits `IsDraft => false`, `Search => true`, `Llms => true`, `Uid => null`, `Description => null`, and `Date => null` without declaring them. The interface itself says what words alone cannot quite convey:
 
 ```csharp:xmldocid
 T:Pennington.FrontMatter.IFrontMatter
 ```
 
-_One sentence. Note the single abstract member (`Title`) and the six defaults — the interface now reads as a contract plus a set of opt-outs rather than a contract plus a capability taxonomy._
+One abstract member (`Title`) and six defaults — the contract now reads as a typed baseline with opt-outs rather than a taxonomy of parallel capabilities. Engine code simplified proportionally: `if (page.IsDraft)` works on every `IFrontMatter`, and there is no pattern-match ceremony to audit.
 
 ### The four interfaces that didn't consolidate
 
-_Three to four sentences. Explain the judgment call: tags, order, section labels, and redirects are not universal — a blog post has tags but no order; a doc page has an order but no redirect target; a redirect stub has a redirect URL and not much else. Folding them into `IFrontMatter` would force every record to carry empty arrays and meaningless defaults, and every consumer would lose the ability to say "does this page actually want to be ordered?" Keeping them as real interfaces means `NavigationBuilder` can cast to `IOrderable` to decide whether to use the declared sort key or fall back to alphabetic order, and `BlogSiteContentService` can cast to `ITaggable` to decide whether to emit a tag-index page. End with the rule of thumb the consolidation encoded: if adoption is universal, default it on the base interface; if adoption is selective, keep the capability interface so consumers can pattern-match meaningfully._
+Tags, order, section labels, and redirects stayed as separate interfaces, and the reasoning is worth sitting with. A blog post has tags but no meaningful order among siblings; a doc page has an order but no redirect target; a redirect stub carries a destination URL and almost nothing else. Folding these into `IFrontMatter` would force every record to carry empty tag arrays and meaningless sort keys, and — more importantly — every consumer would lose the ability to ask "did this content type actually opt into ordering?" The interface's presence, not the property's value, is what `NavigationBuilder` reads when deciding whether a page participates in ordered navigation at all.
 
 ```csharp:xmldocid
 T:Pennington.FrontMatter.IOrderable
 ```
 
-_One sentence. Point out that a single-property interface looks like overkill until you remember it is load-bearing — the interface's presence, not the property's value, is what `NavigationBuilder` reads when deciding whether a page opted into ordering at all._
+A single-property interface looks like overkill until you consider what it signals. The consolidation encoded a rule of thumb: if adoption is universal, move the member to `IFrontMatter` with a sensible default; if adoption is selective, keep the capability interface so that pattern-matching on it remains meaningful. The four remaining capability interfaces are now a genuine signal rather than boilerplate — seeing `IOrderable` on a record tells you the content type consciously opted into ordered navigation, not that the author copied a template.
 
 ### Writing your own front-matter type
 
-_Three to four sentences. Describe the shape authors land on: declare a `record`, implement `IFrontMatter` for the universals, add whichever capability interfaces the content type actually needs, and stop. The default members mean a minimal record can be a single required `Title` property — the engine will happily treat every other concern as "use the default." Custom keys are just extra properties on the record, automatically picked up by `FrontMatterParser` through `YamlDotNet`'s `CamelCaseNamingConvention`, so adding a `stability` or `namespace` field is a one-line change with no interface ceremony. Reference the kitchen-sink fixture as the "everything at once" shape without reproducing it here._
+The shape an author lands on is: declare a `record`, implement `IFrontMatter`, add whichever capability interfaces the content type genuinely needs, and stop. Because the default members handle drafts, search indexing, LLM indexing, cross-references, descriptions, and dates, a minimal record can expose a single required `Title` property and the engine treats every other concern gracefully. Custom keys are ordinary extra properties on the record — `FrontMatterParser` picks them up through `YamlDotNet`'s `CamelCaseNamingConvention`, so adding a `stability` or `namespace` field is a one-line change with no interface ceremony attached. The kitchen-sink fixture in the test suite shows what "everything at once" looks like without needing to reproduce it here.
 
 ## Trade-offs
 
-_Three to four bullets. Name what the consolidation costs, what it ruled out, and what readers need to carry forward. The first bullet is the main one — you can no longer ask "is this page even draftable?" because every page now is. The second is the version-tolerance cost. The third is the author-friendliness win. Keep them bluntly phrased; this section is the difference between explanation and reference._
-
-- **Cost: loss of capability-query semantics.** _Engine code can no longer use `is IDraftable` as a gate — every `IFrontMatter` is draftable now, so authors who want "this content type can never be a draft" must enforce it by convention (or by overriding the default member to always return `false`) rather than by omitting an interface._
-- **Cost: default-member version tolerance.** _Default interface members are a binary-compat feature, not a language feature — consumers that multi-target older TFMs or that use `IFrontMatter` through reflection need to be aware that the members exist on the interface itself, not on every implementing type's vtable._
-- **Alternative considered: "capability bag" dictionary.** _A `Dictionary<string, object>` of front-matter keys was on the table and rejected — it would have flattened the type system entirely, but it loses IntelliSense on the authoring side and moves every type mistake from compile time to runtime. Default members preserved the typed-contract shape while removing the boilerplate._
-- **Consequence: the four remaining interfaces are now meaningful.** _Because the universal ones consolidated, the four capability interfaces that stayed separate (`ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`) are a real signal — seeing one on a record tells you the content type genuinely opts into that behavior, not just that the author copied a template._
+- **Loss of capability-query semantics.** Engine code can no longer use `is IDraftable` as a gate — every `IFrontMatter` is draftable now, so authors who want a content type that can never be a draft must enforce that by convention or by overriding the default member to always return `false`, rather than by omitting an interface.
+- **Default-member version tolerance.** Default interface members are a binary-compatibility feature. Consumers that multi-target older TFMs or that access `IFrontMatter` through reflection need to be aware that these members live on the interface itself, not on every implementing type's vtable.
+- **The alternative that was considered and set aside.** A `Dictionary<string, object>` of front-matter keys would have flattened the type system entirely — no interface hierarchy, no pattern-matching, no boilerplate. The tradeoff is that it loses IntelliSense on the authoring side and moves every type mistake from compile time to runtime. Default members preserved the typed-contract shape while removing the ceremony.
+- **The four remaining interfaces are now a meaningful signal.** Because the universal capabilities consolidated, `ITaggable`, `IOrderable`, `ISectionable`, and `IRedirectable` carry genuine information — their presence on a record tells you the content type consciously opted into that behavior, not that the author copied a template.
 
 ## Further reading
-
-_Three cross-quadrant links. Do not link to the neighboring explanation (`dev-vs-build`, `response-processing`) — those are auto-linked. Point outward to the reference catalog, the authoring how-to, and (optionally) external writing on default interface members._
 
 - Reference: [IFrontMatter and capability defaults](xref:reference.front-matter.ifrontmatter)
 - Reference: [Front matter key reference](xref:reference.front-matter.keys)

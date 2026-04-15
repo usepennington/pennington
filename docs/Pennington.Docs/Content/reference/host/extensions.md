@@ -7,18 +7,11 @@ tags: [host, di, middleware, extensions]
 uid: reference.host.extensions
 ---
 
-> **In this page.** The at-a-glance summary of every `IServiceCollection` and `WebApplication` extension — `AddPennington`, `AddDocSite`, `AddBlogSite`, `AddMonorailCss`, `AddPenningtonRoslyn`, `AddSpaNavigation`, `AddFileWatched`, `UsePennington`, `UseDocSite`, `UseBlogSite`, `UseMonorailCss`, `UsePenningtonLocaleRouting`, `UsePenningtonLiveReload`, `UseSpaNavigation`, `RunOrBuildAsync`, `RunDocSiteAsync`, `RunBlogSiteAsync`. Each extension's configuration surface lives on the matching options page; this page is the index, not a duplicate catalog.
->
-> **Not in this page.** The underlying services each extension wires up (see the pipeline, islands, and infrastructure reference pages). Parameter-level option catalogs live on the `/reference/options/*` pages.
-
-## Summary
-
-_One sentence: what this page is._ The complete roster of public extension methods Pennington exposes for wiring the library into an ASP.NET Core host — `Add*` (DI registration), `Use*` (middleware and endpoints), and `Run*` (host entry points).
-_One sentence: where the methods live._ Declared across `Pennington.Infrastructure.PenningtonExtensions`, `Pennington.Infrastructure.LiveReloadExtensions`, `Pennington.Islands.SpaNavigationExtensions`, `Pennington.Infrastructure.FileWatchedServiceExtensions`, `Pennington.DocSite.DocSiteServiceExtensions`, `Pennington.BlogSite.BlogSiteServiceExtensions`, `Pennington.MonorailCss.MonorailServiceExtensions`, and `Pennington.Roslyn.RoslynExtensions`.
+The complete roster of public extension methods Pennington exposes for wiring the library into an ASP.NET Core host — `Add*` (DI registration), `Use*` (middleware and endpoints), and `Run*` (host entry points). Declared across `Pennington.Infrastructure.PenningtonExtensions`, `Pennington.Infrastructure.LiveReloadExtensions`, `Pennington.Islands.SpaNavigationExtensions`, `Pennington.Infrastructure.FileWatchedServiceExtensions`, `Pennington.DocSite.DocSiteServiceExtensions`, `Pennington.BlogSite.BlogSiteServiceExtensions`, `Pennington.MonorailCss.MonorailServiceExtensions`, and `Pennington.Roslyn.RoslynExtensions`.
 
 ## `IServiceCollection` extensions
 
-_Register services into the DI container. Each row points to the options page that documents the configuration delegate._
+Each row points to the options page that documents the configuration delegate.
 
 | Method | Signature | Package | Options surface | Notes |
 |---|---|---|---|---|
@@ -36,7 +29,7 @@ _Register services into the DI container. Each row points to the options page th
 M:Pennington.Infrastructure.PenningtonExtensions.AddPennington(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Infrastructure.PenningtonOptions})
 ```
 
-_Core entry point; callers configure a `PenningtonOptions` via the delegate. See [`PenningtonOptions`](xref:reference.options.pennington-options) for the full property catalog._
+Callers configure a `PenningtonOptions` via the delegate. See [`PenningtonOptions`](xref:reference.options.pennington-options) for the full property catalog.
 
 ### `AddDocSite`
 
@@ -44,7 +37,7 @@ _Core entry point; callers configure a `PenningtonOptions` via the delegate. See
 M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})
 ```
 
-_Template-style composition over `AddPennington`. Takes a `Func<DocSiteOptions>` (not `Action<T>`) because the options instance is constructed by the caller. See [`DocSiteOptions`](xref:reference.options.docsite-options)._
+Composes over `AddPennington`; takes a `Func<DocSiteOptions>` (not `Action<T>`) because the options instance is constructed by the caller. See [`DocSiteOptions`](xref:reference.options.docsite-options).
 
 ### `AddBlogSite`
 
@@ -52,7 +45,7 @@ _Template-style composition over `AddPennington`. Takes a `Func<DocSiteOptions>`
 M:Pennington.BlogSite.BlogSiteServiceExtensions.AddBlogSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.BlogSite.BlogSiteOptions})
 ```
 
-_Template-style composition over `AddPennington` tuned for blogs. See [`BlogSiteOptions`](xref:reference.options.blogsite-options)._
+Composes over `AddPennington` tuned for blogs. See [`BlogSiteOptions`](xref:reference.options.blogsite-options).
 
 ### `AddMonorailCss`
 
@@ -60,7 +53,7 @@ _Template-style composition over `AddPennington` tuned for blogs. See [`BlogSite
 M:Pennington.MonorailCss.MonorailServiceExtensions.AddMonorailCss(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{System.IServiceProvider,Pennington.MonorailCss.MonorailCssOptions})
 ```
 
-_Paired with `UseMonorailCss`. The options factory receives the resolved `IServiceProvider`. See [`MonorailCssOptions`](xref:reference.options.monorail-css-options)._
+The options factory receives the resolved `IServiceProvider`; paired with `UseMonorailCss`. See [`MonorailCssOptions`](xref:reference.options.monorail-css-options).
 
 ### `AddPenningtonRoslyn`
 
@@ -68,7 +61,7 @@ _Paired with `UseMonorailCss`. The options factory receives the resolved `IServi
 M:Pennington.Roslyn.RoslynExtensions.AddPenningtonRoslyn(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Roslyn.RoslynOptions})
 ```
 
-_The Roslyn-backed highlighter is registered unconditionally; symbol extraction and xmldocid preprocessing activate only when `SolutionPath` is configured. See [`RoslynOptions`](xref:reference.options.roslyn-options)._
+The Roslyn-backed highlighter is registered unconditionally; symbol extraction and xmldocid preprocessing activate only when `SolutionPath` is configured. See [`RoslynOptions`](xref:reference.options.roslyn-options).
 
 ### `AddSpaNavigation`
 
@@ -76,7 +69,7 @@ _The Roslyn-backed highlighter is registered unconditionally; symbol extraction 
 M:Pennington.Islands.SpaNavigationExtensions.AddSpaNavigation(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.Islands.SpaNavigationOptions})
 ```
 
-_Paired with `UseSpaNavigation` (an `IEndpointRouteBuilder` extension). Already called by `AddDocSite`; bare `AddPennington` hosts call it explicitly when they need the SPA envelope. See [`SpaNavigationOptions`](xref:reference.options.auxiliary-options)._
+Paired with `UseSpaNavigation` (an `IEndpointRouteBuilder` extension); already called by `AddDocSite`. See [`SpaNavigationOptions`](xref:reference.options.auxiliary-options).
 
 ### `AddFileWatched<T>`
 
@@ -84,11 +77,11 @@ _Paired with `UseSpaNavigation` (an `IEndpointRouteBuilder` extension). Already 
 M:Pennington.Infrastructure.FileWatchedServiceExtensions.AddFileWatched``1(Microsoft.Extensions.DependencyInjection.IServiceCollection)
 ```
 
-_Registers a singleton wrapped by `FileWatchDependencyFactory<T>` so the instance is reconstructed on file-system change. No options delegate; the registered type is responsible for declaring which paths it watches._
+Registers a singleton wrapped by `FileWatchDependencyFactory<T>` that reconstructs the instance on file-system change; no options delegate is taken.
 
 ## `WebApplication` and endpoint extensions
 
-_Mount middleware, endpoints, and static-file roots. Ordering matters within a single `Use*` call chain — see the individual method pages._
+Ordering within a `Use*` call chain is load-bearing; see each method's detail below.
 
 | Method | Signature | Package | Call site | Notes |
 |---|---|---|---|---|
@@ -106,7 +99,7 @@ _Mount middleware, endpoints, and static-file roots. Ordering matters within a s
 M:Pennington.Infrastructure.PenningtonExtensions.UsePennington(Microsoft.AspNetCore.Builder.WebApplication)
 ```
 
-_The single mandatory middleware call for a bare `AddPennington` host. Order inside is load-bearing: static files → locale routing → live reload → `ResponseProcessingMiddleware` → mapped feed/search endpoints._
+The mandatory middleware call for a bare `AddPennington` host; internal order is static files → locale routing → live reload → `ResponseProcessingMiddleware` → mapped feed/search endpoints.
 
 ### `UseDocSite`
 
@@ -114,7 +107,7 @@ _The single mandatory middleware call for a bare `AddPennington` host. Order ins
 M:Pennington.DocSite.DocSiteServiceExtensions.UseDocSite(Microsoft.AspNetCore.Builder.WebApplication)
 ```
 
-_Composes the full DocSite middleware chain including a call to `UsePennington`; callers do not invoke `UsePennington` separately._
+Composes the full DocSite middleware chain including a call to `UsePennington`; callers do not invoke `UsePennington` separately.
 
 ### `UseBlogSite`
 
@@ -122,7 +115,7 @@ _Composes the full DocSite middleware chain including a call to `UsePennington`;
 M:Pennington.BlogSite.BlogSiteServiceExtensions.UseBlogSite(Microsoft.AspNetCore.Builder.WebApplication)
 ```
 
-_Composes the full BlogSite middleware chain including a call to `UsePennington`. Maps `/rss.xml` when `BlogSiteOptions.EnableRss` is true._
+Composes the full BlogSite middleware chain including a call to `UsePennington`; maps `/rss.xml` when `BlogSiteOptions.EnableRss` is `true`.
 
 ### `UseMonorailCss`
 
@@ -130,7 +123,7 @@ _Composes the full BlogSite middleware chain including a call to `UsePennington`
 M:Pennington.MonorailCss.MonorailServiceExtensions.UseMonorailCss(Microsoft.AspNetCore.Builder.WebApplication,System.String)
 ```
 
-_Optional second positional argument overrides the default `/styles.css` path. Already called by `UseDocSite`/`UseBlogSite`._
+The optional `path` argument overrides the default `/styles.css` endpoint; already called by `UseDocSite` and `UseBlogSite`.
 
 ### `UsePenningtonLocaleRouting`
 
@@ -138,7 +131,7 @@ _Optional second positional argument overrides the default `/styles.css` path. A
 M:Pennington.Infrastructure.PenningtonExtensions.UsePenningtonLocaleRouting(Microsoft.AspNetCore.Builder.WebApplication)
 ```
 
-_Idempotent: subsequent calls are no-ops. Called implicitly by `UsePennington`; invoke explicitly when you need locale routing before other middleware that depends on a stripped path._
+Idempotent — subsequent calls are no-ops; called implicitly by `UsePennington`.
 
 ### `UsePenningtonLiveReload`
 
@@ -146,7 +139,7 @@ _Idempotent: subsequent calls are no-ops. Called implicitly by `UsePennington`; 
 M:Pennington.Infrastructure.LiveReloadExtensions.UsePenningtonLiveReload(Microsoft.AspNetCore.Builder.WebApplication)
 ```
 
-_No-op outside `dotnet watch` (gated on `DOTNET_WATCH` environment variable). Pairs with `LiveReloadScriptProcessor`, which injects the reconnection script on the response side._
+No-op outside `dotnet watch` (gated on the `DOTNET_WATCH` environment variable); pairs with `LiveReloadScriptProcessor`, which injects the reconnection script on the response side.
 
 ### `UseSpaNavigation`
 
@@ -154,16 +147,16 @@ _No-op outside `dotnet watch` (gated on `DOTNET_WATCH` environment variable). Pa
 M:Pennington.Islands.SpaNavigationExtensions.UseSpaNavigation(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)
 ```
 
-_Receiver is `IEndpointRouteBuilder`, not `WebApplication`; call inside `app.UseEndpoints(...)` or on a route group. Already invoked by `UseDocSite`._
+Receiver is `IEndpointRouteBuilder`, not `WebApplication`; call inside `app.UseEndpoints(...)` or on a route group. Already invoked by `UseDocSite`.
 
 ## Host runtime helpers
 
-_Entry points that decide between dev-serve and static-build based on `args[0]`._
+Each method dispatches between dev-serve and static-build based on `args[0]`.
 
 | Method | Signature | Package | Dispatches to | Notes |
 |---|---|---|---|---|
 | `RunOrBuildAsync` | `Task RunOrBuildAsync(this WebApplication, string[] args)` | `Pennington` | `app.RunAsync()` or `OutputGenerationService.GenerateAsync` | Dev-serve on plain `dotnet run`; on `build [baseUrl] [output]` starts the host, crawls it, writes output, sets the exit code on diagnostics. See [CLI and build arguments](xref:reference.host.cli). |
-| `RunDocSiteAsync` | `Task RunDocSiteAsync(this WebApplication, string[] args)` | `Pennington.DocSite` | `RunOrBuildAsync` | Thin delegate; exists so DocSite hosts do not need to import `Pennington.Infrastructure` just to reach `RunOrBuildAsync`. |
+| `RunDocSiteAsync` | `Task RunDocSiteAsync(this WebApplication, string[] args)` | `Pennington.DocSite` | `RunOrBuildAsync` | Thin delegate for DocSite hosts that do not otherwise reference `Pennington.Infrastructure`. |
 | `RunBlogSiteAsync` | `Task RunBlogSiteAsync(this WebApplication, string[] args)` | `Pennington.BlogSite` | `RunOrBuildAsync` | Thin delegate for the blog template; same behavior as `RunOrBuildAsync`. |
 
 ### `RunOrBuildAsync`
@@ -172,7 +165,7 @@ _Entry points that decide between dev-serve and static-build based on `args[0]`.
 M:Pennington.Infrastructure.PenningtonExtensions.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])
 ```
 
-_Unified code path — dev and build share one rendering pipeline. The `build` branch calls `app.StartAsync()`, resolves `OutputGenerationService`, crawls the running host via HTTP, and writes to `OutputOptions.OutputDirectory`. Non-`build` invocations fall through to `app.RunAsync()`._
+Dev and build share one rendering pipeline; the `build` branch calls `app.StartAsync()`, resolves `OutputGenerationService`, crawls the running host via HTTP, and writes to `OutputOptions.OutputDirectory`. All other invocations fall through to `app.RunAsync()`.
 
 ### `RunDocSiteAsync`
 
@@ -180,7 +173,7 @@ _Unified code path — dev and build share one rendering pipeline. The `build` b
 M:Pennington.DocSite.DocSiteServiceExtensions.RunDocSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])
 ```
 
-_One-line delegate to `RunOrBuildAsync`. Callers who already reference `Pennington.Infrastructure` can invoke `RunOrBuildAsync` directly._
+One-line delegate to `RunOrBuildAsync`; callers who already reference `Pennington.Infrastructure` may invoke `RunOrBuildAsync` directly.
 
 ### `RunBlogSiteAsync`
 
@@ -188,11 +181,11 @@ _One-line delegate to `RunOrBuildAsync`. Callers who already reference `Penningt
 M:Pennington.BlogSite.BlogSiteServiceExtensions.RunBlogSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])
 ```
 
-_One-line delegate to `RunOrBuildAsync`. Mirrors `RunDocSiteAsync`._
+One-line delegate to `RunOrBuildAsync`; mirrors `RunDocSiteAsync`.
 
 ## Example
 
-_A complete DocSite host wiring all three layers — `AddDocSite`, `UseDocSite`, `RunDocSiteAsync` — in their canonical call order._
+A complete DocSite host wiring all three layers — `AddDocSite`, `UseDocSite`, `RunDocSiteAsync` — in their canonical call order.
 
 ```csharp:path
 examples/DocSiteScaffoldExample/Program.cs

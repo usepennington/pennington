@@ -7,18 +7,9 @@ tags: [pipeline, content-service, unions, extension-points]
 uid: reference.extension-points.content-pipeline
 ---
 
-> **In this page.** `IContentService`, `IContentParser`, `IContentRenderer`, `IContentPipeline`, and the `ContentItem`/`ContentSource` union types with every case.
->
-> **Not in this page.** Implementation examples — see the how-to [Implement a custom `IContentService`](xref:how-to.extensibility.custom-content-service).
-
-## Summary
-
-_**One sentence: what it is.** The four interfaces and two union types that make up Pennington's content processing pipeline — services discover content, parsers extract front matter and markdown, renderers produce HTML, and the pipeline orchestrates all three stages through `ContentItem` cases that terminate in a `BuildReport`._
-_**One sentence: where it lives.** Namespace `Pennington.Pipeline` (`src/Pennington/Pipeline/`) for the parser/renderer/pipeline contracts and the union types; namespace `Pennington.Content` (`src/Pennington/Content/`) for `IContentService`._
+The four interfaces and two union types that make up Pennington's content processing pipeline — services discover content, parsers extract front matter and markdown, renderers produce HTML, and the pipeline orchestrates all three stages through `ContentItem` cases that terminate in a `BuildReport`. Namespace `Pennington.Pipeline` (`src/Pennington/Pipeline/`) covers the parser/renderer/pipeline contracts and the union types; namespace `Pennington.Content` (`src/Pennington/Content/`) covers `IContentService`.
 
 ## Overview
-
-_Six-row table keyed by type. Columns: **Type**, **Namespace**, **Kind**, **Purpose**. One-sentence purposes only — this is the landing index for the five interfaces and two union types bundled on this page. Alphabetical within each kind grouping (interfaces, then unions)._
 
 | Type | Namespace | Kind | Purpose |
 |---|---|---|---|
@@ -35,17 +26,15 @@ _Six-row table keyed by type. Columns: **Type**, **Namespace**, **Kind**, **Purp
 T:Pennington.Content.IContentService
 ```
 
-_The adapter contract that plugs a content source into the pipeline; every registered `IContentService` is consulted during discovery and for the auxiliary outputs (static copies, generated files, TOC entries, search/llms indexing, xref registration). Built-in implementations: `MarkdownContentService<TFrontMatter>`, `RazorPageContentService`, `LlmsTxtContentService`, `BlogSiteContentService`._
+The adapter contract that plugs a content source into the pipeline; every registered `IContentService` is consulted during discovery and for the auxiliary outputs (static copies, generated files, TOC entries, search/llms indexing, xref registration). Built-in implementations: `MarkdownContentService<TFrontMatter>`, `RazorPageContentService`, `LlmsTxtContentService`, `BlogSiteContentService`. `GetIndexableEntriesAsync` is the only member with a default implementation (returning `GetContentTocEntriesAsync`).
 
 ### Members
-
-_Alphabetical after the required `DiscoverAsync` entry point. `GetIndexableEntriesAsync` is the only member with a default implementation (it returns `GetContentTocEntriesAsync`)._
 
 | Name | Signature | Description |
 |---|---|---|
 | `DiscoverAsync` | `IAsyncEnumerable<DiscoveredItem> DiscoverAsync()` | Yields one `DiscoveredItem` per piece of content this service owns; the stream feeds `ContentPipeline.DiscoverAsync`. |
 | `GetContentToCopyAsync` | `Task<ImmutableList<ContentToCopy>>` | Returns static files to copy verbatim into the output tree (images, downloads, non-markdown assets). |
-| `GetContentToCreateAsync` | `Task<ImmutableList<ContentToCreate>>` | Returns dynamically generated files to write into the output tree (e.g., the search index JSON, llms.txt sidecar files). |
+| `GetContentToCreateAsync` | `Task<ImmutableList<ContentToCreate>>` | Returns dynamically generated files to write into the output tree (for example, the search index JSON, llms.txt sidecar files). |
 | `GetContentTocEntriesAsync` | `Task<ImmutableList<ContentTocItem>>` | Returns navigation entries consumed by `NavigationBuilder.BuildTree` to assemble sidebars, breadcrumbs, and prev/next links. |
 | `GetIndexableEntriesAsync` | `Task<ImmutableList<ContentTocItem>>` (default) | Returns entries that feed `SearchIndexBuilder` and `LlmsTxtService`; defaults to `GetContentTocEntriesAsync` and should be overridden when "shown in navigation" diverges from "discoverable via search" (as `RazorPageContentService` does). |
 | `GetCrossReferencesAsync` | `Task<ImmutableList<CrossReference>>` | Returns `uid → URL` entries registered with `XrefResolver` for `<xref:uid>` and `[text](xref:uid)` resolution. |
@@ -58,7 +47,7 @@ _Alphabetical after the required `DiscoverAsync` entry point. `GetIndexableEntri
 T:Pennington.Pipeline.IContentParser
 ```
 
-_The single-method parse contract invoked by `ContentPipeline.ParseAsync` for every `DiscoveredItem`. Implementations are responsible for catching their own exceptions and returning a `FailedItem`; the pipeline's wrapper catch block is a safety net, not the primary error path._
+The single-method parse contract invoked by `ContentPipeline.ParseAsync` for every `DiscoveredItem`. Implementations are responsible for catching their own exceptions and returning a `FailedItem`; the pipeline's wrapper catch block is a safety net, not the primary error path.
 
 ### Members
 
@@ -72,7 +61,7 @@ _The single-method parse contract invoked by `ContentPipeline.ParseAsync` for ev
 T:Pennington.Pipeline.IContentRenderer
 ```
 
-_The single-method render contract invoked by `ContentPipeline.RenderAsync` for every `ParsedItem`. Produces `RenderedContent` (HTML plus outline, tags, cross-references, optional search document, optional social metadata)._
+The single-method render contract invoked by `ContentPipeline.RenderAsync` for every `ParsedItem`. Produces `RenderedContent` (HTML plus outline, tags, cross-references, optional search document, optional social metadata).
 
 ### Members
 
@@ -86,11 +75,9 @@ _The single-method render contract invoked by `ContentPipeline.RenderAsync` for 
 T:Pennington.Pipeline.IContentPipeline
 ```
 
-_The four-stage orchestrator; the shipped `ContentPipeline` implementation fans in every registered `IContentService` at `DiscoverAsync`, delegates parsing and rendering to `IContentParser` / `IContentRenderer`, and closes with `GenerateAsync`. Items already at a later stage pass through each transform unchanged, and `FailedItem` is never re-processed._
+The four-stage orchestrator; the shipped `ContentPipeline` implementation fans in every registered `IContentService` at `DiscoverAsync`, delegates parsing and rendering to `IContentParser` / `IContentRenderer`, and closes with `GenerateAsync`. Items already at a later stage pass through each transform unchanged, and `FailedItem` is never re-processed.
 
 ### Members
-
-_In pipeline order: discover → parse → render → generate._
 
 | Name | Signature | Description |
 |---|---|---|
@@ -101,15 +88,13 @@ _In pipeline order: discover → parse → render → generate._
 
 ## `ContentItem` union
 
-```csharp:xmldocid
-T:Pennington.Pipeline.ContentItem
+```csharp:path
+src/Pennington/Pipeline/ContentItem.cs
 ```
 
-_The pipeline payload union: exactly four cases. The union exposes a shared `Route` property that pattern-matches every case so call sites can read the route without a `switch` each time. Exhaustive matching is compiler-enforced._
+The pipeline payload union: exactly four cases. The union exposes a shared `Route` property that pattern-matches every case so call sites can read the route without a `switch` each time. Exhaustive matching is compiler-enforced.
 
 ### Cases
-
-_One row per case. Alphabetical by case name after the stage-ordered pair (`DiscoveredItem`, `ParsedItem`, `RenderedItem`) is followed by the terminal `FailedItem`._
 
 | Case | Fields | Produced by | Description |
 |---|---|---|---|
@@ -126,15 +111,13 @@ _One row per case. Alphabetical by case name after the stage-ordered pair (`Disc
 
 ## `ContentSource` union
 
-```csharp:xmldocid
-T:Pennington.Pipeline.ContentSource
+```csharp:path
+src/Pennington/Pipeline/ContentSource.cs
 ```
 
-_Discriminates the origin of a `DiscoveredItem` across exactly four cases. `IContentParser` implementations pattern-match on this union to decide how to read the item — e.g., the Markdown parser matches `MarkdownFileSource` to read from disk, and `RedirectSource` short-circuits to a meta-refresh stub._
+Discriminates the origin of a `DiscoveredItem` across exactly four cases. `IContentParser` implementations pattern-match on this union to decide how to read the item — the Markdown parser matches `MarkdownFileSource` to read from disk, and `RedirectSource` short-circuits to a meta-refresh stub.
 
 ### Cases
-
-_One row per case. Alphabetical._
 
 | Case | Fields | Description |
 |---|---|---|
@@ -145,13 +128,11 @@ _One row per case. Alphabetical._
 
 ## Example
 
-_One minimal example pulled from `examples/ExtensibilityLabExample/ReleaseNotesContentService.cs` — the canonical non-markdown `IContentService` implementation, shown here at the type level so a reader recognizes the full interface surface in one place. Implementation walkthrough lives in the how-to._
+A custom `IContentService` that yields `DiscoveredItem`s from a non-markdown source (JSON release notes) and supplies all remaining `IContentService` members.
 
 ```csharp:xmldocid,bodyonly
 T:ExtensibilityLabExample.ReleaseNotesContentService
 ```
-
-_Reference shape for a custom `IContentService` that yields `DiscoveredItem`s from a non-markdown source (JSON release notes) and supplies the remaining `IContentService` members._
 
 ## See also
 

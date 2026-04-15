@@ -7,18 +7,9 @@ tags: [front-matter, records, templates]
 uid: reference.front-matter.built-in-types
 ---
 
-> **In this page.** _One sentence: the four built-in front-matter records (`DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter`), the keys each supports, the capability interfaces each implements, the template that wires it, and the one-line "pick X when" decision rows._
->
-> **Not in this page.** _One sentence: defining your own front-matter type is a task recipe — see the How-To [Work with front matter](xref:how-to.content-authoring.front-matter)._
-
-## Summary
-
-_**One sentence: what it is.** The four record types Pennington ships as ready-made `IFrontMatter` implementations, covering the doc and blog use cases at both the core-library and site-template layers._
-_**One sentence: where it lives.** Core records live in namespace `Pennington.FrontMatter` (`src/Pennington/FrontMatter/`); the template records live in `Pennington.DocSite` and `Pennington.BlogSite`._
+Pennington ships four ready-made `IFrontMatter` records covering the doc and blog use cases at both the core-library and site-template layers. Core records live in `Pennington.FrontMatter`; the template records live in `Pennington.DocSite` and `Pennington.BlogSite`.
 
 ## Overview
-
-_Four-row summary table keyed by type. Columns: **Type**, **Namespace**, **Wired by**, **Capabilities**. One row each for `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter`. "Wired by" names the extension method that binds the record as the `AddMarkdownContent<T>` type parameter (`PenningtonOptions.AddMarkdownContent<T>` when the author wires it themselves for the core records; `AddDocSite` for `DocSiteFrontMatter`; `AddBlogSite` for `BlogSiteFrontMatter`). Capabilities column lists the capability interfaces each record implements — `IFrontMatter` is universal and not repeated._
 
 | Type | Namespace | Wired by | Capabilities |
 |---|---|---|---|
@@ -35,11 +26,9 @@ _Four-row summary table keyed by type. Columns: **Type**, **Namespace**, **Wired
 T:Pennington.FrontMatter.DocFrontMatter
 ```
 
-_One sentence placing the record: the core-library's doc-page record, meant for bare `AddPennington` hosts that want a doc-shaped metadata contract without adopting the DocSite template. Implements `IFrontMatter, ITaggable, ISectionable, IOrderable`._
+The core-library doc-page record for bare `AddPennington` hosts. Implements `IFrontMatter`, `ITaggable`, `ISectionable`, and `IOrderable`.
 
 ### Properties
-
-_Alphabetical by key. `IsDraft`, `Search`, `Llms`, `Uid`, and `Description` come from `IFrontMatter` defaults — listed here because they are declared on the record and parsed from YAML._
 
 | Name | Type | Default | Description |
 |---|---|---|---|
@@ -59,11 +48,9 @@ _Alphabetical by key. `IsDraft`, `Search`, `Llms`, `Uid`, and `Description` come
 T:Pennington.FrontMatter.BlogFrontMatter
 ```
 
-_One sentence placing the record: the core-library's blog-post record for author-wired blog hosts, carrying `Date`, `Author`, and `Series` alongside the `IFrontMatter` defaults. Implements `IFrontMatter, ITaggable`. Not the record bound by `AddBlogSite`._
+The core-library blog-post record for author-wired blog hosts. Carries `Date`, `Author`, and `Series` alongside the `IFrontMatter` defaults. Implements `IFrontMatter` and `ITaggable`. Not the record bound by `AddBlogSite`.
 
 ### Properties
-
-_Alphabetical by key._
 
 | Name | Type | Default | Description |
 |---|---|---|---|
@@ -84,11 +71,9 @@ _Alphabetical by key._
 T:Pennington.DocSite.DocSiteFrontMatter
 ```
 
-_One sentence placing the record: the record bound by `AddDocSite`; extends the `DocFrontMatter` shape with `RedirectUrl` via `IRedirectable` so doc pages can emit meta-refresh stubs. Implements `IFrontMatter, ITaggable, ISectionable, IOrderable, IRedirectable`._
+The record bound by `AddDocSite`. Extends the `DocFrontMatter` shape with `RedirectUrl` via `IRedirectable`. Implements `IFrontMatter`, `ITaggable`, `ISectionable`, `IOrderable`, and `IRedirectable`.
 
 ### Properties
-
-_Alphabetical by key._
 
 | Name | Type | Default | Description |
 |---|---|---|---|
@@ -109,11 +94,9 @@ _Alphabetical by key._
 T:Pennington.BlogSite.BlogSiteFrontMatter
 ```
 
-_One sentence placing the record: the record bound by `AddBlogSite` — the BlogSite template's post-metadata contract. Carries every post-authoring field in one place (`Author`, `Repository`, `Series`, `Date`, `RedirectUrl`) and implements `IFrontMatter, ITaggable, ISectionable, IRedirectable`._
+The record bound by `AddBlogSite`. Consolidates all post-authoring fields (`Author`, `Repository`, `Series`, `Date`, `RedirectUrl`) in one contract. Implements `IFrontMatter`, `ITaggable`, `ISectionable`, and `IRedirectable`.
 
 ### Properties
-
-_Alphabetical by key. Note the non-null defaults on `Author`, `Repository`, and `Series` — these are empty strings rather than `null`, so posts that omit the key still bind successfully._
 
 | Name | Type | Default | Description |
 |---|---|---|---|
@@ -133,22 +116,16 @@ _Alphabetical by key. Note the non-null defaults on `Author`, `Repository`, and 
 
 ## Choosing a type
 
-_Four one-line decision rows. Product-dictated — no rationale, no narrative._
-
-- Pick `DocFrontMatter` when you run a bare `AddPennington` host for documentation and want doc-shaped metadata (`SectionLabel`, `Order`, `Tags`) without the DocSite template.
-- Pick `BlogFrontMatter` when you run a bare `AddPennington` host for a blog and want `Date`/`Author`/`Series` without the BlogSite template — `AddBlogSite` does **not** bind this record.
-- Pick `DocSiteFrontMatter` when you use `AddDocSite` — it is the record the template registers via `AddMarkdownContent<DocSiteFrontMatter>`, with `RedirectUrl` on top of `DocFrontMatter`.
-- Pick `BlogSiteFrontMatter` when you use `AddBlogSite` — it is the record the template registers via `AddMarkdownContent<BlogSiteFrontMatter>`, and it adds `Author`, `Repository`, `Series`, `RedirectUrl` over `BlogFrontMatter`.
+- `DocFrontMatter` — bare `AddPennington` host for documentation; provides `SectionLabel`, `Order`, and `Tags` without the DocSite template.
+- `BlogFrontMatter` — bare `AddPennington` host for a blog; provides `Date`, `Author`, and `Series` without the BlogSite template. `AddBlogSite` does **not** bind this record.
+- `DocSiteFrontMatter` — `AddDocSite` hosts; the template registers `AddMarkdownContent<DocSiteFrontMatter>` automatically.
+- `BlogSiteFrontMatter` — `AddBlogSite` hosts; the template registers `AddMarkdownContent<BlogSiteFrontMatter>` automatically.
 
 ## Example
-
-_One minimal example from the tutorial backing project: a fully-populated `BlogSiteFrontMatter` block pulled from `BlogSiteFirstPostExample` stage 2 (returns the post's YAML front matter + body as a string)._
 
 ```csharp:xmldocid,bodyonly
 M:BlogSiteFirstPostExample.Stage2.Source
 ```
-
-_Shape of a populated `BlogSiteFrontMatter` YAML block and the keys a post author touches._
 
 ## See also
 

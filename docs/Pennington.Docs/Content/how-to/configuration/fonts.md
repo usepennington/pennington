@@ -7,23 +7,15 @@ sectionLabel: Configuration
 tags: [fonts, typography, preload, docsite]
 ---
 
-> **In this page.** Setting `DisplayFontFamily` and `BodyFontFamily` on `DocSiteOptions`, declaring `FontPreloads`, and serving the matching font files from `wwwroot/fonts/`.
->
-> **Not in this page.** The self-hosting vs. Google Fonts trade-off is out of scope — pick a delivery approach before you land here.
-
-## When to use this
-
-_Two sentences. Readers arrive wanting a site that uses their chosen display and body faces instead of the DocSite defaults and wants those faces to load without a flash of unstyled text. Point readers who do not yet have a working DocSite back to the Getting Started tutorial — this recipe assumes the shell is already up._
+When your DocSite needs custom display and body typefaces instead of the defaults, and you want those faces to load without a flash of fallback text on first paint, follow these steps. If you do not yet have a running DocSite, start with [Create your first Pennington site](xref:tutorials.getting-started.first-site) first.
 
 ## Assumptions
 
-_Short bulleted list. Do not re-teach DocSite setup or MonorailCSS wiring._
-
-- You have a running DocSite built with `AddDocSite` / `UseDocSite` (see [_Create your first Pennington site_](xref:tutorials.getting-started.first-site) if not).
-- You have chosen a delivery strategy (self-hosted `.woff2` files in `wwwroot/fonts/`, or an external provider) and have the files or URLs on hand.
+- You have a running DocSite built with `AddDocSite` / `UseDocSite`.
+- You have chosen a font delivery strategy — self-hosted `.woff2` files or an external provider — and have the files or URLs ready.
 - You know the CSS `font-family` name each face registers under.
 
-To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample). Do not walk through the whole example — this page is a recipe, not a tour.
+To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample).
 
 ---
 
@@ -31,11 +23,11 @@ To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://gith
 
 ### 1. Drop font files into `wwwroot/fonts/`
 
-_One sentence: put each `.woff2` under `wwwroot/fonts/` so `UseStaticFiles` (wired by `UsePennington`) serves it at `/fonts/<file>.woff2`. The kitchen-sink example references `/fonts/display.woff2` and `/fonts/body.woff2` in its preload and `@font-face` wiring — supply your own files at those paths (the example does not ship font binaries)._
+Place each `.woff2` file under `wwwroot/fonts/` — `UsePennington` wires `UseStaticFiles`, so each file becomes available at `/fonts/<file>.woff2`. The kitchen-sink example references `/fonts/display.woff2` and `/fonts/body.woff2`; supply your own files at those paths (the example does not ship font binaries).
 
 ### 2. Register `@font-face` rules via `ExtraStyles`
 
-_One sentence: emit the `@font-face` declarations into the generated stylesheet by returning them from an `ExtraStyles` helper, which `MonorailCSS` appends verbatim above its utility output. Each rule points `src:` at the `/fonts/...` path you just exposed._
+Emit the `@font-face` declarations into the generated stylesheet by returning them from an `ExtraStyles` helper. MonorailCSS appends this content verbatim above its utility output, with each `src:` pointing at the `/fonts/...` path you exposed in step 1.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildExtraStyles
@@ -43,7 +35,7 @@ M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildExtraStyles
 
 ### 3. Declare preload hints with `FontPreloads`
 
-_One sentence: hand `DocSiteOptions.FontPreloads` a `FontPreload[]` so DocSite emits a `<link rel="preload" as="font" crossorigin>` tag for each file in the document head — that's what avoids the flash of fallback text on first paint._
+Pass a `FontPreload[]` to `DocSiteOptions.FontPreloads`. DocSite then emits a `<link rel="preload" as="font" crossorigin>` tag for each entry in the document head, which prevents the flash of fallback text on first paint.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildFontPreloads
@@ -51,7 +43,7 @@ M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildFontPreloads
 
 ### 4. Point `DisplayFontFamily` and `BodyFontFamily` at the new faces
 
-_Two sentences: set `DisplayFontFamily` on `DocSiteOptions` to the CSS stack that leads with your display face, and set `BodyFontFamily` to the stack that leads with your body face. Include a `system-ui` / `sans-serif` fallback so pages still render if a file 404s._
+Set `DisplayFontFamily` on `DocSiteOptions` to the CSS stack that leads with your display face, and set `BodyFontFamily` to the stack that leads with your body face. Include a `system-ui` or `sans-serif` fallback so pages still render gracefully if a file fails to load.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions
@@ -59,7 +51,7 @@ M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions
 
 ### 5. (Optional) Match MonorailCSS utilities to your stacks
 
-_One sentence: if you drive prose styling with MonorailCSS utility classes (e.g. `font-sans`, `font-display`), adjust the theme or `ExtraStyles` so those utilities resolve to the same `font-family` stacks — otherwise utility-styled text will disagree with the layout chrome. Link out to [_Customize MonorailCSS_](xref:how-to.configuration.monorail-css) for how to pass `CustomCssFrameworkSettings` to the bare-`AddPennington` host when you need that._
+If you style prose with MonorailCSS utility classes such as `font-sans` or `font-display`, update the theme or `ExtraStyles` so those utilities resolve to the same `font-family` stacks — otherwise utility-styled text will disagree with the layout chrome. See [Customize MonorailCSS](xref:how-to.configuration.monorail-css) for how to pass `CustomCssFrameworkSettings` when you need that.
 
 ---
 

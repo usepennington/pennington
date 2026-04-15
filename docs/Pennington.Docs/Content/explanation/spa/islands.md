@@ -7,49 +7,45 @@ tags: [spa, islands, architecture, hydration]
 uid: explanation.spa.islands
 ---
 
-> **In this page.** Why Pennington serves a JSON envelope at a `_spa-data` path instead of full page HTML on navigation, how islands are hydrated selectively, and the skeleton/loading lifecycle (`data-spa-loading` modes).
->
-> **Not in this page.** Registering an island — see the [how-to](xref:how-to.extensibility.island-renderer). The raw attribute list and renderer interfaces — see the [reference](xref:reference.extension-points.islands).
-
-## The question
-
-_One sentence, phrased as the reader's question — something like: "Why does in-site navigation fetch a tiny JSON file from `/_spa-data/...` instead of either reloading the full HTML page or booting a client-side SPA framework?" Keep it a single question; the rest of the page is the answer._
+Why does in-site navigation fetch a small JSON file from `/_spa-data/...` instead of either reloading the full HTML page or booting a client-side SPA framework?
 
 ## Context
 
-_Three to five sentences setting up the tradeoff the reader is walking into. Start with the two endpoints of the spectrum: classic server-rendered sites swap the whole document on every click (simple, full-fidelity, but heavy and visually jarring), while full SPAs hydrate the whole app in the browser (snappy, interactive, but ships a framework and fights SEO). Note that documentation sites sit awkwardly between the two — most of a page is static prose that does not benefit from client rendering, but a handful of regions (search, nav highlight, interactive widgets) genuinely want to survive across navigations. Close by previewing the position this page defends: Pennington serves every page server-rendered on first load, then on in-site clicks fetches a **small JSON envelope of pre-rendered island HTML** and swaps only those regions. Neither extreme; a middle path the rest of the page unpacks._
+Classic server-rendered sites swap the whole document on every click — simple, full-fidelity, but heavy and visually jarring when the shared chrome redrawing is indistinguishable from the content changing. Full SPAs take the opposite position: hydrate the entire app in the browser, make every navigation instant, and pay for it with a multi-megabyte runtime on first load, a separate SEO story, and a rendering path that diverges from whatever the server would have produced. Documentation sites sit awkwardly between those two extremes. Most of each page is static prose that does not benefit from client rendering, yet a handful of regions — the active-page highlight in the sidebar, an interactive search overlay, a page outline — genuinely want to survive navigation without re-initializing from scratch.
+
+The position Pennington takes is neither extreme. Every page arrives fully server-rendered on first load. When the visitor clicks an in-site link, the browser fetches a small JSON envelope of pre-rendered HTML fragments — one per registered island — and swaps only those regions into the existing DOM. The shell, sidebar, scripts, and stylesheets never move. The rest of this page unpacks why that shape was chosen and what it costs.
 
 ## How it works
 
-_The narrative spine: envelope shape, island hydration, loading modes, ordering. Anchor with one or two signatures from `Pennington.Islands` so the reader can see the envelope is a real record. Do not drift into "how to register one" — that belongs in the how-to — and do not enumerate attributes — that belongs in the reference._
-
 ### The JSON envelope
 
-_A few sentences. The first request to any URL returns full server-rendered HTML, exactly as it would without SPA — good for cold loads, good for crawlers, good when JavaScript is disabled. Once the browser has that page and the `spa-engine.js` script from `Pennington.UI` is loaded, the client intercepts same-origin link clicks and issues a GET for a sibling JSON document at `SpaNavigationOptions.DataPath` (default `/_spa-data/<slug>.json`). The endpoint is registered by `SpaNavigationExtensions.UseSpaNavigation` and produced by `SpaPageDataService`, which assembles an `SpaEnvelope` record carrying only `Title`, `Description`, optional `Social`, and an `Islands` dictionary of pre-rendered HTML fragments — no chrome, no layout, no script tags, no CSS. The envelope is typically a small fraction of the full-page HTML because the shell, header, footer, sidebar, and every asset reference are already in the DOM from the first load. Contrast this with a naive partial-HTML approach that round-trips the whole `<body>` — the envelope pays for exactly the regions that changed, and nothing more._
+The first request to any URL returns complete server-rendered HTML, exactly as it would without SPA support in the picture — good for cold loads, good for crawlers, functional when JavaScript is disabled. Once the browser has that page and the `spa-engine.js` script from `Pennington.UI` is active, the client intercepts same-origin link clicks and issues a GET for a sibling JSON document at the configured data path (default `/_spa-data/<slug>.json`). `SpaPageDataService` assembles an `SpaEnvelope` record carrying only a title, description, optional social metadata, and an `Islands` dictionary of pre-rendered HTML strings — no chrome, no layout, no asset references.
 
 ```csharp:xmldocid
 T:Pennington.Islands.SpaEnvelope
 ```
 
-_Optional — pull the envelope record so the reader sees how small it is: title, description, social metadata, and a string → string island map. If the prose already stood up, drop the fence._
+The envelope is typically a small fraction of the full-page HTML because everything outside the island slots is already in the DOM from the first load. Contrast this with a naive partial-HTML approach that round-trips the whole `<body>`: the envelope pays for exactly the regions that changed, and nothing more. The typed metadata header also separates concerns cleanly — title, description, and social data are first-class fields rather than HTML the client has to parse out of a `<head>` fragment.
 
 ### Island hydration
 
-_A few sentences on selective hydration. The word "hydration" normally means shipping a framework runtime and re-running component constructors in the browser — in Pennington it means the far weaker act of swapping an HTML substring into a DOM node marked with `data-spa-island="<name>"`. The server did the render; the client only routes the fragment to the right slot. Each `IIslandRenderer` registered in the DI container produces one keyed HTML string per route; `SpaPageDataService` composes them into the `Islands` dictionary; the browser engine iterates island elements and replaces each `innerHTML` with the corresponding entry. Regions that are not islands — site chrome, navigation, scripts — stay put across navigations, which is the point: scroll position on the sidebar survives, focused elements outside the swapped region keep focus, and nothing re-downloads a framework runtime because there is no framework runtime._
+The word "hydration" in the broader ecosystem usually implies shipping a framework runtime and re-running component constructors in the browser to attach event listeners to server-rendered markup. In Pennington it means something far more modest: swapping an HTML substring into a DOM node marked with `data-spa-island="<name>"`. The server did the render; the client routes the fragment to the right slot.
 
 ```csharp:xmldocid
 T:Pennington.Islands.IIslandRenderer
 ```
 
-_Optional — the two-member contract (an `IslandName` and a `RenderAsync` returning a string) makes the "one server render, many client swaps" shape concrete. Drop if prose covered it._
+Each `IIslandRenderer` registered in DI produces one keyed HTML string per route. `SpaPageDataService` composes them into the `Islands` dictionary. The browser engine iterates elements with `data-spa-island` attributes and replaces each one's `innerHTML` with the matching entry. Regions outside islands — chrome, navigation, scripts — stay put across navigations. Scroll position on the sidebar survives. Focused elements outside the swapped region keep focus. Nothing re-downloads a runtime because there is no runtime.
 
-### The loading lifecycle — `data-spa-loading` modes
+### The loading lifecycle
 
-_Two to four sentences. The round trip to fetch the envelope is small but not instant, and a click that does nothing visible for 200ms feels broken. Each island opts into one of three loading behaviours via `data-spa-loading`: `keep` (default — leave the previous HTML visible until the new HTML arrives, best for regions whose content is similar across pages), `clear` (empty the island immediately on navigation start, best for regions whose old content would actively mislead — e.g. an outline from the previous page), and `skeleton` (show a shimmer placeholder after a short delay, best for large regions where a visible holding pattern beats stale content). The skeleton delay is deliberately threshold-gated so navigations that resolve quickly never flash a placeholder; the engine waits past a configurable delay before swapping to skeleton, then holds the skeleton for a minimum duration so it doesn't strobe. The tradeoff across the three modes is a classic perceived-latency choice — stale, blank, or shimmer — and is made per-island because different regions want different answers._
+The round trip to fetch the envelope is small but not instant, and a click that does nothing visible for 200ms feels broken. Each island opts into one of three loading behaviors via a `data-spa-loading` attribute. The `keep` mode (the default) leaves the previous HTML visible until new HTML arrives, which works well for regions whose content is broadly similar across pages. The `clear` mode empties the island immediately on navigation start, which makes sense for regions whose stale content would actively mislead — an outline panel showing headings from the previous page, for example. The `skeleton` mode shows a shimmer placeholder, but only after a configurable threshold has elapsed, so navigations that resolve quickly never flash a placeholder at all; the engine then holds the skeleton for a minimum duration to avoid strobing.
+
+The tradeoff across those three modes is a classic perceived-latency question — stale, blank, or shimmer — and the answer differs by region. That is why the choice is made per-island rather than globally.
 
 ### Why server-render first, then hydrate
 
-_A few sentences closing the loop. Because every page is fully server-rendered on first load, the site works without JavaScript, is crawlable by search engines and LLM indexers byte-for-byte, and passes Core Web Vitals against real HTML rather than a blank shell waiting on a bundle. Because in-site navigation uses the same server-rendered HTML — just delivered in a JSON envelope and swapped into islands — there is no second rendering path to keep in sync with the first. The rendering that happens in the browser is string-to-DOM; the rendering that happens on the server is Razor-to-string. They are the same HTML, produced by the same pipeline, for both the first page load and every subsequent island swap. This is the same dev-vs-build invariant Pennington applies elsewhere — one renderer, consumed differently — and it is why adding an island does not mean adding a client-side component._
+Because every page is fully server-rendered on first load, the site works without JavaScript, is crawlable by search engines and LLM indexers byte-for-byte, and satisfies Core Web Vitals against real HTML rather than a blank shell waiting on a bundle. Because in-site navigation uses the same server-rendered HTML — delivered in a JSON envelope and swapped into islands — there is no second rendering path to keep in sync with the first. The rendering that happens in the browser is string-to-DOM assignment. The rendering that happens on the server is Razor-to-string. They produce the same HTML, through the same pipeline, for both the initial load and every subsequent island swap. Adding an island does not mean adding a client-side component.
 
 ## Trade-offs
 

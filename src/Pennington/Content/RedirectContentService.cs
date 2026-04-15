@@ -2,9 +2,9 @@ namespace Pennington.Content;
 
 using System.Collections.Immutable;
 using System.IO.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
 using FrontMatter;
 using Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Pipeline;
 using Routing;
 using YamlDotNet.Core;

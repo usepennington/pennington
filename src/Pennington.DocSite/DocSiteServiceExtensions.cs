@@ -1,11 +1,11 @@
 namespace Pennington.DocSite;
 
 using System.Reflection;
+using Infrastructure;
+using Islands;
 using Mdazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Infrastructure;
-using Islands;
 using MonorailCss;
 using Pennington.UI.Components;
 

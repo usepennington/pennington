@@ -196,8 +196,8 @@ public class MarkdownContentServiceTests
             SectionLabel = "Documentation"
         };
 
-return new MarkdownContentService<RedirectableFrontMatter>(
-            options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
+        return new MarkdownContentService<RedirectableFrontMatter>(
+                    options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
     }
 
     [Fact]

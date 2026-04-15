@@ -11,19 +11,11 @@ tags:
 uid: tutorials.getting-started.first-page
 ---
 
-> **In this page.** _One sentence paraphrasing the Covers line: the reader will write a YAML front-matter block with the required `title` key, see how a file path under `Content/` becomes a URL, and watch the nav strip auto-assemble as a second and third markdown file land on disk._
->
-> **Not in this page.** _One sentence paraphrasing the Does-not-cover line: point to the explanation on capability interfaces at `xref:explanation.core.front-matter-capabilities`, and to the how-to on non-markdown content sources at `xref:how-to.extensibility.custom-content-service` — those are out of scope here._
+By the end of this tutorial you'll have a running site at `http://localhost:5000` with three markdown pages (`/`, `/about`, `/contact`) and a nav strip that keeps itself sorted — and you won't touch `Program.cs` after step 1.
 
-## What you'll do
-
-_**Artifact** (one sentence): name the visible end state — a running site at `http://localhost:5000` with three markdown pages (`/`, `/about`, `/contact`) and a nav strip listing all three in front-matter `order`. Mention that the reader will not touch `Program.cs` after step 1._
-
-_**Skill** (one sentence): what the reader walks away knowing — how Pennington maps a `Content/**/*.md` path to a URL, what the `title:` key does for the page title and nav label, and that `order:` sorts siblings without any routing code._
+You'll walk away knowing how Pennington maps a `Content/**/*.md` path directly to a URL, what the `title:` key does for the page title and nav label, and how `order:` sorts siblings without any routing code.
 
 ## Prerequisites
-
-_Keep this list short. The Stage1 host code uses `AddPennington`, `UsePennington`, and a minimal `MapGet` — that's why the previous tutorial is required. Don't explain the bare host here; link back to it._
 
 - .NET 11 SDK installed
 - Completed [Spin up a minimal Pennington site](xref:tutorials.getting-started.first-site) (or have that example's Program.cs ready to reuse)
@@ -35,31 +27,29 @@ The finished code for this tutorial lives in [`examples/GettingStartedFirstPageE
 
 ## 1. Write a single page with required front matter
 
-_One sentence: the reader starts from the minimal-site host and replaces whatever placeholder `index.md` they had with a real YAML front-matter block, establishing the `title:` key as the one non-negotiable field._
+Starting from the minimal site you built in the previous tutorial, you'll add a real front-matter block and watch a single markdown file become a routed, titled page.
 
 ### Step 1.1 — Drop `Content/index.md` into the project
 
-_Walk the reader through creating the `Content/` folder (the minimal-site tutorial already pointed `ContentRootPath` there) and adding a single `index.md`. Call out that the YAML block between the two `---` fences is parsed by `FrontMatterParser` into a `DocFrontMatter` record, and that `title` is the only key required to render a page. Encourage writing a short markdown body below the fences — anything goes._
+Create a `Content/` folder at the project root if it isn't there yet — the previous tutorial already pointed `ContentRootPath` there. Add a file named `index.md` with a YAML front-matter block between two `---` fences. Pennington's `FrontMatterParser` reads that block into a `DocFrontMatter` record; `title` is the only key required to render a page. Write whatever markdown body you like below the closing fence.
 
 ```markdown:path
 examples/GettingStartedFirstPageExample/Content/index.md
 ```
 
-_Explain the two `---` fences and that `title:` flows through to both `<title>` and the nav label. Do not get into capability interfaces; link to the explanation page if curious readers need more._
+The `title:` value flows to both the HTML `<title>` tag and the nav link label. If you want to understand the full range of front-matter capability interfaces, see <xref:explanation.core.front-matter-capabilities> — for now, `title` is all you need.
 
 ### Step 1.2 — Confirm the host from the previous tutorial is unchanged
 
-_Show the Stage 1 body so the reader can see the exact host code they should have: `AddPennington`, `AddMarkdownContent<DocFrontMatter>`, `UsePennington`, and the `MapGet("/{*path}", ...)` that walks `IContentService` instances. Emphasize that this is identical to the minimal-site end state plus a `NavigationBuilder` injection — nothing else will change for the rest of the tutorial._
+Your `Program.cs` calls `AddPennington`, registers `AddMarkdownContent<DocFrontMatter>`, applies `UsePennington`, and maps every route with a single `MapGet("/{*path}", ...)` that walks `IContentService` instances. The only addition since the previous tutorial is a `NavigationBuilder` injection — nothing else will change for the rest of this tutorial.
 
 ```csharp:xmldocid,bodyonly
 M:GettingStartedFirstPageExample.Stage1.Run(System.String[])
 ```
 
-_Call out the `NavigationBuilder.BuildTree(tocItems)` call and the string join that becomes `navHtml` — that's the piece the reader will watch grow in later units without editing it._
+Notice the `NavigationBuilder.BuildTree(tocItems)` call and the string join that becomes `navHtml` — that's the piece you'll watch grow in later steps without ever editing it.
 
 ### Checkpoint — A single page renders at `/`
-
-_Concrete verification: the reader runs `dotnet run`, browses to the site root, sees the `Welcome` H1, and the nav strip shows exactly one link._
 
 - Run `dotnet run` from the example project
 - Visit `http://localhost:5000/`
@@ -69,31 +59,29 @@ _Concrete verification: the reader runs `dotnet run`, browses to the site root, 
 
 ## 2. Let the file path become the URL
 
-_One sentence: the reader adds a second markdown file and discovers that Pennington maps the on-disk path straight to a route with no router-table edits._
+Now let's add a second file and watch Pennington map the on-disk path straight to a route — no router-table edits required.
 
 ### Step 2.1 — Add `Content/about.md` with its own front matter
 
-_Have the reader create a sibling file in the same `Content/` folder. Emphasize that the filename (minus `.md`) becomes the URL segment: `about.md` will serve at `/about`. Use `order: 20` so this file sorts predictably when the third one lands. Keep the body short — a paragraph or two is plenty._
+Create `about.md` in the same `Content/` folder. The filename (minus `.md`) becomes the URL segment: `about.md` serves at `/about`. Set `order: 20` so this file sorts predictably when the third one arrives. A short body — a paragraph or two — is all you need.
 
 ```markdown:path
 examples/GettingStartedFirstPageExample/Content/about.md
 ```
 
-_Note the `order: 20` line and promise that its role becomes obvious in unit 3. Do not explain `ISectionable` or capability interfaces here._
+Keep an eye on the `order: 20` line — its role will be obvious once the third file lands in step 3.
 
 ### Step 2.2 — Reload and confirm the host code is still the same
 
-_Show the Stage 2 body to drive the point home: the method delegates to `Stage1.Run`, meaning zero code changes occurred between units 1 and 2. The only thing that moved was a file on disk. This is the lesson._
+The Stage 2 host method delegates entirely to `Stage1.Run` — zero code changes occurred between steps 1 and 2. The only thing that moved was a file on disk.
 
 ```csharp:xmldocid,bodyonly
 M:GettingStartedFirstPageExample.Stage2.Run(System.String[])
 ```
 
-_One sentence: call out that `Stage2.Run(args) => Stage1.Run(args)` is a deliberate choice — the tutorial's pedagogical point is that the host is untouched._
+`Stage2.Run(args) => Stage1.Run(args)` is intentional — the point is that the host is untouched.
 
 ### Checkpoint — Two pages, two nav entries, zero code edits
-
-_Concrete verification with both URLs and the expected nav list._
 
 - With the host still running (or after a `dotnet run` restart), visit `http://localhost:5000/about`
 - You should see the heading **About this site** and a nav strip with two links: **Welcome** (`/`) and **About** (`/about`)
@@ -103,37 +91,33 @@ _Concrete verification with both URLs and the expected nav list._
 
 ## 3. Watch navigation auto-assemble from a third file
 
-_One sentence: the reader adds a third markdown file and sees both URL mapping and front-matter-driven ordering work together._
+With two pages confirmed, let's add a third and see both URL mapping and front-matter ordering click into place together.
 
 ### Step 3.1 — Add `Content/contact.md` with `order: 30`
 
-_Explain that `order:` in front matter is how Pennington sorts siblings in the nav tree. Setting `order: 30` here (vs `order: 20` on About) guarantees Contact lands after About. The root `index.md` has no `order:` and sorts first by convention — mention it briefly, do not dive into the sort algorithm._
+The `order:` field is how Pennington sorts siblings in the nav tree. Setting `order: 30` here — higher than About's `order: 20` — guarantees Contact lands after About. The root `index.md` carries no `order:` and sorts first by convention.
 
 ```markdown:path
 examples/GettingStartedFirstPageExample/Content/contact.md
 ```
 
-_Point at the `order: 30` line and the one-paragraph body; note that the example body invites the reader to try a filename rename, which is step 3.3._
+The example body invites you to try a filename rename — that's coming in step 3.3.
 
 ### Step 3.2 — Confirm the host is still unchanged in Stage 3
 
-_Show the Stage 3 body — it also delegates to `Stage1.Run`. Three files on disk, one host method, nothing edited between stages. This seals the lesson._
+Stage 3 also delegates to `Stage1.Run`. Three files on disk, one host method, nothing edited between any of the stages.
 
 ```csharp:xmldocid,bodyonly
 M:GettingStartedFirstPageExample.Stage3.Run(System.String[])
 ```
 
-_Optional one-liner: the `NavigationBuilder` the reader saw injected back in step 1.2 is what produces the three-item nav now — they've been using it the whole time._
+The `NavigationBuilder` you saw injected back in step 1.2 is what produces the three-item nav now — you've been using it the whole time.
 
 ### Step 3.3 — Rename `contact.md` to see the URL follow the file
 
-_Have the reader rename `Content/contact.md` to `Content/reach-out.md` with the host running. The nav entry updates to reflect the new URL on the next request. This is the concrete demonstration of file-path-to-URL mapping — no config, no restart needed if the dev host is watching._
-
-_No code fence here; this is a filesystem action. Remind the reader to rename it back to `contact.md` before they move on so later tutorials match._
+With the host running, rename `Content/contact.md` to `Content/reach-out.md`. On the next request the nav link's href becomes `/reach-out` — no config, no restart. This is file-path-to-URL mapping in action. Rename it back to `contact.md` before continuing so later tutorials match.
 
 ### Checkpoint — Three pages, sorted by front matter
-
-_Concrete verification of the nav order and all three URLs._
 
 - Visit `/`, `/about`, and `/contact` in turn — each should render its own H1 and body
 - The nav strip on every page lists three links in this order: **Welcome**, **About**, **Contact**
@@ -143,11 +127,8 @@ _Concrete verification of the nav order and all three URLs._
 
 ## Summary
 
-_Three to five bullets. Each one names a capability the reader now has. Do not recap the units — describe what the reader can now do on their own._
-
 - You can write a Pennington-ready markdown page with a YAML front-matter block and the required `title:` key.
 - You know that any `Content/**/*.md` path becomes a URL automatically — no route table, no registration per file.
 - You've seen the nav strip build itself from the content folder, sorted by the `order:` field, without touching `Program.cs`.
 - You can add and rename markdown files and predict the URL and nav position that result.
 
-> Navigation to the next tutorial is generated automatically from `order` — do not write a "what's next" section.

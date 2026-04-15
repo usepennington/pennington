@@ -1,5 +1,8 @@
 namespace Pennington.Markdown;
 
+using Extensions;
+using Extensions.Tabs;
+using Highlighting;
 using Markdig;
 using Markdig.Extensions.Alerts;
 using Markdig.Parsers.Inlines;
@@ -7,9 +10,6 @@ using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Mdazor;
 using Microsoft.Extensions.DependencyInjection;
-using Highlighting;
-using Extensions;
-using Extensions.Tabs;
 
 /// <summary>
 /// Creates a configured Markdig MarkdownPipeline.

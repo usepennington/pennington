@@ -171,8 +171,8 @@ public class DocsHttpTests : IClassFixture<DocsWebApplicationFactory>
     {
         var response = await _client.GetAsync("/", TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        content.ShouldContain("""rel="preload" href="fonts/lexend.woff2" as="font" type="font/woff2" crossorigin""");
-        content.ShouldContain("""rel="preload" href="fonts/noto-sans.woff2" as="font" type="font/woff2" crossorigin""");
+        content.ShouldContain("""rel="preload" href="/fonts/lexend.woff2" as="font" type="font/woff2" crossorigin""");
+        content.ShouldContain("""rel="preload" href="/fonts/noto-sans.woff2" as="font" type="font/woff2" crossorigin""");
     }
 
     [Fact]

@@ -1,5 +1,4 @@
 using Pennington.DocSite;
-using Pennington.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 

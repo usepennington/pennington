@@ -7,18 +7,7 @@ tags: [markdown, extensions, alerts, tabs]
 uid: reference.markdown.extensions
 ---
 
-> **In this page.** _One sentence — paste/trim from TOC "Covers": every non-CommonMark feature in one scannable page — tabs, alerts (including the five built-in kinds' emitted CSS classes), code annotations, cross-reference tags — with syntax, arguments, and a minimal example each._
->
-> **Not in this page.** _One sentence — paste/trim from TOC "Does not cover": Markdig core syntax (tables, footnotes, etc.) — those follow Markdig's own docs._
-
-## Summary
-
-_**One sentence: what it is.** E.g., "The catalog of non-CommonMark Markdown features wired into Pennington's Markdig pipeline."_
-_**One sentence: where it lives.** E.g., "Extensions are registered in `MarkdownPipelineFactory.CreateWithExtensions` from `Pennington.Markdown.Extensions` (alerts, tabs, highlighting/code annotations) and `Pennington.Infrastructure` (xref resolution)."_
-
-## Overview
-
-_Single scannable table listing every extension covered below. Keep rows in the same order as the subsections. The "Controlled by" column names the pipeline hook that enables the feature; the "Doc page" column links to the matching how-to for task-oriented usage._
+The catalog of non-CommonMark Markdown features wired into Pennington's Markdig pipeline. Extensions are registered in `MarkdownPipelineFactory.CreateWithExtensions` from `Pennington.Markdown.Extensions` (alerts, tabs, highlighting/code annotations) and `Pennington.Infrastructure` (xref resolution). Markdig's own built-in syntax (tables, footnotes, and so on) is not covered here.
 
 | Extension | Syntax | Controlled by | Doc page |
 |---|---|---|---|
@@ -29,7 +18,7 @@ _Single scannable table listing every extension covered below. Keep rows in the 
 
 ## Tabs
 
-_Two-sentence opener: what the extension does and the shape it consumes. Mention that the extension collapses a run of consecutive fenced code blocks (starting with one that carries `tabs=true`) into one tabbed container rendered as `role="tablist"` / `role="tab"` / panel regions; the first tab is active by default._
+The tabs extension collapses a run of consecutive fenced code blocks — starting with one that carries `tabs=true` — into a single tabbed container rendered as `role="tablist"` / `role="tab"` / panel regions, with the first tab active by default.
 
 ### Syntax
 
@@ -43,7 +32,7 @@ _Two-sentence opener: what the extension does and the shape it consumes. Mention
 ```
 ````
 
-_One sentence: each fenced block in the consecutive run becomes a tab panel; only the first block needs `tabs=true` to open the group._
+Each fenced block in the consecutive run becomes a tab panel; only the first block requires `tabs=true` to open the group.
 
 ### Arguments
 
@@ -52,7 +41,7 @@ _One sentence: each fenced block in the consecutive run becomes a tab panel; onl
 | `tabs` | `true` | — (absent) | First fence in the group | Marks a fenced block as the start of a tabbed run; consecutive subsequent fences join the same group. |
 | `title` | string (optionally quoted) | Pretty language name derived from the info string | Each fence in the group | Overrides the label shown on the tab button. |
 
-_Argument parsing is `key=value` pairs, quoted values allowed; see [Code-block argument reference](xref:reference.markdown.code-block-args) for the full grammar._
+Arguments are `key=value` pairs; quoted values are allowed. See [Code-block argument reference](xref:reference.markdown.code-block-args) for the full grammar.
 
 ### Emitted CSS classes
 
@@ -64,7 +53,7 @@ _Argument parsing is `key=value` pairs, quoted values allowed; see [Code-block a
 | `TabButtonCss` | `tab-button` | `role="tab"` `<button>` (carries `data-state="active"|"inactive"`). |
 | `TabPanelCss` | `tab-panel` | `aria-labelledby`-bound panel wrapping the rendered code block. |
 
-_Classes are configurable via `TabbedCodeBlockRenderOptions` passed to `UseTabbedCodeBlocks`; the options record shape:_
+Classes are configurable via `TabbedCodeBlockRenderOptions` passed to `UseTabbedCodeBlocks`:
 
 ```csharp:xmldocid
 T:Pennington.Markdown.Extensions.Tabs.TabbedCodeBlockRenderOptions
@@ -72,7 +61,7 @@ T:Pennington.Markdown.Extensions.Tabs.TabbedCodeBlockRenderOptions
 
 ### Minimal example
 
-_One sentence: markdown source excerpt from the DocSite authoring example, showing the two-fence tabbed group that the tutorial renders._
+Markdown source showing a two-fence tabbed group from the DocSite authoring example:
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteAuthorExample.Stage3.Source
@@ -80,7 +69,7 @@ M:DocSiteAuthorExample.Stage3.Source
 
 ## Alerts
 
-_Two-sentence opener: what the extension does — parses GitHub-flavored `> [!KIND]` as the first line of a blockquote and replaces the `QuoteBlock` with an `AlertBlock` carrying two CSS classes. Note that Pennington registers its own `CustomAlertInlineParser` ahead of Markdig's built-in alert parser; the quote-block form is intentionally the only accepted syntax._
+The alerts extension parses a GitHub-flavored `> [!KIND]` token as the first line of a blockquote and replaces the `QuoteBlock` with an `AlertBlock` carrying two CSS classes. Pennington registers its own `CustomAlertInlineParser` ahead of Markdig's built-in alert parser; the blockquote form is the only accepted syntax.
 
 ### Syntax
 
@@ -89,15 +78,15 @@ _Two-sentence opener: what the extension does — parses GitHub-flavored `> [!KI
 > Body text of the alert, CommonMark rendered.
 ````
 
-_One sentence: `KIND` is a case-insensitive alphabetic run; unrecognized kinds still parse but emit a `markdown-alert-<kind>` class with the lowercased token._
+`KIND` is a case-insensitive alphabetic token; unrecognized kinds still parse and emit a `markdown-alert-<kind>` class using the lowercased token.
 
 ### Arguments
 
-_Alerts take no arguments — the kind token is the only variable, and it is drawn from the set listed under Emitted CSS classes._
+Alerts take no arguments; the kind token is the only variable and is drawn from the set listed under built-in kinds.
 
 ### Built-in kinds and emitted CSS classes
 
-_Every alert receives **two** classes: `markdown-alert` (constant) and `markdown-alert-<kind>` (derived from the lowercased token). The five built-in GitHub-compatible kinds and their emitted secondary classes are:_
+Every alert receives two classes: `markdown-alert` (constant) and `markdown-alert-<kind>` (derived from the lowercased token). The five built-in GitHub-compatible kinds and their emitted secondary classes are listed below.
 
 | Kind token | Secondary class | Typical use |
 |---|---|---|
@@ -107,7 +96,7 @@ _Every alert receives **two** classes: `markdown-alert` (constant) and `markdown
 | `WARNING` | `markdown-alert-warning` | Something likely to go wrong. |
 | `IMPORTANT` | `markdown-alert-important` | Must-read information. |
 
-_Backing parser and class-emission logic:_
+Backing parser and class-emission logic:
 
 ```csharp:xmldocid
 T:Pennington.Markdown.Extensions.CustomAlertInlineParser
@@ -115,7 +104,7 @@ T:Pennington.Markdown.Extensions.CustomAlertInlineParser
 
 ### Minimal example
 
-_One sentence: markdown excerpt from the DocSite authoring example showing a `[!NOTE]` block in context._
+Markdown excerpt from the DocSite authoring example showing a `[!NOTE]` block in context:
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteAuthorExample.Stage2.Source
@@ -123,7 +112,7 @@ M:DocSiteAuthorExample.Stage2.Source
 
 ## Code annotations
 
-_Two-sentence opener: what the extension does — after syntax highlighting, `CodeTransformer` scans each rendered line for a `[!code …]` directive inside a language-appropriate comment, strips the comment, and applies a CSS class to the line (and sometimes to the enclosing `<pre>`). Includes the `word:` variant, which wraps a matching substring in a span rather than acting on the whole line, and the `include-start/include-end/exclude-start/exclude-end` snippet directives, which drop surrounding lines from the output._
+After syntax highlighting, `CodeTransformer` scans each rendered line for a `[!code …]` directive inside a language-appropriate comment, strips the comment, and applies a CSS class to the line and optionally to the enclosing `<pre>`. The `word:` variant wraps a matching substring in a span rather than acting on the whole line; the `include-start` / `include-end` / `exclude-start` / `exclude-end` directives remove surrounding lines from the output.
 
 ### Syntax
 
@@ -135,7 +124,7 @@ var z = 3; // [!code word:z|renamed from q]
 ```
 ````
 
-_One sentence: the directive must sit inside a recognized comment marker for the language (`//`, `#`, `--`, `<!-- -->`, `*`, `%`, `'`, `REM`, `;`, `/* */`); the directive and a now-empty comment are removed, leaving trailing content intact._
+The directive must appear inside a recognized comment marker for the language (`//`, `#`, `--`, `<!-- -->`, `*`, `%`, `'`, `REM`, `;`, `/* */`); the directive and any now-empty comment wrapper are removed, leaving trailing content intact.
 
 ### Arguments (notations)
 
@@ -152,7 +141,7 @@ _One sentence: the directive must sit inside a recognized comment marker for the
 | `include-start` / `include-end` | — (structural) | — | Keep only lines between the matching start/end markers; markers are removed. |
 | `exclude-start` / `exclude-end` | — (structural) | — | Drop lines between the matching start/end markers; markers are removed. |
 
-_Backing transformer:_
+Backing transformer:
 
 ```csharp:xmldocid
 T:Pennington.Markdown.Extensions.CodeTransformer
@@ -160,11 +149,11 @@ T:Pennington.Markdown.Extensions.CodeTransformer
 
 ### Emitted CSS classes
 
-_Summary of the classes listed above: line-level classes (`highlight`, `diff-add`, `diff-remove`, `focused`/`blurred`, `error`, `warning`) are added to the `<span class="line">` wrapper; `<pre>`-level classes (`has-highlighted`, `has-diff`, `has-focused`, `has-errors`, `has-warnings`, `has-word-highlights`) are added to the outer `<pre>` so stylesheets can style the block as a whole. `word:` notations emit `word-highlight`, `word-highlight-with-message`, and the callout pieces `word-highlight-wrapper` / `word-highlight-message` / `word-highlight-arrow-container` / `word-highlight-arrow-outer` / `word-highlight-arrow-inner`._
+Line-level classes (`highlight`, `diff-add`, `diff-remove`, `focused` / `blurred`, `error`, `warning`) are added to the `<span class="line">` wrapper. Block-level classes (`has-highlighted`, `has-diff`, `has-focused`, `has-errors`, `has-warnings`, `has-word-highlights`) are added to the outer `<pre>`. The `word:` notation emits `word-highlight` or `word-highlight-with-message` on the wrapped span, plus the callout elements `word-highlight-wrapper`, `word-highlight-message`, `word-highlight-arrow-container`, `word-highlight-arrow-outer`, and `word-highlight-arrow-inner`.
 
 ### Minimal example
 
-_One sentence: an annotated fence exercising `[!code highlight]` on one line and `[!code ++]` / `[!code --]` on others — the `<pre>` inherits `has-highlighted` and `has-diff` and the trailing comments are stripped from the emitted output._
+An annotated fence exercising `[!code highlight]`, `[!code ++]`, and `[!code --]`; the enclosing `<pre>` receives `has-highlighted` and `has-diff`, and the trailing directive comments are stripped from the emitted HTML:
 
 ````markdown
 ```csharp
@@ -176,7 +165,7 @@ var removed = "gone";    // [!code --]
 
 ## Cross-reference tags
 
-_Two-sentence opener: what the extension does — `xref:` links authored in markdown are resolved after render by `XrefHtmlRewriter` against the uid → route map owned by `XrefResolver`. Two surface forms are supported: a tag-shaped form `<xref:uid>` handled in a pre-parse string pass (because it is not valid HTML), and an attribute form `[text](xref:uid)` whose rendered `href="xref:uid"` is rewritten during the DOM pass; unknown uids emit a diagnostic via `DiagnosticContext` and surface in the dev overlay._
+`xref:` links authored in markdown are resolved after rendering by `XrefHtmlRewriter` against the uid-to-route map owned by `XrefResolver`. Two surface forms are supported: the tag form `<xref:uid>` is handled in a pre-parse string pass (it is not valid HTML), and the attribute form `[text](xref:uid)` has its rendered `href="xref:uid"` rewritten during the DOM pass; unknown uids emit a diagnostic via `DiagnosticContext` and surface in the dev overlay.
 
 ### Syntax
 
@@ -186,19 +175,19 @@ See <xref:reference.options.pennington-options>.
 See [PenningtonOptions](xref:reference.options.pennington-options).
 ````
 
-_One sentence: `uid` is the exact string declared in a page's front-matter `uid:` key._
+`uid` is the exact string declared in a page's front-matter `uid:` key.
 
 ### Arguments
 
-_The only variable is the `uid` token. Text content for the tag form is derived from the target page's title; the attribute form uses the supplied link text verbatim._
+The only variable is the `uid` token. The tag form derives its link text from the target page's title; the attribute form uses the supplied link text verbatim.
 
 ### Emitted CSS classes
 
-_The rewriter emits a standard `<a href="…">` element with no added class — styling is delegated to the surrounding prose stylesheet._
+The rewriter emits a standard `<a href="…">` element with no added class; styling is delegated to the surrounding prose stylesheet.
 
 ### Minimal example
 
-_One sentence: both surface forms resolving the same uid — the tag form derives its link text from the target page's title, the attribute form uses the supplied label verbatim._
+Both surface forms resolving the same uid — the tag form derives its link text from the target page title, the attribute form uses the supplied label verbatim:
 
 ```markdown
 See <xref:reference.options.pennington-options> for the full options catalog.
@@ -206,7 +195,7 @@ See <xref:reference.options.pennington-options> for the full options catalog.
 Configure MonorailCSS through [the options record](xref:reference.options.monorail-css-options).
 ```
 
-_Backing rewriter:_
+Backing rewriter:
 
 ```csharp:xmldocid
 T:Pennington.Infrastructure.XrefHtmlRewriter

@@ -2,9 +2,9 @@ namespace Pennington.IntegrationTests.DocsSite;
 
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
 using Infrastructure;
 using LlmsTxt;
+using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Regression tests for the bug where llms.txt and search-index.json were

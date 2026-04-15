@@ -8,8 +8,9 @@
             {
                 var isActive = ActiveArea != null
                     && string.Equals(area.Slug, ActiveArea.Slug, StringComparison.OrdinalIgnoreCase);
+                var href = AreaHrefs.TryGetValue(area.Slug, out var resolved) ? resolved : $"/{area.Slug}/";
                 <li>
-                    <a href="/@area.Slug/"
+                    <a href="@href"
                        data-area="@area.Slug"
                        aria-current="@(isActive ? "true" : "false")"
                        class="flex items-center px-2 mx-1 py-1.5 rounded-md text-base transition-colors duration-150
@@ -36,4 +37,5 @@
 @code {
     [Parameter] public IReadOnlyList<ContentArea> Areas { get; set; } = [];
     [Parameter] public ContentArea? ActiveArea { get; set; }
+    [Parameter] public IReadOnlyDictionary<string, string> AreaHrefs { get; set; } = new Dictionary<string, string>();
 }

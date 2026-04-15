@@ -7,115 +7,105 @@ sectionLabel: UI Components
 tags: [ui, components, localization, structured-data]
 ---
 
-> **In this page.** _One sentence pulled from `docs-toc.md`: `LanguageSwitcher`, `StructuredData`, and `FallbackNotice` — parameters and a one-line "use when" row for each._
->
-> **Not in this page.** _One sentence pulled from `docs-toc.md`: authoring your own Razor components — see the tutorial [Author a custom Razor component for markdown](xref:tutorials.beyond-basics.custom-razor-component) and the extensibility how-to._
-
-## Summary
-
-_**One sentence: what it is.** The three non-content, non-navigation Razor components shipped in `Pennington.UI`: a locale selector, a `<head>`-injecting JSON-LD emitter, and an inline notice shown when a page falls back to the default locale._
-_**One sentence: where it lives.** Namespace `Pennington.UI.Components`, files `src/Pennington.UI/Components/LanguageSwitcher.razor`, `StructuredData.razor`, and `FallbackNotice.razor`; all three are surfaced by the `Pennington.UI` `@using Pennington.UI.Components` import in consumers._
+`Pennington.UI` ships three utility Razor components — `LanguageSwitcher`, `StructuredData`, and `FallbackNotice` — that handle locale selection, JSON-LD head injection, and fallback-locale notification respectively. All three live in namespace `Pennington.UI.Components` and are made available via the `@using Pennington.UI.Components` import.
 
 ## `LanguageSwitcher`
 
-```csharp:xmldocid
-T:Pennington.UI.Components.LanguageSwitcher
+```razor:path
+src/Pennington.UI/Components/LanguageSwitcher.razor
 ```
 
-_One sentence: renders a `<details>`-backed dropdown of alternate-language links, pre-wired for SPA reload via the `data-spa-reload` attribute; hides itself when fewer than two locales are available. Falls back to `LocaleContext` + `LocalizationOptions.GetAlternateLanguages` when `AlternateLanguages` is null or empty._
+Renders a `<details>`-backed dropdown of alternate-language links pre-wired for SPA reload via the `data-spa-reload` attribute; hides itself when fewer than two locales are available, and auto-computes the list from `LocaleContext` and `LocalizationOptions` when `AlternateLanguages` is null or empty.
 
 | Field | Value |
 |---|---|
 | Renders | `<details>` dropdown of alternate-language `<a>` links in the page chrome. |
-| Use when | The site has more than one locale registered and the layout needs a language picker. |
 
 ### Parameters
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `AlternateLanguages` | `IReadOnlyList<AlternateLanguageItem>?` | `null` | _One sentence: explicit list of alternate-language items; when null or empty, the component auto-computes the list from the injected `LocaleContext` and `LocalizationOptions`._ |
+| `AlternateLanguages` | `IReadOnlyList<AlternateLanguageItem>?` | `null` | Explicit list of alternate-language items; when null or empty, the component auto-computes the list from the injected `LocaleContext` and `LocalizationOptions`. |
 
 ### `AlternateLanguageItem`
 
-_One sentence: nested record type exposed on the component for callers that need to pass an explicit list — `DocSite`'s `MainLayout` builds one per-request from `ContentResolver.GetAlternateLanguagesAsync`._
+Nested record type that callers supply when constructing an explicit `AlternateLanguages` list; `DocSite`'s `MainLayout` builds one instance per locale per-request from `ContentResolver.GetAlternateLanguagesAsync`.
 
 | Name | Type | Description |
 |---|---|---|
-| `Locale` | `string` | _One sentence: locale code written to the `data-locale` attribute on the rendered `<a>`._ |
-| `DisplayName` | `string` | _One sentence: visible label used in the dropdown row and as the currently-selected summary text._ |
-| `Url` | `string` | _One sentence: `href` written on the anchor; typically a locale-prefixed canonical path._ |
-| `IsCurrentLocale` | `bool` | _One sentence: when `true`, the row renders with the current-locale styling (`font-semibold` and the primary accent color)._ |
+| `Locale` | `string` | Locale code written to the `data-locale` attribute on the rendered `<a>`. |
+| `DisplayName` | `string` | Visible label used in the dropdown row and as the currently-selected summary text. |
+| `Url` | `string` | `href` written on the anchor; typically a locale-prefixed canonical path. |
+| `IsCurrentLocale` | `bool` | When `true`, the row renders with current-locale styling (`font-semibold` and the primary accent color). |
 
 ### Example
 
-_One sentence: the DocSite `MainLayout` shows the production wiring — guard on `LocalizationOptions.IsMultiLocale`, then pass the pre-computed `_langSwitcherItems` list._
+The DocSite `MainLayout` shows the production wiring: guard on `LocalizationOptions.IsMultiLocale`, then pass the pre-computed `_langSwitcherItems` list.
 
 ```razor:path
 src/Pennington.DocSite/Components/Layout/MainLayout.razor
 ```
 
-_One sentence of context: in a DocSite host `LanguageSwitcher` is rendered for you; the above is the reference wiring for replaced layouts or bare `AddPennington` hosts._
+> **Note:** In a DocSite host `LanguageSwitcher` is rendered automatically; the above is the reference wiring for replaced layouts or bare `AddPennington` hosts.
 
 ## `StructuredData`
 
-```csharp:xmldocid
-T:Pennington.UI.Components.StructuredData
+```razor:path
+src/Pennington.UI/Components/StructuredData.razor
 ```
 
-_One sentence: emits up to three `<script type="application/ld+json">` tags into the document `<head>` via `<HeadContent>`, one each for `JsonLdArticle`, `JsonLdBreadcrumbList`, and `JsonLdWebSite`. Each payload is serialized with `JsonLdSerializer` and only rendered when the corresponding parameter is non-null._
+Emits up to three `<script type="application/ld+json">` tags into the document `<head>` via `<HeadContent>`, one each for `JsonLdArticle`, `JsonLdBreadcrumbList`, and `JsonLdWebSite`; each payload is serialized with `JsonLdSerializer` and rendered only when the corresponding parameter is non-null.
 
 | Field | Value |
 |---|---|
 | Renders | Zero to three `<script type="application/ld+json">` tags injected into `<head>`. |
-| Use when | A page needs schema.org JSON-LD for SEO — typically article, breadcrumb, or site-level metadata. |
 
 ### Parameters
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `Article` | `JsonLdArticle?` | `null` | _One sentence: schema.org `Article` payload emitted when non-null, serialized by `JsonLdSerializer.SerializeArticle`._ |
-| `Breadcrumbs` | `JsonLdBreadcrumbList?` | `null` | _One sentence: schema.org `BreadcrumbList` payload emitted when non-null, serialized by `JsonLdSerializer.SerializeBreadcrumbList`._ |
-| `WebSite` | `JsonLdWebSite?` | `null` | _One sentence: schema.org `WebSite` payload emitted when non-null, serialized by `JsonLdSerializer.SerializeWebSite`; typically rendered once on the home page._ |
+| `Article` | `JsonLdArticle?` | `null` | Schema.org `Article` payload emitted when non-null, serialized by `JsonLdSerializer.SerializeArticle`. |
+| `Breadcrumbs` | `JsonLdBreadcrumbList?` | `null` | Schema.org `BreadcrumbList` payload emitted when non-null, serialized by `JsonLdSerializer.SerializeBreadcrumbList`. |
+| `WebSite` | `JsonLdWebSite?` | `null` | Schema.org `WebSite` payload emitted when non-null, serialized by `JsonLdSerializer.SerializeWebSite`; typically rendered once on the home page. |
 
 ### Example
 
-_One sentence: the DocSite `Pages` component emits `StructuredData` gated on `CanonicalBaseUrl` being set — article + breadcrumb on content pages, website on the home page._
+The DocSite `Pages` component emits `StructuredData` gated on `CanonicalBaseUrl` being set — article and breadcrumb on content pages, website on the home page.
 
 ```razor:path
 src/Pennington.DocSite/Components/Layout/Pages.razor
 ```
 
-_One sentence of context: the JSON-LD payload records themselves are documented on the schema types reference page._
+> **Note:** The JSON-LD payload record types are documented at <xref:reference.structured-data.types>.
 
 ## `FallbackNotice`
 
-```csharp:xmldocid
-T:Pennington.UI.Components.FallbackNotice
+```razor:path
+src/Pennington.UI/Components/FallbackNotice.razor
 ```
 
-_One sentence: renders an inline amber notice banner above the article region when the requested locale has no translation and the page is being served from the default locale. Renders nothing when `RequestedLocale` is null or empty._
+Renders an inline amber notice banner above the article region when the requested locale has no translation and the page is being served from the default locale; renders nothing when `RequestedLocale` is null or empty.
 
 | Field | Value |
 |---|---|
 | Renders | Amber-styled notice `<div>` above the article when a fallback is active; nothing otherwise. |
-| Use when | A page is served in the default locale because the requested locale is missing a translation. |
 
 ### Parameters
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `RequestedLocale` | `string?` | `null` | _One sentence: locale code the visitor asked for; when non-null/non-empty, the notice renders and this value is shown as the "not yet available" locale._ |
-| `DefaultLocale` | `string?` | `null` | _One sentence: locale code the page is actually being served in; shown in the notice as the locale the visitor is seeing instead._ |
+| `RequestedLocale` | `string?` | `null` | Locale code the visitor requested; when non-null and non-empty, the notice renders and displays this value as the unavailable locale. |
+| `DefaultLocale` | `string?` | `null` | Locale code the page is actually served in; displayed in the notice as the locale the visitor sees instead. |
 
 ### Example
 
-_One sentence: `DocSiteArticle` places `FallbackNotice` above the article header whenever a non-empty `FallbackRequestedLocale` is supplied by the content resolver._
+`DocSiteArticle` places `FallbackNotice` above the article header whenever a non-empty `FallbackRequestedLocale` is supplied by the content resolver.
 
 ```razor:path
 src/Pennington.DocSite/Slots/Components/DocSiteArticle.razor
 ```
 
-_One sentence of context: fallback detection itself is owned by `ContentResolver` — the component is a pure presentation surface._
+> **Note:** Fallback detection is owned by `ContentResolver`; `FallbackNotice` is a pure presentation surface.
 
 ## See also
 

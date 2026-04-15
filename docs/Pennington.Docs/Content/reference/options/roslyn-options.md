@@ -7,12 +7,6 @@ tags: [options, roslyn, xmldocid]
 uid: reference.options.roslyn-options
 ---
 
-> **In this page.** `SolutionPath` (path to `.sln`/`.slnx`), the optional `ProjectFilter` with `IncludedProjects`/`ExcludedProjects`, and how `AddPenningtonRoslyn` wires the options into the symbol-extraction and `xmldocid` preprocessing services shipped in `Pennington.Roslyn`.
->
-> **Not in this page.** Authoring `xmldocid` code fences — see the Roslyn tutorial and the code-annotations how-to.
-
-## Summary
-
 The options class supplied to `services.AddPenningtonRoslyn(Action<RoslynOptions>)` in the optional `Pennington.Roslyn` package. Declared in namespace `Pennington.Roslyn` at `src/Pennington.Roslyn/RoslynOptions.cs`.
 
 ## Declaration

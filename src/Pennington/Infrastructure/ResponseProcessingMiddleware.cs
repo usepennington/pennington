@@ -1,9 +1,9 @@
 namespace Pennington.Infrastructure;
 
 using System.Text;
+using Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Diagnostics;
 
 /// <summary>Captures response body once and runs all registered IResponseProcessors in order.</summary>
 public sealed class ResponseProcessingMiddleware(RequestDelegate next)

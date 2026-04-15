@@ -1,8 +1,8 @@
 namespace Pennington.Infrastructure;
 
 using System.Text;
-using Microsoft.AspNetCore.Http;
 using Content;
+using Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Issues HTTP 301 responses for URLs in <see cref="RedirectContentService"/>'s

@@ -1,10 +1,10 @@
 namespace Pennington.Feeds;
 
 using System.Xml.Linq;
-using Microsoft.Extensions.DependencyInjection;
 using Content;
 using FrontMatter;
 using Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Pipeline;
 
 /// <summary>

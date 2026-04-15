@@ -1,8 +1,8 @@
 namespace Pennington.Roslyn.Tests.Preprocessing;
 
+using Markdown.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Pennington.Highlighting;
-using Markdown.Extensions;
 using Pennington.Roslyn.Highlighting;
 using Pennington.Roslyn.Preprocessing;
 

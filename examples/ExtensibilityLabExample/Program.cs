@@ -1,7 +1,6 @@
 using ExtensibilityLabExample;
 using Pennington.Content;
 using Pennington.FrontMatter;
-using Pennington.Highlighting;
 using Pennington.Infrastructure;
 using Pennington.Islands;
 using Pennington.Markdown.Extensions;

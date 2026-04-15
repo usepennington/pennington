@@ -7,17 +7,9 @@ sectionLabel: Content Authoring
 tags: [authoring, code, highlighting, annotations]
 ---
 
-> **In this page.** _Paraphrase the TOC "Covers" line: applying `[!code highlight]`, `[!code ++]` / `[!code --]`, `[!code focus]`, and `[!code error]` / `[!code warning]` as trailing comments inside fenced code blocks so the rendered HTML gets the matching line classes._
->
-> **Not in this page.** _Paraphrase "Does not cover": writing your own `ICodeBlockPreprocessor` to transform fence bodies before highlighting — that belongs in [Register a code-block preprocessor](xref:how-to.extensibility.code-block-preprocessor)._
-
-## When to use this
-
-_Two sentences. Frame the goal: the reader already has a working fenced code block and wants to call out a specific line (highlight, diff, focus) or mark a line as an error/warning without reaching for a custom extension. Do not re-teach fenced code or highlighting — link to the highlighting explanation for rationale._
+When you have a working fenced code block and need to call out specific lines — highlighting a change, diffing before/after, focusing the reader's eye, or surfacing a diagnostic — trailing `[!code ...]` comment directives let you do that without a custom extension. For why the transformer runs after the highlighter and how highlighters plug in, see <xref:explanation.rendering.highlighting>.
 
 ## Assumptions
-
-_Three bullets. Each is realistic prior state, not a tutorial step._
 
 - You have an existing Pennington site rendering markdown with highlighted code fences (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
 - The fenced language supports a comment syntax the transformer recognises — `//`, `#`, `--`, `<!-- -->`, `*`, `%`, `'`, `REM`, `;`, or `/* */`.
@@ -29,11 +21,9 @@ To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://gith
 
 ## Steps
 
-_Five steps. Each is one imperative action. Snippets are markdown fences (the directive syntax lives inside the fenced body, not in a C# symbol), except step 5 which embeds the full fixture file via `:path`._
-
 ### 1. Highlight a single line
 
-_One sentence: append `// [!code highlight]` (swap the comment marker to match the fenced language — `#` for YAML, `--` for SQL) to the line you want emphasized. The transformer strips the directive and adds the `highlight` class to the `.line` span._
+Append `// [!code highlight]` to the line you want emphasised, swapping the comment marker to match the fenced language (`#` for YAML, `--` for SQL). The transformer strips the directive and adds the `highlight` class to the `.line` span.
 
 ````markdown
 ```csharp
@@ -46,7 +36,7 @@ public int Add(int a, int b)
 
 ### 2. Mark lines as added or removed (diff)
 
-_One sentence: use `[!code ++]` for added lines and `[!code --]` for removed lines to render a diff view — each side gets its own class (`diff-add` / `diff-remove`) so the stylesheet can paint the gutter._
+Use `[!code ++]` for added lines and `[!code --]` for removed lines. Each directive is replaced with a `diff-add` or `diff-remove` class on the `.line` span so the stylesheet can paint the gutter.
 
 ````markdown
 ```csharp
@@ -63,7 +53,7 @@ public int OldWay(int a, int b) // [!code --]
 
 ### 3. Focus one line and dim the rest
 
-_One sentence: drop `[!code focus]` on the line (or lines) the reader should zero in on — every other line receives a `dimmed` class so the focused line stands out._
+Add `[!code focus]` to the line (or lines) the reader should zero in on. Every other line receives a `dimmed` class so the focused line stands out.
 
 ````markdown
 ```csharp
@@ -75,7 +65,7 @@ config.Save();
 
 ### 4. Flag errors and warnings
 
-_One sentence: use `[!code error]` and `[!code warning]` to surface diagnostics inline — they apply `error` and `warning` classes respectively so the line is painted like compiler output._
+Use `[!code error]` and `[!code warning]` to surface diagnostics inline. The transformer applies `error` and `warning` classes to the respective lines so they render like compiler output.
 
 ````markdown
 ```csharp
@@ -84,9 +74,9 @@ var length = path.Length; // [!code warning]
 ```
 ````
 
-### 5. Keep directives out of the final HTML
+### 5. Confirm directives are stripped from the final HTML
 
-_Two sentences: the `CodeTransformer` post-processes the highlighter output, moves the directive's notation onto the enclosing `.line` span, and deletes the trailing comment so the rendered code looks clean. Embed the fixture file that shows all five directives end-to-end as they appear in source markdown._
+The `CodeTransformer` post-processes the highlighter output: it promotes each directive's class onto the enclosing `.line` span and deletes the trailing comment, so the rendered code stays clean. The fixture below shows all four directives end-to-end as they appear in source markdown.
 
 ```markdown:path
 examples/DocSiteKitchenSinkExample/Content/main/code-annotations.md
@@ -96,11 +86,9 @@ examples/DocSiteKitchenSinkExample/Content/main/code-annotations.md
 
 ## Verify
 
-_Three bullets. Each is one observable check._
-
-- Run `dotnet run` and visit the page — each annotated line shows the expected treatment (highlighted bar, diff marker, dimmed siblings, error/warning paint) and the `// [!code ...]` text is gone from the rendered output.
+- Run `dotnet run` and visit the page — each annotated line shows the expected treatment (highlighted bar, diff marker, dimmed siblings, error/warning paint) and the `// [!code ...]` text is absent from the rendered output.
 - View source on the rendered `<pre>` — annotated `.line` spans carry the matching class (`highlight`, `diff-add`, `diff-remove`, `focused`, `dimmed`, `error`, `warning`).
-- Swap the comment marker to match a different fenced language (for example `# [!code highlight]` in a `yaml` block) and confirm the directive is still stripped and the class still applied.
+- Swap the comment marker to match a different fenced language (for example `# [!code highlight]` in a `yaml` block) and confirm the directive is stripped and the class is still applied.
 
 ## Related
 

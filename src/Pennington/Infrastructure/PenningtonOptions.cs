@@ -2,11 +2,11 @@ namespace Pennington.Infrastructure;
 
 using System.Collections.Immutable;
 using System.Reflection;
-using Markdig;
 using Highlighting;
 using Islands;
 using LlmsTxt;
 using Localization;
+using Markdig;
 using Markdown.Extensions.Tabs;
 using Search;
 

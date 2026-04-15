@@ -2,12 +2,12 @@ namespace Pennington.Roslyn.Workspace;
 
 using System.Collections.Concurrent;
 using System.Text;
+using Infrastructure;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Infrastructure;
 using Symbols;
 
 /// <summary>

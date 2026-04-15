@@ -5,8 +5,8 @@ using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
-using Microsoft.Extensions.DependencyInjection;
 using Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Resolves xref: cross-reference links in HTML.
@@ -64,16 +64,28 @@ public sealed partial class XrefResolvingService
     /// <summary>
     /// Phase 1: regex substitution of raw <c>&lt;xref:uid&gt;</c> tags.
     /// Produces an <c>&lt;a&gt;</c> element that the later DOM phase
-    /// (or any downstream HTML parser) can see as normal markup.
+    /// (or any downstream HTML parser) can see as normal markup. Skips
+    /// content inside <c>&lt;code&gt;</c> and <c>&lt;pre&gt;</c> blocks so
+    /// authoring docs can show literal <c>&lt;xref:uid&gt;</c> samples in
+    /// fenced code without the rewriter latching onto them — the highlighter
+    /// also splits long tokens across span boundaries, which would otherwise
+    /// let <c>[^&gt;]+</c> consume span markup as the uid.
     /// </summary>
     public async Task<string> ResolveXrefTagsAsync(string html, DiagnosticContext? diagnostics)
     {
+        if (!html.Contains("<xref:", StringComparison.Ordinal)) return html;
+
+        // Build a mask of byte ranges to skip (inside <code> or <pre> elements).
+        var skipRanges = BuildSkipRanges(html);
+
         var matches = XrefTagRegex().Matches(html);
         if (matches.Count == 0) return html;
 
         for (var i = matches.Count - 1; i >= 0; i--)
         {
             var match = matches[i];
+            if (IsInsideSkipRange(match.Index, skipRanges)) continue;
+
             var uid = match.Groups[1].Value;
             var xref = await Resolver.ResolveAsync(uid);
 
@@ -92,6 +104,21 @@ public sealed partial class XrefResolvingService
         }
 
         return html;
+    }
+
+    private static List<(int Start, int End)> BuildSkipRanges(string html)
+    {
+        var ranges = new List<(int, int)>();
+        foreach (var match in CodeOrPreRegex().EnumerateMatches(html))
+            ranges.Add((match.Index, match.Index + match.Length));
+        return ranges;
+    }
+
+    private static bool IsInsideSkipRange(int index, List<(int Start, int End)> ranges)
+    {
+        foreach (var (start, end) in ranges)
+            if (index >= start && index < end) return true;
+        return false;
     }
 
     /// <summary>
@@ -137,4 +164,7 @@ public sealed partial class XrefResolvingService
 
     [GeneratedRegex("""<xref:([^>]+)>""")]
     private static partial Regex XrefTagRegex();
+
+    [GeneratedRegex("""<(code|pre|script|style)\b[^>]*>.*?</\1\s*>""", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    private static partial Regex CodeOrPreRegex();
 }
