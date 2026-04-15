@@ -22,7 +22,10 @@ A working reference: `examples/ExtensibilityLabExample` — `ChartIslandRenderer
 
 ## Steps
 
-### 1. Build the Razor component the island will render
+<Steps>
+<Step StepNumber="1">
+
+**Build the Razor component the island will render**
 
 Create a Razor component whose `[Parameter]` surface matches the dictionary the renderer will produce. The component should be pure presentation — it takes its data through parameters and fetches nothing itself. Every value it touches needs to be passable through the `IDictionary<string, object?>` parameters payload, because that is what `RazorIslandRenderer<T>` hands to the `ComponentRenderer`.
 
@@ -30,7 +33,10 @@ Create a Razor component whose `[Parameter]` surface matches the dictionary the 
 examples/ExtensibilityLabExample/Components/ChartIsland.razor
 ```
 
-### 2. Subclass `RazorIslandRenderer<TComponent>`
+</Step>
+<Step StepNumber="2">
+
+**Subclass `RazorIslandRenderer<TComponent>`**
 
 Derive from [`RazorIslandRenderer<T>`](xref:reference.extension-points.islands) rather than implementing [`IIslandRenderer`](xref:reference.extension-points.islands) directly. The base class wires the `ComponentRenderer` call, leaving `IslandName` and `BuildParametersAsync` as the only members to override. Reach for `IIslandRenderer.RenderAsync` only to emit a non-Razor fragment — a pre-rendered string, a cached snippet, or a remote include.
 
@@ -38,7 +44,10 @@ Derive from [`RazorIslandRenderer<T>`](xref:reference.extension-points.islands) 
 T:ExtensibilityLabExample.ChartIslandRenderer
 ```
 
-### 3. Expose `IslandName` and gate parameters on the route
+</Step>
+<Step StepNumber="3">
+
+**Expose `IslandName` and gate parameters on the route**
 
 `IslandName` is the key the SPA envelope uses for this island, and it has to match the `data-spa-island` attribute on the markup. `BuildParametersAsync` receives the [`ContentRoute`](xref:reference.extension-points.routing) for the page being rendered — inspect `CanonicalPath` and return `null` for any route that does not carry this island so the base class skips rendering. Returning parameters on every route wastes work and produces orphan HTML in pages with no slot to hold it.
 
@@ -46,7 +55,10 @@ T:ExtensibilityLabExample.ChartIslandRenderer
 M:ExtensibilityLabExample.ChartIslandRenderer.BuildParametersAsync(Pennington.Routing.ContentRoute)
 ```
 
-### 4. Register the renderer on `IslandsOptions`
+</Step>
+<Step StepNumber="4">
+
+**Register the renderer on `IslandsOptions`**
 
 Call `options.Islands.Register<TRenderer>("islandName")` inside the `AddPennington` configuration. The generic type argument is the renderer; the string is both the `data-spa-island` attribute value and the key `SpaPageDataService` writes into the `islands` slot of the JSON envelope — the two have to agree exactly. Register one entry per island. The dictionary is keyed by name, so registering twice with the same name replaces the earlier entry.
 
@@ -54,7 +66,10 @@ Call `options.Islands.Register<TRenderer>("islandName")` inside the `AddPenningt
 examples/ExtensibilityLabExample/Program.cs
 ```
 
-### 5. Author the `data-spa-island` slot in your content
+</Step>
+<Step StepNumber="5">
+
+**Author the `data-spa-island` slot in your content**
 
 Wrap the server-rendered region in an element that carries `data-spa-island="islandName"`. Nothing else is required — the SPA runtime replaces the element's innerHTML on navigation, and on first load the renderer's output is already there. Keep a `<noscript>` fallback or a plain-markup default inside the slot so the page still reads sensibly before the island hydrates.
 
@@ -62,13 +77,19 @@ Wrap the server-rendered region in an element that carries `data-spa-island="isl
 examples/ExtensibilityLabExample/Content/chart-demo.md
 ```
 
-### 6. Keep `AddSpaNavigation` / `UseSpaNavigation` wired
+</Step>
+<Step StepNumber="6">
+
+**Keep `AddSpaNavigation` / `UseSpaNavigation` wired**
 
 Islands run because `SpaNavigationContentService` emits per-page envelopes at `/_spa-data/{slug}.json`, and the `ComponentRenderer` the renderer depends on is registered as a scoped service alongside it. If either line is missing from `Program.cs` the renderer never runs — even on first load — because the DocSite content island short-circuits without its services.
 
 ```csharp:path
 examples/ExtensibilityLabExample/Program.cs
 ```
+
+</Step>
+</Steps>
 
 ---
 

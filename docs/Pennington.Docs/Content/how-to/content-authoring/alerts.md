@@ -21,7 +21,10 @@ For a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.c
 
 ## Steps
 
-### 1. Open a blockquote with an alert marker
+<Steps>
+<Step StepNumber="1">
+
+**Open a blockquote with an alert marker**
 
 Start a standard `>` blockquote whose first line is `[!KIND]` in uppercase. The `CustomAlertInlineParser` fires only when the marker is the first inline on the first paragraph of the quote block, so no leading text before it.
 
@@ -30,7 +33,10 @@ Start a standard `>` blockquote whose first line is `[!KIND]` in uppercase. The 
 > Notes carry side information worth a glance before continuing.
 ````
 
-### 2. Pick one of the five built-in kinds
+</Step>
+<Step StepNumber="2">
+
+**Pick one of the five built-in kinds**
 
 Choose from `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, or `CAUTION` based on signal strength: note (neutral fact) → tip (smart default) → important (load-bearing) → warning (avoidable problem) → caution (destructive or irreversible). Any other token fails the parse and the block renders as a plain `<blockquote>` with no alert styling.
 
@@ -48,7 +54,10 @@ Choose from `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, or `CAUTION` based on signal 
 > Cautions surface destructive operations — wire-format breaks, security footguns.
 ````
 
-### 3. Write the body as normal markdown
+</Step>
+<Step StepNumber="3">
+
+**Write the body as normal markdown**
 
 Every line after the marker is regular markdown — inline formatting, links, lists, and code spans all work because the rest of the blockquote passes through the standard Markdig pipeline unchanged.
 
@@ -61,7 +70,10 @@ Every line after the marker is regular markdown — inline formatting, links, li
 > - second point
 ````
 
-### 4. Know the classes the renderer emits
+</Step>
+<Step StepNumber="4">
+
+**Know the classes the renderer emits**
 
 The parser rewrites the quote block into an `AlertBlock` and stamps it with two classes: `markdown-alert` (always present) and `markdown-alert-{kind}` where `{kind}` is the lower-cased token. The production parser type below is the place to look for edge cases or extension points.
 
@@ -69,13 +81,19 @@ The parser rewrites the quote block into an `AlertBlock` and stamps it with two 
 T:Pennington.Markdown.Extensions.CustomAlertInlineParser
 ```
 
-### 5. Embed the reference fixture to mirror the rendered output
+</Step>
+<Step StepNumber="5">
+
+**Embed the reference fixture to mirror the rendered output**
 
 The kitchen-sink fixture below is the canonical page that exercises one of each alert kind — compare authored markdown against it.
 
 ```markdown:path
 examples/DocSiteKitchenSinkExample/Content/main/alerts.md
 ```
+
+</Step>
+</Steps>
 
 ---
 

@@ -18,7 +18,10 @@ When authoring a page that needs to link to another page, a heading anchor, a co
 
 ## Steps
 
-### 1. Link to a sibling page with a relative path
+<Steps>
+<Step StepNumber="1">
+
+**Link to a sibling page with a relative path**
 
 Write a standard markdown link with a relative target such as `[Customize the sidebar](./customize-sidebar)`. `MarkdownLinkResolver` walks the content tree and resolves the target against the current page's URL. Relative links survive section moves as long as both files stay in the same folder, which makes them the right choice for tightly coupled pages.
 
@@ -26,23 +29,38 @@ Write a standard markdown link with a relative target such as `[Customize the si
 examples/DocSiteKitchenSinkExample/Content/main/linking.md
 ```
 
-### 2. Link to a page in another area with an absolute path
+</Step>
+<Step StepNumber="2">
+
+**Link to a page in another area with an absolute path**
 
 When the target lives in a different section or area, use a site-absolute path: `[API index](/api/)`. Absolute paths are stable across folder moves of the source page but break if the target URL changes. Reach for `uid:` cross-references when rename safety matters.
 
-### 3. Jump to a heading with an anchor fragment
+</Step>
+<Step StepNumber="3">
+
+**Jump to a heading with an anchor fragment**
 
 Append `#slug` to any link target to scroll to a specific heading. Markdig's auto-identifier pass slugifies headings, so `## Relative links to sibling pages` becomes `#relative-links-to-sibling-pages`. The same fragment syntax applies to relative links, absolute paths, and uid-based xrefs.
 
-### 4. Link to colocated and shared assets
+</Step>
+<Step StepNumber="4">
+
+**Link to colocated and shared assets**
 
 Reference assets stored under `Content/` with a relative path (`./assets/diagram.png`) and assets under `wwwroot/` with a site-absolute path (`/shared.png`). The content copy pass and the static-file pipeline place the files at matching URLs, so the two rules map directly to where the file lives on disk. For more on asset placement, see <xref:how-to.content-authoring.images-and-assets>.
 
-### 5. Link to an external site
+</Step>
+<Step StepNumber="5">
+
+**Link to an external site**
 
 Write the full URL directly: `[Markdig](https://github.com/xoofx/markdig)`. Pennington leaves the `href` untouched — only relative, root-relative, and uid-shaped links participate in rewriting. Add `rel="noopener"` or `target="_blank"` through a custom Markdig extension when a hosting policy requires it; none of the built-in rewriters add these attributes.
 
-### 6. Deploy under a sub-path and let `BaseUrlHtmlRewriter` prepend the prefix
+</Step>
+<Step StepNumber="6">
+
+**Deploy under a sub-path and let `BaseUrlHtmlRewriter` prepend the prefix**
 
 Set `OutputOptions.BaseUrl` (for example `/docs/`) so every rendered response has its `href`, `src`, and `action` attributes prefixed at response time. Write root-relative links like `/api/` in markdown, and the rewriter turns them into `/docs/api/` on the way out. Avoid hard-coding the prefix in markdown.
 
@@ -51,6 +69,9 @@ T:Pennington.Infrastructure.BaseUrlHtmlRewriter
 ```
 
 <!-- TODO confirm the xmldocid resolves — `T:Pennington.Infrastructure.BaseUrlHtmlRewriter` is listed in site-architecture.md and present at src/Pennington/Infrastructure/BaseUrlHtmlRewriter.cs. -->
+
+</Step>
+</Steps>
 
 ---
 

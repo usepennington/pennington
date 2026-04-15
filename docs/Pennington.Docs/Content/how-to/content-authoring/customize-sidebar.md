@@ -21,7 +21,10 @@ For a working reference, see `examples/DocSiteKitchenSinkExample` — `Content/m
 
 ## Steps
 
-### 1. Reorder pages within a section
+<Steps>
+<Step StepNumber="1">
+
+**Reorder pages within a section**
 
 Lower `order:` values sort earlier inside a section; ties break alphabetically on `Title`. Use 10/20/30 spacing so later inserts land between siblings without renumbering every file.
 
@@ -38,7 +41,10 @@ Backing symbol on the DocSite front-matter record:
 P:Pennington.DocSite.DocSiteFrontMatter.Order
 ```
 
-### 2. Promote a page to be the section landing
+</Step>
+<Step StepNumber="2">
+
+**Promote a page to be the section landing**
 
 Name the file `index.md` inside the section subfolder (for example `Content/main/widgets/index.md`). Pennington routes it at the subfolder URL and `NavigationBuilder` surfaces it as the section's lead entry rather than a separate child. A low `order:` — typically `10` — sorts the entire section earlier, because the section's aggregate sort key is the minimum `order:` of its direct children.
 
@@ -57,7 +63,10 @@ examples/DocSiteKitchenSinkExample/Content/main/index.md
 
 <!-- TODO: xmldocid needed — replace above with a section-level index.md fixture once one exists in examples/ -->
 
-### 3. Override the displayed section title
+</Step>
+<Step StepNumber="3">
+
+**Override the displayed section title**
 
 The sidebar section header comes from the folder name, with kebab-case converted to title case by `NavigationBuilder` (for example `getting-started` becomes "Getting Started"). Renaming the folder changes what the sidebar prints. The front-matter `sectionLabel:` key is separate — it sets the page-context label surfaced on `NavigationInfo.SectionName` for breadcrumbs and current-page context, not the sidebar group header.
 
@@ -74,7 +83,10 @@ Backing symbol for the front-matter key:
 P:Pennington.DocSite.DocSiteFrontMatter.SectionLabel
 ```
 
-### 4. Hide a page from the sidebar
+</Step>
+<Step StepNumber="4">
+
+**Hide a page from the sidebar**
 
 Set `isDraft: true` to keep the page compiled — so `xref:` links still resolve — while dropping it from the sidebar, the search index, and `llms.txt`. A page with `redirectUrl:` is also omitted from the sidebar regardless of other keys; the engine treats redirects as transport hops rather than content.
 
@@ -90,6 +102,9 @@ Backing symbol on `IFrontMatter` (the draft key is not specific to DocSite):
 ```csharp:xmldocid
 P:Pennington.FrontMatter.IFrontMatter.IsDraft
 ```
+
+</Step>
+</Steps>
 
 ---
 

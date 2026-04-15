@@ -21,7 +21,10 @@ The `DocSiteKitchenSinkExample` project includes a fixture that uses all three k
 
 ## Steps
 
-### 1. Hide an unfinished page with `isDraft: true`
+<Steps>
+<Step StepNumber="1">
+
+**Hide an unfinished page with `isDraft: true`**
 
 Setting `isDraft: true` keeps the page compiled — `xref:` links targeting it still resolve — but drops it from navigation, search, and `llms.txt`.
 
@@ -34,7 +37,10 @@ isDraft: true
 
 The default is `false`. For the full key catalog, see <xref:reference.front-matter.keys>.
 
-### 2. Tag a page for grouping
+</Step>
+<Step StepNumber="2">
+
+**Tag a page for grouping**
 
 `tags:` accepts a free-form string array that flows through `ITaggable` into `RenderedContent.Tags`, making it available to client-side filtering widgets and future tag-index pages. Pennington does not currently emit `/tags/<name>` pages for DocSite — tag routing requires a custom content service.
 
@@ -51,7 +57,10 @@ For the `DocSiteFrontMatter` shape that backs this key:
 P:Pennington.DocSite.DocSiteFrontMatter.Tags
 ```
 
-### 3. Order a page inside its section
+</Step>
+<Step StepNumber="3">
+
+**Order a page inside its section**
 
 Lower `order:` values sort earlier within a section. A section inherits its own sort key from the minimum `order:` among its children, so changing one page can reshuffle the whole section. Spacing like 10/20/30 leaves room for later inserts between existing siblings.
 
@@ -73,6 +82,9 @@ To see all three keys combined in one file:
 ```markdown:path
 examples/DocSiteKitchenSinkExample/Content/main/drafts-tags-ordering.md
 ```
+
+</Step>
+</Steps>
 
 ---
 

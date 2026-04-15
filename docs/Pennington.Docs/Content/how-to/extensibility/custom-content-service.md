@@ -21,7 +21,10 @@ For a working setup, see [`examples/ExtensibilityLabExample`](https://github.com
 
 ## Steps
 
-### 1. Model your source records
+<Steps>
+<Step StepNumber="1">
+
+**Model your source records**
 
 Define an immutable record that represents one page's worth of source data. `ReleaseEntry` is the JSON-backed shape the rest of the service keys off; the equivalent type in another project carries whatever fields the source provides.
 
@@ -29,7 +32,10 @@ Define an immutable record that represents one page's worth of source data. `Rel
 T:ExtensibilityLabExample.ReleaseEntry
 ```
 
-### 2. Implement `IContentService` and load the records once
+</Step>
+<Step StepNumber="2">
+
+**Implement `IContentService` and load the records once**
 
 Create a sealed class implementing <xref:reference.extension-points.content-pipeline>, inject whatever reads the source (here, `IWebHostEnvironment` for `ContentRootPath`), and cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source.
 
@@ -37,7 +43,10 @@ Create a sealed class implementing <xref:reference.extension-points.content-pipe
 T:ExtensibilityLabExample.ReleaseNotesContentService
 ```
 
-### 3. Yield one `DiscoveredItem` per page from `DiscoverAsync`
+</Step>
+<Step StepNumber="3">
+
+**Yield one `DiscoveredItem` per page from `DiscoverAsync`**
 
 Build each item's `ContentRoute` through `ContentRouteFactory.FromUrl` (synthetic URL, no backing file) or `ContentRouteFactory.FromCustom` (URL plus an on-disk `FilePath` so file-watching picks up edits), and pair it with a `ContentSource` case. Use `RedirectSource` as the placeholder when an endpoint elsewhere in `Program.cs` produces the actual HTML. Yield an index route, then one route per record.
 
@@ -45,7 +54,10 @@ Build each item's `ContentRoute` through `ContentRouteFactory.FromUrl` (syntheti
 M:ExtensibilityLabExample.ReleaseNotesContentService.DiscoverAsync
 ```
 
-### 4. Emit `ContentTocItem`s for navigation and search
+</Step>
+<Step StepNumber="4">
+
+**Emit `ContentTocItem`s for navigation and search**
 
 Each `ContentTocItem` is one row in the sidebar and one document in the search index. Set `Title`, `Route`, `Order` (use tidy 10/20/30 sequences), `HierarchyParts` (the path segments that drive sidebar nesting), and `SectionLabel` (group header). Return an index entry first, then one per record.
 
@@ -53,7 +65,10 @@ Each `ContentTocItem` is one row in the sidebar and one document in the search i
 M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentTocEntriesAsync
 ```
 
-### 5. Return `ContentToCopy` / `ContentToCreate` lists
+</Step>
+<Step StepNumber="5">
+
+**Return `ContentToCopy` / `ContentToCreate` lists**
 
 `GetContentToCopyAsync` is for static assets copied verbatim into the output tree (images, downloads). `GetContentToCreateAsync` is for dynamically generated files that are not routes the crawler will visit — the `LlmsTxtContentService` uses it for stripped-markdown sidecars. For a service whose only output is HTML served by a `MapGet` endpoint, both return `ImmutableList.Empty`.
 
@@ -65,7 +80,10 @@ M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentToCopyAsync
 M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentToCreateAsync
 ```
 
-### 6. Publish xref ids through `GetCrossReferencesAsync`
+</Step>
+<Step StepNumber="6">
+
+**Publish xref ids through `GetCrossReferencesAsync`**
 
 Each `CrossReference(uid, title, route)` registers a uid that other content can target with `<xref:uid>` or `href="xref:uid"`. Pick a stable prefix (`release-1.0.0` here) so authors can deep-link specific entries without pasting URLs that may change.
 
@@ -73,13 +91,19 @@ Each `CrossReference(uid, title, route)` registers a uid that other content can 
 M:ExtensibilityLabExample.ReleaseNotesContentService.GetCrossReferencesAsync
 ```
 
-### 7. Register the service in DI
+</Step>
+<Step StepNumber="7">
+
+**Register the service in DI**
 
 `AddPennington` does not auto-discover `IContentService` implementations — register directly on `IServiceCollection`. When an endpoint in `Program.cs` needs the concrete type to render detail pages, register it once by concrete type and forward `IContentService` to the same instance so the container does not create a second copy.
 
 ```csharp:path
 examples/ExtensibilityLabExample/Program.cs
 ```
+
+</Step>
+</Steps>
 
 ---
 

@@ -21,7 +21,10 @@ For a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.c
 
 ## Steps
 
-### 1. Declare a `uid:` on the target page
+<Steps>
+<Step StepNumber="1">
+
+**Declare a `uid:` on the target page**
 
 Every page type already has a `uid:` field through `IFrontMatter` — filling it opts the page in. Choose a stable, dot-separated string that does not encode the current URL path; the whole value of a uid is that it survives a move.
 
@@ -38,7 +41,10 @@ Backing contract for the `Uid` key:
 P:Pennington.FrontMatter.IFrontMatter.Uid
 ```
 
-### 2. Link with the inline `<xref:uid>` form
+</Step>
+<Step StepNumber="2">
+
+**Link with the inline `<xref:uid>` form**
 
 The angle-bracket form resolves in the pre-parse phase — `XrefResolvingService` regex-replaces it before AngleSharp sees the document, because `<xref:…>` is not valid HTML and the parser would swallow it. Link text defaults to the target page's `Title`.
 
@@ -52,7 +58,10 @@ The pre-parse phase that handles this form:
 M:Pennington.Infrastructure.XrefResolvingService.ResolveXrefTagsAsync(System.String,Pennington.Diagnostics.DiagnosticContext)
 ```
 
-### 3. Link with the `[text](xref:uid)` form
+</Step>
+<Step StepNumber="3">
+
+**Link with the `[text](xref:uid)` form**
 
 The anchor-style form is a standard markdown link whose `href` starts with `xref:`. Markdig emits a regular `<a>` and the DOM phase rewrites the `href` after parsing. This form carries a custom link label.
 
@@ -66,7 +75,10 @@ The DOM phase that handles this form:
 M:Pennington.Infrastructure.XrefResolvingService.ResolveXrefLinksAsync(AngleSharp.Dom.IDocument,Pennington.Diagnostics.DiagnosticContext)
 ```
 
-### 4. Let `XrefHtmlRewriter` resolve everything on response
+</Step>
+<Step StepNumber="4">
+
+**Let `XrefHtmlRewriter` resolve everything on response**
 
 Both phases run inside `XrefHtmlRewriter` (`Order => 10`), which executes before `LocaleLinkHtmlRewriter` and `BaseUrlHtmlRewriter` so later rewriters see canonical paths — identically in dev serve and `build`. `XrefResolver` owns the `uid → URL` map, built lazily from `IContentService.GetCrossReferencesAsync()` and file-watched, so moving or renaming a target page invalidates the lookup without a restart.
 
@@ -81,6 +93,9 @@ For a full round-trip pairing in the repo:
 ```markdown:path
 examples/DocSiteKitchenSinkExample/Content/main/cross-references-a.md
 ```
+
+</Step>
+</Steps>
 
 ---
 

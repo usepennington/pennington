@@ -21,7 +21,10 @@ For a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.c
 
 ## Steps
 
-### 1. Fence the diagram with `mermaid` as the language
+<Steps>
+<Step StepNumber="1">
+
+**Fence the diagram with `mermaid` as the language**
 
 Open a fenced code block with three backticks and the word `mermaid`, then write ordinary Mermaid text inside. CommonMark keeps the block as a `<pre><code class="language-mermaid">…</code></pre>` in the rendered HTML — Pennington does not preprocess the body, so anything valid in Mermaid works as is.
 
@@ -29,7 +32,10 @@ Open a fenced code block with three backticks and the word `mermaid`, then write
 examples/DocSiteKitchenSinkExample/Content/main/diagrams.md
 ```
 
-### 2. Let the bundled client script render it
+</Step>
+<Step StepNumber="2">
+
+**Let the bundled client script render it**
 
 The DocSite ships `Pennington.UI/wwwroot/scripts.js`, which includes a `MermaidManager` that scans the DOM for `code.language-mermaid` on page load, lazy-loads Mermaid from CDN, and swaps each `<code>` block for the rendered SVG. No server-side registration is needed — the fence renders verbatim and the script takes over in the browser.
 
@@ -37,11 +43,17 @@ The DocSite ships `Pennington.UI/wwwroot/scripts.js`, which includes a `MermaidM
 
 See [`src/Pennington.UI/wwwroot/scripts.js`](https://github.com/usepennington/pennington/blob/main/src/Pennington.UI/wwwroot/scripts.js) (`MermaidManager` class) for the full behavior — including how it dynamically imports Mermaid from `cdn.jsdelivr.net` the first time a diagram appears on a page.
 
-### 3. Let theme changes re-render the diagram
+</Step>
+<Step StepNumber="3">
+
+**Let theme changes re-render the diagram**
 
 When the DocSite theme toggle flips light/dark, the page manager calls `MermaidManager.reinitializeForTheme()`, which reinitializes Mermaid with a matching built-in theme (`default` vs. `dark`) and re-renders every diagram in place. There is no per-diagram configuration to opt into — all `mermaid` fences on the page participate automatically.
 
 <!-- Mermaid's own theme config (neutral, forest, etc.) is not exposed through Pennington. For a non-default theme per diagram, use Mermaid's inline `%%{init: { 'theme': '…' } }%%` directive at the top of the fence body — that is Mermaid syntax, not Pennington syntax. -->
+
+</Step>
+</Steps>
 
 ---
 

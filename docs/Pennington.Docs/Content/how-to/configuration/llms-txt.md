@@ -21,11 +21,17 @@ For a working DocSite setup with one opted-out page, refer to `Content/main/llms
 
 ## Steps
 
-### 1. Decide: DocSite front matter, or bare `AddLlmsTxt`?
+<Steps>
+<Step StepNumber="1">
+
+**Decide: DocSite front matter, or bare `AddLlmsTxt`?**
 
 `AddDocSite` already calls `AddLlmsTxt` internally and defaults `ContentSelector` to `#main-content`. On a DocSite host, per-page inclusion is controlled through front matter (step 2), with an optional selector override through `DocSiteOptions.LlmsTxtContentSelector`. On a bare `AddPennington` host nothing is wired — `AddLlmsTxt(...)` needs an explicit call with a chosen `ContentSelector` (step 3).
 
-### 2. (DocSite) Opt a page out with `llms: false`
+</Step>
+<Step StepNumber="2">
+
+**(DocSite) Opt a page out with `llms: false`**
 
 Every non-draft page is included in the index by default (`Llms = true`). Setting `llms: false` in a page's front matter causes `LlmsTxtService` to skip it when assembling `/llms.txt` and its sidecar markdown. The page still renders, appears in the sidebar, and participates in search unless `search: false` is also set.
 
@@ -39,7 +45,10 @@ P:Pennington.DocSite.DocSiteFrontMatter.Llms
 
 For a custom `ContentSelector` (different article wrapper or a non-DocSite layout), set `DocSiteOptions.LlmsTxtContentSelector`. It defaults to `#main-content` and is overridable without leaving DocSite. See [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning) for cases that do require bare `AddPennington`.
 
-### 3. (Bare Pennington) Enable `LlmsTxtOptions` with `AddLlmsTxt`
+</Step>
+<Step StepNumber="3">
+
+**(Bare Pennington) Enable `LlmsTxtOptions` with `AddLlmsTxt`**
 
 On a bare host nothing is wired until `penn.AddLlmsTxt(...)` is called. The options surface covers `OutputDirectory` (where per-page stripped-markdown sidecars land, defaults to `_llms`), `GenerateFullFile`, and `ContentSelector` (CSS selector that scopes HTML-to-markdown extraction; null means the whole `<body>`).
 
@@ -51,13 +60,19 @@ M:ExtensibilityLabExample.LlmsTxtConfiguration.Configure(Pennington.LlmsTxt.Llms
 T:Pennington.LlmsTxt.LlmsTxtOptions
 ```
 
-### 4. (Optional) Turn on `GenerateFullFile` for a concatenated snapshot
+</Step>
+<Step StepNumber="4">
+
+**(Optional) Turn on `GenerateFullFile` for a concatenated snapshot**
 
 `GenerateFullFile = true` emits `/llms-full.txt`, the same per-page markdown concatenated into one file — useful for one-shot ingest by agents that cannot follow per-page links. The default is `false` because the full file can be large; enable it when a known consumer needs it.
 
 ```csharp:xmldocid
 P:Pennington.LlmsTxt.LlmsTxtOptions.GenerateFullFile
 ```
+
+</Step>
+</Steps>
 
 ---
 

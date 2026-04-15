@@ -19,7 +19,10 @@ Pennington registers and serves `/sitemap.xml` automatically on any `AddPenningt
 
 ## Steps
 
-### 1. Confirm `/sitemap.xml` is already wired
+<Steps>
+<Step StepNumber="1">
+
+**Confirm `/sitemap.xml` is already wired**
 
 `AddPennington` registers `SitemapService` and `UsePennington` maps `GET /sitemap.xml` to it. There is no `AddSitemap(...)` call to make and no toggle on `PenningtonOptions`. The service walks every registered `IContentService.DiscoverAsync` result, skipping non-HTML outputs and `RedirectSource` placeholders before the builder applies its own filters.
 
@@ -27,7 +30,10 @@ Pennington registers and serves `/sitemap.xml` automatically on any `AddPenningt
 T:Pennington.Feeds.SitemapService
 ```
 
-### 2. Set `CanonicalBaseUrl` so `<loc>` values resolve
+</Step>
+<Step StepNumber="2">
+
+**Set `CanonicalBaseUrl` so `<loc>` values resolve**
 
 When `CanonicalBaseUrl` is set on `PenningtonOptions`, `DocSiteOptions`, or `BlogSiteOptions`, the sitemap builder prefixes every URL with it — typically `https://your-domain.com/` — producing the absolute `<loc>` entries crawlers require. When it is not set and the static build targets a sub-path (`dotnet run -- build /sub/`), the builder falls back to `OutputOptions.BaseUrl`, producing entries like `/sub/page/`. Crawlers can resolve those relative to the sitemap URL, but fully-qualified values are preferred.
 
@@ -41,7 +47,10 @@ The backing property on `BlogSiteOptions`:
 P:Pennington.BlogSite.BlogSiteOptions.CanonicalBaseUrl
 ```
 
-### 3. Use `IsDraft` and `redirectUrl:` to exclude pages
+</Step>
+<Step StepNumber="3">
+
+**Use `IsDraft` and `redirectUrl:` to exclude pages**
 
 `SitemapBuilder.Build` drops any candidate whose front matter has `isDraft: true` and drops any candidate whose front matter implements `IRedirectable` with a non-empty `RedirectUrl`; redirect stubs are never listed as canonical URLs. `search: false` and `llms: false` are not honored here. Those are search-UX preferences, not SEO directives, so opting a page out of client-side search does not remove it from the sitemap.
 
@@ -56,13 +65,19 @@ P:Pennington.FrontMatter.IFrontMatter.IsDraft
 P:Pennington.FrontMatter.IRedirectable.RedirectUrl
 ```
 
-### 4. (BlogSite only) Set `EnableSitemap = false` to turn it off
+</Step>
+<Step StepNumber="4">
+
+**(BlogSite only) Set `EnableSitemap = false` to turn it off**
 
 On an `AddBlogSite` host, `BlogSiteOptions.EnableSitemap` (default `true`) is the one knob that unregisters the `/sitemap.xml` endpoint. Set it to `false` when the host environment owns its own sitemap. On a bare `AddPennington` or `AddDocSite` host the endpoint is always mapped; there is no equivalent toggle because the sitemap has no per-request cost when nothing fetches it.
 
 ```csharp:xmldocid
 P:Pennington.BlogSite.BlogSiteOptions.EnableSitemap
 ```
+
+</Step>
+</Steps>
 
 ---
 

@@ -21,7 +21,10 @@ The `examples/DocSiteKitchenSinkExample` project exercises three `<FeatureCallou
 
 ## Steps
 
-### 1. Drop a built-in component into a markdown page
+<Steps>
+<Step StepNumber="1">
+
+**Drop a built-in component into a markdown page**
 
 The eight Pennington.UI components (`<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<CodeBlock>`, `<LinkCard>`, `<Step>`, `<Steps>`) are pre-registered by `AddDocSite` and `AddBlogSite`, so the tag goes straight into any `.md` file. Place it anywhere CommonMark allows an HTML block — attribute values bind to `[Parameter]` properties by case-insensitive name match.
 
@@ -33,7 +36,10 @@ The eight Pennington.UI components (`<Badge>`, `<BigTable>`, `<Card>`, `<CardGri
 The v2 pipeline is shipping today.
 ```
 
-### 2. Pass markdown as `ChildContent`
+</Step>
+<Step StepNumber="2">
+
+**Pass markdown as `ChildContent`**
 
 Whatever appears between the open and close tags becomes the component's `ChildContent` render fragment and is parsed as markdown — so `**bold**`, links, and nested components all work inside a `<Card>` or `<FeatureCallout>` body.
 
@@ -43,7 +49,10 @@ The **v2 pipeline** ships with [unified dev and build](/explanation/core/dev-vs-
 </Card>
 ```
 
-### 3. Bind primitive attributes to `[Parameter]` properties
+</Step>
+<Step StepNumber="3">
+
+**Bind primitive attributes to `[Parameter]` properties**
 
 Only primitive parameter types (strings, numbers, booleans) bind from markdown attributes — the attribute value arrives as a raw string and Mdazor converts it via reflection. For complex data, pack it into a delimited string and parse it inside the component, or use `ChildContent` for rich content.
 
@@ -53,7 +62,10 @@ Pages render in a single SSR pass.
 </Card>
 ```
 
-### 4. On a bare `AddPennington` host, register each component once
+</Step>
+<Step StepNumber="4">
+
+**On a bare `AddPennington` host, register each component once**
 
 `AddPennington` wires the component registry via `AddMdazor()` but does not register any components — that falls to the `AddDocSite` and `AddBlogSite` templates. Chain one `AddMdazorComponent<T>()` call per component that should be available in markdown.
 
@@ -67,13 +79,19 @@ For the shape DocSite uses internally (all eight built-ins registered on one cal
 M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})
 ```
 
-### 5. Review the end-to-end fixture
+</Step>
+<Step StepNumber="5">
+
+**Review the end-to-end fixture**
 
 The kitchen-sink example page stages three `<FeatureCallout Kind="tip|info|warn">` instances alongside a built-in `<Badge>`, covering attributes, `ChildContent`, and multiple visual variants in one file.
 
 ```markdown:path
 examples/DocSiteKitchenSinkExample/Content/main/ui-components-in-markdown.md
 ```
+
+</Step>
+</Steps>
 
 ---
 

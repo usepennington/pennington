@@ -22,7 +22,10 @@ For a working setup, see `examples/DocSiteChromeOverridesExample`. `SiteChromeOv
 
 ## Steps
 
-### 1. Build a populated `DocSiteOptions`
+<Steps>
+<Step StepNumber="1">
+
+**Build a populated `DocSiteOptions`**
 
 The whole code surface for this recipe lives in one factory method, so the four seams sit together on a single record initializer. The example sets `SiteTitle` and `Description` alongside the override seams, matching the shape produced by `AddDocSite(() => SiteChromeOverrides.BuildDocSiteOptions())`.
 
@@ -30,7 +33,10 @@ The whole code surface for this recipe lives in one factory method, so the four 
 M:DocSiteChromeOverridesExample.SiteChromeOverrides.BuildDocSiteOptions
 ```
 
-### 2. Inject tags into `<head>` via `AdditionalHtmlHeadContent`
+</Step>
+<Step StepNumber="2">
+
+**Inject tags into `<head>` via `AdditionalHtmlHeadContent`**
 
 `AdditionalHtmlHeadContent` is a raw HTML string rendered inside every page's `<head>`, making it the right seam for meta tags, preconnect hints, analytics snippets, and font `<link>` elements that MonorailCSS does not know about. To author the fragment as a Razor component instead, render it with `ToHtmlString()` once at startup and pass the resulting string — the example pairs `SiteChromeOverrides.BuildHtmlHeadContent` with `Components/ExtraHeadFragment.razor` so both shapes sit side by side.
 
@@ -38,7 +44,10 @@ M:DocSiteChromeOverridesExample.SiteChromeOverrides.BuildDocSiteOptions
 M:DocSiteChromeOverridesExample.SiteChromeOverrides.BuildHtmlHeadContent
 ```
 
-### 3. Append rules to the generated stylesheet via `ExtraStyles`
+</Step>
+<Step StepNumber="3">
+
+**Append rules to the generated stylesheet via `ExtraStyles`**
 
 `ExtraStyles` is a CSS string concatenated onto the MonorailCSS-generated `/styles.css`, making it the right home for `@font-face` declarations, custom-property overrides, and any selector the utility-class scanner will not discover on its own. Keep this string small — anything expressible as MonorailCSS utilities in Razor markup gets picked up automatically by `CssClassCollectorProcessor`.
 
@@ -46,7 +55,10 @@ M:DocSiteChromeOverridesExample.SiteChromeOverrides.BuildHtmlHeadContent
 M:DocSiteChromeOverridesExample.SiteChromeOverrides.BuildExtraStyles
 ```
 
-### 4. Replace the header and footer HTML with the string slots
+</Step>
+<Step StepNumber="4">
+
+**Replace the header and footer HTML with the string slots**
 
 `HeaderContent` and `FooterContent` are raw HTML strings the DocSite layout splices into the top bar and footer regions — they accept anything an HTML fragment can hold, from a branded logo wordmark to a compliance notice. Because they are strings, no `AdditionalRoutingAssemblies` entry is needed for them; for a component-authored fragment, render it to HTML at startup the same way as the head snippet above.
 
@@ -59,7 +71,10 @@ var options = new DocSiteOptions
 };
 ```
 
-### 5. Route your own `@page` components via `AdditionalRoutingAssemblies`
+</Step>
+<Step StepNumber="5">
+
+**Route your own `@page` components via `AdditionalRoutingAssemblies`**
 
 The DocSite shell only discovers `@page` directives in its own assembly by default; adding the host assembly to `AdditionalRoutingAssemblies` makes any `@page "/route"` component in that assembly routable alongside the bundled pages. The example returns `[typeof(SiteChromeOverrides).Assembly]` so a Razor component like `ExtraPage.razor` sitting next to `Program.cs` gets picked up without any additional DI wiring.
 
@@ -67,7 +82,10 @@ The DocSite shell only discovers `@page` directives in its own assembly by defau
 M:DocSiteChromeOverridesExample.SiteChromeOverrides.BuildAdditionalRoutingAssemblies
 ```
 
-### 6. Wire the options into `AddDocSite`
+</Step>
+<Step StepNumber="6">
+
+**Wire the options into `AddDocSite`**
 
 `AddDocSite` takes a `Func<DocSiteOptions>` factory, so the most direct wiring is to pass the helper as a method reference and keep the host file short. The example's `Program.cs` runs this exact shape end-to-end.
 
@@ -75,9 +93,15 @@ M:DocSiteChromeOverridesExample.SiteChromeOverrides.BuildAdditionalRoutingAssemb
 examples/DocSiteChromeOverridesExample/Program.cs
 ```
 
-### 7. Replace the content island through the islands system
+</Step>
+<Step StepNumber="7">
+
+**Replace the content island through the islands system**
 
 To swap the article body itself — the island whose `IslandName` is `"content"` — follow <xref:how-to.extensibility.island-renderer> and register an `IIslandRenderer` with `IslandName => "content"` to displace the shipped `DocSiteArticleSlotRenderer`. This seam lives in the islands system rather than `DocSiteOptions`, which is why it is a separate recipe.
+
+</Step>
+</Steps>
 
 ---
 

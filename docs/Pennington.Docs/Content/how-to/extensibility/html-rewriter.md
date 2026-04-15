@@ -21,7 +21,10 @@ For a working setup, see [`examples/ExtensibilityLabExample`](https://github.com
 
 ## Steps
 
-### 1. Implement `IHtmlResponseRewriter`
+<Steps>
+<Step StepNumber="1">
+
+**Implement `IHtmlResponseRewriter`**
 
 The contract requires four members: `Order`, `ShouldApply(HttpContext)`, `PreParseAsync(string, HttpContext)`, and `ApplyAsync(IDocument, HttpContext)` — the example class below demonstrates all four in one sealed type.
 
@@ -29,7 +32,10 @@ The contract requires four members: `Order`, `ShouldApply(HttpContext)`, `PrePar
 T:ExtensibilityLabExample.AnchorLowercaseRewriter
 ```
 
-### 2. Gate work with `ShouldApply`
+</Step>
+<Step StepNumber="2">
+
+**Gate work with `ShouldApply`**
 
 `ShouldApply` runs per-response; return `false` to skip both phases when the content-type, path, or headers mean there is nothing to do. The example narrows to `text/html` responses so non-HTML endpoints (search index JSON, llms.txt) bypass the rewriter entirely.
 
@@ -37,7 +43,10 @@ T:ExtensibilityLabExample.AnchorLowercaseRewriter
 M:ExtensibilityLabExample.AnchorLowercaseRewriter.ShouldApply(Microsoft.AspNetCore.Http.HttpContext)
 ```
 
-### 3. Use `PreParseAsync` for non-HTML tokens
+</Step>
+<Step StepNumber="3">
+
+**Use `PreParseAsync` for non-HTML tokens**
 
 `PreParseAsync` receives the raw HTML string before AngleSharp parses it and returns the string to parse — use it only when the target construct is not valid HTML structure (raw `<xref:uid>` tags are the canonical shipped example; the lab strips a sentinel comment). Return the input unchanged when there is nothing to do, to avoid paying for an allocation on every response.
 
@@ -45,7 +54,10 @@ M:ExtensibilityLabExample.AnchorLowercaseRewriter.ShouldApply(Microsoft.AspNetCo
 M:ExtensibilityLabExample.AnchorLowercaseRewriter.PreParseAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)
 ```
 
-### 4. Use `ApplyAsync` for DOM edits
+</Step>
+<Step StepNumber="4">
+
+**Use `ApplyAsync` for DOM edits**
 
 `ApplyAsync` receives the already-parsed `IDocument` shared by every rewriter in this pass — query with `QuerySelectorAll`, mutate attributes and text, and return; do not re-serialize or reparse. The example lowercases the text content of every `<a data-lowercase>`; more typical uses include href canonicalisation, `loading="lazy"` on images, or stamping `rel="noopener"` on external links.
 
@@ -53,7 +65,10 @@ M:ExtensibilityLabExample.AnchorLowercaseRewriter.PreParseAsync(System.String,Mi
 M:ExtensibilityLabExample.AnchorLowercaseRewriter.ApplyAsync(AngleSharp.Dom.IDocument,Microsoft.AspNetCore.Http.HttpContext)
 ```
 
-### 5. Pick an `Order` that cooperates with built-ins
+</Step>
+<Step StepNumber="5">
+
+**Pick an `Order` that cooperates with built-ins**
 
 The three shipped rewriters run at 10 (`XrefHtmlRewriter`), 20 (`LocaleLinkHtmlRewriter`), and 30 (`BaseUrlHtmlRewriter`) — choose a number above 30 to see already-resolved xref/locale/base hrefs, below 10 to preempt xref resolution, or between the built-ins only to deliberately slot into that chain. The example uses 500 so anchors are lowercased after every transport-layer transform has landed.
 
@@ -61,13 +76,19 @@ The three shipped rewriters run at 10 (`XrefHtmlRewriter`), 20 (`LocaleLinkHtmlR
 P:ExtensibilityLabExample.AnchorLowercaseRewriter.Order
 ```
 
-### 6. Register the rewriter in DI
+</Step>
+<Step StepNumber="6">
+
+**Register the rewriter in DI**
 
 `HtmlResponseRewritingProcessor` resolves every registered `IHtmlResponseRewriter` from the container and sorts by `Order`, so a single `AddSingleton<IHtmlResponseRewriter, T>()` next to the host wiring is sufficient.
 
 ```csharp:path
 examples/ExtensibilityLabExample/Program.cs
 ```
+
+</Step>
+</Steps>
 
 ---
 

@@ -23,7 +23,10 @@ To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://gith
 
 ## Steps
 
-### 1. Add `redirectUrl:` to the old page's front matter
+<Steps>
+<Step StepNumber="1">
+
+**Add `redirectUrl:` to the old page's front matter**
 
 Open the markdown file at the old URL and set `redirectUrl:` to the new absolute path. Keep `title:` so diagnostics remain readable; the body is not rendered.
 
@@ -31,7 +34,10 @@ Open the markdown file at the old URL and set `redirectUrl:` to the new absolute
 examples/DocSiteKitchenSinkExample/Content/main/redirect-source.md
 ```
 
-### 2. Confirm the front-matter record implements `IRedirectable`
+</Step>
+<Step StepNumber="2">
+
+**Confirm the front-matter record implements `IRedirectable`**
 
 The engine looks for the `RedirectUrl` property via `IRedirectable` pattern-matching; `DocSiteFrontMatter` already declares it. For a custom front-matter record, add the interface so the pipeline surfaces the page as a redirect.
 
@@ -43,7 +49,10 @@ T:Pennington.DocSite.DocSiteFrontMatter
 T:Pennington.FrontMatter.IRedirectable
 ```
 
-### 3. Understand what the pipeline emits
+</Step>
+<Step StepNumber="3">
+
+**Understand what the pipeline emits**
 
 During discovery, `MarkdownContentService` detects `RedirectUrl` and yields a `RedirectSource` instead of a `MarkdownFileSource`, so the page skips parse/render and the redirect middleware handles it uniformly at dev serve and `build` time.
 
@@ -51,13 +60,19 @@ During discovery, `MarkdownContentService` detects `RedirectUrl` and yields a `R
 M:Pennington.Content.MarkdownContentService`1.DiscoverAsync
 ```
 
-### 4. Run the site and follow the old URL
+</Step>
+<Step StepNumber="4">
+
+**Run the site and follow the old URL**
 
 Start the site with `dotnet run`. The old URL responds with a meta-refresh stub that forwards to `redirectUrl`; the static build writes the same stub to disk at the old page's output path.
 
 ```bash
 dotnet run --project src/YourDocSite
 ```
+
+</Step>
+</Steps>
 
 ---
 

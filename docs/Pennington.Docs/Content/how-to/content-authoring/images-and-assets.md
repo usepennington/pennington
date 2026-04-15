@@ -21,7 +21,10 @@ To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://gith
 
 ## Steps
 
-### 1. Colocate an image next to its markdown file
+<Steps>
+<Step StepNumber="1">
+
+**Colocate an image next to its markdown file**
 
 Drop the image into a folder alongside the page — typically an `assets/` subfolder. `MarkdownContentService` walks the content tree and copies every non-markdown file to the same relative path in the output, so the image ships with the page automatically.
 
@@ -29,7 +32,10 @@ Drop the image into a folder alongside the page — typically an `assets/` subfo
 examples/DocSiteKitchenSinkExample/Content/main/images-and-assets.md
 ```
 
-### 2. Reference the colocated image with a relative path
+</Step>
+<Step StepNumber="2">
+
+**Reference the colocated image with a relative path**
 
 Use a standard markdown image tag with a relative path:
 
@@ -39,11 +45,17 @@ Use a standard markdown image tag with a relative path:
 
 `MarkdownLinkResolver` resolves the link against the source file's URL, so it renders correctly whether the page is served at `/main/images-and-assets/` or under a locale prefix.
 
-### 3. Put shared assets in `wwwroot/`
+</Step>
+<Step StepNumber="3">
+
+**Put shared assets in `wwwroot/`**
 
 When the same image is referenced from multiple pages, drop it into `wwwroot/` so it has one canonical URL. `UsePennington` wires `UseStaticFiles` for `wwwroot/`, so `wwwroot/shared.png` is served at `/shared.png`.
 
-### 4. Reference the shared asset with an absolute path
+</Step>
+<Step StepNumber="4">
+
+**Reference the shared asset with an absolute path**
 
 Write the markdown image with a leading slash so it resolves at the site root regardless of which page embeds it:
 
@@ -53,11 +65,17 @@ Write the markdown image with a leading slash so it resolves at the site root re
 
 When deploying under a sub-path, `BaseUrlHtmlRewriter` prepends the base URL at response time — avoid hard-coding the sub-path.
 
-### 5. (Optional) Exclude an asset subtree from the copy pass
+</Step>
+<Step StepNumber="5">
+
+**(Optional) Exclude an asset subtree from the copy pass**
 
 To keep a folder under `Content/` out of the output, list it in `MarkdownContentServiceOptions.ExcludePaths` when calling `AddMarkdownContent<T>`. The copy pass skips any relative path matched by `ExcludePaths`.
 
 <!-- TODO: xmldocid needed -->
+
+</Step>
+</Steps>
 
 ---
 
