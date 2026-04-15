@@ -36,7 +36,10 @@ The finished code for this tutorial lives in [`examples/_ExampleProjectName_`](h
 
 _One sentence: what this unit accomplishes and why it comes first._
 
-### Step 1.1 — _Action verb + target_
+<Steps>
+<Step StepNumber="1">
+
+**_Action verb + target_**
 
 _One sentence of setup if the step needs it._
 
@@ -48,13 +51,19 @@ M:_ExampleProjectName_._Type_._Member_
 
 _Explain one non-obvious line if the code has any. Delete this paragraph if nothing needs it._
 
-### Step 1.2 — _Next action_
+</Step>
+<Step StepNumber="2">
+
+**_Next action_**
 
 _Continue until the unit is done. Keep each step to one verb and one target._
 
 ```csharp:xmldocid
 T:_ExampleProjectName_._Type_
 ```
+
+</Step>
+</Steps>
 
 ### Checkpoint — _What you should see now_
 
@@ -69,11 +78,17 @@ _Concrete verifiable state: a URL returns something, a file exists, a log line a
 
 _Repeat the unit/step/checkpoint structure. Aim for 3–5 units per tutorial. More than 5 usually means this should be split into two tutorials._
 
-### Step 2.1 — _Action_
+<Steps>
+<Step StepNumber="1">
+
+**_Action_**
 
 ```csharp:xmldocid,bodyonly
 M:_ExampleProjectName_._Type_._Member_
 ```
+
+</Step>
+</Steps>
 
 ### Checkpoint — _What you should see now_
 

@@ -20,11 +20,17 @@ This page covers serving an `output/` directory produced by `dotnet run -- build
 
 ## Steps
 
-### 1. Upload `output/` to the web root
+<Steps>
+<Step StepNumber="1">
+
+**Upload `output/` to the web root**
 
 Copy the full contents of `output/` to the directory the web server will serve — `/var/www/pennington/` for Nginx or the IIS site's **Physical path** for IIS. Keep the `_content/` and `_spa-data/` folders intact; fingerprinted assets and island payloads live under those underscore-prefixed paths and ship verbatim.
 
-### 2. Install the server config
+</Step>
+<Step StepNumber="2">
+
+**Install the server config**
 
 Drop the snippet below into the server's config location: Nginx reads its `server` block from `/etc/nginx/sites-enabled/` or `conf.d/`; IIS reads `web.config` from the site root alongside `index.html`. Reload after writing — `nginx -s reload` for Nginx, `iisreset` or an app-pool recycle for IIS.
 
@@ -36,11 +42,17 @@ examples/SubPathDeployableExample/nginx.conf
 examples/SubPathDeployableExample/web.config
 ```
 
-### 3. Serve directory indexes for trailing-slash URLs
+</Step>
+<Step StepNumber="3">
+
+**Serve directory indexes for trailing-slash URLs**
 
 Pennington emits every content page as `<slug>/index.html` and every internal link with a trailing slash, so the server needs to resolve `/guides/first-page/` by serving `/guides/first-page/index.html`. Nginx handles this with `try_files $uri $uri/ /404.html` and `index index.html` — both are already in the snippet above. IIS needs `<defaultDocument>` naming `index.html` plus a rewrite rule that 301-redirects `/guides/first-page` to `/guides/first-page/` so the default-document rule can fire. Without either piece, visitors see a raw directory listing or a 404 on canonical URLs.
 
-### 4. Wire `404.html` as the miss fallback
+</Step>
+<Step StepNumber="4">
+
+**Wire `404.html` as the miss fallback**
 
 During `build`, `OutputGenerationService` materializes a real `404.html` at the root of `output/` by rendering the path identified by `NotFoundGeneratorPath`. The web server's only job is to return that file with a 404 status on misses. Nginx handles this with `try_files … /404.html;` and `error_page 404 /404.html;`; IIS uses `<httpErrors errorMode="Custom" existingResponse="Replace">` with `<error statusCode="404" path="/404.html" responseMode="File" />`. Both snippets already include this wiring.
 
@@ -48,9 +60,15 @@ During `build`, `OutputGenerationService` materializes a real `404.html` at the 
 F:Pennington.Generation.OutputGenerationService.NotFoundGeneratorPath
 ```
 
-### 5. Fix MIME types and cache headers for fingerprinted assets
+</Step>
+<Step StepNumber="5">
+
+**Fix MIME types and cache headers for fingerprinted assets**
 
 Nginx's default `mime.types` usually covers everything Pennington emits, but IIS ships without entries for `.webmanifest` and on some Windows SKUs `.woff2`, so the `web.config` above registers them explicitly. Both snippets also mark `/_content/` fingerprinted assets as `public, immutable` with a one-year expiry — that cache contract is the reason `_content/` paths include content hashes, so preserve it even if you trim the rest of the snippet. The sitemap and `llms.txt` are top-level files; the Nginx snippet sets `default_type` for them, and IIS's built-in `.xml` and `.txt` MIME entries cover them with no extra config.
+
+</Step>
+</Steps>
 
 ---
 

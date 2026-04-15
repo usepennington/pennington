@@ -27,13 +27,19 @@ The finished code for this tutorial lives in [`examples/BlogSiteScaffoldExample`
 
 The host you built in the getting-started tutorials calls `AddPennington`, registers content with `AddMarkdownContent<DocFrontMatter>`, mounts `UsePennington`, and wires a hand-written `MapGet` fallback that walks `IContentService` to serve individual pages.
 
-### Step 1.1 — Review the pre-BlogSite host shape
+<Steps>
+<Step StepNumber="1">
+
+**Review the pre-BlogSite host shape**
 
 Here is what that host looks like. The three moving parts are the DI registration, the `UsePennington` call, and the hand-rolled `MapGet` fallback. Notice what is absent: the home listing, `/archive`, `/blog/<slug>` pages, `/tags` and `/topics` aliases, the `/rss.xml` feed, and the MonorailCSS chrome. The next unit brings all of that in with a single `AddBlogSite` call.
 
 ```csharp:xmldocid,bodyonly
 M:BlogSiteScaffoldExample.Stage1.Run(System.String[])
 ```
+
+</Step>
+</Steps>
 
 ### Checkpoint — The bare host runs
 
@@ -46,7 +52,10 @@ M:BlogSiteScaffoldExample.Stage1.Run(System.String[])
 
 `AddBlogSite` is a single DI call that registers Pennington core, MonorailCSS, the Razor-component chrome (home, archive, post, and tag pages), the file-watched `BlogContentResolver`, and the `BlogSiteContentService` that yields per-tag routes and the `/rss.xml` feed — all driven from one options record.
 
-### Step 2.1 — Replace the registration call
+<Steps>
+<Step StepNumber="1">
+
+**Replace the registration call**
 
 `AddBlogSite` takes a `Func<BlogSiteOptions>` — the delegate constructs and returns a fresh options record rather than mutating one through an `Action`. Remove the earlier `AddMarkdownContent<DocFrontMatter>` call; the template registers `AddMarkdownContent<BlogSiteFrontMatter>` internally, and the next tutorial walks through that front-matter record. `AddBlogSite` also calls `AddPennington`, `AddMonorailCss`, and `AddRazorComponents` under the hood, so a BlogSite project does not register those separately.
 
@@ -54,7 +63,10 @@ M:BlogSiteScaffoldExample.Stage1.Run(System.String[])
 M:Pennington.BlogSite.BlogSiteServiceExtensions.AddBlogSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.BlogSite.BlogSiteOptions})
 ```
 
-### Step 2.2 — Populate the core `BlogSiteOptions`
+</Step>
+<Step StepNumber="2">
+
+**Populate the core `BlogSiteOptions`**
 
 The options this tutorial covers fall into three groups.
 
@@ -70,9 +82,15 @@ The full options surface — including the homepage-specific knobs `HeroContent`
 T:Pennington.BlogSite.BlogSiteOptions
 ```
 
-### Step 2.3 — Contrast with `DocSite` defaults
+</Step>
+<Step StepNumber="3">
+
+**Contrast with `DocSite` defaults**
 
 Two differences distinguish BlogSite from DocSite at the template level. First, `AddBlogSite` binds `AddMarkdownContent<BlogSiteFrontMatter>` — not `DocSiteFrontMatter` and not the lower-level `BlogFrontMatter` from the core library. Second, BlogSite resolves URLs from a single content-path pair (`ContentRootPath` + `BlogContentPath`) served at a fixed `BlogBaseUrl`, while DocSite drives URLs from `ContentArea` slugs under `ContentRootPath`. The rest of what differs between the two templates — the hard-coded chrome, the RSS-first layout, the absence of an area switcher — follows from those two choices.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Services registered, middleware not yet mounted
 
@@ -85,7 +103,10 @@ Two differences distinguish BlogSite from DocSite at the template level. First, 
 
 `UseBlogSite` is the middleware counterpart to `AddBlogSite` — one call mounts antiforgery, static files, MonorailCSS, core Pennington middleware, and Razor-component routing for `Home`, `Archive`, `Blog`, `Tag`, and `Tags` in the correct order; when `EnableRss` is true (the default) it also maps `/rss.xml`.
 
-### Step 3.1 — Call `UseBlogSite` after `Build()`
+<Steps>
+<Step StepNumber="1">
+
+**Call `UseBlogSite` after `Build()`**
 
 This single call replaces both the `UsePennington` line and the hand-written `MapGet` fallback from stage 1. After it runs, the BlogSite Razor components own `/`, `/archive`, `/blog/{*fileName}`, `/tags`, `/tags/{TagEncodedName}`, and the `/topics` aliases, with `BlogContentResolver` handling per-request rendering.
 
@@ -93,7 +114,10 @@ This single call replaces both the `UsePennington` line and the hand-written `Ma
 M:Pennington.BlogSite.BlogSiteServiceExtensions.UseBlogSite(Microsoft.AspNetCore.Builder.WebApplication)
 ```
 
-### Step 3.2 — Swap `RunAsync` for `RunBlogSiteAsync`
+</Step>
+<Step StepNumber="2">
+
+**Swap `RunAsync` for `RunBlogSiteAsync`**
 
 `RunBlogSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves live in development and generates static HTML when invoked as `dotnet run -- build <baseUrl> <outputDir>`. Both positional arguments are optional and default to `/` and `output` respectively. For the full explanation of how unified dev and build paths work, see <xref:explanation.core.dev-vs-build>.
 
@@ -101,13 +125,19 @@ M:Pennington.BlogSite.BlogSiteServiceExtensions.UseBlogSite(Microsoft.AspNetCore
 M:Pennington.BlogSite.BlogSiteServiceExtensions.RunBlogSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])
 ```
 
-### Step 3.3 — See the fully-wired host
+</Step>
+<Step StepNumber="3">
+
+**See the fully-wired host**
 
 Here is the complete `Program.cs` after the swap. Three calls replace the entire stage-1 setup — the diff says the rest.
 
 ```csharp:xmldocid,bodyonly
 M:BlogSiteScaffoldExample.Stage2.Run(System.String[])
 ```
+
+</Step>
+</Steps>
 
 ### Checkpoint — Full chrome renders
 
@@ -120,7 +150,10 @@ M:BlogSiteScaffoldExample.Stage2.Run(System.String[])
 
 Posts live under `{ContentRootPath}/{BlogContentPath}` — with the defaults from step 2, that is `Content/Blog/`. A single placeholder post here keeps the home listing, archive, and RSS feed non-empty until the next tutorial introduces the full `BlogSiteFrontMatter` surface.
 
-### Step 4.1 — Create `Content/Blog/hello-world.md`
+<Steps>
+<Step StepNumber="1">
+
+**Create `Content/Blog/hello-world.md`**
 
 The placeholder post uses four front-matter keys: `title`, `description`, `date`, and `author`. These are the minimum the home listing and RSS feed need to render an entry. The next tutorial expands this to the full `BlogSiteFrontMatter` surface, adding `tags`, `series`, `repository`, `section`, and `redirectUrl`.
 
@@ -128,7 +161,10 @@ The placeholder post uses four front-matter keys: `title`, `description`, `date`
 examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md
 ```
 
-### Step 4.2 — Walk the built-in routes
+</Step>
+<Step StepNumber="2">
+
+**Walk the built-in routes**
 
 Visit each URL in order and confirm the placeholder post's metadata appears on every page:
 
@@ -138,6 +174,9 @@ Visit each URL in order and confirm the placeholder post's metadata appears on e
 - `/tags` — empty tag list (placeholder post has no tags; the next tutorial adds them)
 - `/rss.xml` — RSS 2.0 feed with one `<item>` carrying the post title, link, description, pub date, and author
 - `/topics` and `/topics/<name>` — aliases for `/tags` and `/tags/<name>` (confirm one loads)
+
+</Step>
+</Steps>
 
 ### Checkpoint — Every built-in route responds
 

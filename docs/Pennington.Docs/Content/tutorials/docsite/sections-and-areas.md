@@ -29,7 +29,10 @@ The finished code for this tutorial lives in [`examples/DocSiteSectionsExample`]
 
 Let's begin with a single page parked directly under an area folder — no subfolder, no `sectionLabel:`, no `order:` — so the sidebar has nothing to group. This establishes the baseline the rest of the tutorial builds on.
 
-### Step 1.1 — Confirm the two-area host from the scaffolding tutorial
+<Steps>
+<Step StepNumber="1">
+
+**Confirm the two-area host from the scaffolding tutorial**
 
 The `Program.cs` file wires up two `ContentArea` entries: `Guides` bound to the `guides` folder and `Reference` bound to the `reference` folder.
 
@@ -41,7 +44,10 @@ This file stays untouched for the rest of the tutorial. Every change from here o
 
 The two `ContentArea` constructors take a label shown in the area selector, followed by the folder name under `Content/`. `AddDocSite` discovers both folders through a single markdown pipeline.
 
-### Step 1.2 — Drop a single page into `Content/guides/` with no section or order
+</Step>
+<Step StepNumber="2">
+
+**Drop a single page into `Content/guides/` with no section or order**
 
 Create `Content/guides/install.md` with minimal front matter — a `title:` and a `description:`, nothing else.
 
@@ -50,6 +56,9 @@ M:DocSiteSectionsExample.Stage1.Source
 ```
 
 Paste the YAML-plus-markdown content above into `Content/guides/install.md`. With no subfolder and no `order:`, the page sorts to the top of the Guides area as a flat entry. The `order` key defaults to `int.MaxValue` and there is no sibling subfolder for the navigation builder to fold the page under. The next unit fixes that.
+
+</Step>
+</Steps>
 
 ### Checkpoint — A single ungrouped entry under Guides
 
@@ -65,13 +74,19 @@ The sidebar shows the page directly, with no section header above it.
 
 Now let's move the same page under a `getting-started/` subfolder and add `sectionLabel:` plus `order:` to the front matter. The sidebar gains its first grouped section header.
 
-### Step 2.1 — Move `install.md` under `Content/guides/getting-started/`
+<Steps>
+<Step StepNumber="1">
+
+**Move `install.md` under `Content/guides/getting-started/`**
 
 Delete `Content/guides/install.md` and create `Content/guides/getting-started/installation.md` in its place.
 
 The load-bearing rule: **the subfolder name is what creates the sidebar section**, not the `sectionLabel:` key. `NavigationBuilder` title-cases the folder name (`getting-started` becomes *Getting Started*) and renders it as a non-navigable header above the page links.
 
-### Step 2.2 — Add `sectionLabel: Getting Started` and `order: 10` to the front matter
+</Step>
+<Step StepNumber="2">
+
+**Add `sectionLabel: Getting Started` and `order: 10` to the front matter**
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteSectionsExample.Stage2.Source
@@ -80,6 +95,9 @@ M:DocSiteSectionsExample.Stage2.Source
 The two keys serve different purposes. `order:` is an integer that sorts pages inside a section — smaller numbers appear first, with ties broken alphabetically on title. `sectionLabel:` is metadata carried on `NavigationInfo.SectionName` and shown in breadcrumbs and prev/next chrome. When a file lives outside a subfolder, `sectionLabel:` has no grouping effect — it is a label, not a grouper.
 
 One section, one subfolder. `sectionLabel:` names it in breadcrumbs.
+
+</Step>
+</Steps>
 
 ### Checkpoint — One grouped section under Guides
 
@@ -93,7 +111,10 @@ One section, one subfolder. `sectionLabel:` names it in breadcrumbs.
 
 Let's add the remaining pages to `getting-started/` and `advanced/` so Guides has two sibling sections with staggered `order:` values — the pattern that prevents the tie-break surprise.
 
-### Step 3.1 — Add two more pages to `getting-started/` with `order: 20` and `order: 30`
+<Steps>
+<Step StepNumber="1">
+
+**Add two more pages to `getting-started/` with `order: 20` and `order: 30`**
 
 Add the Guides landing page and two more pages to the `getting-started/` subfolder. Give `first-project.md` an `order:` of `20` and `configuration.md` an `order:` of `30`. Each page also carries `sectionLabel: Getting Started`.
 
@@ -111,7 +132,10 @@ examples/DocSiteSectionsExample/Content/guides/getting-started/configuration.md
 
 The 10/20/30 sequence is deliberate — it leaves room to insert pages later without renumbering everything. The minimum `order:` value in this section is `10`, which matters in the next step.
 
-### Step 3.2 — Add the `advanced/` section with `order: 40` and `order: 50`
+</Step>
+<Step StepNumber="2">
+
+**Add the `advanced/` section with `order: 40` and `order: 50`**
 
 Create `Content/guides/advanced/` and add two pages with `sectionLabel: Advanced` and `order:` values of `40` and `50`.
 
@@ -125,6 +149,9 @@ examples/DocSiteSectionsExample/Content/guides/advanced/response-pipeline.md
 
 Stagger `order:` values across sibling sections — 10/20/30 inside `getting-started/` and 40/50 inside `advanced/` — so the two section headers sort in the intended order. When both sections start at `10`, the navigation builder falls back to alphabetical ordering of the folder names, and `advanced/` appears above *Getting Started*.
 
+</Step>
+</Steps>
+
 ### Checkpoint — Two sections under Guides, in the intended order
 
 - Revisit `http://localhost:5000/guides/installation`
@@ -137,7 +164,10 @@ Stagger `order:` values across sibling sections — 10/20/30 inside `getting-sta
 
 The same subfolder-plus-staggered-order pattern applies to the `Reference` area. Switching between both areas through the sidebar's area selector confirms each gets its own independent sidebar tree.
 
-### Step 4.1 — Fill in `Content/reference/core-api/` with `order: 10` and `order: 20`
+<Steps>
+<Step StepNumber="1">
+
+**Fill in `Content/reference/core-api/` with `order: 10` and `order: 20`**
 
 Create the `core-api/` subfolder under `Content/reference/` and add two pages, each with `sectionLabel: Core API` and `order:` values of `10` and `20`. The folder creates the section, the key labels it, and the staggered numbers keep sibling sections predictable.
 
@@ -153,7 +183,10 @@ examples/DocSiteSectionsExample/Content/reference/core-api/pennington-options.md
 examples/DocSiteSectionsExample/Content/reference/core-api/content-pipeline.md
 ```
 
-### Step 4.2 — Add `Content/reference/extensions/` with `order: 30` and `order: 40`
+</Step>
+<Step StepNumber="2">
+
+**Add `Content/reference/extensions/` with `order: 30` and `order: 40`**
 
 Create `extensions/` and drop two pages in it with `sectionLabel: Extensions` and `order:` values of `30` and `40`. Using `30`/`40` rather than restarting at `10` applies the same staggering rule from unit 3 — the *Core API* minimum is `10` and the *Extensions* minimum is `30`, so the sections sort *Core API → Extensions* without relying on the alphabetical tie-break.
 
@@ -165,9 +198,15 @@ examples/DocSiteSectionsExample/Content/reference/extensions/markdown-extensions
 examples/DocSiteSectionsExample/Content/reference/extensions/content-services.md
 ```
 
-### Step 4.3 — Switch areas with the sidebar's area selector
+</Step>
+<Step StepNumber="3">
+
+**Switch areas with the sidebar's area selector**
 
 Click the area selector pill at the top of the sidebar — the control that toggles between *Guides* and *Reference*. Each area has its own independent sidebar tree. The `ContentArea` bindings from `Program.cs` plus the subfolder layout are what make this work, with no extra code.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Both areas render correctly, independently
 

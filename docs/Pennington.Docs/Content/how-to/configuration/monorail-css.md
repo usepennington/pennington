@@ -21,7 +21,10 @@ The `ServiceConfiguration` helpers referenced below are backed by `examples/DocS
 
 ## Steps
 
-### 1. Pick `NamedColorScheme` for a Tailwind-named palette
+<Steps>
+<Step StepNumber="1">
+
+**Pick `NamedColorScheme` for a Tailwind-named palette**
 
 `NamedColorScheme` maps five MonorailCSS palette slots (primary, accent, tertiary-one, tertiary-two, base) onto named palettes from `MonorailCss.Theme.ColorNames`. The simplest re-skin is changing the five `*ColorName` strings on the default options.
 
@@ -29,7 +32,10 @@ The `ServiceConfiguration` helpers referenced below are backed by `examples/DocS
 T:Pennington.MonorailCss.NamedColorScheme
 ```
 
-### 2. Pick `AlgorithmicColorScheme` for hue-driven palettes
+</Step>
+<Step StepNumber="2">
+
+**Pick `AlgorithmicColorScheme` for hue-driven palettes**
 
 `AlgorithmicColorScheme` synthesises primary, accent, and tertiary palettes from one `PrimaryHue` plus a `ColorSchemeGenerator` delegate, so the whole site repigments by changing a single number. The kitchen-sink helper below shows a plausible generator wired against `ColorNames.Zinc`.
 
@@ -37,7 +43,10 @@ T:Pennington.MonorailCss.NamedColorScheme
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildColorScheme
 ```
 
-### 3. Assign the color scheme on the DocSite options
+</Step>
+<Step StepNumber="3">
+
+**Assign the color scheme on the DocSite options**
 
 `DocSiteOptions.ColorScheme` is the forwarded knob — whichever `IColorScheme` is assigned becomes the seed for the generated stylesheet.
 
@@ -45,7 +54,10 @@ M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildColorScheme
 P:Pennington.DocSite.DocSiteOptions.ColorScheme
 ```
 
-### 4. Append site-wide rules with `ExtraStyles`
+</Step>
+<Step StepNumber="4">
+
+**Append site-wide rules with `ExtraStyles`**
 
 The `ExtraStyles` string is emitted verbatim above the generated utility stylesheet. It fits `@font-face` declarations, utility overrides, or one-off selectors that don't belong in a Razor component. The kitchen-sink helper below combines two font faces with a component-scoped tweak as a realistic reference.
 
@@ -59,7 +71,10 @@ Pass it through on the DocSite options:
 P:Pennington.DocSite.DocSiteOptions.ExtraStyles
 ```
 
-### 5. Tweak prose rules with `CustomCssFrameworkSettings`
+</Step>
+<Step StepNumber="5">
+
+**Tweak prose rules with `CustomCssFrameworkSettings`**
 
 `DocSiteOptions.CustomCssFrameworkSettings` mirrors the `MonorailCssOptions` delegate — it post-processes the `CssFrameworkSettings` after the DocSite theme is applied, so it fits prose tweaks, color maps, or apply directives without leaving DocSite. When `ContentPaths` (the glob list scanned at startup for classes used in non-HTML files) or other capabilities outside DocSite's scope are needed, drop to bare `AddPennington` + `AddMonorailCss`; see <xref:explanation.core.docsite-positioning> for the authoritative breakdown.
 
@@ -78,6 +93,9 @@ For a bare `AddPennington` host the same knob sits on `MonorailCssOptions` direc
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.MonorailCssCustomization.BuildOptions
 ```
+
+</Step>
+</Steps>
 
 ---
 

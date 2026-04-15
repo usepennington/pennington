@@ -24,7 +24,10 @@ For a complete reference setup, the `BeyondLocaleExample` project has English un
 
 ## Steps
 
-### 1. Populate `LocalizationOptions` with the default locale and every additional locale
+<Steps>
+<Step StepNumber="1">
+
+**Populate `LocalizationOptions` with the default locale and every additional locale**
 
 On a DocSite host, set `DefaultLocale` and call `AddLocale` once per additional language inside `ConfigureLocalization`. On a bare `AddPennington` host, configure `PenningtonOptions.Localization` the same way. The default locale owns the URL root; each additional locale gets a URL prefix matching its code, so choose codes that read well in URLs.
 
@@ -40,7 +43,10 @@ M:Pennington.Infrastructure.LocalizationOptions.AddLocale(System.String,Penningt
 T:Pennington.Localization.LocaleInfo
 ```
 
-### 2. Mirror your content tree under `Content/<locale>/` for every non-default locale
+</Step>
+<Step StepNumber="2">
+
+**Mirror your content tree under `Content/<locale>/` for every non-default locale**
 
 Default-locale files stay directly under `ContentRootPath` with no prefix. For each additional locale, create a sibling folder named after the locale code and place translated files there, mirroring the default-locale filenames so `ContentResolver` can pair them. Pages without a translation fall back to the default locale automatically, so shipping does not require a full translation pass.
 
@@ -48,7 +54,10 @@ Default-locale files stay directly under `ContentRootPath` with no prefix. For e
 examples/BeyondLocaleExample/Content/es/about.md
 ```
 
-### 3. Confirm `UsePenningtonLocaleRouting` is in the pipeline
+</Step>
+<Step StepNumber="3">
+
+**Confirm `UsePenningtonLocaleRouting` is in the pipeline**
 
 `UseDocSite` and `UseBlogSite` already register `UsePenningtonLocaleRouting` as the first middleware — template hosts need no extra call. On a bare `AddPennington` host, insert it before `UseRouting` so `LocaleDetectionMiddleware` can strip the locale prefix into `PathBase` ahead of endpoint matching.
 
@@ -56,7 +65,10 @@ examples/BeyondLocaleExample/Content/es/about.md
 M:Pennington.Infrastructure.PenningtonExtensions.UsePenningtonLocaleRouting(Microsoft.AspNetCore.Builder.WebApplication)
 ```
 
-### 4. Add UI string translations through `TranslationOptions`
+</Step>
+<Step StepNumber="4">
+
+**Add UI string translations through `TranslationOptions`**
 
 UI strings rendered by Razor components flow through `IStringLocalizer`, which Pennington backs with the in-memory `TranslationOptions` on `PenningtonOptions.Translations`. Register one entry per locale/key pair inside the `AddPennington` or `AddDocSite` configuration. Keys are free-form, and missing keys fall back to the default locale automatically.
 
@@ -75,7 +87,10 @@ M:Pennington.Localization.TranslationOptions.Add(System.String,System.String,Sys
 T:Pennington.Localization.PenningtonStringLocalizer
 ```
 
-### 5. Surface the language switcher
+</Step>
+<Step StepNumber="5">
+
+**Surface the language switcher**
 
 On DocSite, the `LanguageSwitcher` component is already wired into `MainLayout.razor` and activates automatically when `LocalizationOptions.IsMultiLocale` is true; no extra markup required. On a bare host, drop `<LanguageSwitcher />` into the layout wherever the locale picker should appear.
 
@@ -86,6 +101,9 @@ src/Pennington.UI/Components/LanguageSwitcher.razor
 ```csharp:xmldocid
 P:Pennington.Infrastructure.LocalizationOptions.IsMultiLocale
 ```
+
+</Step>
+</Steps>
 
 ---
 

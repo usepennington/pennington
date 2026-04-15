@@ -23,7 +23,10 @@ For a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](https:/
 ## Steps
 
 
-### 1. Set `HeroContent` for the headline block
+<Steps>
+<Step StepNumber="1">
+
+**Set `HeroContent` for the headline block**
 
 `HeroContent` is a two-field positional record (`Title`, `Description`) rendered at the top of `/`. `Description` is emitted as a `MarkupString` in `Home.razor`, so light HTML is permitted; plain prose works for most sites.
 
@@ -35,7 +38,10 @@ T:Pennington.BlogSite.HeroContent
 M:BlogSiteHeroProjectsSocialsExample.Stage1.Run(System.String[])
 ```
 
-### 2. Fill `MyWork` with `Project` entries
+</Step>
+<Step StepNumber="2">
+
+**Fill `MyWork` with `Project` entries**
 
 `MyWork` takes a `Project[]`, where each `Project(Title, Description, Url)` renders as a linked entry in the "My Work" sidebar card. The array is rendered verbatim, so ordering entries in the initializer controls their display order.
 
@@ -47,7 +53,10 @@ T:Pennington.BlogSite.Project
 M:BlogSiteHeroProjectsSocialsExample.Stage2.Run(System.String[])
 ```
 
-### 3. Wire `Socials` with the built-in icon fragments
+</Step>
+<Step StepNumber="3">
+
+**Wire `Socials` with the built-in icon fragments**
 
 `Socials` takes a `SocialLink[]`, where `SocialLink(Icon, Url)` pairs a `RenderFragment` with an `<a href>` target. The four built-in fragments — `GithubIcon`, `BlueskyIcon`, `LinkedInIcon`, `MastodonIcon` — are `static readonly` fields on `Pennington.BlogSite.Components.SocialIcons` and are passed directly without any wrapper type or component registration.
 
@@ -59,7 +68,10 @@ T:Pennington.BlogSite.SocialLink
 src/Pennington.BlogSite/Components/SocialIcons.razor
 ```
 
-### 4. Populate `MainSiteLinks` for the top nav
+</Step>
+<Step StepNumber="4">
+
+**Populate `MainSiteLinks` for the top nav**
 
 `MainSiteLinks` takes a `HeaderLink[]`, where each `HeaderLink(Title, Url)` appears in both the site header and footer via `MainLayout.razor`. Use relative URLs (`/`, `/archive`, `/tags`) so `BaseUrlHtmlRewriter` can prefix them correctly on sub-path deployments.
 
@@ -70,6 +82,9 @@ T:Pennington.BlogSite.HeaderLink
 ```csharp:xmldocid,bodyonly
 M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])
 ```
+
+</Step>
+</Steps>
 
 ---
 

@@ -21,7 +21,10 @@ To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://gith
 
 ## Steps
 
-### 1. Declare the YAML block at the top of the file
+<Steps>
+<Step StepNumber="1">
+
+**Declare the YAML block at the top of the file**
 
 Place the YAML between two `---` fences as the very first content in the markdown file — before any heading.
 
@@ -29,7 +32,10 @@ Place the YAML between two `---` fences as the very first content in the markdow
 examples/DocSiteKitchenSinkExample/Content/main/front-matter.md
 ```
 
-### 2. Pick the built-in record that matches your host
+</Step>
+<Step StepNumber="2">
+
+**Pick the built-in record that matches your host**
 
 The record is determined by the host: `AddDocSite` binds `DocSiteFrontMatter`, `AddBlogSite` binds `BlogSiteFrontMatter`, and bare `AddPennington` accepts whichever type you pass to `AddMarkdownContent<T>`. The base doc-shaped record is `DocFrontMatter`:
 
@@ -43,7 +49,10 @@ The blog-shaped counterpart for posts:
 T:Pennington.FrontMatter.BlogFrontMatter
 ```
 
-### 3. Fill in only the keys needed
+</Step>
+<Step StepNumber="3">
+
+**Fill in only the keys needed**
 
 Every key on the built-in records has a default, so the YAML block can be as small as `title:` plus whatever the page needs — tags, order, description, uid. The DocSite template exposes the full superset via `DocSiteFrontMatter`:
 
@@ -51,7 +60,10 @@ Every key on the built-in records has a default, so the YAML block can be as sma
 T:Pennington.DocSite.DocSiteFrontMatter
 ```
 
-### 4. Define a custom record for extra keys
+</Step>
+<Step StepNumber="4">
+
+**Define a custom record for extra keys**
 
 Declare a `public record` implementing `IFrontMatter` and any relevant capability interfaces — `ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`. See <xref:reference.front-matter.ifrontmatter> for the full list of optional interfaces.
 
@@ -59,11 +71,17 @@ Declare a `public record` implementing `IFrontMatter` and any relevant capabilit
 T:DocSiteKitchenSinkExample.ApiFrontMatter
 ```
 
-### 5. Register the custom record with a markdown source
+</Step>
+<Step StepNumber="5">
+
+**Register the custom record with a markdown source**
 
 Pass the record type to `AddMarkdownContent<T>` so the pipeline deserializes the YAML into that type. `AddDocSite` and `AddBlogSite` each already register one source — chaining a second record requires bare `AddPennington` (see [Use multiple content sources](xref:how-to.configuration.multiple-sources)).
 
 <!-- TODO: xmldocid needed -->
+
+</Step>
+</Steps>
 
 ---
 

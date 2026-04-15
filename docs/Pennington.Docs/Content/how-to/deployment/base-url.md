@@ -22,7 +22,10 @@ For a working setup, see [`examples/SubPathDeployableExample`](https://github.co
 
 ## Steps
 
-### 1. Pass the base URL to `build`
+<Steps>
+<Step StepNumber="1">
+
+**Pass the base URL to `build`**
 
 `OutputOptions.FromArgs` accepts the sub-path as either a positional token or a named flag; the named flag form survives reordering in CI scripts more reliably. Include the leading slash and omit the trailing slash — the rewriter normalizes either way.
 
@@ -38,7 +41,10 @@ dotnet run -- build --base-url=/docs --output=dist
 M:Pennington.Generation.OutputOptions.FromArgs(System.String[])
 ```
 
-### 2. Know what the rewriter prefixes
+</Step>
+<Step StepNumber="2">
+
+**Know what the rewriter prefixes**
 
 `BaseUrlHtmlRewriter` runs at `Order => 30` in the `IHtmlResponseRewriter` chain — after xref resolution (10) and locale prefixing (20) — so every upstream transform hands it root-relative paths. It prefixes any `href`, `src`, or `action` attribute whose value starts with `/` (but not `//`, which is protocol-relative) and stamps `data-base-url` on `<body>` for client-side code that needs to reproduce the prefix on dynamically built URLs.
 
@@ -46,7 +52,10 @@ M:Pennington.Generation.OutputOptions.FromArgs(System.String[])
 T:Pennington.Infrastructure.BaseUrlHtmlRewriter
 ```
 
-### 3. Use root-relative links in your content
+</Step>
+<Step StepNumber="3">
+
+**Use root-relative links in your content**
 
 Because the rewriter only matches the leading `/`, protocol-relative URLs (`//cdn.example.com/x.js`) and absolute URLs (`https://…`) pass through untouched, while hash (`#section`) and page-relative links (`./neighbor/`) are ignored. The nested `/guides/first-page/` link in the example's landing page is the smallest case that makes the prefix visible — copy its shape for internal cross-links.
 
@@ -54,7 +63,10 @@ Because the rewriter only matches the leading `/`, protocol-relative URLs (`//cd
 examples/SubPathDeployableExample/Content/index.md
 ```
 
-### 4. Read `data-base-url` from client-side code
+</Step>
+<Step StepNumber="4">
+
+**Read `data-base-url` from client-side code**
 
 When an island, Blazor component, or hand-rolled script builds URLs at runtime, read the prefix from `document.body.dataset.baseUrl` rather than hard-coding `/docs`. This keeps a single build portable across hosts — the same `output/` works under `/docs` in staging and `/` in preview with no code change, only a different `--base-url`.
 
@@ -62,6 +74,9 @@ When an island, Blazor component, or hand-rolled script builds URLs at runtime, 
 const base = document.body.dataset.baseUrl ?? "";
 const href = `${base}/guides/first-page/`;
 ```
+
+</Step>
+</Steps>
 
 ---
 

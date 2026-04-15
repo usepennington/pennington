@@ -28,11 +28,17 @@ The finished code for this tutorial lives in [`examples/DocSiteAuthorExample`](h
 
 Let's start with the metadata block that drives the sidebar entry, the `<title>`, the meta description, and the tag chips. Stage 1 is front matter plus a single heading — the skeleton every later stage builds on.
 
-### Step 1.1 — Create `Content/guides/authoring.md`
+<Steps>
+<Step StepNumber="1">
+
+**Create `Content/guides/authoring.md`**
 
 In the `Guides` area folder (`Content/guides/`), create a new file named `authoring.md` and leave it empty for now. The next step fills it in.
 
-### Step 1.2 — Paste the stage-1 markdown
+</Step>
+<Step StepNumber="2">
+
+**Paste the stage-1 markdown**
 
 Copy the block below verbatim into `authoring.md`. The five keys — `title`, `description`, `tags`, `sectionLabel`, `order` — are the ones `DocSiteFrontMatter` reads to build the sidebar, meta tags, and tag chips. Everything below the closing `---` is the page body.
 
@@ -41,6 +47,9 @@ M:DocSiteAuthorExample.Stage1.Source
 ```
 
 `sectionLabel` controls the prev/next breadcrumb label shown beneath the page header; it's not what groups pages into the sidebar (subfolder layout does that). `order` decides where this page sits relative to its siblings.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Stage-1 page renders
 
@@ -54,7 +63,10 @@ M:DocSiteAuthorExample.Stage1.Source
 
 Pennington recognises the GitHub alert syntax: a block quote whose first line is `[!KIND]`. Adding one produces a coloured callout and — because the callout introduces a `##` heading above it — the first outline-nav entry.
 
-### Step 2.1 — Replace the file body with the stage-2 markdown
+<Steps>
+<Step StepNumber="1">
+
+**Replace the file body with the stage-2 markdown**
 
 Swap the current contents of `authoring.md` for the block below. It keeps the same front matter and adds a `## Callouts` section containing a `[!NOTE]` alert.
 
@@ -63,6 +75,9 @@ M:DocSiteAuthorExample.Stage2.Source
 ```
 
 The supported kinds are `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, and `CAUTION`. Pennington's `CustomAlertInlineParser` rewrites the surrounding quote block into a `markdown-alert` container so CSS can style it.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Alert and first outline entry
 
@@ -76,7 +91,10 @@ The supported kinds are `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, and `CAUTION`. Pe
 
 Marking two or more adjacent fenced code blocks with `tabs=true` and a `title="…"` fence argument tells Pennington's `TabbedCodeBlockRenderer` to group them into a single ARIA tablist. The tab labels come from each block's `title`.
 
-### Step 3.1 — Replace the file body with the stage-3 markdown
+<Steps>
+<Step StepNumber="1">
+
+**Replace the file body with the stage-3 markdown**
 
 Paste the block below over the current contents of `authoring.md`. It keeps the front matter and alert from stage 2 and adds a `## Tabbed code groups` section with three adjacent fenced blocks.
 
@@ -85,6 +103,9 @@ M:DocSiteAuthorExample.Stage3.Source
 ```
 
 Each fence still gets normal syntax highlighting based on its language (`bash`, `powershell`, `xml`). The `tabs=true` flag and `title="…"` label are what tell the tabbed renderer these three blocks belong together — drop either one and the blocks render independently.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Tabs render and outline nav populates
 

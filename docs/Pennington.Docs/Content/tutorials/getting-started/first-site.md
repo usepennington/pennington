@@ -26,7 +26,10 @@ The finished code for this tutorial lives in [`examples/GettingStartedMinimalSit
 
 First, let's create the project shell Pennington will plug into — no Pennington code yet, a plain web app that returns a string, so the changes in step 2 stand out.
 
-### Step 1.1 — Create the web project
+<Steps>
+<Step StepNumber="1">
+
+**Create the web project**
 
 Run these two commands in a working folder. The `web` template produces a minimal top-level-statement `Program.cs` — no MVC, no Razor Pages — which is the starting shape we'll edit in the steps ahead.
 
@@ -35,7 +38,10 @@ dotnet new web -n MyFirstPenningtonSite
 cd MyFirstPenningtonSite
 ```
 
-### Step 1.2 — Add the Pennington package reference
+</Step>
+<Step StepNumber="2">
+
+**Add the Pennington package reference**
 
 Add the Pennington package so the `AddPennington` extension method resolves. The backing example in this repo uses a `ProjectReference`, but for a new project this one command is enough.
 
@@ -43,13 +49,19 @@ Add the Pennington package so the `AddPennington` extension method resolves. The
 dotnet add package Pennington
 ```
 
-### Step 1.3 — Confirm the bare host runs
+</Step>
+<Step StepNumber="3">
+
+**Confirm the bare host runs**
 
 Before adding Pennington, `Program.cs` looks like this — a plain `WebApplication` with a single `MapGet` that returns a string. This is the baseline we'll build on.
 
 ```csharp:xmldocid,bodyonly
 M:GettingStartedMinimalSiteExample.Stage1.Run(System.String[])
 ```
+
+</Step>
+</Steps>
 
 ### Checkpoint — Bare host responds
 
@@ -65,7 +77,10 @@ The browser shows the literal text `Hello from ASP.NET.` — no markdown involve
 
 Now let's swap the pass-through string endpoint for the Pennington content pipeline: `AddPennington` registers the core services, `AddMarkdownContent<DocFrontMatter>` names the markdown folder, and the host gains a `ContentRootPath` it will watch for changes.
 
-### Step 2.1 — Create the Content folder and an index page
+<Steps>
+<Step StepNumber="1">
+
+**Create the Content folder and an index page**
 
 Create a `Content/` folder beside `Program.cs`, then add `index.md` with the contents below. Two things are required: a YAML front-matter block with a `title:` key, and a markdown body.
 
@@ -73,7 +88,10 @@ Create a `Content/` folder beside `Program.cs`, then add `index.md` with the con
 examples/GettingStartedMinimalSiteExample/Content/index.md
 ```
 
-### Step 2.2 — Wire `AddPennington` in `Program.cs`
+</Step>
+<Step StepNumber="2">
+
+**Wire `AddPennington` in `Program.cs`**
 
 Replace the body of `Program.cs` with the service-registration block below, which walks through `WebApplication.CreateBuilder` → `AddPennington` → `AddMarkdownContent<DocFrontMatter>` → `app.Build()`.
 
@@ -82,6 +100,9 @@ M:GettingStartedMinimalSiteExample.Stage2.Run(System.String[])
 ```
 
 `ContentRootPath` sets the host's base for static files; the `ContentPath` passed to `AddMarkdownContent` is where this particular markdown source reads from — both point at `"Content"` here.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Services resolve
 
@@ -96,7 +117,10 @@ M:GettingStartedMinimalSiteExample.Stage2.Run(System.String[])
 
 Now we mount the middleware chain with `app.UsePennington()`, add a `MapGet` that hands each request to the content pipeline, and hand control to `RunOrBuildAsync` — the same host that serves live today will generate static HTML tomorrow with no code change.
 
-### Step 3.1 — Add `UsePennington` and `RunOrBuildAsync`
+<Steps>
+<Step StepNumber="1">
+
+**Add `UsePennington` and `RunOrBuildAsync`**
 
 Update `Program.cs` to match the snapshot below.
 
@@ -106,7 +130,10 @@ M:GettingStartedMinimalSiteExample.Stage3.Run(System.String[])
 
 `UsePennington` installs static files, the response-processing middleware, live reload, and auto-registered endpoints like `/sitemap.xml`; `RunOrBuildAsync` serves live when called with no args and generates static HTML when passed `-- build`.
 
-### Step 3.2 — Add the page-rendering endpoint
+</Step>
+<Step StepNumber="2">
+
+**Add the page-rendering endpoint**
 
 The stage-3 snapshot registered services and middleware but didn't add a rendering endpoint. Here's the complete final `Program.cs`. It adds a `MapGet` that walks the `IContentService` set, finds the matching markdown, and returns rendered HTML.
 
@@ -115,6 +142,9 @@ examples/GettingStartedMinimalSiteExample/Program.cs
 ```
 
 This `MapGet` is deliberately minimal — in the DocSite and BlogSite tutorials the template ships its own Razor layout and routing, so this endpoint falls away once we move past the bare host.
+
+</Step>
+</Steps>
 
 ### Checkpoint — The page renders with its front-matter title
 
@@ -130,7 +160,10 @@ That's the working site. `dotnet run` serves live, and `http://localhost:5000/` 
 
 Let's confirm that `UsePennington`'s file-watcher and live-reload WebSocket are working: restart under `dotnet watch`, edit the markdown file, and watch the browser reload without touching the terminal.
 
-### Step 4.1 — Run under `dotnet watch`
+<Steps>
+<Step StepNumber="1">
+
+**Run under `dotnet watch`**
 
 Stop the previous `dotnet run` with `Ctrl+C`, then start the watcher. Live reload is gated on the `DOTNET_WATCH` environment variable, which `dotnet watch` sets automatically — no manual setup required. Leave `http://localhost:5000/` open in the browser.
 
@@ -138,9 +171,15 @@ Stop the previous `dotnet run` with `Ctrl+C`, then start the watcher. Live reloa
 dotnet watch
 ```
 
-### Step 4.2 — Edit the front-matter title
+</Step>
+<Step StepNumber="2">
+
+**Edit the front-matter title**
 
 Open `Content/index.md` and change the `title:` value to something recognizable — for example `title: Hello, Pennington` — then save. The browser tab updates on its own within a second. If it doesn't, hard-refresh once; stale HTML may be cached from the earlier `dotnet run`.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Live reload fires
 

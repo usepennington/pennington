@@ -26,13 +26,19 @@ The finished code for this tutorial lives in [`examples/GettingStartedStylingExa
 
 Let's confirm the baseline before touching anything. The starting point is an unstyled three-page site — the same shape built in the previous tutorial.
 
-### Step 1.1 — Run the pre-styling host
+<Steps>
+<Step StepNumber="1">
+
+**Run the pre-styling host**
 
 Here's the host as it stands at the start of this tutorial. Run it and load `/` to see the bare, unstyled HTML — no class-based styling has entered the picture yet.
 
 ```csharp:xmldocid,bodyonly
 M:GettingStartedStylingExample.Stage1.Run(System.String[])
 ```
+
+</Step>
+</Steps>
 
 ### Checkpoint — Unstyled pages render
 
@@ -45,7 +51,10 @@ M:GettingStartedStylingExample.Stage1.Run(System.String[])
 
 Before wiring MonorailCSS itself, let's create the shared `Layout.Render` helper. Its HTML carries the utility classes the class-collector reads on each response, and MonorailCSS styles them once it's registered.
 
-### Step 2.1 — Create the layout helper
+<Steps>
+<Step StepNumber="1">
+
+**Create the layout helper**
 
 Drop the `Layout` class next to `Program.cs`. The full type shows both the signature and the utility-class shell it emits.
 
@@ -54,6 +63,9 @@ T:GettingStartedStylingExample.Layout
 ```
 
 Notice that `<link rel="stylesheet" href="/styles.css">` points at an endpoint that doesn't exist yet — that's intentional. `UseMonorailCss` mounts it in section 4. Classes like `text-primary-700`, `bg-base-50`, and `border-base-200` come from the named color palette configured in the next section.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Layout file compiles
 
@@ -66,13 +78,19 @@ Notice that `<link rel="stylesheet" href="/styles.css">` points at an endpoint t
 
 Now let's add the MonorailCSS service registration, pick a named color scheme, and update the route handler to wrap every response in `Layout.Render`. The stylesheet endpoint still isn't mounted, so pages stay unstyled — that's deliberate. Keeping DI wiring separate from endpoint wiring makes it easier to pinpoint problems.
 
-### Step 3.1 — Call `AddMonorailCss` with a `NamedColorScheme`
+<Steps>
+<Step StepNumber="1">
+
+**Call `AddMonorailCss` with a `NamedColorScheme`**
 
 Here's the updated host. Each of `PrimaryColorName`, `AccentColorName`, `TertiaryOneColorName`, `TertiaryTwoColorName`, and `BaseColorName` takes a `ColorNames` value. This tutorial uses indigo/pink/cyan/amber/slate, but any `ColorNames` constant works — swap freely.
 
 ```csharp:xmldocid,bodyonly
 M:GettingStartedStylingExample.Stage2.Run(System.String[])
 ```
+
+</Step>
+</Steps>
 
 ### Checkpoint — Services registered, pages still unstyled
 
@@ -85,13 +103,19 @@ M:GettingStartedStylingExample.Stage2.Run(System.String[])
 
 One line stands between here and a live stylesheet. Adding `UseMonorailCss` to the middleware pipeline turns `/styles.css` into a real endpoint backed by the class-collector.
 
-### Step 4.1 — Call `app.UseMonorailCss()`
+<Steps>
+<Step StepNumber="1">
+
+**Call `app.UseMonorailCss()`**
 
 The updated host is Stage 2 with one line added: `app.UseMonorailCss()`. The default path is `/styles.css`, which already matches the `<link>` tag in `Layout.Render`.
 
 ```csharp:xmldocid,bodyonly
 M:GettingStartedStylingExample.Stage3.Run(System.String[])
 ```
+
+</Step>
+</Steps>
 
 ### Checkpoint — Styled pages and a live stylesheet
 
@@ -105,7 +129,10 @@ M:GettingStartedStylingExample.Stage3.Run(System.String[])
 
 Let's prove the class-collector is live. Adding a new utility class to a markdown file and reloading the browser produces a new CSS rule without a server restart.
 
-### Step 5.1 — Add a new utility class to a page
+<Steps>
+<Step StepNumber="1">
+
+**Add a new utility class to a page**
 
 Open `Content/about.md` and add the following line anywhere in the body:
 
@@ -115,9 +142,15 @@ Open `Content/about.md` and add the following line anywhere in the body:
 
 The class `text-accent-600` wasn't in the layout, so it doesn't yet exist in the stylesheet.
 
-### Step 5.2 — Reload and confirm the new rule
+</Step>
+<Step StepNumber="2">
+
+**Reload and confirm the new rule**
 
 Now reload `/about` in the browser. The paragraph renders in pink italic because MonorailCSS regenerated the stylesheet on the next `/styles.css` request after the new class flowed through the collector. Reload `/styles.css` directly and the `text-accent-600` rule is present.
+
+</Step>
+</Steps>
 
 ### Checkpoint — New class, new rule, no restart
 

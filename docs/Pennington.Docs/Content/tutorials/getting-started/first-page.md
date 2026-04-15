@@ -29,7 +29,10 @@ The finished code for this tutorial lives in [`examples/GettingStartedFirstPageE
 
 Starting from the minimal site built in the previous tutorial, this step adds a real front-matter block and turns a single markdown file into a routed, titled page.
 
-### Step 1.1 — Drop `Content/index.md` into the project
+<Steps>
+<Step StepNumber="1">
+
+**Drop `Content/index.md` into the project**
 
 Create a `Content/` folder at the project root if it isn't there yet — the previous tutorial already pointed `ContentRootPath` there. Add a file named `index.md` with a YAML front-matter block between two `---` fences. Pennington's `FrontMatterParser` reads that block into a `DocFrontMatter` record; `title` is the only key required to render a page. Any markdown body works below the closing fence.
 
@@ -39,7 +42,10 @@ examples/GettingStartedFirstPageExample/Content/index.md
 
 The `title:` value flows to both the HTML `<title>` tag and the nav link label. For the full range of front-matter capability interfaces, see <xref:explanation.core.front-matter-capabilities> — for now, `title` is enough.
 
-### Step 1.2 — Confirm the host from the previous tutorial is unchanged
+</Step>
+<Step StepNumber="2">
+
+**Confirm the host from the previous tutorial is unchanged**
 
 `Program.cs` calls `AddPennington`, registers `AddMarkdownContent<DocFrontMatter>`, applies `UsePennington`, and maps every route with a single `MapGet("/{*path}", ...)` that walks `IContentService` instances. The only addition since the previous tutorial is a `NavigationBuilder` injection — nothing else changes for the rest of this tutorial.
 
@@ -48,6 +54,9 @@ M:GettingStartedFirstPageExample.Stage1.Run(System.String[])
 ```
 
 Notice the `NavigationBuilder.BuildTree(tocItems)` call and the string join that becomes `navHtml` — that's the piece that grows in later steps without any edits.
+
+</Step>
+</Steps>
 
 ### Checkpoint — A single page renders at `/`
 
@@ -61,7 +70,10 @@ Notice the `NavigationBuilder.BuildTree(tocItems)` call and the string join that
 
 Now let's add a second file and watch Pennington map the on-disk path straight to a route — no router-table edits required.
 
-### Step 2.1 — Add `Content/about.md` with its own front matter
+<Steps>
+<Step StepNumber="1">
+
+**Add `Content/about.md` with its own front matter**
 
 Create `about.md` in the same `Content/` folder. The filename (minus `.md`) becomes the URL segment: `about.md` serves at `/about`. Set `order: 20` so this file sorts predictably when the third one arrives. A short body — a paragraph or two — is enough.
 
@@ -71,7 +83,10 @@ examples/GettingStartedFirstPageExample/Content/about.md
 
 Keep an eye on the `order: 20` line — its role becomes apparent once the third file lands in step 3.
 
-### Step 2.2 — Reload and confirm the host code is still the same
+</Step>
+<Step StepNumber="2">
+
+**Reload and confirm the host code is still the same**
 
 The Stage 2 host method delegates entirely to `Stage1.Run` — zero code changes between steps 1 and 2. The only thing that moved was a file on disk.
 
@@ -80,6 +95,9 @@ M:GettingStartedFirstPageExample.Stage2.Run(System.String[])
 ```
 
 `Stage2.Run(args) => Stage1.Run(args)` is intentional — the point is that the host is untouched.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Two pages, two nav entries, zero code edits
 
@@ -93,7 +111,10 @@ M:GettingStartedFirstPageExample.Stage2.Run(System.String[])
 
 With two pages confirmed, let's add a third and see both URL mapping and front-matter ordering click into place together.
 
-### Step 3.1 — Add `Content/contact.md` with `order: 30`
+<Steps>
+<Step StepNumber="1">
+
+**Add `Content/contact.md` with `order: 30`**
 
 The `order:` field is how Pennington sorts siblings in the nav tree. Setting `order: 30` here — higher than About's `order: 20` — places Contact after About. The root `index.md` carries no `order:` and sorts first by convention.
 
@@ -103,7 +124,10 @@ examples/GettingStartedFirstPageExample/Content/contact.md
 
 The example body invites a filename rename — that's coming in step 3.3.
 
-### Step 3.2 — Confirm the host is still unchanged in Stage 3
+</Step>
+<Step StepNumber="2">
+
+**Confirm the host is still unchanged in Stage 3**
 
 Stage 3 also delegates to `Stage1.Run`. Three files on disk, one host method, nothing edited between any of the stages.
 
@@ -113,9 +137,15 @@ M:GettingStartedFirstPageExample.Stage3.Run(System.String[])
 
 The `NavigationBuilder` injected back in step 1.2 is what produces the three-item nav — it's been at work the whole time.
 
-### Step 3.3 — Rename `contact.md` to see the URL follow the file
+</Step>
+<Step StepNumber="3">
+
+**Rename `contact.md` to see the URL follow the file**
 
 With the host running, rename `Content/contact.md` to `Content/reach-out.md`. On the next request the nav link's href becomes `/reach-out` — no config, no restart. This is file-path-to-URL mapping in action. Rename it back to `contact.md` before continuing so later tutorials match.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Three pages, sorted by front matter
 

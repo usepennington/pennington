@@ -21,11 +21,17 @@ For a working DocSite multi-area setup, see [`examples/DocSiteKitchenSinkExample
 
 ## Steps
 
-### 1. Decide: DocSite areas, or chained `AddMarkdownContent` calls?
+<Steps>
+<Step StepNumber="1">
+
+**Decide: DocSite areas, or chained `AddMarkdownContent` calls?**
 
 `AddDocSite` owns exactly one markdown pipeline keyed on `DocSiteFrontMatter`; use `ContentArea[]` on `DocSiteOptions.Areas` to split it into folder-scoped sub-trees (continue to step 2). For two different front-matter types, or for a site already on bare `AddPennington`, chain `AddMarkdownContent<T>` calls instead (jump to step 4).
 
-### 2. (DocSite) Declare the areas
+</Step>
+<Step StepNumber="2">
+
+**(DocSite) Declare the areas**
 
 Each `ContentArea` slug becomes both the URL prefix and the top-level folder under `ContentRootPath`.
 
@@ -33,7 +39,10 @@ Each `ContentArea` slug becomes both the URL prefix and the top-level folder und
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildAreas
 ```
 
-### 3. (DocSite) Wire the areas onto `DocSiteOptions.Areas`
+</Step>
+<Step StepNumber="3">
+
+**(DocSite) Wire the areas onto `DocSiteOptions.Areas`**
 
 Assign the areas array when building `DocSiteOptions` — the relevant property is `Areas = BuildAreas()`.
 
@@ -43,7 +52,10 @@ M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions
 
 Skip to **Verify**.
 
-### 4. (Bare Pennington) Register the first markdown source
+</Step>
+<Step StepNumber="4">
+
+**(Bare Pennington) Register the first markdown source**
 
 Call `AddMarkdownContent<TFrontMatter>` inside `AddPennington` with a `ContentPath` that roots the first tree, a distinct `BasePageUrl`, and an optional `SectionLabel` to group the source's pages in navigation.
 
@@ -51,7 +63,10 @@ Call `AddMarkdownContent<TFrontMatter>` inside `AddPennington` with a `ContentPa
 M:MultipleSourcesExample.ServiceConfiguration.RegisterDocSource(Pennington.Infrastructure.MarkdownContentOptions)
 ```
 
-### 5. (Bare Pennington) Register the second markdown source
+</Step>
+<Step StepNumber="5">
+
+**(Bare Pennington) Register the second markdown source**
 
 Point the second `AddMarkdownContent<T>` at a different `ContentPath` and `BasePageUrl`; the front-matter type can differ from the first source.
 
@@ -59,13 +74,19 @@ Point the second `AddMarkdownContent<T>` at a different `ContentPath` and `BaseP
 M:MultipleSourcesExample.ServiceConfiguration.RegisterBlogSource(Pennington.Infrastructure.MarkdownContentOptions)
 ```
 
-### 6. (Optional) Carve out an overlapping subtree with `ExcludePaths`
+</Step>
+<Step StepNumber="6">
+
+**(Optional) Carve out an overlapping subtree with `ExcludePaths`**
 
 When one source's `ContentPath` is a parent of another's, Pennington emits an overlap warning at startup because both pipelines would discover the inner tree and produce conflicting outputs. Adding `ExcludePaths` on the broader source gives the specialised source exclusive ownership of that subtree.
 
 ```csharp:xmldocid,bodyonly
 M:MultipleSourcesExample.ServiceConfiguration.RegisterOverlappingDocSource(Pennington.Infrastructure.MarkdownContentOptions)
 ```
+
+</Step>
+</Steps>
 
 ---
 

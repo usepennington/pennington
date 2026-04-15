@@ -29,7 +29,10 @@ The finished code for this tutorial lives in [`examples/BeyondLocaleExample`](ht
 
 Start with a plain DocSite host serving three English pages from `Content/` — no localization, no switcher. A clear baseline makes the contrast obvious when localization arrives in section 2.
 
-### Step 1.1 — Confirm the English-only host
+<Steps>
+<Step StepNumber="1">
+
+**Confirm the English-only host**
 
 Here's the starting host. There is no `ConfigureLocalization` action on `DocSiteOptions`. That means `LocalizationOptions.IsMultiLocale` is false, `UseDocSite`'s built-in `UsePenningtonLocaleRouting` is a no-op, and the built-in `LanguageSwitcher` in `MainLayout.razor` renders nothing.
 
@@ -39,7 +42,10 @@ M:BeyondLocaleExample.Stage1.Run(System.String[])
 
 `UseDocSite()` already calls `UsePenningtonLocaleRouting` internally, so no direct call is needed at any point in this tutorial.
 
-### Step 1.2 — Drop the three English pages into `Content/`
+</Step>
+<Step StepNumber="2">
+
+**Drop the three English pages into `Content/`**
 
 Place `index.md`, `about.md`, and `getting-started.md` directly under `Content/`. These are the default-locale pages — they own the URL root. No locale subfolder belongs here yet.
 
@@ -55,6 +61,9 @@ examples/BeyondLocaleExample/Content/about.md
 examples/BeyondLocaleExample/Content/getting-started.md
 ```
 
+</Step>
+</Steps>
+
 ### Checkpoint — Three English pages, no switcher
 
 - Run `dotnet run` from `examples/BeyondLocaleExample`
@@ -67,7 +76,10 @@ examples/BeyondLocaleExample/Content/getting-started.md
 
 Now let's make the site aware of Spanish. A single `ConfigureLocalization` action on `DocSiteOptions` names `"en"` as the default and registers `"es"` as a second locale. That one change activates every piece of locale routing, link rewriting, and UI chrome downstream.
 
-### Step 2.1 — Add the `ConfigureLocalization` action to `DocSiteOptions`
+<Steps>
+<Step StepNumber="1">
+
+**Add the `ConfigureLocalization` action to `DocSiteOptions`**
 
 Here's the updated host:
 
@@ -85,9 +97,15 @@ The new action has three pieces:
 
 Once `Locales` contains more than one entry, [`LocalizationOptions.IsMultiLocale`](xref:reference.options.localization-options) flips to `true`. That single boolean gates the switcher, the locale detection middleware, and the per-locale search index.
 
-### Step 2.2 — Leave `UseDocSite()` alone
+</Step>
+<Step StepNumber="2">
+
+**Leave `UseDocSite()` alone**
 
 There's no need to add `app.UsePenningtonLocaleRouting()` to `Program.cs`. `UseDocSite` already calls it internally. Now that `IsMultiLocale` is true, the middleware rewrites `/es/<path>` requests into `<path>` with `PathBase = "/es"` so Blazor routing sees the stripped path.
+
+</Step>
+</Steps>
 
 ### Checkpoint — The switcher appears, but Spanish URLs still 404
 
@@ -101,7 +119,10 @@ There's no need to add `app.UsePenningtonLocaleRouting()` to `Program.cs`. `UseD
 
 Now let's give Spanish its content. Mirror the three English pages under a `Content/es/` subfolder — same file names, same front-matter keys, translated body copy. The content resolver matches each Spanish URL to the corresponding Spanish file.
 
-### Step 3.1 — Create `Content/es/` and translate `index.md`
+<Steps>
+<Step StepNumber="1">
+
+**Create `Content/es/` and translate `index.md`**
 
 Create the `Content/es/` subfolder and add `index.md` with Spanish front-matter and Spanish body copy. The load-bearing rule: **the subfolder name matches the locale code passed to `AddLocale`** — `es` here, because that is the code registered in step 2.1. Files under `Content/es/` serve from `/es/*`; files directly under `Content/` serve from `/*`.
 
@@ -109,7 +130,10 @@ Create the `Content/es/` subfolder and add `index.md` with Spanish front-matter 
 examples/BeyondLocaleExample/Content/es/index.md
 ```
 
-### Step 3.2 — Translate `about.md` and `getting-started.md`
+</Step>
+<Step StepNumber="2">
+
+**Translate `about.md` and `getting-started.md`**
 
 Repeat the move for the two remaining pages. Each Spanish file keeps the same filename as its English sibling; URL routing derives the path from the filename, not from any front-matter key.
 
@@ -123,6 +147,9 @@ examples/BeyondLocaleExample/Content/es/about.md
 examples/BeyondLocaleExample/Content/es/getting-started.md
 ```
 
+</Step>
+</Steps>
+
 ### Checkpoint — Spanish URLs serve Spanish content
 
 - With the host still running, visit `http://localhost:5000/es/` — the page renders in Spanish with no fallback banner
@@ -135,7 +162,10 @@ examples/BeyondLocaleExample/Content/es/getting-started.md
 
 The [`LanguageSwitcher`](xref:reference.ui.utility) component is already baked into DocSite's `MainLayout.razor`. Now let's verify that it swaps locales in place by rewriting the current URL, landing on the same page in the other language rather than bouncing back to the home page.
 
-### Step 4.1 — Confirm the final host shape matches `Program.cs`
+<Steps>
+<Step StepNumber="1">
+
+**Confirm the final host shape matches `Program.cs`**
 
 Here's the final host — identical to what section 2 produced. This is a sanity-check step, not a new code change. Nothing in `UseDocSite()` or `RunDocSiteAsync(args)` changes when a second locale is added.
 
@@ -143,9 +173,15 @@ Here's the final host — identical to what section 2 produced. This is a sanity
 M:BeyondLocaleExample.Stage3.Run(System.String[])
 ```
 
-### Step 4.2 — Click the switcher from `/es/about`
+</Step>
+<Step StepNumber="2">
+
+**Click the switcher from `/es/about`**
 
 Navigate to `http://localhost:5000/es/about`, open the language switcher in the header, and click *English*. The URL becomes `http://localhost:5000/about`. The switcher strips the `/es` prefix because English is the default locale and preserves the rest of the path, so the About page stays in view. That URL rewriting is the switcher's entire job — no client-side state, no cookies involved.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Locale switching preserves the current page
 

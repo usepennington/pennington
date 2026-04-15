@@ -33,7 +33,10 @@ To copy a working setup, see [`examples/_ExampleProjectName_`](https://github.co
 
 _Numbered, terse, verb-first. Aim for 3–7 steps. More than 7 means the page is really a tutorial._
 
-### 1. _Action verb + target_
+<Steps>
+<Step StepNumber="1">
+
+**_Action verb + target_**
 
 _One sentence of context if needed. Otherwise skip straight to the code._
 
@@ -41,7 +44,10 @@ _One sentence of context if needed. Otherwise skip straight to the code._
 M:_ExampleProjectName_._Type_._Member_
 ```
 
-### 2. _Next action_
+</Step>
+<Step StepNumber="2">
+
+**_Next action_**
 
 _One-sentence rationale only if non-obvious._
 
@@ -49,7 +55,10 @@ _One-sentence rationale only if non-obvious._
 T:_ExampleProjectName_._Type_
 ```
 
-### 3. _Next action_
+</Step>
+<Step StepNumber="3">
+
+**_Next action_**
 
 _Add markdown / YAML / config snippets using plain fences when they are not C# symbols:_
 
@@ -57,6 +66,9 @@ _Add markdown / YAML / config snippets using plain fences when they are not C# s
 title: Sample Page
 description: Short description
 ```
+
+</Step>
+</Steps>
 
 ---
 

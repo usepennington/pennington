@@ -21,7 +21,10 @@ To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://gith
 
 ## Steps
 
-### 1. Mark adjacent fences with `tabs=true title="..."`
+<Steps>
+<Step StepNumber="1">
+
+**Mark adjacent fences with `tabs=true title="..."`**
 
 Add `tabs=true` and a `title="..."` attribute to the info string of two or more adjacent fenced code blocks. The extension walks the document, finds consecutive `FencedCodeBlock`s whose `tabs` attribute equals `"true"`, and folds them into a single tablist. The `title` value becomes the tab label; the language token before the attributes still drives syntax highlighting.
 
@@ -29,7 +32,10 @@ Add `tabs=true` and a `title="..."` attribute to the info string of two or more 
 examples/DocSiteKitchenSinkExample/Content/main/tabbed-code.md
 ```
 
-### 2. Keep the blocks adjacent — no prose in between
+</Step>
+<Step StepNumber="2">
+
+**Keep the blocks adjacent — no prose in between**
 
 The grouping logic only collapses fences that sit next to each other in the block stream. A paragraph, heading, or blank-lined HTML element between two fences splits the group into two separate tablists. The first tab in each group renders active by default.
 
@@ -37,7 +43,10 @@ The grouping logic only collapses fences that sit next to each other in the bloc
 T:Pennington.Markdown.Extensions.Tabs.TabbedCodeBlock
 ```
 
-### 3. Inspect the default render options
+</Step>
+<Step StepNumber="3">
+
+**Inspect the default render options**
 
 The rendered HTML gets its CSS class names from `TabbedCodeBlockRenderOptions`. The `Default` instance ships with `not-prose` on the outer wrapper plus `tab-container`, `tab-list`, `tab-button`, and `tab-panel` on the nested elements — enough for the MonorailCSS preset to style them without extra work.
 
@@ -45,13 +54,19 @@ The rendered HTML gets its CSS class names from `TabbedCodeBlockRenderOptions`. 
 T:Pennington.Markdown.Extensions.Tabs.TabbedCodeBlockRenderOptions
 ```
 
-### 4. Override the class names for custom CSS
+</Step>
+<Step StepNumber="4">
+
+**Override the class names for custom CSS**
 
 Set `PenningtonOptions.TabbedCodeBlockOptions` to a `Func<TabbedCodeBlockRenderOptions>` returning a modified `with` expression. The factory replaces the `Default` shape on the pipeline's single registration of the tabbed extension, so every rendered page picks up the new class names. This works identically on `AddPennington`, `AddDocSite`, and `AddBlogSite` because each surface plumbs the same property through to the pipeline factory.
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.TabbedCodeBlockStyling.ConfigureTabbedCodeBlocksOverride(Pennington.Infrastructure.PenningtonOptions)
 ```
+
+</Step>
+</Steps>
 
 ---
 

@@ -21,7 +21,10 @@ For a working setup, see [`examples/ExtensibilityLabExample`](https://github.com
 
 ## Steps
 
-### 1. Implement `ICodeHighlighter`
+<Steps>
+<Step StepNumber="1">
+
+**Implement `ICodeHighlighter`**
 
 The contract requires three members: `SupportedLanguages`, `Priority`, and `Highlight(code, language)`. The example below wraps keywords, arrows, and string literals in classed `<span>` elements and HTML-encodes everything else.
 
@@ -29,7 +32,10 @@ The contract requires three members: `SupportedLanguages`, `Priority`, and `High
 T:ExtensibilityLabExample.PipelineHighlighter
 ```
 
-### 2. Declare `SupportedLanguages`
+</Step>
+<Step StepNumber="2">
+
+**Declare `SupportedLanguages`**
 
 Every language token returned here maps to a fence language (for example, ` ```pipeline `) that routes to the highlighter. Use `StringComparer.OrdinalIgnoreCase` to match `Pipeline` and `PIPELINE` as well.
 
@@ -37,7 +43,10 @@ Every language token returned here maps to a fence language (for example, ` ```p
 P:ExtensibilityLabExample.PipelineHighlighter.SupportedLanguages
 ```
 
-### 3. Set `Priority`
+</Step>
+<Step StepNumber="3">
+
+**Set `Priority`**
 
 Higher priority wins when multiple highlighters claim the same language. The built-in chain places `PlainTextHighlighter` at 0, `TextMateHighlighter` at 50, and `ShellHighlighter` at 75. The example uses 100 so the `pipeline` fence routes here even if a future TextMate grammar also claims it, while leaving room below for any secondary fallbacks that ship alongside.
 
@@ -45,7 +54,10 @@ Higher priority wins when multiple highlighters claim the same language. The bui
 P:ExtensibilityLabExample.PipelineHighlighter.Priority
 ```
 
-### 4. Produce the fence HTML in `Highlight`
+</Step>
+<Step StepNumber="4">
+
+**Produce the fence HTML in `Highlight`**
 
 `Highlight` receives the raw fence body and the language token and returns the full HTML for the block, including the outer `<pre><code>` wrapper — the same convention the built-in highlighters follow. HTML-encode every character not explicitly wrapped in a span; the pipeline example uses `WebUtility.HtmlEncode` on every literal path to prevent injection.
 
@@ -53,7 +65,10 @@ P:ExtensibilityLabExample.PipelineHighlighter.Priority
 M:ExtensibilityLabExample.PipelineHighlighter.Highlight(System.String,System.String)
 ```
 
-### 5. Register with `HighlightingOptions.AddHighlighter`
+</Step>
+<Step StepNumber="5">
+
+**Register with `HighlightingOptions.AddHighlighter`**
 
 `PenningtonOptions.Highlighting` exposes an `AddHighlighter` overload that inserts the instance into the priority-sorted chain resolved by `HighlightingService`. Call it inside the `AddPennington` delegate so the highlighter is active for both `dotnet run` and `dotnet run -- build output`.
 
@@ -61,7 +76,10 @@ M:ExtensibilityLabExample.PipelineHighlighter.Highlight(System.String,System.Str
 M:Pennington.Infrastructure.HighlightingOptions.AddHighlighter(Pennington.Highlighting.ICodeHighlighter)
 ```
 
-### 6. Author a fence that targets your language
+</Step>
+<Step StepNumber="6">
+
+**Author a fence that targets your language**
 
 Any markdown fence tagged with one of the strings from `SupportedLanguages` now routes to the custom highlighter instead of the fallback chain.
 
@@ -70,6 +88,9 @@ Any markdown fence tagged with one of the strings from `SupportedLanguages` now 
 source "orders" -> filter where=paid | transform total=sum | sink "warehouse"
 ```
 ```
+
+</Step>
+</Steps>
 
 ---
 

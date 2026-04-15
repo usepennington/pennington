@@ -21,7 +21,10 @@ For a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.c
 
 ## Steps
 
-### 1. Highlight a single line
+<Steps>
+<Step StepNumber="1">
+
+**Highlight a single line**
 
 Append `// [!code highlight]` to the line for emphasis, swapping the comment marker to match the fenced language (`#` for YAML, `--` for SQL). The transformer strips the directive and adds the `highlight` class to the `.line` span.
 
@@ -34,7 +37,10 @@ public int Add(int a, int b)
 ```
 ````
 
-### 2. Mark lines as added or removed (diff)
+</Step>
+<Step StepNumber="2">
+
+**Mark lines as added or removed (diff)**
 
 Use `[!code ++]` for added lines and `[!code --]` for removed lines. Each directive is replaced with a `diff-add` or `diff-remove` class on the `.line` span so the stylesheet can paint the gutter.
 
@@ -51,7 +57,10 @@ public int OldWay(int a, int b) // [!code --]
 ```
 ````
 
-### 3. Focus one line and dim the rest
+</Step>
+<Step StepNumber="3">
+
+**Focus one line and dim the rest**
 
 Add `[!code focus]` to the line (or lines) worth zeroing in on. Every other line receives a `dimmed` class so the focused line stands out.
 
@@ -63,7 +72,10 @@ config.Save();
 ```
 ````
 
-### 4. Flag errors and warnings
+</Step>
+<Step StepNumber="4">
+
+**Flag errors and warnings**
 
 Use `[!code error]` and `[!code warning]` to surface diagnostics inline. The transformer applies `error` and `warning` classes to the respective lines so they render like compiler output.
 
@@ -74,13 +86,19 @@ var length = path.Length; // [!code warning]
 ```
 ````
 
-### 5. Confirm directives are stripped from the final HTML
+</Step>
+<Step StepNumber="5">
+
+**Confirm directives are stripped from the final HTML**
 
 The `CodeTransformer` post-processes the highlighter output: it promotes each directive's class onto the enclosing `.line` span and deletes the trailing comment, so the rendered code stays clean. The fixture below shows all four directives end-to-end as they appear in source markdown.
 
 ```markdown:path
 examples/DocSiteKitchenSinkExample/Content/main/code-annotations.md
 ```
+
+</Step>
+</Steps>
 
 ---
 

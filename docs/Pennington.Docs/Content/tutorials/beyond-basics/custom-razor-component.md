@@ -30,7 +30,10 @@ The finished code for this tutorial lives in [`examples/BeyondCustomRazorCompone
 
 Before Mdazor can render a custom tag from markdown, a real Razor component has to exist in the project. This unit adds `Components/PricingCard.razor` and a top-level `_Imports.razor` so `[Parameter]` is in scope without per-file `@using` lines.
 
-### Step 1.1 — Add a project-wide `_Imports.razor`
+<Steps>
+<Step StepNumber="1">
+
+**Add a project-wide `_Imports.razor`**
 
 Drop an `_Imports.razor` file at the project root so every `.razor` file in the project gets the Blazor component namespaces. This is the same file a Blazor template ships with — the two `@using` lines are what make `[Parameter]` resolve inside the component file in the next step.
 
@@ -38,7 +41,10 @@ Drop an `_Imports.razor` file at the project root so every `.razor` file in the 
 examples/BeyondCustomRazorComponentExample/_Imports.razor
 ```
 
-### Step 1.2 — Create `Components/PricingCard.razor`
+</Step>
+<Step StepNumber="2">
+
+**Create `Components/PricingCard.razor`**
 
 Create a `Components/` folder and add `PricingCard.razor` with four `[Parameter]` properties — `Tier`, `Price`, `Features`, and `Highlighted` — and markup that renders a pricing card with a "Most Popular" badge when highlighted. The `Features` parameter is a pipe-delimited string because Mdazor binds only primitive parameter types from markdown attributes; lists arrive as strings and are split inside the component.
 
@@ -47,6 +53,9 @@ M:BeyondCustomRazorComponentExample.Stage1.Source
 ```
 
 The file is a regular Blazor component — there is nothing Pennington-specific about it yet. Mdazor discovers it in the next unit.
+
+</Step>
+</Steps>
 
 ### Checkpoint — The component compiles but markdown cannot see it
 
@@ -58,7 +67,10 @@ Run `dotnet build` from `examples/BeyondCustomRazorComponentExample`. The build 
 
 DocSite already calls `AddMdazor()` and registers the built-in Pennington.UI components. The only remaining step is one `AddMdazorComponent<PricingCard>()` line so Mdazor's registry knows about the new type.
 
-### Step 2.1 — Add `AddMdazorComponent<PricingCard>()` to `Program.cs`
+<Steps>
+<Step StepNumber="1">
+
+**Add `AddMdazorComponent<PricingCard>()` to `Program.cs`**
 
 Open `Program.cs` and add a single `builder.Services.AddMdazorComponent<PricingCard>()` line after the `AddDocSite` block. The extension lives in the `Mdazor` namespace and ships from the `Mdazor` NuGet package, already transitively referenced through `Pennington.DocSite` — no package add required.
 
@@ -68,9 +80,15 @@ M:BeyondCustomRazorComponentExample.Stage2.Run(System.String[])
 
 `AddMdazorComponent<T>()` returns `IServiceCollection`, so additional component registrations can chain off the same call. That becomes handy when registering several custom components at once.
 
-### Step 2.2 — Confirm the host still boots
+</Step>
+<Step StepNumber="2">
+
+**Confirm the host still boots**
 
 Run the DocSite host to verify the extra DI line did not break startup. No markdown change has been made yet, so the site renders exactly as it did before — the new wiring stays invisible until a page consumes the tag.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Mdazor knows about PricingCard
 
@@ -82,7 +100,10 @@ Run `dotnet run` from `examples/BeyondCustomRazorComponentExample` and visit `ht
 
 Now let's add a markdown page that uses `<PricingCard />` twice with different attribute values, exercising both the default and highlighted visual states of the component.
 
-### Step 3.1 — Create `Content/pricing.md`
+<Steps>
+<Step StepNumber="1">
+
+**Create `Content/pricing.md`**
 
 Add a new markdown page under `Content/` with front matter (`title: Pricing`, `description:`, `order: 20`) and two `<PricingCard ... />` tags between headings. The first card uses `Tier="Basic" Price="9"`; the second adds `Highlighted="true"` and richer feature text.
 
@@ -92,9 +113,15 @@ examples/BeyondCustomRazorComponentExample/Content/pricing.md
 
 Two rules govern how the page works. Tag-name matching is case-sensitive on the leading character — `<PricingCard>` must start with a capital letter to be treated as a component candidate. Attribute-to-parameter binding is case-insensitive via reflection, so `Tier="Pro"` binds to `[Parameter] public string Tier` regardless of casing.
 
-### Step 3.2 — Refresh the pricing page in the browser
+</Step>
+<Step StepNumber="2">
+
+**Refresh the pricing page in the browser**
 
 With `dotnet run` still active, open `http://localhost:5000/pricing`. Mdazor intercepts each `<PricingCard ... />` tag, looks up the registered type, instantiates it, assigns parameters from the attributes, renders the component through Blazor's server-side `HtmlRenderer`, and inlines the resulting HTML back into the Markdig pipeline's output.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Two cards render on the pricing page
 
@@ -106,13 +133,22 @@ Visit `http://localhost:5000/pricing`. Two pricing cards appear: a plain **Basic
 
 Now let's confirm the markdown-to-parameter binding is real by editing attribute values in the markdown and watching the rendered output change — this is the whole authoring loop.
 
-### Step 4.1 — Edit the Pro card to change `Price` and `Features`
+<Steps>
+<Step StepNumber="1">
+
+**Edit the Pro card to change `Price` and `Features`**
 
 In `Content/pricing.md`, change `Price="49"` to `Price="99"` and extend the `Features=""` string with an extra pipe-separated entry (for example, `"...|24/7 chat support"`). Save the file.
 
-### Step 4.2 — Flip `Highlighted` on the Basic card
+</Step>
+<Step StepNumber="2">
+
+**Flip `Highlighted` on the Basic card**
 
 Add `Highlighted="true"` to the first `<PricingCard Tier="Basic" ... />` tag. Boolean attribute values from markdown bind with case-insensitive `true` / `false` — `Highlighted="True"` and `Highlighted="true"` both flip the card into its emphasised state.
+
+</Step>
+</Steps>
 
 ### Checkpoint — The rendered cards reflect the edits
 

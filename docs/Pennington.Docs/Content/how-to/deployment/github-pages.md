@@ -22,11 +22,17 @@ For a working setup, see [`examples/SubPathDeployableExample`](https://github.co
 
 ## Steps
 
-### 1. Enable GitHub Pages with the Actions source
+<Steps>
+<Step StepNumber="1">
+
+**Enable GitHub Pages with the Actions source**
 
 In the repo settings, switch **Pages → Build and deployment → Source** to **GitHub Actions** so the deploy workflow is authorized to publish. Also confirm the three workflow permissions the deploy action needs — `contents: read`, `pages: write`, `id-token: write` — are not blocked at the organization level. The workflow declares them explicitly, but an org-wide deny overrides that.
 
-### 2. Drop in the canonical workflow
+</Step>
+<Step StepNumber="2">
+
+**Drop in the canonical workflow**
 
 Commit the YAML below to `.github/workflows/deploy.yml` at the repo root. It pins `actions/setup-dotnet@v4` to .NET 11, derives the base URL from `${{ github.event.repository.name }}` so the same file works on forks and renames, runs `dotnet run -- build "$BASE_URL"`, writes `.nojekyll`, and hands `output/` to `actions/upload-pages-artifact@v3` and `actions/deploy-pages@v4`.
 
@@ -34,15 +40,24 @@ Commit the YAML below to `.github/workflows/deploy.yml` at the repo root. It pin
 examples/SubPathDeployableExample/.github/workflows/deploy.yml
 ```
 
-### 3. Point the `--project` path at your site
+</Step>
+<Step StepNumber="3">
+
+**Point the `--project` path at your site**
 
 The template targets `examples/SubPathDeployableExample`; edit the `--project` argument and any `working-directory` references so the `dotnet run` step points at the correct csproj. For repos that host multiple buildable projects, add `actions/cache@v4` over `~/.nuget/packages` if NuGet restore takes more than a minute — `--configuration Release` is already set.
 
-### 4. Keep `.nojekyll` in the artifact
+</Step>
+<Step StepNumber="4">
+
+**Keep `.nojekyll` in the artifact**
 
 GitHub Pages runs content through Jekyll by default, which silently strips any path starting with an underscore — that removes Pennington's `_content/` copy folder and SPA `_spa-data/` payloads. The `touch output/.nojekyll` step in the workflow disables Jekyll processing; leave it in place.
 
-### 5. Match the build `baseUrl` to the Pages URL
+</Step>
+<Step StepNumber="5">
+
+**Match the build `baseUrl` to the Pages URL**
 
 Project Pages sites serve at `https://<user>.github.io/<repo>/`, so the workflow passes `/<repo>` as the first positional `build` argument and `BaseUrlHtmlRewriter` prefixes every internal `href`, `src`, and `action` on the way out. For sites at an org-level root or a custom apex domain, replace the `BASE_URL` env with an empty string and drop the argument entirely. Sub-path wiring is covered in <xref:how-to.deployment.base-url>.
 
@@ -50,7 +65,10 @@ Project Pages sites serve at `https://<user>.github.io/<repo>/`, so the workflow
 T:Pennington.Infrastructure.BaseUrlHtmlRewriter
 ```
 
-### 6. (Optional) Fail CI on a bad `BuildReport`
+</Step>
+<Step StepNumber="6">
+
+**(Optional) Fail CI on a bad `BuildReport`**
 
 `RunOrBuildAsync` already sets a non-zero exit code on errors, so the workflow fails fast on broken pages. For stricter semantics — failing the main-branch build on broken xrefs while letting warnings pass on feature branches — wrap the call and write the report to stdout.
 
@@ -61,6 +79,9 @@ M:SubPathDeployableExample.BuildHost.RunOrBuildAsync(Microsoft.AspNetCore.Builde
 ```csharp:xmldocid,bodyonly
 M:SubPathDeployableExample.BuildHost.PrintBuildReport(Pennington.Generation.BuildReport)
 ```
+
+</Step>
+</Steps>
 
 ---
 

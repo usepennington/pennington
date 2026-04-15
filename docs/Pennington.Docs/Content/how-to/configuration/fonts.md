@@ -21,11 +21,17 @@ For a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.c
 
 ## Steps
 
-### 1. Drop font files into `wwwroot/fonts/`
+<Steps>
+<Step StepNumber="1">
+
+**Drop font files into `wwwroot/fonts/`**
 
 Place each `.woff2` file under `wwwroot/fonts/`. `UsePennington` wires `UseStaticFiles`, so each file becomes available at `/fonts/<file>.woff2`. The kitchen-sink example references `/fonts/display.woff2` and `/fonts/body.woff2`; supply your own files at those paths (the example does not ship font binaries).
 
-### 2. Register `@font-face` rules via `ExtraStyles`
+</Step>
+<Step StepNumber="2">
+
+**Register `@font-face` rules via `ExtraStyles`**
 
 Emit the `@font-face` declarations into the generated stylesheet by returning them from an `ExtraStyles` helper. MonorailCSS appends this content verbatim above its utility output, with each `src:` pointing at the `/fonts/...` path you exposed in step 1.
 
@@ -33,7 +39,10 @@ Emit the `@font-face` declarations into the generated stylesheet by returning th
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildExtraStyles
 ```
 
-### 3. Declare preload hints with `FontPreloads`
+</Step>
+<Step StepNumber="3">
+
+**Declare preload hints with `FontPreloads`**
 
 Pass a `FontPreload[]` to `DocSiteOptions.FontPreloads`. DocSite then emits a `<link rel="preload" as="font" crossorigin>` tag for each entry in the document head, which prevents the flash of fallback text on first paint.
 
@@ -41,7 +50,10 @@ Pass a `FontPreload[]` to `DocSiteOptions.FontPreloads`. DocSite then emits a `<
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildFontPreloads
 ```
 
-### 4. Point `DisplayFontFamily` and `BodyFontFamily` at the new faces
+</Step>
+<Step StepNumber="4">
+
+**Point `DisplayFontFamily` and `BodyFontFamily` at the new faces**
 
 Set `DisplayFontFamily` on `DocSiteOptions` to the CSS stack led by the display face, and set `BodyFontFamily` to the stack led by the body face. Include a `system-ui` or `sans-serif` fallback so pages still render gracefully if a file fails to load.
 
@@ -49,9 +61,15 @@ Set `DisplayFontFamily` on `DocSiteOptions` to the CSS stack led by the display 
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions
 ```
 
-### 5. (Optional) Match MonorailCSS utilities to your stacks
+</Step>
+<Step StepNumber="5">
+
+**(Optional) Match MonorailCSS utilities to your stacks**
 
 When prose uses MonorailCSS utility classes such as `font-sans` or `font-display`, update the theme or `ExtraStyles` so those utilities resolve to the same `font-family` stacks; otherwise utility-styled text disagrees with the layout chrome. See [Customize MonorailCSS](xref:how-to.configuration.monorail-css) for how to pass `CustomCssFrameworkSettings`.
+
+</Step>
+</Steps>
 
 ---
 

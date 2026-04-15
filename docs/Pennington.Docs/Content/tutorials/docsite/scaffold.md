@@ -25,7 +25,10 @@ The finished code for this tutorial lives in [`examples/DocSiteScaffoldExample`]
 
 The starting host wires `AddPennington`, `UsePennington`, and a hand-written `MapGet` fallback that walks `IContentService` to render pages. The DocSite template replaces all of that.
 
-### Step 1.1 — Review the pre-DocSite host shape
+<Steps>
+<Step StepNumber="1">
+
+**Review the pre-DocSite host shape**
 
 The starting state has three moving parts: DI registration, middleware, and the fallback endpoint.
 
@@ -34,6 +37,9 @@ M:DocSiteScaffoldExample.Stage1.Run(System.String[])
 ```
 
 Everything the DocSite template adds — sidebar, header chrome, MonorailCSS, SPA navigation, the Razor component layout — is absent here. The next step collapses those ~30 lines into a single DI call.
+
+</Step>
+</Steps>
 
 ### Checkpoint — The bare host runs
 
@@ -46,7 +52,10 @@ Everything the DocSite template adds — sidebar, header chrome, MonorailCSS, SP
 
 `AddDocSite` is a single DI call that registers Pennington core, MonorailCSS, SPA navigation, the `ContentResolver`, and the `DocSiteArticleSlotRenderer` Razor island — all driven from one options object.
 
-### Step 2.1 — Replace the registration call
+<Steps>
+<Step StepNumber="1">
+
+**Replace the registration call**
 
 `AddDocSite` takes a `Func<DocSiteOptions>` rather than an `Action`, so the call constructs and returns a fresh options record. The `AddMarkdownContent` call can also go — the template registers it internally.
 
@@ -54,7 +63,10 @@ Everything the DocSite template adds — sidebar, header chrome, MonorailCSS, SP
 M:Pennington.DocSite.DocSiteServiceExtensions.AddDocSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.DocSite.DocSiteOptions})
 ```
 
-### Step 2.2 — Populate `DocSiteOptions`
+</Step>
+<Step StepNumber="2">
+
+**Populate `DocSiteOptions`**
 
 This tutorial uses five fields: `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`. Each one surfaces in the rendered chrome as soon as it's set. `DocSiteOptions` carries many more fields; for the full surface — and for what DocSite hard-codes, such as the single `AddMarkdownContent<DocSiteFrontMatter>` registration, `SearchIndexOptions.ContentSelector`, `LlmsTxtOptions`, and `MonorailCssOptions.CustomCssFrameworkSettings` — see [Positioning DocSite as a fast path](xref:explanation.core.docsite-positioning).
 
@@ -62,13 +74,19 @@ This tutorial uses five fields: `SiteTitle`, `Description`, `GitHubUrl`, `Header
 T:Pennington.DocSite.DocSiteOptions
 ```
 
-### Step 2.3 — See the registration-only state
+</Step>
+<Step StepNumber="3">
+
+**See the registration-only state**
 
 At this point `AddDocSite` is wired but `UseDocSite` hasn't been called yet. The host builds, but the middleware stack is still the ASP.NET default. The `await app.RunAsync()` call is a placeholder that the next section replaces.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteScaffoldExample.Stage2.Run(System.String[])
 ```
+
+</Step>
+</Steps>
 
 ### Checkpoint — Services registered, middleware not yet mounted
 
@@ -81,7 +99,10 @@ M:DocSiteScaffoldExample.Stage2.Run(System.String[])
 
 `UseDocSite` is the middleware counterpart to `AddDocSite` — one call mounts locale routing, antiforgery, static files, Razor component routing, MonorailCSS, SPA navigation, and core Pennington middleware in the correct order.
 
-### Step 3.1 — Call `UseDocSite` after `Build()`
+<Steps>
+<Step StepNumber="1">
+
+**Call `UseDocSite` after `Build()`**
 
 This single call replaces both the old `UsePennington` line and the hand-written `MapGet` fallback from stage 1. The Razor `Pages.razor` component owns the `/{*fileName:nonfile}` route and resolves pages through `ContentResolver`.
 
@@ -89,7 +110,10 @@ This single call replaces both the old `UsePennington` line and the hand-written
 M:Pennington.DocSite.DocSiteServiceExtensions.UseDocSite(Microsoft.AspNetCore.Builder.WebApplication)
 ```
 
-### Step 3.2 — Swap `RunAsync` for `RunDocSiteAsync`
+</Step>
+<Step StepNumber="2">
+
+**Swap `RunAsync` for `RunDocSiteAsync`**
 
 `RunDocSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves pages live in development and generates static HTML when invoked as `dotnet run -- build <baseUrl> <outputDir>` — one code path for both modes.
 
@@ -97,13 +121,19 @@ M:Pennington.DocSite.DocSiteServiceExtensions.UseDocSite(Microsoft.AspNetCore.Bu
 M:Pennington.DocSite.DocSiteServiceExtensions.RunDocSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])
 ```
 
-### Step 3.3 — See the fully-wired host
+</Step>
+<Step StepNumber="3">
+
+**See the fully-wired host**
 
 The canonical final shape has three calls that match `Program.cs` verbatim: `AddDocSite`, `UseDocSite`, `RunDocSiteAsync`.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteScaffoldExample.Stage3.Run(System.String[])
 ```
+
+</Step>
+</Steps>
 
 ### Checkpoint — Full chrome renders
 
@@ -116,7 +146,10 @@ M:DocSiteScaffoldExample.Stage3.Run(System.String[])
 
 `DocSiteOptions.Areas` is a list of `ContentArea(Label, Slug)` pairs. Each slug binds a top-level folder under `ContentRootPath` to a URL prefix and to its own sidebar tab.
 
-### Step 4.1 — Review the `ContentArea` contract
+<Steps>
+<Step StepNumber="1">
+
+**Review the `ContentArea` contract**
 
 `ContentArea` has two fields: a human-readable label that appears in the area selector, and a slug that matches the folder name and URL prefix. The order of entries in `Areas` drives the order of tabs in the sidebar.
 
@@ -124,7 +157,10 @@ M:DocSiteScaffoldExample.Stage3.Run(System.String[])
 T:Pennington.DocSite.ContentArea
 ```
 
-### Step 4.2 — Create the area folders
+</Step>
+<Step StepNumber="2">
+
+**Create the area folders**
 
 Under `Content/`, create two folders — `guides/` and `reference/` — each with an `index.md`. The `guides` slug in `DocSiteOptions.Areas` binds `Content/guides/` to the `/guides/` URL prefix and to the Guides sidebar tab. The `reference` slug works the same way.
 
@@ -136,9 +172,15 @@ examples/DocSiteScaffoldExample/Content/guides/index.md
 examples/DocSiteScaffoldExample/Content/reference/index.md
 ```
 
-### Step 4.3 — Confirm the two-area `Areas` list
+</Step>
+<Step StepNumber="3">
+
+**Confirm the two-area `Areas` list**
 
 The `Areas` block in the stage 3 host has exactly two `ContentArea` entries. The sidebar only shows the area selector when more than one area is configured, so with both entries in place the tab switcher appears for the first time.
+
+</Step>
+</Steps>
 
 ### Checkpoint — Both areas resolve and switch independently
 
