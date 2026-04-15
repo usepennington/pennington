@@ -7,7 +7,7 @@ sectionLabel: Content Authoring
 tags: [authoring, xmldocid, code-samples, roslyn]
 ---
 
-When a walkthrough section discusses a single member, the matching code fence should show only that member — not the whole enclosing type with its xmldoc and every sibling property. The xmldocid preprocessor supports the narrower forms directly; the trick is knowing which form applies where. This page covers the four moves that take a 100-line fence down to a handful of lines: fence one member, strip declarations with `,bodyonly`, split long methods into named helpers, and compare versions with `xmldocid-diff`. For the fence grammar itself, see <xref:reference.markdown.code-block-args>.
+To limit a code fence to the one member a walkthrough discusses — rather than dumping the whole enclosing type with its xmldoc and every sibling property — use the xmldocid preprocessor's member-scoped forms. This page works through four techniques in order of reach: fence one member with `M:`, strip declaration noise with `,bodyonly`, refactor long methods into named helpers, and compare versions with `xmldocid-diff`. For the fence grammar itself, see <xref:reference.markdown.code-block-args>.
 
 ## Assumptions
 
@@ -20,9 +20,9 @@ For a working setup, see [`examples/FocusedCodeSamplesExample`](https://github.c
 
 ## Fence one member, not the whole type
 
-`T:Type` pulls the full class declaration with xmldoc and every member. When the surrounding prose is about one method, reach for `M:Type.Method(...)` (or `P:` / `F:` / `E:`) instead — the fence shrinks to the member that matters.
+When the surrounding prose is about one method, reach for `M:Type.Method(...)` instead of `T:Type`. Member-scoped forms (`M:` for methods, `P:` for properties, `F:` for fields, `E:` for events) shrink the fence to the member the reader cares about. A `T:` fence pulls the full class declaration, its xmldoc, and every sibling member.
 
-Before, with the whole class body landing on a page that only discusses `CountWords`:
+The wide form, which lands on a page that only discusses `CountWords`:
 
 ````markdown
 ```csharp:xmldocid
@@ -30,7 +30,7 @@ T:FocusedCodeSamplesExample.MonolithWordCounter
 ```
 ````
 
-After, scoped to the method the prose is about:
+The narrow form, scoped to the method under discussion:
 
 ````markdown
 ```csharp:xmldocid
@@ -66,9 +66,9 @@ M:FocusedCodeSamplesExample.MonolithWordCounter.CountWords(System.String,System.
 
 ## Break a long method into named helpers
 
-When the target method is genuinely 25+ lines of distinct phases, no fence form will make it short and still intelligible — the source is too large. The fix is in the source, not the fence: extract each phase into a named helper with its own xmldoc summary, then fence the helpers one at a time.
+When the target method runs 25+ lines across distinct phases, no fence form will make it short and intelligible — the source itself is too large. Fix the source, not the fence: extract each phase into a named helper with its own xmldoc summary, then fence the helpers one at a time.
 
-`ModularWordCounter` is the same logic as `MonolithWordCounter` split into three helpers — `Tokenize`, `Tally`, and `Format` — orchestrated by a short `CountWords`. Fenced with `T:`, the whole class gives the reader the full picture in one place:
+`ModularWordCounter` is the same logic as `MonolithWordCounter` split into three helpers — `Tokenize`, `Tally`, and `Format` — orchestrated by a short `CountWords`. A `T:` fence on the whole class gives the reader the full picture in one place:
 
 ````markdown
 ```csharp:xmldocid
@@ -102,7 +102,7 @@ M:FocusedCodeSamplesExample.ModularWordCounter.Format(System.Collections.Generic
 ```
 ````
 
-Each of those renders as a small, focused fence. The orchestrator is a three-liner that reads top-to-bottom as the outline for the walkthrough:
+The orchestrator renders as a three-liner that reads top-to-bottom as the outline for the walkthrough:
 
 ```csharp:xmldocid,bodyonly
 M:FocusedCodeSamplesExample.ModularWordCounter.CountWords(System.String,System.Int32)
@@ -126,13 +126,13 @@ M:FocusedCodeSamplesExample.ModularWordCounter.Tally(System.Collections.Generic.
 M:FocusedCodeSamplesExample.ModularWordCounter.Format(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Int32}})
 ```
 
-Helpers being `public` is part of the trade — `internal` methods do not surface xmldoc and do not participate in the symbol table the preprocessor walks. For doc-facing fixtures, `public` is the right visibility even when idiomatic application code would keep them internal.
+Keep the helpers `public`. `internal` methods do not surface xmldoc and do not participate in the symbol table the preprocessor walks, so fences against them fail to resolve. For doc-facing fixtures, `public` is the right visibility even when idiomatic application code would keep them internal.
 
 ## Show a delta with `xmldocid-diff`
 
-When the article's point is that one version replaces another — a small refactor, a migration, a perf tweak — fence both versions together with `xmldocid-diff`. The preprocessor emits a diff so the reader sees the two or three lines that moved, rather than reading both fences independently and comparing them by eye. The fence shines when the delta is small; whole-method rewrites render every line as changed and lose their teaching value.
+When the article's point is that one version replaces another — a small refactor, a migration, a perf tweak — fence both versions with `xmldocid-diff`. The preprocessor emits a unified diff so the reader sees the two or three lines that moved rather than comparing two fences by eye. The form works best when the delta is small; whole-method rewrites render every line as changed and bury the point.
 
-`ModularWordCounter.FormatV2` is deliberately a one-change variant of `Format` — the `StringBuilder` is rented from a pool instead of constructed fresh, with the matching `Return` call at the end. Everything else is identical, so the diff collapses to those lines.
+`ModularWordCounter.FormatV2` is deliberately a one-change variant of `Format`. It rents its `StringBuilder` from a pool instead of constructing a fresh one, and returns the builder at the end. Everything else is identical, so the diff collapses to those lines.
 
 ````markdown
 ```csharp:xmldocid-diff,bodyonly
@@ -160,7 +160,7 @@ examples/FocusedCodeSamplesExample/Program.cs
 ```
 ````
 
-For anything with a namespace and a type, prefer `:xmldocid` — it survives renames and line shifts that would silently break a `:path` fence, because the build fails noisily when a referenced xmldocid no longer resolves.
+For anything with a namespace and a type, prefer `:xmldocid`. The build fails noisily on an unresolved symbol, so it survives the renames and line shifts that silently break `:path` fences.
 
 ---
 
@@ -168,7 +168,7 @@ For anything with a namespace and a type, prefer `:xmldocid` — it survives ren
 
 - Rebuild the site with `dotnet run --project docs/Pennington.Docs -- build` and reload the page — each fence renders at the scope its info string declares, with no carry-over of enclosing-type xmldoc.
 - Grep `output/**/*.html` for `<pre>` elements taller than 25 lines — those are candidates for a `,bodyonly` or member-scoped follow-up pass.
-- Rename `Tokenize` to `Split` in `examples/FocusedCodeSamplesExample/ModularWordCounter.cs` and rebuild — the build report surfaces an unresolved `M:…Tokenize(…)` rather than silently rendering nothing. That failure mode is the feedback loop that keeps fences honest as source moves.
+- Rename `Tokenize` to `Split` in `examples/FocusedCodeSamplesExample/ModularWordCounter.cs` and rebuild — the build report surfaces an unresolved `M:…Tokenize(…)` rather than silently rendering nothing.
 
 ## Related
 
