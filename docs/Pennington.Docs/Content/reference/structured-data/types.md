@@ -125,7 +125,7 @@ Emits `@context`, `@type`, `name`, and `url` unconditionally and adds `descripti
 
 ## Example
 
-The `examples/BlogKitchenSinkExample` project projects a `BlogSiteFrontMatter` into a `JsonLdArticle` via the helper below:
+The `examples/BlogKitchenSinkExample` project maps a `BlogSiteFrontMatter` to a `JsonLdArticle` via the helper below:
 
 ```csharp:xmldocid,bodyonly
 M:BlogKitchenSinkExample.StructuredDataBuilder.BuildArticle(Pennington.BlogSite.BlogSiteFrontMatter,System.String)

@@ -7,13 +7,13 @@ tags: [blogsite, template, scaffold, options]
 uid: tutorials.blogsite.scaffold
 ---
 
-By the end of this tutorial you'll have a running BlogSite host titled "Scaffold Blog" that serves a home listing, `/archive`, `/blog/<slug>`, `/tags`, `/tags/<name>` (plus the `/topics` aliases), and `/rss.xml` — all from a single placeholder post under `Content/Blog/`.
+By the end of this tutorial, a running BlogSite host titled "Scaffold Blog" serves a home listing, `/archive`, `/blog/<slug>`, `/tags`, `/tags/<name>` (plus the `/topics` aliases), and `/rss.xml` — all from a single placeholder post under `Content/Blog/`.
 
-You'll walk away able to swap any plain Pennington host for the BlogSite template in three calls and populate the core `BlogSiteOptions` surface, with a clear mental model of how `ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, and `TagsPageUrl` work together.
+Along the way, you'll see how to swap any plain Pennington host for the BlogSite template in three calls and populate the core `BlogSiteOptions` surface, with a clear mental model of how `ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, and `TagsPageUrl` work together.
 
 ## Prerequisites
 
-You'll need the following before starting. No DocSite experience is required — BlogSite is a separate template.
+No DocSite experience is required — BlogSite is a separate template. Before starting, gather the following:
 
 - .NET 11 SDK installed
 - Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site)
@@ -29,7 +29,7 @@ The host you built in the getting-started tutorials calls `AddPennington`, regis
 
 ### Step 1.1 — Review the pre-BlogSite host shape
 
-Here is what that host looks like. The three moving parts are the DI registration, the `UsePennington` call, and the hand-rolled `MapGet` fallback. Notice what is absent: the home listing, `/archive`, `/blog/<slug>` pages, `/tags` and `/topics` aliases, the `/rss.xml` feed, and the MonorailCSS chrome. All of that arrives in the next unit with a single `AddBlogSite` call.
+Here is what that host looks like. The three moving parts are the DI registration, the `UsePennington` call, and the hand-rolled `MapGet` fallback. Notice what is absent: the home listing, `/archive`, `/blog/<slug>` pages, `/tags` and `/topics` aliases, the `/rss.xml` feed, and the MonorailCSS chrome. The next unit brings all of that in with a single `AddBlogSite` call.
 
 ```csharp:xmldocid,bodyonly
 M:BlogSiteScaffoldExample.Stage1.Run(System.String[])
@@ -38,7 +38,7 @@ M:BlogSiteScaffoldExample.Stage1.Run(System.String[])
 ### Checkpoint — The bare host runs
 
 - Run `dotnet run` and visit `http://localhost:5000/blog/hello-world`
-- You should see unstyled HTML for your markdown — no home listing, no archive, no tag pages, no RSS feed
+- The page shows unstyled HTML for the markdown — no home listing, no archive, no tag pages, no RSS feed
 
 ---
 
@@ -48,7 +48,7 @@ M:BlogSiteScaffoldExample.Stage1.Run(System.String[])
 
 ### Step 2.1 — Replace the registration call
 
-`AddBlogSite` takes a `Func<BlogSiteOptions>` — you construct and return a fresh options record rather than mutating one through an `Action`. Remove the `AddMarkdownContent<DocFrontMatter>` call you had before; the template registers `AddMarkdownContent<BlogSiteFrontMatter>` internally, and the next tutorial will walk you through that front-matter record. `AddBlogSite` also calls `AddPennington`, `AddMonorailCss`, and `AddRazorComponents` under the hood, so do not register those separately in any BlogSite project.
+`AddBlogSite` takes a `Func<BlogSiteOptions>` — the delegate constructs and returns a fresh options record rather than mutating one through an `Action`. Remove the earlier `AddMarkdownContent<DocFrontMatter>` call; the template registers `AddMarkdownContent<BlogSiteFrontMatter>` internally, and the next tutorial walks through that front-matter record. `AddBlogSite` also calls `AddPennington`, `AddMonorailCss`, and `AddRazorComponents` under the hood, so a BlogSite project does not register those separately.
 
 ```csharp:xmldocid
 M:Pennington.BlogSite.BlogSiteServiceExtensions.AddBlogSite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{Pennington.BlogSite.BlogSiteOptions})
@@ -77,7 +77,7 @@ Two differences distinguish BlogSite from DocSite at the template level. First, 
 ### Checkpoint — Services registered, middleware not yet mounted
 
 - `dotnet build` succeeds
-- `dotnet run` starts the host, but `/` still returns whatever the pre-BlogSite pipeline produced — BlogSite services are in DI but the middleware and endpoints are not mounted yet
+- `dotnet run` starts the host, but `/` still returns whatever the pre-BlogSite pipeline produced — BlogSite services sit in DI while the middleware and endpoints remain unmounted
 
 ---
 
@@ -95,7 +95,7 @@ M:Pennington.BlogSite.BlogSiteServiceExtensions.UseBlogSite(Microsoft.AspNetCore
 
 ### Step 3.2 — Swap `RunAsync` for `RunBlogSiteAsync`
 
-`RunBlogSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves live in development and generates static HTML when you invoke it as `dotnet run -- build <baseUrl> <outputDir>`. Both positional arguments are optional and default to `/` and `output` respectively. For the full explanation of how unified dev and build paths work, see <xref:explanation.core.dev-vs-build>.
+`RunBlogSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves live in development and generates static HTML when invoked as `dotnet run -- build <baseUrl> <outputDir>`. Both positional arguments are optional and default to `/` and `output` respectively. For the full explanation of how unified dev and build paths work, see <xref:explanation.core.dev-vs-build>.
 
 ```csharp:xmldocid
 M:Pennington.BlogSite.BlogSiteServiceExtensions.RunBlogSiteAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])
@@ -112,13 +112,13 @@ M:BlogSiteScaffoldExample.Stage2.Run(System.String[])
 ### Checkpoint — Full chrome renders
 
 - Run `dotnet run` and visit `http://localhost:5000/`
-- You should see the BlogSite home layout: site title "Scaffold Blog", a recent-posts list with one entry, header chrome, and MonorailCSS styling
+- The BlogSite home layout appears: site title "Scaffold Blog", a recent-posts list with one entry, header chrome, and MonorailCSS styling
 
 ---
 
 ## 4. Drop in a placeholder post and verify every built-in route
 
-Posts live under `{ContentRootPath}/{BlogContentPath}` — with the defaults from step 2, that is `Content/Blog/`. You'll add a single placeholder post here to keep the home listing, archive, and RSS feed non-empty until the next tutorial introduces the full `BlogSiteFrontMatter` surface.
+Posts live under `{ContentRootPath}/{BlogContentPath}` — with the defaults from step 2, that is `Content/Blog/`. A single placeholder post here keeps the home listing, archive, and RSS feed non-empty until the next tutorial introduces the full `BlogSiteFrontMatter` surface.
 
 ### Step 4.1 — Create `Content/Blog/hello-world.md`
 
@@ -130,7 +130,7 @@ examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md
 
 ### Step 4.2 — Walk the built-in routes
 
-Visit each URL in order and confirm you see the placeholder post's metadata on every page:
+Visit each URL in order and confirm the placeholder post's metadata appears on every page:
 
 - `/` — home listing with `hello-world` as the only recent post
 - `/archive` — full archive (one entry)
@@ -148,7 +148,7 @@ Visit each URL in order and confirm you see the placeholder post's metadata on e
 
 ## Summary
 
-- You replaced the bare `AddPennington` host with `AddBlogSite` + `UseBlogSite` + `RunBlogSiteAsync` and saw the full BlogSite chrome render.
-- You populated the core `BlogSiteOptions` surface — `SiteTitle`, `Description`, `CanonicalBaseUrl`, `ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, `TagsPageUrl`, `AuthorName`, `AuthorBio` — and watched each field appear in the rendered output.
-- You learned that BlogSite binds posts through `AddMarkdownContent<BlogSiteFrontMatter>` and defaults content paths to `Content/Blog` served at `/blog`, distinguishing it from the `DocSite` template's area-driven layout.
-- You verified every built-in route the template ships: `/`, `/archive`, `/blog/<slug>`, `/tags` (and `/topics` aliases), `/tags/<name>`, and `/rss.xml`.
+- The bare `AddPennington` host gave way to `AddBlogSite` + `UseBlogSite` + `RunBlogSiteAsync`, and the full BlogSite chrome now renders.
+- The core `BlogSiteOptions` surface — `SiteTitle`, `Description`, `CanonicalBaseUrl`, `ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, `TagsPageUrl`, `AuthorName`, `AuthorBio` — is populated, and each field flows through to the rendered output.
+- BlogSite binds posts through `AddMarkdownContent<BlogSiteFrontMatter>` and defaults content paths to `Content/Blog` served at `/blog`, which distinguishes it from the `DocSite` template's area-driven layout.
+- Every built-in route the template ships responds: `/`, `/archive`, `/blog/<slug>`, `/tags` (and `/topics` aliases), `/tags/<name>`, and `/rss.xml`.

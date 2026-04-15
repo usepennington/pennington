@@ -7,13 +7,13 @@ sectionLabel: Content Authoring
 tags: [markdown, tabs, code-blocks, extensions]
 ---
 
-When you have two or more code variants showing the same operation — bash vs. PowerShell, a `csproj` property vs. its CLI equivalent, C# vs. F# — tabbed code groups let readers pick a variant without scrolling past alternatives. For the info-string grammar that drives this feature, see <xref:reference.markdown.code-block-args>.
+When two or more code variants show the same operation — bash vs. PowerShell, a `csproj` property vs. its CLI equivalent, C# vs. F# — tabbed code groups let the audience pick a variant without scrolling past alternatives. For the info-string grammar that drives this feature, see <xref:reference.markdown.code-block-args>.
 
 ## Assumptions
 
-- You have an existing Pennington site rendering markdown (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
-- You know the fence info-string shape (language token plus key/value attributes) — the reference page above covers the grammar.
-- Your host wires the default Pennington markdown pipeline, which already enables `UseTabbedCodeBlocks` under `AddDocSite`, `AddBlogSite`, or bare `AddPennington`.
+- An existing Pennington site rendering markdown (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
+- Familiarity with the fence info-string shape (language token plus key/value attributes) — the reference page above covers the grammar.
+- The host wires the default Pennington markdown pipeline, which already enables `UseTabbedCodeBlocks` under `AddDocSite`, `AddBlogSite`, or bare `AddPennington`.
 
 To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample) — `Content/main/tabbed-code.md` is the fixture page this how-to fences from.
 
@@ -31,7 +31,7 @@ examples/DocSiteKitchenSinkExample/Content/main/tabbed-code.md
 
 ### 2. Keep the blocks adjacent — no prose in between
 
-The grouping logic only collapses fences that sit next to each other in the block stream, so a paragraph, heading, or blank-lined HTML element between two fences breaks the group into two separate tablists. The first tab in each group renders active by default.
+The grouping logic only collapses fences that sit next to each other in the block stream. A paragraph, heading, or blank-lined HTML element between two fences splits the group into two separate tablists. The first tab in each group renders active by default.
 
 ```csharp:xmldocid
 T:Pennington.Markdown.Extensions.Tabs.TabbedCodeBlock
@@ -45,9 +45,9 @@ The rendered HTML gets its CSS class names from `TabbedCodeBlockRenderOptions`. 
 T:Pennington.Markdown.Extensions.Tabs.TabbedCodeBlockRenderOptions
 ```
 
-### 4. Override the class names when you need custom CSS
+### 4. Override the class names for custom CSS
 
-Set `PenningtonOptions.TabbedCodeBlockOptions` to a `Func<TabbedCodeBlockRenderOptions>` returning a modified `with` expression. The factory replaces the `Default` shape on the pipeline's single registration of the tabbed extension, so every rendered page picks up your class names. This works identically on `AddPennington`, `AddDocSite`, and `AddBlogSite` because each surface plumbs the same property through to the pipeline factory.
+Set `PenningtonOptions.TabbedCodeBlockOptions` to a `Func<TabbedCodeBlockRenderOptions>` returning a modified `with` expression. The factory replaces the `Default` shape on the pipeline's single registration of the tabbed extension, so every rendered page picks up the new class names. This works identically on `AddPennington`, `AddDocSite`, and `AddBlogSite` because each surface plumbs the same property through to the pipeline factory.
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.TabbedCodeBlockStyling.ConfigureTabbedCodeBlocksOverride(Pennington.Infrastructure.PenningtonOptions)
@@ -59,7 +59,7 @@ M:ExtensibilityLabExample.TabbedCodeBlockStyling.ConfigureTabbedCodeBlocksOverri
 
 - Run `dotnet run` and visit the rendered page — the adjacent fences show a tablist with one tab per `title="..."` value.
 - Click each tab — only the matching panel is visible, and the first tab is active on load.
-- If you overrode `TabbedCodeBlockRenderOptions`, the emitted HTML uses your class names (inspect with browser dev-tools on `.tab-container` or its replacement).
+- When `TabbedCodeBlockRenderOptions` is overridden, the emitted HTML uses the custom class names (inspect with browser dev-tools on `.tab-container` or its replacement).
 
 ## Related
 

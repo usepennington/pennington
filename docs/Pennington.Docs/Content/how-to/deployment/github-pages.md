@@ -7,16 +7,16 @@ sectionLabel: Publishing & Deployment
 tags: [deployment, github-pages, ci, base-url]
 ---
 
-Use this guide when you have a working Pennington site committed to a GitHub repo and want Pages to build and deploy it automatically on every push to `main`. If the site still only runs under `dotnet run`, complete <xref:how-to.deployment.static-build> first so you know what `output/` should look like before automating it.
+This guide covers deploying a working Pennington site committed to a GitHub repo, so Pages builds and deploys it automatically on every push to `main`. When the site still only runs under `dotnet run`, complete <xref:how-to.deployment.static-build> first — the shape of `output/` is easier to automate once it's familiar.
 
 ## Assumptions
 
-- You have a Pennington site that builds locally with `dotnet run --project <your-project> -- build` (see [_Build a static site_](xref:how-to.deployment.static-build) if not).
+- A Pennington site that builds locally with `dotnet run --project <your-project> -- build` (see [_Build a static site_](xref:how-to.deployment.static-build) if not).
 - The repo is pushed to GitHub and Pages is enabled under **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-- The site will be served under a repository sub-path like `https://<user>.github.io/<repo>/` — root-domain deployments are called out in Step 5.
-- You are comfortable with GitHub Actions YAML at the "copy, commit, inspect the run log" level.
+- The site will serve under a repository sub-path like `https://<user>.github.io/<repo>/` — root-domain deployments are called out in Step 5.
+- Working with GitHub Actions YAML at the "copy, commit, inspect the run log" level feels approachable.
 
-To copy a working setup, see [`examples/SubPathDeployableExample`](https://github.com/usepennington/pennington/tree/main/examples/SubPathDeployableExample). The `.github/workflows/deploy.yml`, host-config siblings (`staticwebapp.config.json`, `netlify.toml`, `nginx.conf`, `web.config`), and the `BuildHost` helper are the teaching surface; do not walk through the whole example.
+For a working setup, see [`examples/SubPathDeployableExample`](https://github.com/usepennington/pennington/tree/main/examples/SubPathDeployableExample). The `.github/workflows/deploy.yml`, host-config siblings (`staticwebapp.config.json`, `netlify.toml`, `nginx.conf`, `web.config`), and the `BuildHost` helper are the teaching surface; the rest of the example is outside scope here.
 
 ---
 
@@ -24,7 +24,7 @@ To copy a working setup, see [`examples/SubPathDeployableExample`](https://githu
 
 ### 1. Enable GitHub Pages with the Actions source
 
-In the repo settings, switch **Pages → Build and deployment → Source** to **GitHub Actions** so the deploy workflow is authorized to publish. Also confirm the three workflow permissions the deploy action needs — `contents: read`, `pages: write`, `id-token: write` — are not blocked at the organization level; the workflow declares them explicitly, but an org-wide deny overrides that.
+In the repo settings, switch **Pages → Build and deployment → Source** to **GitHub Actions** so the deploy workflow is authorized to publish. Also confirm the three workflow permissions the deploy action needs — `contents: read`, `pages: write`, `id-token: write` — are not blocked at the organization level. The workflow declares them explicitly, but an org-wide deny overrides that.
 
 ### 2. Drop in the canonical workflow
 
@@ -36,15 +36,15 @@ examples/SubPathDeployableExample/.github/workflows/deploy.yml
 
 ### 3. Point the `--project` path at your site
 
-The template targets `examples/SubPathDeployableExample`; edit the `--project` argument and any `working-directory` references so the `dotnet run` step points at your csproj. For repos that host multiple buildable projects, add `actions/cache@v4` over `~/.nuget/packages` if NuGet restore takes more than a minute — `--configuration Release` is already set.
+The template targets `examples/SubPathDeployableExample`; edit the `--project` argument and any `working-directory` references so the `dotnet run` step points at the correct csproj. For repos that host multiple buildable projects, add `actions/cache@v4` over `~/.nuget/packages` if NuGet restore takes more than a minute — `--configuration Release` is already set.
 
 ### 4. Keep `.nojekyll` in the artifact
 
-GitHub Pages runs content through Jekyll by default, which silently strips any path starting with an underscore — that would remove Pennington's `_content/` copy folder and SPA `_spa-data/` payloads. The `touch output/.nojekyll` step in the workflow disables Jekyll processing; leave it in place.
+GitHub Pages runs content through Jekyll by default, which silently strips any path starting with an underscore — that removes Pennington's `_content/` copy folder and SPA `_spa-data/` payloads. The `touch output/.nojekyll` step in the workflow disables Jekyll processing; leave it in place.
 
 ### 5. Match the build `baseUrl` to the Pages URL
 
-Project Pages sites serve at `https://<user>.github.io/<repo>/`, so the workflow passes `/<repo>` as the first positional `build` argument and `BaseUrlHtmlRewriter` prefixes every internal `href`, `src`, and `action` on the way out. For sites at an org-level root or a custom apex domain, replace the `BASE_URL` env with an empty string and drop the argument entirely — sub-path wiring is covered in <xref:how-to.deployment.base-url>.
+Project Pages sites serve at `https://<user>.github.io/<repo>/`, so the workflow passes `/<repo>` as the first positional `build` argument and `BaseUrlHtmlRewriter` prefixes every internal `href`, `src`, and `action` on the way out. For sites at an org-level root or a custom apex domain, replace the `BASE_URL` env with an empty string and drop the argument entirely. Sub-path wiring is covered in <xref:how-to.deployment.base-url>.
 
 ```csharp:xmldocid
 T:Pennington.Infrastructure.BaseUrlHtmlRewriter

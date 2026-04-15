@@ -16,13 +16,13 @@ llms: false
 
 ## What you'll do
 
-_**Artifact** (one sentence): the concrete thing the reader will have running when they finish — e.g., "a Pennington site with two locales and a working language switcher"._
+_**Artifact** (one sentence): the concrete thing that will be running at the end — e.g., "a Pennington site with two locales and a working language switcher"._
 
-_**Skill** (one sentence): what the reader will know how to do afterward — e.g., "you'll understand how to wire locale-prefixed URLs to translated content"._
+_**Skill** (one sentence): the capability this tutorial teaches — e.g., "how to wire locale-prefixed URLs to translated content"._
 
 ## Prerequisites
 
-_Keep this list to **tools installed** and **prior tutorials completed** — nothing else. If a reader needs to read an Explanation page before step 1, this tutorial is scoped wrong; pull the needed concept into a short sentence at the start of the step that uses it._
+_Keep this list to **tools installed** and **prior tutorials completed** — nothing else. If an Explanation page needs to come before step 1, this tutorial is scoped wrong; pull the needed concept into a short sentence at the start of the step that uses it._
 
 - .NET 11 SDK installed
 - Completed [_Prior tutorial title_](/_path_) (or have an equivalent Pennington project ready)
@@ -34,7 +34,7 @@ The finished code for this tutorial lives in [`examples/_ExampleProjectName_`](h
 
 ## 1. _First unit title — verb-led, e.g., "Register the service"_
 
-_One sentence: what this unit accomplishes and why it has to come first._
+_One sentence: what this unit accomplishes and why it comes first._
 
 ### Step 1.1 — _Action verb + target_
 
@@ -50,7 +50,7 @@ _Explain one non-obvious line if the code has any. Delete this paragraph if noth
 
 ### Step 1.2 — _Next action_
 
-_Continue until the unit is done. Keep each step to one verb + one target._
+_Continue until the unit is done. Keep each step to one verb and one target._
 
 ```csharp:xmldocid
 T:_ExampleProjectName_._Type_
@@ -58,16 +58,16 @@ T:_ExampleProjectName_._Type_
 
 ### Checkpoint — _What you should see now_
 
-_Concrete verifiable state: a URL returns something, a file exists, a log line appears. If the reader cannot verify, the unit is wrong — tighten it._
+_Concrete verifiable state: a URL returns something, a file exists, a log line appears. If the step cannot be verified, the unit is wrong — tighten it._
 
 - Run `dotnet run` and visit `http://localhost:5000/_path_`
-- You should see _X_
+- The page shows _X_
 
 ---
 
 ## 2. _Second unit title_
 
-_Repeat the unit/step/checkpoint structure. Aim for 3–5 units per tutorial. More than 5 means this should probably be two tutorials._
+_Repeat the unit/step/checkpoint structure. Aim for 3–5 units per tutorial. More than 5 usually means this should be split into two tutorials._
 
 ### Step 2.1 — _Action_
 
@@ -83,9 +83,9 @@ _Concrete verification._
 
 ## Summary
 
-_Three to five bullets. Each bullet names a capability the reader now has, not a topic you covered._
+_Three to five bullets. Each bullet names a capability gained, not a topic covered._
 
-- You wired up _X_ and saw it _Y_.
-- You learned to _Z_.
+- Wired up _X_ and saw it _Y_.
+- Learned to _Z_.
 
 > Navigation to the next tutorial is generated automatically from `order` — do not write a "what's next" section.

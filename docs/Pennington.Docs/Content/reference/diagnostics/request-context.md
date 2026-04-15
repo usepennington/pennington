@@ -118,7 +118,7 @@ Two transports surface the accumulated diagnostics, both wired inside `UsePennin
 
 ## Example
 
-The canonical in-repo consumer is `XrefResolvingService` reporting unresolved uids. Inject `DiagnosticContext` into your own service or response processor and call `AddWarning` / `AddError` / `AddInfo` during request handling; every entry flows into the `X-Pennington-Diagnostic` response header and the dev overlay without further wiring. The `examples/ExtensibilityLabExample` lab registers a scoped `IResponseProcessor` that follows this shape:
+The canonical in-repo consumer is `XrefResolvingService`, which reports unresolved uids. Any service or response processor that resolves `DiagnosticContext` and calls `AddWarning` / `AddError` / `AddInfo` during request handling flows entries into the `X-Pennington-Diagnostic` response header and the dev overlay without further wiring. The `examples/ExtensibilityLabExample` lab registers a scoped `IResponseProcessor` that follows this shape:
 
 ```csharp:xmldocid
 T:ExtensibilityLabExample.DiagnosticsEmittingProcessor

@@ -7,7 +7,7 @@ sectionLabel: "Routing and Navigation"
 tags: [navigation, routing, hierarchy]
 ---
 
-Why does the Pennington sidebar reflect your folder layout even for folders you never named in front matter, and where does the ordering come from?
+Why does the Pennington sidebar reflect the folder layout even for folders that were never named in front matter, and where does the ordering come from?
 
 ## Context
 

@@ -7,7 +7,7 @@ tags: [islands, spa, extension-points, rendering]
 uid: reference.extension-points.islands
 ---
 
-`Pennington.Islands` defines the four types implementers touch when adding a server-rendered island: the `IIslandRenderer` contract, the `RazorIslandRenderer<T>` convenience base, the `SpaEnvelope` record describing the per-route payload, and the `RenderContext` handed to renderers, together with the `data-spa-*` attribute surface the browser engine reads to locate and hydrate those islands. The namespace is registered through `PenningtonOptions.Islands.Register<T>(name)` and exposed to the browser by `SpaNavigationExtensions.AddSpaNavigation` / `UseSpaNavigation`.
+`Pennington.Islands` defines the four types involved in adding a server-rendered island: the `IIslandRenderer` contract, the `RazorIslandRenderer<T>` convenience base, the `SpaEnvelope` record describing the per-route payload, and the `RenderContext` handed to renderers, together with the `data-spa-*` attribute surface the browser engine reads to locate and hydrate those islands. The namespace is registered through `PenningtonOptions.Islands.Register<T>(name)` and exposed to the browser by `SpaNavigationExtensions.AddSpaNavigation` / `UseSpaNavigation`.
 
 ## `IIslandRenderer`
 

@@ -7,15 +7,15 @@ sectionLabel: Configuration
 tags: [configuration, content-sources, areas, overlap-detection]
 ---
 
-When one markdown tree has outgrown a single root — a `/docs/` section alongside a separate `/blog/` section, or a catch-all root paired with a specialised subtree — you need to register multiple content sources. The right recipe depends on your host: `AddDocSite` supports multiple folder-scoped sub-trees through `ContentArea` entries, while bare `AddPennington` lets you chain any number of `AddMarkdownContent<T>` calls with independent front-matter types. If you haven't stood up a site yet, start with <xref:tutorials.getting-started.first-page>.
+When one markdown tree outgrows a single root — a `/docs/` section alongside a separate `/blog/` section, or a catch-all root paired with a specialised subtree — registering multiple content sources is the answer. The right recipe depends on the host: `AddDocSite` supports multiple folder-scoped sub-trees through `ContentArea` entries, while bare `AddPennington` allows any number of chained `AddMarkdownContent<T>` calls with independent front-matter types. For a first site, start with <xref:tutorials.getting-started.first-page>.
 
 ## Assumptions
 
-- You have a working Pennington site (see [_Your first Pennington site_](xref:tutorials.getting-started.first-page) if not)
-- You know which host extension you are using — `AddDocSite` vs bare `AddPennington` — and why ([_When is DocSite the right starting point?_](xref:explanation.core.docsite-positioning))
-- You understand `IFrontMatter` basics ([_Use a custom front-matter record_](xref:how-to.content-authoring.front-matter))
+- A working Pennington site (see [_Your first Pennington site_](xref:tutorials.getting-started.first-page) if not)
+- The chosen host extension — `AddDocSite` vs bare `AddPennington` — and the reason for that choice ([_When is DocSite the right starting point?_](xref:explanation.core.docsite-positioning))
+- Familiarity with `IFrontMatter` basics ([_Use a custom front-matter record_](xref:how-to.content-authoring.front-matter))
 
-To copy a working DocSite multi-area setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample). For the bare `AddPennington` chained-sources recipe, see [`examples/MultipleSourcesExample`](https://github.com/usepennington/pennington/tree/main/examples/MultipleSourcesExample) — the helpers on `ServiceConfiguration` back each step below.
+For a working DocSite multi-area setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample). For the bare `AddPennington` chained-sources recipe, see [`examples/MultipleSourcesExample`](https://github.com/usepennington/pennington/tree/main/examples/MultipleSourcesExample); the helpers on `ServiceConfiguration` back each step below.
 
 ---
 
@@ -23,7 +23,7 @@ To copy a working DocSite multi-area setup, see [`examples/DocSiteKitchenSinkExa
 
 ### 1. Decide: DocSite areas, or chained `AddMarkdownContent` calls?
 
-`AddDocSite` owns exactly one markdown pipeline keyed on `DocSiteFrontMatter`; use `ContentArea[]` on `DocSiteOptions.Areas` to split it into folder-scoped sub-trees (continue to step 2). When you need two different front-matter types, or you are already on bare `AddPennington`, chain `AddMarkdownContent<T>` calls instead (jump to step 4).
+`AddDocSite` owns exactly one markdown pipeline keyed on `DocSiteFrontMatter`; use `ContentArea[]` on `DocSiteOptions.Areas` to split it into folder-scoped sub-trees (continue to step 2). For two different front-matter types, or for a site already on bare `AddPennington`, chain `AddMarkdownContent<T>` calls instead (jump to step 4).
 
 ### 2. (DocSite) Declare the areas
 
@@ -45,7 +45,7 @@ Skip to **Verify**.
 
 ### 4. (Bare Pennington) Register the first markdown source
 
-Call `AddMarkdownContent<TFrontMatter>` inside `AddPennington` with a `ContentPath` that roots the first tree, a distinct `BasePageUrl`, and an optional `SectionLabel` that groups the source's pages in navigation.
+Call `AddMarkdownContent<TFrontMatter>` inside `AddPennington` with a `ContentPath` that roots the first tree, a distinct `BasePageUrl`, and an optional `SectionLabel` to group the source's pages in navigation.
 
 ```csharp:xmldocid,bodyonly
 M:MultipleSourcesExample.ServiceConfiguration.RegisterDocSource(Pennington.Infrastructure.MarkdownContentOptions)
@@ -61,7 +61,7 @@ M:MultipleSourcesExample.ServiceConfiguration.RegisterBlogSource(Pennington.Infr
 
 ### 6. (Optional) Carve out an overlapping subtree with `ExcludePaths`
 
-When one source's `ContentPath` is a parent of another's, Pennington emits an overlap warning at startup because both pipelines would discover the inner tree and produce conflicting outputs. Add `ExcludePaths` on the broader source so the specialised source owns that subtree exclusively.
+When one source's `ContentPath` is a parent of another's, Pennington emits an overlap warning at startup because both pipelines would discover the inner tree and produce conflicting outputs. Adding `ExcludePaths` on the broader source gives the specialised source exclusive ownership of that subtree.
 
 ```csharp:xmldocid,bodyonly
 M:MultipleSourcesExample.ServiceConfiguration.RegisterOverlappingDocSource(Pennington.Infrastructure.MarkdownContentOptions)
@@ -71,8 +71,8 @@ M:MultipleSourcesExample.ServiceConfiguration.RegisterOverlappingDocSource(Penni
 
 ## Verify
 
-- Run `dotnet run` and visit each source's `BasePageUrl` — confirm pages render under both prefixes
-- Startup logs contain no `Markdown content source rooted at '…' overlaps…` warnings (or, if expected, the warning text names the subtree you intend to exclude)
+- Run `dotnet run` and visit each source's `BasePageUrl`. Confirm pages render under both prefixes
+- Startup logs contain no `Markdown content source rooted at '…' overlaps…` warnings (or, if expected, the warning text names the subtree intended for exclusion)
 - Each source's pages appear under the correct `SectionLabel` / `ContentArea.Title` in the generated navigation
 
 ## Related

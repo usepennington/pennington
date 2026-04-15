@@ -7,16 +7,16 @@ sectionLabel: Publishing & Deployment
 tags: [deployment, base-url, rewriter, sub-path]
 ---
 
-When your site works at root (`/`) locally but the target host — a GitHub Pages project site, a reverse-proxied sub-app, or an Azure Front Door path — serves it under a sub-path, pass a single extra argument to `build`. There is no per-link refactor and no separate build mode: the same `RunOrBuildAsync` call handles both cases, with `BaseUrlHtmlRewriter` prefixing every root-relative href, src, and action on the way out.
+When a site works at root (`/`) locally but the target host — a GitHub Pages project site, a reverse-proxied sub-app, or an Azure Front Door path — serves it under a sub-path, one extra argument to `build` covers the difference. There is no per-link refactor and no separate build mode: the same `RunOrBuildAsync` call handles both cases, with `BaseUrlHtmlRewriter` prefixing every root-relative href, src, and action on the way out.
 
 ## Assumptions
 
-- You have a working Pennington site that builds locally with `dotnet run -- build` (see <xref:how-to.deployment.static-build> if not).
-- You know the sub-path the host will serve you under — for example `/docs` for `https://example.com/docs/` or `/<repo>` for a GitHub Pages project site.
-- Internal links are authored as root-relative (`/guides/first-page/`) — the rewriter keys off the leading `/`.
-- Your host is already configured to serve `output/` at that sub-path (see <xref:how-to.deployment.github-pages> or <xref:how-to.deployment.self-host>).
+- A working Pennington site that builds locally with `dotnet run -- build` (see <xref:how-to.deployment.static-build> if not).
+- The sub-path the host will serve from — for example `/docs` for `https://example.com/docs/` or `/<repo>` for a GitHub Pages project site.
+- Internal links authored as root-relative (`/guides/first-page/`) — the rewriter keys off the leading `/`.
+- The host is already configured to serve `output/` at that sub-path (see <xref:how-to.deployment.github-pages> or <xref:how-to.deployment.self-host>).
 
-To copy a working setup, see [`examples/SubPathDeployableExample`](https://github.com/usepennington/pennington/tree/main/examples/SubPathDeployableExample). The nested `/guides/first-page/` route is deliberate: it makes sub-path rewriting observable on a deep link.
+For a working setup, see [`examples/SubPathDeployableExample`](https://github.com/usepennington/pennington/tree/main/examples/SubPathDeployableExample). The nested `/guides/first-page/` route is deliberate: it makes sub-path rewriting observable on a deep link.
 
 ---
 
@@ -56,7 +56,7 @@ examples/SubPathDeployableExample/Content/index.md
 
 ### 4. Read `data-base-url` from client-side code
 
-If an island, Blazor component, or hand-rolled script builds URLs at runtime, read the prefix from `document.body.dataset.baseUrl` rather than hard-coding `/docs`. This keeps a single build portable across hosts — the same `output/` works under `/docs` in staging and `/` in preview with no code change, only a different `--base-url`.
+When an island, Blazor component, or hand-rolled script builds URLs at runtime, read the prefix from `document.body.dataset.baseUrl` rather than hard-coding `/docs`. This keeps a single build portable across hosts — the same `output/` works under `/docs` in staging and `/` in preview with no code change, only a different `--base-url`.
 
 ```javascript
 const base = document.body.dataset.baseUrl ?? "";

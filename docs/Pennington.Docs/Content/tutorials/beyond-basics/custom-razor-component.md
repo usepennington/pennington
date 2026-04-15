@@ -13,14 +13,14 @@ uid: tutorials.beyond-basics.custom-razor-component
 
 By the end of this tutorial you'll have a running DocSite at `http://localhost:5000/pricing` that renders two styled `<PricingCard />` cards — a standard "Basic" tier and a highlighted "Pro" tier — both driven by tag attributes inside a plain markdown file.
 
-You'll walk away knowing how to author a Razor component with `[Parameter]`-decorated properties, wire it into Mdazor's component registry with one `AddMdazorComponent<T>()` line, and consume it from markdown with self-closing tag syntax whose attribute values bind case-insensitively to the component's parameters.
+Along the way, the tutorial covers authoring a Razor component with `[Parameter]`-decorated properties, wiring it into Mdazor's component registry with one `AddMdazorComponent<T>()` line, and consuming it from markdown with self-closing tag syntax whose attribute values bind case-insensitively to the component's parameters.
 
 ## Prerequisites
 
 - .NET 11 SDK installed
 - Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the `AddDocSite` / `UseDocSite` / `RunDocSiteAsync` host shape this tutorial extends)
 - Completed [Connect to a Roslyn solution for live API snippets](xref:tutorials.beyond-basics.connect-roslyn) (previous tutorial in the Beyond the Basics section)
-- Basic Razor familiarity — you have written a `.razor` file with `@code {}` and `[Parameter]` properties before
+- Basic Razor familiarity — a `.razor` file with `@code {}` and `[Parameter]` properties should feel routine
 
 The finished code for this tutorial lives in [`examples/BeyondCustomRazorComponentExample`](https://github.com/usepennington/pennington/tree/main/examples/BeyondCustomRazorComponentExample).
 
@@ -40,7 +40,7 @@ examples/BeyondCustomRazorComponentExample/_Imports.razor
 
 ### Step 1.2 — Create `Components/PricingCard.razor`
 
-Create a `Components/` folder and add `PricingCard.razor` with four `[Parameter]` properties — `Tier`, `Price`, `Features`, and `Highlighted` — and markup that renders a pricing card with a "Most Popular" badge when highlighted. The `Features` parameter is a pipe-delimited string because Mdazor only binds primitive parameter types from markdown attributes; lists arrive as strings and are split inside the component.
+Create a `Components/` folder and add `PricingCard.razor` with four `[Parameter]` properties — `Tier`, `Price`, `Features`, and `Highlighted` — and markup that renders a pricing card with a "Most Popular" badge when highlighted. The `Features` parameter is a pipe-delimited string because Mdazor binds only primitive parameter types from markdown attributes; lists arrive as strings and are split inside the component.
 
 ```csharp:xmldocid,bodyonly
 M:BeyondCustomRazorComponentExample.Stage1.Source
@@ -48,29 +48,29 @@ M:BeyondCustomRazorComponentExample.Stage1.Source
 
 The file is a regular Blazor component — there is nothing Pennington-specific about it yet. Mdazor discovers it in the next unit.
 
-### Checkpoint — The component compiles but markdown does not see it
+### Checkpoint — The component compiles but markdown cannot see it
 
-Run `dotnet build` from `examples/BeyondCustomRazorComponentExample`. The build succeeds and produces `BeyondCustomRazorComponentExample.dll`. The `PricingCard` type exists at `BeyondCustomRazorComponentExample.Components.PricingCard` but is not yet wired to Mdazor, so a `<PricingCard />` tag in markdown would render as a literal custom element.
+Run `dotnet build` from `examples/BeyondCustomRazorComponentExample`. The build succeeds and produces `BeyondCustomRazorComponentExample.dll`. The `PricingCard` type exists at `BeyondCustomRazorComponentExample.Components.PricingCard` but is not yet wired to Mdazor, so a `<PricingCard />` tag in markdown renders as a literal custom element.
 
 ---
 
 ## 2. Register the component with Mdazor
 
-DocSite already calls `AddMdazor()` and registers the built-in Pennington.UI components. Your only job here is to add one `AddMdazorComponent<PricingCard>()` line so Mdazor's registry knows about the new type.
+DocSite already calls `AddMdazor()` and registers the built-in Pennington.UI components. The only remaining step is one `AddMdazorComponent<PricingCard>()` line so Mdazor's registry knows about the new type.
 
 ### Step 2.1 — Add `AddMdazorComponent<PricingCard>()` to `Program.cs`
 
-Open `Program.cs` and add a single `builder.Services.AddMdazorComponent<PricingCard>()` line after the `AddDocSite` block. The extension lives in the `Mdazor` namespace and is shipped by the `Mdazor` NuGet package, which is already transitively referenced through `Pennington.DocSite` — no package add required.
+Open `Program.cs` and add a single `builder.Services.AddMdazorComponent<PricingCard>()` line after the `AddDocSite` block. The extension lives in the `Mdazor` namespace and ships from the `Mdazor` NuGet package, already transitively referenced through `Pennington.DocSite` — no package add required.
 
 ```csharp:xmldocid,bodyonly
 M:BeyondCustomRazorComponentExample.Stage2.Run(System.String[])
 ```
 
-One thing worth noting: `AddMdazorComponent<T>()` returns `IServiceCollection`, so additional component registrations can chain off the same call. That becomes handy when you register several custom components at once.
+`AddMdazorComponent<T>()` returns `IServiceCollection`, so additional component registrations can chain off the same call. That becomes handy when registering several custom components at once.
 
 ### Step 2.2 — Confirm the host still boots
 
-Run the DocSite host to verify the extra DI line did not break startup. No markdown change has been made yet, so the site renders exactly as it did before — the new wiring is invisible until a page consumes the tag.
+Run the DocSite host to verify the extra DI line did not break startup. No markdown change has been made yet, so the site renders exactly as it did before — the new wiring stays invisible until a page consumes the tag.
 
 ### Checkpoint — Mdazor knows about PricingCard
 
@@ -98,13 +98,13 @@ With `dotnet run` still active, open `http://localhost:5000/pricing`. Mdazor int
 
 ### Checkpoint — Two cards render on the pricing page
 
-Visit `http://localhost:5000/pricing`. You'll see two pricing cards: a plain **Basic** card at `$9 / month` and a **Pro** card at `$49 / month` with a "Most Popular" pill and a thicker accent border. View the page source — `<PricingCard>` has been replaced by real HTML (a `<div>` tree with the card classes), not left as a literal custom element.
+Visit `http://localhost:5000/pricing`. Two pricing cards appear: a plain **Basic** card at `$9 / month` and a **Pro** card at `$49 / month` with a "Most Popular" pill and a thicker accent border. View the page source — `<PricingCard>` has been replaced by real HTML (a `<div>` tree with the card classes), not left as a literal custom element.
 
 ---
 
 ## 4. Pass more parameters and verify binding
 
-Let's prove that the markdown-to-parameter binding is real by editing attribute values in the markdown and watching the rendered output change — this is the whole authoring loop you now own.
+Now let's confirm the markdown-to-parameter binding is real by editing attribute values in the markdown and watching the rendered output change — this is the whole authoring loop.
 
 ### Step 4.1 — Edit the Pro card to change `Price` and `Features`
 
@@ -126,7 +126,7 @@ Reload `http://localhost:5000/pricing`. The dev host picks up markdown changes a
 
 ## Summary
 
-- You can author a Razor component under `Components/` with `[Parameter]`-decorated properties and use it from markdown by name.
-- You can register any component type with Mdazor in one line: `services.AddMdazorComponent<T>()` after `AddDocSite` (or after `AddPennington` on a custom host).
-- You know the two binding rules for markdown-driven consumption: tag names must start with a capital letter, and attribute values bind case-insensitively to parameter properties of primitive types (`string`, `bool`, numbers).
-- You can mix built-in Pennington.UI components and your own custom components in the same markdown page — both go through the same Mdazor registry.
+- A Razor component lives under `Components/` with `[Parameter]`-decorated properties and is consumed from markdown by name.
+- Any component type registers with Mdazor in one line: `services.AddMdazorComponent<T>()` after `AddDocSite` (or after `AddPennington` on a custom host).
+- Two binding rules govern markdown-driven consumption: tag names start with a capital letter, and attribute values bind case-insensitively to parameter properties of primitive types (`string`, `bool`, numbers).
+- Built-in Pennington.UI components and custom components mix freely in the same markdown page — both go through the same Mdazor registry.

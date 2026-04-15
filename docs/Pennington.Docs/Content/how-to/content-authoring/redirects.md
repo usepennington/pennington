@@ -7,15 +7,15 @@ sectionLabel: Content Authoring
 tags: [redirects, front-matter, routing]
 ---
 
-When you rename or delete a published page, the old URL needs to forward visitors and search engines to the new location. Setting `redirectUrl:` in the page's front matter causes Pennington to emit a meta-refresh stub at the old path — the body is not rendered or indexed.
+When a published page is renamed or deleted, the old URL needs to forward visitors and search engines to the new location. Setting `redirectUrl:` in the page's front matter causes Pennington to emit a meta-refresh stub at the old path — the body is not rendered or indexed.
 
-This covers front-matter-based redirects only. HTTP 301 responses and batch redirects via a sidecar file are handled at the hosting layer and are outside this guide's scope.
+This covers front-matter-based redirects only. HTTP 301 responses and batch redirects via a sidecar file are handled at the hosting layer and fall outside this guide's scope.
 
 ## Assumptions
 
-- You have an existing Pennington doc site using `AddDocSite` (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
-- You know the old URL (the page being retired) and the new URL (the canonical destination).
-- Your front-matter type implements `IRedirectable` — `DocSiteFrontMatter` and `BlogSiteFrontMatter` both do.
+- An existing Pennington doc site using `AddDocSite` (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
+- Both the old URL (the page being retired) and the new URL (the canonical destination) are known.
+- The front-matter type implements `IRedirectable` — `DocSiteFrontMatter` and `BlogSiteFrontMatter` both do.
 
 To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample) — `Content/main/redirect-source.md` is the fixture this how-to is fenced from.
 
@@ -25,15 +25,15 @@ To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://gith
 
 ### 1. Add `redirectUrl:` to the old page's front matter
 
-Open the markdown file at the old URL and set `redirectUrl:` to the new absolute path. Keep `title:` so diagnostics remain readable; the body will not be rendered.
+Open the markdown file at the old URL and set `redirectUrl:` to the new absolute path. Keep `title:` so diagnostics remain readable; the body is not rendered.
 
 ```markdown:path
 examples/DocSiteKitchenSinkExample/Content/main/redirect-source.md
 ```
 
-### 2. Confirm your front-matter record implements `IRedirectable`
+### 2. Confirm the front-matter record implements `IRedirectable`
 
-The engine looks for the `RedirectUrl` property via `IRedirectable` pattern-matching; `DocSiteFrontMatter` already declares it. If you use a custom front-matter record, add the interface so the pipeline will surface the page as a redirect.
+The engine looks for the `RedirectUrl` property via `IRedirectable` pattern-matching; `DocSiteFrontMatter` already declares it. For a custom front-matter record, add the interface so the pipeline surfaces the page as a redirect.
 
 ```csharp:xmldocid
 T:Pennington.DocSite.DocSiteFrontMatter
@@ -63,9 +63,9 @@ dotnet run --project src/YourDocSite
 
 ## Verify
 
-- Visit the old URL in a browser: expect an immediate redirect to the target set in `redirectUrl`.
-- View the old URL's source: expect `<meta http-equiv="refresh" content="0;url=...">` and a `<link rel="canonical" href="...">` tag pointing at the redirect target.
-- Check `/sitemap.xml` and `/llms.txt`: the old URL must not appear (redirects are filtered by `SitemapBuilder` and `LlmsTxtService`).
+- Visit the old URL in a browser: the page redirects immediately to the target set in `redirectUrl`.
+- View the old URL's source: the markup contains `<meta http-equiv="refresh" content="0;url=...">` and a `<link rel="canonical" href="...">` tag pointing at the redirect target.
+- Check `/sitemap.xml` and `/llms.txt`: the old URL does not appear (redirects are filtered by `SitemapBuilder` and `LlmsTxtService`).
 
 ## Related
 

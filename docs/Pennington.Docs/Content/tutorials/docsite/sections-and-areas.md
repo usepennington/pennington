@@ -11,9 +11,9 @@ tags:
 uid: tutorials.docsite.sections-and-areas
 ---
 
-By the end of this tutorial you'll have a running DocSite at `http://localhost:5000` with an area selector showing **Guides** and **Reference**. Each area renders its own grouped sidebar: *Getting Started* and *Advanced* under Guides, *Core API* and *Extensions* under Reference, with pages sorted by `order:` inside each group.
+By the end of this tutorial the DocSite runs at `http://localhost:5000` with an area selector showing **Guides** and **Reference**. Each area renders its own grouped sidebar: *Getting Started* and *Advanced* under Guides, *Core API* and *Extensions* under Reference, with pages sorted by `order:` inside each group.
 
-You'll walk away knowing that a top-level folder under `Content/` becomes a `ContentArea`, that each subfolder under an area becomes a sidebar section node driven by the folder name rather than by `sectionLabel:`, and that staggering `order:` numbers across sibling sections is how you control which section header appears first.
+The tutorial shows how a top-level folder under `Content/` becomes a `ContentArea`, how each subfolder under an area becomes a sidebar section node driven by the folder name rather than by `sectionLabel:`, and how staggering `order:` numbers across sibling sections controls which section header appears first.
 
 ## Prerequisites
 
@@ -27,7 +27,7 @@ The finished code for this tutorial lives in [`examples/DocSiteSectionsExample`]
 
 ## 1. Start from a flat area and see the limit
 
-Let's begin with a single page parked directly under an area folder — no subfolder, no `sectionLabel:`, no `order:` — so the sidebar has nothing to group. This establishes the baseline you'll improve on through the rest of the tutorial.
+Let's begin with a single page parked directly under an area folder — no subfolder, no `sectionLabel:`, no `order:` — so the sidebar has nothing to group. This establishes the baseline the rest of the tutorial builds on.
 
 ### Step 1.1 — Confirm the two-area host from the scaffolding tutorial
 
@@ -37,9 +37,9 @@ The `Program.cs` file wires up two `ContentArea` entries: `Guides` bound to the 
 examples/DocSiteSectionsExample/Program.cs
 ```
 
-This file stays untouched for the rest of the tutorial. Every change from here on is a filesystem change under `Content/`. The area selector that appears in the top-left of the sidebar is rendered automatically by `MainLayout` whenever `DocSiteOptions.Areas` contains more than one entry — no extra code required.
+This file stays untouched for the rest of the tutorial. Every change from here on is a filesystem change under `Content/`. The area selector at the top-left of the sidebar renders automatically through `MainLayout` whenever `DocSiteOptions.Areas` contains more than one entry — no extra code required.
 
-Notice the two `ContentArea` constructors: the first argument is the label shown in the area selector, the second is the folder name under `Content/`. `AddDocSite` discovers both folders through a single markdown pipeline.
+The two `ContentArea` constructors take a label shown in the area selector, followed by the folder name under `Content/`. `AddDocSite` discovers both folders through a single markdown pipeline.
 
 ### Step 1.2 — Drop a single page into `Content/guides/` with no section or order
 
@@ -53,7 +53,7 @@ Paste the YAML-plus-markdown content above into `Content/guides/install.md`. Wit
 
 ### Checkpoint — A single ungrouped entry under Guides
 
-The sidebar should show the page directly, with no section header above it.
+The sidebar shows the page directly, with no section header above it.
 
 - Run `dotnet run` from `examples/DocSiteSectionsExample`
 - Visit `http://localhost:5000/guides/install`
@@ -77,7 +77,7 @@ The load-bearing rule: **the subfolder name is what creates the sidebar section*
 M:DocSiteSectionsExample.Stage2.Source
 ```
 
-The two keys serve different purposes. `order:` is an integer that sorts pages inside a section — smaller numbers appear first, with ties broken alphabetically on title. `sectionLabel:` is metadata carried on `NavigationInfo.SectionName` and shown in breadcrumbs and prev/next chrome. If the file lives outside a subfolder, `sectionLabel:` has no grouping effect — it is a label, not a grouper.
+The two keys serve different purposes. `order:` is an integer that sorts pages inside a section — smaller numbers appear first, with ties broken alphabetically on title. `sectionLabel:` is metadata carried on `NavigationInfo.SectionName` and shown in breadcrumbs and prev/next chrome. When a file lives outside a subfolder, `sectionLabel:` has no grouping effect — it is a label, not a grouper.
 
 One section, one subfolder. `sectionLabel:` names it in breadcrumbs.
 
@@ -91,7 +91,7 @@ One section, one subfolder. `sectionLabel:` names it in breadcrumbs.
 
 ## 3. Fill in the rest of the Guides area
 
-Let's add the remaining pages to `getting-started/` and `advanced/` so Guides has two sibling sections with staggered `order:` values — the exact pattern that prevents the tie-break surprise.
+Let's add the remaining pages to `getting-started/` and `advanced/` so Guides has two sibling sections with staggered `order:` values — the pattern that prevents the tie-break surprise.
 
 ### Step 3.1 — Add two more pages to `getting-started/` with `order: 20` and `order: 30`
 
@@ -123,7 +123,7 @@ examples/DocSiteSectionsExample/Content/guides/advanced/custom-layouts.md
 examples/DocSiteSectionsExample/Content/guides/advanced/response-pipeline.md
 ```
 
-Stagger `order:` values across sibling sections — 10/20/30 inside `getting-started/` and 40/50 inside `advanced/` — so the two section headers sort in the order you expect. If both sections start at `10`, the navigation builder falls back to alphabetical ordering of the folder names, and `advanced/` would appear above *Getting Started* before you had a chance to wonder why.
+Stagger `order:` values across sibling sections — 10/20/30 inside `getting-started/` and 40/50 inside `advanced/` — so the two section headers sort in the intended order. When both sections start at `10`, the navigation builder falls back to alphabetical ordering of the folder names, and `advanced/` appears above *Getting Started*.
 
 ### Checkpoint — Two sections under Guides, in the intended order
 
@@ -135,7 +135,7 @@ Stagger `order:` values across sibling sections — 10/20/30 inside `getting-sta
 
 ## 4. Populate the Reference area to confirm it repeats the pattern
 
-You'll now apply the same subfolder-plus-staggered-order pattern to the `Reference` area, then switch between both areas using the sidebar's area selector to confirm each gets its own independent sidebar tree.
+The same subfolder-plus-staggered-order pattern applies to the `Reference` area. Switching between both areas through the sidebar's area selector confirms each gets its own independent sidebar tree.
 
 ### Step 4.1 — Fill in `Content/reference/core-api/` with `order: 10` and `order: 20`
 
@@ -174,13 +174,13 @@ Click the area selector pill at the top of the sidebar — the control that togg
 - With the host running, visit `http://localhost:5000/reference/core-api/pennington-options`
 - The sidebar shows **Core API** above **Extensions**, with two pages under each in `order:` sequence
 - Click the area selector to **Guides** — the sidebar replaces itself with the *Getting Started* / *Advanced* groups from unit 3
-- The area selector tracks whichever area you're currently inside as you navigate
+- The area selector tracks the current area as navigation moves between pages
 
 ---
 
 ## Summary
 
-- You can split a DocSite's `Content/` folder into multiple `ContentArea` entries and have each one get its own sidebar tree.
+- A DocSite's `Content/` folder splits into multiple `ContentArea` entries, and each one gets its own sidebar tree.
 - **The subfolder name creates the sidebar section** — `sectionLabel:` is metadata for breadcrumbs and prev/next labels, not a grouper.
-- You can stagger `order:` values across sibling sections (10/20/30 for one, 40/50 for the next) so section headers sort in the order you intend, without relying on alphabetical tie-breaks between folder names.
-- You can predict the shape of the generated sidebar from the shape of the `Content/` folder before running the site.
+- Staggered `order:` values across sibling sections (10/20/30 for one, 40/50 for the next) sort section headers in the intended order, without relying on alphabetical tie-breaks between folder names.
+- The shape of the generated sidebar is predictable from the shape of the `Content/` folder before running the site.

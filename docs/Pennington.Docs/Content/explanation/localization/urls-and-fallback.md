@@ -45,7 +45,7 @@ The default locale is not a special kind of locale — it is the locale that own
 M:Pennington.Infrastructure.LocalizationOptions.StripLocalePrefix(System.String,System.String)
 ```
 
-`StripLocalePrefix` is pure URL math with no file-system knowledge. `ContentResolver` decides whether the stripped path actually resolves to a file, and that separation is what lets the same helper serve both request-time fallback and build-time URL generation.
+`StripLocalePrefix` is pure URL math with no file-system knowledge. `ContentResolver` decides whether the stripped path resolves to a file on disk, and that separation is what lets the same helper serve both request-time fallback and build-time URL generation.
 
 ### Per-locale search indices
 

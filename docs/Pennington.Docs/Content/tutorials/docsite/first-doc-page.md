@@ -11,9 +11,9 @@ tags:
 uid: tutorials.docsite.first-doc-page
 ---
 
-By the end of this tutorial you'll have a running DocSite with a `guides/authoring.md` page that shows a fully-populated front-matter block, a rendered `[!NOTE]` alert, and a three-panel tabbed code group — with the outline nav on the right listing every `##` heading on the page.
+By the end of this tutorial the DocSite has a `guides/authoring.md` page showing a fully-populated front-matter block, a rendered `[!NOTE]` alert, and a three-panel tabbed code group — with the outline nav on the right listing every `##` heading on the page.
 
-You'll know how to populate `DocSiteFrontMatter`, reach for Pennington's GitHub-style alerts, and group adjacent fenced code blocks into a tabbed component without writing a single line of Razor or JavaScript.
+This tutorial covers populating `DocSiteFrontMatter`, reaching for Pennington's GitHub-style alerts, and grouping adjacent fenced code blocks into a tabbed component without writing a single line of Razor or JavaScript.
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ Let's start with the metadata block that drives the sidebar entry, the `<title>`
 
 ### Step 1.1 — Create `Content/guides/authoring.md`
 
-In your `Guides` area folder (`Content/guides/`), create a new file named `authoring.md` and leave it empty for now. The next step fills it in.
+In the `Guides` area folder (`Content/guides/`), create a new file named `authoring.md` and leave it empty for now. The next step fills it in.
 
 ### Step 1.2 — Paste the stage-1 markdown
 
@@ -45,14 +45,14 @@ M:DocSiteAuthorExample.Stage1.Source
 ### Checkpoint — Stage-1 page renders
 
 - Run `dotnet run` from the project folder and visit `http://localhost:5000/guides/authoring`.
-- You should see the h1 "Authoring a doc page", the description rendered as meta, and a sidebar entry labelled "Authoring a doc page" under the `Guides` area.
+- The h1 reads "Authoring a doc page", the description renders as meta, and a sidebar entry labelled "Authoring a doc page" appears under the `Guides` area.
 - The outline nav on the right is empty — there are no `##` headings yet. That changes in unit 2.
 
 ---
 
 ## 2. Add a GitHub-style alert
 
-Pennington recognises the GitHub alert syntax: a block quote whose first line is `[!KIND]`. Adding one gives you a coloured callout and — because the callout introduces a `##` heading above it — your first outline-nav entry.
+Pennington recognises the GitHub alert syntax: a block quote whose first line is `[!KIND]`. Adding one produces a coloured callout and — because the callout introduces a `##` heading above it — the first outline-nav entry.
 
 ### Step 2.1 — Replace the file body with the stage-2 markdown
 
@@ -74,7 +74,7 @@ The supported kinds are `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, and `CAUTION`. Pe
 
 ## 3. Add a tabbed code group
 
-Mark two or more adjacent fenced code blocks with `tabs=true` and a `title="…"` fence argument and Pennington's `TabbedCodeBlockRenderer` groups them into a single ARIA tablist. The tab labels come from each block's `title`.
+Marking two or more adjacent fenced code blocks with `tabs=true` and a `title="…"` fence argument tells Pennington's `TabbedCodeBlockRenderer` to group them into a single ARIA tablist. The tab labels come from each block's `title`.
 
 ### Step 3.1 — Replace the file body with the stage-3 markdown
 
@@ -89,15 +89,15 @@ Each fence still gets normal syntax highlighting based on its language (`bash`, 
 ### Checkpoint — Tabs render and outline nav populates
 
 - Reload `http://localhost:5000/guides/authoring`.
-- The three fenced blocks under "Tabbed code groups" now render as one component with three selectable tabs ("dotnet CLI", "PowerShell", "csproj"); clicking a tab swaps the visible code.
-- The outline nav on the right now shows two entries — "Callouts" and "Tabbed code groups" — each linking to its heading anchor.
+- The three fenced blocks under "Tabbed code groups" render as one component with three selectable tabs ("dotnet CLI", "PowerShell", "csproj"); clicking a tab swaps the visible code.
+- The outline nav on the right shows two entries — "Callouts" and "Tabbed code groups" — each linking to its heading anchor.
 
 ---
 
 ## Summary
 
-- You populated every key `DocSiteFrontMatter` reads — `title`, `description`, `tags`, `sectionLabel`, `order` — and saw them flow through to the sidebar, meta description, and prev/next label.
-- You added a GitHub-style `[!NOTE]` alert and saw Pennington's `CustomAlertInlineParser` turn it into a styled callout.
-- You grouped three adjacent fenced code blocks into a single tabbed component with `tabs=true` and `title="…"`.
-- You watched the outline nav populate automatically from the page's `##` headings — no manual nav wiring.
+- Every key `DocSiteFrontMatter` reads — `title`, `description`, `tags`, `sectionLabel`, `order` — flows through to the sidebar, meta description, and prev/next label.
+- A GitHub-style `[!NOTE]` alert goes through Pennington's `CustomAlertInlineParser` and renders as a styled callout.
+- Three adjacent fenced code blocks with `tabs=true` and `title="…"` become a single tabbed component.
+- The outline nav populates automatically from the page's `##` headings — no manual nav wiring.
 

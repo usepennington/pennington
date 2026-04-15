@@ -7,16 +7,16 @@ sectionLabel: Publishing & Deployment
 tags: [deployment, azure-static-web-apps, cloudflare-pages, netlify]
 ---
 
-You've worked through [Deploy to GitHub Pages](xref:how-to.deployment.github-pages), understand the `dotnet run -- build [baseUrl]` → `output/` → artifact pipeline, and now want to target Azure Static Web Apps, Cloudflare Pages, or Netlify instead. This page only covers the deltas — go back to the GitHub Pages recipe first if you haven't run through it.
+With [Deploy to GitHub Pages](xref:how-to.deployment.github-pages) already in place and the `dotnet run -- build [baseUrl]` → `output/` → artifact pipeline understood, this page covers the deltas for targeting Azure Static Web Apps, Cloudflare Pages, or Netlify instead. Start with the GitHub Pages recipe first — the material here assumes familiarity with it.
 
 ## Assumptions
 
-- You have already worked through [_Deploy to GitHub Pages_](xref:how-to.deployment.github-pages) and the canonical workflow builds cleanly against your project.
-- You have a deploy target account created (SWA resource, Cloudflare Pages project, or Netlify site) and the repo connected.
-- Your site either serves at the host's domain root (`baseUrl = "/"`) or you know the exact sub-path you need to pass as the first positional argument to `build`.
-- You are comfortable editing one host config file per target — the snippets below are complete, not starting points.
+- [_Deploy to GitHub Pages_](xref:how-to.deployment.github-pages) is already working, and the canonical workflow builds cleanly against the project.
+- A deploy target account exists (SWA resource, Cloudflare Pages project, or Netlify site) and the repo is connected.
+- The site serves either at the host's domain root (`baseUrl = "/"`) or under a known sub-path to pass as the first positional argument to `build`.
+- Editing one host config file per target is comfortable territory — the snippets below are complete, not starting points.
 
-To copy a working setup, see [`examples/SubPathDeployableExample`](https://github.com/usepennington/pennington/tree/main/examples/SubPathDeployableExample). The `.github/workflows/deploy.yml`, `staticwebapp.config.json`, and `netlify.toml` siblings are the teaching surface for this page; do not walk through the whole example.
+For a working setup, see [`examples/SubPathDeployableExample`](https://github.com/usepennington/pennington/tree/main/examples/SubPathDeployableExample). The `.github/workflows/deploy.yml`, `staticwebapp.config.json`, and `netlify.toml` siblings are the teaching surface for this page; the rest of the example is outside scope here.
 
 ---
 
@@ -24,7 +24,7 @@ To copy a working setup, see [`examples/SubPathDeployableExample`](https://githu
 
 ### 1. Lock in the four shared values
 
-Every host configuration shares four knobs: the **build command** (`dotnet run --project <your-project> -- build "$BASE_URL"`), the **publish directory** (`output/`, the default from `OutputOptions`), the **.NET SDK pin** (`11.0.x`, matching `setup-dotnet@v4` in the GitHub Pages workflow), and the **base URL** (`/` for apex domains, `/<path>` for sub-path hosting). Note these four values before opening any host dashboard — the per-host files below are each those same four values expressed in that host's syntax.
+Every host configuration shares four knobs: the **build command** (`dotnet run --project <your-project> -- build "$BASE_URL"`), the **publish directory** (`output/`, the default from `OutputOptions`), the **.NET SDK pin** (`11.0.x`, matching `setup-dotnet@v4` in the GitHub Pages workflow), and the **base URL** (`/` for apex domains, `/<path>` for sub-path hosting). Settle on these four values before opening any host dashboard — the per-host files below are each those same four values expressed in that host's syntax.
 
 ```csharp:xmldocid
 M:Pennington.Generation.OutputOptions.FromArgs(System.String[])
@@ -32,7 +32,7 @@ M:Pennington.Generation.OutputOptions.FromArgs(System.String[])
 
 ### 2. Pick your host and copy the per-host deltas
 
-The table below is the authoritative diff against the GitHub Pages workflow — blank cells mean nothing changes from the canonical recipe. Read the row for your host, then continue to the matching step for the host-specific config file.
+The table below is the authoritative diff against the GitHub Pages workflow — blank cells mean nothing changes from the canonical recipe. Find the row for the target host, then continue to the matching step for the host-specific config file.
 
 | Concern | GitHub Pages (canonical) | Azure Static Web Apps | Cloudflare Pages | Netlify |
 |---|---|---|---|---|
@@ -47,7 +47,7 @@ The table below is the authoritative diff against the GitHub Pages workflow — 
 
 ### 3. Azure Static Web Apps — drop in `staticwebapp.config.json`
 
-Commit the JSON below at the repo root; SWA reads it during deploy and applies routes, MIME overrides, nav fallback, and 404 handling. In your SWA workflow (`.github/workflows/azure-static-web-apps-<id>.yml`, generated by the Azure portal), confirm `app_build_command` is `dotnet run --project <your-project> -- build` and `output_location` is `output` — everything else from the canonical GitHub Pages workflow applies unchanged.
+Commit the JSON below at the repo root; SWA reads it during deploy and applies routes, MIME overrides, nav fallback, and 404 handling. In the SWA workflow (`.github/workflows/azure-static-web-apps-<id>.yml`, generated by the Azure portal), confirm `app_build_command` is `dotnet run --project <your-project> -- build` and `output_location` is `output` — everything else from the canonical GitHub Pages workflow applies unchanged.
 
 ```json:path
 examples/SubPathDeployableExample/staticwebapp.config.json
@@ -55,7 +55,7 @@ examples/SubPathDeployableExample/staticwebapp.config.json
 
 ### 4. Netlify — drop in `netlify.toml`
 
-Commit the TOML below at the repo root; Netlify autodetects it and no dashboard build-setting changes are needed beyond linking the repo. `BASE_URL` defaults to `/` — override it in **Site configuration → Environment variables** for sub-path hosting, and the `[[redirects]]` block with `status = 404` routes deep-link misses to the generated `output/404.html`.
+Commit the TOML below at the repo root; Netlify autodetects it and no dashboard build-setting changes are needed beyond linking the repo. `BASE_URL` defaults to `/` — override it in **Site configuration → Environment variables** for sub-path hosting. The `[[redirects]]` block with `status = 404` routes deep-link misses to the generated `output/404.html`.
 
 ```toml:path
 examples/SubPathDeployableExample/netlify.toml
@@ -63,11 +63,11 @@ examples/SubPathDeployableExample/netlify.toml
 
 ### 5. Cloudflare Pages — configure in dashboard (no config file needed)
 
-Cloudflare Pages has no first-party config file equivalent to SWA or Netlify, so configure everything in the project dashboard under **Settings → Builds & deployments**: set **Build command** to `dotnet run --project <your-project> -- build`, **Build output directory** to `output`, and add environment variables `DOTNET_VERSION=11.0.x` and `BASE_URL=/` (or your sub-path). For custom cache headers on `/_content/*`, drop a `_headers` file into `wwwroot/` so it ships as part of `output/` — the directive format matches the Netlify and Azure snippets above.
+Cloudflare Pages has no first-party config file equivalent to SWA or Netlify, so everything goes in the project dashboard under **Settings → Builds & deployments**: set **Build command** to `dotnet run --project <your-project> -- build`, **Build output directory** to `output`, and add environment variables `DOTNET_VERSION=11.0.x` and `BASE_URL=/` (or the relevant sub-path). For custom cache headers on `/_content/*`, drop a `_headers` file into `wwwroot/` so it ships as part of `output/` — the directive format matches the Netlify and Azure snippets above.
 
 ### 6. Pass the right `baseUrl` for the host's URL shape
 
-GitHub Pages defaults to a sub-path; Azure Static Web Apps, Cloudflare Pages, and Netlify default to the apex — so the build argument you pass is usually different. For apex deploys pass nothing (or `/`); for a sub-path pass `/<path>` and `BaseUrlHtmlRewriter` will prefix every internal href, src, and action on the way out. Full details are in [Host under a sub-path (base URL)](xref:how-to.deployment.base-url).
+GitHub Pages defaults to a sub-path; Azure Static Web Apps, Cloudflare Pages, and Netlify default to the apex — so the build argument is usually different. For apex deploys pass nothing (or `/`); for a sub-path pass `/<path>` and `BaseUrlHtmlRewriter` prefixes every internal href, src, and action on the way out. Full details are in [Host under a sub-path (base URL)](xref:how-to.deployment.base-url).
 
 ```csharp:xmldocid
 T:Pennington.Infrastructure.BaseUrlHtmlRewriter
@@ -79,7 +79,7 @@ T:Pennington.Infrastructure.BaseUrlHtmlRewriter
 
 - Trigger a deploy on the target host; the build log shows `setup-dotnet` (or equivalent) picking up `11.0.x`, `dotnet run -- build` exiting zero, and the host uploading `output/` as the publish directory.
 - Open the deployed URL — the landing page loads, nested links resolve, and view-source shows the expected `<body data-base-url="...">` (empty or `/<path>/` depending on the host).
-- Visit a non-existent path like `/does-not-exist/` — the response body is the generated `output/404.html`, not the host's default 404 shell.
+- Visit a non-existent path like `/does-not-exist/` — the response body is the generated `output/404.html` rather than the host's default 404 shell.
 
 ## Related
 

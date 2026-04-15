@@ -7,13 +7,13 @@ sectionLabel: Content Authoring
 tags: [images, assets, wwwroot, authoring]
 ---
 
-Use this guide when you want to embed an image that belongs to exactly one page — colocate it under `Content/` alongside its markdown file. When the same file is needed on multiple pages (a logo, a cover photo, a shared diagram), put it in `wwwroot/` instead. If you haven't yet added your first markdown page, start with <xref:tutorials.getting-started.first-page>.
+To embed an image that belongs to exactly one page, colocate it under `Content/` alongside its markdown file. When the same file is needed on multiple pages (a logo, a cover photo, a shared diagram), put it in `wwwroot/` instead. For a starting point, see <xref:tutorials.getting-started.first-page>.
 
 ## Assumptions
 
-- You have an existing Pennington site with at least one markdown page.
-- You know which markdown file you want the image to appear on.
-- Your project has a `wwwroot/` folder for shared static files (the default for Web SDK projects).
+- An existing Pennington site with at least one markdown page.
+- The target markdown file is known.
+- The project has a `wwwroot/` folder for shared static files (the default for Web SDK projects).
 
 To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample).
 
@@ -51,11 +51,11 @@ Write the markdown image with a leading slash so it resolves at the site root re
 ![Alt text](/shared.png)
 ```
 
-If you deploy under a sub-path, `BaseUrlHtmlRewriter` prepends the base URL at response time — do not hard-code the sub-path.
+When deploying under a sub-path, `BaseUrlHtmlRewriter` prepends the base URL at response time — avoid hard-coding the sub-path.
 
 ### 5. (Optional) Exclude an asset subtree from the copy pass
 
-If a folder under `Content/` should not be copied to output, list it in `MarkdownContentServiceOptions.ExcludePaths` when calling `AddMarkdownContent<T>`. The copy pass skips any relative path matched by `ExcludePaths`.
+To keep a folder under `Content/` out of the output, list it in `MarkdownContentServiceOptions.ExcludePaths` when calling `AddMarkdownContent<T>`. The copy pass skips any relative path matched by `ExcludePaths`.
 
 <!-- TODO: xmldocid needed -->
 

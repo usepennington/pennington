@@ -41,7 +41,7 @@ T:Pennington.Infrastructure.FileWatchDependencyFactory`1
 
 `LiveReloadServer` is a singleton that subscribes to the same `IFileWatcher.SubscribeToChanges` hook in its constructor and maintains a `ConcurrentDictionary<string, WebSocket>` of connected browser sessions. On any watcher notification it walks the dictionary, sends the string `"reload"` to every open socket, and prunes closed ones. The endpoint is mapped at `/__pennington/reload` as a WebSocket path; when a browser upgrades the connection, `HandleAsync` parks it until the client disconnects.
 
-The browser-side script wires `ws.onmessage` to `location.reload()` and `ws.onclose` to a one-second reconnect loop. This is what makes the experience feel seamless after `dotnet watch` restarts Kestrel: the browser reconnects automatically on the next tick, receives the next `"reload"` from the refreshed server, and the developer never touches F5.
+The browser-side script wires `ws.onmessage` to `location.reload()` and `ws.onclose` to a one-second reconnect loop. This is what makes the experience feel seamless after `dotnet watch` restarts Kestrel: the browser reconnects automatically on the next tick, receives the next `"reload"` from the refreshed server, and no manual F5 is needed.
 
 ```csharp:xmldocid
 T:Pennington.Infrastructure.LiveReloadServer

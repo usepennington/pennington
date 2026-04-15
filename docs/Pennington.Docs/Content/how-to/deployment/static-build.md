@@ -7,15 +7,15 @@ sectionLabel: Publishing & Deployment
 tags: [build, deployment, output-generation, build-report]
 ---
 
-When you have a working Pennington site running under `dotnet run` and need a folder of static HTML to hand to a static host, run the app in build mode. There is no separate build project — the same `Program.cs` that serves the site locally crawls itself over HTTP and writes the result to disk, so what you test locally is exactly what ships.
+To turn a working Pennington site running under `dotnet run` into a folder of static HTML for a static host, run the app in build mode. There is no separate build project — the same `Program.cs` that serves the site locally crawls itself over HTTP and writes the result to disk, so the locally tested site is exactly what ships.
 
 For platform-specific upload steps, see <xref:how-to.deployment.github-pages>. For sites hosted under a sub-path, see <xref:how-to.deployment.base-url>.
 
 ## Assumptions
 
-- You have a working Pennington site that serves under `dotnet run` (see <xref:tutorials.getting-started.first-site> if not)
-- Your host composes `RunOrBuildAsync` (directly, or via `RunDocSiteAsync` / `RunBlogSiteAsync`)
-- You can write to a local directory — the build deletes and re-creates `output/` by default
+- A working Pennington site that serves under `dotnet run` (see <xref:tutorials.getting-started.first-site> if not)
+- The host composes `RunOrBuildAsync` (directly, or via `RunDocSiteAsync` / `RunBlogSiteAsync`)
+- A writable local directory — the build deletes and re-creates `output/` by default
 
 ---
 
@@ -23,13 +23,13 @@ For platform-specific upload steps, see <xref:how-to.deployment.github-pages>. F
 
 ### 1. Confirm the host calls `RunOrBuildAsync`
 
-`RunOrBuildAsync` is the single switch: no arguments means dev serve, `build` as the first argument triggers the crawl-and-write path. Most apps already route through it via `RunDocSiteAsync` or `RunBlogSiteAsync`. Check the tail of your `Program.cs` to confirm.
+`RunOrBuildAsync` is the single switch: no arguments means dev serve, `build` as the first argument triggers the crawl-and-write path. Most apps already route through it via `RunDocSiteAsync` or `RunBlogSiteAsync`. The tail of `Program.cs` confirms it.
 
 ```csharp:path
 examples/SubPathDeployableExample/Program.cs
 ```
 
-If you need custom exit-code semantics — for example, failing CI on broken links but not on warnings — replace the call with the explicit switch written out longhand:
+For custom exit-code semantics — for example, failing CI on broken links but not on warnings — replace the call with the explicit switch written out longhand:
 
 ```csharp:xmldocid,bodyonly
 M:SubPathDeployableExample.BuildHost.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])
@@ -58,7 +58,7 @@ M:Pennington.Generation.OutputOptions.FromArgs(System.String[])
 
 ### 3. Understand what the crawler does
 
-`OutputGenerationService` starts the real ASP.NET host, opens an `HttpClient` against the first bound URL, and issues a GET for every route discovered by `IContentService.DiscoverAsync` plus every `MapGet` endpoint. Every page passes through the live response-processor pipeline — xref resolution, locale prefixing, base-URL rewriting, MonorailCSS class collection, and diagnostics behave identically in dev and build. This is the deliberate invariant, not an accident.
+`OutputGenerationService` starts the real ASP.NET host, opens an `HttpClient` against the first bound URL, and issues a GET for every route discovered by `IContentService.DiscoverAsync` plus every `MapGet` endpoint. Every page passes through the live response-processor pipeline — xref resolution, locale prefixing, base-URL rewriting, MonorailCSS class collection, and diagnostics behave identically in dev and build. This is a deliberate invariant.
 
 ```csharp:xmldocid
 T:Pennington.Generation.OutputGenerationService
@@ -74,7 +74,7 @@ When the crawl finishes, `RunOrBuildAsync` writes a human-readable report and ex
 T:Pennington.Generation.BuildReport
 ```
 
-For a custom CI presentation such as a GitHub Actions summary, print the report yourself:
+For a custom CI presentation such as a GitHub Actions summary, print the report directly:
 
 ```csharp:xmldocid,bodyonly
 M:SubPathDeployableExample.BuildHost.PrintBuildReport(Pennington.Generation.BuildReport)
@@ -82,7 +82,7 @@ M:SubPathDeployableExample.BuildHost.PrintBuildReport(Pennington.Generation.Buil
 
 ### 5. Fix what the report flags before shipping
 
-`BrokenLinks` surfaces internal hrefs that did not resolve to a generated page — usually a typo or a moved file that no xref caught. `FailedPages` surfaces routes whose parse or render raised an exception, each carrying the originating `ContentRoute` so you can locate the source. Warnings are advisory and do not set `HasErrors` on their own, but a warning that represents a broken link will flip the flag.
+`BrokenLinks` surfaces internal hrefs that did not resolve to a generated page — usually a typo or a moved file that no xref caught. `FailedPages` surfaces routes whose parse or render raised an exception, each carrying the originating `ContentRoute` so the source is easy to locate. Warnings are advisory and do not set `HasErrors` on their own, but a warning that represents a broken link flips the flag.
 
 ```csharp:xmldocid
 P:Pennington.Generation.BuildReport.BrokenLinks

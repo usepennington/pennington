@@ -7,13 +7,13 @@ sectionLabel: Content Authoring
 tags: [navigation, sidebar, sections, ordering]
 ---
 
-Use this guide when you have a DocSite with pages grouped under subfolders and you want to adjust the auto-generated sidebar — reordering siblings, making one page the section landing, renaming the section header, or hiding a page. These adjustments use front-matter keys and folder naming. To replace the sidebar component itself, see the extensibility guide for overriding DocSite components.
+When a DocSite groups pages under subfolders, the auto-generated sidebar may need adjustment — reordering siblings, making one page the section landing, renaming the section header, or hiding a page. These adjustments use front-matter keys and folder naming. To replace the sidebar component itself, see the extensibility guide for overriding DocSite components.
 
 ## Assumptions
 
-- You have a Pennington DocSite with markdown under `Content/<area>/` and at least one subfolder (the subfolder is what creates a sidebar group — see [Work with front matter](xref:how-to.content-authoring.front-matter) if not)
-- Your pages use `DocSiteFrontMatter` or another type that implements `IOrderable` + `ISectionable`
-- You understand the basics of `order:` and `isDraft:` — if not, start with [Manage drafts, tags, and ordering](xref:how-to.content-authoring.drafts-tags-ordering)
+- A Pennington DocSite has markdown under `Content/<area>/` with at least one subfolder (the subfolder is what creates a sidebar group — see [Work with front matter](xref:how-to.content-authoring.front-matter) if not)
+- Pages use `DocSiteFrontMatter` or another type that implements `IOrderable` + `ISectionable`
+- The basics of `order:` and `isDraft:` are familiar — if not, start with [Manage drafts, tags, and ordering](xref:how-to.content-authoring.drafts-tags-ordering)
 
 For a working reference, see `examples/DocSiteKitchenSinkExample` — `Content/main/customize-sidebar.md` exercises the same keys.
 
@@ -40,7 +40,7 @@ P:Pennington.DocSite.DocSiteFrontMatter.Order
 
 ### 2. Promote a page to be the section landing
 
-Name the file `index.md` inside the section subfolder (for example `Content/main/widgets/index.md`). Pennington routes it at the subfolder URL and `NavigationBuilder` surfaces it as the section's lead entry rather than a separate child. Give it a low `order:` — typically `10` — so the entire section also sorts earlier, because the section's aggregate sort key is the minimum `order:` of its direct children.
+Name the file `index.md` inside the section subfolder (for example `Content/main/widgets/index.md`). Pennington routes it at the subfolder URL and `NavigationBuilder` surfaces it as the section's lead entry rather than a separate child. A low `order:` — typically `10` — sorts the entire section earlier, because the section's aggregate sort key is the minimum `order:` of its direct children.
 
 ```yaml
 ---
@@ -59,7 +59,7 @@ examples/DocSiteKitchenSinkExample/Content/main/index.md
 
 ### 3. Override the displayed section title
 
-The sidebar section header comes from the folder name, with kebab-case converted to title case by `NavigationBuilder` (for example `getting-started` becomes "Getting Started"). To change what the sidebar prints, rename the folder. The front-matter `sectionLabel:` key is separate — it sets the page-context label surfaced on `NavigationInfo.SectionName` for breadcrumbs and current-page context, not the sidebar group header.
+The sidebar section header comes from the folder name, with kebab-case converted to title case by `NavigationBuilder` (for example `getting-started` becomes "Getting Started"). Renaming the folder changes what the sidebar prints. The front-matter `sectionLabel:` key is separate — it sets the page-context label surfaced on `NavigationInfo.SectionName` for breadcrumbs and current-page context, not the sidebar group header.
 
 ```yaml
 ---
@@ -76,7 +76,7 @@ P:Pennington.DocSite.DocSiteFrontMatter.SectionLabel
 
 ### 4. Hide a page from the sidebar
 
-Set `isDraft: true` to keep the page compiled — so `xref:` links still resolve — while dropping it from the sidebar, the search index, and `llms.txt`. A page with `redirectUrl:` is also omitted from the sidebar regardless of other keys, because the engine treats redirects as transport hops rather than content.
+Set `isDraft: true` to keep the page compiled — so `xref:` links still resolve — while dropping it from the sidebar, the search index, and `llms.txt`. A page with `redirectUrl:` is also omitted from the sidebar regardless of other keys; the engine treats redirects as transport hops rather than content.
 
 ```yaml
 ---

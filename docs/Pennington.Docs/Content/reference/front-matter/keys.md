@@ -15,7 +15,7 @@ The flat catalog of YAML keys parsed into the four shipped `IFrontMatter` record
 T:Pennington.FrontMatter.IFrontMatter
 ```
 
-The base interface every front-matter record implements; default interface members supply the opt-out values (`IsDraft = false`, `Search = true`, `Llms = true`, `Uid = null`, `Description = null`, `Date = null`) so records only declare what they actually parse.
+The base interface every front-matter record implements; default interface members supply the opt-out values (`IsDraft = false`, `Search = true`, `Llms = true`, `Uid = null`, `Description = null`, `Date = null`) so records only declare what they parse.
 
 ## Keys
 

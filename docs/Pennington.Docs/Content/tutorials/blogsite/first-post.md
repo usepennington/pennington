@@ -11,7 +11,7 @@ tags:
 uid: tutorials.blogsite.first-post
 ---
 
-By the end of this tutorial you'll have a running BlogSite at `http://localhost:5000` whose home page, archive, per-tag index, and `/rss.xml` all surface a single, fully-populated post — the placeholder from the scaffold tutorial replaced by your own. You'll know every `BlogSiteFrontMatter` field a post author touches, how each one lights up a different blog surface, and how to confirm RSS is on by opening `/rss.xml`.
+By the end of this tutorial, a running BlogSite at `http://localhost:5000` surfaces a single, fully-populated post on the home page, the archive, the per-tag index, and `/rss.xml` — the placeholder from the scaffold tutorial swapped for a post of your own. Along the way, every `BlogSiteFrontMatter` field a post author touches comes into view, along with the surface each one lights up and how to confirm RSS is on by opening `/rss.xml`.
 
 ## Prerequisites
 
@@ -25,11 +25,11 @@ The finished code for this tutorial lives in [`examples/BlogSiteFirstPostExample
 
 ## 1. Start from a bare-minimum front-matter block
 
-You'll replace the scaffold's placeholder post with a new file `Content/Blog/my-first-post.md` that carries only the three fields every post truly needs — `title`, `description`, and `date` — then confirm it renders on the home listing, the archive, and the RSS feed even in this minimal state.
+This section replaces the scaffold's placeholder post with a new file `Content/Blog/my-first-post.md` that carries only the three fields every post truly needs — `title`, `description`, and `date` — then confirms it renders on the home listing, the archive, and the RSS feed even in this minimal state.
 
 ### Step 1.1 — Delete `Content/Blog/hello-world.md` and create `my-first-post.md`
 
-The scaffold tutorial left a placeholder post named `hello-world.md` in `Content/Blog/`. Delete it, then create a new file `my-first-post.md` in the same folder. The filename (minus `.md`) becomes the URL slug, so the post will serve at `/blog/my-first-post/`.
+The scaffold tutorial left a placeholder post named `hello-world.md` in `Content/Blog/`. Delete it, then create a new file `my-first-post.md` in the same folder. The filename (minus `.md`) becomes the URL slug, so the post serves at `/blog/my-first-post/`.
 
 ### Step 1.2 — Paste in title, description, and date only
 
@@ -39,12 +39,12 @@ Paste the Stage 1 markdown body into the new file. These three fields are the sm
 M:BlogSiteFirstPostExample.Stage1.Source
 ```
 
-The two `---` fences delimit the YAML front matter block. The `date:` value is parsed as an ISO-8601 date; any format that round-trips as a date string works fine. For the full list of recognised front-matter keys, see the <xref:reference.blogsite.frontmatter> reference page.
+The two `---` fences delimit the YAML front matter block. The `date:` value parses as an ISO-8601 date; any format that round-trips as a date string works. For the full list of recognised front-matter keys, see the <xref:reference.blogsite.frontmatter> reference page.
 
 ### Checkpoint — The new post replaces the scaffold placeholder
 
 - Run `dotnet run` from the example project
-- Visit `http://localhost:5000/` — you should see a single recent-posts card titled **Shipping a tiny content engine for weekend projects** with the stage-1 description
+- Visit `http://localhost:5000/` — a single recent-posts card titled **Shipping a tiny content engine for weekend projects** appears with the stage-1 description
 - Visit `http://localhost:5000/archive` — the same post appears as the only archive entry, dated **2026-04-10**
 - Visit `http://localhost:5000/blog/my-first-post/` — the post body renders with its H1 and paragraph text
 
@@ -52,7 +52,7 @@ The two `---` fences delimit the YAML front matter block. The `date:` value is p
 
 ## 2. Populate every `BlogSiteFrontMatter` field
 
-Now let's expand the front-matter block to populate every `BlogSiteFrontMatter` field a post author touches — `author`, `tags`, `series`, `repository`, `sectionLabel`, and `redirectUrl` — and watch each one light up a different surface in the running site.
+Next, the front-matter block expands to cover every `BlogSiteFrontMatter` field a post author touches — `author`, `tags`, `series`, `repository`, `sectionLabel`, and `redirectUrl` — and each one lights up a different surface in the running site.
 
 ### Step 2.1 — Replace the front matter with the fully-populated block
 
@@ -73,29 +73,29 @@ The list-of-strings shape for `tags:` is YAML's block sequence (`- value` per li
 
 ### Step 2.2 — Reload and confirm every surface lit up
 
-With the file saved, reload the running site and verify each new field in turn. No code changes are needed — the host from the scaffold tutorial is untouched.
+With the file saved, reload the running site and verify each new field in turn. No code changes are needed — the host from the scaffold tutorial stays untouched.
 
 ### Checkpoint — Each field has a visible home
 
-- Visit `http://localhost:5000/blog/my-first-post/` — the post header now shows the byline **Author Name**, the series banner **Pennington Field Notes**, three tag chips (**pennington**, **dotnet**, **blogging**), and a **Source Code** link card pointing at the `repository:` URL
+- Visit `http://localhost:5000/blog/my-first-post/` — the post header shows the byline **Author Name**, the series banner **Pennington Field Notes**, three tag chips (**pennington**, **dotnet**, **blogging**), and a **Source Code** link card pointing at the `repository:` URL
 - Visit `http://localhost:5000/tags/pennington/` — the post appears on the per-tag index; repeat for `/tags/dotnet/` and `/tags/blogging/`
-- Visit `http://localhost:5000/archive` — the archive card now shows the longer description from the Stage 2 block
+- Visit `http://localhost:5000/archive` — the archive card carries the longer description from the Stage 2 block
 
 ---
 
 ## 3. Turn on the built-in RSS feed
 
-Let's make the RSS wiring explicit. `EnableRss` already defaults to `true`, but adding the line to source gives you a concrete symbol to flip when you want to turn the feed off, and lets us verify that the populated front matter reached the feed items.
+Now to make the RSS wiring explicit. `EnableRss` already defaults to `true`, but putting the line in source gives a concrete symbol to flip when turning the feed off, and confirms that the populated front matter reached the feed items.
 
 ### Step 3.1 — Set `EnableRss = true` explicitly in `Program.cs`
 
-Open `Program.cs` from the scaffold tutorial and add one explicit line inside the `AddBlogSite(...)` block: `EnableRss = true,`. This mirrors the default (see the `EnableRss` row in [`BlogSiteOptions`](xref:reference.options.blogsite-options)) but makes intent clear. Also confirm that `CanonicalBaseUrl` is set — it already is from the scaffold — because the RSS feed uses it to build absolute `<link>` elements.
+Open `Program.cs` from the scaffold tutorial and add one explicit line inside the `AddBlogSite(...)` block: `EnableRss = true,`. This mirrors the default (see the `EnableRss` row in [`BlogSiteOptions`](xref:reference.options.blogsite-options)) but makes the intent clear. Also confirm `CanonicalBaseUrl` is set — it already is from the scaffold — because the RSS feed uses it to build absolute `<link>` elements.
 
 ```csharp:path
 examples/BlogSiteFirstPostExample/Program.cs
 ```
 
-`UseBlogSite()` maps the `/rss.xml` route when `EnableRss` is `true` (see [Built-in BlogSite routes](xref:reference.blogsite.routes)). The template builds the feed — your populated front matter is what makes each feed item meaningful.
+`UseBlogSite()` maps the `/rss.xml` route when `EnableRss` is `true` (see [Built-in BlogSite routes](xref:reference.blogsite.routes)). The template builds the feed — populated front matter is what makes each feed item meaningful.
 
 ### Step 3.2 — Open `/rss.xml` and confirm the post is an entry
 
@@ -104,14 +104,14 @@ Visit `http://localhost:5000/rss.xml` in the browser (or `curl` it). Confirm the
 ### Checkpoint — A valid RSS feed with the populated post
 
 - Visit `http://localhost:5000/rss.xml` — the browser either renders the feed (Firefox) or shows raw XML (Chrome/Edge)
-- Confirm the `<channel>` carries the site title **First Post Blog** and the configured description
-- Confirm a single `<item>` element contains `<title>Shipping a tiny content engine for weekend projects</title>`, `<description>` with the stage-2 text, `<pubDate>` for **10 Apr 2026**, `<author>Author Name</author>`, and a `<link>` whose value starts with the configured `CanonicalBaseUrl`
+- The `<channel>` carries the site title **First Post Blog** and the configured description
+- A single `<item>` element contains `<title>Shipping a tiny content engine for weekend projects</title>`, `<description>` with the stage-2 text, `<pubDate>` for **10 Apr 2026**, `<author>Author Name</author>`, and a `<link>` whose value starts with the configured `CanonicalBaseUrl`
 
 ---
 
 ## Summary
 
-- You can author a Pennington blog post backed by `BlogSiteFrontMatter` and predict which blog surface each field drives — title/description/date for listings, author for byline and RSS, tags for `/tags/<tag>/` indexes, series for the shared banner, repository for the source-code link card.
-- You know that `AddBlogSite` binds `AddMarkdownContent<BlogSiteFrontMatter>` — not the core `BlogFrontMatter` — so the YAML keys your posts accept are the ones on `BlogSiteFrontMatter`.
-- You can turn on (or off) the built-in RSS feed with `EnableRss` on `BlogSiteOptions`, and you've seen how populated front matter flows into every RSS item element.
-- You can drop a new `Content/Blog/*.md` file and watch it appear on the home page, the archive, every tag it claims, and `/rss.xml` without touching `Program.cs` again.
+- A Pennington blog post backed by `BlogSiteFrontMatter` maps predictably onto each blog surface — title/description/date for listings, author for byline and RSS, tags for `/tags/<tag>/` indexes, series for the shared banner, repository for the source-code link card.
+- `AddBlogSite` binds `AddMarkdownContent<BlogSiteFrontMatter>` — not the core `BlogFrontMatter` — so the YAML keys a post accepts are the ones on `BlogSiteFrontMatter`.
+- The `EnableRss` option on `BlogSiteOptions` turns the built-in RSS feed on or off, and populated front matter flows into every RSS item element.
+- Dropping a new `Content/Blog/*.md` file brings it straight to the home page, the archive, every tag it claims, and `/rss.xml` — no `Program.cs` changes needed.

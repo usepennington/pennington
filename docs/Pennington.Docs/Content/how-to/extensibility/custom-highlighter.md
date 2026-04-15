@@ -7,15 +7,15 @@ sectionLabel: Extensibility
 tags: [highlighting, extensibility, textmate, code-blocks]
 ---
 
-Use this approach when you have fences tagged with a language token — a DSL, config format, or domain notation — that TextMateSharp does not cover, and you want styled output without authoring a full TextMate grammar. If you only need line-level callouts on an already-supported language, see <xref:how-to.content-authoring.code-annotations>. When the goal is transforming fence bodies rather than colouring tokens, see <xref:how-to.extensibility.code-block-preprocessor>.
+Use this approach for fences tagged with a language token — a DSL, config format, or domain notation — that TextMateSharp does not cover, when styled output is the goal but authoring a full TextMate grammar is not. For line-level callouts on an already-supported language, see <xref:how-to.content-authoring.code-annotations>. When the goal is transforming fence bodies rather than colouring tokens, see <xref:how-to.extensibility.code-block-preprocessor>.
 
 ## Assumptions
 
-- You have an existing Pennington site rendering markdown fences (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
-- The language you want to highlight is not already served by `TextMateHighlighter` (priority 50) or `ShellHighlighter` (priority 75) — confirm by rendering a fence and inspecting the emitted HTML for the built-in token spans.
-- You are comfortable producing HTML for a fence body yourself — `ICodeHighlighter.Highlight` returns a raw HTML string, so your implementation owns escaping and the outer `<pre><code>` wrapper.
+- An existing Pennington site rendering markdown fences (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
+- A target language not already served by `TextMateHighlighter` (priority 50) or `ShellHighlighter` (priority 75) — confirm by rendering a fence and inspecting the emitted HTML for the built-in token spans.
+- Comfort producing HTML for a fence body by hand — `ICodeHighlighter.Highlight` returns a raw HTML string, so the implementation owns escaping and the outer `<pre><code>` wrapper.
 
-To copy a working setup, see [`examples/ExtensibilityLabExample`](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample) — `PipelineHighlighter.cs` stakes out a fictional `pipeline` DSL and `Program.cs` registers it against a bare `AddPennington` host.
+For a working setup, see [`examples/ExtensibilityLabExample`](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample) — `PipelineHighlighter.cs` stakes out a fictional `pipeline` DSL and `Program.cs` registers it against a bare `AddPennington` host.
 
 ---
 
@@ -31,7 +31,7 @@ T:ExtensibilityLabExample.PipelineHighlighter
 
 ### 2. Declare `SupportedLanguages`
 
-Every language token returned here maps to a fence language (for example, ` ```pipeline `) that routes to your highlighter. Use `StringComparer.OrdinalIgnoreCase` when you want `Pipeline` and `PIPELINE` to match as well.
+Every language token returned here maps to a fence language (for example, ` ```pipeline `) that routes to the highlighter. Use `StringComparer.OrdinalIgnoreCase` to match `Pipeline` and `PIPELINE` as well.
 
 ```csharp:xmldocid
 P:ExtensibilityLabExample.PipelineHighlighter.SupportedLanguages
@@ -39,7 +39,7 @@ P:ExtensibilityLabExample.PipelineHighlighter.SupportedLanguages
 
 ### 3. Set `Priority`
 
-Higher priority wins when multiple highlighters claim the same language. The built-in chain places `PlainTextHighlighter` at 0, `TextMateHighlighter` at 50, and `ShellHighlighter` at 75. The example uses 100 so the `pipeline` fence routes here even if a future TextMate grammar also claims it, while leaving room below for any secondary fallbacks you ship alongside.
+Higher priority wins when multiple highlighters claim the same language. The built-in chain places `PlainTextHighlighter` at 0, `TextMateHighlighter` at 50, and `ShellHighlighter` at 75. The example uses 100 so the `pipeline` fence routes here even if a future TextMate grammar also claims it, while leaving room below for any secondary fallbacks that ship alongside.
 
 ```csharp:xmldocid
 P:ExtensibilityLabExample.PipelineHighlighter.Priority
@@ -47,7 +47,7 @@ P:ExtensibilityLabExample.PipelineHighlighter.Priority
 
 ### 4. Produce the fence HTML in `Highlight`
 
-`Highlight` receives the raw fence body and the language token and must return the full HTML for the block, including the outer `<pre><code>` wrapper — the same convention the built-in highlighters follow. HTML-encode every character you do not explicitly wrap in a span; the pipeline example uses `WebUtility.HtmlEncode` on every literal path to prevent injection.
+`Highlight` receives the raw fence body and the language token and returns the full HTML for the block, including the outer `<pre><code>` wrapper — the same convention the built-in highlighters follow. HTML-encode every character not explicitly wrapped in a span; the pipeline example uses `WebUtility.HtmlEncode` on every literal path to prevent injection.
 
 ```csharp:xmldocid
 M:ExtensibilityLabExample.PipelineHighlighter.Highlight(System.String,System.String)
@@ -55,7 +55,7 @@ M:ExtensibilityLabExample.PipelineHighlighter.Highlight(System.String,System.Str
 
 ### 5. Register with `HighlightingOptions.AddHighlighter`
 
-`PenningtonOptions.Highlighting` exposes an `AddHighlighter` overload that inserts your instance into the priority-sorted chain resolved by `HighlightingService`. Call it inside the `AddPennington` delegate so the highlighter is active for both `dotnet run` and `dotnet run -- build output`.
+`PenningtonOptions.Highlighting` exposes an `AddHighlighter` overload that inserts the instance into the priority-sorted chain resolved by `HighlightingService`. Call it inside the `AddPennington` delegate so the highlighter is active for both `dotnet run` and `dotnet run -- build output`.
 
 ```csharp:xmldocid,bodyonly
 M:Pennington.Infrastructure.HighlightingOptions.AddHighlighter(Pennington.Highlighting.ICodeHighlighter)
@@ -63,7 +63,7 @@ M:Pennington.Infrastructure.HighlightingOptions.AddHighlighter(Pennington.Highli
 
 ### 6. Author a fence that targets your language
 
-Any markdown fence tagged with one of the strings from `SupportedLanguages` now routes to your highlighter instead of the fallback chain.
+Any markdown fence tagged with one of the strings from `SupportedLanguages` now routes to the custom highlighter instead of the fallback chain.
 
 ```markdown
 ```pipeline

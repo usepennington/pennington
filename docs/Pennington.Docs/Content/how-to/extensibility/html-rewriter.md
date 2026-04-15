@@ -7,15 +7,15 @@ sectionLabel: Extensibility
 tags: [html-rewriting, extensibility, anglesharp, response-pipeline]
 ---
 
-Use this approach when you need to mutate HTML that has already been rendered — rewrite anchors, inject attributes, normalise URLs, strip sentinels — without reparsing the document yourself. For non-HTML response types (JSON, plain text) or passes that must see the final byte stream after every rewriter has run, use <xref:how-to.extensibility.response-processor> instead.
+Use this approach to mutate HTML that has already been rendered — rewrite anchors, inject attributes, normalise URLs, strip sentinels — without reparsing the document by hand. For non-HTML response types (JSON, plain text) or passes that need the final byte stream after every rewriter has run, use <xref:how-to.extensibility.response-processor> instead.
 
 ## Assumptions
 
-- You have an existing Pennington site rendering HTML pages (see the <xref:tutorials.getting-started.first-site> if not).
-- You understand that `HtmlResponseRewritingProcessor` parses each response body with AngleSharp exactly once and invokes every registered rewriter against that shared `IDocument` — so your `ApplyAsync` mutates the same tree the xref, locale, and base-URL rewriters already touched.
-- You know which phase fits your edit: a non-HTML token (something that is not valid HTML structure, like `<xref:uid>` or a sentinel comment) belongs in `PreParseAsync`; anything queryable by selectors belongs in `ApplyAsync`.
+- An existing Pennington site rendering HTML pages (see the <xref:tutorials.getting-started.first-site> if not).
+- Awareness that `HtmlResponseRewritingProcessor` parses each response body with AngleSharp exactly once and invokes every registered rewriter against that shared `IDocument` — so `ApplyAsync` mutates the same tree the xref, locale, and base-URL rewriters already touched.
+- A clear sense of which phase fits the edit: a non-HTML token (something that is not valid HTML structure, like `<xref:uid>` or a sentinel comment) belongs in `PreParseAsync`; anything queryable by selectors belongs in `ApplyAsync`.
 
-To copy a working setup, see [`examples/ExtensibilityLabExample`](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample) — `AnchorLowercaseRewriter.cs` exercises both halves of the contract and `Program.cs` registers it against a bare `AddPennington` host.
+For a working setup, see [`examples/ExtensibilityLabExample`](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample) — `AnchorLowercaseRewriter.cs` exercises both halves of the contract and `Program.cs` registers it against a bare `AddPennington` host.
 
 ---
 
@@ -31,7 +31,7 @@ T:ExtensibilityLabExample.AnchorLowercaseRewriter
 
 ### 2. Gate work with `ShouldApply`
 
-`ShouldApply` runs per-response; return `false` to skip both phases when the content-type, path, or headers mean you have nothing to do. The example narrows to `text/html` responses so non-HTML endpoints (search index JSON, llms.txt) bypass the rewriter entirely.
+`ShouldApply` runs per-response; return `false` to skip both phases when the content-type, path, or headers mean there is nothing to do. The example narrows to `text/html` responses so non-HTML endpoints (search index JSON, llms.txt) bypass the rewriter entirely.
 
 ```csharp:xmldocid
 M:ExtensibilityLabExample.AnchorLowercaseRewriter.ShouldApply(Microsoft.AspNetCore.Http.HttpContext)
@@ -39,7 +39,7 @@ M:ExtensibilityLabExample.AnchorLowercaseRewriter.ShouldApply(Microsoft.AspNetCo
 
 ### 3. Use `PreParseAsync` for non-HTML tokens
 
-`PreParseAsync` receives the raw HTML string before AngleSharp parses it and returns the string to parse — use it only when the construct you are rewriting is not valid HTML structure (raw `<xref:uid>` tags are the canonical shipped example; the lab strips a sentinel comment). Return the input unchanged when there is nothing to do so you do not pay for an allocation on every response.
+`PreParseAsync` receives the raw HTML string before AngleSharp parses it and returns the string to parse — use it only when the target construct is not valid HTML structure (raw `<xref:uid>` tags are the canonical shipped example; the lab strips a sentinel comment). Return the input unchanged when there is nothing to do, to avoid paying for an allocation on every response.
 
 ```csharp:xmldocid
 M:ExtensibilityLabExample.AnchorLowercaseRewriter.PreParseAsync(System.String,Microsoft.AspNetCore.Http.HttpContext)
@@ -47,7 +47,7 @@ M:ExtensibilityLabExample.AnchorLowercaseRewriter.PreParseAsync(System.String,Mi
 
 ### 4. Use `ApplyAsync` for DOM edits
 
-`ApplyAsync` receives the already-parsed `IDocument` shared by every rewriter in this pass — query with `QuerySelectorAll`, mutate attributes and text, and return; do not re-serialize or reparse. The example lowercases the text content of every `<a data-lowercase>`; more typical uses are href canonicalisation, `loading="lazy"` on images, or stamping `rel="noopener"` on external links.
+`ApplyAsync` receives the already-parsed `IDocument` shared by every rewriter in this pass — query with `QuerySelectorAll`, mutate attributes and text, and return; do not re-serialize or reparse. The example lowercases the text content of every `<a data-lowercase>`; more typical uses include href canonicalisation, `loading="lazy"` on images, or stamping `rel="noopener"` on external links.
 
 ```csharp:xmldocid
 M:ExtensibilityLabExample.AnchorLowercaseRewriter.ApplyAsync(AngleSharp.Dom.IDocument,Microsoft.AspNetCore.Http.HttpContext)
@@ -55,7 +55,7 @@ M:ExtensibilityLabExample.AnchorLowercaseRewriter.ApplyAsync(AngleSharp.Dom.IDoc
 
 ### 5. Pick an `Order` that cooperates with built-ins
 
-The three shipped rewriters run at 10 (`XrefHtmlRewriter`), 20 (`LocaleLinkHtmlRewriter`), and 30 (`BaseUrlHtmlRewriter`) — choose a number above 30 to see already-resolved xref/locale/base hrefs, below 10 to preempt xref resolution, or between the built-ins only when you deliberately want to slot into that chain. The example uses 500 so anchors are lowercased after every transport-layer transform has landed.
+The three shipped rewriters run at 10 (`XrefHtmlRewriter`), 20 (`LocaleLinkHtmlRewriter`), and 30 (`BaseUrlHtmlRewriter`) — choose a number above 30 to see already-resolved xref/locale/base hrefs, below 10 to preempt xref resolution, or between the built-ins only to deliberately slot into that chain. The example uses 500 so anchors are lowercased after every transport-layer transform has landed.
 
 ```csharp:xmldocid
 P:ExtensibilityLabExample.AnchorLowercaseRewriter.Order
@@ -63,7 +63,7 @@ P:ExtensibilityLabExample.AnchorLowercaseRewriter.Order
 
 ### 6. Register the rewriter in DI
 
-`HtmlResponseRewritingProcessor` resolves every registered `IHtmlResponseRewriter` from the container and sorts by `Order`, so a single `AddSingleton<IHtmlResponseRewriter, T>()` next to your host wiring is sufficient.
+`HtmlResponseRewritingProcessor` resolves every registered `IHtmlResponseRewriter` from the container and sorts by `Order`, so a single `AddSingleton<IHtmlResponseRewriter, T>()` next to the host wiring is sufficient.
 
 ```csharp:path
 examples/ExtensibilityLabExample/Program.cs

@@ -7,15 +7,15 @@ sectionLabel: Extensibility
 tags: [extensibility, content-service, pipeline, cross-references]
 ---
 
-When your content lives somewhere `MarkdownContentService<T>` can't reach — a folder of JSON release notes, a SQL table, a remote API, generated API reference — and you need those pages to appear in navigation, cross-references, search, and the static build the same way markdown pages do, implement `IContentService` directly. The recipe below uses the `ReleaseNotesContentService` from `examples/ExtensibilityLabExample`, which turns `Content/releases/*.json` into `/releases/{version}/` routes. If you need a second markdown tree with a different front-matter type, use chained `AddMarkdownContent<T>` instead — see <xref:how-to.configuration.multiple-sources>.
+When content lives somewhere `MarkdownContentService<T>` can't reach — a folder of JSON release notes, a SQL table, a remote API, generated API reference — and those pages need to appear in navigation, cross-references, search, and the static build the same way markdown pages do, implement `IContentService` directly. The recipe below uses the `ReleaseNotesContentService` from `examples/ExtensibilityLabExample`, which turns `Content/releases/*.json` into `/releases/{version}/` routes. For a second markdown tree with a different front-matter type, use chained `AddMarkdownContent<T>` instead — see <xref:how-to.configuration.multiple-sources>.
 
 ## Assumptions
 
-- You have a working Pennington site on bare `AddPennington` (see <xref:tutorials.getting-started.first-site> if not) — `AddDocSite` pins its own markdown service, so adding a second content service on top works, but the concepts below assume you understand the unwrapped host
-- You understand the four-stage pipeline at a conceptual level (<xref:explanation.core.content-pipeline>)
-- Your source data can be enumerated synchronously or asynchronously on startup — `DiscoverAsync` runs both at build time and on demand for live requests
+- A working Pennington site on bare `AddPennington` (see <xref:tutorials.getting-started.first-site> if not) — `AddDocSite` pins its own markdown service, so adding a second content service on top works, but the concepts below assume familiarity with the unwrapped host
+- Familiarity with the four-stage pipeline at a conceptual level (<xref:explanation.core.content-pipeline>)
+- Source data that can be enumerated synchronously or asynchronously on startup — `DiscoverAsync` runs both at build time and on demand for live requests
 
-To copy a working setup, see [`examples/ExtensibilityLabExample`](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample) — the `ReleaseNotesContentService` file is self-contained. Do not walk through the whole example — this page is a recipe, not a tour.
+For a working setup, see [`examples/ExtensibilityLabExample`](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample) — the `ReleaseNotesContentService` file is self-contained. This page is a recipe, not a tour of the whole example.
 
 ---
 
@@ -23,7 +23,7 @@ To copy a working setup, see [`examples/ExtensibilityLabExample`](https://github
 
 ### 1. Model your source records
 
-Define an immutable record that represents one page's worth of source data. `ReleaseEntry` is the JSON-backed shape the rest of the service keys off; your own type will have whatever fields your source provides.
+Define an immutable record that represents one page's worth of source data. `ReleaseEntry` is the JSON-backed shape the rest of the service keys off; the equivalent type in another project carries whatever fields the source provides.
 
 ```csharp:xmldocid
 T:ExtensibilityLabExample.ReleaseEntry
@@ -31,7 +31,7 @@ T:ExtensibilityLabExample.ReleaseEntry
 
 ### 2. Implement `IContentService` and load the records once
 
-Create a sealed class implementing <xref:reference.extension-points.content-pipeline>, inject whatever you need to read the source (here, `IWebHostEnvironment` for `ContentRootPath`), and cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source.
+Create a sealed class implementing <xref:reference.extension-points.content-pipeline>, inject whatever reads the source (here, `IWebHostEnvironment` for `ContentRootPath`), and cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source.
 
 ```csharp:xmldocid
 T:ExtensibilityLabExample.ReleaseNotesContentService
@@ -39,7 +39,7 @@ T:ExtensibilityLabExample.ReleaseNotesContentService
 
 ### 3. Yield one `DiscoveredItem` per page from `DiscoverAsync`
 
-Build each item's `ContentRoute` through `ContentRouteFactory.FromUrl` (synthetic URL, no backing file) or `ContentRouteFactory.FromCustom` (URL plus an on-disk `FilePath` so file-watching picks up edits), and pair it with a `ContentSource` case. Use `RedirectSource` as the placeholder when an endpoint elsewhere in `Program.cs` produces the actual HTML. Yield an index route plus one route per record.
+Build each item's `ContentRoute` through `ContentRouteFactory.FromUrl` (synthetic URL, no backing file) or `ContentRouteFactory.FromCustom` (URL plus an on-disk `FilePath` so file-watching picks up edits), and pair it with a `ContentSource` case. Use `RedirectSource` as the placeholder when an endpoint elsewhere in `Program.cs` produces the actual HTML. Yield an index route, then one route per record.
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.ReleaseNotesContentService.DiscoverAsync
@@ -55,7 +55,7 @@ M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentTocEntriesAsync
 
 ### 5. Return `ContentToCopy` / `ContentToCreate` lists
 
-`GetContentToCopyAsync` is for static assets that should be copied verbatim into the output tree (images, downloads). `GetContentToCreateAsync` is for dynamically generated files that are not routes the crawler will visit — the `LlmsTxtContentService` uses it for stripped-markdown sidecars. For a service whose only output is HTML served by a `MapGet` endpoint, both return `ImmutableList.Empty`.
+`GetContentToCopyAsync` is for static assets copied verbatim into the output tree (images, downloads). `GetContentToCreateAsync` is for dynamically generated files that are not routes the crawler will visit — the `LlmsTxtContentService` uses it for stripped-markdown sidecars. For a service whose only output is HTML served by a `MapGet` endpoint, both return `ImmutableList.Empty`.
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentToCopyAsync
@@ -67,7 +67,7 @@ M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentToCreateAsync
 
 ### 6. Publish xref ids through `GetCrossReferencesAsync`
 
-Each `CrossReference(uid, title, route)` registers a uid that other content can target with `<xref:uid>` or `href="xref:uid"`. Pick a stable prefix (`release-1.0.0` here) so authors can deep-link specific entries without pasting URLs that might change.
+Each `CrossReference(uid, title, route)` registers a uid that other content can target with `<xref:uid>` or `href="xref:uid"`. Pick a stable prefix (`release-1.0.0` here) so authors can deep-link specific entries without pasting URLs that may change.
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.ReleaseNotesContentService.GetCrossReferencesAsync
@@ -75,7 +75,7 @@ M:ExtensibilityLabExample.ReleaseNotesContentService.GetCrossReferencesAsync
 
 ### 7. Register the service in DI
 
-`AddPennington` does not auto-discover `IContentService` implementations — register yours directly on `IServiceCollection`. When an endpoint in `Program.cs` needs the concrete type to render detail pages, register it once by concrete type and forward `IContentService` to the same instance so the container does not create a second copy.
+`AddPennington` does not auto-discover `IContentService` implementations — register directly on `IServiceCollection`. When an endpoint in `Program.cs` needs the concrete type to render detail pages, register it once by concrete type and forward `IContentService` to the same instance so the container does not create a second copy.
 
 ```csharp:path
 examples/ExtensibilityLabExample/Program.cs

@@ -7,13 +7,13 @@ sectionLabel: Content Authoring
 tags: [front-matter, drafts, tags, ordering]
 ---
 
-Use this guide when you have a working DocSite with pages under `Content/` and need to keep an unfinished page out of navigation, attach grouping keywords to a page, or control where a page appears within its sidebar section. For how front matter is parsed in the first place, see <xref:how-to.content-authoring.front-matter>.
+When a working DocSite needs to keep an unfinished page out of navigation, attach grouping keywords to a page, or control where a page appears within its sidebar section, three front-matter keys cover it. For how front matter is parsed in the first place, see <xref:how-to.content-authoring.front-matter>.
 
 ## Assumptions
 
-- You have a working Pennington site with markdown under `Content/` (see <xref:how-to.content-authoring.front-matter> if not)
-- Your pages use `DocSiteFrontMatter` (the default when you called `AddDocSite`) or another type that implements `ITaggable` + `IOrderable`
-- The sidebar currently renders in file-order and you have not customized `TableOfContentsNavigation`
+- A working Pennington site has markdown under `Content/` (see <xref:how-to.content-authoring.front-matter> if not)
+- Pages use `DocSiteFrontMatter` (the default after `AddDocSite`) or another type that implements `ITaggable` + `IOrderable`
+- The sidebar currently renders in file-order; `TableOfContentsNavigation` has not been customized
 
 The `DocSiteKitchenSinkExample` project includes a fixture that uses all three keys in one file — see the `markdown:path` embed in step 3 below.
 
@@ -53,7 +53,7 @@ P:Pennington.DocSite.DocSiteFrontMatter.Tags
 
 ### 3. Order a page inside its section
 
-Lower `order:` values sort earlier within a section. A section inherits its own sort key from the minimum `order:` among its children, so changing one page can reshuffle the whole section. Use spacing like 10/20/30 so later inserts have room between existing siblings.
+Lower `order:` values sort earlier within a section. A section inherits its own sort key from the minimum `order:` among its children, so changing one page can reshuffle the whole section. Spacing like 10/20/30 leaves room for later inserts between existing siblings.
 
 ```yaml
 ---
@@ -78,7 +78,7 @@ examples/DocSiteKitchenSinkExample/Content/main/drafts-tags-ordering.md
 
 ## Verify
 
-- Run `dotnet run`; the drafted page's URL still responds 200 but is absent from the sidebar and from `/search-index.json`
+- Run `dotnet run` — the drafted page's URL still responds 200 but is absent from the sidebar and from `/search-index.json`
 - The tagged page's HTML carries the tag strings in its rendered output (inspect `RenderedContent.Tags` or the page body)
 - Sidebar entries within the section appear in ascending `order:` — swap two values and the order flips on next reload
 

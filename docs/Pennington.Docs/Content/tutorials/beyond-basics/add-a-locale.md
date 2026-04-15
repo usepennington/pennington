@@ -11,9 +11,9 @@ tags:
 uid: tutorials.beyond-basics.add-a-locale
 ---
 
-By the end of this tutorial you'll have a running DocSite at `http://localhost:5000` that serves three English pages at `/`, `/about`, and `/getting-started`, plus three Spanish translations at `/es/`, `/es/about`, and `/es/getting-started`. A `LanguageSwitcher` pill will appear in the header, toggling between the two languages without any manual layout edits from you.
+By the end of this tutorial you'll have a running DocSite at `http://localhost:5000` that serves three English pages at `/`, `/about`, and `/getting-started`, plus three Spanish translations at `/es/`, `/es/about`, and `/es/getting-started`. A `LanguageSwitcher` pill appears in the header and toggles between the two languages without any manual layout edits.
 
-You'll walk away knowing that a single `ConfigureLocalization` action on `DocSiteOptions` is the toggle that enables multi-locale behavior. The default locale lives at the URL root; every other locale gets a folder prefix equal to its code. The `LanguageSwitcher` is already wired into DocSite chrome — it stays hidden until a second locale is registered.
+A single `ConfigureLocalization` action on `DocSiteOptions` is the toggle that enables multi-locale behavior. The default locale lives at the URL root; every other locale gets a folder prefix equal to its code. The `LanguageSwitcher` is already wired into DocSite chrome and stays hidden until a second locale is registered.
 
 ## Prerequisites
 
@@ -27,17 +27,17 @@ The finished code for this tutorial lives in [`examples/BeyondLocaleExample`](ht
 
 ## 1. Start from a single-locale DocSite
 
-You'll begin with a plain DocSite host serving three English pages from `Content/` — no localization, no switcher. Getting the baseline clear first makes the contrast obvious when you add localization in section 2.
+Start with a plain DocSite host serving three English pages from `Content/` — no localization, no switcher. A clear baseline makes the contrast obvious when localization arrives in section 2.
 
 ### Step 1.1 — Confirm the English-only host
 
-Here's the starting host. Notice there is no `ConfigureLocalization` action on `DocSiteOptions`. That means `LocalizationOptions.IsMultiLocale` is false, `UseDocSite`'s built-in `UsePenningtonLocaleRouting` is effectively a no-op, and the built-in `LanguageSwitcher` in `MainLayout.razor` renders nothing.
+Here's the starting host. There is no `ConfigureLocalization` action on `DocSiteOptions`. That means `LocalizationOptions.IsMultiLocale` is false, `UseDocSite`'s built-in `UsePenningtonLocaleRouting` is a no-op, and the built-in `LanguageSwitcher` in `MainLayout.razor` renders nothing.
 
 ```csharp:xmldocid,bodyonly
 M:BeyondLocaleExample.Stage1.Run(System.String[])
 ```
 
-One thing worth noting: `UseDocSite()` already calls `UsePenningtonLocaleRouting` internally. You won't need to invoke it yourself at any point in this tutorial.
+`UseDocSite()` already calls `UsePenningtonLocaleRouting` internally, so no direct call is needed at any point in this tutorial.
 
 ### Step 1.2 — Drop the three English pages into `Content/`
 
@@ -65,7 +65,7 @@ examples/BeyondLocaleExample/Content/getting-started.md
 
 ## 2. Register a second locale with `ConfigureLocalization`
 
-Now let's make the site aware of Spanish. A single `ConfigureLocalization` action on `DocSiteOptions` is all it takes to name `"en"` as the default and register `"es"` as a second locale. That one change activates every piece of locale routing, link rewriting, and UI chrome downstream.
+Now let's make the site aware of Spanish. A single `ConfigureLocalization` action on `DocSiteOptions` names `"en"` as the default and registers `"es"` as a second locale. That one change activates every piece of locale routing, link rewriting, and UI chrome downstream.
 
 ### Step 2.1 — Add the `ConfigureLocalization` action to `DocSiteOptions`
 
@@ -75,19 +75,19 @@ Here's the updated host:
 M:BeyondLocaleExample.Stage2.Run(System.String[])
 ```
 
-Walk through the new action line by line:
+The new action has three pieces:
 
 - `DefaultLocale = "en"` — English owns the URL root with no prefix.
 - `AddLocale("en", new LocaleInfo("English"))` — registers English with the display name the switcher shows.
 - `AddLocale("es", new LocaleInfo("Español", HtmlLang: "es"))` — registers Spanish. The `HtmlLang` value is what Pennington emits on the `<html>` element for that locale's pages.
 
-`AddLocale` is overloaded: the string-only form is shorthand when you don't need a custom display name or `HtmlLang`.
+`AddLocale` is overloaded: the string-only form is shorthand when a custom display name or `HtmlLang` is not needed.
 
 Once `Locales` contains more than one entry, [`LocalizationOptions.IsMultiLocale`](xref:reference.options.localization-options) flips to `true`. That single boolean gates the switcher, the locale detection middleware, and the per-locale search index.
 
-### Step 2.2 — Do not touch `UseDocSite()`
+### Step 2.2 — Leave `UseDocSite()` alone
 
-You don't need to add `app.UsePenningtonLocaleRouting()` to `Program.cs`. `UseDocSite` already calls it internally. Now that `IsMultiLocale` is true, the middleware starts rewriting `/es/<path>` requests into `<path>` with `PathBase = "/es"` so Blazor routing sees the stripped path.
+There's no need to add `app.UsePenningtonLocaleRouting()` to `Program.cs`. `UseDocSite` already calls it internally. Now that `IsMultiLocale` is true, the middleware rewrites `/es/<path>` requests into `<path>` with `PathBase = "/es"` so Blazor routing sees the stripped path.
 
 ### Checkpoint — The switcher appears, but Spanish URLs still 404
 
@@ -99,11 +99,11 @@ You don't need to add `app.UsePenningtonLocaleRouting()` to `Program.cs`. `UseDo
 
 ## 3. Add translated markdown under `Content/es/`
 
-Let's give Spanish its content. You'll mirror the three English pages under a `Content/es/` subfolder — same file names, same front-matter keys, translated body copy. The content resolver matches each Spanish URL to the corresponding Spanish file.
+Now let's give Spanish its content. Mirror the three English pages under a `Content/es/` subfolder — same file names, same front-matter keys, translated body copy. The content resolver matches each Spanish URL to the corresponding Spanish file.
 
 ### Step 3.1 — Create `Content/es/` and translate `index.md`
 
-Create the `Content/es/` subfolder and add `index.md` with Spanish front-matter and Spanish body copy. The load-bearing rule: **the subfolder name must match the locale code passed to `AddLocale`** — `es` here, because that is the code registered in step 2.1. Files under `Content/es/` serve from `/es/*`; files directly under `Content/` serve from `/*`.
+Create the `Content/es/` subfolder and add `index.md` with Spanish front-matter and Spanish body copy. The load-bearing rule: **the subfolder name matches the locale code passed to `AddLocale`** — `es` here, because that is the code registered in step 2.1. Files under `Content/es/` serve from `/es/*`; files directly under `Content/` serve from `/*`.
 
 ```markdown:path
 examples/BeyondLocaleExample/Content/es/index.md
@@ -113,7 +113,7 @@ examples/BeyondLocaleExample/Content/es/index.md
 
 Repeat the move for the two remaining pages. Each Spanish file keeps the same filename as its English sibling; URL routing derives the path from the filename, not from any front-matter key.
 
-Skipping a translation is allowed. The content resolver falls back to the default-locale copy and renders a `FallbackNotice` banner naming the requested and default locales.
+Skipping a translation is fine. The content resolver falls back to the default-locale copy and renders a `FallbackNotice` banner naming the requested and default locales.
 
 ```markdown:path
 examples/BeyondLocaleExample/Content/es/about.md
@@ -133,11 +133,11 @@ examples/BeyondLocaleExample/Content/es/getting-started.md
 
 ## 4. Use the built-in `LanguageSwitcher` to move between locales
 
-The [`LanguageSwitcher`](xref:reference.ui.utility) component is already baked into DocSite's `MainLayout.razor`. Let's verify that it swaps locales in place by rewriting the current URL, landing you on the same page in the other language rather than bouncing you to the home page.
+The [`LanguageSwitcher`](xref:reference.ui.utility) component is already baked into DocSite's `MainLayout.razor`. Now let's verify that it swaps locales in place by rewriting the current URL, landing on the same page in the other language rather than bouncing back to the home page.
 
 ### Step 4.1 — Confirm the final host shape matches `Program.cs`
 
-Here's the final host — identical to what you built in section 2. This is a sanity-check step, not a new code change. Nothing in `UseDocSite()` or `RunDocSiteAsync(args)` changes when a second locale is added.
+Here's the final host — identical to what section 2 produced. This is a sanity-check step, not a new code change. Nothing in `UseDocSite()` or `RunDocSiteAsync(args)` changes when a second locale is added.
 
 ```csharp:xmldocid,bodyonly
 M:BeyondLocaleExample.Stage3.Run(System.String[])
@@ -145,19 +145,19 @@ M:BeyondLocaleExample.Stage3.Run(System.String[])
 
 ### Step 4.2 — Click the switcher from `/es/about`
 
-Navigate to `http://localhost:5000/es/about`, open the language switcher in the header, and click *English*. The URL becomes `http://localhost:5000/about`. The switcher strips the `/es` prefix because English is the default locale and preserves the rest of the path so you stay on the About page. That URL rewriting is the switcher's entire job — no client-side state, no cookies involved.
+Navigate to `http://localhost:5000/es/about`, open the language switcher in the header, and click *English*. The URL becomes `http://localhost:5000/about`. The switcher strips the `/es` prefix because English is the default locale and preserves the rest of the path, so the About page stays in view. That URL rewriting is the switcher's entire job — no client-side state, no cookies involved.
 
 ### Checkpoint — Locale switching preserves the current page
 
-- From `http://localhost:5000/es/about`, click *English* in the switcher — you land on `http://localhost:5000/about`
-- From `http://localhost:5000/getting-started`, click *Español* — you land on `http://localhost:5000/es/getting-started`
-- From `http://localhost:5000/`, click *Español* — you land on `http://localhost:5000/es/` (the default locale's root maps to the secondary locale's prefix root)
+- From `http://localhost:5000/es/about`, click *English* — the URL becomes `http://localhost:5000/about`
+- From `http://localhost:5000/getting-started`, click *Español* — the URL becomes `http://localhost:5000/es/getting-started`
+- From `http://localhost:5000/`, click *Español* — the URL becomes `http://localhost:5000/es/` (the default locale's root maps to the secondary locale's prefix root)
 
 ---
 
 ## Summary
 
-- You can turn a single-locale DocSite into a multi-locale one by adding a single `ConfigureLocalization` action to `DocSiteOptions` — no explicit middleware call, no layout edits.
-- You know that the default locale owns the URL root and every other locale gets a code prefix equal to the string passed to `AddLocale`, with the matching `Content/<code>/` subfolder providing the translations.
-- You can rely on the `LanguageSwitcher` appearing automatically once `LocalizationOptions.IsMultiLocale` flips to true, and you know it rewrites the current URL in place rather than redirecting to the home page.
-- You can predict what happens when a translation is missing: the content resolver falls back to the default-locale copy and renders a `FallbackNotice` banner naming the requested and default locales.
+- A single-locale DocSite becomes multi-locale by adding one `ConfigureLocalization` action to `DocSiteOptions` — no explicit middleware call, no layout edits.
+- The default locale owns the URL root and every other locale gets a code prefix equal to the string passed to `AddLocale`, with the matching `Content/<code>/` subfolder providing the translations.
+- The `LanguageSwitcher` appears automatically once `LocalizationOptions.IsMultiLocale` flips to true, and it rewrites the current URL in place rather than redirecting to the home page.
+- When a translation is missing, the content resolver falls back to the default-locale copy and renders a `FallbackNotice` banner naming the requested and default locales.

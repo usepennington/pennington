@@ -7,13 +7,13 @@ tags: [roslyn, api-docs, xmldocid, hot-reload]
 uid: tutorials.beyond-basics.connect-roslyn
 ---
 
-By the end of this tutorial, your DocSite host will load a sibling C# class library through an inner `.slnx` and render live `Calculator` and `Greeter` source inside a markdown page via `csharp:xmldocid` fences. You'll know how to register `Pennington.Roslyn`, set `SolutionPath`, write the three fence variants (`:xmldocid`, `:xmldocid,bodyonly`, and multi-symbol), and confirm that hot reload refreshes snippets when the backing source changes.
+By the end of this tutorial, your DocSite host loads a sibling C# class library through an inner `.slnx` and renders live `Calculator` and `Greeter` source inside a markdown page via `csharp:xmldocid` fences. You'll see how to register `Pennington.Roslyn`, set `SolutionPath`, write the three fence variants (`:xmldocid`, `:xmldocid,bodyonly`, and multi-symbol), and confirm that hot reload refreshes snippets when the backing source changes.
 
 ## Prerequisites
 
 - .NET 11 SDK installed
 - Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (or have an equivalent DocSite host ready)
-- A C# project or class library you want to fence into docs (we'll build a tiny one in unit 1)
+- A C# project or class library to fence into docs (we'll build a tiny one in unit 1)
 
 The finished code for this tutorial lives in [`examples/BeyondRoslynExample`](https://github.com/usepennington/pennington/tree/main/examples/BeyondRoslynExample).
 
@@ -21,11 +21,11 @@ The finished code for this tutorial lives in [`examples/BeyondRoslynExample`](ht
 
 ## 1. Give your host a sibling library to fence
 
-Before `Pennington.Roslyn` can pull source, there must be a `.slnx` that lists the project holding the types you want to embed. This unit stands up the dual-project shape the rest of the tutorial uses.
+Before `Pennington.Roslyn` can pull source, there needs to be a `.slnx` listing the project that holds the types to embed. This unit stands up the dual-project shape the rest of the tutorial uses.
 
 ### Step 1.1 — Review the starting DocSite host
 
-This is the plain DocSite from the scaffold tutorial with no Roslyn wired yet. If you drop a `csharp:xmldocid` fence into a markdown page right now, it renders as a literal code block because no preprocessor is registered.
+This is the plain DocSite from the scaffold tutorial with no Roslyn wired yet. A `csharp:xmldocid` fence dropped into a markdown page right now renders as a literal code block, because no preprocessor is registered.
 
 ```csharp:xmldocid,bodyonly
 M:BeyondRoslynExample.Stage1.Run(System.String[])
@@ -33,7 +33,7 @@ M:BeyondRoslynExample.Stage1.Run(System.String[])
 
 ### Step 1.2 — Add a sibling `Sample` class library
 
-Drop a `Sample/BeyondRoslynExample.Sample.csproj` folder next to your host csproj. Set `GenerateDocumentationFile=true` so XmlDocId lookups resolve. Also set `DefaultItemExcludes` on the host csproj to skip `Sample\**` — otherwise the two projects compete over the same `.cs` files.
+Drop a `Sample/BeyondRoslynExample.Sample.csproj` folder next to the host csproj. Set `GenerateDocumentationFile=true` so XmlDocId lookups resolve. Also set `DefaultItemExcludes` on the host csproj to skip `Sample\**` — otherwise the two projects compete over the same `.cs` files.
 
 ### Step 1.3 — Add two small types to fence
 
@@ -49,7 +49,7 @@ T:BeyondRoslynExample.Sample.Greeter
 
 ### Step 1.4 — Write an inner `BeyondRoslynExample.slnx`
 
-Create an inner `.slnx` that registers only the Sample library. `SolutionPath` will point at this file rather than your outer repo-level solution, so the MSBuild workspace loads exactly the source you want to fence into docs.
+Create an inner `.slnx` that registers only the Sample library. `SolutionPath` points at this file rather than the outer repo-level solution, so the MSBuild workspace loads exactly the source to fence into docs.
 
 ```text:path
 examples/BeyondRoslynExample/BeyondRoslynExample.slnx
@@ -65,7 +65,7 @@ examples/BeyondRoslynExample/BeyondRoslynExample.slnx
 
 ## 2. Register `Pennington.Roslyn` and set `SolutionPath`
 
-A single DI call turns on the xmldocid preprocessor. Once `AddPenningtonRoslyn` runs with `SolutionPath` set, every markdown page in your content folder gains the `:xmldocid`, `:xmldocid,bodyonly`, `:xmldocid-diff`, and `:path` fence modifiers.
+A single DI call turns on the xmldocid preprocessor. Once `AddPenningtonRoslyn` runs with `SolutionPath` set, every markdown page in the content folder gains the `:xmldocid`, `:xmldocid,bodyonly`, `:xmldocid-diff`, and `:path` fence modifiers.
 
 ### Step 2.1 — Add a package reference
 
@@ -81,7 +81,7 @@ M:Pennington.Roslyn.RoslynExtensions.AddPenningtonRoslyn(Microsoft.Extensions.De
 
 ### Step 2.3 — See the options surface
 
-`RoslynOptions` carries `SolutionPath` (required for fence resolution) and `ProjectFilter` (narrows the workspace when the `.slnx` lists more than you need). For this tutorial, only `SolutionPath` matters.
+`RoslynOptions` carries `SolutionPath` (required for fence resolution) and `ProjectFilter` (narrows the workspace when the `.slnx` lists more than the docs need). For this tutorial, only `SolutionPath` matters.
 
 ```csharp:xmldocid
 T:Pennington.Roslyn.RoslynOptions
@@ -109,7 +109,7 @@ Now that `RoslynCodeBlockPreprocessor` (`T:Pennington.Roslyn.Preprocessing.Rosly
 
 ### Step 3.1 — Create a new markdown page
 
-Add `Content/api-pulls.md` with a front-matter block (`title`, `description`, `order`) and a heading. You'll fence a type from the Sample library into it in the next step.
+Add `Content/api-pulls.md` with a front-matter block (`title`, `description`, `order`) and a heading. The next step fences a type from the Sample library into it.
 
 ### Step 3.2 — Fence a whole type with `T:`
 
@@ -127,10 +127,10 @@ Method XmlDocIds include full parameter types. The Sample library's `Add` method
 M:BeyondRoslynExample.Sample.Calculator.Add(System.Int32,System.Int32)
 ```
 
-### Checkpoint — Real source renders inside your docs
+### Checkpoint — Real source renders inside the docs
 
 - Run `dotnet run` and visit `http://localhost:5000/api-pulls`
-- You should see the `Calculator` class and the `Add` method rendered as syntax-highlighted C#, pulled directly from `Sample/Calculator.cs`
+- The `Calculator` class and the `Add` method render as syntax-highlighted C#, pulled directly from `Sample/Calculator.cs`
 - Right-click → View Source: the markup is real `<pre><code>` with TextMate-style token spans, not an image
 
 ---
@@ -147,11 +147,11 @@ Run `dotnet watch` on the host csproj so file changes trigger a reload of the MS
 
 Change the body of `Add` in `Sample/Calculator.cs` — add a comment or rename a local variable. Save the file.
 
-### Checkpoint — The page shows your edit
+### Checkpoint — The page reflects the edit
 
 - Refresh `/api-pulls`
-- The `Add` method snippet now shows your change, pulled fresh from `Calculator.cs`
-- You never rebuilt the docs site manually — the workspace picked it up
+- The `Add` method snippet now shows the change, pulled fresh from `Calculator.cs`
+- No manual docs rebuild was required — the workspace picked it up
 
 ---
 
@@ -161,7 +161,7 @@ Two fence options let you control what renders: append `,bodyonly` to strip the 
 
 ### Step 5.1 — Strip the declaration with `,bodyonly`
 
-Appending `,bodyonly` to the fence language returns only the block contents, or the expression-body expression for arrow members. Use it when the declaration is noise and you only want to show what happens inside.
+Appending `,bodyonly` to the fence language returns only the block contents, or the expression-body expression for arrow members. Use it when the declaration is noise and the snippet should show what happens inside.
 
 ```csharp:xmldocid,bodyonly
 M:BeyondRoslynExample.Sample.Calculator.Multiply(System.Int32,System.Int32)
@@ -169,7 +169,7 @@ M:BeyondRoslynExample.Sample.Calculator.Multiply(System.Int32,System.Int32)
 
 ### Step 5.2 — Concatenate multiple XmlDocIds
 
-Place multiple XmlDocIds in one fence, one per line. The preprocessor renders them all in the order listed — useful when you want two related members in the same code block.
+Place multiple XmlDocIds in one fence, one per line. The preprocessor renders them all in the order listed — useful for pairing two related members in the same code block.
 
 ```csharp:xmldocid
 M:BeyondRoslynExample.Sample.Greeter.Greet(System.String)
@@ -186,7 +186,7 @@ M:BeyondRoslynExample.Sample.Calculator.Mean(System.Collections.Generic.IReadOnl
 
 ## Summary
 
-- You stood up a dual-project shape — a DocSite host plus a sibling Sample library wired through an inner slnx.
-- You turned on `Pennington.Roslyn` with a single `AddPenningtonRoslyn` call and `RoslynOptions.SolutionPath`.
-- You wrote `csharp:xmldocid` fences for types (`T:`), methods (`M:`), body-only snippets (`,bodyonly`), and multi-symbol blocks.
-- You confirmed hot reload refreshes rendered snippets when the backing source changes.
+- A dual-project shape now stands up — a DocSite host plus a sibling Sample library wired through an inner slnx.
+- `Pennington.Roslyn` is active via a single `AddPenningtonRoslyn` call and `RoslynOptions.SolutionPath`.
+- `csharp:xmldocid` fences cover types (`T:`), methods (`M:`), body-only snippets (`,bodyonly`), and multi-symbol blocks.
+- Hot reload refreshes rendered snippets when the backing source changes.

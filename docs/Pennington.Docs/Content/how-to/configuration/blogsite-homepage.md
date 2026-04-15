@@ -7,16 +7,16 @@ sectionLabel: Configuration
 tags: [blogsite, homepage, socials, hero]
 ---
 
-When you have a running BlogSite and want to wire all four homepage surfaces — the hero block, "My Work" card, social-icon row, and top-nav links — in one pass, this is the recipe. For the hand-held walkthrough, see [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials).
+To wire all four homepage surfaces on a running BlogSite — the hero block, "My Work" card, social-icon row, and top-nav links — in one pass, follow this recipe. For the hand-held walkthrough, see [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials).
 
 ## Assumptions
 
 
-- You have a running BlogSite built with `AddBlogSite` / `UseBlogSite` (see [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold) if not).
-- You have at least one post under `BlogContentPath` so the recent-posts slot is not empty (see [Author your first post with BlogSiteFrontMatter](xref:tutorials.blogsite.first-post)).
-- You are editing the single `AddBlogSite(() => new BlogSiteOptions { ... })` call — the four surfaces are init-only properties on that same record literal.
+- A running BlogSite built with `AddBlogSite` / `UseBlogSite` (see [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold) if not).
+- At least one post under `BlogContentPath` so the recent-posts slot is not empty (see [Author your first post with BlogSiteFrontMatter](xref:tutorials.blogsite.first-post)).
+- A single `AddBlogSite(() => new BlogSiteOptions { ... })` call to edit — the four surfaces are init-only properties on that same record literal.
 
-To copy a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteHeroProjectsSocialsExample). Do not walk through the whole example — this page is a recipe, not a tour.
+For a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteHeroProjectsSocialsExample). This page is a recipe, not a tour, so it does not walk through the whole example.
 
 ---
 
@@ -25,7 +25,7 @@ To copy a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](htt
 
 ### 1. Set `HeroContent` for the headline block
 
-`HeroContent` is a two-field positional record (`Title`, `Description`) rendered at the top of `/`. `Description` is emitted as a `MarkupString` in `Home.razor`, so light HTML is permitted — plain prose works for most sites.
+`HeroContent` is a two-field positional record (`Title`, `Description`) rendered at the top of `/`. `Description` is emitted as a `MarkupString` in `Home.razor`, so light HTML is permitted; plain prose works for most sites.
 
 ```csharp:xmldocid
 T:Pennington.BlogSite.HeroContent
@@ -75,9 +75,9 @@ M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])
 
 ## Verify
 
-- Run `dotnet run` and open `/` — the hero title and description appear at the top, and the "My Work" card lists each `Project` entry with a working link.
-- The social-icon row under the card renders one icon per `SocialLink`, each linking to its `Url`; the top-nav and footer list every `HeaderLink`.
-- Run `dotnet run -- build` — the generated `index.html` contains every hero/project/socials/nav string; no 500s in the build report.
+- Run `dotnet run` and open `/`. The hero title and description appear at the top, and the "My Work" card lists each `Project` entry with a working link.
+- The social-icon row under the card renders one icon per `SocialLink`, each linking to its `Url`. The top-nav and footer list every `HeaderLink`.
+- Run `dotnet run -- build`. The generated `index.html` contains every hero/project/socials/nav string, and the build report shows no 500s.
 
 ## Related
 

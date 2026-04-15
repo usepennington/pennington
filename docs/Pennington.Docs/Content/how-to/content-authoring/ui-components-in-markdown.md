@@ -7,12 +7,12 @@ sectionLabel: Content Authoring
 tags: [authoring, components, mdazor, razor]
 ---
 
-Use this guide when you have a working Pennington site that renders markdown and you want to embed a Razor component tag — such as `<Badge>` or `<Card>` — directly inside a `.md` file instead of writing raw HTML. It also covers the extra registration step needed when your host calls `AddPennington` directly rather than through the `AddDocSite` or `AddBlogSite` templates. To author a new component from scratch, see the <xref:tutorials.beyond-basics.custom-razor-component> tutorial.
+To embed a Razor component tag — such as `<Badge>` or `<Card>` — directly inside a `.md` file instead of writing raw HTML, use the patterns on this page. It also covers the extra registration step needed when the host calls `AddPennington` directly rather than through the `AddDocSite` or `AddBlogSite` templates. To author a new component from scratch, see the <xref:tutorials.beyond-basics.custom-razor-component> tutorial.
 
 ## Assumptions
 
-- You have a working Pennington site that renders markdown (see the <xref:tutorials.getting-started.first-site> tutorial if not).
-- Your host calls `AddDocSite`, `AddBlogSite`, or `AddPennington` — the first two register the eight Pennington.UI components for you; the last requires the one-line registration shown in step 4.
+- A working Pennington site that renders markdown (see the <xref:tutorials.getting-started.first-site> tutorial if not).
+- The host calls `AddDocSite`, `AddBlogSite`, or `AddPennington` — the first two register the eight Pennington.UI components automatically; the last requires the one-line registration shown in step 4.
 - Component tag names start with an uppercase letter and match the Razor component type name — case-sensitive on the leading character (for example, `<Card>`, not `<card>`).
 
 The `examples/DocSiteKitchenSinkExample` project exercises three `<FeatureCallout>` instances plus a `<Badge>` and shows the `AddMdazorComponent<FeatureCallout>()` registration in `Program.cs`.
@@ -23,7 +23,7 @@ The `examples/DocSiteKitchenSinkExample` project exercises three `<FeatureCallou
 
 ### 1. Drop a built-in component into a markdown page
 
-The eight Pennington.UI components (`<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<CodeBlock>`, `<LinkCard>`, `<Step>`, `<Steps>`) are pre-registered by `AddDocSite` and `AddBlogSite`, so you type the tag directly in any `.md` file. Place it anywhere CommonMark allows an HTML block — attribute values bind to `[Parameter]` properties by case-insensitive name match.
+The eight Pennington.UI components (`<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<CodeBlock>`, `<LinkCard>`, `<Step>`, `<Steps>`) are pre-registered by `AddDocSite` and `AddBlogSite`, so the tag goes straight into any `.md` file. Place it anywhere CommonMark allows an HTML block — attribute values bind to `[Parameter]` properties by case-insensitive name match.
 
 ```markdown
 # Release notes
@@ -45,7 +45,7 @@ The **v2 pipeline** ships with [unified dev and build](/explanation/core/dev-vs-
 
 ### 3. Bind primitive attributes to `[Parameter]` properties
 
-Only primitive parameter types (strings, numbers, booleans) bind from markdown attributes — the attribute value arrives as a raw string and Mdazor converts it via reflection. Pack complex data into a delimited string and parse it inside the component, or use `ChildContent` for rich content.
+Only primitive parameter types (strings, numbers, booleans) bind from markdown attributes — the attribute value arrives as a raw string and Mdazor converts it via reflection. For complex data, pack it into a delimited string and parse it inside the component, or use `ChildContent` for rich content.
 
 ```markdown
 <Card Title="Fast" Href="/explanation/core/dev-vs-build" Variant="primary">
@@ -55,7 +55,7 @@ Pages render in a single SSR pass.
 
 ### 4. On a bare `AddPennington` host, register each component once
 
-`AddPennington` wires the component registry via `AddMdazor()` but does not register any components — that is the `AddDocSite` and `AddBlogSite` templates' job. Chain one `AddMdazorComponent<T>()` call per component you want available in markdown.
+`AddPennington` wires the component registry via `AddMdazor()` but does not register any components — that falls to the `AddDocSite` and `AddBlogSite` templates. Chain one `AddMdazorComponent<T>()` call per component that should be available in markdown.
 
 ```csharp:path
 examples/DocSiteKitchenSinkExample/Program.cs
@@ -80,7 +80,7 @@ examples/DocSiteKitchenSinkExample/Content/main/ui-components-in-markdown.md
 ## Verify
 
 - Run `dotnet run` and visit the authored page — each component tag renders as the component's output (not raw text or an empty element) and `ChildContent` appears inside it as rendered markdown.
-- View source on the rendered HTML — component markup replaces the tag entirely; there is no `<Badge>` literal in the output.
+- View source on the rendered HTML — component markup replaces the tag entirely; no `<Badge>` literal remains in the output.
 - On a bare `AddPennington` host, omit the `AddMdazorComponent<T>()` line for one component and reload — the tag renders as literal text, confirming the registration is what activates it.
 
 ## Related

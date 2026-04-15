@@ -95,7 +95,7 @@ Renders an inline amber notice banner above the article region when the requeste
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `RequestedLocale` | `string?` | `null` | Locale code the visitor requested; when non-null and non-empty, the notice renders and displays this value as the unavailable locale. |
-| `DefaultLocale` | `string?` | `null` | Locale code the page is actually served in; displayed in the notice as the locale the visitor sees instead. |
+| `DefaultLocale` | `string?` | `null` | Locale code the page is served in; displayed in the notice as the locale the visitor sees instead. |
 
 ### Example
 
