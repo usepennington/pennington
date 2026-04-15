@@ -216,6 +216,11 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
 
         _logger.LogTrace("Enqueued document update for {FilePath} (queue depth: {Count})",
             filePath, _pendingUpdates.Count);
+
+        // Symbol cache holds SymbolInfo with snapshot Document references. Those
+        // snapshots are frozen to the pre-edit solution; clear so the next
+        // extraction re-queries from the patched solution.
+        SymbolExtractionService?.ClearCache();
     }
 
     private void ApplyPendingUpdates()
@@ -373,6 +378,12 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
         {
             _logger.LogTrace("C# source file watcher triggered: {ChangeType} for {Path}", changeType, path);
 
+            if (IsGeneratedOrBuildOutput(path))
+            {
+                _logger.LogTrace("Ignoring generated or build-output file: {Path}", path);
+                return;
+            }
+
             switch (changeType)
             {
                 case WatcherChangeTypes.Changed:
@@ -388,6 +399,31 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
                     break;
             }
         });
+    }
+
+    /// <summary>
+    /// Returns true for `.cs` paths that should be ignored by the source watcher —
+    /// MSBuild output directories (`obj/`, `bin/`) and typical generated files.
+    /// Prevents rebuild bursts from thrashing the symbol cache.
+    /// </summary>
+    private static bool IsGeneratedOrBuildOutput(string path)
+    {
+        var normalized = path.Replace('\\', '/');
+
+        foreach (var segment in normalized.Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (segment.Equals("obj", StringComparison.OrdinalIgnoreCase) ||
+                segment.Equals("bin", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        var fileName = Path.GetFileName(normalized);
+        return fileName.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase)
+            || fileName.EndsWith(".Designer.cs", StringComparison.OrdinalIgnoreCase)
+            || fileName.EndsWith(".AssemblyInfo.cs", StringComparison.OrdinalIgnoreCase)
+            || fileName.EndsWith(".AssemblyAttributes.cs", StringComparison.OrdinalIgnoreCase);
     }
 
     private static IEnumerable<Project> ApplyProjectFilter(IEnumerable<Project> projects, ProjectFilter filter)
