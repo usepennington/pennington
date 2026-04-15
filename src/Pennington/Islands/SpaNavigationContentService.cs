@@ -47,7 +47,7 @@ internal sealed class SpaNavigationContentService(
                     OutputFile = new FilePath($"{dataPath}/{slug}.json"),
                 };
 
-                ContentSource source = new RedirectSource(new UrlPath("/"));
+                ContentSource source = new EndpointSource();
                 yield return new DiscoveredItem(route, source);
             }
         }

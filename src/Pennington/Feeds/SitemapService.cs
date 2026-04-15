@@ -83,11 +83,11 @@ public sealed class SitemapService
                     continue;
                 }
 
-                // RedirectSource-backed items either are explicit redirects
-                // (no canonical value) or are framework-internal placeholder
-                // routes like /_spa-data/*.json (which the extension check
-                // above already caught). Skip them.
-                if (discovered.Source is RedirectSource) continue;
+                // RedirectSource items are explicit redirects — no canonical value.
+                // EndpointSource items are framework-internal routes served by a
+                // live HTTP endpoint (e.g., /_spa-data/*.json) and must not appear
+                // as canonical URLs either. Skip both.
+                if (discovered.Source is RedirectSource or EndpointSource) continue;
 
                 IFrontMatter? metadata = null;
 
