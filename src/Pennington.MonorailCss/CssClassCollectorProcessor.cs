@@ -33,7 +33,7 @@ public partial class CssClassCollectorProcessor(
         var contentType = context.Response.ContentType;
         var isJson = contentType?.Contains("application/json", StringComparison.OrdinalIgnoreCase) == true;
 
-        logger.LogTrace("Gathering CSS from {ContentType} response for {Url}", isJson ? "JSON" : "HTML", url);
+        LogGatheringCssFromContentTypeResponseForUrl(isJson ? "JSON" : "HTML", url);
 
         // JSON responses contain HTML with escaped quotes. JavaScriptEncoder.Default
         // encodes " as \u0022 and may also produce \". Unescape both forms so the
@@ -57,7 +57,7 @@ public partial class CssClassCollectorProcessor(
             collector.BeginProcessing();
             try
             {
-                logger.LogTrace("Gathered {Count} CSS classes", allClasses.Count);
+                LogGatheredCountCssClasses(allClasses.Count);
                 collector.AddClasses(url, allClasses);
             }
             finally
@@ -75,4 +75,10 @@ public partial class CssClassCollectorProcessor(
 
     [GeneratedRegex("""\\u([0-9a-fA-F]{4})""")]
     private static partial Regex JsonUnescapeRegex();
+
+    [LoggerMessage(LogLevel.Trace, "Gathering CSS from {ContentType} response for {Url}")]
+    partial void LogGatheringCssFromContentTypeResponseForUrl(string contentType, PathString url);
+
+    [LoggerMessage(LogLevel.Trace, "Gathered {Count} CSS classes")]
+    partial void LogGatheredCountCssClasses(int count);
 }

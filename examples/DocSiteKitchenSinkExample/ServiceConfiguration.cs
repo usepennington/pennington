@@ -1,6 +1,5 @@
 namespace DocSiteKitchenSinkExample;
 
-using MonorailCss.Theme;
 using Pennington.DocSite;
 using Pennington.Infrastructure;
 using Pennington.Localization;
@@ -48,7 +47,7 @@ internal static class ServiceConfiguration
         {
             PrimaryHue = 220,
             ColorSchemeGenerator = primary => (primary + 140, primary + 60, primary - 40),
-            BaseColorName = ColorNames.Zinc,
+            BaseColorName = ColorName.Zinc,
         };
 
     /// <summary>

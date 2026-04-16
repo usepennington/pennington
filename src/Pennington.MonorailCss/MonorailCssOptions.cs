@@ -5,6 +5,76 @@ using MonorailCss.Theme;
 namespace Pennington.MonorailCss;
 
 /// <summary>
+/// A color reference that provides IntelliSense discoverability for known Tailwind colors
+/// while still accepting arbitrary custom color names via implicit string conversion.
+/// </summary>
+public readonly record struct ColorName(string Value)
+{
+    /// <summary>Converts a plain string to a <see cref="ColorName"/>.</summary>
+    public static implicit operator ColorName(string value) => new(value);
+
+    /// <inheritdoc />
+    public override string ToString() => Value;
+
+    /// <summary>Red</summary>
+    public static ColorName Red => new(ColorNames.Red);
+    /// <summary>Orange</summary>
+    public static ColorName Orange => new(ColorNames.Orange);
+    /// <summary>Amber</summary>
+    public static ColorName Amber => new(ColorNames.Amber);
+    /// <summary>Yellow</summary>
+    public static ColorName Yellow => new(ColorNames.Yellow);
+    /// <summary>Lime</summary>
+    public static ColorName Lime => new(ColorNames.Lime);
+    /// <summary>Green</summary>
+    public static ColorName Green => new(ColorNames.Green);
+    /// <summary>Emerald</summary>
+    public static ColorName Emerald => new(ColorNames.Emerald);
+    /// <summary>Teal</summary>
+    public static ColorName Teal => new(ColorNames.Teal);
+    /// <summary>Cyan</summary>
+    public static ColorName Cyan => new(ColorNames.Cyan);
+    /// <summary>Sky</summary>
+    public static ColorName Sky => new(ColorNames.Sky);
+    /// <summary>Blue</summary>
+    public static ColorName Blue => new(ColorNames.Blue);
+    /// <summary>Indigo</summary>
+    public static ColorName Indigo => new(ColorNames.Indigo);
+    /// <summary>Violet</summary>
+    public static ColorName Violet => new(ColorNames.Violet);
+    /// <summary>Purple</summary>
+    public static ColorName Purple => new(ColorNames.Purple);
+    /// <summary>Fuchsia</summary>
+    public static ColorName Fuchsia => new(ColorNames.Fuchsia);
+    /// <summary>Pink</summary>
+    public static ColorName Pink => new(ColorNames.Pink);
+    /// <summary>Rose</summary>
+    public static ColorName Rose => new(ColorNames.Rose);
+    /// <summary>Slate</summary>
+    public static ColorName Slate => new(ColorNames.Slate);
+    /// <summary>Gray</summary>
+    public static ColorName Gray => new(ColorNames.Gray);
+    /// <summary>Zinc</summary>
+    public static ColorName Zinc => new(ColorNames.Zinc);
+    /// <summary>Neutral</summary>
+    public static ColorName Neutral => new(ColorNames.Neutral);
+    /// <summary>Stone</summary>
+    public static ColorName Stone => new(ColorNames.Stone);
+    /// <summary>Mauve</summary>
+    public static ColorName Mauve => new(ColorNames.Mauve);
+    /// <summary>Olive</summary>
+    public static ColorName Olive => new(ColorNames.Olive);
+    /// <summary>Mist</summary>
+    public static ColorName Mist => new(ColorNames.Mist);
+    /// <summary>Taupe</summary>
+    public static ColorName Taupe => new(ColorNames.Taupe);
+    /// <summary>Black</summary>
+    public static ColorName Black => new(ColorNames.Black);
+    /// <summary>White</summary>
+    public static ColorName White => new(ColorNames.White);
+}
+
+/// <summary>
 /// Options for configuring the Monorail CSS framework integration.
 /// </summary>
 public class MonorailCssOptions
@@ -15,11 +85,11 @@ public class MonorailCssOptions
     /// </summary>
     public IColorScheme ColorScheme { get; init; } = new NamedColorScheme
     {
-        PrimaryColorName = ColorNames.Blue,
-        AccentColorName = ColorNames.Purple,
-        TertiaryOneColorName = ColorNames.Cyan,
-        TertiaryTwoColorName = ColorNames.Pink,
-        BaseColorName = ColorNames.Slate
+        PrimaryColorName = ColorName.Blue,
+        AccentColorName = ColorName.Purple,
+        TertiaryOneColorName = ColorName.Cyan,
+        TertiaryTwoColorName = ColorName.Pink,
+        BaseColorName = ColorName.Slate
     };
 
     /// <summary>
@@ -68,7 +138,7 @@ public class AlgorithmicColorScheme : IColorScheme
     /// Gets or sets the base color name from the MonorailCSS color palette.
     /// The default value is "Gray".
     /// </summary>
-    public string BaseColorName { get; init; } = ColorNames.Gray;
+    public ColorName BaseColorName { get; init; } = ColorName.Gray;
 
     /// <summary>
     /// Gets or sets the function that generates accent and tertiary hues from the primary hue.
@@ -76,6 +146,12 @@ public class AlgorithmicColorScheme : IColorScheme
     /// </summary>
     public Func<int, (int, int, int)> ColorSchemeGenerator { get; init; } =
         primary => (primary + 180, primary + 90, primary - 90);
+
+    /// <summary>
+    /// Gets or sets additional color mappings beyond the core slots.
+    /// Key is the target slot name (e.g., "info", "warning"), value is the source color.
+    /// </summary>
+    public Dictionary<string, ColorName> AdditionalMappings { get; init; } = [];
 
     /// <inheritdoc />
     public Theme ApplyToTheme(Theme theme)
@@ -86,11 +162,16 @@ public class AlgorithmicColorScheme : IColorScheme
         var tertiaryOne = ColorPaletteGenerator.GenerateFromHue(tertiaryOneHue);
         var tertiaryTwo = ColorPaletteGenerator.GenerateFromHue(tertiaryTwoHue);
 
-        return theme.AddColorPalette("primary", primary)
+        theme = theme.AddColorPalette("primary", primary)
              .AddColorPalette("accent", accent)
              .AddColorPalette("tertiary-one", tertiaryOne)
              .AddColorPalette("tertiary-two", tertiaryTwo)
-             .MapColorPalette(BaseColorName, "base");
+             .MapColorPalette(BaseColorName.Value, "base");
+
+        foreach (var (slot, color) in AdditionalMappings)
+            theme = theme.MapColorPalette(color.Value, slot);
+
+        return theme;
     }
 }
 
@@ -102,36 +183,47 @@ public class NamedColorScheme : IColorScheme
     /// <summary>
     /// Gets or sets the color name to map to "primary".
     /// </summary>
-    public required string PrimaryColorName { get; init; }
+    public required ColorName PrimaryColorName { get; init; }
 
     /// <summary>
     /// Gets or sets the color name to map to "accent".
     /// </summary>
-    public required string AccentColorName { get; init; }
+    public required ColorName AccentColorName { get; init; }
 
     /// <summary>
     /// Gets or sets the color name to map to "tertiary-one".
     /// </summary>
-    public required string TertiaryOneColorName { get; init; }
+    public required ColorName TertiaryOneColorName { get; init; }
 
     /// <summary>
     /// Gets or sets the color name to map to "tertiary-two".
     /// </summary>
-    public required string TertiaryTwoColorName { get; init; }
+    public required ColorName TertiaryTwoColorName { get; init; }
 
     /// <summary>
     /// Gets or sets the color name to map to "base".
     /// </summary>
-    public required string BaseColorName { get; init; }
+    public required ColorName BaseColorName { get; init; }
+
+    /// <summary>
+    /// Gets or sets additional color mappings beyond the core slots.
+    /// Key is the target slot name (e.g., "info", "warning"), value is the source color.
+    /// </summary>
+    public Dictionary<string, ColorName> AdditionalMappings { get; init; } = [];
 
     /// <inheritdoc />
     public Theme ApplyToTheme(Theme theme)
     {
-        return theme.MapColorPalette(PrimaryColorName, "primary")
-             .MapColorPalette(AccentColorName, "accent")
-             .MapColorPalette(TertiaryOneColorName, "tertiary-one")
-             .MapColorPalette(TertiaryTwoColorName, "tertiary-two")
-             .MapColorPalette(BaseColorName, "base");
+        theme = theme.MapColorPalette(PrimaryColorName.Value, "primary")
+             .MapColorPalette(AccentColorName.Value, "accent")
+             .MapColorPalette(TertiaryOneColorName.Value, "tertiary-one")
+             .MapColorPalette(TertiaryTwoColorName.Value, "tertiary-two")
+             .MapColorPalette(BaseColorName.Value, "base");
+
+        foreach (var (slot, color) in AdditionalMappings)
+            theme = theme.MapColorPalette(color.Value, slot);
+
+        return theme;
     }
 }
 

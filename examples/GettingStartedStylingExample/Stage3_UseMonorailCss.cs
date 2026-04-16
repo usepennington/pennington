@@ -1,6 +1,5 @@
 namespace GettingStartedStylingExample;
 
-using MonorailCss.Theme;
 using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
@@ -41,11 +40,11 @@ public static class Stage3
         {
             ColorScheme = new NamedColorScheme
             {
-                PrimaryColorName = ColorNames.Indigo,
-                AccentColorName = ColorNames.Pink,
-                TertiaryOneColorName = ColorNames.Cyan,
-                TertiaryTwoColorName = ColorNames.Amber,
-                BaseColorName = ColorNames.Slate,
+                PrimaryColorName = ColorName.Indigo,
+                AccentColorName = ColorName.Pink,
+                TertiaryOneColorName = ColorName.Cyan,
+                TertiaryTwoColorName = ColorName.Amber,
+                BaseColorName = ColorName.Slate,
             },
         });
 

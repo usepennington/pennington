@@ -1,5 +1,4 @@
 using Mdazor;
-using MonorailCss.Theme;
 using Pennington.Docs.Components.Reference;
 using Pennington.DocSite;
 using Pennington.Infrastructure;
@@ -17,7 +16,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     {
         PrimaryHue = 260,
         ColorSchemeGenerator = i => (i + 180, i - 90, i + 90),
-        BaseColorName = ColorNames.Zinc
+        BaseColorName = ColorName.Mist
     },
     GitHubUrl = "https://github.com/usepennington/pennington",
     CanonicalBaseUrl = "https://phil-scott-78.github.io/pennington/",

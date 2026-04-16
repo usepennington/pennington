@@ -1,6 +1,5 @@
 namespace ExtensibilityLabExample;
 
-using MonorailCss.Theme;
 using Pennington.MonorailCss;
 
 /// <summary>
@@ -21,11 +20,11 @@ public static class MonorailCssCustomization
     {
         ColorScheme = new NamedColorScheme
         {
-            PrimaryColorName = ColorNames.Sky,
-            AccentColorName = ColorNames.Emerald,
-            TertiaryOneColorName = ColorNames.Amber,
-            TertiaryTwoColorName = ColorNames.Violet,
-            BaseColorName = ColorNames.Slate,
+            PrimaryColorName = ColorName.Sky,
+            AccentColorName = ColorName.Emerald,
+            TertiaryOneColorName = ColorName.Amber,
+            TertiaryTwoColorName = ColorName.Violet,
+            BaseColorName = ColorName.Slate,
         },
         CustomCssFrameworkSettings = settings => settings with
         {
