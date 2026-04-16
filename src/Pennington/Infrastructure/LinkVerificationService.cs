@@ -167,9 +167,9 @@ public sealed partial class LinkVerificationService
     }
 
     private static string StripCodeAndPre(string html)
-        => CodeAndPreRegex().Replace(html, "");
+        => CodeAndPreRegex().Replace(html, "$1$3");
 
-    [GeneratedRegex("""<(code|pre|script|style)\b[^>]*>.*?</\1\s*>""", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    [GeneratedRegex("""(<(code|pre|script|style)\b[^>]*>).*?(</\2\s*>)""", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex CodeAndPreRegex();
 
     private static string ExtractAttributeValue(string html, ValueMatch match)
