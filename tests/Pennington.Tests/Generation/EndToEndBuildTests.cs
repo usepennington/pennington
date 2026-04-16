@@ -148,7 +148,7 @@ public class EndToEndBuildTests
         var errors = report.Diagnostics.Where(d => d.Severity is DiagnosticSeverity.Error).ToList();
         errors.Count.ShouldBe(1);
         errors[0].Message.ShouldContain("YAML parse error");
-        errors[0].Route.CanonicalPath.Value.ShouldBe("/docs/broken/");
+        errors[0].Route?.CanonicalPath.Value.ShouldBe("/docs/broken/");
     }
 
     [Fact]
