@@ -24,5 +24,8 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="*" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Framework" Version="*" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="DiffPlex" Version="*" />
+    
+    <!-- explicitly installed due to https://github.com/advisories/GHSA-37gx-xxp4-5rgx and others -->
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.6" />
   </ItemGroup>
 </Project>
