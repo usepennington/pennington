@@ -4,11 +4,17 @@ using Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Injects a live reload script into HTML responses during development.
-/// Only active when DOTNET_WATCH environment variable is set.
+/// Skipped during static build so the output HTML is clean.
 /// </summary>
 public sealed class LiveReloadScriptProcessor : IResponseProcessor
 {
-    private readonly bool _isDevMode = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH"));
+    private readonly bool _isDevMode = !IsBuildMode();
+
+    private static bool IsBuildMode()
+    {
+        var args = Environment.GetCommandLineArgs();
+        return args.Length > 1 && args[1].Equals("build", StringComparison.OrdinalIgnoreCase);
+    }
 
     // Runs after the HTML rewriting pipeline (10) but before the
     // diagnostic overlay (30).
@@ -29,10 +35,20 @@ public sealed class LiveReloadScriptProcessor : IResponseProcessor
             <script>
             (function(){
                 var p=(location.protocol==='https:'?'wss://':'ws://')+location.host+'/__pennington/reload';
+                var isClosing=false;
+                window.addEventListener('beforeunload',function(){
+                    isClosing=true;
+                    setTimeout(function(){isClosing=false;},2500);
+                });
                 function connect(){
+                    if(isClosing)return;
                     var ws=new WebSocket(p);
-                    ws.onmessage=function(){location.reload();};
-                    ws.onclose=function(){setTimeout(connect,1000);};
+                    ws.onopen=function(){
+                        if(connect.was){setTimeout(function(){location.reload();},150);return;}
+                        connect.was=true;
+                    };
+                    ws.onmessage=function(){setTimeout(function(){location.reload();},150);};
+                    ws.onclose=function(){if(!isClosing)setTimeout(connect,500);};
                 }
                 connect();
             })();

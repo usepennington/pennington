@@ -8,17 +8,28 @@ using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Manages WebSocket connections for live reload during development.
-/// When watched files change, sends a reload message to all connected browsers.
+/// When watched files change, debounces rapid notifications and sends
+/// a single reload message to all connected browsers.
 /// </summary>
 public sealed class LiveReloadServer
 {
     private readonly ConcurrentDictionary<string, WebSocket> _clients = new();
     private readonly ILogger<LiveReloadServer>? _logger;
+    private Timer? _debounceTimer;
 
     public LiveReloadServer(IFileWatcher fileWatcher, ILogger<LiveReloadServer>? logger = null)
     {
         _logger = logger;
-        fileWatcher.SubscribeToChanges(NotifyClients);
+        fileWatcher.SubscribeToChanges(DebouncedNotify);
+    }
+
+    private void DebouncedNotify()
+    {
+        // Reset the timer on every notification — NotifyClients fires only
+        // after 300ms of quiet, coalescing rapid saves into one reload.
+        _debounceTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+        _debounceTimer ??= new Timer(_ => NotifyClients());
+        _debounceTimer.Change(300, Timeout.Infinite);
     }
 
     private void NotifyClients()
@@ -72,11 +83,13 @@ public static class LiveReloadExtensions
     internal const string ReloadPath = "/__pennington/reload";
 
     /// <summary>
-    /// Adds live reload WebSocket support for development. Only active when DOTNET_WATCH is set.
+    /// Adds live reload WebSocket support for development.
+    /// Skipped during static build (<c>args[0] == "build"</c>).
     /// </summary>
     public static WebApplication UsePenningtonLiveReload(this WebApplication app)
     {
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH")))
+        var args = Environment.GetCommandLineArgs();
+        if (args.Length > 1 && args[1].Equals("build", StringComparison.OrdinalIgnoreCase))
             return app;
 
         app.UseWebSockets();

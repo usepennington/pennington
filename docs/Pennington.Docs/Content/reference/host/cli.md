@@ -35,9 +35,8 @@ The command-line surface `RunOrBuildAsync` dispatches on — one positional verb
 
 | Variable | Consumer | Effect when set |
 |---|---|---|
-| `DOTNET_WATCH` | `LiveReloadServer`, `LiveReloadScriptProcessor`, `DiagnosticOverlayProcessor`, `LiveReloadExtensions.UsePenningtonLiveReload` | Enables the `/__pennington/reload` WebSocket, injects the reconnection script before `</body>`, renders the dev-mode diagnostic overlay. Unset at build and in production → every live-reload code path is a no-op. Set automatically by `dotnet watch`. |
 | `ASPNETCORE_URLS` | ASP.NET Core host | Standard ASP.NET binding. `RunOrBuildAsync` resolves `app.Urls.First()` after `StartAsync`, falling back to `http://localhost:5000` only when `app.Urls` is empty, so overriding this variable moves the crawler target. |
-| `ASPNETCORE_ENVIRONMENT` | ASP.NET Core host | Standard environment selection; Pennington itself does not branch on it, but downstream templates (DocSite/BlogSite) may read `app.Environment.IsDevelopment()`. |
+| `ASPNETCORE_ENVIRONMENT` | ASP.NET Core host | Standard environment selection; Pennington's dev tooling (live reload, diagnostic overlay) gates on the `build` command-line argument, not on this variable. |
 
 ## Exit codes
 

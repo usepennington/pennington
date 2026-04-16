@@ -188,7 +188,7 @@ public static class PenningtonExtensions
         services.AddSingleton<IResponseProcessor, LiveReloadScriptProcessor>();
         services.AddSingleton<IResponseProcessor, DiagnosticOverlayProcessor>();
 
-        // Live reload (only does work when DOTNET_WATCH is set)
+        // Live reload
         services.AddSingleton<LiveReloadServer>();
 
         // Feed builders. When CanonicalBaseUrl is set (typically a fully-qualified

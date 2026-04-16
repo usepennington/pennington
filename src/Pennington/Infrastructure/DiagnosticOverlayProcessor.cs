@@ -9,15 +9,19 @@ using Microsoft.Extensions.DependencyInjection;
 /// Injects a diagnostic overlay widget into HTML responses during development.
 /// Shows a floating badge with warning/error counts that expands to show details.
 /// Updates on SPA navigations via the spa:diagnostics custom event.
-/// Only active when DOTNET_WATCH environment variable is set.
+/// Only active during dev-serve (disabled during static build).
 /// </summary>
 public sealed class DiagnosticOverlayProcessor : IResponseProcessor
 {
-    private readonly bool _isDevMode = !string.IsNullOrEmpty(
-        Environment.GetEnvironmentVariable("DOTNET_WATCH"));
+    private readonly bool _isDevMode = !IsBuildMode();
 
-    // Last in the response pipeline — runs after the HTML rewriting
-    // pipeline (10) and live-reload injection (20).
+    private static bool IsBuildMode()
+    {
+        var args = Environment.GetCommandLineArgs();
+        return args.Length > 1 && args[1].Equals("build", StringComparison.OrdinalIgnoreCase);
+    }
+
+    // Runs after the HTML rewriting pipeline (10).
     public int Order => 30;
 
     public bool ShouldProcess(HttpContext context)

@@ -62,7 +62,7 @@ Ordering within a `Use*` call chain is load-bearing; see each method's detail be
 | `UseBlogSite` | `WebApplication UseBlogSite(this WebApplication)` | `Pennington.BlogSite` | Single top-level call | Wires antiforgery → static files → `MapRazorComponents<App>` → MonorailCSS → `UsePennington`; maps `/rss.xml` when `EnableRss`. |
 | `UseMonorailCss` | `WebApplication UseMonorailCss(this WebApplication, string path = "/styles.css")` | `Pennington.MonorailCss` | After routing, before endpoints | Scans `MonorailCssOptions.ContentPaths`, maps the stylesheet endpoint at `path`. |
 | `UsePenningtonLocaleRouting` | `WebApplication UsePenningtonLocaleRouting(this WebApplication)` | `Pennington` | Before endpoint mapping | Registers `RequestLocalizationOptions`, `PenningtonUrlRequestCultureProvider`, and `LocaleDetectionMiddleware`, then calls `UseRouting()`; idempotent via the `Pennington.LocaleRoutingAdded` key. |
-| `UsePenningtonLiveReload` | `WebApplication UsePenningtonLiveReload(this WebApplication)` | `Pennington` | After routing | Gated on `DOTNET_WATCH`; maps the `/__pennington/reload` WebSocket to `LiveReloadServer`. |
+| `UsePenningtonLiveReload` | `WebApplication UsePenningtonLiveReload(this WebApplication)` | `Pennington` | After routing | Skipped during build; maps the `/__pennington/reload` WebSocket to `LiveReloadServer`. |
 | `UseSpaNavigation` | `IEndpointRouteBuilder UseSpaNavigation(this IEndpointRouteBuilder)` | `Pennington` | Inside endpoint configuration | Maps the `SpaNavigationOptions.DataPath` JSON endpoint (default `/_spa-data`). Note the `IEndpointRouteBuilder` receiver. |
 
 ### `UsePennington`
@@ -87,7 +87,7 @@ Idempotent — subsequent calls are no-ops; called implicitly by `UsePennington`
 
 ### `UsePenningtonLiveReload`
 
-No-op outside `dotnet watch` (gated on the `DOTNET_WATCH` environment variable); pairs with `LiveReloadScriptProcessor`, which injects the reconnection script on the response side.
+Skipped during static build (gated on `args[0] == "build"`); pairs with `LiveReloadScriptProcessor`, which injects the reconnection script on the response side. Notifications are debounced — rapid file saves coalesce into a single browser reload.
 
 ### `UseSpaNavigation`
 
