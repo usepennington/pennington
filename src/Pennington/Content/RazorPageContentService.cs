@@ -28,6 +28,9 @@ public sealed partial class RazorPageContentService : IContentService
 
     private sealed record ComponentWithMetadata(Type Component, List<ContentRoute> Routes, DocFrontMatter? Metadata);
 
+    /// <summary>
+    /// Initializes the service with the assemblies to scan for routable Razor components.
+    /// </summary>
     public RazorPageContentService(
         Assembly[] assemblies,
         IFileSystem fileSystem,
@@ -48,9 +51,13 @@ public sealed partial class RazorPageContentService : IContentService
     /// </summary>
     public IReadOnlyList<(string Template, string TypeName)> MissingTrailingSlashPages => _missingTrailingSlashPages;
 
+    /// <inheritdoc/>
     public string DefaultSectionLabel => "";
+
+    /// <inheritdoc/>
     public int SearchPriority => 5;
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
         foreach (var entry in _componentMetadataCache.Value)
@@ -69,12 +76,15 @@ public sealed partial class RazorPageContentService : IContentService
         await Task.CompletedTask;
     }
 
+    /// <inheritdoc/>
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
         => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
+    /// <inheritdoc/>
     public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
         => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
 
+    /// <inheritdoc/>
     public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {
         var builder = ImmutableList.CreateBuilder<ContentTocItem>();
@@ -105,6 +115,7 @@ public sealed partial class RazorPageContentService : IContentService
         return Task.FromResult(builder.ToImmutable());
     }
 
+    /// <inheritdoc/>
     public Task<ImmutableList<ContentTocItem>> GetIndexableEntriesAsync()
     {
         var builder = ImmutableList.CreateBuilder<ContentTocItem>();
@@ -145,6 +156,7 @@ public sealed partial class RazorPageContentService : IContentService
         return Task.FromResult(builder.ToImmutable());
     }
 
+    /// <inheritdoc/>
     public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
     {
         var builder = ImmutableList.CreateBuilder<CrossReference>();

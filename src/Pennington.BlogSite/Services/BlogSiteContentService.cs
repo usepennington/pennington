@@ -22,6 +22,7 @@ public sealed class BlogSiteContentService : IContentService
     private readonly FrontMatterParser _parser;
     private readonly AsyncLazy<ImmutableList<BlogPostDescriptor>> _posts;
 
+    /// <summary>Creates a new service bound to the supplied options and front-matter parser.</summary>
     public BlogSiteContentService(
         BlogSiteOptions options,
         FrontMatterParser parser)
@@ -31,9 +32,13 @@ public sealed class BlogSiteContentService : IContentService
         _posts = new AsyncLazy<ImmutableList<BlogPostDescriptor>>(LoadPostsAsync);
     }
 
+    /// <inheritdoc />
     public string DefaultSectionLabel => "";
+
+    /// <inheritdoc />
     public int SearchPriority => 0;
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
         var posts = await _posts.Value;
@@ -65,15 +70,19 @@ public sealed class BlogSiteContentService : IContentService
         }
     }
 
+    /// <inheritdoc />
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
         => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
+    /// <inheritdoc />
     public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
         => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
 
+    /// <inheritdoc />
     public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
         => Task.FromResult(ImmutableList<ContentTocItem>.Empty);
 
+    /// <inheritdoc />
     public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
         => Task.FromResult(ImmutableList<CrossReference>.Empty);
 

@@ -7,6 +7,7 @@ using System.Text;
 /// </summary>
 public record CodeHighlightRenderOptions
 {
+    /// <summary>Default CSS class configuration used by the code highlight renderer.</summary>
     public static readonly CodeHighlightRenderOptions Default = new()
     {
         OuterWrapperCss = "code-highlight-wrapper not-prose",

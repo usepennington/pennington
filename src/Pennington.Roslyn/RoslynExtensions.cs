@@ -9,6 +9,7 @@ using Preprocessing;
 using Symbols;
 using Workspace;
 
+/// <summary>Dependency injection extensions for registering the Pennington Roslyn integration.</summary>
 public static class RoslynExtensions
 {
     /// <summary>Add Roslyn-based code analysis and highlighting.</summary>

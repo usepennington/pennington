@@ -17,12 +17,16 @@ public sealed class SyntaxHighlighter : IDisposable
     private readonly Project _vbProject;
     private bool _disposed;
 
+    /// <summary>Source language accepted by the highlighter.</summary>
     public enum Language
     {
+        /// <summary>C# source code.</summary>
         CSharp,
+        /// <summary>Visual Basic source code.</summary>
         VisualBasic,
     }
 
+    /// <summary>Creates a new highlighter backed by a fresh <see cref="AdhocWorkspace"/> with C# and VB projects.</summary>
     public SyntaxHighlighter()
     {
         _adHocWorkspace = new AdhocWorkspace();
@@ -30,6 +34,7 @@ public sealed class SyntaxHighlighter : IDisposable
         _vbProject = _adHocWorkspace.CurrentSolution.AddProject("vbProjectName", "assemblyName", LanguageNames.VisualBasic);
     }
 
+    /// <summary>Classifies the supplied code using Roslyn and returns an HTML <c>&lt;pre&gt;&lt;code&gt;</c> block with hljs- and roslyn- CSS classes applied.</summary>
     public string Highlight(string codeContent, Language language = Language.CSharp)
     {
         var project = language switch
@@ -224,6 +229,7 @@ public sealed class SyntaxHighlighter : IDisposable
         };
     }
 
+    /// <summary>Disposes the underlying <see cref="AdhocWorkspace"/>.</summary>
     public void Dispose()
     {
         Dispose(true);
@@ -242,6 +248,7 @@ public sealed class SyntaxHighlighter : IDisposable
         _disposed = true;
     }
 
+    /// <summary>Finalizer that releases the underlying workspace if <see cref="Dispose()"/> was not called.</summary>
     ~SyntaxHighlighter()
     {
         Dispose(false);

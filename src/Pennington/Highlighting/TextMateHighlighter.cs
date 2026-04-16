@@ -102,16 +102,22 @@ public sealed class TextMateHighlighter : ICodeHighlighter
         ];
     }
 
+    /// <summary>
+    /// Initializes the highlighter with a TextMate grammar registry shared across instances.
+    /// </summary>
     public TextMateHighlighter(TextMateLanguageRegistry languageRegistry)
     {
         _languageRegistry = languageRegistry ?? throw new ArgumentNullException(nameof(languageRegistry));
         _registry = languageRegistry.Registry;
     }
 
+    /// <inheritdoc/>
     public IReadOnlySet<string> SupportedLanguages { get; } = new HashSet<string> { "*" };
 
+    /// <inheritdoc/>
     public int Priority => 50;
 
+    /// <inheritdoc/>
     public string Highlight(string code, string language)
     {
         if (string.IsNullOrWhiteSpace(code))

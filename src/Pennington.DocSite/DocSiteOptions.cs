@@ -13,21 +13,52 @@ using Routing;
 /// </summary>
 public record DocSiteOptions
 {
+    /// <summary>Title displayed in the site chrome and used as a default for OpenGraph tags.</summary>
     public required string SiteTitle { get; init; }
+
+    /// <summary>Short description used in the meta description tag and default OpenGraph description.</summary>
     public required string Description { get; init; }
+
+    /// <summary>Color scheme driving the MonorailCSS theme. Defaults to the built-in DocSite palette when null.</summary>
     public IColorScheme? ColorScheme { get; init; }
+
+    /// <summary>Absolute base URL used when emitting canonical links, sitemap entries, and absolute feed URLs.</summary>
     public string? CanonicalBaseUrl { get; init; }
+
+    /// <summary>Root folder (relative to the content project) that holds the markdown and razor content tree.</summary>
     public FilePath ContentRootPath { get; init; } = new("Content");
+
+    /// <summary>Optional image URL rendered as the header logo/icon.</summary>
     public string? HeaderIcon { get; init; }
+
+    /// <summary>Markdown or HTML inserted into the site header alongside the icon and title.</summary>
     public string? HeaderContent { get; init; }
+
+    /// <summary>Markdown or HTML inserted into the site footer.</summary>
     public string? FooterContent { get; init; }
+
+    /// <summary>URL to the project's GitHub repository. When set, a GitHub link is shown in the header.</summary>
     public string? GitHubUrl { get; init; }
+
+    /// <summary>Default social-share image URL used when a page does not specify its own.</summary>
     public string? SocialImageUrl { get; init; }
+
+    /// <summary>CSS font-family stack used for display type (headings and hero copy).</summary>
     public string? DisplayFontFamily { get; init; }
+
+    /// <summary>CSS font-family stack used for body copy.</summary>
     public string? BodyFontFamily { get; init; }
+
+    /// <summary>Additional CSS appended to the generated stylesheet.</summary>
     public string? ExtraStyles { get; init; }
+
+    /// <summary>Additional raw HTML appended to the document <c>&lt;head&gt;</c> (for analytics, meta tags, etc.).</summary>
     public string? AdditionalHtmlHeadContent { get; init; }
+
+    /// <summary>Fonts to preload via <c>&lt;link rel="preload"&gt;</c> for faster first paint.</summary>
     public FontPreload[] FontPreloads { get; init; } = [];
+
+    /// <summary>Additional assemblies scanned for Razor components so out-of-project pages participate in routing.</summary>
     public Assembly[] AdditionalRoutingAssemblies { get; init; } = [];
 
     /// <summary>Path to .sln or .slnx for Roslyn integration. Requires Pennington.Roslyn package.</summary>

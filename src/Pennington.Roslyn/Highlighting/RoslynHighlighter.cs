@@ -10,16 +10,20 @@ public sealed class RoslynHighlighter : ICodeHighlighter
 {
     private readonly SyntaxHighlighter _highlighter;
 
+    /// <summary>Creates a new highlighter that delegates to the supplied <see cref="SyntaxHighlighter"/>.</summary>
     public RoslynHighlighter(SyntaxHighlighter highlighter)
     {
         _highlighter = highlighter;
     }
 
+    /// <inheritdoc />
     public IReadOnlySet<string> SupportedLanguages { get; } =
         new HashSet<string> { "csharp", "cs", "c#", "vb", "vbnet" };
 
+    /// <inheritdoc />
     public int Priority => 100;
 
+    /// <inheritdoc />
     public string Highlight(string code, string language)
     {
         var lang = language.ToLowerInvariant() switch

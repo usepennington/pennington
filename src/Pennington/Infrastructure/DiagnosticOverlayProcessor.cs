@@ -22,8 +22,10 @@ public sealed class DiagnosticOverlayProcessor : IResponseProcessor
     }
 
     // Runs after the HTML rewriting pipeline (10).
+    /// <inheritdoc/>
     public int Order => 30;
 
+    /// <inheritdoc/>
     public bool ShouldProcess(HttpContext context)
     {
         if (!_isDevMode) return false;
@@ -32,6 +34,7 @@ public sealed class DiagnosticOverlayProcessor : IResponseProcessor
             && contentType.Contains("text/html");
     }
 
+    /// <inheritdoc/>
     public Task<string> ProcessAsync(string responseBody, HttpContext context)
     {
         var diagnosticContext = context.RequestServices.GetService<DiagnosticContext>();

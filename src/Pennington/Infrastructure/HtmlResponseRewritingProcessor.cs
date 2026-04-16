@@ -19,13 +19,16 @@ public sealed class HtmlResponseRewritingProcessor : IResponseProcessor
     private readonly IReadOnlyList<IHtmlResponseRewriter> _rewriters;
     private readonly IBrowsingContext _browsingContext = BrowsingContext.New(Configuration.Default);
 
+    /// <summary>Initializes the orchestrator with the registered rewriters, ordered by <see cref="IHtmlResponseRewriter.Order"/>.</summary>
     public HtmlResponseRewritingProcessor(IEnumerable<IHtmlResponseRewriter> rewriters)
     {
         _rewriters = rewriters.OrderBy(r => r.Order).ToArray();
     }
 
+    /// <inheritdoc/>
     public int Order => 10;
 
+    /// <inheritdoc/>
     public bool ShouldProcess(HttpContext context)
     {
         var contentType = context.Response.ContentType ?? "";
@@ -34,6 +37,7 @@ public sealed class HtmlResponseRewritingProcessor : IResponseProcessor
         return _rewriters.Any(r => r.ShouldApply(context));
     }
 
+    /// <inheritdoc/>
     public async Task<string> ProcessAsync(string responseBody, HttpContext context)
     {
         var applicable = _rewriters.Where(r => r.ShouldApply(context)).ToList();

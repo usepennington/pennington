@@ -5,21 +5,38 @@ using System.Linq;
 using Diagnostics;
 using Routing;
 
+/// <summary>
+/// Aggregated result of a static build run, including diagnostics, broken links, and per-page outcomes.
+/// </summary>
 public sealed class BuildReport
 {
+    /// <summary>Diagnostics recorded during the build.</summary>
     public ImmutableList<BuildDiagnostic> Diagnostics { get; }
+
+    /// <summary>Broken links discovered by link verification.</summary>
     public ImmutableList<BrokenLink> BrokenLinks { get; }
+
+    /// <summary>Routes that were successfully written to the output directory.</summary>
     public ImmutableList<ContentRoute> GeneratedPages { get; }
+
+    /// <summary>Routes that were skipped (typically drafts).</summary>
     public ImmutableList<ContentRoute> SkippedPages { get; }
+
+    /// <summary>Routes whose generation failed.</summary>
     public ImmutableList<ContentRoute> FailedPages { get; }
+
+    /// <summary>Total wall-clock duration of the build.</summary>
     public TimeSpan Duration { get; }
 
+    /// <summary>True when the build produced any errors, failed pages, or broken links.</summary>
     public bool HasErrors => Diagnostics.Any(d => d.Severity is DiagnosticSeverity.Error)
                           || BrokenLinks.Count > 0
                           || FailedPages.Count > 0;
 
+    /// <summary>Total number of pages considered, including generated, skipped, and failed.</summary>
     public int TotalPages => GeneratedPages.Count + SkippedPages.Count + FailedPages.Count;
 
+    /// <summary>Initializes a completed build report with all captured results.</summary>
     public BuildReport(
         ImmutableList<BuildDiagnostic> diagnostics,
         ImmutableList<BrokenLink> brokenLinks,
@@ -36,6 +53,7 @@ public sealed class BuildReport
         Duration = duration;
     }
 
+    /// <summary>Writes a human-readable summary of the report to <paramref name="writer"/>.</summary>
     public void WriteTo(TextWriter writer)
     {
         // Summary line
@@ -110,6 +128,7 @@ public sealed class BuildReport
         }
     }
 
+    /// <summary>Returns the human-readable summary as a single formatted string.</summary>
     public string ToFormattedString()
     {
         using var writer = new StringWriter();

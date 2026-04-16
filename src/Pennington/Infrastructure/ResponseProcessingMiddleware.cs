@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// <summary>Captures response body once and runs all registered IResponseProcessors in order.</summary>
 public sealed class ResponseProcessingMiddleware(RequestDelegate next)
 {
+    /// <summary>Captures the response body, runs applicable processors in order, then writes the final payload.</summary>
     public async Task InvokeAsync(HttpContext context, IEnumerable<IResponseProcessor> processors)
     {
         var originalBodyStream = context.Response.Body;

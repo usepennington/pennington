@@ -14,6 +14,7 @@ public sealed class ContentPipeline : IContentPipeline
     private readonly IContentParser _parser;
     private readonly IContentRenderer _renderer;
 
+    /// <summary>Creates the pipeline from the registered content services, parser, and renderer.</summary>
     public ContentPipeline(
         IEnumerable<IContentService> services,
         IContentParser parser,
@@ -24,6 +25,7 @@ public sealed class ContentPipeline : IContentPipeline
         _renderer = renderer;
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<ContentItem> DiscoverAsync()
     {
         foreach (var service in _services)
@@ -35,6 +37,7 @@ public sealed class ContentPipeline : IContentPipeline
         }
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<ContentItem> ParseAsync(IAsyncEnumerable<ContentItem> items)
     {
         await foreach (var item in items)
@@ -75,6 +78,7 @@ public sealed class ContentPipeline : IContentPipeline
         }
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<ContentItem> RenderAsync(IAsyncEnumerable<ContentItem> items)
     {
         await foreach (var item in items)
@@ -108,6 +112,7 @@ public sealed class ContentPipeline : IContentPipeline
         }
     }
 
+    /// <inheritdoc/>
     public async Task<BuildReport> GenerateAsync(IAsyncEnumerable<ContentItem> items, OutputOptions options)
     {
         var reportBuilder = new BuildReportBuilder();

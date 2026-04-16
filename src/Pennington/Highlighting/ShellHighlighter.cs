@@ -10,10 +10,13 @@ using Infrastructure;
 /// </summary>
 public sealed partial class ShellHighlighter : ICodeHighlighter
 {
+    /// <inheritdoc/>
     public IReadOnlySet<string> SupportedLanguages { get; } = new HashSet<string> { "bash", "shell", "sh" };
 
+    /// <inheritdoc/>
     public int Priority => 75;
 
+    /// <inheritdoc/>
     public string Highlight(string code, string language)
     {
         if (string.IsNullOrWhiteSpace(code))

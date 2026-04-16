@@ -21,6 +21,7 @@ internal static class HtmlToMarkdownConverter
     /// <summary>
     /// Converts <paramref name="root"/> to markdown.
     /// </summary>
+    /// <param name="root">Root element whose descendants are converted.</param>
     /// <param name="rewriteHref">
     /// Optional callback invoked for every <c>&lt;a href&gt;</c> value before it's
     /// emitted. Return the href unchanged to keep the link as-is, or a new string

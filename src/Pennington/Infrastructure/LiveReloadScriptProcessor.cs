@@ -18,8 +18,10 @@ public sealed class LiveReloadScriptProcessor : IResponseProcessor
 
     // Runs after the HTML rewriting pipeline (10) but before the
     // diagnostic overlay (30).
+    /// <inheritdoc/>
     public int Order => 20;
 
+    /// <inheritdoc/>
     public bool ShouldProcess(HttpContext context)
     {
         if (!_isDevMode) return false;
@@ -29,6 +31,7 @@ public sealed class LiveReloadScriptProcessor : IResponseProcessor
             && contentType.Contains("text/html");
     }
 
+    /// <inheritdoc/>
     public Task<string> ProcessAsync(string responseBody, HttpContext context)
     {
         const string script = """

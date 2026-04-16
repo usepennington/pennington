@@ -15,21 +15,25 @@ public sealed class LlmsTxtContentService : IContentService
     private readonly LlmsTxtService _service;
     private readonly LlmsTxtOptions _options;
 
+    /// <summary>Creates a content service that emits llms.txt and stripped markdown files produced by the given service.</summary>
     public LlmsTxtContentService(LlmsTxtService service, LlmsTxtOptions options)
     {
         _service = service;
         _options = options;
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
         await Task.CompletedTask;
         yield break;
     }
 
+    /// <inheritdoc/>
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
         => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
+    /// <inheritdoc/>
     public async Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
     {
         var builder = ImmutableList.CreateBuilder<ContentToCreate>();
@@ -63,12 +67,17 @@ public sealed class LlmsTxtContentService : IContentService
         return builder.ToImmutable();
     }
 
+    /// <inheritdoc/>
     public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
         => Task.FromResult(ImmutableList<ContentTocItem>.Empty);
 
+    /// <inheritdoc/>
     public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
         => Task.FromResult(ImmutableList<CrossReference>.Empty);
 
+    /// <inheritdoc/>
     public string DefaultSectionLabel => "";
+
+    /// <inheritdoc/>
     public int SearchPriority => 0;
 }

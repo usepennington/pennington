@@ -11,8 +11,10 @@ using MonorailCss;
 using Pennington.UI.Components;
 using Services;
 
+/// <summary>DI extension methods for registering and running the BlogSite template.</summary>
 public static class BlogSiteServiceExtensions
 {
+    /// <summary>Registers BlogSite services with the provided options.</summary>
     public static IServiceCollection AddBlogSite(this IServiceCollection services,
         Func<BlogSiteOptions> configureOptions)
     {
@@ -84,6 +86,7 @@ public static class BlogSiteServiceExtensions
         return services;
     }
 
+    /// <summary>Wires BlogSite middleware, Razor components, and RSS endpoint into the request pipeline.</summary>
     public static WebApplication UseBlogSite(this WebApplication app)
     {
         var options = app.Services.GetRequiredService<BlogSiteOptions>();
@@ -106,6 +109,7 @@ public static class BlogSiteServiceExtensions
         return app;
     }
 
+    /// <summary>Runs the BlogSite: either serves the app or performs a static build, based on command-line args.</summary>
     public static async Task RunBlogSiteAsync(this WebApplication app, string[] args)
     {
         await app.RunOrBuildAsync(args);

@@ -1,5 +1,6 @@
 namespace Pennington.Routing;
 
+/// <summary>Creates <see cref="ContentRoute"/> instances from source file paths or URL paths.</summary>
 public static class ContentRouteFactory
 {
     /// <summary>

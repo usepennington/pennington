@@ -22,6 +22,7 @@ public sealed class BlogContentResolver
     private readonly BlogSiteOptions _options;
     private readonly AsyncLazy<List<BlogPostPage>> _postsLazy;
 
+    /// <summary>Creates a new resolver with the supplied content services, parser, renderer, and options.</summary>
     public BlogContentResolver(
         IEnumerable<IContentService> services,
         FrontMatterParser parser,

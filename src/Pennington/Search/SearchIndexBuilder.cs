@@ -11,6 +11,7 @@ public sealed partial class SearchIndexBuilder
 {
     private readonly int _defaultPriority;
 
+    /// <summary>Creates the builder with the default search priority applied when a TOC entry has none.</summary>
     public SearchIndexBuilder(int defaultPriority = 5)
     {
         _defaultPriority = defaultPriority;

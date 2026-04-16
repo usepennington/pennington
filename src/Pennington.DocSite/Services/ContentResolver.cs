@@ -26,6 +26,7 @@ public sealed class ContentResolver
     private readonly LocalizationOptions _localization;
     private readonly DocSiteOptions _docSiteOptions;
 
+    /// <summary>Creates a new resolver with the supplied content services and options.</summary>
     public ContentResolver(
         IEnumerable<IContentService> services,
         FrontMatterParser parser,
@@ -277,6 +278,18 @@ public sealed class ContentResolver
 
 }
 
+/// <summary>Rendered content plus the surrounding locale/fallback metadata needed to render a page.</summary>
+/// <param name="Route">Canonical route for the resolved page.</param>
+/// <param name="Title">Page title from front matter.</param>
+/// <param name="Description">Page description from front matter.</param>
+/// <param name="Html">Rendered HTML body.</param>
+/// <param name="Outline">Headings extracted from the body for the on-page outline.</param>
+/// <param name="Metadata">Parsed front matter for the page.</param>
+/// <param name="Locale">Locale used to render the page (may differ from the requested locale when falling back).</param>
+/// <param name="IsFallback">True when content from the default locale was served because the requested locale had no match.</param>
+/// <param name="RequestedLocale">Locale the user originally requested, when different from <paramref name="Locale"/>.</param>
+/// <param name="FallbackRequestedDisplayName">Display name for the requested locale, shown in the fallback notice.</param>
+/// <param name="FallbackDefaultDisplayName">Display name for the locale actually served, shown in the fallback notice.</param>
 public record ResolvedContent(
     ContentRoute Route,
     string Title,

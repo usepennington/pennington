@@ -10,6 +10,7 @@ public abstract class RazorIslandRenderer<TComponent>(
     ComponentRenderer renderer) : IIslandRenderer
     where TComponent : IComponent
 {
+    /// <inheritdoc/>
     public abstract string IslandName { get; }
 
     /// <summary>
@@ -17,6 +18,7 @@ public abstract class RazorIslandRenderer<TComponent>(
     /// </summary>
     protected abstract Task<IDictionary<string, object?>?> BuildParametersAsync(ContentRoute route);
 
+    /// <inheritdoc/>
     public async Task<string> RenderAsync(ContentRoute route, RenderContext context)
     {
         var parameters = await BuildParametersAsync(route);

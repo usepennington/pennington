@@ -11,6 +11,7 @@ using Pipeline;
 /// </summary>
 public static class MarkdownOutlineGenerator
 {
+    /// <summary>Produces outline entries for every heading in the document that has an id attribute.</summary>
     public static OutlineEntry[] GenerateOutline(MarkdownDocument document)
     {
         var entries = new List<OutlineEntry>();

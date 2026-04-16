@@ -31,6 +31,7 @@ public sealed class MarkdownLinkResolver
 
     private readonly AsyncLazy<IndexData> _indexLazy;
 
+    /// <summary>Creates the resolver; the link index is built lazily on first resolution.</summary>
     public MarkdownLinkResolver(IEnumerable<IContentService> contentServices)
     {
         _indexLazy = new AsyncLazy<IndexData>(() => BuildIndexAsync(contentServices));

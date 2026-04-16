@@ -3,6 +3,9 @@ namespace Pennington.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+/// <summary>
+/// DI helpers for registering services whose lifetimes are bound to file-change invalidation.
+/// </summary>
 public static class FileWatchedServiceExtensions
 {
     /// <summary>

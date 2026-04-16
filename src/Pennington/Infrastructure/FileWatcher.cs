@@ -14,12 +14,14 @@ public sealed class FileWatcher : IFileWatcher
     private readonly ILogger<FileWatcher>? _logger;
     private bool _disposed;
 
+    /// <summary>Initializes the watcher with a filesystem abstraction and optional logger.</summary>
     public FileWatcher(IFileSystem fileSystem, ILogger<FileWatcher>? logger = null)
     {
         _fileSystem = fileSystem;
         _logger = logger;
     }
 
+    /// <inheritdoc/>
     public void AddPathWatch(string path, string filePattern, Action<string, WatcherChangeTypes> onFileChanged, bool includeSubdirectories = true)
     {
         _logger?.LogInformation("Adding file watch: {Path} with pattern {Pattern}", path, filePattern);
@@ -46,6 +48,7 @@ public sealed class FileWatcher : IFileWatcher
         _watchers[key] = watcher;
     }
 
+    /// <inheritdoc/>
     public void SubscribeToChanges(Action onUpdate)
     {
         _subscribers.Add(onUpdate);
@@ -60,6 +63,7 @@ public sealed class FileWatcher : IFileWatcher
         }
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (_disposed) return;

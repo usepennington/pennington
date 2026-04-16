@@ -26,13 +26,16 @@ public sealed class LocaleLinkHtmlRewriter : IHtmlResponseRewriter
 {
     private readonly LocalizationOptions _localization;
 
+    /// <summary>Creates the rewriter.</summary>
     public LocaleLinkHtmlRewriter(LocalizationOptions localization)
     {
         _localization = localization;
     }
 
+    /// <inheritdoc/>
     public int Order => 20;
 
+    /// <inheritdoc/>
     public bool ShouldApply(HttpContext context)
     {
         if (!_localization.IsMultiLocale) return false;
@@ -43,6 +46,7 @@ public sealed class LocaleLinkHtmlRewriter : IHtmlResponseRewriter
             && !string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <inheritdoc/>
     public Task ApplyAsync(IDocument document, HttpContext context)
     {
         var locale = context.Items["Pennington.Locale"] as string ?? _localization.DefaultLocale;

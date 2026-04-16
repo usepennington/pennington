@@ -9,6 +9,9 @@ public sealed class HighlightingService
     private readonly IReadOnlyList<ICodeHighlighter> _highlighters;
     private readonly PlainTextHighlighter _fallback = new();
 
+    /// <summary>
+    /// Initializes the service with the registered highlighters, ordered by descending <see cref="ICodeHighlighter.Priority"/>.
+    /// </summary>
     public HighlightingService(IEnumerable<ICodeHighlighter> highlighters)
     {
         // Sort by priority descending so we can pick the first match

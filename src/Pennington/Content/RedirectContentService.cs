@@ -33,6 +33,9 @@ public sealed class RedirectContentService : IContentService
     private readonly IFileSystem _fileSystem;
     private readonly AsyncLazy<ImmutableDictionary<string, string>> _mappingsLazy;
 
+    /// <summary>
+    /// Initializes the service and prepares lazy loading of the unified redirect map.
+    /// </summary>
     public RedirectContentService(
         IServiceProvider serviceProvider,
         PenningtonOptions pennOptions,
@@ -44,7 +47,10 @@ public sealed class RedirectContentService : IContentService
         _mappingsLazy = new AsyncLazy<ImmutableDictionary<string, string>>(LoadMappingsAsync);
     }
 
+    /// <inheritdoc/>
     public string DefaultSectionLabel => "";
+
+    /// <inheritdoc/>
     public int SearchPriority => 0;
 
     /// <summary>
@@ -72,15 +78,19 @@ public sealed class RedirectContentService : IContentService
         }
     }
 
+    /// <inheritdoc/>
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync() =>
         Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
+    /// <inheritdoc/>
     public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync() =>
         Task.FromResult(ImmutableList<ContentToCreate>.Empty);
 
+    /// <inheritdoc/>
     public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync() =>
         Task.FromResult(ImmutableList<ContentTocItem>.Empty);
 
+    /// <inheritdoc/>
     public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync() =>
         Task.FromResult(ImmutableList<CrossReference>.Empty);
 

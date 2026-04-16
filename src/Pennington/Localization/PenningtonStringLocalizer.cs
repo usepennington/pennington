@@ -15,12 +15,14 @@ public sealed class PenningtonStringLocalizer : IStringLocalizer
     private readonly TranslationOptions _translations;
     private readonly LocalizationOptions _localization;
 
+    /// <summary>Creates the localizer.</summary>
     public PenningtonStringLocalizer(TranslationOptions translations, LocalizationOptions localization)
     {
         _translations = translations;
         _localization = localization;
     }
 
+    /// <inheritdoc/>
     public LocalizedString this[string name]
     {
         get
@@ -30,6 +32,7 @@ public sealed class PenningtonStringLocalizer : IStringLocalizer
         }
     }
 
+    /// <inheritdoc/>
     public LocalizedString this[string name, params object[] arguments]
     {
         get
@@ -42,6 +45,7 @@ public sealed class PenningtonStringLocalizer : IStringLocalizer
         }
     }
 
+    /// <inheritdoc/>
     public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
     {
         var locale = ResolveLocale();

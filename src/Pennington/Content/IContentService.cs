@@ -65,6 +65,13 @@ public interface IContentService
     /// </summary>
     Task<ImmutableList<CrossReference>> GetCrossReferencesAsync();
 
+    /// <summary>
+    /// Default section label applied to discovered items that do not supply one via front matter.
+    /// </summary>
     string DefaultSectionLabel { get; }
+
+    /// <summary>
+    /// Relative priority for ordering results in the search index (higher values rank first).
+    /// </summary>
     int SearchPriority { get; }
 }

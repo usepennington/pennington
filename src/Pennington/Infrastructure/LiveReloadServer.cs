@@ -17,6 +17,7 @@ public sealed class LiveReloadServer
     private readonly ILogger<LiveReloadServer>? _logger;
     private Timer? _debounceTimer;
 
+    /// <summary>Initializes the server and subscribes to watched-file change notifications.</summary>
     public LiveReloadServer(IFileWatcher fileWatcher, ILogger<LiveReloadServer>? logger = null)
     {
         _logger = logger;
@@ -78,6 +79,7 @@ public sealed class LiveReloadServer
     }
 }
 
+/// <summary>Extensions that wire the live reload WebSocket endpoint into the request pipeline.</summary>
 public static class LiveReloadExtensions
 {
     internal const string ReloadPath = "/__pennington/reload";

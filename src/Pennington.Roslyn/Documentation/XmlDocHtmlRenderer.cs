@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
+/// <summary>Renders <see cref="XmlDocNode"/> trees into HTML for display in the DocSite.</summary>
 public sealed class XmlDocHtmlRenderer : IXmlDocHtmlRenderer
 {
+    /// <summary>Renders the nodes as block-level HTML, wrapping loose inline content in <c>&lt;p&gt;</c> and emitting <c>&lt;pre&gt;</c>/<c>&lt;ul&gt;</c>/<c>&lt;ol&gt;</c> for code blocks and lists.</summary>
     public string RenderHtml(IEnumerable<XmlDocNode> nodes)
     {
         var materialised = nodes.ToList();
@@ -72,6 +74,7 @@ public sealed class XmlDocHtmlRenderer : IXmlDocHtmlRenderer
         return sb.ToString();
     }
 
+    /// <summary>Renders the nodes as inline HTML without wrapping paragraphs, suitable for embedding inside an existing block element.</summary>
     public string RenderInlineHtml(IEnumerable<XmlDocNode> nodes)
     {
         var sb = new StringBuilder();

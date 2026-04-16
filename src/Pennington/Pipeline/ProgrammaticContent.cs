@@ -8,18 +8,27 @@ using Routing;
 /// </summary>
 public interface IProgrammaticContentGenerator
 {
+    /// <summary>Generates the content for the given route.</summary>
     Task<ProgrammaticContent> GenerateAsync(ContentRoute route);
 }
 
+/// <summary>Programmatic content produced as a text body.</summary>
+/// <param name="Metadata">Optional front matter metadata.</param>
+/// <param name="RawContent">Raw body text (markdown or HTML depending on content type).</param>
+/// <param name="ContentType">MIME type for the response.</param>
 public record TextProgrammaticContent(
     IFrontMatter? Metadata,
     string RawContent,
     string ContentType = "text/html"
 );
 
+/// <summary>Programmatic content produced as a binary payload.</summary>
+/// <param name="ByteGenerator">Deferred byte producer invoked when the content is needed.</param>
+/// <param name="ContentType">MIME type for the response.</param>
 public record BinaryProgrammaticContent(
     Func<Task<byte[]>> ByteGenerator,
     string ContentType
 );
 
+/// <summary>Union of supported programmatic content payload shapes.</summary>
 public union ProgrammaticContent(TextProgrammaticContent, BinaryProgrammaticContent);

@@ -8,11 +8,22 @@ using Routing;
 /// </summary>
 public sealed class MarkdownContentServiceOptions
 {
+    /// <summary>Filesystem path to the directory containing markdown files.</summary>
     public required FilePath ContentPath { get; init; }
+
+    /// <summary>URL prefix prepended to routes generated from this content directory.</summary>
     public UrlPath BasePageUrl { get; init; } = new("/");
+
+    /// <summary>Default section label applied to discovered items when front matter doesn't specify one.</summary>
     public string? SectionLabel { get; init; }
+
+    /// <summary>Glob pattern used to enumerate source files (defaults to <c>*.md</c>).</summary>
     public string FilePattern { get; init; } = "*.md";
+
+    /// <summary>Locale code associated with single-locale content (ignored when multi-locale routing is active).</summary>
     public string Locale { get; init; } = "";
+
+    /// <summary>Relative ordering priority for this source's entries in the search index.</summary>
     public int SearchPriority { get; init; } = 10;
 
     /// <summary>

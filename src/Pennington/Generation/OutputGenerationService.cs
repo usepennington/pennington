@@ -36,6 +36,9 @@ public sealed class OutputGenerationService
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<OutputGenerationService> _logger;
 
+    /// <summary>
+    /// Initializes the service with the dependencies required to crawl the running app and write output.
+    /// </summary>
     public OutputGenerationService(
         IEnumerable<IContentService> contentServices,
         OutputOptions outputOptions,
@@ -53,6 +56,9 @@ public sealed class OutputGenerationService
         _logger = logger;
     }
 
+    /// <summary>
+    /// Crawls the running app at <paramref name="appUrl"/> and writes every discovered route to the output directory.
+    /// </summary>
     public async Task<BuildReport> GenerateAsync(string appUrl)
     {
         var reportBuilder = new BuildReportBuilder();

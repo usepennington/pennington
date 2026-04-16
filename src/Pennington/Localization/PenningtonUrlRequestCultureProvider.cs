@@ -14,11 +14,13 @@ public sealed class PenningtonUrlRequestCultureProvider : IRequestCultureProvide
 {
     private readonly LocalizationOptions _localization;
 
+    /// <summary>Creates the provider.</summary>
     public PenningtonUrlRequestCultureProvider(LocalizationOptions localization)
     {
         _localization = localization;
     }
 
+    /// <inheritdoc/>
     public Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
     {
         var path = httpContext.Request.Path.Value ?? "/";

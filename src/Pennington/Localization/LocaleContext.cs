@@ -11,6 +11,7 @@ public sealed class LocaleContext
 {
     private readonly LocalizationOptions _localization;
 
+    /// <summary>Creates the context, initialized to the default locale until middleware populates the request's locale.</summary>
     public LocaleContext(LocalizationOptions localization)
     {
         _localization = localization;

@@ -21,12 +21,14 @@ public sealed class MarkdownContentRenderer : IContentRenderer
     private readonly MarkdownPipeline _pipeline;
     private readonly MarkdownLinkResolver? _linkResolver;
 
+    /// <summary>Creates the renderer; the default Markdig pipeline is used when none is supplied.</summary>
     public MarkdownContentRenderer(MarkdownPipeline? pipeline = null, MarkdownLinkResolver? linkResolver = null)
     {
         _pipeline = pipeline ?? MarkdownPipelineFactory.CreateDefault();
         _linkResolver = linkResolver;
     }
 
+    /// <inheritdoc/>
     public async Task<ContentItem> RenderAsync(ParsedItem item)
     {
         try

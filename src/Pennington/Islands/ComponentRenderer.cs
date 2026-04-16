@@ -14,6 +14,7 @@ public sealed class ComponentRenderer(
 {
     private readonly HtmlRenderer _renderer = new(serviceProvider, loggerFactory);
 
+    /// <summary>Renders a Blazor component to an HTML string with the given parameters.</summary>
     public Task<string> RenderComponentAsync<TComponent>(
         IDictionary<string, object?>? parameters = null)
         where TComponent : IComponent
@@ -29,6 +30,7 @@ public sealed class ComponentRenderer(
         });
     }
 
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
         await _renderer.DisposeAsync();

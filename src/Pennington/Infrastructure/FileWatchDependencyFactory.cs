@@ -13,6 +13,7 @@ public sealed class FileWatchDependencyFactory<T> : IDisposable where T : class
     private T? _instance;
     private readonly Lock _lock = new();
 
+    /// <summary>Initializes the factory and subscribes to file-change notifications.</summary>
     public FileWatchDependencyFactory(IFileWatcher fileWatcher, IServiceProvider serviceProvider, ILogger<FileWatchDependencyFactory<T>> logger)
     {
         _serviceProvider = serviceProvider;
@@ -20,6 +21,7 @@ public sealed class FileWatchDependencyFactory<T> : IDisposable where T : class
         fileWatcher.SubscribeToChanges(InvalidateInstance);
     }
 
+    /// <summary>Returns the cached instance, constructing one via DI on first access.</summary>
     public T GetInstance()
     {
         lock (_lock)
@@ -31,6 +33,7 @@ public sealed class FileWatchDependencyFactory<T> : IDisposable where T : class
         }
     }
 
+    /// <summary>Disposes the current instance (if any) so the next call to <see cref="GetInstance"/> builds a fresh one.</summary>
     public void InvalidateInstance()
     {
         lock (_lock)
@@ -44,6 +47,7 @@ public sealed class FileWatchDependencyFactory<T> : IDisposable where T : class
         }
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         lock (_lock)

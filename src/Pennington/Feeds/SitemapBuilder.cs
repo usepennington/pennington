@@ -20,8 +20,12 @@ public sealed class SitemapBuilder
 {
     private readonly UrlPath _canonicalBase;
 
+    /// <summary>Canonical site base URL used when resolving absolute entry URLs.</summary>
     public UrlPath CanonicalBase => _canonicalBase;
 
+    /// <summary>
+    /// Initializes the builder with the canonical site base URL used to produce absolute entry URLs.
+    /// </summary>
     public SitemapBuilder(UrlPath canonicalBase)
     {
         _canonicalBase = canonicalBase;

@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using Content;
 using Routing;
 
+/// <summary>Builds hierarchical navigation trees and related navigation metadata from flat TOC entries.</summary>
 public sealed class NavigationBuilder
 {
     /// <summary>

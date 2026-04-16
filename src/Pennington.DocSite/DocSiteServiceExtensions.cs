@@ -9,8 +9,10 @@ using Microsoft.Extensions.DependencyInjection;
 using MonorailCss;
 using Pennington.UI.Components;
 
+/// <summary>DI extension methods for registering and running the DocSite template.</summary>
 public static class DocSiteServiceExtensions
 {
+    /// <summary>Registers DocSite services with the provided options.</summary>
     public static IServiceCollection AddDocSite(this IServiceCollection services,
         Func<DocSiteOptions> configureOptions)
     {
@@ -96,6 +98,7 @@ public static class DocSiteServiceExtensions
         return services;
     }
 
+    /// <summary>Wires DocSite middleware and Razor components into the request pipeline.</summary>
     public static WebApplication UseDocSite(this WebApplication app)
     {
         var options = app.Services.GetRequiredService<DocSiteOptions>();
@@ -112,6 +115,7 @@ public static class DocSiteServiceExtensions
         return app;
     }
 
+    /// <summary>Runs the DocSite: either serves the app or performs a static build, based on command-line args.</summary>
     public static async Task RunDocSiteAsync(this WebApplication app, string[] args)
     {
         await app.RunOrBuildAsync(args);

@@ -14,12 +14,14 @@ public sealed class XrefResolver
 {
     private readonly AsyncLazy<ImmutableDictionary<string, CrossReference>> _lookupLazy;
 
+    /// <summary>Initializes the resolver and prepares lazy aggregation of UID entries across content services.</summary>
     public XrefResolver(IEnumerable<IContentService> contentServices)
     {
         _lookupLazy = new AsyncLazy<ImmutableDictionary<string, CrossReference>>(
             () => BuildLookupAsync(contentServices));
     }
 
+    /// <summary>Returns the <see cref="CrossReference"/> for <paramref name="uid"/>, or <c>null</c> when not found.</summary>
     public async Task<CrossReference?> ResolveAsync(string uid)
     {
         if (string.IsNullOrWhiteSpace(uid))

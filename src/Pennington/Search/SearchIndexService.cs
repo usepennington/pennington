@@ -25,6 +25,7 @@ public sealed class SearchIndexService
     private readonly AsyncLazy<IReadOnlyDictionary<string, string>> _indexLazy;
     private readonly LocalizationOptions _localization;
 
+    /// <summary>Creates the service; the per-locale index is computed lazily on first request.</summary>
     public SearchIndexService(
         IServiceProvider serviceProvider,
         SearchIndexBuilder builder,

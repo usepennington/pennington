@@ -7,8 +7,10 @@ public sealed class AsyncLazy<T>
     private Task<T>? _task;
     private readonly Lock _lock = new();
 
+    /// <summary>Initializes the instance with a factory invoked on first access.</summary>
     public AsyncLazy(Func<Task<T>> factory) => _factory = factory;
 
+    /// <summary>Task that resolves to the lazily produced value; retries automatically if the previous attempt faulted.</summary>
     public Task<T> Value
     {
         get
@@ -22,6 +24,7 @@ public sealed class AsyncLazy<T>
         }
     }
 
+    /// <summary>Discards any cached value so the next access runs the factory again.</summary>
     public void Reset()
     {
         lock (_lock) { _task = null; }

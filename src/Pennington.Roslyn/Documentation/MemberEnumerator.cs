@@ -72,7 +72,9 @@ internal sealed class MemberEnumerator : IMemberEnumerator
         }
 
         var docId = symbol.GetDocumentationCommentId() ?? string.Empty;
-        var parsedXml = _xmlDocParser.Parse(symbol.GetDocumentationCommentXml());
+        var rawXml = symbol.GetDocumentationCommentXml();
+        var resolvedXml = InheritDocResolver.Resolve(rawXml, symbol);
+        var parsedXml = _xmlDocParser.Parse(resolvedXml);
 
         return symbol switch
         {

@@ -29,6 +29,9 @@ using Routing;
 using Search;
 using Testably.Abstractions;
 
+/// <summary>
+/// DI and pipeline extensions that wire Pennington services into an ASP.NET Core host.
+/// </summary>
 public static class PenningtonExtensions
 {
     private const string LocaleRoutingKey = "Pennington.LocaleRoutingAdded";

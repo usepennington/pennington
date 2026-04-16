@@ -30,6 +30,7 @@ public sealed class RenderedHtmlFetcher : IDisposable
     private readonly IBrowsingContext _browsingContext = BrowsingContext.New(Configuration.Default);
     private readonly Lazy<HttpClient> _client;
 
+    /// <summary>Initializes the fetcher with the running server and a logger.</summary>
     public RenderedHtmlFetcher(IServer server, ILogger<RenderedHtmlFetcher> logger)
     {
         _server = server;
@@ -95,6 +96,7 @@ public sealed class RenderedHtmlFetcher : IDisposable
         return document.Body;
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (_client.IsValueCreated)

@@ -11,6 +11,9 @@ public sealed class RssFeedBuilder
 {
     private readonly UrlPath _canonicalBase;
 
+    /// <summary>
+    /// Initializes the builder with the canonical site base URL used to produce absolute item links.
+    /// </summary>
     public RssFeedBuilder(UrlPath canonicalBase)
     {
         _canonicalBase = canonicalBase;

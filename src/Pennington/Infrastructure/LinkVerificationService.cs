@@ -25,7 +25,7 @@ public sealed partial class LinkVerificationService
     /// / <c>/_blazor/</c>. Passing <c>"/"</c> (the default) disables prefix stripping.
     ///
     /// <paramref name="copiedAssetPaths"/> are relative output paths produced by
-    /// <see cref="IContentService.GetContentToCopyAsync"/> (e.g. <c>media/sample.svg</c>);
+    /// <see cref="Content.IContentService.GetContentToCopyAsync"/> (e.g. <c>media/sample.svg</c>);
     /// they get normalized into absolute root-relative URLs (<c>/media/sample.svg</c>)
     /// and added to the known-paths set so that <c>&lt;img src&gt;</c> references to
     /// assets the engine just copied aren't flagged as broken.

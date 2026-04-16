@@ -3,8 +3,10 @@ namespace Pennington.Roslyn.Documentation;
 using System.Collections.Immutable;
 using System.Xml.Linq;
 
+/// <summary>Default <see cref="IXmlDocParser"/> implementation that parses xmldoc XML via <see cref="System.Xml.Linq.XDocument"/>.</summary>
 public sealed class XmlDocParser : IXmlDocParser
 {
+    /// <inheritdoc />
     public ParsedXmlDoc Parse(string? xmlDocumentation)
     {
         if (string.IsNullOrWhiteSpace(xmlDocumentation))

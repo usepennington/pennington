@@ -14,6 +14,7 @@ public static class SpaEnvelopeSerializer
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     };
 
+    /// <summary>Serializes an SPA envelope DTO to JSON using the configured options.</summary>
     public static string Serialize(SpaEnvelopeDto envelope)
         => JsonSerializer.Serialize(envelope, Options);
 }

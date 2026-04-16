@@ -37,6 +37,7 @@ public sealed partial class XrefResolvingService
     private readonly IServiceProvider _serviceProvider;
     private readonly IBrowsingContext _browsingContext = BrowsingContext.New(Configuration.Default);
 
+    /// <summary>Initializes the service with the provider used to resolve the current <see cref="XrefResolver"/> on demand.</summary>
     public XrefResolvingService(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;

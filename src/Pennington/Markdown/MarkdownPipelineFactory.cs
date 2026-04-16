@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class MarkdownPipelineFactory
 {
+    /// <summary>Creates a basic Markdig pipeline with advanced extensions and YAML front matter.</summary>
     public static MarkdownPipeline CreateDefault()
     {
         return new MarkdownPipelineBuilder()

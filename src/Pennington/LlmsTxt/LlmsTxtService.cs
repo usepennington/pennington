@@ -27,6 +27,7 @@ public sealed class LlmsTxtService
 {
     private readonly AsyncLazy<LlmsTxtData> _dataLazy;
 
+    /// <summary>Creates the service; data is computed lazily on first request.</summary>
     public LlmsTxtService(
         IServiceProvider serviceProvider,
         PenningtonOptions pennOptions,
@@ -39,10 +40,13 @@ public sealed class LlmsTxtService
             () => BuildAsync(serviceProvider, pennOptions, llmsTxtOptions, navigationBuilder, fetcher, logger));
     }
 
+    /// <summary>Returns the generated llms.txt index content.</summary>
     public async Task<string> GetLlmsTxtAsync() => (await _dataLazy.Value).IndexContent;
 
+    /// <summary>Returns the per-page stripped markdown files emitted alongside llms.txt.</summary>
     public async Task<ImmutableList<MarkdownFile>> GetMarkdownFilesAsync() => (await _dataLazy.Value).MarkdownFiles;
 
+    /// <summary>Returns the optional concatenated llms-full.txt content, or null when disabled.</summary>
     public async Task<string?> GetLlmsFullTxtAsync() => (await _dataLazy.Value).FullContent;
 
     private static async Task<LlmsTxtData> BuildAsync(
@@ -261,5 +265,8 @@ public sealed class LlmsTxtService
         ImmutableList<MarkdownFile> MarkdownFiles,
         string? FullContent);
 
+    /// <summary>A stripped markdown file produced for the llms output.</summary>
+    /// <param name="OutputPath">Relative output path for the markdown file.</param>
+    /// <param name="Content">UTF-8 bytes of the stripped markdown body.</param>
     public record MarkdownFile(FilePath OutputPath, byte[] Content);
 }

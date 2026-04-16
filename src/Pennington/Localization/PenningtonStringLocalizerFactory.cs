@@ -12,12 +12,15 @@ public sealed class PenningtonStringLocalizerFactory : IStringLocalizerFactory
 {
     private readonly PenningtonStringLocalizer _localizer;
 
+    /// <summary>Creates the factory with the shared localizer instance.</summary>
     public PenningtonStringLocalizerFactory(TranslationOptions translations, LocalizationOptions localization)
     {
         _localizer = new PenningtonStringLocalizer(translations, localization);
     }
 
+    /// <inheritdoc/>
     public IStringLocalizer Create(Type resourceSource) => _localizer;
 
+    /// <inheritdoc/>
     public IStringLocalizer Create(string baseName, string location) => _localizer;
 }

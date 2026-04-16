@@ -49,11 +49,17 @@ public sealed class SitemapService
 {
     private readonly AsyncLazy<string> _sitemapLazy;
 
+    /// <summary>
+    /// Initializes the service and prepares lazy sitemap generation driven by the provided builder.
+    /// </summary>
     public SitemapService(IServiceProvider serviceProvider, SitemapBuilder builder)
     {
         _sitemapLazy = new AsyncLazy<string>(() => BuildSitemapAsync(serviceProvider, builder));
     }
 
+    /// <summary>
+    /// Returns the serialized sitemap XML, generating it on first access and caching the result.
+    /// </summary>
     public Task<string> GetSitemapXmlAsync() => _sitemapLazy.Value;
 
     private static async Task<string> BuildSitemapAsync(IServiceProvider sp, SitemapBuilder builder)

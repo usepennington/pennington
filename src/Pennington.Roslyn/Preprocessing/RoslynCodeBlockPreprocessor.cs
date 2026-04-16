@@ -19,6 +19,7 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
     private readonly RoslynOptions _options;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
+    /// <summary>Creates a new preprocessor wired to the symbol extraction service, Roslyn highlighter, options, and per-request diagnostics accessor.</summary>
     public RoslynCodeBlockPreprocessor(
         ISymbolExtractionService symbolService,
         SyntaxHighlighter highlighter,
@@ -34,8 +35,10 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
     private DiagnosticContext? Diagnostics
         => _httpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
 
+    /// <inheritdoc />
     public int Priority => 100;
 
+    /// <inheritdoc />
     public CodeBlockPreprocessResult? TryProcess(string code, string languageId)
     {
         var (baseLanguage, modifier) = ParseLanguageId(languageId);

@@ -13,12 +13,14 @@ public sealed class MarkdownContentParser<TFrontMatter> : IContentParser
     private readonly FrontMatterParser _frontMatterParser;
     private readonly IFileSystem _fileSystem;
 
+    /// <summary>Creates the parser.</summary>
     public MarkdownContentParser(FrontMatterParser frontMatterParser, IFileSystem fileSystem)
     {
         _frontMatterParser = frontMatterParser;
         _fileSystem = fileSystem;
     }
 
+    /// <inheritdoc/>
     public async Task<ContentItem> ParseAsync(DiscoveredItem item)
     {
         if (item.Source is not MarkdownFileSource markdownSource)

@@ -1,5 +1,6 @@
 namespace Pennington.Highlighting;
 
+/// <summary>Syntax highlighter that converts source code into HTML fragments.</summary>
 public interface ICodeHighlighter
 {
     /// <summary>Languages this highlighter handles (e.g., "csharp", "python").</summary>

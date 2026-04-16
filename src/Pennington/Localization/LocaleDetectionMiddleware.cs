@@ -15,12 +15,14 @@ public sealed class LocaleDetectionMiddleware
     private readonly RequestDelegate _next;
     private readonly LocalizationOptions _localization;
 
+    /// <summary>Creates the middleware.</summary>
     public LocaleDetectionMiddleware(RequestDelegate next, LocalizationOptions localization)
     {
         _next = next;
         _localization = localization;
     }
 
+    /// <summary>Processes the request: detects the locale, populates <see cref="LocaleContext"/>, and strips the locale prefix from the request path.</summary>
     public Task Invoke(HttpContext context)
     {
         var path = context.Request.Path.Value ?? "/";

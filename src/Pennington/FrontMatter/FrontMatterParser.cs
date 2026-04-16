@@ -11,6 +11,9 @@ public sealed class FrontMatterParser
 {
     private readonly IDeserializer _deserializer;
 
+    /// <summary>
+    /// Initializes the parser with a camelCase YAML deserializer that ignores unmatched properties.
+    /// </summary>
     public FrontMatterParser()
     {
         _deserializer = new DeserializerBuilder()

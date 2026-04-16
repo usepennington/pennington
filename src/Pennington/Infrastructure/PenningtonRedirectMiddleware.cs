@@ -16,11 +16,13 @@ public sealed class PenningtonRedirectMiddleware
 {
     private readonly RequestDelegate _next;
 
+    /// <summary>Initializes the middleware with the next delegate in the pipeline.</summary>
     public PenningtonRedirectMiddleware(RequestDelegate next)
     {
         _next = next;
     }
 
+    /// <summary>Issues a 301 when the request path matches the merged redirect map, otherwise calls the next delegate.</summary>
     public async Task InvokeAsync(HttpContext context, RedirectContentService redirects)
     {
         var path = context.Request.Path.Value;

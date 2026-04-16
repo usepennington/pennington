@@ -23,6 +23,9 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
     private readonly ImmutableArray<string> _normalizedExcludePaths;
     private readonly AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>> _metadataLazy;
 
+    /// <summary>
+    /// Initializes the service, registers the content directory with the watcher, and prepares lazy metadata loading.
+    /// </summary>
     public MarkdownContentService(
         MarkdownContentServiceOptions options,
         FrontMatterParser parser,
@@ -44,11 +47,25 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         fileWatcher.AddPathWatch(_absoluteContentPath, "*.*", (_, _) => { });
     }
 
+    /// <inheritdoc/>
     public string DefaultSectionLabel => _options.SectionLabel ?? "";
+
+    /// <inheritdoc/>
     public int SearchPriority => _options.SearchPriority;
 
+    /// <summary>
+    /// Absolute filesystem path to the root of this service's content directory.
+    /// </summary>
     public string AbsoluteContentRoot => _absoluteContentPath;
+
+    /// <summary>
+    /// URL prefix prepended to routes generated from this content directory.
+    /// </summary>
     public UrlPath BasePageUrl => _options.BasePageUrl;
+
+    /// <summary>
+    /// Normalized forward-slash subtree paths (relative to the content root) that are skipped during discovery.
+    /// </summary>
     public ImmutableArray<string> ExcludePaths => _normalizedExcludePaths;
 
     /// <summary>
@@ -92,6 +109,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         return false;
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
         foreach (var (route, sourceFile) in DiscoverRoutesWithFallbacks())
@@ -123,6 +141,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         }
     }
 
+    /// <inheritdoc/>
     public async Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {
         var metadata = await _metadataLazy.Value;
@@ -168,6 +187,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         return builder.ToImmutable();
     }
 
+    /// <inheritdoc/>
     public async Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
     {
         var metadata = await _metadataLazy.Value;
@@ -184,6 +204,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         return builder.ToImmutable();
     }
 
+    /// <inheritdoc/>
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
     {
         var contentPath = _absoluteContentPath;
@@ -232,6 +253,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         return Task.FromResult(builder.ToImmutable());
     }
 
+    /// <inheritdoc/>
     public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
         => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
 

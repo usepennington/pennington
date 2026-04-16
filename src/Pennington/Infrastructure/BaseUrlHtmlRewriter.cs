@@ -19,16 +19,20 @@ public sealed class BaseUrlHtmlRewriter : IHtmlResponseRewriter
 {
     private readonly string _baseUrl;
 
+    /// <summary>Initializes the rewriter with the base URL from <see cref="OutputOptions"/>.</summary>
     public BaseUrlHtmlRewriter(OutputOptions? outputOptions)
     {
         _baseUrl = outputOptions?.BaseUrl.Value.TrimEnd('/') ?? "";
     }
 
+    /// <inheritdoc/>
     public int Order => 30;
 
+    /// <inheritdoc/>
     public bool ShouldApply(HttpContext context)
         => !string.IsNullOrEmpty(_baseUrl) && _baseUrl != "/";
 
+    /// <inheritdoc/>
     public Task ApplyAsync(IDocument document, HttpContext context)
     {
         document.Body?.SetAttribute("data-base-url", _baseUrl);

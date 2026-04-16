@@ -5,6 +5,7 @@ namespace Pennington.Markdown.Extensions.Tabs;
 /// </summary>
 public record TabbedCodeBlockRenderOptions
 {
+    /// <summary>Default CSS class configuration used by the tabbed code block renderer.</summary>
     public static readonly TabbedCodeBlockRenderOptions Default = new()
     {
         OuterWrapperCss = "not-prose",

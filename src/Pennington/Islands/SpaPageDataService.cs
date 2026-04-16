@@ -8,6 +8,7 @@ public sealed class SpaPageDataService
     private readonly IEnumerable<IIslandRenderer> _renderers;
     private readonly RenderContext _renderContext;
 
+    /// <summary>Creates a service coordinating the supplied island renderers under the given render context.</summary>
     public SpaPageDataService(IEnumerable<IIslandRenderer> renderers, RenderContext renderContext)
     {
         _renderers = renderers;

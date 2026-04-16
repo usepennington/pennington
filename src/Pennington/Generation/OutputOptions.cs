@@ -2,12 +2,23 @@ namespace Pennington.Generation;
 
 using Routing;
 
+/// <summary>
+/// Options controlling the static build output: target directory, base URL, and cleanup behavior.
+/// </summary>
 public sealed class OutputOptions
 {
+    /// <summary>Directory where generated output is written.</summary>
     public required FilePath OutputDirectory { get; init; }
+
+    /// <summary>Base URL the site is deployed under (used to rewrite links in generated HTML).</summary>
     public UrlPath BaseUrl { get; init; } = new("/");
+
+    /// <summary>When true, the output directory is cleared before a build run.</summary>
     public bool CleanOutput { get; init; } = true;
 
+    /// <summary>
+    /// Parses CLI arguments into <see cref="OutputOptions"/>, honoring positional and named flag forms.
+    /// </summary>
     public static OutputOptions FromArgs(string[] args)
     {
         // OutputOptions is only meaningful for the "build" CLI verb — the same

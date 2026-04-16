@@ -13,14 +13,28 @@ using Search;
 /// <summary>Main configuration options for the Pennington content engine.</summary>
 public sealed class PenningtonOptions
 {
+    /// <summary>Site title shown in the browser tab, OpenGraph tags, and RSS feed.</summary>
     public string SiteTitle { get; set; } = "";
+
+    /// <summary>Default site description used for meta tags when a page supplies none.</summary>
     public string SiteDescription { get; set; } = "";
+
+    /// <summary>Absolute base URL used to generate canonical, OpenGraph, and feed links.</summary>
     public string? CanonicalBaseUrl { get; set; }
+
+    /// <summary>Root filesystem directory containing site content.</summary>
     public string ContentRootPath { get; set; } = "Content";
 
+    /// <summary>Code-highlighting configuration.</summary>
     public HighlightingOptions Highlighting { get; } = new();
+
+    /// <summary>Island (interactive component) registration.</summary>
     public IslandsOptions Islands { get; } = new();
+
+    /// <summary>Localization configuration, including locales and defaults.</summary>
     public LocalizationOptions Localization { get; } = new();
+
+    /// <summary>Translation string configuration for localized UI.</summary>
     public TranslationOptions Translations { get; } = new();
 
     /// <summary>
@@ -49,6 +63,7 @@ public sealed class PenningtonOptions
         return options;
     }
 
+    /// <summary>Markdown content sources registered via <see cref="AddMarkdownContent{TFrontMatter}"/>.</summary>
     public IReadOnlyList<MarkdownContentOptions> MarkdownSources => _markdownSources;
 
     private LlmsTxtOptions? _llmsTxtOptions;
@@ -61,6 +76,7 @@ public sealed class PenningtonOptions
         return _llmsTxtOptions;
     }
 
+    /// <summary>llms.txt options registered via <see cref="AddLlmsTxt"/>, or <c>null</c> when not enabled.</summary>
     public LlmsTxtOptions? LlmsTxt => _llmsTxtOptions;
 
     /// <summary>Configuration for the search index.</summary>
@@ -73,8 +89,13 @@ public sealed class PenningtonOptions
 /// <summary>Options for a markdown content source.</summary>
 public sealed class MarkdownContentOptions
 {
+    /// <summary>Filesystem path to the directory containing markdown files.</summary>
     public string ContentPath { get; set; } = "Content";
+
+    /// <summary>URL prefix prepended to routes generated from this source.</summary>
     public string BasePageUrl { get; set; } = "/";
+
+    /// <summary>Default section label applied when front matter does not specify one.</summary>
     public string? SectionLabel { get; set; }
 
     /// <summary>
@@ -93,12 +114,15 @@ public sealed class HighlightingOptions
 {
     private readonly List<ICodeHighlighter> _highlighters = [];
 
+    /// <summary>Registers a highlighter type, constructed with its parameterless constructor.</summary>
     public void AddHighlighter<T>() where T : ICodeHighlighter, new()
         => _highlighters.Add(new T());
 
+    /// <summary>Registers a pre-built highlighter instance.</summary>
     public void AddHighlighter(ICodeHighlighter highlighter)
         => _highlighters.Add(highlighter);
 
+    /// <summary>Highlighters registered via <see cref="AddHighlighter(ICodeHighlighter)"/> or the generic overload.</summary>
     public IReadOnlyList<ICodeHighlighter> Highlighters => _highlighters;
 }
 
@@ -107,24 +131,30 @@ public sealed class IslandsOptions
 {
     private readonly Dictionary<string, Type> _islands = [];
 
+    /// <summary>Registers an island renderer under <paramref name="name"/>.</summary>
     public void Register<T>(string name) where T : IIslandRenderer
         => _islands[name] = typeof(T);
 
+    /// <summary>Islands registered via <see cref="Register{T}"/>, keyed by island name.</summary>
     public IReadOnlyDictionary<string, Type> RegisteredIslands => _islands;
 }
 
 /// <summary>Options for localization.</summary>
 public sealed class LocalizationOptions
 {
+    /// <summary>Locale code used when no URL locale prefix is present.</summary>
     public string DefaultLocale { get; set; } = "en";
     private readonly Dictionary<string, LocaleInfo> _locales = [];
 
+    /// <summary>Registers a locale with the supplied metadata.</summary>
     public void AddLocale(string code, LocaleInfo info)
         => _locales[code] = info;
 
+    /// <summary>Registers a locale with just a display name.</summary>
     public void AddLocale(string code, string displayName)
         => _locales[code] = new LocaleInfo(displayName);
 
+    /// <summary>Configured locales keyed by locale code.</summary>
     public IReadOnlyDictionary<string, LocaleInfo> Locales => _locales;
 
     /// <summary>True when more than one locale is configured.</summary>
