@@ -39,14 +39,14 @@ internal static class ServiceConfiguration
 
     /// <summary>
     /// Algorithmic color scheme seeded from a single primary hue.
-    /// The generator function derives the accent and two tertiary hues so
-    /// the whole palette moves with one number.
+    /// The generator function derives the accent hue so the whole palette
+    /// moves with one number.
     /// </summary>
     public static AlgorithmicColorScheme BuildColorScheme() =>
         new()
         {
             PrimaryHue = 220,
-            ColorSchemeGenerator = primary => (primary + 140, primary + 60, primary - 40),
+            ColorSchemeGenerator = primary => primary + 140,
             BaseColorName = ColorName.Zinc,
         };
 

@@ -13,7 +13,8 @@ uid: reference.options.monorail-css-options
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `ColorScheme` | `IColorScheme` | `NamedColorScheme` with `Blue` primary, `Purple` accent, `Cyan` tertiary-one, `Pink` tertiary-two, and `Slate` base | Palette applied to the MonorailCSS theme via `IColorScheme.ApplyToTheme`, exposing the `primary`, `accent`, `tertiary-one`, `tertiary-two`, and `base` utility prefixes. |
+| `ColorScheme` | `IColorScheme` | `NamedColorScheme` with `Blue` primary, `Purple` accent, and `Slate` base | Palette applied to the MonorailCSS theme via `IColorScheme.ApplyToTheme`, exposing the `primary`, `accent`, and `base` utility prefixes. |
+| `SyntaxTheme` | `SyntaxTheme` | `SyntaxTheme.Default` (Sky keywords, Emerald strings, Rose variables, Amber functions, Slate comments) | Tailwind palettes used by the `.hljs-*` syntax-highlight token classes. Independent of `ColorScheme` so brand colors and code colors can vary freely. |
 | `ContentPaths` | `string[]` | `[]` | Extra file paths (relative to the web root) scanned at startup for CSS class usage, ensuring classes referenced only in client-side JS or other non-HTML files reach the generated stylesheet. |
 | `CustomCssFrameworkSettings` | `Func<CssFrameworkSettings, CssFrameworkSettings>` | identity (`settings => settings`) | Hook that receives the fully-populated `CssFrameworkSettings` and returns a modified copy, allowing advanced MonorailCSS customization after Pennington's defaults are applied. |
 | `ExtraStyles` | `string` | `string.Empty` | Raw CSS prepended verbatim to the generated stylesheet, suitable for `@font-face` rules and site-wide overrides outside MonorailCSS's utility generation. |
@@ -24,25 +25,37 @@ uid: reference.options.monorail-css-options
 
 ### `NamedColorScheme`
 
-Maps five named Tailwind color palettes (from `MonorailCss.Theme.ColorNames`) onto the Pennington utility prefixes; all five properties are `required`.
+Maps three named Tailwind color palettes (from `MonorailCss.Theme.ColorNames`) onto the Pennington utility prefixes; all three properties are `required`. Use `AdditionalMappings` for extra slots.
 
 | Name | Type | Description |
 |---|---|---|
-| `AccentColorName` | `string` (required) | Name from `MonorailCss.Theme.ColorNames` mapped to the `accent` palette. |
-| `BaseColorName` | `string` (required) | Name from `MonorailCss.Theme.ColorNames` mapped to the `base` palette, driving neutral surfaces, borders, and body text. |
-| `PrimaryColorName` | `string` (required) | Name from `MonorailCss.Theme.ColorNames` mapped to the `primary` palette. |
-| `TertiaryOneColorName` | `string` (required) | Name from `MonorailCss.Theme.ColorNames` mapped to the `tertiary-one` palette. |
-| `TertiaryTwoColorName` | `string` (required) | Name from `MonorailCss.Theme.ColorNames` mapped to the `tertiary-two` palette. |
+| `AccentColorName` | `ColorName` (required) | Name from `MonorailCss.Theme.ColorNames` mapped to the `accent` palette. |
+| `BaseColorName` | `ColorName` (required) | Name from `MonorailCss.Theme.ColorNames` mapped to the `base` palette, driving neutral surfaces, borders, and body text. |
+| `PrimaryColorName` | `ColorName` (required) | Name from `MonorailCss.Theme.ColorNames` mapped to the `primary` palette. |
+| `AdditionalMappings` | `Dictionary<string, ColorName>` | Extra slot → color mappings (for example `"info" → ColorName.Sky`). |
 
 ### `AlgorithmicColorScheme`
 
-Generates palettes algorithmically from a single primary hue, using a caller-supplied generator function to derive the accent and two tertiary hues.
+Generates palettes algorithmically from a single primary hue, using a caller-supplied generator function to derive the accent hue.
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `BaseColorName` | `string` | `ColorNames.Gray` | Name from `MonorailCss.Theme.ColorNames` mapped to the `base` palette; the remaining four palettes are generated algorithmically, not named. |
-| `ColorSchemeGenerator` | `Func<int, (int, int, int)>` | `primary => (primary + 180, primary + 90, primary - 90)` | Function that receives the primary hue and returns `(accent, tertiaryOne, tertiaryTwo)` hues, each passed to `ColorPaletteGenerator.GenerateFromHue`. |
+| `BaseColorName` | `ColorName` | `ColorName.Gray` | Name from `MonorailCss.Theme.ColorNames` mapped to the `base` palette; `primary` and `accent` are generated algorithmically. |
+| `ColorSchemeGenerator` | `Func<int, int>` | `primary => primary + 180` | Function that receives the primary hue and returns the accent hue, passed to `ColorPaletteGenerator.GenerateFromHue`. |
 | `PrimaryHue` | `int` (required) | — | Seed hue in the `0..360` range from which the primary palette is generated. |
+| `AdditionalMappings` | `Dictionary<string, ColorName>` | Extra slot → color mappings layered on after the generated palettes. |
+
+### `SyntaxTheme`
+
+Color palette for `.hljs-*` syntax-highlight token classes. All five slots are `required`; use `SyntaxTheme.Default` for a tuned starting point.
+
+| Name | Type | Description |
+|---|---|---|
+| `Keyword` | `ColorName` (required) | Keywords, class names, literals, selector tags. |
+| `String` | `ColorName` (required) | String literals, numbers, regular expressions. |
+| `Variable` | `ColorName` (required) | Variables, attribute names, symbols. |
+| `Function` | `ColorName` (required) | Function/method titles, parameters, built-ins. |
+| `Comment` | `ColorName` (required) | Comments and quotes — usually matches the site's base color. |
 
 ## Example
 

@@ -81,16 +81,21 @@ public class MonorailCssOptions
 {
     /// <summary>
     /// Gets or sets the color scheme for the site.
-    /// The default is a NamedColorScheme with Blue (primary), Purple (accent), Cyan (tertiary-one), Pink (tertiary-two), and Slate (base).
+    /// The default is a NamedColorScheme with Blue (primary), Purple (accent), and Slate (base).
     /// </summary>
     public IColorScheme ColorScheme { get; init; } = new NamedColorScheme
     {
         PrimaryColorName = ColorName.Blue,
         AccentColorName = ColorName.Purple,
-        TertiaryOneColorName = ColorName.Cyan,
-        TertiaryTwoColorName = ColorName.Pink,
         BaseColorName = ColorName.Slate
     };
+
+    /// <summary>
+    /// Gets or sets the syntax-highlight color theme.
+    /// Controls the Tailwind palettes used by <c>.hljs-*</c> token classes,
+    /// independent of the site's brand <see cref="ColorScheme"/>.
+    /// </summary>
+    public SyntaxTheme SyntaxTheme { get; init; } = SyntaxTheme.Default;
 
     /// <summary>
     /// Gets or sets a function to customize the CSS framework settings.
@@ -141,11 +146,10 @@ public class AlgorithmicColorScheme : IColorScheme
     public ColorName BaseColorName { get; init; } = ColorName.Gray;
 
     /// <summary>
-    /// Gets or sets the function that generates accent and tertiary hues from the primary hue.
-    /// The function takes the primary hue as input and returns a tuple containing the accent, tertiary one, and tertiary two hues.
+    /// Gets or sets the function that generates the accent hue from the primary hue.
+    /// Defaults to the complementary hue (primary + 180°).
     /// </summary>
-    public Func<int, (int, int, int)> ColorSchemeGenerator { get; init; } =
-        primary => (primary + 180, primary + 90, primary - 90);
+    public Func<int, int> ColorSchemeGenerator { get; init; } = primary => primary + 180;
 
     /// <summary>
     /// Gets or sets additional color mappings beyond the core slots.
@@ -157,15 +161,11 @@ public class AlgorithmicColorScheme : IColorScheme
     public Theme ApplyToTheme(Theme theme)
     {
         var primary = ColorPaletteGenerator.GenerateFromHue(PrimaryHue);
-        var (accentHue, tertiaryOneHue, tertiaryTwoHue) = ColorSchemeGenerator(PrimaryHue);
+        var accentHue = ColorSchemeGenerator(PrimaryHue);
         var accent = ColorPaletteGenerator.GenerateFromHue(accentHue);
-        var tertiaryOne = ColorPaletteGenerator.GenerateFromHue(tertiaryOneHue);
-        var tertiaryTwo = ColorPaletteGenerator.GenerateFromHue(tertiaryTwoHue);
 
         theme = theme.AddColorPalette("primary", primary)
              .AddColorPalette("accent", accent)
-             .AddColorPalette("tertiary-one", tertiaryOne)
-             .AddColorPalette("tertiary-two", tertiaryTwo)
              .MapColorPalette(BaseColorName.Value, "base");
 
         foreach (var (slot, color) in AdditionalMappings)
@@ -191,16 +191,6 @@ public class NamedColorScheme : IColorScheme
     public required ColorName AccentColorName { get; init; }
 
     /// <summary>
-    /// Gets or sets the color name to map to "tertiary-one".
-    /// </summary>
-    public required ColorName TertiaryOneColorName { get; init; }
-
-    /// <summary>
-    /// Gets or sets the color name to map to "tertiary-two".
-    /// </summary>
-    public required ColorName TertiaryTwoColorName { get; init; }
-
-    /// <summary>
     /// Gets or sets the color name to map to "base".
     /// </summary>
     public required ColorName BaseColorName { get; init; }
@@ -216,8 +206,6 @@ public class NamedColorScheme : IColorScheme
     {
         theme = theme.MapColorPalette(PrimaryColorName.Value, "primary")
              .MapColorPalette(AccentColorName.Value, "accent")
-             .MapColorPalette(TertiaryOneColorName.Value, "tertiary-one")
-             .MapColorPalette(TertiaryTwoColorName.Value, "tertiary-two")
              .MapColorPalette(BaseColorName.Value, "base");
 
         foreach (var (slot, color) in AdditionalMappings)
@@ -266,7 +254,7 @@ public class MonorailCssService(MonorailCssOptions options, CssClassCollector cs
                 .AddRange(CodeBlockApplies())
                 .AddRange(TabApplies())
                 .AddRange(MarkdownAlertApplies())
-                .AddRange(HljsApplies())
+                .AddRange(HljsApplies(options.SyntaxTheme))
                 .AddRange(SearchModalApplies()),
 
             ProseCustomization = GetCustomProseSettings()
@@ -578,8 +566,16 @@ public class MonorailCssService(MonorailCssOptions options, CssClassCollector cs
             });
     }
 
-    private static ImmutableDictionary<string, string> HljsApplies()
+    private static ImmutableDictionary<string, string> HljsApplies(SyntaxTheme syntax)
     {
+        string Token(ColorName c) => $"text-{c.Value}-800 dark:text-{c.Value}-300";
+        string Soft(ColorName c) => $"text-{c.Value}-700 dark:text-{c.Value}-300";
+
+        var keyword = Token(syntax.Keyword);
+        var @string = Token(syntax.String);
+        var variable = Token(syntax.Variable);
+        var function = Token(syntax.Function);
+
         return ImmutableDictionary.Create<string, string>()
             .AddRange(new Dictionary<string, string>
             {
@@ -587,41 +583,41 @@ public class MonorailCssService(MonorailCssOptions options, CssClassCollector cs
                 { ".hljs", "text-base-900 dark:text-base-200" },
 
                 // Comments
-                { ".hljs-comment", "text-base-600 italic dark:text-base-400" },
-                { ".hljs-quote", "text-base-800/50 italic dark:text-base-300" },
+                { ".hljs-comment", $"text-{syntax.Comment.Value}-600 italic dark:text-{syntax.Comment.Value}-400" },
+                { ".hljs-quote", $"text-{syntax.Comment.Value}-800/50 italic dark:text-{syntax.Comment.Value}-300" },
 
                 // Keywords and control flow
-                { ".hljs-keyword", "text-primary-800 dark:text-primary-300" },
-                { ".hljs-selector-tag", "text-primary-700 dark:text-primary-300" },
-                { ".hljs-literal", "text-primary-800 dark:text-primary-300" },
+                { ".hljs-keyword", keyword },
+                { ".hljs-selector-tag", Soft(syntax.Keyword) },
+                { ".hljs-literal", keyword },
                 { ".hljs-type", "text-base-700 dark:text-base-300" },
 
                 // Strings and characters
-                { ".hljs-string", "text-tertiary-one-800 dark:text-tertiary-one-300" },
-                { ".hljs-number", "text-tertiary-one-800 dark:text-tertiary-one-300" },
-                { ".hljs-regexp", "text-tertiary-one-800 dark:text-tertiary-one-300" },
+                { ".hljs-string", @string },
+                { ".hljs-number", @string },
+                { ".hljs-regexp", @string },
 
                 // Functions and methods
-                { ".hljs-function", "text-accent-800 dark:text-accent-300" },
-                { ".hljs-title", "text-accent-800 dark:text-accent-300" },
-                { ".hljs-params", "text-accent-800 dark:text-accent-300" },
+                { ".hljs-function", function },
+                { ".hljs-title", function },
+                { ".hljs-params", function },
 
                 // Variables and identifiers
-                { ".hljs-variable", "text-tertiary-two-800 dark:text-tertiary-two-300" },
-                { ".hljs-name", "text-tertiary-two-800 dark:text-tertiary-two-300" },
-                { ".hljs-attr", "text-tertiary-two-800 dark:text-tertiary-two-300" },
-                { ".hljs-symbol", "text-tertiary-two-800 dark:text-tertiary-two-300" },
+                { ".hljs-variable", variable },
+                { ".hljs-name", variable },
+                { ".hljs-attr", variable },
+                { ".hljs-symbol", variable },
 
                 // Operators and punctuation
                 { ".hljs-operator", "text-base-800 dark:text-base-300" },
                 { ".hljs-punctuation", "text-base-800 dark:text-base-300" },
 
                 // Special elements
-                { ".hljs-built_in", "text-accent-700 dark:text-accent-300" },
-                { ".hljs-class", "text-primary-800 dark:text-primary-300" },
+                { ".hljs-built_in", Soft(syntax.Function) },
+                { ".hljs-class", keyword },
                 { ".hljs-meta", "text-base-800 dark:text-base-300" },
-                { ".hljs-tag", "text-primary-800 dark:text-primary-300" },
-                { ".hljs-attribute", "text-tertiary-two-800 dark:text-tertiary-two-300" },
+                { ".hljs-tag", keyword },
+                { ".hljs-attribute", variable },
                 { ".hljs-addition", "text-green-800 dark:text-green-300" },
                 { ".hljs-deletion", "text-red-800 dark:text-red-300" },
                 { ".hljs-link", "text-blue-800 dark:text-blue-300" },

@@ -41,8 +41,6 @@ public static class Stage2
             {
                 PrimaryColorName = ColorName.Indigo,
                 AccentColorName = ColorName.Pink,
-                TertiaryOneColorName = ColorName.Cyan,
-                TertiaryTwoColorName = ColorName.Amber,
                 BaseColorName = ColorName.Slate,
             },
         });

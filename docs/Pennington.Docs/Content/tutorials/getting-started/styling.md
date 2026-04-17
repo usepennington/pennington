@@ -83,7 +83,7 @@ Now let's add the MonorailCSS service registration, pick a named color scheme, a
 
 **Call `AddMonorailCss` with a `NamedColorScheme`**
 
-Here's the updated host. Each of `PrimaryColorName`, `AccentColorName`, `TertiaryOneColorName`, `TertiaryTwoColorName`, and `BaseColorName` takes a `ColorNames` value. This tutorial uses indigo/pink/cyan/amber/slate, but any `ColorNames` constant works — swap freely.
+Here's the updated host. Each of `PrimaryColorName`, `AccentColorName`, and `BaseColorName` takes a `ColorName` value. This tutorial uses indigo/pink/slate, but any `ColorName` constant works — swap freely.
 
 ```csharp:xmldocid,bodyonly
 M:GettingStartedStylingExample.Stage2.Run(System.String[])

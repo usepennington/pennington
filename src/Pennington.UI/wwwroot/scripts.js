@@ -665,7 +665,7 @@ class MermaidManager {
                     
                     // Secondary colors
                     secondaryColor: getCSSVariable('--color-accent-600', '#006100'),
-                    tertiaryColor: getCSSVariable('--color-tertiary-one-600', '#666666'),
+                    tertiaryColor: getCSSVariable('--color-accent-600', '#666666'),
                     
                     // Background colors
                     background: getCSSVariable('--color-base-950', '#0a0a0a'),
@@ -683,7 +683,7 @@ class MermaidManager {
                     primaryBorderColor: getCSSVariable('--color-primary-500', '#dc2626'),
                     nodeBorder: getCSSVariable('--color-primary-500', '#dc2626'),
                     secondaryBorderColor: getCSSVariable('--color-accent-500', '#22c55e'),
-                    tertiaryBorderColor: getCSSVariable('--color-tertiary-one-500', '#6b7280'),
+                    tertiaryBorderColor: getCSSVariable('--color-accent-500', '#6b7280'),
                     
                     // Text colors
                     textColor: getCSSVariable('--color-base-300', '#f3f4f6'),
@@ -696,8 +696,8 @@ class MermaidManager {
                     // Additional node colors for variety
                     node0: getCSSVariable('--color-primary-600', '#dc2626'),
                     node1: getCSSVariable('--color-accent-600', '#059669'),
-                    node2: getCSSVariable('--color-tertiary-one-600', '#4b5563'),
-                    node3: getCSSVariable('--color-tertiary-two-600', '#7c3aed')
+                    node2: getCSSVariable('--color-accent-600', '#4b5563'),
+                    node3: getCSSVariable('--color-primary-600', '#7c3aed')
                 }
             };
         } else {
@@ -716,7 +716,7 @@ class MermaidManager {
                     
                     // Secondary colors
                     secondaryColor: getCSSVariable('--color-accent-700', '#006100'),
-                    tertiaryColor: getCSSVariable('--color-tertiary-one-600', '#4b5563'),
+                    tertiaryColor: getCSSVariable('--color-accent-600', '#4b5563'),
                     
                     // Background colors
                     background: getCSSVariable('--color-base-50', '#f9fafb'),
@@ -735,7 +735,7 @@ class MermaidManager {
                     primaryBorderColor: getCSSVariable('--color-primary-600', '#dc2626'),
                     nodeBorder: getCSSVariable('--color-primary-600', '#dc2626'),
                     secondaryBorderColor: getCSSVariable('--color-accent-600', '#16a34a'),
-                    tertiaryBorderColor: getCSSVariable('--color-tertiary-one-400', '#9ca3af'),
+                    tertiaryBorderColor: getCSSVariable('--color-accent-400', '#9ca3af'),
                     
                     // Text colors
                     textColor: getCSSVariable('--color-base-900', '#111827'),
@@ -748,8 +748,8 @@ class MermaidManager {
                     // Additional node colors for variety
                     node0: getCSSVariable('--color-primary-600', '#dc2626'),
                     node1: getCSSVariable('--color-accent-600', '#16a34a'),
-                    node2: getCSSVariable('--color-tertiary-one-600', '#4b5563'),
-                    node3: getCSSVariable('--color-tertiary-two-600', '#7c3aed')
+                    node2: getCSSVariable('--color-accent-600', '#4b5563'),
+                    node3: getCSSVariable('--color-primary-600', '#7c3aed')
                 }
             };
         }

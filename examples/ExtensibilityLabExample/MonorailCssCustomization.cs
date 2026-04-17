@@ -22,8 +22,6 @@ public static class MonorailCssCustomization
         {
             PrimaryColorName = ColorName.Sky,
             AccentColorName = ColorName.Emerald,
-            TertiaryOneColorName = ColorName.Amber,
-            TertiaryTwoColorName = ColorName.Violet,
             BaseColorName = ColorName.Slate,
         },
         CustomCssFrameworkSettings = settings => settings with

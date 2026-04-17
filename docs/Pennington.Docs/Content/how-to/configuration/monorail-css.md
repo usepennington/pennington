@@ -26,7 +26,7 @@ The `ServiceConfiguration` helpers referenced below are backed by `examples/DocS
 
 **Pick `NamedColorScheme` for a Tailwind-named palette**
 
-`NamedColorScheme` maps five MonorailCSS palette slots (primary, accent, tertiary-one, tertiary-two, base) onto named palettes from `MonorailCss.Theme.ColorNames`. The simplest re-skin is changing the five `*ColorName` strings on the default options.
+`NamedColorScheme` maps three MonorailCSS palette slots (primary, accent, base) onto named palettes from `MonorailCss.Theme.ColorNames`. The simplest re-skin is changing the three `*ColorName` values on the default options.
 
 ```csharp:xmldocid
 T:Pennington.MonorailCss.NamedColorScheme
@@ -37,7 +37,7 @@ T:Pennington.MonorailCss.NamedColorScheme
 
 **Pick `AlgorithmicColorScheme` for hue-driven palettes**
 
-`AlgorithmicColorScheme` synthesises primary, accent, and tertiary palettes from one `PrimaryHue` plus a `ColorSchemeGenerator` delegate, so the whole site repigments by changing a single number. The kitchen-sink helper below shows a plausible generator wired against `ColorNames.Zinc`.
+`AlgorithmicColorScheme` synthesises primary and accent palettes from one `PrimaryHue` plus a `ColorSchemeGenerator` delegate (hue → accent hue), so the whole site repigments by changing a single number. The kitchen-sink helper below shows a plausible generator wired against `ColorName.Zinc`.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildColorScheme
@@ -57,6 +57,17 @@ P:Pennington.DocSite.DocSiteOptions.ColorScheme
 </Step>
 <Step StepNumber="4">
 
+**Override syntax-highlight colors with `SyntaxTheme`**
+
+`MonorailCssOptions.SyntaxTheme` holds the five Tailwind palettes used by `.hljs-*` token classes (keyword, string, variable, function, comment). It is independent of the brand `ColorScheme`, so code colors can stay consistent while the site reskins, or vice versa. `SyntaxTheme.Default` ships Sky / Emerald / Rose / Amber / Slate; replace the whole record to substitute your own.
+
+```csharp:xmldocid
+T:Pennington.MonorailCss.SyntaxTheme
+```
+
+</Step>
+<Step StepNumber="5">
+
 **Append site-wide rules with `ExtraStyles`**
 
 The `ExtraStyles` string is emitted verbatim above the generated utility stylesheet. It fits `@font-face` declarations, utility overrides, or one-off selectors that don't belong in a Razor component. The kitchen-sink helper below combines two font faces with a component-scoped tweak as a realistic reference.
@@ -72,7 +83,7 @@ P:Pennington.DocSite.DocSiteOptions.ExtraStyles
 ```
 
 </Step>
-<Step StepNumber="5">
+<Step StepNumber="6">
 
 **Tweak prose rules with `CustomCssFrameworkSettings`**
 

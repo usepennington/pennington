@@ -15,7 +15,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     ColorScheme = new AlgorithmicColorScheme
     {
         PrimaryHue = 260,
-        ColorSchemeGenerator = i => (i + 180, i - 90, i + 90),
+        ColorSchemeGenerator = i => i + 180,
         BaseColorName = ColorName.Mist
     },
     GitHubUrl = "https://github.com/usepennington/pennington",

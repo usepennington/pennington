@@ -23,17 +23,16 @@ builder.Services.AddPennington(penn =>
 });
 
 // Register MonorailCSS. The NamedColorScheme below picks which named Tailwind
-// palettes resolve behind the `primary`, `accent`, `tertiary-one`,
-// `tertiary-two`, and `base` utility prefixes. Change `PrimaryColorName` and
-// the next stylesheet regeneration reflects the new palette.
+// palettes resolve behind the `primary`, `accent`, and `base` utility prefixes.
+// Change `PrimaryColorName` and the next stylesheet regeneration reflects the
+// new palette. Syntax-highlight colors live on a separate `SyntaxTheme` option
+// so brand colors and code colors can vary independently.
 builder.Services.AddMonorailCss(_ => new MonorailCssOptions
 {
     ColorScheme = new NamedColorScheme
     {
         PrimaryColorName = ColorName.Indigo,
         AccentColorName = ColorName.Pink,
-        TertiaryOneColorName = ColorName.Cyan,
-        TertiaryTwoColorName = ColorName.Amber,
         BaseColorName = ColorName.Slate,
     },
 });

@@ -39,11 +39,13 @@ The edge case that `ContentPaths` exists to solve is classes that live only in c
 
 ### Color schemes: named vs algorithmic
 
-A `NamedColorScheme` maps five role names — `primary`, `accent`, `tertiary-one`, `tertiary-two`, `base` — onto built-in MonorailCSS palettes by name (for example, `Blue` or `Slate`). It is the default, and it suits sites where the designer thinks in terms of recognizable Tailwind-style palettes and picks by name rather than by hue.
+A `NamedColorScheme` maps three role names — `primary`, `accent`, `base` — onto built-in MonorailCSS palettes by name (for example, `Blue` or `Slate`). It is the default, and it suits sites where the designer thinks in terms of recognizable Tailwind-style palettes and picks by name rather than by hue.
 
-An `AlgorithmicColorScheme` takes a single `PrimaryHue` number in degrees plus a `ColorSchemeGenerator` function — defaulting to complement, split-complement-left, and split-complement-right — and synthesizes all four non-base palettes from scratch. This second shape is what makes "my brand color is hue 214, derive everything from that" viable without hand-authoring a full palette table.
+An `AlgorithmicColorScheme` takes a single `PrimaryHue` number in degrees plus a `ColorSchemeGenerator` function — defaulting to the complementary hue — and synthesizes `primary` and `accent` from scratch. This second shape is what makes "my brand color is hue 214, derive everything from that" viable without hand-authoring a full palette table.
 
 The two schemes are not a legacy/modern pair or a simple/advanced pair — they occupy different spots on the designer-versus-programmer axis. Named is the choice when a designer says "I want Tailwind Purple for primary"; Algorithmic is the choice when the starting point is a brand hue expressed in degrees and the palette needs to be coherent rather than cherry-picked.
+
+Syntax-highlight colors are deliberately kept off the brand scheme. `SyntaxTheme` on `MonorailCssOptions` holds the five roles `.hljs-*` token classes consume — keyword, string, variable, function, and comment — each mapped to its own Tailwind palette. The default picks a tuned combination (Sky / Emerald / Rose / Amber / Slate) that reads well against either a light or dark code background, so a site can pick primary and accent purely for brand reasons without constraining how code renders.
 
 ### OKLCH palette generation
 
