@@ -49,13 +49,6 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - When switching between Windows and WSL/Linux, run `dotnet clean Pennington.slnx` first — stale `obj/` artifacts from the other OS cause build failures (NuGet fallback paths, Razor editorconfig paths)
 - Culture handling differs: Linux ICU synthesizes cultures for any string instead of throwing `CultureNotFoundException`. The `TryGetCulture` method in `PenningtonUrlRequestCultureProvider` guards against this.
 
-## Conventions
-- C# 15 union types (construction: `new UnionType(caseInstance)`, pattern matching: case types directly)
-- Records for data types, ImmutableList for collections
-- File-scoped namespaces
-- LSP reports false errors on `union` keyword and ASP.NET/Markdig types — the compiler handles them correctly
-
-
 ## Absolute Paths
 
 Trust the working directory. Use paths relative to the root of the site as a priority, do not prefix with drive and folder unless absolutely nescassary. Do not cd into the folder superfulously. Trust your working directory.
