@@ -6,6 +6,7 @@
     <Project Path="src/Pennington.DocSite/Pennington.DocSite.csproj" />
     <Project Path="src/Pennington.Roslyn/Pennington.Roslyn.csproj" />
     <Project Path="src/Pennington.BlogSite/Pennington.BlogSite.csproj" />
+    <Project Path="src/Pennington.Tui/Pennington.Tui.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Pennington.Tests/Pennington.Tests.csproj" />
@@ -36,5 +37,6 @@
     <Project Path="examples/DocSiteChromeOverridesExample/DocSiteChromeOverridesExample.csproj" />
     <Project Path="examples/SubPathDeployableExample/SubPathDeployableExample.csproj" />
     <Project Path="examples/FocusedCodeSamplesExample/FocusedCodeSamplesExample.csproj" />
+    <Project Path="examples/BeyondTuiExample/BeyondTuiExample.csproj" />
   </Folder>
 </Solution>

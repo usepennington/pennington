@@ -4,17 +4,12 @@
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pennington.DocSite\Pennington.DocSite.csproj" />
-    <ProjectReference Include="..\..\src\Pennington.Roslyn\Pennington.Roslyn.csproj" />
     <ProjectReference Include="..\..\src\Pennington.Tui\Pennington.Tui.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Watch Include="Content\**\*.*" />
-  </ItemGroup>
-  <ItemGroup>
-    <InternalsVisibleTo Include="Pennington.IntegrationTests" />
   </ItemGroup>
 </Project>

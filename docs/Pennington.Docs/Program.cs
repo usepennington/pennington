@@ -4,6 +4,7 @@ using Pennington.DocSite;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
 using Pennington.Roslyn;
+using Pennington.Tui;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,6 +62,10 @@ builder.Services.AddPenningtonRoslyn(roslyn =>
 {
     roslyn.SolutionPath = "../../Pennington.slnx";
 });
+
+// Dev-time full-screen dashboard. No-ops when the host is launched with
+// `dotnet run -- build`, so the static build path is unchanged.
+builder.Services.AddPenningtonTui();
 
 // Reference-doc Mdazor components: generate property tables, member lists, and
 // xmldoc content directly from the source via Roslyn.

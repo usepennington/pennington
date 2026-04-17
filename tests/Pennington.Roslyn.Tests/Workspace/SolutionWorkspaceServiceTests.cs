@@ -125,6 +125,8 @@ public sealed class SolutionWorkspaceServiceTests
 
         public void SubscribeToChanges(Action onUpdate) { }
 
+        public void SubscribeToChanges(Action<FileChangeNotification> onUpdate) { }
+
         public void Dispose() { }
     }
 

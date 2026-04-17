@@ -11,6 +11,7 @@ public sealed class FileWatcher : IFileWatcher
     private readonly IFileSystem _fileSystem;
     private readonly Dictionary<string, IFileSystemWatcher> _watchers = new();
     private readonly List<Action> _subscribers = [];
+    private readonly List<Action<FileChangeNotification>> _pathAwareSubscribers = [];
     private readonly ILogger<FileWatcher>? _logger;
     private bool _disposed;
 
@@ -39,10 +40,10 @@ public sealed class FileWatcher : IFileWatcher
         watcher.IncludeSubdirectories = includeSubdirectories;
         watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.CreationTime;
 
-        watcher.Changed += (_, e) => { onFileChanged(e.FullPath, WatcherChangeTypes.Changed); NotifySubscribers(); };
-        watcher.Created += (_, e) => { onFileChanged(e.FullPath, WatcherChangeTypes.Created); NotifySubscribers(); };
-        watcher.Deleted += (_, e) => { onFileChanged(e.FullPath, WatcherChangeTypes.Deleted); NotifySubscribers(); };
-        watcher.Renamed += (_, e) => { onFileChanged(e.FullPath, WatcherChangeTypes.Renamed); NotifySubscribers(); };
+        watcher.Changed += (_, e) => { onFileChanged(e.FullPath, WatcherChangeTypes.Changed); NotifySubscribers(e.FullPath, WatcherChangeTypes.Changed); };
+        watcher.Created += (_, e) => { onFileChanged(e.FullPath, WatcherChangeTypes.Created); NotifySubscribers(e.FullPath, WatcherChangeTypes.Created); };
+        watcher.Deleted += (_, e) => { onFileChanged(e.FullPath, WatcherChangeTypes.Deleted); NotifySubscribers(e.FullPath, WatcherChangeTypes.Deleted); };
+        watcher.Renamed += (_, e) => { onFileChanged(e.FullPath, WatcherChangeTypes.Renamed); NotifySubscribers(e.FullPath, WatcherChangeTypes.Renamed); };
 
         watcher.EnableRaisingEvents = true;
         _watchers[key] = watcher;
@@ -54,12 +55,25 @@ public sealed class FileWatcher : IFileWatcher
         _subscribers.Add(onUpdate);
     }
 
-    private void NotifySubscribers()
+    /// <inheritdoc/>
+    public void SubscribeToChanges(Action<FileChangeNotification> onUpdate)
+    {
+        _pathAwareSubscribers.Add(onUpdate);
+    }
+
+    private void NotifySubscribers(string fullPath, WatcherChangeTypes changeType)
     {
         foreach (var subscriber in _subscribers)
         {
             try { subscriber(); }
             catch (Exception ex) { _logger?.LogError(ex, "Error notifying file watch subscriber"); }
+        }
+        if (_pathAwareSubscribers.Count == 0) return;
+        var notification = new FileChangeNotification(fullPath, changeType);
+        foreach (var subscriber in _pathAwareSubscribers)
+        {
+            try { subscriber(notification); }
+            catch (Exception ex) { _logger?.LogError(ex, "Error notifying path-aware file watch subscriber"); }
         }
     }
 

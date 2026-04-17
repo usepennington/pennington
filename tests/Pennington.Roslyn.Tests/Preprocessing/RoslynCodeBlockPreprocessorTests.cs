@@ -275,6 +275,7 @@ public sealed class RoslynCodeBlockPreprocessorTests
     {
         public void AddPathWatch(string path, string filePattern, Action<string, WatcherChangeTypes> onFileChanged, bool includeSubdirectories = true) { }
         public void SubscribeToChanges(Action onUpdate) { }
+        public void SubscribeToChanges(Action<Infrastructure.FileChangeNotification> onUpdate) { }
         public void Dispose() { }
     }
 }

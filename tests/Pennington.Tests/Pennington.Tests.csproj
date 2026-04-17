@@ -23,5 +23,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pennington\Pennington.csproj" />
     <ProjectReference Include="..\..\src\Pennington.MonorailCss\Pennington.MonorailCss.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.Tui\Pennington.Tui.csproj" />
   </ItemGroup>
 </Project>

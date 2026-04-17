@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>Dev-time full-screen TUI dashboard for Pennington</Description>
+    <PackageTags>dotnet pennington tui terminal dashboard</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Pennington.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Pennington\Pennington.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="XenoAtom.Terminal.UI" Version="2.7.0" />
+  </ItemGroup>
+</Project>

@@ -59,7 +59,15 @@ public sealed class OutputGenerationService
     /// <summary>
     /// Crawls the running app at <paramref name="appUrl"/> and writes every discovered route to the output directory.
     /// </summary>
-    public async Task<BuildReport> GenerateAsync(string appUrl)
+    public Task<BuildReport> GenerateAsync(string appUrl) => GenerateAsync(appUrl, writeToDisk: true);
+
+    /// <summary>
+    /// Crawls the running app at <paramref name="appUrl"/> and returns a <see cref="BuildReport"/>.
+    /// When <paramref name="writeToDisk"/> is <c>false</c> the output directory is left untouched —
+    /// the HTTP crawl, diagnostic collection, and link verification still run, which makes this mode
+    /// suitable for dev-time validators that want the same warnings a real build would produce.
+    /// </summary>
+    public async Task<BuildReport> GenerateAsync(string appUrl, bool writeToDisk)
     {
         var reportBuilder = new BuildReportBuilder();
         using var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
@@ -132,54 +140,65 @@ public sealed class OutputGenerationService
             contentPages.Count, mapGetPages.Count);
 
         // Phase 3: Clean output directory (if configured) and ensure it exists
-        if (_outputOptions.CleanOutput && _fileSystem.Directory.Exists(outputDir))
-            _fileSystem.Directory.Delete(outputDir, true);
-        _fileSystem.Directory.CreateDirectory(outputDir);
+        if (writeToDisk)
+        {
+            if (_outputOptions.CleanOutput && _fileSystem.Directory.Exists(outputDir))
+                _fileSystem.Directory.Delete(outputDir, true);
+            _fileSystem.Directory.CreateDirectory(outputDir);
+        }
 
-        // Phase 4: Copy static assets
+        // Phase 4: Copy static assets. In dry-run mode we still enumerate so copiedAssetPaths
+        // is populated — LinkVerificationService needs those paths to recognize legitimate
+        // asset URLs, otherwise every <img src="/media/foo.svg"> would flag as broken.
         var copiedAssetPaths = new List<string>();
         try
         {
-            copiedAssetPaths = await CopyStaticAssetsAsync(outputDir, reportBuilder);
+            copiedAssetPaths = await CopyStaticAssetsAsync(outputDir, reportBuilder, writeToDisk);
         }
         catch (Exception ex)
         {
             reportBuilder.AddError("Failed to copy static assets", ex);
         }
 
-        // Phase 5: Create dynamic content files
-        try
+        // Phase 5: Create dynamic content files (sitemap.xml, rss, llms.txt, etc.)
+        if (writeToDisk)
         {
-            await CreateContentFilesAsync(outputDir, reportBuilder);
-        }
-        catch (Exception ex)
-        {
-            reportBuilder.AddError("Failed to create dynamic content files", ex);
+            try
+            {
+                await CreateContentFilesAsync(outputDir, reportBuilder);
+            }
+            catch (Exception ex)
+            {
+                reportBuilder.AddError("Failed to create dynamic content files", ex);
+            }
         }
 
         // Phase 6: Fetch all HTML content pages (in parallel)
-        var contentResults = await FetchPagesAsync(client, contentPages, outputDir);
+        var contentResults = await FetchPagesAsync(client, contentPages, outputDir, writeToDisk);
         ProcessFetchResults(reportBuilder, contentResults);
 
         // Phase 7: Fetch MapGet routes LAST (CSS needs all HTML to have been processed first)
-        var mapGetResults = await FetchPagesAsync(client, mapGetPages, outputDir);
+        var mapGetResults = await FetchPagesAsync(client, mapGetPages, outputDir, writeToDisk);
         ProcessFetchResults(reportBuilder, mapGetResults);
 
         // Phase 8: Generate 404.html by fetching a non-existent URL (triggers fallback route)
-        try
+        if (writeToDisk)
         {
-            var notFoundResponse = await client.GetAsync(NotFoundGeneratorPath);
-            var notFoundHtml = await notFoundResponse.Content.ReadAsStringAsync();
-            if (!string.IsNullOrWhiteSpace(notFoundHtml))
+            try
             {
-                var notFoundPath = _fileSystem.Path.Combine(outputDir, "404.html");
-                await _fileSystem.File.WriteAllTextAsync(notFoundPath, notFoundHtml);
-                _logger.LogDebug("Generated 404.html");
+                var notFoundResponse = await client.GetAsync(NotFoundGeneratorPath);
+                var notFoundHtml = await notFoundResponse.Content.ReadAsStringAsync();
+                if (!string.IsNullOrWhiteSpace(notFoundHtml))
+                {
+                    var notFoundPath = _fileSystem.Path.Combine(outputDir, "404.html");
+                    await _fileSystem.File.WriteAllTextAsync(notFoundPath, notFoundHtml);
+                    _logger.LogDebug("Generated 404.html");
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "Failed to generate 404.html");
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed to generate 404.html");
+            }
         }
 
         // Phase 9: Verify internal links across all fetched HTML pages
@@ -291,7 +310,7 @@ public sealed class OutputGenerationService
         return pages;
     }
 
-    private async Task<List<string>> CopyStaticAssetsAsync(string outputDir, BuildReportBuilder reportBuilder)
+    private async Task<List<string>> CopyStaticAssetsAsync(string outputDir, BuildReportBuilder reportBuilder, bool writeToDisk)
     {
         // Track the relative output paths of every asset we copied from a content
         // service. These get handed to LinkVerificationService so it doesn't flag
@@ -305,7 +324,8 @@ public sealed class OutputGenerationService
             var toCopy = await service.GetContentToCopyAsync();
             foreach (var item in toCopy)
             {
-                CopyFile(item.SourcePath.Value, _fileSystem.Path.Combine(outputDir, item.OutputPath.Value), reportBuilder);
+                if (writeToDisk)
+                    CopyFile(item.SourcePath.Value, _fileSystem.Path.Combine(outputDir, item.OutputPath.Value), reportBuilder);
                 copiedPaths.Add(item.OutputPath.Value);
             }
         }
@@ -315,7 +335,8 @@ public sealed class OutputGenerationService
         // manifest providers that expose _content/<Rcl>/*), so one recursive walk enumerates
         // every asset exactly once. A previous implementation re-walked each child provider
         // after the top-level walk, producing duplicate File.Copy calls for every RCL asset.
-        CopyFileProvider(_environment.WebRootFileProvider, "", outputDir, reportBuilder);
+        if (writeToDisk)
+            CopyFileProvider(_environment.WebRootFileProvider, "", outputDir, reportBuilder);
 
         return copiedPaths;
     }
@@ -345,7 +366,7 @@ public sealed class OutputGenerationService
         }
     }
 
-    private async Task<List<FetchResult>> FetchPagesAsync(HttpClient client, List<PageToGenerate> pages, string outputDir)
+    private async Task<List<FetchResult>> FetchPagesAsync(HttpClient client, List<PageToGenerate> pages, string outputDir, bool writeToDisk)
     {
         var results = new ConcurrentBag<FetchResult>();
         await Parallel.ForEachAsync(pages, async (page, ct) =>
@@ -354,8 +375,11 @@ public sealed class OutputGenerationService
             {
                 var response = await client.GetAsync(page.Url, ct);
                 var outputPath = _fileSystem.Path.Combine(outputDir, page.OutputFile.Value);
-                var dir = _fileSystem.Path.GetDirectoryName(outputPath);
-                if (dir != null) _fileSystem.Directory.CreateDirectory(dir);
+                if (writeToDisk)
+                {
+                    var dir = _fileSystem.Path.GetDirectoryName(outputPath);
+                    if (dir != null) _fileSystem.Directory.CreateDirectory(dir);
+                }
 
                 // Extract per-request diagnostics from response headers
                 var diagnostics = ParseDiagnosticHeaders(response);
@@ -364,14 +388,17 @@ public sealed class OutputGenerationService
                     response.StatusCode == System.Net.HttpStatusCode.Found)
                 {
                     var location = response.Headers.Location?.ToString() ?? "/";
-                    var redirectHtml = $"""
-                        <!DOCTYPE html>
-                        <html><head>
-                        <meta http-equiv="refresh" content="0;url={location}">
-                        <link rel="canonical" href="{location}">
-                        </head></html>
-                        """;
-                    await _fileSystem.File.WriteAllTextAsync(outputPath, redirectHtml, ct);
+                    if (writeToDisk)
+                    {
+                        var redirectHtml = $"""
+                            <!DOCTYPE html>
+                            <html><head>
+                            <meta http-equiv="refresh" content="0;url={location}">
+                            <link rel="canonical" href="{location}">
+                            </head></html>
+                            """;
+                        await _fileSystem.File.WriteAllTextAsync(outputPath, redirectHtml, ct);
+                    }
                     _logger.LogDebug("Redirect: {Url} -> {Location}", page.Url, location);
                     results.Add(new FetchResult(page, FetchOutcome.Redirect, Diagnostics: diagnostics));
                 }
@@ -381,7 +408,8 @@ public sealed class OutputGenerationService
                     if (contentType.StartsWith("text/") || contentType.Contains("json") || contentType.Contains("xml"))
                     {
                         var content = await response.Content.ReadAsStringAsync(ct);
-                        await _fileSystem.File.WriteAllTextAsync(outputPath, content, ct);
+                        if (writeToDisk)
+                            await _fileSystem.File.WriteAllTextAsync(outputPath, content, ct);
                         _logger.LogDebug("Generated: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
 
                         // Capture HTML content for link verification
@@ -390,8 +418,11 @@ public sealed class OutputGenerationService
                     }
                     else
                     {
-                        var bytes = await response.Content.ReadAsByteArrayAsync(ct);
-                        await _fileSystem.File.WriteAllBytesAsync(outputPath, bytes, ct);
+                        if (writeToDisk)
+                        {
+                            var bytes = await response.Content.ReadAsByteArrayAsync(ct);
+                            await _fileSystem.File.WriteAllBytesAsync(outputPath, bytes, ct);
+                        }
                         _logger.LogDebug("Generated: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
                         results.Add(new FetchResult(page, FetchOutcome.Generated, Diagnostics: diagnostics));
                     }
