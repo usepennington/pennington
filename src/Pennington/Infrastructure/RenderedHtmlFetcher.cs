@@ -2,8 +2,6 @@ namespace Pennington.Infrastructure;
 
 using AngleSharp;
 using AngleSharp.Dom;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
@@ -17,43 +15,26 @@ using Microsoft.Extensions.Logging;
 /// misses request-pipeline transforms for everything else.
 /// </para>
 /// <para>
-/// The base URL is taken from <see cref="IServerAddressesFeature"/>, so this
-/// works identically in dev-serve mode and in static-build mode (both run
-/// Kestrel). http:// addresses are preferred over https:// to avoid dev-cert
-/// trust issues.
+/// The base URL is resolved lazily per call by the <see cref="IHttpClientFactory"/>
+/// named-client config registered in <c>AddPennington</c>, so this works
+/// identically in dev-serve mode and in static-build mode (both run Kestrel).
+/// http:// addresses are preferred over https:// to avoid dev-cert trust issues.
 /// </para>
 /// </summary>
-public sealed class RenderedHtmlFetcher : IDisposable
+public sealed class RenderedHtmlFetcher
 {
-    private readonly IServer _server;
+    /// <summary>Named-client key used to resolve the configured <see cref="HttpClient"/>.</summary>
+    public const string HttpClientName = "Pennington.RenderedHtml";
+
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<RenderedHtmlFetcher> _logger;
     private readonly IBrowsingContext _browsingContext = BrowsingContext.New(Configuration.Default);
-    private readonly Lazy<HttpClient> _client;
 
-    /// <summary>Initializes the fetcher with the running server and a logger.</summary>
-    public RenderedHtmlFetcher(IServer server, ILogger<RenderedHtmlFetcher> logger)
+    /// <summary>Initializes the fetcher with the HTTP client factory and a logger.</summary>
+    public RenderedHtmlFetcher(IHttpClientFactory httpClientFactory, ILogger<RenderedHtmlFetcher> logger)
     {
-        _server = server;
+        _httpClientFactory = httpClientFactory;
         _logger = logger;
-        _client = new Lazy<HttpClient>(CreateClient);
-    }
-
-    private HttpClient CreateClient()
-    {
-        var addresses = _server.Features.Get<IServerAddressesFeature>()?.Addresses;
-        if (addresses is null || addresses.Count == 0)
-        {
-            throw new InvalidOperationException(
-                "RenderedHtmlFetcher requires the web host to be listening. " +
-                "IServerAddressesFeature has no addresses — is the app started yet?");
-        }
-
-        // Prefer http:// to avoid dev-cert trust issues.
-        var baseAddress = addresses.FirstOrDefault(a => a.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-            ?? addresses.First();
-
-        var handler = new HttpClientHandler { AllowAutoRedirect = false };
-        return new HttpClient(handler) { BaseAddress = new Uri(baseAddress) };
     }
 
     /// <summary>
@@ -64,10 +45,12 @@ public sealed class RenderedHtmlFetcher : IDisposable
     /// </summary>
     public async Task<IElement?> FetchContentAsync(string path, string? selector, CancellationToken ct = default)
     {
+        var client = _httpClientFactory.CreateClient(HttpClientName);
+
         HttpResponseMessage response;
         try
         {
-            response = await _client.Value.GetAsync(path, ct);
+            response = await client.GetAsync(path, ct);
         }
         catch (Exception ex)
         {
@@ -94,14 +77,5 @@ public sealed class RenderedHtmlFetcher : IDisposable
         }
 
         return document.Body;
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        if (_client.IsValueCreated)
-        {
-            _client.Value.Dispose();
-        }
     }
 }

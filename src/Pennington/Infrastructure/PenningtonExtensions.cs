@@ -15,6 +15,8 @@ using Markdown.Extensions;
 using Mdazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
@@ -221,6 +223,23 @@ public static class PenningtonExtensions
         // Shared helper for fetching post-pipeline rendered HTML from the running host.
         // Used by LlmsTxtService and SearchIndexService so their outputs reflect
         // Markdig extensions, Razor SSR, xref resolution, etc.
+        services.AddHttpClient(RenderedHtmlFetcher.HttpClientName, (sp, client) =>
+            {
+                var server = sp.GetRequiredService<IServer>();
+                var addresses = server.Features.Get<IServerAddressesFeature>()?.Addresses;
+                if (addresses is null || addresses.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        "RenderedHtmlFetcher requires the web host to be listening. " +
+                        "IServerAddressesFeature has no addresses — is the app started yet?");
+                }
+
+                // Prefer http:// to avoid dev-cert trust issues.
+                var baseAddress = addresses.FirstOrDefault(a => a.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+                    ?? addresses.First();
+                client.BaseAddress = new Uri(baseAddress);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
         services.AddSingleton<RenderedHtmlFetcher>();
 
         // Search index
