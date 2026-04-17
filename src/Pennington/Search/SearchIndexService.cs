@@ -85,12 +85,26 @@ public sealed class SearchIndexService
                     continue;
                 }
 
+                if (options.ExcludeCodeBlocks)
+                {
+                    foreach (var pre in element.QuerySelectorAll("pre").ToList())
+                        pre.Remove();
+                }
+
+                // Extract heading text before tag-stripping collapses the DOM.
+                // All six levels are joined with spaces; client-side boost applies
+                // uniformly — finer-grained per-level weights didn't pull their weight.
+                var headings = string.Join(' ',
+                    element.QuerySelectorAll("h1, h2, h3, h4, h5, h6")
+                        .Select(h => h.TextContent.Trim())
+                        .Where(t => t.Length > 0));
+
                 var locale = string.IsNullOrEmpty(toc.Route.Locale)
                     ? localization.DefaultLocale
                     : toc.Route.Locale;
                 if (!groups.TryGetValue(locale, out var list))
                     groups[locale] = list = [];
-                list.Add(builder.Build(toc, element.InnerHtml));
+                list.Add(builder.Build(toc, element.InnerHtml, headings));
             }
         }
 

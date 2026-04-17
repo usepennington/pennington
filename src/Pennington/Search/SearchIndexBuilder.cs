@@ -18,15 +18,18 @@ public sealed partial class SearchIndexBuilder
     }
 
     /// <summary>
-    /// Build a SearchIndexDocument from a TOC entry and its fetched body HTML.
-    /// Draft filtering is handled upstream by each <c>IContentService</c>'s TOC builder.
+    /// Build a SearchIndexDocument from a TOC entry plus its fetched body HTML and
+    /// pre-extracted headings text. Draft filtering is handled upstream by each
+    /// <c>IContentService</c>'s TOC builder.
     /// </summary>
-    public SearchIndexDocument Build(ContentTocItem toc, string bodyHtml)
+    public SearchIndexDocument Build(ContentTocItem toc, string bodyHtml, string headings)
     {
         var body = StripHtml(bodyHtml);
 
         return new SearchIndexDocument(
             Title: toc.Title,
+            Description: toc.Description,
+            Headings: headings,
             Body: body,
             Url: toc.Route.CanonicalPath.Value,
             SectionLabel: toc.SectionLabel,

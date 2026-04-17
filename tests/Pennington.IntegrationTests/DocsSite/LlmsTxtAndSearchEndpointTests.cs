@@ -2,6 +2,7 @@ namespace Pennington.IntegrationTests.DocsSite;
 
 using System.Text;
 using System.Text.Json;
+using AngleSharp;
 using Infrastructure;
 using LlmsTxt;
 using Microsoft.Extensions.DependencyInjection;
@@ -87,6 +88,50 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
             .Count(el => !string.IsNullOrWhiteSpace(el.GetProperty("body").GetString()));
 
         nonEmpty.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task SearchIndex_ExcludesCodeBlockText_ByDefault()
+    {
+        // Pick any indexed doc whose rendered page has a <pre> block, then verify
+        // a distinctive token from inside that <pre> does not appear in the search
+        // body for the same URL. Content-agnostic — walks pages until one qualifies.
+        var json = await _fixture.Client.GetStringAsync("/search-index-en.json", TestContext.Current.CancellationToken);
+        using var doc = JsonDocument.Parse(json);
+
+        var context = BrowsingContext.New(Configuration.Default);
+        string? codeOnlyToken = null;
+        string? matchedBody = null;
+
+        foreach (var entry in doc.RootElement.EnumerateArray())
+        {
+            var url = entry.GetProperty("url").GetString();
+            if (string.IsNullOrEmpty(url)) continue;
+
+            var html = await _fixture.Client.GetStringAsync(url, TestContext.Current.CancellationToken);
+            var page = await context.OpenAsync(req => req.Content(html), TestContext.Current.CancellationToken);
+            var pre = page.QuerySelector("#main-content pre") ?? page.QuerySelector("pre");
+            if (pre is null) continue;
+
+            // Find a token that appears inside <pre> but NOT anywhere else on the page.
+            var preText = pre.TextContent;
+            pre.Remove();
+            var pageTextWithoutPre = page.Body?.TextContent ?? "";
+
+            var candidate = preText
+                .Split([' ', '\n', '\r', '\t', '(', ')', '{', '}', '[', ']', ';', ','], StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault(t => t.Length >= 6 && !pageTextWithoutPre.Contains(t, StringComparison.Ordinal));
+            if (candidate is null) continue;
+
+            codeOnlyToken = candidate;
+            matchedBody = entry.GetProperty("body").GetString();
+            break;
+        }
+
+        codeOnlyToken.ShouldNotBeNull("expected at least one docs page with a <pre> block containing a code-only token");
+        matchedBody.ShouldNotBeNull();
+        matchedBody!.Contains(codeOnlyToken!, StringComparison.Ordinal).ShouldBeFalse(
+            $"token '{codeOnlyToken}' appears only in <pre> on the source page, so it must not leak into the search body");
     }
 
     [Fact]

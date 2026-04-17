@@ -109,7 +109,10 @@ public sealed partial class RazorPageContentService : IContentService
                 HierarchyParts: hierarchyParts,
                 SectionLabel: sectionLabel ?? DefaultSectionLabel,
                 Locale: null
-            ));
+            )
+            {
+                Description = entry.Metadata.Description,
+            });
         }
 
         return Task.FromResult(builder.ToImmutable());
@@ -148,6 +151,7 @@ public sealed partial class RazorPageContentService : IContentService
                 Locale: null
             )
             {
+                Description = entry.Metadata?.Description,
                 ExcludeFromSearch = excludeFromSearch,
                 ExcludeFromLlms = excludeFromLlms,
             });

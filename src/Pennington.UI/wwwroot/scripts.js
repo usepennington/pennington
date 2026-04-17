@@ -1294,8 +1294,8 @@ class SearchManager {
                 cache: 100,
                 document: {
                     id: 'id',
-                    store: ["title", "body", "url", "section", "locale"],
-                    index: ["title", "body"]
+                    store: ["title", "description", "body", "url", "section", "locale"],
+                    index: ["title", "description", "headings", "body"]
                 }
             });
 
@@ -1306,6 +1306,8 @@ class SearchManager {
                 const docToIndex = {
                     id: index.toString(), // FlexSearch Document API needs string IDs
                     title: doc.title || '',
+                    description: doc.description || '',
+                    headings: doc.headings || '',
                     body: doc.body || '',
                     url: url,
                     section: doc.section || '',
@@ -1364,39 +1366,14 @@ class SearchManager {
         }
     }
 
-    parseHeadingsText(headings) {
-        // Convert "level:text" format headings to weighted text
-        // Higher priority for lower heading levels (H1 > H2 > H3, etc.)
-        return headings.map(heading => {
-            if (typeof heading === 'string' && heading.includes(':')) {
-                const [level, text] = heading.split(':', 2);
-                const priority = this.getHeadingPriority(parseInt(level));
-                // Repeat text based on priority for better matching
-                const repetitions = Math.ceil(priority / 20);
-                return Array(repetitions).fill(text).join(' ');
-            }
-            return heading; // Fallback for legacy format
-        }).join(' ');
-    }
-
-    getHeadingPriority(level) {
-        switch (level) {
-            case 1: return 100; // H1 - highest priority
-            case 2: return 80;  // H2 - high priority
-            case 3: return 60;  // H3 - medium-high priority
-            case 4: return 40;  // H4 - medium priority
-            case 5: return 20;  // H5 - low priority
-            case 6: return 10;  // H6 - lowest priority
-            default: return 0;
-        }
-    }
-
     combineFieldResults(results) {
         const scoreMap = new Map();
         
-        // Field weights
+        // Field weights — title dominates, description/headings mid-tier, body baseline.
         const fieldWeights = {
-            'title': 3,
+            'title': 4,
+            'description': 2,
+            'headings': 2,
             'body': 1
         };
 

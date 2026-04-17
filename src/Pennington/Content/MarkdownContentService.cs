@@ -179,6 +179,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
                 Locale: string.IsNullOrEmpty(route.Locale) ? null : route.Locale
             )
             {
+                Description = fm.Description,
                 ExcludeFromSearch = excludeFromSearch,
                 ExcludeFromLlms = excludeFromLlms,
             });

@@ -13,7 +13,12 @@ public class SearchIndexBuilderTests
         Locale = locale
     };
 
-    private static ContentTocItem MakeToc(string title, string path, string? sectionLabel = null, string locale = "") =>
+    private static ContentTocItem MakeToc(
+        string title,
+        string path,
+        string? sectionLabel = null,
+        string locale = "",
+        string? description = null) =>
         new(
             Title: title,
             Route: MakeRoute(path, locale),
@@ -21,7 +26,10 @@ public class SearchIndexBuilderTests
             HierarchyParts: [],
             SectionLabel: sectionLabel,
             Locale: string.IsNullOrEmpty(locale) ? null : locale
-        );
+        )
+        {
+            Description = description,
+        };
 
     private readonly SearchIndexBuilder _builder = new();
 
@@ -30,7 +38,7 @@ public class SearchIndexBuilderTests
     {
         var toc = MakeToc("Introduction", "/docs/intro", locale: "en");
 
-        var doc = _builder.Build(toc, "<p>Welcome to the docs</p>");
+        var doc = _builder.Build(toc, "<p>Welcome to the docs</p>", "");
 
         doc.Title.ShouldBe("Introduction");
         doc.Body.ShouldBe("Welcome to the docs");
@@ -42,7 +50,7 @@ public class SearchIndexBuilderTests
     [Fact]
     public void Build_StripsHtmlFromBody()
     {
-        var doc = _builder.Build(MakeToc("Page", "/page"), "<p>Hello <strong>world</strong></p>");
+        var doc = _builder.Build(MakeToc("Page", "/page"), "<p>Hello <strong>world</strong></p>", "");
 
         doc.Body.ShouldBe("Hello world");
     }
@@ -50,7 +58,7 @@ public class SearchIndexBuilderTests
     [Fact]
     public void Build_IncludesSectionFromToc()
     {
-        var doc = _builder.Build(MakeToc("Auth", "/api/auth", sectionLabel: "api"), "<p>body</p>");
+        var doc = _builder.Build(MakeToc("Auth", "/api/auth", sectionLabel: "api"), "<p>body</p>", "");
 
         doc.SectionLabel.ShouldBe("api");
     }
@@ -60,7 +68,8 @@ public class SearchIndexBuilderTests
     {
         var doc = _builder.Build(
             MakeToc("Entities", "/entities"),
-            "<p>Tom &amp; Jerry &lt;3 &gt; others &quot;said&quot; he&#39;s&nbsp;right</p>");
+            "<p>Tom &amp; Jerry &lt;3 &gt; others &quot;said&quot; he&#39;s&nbsp;right</p>",
+            "");
 
         doc.Body.ShouldBe("Tom & Jerry <3 > others \"said\" he's right");
     }
@@ -70,7 +79,8 @@ public class SearchIndexBuilderTests
     {
         var doc = _builder.Build(
             MakeToc("Nested", "/nested"),
-            "<div><p>Outer <strong>bold <em>italic</em></strong> text</p></div>");
+            "<div><p>Outer <strong>bold <em>italic</em></strong> text</p></div>",
+            "");
 
         doc.Body.ShouldBe("Outer bold italic text");
     }
@@ -80,7 +90,8 @@ public class SearchIndexBuilderTests
     {
         var doc = _builder.Build(
             MakeToc("Whitespace", "/whitespace"),
-            "<p>Line one</p>\n\n<p>Line   two</p>");
+            "<p>Line one</p>\n\n<p>Line   two</p>",
+            "");
 
         doc.Body.ShouldNotContain("\n");
         doc.Body.ShouldNotContain("  "); // no double spaces
@@ -91,11 +102,34 @@ public class SearchIndexBuilderTests
     {
         var doc = _builder.Build(
             MakeToc("Code", "/code"),
-            "<p>Use this:</p><pre><code class=\"language-csharp\">var x = 42;</code></pre>");
+            "<p>Use this:</p><pre><code class=\"language-csharp\">var x = 42;</code></pre>",
+            "");
 
         doc.Body.ShouldContain("Use this:");
         doc.Body.ShouldContain("var x = 42;");
         doc.Body.ShouldNotContain("<code");
         doc.Body.ShouldNotContain("<pre>");
+    }
+
+    [Fact]
+    public void Build_CarriesDescriptionFromToc()
+    {
+        var doc = _builder.Build(
+            MakeToc("Intro", "/intro", description: "A short overview of the docs."),
+            "<p>body</p>",
+            "");
+
+        doc.Description.ShouldBe("A short overview of the docs.");
+    }
+
+    [Fact]
+    public void Build_StoresHeadingsArgumentVerbatim()
+    {
+        var doc = _builder.Build(
+            MakeToc("Page", "/page"),
+            "<p>body</p>",
+            "Install Getting started Advanced");
+
+        doc.Headings.ShouldBe("Install Getting started Advanced");
     }
 }

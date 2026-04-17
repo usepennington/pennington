@@ -14,6 +14,9 @@ public record ContentTocItem(
     string? Locale
 )
 {
+    /// <summary>Front-matter description, surfaced as a boosted field in the search index.</summary>
+    public string? Description { get; init; }
+
     /// <summary>When true, excluded from the search index.</summary>
     public bool ExcludeFromSearch { get; init; }
 
