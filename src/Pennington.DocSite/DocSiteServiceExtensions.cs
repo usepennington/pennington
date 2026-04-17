@@ -45,12 +45,11 @@ public static class DocSiteServiceExtensions
             // Localization
             options.ConfigureLocalization?.Invoke(penn.Localization);
 
-            // Scan the entry assembly (the app) plus any explicitly configured assemblies
-            var appAssembly = Assembly.GetEntryAssembly();
-            var allAssemblies = appAssembly != null
-                ? [appAssembly, .. options.AdditionalRoutingAssemblies]
-                : options.AdditionalRoutingAssemblies;
-            penn.AdditionalRoutingAssemblies = allAssemblies;
+            // Scan the entry assembly (the app) plus any explicitly configured assemblies.
+            // Dedup so a user who passes their entry assembly explicitly doesn't get the
+            // same assembly enumerated twice by RazorPageContentService (which would emit
+            // every @page route twice and trip the duplicate-route warning).
+            penn.AdditionalRoutingAssemblies = BuildRoutingAssemblies(options);
 
             // Last: give the app a chance to wire additional content sources,
             // highlighters, islands, etc. Runs after DocSite's own defaults so
@@ -106,8 +105,12 @@ public static class DocSiteServiceExtensions
         app.UsePenningtonLocaleRouting();
         app.UseAntiforgery();
         app.UseStaticFiles();
+        // The runtime Blazor router needs the same augmented assembly list the static
+        // content service uses, otherwise a consumer's `@page` (and its `@layout`
+        // directive) is invisible at runtime — the catch-all Pages.razor would win and
+        // strip the layout by rendering via DynamicComponent.
         app.MapRazorComponents<Components.App>()
-            .AddAdditionalAssemblies(options.AdditionalRoutingAssemblies);
+            .AddAdditionalAssemblies(BuildRoutingAssemblies(options));
         app.UseMonorailCss();
         app.UseSpaNavigation();
         app.UsePennington();
@@ -119,5 +122,23 @@ public static class DocSiteServiceExtensions
     public static async Task RunDocSiteAsync(this WebApplication app, string[] args)
     {
         await app.RunOrBuildAsync(args);
+    }
+
+    private static Assembly[] BuildRoutingAssemblies(DocSiteOptions options)
+    {
+        var entry = Assembly.GetEntryAssembly();
+        var seen = new HashSet<Assembly>();
+        var result = new List<Assembly>(options.AdditionalRoutingAssemblies.Length + 1);
+
+        if (entry is not null && seen.Add(entry))
+            result.Add(entry);
+
+        foreach (var asm in options.AdditionalRoutingAssemblies)
+        {
+            if (seen.Add(asm))
+                result.Add(asm);
+        }
+
+        return result.ToArray();
     }
 }

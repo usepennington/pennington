@@ -1,0 +1,66 @@
+@using Pennington.DocSite.Services
+@using Pennington.Generation
+@using Pennington.Infrastructure
+@inherits LayoutComponentBase
+@inject ContentResolver ContentResolver
+@inject NavigationManager NavigationManager
+@inject DocSiteOptions DocSiteOptions
+@inject LocalizationOptions Localization
+
+<HeadContent>
+    @if (!string.IsNullOrEmpty(DocSiteOptions.SocialImageUrl))
+    {
+        <meta property="og:image" content="@DocSiteOptions.SocialImageUrl" />
+        <meta name="twitter:image" content="@DocSiteOptions.SocialImageUrl" />
+        <meta name="twitter:card" content="summary_large_image" />
+    }
+    <meta property="og:site_name" content="@DocSiteOptions.SiteTitle" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:site" content="@DocSiteOptions.SiteTitle" />
+</HeadContent>
+
+<div class="dark:scheme-dark font-sans box-border bg-base-100 dark:bg-base-950 text-base-900 dark:text-base-50">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-primary-700 focus:text-white focus:p-3">Skip to main content</a>
+    <div style="scrollbar-gutter: stable both-edges;">
+        <div class="flex flex-col min-h-screen w-full">
+            <DocSiteHeader ShowMobileMenuButton="false" AlternateLanguages="_langSwitcherItems" />
+            <main class="mx-auto max-w-7xl w-full px-4 lg:px-8 mt-4 lg:mt-8">
+                @* No data-spa-island: the landing page uses a different chrome than
+                   the docs layout, so an island swap would leave the sidebar stripped.
+                   Without islands, spa-engine.js falls back to a full page load for
+                   any link — the correct behavior when crossing layout boundaries. *@
+                <article id="main-content" class="min-w-0">
+                    @Body
+                </article>
+                <DocSiteFooter />
+            </main>
+        </div>
+    </div>
+</div>
+
+@code {
+    private IReadOnlyList<LanguageSwitcher.AlternateLanguageItem> _langSwitcherItems = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Localization.IsMultiLocale)
+        {
+            await base.OnInitializedAsync();
+            return;
+        }
+
+        var currentPath = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath;
+        if (string.Equals(currentPath, OutputGenerationService.NotFoundGeneratorPath, StringComparison.Ordinal))
+        {
+            currentPath = "/";
+        }
+
+        var alternates = await ContentResolver.GetAlternateLanguagesAsync(currentPath);
+        _langSwitcherItems = alternates
+            .Select(a => new LanguageSwitcher.AlternateLanguageItem(
+                a.Locale, a.DisplayName, a.Route.CanonicalPath.Value, a.IsCurrentLocale))
+            .ToList();
+
+        await base.OnInitializedAsync();
+    }
+}

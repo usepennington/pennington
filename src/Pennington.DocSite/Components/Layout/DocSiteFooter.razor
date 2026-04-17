@@ -1,0 +1,8 @@
+@inject DocSiteOptions DocSiteOptions
+
+@if (DocSiteOptions.FooterContent != null)
+{
+    <div>
+        @((MarkupString)DocSiteOptions.FooterContent)
+    </div>
+}

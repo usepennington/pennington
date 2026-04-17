@@ -1,4 +1,5 @@
 @page "/"
+@layout Pennington.DocSite.Components.Layout.FullWidthLayout
 @using Pennington.UI.Components
 @using Microsoft.AspNetCore.Components.Web
 
@@ -14,41 +15,100 @@
         Pennington v2 is a static content engine for .NET developers who want instant feedback without leaving the ecosystem.
         Union types for the content pipeline, pluggable everything, zero Node.js. All configuration in C#.
     </p>
-    <div class="flex flex-wrap items-center gap-4">
+    <div class="flex flex-wrap items-center gap-3">
         <a href="/tutorials/getting-started/first-site/"
-           class="inline-flex items-center gap-1.5 font-display font-semibold text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-5 py-2.5 transition-colors">
+           class="group inline-flex items-center gap-2 font-display font-semibold text-base bg-primary-600 hover:bg-primary-500 text-white rounded-xl px-6 py-3 shadow-lg shadow-primary-600/20 hover:shadow-primary-500/30 transition-all">
             Get Started
-            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-4 w-4">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"></path>
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-4 w-4 transition-transform group-hover:translate-x-0.5">
+                <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"></path>
             </svg>
+        </a>
+        <a href="https://github.com/usepennington/pennington"
+           class="inline-flex items-center gap-2 font-display font-semibold text-base text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 rounded-xl px-5 py-3 ring-1 ring-base-300 dark:ring-base-700 hover:ring-primary-500 dark:hover:ring-primary-400 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" stroke="currentColor" fill="none">
+                <path d="M10 20.5675C6.57143 21.7248 3.71429 20.5675 2 17" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M10 22V18.7579C10 18.1596 10.1839 17.6396 10.4804 17.1699C10.6838 16.8476 10.5445 16.3904 10.1771 16.2894C7.13394 15.4528 5 14.1077 5 9.64606C5 8.48611 5.38005 7.39556 6.04811 6.4464C6.21437 6.21018 6.29749 6.09208 6.31748 5.9851C6.33746 5.87813 6.30272 5.73852 6.23322 5.45932C5.95038 4.32292 5.96871 3.11619 6.39322 2.02823C6.39322 2.02823 7.27042 1.74242 9.26698 2.98969C9.72282 3.27447 9.95075 3.41686 10.1515 3.44871C10.3522 3.48056 10.6206 3.41384 11.1573 3.28041C11.8913 3.09795 12.6476 3 13.5 3C14.3524 3 15.1087 3.09795 15.8427 3.28041C16.3794 3.41384 16.6478 3.48056 16.8485 3.44871C17.0493 3.41686 17.2772 3.27447 17.733 2.98969C19.7296 1.74242 20.6068 2.02823 20.6068 2.02823C21.0313 3.11619 21.0496 4.32292 20.7668 5.45932C20.6973 5.73852 20.6625 5.87813 20.6825 5.9851C20.7025 6.09207 20.7856 6.21019 20.9519 6.4464C21.6199 7.39556 22 8.48611 22 9.64606C22 14.1077 19.8661 15.4528 16.8229 16.2894C16.4555 16.3904 16.3162 16.8476 16.5196 17.1699C16.8161 17.6396 17 18.1596 17 18.7579V22" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            View on GitHub
         </a>
     </div>
 </section>
 
 <section class="pb-12 lg:pb-16">
+    <div class="rounded-2xl border border-base-200 dark:border-base-700/50 bg-base-50 dark:bg-base-900/50 p-6 lg:p-10">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-12">
+            <div>
+                <p class="text-xs font-display font-semibold tracking-widest uppercase text-primary-600 dark:text-primary-400 mb-4">
+                    <span aria-hidden="true" class="mr-1">&mdash;</span> Quickstart
+                </p>
+                <h2 class="font-display text-3xl font-bold tracking-tight text-base-900 dark:text-base-50 leading-tight mb-4 text-balance">
+                    From zero to site in about 90 seconds.
+                </h2>
+                <p class="text-sm lg:text-base text-base-600 dark:text-base-400 leading-relaxed mb-6">
+                    Three commands, any terminal, any OS. You'll need .NET 11 and nothing else.
+                </p>
+                <a href="/tutorials/getting-started/first-site/"
+                   class="group inline-flex items-center gap-2 font-display font-semibold text-sm text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 rounded-xl px-5 py-2.5 ring-1 ring-base-300 dark:ring-base-700 hover:ring-primary-500 dark:hover:ring-primary-400 transition-colors">
+                    Walk through the full tutorial
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-4 w-4 transition-transform group-hover:translate-x-0.5">
+                        <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"></path>
+                    </svg>
+                </a>
+            </div>
+            <div class="flex flex-col gap-3">
+                @foreach (var step in _quickstartSteps)
+                {
+                    <div class="flex items-center gap-4 rounded-xl border border-base-200 dark:border-base-800 bg-white/70 dark:bg-base-950/60 px-4 py-3">
+                        <span class="shrink-0 flex items-center justify-center w-7 h-7 rounded-full ring-2 ring-base-300 dark:ring-base-800 bg-base-100 dark:bg-base-900 font-display text-xs font-bold text-primary-600 dark:text-primary-400">
+                            @step.Number
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-display font-medium text-base-900 dark:text-base-100 mb-0.5">@step.Title</p>
+                            <div class="font-mono text-xs lg:text-sm text-base-600 dark:text-base-300">
+                                <span class="text-primary-500 select-none">$</span>
+                                @((MarkupString)step.CommandHtml)
+                            </div>
+                        </div>
+                        <button type="button"
+                                onclick="navigator.clipboard.writeText(this.dataset.cmd);this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1200)"
+                                data-cmd="@step.Command"
+                                class="shrink-0 text-xs font-display font-medium text-base-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors px-2 py-1">
+                            Copy
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pb-12 lg:pb-16">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-6">
+        <a href="/explanation/dev-experience/hot-reload/"
+           class="group rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 hover:border-primary-400 dark:hover:border-primary-600 hover:bg-white dark:hover:bg-base-900 transition-colors p-6">
             <div class="text-primary-600 dark:text-primary-400 mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1.5em" height="1.5em" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M13 2L4.09347 12.6879C3.74466 13.1072 3.57026 13.3168 3.56759 13.4925C3.56524 13.6461 3.63372 13.7923 3.75324 13.8889C3.89073 14 4.16318 14 4.70808 14H12L11 22L19.9065 11.3121C20.2553 10.8928 20.4297 10.6832 20.4324 10.5075C20.4348 10.3539 20.3663 10.2077 20.2468 10.1111C20.1093 10 19.8368 10 19.2919 10H12L13 2Z" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </div>
-            <h3 class="font-display font-semibold text-base-900 dark:text-base-50 mb-1">Instant hot reload</h3>
+            <h3 class="font-display font-semibold text-base-900 dark:text-base-50 group-hover:text-primary-700 dark:group-hover:text-primary-400 mb-1 transition-colors">Instant hot reload</h3>
             <p class="text-sm text-base-600 dark:text-base-400">Content, navigation, and cross-references update immediately. Just run <code class="font-mono text-xs bg-base-100 dark:bg-base-800 px-1 rounded">dotnet watch</code> and write.</p>
-        </div>
+        </a>
 
-        <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-6">
+        <a href="/explanation/core/dev-vs-build/"
+           class="group rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 hover:border-primary-400 dark:hover:border-primary-600 hover:bg-white dark:hover:bg-base-900 transition-colors p-6">
             <div class="text-primary-600 dark:text-primary-400 mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1.5em" height="1.5em" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M17 12H7" stroke-linecap="round" stroke-linejoin="round" />
                     <path d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" />
                 </svg>
             </div>
-            <h3 class="font-display font-semibold text-base-900 dark:text-base-50 mb-1">Zero Node.js</h3>
+            <h3 class="font-display font-semibold text-base-900 dark:text-base-50 group-hover:text-primary-700 dark:group-hover:text-primary-400 mb-1 transition-colors">Zero Node.js</h3>
             <p class="text-sm text-base-600 dark:text-base-400">No package.json. No webpack. No node_modules. All configuration lives in C# code, right where you're already working.</p>
-        </div>
+        </a>
 
-        <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-6">
+        <a href="/explanation/rendering/highlighting/"
+           class="group rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 hover:border-primary-400 dark:hover:border-primary-600 hover:bg-white dark:hover:bg-base-900 transition-colors p-6">
             <div class="text-primary-600 dark:text-primary-400 mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1.5em" height="1.5em" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M7 8L3 12L7 16" stroke-linecap="round" stroke-linejoin="round" />
@@ -56,11 +116,12 @@
                     <path d="M14 4L10 20" stroke-linecap="round" />
                 </svg>
             </div>
-            <h3 class="font-display font-semibold text-base-900 dark:text-base-50 mb-1">Roslyn-powered highlighting</h3>
+            <h3 class="font-display font-semibold text-base-900 dark:text-base-50 group-hover:text-primary-700 dark:group-hover:text-primary-400 mb-1 transition-colors">Roslyn-powered highlighting</h3>
             <p class="text-sm text-base-600 dark:text-base-400">Semantic C# and VB.NET highlighting from the actual compiler — not regex guesswork. Extract code by <code class="font-mono text-xs bg-base-100 dark:bg-base-800 px-1 rounded">xmldocid</code>, show diffs, and get 52+ server-side languages via TextMateSharp.</p>
-        </div>
+        </a>
 
-        <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-6">
+        <a href="/tutorials/beyond-basics/custom-razor-component/"
+           class="group rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 hover:border-primary-400 dark:hover:border-primary-600 hover:bg-white dark:hover:bg-base-900 transition-colors p-6">
             <div class="text-primary-600 dark:text-primary-400 mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1.5em" height="1.5em" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" />
@@ -68,21 +129,23 @@
                     <path d="M9 9V21.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </div>
-            <h3 class="font-display font-semibold text-base-900 dark:text-base-50 mb-1">Blazor for layouts</h3>
+            <h3 class="font-display font-semibold text-base-900 dark:text-base-50 group-hover:text-primary-700 dark:group-hover:text-primary-400 mb-1 transition-colors">Blazor for layouts</h3>
             <p class="text-sm text-base-600 dark:text-base-400">Write layouts as Razor components. Embed them directly in Markdown with Mdazor. No new template language to learn.</p>
-        </div>
+        </a>
 
-        <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-6">
+        <a href="/how-to/content-authoring/tabbed-code/"
+           class="group rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 hover:border-primary-400 dark:hover:border-primary-600 hover:bg-white dark:hover:bg-base-900 transition-colors p-6">
             <div class="text-primary-600 dark:text-primary-400 mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1.5em" height="1.5em" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10L12 2Z" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </div>
-            <h3 class="font-display font-semibold text-base-900 dark:text-base-50 mb-1">Rich Markdown extensions</h3>
+            <h3 class="font-display font-semibold text-base-900 dark:text-base-50 group-hover:text-primary-700 dark:group-hover:text-primary-400 mb-1 transition-colors">Rich Markdown extensions</h3>
             <p class="text-sm text-base-600 dark:text-base-400">Tabbed code blocks, Mermaid diagrams, custom alerts, and Shiki-style transformations — diffs, highlights, and focus lines included.</p>
-        </div>
+        </a>
 
-        <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-6">
+        <a href="/explanation/core/content-pipeline/"
+           class="group rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 hover:border-primary-400 dark:hover:border-primary-600 hover:bg-white dark:hover:bg-base-900 transition-colors p-6">
             <div class="text-primary-600 dark:text-primary-400 mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1.5em" height="1.5em" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M8 4.5V3M16 4.5V3" stroke-linecap="round" stroke-linejoin="round" />
@@ -92,9 +155,9 @@
                     <path d="M8 11C8 9.58579 8 8.87868 8.43934 8.43934C8.87868 8 9.58579 8 11 8H13C14.4142 8 15.1213 8 15.5607 8.43934C16 8.87868 16 9.58579 16 11V13C16 14.4142 16 15.1213 15.5607 15.5607C15.1213 16 14.4142 16 13 16H11C9.58579 16 8.87868 16 8.43934 15.5607C8 15.1213 8 14.4142 8 13V11Z" />
                 </svg>
             </div>
-            <h3 class="font-display font-semibold text-base-900 dark:text-base-50 mb-1">Pluggable pipeline</h3>
+            <h3 class="font-display font-semibold text-base-900 dark:text-base-50 group-hover:text-primary-700 dark:group-hover:text-primary-400 mb-1 transition-colors">Pluggable pipeline</h3>
             <p class="text-sm text-base-600 dark:text-base-400">Discover, Parse, Render, Generate — a four-stage content pipeline with C# 15 union types. Search, RSS, sitemaps, and GitHub Pages deployment all included.</p>
-        </div>
+        </a>
     </div>
 </section>
 
@@ -150,34 +213,19 @@
     </CardGrid>
 </section>
 
-<section class="border-t border-base-200 dark:border-base-700 pt-10 pb-12">
-    <h2 class="font-display text-xs font-semibold uppercase tracking-widest text-base-400 dark:text-base-500 mb-6">Frequently Asked Questions</h2>
-    <dl class="space-y-5 max-w-2xl">
-        <div>
-            <dt class="font-display font-medium text-base-700 dark:text-base-300 text-sm">Why union types? Why C# 15?</dt>
-            <dd class="text-sm text-base-500 dark:text-base-500 mt-0.5">Because <code class="font-mono text-xs bg-base-100 dark:bg-base-800 px-1 rounded">ContentItem</code> is either Discovered, Parsed, Rendered, or Failed. Abstract base classes pretend otherwise. We don't pretend here.</dd>
-        </div>
-        <div>
-            <dt class="font-display font-medium text-base-700 dark:text-base-300 text-sm">Is Pennington v2 production-ready?</dt>
-            <dd class="text-sm text-base-500 dark:text-base-500 mt-0.5">This site is built with Pennington, so take from that what you will.</dd>
-        </div>
-        <div>
-            <dt class="font-display font-medium text-base-700 dark:text-base-300 text-sm">Is there a migration tool from my favorite documentation tool?</dt>
-            <dd class="text-sm text-base-500 dark:text-base-500 mt-0.5">No. Bring your markdown, leave your config files behind.</dd>
-        </div>
-        <div>
-            <dt class="font-display font-medium text-base-700 dark:text-base-300 text-sm">Is this an appropriate tool for my non-.NET project?</dt>
-            <dd class="text-sm text-base-500 dark:text-base-500 mt-0.5">Probably not, but knock yourself out.</dd>
-        </div>
-        <div>
-            <dt class="font-display font-medium text-base-700 dark:text-base-300 text-sm">Can I submit a pull request?</dt>
-            <dd class="text-sm text-base-500 dark:text-base-500 mt-0.5">
-                Yeah, but hop on the <a href="https://github.com/usepennington/pennington/discussions" class="text-primary-600 dark:text-primary-400 hover:underline">GitHub discussions</a> first before getting too far ahead of yourself.
-            </dd>
-        </div>
-        <div>
-            <dt class="font-display font-medium text-base-700 dark:text-base-300 text-sm">There's a missing feature my company critically needs — it's costing us $1000 a day!</dt>
-            <dd class="text-sm text-base-500 dark:text-base-500 mt-0.5">I'll add it for $999 a day.</dd>
-        </div>
-    </dl>
-</section>
+@code {
+    private record QuickstartStep(string Number, string Title, string Command, string CommandHtml);
+
+    private static readonly QuickstartStep[] _quickstartSteps =
+    [
+        new("1", "Install the project templates",
+            "dotnet new install Pennington.Templates",
+            """ dotnet new install <span class="text-primary-500">Pennington.Templates</span>"""),
+        new("2", "Scaffold a new docs site",
+            "dotnet new pennington-docs -o my-site",
+            """ dotnet new <span class="text-primary-500">pennington-docs</span> -o my-site"""),
+        new("3", "Run it, write Markdown, watch it update",
+            "cd my-site && dotnet run",
+            """ cd my-site &amp;&amp; <span class="text-primary-500">dotnet run</span>"""),
+    ];
+}
