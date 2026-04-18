@@ -44,8 +44,8 @@ Pennington ships four ready-made `IFrontMatter` records covering the doc and blo
 
 ## Example
 
-```csharp:xmldocid,bodyonly
-M:BlogSiteFirstPostExample.Stage2.Source
+```markdown:path
+examples/BlogSiteFirstPostExample/snippets/stage2.md
 ```
 
 ## See also

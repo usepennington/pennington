@@ -41,8 +41,8 @@ The scaffold tutorial left a placeholder post named `hello-world.md` in `Content
 
 Paste the Stage 1 markdown body into the new file. These three fields are the smallest front matter that lets a BlogSite post render cleanly: `title` is the only field required by `IFrontMatter`; `description` is what the home card, archive card, and RSS `<description>` element all pull from; and `date` drives both the archive sort order and the RSS `<pubDate>` element.
 
-```csharp:xmldocid,bodyonly
-M:BlogSiteFirstPostExample.Stage1.Source
+```markdown:path
+examples/BlogSiteFirstPostExample/snippets/stage1.md
 ```
 
 The two `---` fences delimit the YAML front matter block. The `date:` value parses as an ISO-8601 date; any format that round-trips as a date string works. For the full list of recognised front-matter keys, see the <xref:reference.blogsite.frontmatter> reference page.
@@ -77,8 +77,8 @@ Replace the Stage 1 YAML block with the Stage 2 block below. Here's what each ne
 - `sectionLabel:` — groups the post under a named slice of the archive
 - `redirectUrl:` — stays empty here because this post has no previous home on the web; set it when migrating a post from another URL
 
-```csharp:xmldocid,bodyonly
-M:BlogSiteFirstPostExample.Stage2.Source
+```markdown:path
+examples/BlogSiteFirstPostExample/snippets/stage2.md
 ```
 
 The list-of-strings shape for `tags:` is YAML's block sequence (`- value` per line). For the full record definition, see <xref:reference.blogsite.frontmatter>.

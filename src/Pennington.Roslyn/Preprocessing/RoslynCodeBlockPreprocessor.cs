@@ -3,6 +3,7 @@ namespace Pennington.Roslyn.Preprocessing;
 using System.Net;
 using Diagnostics;
 using Highlighting;
+using Pennington.Highlighting;
 using Markdown.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,18 +17,21 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
 {
     private readonly ISymbolExtractionService _symbolService;
     private readonly SyntaxHighlighter _highlighter;
+    private readonly HighlightingService _highlightingService;
     private readonly RoslynOptions _options;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    /// <summary>Creates a new preprocessor wired to the symbol extraction service, Roslyn highlighter, options, and per-request diagnostics accessor.</summary>
+    /// <summary>Creates a new preprocessor wired to the symbol extraction service, Roslyn highlighter, shared highlighting service, options, and per-request diagnostics accessor.</summary>
     public RoslynCodeBlockPreprocessor(
         ISymbolExtractionService symbolService,
         SyntaxHighlighter highlighter,
+        HighlightingService highlightingService,
         RoslynOptions options,
         IHttpContextAccessor httpContextAccessor)
     {
         _symbolService = symbolService;
         _highlighter = highlighter;
+        _highlightingService = highlightingService;
         _options = options;
         _httpContextAccessor = httpContextAccessor;
     }
@@ -47,6 +51,14 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
             return null;
         }
 
+        if (modifier.StartsWith("xmldocid", StringComparison.Ordinal) && !IsRoslynLanguage(baseLanguage))
+        {
+            Diagnostics?.AddError(
+                $":xmldocid fence requires a C# or VB language tag, got '{baseLanguage}'. " +
+                "To embed non-C# content (markdown, razor, html, css, etc.), use ':path' with a file reference.");
+            return null;
+        }
+
         return modifier switch
         {
             "xmldocid" => ProcessXmlDocId(baseLanguage, code, bodyOnly: false),
@@ -57,6 +69,9 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
             _ => null
         };
     }
+
+    private static bool IsRoslynLanguage(string baseLanguage) =>
+        baseLanguage.ToLowerInvariant() is "csharp" or "cs" or "vb" or "vbnet";
 
     internal static (string baseLanguage, string? modifier) ParseLanguageId(string languageId)
     {
@@ -238,8 +253,7 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
             }
 
             var content = File.ReadAllText(fullPath);
-            var lang = DetectHighlighterLanguage(baseLanguage, Path.GetExtension(relativePath));
-            var highlighted = _highlighter.Highlight(content, lang);
+            var highlighted = _highlightingService.Highlight(content, baseLanguage);
 
             return new CodeBlockPreprocessResult(highlighted, baseLanguage, SkipTransform: false);
         }
@@ -313,24 +327,12 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
         return new DiffRenderResult(string.Join("\n", outputLines), hasDifferences);
     }
 
-    private static SyntaxHighlighter.Language DetectHighlighterLanguage(string baseLanguage, string? fileExtension = null)
-    {
-        // If we have a file extension, use it
-        if (fileExtension is not null)
-        {
-            return fileExtension.ToLowerInvariant() switch
-            {
-                ".vb" => SyntaxHighlighter.Language.VisualBasic,
-                _ => SyntaxHighlighter.Language.CSharp
-            };
-        }
-
-        return baseLanguage.ToLowerInvariant() switch
+    private static SyntaxHighlighter.Language DetectHighlighterLanguage(string baseLanguage) =>
+        baseLanguage.ToLowerInvariant() switch
         {
             "vb" or "vbnet" => SyntaxHighlighter.Language.VisualBasic,
-            _ => SyntaxHighlighter.Language.CSharp
+            _ => SyntaxHighlighter.Language.CSharp,
         };
-    }
 
     /// <summary>
     /// Extracts the inner HTML content from between pre/code tags.

@@ -59,8 +59,8 @@ Classes are configurable via `TabbedCodeBlockRenderOptions` passed to `UseTabbed
 
 Markdown source showing a two-fence tabbed group from the DocSite authoring example:
 
-```csharp:xmldocid,bodyonly
-M:DocSiteAuthorExample.Stage3.Source
+```markdown:path
+examples/DocSiteAuthorExample/snippets/stage3.md
 ```
 
 ## Alerts
@@ -98,8 +98,8 @@ Backing parser and class-emission logic live in `CustomAlertInlineParser` (`Penn
 
 Markdown excerpt from the DocSite authoring example showing a `[!NOTE]` block in context:
 
-```csharp:xmldocid,bodyonly
-M:DocSiteAuthorExample.Stage2.Source
+```markdown:path
+examples/DocSiteAuthorExample/snippets/stage2.md
 ```
 
 ## Code annotations

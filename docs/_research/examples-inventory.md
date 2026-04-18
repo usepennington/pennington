@@ -203,18 +203,9 @@ group. Tutorial prose pulls each body via `csharp:xmldocid,bodyonly`.
 - `examples/DocSiteAuthorExample/Program.cs` — canonical final state (single-area DocSite host)
 - `examples/DocSiteAuthorExample/Content/guides/index.md` — Guides area landing page
 - `examples/DocSiteAuthorExample/Content/guides/authoring.md` — the teaching page with full `DocSiteFrontMatter`, a `[!NOTE]` alert, and a three-panel tabbed code group
-- `examples/DocSiteAuthorExample/Stage1_BareFrontMatter.cs` — stage 1 markdown source (front matter + h1 only)
-- `examples/DocSiteAuthorExample/Stage2_AddAlert.cs` — stage 2 markdown source (adds `[!NOTE]` block)
-- `examples/DocSiteAuthorExample/Stage3_AddTabbedCode.cs` — stage 3 markdown source (adds tabbed code group)
-
-**Symbols**
-
-- `T:DocSiteAuthorExample.Stage1`
-- `M:DocSiteAuthorExample.Stage1.Source` (short)
-- `T:DocSiteAuthorExample.Stage2`
-- `M:DocSiteAuthorExample.Stage2.Source` (short)
-- `T:DocSiteAuthorExample.Stage3`
-- `M:DocSiteAuthorExample.Stage3.Source` (short)
+- `examples/DocSiteAuthorExample/snippets/stage1.md` — stage 1 markdown source (front matter + h1 only)
+- `examples/DocSiteAuthorExample/snippets/stage2.md` — stage 2 markdown source (adds `[!NOTE]` block)
+- `examples/DocSiteAuthorExample/snippets/stage3.md` — stage 3 markdown source (adds tabbed code group)
 
 Production symbols the tutorial leans on (live in `src/Pennington.DocSite`
 and `src/Pennington/Markdown/Extensions`):
@@ -390,15 +381,8 @@ and `<author>`.
 
 - `examples/BlogSiteFirstPostExample/Program.cs` — canonical final state (AddBlogSite with explicit `EnableRss = true`, no placeholder post)
 - `examples/BlogSiteFirstPostExample/Content/Blog/my-first-post.md` — the fully-populated post
-- `examples/BlogSiteFirstPostExample/Stage1_BareFrontMatter.cs` — stage 1 markdown source (title + description + date only)
-- `examples/BlogSiteFirstPostExample/Stage2_FullFrontMatter.cs` — stage 2 markdown source (every BlogSiteFrontMatter field populated)
-
-**Symbols**
-
-- `T:BlogSiteFirstPostExample.Stage1`
-- `M:BlogSiteFirstPostExample.Stage1.Source` (short)
-- `T:BlogSiteFirstPostExample.Stage2`
-- `M:BlogSiteFirstPostExample.Stage2.Source` (short)
+- `examples/BlogSiteFirstPostExample/snippets/stage1.md` — stage 1 markdown source (title + description + date only)
+- `examples/BlogSiteFirstPostExample/snippets/stage2.md` — stage 2 markdown source (every BlogSiteFrontMatter field populated)
 
 Production symbols the tutorial leans on (live in `src/Pennington.BlogSite`):
 

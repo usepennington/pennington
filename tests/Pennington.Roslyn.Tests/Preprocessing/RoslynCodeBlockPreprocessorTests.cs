@@ -137,6 +137,7 @@ public sealed class RoslynCodeBlockPreprocessorTests
         var preprocessor = new RoslynCodeBlockPreprocessor(
             new StubSymbolExtractionService(),
             new SyntaxHighlighter(),
+            CreateHighlightingService(),
             new RoslynOptions { SolutionPath = "bare-filename.slnx" },
             new NullHttpContextAccessor());
 
@@ -166,6 +167,7 @@ public sealed class RoslynCodeBlockPreprocessorTests
             var preprocessor = new RoslynCodeBlockPreprocessor(
                 new StubSymbolExtractionService(),
                 new SyntaxHighlighter(),
+                CreateHighlightingService(),
                 new RoslynOptions { SolutionPath = solutionFile },
                 new NullHttpContextAccessor());
 
@@ -175,6 +177,67 @@ public sealed class RoslynCodeBlockPreprocessorTests
             result.HighlightedHtml.ShouldNotContain("File not found");
             result.HighlightedHtml.ShouldNotContain("Solution directory not found");
             result.HighlightedHtml.ShouldContain("sentinel");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void TryProcess_Rejects_XmlDocId_For_Non_CSharp_Language()
+    {
+        var preprocessor = CreatePreprocessor();
+
+        // A :xmldocid fence with a non-C#/VB base language is a misuse — the
+        // extractor pulls C# expression text, not the string value, so wrapping
+        // markdown as a raw-string expression leaks `"""` delimiters into the
+        // rendered block. The preprocessor must refuse and pass through.
+        var result = preprocessor.TryProcess("T:Whatever.Type", "markdown:xmldocid");
+
+        result.ShouldBeNull();
+    }
+
+    [Fact]
+    public void TryProcess_Accepts_XmlDocId_For_CSharp_Language()
+    {
+        var preprocessor = CreatePreprocessor();
+
+        var result = preprocessor.TryProcess("T:Whatever.Type", "csharp:xmldocid");
+
+        result.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void ProcessPath_Uses_HighlightingService_For_Markdown()
+    {
+        // For non-C#/VB :path fences, highlighting should dispatch through the
+        // HighlightingService so TextMate (or another registered highlighter)
+        // picks up the language — not the Roslyn C# classifier.
+        var tempDir = Path.Combine(Path.GetTempPath(), $"penn-roslyn-md-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            var solutionFile = Path.Combine(tempDir, "fake.slnx");
+            File.WriteAllText(solutionFile, "<Solution />");
+            var contentFile = Path.Combine(tempDir, "sample.md");
+            File.WriteAllText(contentFile, "# hello markdown");
+
+            var captured = new CapturingHighlighter();
+            var highlightingService = new HighlightingService([captured]);
+
+            var preprocessor = new RoslynCodeBlockPreprocessor(
+                new StubSymbolExtractionService(),
+                new SyntaxHighlighter(),
+                highlightingService,
+                new RoslynOptions { SolutionPath = solutionFile },
+                new NullHttpContextAccessor());
+
+            var result = preprocessor.TryProcess("sample.md", "markdown:path");
+
+            result.ShouldNotBeNull();
+            captured.LastLanguage.ShouldBe("markdown");
+            captured.LastCode.ShouldBe("# hello markdown");
         }
         finally
         {
@@ -244,9 +307,13 @@ public sealed class RoslynCodeBlockPreprocessorTests
         return new RoslynCodeBlockPreprocessor(
             new StubSymbolExtractionService(),
             new SyntaxHighlighter(),
+            CreateHighlightingService(),
             new RoslynOptions(),
             new NullHttpContextAccessor());
     }
+
+    private static HighlightingService CreateHighlightingService() =>
+        new([new PlainTextHighlighter()]);
 
     private sealed class NullHttpContextAccessor : Microsoft.AspNetCore.Http.IHttpContextAccessor
     {
@@ -268,6 +335,22 @@ public sealed class RoslynCodeBlockPreprocessorTests
             => Task.FromResult(string.Empty);
 
         public void ClearCache() { }
+    }
+
+    /// <summary>Records what the preprocessor forwards to the highlighting pipeline.</summary>
+    private sealed class CapturingHighlighter : ICodeHighlighter
+    {
+        public IReadOnlySet<string> SupportedLanguages { get; } = new HashSet<string> { "*" };
+        public int Priority => 200;
+        public string? LastLanguage { get; private set; }
+        public string? LastCode { get; private set; }
+
+        public string Highlight(string code, string language)
+        {
+            LastCode = code;
+            LastLanguage = language;
+            return $"<pre><code class=\"language-{language}\">{code}</code></pre>";
+        }
     }
 
     /// <summary>Stub file watcher for DI registration tests.</summary>

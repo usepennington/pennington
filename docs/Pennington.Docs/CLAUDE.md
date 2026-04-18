@@ -97,10 +97,10 @@ M:Ns.Type.Method
 Body must contain exactly 2 XmlDocIds (before/after). Supports the same `,bodyonly` suffix.
 
 ### When to use which
-- **`:xmldocid`** — default for C# examples; survives renames, refactors, and line shifts.
-- **`:xmldocid,bodyonly`** — when the declaration is noise (showing what's inside a method).
-- **`:path`** — only when no xmldocid-addressable symbol exists: top-level-statements `Program.cs`, Razor components, markdown/content files, config files.
-- **`:xmldocid-diff`** — before/after comparisons in explanation pages.
+- **`:xmldocid`** — **C# or VB only.** Default for C# examples; survives renames, refactors, and line shifts. Non-Roslyn languages (`markdown`, `razor`, `html`, `css`, etc.) are rejected — use `:path` instead.
+- **`:xmldocid,bodyonly`** — when the declaration is noise (showing what's inside a method). Same C#/VB-only restriction.
+- **`:path`** — the right fence for anything that isn't C#/VB code: markdown snippets (including staged tutorial `.md` files), Razor components, HTML, CSS, config files, top-level-statements `Program.cs`.
+- **`:xmldocid-diff`** — before/after comparisons in explanation pages. C#/VB only.
 
 Requires `Pennington.Roslyn` wired (`AddPenningtonRoslyn`) and `SolutionPath` set on `RoslynOptions` / `DocSiteOptions`.
 
