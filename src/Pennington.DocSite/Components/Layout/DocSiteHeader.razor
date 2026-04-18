@@ -3,23 +3,27 @@
 @inject LocalizationOptions Localization
 
 <header class="sticky top-0 z-10 h-14 backdrop-blur-sm bg-base-50/90 dark:bg-base-950/90 flex items-center justify-between gap-x-8 border-b border-base-200 dark:border-base-800">
-    <nav aria-label="Site" class="mx-auto px-4 lg:px-8 max-w-6xl flex flex-row items-center gap-x-2 w-full">
+    <nav aria-label="Site" class="mx-auto px-4 lg:px-8 max-w-7xl flex flex-row items-center gap-x-2 w-full">
         @if (ShowMobileMenuButton)
         {
             @_mobileMenuButton
         }
         <div
-            class="@(ShowMobileMenuButton ? "lg:hidden" : "") flex flex-1 lg:flex-none min-w-0 shrink items-center place-content-center gap-x-2 lg:gap-x-4">
-            <div class="transition-all w-0 sm:w-5 overflow-hidden">
-                @if (DocSiteOptions.HeaderIcon != null)
-                {
-                    @((MarkupString)DocSiteOptions.HeaderIcon)
-                }
-                else
-                {
-                    @_defaultHeaderIcon
-                }
-            </div>
+            class="@(ShowMobileMenuButton ? "lg:hidden" : "") flex flex-1 @(CenterSearch ? "lg:basis-0 lg:justify-start" : "lg:flex-none") min-w-0 shrink items-center place-content-center gap-x-2 lg:gap-x-4">
+            @* HeaderIcon convention: null = default icon, "" = no icon (suppressed), non-empty = user-supplied markup. *@
+            @if (DocSiteOptions.HeaderIcon != "")
+            {
+                <div class="transition-all w-0 sm:w-5 overflow-hidden">
+                    @if (DocSiteOptions.HeaderIcon != null)
+                    {
+                        @((MarkupString)DocSiteOptions.HeaderIcon)
+                    }
+                    else
+                    {
+                        @_defaultHeaderIcon
+                    }
+                </div>
+            }
 
             <span
                 class="font-display dark:text-base-50 text-sm lg:text-base font-medium text-base-900 tracking-tight">
@@ -34,7 +38,7 @@
             </span>
         </div>
 
-        <div class="lg:flex-1">
+        <div class="lg:flex-1 @(CenterSearch ? "lg:basis-0 lg:flex lg:justify-center" : "")">
             <button type="button"
                     id="search-input"
                     class="w-8 md:w-32 lg:w-full m-0 max-w-xl h-8 transition-all pr-4 items-center gap-2 rounded-full bg-base-50 pl-1 text-sm text-base-500 ring-1 ring-base-900/10 transition hover:ring-base-900/20 md:flex dark:bg-base-950/5 dark:text-base-400 dark:ring-base-50/10 dark:ring-inset dark:hover:ring-base-50/20">
@@ -52,7 +56,7 @@
             </button>
         </div>
 
-        <div class="flex items-center gap-x-2">
+        <div class="flex items-center gap-x-2 @(CenterSearch ? "lg:flex-1 lg:basis-0 lg:justify-end" : "")">
             @if (Localization.IsMultiLocale)
             {
                 <LanguageSwitcher AlternateLanguages="AlternateLanguages" />
@@ -104,6 +108,13 @@
 
 @code {
     [Parameter] public bool ShowMobileMenuButton { get; set; }
+
+    /// <summary>
+    /// When true, the three header groups (title, search, actions) share equal space on lg+ so the
+    /// search bar sits centered on the viewport. Intended for sidebarless layouts like the landing page.
+    /// </summary>
+    [Parameter] public bool CenterSearch { get; set; }
+
     [Parameter] public IReadOnlyList<LanguageSwitcher.AlternateLanguageItem>? AlternateLanguages { get; set; }
 
     private readonly RenderFragment _mobileMenuButton =
