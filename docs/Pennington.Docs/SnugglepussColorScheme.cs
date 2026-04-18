@@ -144,5 +144,5 @@ internal sealed class SnugglepussColorScheme : IColorScheme
              .AddColorPalette("accent-four", AccentFour)
              .MapColorPalette("snugglepuss", "primary")
              .MapColorPalette("winchester", "accent")
-             .MapColorPalette("pewter", "base");
+             .MapColorPalette(ColorNames.Zinc, "base");
 }
