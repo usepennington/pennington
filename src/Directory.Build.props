@@ -27,6 +27,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)../logo.png" Pack="true" PackagePath="" />
-    <None Include="$(MSBuildThisFileDirectory)../README.md" Pack="true" PackagePath="" />
+    <None Include="$(MSBuildThisFileDirectory)../README.md" Pack="true" PackagePath="" Condition="'$(MSBuildProjectName)' != 'Pennington.Templates'" />
   </ItemGroup>
 </Project>
