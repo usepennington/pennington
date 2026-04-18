@@ -1,3 +1,5 @@
+using Pennington.Infrastructure;
+
 namespace Pennington.Routing;
 
 /// <summary>Describes the canonical location of a piece of content, its output file, and originating locale.</summary>
@@ -36,7 +38,11 @@ public sealed record ContentRoute
     public UrlPath AbsoluteUrl(UrlPath canonicalBase)
     {
         var baseVal = canonicalBase.Value;
-        if (Uri.TryCreate(baseVal, UriKind.Absolute, out _))
+        // AllowImplicitFilePaths = false rejects bare paths like `/preview/`,
+        // which the default Uri parser accepts as a file URI on Linux but not
+        // on Windows — a subtle cross-platform trap.
+        var options = new UriParseOptions { UriKind = UriKind.Absolute, AllowImplicitFilePaths = false };
+        if (Uri.TryCreate(baseVal, options, out var uri) && uri!.Scheme is "http" or "https")
         {
             var trimmedBase = baseVal.TrimEnd('/');
             var path = CanonicalPath.Value;

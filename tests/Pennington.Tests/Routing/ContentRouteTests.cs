@@ -86,4 +86,21 @@ public class ContentRouteTests
         var url = Route("/about/").AbsoluteUrl(new UrlPath("https://site.example.com:8080"));
         url.Value.ShouldBe("https://site.example.com:8080/about/");
     }
+
+    // Regression: on Linux `Uri.TryCreate("/preview/", Absolute)` parses as a
+    // file URI, which used to route path bases through the URI-compose branch
+    // and produced `/preview/` for the root route instead of `/preview`.
+    [Fact]
+    public void AbsoluteUrl_PathBase_RootRoute_DoesNotLeaveTrailingSlash()
+    {
+        var url = Route("/").AbsoluteUrl(new UrlPath("/preview/"));
+        url.Value.ShouldBe("/preview");
+    }
+
+    [Fact]
+    public void AbsoluteUrl_PathBase_DeepRoute_ComposesCleanly()
+    {
+        var url = Route("/docs/getting-started/").AbsoluteUrl(new UrlPath("/preview/"));
+        url.Value.ShouldBe("/preview/docs/getting-started/");
+    }
 }
