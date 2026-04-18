@@ -15,7 +15,13 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-  <ItemGroup>
+  <!--
+    MinVer rewrites the assembly version from git tags, which breaks dotnet watch's
+    hot reload (version churn on every edit triggers "rude edit" warnings). There's
+    no reliable flag for "running under dotnet watch", so we restrict packaging-time
+    dependencies to Release builds and rely on no one publishing with dotnet watch.
+  -->
+  <ItemGroup Condition="'$(Configuration)'=='Release'">
     <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>

@@ -60,6 +60,12 @@ internal sealed class PenningtonTuiHostedService(
     internal static bool IsBuildMode(string[] commandLineArgs) =>
         commandLineArgs.Length > 1 && commandLineArgs[1].Equals("build", StringComparison.OrdinalIgnoreCase);
 
+    // dotnet watch sets DOTNET_WATCH=1 in the child process. The TUI grabs the
+    // terminal surface exclusively, which fights with dotnet watch's own output
+    // and hot-reload prompts, so we step aside entirely in this mode.
+    internal static bool IsDotnetWatchMode() =>
+        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH"));
+
     private void OnApplicationStarted()
     {
         try

@@ -17,6 +17,15 @@ public static class PenningtonTuiExtensions
     /// </summary>
     public static IServiceCollection AddPenningtonTui(this IServiceCollection services, Action<PenningtonTuiOptions>? configure = null)
     {
+        // dotnet watch owns the console and re-launches the child on file changes;
+        // the TUI can't share that surface, so we bail out before touching logging
+        // or the hosted service and let the host run as if the package weren't added.
+        if (PenningtonTuiHostedService.IsDotnetWatchMode())
+        {
+            services.AddHostedService<DotnetWatchNoticeService>();
+            return services;
+        }
+
         var options = new PenningtonTuiOptions();
         configure?.Invoke(options);
         services.AddSingleton(options);
