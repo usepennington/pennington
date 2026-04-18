@@ -22,6 +22,13 @@ public record DocSiteOptions
     /// <summary>Color scheme driving the MonorailCSS theme. Defaults to the built-in DocSite palette when null.</summary>
     public IColorScheme? ColorScheme { get; init; }
 
+    /// <summary>
+    /// Syntax-highlight color palette used by <c>.hljs-*</c> token classes.
+    /// Defaults to <see cref="Pennington.MonorailCss.SyntaxTheme.Default"/> when null.
+    /// Values may reference custom palette names registered via <see cref="ColorScheme"/>.
+    /// </summary>
+    public SyntaxTheme? SyntaxTheme { get; init; }
+
     /// <summary>Absolute base URL used when emitting canonical links, sitemap entries, and absolute feed URLs.</summary>
     public string? CanonicalBaseUrl { get; init; }
 

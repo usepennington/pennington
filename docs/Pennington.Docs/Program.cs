@@ -1,4 +1,5 @@
 using Mdazor;
+using Pennington.Docs;
 using Pennington.Docs.Components.Reference;
 using Pennington.DocSite;
 using Pennington.Infrastructure;
@@ -13,11 +14,14 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     SiteTitle = "Pennington",
     Description = "A Content Engine for .NET",
     SocialImageUrl = "/social.png",
-    ColorScheme = new AlgorithmicColorScheme
+    ColorScheme = new SnugglepussColorScheme(),
+    SyntaxTheme = new SyntaxTheme
     {
-        PrimaryHue = 260,
-        ColorSchemeGenerator = i => i + 180,
-        BaseColorName = ColorName.Mist
+        Keyword  = "accent-four",
+        String   = "accent-two",
+        Variable = "accent-one",
+        Function = "accent-three",
+        Comment  = "pewter",
     },
     GitHubUrl = "https://github.com/usepennington/pennington",
     CanonicalBaseUrl = "https://phil-scott-78.github.io/pennington/",

@@ -75,6 +75,7 @@ public static class DocSiteServiceExtensions
             var monoOptions = new MonorailCssOptions
             {
                 ColorScheme = options.ColorScheme ?? new MonorailCssOptions().ColorScheme,
+                SyntaxTheme = options.SyntaxTheme ?? SyntaxTheme.Default,
                 ExtraStyles = options.ExtraStyles ?? string.Empty,
                 CustomCssFrameworkSettings = options.CustomCssFrameworkSettings ?? (settings => settings),
             };
