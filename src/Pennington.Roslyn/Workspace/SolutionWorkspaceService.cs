@@ -90,12 +90,17 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
 
         _logger.LogDebug("Loading solution from {SolutionPath}", solutionPath);
 
-        // Configure MSBuild properties to redirect build artifacts to temp folder
+        // Redirect intermediates to a temp folder so MSBuildWorkspace's evaluation
+        // doesn't fight dotnet watch over real obj/ files. Leave OutputPath alone:
+        // ResolveProjectReferences needs each referenced project's compiled assembly
+        // at the natural bin path, and dotnet watch (or a prior dotnet build) puts it
+        // there. Redirecting BaseOutputPath to a temp folder breaks that lookup with
+        // "Found project reference without a matching metadata reference" warnings.
+        // OutputPath isn't overridden, so the SDK appends $(TargetFramework) per
+        // inner build and multi-target projects no longer collide.
         var properties = new Dictionary<string, string>
         {
             ["BaseIntermediateOutputPath"] = Path.Combine(_tempBuildPath, "obj") + Path.DirectorySeparatorChar,
-            ["IntermediateOutputPath"] = Path.Combine(_tempBuildPath, "obj", "$(Configuration)") + Path.DirectorySeparatorChar,
-            ["OutputPath"] = Path.Combine(_tempBuildPath, "bin", "$(Configuration)") + Path.DirectorySeparatorChar,
         };
 
         var workspace = MSBuildWorkspace.Create(properties);
@@ -144,6 +149,8 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
         {
             projects = ApplyProjectFilter(projects, _options.ProjectFilter);
         }
+
+        projects = SelectMostRecentTargetFramework(projects);
 
         return projects.ToList();
     }
@@ -439,6 +446,109 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
         }
 
         return projects;
+    }
+
+    // MSBuildWorkspace yields one Project per TFM for multi-targeted csproj files
+    // (same FilePath, Name suffixed as "Foo(net11.0)"). Picking all of them double-
+    // extracts symbols and can drag in down-level TFMs like net45 whose APIs diverge
+    // from the modern build. Collapse each group to the most recent TFM.
+    private IEnumerable<Project> SelectMostRecentTargetFramework(IEnumerable<Project> projects)
+    {
+        var grouped = projects
+            .GroupBy(p => p.FilePath ?? p.Id.ToString(), StringComparer.OrdinalIgnoreCase);
+
+        foreach (var group in grouped)
+        {
+            var candidates = group.ToList();
+            if (candidates.Count == 1)
+            {
+                yield return candidates[0];
+                continue;
+            }
+
+            var ranked = candidates
+                .Select(p => (Project: p, Tfm: ExtractTargetFramework(p)))
+                .OrderByDescending(x => TargetFrameworkRank(x.Tfm))
+                .ToList();
+
+            var winner = ranked[0];
+            var skipped = string.Join(", ", ranked.Skip(1).Select(x => x.Tfm ?? "?"));
+            _logger.LogDebug(
+                "Multi-target project {ProjectFile}: selected {SelectedTfm}, skipped {SkippedTfms}",
+                group.Key,
+                winner.Tfm ?? "?",
+                skipped);
+
+            yield return winner.Project;
+        }
+    }
+
+    // Roslyn names a multi-target project's Project instance as "{Name}({tfm})".
+    // Single-target projects have no suffix, in which case the TFM is unknown here.
+    private static string? ExtractTargetFramework(Project project)
+    {
+        var name = project.Name;
+        var open = name.LastIndexOf('(');
+        if (open < 0 || !name.EndsWith(')'))
+        {
+            return null;
+        }
+
+        return name[(open + 1)..^1];
+    }
+
+    // Ranks TFMs so the newest modern .NET wins, and legacy .NET Framework
+    // (net45/net48/etc.) can never beat a modern TFM even when it sorts later
+    // alphabetically.
+    private static long TargetFrameworkRank(string? tfm)
+    {
+        if (string.IsNullOrEmpty(tfm))
+        {
+            return 0;
+        }
+
+        var dash = tfm.IndexOf('-');
+        if (dash >= 0)
+        {
+            tfm = tfm[..dash];
+        }
+
+        if (!tfm.StartsWith("net", StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
+
+        var rest = tfm[3..];
+
+        if (rest.StartsWith("standard", StringComparison.OrdinalIgnoreCase))
+        {
+            return 20_000 + ParseDottedVersion(rest["standard".Length..]);
+        }
+
+        if (rest.StartsWith("coreapp", StringComparison.OrdinalIgnoreCase))
+        {
+            return 30_000 + ParseDottedVersion(rest["coreapp".Length..]);
+        }
+
+        // "netX.Y" form (.NET 5+) has a dot; .NET Framework uses "net45"/"net472".
+        if (rest.Contains('.'))
+        {
+            return 40_000 + ParseDottedVersion(rest);
+        }
+
+        if (int.TryParse(rest, out var frameworkVersion))
+        {
+            return 10_000 + frameworkVersion;
+        }
+
+        return 0;
+    }
+
+    private static int ParseDottedVersion(string value)
+    {
+        return Version.TryParse(value, out var version)
+            ? version.Major * 1000 + version.Minor * 10 + Math.Max(version.Build, 0)
+            : 0;
     }
 
     public void Dispose()
