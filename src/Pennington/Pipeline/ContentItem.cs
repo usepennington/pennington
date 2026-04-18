@@ -28,11 +28,12 @@ public record RenderedItem(ContentRoute Route, IFrontMatter Metadata, RenderedCo
 public record FailedItem(ContentRoute Route, ContentError Error);
 
 /// <summary>Union of all content item states flowing through the pipeline.</summary>
-// The union — compiler enforces exhaustive matching over exactly these four types
+// The union — compiler enforces exhaustive matching over exactly these four types.
+// The #else branch is a transitional net10.0 shim while C# 15 unions require net11.0.
+#if NET11_0_OR_GREATER
 public union ContentItem(DiscoveredItem, ParsedItem, RenderedItem, FailedItem)
 {
     /// <summary>The route for the current item regardless of state.</summary>
-    // Every case carries a Route — expose it on the union to avoid pattern matching at every call site
     public ContentRoute Route => this switch
     {
         DiscoveredItem d => d.Route,
@@ -42,3 +43,28 @@ public union ContentItem(DiscoveredItem, ParsedItem, RenderedItem, FailedItem)
         null => throw new InvalidOperationException("Uninitialized ContentItem")
     };
 }
+#else
+[System.Runtime.CompilerServices.Union]
+public readonly struct ContentItem : System.Runtime.CompilerServices.IUnion
+{
+    public object? Value { get; }
+    public ContentItem(DiscoveredItem value) { Value = value; }
+    public ContentItem(ParsedItem value) { Value = value; }
+    public ContentItem(RenderedItem value) { Value = value; }
+    public ContentItem(FailedItem value) { Value = value; }
+    public static implicit operator ContentItem(DiscoveredItem value) => new(value);
+    public static implicit operator ContentItem(ParsedItem value) => new(value);
+    public static implicit operator ContentItem(RenderedItem value) => new(value);
+    public static implicit operator ContentItem(FailedItem value) => new(value);
+
+    /// <summary>The route for the current item regardless of state.</summary>
+    public ContentRoute Route => Value switch
+    {
+        DiscoveredItem d => d.Route,
+        ParsedItem p => p.Route,
+        RenderedItem r => r.Route,
+        FailedItem f => f.Route,
+        _ => throw new InvalidOperationException("Uninitialized ContentItem")
+    };
+}
+#endif

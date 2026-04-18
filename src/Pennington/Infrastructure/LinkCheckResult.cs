@@ -23,4 +23,18 @@ public record ExternalLink(ContentRoute SourcePage, string Url);
 
 // The union
 /// <summary>Outcome of checking a single link during build-time verification.</summary>
+#if NET11_0_OR_GREATER
 public union LinkCheckResult(ValidLink, BrokenLinkResult, ExternalLink);
+#else
+[System.Runtime.CompilerServices.Union]
+public readonly struct LinkCheckResult : System.Runtime.CompilerServices.IUnion
+{
+    public object? Value { get; }
+    public LinkCheckResult(ValidLink value) { Value = value; }
+    public LinkCheckResult(BrokenLinkResult value) { Value = value; }
+    public LinkCheckResult(ExternalLink value) { Value = value; }
+    public static implicit operator LinkCheckResult(ValidLink value) => new(value);
+    public static implicit operator LinkCheckResult(BrokenLinkResult value) => new(value);
+    public static implicit operator LinkCheckResult(ExternalLink value) => new(value);
+}
+#endif

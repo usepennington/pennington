@@ -31,4 +31,16 @@ public record BinaryProgrammaticContent(
 );
 
 /// <summary>Union of supported programmatic content payload shapes.</summary>
+#if NET11_0_OR_GREATER
 public union ProgrammaticContent(TextProgrammaticContent, BinaryProgrammaticContent);
+#else
+[System.Runtime.CompilerServices.Union]
+public readonly struct ProgrammaticContent : System.Runtime.CompilerServices.IUnion
+{
+    public object? Value { get; }
+    public ProgrammaticContent(TextProgrammaticContent value) { Value = value; }
+    public ProgrammaticContent(BinaryProgrammaticContent value) { Value = value; }
+    public static implicit operator ProgrammaticContent(TextProgrammaticContent value) => new(value);
+    public static implicit operator ProgrammaticContent(BinaryProgrammaticContent value) => new(value);
+}
+#endif

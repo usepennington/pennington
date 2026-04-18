@@ -113,7 +113,7 @@ public sealed class RedirectContentService : IContentService
 
             await foreach (var item in service.DiscoverAsync())
             {
-                if (item.Source is RedirectSource redirect)
+                if (item.Source.Value is RedirectSource redirect)
                 {
                     builder[NormalizeSource(item.Route.CanonicalPath.Value)] = redirect.TargetUrl.Value;
                 }

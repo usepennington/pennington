@@ -93,7 +93,7 @@ public sealed class SitemapService
                 // EndpointSource items are framework-internal routes served by a
                 // live HTTP endpoint (e.g., /_spa-data/*.json) and must not appear
                 // as canonical URLs either. Skip both.
-                if (discovered.Source is RedirectSource or EndpointSource) continue;
+                if (discovered.Source.Value is RedirectSource or EndpointSource) continue;
 
                 IFrontMatter? metadata = null;
 
@@ -102,10 +102,10 @@ public sealed class SitemapService
                 // Programmatic/Razor sources surface metadata at generation /
                 // render time, which is too expensive to run here just for
                 // lastmod. Those entries get emitted with route + no metadata.
-                if (discovered.Source is MarkdownFileSource && parser is not null)
+                if (discovered.Source.Value is MarkdownFileSource && parser is not null)
                 {
                     var parseResult = await parser.ParseAsync(discovered);
-                    if (parseResult is ParsedItem parsed)
+                    if (parseResult.Value is ParsedItem parsed)
                     {
                         metadata = parsed.Metadata;
                     }

@@ -38,7 +38,7 @@ internal sealed class SpaNavigationContentService(
                     continue;
 
                 // Razor pages and redirects can't be rendered as SPA island content
-                if (item.Source is RazorPageSource or RedirectSource) continue;
+                if (item.Source.Value is RazorPageSource or RedirectSource) continue;
 
                 var slug = SpaSlug.ToSlug(item.Route.CanonicalPath.Value);
                 var route = new ContentRoute

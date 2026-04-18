@@ -22,7 +22,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 11.0.x
+          dotnet-version: |
+            10.0.x
+            11.0.x
 
       - name: Build
         run: dotnet build Pennington.slnx -c Release
@@ -58,7 +60,9 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 11.0.x
+          dotnet-version: |
+            10.0.x
+            11.0.x
 
       - uses: nuget/login@v1
         id: login

@@ -86,12 +86,12 @@ public sealed class ContentResolver
 
         // Render
         var renderResult = await _renderer.RenderAsync(parseResult);
-        if (renderResult is FailedItem failed)
+        if (renderResult.Value is FailedItem failed)
         {
             _diagnostics.AddError(failed.Error.Message, "ContentResolver");
             return null;
         }
-        if (renderResult is not RenderedItem rendered) return null;
+        if (renderResult.Value is not RenderedItem rendered) return null;
 
         return new ResolvedContent(
             Route: rendered.Route,

@@ -28,4 +28,22 @@ public record ProgrammaticSource(IProgrammaticContentGenerator Generator);
 public record EndpointSource();
 
 /// <summary>Union of all ways content can be sourced for a route.</summary>
+#if NET11_0_OR_GREATER
 public union ContentSource(MarkdownFileSource, RazorPageSource, RedirectSource, ProgrammaticSource, EndpointSource);
+#else
+[System.Runtime.CompilerServices.Union]
+public readonly struct ContentSource : System.Runtime.CompilerServices.IUnion
+{
+    public object? Value { get; }
+    public ContentSource(MarkdownFileSource value) { Value = value; }
+    public ContentSource(RazorPageSource value) { Value = value; }
+    public ContentSource(RedirectSource value) { Value = value; }
+    public ContentSource(ProgrammaticSource value) { Value = value; }
+    public ContentSource(EndpointSource value) { Value = value; }
+    public static implicit operator ContentSource(MarkdownFileSource value) => new(value);
+    public static implicit operator ContentSource(RazorPageSource value) => new(value);
+    public static implicit operator ContentSource(RedirectSource value) => new(value);
+    public static implicit operator ContentSource(ProgrammaticSource value) => new(value);
+    public static implicit operator ContentSource(EndpointSource value) => new(value);
+}
+#endif

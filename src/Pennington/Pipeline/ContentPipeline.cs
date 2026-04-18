@@ -43,20 +43,20 @@ public sealed class ContentPipeline : IContentPipeline
         await foreach (var item in items)
         {
             // FailedItems pass through unchanged
-            if (item is FailedItem)
+            if (item.Value is FailedItem)
             {
                 yield return item;
                 continue;
             }
 
-            if (item is DiscoveredItem discovered)
+            if (item.Value is DiscoveredItem discovered)
             {
                 // RedirectSource items are handled by PenningtonRedirectMiddleware at
                 // request time (dev) and captured as 301 responses by the build crawler;
                 // they don't participate in parse/render and must not reach the parser.
                 // EndpointSource items (e.g., /_spa-data/*.json) are produced by a live
                 // HTTP endpoint — there's no file to parse, same skip applies.
-                if (discovered.Source is RedirectSource or EndpointSource) continue;
+                if (discovered.Source.Value is RedirectSource or EndpointSource) continue;
 
                 ContentItem result;
                 try
@@ -84,13 +84,13 @@ public sealed class ContentPipeline : IContentPipeline
         await foreach (var item in items)
         {
             // FailedItems pass through unchanged
-            if (item is FailedItem)
+            if (item.Value is FailedItem)
             {
                 yield return item;
                 continue;
             }
 
-            if (item is ParsedItem parsed)
+            if (item.Value is ParsedItem parsed)
             {
                 ContentItem result;
                 try
@@ -119,7 +119,7 @@ public sealed class ContentPipeline : IContentPipeline
 
         await foreach (var item in items)
         {
-            switch (item)
+            switch (item.Value)
             {
                 case RenderedItem rendered:
                     // Check for drafts

@@ -116,10 +116,10 @@ public sealed class XmlDocParser : IXmlDocParser
             "para" => new XmlDocNode(new ParaNode(ParseChildren(element))),
             "see" => ParseSeeOrCref(element),
             "paramref" => element.Attribute("name")?.Value is { Length: > 0 } pname
-                ? new XmlDocNode(new ParamRefNode(pname))
+                ? (XmlDocNode?)new XmlDocNode(new ParamRefNode(pname))
                 : null,
             "typeparamref" => element.Attribute("name")?.Value is { Length: > 0 } tname
-                ? new XmlDocNode(new TypeParamRefNode(tname))
+                ? (XmlDocNode?)new XmlDocNode(new TypeParamRefNode(tname))
                 : null,
             "list" => new XmlDocNode(new ListNode(
                 Kind: element.Attribute("type")?.Value ?? "bullet",
@@ -254,7 +254,7 @@ public sealed class XmlDocParser : IXmlDocParser
 
         foreach (var node in nodes)
         {
-            if (node is TextNode t)
+            if (node.Value is TextNode t)
             {
                 // Concatenate directly — boundary whitespace is already carried on each
                 // TextNode by NormalizeWhitespace, so we must not inject an extra space.
@@ -288,7 +288,7 @@ public sealed class XmlDocParser : IXmlDocParser
 
         var builder = nodes.ToBuilder();
 
-        if (builder[0] is TextNode first && first.Text.Length > 0 && char.IsWhiteSpace(first.Text[0]))
+        if (builder[0].Value is TextNode first && first.Text.Length > 0 && char.IsWhiteSpace(first.Text[0]))
         {
             var trimmed = first.Text.TrimStart();
             builder[0] = trimmed.Length > 0
@@ -296,7 +296,7 @@ public sealed class XmlDocParser : IXmlDocParser
                 : new XmlDocNode(new TextNode(string.Empty));
         }
 
-        if (builder[^1] is TextNode last && last.Text.Length > 0 && char.IsWhiteSpace(last.Text[^1]))
+        if (builder[^1].Value is TextNode last && last.Text.Length > 0 && char.IsWhiteSpace(last.Text[^1]))
         {
             var trimmed = last.Text.TrimEnd();
             builder[^1] = trimmed.Length > 0

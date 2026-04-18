@@ -98,7 +98,7 @@ public sealed class BlogContentResolver
 
                 var parsedItem = new ParsedItem(item.Route, fm, parsed.Body);
                 var rendered = await _renderer.RenderAsync(parsedItem);
-                if (rendered is RenderedItem renderedItem)
+                if (rendered.Value is RenderedItem renderedItem)
                 {
                     var post = new BlogPostPage(fm, item.Route.CanonicalPath.Value, tags);
                     return new RenderedBlogPost(post, renderedItem.Content.Html);

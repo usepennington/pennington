@@ -214,7 +214,7 @@ public sealed class OutputGenerationService
                 var linkResults = linkVerifier.VerifyLinks(result.Page.Route, html);
                 foreach (var linkResult in linkResults)
                 {
-                    if (linkResult is BrokenLinkResult broken)
+                    if (linkResult.Value is BrokenLinkResult broken)
                     {
                         reportBuilder.AddBrokenLink(
                             new BrokenLink(broken.SourcePage, broken.Url, broken.Type, broken.Reason));

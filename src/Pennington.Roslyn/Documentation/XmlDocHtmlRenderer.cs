@@ -21,7 +21,7 @@ public sealed class XmlDocHtmlRenderer : IXmlDocHtmlRenderer
 
         foreach (var node in materialised)
         {
-            switch (node)
+            switch (node.Value)
             {
                 case ParaNode p:
                     if (openParagraph)
@@ -88,7 +88,7 @@ public sealed class XmlDocHtmlRenderer : IXmlDocHtmlRenderer
 
     private void RenderInlineNode(XmlDocNode node, StringBuilder sb)
     {
-        switch (node)
+        switch (node.Value)
         {
             case TextNode t:
                 sb.Append(WebUtility.HtmlEncode(t.Text));

@@ -43,6 +43,7 @@ public record ListNode(string Kind, ImmutableArray<XmlDocListItem> Items);
 public record XmlDocListItem(ImmutableArray<XmlDocNode> Term, ImmutableArray<XmlDocNode> Description);
 
 /// <summary>Discriminated union of node kinds that make up a parsed xmldoc tree.</summary>
+#if NET11_0_OR_GREATER
 public union XmlDocNode(
     TextNode,
     InlineCodeNode,
@@ -52,3 +53,26 @@ public union XmlDocNode(
     ParamRefNode,
     TypeParamRefNode,
     ListNode);
+#else
+[System.Runtime.CompilerServices.Union]
+public readonly struct XmlDocNode : System.Runtime.CompilerServices.IUnion
+{
+    public object? Value { get; }
+    public XmlDocNode(TextNode value) { Value = value; }
+    public XmlDocNode(InlineCodeNode value) { Value = value; }
+    public XmlDocNode(CodeBlockNode value) { Value = value; }
+    public XmlDocNode(ParaNode value) { Value = value; }
+    public XmlDocNode(CrefNode value) { Value = value; }
+    public XmlDocNode(ParamRefNode value) { Value = value; }
+    public XmlDocNode(TypeParamRefNode value) { Value = value; }
+    public XmlDocNode(ListNode value) { Value = value; }
+    public static implicit operator XmlDocNode(TextNode value) => new(value);
+    public static implicit operator XmlDocNode(InlineCodeNode value) => new(value);
+    public static implicit operator XmlDocNode(CodeBlockNode value) => new(value);
+    public static implicit operator XmlDocNode(ParaNode value) => new(value);
+    public static implicit operator XmlDocNode(CrefNode value) => new(value);
+    public static implicit operator XmlDocNode(ParamRefNode value) => new(value);
+    public static implicit operator XmlDocNode(TypeParamRefNode value) => new(value);
+    public static implicit operator XmlDocNode(ListNode value) => new(value);
+}
+#endif
