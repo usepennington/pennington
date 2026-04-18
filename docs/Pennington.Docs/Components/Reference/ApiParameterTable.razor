@@ -3,27 +3,40 @@
 @inject IXmlDocHtmlRenderer Renderer
 @inject IHttpContextAccessor HttpContextAccessor
 
-@((MarkupString)_html)
+@if (_error is not null)
+{
+    <div class="diag-error">@((MarkupString)_error)</div>
+}
+else if (_empty is not null)
+{
+    <p><em>@_empty</em></p>
+}
+else
+{
+    <ApiDefinitionList Rows="_rows" />
+}
 
 @code {
     [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
 
-    private string _html = string.Empty;
+    private IReadOnlyList<ApiDefinitionRow> _rows = [];
+    private string? _error;
+    private string? _empty;
 
     private DiagnosticContext? Diagnostics =>
         HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
 
     protected override void OnParametersSet()
     {
-        _html = BuildHtml();
-    }
+        _error = null;
+        _empty = null;
+        _rows = [];
 
-    private string BuildHtml()
-    {
         if (string.IsNullOrWhiteSpace(XmlDocId))
         {
             Diagnostics?.AddError("<ApiParameterTable> missing XmlDocId");
-            return "<div class=\"diag-error\">&lt;ApiParameterTable&gt; missing XmlDocId</div>";
+            _error = "&lt;ApiParameterTable&gt; missing XmlDocId";
+            return;
         }
 
         SymbolInfo? info;
@@ -34,44 +47,47 @@
         catch (Exception ex)
         {
             Diagnostics?.AddError($"<ApiParameterTable> resolution failed for {XmlDocId}: {ex.Message}");
-            return $"<div class=\"diag-error\">Resolution failed: {WebUtility.HtmlEncode(ex.Message)}</div>";
+            _error = $"Resolution failed: {WebUtility.HtmlEncode(ex.Message)}";
+            return;
         }
 
         if (info?.Symbol is not Microsoft.CodeAnalysis.IMethodSymbol method)
         {
             Diagnostics?.AddError($"<ApiParameterTable> expected a method xmldocid (M:...), got {XmlDocId}");
-            return $"<div class=\"diag-error\">Expected a method xmldocid (M:...), got <code>{WebUtility.HtmlEncode(XmlDocId)}</code></div>";
+            _error = $"Expected a method xmldocid (M:...), got <code>{WebUtility.HtmlEncode(XmlDocId)}</code>";
+            return;
         }
 
         if (method.Parameters.Length == 0)
         {
-            return "<p><em>This method takes no parameters.</em></p>";
+            _empty = "This method takes no parameters.";
+            return;
         }
 
         var parsed = Parser.Parse(method.GetDocumentationCommentXml());
 
-        var sb = new StringBuilder();
-        sb.Append("<table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>");
+        var rows = new List<ApiDefinitionRow>(method.Parameters.Length);
+        var displayFormat = new Microsoft.CodeAnalysis.SymbolDisplayFormat(
+            genericsOptions: Microsoft.CodeAnalysis.SymbolDisplayGenericsOptions.IncludeTypeParameters,
+            miscellaneousOptions: Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.UseSpecialTypes
+                | Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier,
+            typeQualificationStyle: Microsoft.CodeAnalysis.SymbolDisplayTypeQualificationStyle.NameAndContainingTypes);
+
         foreach (var p in method.Parameters)
         {
-            var typeDisplay = p.Type.ToDisplayString(new Microsoft.CodeAnalysis.SymbolDisplayFormat(
-                genericsOptions: Microsoft.CodeAnalysis.SymbolDisplayGenericsOptions.IncludeTypeParameters,
-                miscellaneousOptions: Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.UseSpecialTypes
-                    | Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier,
-                typeQualificationStyle: Microsoft.CodeAnalysis.SymbolDisplayTypeQualificationStyle.NameAndContainingTypes));
-
+            var typeDisplay = p.Type.ToDisplayString(displayFormat);
             var description = parsed.Params.TryGetValue(p.Name, out var nodes)
                 ? Renderer.RenderInlineHtml(nodes)
                 : string.Empty;
 
-            sb.Append("<tr>")
-                .Append("<td><code>").Append(WebUtility.HtmlEncode(p.Name)).Append("</code></td>")
-                .Append("<td><code>").Append(WebUtility.HtmlEncode(typeDisplay)).Append("</code></td>")
-                .Append("<td>").Append(description).Append("</td>")
-                .Append("</tr>");
+            rows.Add(new ApiDefinitionRow(
+                Name: p.Name,
+                TypeDisplay: typeDisplay,
+                DefaultValue: null,
+                Required: false,
+                DescriptionHtml: description));
         }
 
-        sb.Append("</tbody></table>");
-        return sb.ToString();
+        _rows = rows;
     }
 }

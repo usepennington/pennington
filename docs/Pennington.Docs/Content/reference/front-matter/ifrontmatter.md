@@ -7,47 +7,41 @@ tags: [front-matter, capabilities, interfaces]
 uid: reference.front-matter.ifrontmatter
 ---
 
-`IFrontMatter` is the universal front-matter contract that every Pennington content page implements, declaring one required `Title` property and six default members covering drafts, indexing opt-outs, uid, description, and date. It is declared in `Pennington.FrontMatter`; the four remaining capability interfaces (`ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`) are in the same namespace.
+## `IFrontMatter`
 
-## Members
+<ApiSummary XmlDocId="T:Pennington.FrontMatter.IFrontMatter" />
 
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.IFrontMatter" />
 
-## Capability interfaces
+## `ITaggable`
 
-The four remaining capability interfaces stay separate from `IFrontMatter` because not every content type implements them; consumers pattern-match these interfaces independently, and each interface declares exactly one property.
-
-### `ITaggable`
+<ApiSummary XmlDocId="T:Pennington.FrontMatter.ITaggable" />
 
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.ITaggable" />
 
-Implemented by `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, and `BlogSiteFrontMatter`.
+## `IOrderable`
 
-### `IOrderable`
+<ApiSummary XmlDocId="T:Pennington.FrontMatter.IOrderable" />
 
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.IOrderable" />
 
-Implemented by `DocFrontMatter` and `DocSiteFrontMatter`, both defaulting to `int.MaxValue` so unset pages sort last.
+## `ISectionable`
 
-### `ISectionable`
+<ApiSummary XmlDocId="T:Pennington.FrontMatter.ISectionable" />
 
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.ISectionable" />
 
-Implemented by `DocFrontMatter` and `DocSiteFrontMatter`.
+## `IRedirectable`
 
-### `IRedirectable`
+<ApiSummary XmlDocId="T:Pennington.FrontMatter.IRedirectable" />
 
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.IRedirectable" />
-
-Implemented by `DocSiteFrontMatter` and `BlogSiteFrontMatter`; see <xref:how-to.content-authoring.redirects> for authoring practice.
 
 ## Example
 
 ```csharp:xmldocid,bodyonly
 T:DocSiteKitchenSinkExample.ApiFrontMatter
 ```
-
-This record demonstrates the reference shape for a custom front-matter type with full capability coverage: `IFrontMatter` plus all four capability interfaces in a single declaration.
 
 ## See also
 

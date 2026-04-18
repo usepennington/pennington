@@ -34,15 +34,15 @@ public class ApiReferenceComponentTests : IClassFixture<DocsWebApplicationFactor
     }
 
     [Fact(Skip = "reference/options/roslyn-options page is in draft; un-skip when it's published")]
-    public async Task RoslynOptionsPage_ApiMemberTable_Uses_Table_Headers()
+    public async Task RoslynOptionsPage_ApiMemberTable_Uses_Definition_List()
     {
         var response = await _client.GetAsync("/reference/options/roslyn-options/", TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
-        content.ShouldContain("<th>Name</th>");
-        content.ShouldContain("<th>Type</th>");
-        content.ShouldContain("<th>Default</th>");
-        content.ShouldContain("<th>Description</th>");
+        content.ShouldContain("<dl");
+        content.ShouldContain("<dt");
+        content.ShouldContain("<dd");
+        content.ShouldNotContain("<th>Name</th>");
     }
 
     [Fact(Skip = "reference/options/roslyn-options page is in draft; un-skip when it's published")]

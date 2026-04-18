@@ -1,0 +1,64 @@
+@inject ISymbolExtractionService SymbolService
+@inject IXmlDocParser Parser
+@inject IXmlDocHtmlRenderer Renderer
+@inject IHttpContextAccessor HttpContextAccessor
+
+@if (_error is not null)
+{
+    <div class="diag-error">@((MarkupString)_error)</div>
+}
+else if (!string.IsNullOrEmpty(_html))
+{
+    @((MarkupString)_html)
+}
+
+@code {
+    [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
+
+    private string _html = string.Empty;
+    private string? _error;
+
+    private DiagnosticContext? Diagnostics =>
+        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
+
+    protected override void OnParametersSet()
+    {
+        _error = null;
+        _html = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(XmlDocId))
+        {
+            Diagnostics?.AddError("<ApiSummary> missing XmlDocId");
+            _error = "&lt;ApiSummary&gt; missing XmlDocId";
+            return;
+        }
+
+        SymbolInfo? info;
+        try
+        {
+            info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(XmlDocId));
+        }
+        catch (Exception ex)
+        {
+            Diagnostics?.AddError($"<ApiSummary> resolution failed for {XmlDocId}: {ex.Message}");
+            _error = $"Resolution failed for <code>{WebUtility.HtmlEncode(XmlDocId)}</code>: {WebUtility.HtmlEncode(ex.Message)}";
+            return;
+        }
+
+        if (info is null)
+        {
+            Diagnostics?.AddError($"<ApiSummary> unresolved xmldocid: {XmlDocId}");
+            _error = $"Unresolved xmldocid: <code>{WebUtility.HtmlEncode(XmlDocId)}</code>";
+            return;
+        }
+
+        var parsed = Parser.Parse(info.Symbol.GetDocumentationCommentXml());
+        if (!parsed.HasSummary)
+        {
+            Diagnostics?.AddWarning($"<ApiSummary> {XmlDocId} has no <summary>");
+            return;
+        }
+
+        _html = Renderer.RenderHtml(parsed.Summary);
+    }
+}

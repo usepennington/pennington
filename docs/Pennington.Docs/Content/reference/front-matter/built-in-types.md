@@ -7,57 +7,40 @@ tags: [front-matter, records, templates]
 uid: reference.front-matter.built-in-types
 ---
 
-Pennington ships four ready-made `IFrontMatter` records covering the doc and blog use cases at both the core-library and site-template layers. Core records live in `Pennington.FrontMatter`; the template records live in `Pennington.DocSite` and `Pennington.BlogSite`.
-
-## Overview
+Pennington ships four ready-made `IFrontMatter` records covering the doc and blog use cases at both the core-library and site-template layers.
 
 | Type | Namespace | Wired by | Capabilities |
 |---|---|---|---|
-| `DocFrontMatter` | `Pennington.FrontMatter` | `PenningtonOptions.AddMarkdownContent<DocFrontMatter>` (author-wired) | `ITaggable`, `ISectionable`, `IOrderable` |
-| `BlogFrontMatter` | `Pennington.FrontMatter` | `PenningtonOptions.AddMarkdownContent<BlogFrontMatter>` (author-wired) | `ITaggable` |
+| `DocFrontMatter` | `Pennington.FrontMatter` | `AddMarkdownContent<DocFrontMatter>` (author-wired) | `ITaggable`, `ISectionable`, `IOrderable` |
+| `BlogFrontMatter` | `Pennington.FrontMatter` | `AddMarkdownContent<BlogFrontMatter>` (author-wired) | `ITaggable` |
 | `DocSiteFrontMatter` | `Pennington.DocSite` | `AddDocSite` | `ITaggable`, `ISectionable`, `IOrderable`, `IRedirectable` |
 | `BlogSiteFrontMatter` | `Pennington.BlogSite` | `AddBlogSite` | `ITaggable`, `ISectionable`, `IRedirectable` |
 
-> **Template binding.** `AddBlogSite` registers `AddMarkdownContent<BlogSiteFrontMatter>` — **not** `BlogFrontMatter`. The `BlogFrontMatter` record is the core-library's blog shape; `BlogSiteFrontMatter` is the site-template record with additional post-metadata fields (`Author`, `Repository`, `Series`, `RedirectUrl`).
+> **Template binding.** `AddBlogSite` registers `AddMarkdownContent<BlogSiteFrontMatter>` — **not** `BlogFrontMatter`.
 
 ## `DocFrontMatter`
 
-The core-library doc-page record for bare `AddPennington` hosts. Implements `IFrontMatter`, `ITaggable`, `ISectionable`, and `IOrderable`.
-
-### Properties
+<ApiSummary XmlDocId="T:Pennington.FrontMatter.DocFrontMatter" />
 
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.DocFrontMatter" />
 
 ## `BlogFrontMatter`
 
-The core-library blog-post record for author-wired blog hosts. Carries `Date`, `Author`, and `Series` alongside the `IFrontMatter` defaults. Implements `IFrontMatter` and `ITaggable`. Not the record bound by `AddBlogSite`.
-
-### Properties
+<ApiSummary XmlDocId="T:Pennington.FrontMatter.BlogFrontMatter" />
 
 <ApiMemberTable XmlDocId="T:Pennington.FrontMatter.BlogFrontMatter" />
 
 ## `DocSiteFrontMatter`
 
-The record bound by `AddDocSite`. Extends the `DocFrontMatter` shape with `RedirectUrl` via `IRedirectable`. Implements `IFrontMatter`, `ITaggable`, `ISectionable`, `IOrderable`, and `IRedirectable`.
-
-### Properties
+<ApiSummary XmlDocId="T:Pennington.DocSite.DocSiteFrontMatter" />
 
 <ApiMemberTable XmlDocId="T:Pennington.DocSite.DocSiteFrontMatter" />
 
 ## `BlogSiteFrontMatter`
 
-The record bound by `AddBlogSite`. Consolidates all post-authoring fields (`Author`, `Repository`, `Series`, `Date`, `RedirectUrl`) in one contract. Implements `IFrontMatter`, `ITaggable`, `ISectionable`, and `IRedirectable`.
-
-### Properties
+<ApiSummary XmlDocId="T:Pennington.BlogSite.BlogSiteFrontMatter" />
 
 <ApiMemberTable XmlDocId="T:Pennington.BlogSite.BlogSiteFrontMatter" />
-
-## Choosing a type
-
-- `DocFrontMatter` — bare `AddPennington` host for documentation; provides `SectionLabel`, `Order`, and `Tags` without the DocSite template.
-- `BlogFrontMatter` — bare `AddPennington` host for a blog; provides `Date`, `Author`, and `Series` without the BlogSite template. `AddBlogSite` does **not** bind this record.
-- `DocSiteFrontMatter` — `AddDocSite` hosts; the template registers `AddMarkdownContent<DocSiteFrontMatter>` automatically.
-- `BlogSiteFrontMatter` — `AddBlogSite` hosts; the template registers `AddMarkdownContent<BlogSiteFrontMatter>` automatically.
 
 ## Example
 

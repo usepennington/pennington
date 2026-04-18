@@ -7,25 +7,9 @@ tags: [blogsite, front-matter, yaml]
 uid: reference.blogsite.frontmatter
 ---
 
-`BlogSiteFrontMatter` is the front-matter record `Pennington.BlogSite` binds every post to. It lives in namespace `Pennington.BlogSite` and implements `IFrontMatter`, `ITaggable`, `ISectionable`, and `IRedirectable`, so posts participate in navigation, tagging, section grouping, and redirect rules alongside regular Pennington content.
+<ApiSummary XmlDocId="T:Pennington.BlogSite.BlogSiteFrontMatter" />
 
-## Fields
-
-| Key | Type | Default | Description |
-|---|---|---|---|
-| `title` | `string` | `"Empty title"` | Post title; required by `IFrontMatter` and surfaced in the home card, archive card, RSS `<title>`, and the rendered `<h1>` for default layouts. |
-| `author` | `string` | `""` | Author byline rendered in the post header and used in JSON-LD `Article` payloads. |
-| `description` | `string?` | `null` | Short blurb used by the home and archive cards, RSS `<description>`, and OpenGraph metadata. |
-| `repository` | `string` | `""` | Optional repository URL rendered as a "View source" link on the post layout. |
-| `date` | `DateTime?` | `null` | Publish date (ISO-8601 in YAML). Drives archive sort order and the RSS `<pubDate>` element. |
-| `isDraft` | `bool` | `false` | Excludes the post from home, archive, tag pages, and the RSS feed when `true`. |
-| `tags` | `string[]` | `[]` | Tag list for `/tags` index, per-tag pages, and the RSS `<category>` entries. |
-| `series` | `string` | `""` | Series label used by templated layouts that group posts under a shared heading. |
-| `redirectUrl` | `string?` | `null` | When set, the post URL serves a redirect to this target instead of rendering content (`IRedirectable`). |
-| `sectionLabel` | `string?` | `null` | Section grouping key consumed by `ISectionable`-aware navigation layouts. |
-| `uid` | `string?` | `null` | Stable cross-reference identifier; when set, the post registers with `XrefResolver` and can be linked via `<xref:uid>` or `[text](xref:uid)`. |
-| `search` | `bool` | `true` | Include the post in the generated search index. |
-| `llms` | `bool` | `true` | Include the post in the generated `llms.txt` catalogue and per-page markdown sidecars. |
+<ApiMemberTable XmlDocId="T:Pennington.BlogSite.BlogSiteFrontMatter" />
 
 ## Example
 

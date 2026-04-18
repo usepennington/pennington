@@ -7,75 +7,33 @@ tags: [islands, spa, extension-points, rendering]
 uid: reference.extension-points.islands
 ---
 
-`Pennington.Islands` defines the four types involved in adding a server-rendered island: the `IIslandRenderer` contract, the `RazorIslandRenderer<T>` convenience base, the `SpaEnvelope` record describing the per-route payload, and the `RenderContext` handed to renderers, together with the `data-spa-*` attribute surface the browser engine reads to locate and hydrate those islands. The namespace is registered through `PenningtonOptions.Islands.Register<T>(name)` and exposed to the browser by `SpaNavigationExtensions.AddSpaNavigation` / `UseSpaNavigation`.
-
 ## `IIslandRenderer`
 
-```csharp:xmldocid
-T:Pennington.Islands.IIslandRenderer
-```
+<ApiSummary XmlDocId="T:Pennington.Islands.IIslandRenderer" />
 
-The root contract exposes one property that names the island and one method that returns rendered HTML for a given `ContentRoute` and `RenderContext`; returning an empty string signals no island for that route, and `SpaPageDataService` drops empty results before keying the `SpaEnvelope.Islands` dictionary.
-
-### Members
-
-| Name | Signature | Description |
-|---|---|---|
-| `IslandName` | `string { get; }` | The island key; must match the `data-spa-island` attribute value in the host markup and becomes the key under which the rendered HTML is stored in `SpaEnvelope.Islands`. |
-| `RenderAsync` | `Task<string> RenderAsync(ContentRoute route, RenderContext context)` | Returns the island HTML for the given route, or an empty string to skip this island on that route; called once per route per renderer by `SpaPageDataService.GetPageDataAsync`. |
+<ApiMemberTable XmlDocId="T:Pennington.Islands.IIslandRenderer" Kind="All" />
 
 ## `RazorIslandRenderer<T>`
 
-```csharp:xmldocid
-T:Pennington.Islands.RazorIslandRenderer`1
-```
+<ApiSummary XmlDocId="T:Pennington.Islands.RazorIslandRenderer`1" />
 
-Abstract base that implements `IIslandRenderer` for the common case of rendering a Razor component `TComponent`; subclasses override `IslandName` and `BuildParametersAsync`, and the base resolves parameters to HTML through the scoped `ComponentRenderer`. Returning `null` from `BuildParametersAsync` skips the island for that route, causing the base to return an empty string that `SpaPageDataService` filters out.
-
-### Members
-
-| Name | Signature | Description |
-|---|---|---|
-| `BuildParametersAsync` | `protected abstract Task<IDictionary<string, object?>?> BuildParametersAsync(ContentRoute route)` | Subclass hook that returns the parameter dictionary passed to `TComponent`, or `null` to skip the island for that route; consulted once per `RenderAsync` invocation. |
-| `IslandName` | `public abstract string { get; }` | Subclass-supplied island key; see the `IIslandRenderer.IslandName` row above for the contract. |
-| `RenderAsync` | `public Task<string> RenderAsync(ContentRoute route, RenderContext context)` | Sealed base implementation that calls `BuildParametersAsync`, returns `""` when the result is `null`, and otherwise delegates to `ComponentRenderer.RenderComponentAsync<TComponent>(parameters)`. |
+<ApiMemberTable XmlDocId="T:Pennington.Islands.RazorIslandRenderer`1" Kind="All" Access="PublicAndProtected" />
 
 ## `RenderContext`
 
-```csharp:xmldocid
-T:Pennington.Islands.RenderContext
-```
+<ApiSummary XmlDocId="T:Pennington.Islands.RenderContext" />
 
-Record supplied to every `IIslandRenderer.RenderAsync` call; the scoped `SpaPageDataService` injects a single instance per request carrying the base URL, site title, and active locale without requiring access to the full `HttpContext`.
-
-### Members
-
-| Name | Type | Description |
-|---|---|---|
-| `BaseUrl` | `UrlPath` | Site base URL; matches `PenningtonOptions.CanonicalBaseUrl` at build time and is the value islands should prepend when constructing absolute links. |
-| `SiteTitle` | `string` | Site title from `PenningtonOptions.SiteTitle`; supplied to islands that render page headings or `<title>` fragments. |
-| `Locale` | `string?` | Active locale code for the current request, or `null` when `LocalizationOptions.IsMultiLocale` is false; renderers that vary by locale read this value. |
+<ApiMemberTable XmlDocId="T:Pennington.Islands.RenderContext" />
 
 ## `SpaEnvelope`
 
-```csharp:xmldocid
-T:Pennington.Islands.SpaEnvelope
-```
+<ApiSummary XmlDocId="T:Pennington.Islands.SpaEnvelope" />
 
-Record describing the server-side shape of the per-route payload, holding the page title, optional description, optional `SocialMetadata`, and the `ImmutableDictionary<string, string>` of island-name to HTML. The JSON served at `SpaNavigationOptions.DataPath` (default `/_spa-data`) is the serialized form of the sibling `SpaEnvelopeDto` (`Pennington.Islands.SpaEnvelopeDto`), which flattens the dictionary and carries `Diagnostics` and an optional `Reload` flag; consult that type for the wire contract.
-
-### Members
-
-| Name | Type | Description |
-|---|---|---|
-| `Title` | `string` | Page title surfaced in `<title>` on SPA navigation; the client engine writes it into `document.title` on `spa:commit`. |
-| `Description` | `string?` | Page description; optional, used for `<meta name="description">` updates on navigation. |
-| `Social` | `SocialMetadata?` | Per-page social-card metadata (from the `RenderedItem`'s `RenderedContent.Social`); optional and not currently serialized to the wire DTO. |
-| `Islands` | `ImmutableDictionary<string, string>` | Map of island name → rendered HTML, one entry per `IIslandRenderer` that returned a non-empty string for the route. |
+<ApiMemberTable XmlDocId="T:Pennington.Islands.SpaEnvelope" />
 
 ## `data-spa-*` attribute reference
 
-Lookup table for the attribute surface the client engine reads (`src/Pennington.UI/wwwroot/spa-engine.js`), grouped by the element that carries them and ordered alphabetically within each group.
+Lookup table for the attribute surface the client engine reads (`src/Pennington.UI/wwwroot/spa-engine.js`), grouped by the element that carries them.
 
 | Attribute | Applies to | Values | Description |
 |---|---|---|---|
@@ -84,23 +42,19 @@ Lookup table for the attribute surface the client engine reads (`src/Pennington.
 | `data-spa-skeleton-for` | `<template>` | Island name matching `data-spa-island` | Pairs a `<template>` with a skeleton-loading island; the template's content is cloned into the island instead of the default shimmer when `data-spa-loading="skeleton"`. |
 | `data-spa-reload` | `<a>` | Presence only (boolean attribute) | Marks a link as "do not intercept" — the engine performs a full-document reload for this anchor instead of fetching the JSON envelope. |
 | `data-spa-data-path` | `<html>` | URL path (default `/_spa-data`) | Overrides the path the engine fetches envelopes from; must match `SpaNavigationOptions.DataPath`. |
-| `data-spa-skeleton-delay` | `<html>` | Integer milliseconds (default `100`) | Milliseconds the engine waits before showing a skeleton — shorter fetches skip the skeleton entirely to avoid flicker. |
-| `data-spa-min-skeleton` | `<html>` | Integer milliseconds (default `250`) | Minimum time a skeleton stays visible once shown, to prevent sub-frame flashes of loading UI. |
-| `data-base-url` | `<body>` | URL path | Stamped by `BaseUrlHtmlRewriter`; the engine strips this prefix from `location.pathname` when computing a route's `SpaSlug`. Not an island attribute per se — listed here because `spa-engine.js` reads it. |
+| `data-spa-skeleton-delay` | `<html>` | Integer milliseconds (default `100`) | Milliseconds the engine waits before showing a skeleton. |
+| `data-spa-min-skeleton` | `<html>` | Integer milliseconds (default `250`) | Minimum time a skeleton stays visible once shown. |
+| `data-base-url` | `<body>` | URL path | Stamped by `BaseUrlHtmlRewriter`; the engine strips this prefix from `location.pathname` when computing a route's `SpaSlug`. |
 
 ## Example
-
-The canonical subclass of `RazorIslandRenderer<TComponent>` from the extensibility lab overrides `IslandName`, implements `BuildParametersAsync`, and returns `null` to skip the island on routes that do not carry a matching `data-spa-island` slot; registered via `options.Islands.Register<ChartIslandRenderer>("chart")`.
 
 ```csharp:xmldocid,bodyonly
 T:ExtensibilityLabExample.ChartIslandRenderer
 ```
 
-Reference shape for a Razor-backed island renderer; the implementation walkthrough lives in the how-to guide at <xref:how-to.extensibility.island-renderer>.
-
 ## See also
 
 - How-to: [Register an island renderer](xref:how-to.extensibility.island-renderer)
-- Related reference: [`HighlightingOptions`, `IslandsOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `OutputOptions`](xref:reference.options.auxiliary-options)
+- Related reference: [`IslandsOptions`](xref:reference.options.auxiliary-options)
 - Related reference: [Routing types](xref:reference.extension-points.routing)
 - Background: [SPA navigation and island architecture](xref:explanation.spa.islands)

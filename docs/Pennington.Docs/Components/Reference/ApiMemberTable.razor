@@ -2,7 +2,18 @@
 @inject IXmlDocHtmlRenderer Renderer
 @inject IHttpContextAccessor HttpContextAccessor
 
-@((MarkupString)_html)
+@if (_error is not null)
+{
+    <div class="diag-error">@((MarkupString)_error)</div>
+}
+else if (_empty is not null)
+{
+    <p><em>@_empty</em></p>
+}
+else
+{
+    <ApiDefinitionList Rows="_rows" />
+}
 
 @code {
     [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
@@ -10,22 +21,24 @@
     [Parameter] public string Access { get; set; } = "public";
     [Parameter] public string Order { get; set; } = "alphabetical";
 
-    private string _html = string.Empty;
+    private IReadOnlyList<ApiDefinitionRow> _rows = [];
+    private string? _error;
+    private string? _empty;
 
     private DiagnosticContext? Diagnostics =>
         HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
 
     protected override void OnParametersSet()
     {
-        _html = BuildHtml();
-    }
+        _error = null;
+        _empty = null;
+        _rows = [];
 
-    private string BuildHtml()
-    {
         if (string.IsNullOrWhiteSpace(XmlDocId))
         {
             Diagnostics?.AddError("<ApiMemberTable> missing XmlDocId");
-            return "<div class=\"diag-error\">&lt;ApiMemberTable&gt; missing XmlDocId</div>";
+            _error = "&lt;ApiMemberTable&gt; missing XmlDocId";
+            return;
         }
 
         var kind = MemberOptionParser.ParseKind(Kind);
@@ -40,41 +53,33 @@
         catch (Exception ex)
         {
             Diagnostics?.AddError($"<ApiMemberTable> failed to enumerate {XmlDocId}: {ex.Message}");
-            return $"<div class=\"diag-error\">Failed to enumerate {WebUtility.HtmlEncode(XmlDocId)}: {WebUtility.HtmlEncode(ex.Message)}</div>";
+            _error = $"Failed to enumerate {WebUtility.HtmlEncode(XmlDocId)}: {WebUtility.HtmlEncode(ex.Message)}";
+            return;
         }
 
         if (members.Count == 0)
         {
             Diagnostics?.AddWarning($"<ApiMemberTable> no {Kind.ToLowerInvariant()} matched for {XmlDocId}");
-            return $"<p><em>No {WebUtility.HtmlEncode(Kind.ToLowerInvariant())} documented.</em></p>";
+            _empty = $"No {Kind.ToLowerInvariant()} documented.";
+            return;
         }
 
-        var sb = new StringBuilder();
-        sb.Append("<table><thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>");
+        var rows = new List<ApiDefinitionRow>(members.Count);
         foreach (var m in members)
         {
-            var description = Renderer.RenderInlineHtml(m.Xmldoc.Summary);
             if (!m.Xmldoc.HasSummary)
             {
                 Diagnostics?.AddWarning($"Member {m.XmlDocId} has no <summary>");
             }
 
-            sb.Append("<tr>")
-                .Append("<td><code>").Append(WebUtility.HtmlEncode(m.Name)).Append("</code>");
-            if (m.IsRequired)
-            {
-                sb.Append(" <span class=\"api-required\">(required)</span>");
-            }
-            sb.Append("</td>")
-                .Append("<td><code>").Append(WebUtility.HtmlEncode(m.TypeDisplay)).Append("</code></td>")
-                .Append("<td>")
-                    .Append(m.DefaultValue is null ? "—" : $"<code>{WebUtility.HtmlEncode(m.DefaultValue)}</code>")
-                .Append("</td>")
-                .Append("<td>").Append(description).Append("</td>")
-                .Append("</tr>");
+            rows.Add(new ApiDefinitionRow(
+                Name: m.Name,
+                TypeDisplay: m.TypeDisplay,
+                DefaultValue: m.DefaultValue,
+                Required: m.IsRequired,
+                DescriptionHtml: Renderer.RenderInlineHtml(m.Xmldoc.Summary)));
         }
 
-        sb.Append("</tbody></table>");
-        return sb.ToString();
+        _rows = rows;
     }
 }

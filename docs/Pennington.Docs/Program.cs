@@ -78,6 +78,7 @@ builder.Services
     .AddMdazorComponent<ApiMemberTable>()
     .AddMdazorComponent<ApiMemberList>()
     .AddMdazorComponent<ApiParameterTable>()
+    .AddMdazorComponent<ApiSummary>()
     .AddMdazorComponent<ApiReturns>()
     .AddMdazorComponent<ApiRemarks>()
     .AddMdazorComponent<ApiSeeAlso>();
