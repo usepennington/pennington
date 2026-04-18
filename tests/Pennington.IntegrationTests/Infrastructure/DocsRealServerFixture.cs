@@ -21,10 +21,8 @@ public sealed class DocsRealServerFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        var docsProjectPath = Path.GetFullPath(Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "..", "..", "..", "..", "..",
-            "docs", "Pennington.Docs"));
+        var repoRoot = FindRepoRoot();
+        var docsProjectPath = Path.Combine(repoRoot, "docs", "Pennington.Docs");
 
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -43,7 +41,7 @@ public sealed class DocsRealServerFixture : IAsyncLifetime
 
         builder.Services.AddPenningtonRoslyn(roslyn =>
         {
-            roslyn.SolutionPath = Path.Combine(docsProjectPath, "..", "..", "Pennington.slnx");
+            roslyn.SolutionPath = Path.Combine(repoRoot, "Pennington.slnx");
         });
 
         _app = builder.Build();
@@ -52,6 +50,23 @@ public sealed class DocsRealServerFixture : IAsyncLifetime
         await _app.StartAsync();
         BaseUrl = _app.Urls.First();
         Client = new HttpClient { BaseAddress = new Uri(BaseUrl) };
+    }
+
+    private static string FindRepoRoot()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "Pennington.slnx")))
+        {
+            dir = dir.Parent;
+        }
+
+        if (dir == null)
+        {
+            throw new DirectoryNotFoundException(
+                $"Could not locate Pennington.slnx walking up from {AppContext.BaseDirectory}.");
+        }
+
+        return dir.FullName;
     }
 
     public async ValueTask DisposeAsync()
