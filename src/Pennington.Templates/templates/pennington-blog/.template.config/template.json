@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Phil Scott",
+  "classifications": [ "Web", "Pennington", "Blog" ],
+  "identity": "Pennington.Blog",
+  "name": "Pennington Blog Site",
+  "description": "A BlogSite scaffold with a home page, archive, tag listings, and an RSS feed.",
+  "shortName": "pennington-blog",
+  "sourceName": "Pennington.Site",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  }
+}

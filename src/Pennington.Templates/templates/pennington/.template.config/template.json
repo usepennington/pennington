@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Phil Scott",
+  "classifications": [ "Web", "Pennington", "Static Site" ],
+  "identity": "Pennington.Empty",
+  "name": "Pennington Site (empty)",
+  "description": "A minimal Pennington host with AddPennington, UsePennington, and a catch-all endpoint that renders Markdown from Content/.",
+  "shortName": "pennington",
+  "sourceName": "Pennington.Site",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  }
+}
