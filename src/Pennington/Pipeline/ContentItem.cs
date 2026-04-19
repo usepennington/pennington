@@ -47,14 +47,23 @@ public union ContentItem(DiscoveredItem, ParsedItem, RenderedItem, FailedItem)
 [System.Runtime.CompilerServices.Union]
 public readonly struct ContentItem : System.Runtime.CompilerServices.IUnion
 {
+    /// <summary>Wrapped case instance; inspect via pattern matching on the case types.</summary>
     public object? Value { get; }
+    /// <summary>Wraps a <see cref="DiscoveredItem"/>.</summary>
     public ContentItem(DiscoveredItem value) { Value = value; }
+    /// <summary>Wraps a <see cref="ParsedItem"/>.</summary>
     public ContentItem(ParsedItem value) { Value = value; }
+    /// <summary>Wraps a <see cref="RenderedItem"/>.</summary>
     public ContentItem(RenderedItem value) { Value = value; }
+    /// <summary>Wraps a <see cref="FailedItem"/>.</summary>
     public ContentItem(FailedItem value) { Value = value; }
+    /// <summary>Implicit conversion from <see cref="DiscoveredItem"/>.</summary>
     public static implicit operator ContentItem(DiscoveredItem value) => new(value);
+    /// <summary>Implicit conversion from <see cref="ParsedItem"/>.</summary>
     public static implicit operator ContentItem(ParsedItem value) => new(value);
+    /// <summary>Implicit conversion from <see cref="RenderedItem"/>.</summary>
     public static implicit operator ContentItem(RenderedItem value) => new(value);
+    /// <summary>Implicit conversion from <see cref="FailedItem"/>.</summary>
     public static implicit operator ContentItem(FailedItem value) => new(value);
 
     /// <summary>The route for the current item regardless of state.</summary>

@@ -37,10 +37,15 @@ public union ProgrammaticContent(TextProgrammaticContent, BinaryProgrammaticCont
 [System.Runtime.CompilerServices.Union]
 public readonly struct ProgrammaticContent : System.Runtime.CompilerServices.IUnion
 {
+    /// <summary>Wrapped case instance; inspect via pattern matching on the case types.</summary>
     public object? Value { get; }
+    /// <summary>Wraps a <see cref="TextProgrammaticContent"/>.</summary>
     public ProgrammaticContent(TextProgrammaticContent value) { Value = value; }
+    /// <summary>Wraps a <see cref="BinaryProgrammaticContent"/>.</summary>
     public ProgrammaticContent(BinaryProgrammaticContent value) { Value = value; }
+    /// <summary>Implicit conversion from <see cref="TextProgrammaticContent"/>.</summary>
     public static implicit operator ProgrammaticContent(TextProgrammaticContent value) => new(value);
+    /// <summary>Implicit conversion from <see cref="BinaryProgrammaticContent"/>.</summary>
     public static implicit operator ProgrammaticContent(BinaryProgrammaticContent value) => new(value);
 }
 #endif

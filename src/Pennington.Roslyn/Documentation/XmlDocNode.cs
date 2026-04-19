@@ -57,22 +57,39 @@ public union XmlDocNode(
 [System.Runtime.CompilerServices.Union]
 public readonly struct XmlDocNode : System.Runtime.CompilerServices.IUnion
 {
+    /// <summary>Wrapped case instance; inspect via pattern matching on the case types.</summary>
     public object? Value { get; }
+    /// <summary>Wraps a <see cref="TextNode"/>.</summary>
     public XmlDocNode(TextNode value) { Value = value; }
+    /// <summary>Wraps an <see cref="InlineCodeNode"/>.</summary>
     public XmlDocNode(InlineCodeNode value) { Value = value; }
+    /// <summary>Wraps a <see cref="CodeBlockNode"/>.</summary>
     public XmlDocNode(CodeBlockNode value) { Value = value; }
+    /// <summary>Wraps a <see cref="ParaNode"/>.</summary>
     public XmlDocNode(ParaNode value) { Value = value; }
+    /// <summary>Wraps a <see cref="CrefNode"/>.</summary>
     public XmlDocNode(CrefNode value) { Value = value; }
+    /// <summary>Wraps a <see cref="ParamRefNode"/>.</summary>
     public XmlDocNode(ParamRefNode value) { Value = value; }
+    /// <summary>Wraps a <see cref="TypeParamRefNode"/>.</summary>
     public XmlDocNode(TypeParamRefNode value) { Value = value; }
+    /// <summary>Wraps a <see cref="ListNode"/>.</summary>
     public XmlDocNode(ListNode value) { Value = value; }
+    /// <summary>Implicit conversion from <see cref="TextNode"/>.</summary>
     public static implicit operator XmlDocNode(TextNode value) => new(value);
+    /// <summary>Implicit conversion from <see cref="InlineCodeNode"/>.</summary>
     public static implicit operator XmlDocNode(InlineCodeNode value) => new(value);
+    /// <summary>Implicit conversion from <see cref="CodeBlockNode"/>.</summary>
     public static implicit operator XmlDocNode(CodeBlockNode value) => new(value);
+    /// <summary>Implicit conversion from <see cref="ParaNode"/>.</summary>
     public static implicit operator XmlDocNode(ParaNode value) => new(value);
+    /// <summary>Implicit conversion from <see cref="CrefNode"/>.</summary>
     public static implicit operator XmlDocNode(CrefNode value) => new(value);
+    /// <summary>Implicit conversion from <see cref="ParamRefNode"/>.</summary>
     public static implicit operator XmlDocNode(ParamRefNode value) => new(value);
+    /// <summary>Implicit conversion from <see cref="TypeParamRefNode"/>.</summary>
     public static implicit operator XmlDocNode(TypeParamRefNode value) => new(value);
+    /// <summary>Implicit conversion from <see cref="ListNode"/>.</summary>
     public static implicit operator XmlDocNode(ListNode value) => new(value);
 }
 #endif

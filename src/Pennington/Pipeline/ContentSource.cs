@@ -34,16 +34,27 @@ public union ContentSource(MarkdownFileSource, RazorPageSource, RedirectSource, 
 [System.Runtime.CompilerServices.Union]
 public readonly struct ContentSource : System.Runtime.CompilerServices.IUnion
 {
+    /// <summary>Wrapped case instance; inspect via pattern matching on the case types.</summary>
     public object? Value { get; }
+    /// <summary>Wraps a <see cref="MarkdownFileSource"/>.</summary>
     public ContentSource(MarkdownFileSource value) { Value = value; }
+    /// <summary>Wraps a <see cref="RazorPageSource"/>.</summary>
     public ContentSource(RazorPageSource value) { Value = value; }
+    /// <summary>Wraps a <see cref="RedirectSource"/>.</summary>
     public ContentSource(RedirectSource value) { Value = value; }
+    /// <summary>Wraps a <see cref="ProgrammaticSource"/>.</summary>
     public ContentSource(ProgrammaticSource value) { Value = value; }
+    /// <summary>Wraps an <see cref="EndpointSource"/>.</summary>
     public ContentSource(EndpointSource value) { Value = value; }
+    /// <summary>Implicit conversion from <see cref="MarkdownFileSource"/>.</summary>
     public static implicit operator ContentSource(MarkdownFileSource value) => new(value);
+    /// <summary>Implicit conversion from <see cref="RazorPageSource"/>.</summary>
     public static implicit operator ContentSource(RazorPageSource value) => new(value);
+    /// <summary>Implicit conversion from <see cref="RedirectSource"/>.</summary>
     public static implicit operator ContentSource(RedirectSource value) => new(value);
+    /// <summary>Implicit conversion from <see cref="ProgrammaticSource"/>.</summary>
     public static implicit operator ContentSource(ProgrammaticSource value) => new(value);
+    /// <summary>Implicit conversion from <see cref="EndpointSource"/>.</summary>
     public static implicit operator ContentSource(EndpointSource value) => new(value);
 }
 #endif

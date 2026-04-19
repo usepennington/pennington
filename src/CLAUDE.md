@@ -6,6 +6,14 @@
 - File-scoped namespaces.
 - LSP reports false errors on the `union` keyword and on some ASP.NET/Markdig types — the compiler handles them correctly, ignore the squiggles.
 
+## XML docs
+Every public type and member needs an xmldoc (CS1591 is on). Keep summaries concise and sufficient — a single sentence is usually enough.
+- Records: `<summary>` on the type plus one `<param>` per positional parameter.
+- Union case types get their own `<summary>`; the union itself gets a one-line `<summary>` describing the set.
+- Net10.0 union shims under `#else` are hand-written: each `Value` property, constructor overload, and implicit operator needs its own one-line summary (e.g. `/// <summary>Wraps a <see cref="CaseType"/>.</summary>`). The net11.0 `union` branch synthesizes these, so only the shim needs them.
+- Cross-reference with `<see cref="..."/>` rather than prose names.
+- Don't restate the identifier — `<summary>Gets the title.</summary>` on a `Title` property adds nothing; describe the invariant or purpose instead.
+
 ## Front matter is capability-based
 `IFrontMatter` (in `src/Pennington/FrontMatter/IFrontMatter.cs`) is the minimum contract — every page has a `Title`. Types opt into extra fields by implementing mixin interfaces in `src/Pennington/FrontMatter/Capabilities.cs`:
 

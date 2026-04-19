@@ -29,12 +29,19 @@ public union LinkCheckResult(ValidLink, BrokenLinkResult, ExternalLink);
 [System.Runtime.CompilerServices.Union]
 public readonly struct LinkCheckResult : System.Runtime.CompilerServices.IUnion
 {
+    /// <summary>Wrapped case instance; inspect via pattern matching on the case types.</summary>
     public object? Value { get; }
+    /// <summary>Wraps a <see cref="ValidLink"/>.</summary>
     public LinkCheckResult(ValidLink value) { Value = value; }
+    /// <summary>Wraps a <see cref="BrokenLinkResult"/>.</summary>
     public LinkCheckResult(BrokenLinkResult value) { Value = value; }
+    /// <summary>Wraps an <see cref="ExternalLink"/>.</summary>
     public LinkCheckResult(ExternalLink value) { Value = value; }
+    /// <summary>Implicit conversion from <see cref="ValidLink"/>.</summary>
     public static implicit operator LinkCheckResult(ValidLink value) => new(value);
+    /// <summary>Implicit conversion from <see cref="BrokenLinkResult"/>.</summary>
     public static implicit operator LinkCheckResult(BrokenLinkResult value) => new(value);
+    /// <summary>Implicit conversion from <see cref="ExternalLink"/>.</summary>
     public static implicit operator LinkCheckResult(ExternalLink value) => new(value);
 }
 #endif
