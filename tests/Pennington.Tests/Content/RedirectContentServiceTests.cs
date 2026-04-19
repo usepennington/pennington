@@ -166,6 +166,16 @@ public class RedirectContentServiceTests
             await Task.CompletedTask;
         }
 
+        public Task<ImmutableList<DiscoveredItem>> GetRedirectSourcesAsync()
+        {
+            var builder = ImmutableList.CreateBuilder<DiscoveredItem>();
+            foreach (var (route, target) in _redirects)
+            {
+                builder.Add(new DiscoveredItem(route, new RedirectSource(new UrlPath(target))));
+            }
+            return Task.FromResult(builder.ToImmutable());
+        }
+
         public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync() =>
             Task.FromResult(ImmutableList<ContentToCopy>.Empty);
         public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync() =>
