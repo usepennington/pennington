@@ -27,7 +27,7 @@ The `/` operator handles path composition. It trims a trailing slash from the le
 
 The `Matches` method is load-bearing for the resolver and link checker: it treats `/foo/`, `/foo/index.html`, and `/foo` as the same directory page. That behavior centralizes a subtle normalization rule that would otherwise have to be replicated — slightly differently each time — wherever route matching happens.
 
-`FilePath` is the filesystem-shaped peer — same value-record shape, same `/` composition operator, with `Extension`, `FileName`, and `FileNameWithoutExtension` standing in for the URL normalization helpers. The two types are deliberately not interchangeable: a URL is a logical address, a file path is a disk location, and the boundary between them is crossed explicitly through `ContentRoute` rather than accidentally through an untyped string. See <xref:reference.extension-points.routing> for the full member surface of both.
+`FilePath` is the filesystem-shaped peer — same value-record shape, same `/` composition operator, with `Extension`, `FileName`, and `FileNameWithoutExtension` standing in for the URL normalization helpers. The two types are deliberately not interchangeable: a URL is a logical address, a file path is a disk location, and the boundary between them is crossed explicitly through `ContentRoute` rather than accidentally through an untyped string. See <xref:reference.api.content-route> for the full member surface of both.
 
 The ceremony — implicit conversions from string literals, operators for composition — keeps call-site code short while the type system does the policing.
 
@@ -52,7 +52,7 @@ The same separation drives the build crawler. `OutputGenerationService` fetches 
 
 ## Further reading
 
-- Reference: [Routing types](xref:reference.extension-points.routing)
+- Reference: [Routing types](xref:reference.api.content-route)
 - How-to: [Host under a sub-path (base URL)](xref:how-to.deployment.base-url)
 - Explanation: [Response processing and rewriters](xref:explanation.core.response-processing)
 - External: [Parse, don't validate (Alexis King)](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/)

@@ -78,7 +78,7 @@ The DocSite `Pages` component (`src/Pennington.DocSite/Components/Layout/Pages.r
 }
 ```
 
-> **Note:** The JSON-LD payload record types are documented at <xref:reference.structured-data.types>.
+> **Note:** The JSON-LD payload record types are documented at <xref:reference.api.json-ld-article>.
 
 ## `FallbackNotice`
 
@@ -114,5 +114,5 @@ Renders an inline amber notice banner above the article region when the requeste
 
 - Related reference: [Navigation components](xref:reference.ui.navigation) — sibling `Pennington.UI` reference page for `TableOfContentsNavigation` and `OutlineNavigation`.
 - Related reference: [Content components](xref:reference.ui.content) — sibling `Pennington.UI` reference page for `Card`, `Badge`, `CodeBlock`, and the rest of the content-authoring surface.
-- Related reference: [JSON-LD schema types](xref:reference.structured-data.types) — the record types (`JsonLdArticle`, `JsonLdBreadcrumbList`, `JsonLdWebSite`) that `StructuredData` serializes.
+- Related reference: [JSON-LD schema types](xref:reference.api.json-ld-article) — the record types (`JsonLdArticle`, `JsonLdBreadcrumbList`, `JsonLdWebSite`) that `StructuredData` serializes.
 - How-to: [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale) — tutorial that wires `LanguageSwitcher` and `FallbackNotice` end-to-end via `AddDocSite`.

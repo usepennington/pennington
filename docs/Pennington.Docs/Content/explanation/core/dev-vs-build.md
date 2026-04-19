@@ -52,7 +52,7 @@ The HTTP overhead of build mode is measurable on very small sites and mostly irr
 
 ## Further reading
 
-- Reference: [Build report fields](xref:reference.diagnostics.build-report)
+- Reference: [Build report fields](xref:reference.api.build-report)
 - Reference: [CLI and build arguments](xref:reference.host.cli)
 - How-to: [Build a static site](xref:how-to.deployment.static-build)
 - How-to: [Host under a sub-path (base URL)](xref:how-to.deployment.base-url)

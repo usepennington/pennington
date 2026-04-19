@@ -44,7 +44,7 @@ See <xref:reference.host.cli> for the full argument grammar parsed by `OutputOpt
 
 **Know what the rewriter prefixes**
 
-`BaseUrlHtmlRewriter` runs at `Order => 30` in the `IHtmlResponseRewriter` chain — after xref resolution (10) and locale prefixing (20) — so every upstream transform hands it root-relative paths. It prefixes any `href`, `src`, or `action` attribute whose value starts with `/` (but not `//`, which is protocol-relative) and stamps `data-base-url` on `<body>` for client-side code that needs to reproduce the prefix on dynamically built URLs. See <xref:reference.extension-points.response-processing> for the full rewriter surface.
+`BaseUrlHtmlRewriter` runs at `Order => 30` in the `IHtmlResponseRewriter` chain — after xref resolution (10) and locale prefixing (20) — so every upstream transform hands it root-relative paths. It prefixes any `href`, `src`, or `action` attribute whose value starts with `/` (but not `//`, which is protocol-relative) and stamps `data-base-url` on `<body>` for client-side code that needs to reproduce the prefix on dynamically built URLs. See <xref:reference.api.i-response-processor> for the full rewriter surface.
 
 </Step>
 <Step StepNumber="3">

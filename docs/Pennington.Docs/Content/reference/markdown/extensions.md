@@ -158,9 +158,9 @@ var removed = "gone";    // [!code --]
 ### Syntax
 
 ````markdown
-See <xref:reference.options.pennington-options>.
+See <xref:reference.api.pennington-options>.
 
-See [PenningtonOptions](xref:reference.options.pennington-options).
+See [PenningtonOptions](xref:reference.api.pennington-options).
 ````
 
 `uid` is the exact string declared in a page's front-matter `uid:` key.
@@ -178,9 +178,9 @@ The rewriter emits a standard `<a href="…">` element with no added class; styl
 Both surface forms resolving the same uid — the tag form derives its link text from the target page title, the attribute form uses the supplied label verbatim:
 
 ```markdown
-See <xref:reference.options.pennington-options> for the full options catalog.
+See <xref:reference.api.pennington-options> for the full options catalog.
 
-Configure MonorailCSS through [the options record](xref:reference.options.monorail-css-options).
+Configure MonorailCSS through [the options record](xref:reference.api.monorail-css-options).
 ```
 
 The backing rewriter is `XrefHtmlRewriter` in `Pennington.Infrastructure`.

@@ -100,6 +100,6 @@ services.AddDocSite(opts =>
 ## Related
 
 - Reference: [Front matter key reference](xref:reference.front-matter.keys)
-- Reference: [`HighlightingOptions`, `IslandsOptions`, `SearchIndexOptions`, `LlmsTxtOptions`, `OutputOptions`](xref:reference.options.auxiliary-options)
+- Reference: [`SearchIndexOptions`](xref:reference.api.search-index-options) — the knobs this how-to touches; see also [`HighlightingOptions`](xref:reference.api.highlighting-options), [`IslandsOptions`](xref:reference.api.islands-options), [`LlmsTxtOptions`](xref:reference.api.llms-txt-options), and [`OutputOptions`](xref:reference.api.output-options)
 - Background: [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning)
 - How-to: [Generate an llms.txt](xref:how-to.configuration.llms-txt)

@@ -81,6 +81,6 @@ When prose uses MonorailCSS utility classes such as `font-sans` or `font-display
 
 ## Related
 
-- Reference: [_`DocSiteOptions`_](xref:reference.options.docsite-options) — the full property list including `DisplayFontFamily`, `BodyFontFamily`, `FontPreloads`, and `ExtraStyles`.
-- Reference: [_`FontPreload`_](xref:reference.options.docsite-options) — the `Href` / `Type` record shape (defaults to `font/woff2`).
+- Reference: [_`DocSiteOptions`_](xref:reference.api.doc-site-options) — the full property list including `DisplayFontFamily`, `BodyFontFamily`, `FontPreloads`, and `ExtraStyles`.
+- Reference: [_`FontPreload`_](xref:reference.api.font-preload) — the `Href` / `Type` record shape (defaults to `font/woff2`).
 - How-to: [_Customize MonorailCSS_](xref:how-to.configuration.monorail-css) — for aligning utility-class font stacks with your new families.

@@ -94,6 +94,6 @@ source "orders" -> filter where=paid | transform total=sum | sink "warehouse"
 
 ## Related
 
-- Reference: [Highlighting interfaces](xref:reference.extension-points.highlighting)
+- Reference: [Highlighting interfaces](xref:reference.api.i-code-highlighter)
 - Background: [The syntax-highlighting cascade](xref:explanation.rendering.highlighting)
 - Related how-to: [Register a code-block preprocessor](xref:how-to.extensibility.code-block-preprocessor)

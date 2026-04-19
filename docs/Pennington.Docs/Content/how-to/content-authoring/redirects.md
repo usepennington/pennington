@@ -85,5 +85,5 @@ dotnet run --project src/YourDocSite
 ## Related
 
 - Reference: [Front matter key reference](xref:reference.front-matter.keys) — the row for `redirectUrl` (type, default, which records support it).
-- Reference: [`IFrontMatter` and capability defaults](xref:reference.front-matter.ifrontmatter) — how `IRedirectable` fits alongside the other capability interfaces.
+- Reference: [`IFrontMatter` and capability defaults](xref:reference.api.i-front-matter) — how `IRedirectable` fits alongside the other capability interfaces.
 - Background: [The front-matter capability system](xref:explanation.core.front-matter-capabilities) — why `IRedirectable` stayed a separate capability instead of collapsing into `IFrontMatter`.

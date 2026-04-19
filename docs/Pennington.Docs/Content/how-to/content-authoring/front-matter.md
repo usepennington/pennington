@@ -65,7 +65,7 @@ T:Pennington.DocSite.DocSiteFrontMatter
 
 **Define a custom record for extra keys**
 
-Declare a `public record` implementing `IFrontMatter` and any relevant capability interfaces — `ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`. See <xref:reference.front-matter.ifrontmatter> for the full list of optional interfaces.
+Declare a `public record` implementing `IFrontMatter` and any relevant capability interfaces — `ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`. See <xref:reference.api.i-front-matter> for the full list of optional interfaces.
 
 ```csharp:xmldocid
 T:DocSiteKitchenSinkExample.ApiFrontMatter
@@ -94,6 +94,6 @@ Pass the record type to `AddMarkdownContent<T>` so the pipeline deserializes the
 ## Related
 
 - Reference: [Front matter key reference](xref:reference.front-matter.keys) — every built-in key, type, and default
-- Reference: [Built-in front-matter types](xref:reference.front-matter.built-in-types) — `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter`
-- Reference: [`IFrontMatter` and capability defaults](xref:reference.front-matter.ifrontmatter) — the capability interfaces you can add to a custom record
+- Reference: [Built-in front-matter types](xref:reference.api.doc-front-matter) — `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter`
+- Reference: [`IFrontMatter` and capability defaults](xref:reference.api.i-front-matter) — the capability interfaces you can add to a custom record
 - Background: [The front-matter capability system](xref:explanation.core.front-matter-capabilities) — why the design collapsed ten interfaces into default members

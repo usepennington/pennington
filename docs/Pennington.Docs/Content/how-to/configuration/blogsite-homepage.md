@@ -97,5 +97,5 @@ M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])
 ## Related
 
 - Tutorial: [_Add a hero, projects, and social links_](xref:tutorials.blogsite.hero-projects-socials) — the hand-held walkthrough of the same four surfaces.
-- Reference: [_`BlogSiteOptions`_](xref:reference.options.blogsite-options) — the full property catalog (site metadata, content paths, feeds, fonts).
+- Reference: [_`BlogSiteOptions`_](xref:reference.api.blog-site-options) — the full property catalog (site metadata, content paths, feeds, fonts).
 - Background: [_When is DocSite the right starting point?_](xref:explanation.core.docsite-positioning) — for the DocSite-vs-BlogSite trade-off behind these templates.

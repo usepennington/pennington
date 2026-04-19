@@ -76,6 +76,6 @@ In dev mode the feed is served live by the `MapGet("/rss.xml", ...)` handler reg
 
 ## Related
 
-- Reference: <xref:reference.options.blogsite-options>
+- Reference: <xref:reference.api.blog-site-options>
 - Reference: <xref:reference.blogsite.routes>
 - Reference: <xref:reference.front-matter.keys>

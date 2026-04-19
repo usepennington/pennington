@@ -87,6 +87,6 @@ To keep a folder under `Content/` out of the output, list it in `MarkdownContent
 
 ## Related
 
-- <xref:reference.options.markdown-content-options> — `ContentPath`, `ExcludePaths`, `FilePattern`.
+- <xref:reference.api.markdown-content-options> — `ContentPath`, `ExcludePaths`, `FilePattern`.
 - <xref:reference.front-matter.keys> — when an image is set as a social card or cover image via front matter.
 - <xref:explanation.core.dev-vs-build> — how `GetContentToCopyAsync` fits the content pipeline.

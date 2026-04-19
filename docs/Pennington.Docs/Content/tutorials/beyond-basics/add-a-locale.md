@@ -95,7 +95,7 @@ The new action has three pieces:
 
 `AddLocale` is overloaded: the string-only form is shorthand when a custom display name or `HtmlLang` is not needed.
 
-Once `Locales` contains more than one entry, [`LocalizationOptions.IsMultiLocale`](xref:reference.options.localization-options) flips to `true`. That single boolean gates the switcher, the locale detection middleware, and the per-locale search index.
+Once `Locales` contains more than one entry, [`LocalizationOptions.IsMultiLocale`](xref:reference.api.localization-options) flips to `true`. That single boolean gates the switcher, the locale detection middleware, and the per-locale search index.
 
 </Step>
 <Step StepNumber="2">

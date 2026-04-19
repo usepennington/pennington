@@ -46,6 +46,6 @@ Both `LiveReloadScriptProcessor` and `UsePenningtonLiveReload` check whether the
 ## Further reading
 
 - Reference: [DI and middleware extension methods](xref:reference.host.extensions)
-- Reference: [Response processing interfaces](xref:reference.extension-points.response-processing)
+- Reference: [Response processing interfaces](xref:reference.api.i-response-processor)
 - Explanation: [The response-processing pipeline](xref:explanation.core.response-processing)
 - Explanation: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build)

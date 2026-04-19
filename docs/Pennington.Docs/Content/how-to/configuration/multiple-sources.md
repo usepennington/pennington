@@ -98,7 +98,7 @@ M:MultipleSourcesExample.ServiceConfiguration.RegisterOverlappingDocSource(Penni
 
 ## Related
 
-- Reference: [_`PenningtonOptions.AddMarkdownContent<T>`_](xref:reference.options.pennington-options) _(confirm path)_
-- Reference: [_`DocSiteOptions.Areas` / `ContentArea`_](xref:reference.options.docsite-options) _(confirm path)_
+- Reference: [_`PenningtonOptions.AddMarkdownContent<T>`_](xref:reference.api.pennington-options) _(confirm path)_
+- Reference: [_`DocSiteOptions.Areas` / `ContentArea`_](xref:reference.api.doc-site-options) _(confirm path)_
 - Background: [_When is DocSite the right starting point?_](xref:explanation.core.docsite-positioning)
 - Extensibility: [_Implement a custom content service_](xref:how-to.extensibility.custom-content-service)

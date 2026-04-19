@@ -106,7 +106,7 @@ builder.Services.AddPenningtonRoslyn(opts =>
 
 **See the options surface**
 
-`RoslynOptions` carries `SolutionPath` (required for fence resolution) and `ProjectFilter` (narrows the workspace when the `.slnx` lists more than the docs need). For this tutorial, only `SolutionPath` matters. See <xref:reference.options.roslyn-options> for the full surface.
+`RoslynOptions` carries `SolutionPath` (required for fence resolution) and `ProjectFilter` (narrows the workspace when the `.slnx` lists more than the docs need). For this tutorial, only `SolutionPath` matters. See <xref:reference.api.roslyn-options> for the full surface.
 
 </Step>
 <Step StepNumber="4">

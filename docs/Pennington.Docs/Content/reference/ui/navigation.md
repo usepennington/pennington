@@ -88,5 +88,5 @@ T:Pennington.Navigation.NavigationInfo
 ## See also
 
 - How-to: [Customize the sidebar](xref:how-to.content-authoring.customize-sidebar)
-- Related reference: [Navigation types](xref:reference.extension-points.navigation)
+- Related reference: [Navigation types](xref:reference.api.navigation-builder)
 - Related reference: [Content components](xref:reference.ui.content)

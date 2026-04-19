@@ -64,7 +64,7 @@ Everything the DocSite template adds — sidebar, header chrome, MonorailCSS, SP
 
 **Populate `DocSiteOptions`**
 
-This tutorial uses five fields: `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`. Each one surfaces in the rendered chrome as soon as it's set. `DocSiteOptions` carries many more fields; see <xref:reference.options.docsite-options> for the full surface, and [Positioning DocSite as a fast path](xref:explanation.core.docsite-positioning) for what the template hard-codes.
+This tutorial uses five fields: `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`. Each one surfaces in the rendered chrome as soon as it's set. `DocSiteOptions` carries many more fields; see <xref:reference.api.doc-site-options> for the full surface, and [Positioning DocSite as a fast path](xref:explanation.core.docsite-positioning) for what the template hard-codes.
 
 </Step>
 <Step StepNumber="3">

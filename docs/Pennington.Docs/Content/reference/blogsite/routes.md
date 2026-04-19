@@ -28,7 +28,7 @@ All routes registered by `UseBlogSite`, ordered by the surface they serve.
 | `/blog/{*fileName}` | `GET` | `BlogBaseUrl` (see note) | Post-rendering catch-all Razor page (`Blog.razor`); looks up the post by `{BlogBaseUrl}/{fileName}` via `BlogContentResolver.GetPostByUrlAsync` and renders it through `BlogPost` with OpenGraph and structured-data head tags. |
 | `/rss.xml` | `GET` | `EnableRss` | `MapGet` endpoint in `UseBlogSite` that delegates to `BlogSiteContentService.GetRssXmlAsync`; omitted entirely when `EnableRss` is `false`. |
 
-> **Note on `TagsPageUrl` and `BlogBaseUrl`.** The `@page` directives on `Tags.razor`, `Tag.razor`, and `Blog.razor` are string literals (`"/tags"`, `"/topics"`, `"/blog/{*fileName}"`) and are not templated from `BlogSiteOptions`. `TagsPageUrl` (default `"/tags"`) and `BlogBaseUrl` (default `"/blog"`) are used by `BlogContentResolver` / `BlogSiteContentService` to build tag and post URLs that match these page routes; changing them away from the defaults requires supplying replacement Razor pages via `AdditionalRoutingAssemblies`. See [`BlogSiteOptions`](xref:reference.options.blogsite-options).
+> **Note on `TagsPageUrl` and `BlogBaseUrl`.** The `@page` directives on `Tags.razor`, `Tag.razor`, and `Blog.razor` are string literals (`"/tags"`, `"/topics"`, `"/blog/{*fileName}"`) and are not templated from `BlogSiteOptions`. `TagsPageUrl` (default `"/tags"`) and `BlogBaseUrl` (default `"/blog"`) are used by `BlogContentResolver` / `BlogSiteContentService` to build tag and post URLs that match these page routes; changing them away from the defaults requires supplying replacement Razor pages via `AdditionalRoutingAssemblies`. See [`BlogSiteOptions`](xref:reference.api.blog-site-options).
 
 ## Option-to-route matrix
 
@@ -53,7 +53,7 @@ The example boots `Pennington.BlogSite` with scaffold options; all eight routes 
 
 ## See also
 
-- Reference: [`BlogSiteOptions`](xref:reference.options.blogsite-options)
+- Reference: [`BlogSiteOptions`](xref:reference.api.blog-site-options)
 - Reference: [Built-in `SocialIcons` `RenderFragment`s](xref:reference.blogsite.social-icons)
 - How-to: [Customize DocSite layouts and components](xref:how-to.extensibility.override-docsite-components)
 - How-to: [Configure the BlogSite homepage](xref:how-to.configuration.blogsite-homepage)

@@ -23,7 +23,7 @@ The cascade is specificity-ordered, not quality-ordered. Shell wins over TextMat
 
 The `HighlightingService` dispatcher is stateless past construction, so adding a highlighter via `HighlightingOptions.AddHighlighter` in DI is enough — no registry mutation, no re-sorting at runtime, no ordering surprise that depends on registration order. Priority is the only tiebreaker that matters.
 
-The `ICodeHighlighter` contract is three members — `SupportedLanguages`, `Priority`, and `Highlight(code, language)` — which is the narrowest shape that still lets the dispatcher make a correct choice without asking a highlighter to render first and regret later. See <xref:reference.extension-points.highlighting> for the interface surface.
+The `ICodeHighlighter` contract is three members — `SupportedLanguages`, `Priority`, and `Highlight(code, language)` — which is the narrowest shape that still lets the dispatcher make a correct choice without asking a highlighter to render first and regret later. See <xref:reference.api.i-code-highlighter> for the interface surface.
 
 ### Why TextMateSharp
 
@@ -50,6 +50,6 @@ This is the same pattern a third-party highlighter would follow — declare the 
 
 ## Further reading
 
-- Reference: [Highlighting interfaces](xref:reference.extension-points.highlighting) — `ICodeHighlighter`, `HighlightingService`, `TextMateLanguageRegistry`, and `ICodeBlockPreprocessor` with full member tables.
+- Reference: [Highlighting interfaces](xref:reference.api.i-code-highlighter) — `ICodeHighlighter`, `HighlightingService`, `TextMateLanguageRegistry`, and `ICodeBlockPreprocessor` with full member tables.
 - How-to: [Add a custom syntax highlighter](xref:how-to.extensibility.custom-highlighter) — the step-by-step for implementing `ICodeHighlighter`, picking a priority, and registering via `HighlightingOptions.AddHighlighter`.
 - External: [TextMateSharp](https://github.com/danipen/TextMateSharp) — the upstream library that provides the grammar corpus; authoring new grammars follows its documentation, not Pennington's.

@@ -1,0 +1,57 @@
+@page "/reference/api/"
+@layout Pennington.DocSite.Components.Layout.MainLayout
+@using Microsoft.AspNetCore.Components.Web
+@using Pennington.Docs.ApiReference
+@inject ApiReferenceIndex Index
+
+<PageTitle>API reference — Pennington</PageTitle>
+
+<header class="mb-8">
+    <h1 class="font-display text-3xl lg:text-4xl font-bold tracking-tight text-base-900 dark:text-base-50">
+        API reference
+    </h1>
+    <p class="mt-2 text-base text-base-600 dark:text-base-400">
+        Every public Pennington type with xmldoc, grouped by namespace.
+    </p>
+</header>
+
+@if (_groups is { Length: > 0 })
+{
+    @foreach (var group in _groups)
+    {
+        <section class="mt-8">
+            <h2 class="font-display text-sm font-semibold tracking-widest uppercase text-base-500 dark:text-base-400 mb-3">
+                @group.Namespace
+            </h2>
+            <ul class="list-none pl-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-1">
+                @foreach (var entry in group.Entries)
+                {
+                    <li class="m-0">
+                        <a href="/reference/api/@(entry.Slug)/"
+                           class="font-mono text-sm text-primary-700 dark:text-primary-400 hover:underline">@entry.TypeName</a>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+}
+
+@code {
+    [Parameter] public string? Key { get; set; }
+
+    private NamespaceGroup[] _groups = [];
+
+    private sealed record NamespaceGroup(string Namespace, ApiReferenceEntry[] Entries);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var entries = await Index.GetEntriesAsync();
+        _groups = entries.Values
+            .GroupBy(e => e.Namespace, StringComparer.Ordinal)
+            .OrderBy(g => g.Key, StringComparer.Ordinal)
+            .Select(g => new NamespaceGroup(
+                g.Key,
+                g.OrderBy(e => e.TypeName, StringComparer.Ordinal).ToArray()))
+            .ToArray();
+    }
+}

@@ -98,6 +98,6 @@ See `examples/ExtensibilityLabExample/Program.cs` for the full host this registr
 
 ## Related
 
-- Reference: [Response processing interfaces](xref:reference.extension-points.response-processing)
+- Reference: [Response processing interfaces](xref:reference.api.i-response-processor)
 - Background: [The response-processing pipeline](xref:explanation.core.response-processing)
 - Related how-to: [Write a response processor](xref:how-to.extensibility.response-processor)

@@ -175,4 +175,4 @@ For anything with a namespace and a type, prefer `:xmldocid`. The build fails no
 - Reference: [Markdown extensions catalog](xref:reference.markdown.extensions) — the full fence grammar including `xmldocid`, `xmldocid,bodyonly`, `xmldocid-diff`, and `path`.
 - Reference: [Code-block argument reference](xref:reference.markdown.code-block-args) — info-string parser details and the full list of suffix forms.
 - How-to: [Annotate code blocks](xref:how-to.content-authoring.code-annotations) — per-line `[!code highlight]` / `[!code ++]` directives that compose with the fence forms on this page.
-- Reference: [RoslynOptions](xref:reference.options.roslyn-options) — the `SolutionPath` setting that lets the preprocessor resolve `T:` / `M:` / `P:` targets.
+- Reference: [RoslynOptions](xref:reference.api.roslyn-options) — the `SolutionPath` setting that lets the preprocessor resolve `T:` / `M:` / `P:` targets.

@@ -65,6 +65,6 @@ The consequence of that decision is that `DocSiteOptions` is a curated subset of
 
 ## Further reading
 
-- Reference: [`DocSiteOptions` reference](xref:reference.options.docsite-options) — the full list of tweak points with defaults and forwarding semantics.
+- Reference: [`DocSiteOptions` reference](xref:reference.api.doc-site-options) — the full list of tweak points with defaults and forwarding semantics.
 - How-to: [Use multiple content sources](xref:how-to.configuration.multiple-sources) — the canonical guide for the "two front-matter types" case, covering both the `ConfigurePennington` path and the drop to bare `AddPennington`.
 - How-to: [Override DocSite components](xref:how-to.extensibility.override-docsite-components) — the template-compatible extension path for layout tweaks before dropping a level.

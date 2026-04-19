@@ -72,7 +72,7 @@ The content-path quartet controls where posts live on disk and what URLs they pr
 
 `AuthorName` and `AuthorBio` provide site-wide author defaults. They populate the RSS channel, JSON-LD article markup, and any post that omits its own `author:` front-matter field.
 
-The full options surface — including the homepage-specific knobs `HeroContent`, `MyWork`, `Socials`, and `MainSiteLinks` — is covered in <xref:reference.options.blogsite-options>. Those knobs are skipped here and introduced in the third tutorial of this section.
+The full options surface — including the homepage-specific knobs `HeroContent`, `MyWork`, `Socials`, and `MainSiteLinks` — is covered in <xref:reference.api.blog-site-options>. Those knobs are skipped here and introduced in the third tutorial of this section.
 
 </Step>
 <Step StepNumber="3">

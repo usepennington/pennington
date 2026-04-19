@@ -84,6 +84,6 @@ P:Pennington.LlmsTxt.LlmsTxtOptions.GenerateFullFile
 
 ## Related
 
-- Reference: [`LlmsTxtOptions` and auxiliary options](xref:reference.options.auxiliary-options)
+- Reference: [`LlmsTxtOptions`](xref:reference.api.llms-txt-options)
 - How-to: [Configure search indexing](xref:how-to.configuration.search)
 - Background: [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning)

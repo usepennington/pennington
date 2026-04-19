@@ -35,7 +35,7 @@ On a DocSite host, set `DefaultLocale` and call `AddLocale` once per additional 
 M:BeyondLocaleExample.Stage3.Run(System.String[])
 ```
 
-See <xref:reference.options.localization-options> for the `LocalizationOptions` members (`DefaultLocale`, `Locales`, `AddLocale`, `LocaleInfo`).
+See <xref:reference.api.localization-options> for the `LocalizationOptions` members (`DefaultLocale`, `Locales`, `AddLocale`, `LocaleInfo`).
 
 </Step>
 <Step StepNumber="2">
@@ -74,7 +74,7 @@ builder.Services.AddPennington(options =>
 });
 ```
 
-See <xref:reference.options.translations> for the full `TranslationOptions` surface.
+See <xref:reference.api.translation-options> for the full `TranslationOptions` surface.
 
 </Step>
 <Step StepNumber="5">
@@ -104,6 +104,6 @@ See <xref:reference.ui.utility> for the `LanguageSwitcher` parameter surface.
 ## Related
 
 - Tutorial: [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale)
-- Reference: [`LocalizationOptions`](xref:reference.options.localization-options)
-- Reference: [`TranslationOptions`](xref:reference.options.translations)
+- Reference: [`LocalizationOptions`](xref:reference.api.localization-options)
+- Reference: [`TranslationOptions`](xref:reference.api.translation-options)
 - Background: TODO — Explanation page on locale routing and content fallback (not yet written in TOC)

@@ -31,7 +31,7 @@ Tier B lives entirely inside `HtmlResponseRewritingProcessor`. The orchestrator 
 
 The first phase, `PreParseAsync`, operates on the raw HTML string. This handles constructs AngleSharp cannot represent cleanly — the `<xref:uid>` tag syntax is not valid HTML, so it needs to be rewritten into something the parser can consume before the document is built. The second phase, `ApplyAsync`, receives a single shared `IDocument` that every rewriter mutates in turn. The document is serialized once at the end.
 
-The invariant worth internalizing: N rewriters, one parse, one serialize, one DOM. Adding a new DOM-shaped concern — a heading-anchor normalizer, an image lazy-loader, a table classifier — costs a method call, not another parse/serialize round trip. See <xref:reference.extension-points.response-processing> for the `IResponseProcessor` and `IHtmlResponseRewriter` contracts.
+The invariant worth internalizing: N rewriters, one parse, one serialize, one DOM. Adding a new DOM-shaped concern — a heading-anchor normalizer, an image lazy-loader, a table classifier — costs a method call, not another parse/serialize round trip. See <xref:reference.api.i-response-processor> for the `IResponseProcessor` and `IHtmlResponseRewriter` contracts.
 
 ### Why two tiers, not one
 
@@ -63,7 +63,7 @@ Reversing any two of these breaks one of the others' invariants. The monolithic-
 
 ## Further reading
 
-- Reference: [Response processing interfaces](xref:reference.extension-points.response-processing) — the member-by-member catalog of `IResponseProcessor`, `IHtmlResponseRewriter`, and the three built-in rewriters.
+- Reference: [Response processing interfaces](xref:reference.api.i-response-processor) — the member-by-member catalog of `IResponseProcessor`, `IHtmlResponseRewriter`, and the three built-in rewriters.
 - How-to: [Write a response processor](xref:how-to.extensibility.response-processor) — for touching the raw body.
 - How-to: [Write an HTML rewriter](xref:how-to.extensibility.html-rewriter) — for working inside the shared DOM pass.
 - Related explanation: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build) — why the same processor chain runs against both live requests and the static-build crawler.

@@ -38,7 +38,7 @@ examples/ExtensibilityLabExample/Components/ChartIsland.razor
 
 **Subclass `RazorIslandRenderer<TComponent>`**
 
-Derive from [`RazorIslandRenderer<T>`](xref:reference.extension-points.islands) rather than implementing [`IIslandRenderer`](xref:reference.extension-points.islands) directly. The base class wires the `ComponentRenderer` call, leaving `IslandName` and `BuildParametersAsync` as the only members to override. Reach for `IIslandRenderer.RenderAsync` only to emit a non-Razor fragment — a pre-rendered string, a cached snippet, or a remote include.
+Derive from [`RazorIslandRenderer<T>`](xref:reference.api.i-island-renderer) rather than implementing [`IIslandRenderer`](xref:reference.api.i-island-renderer) directly. The base class wires the `ComponentRenderer` call, leaving `IslandName` and `BuildParametersAsync` as the only members to override. Reach for `IIslandRenderer.RenderAsync` only to emit a non-Razor fragment — a pre-rendered string, a cached snippet, or a remote include.
 
 ```csharp:xmldocid
 T:ExtensibilityLabExample.ChartIslandRenderer
@@ -49,7 +49,7 @@ T:ExtensibilityLabExample.ChartIslandRenderer
 
 **Expose `IslandName` and gate parameters on the route**
 
-`IslandName` is the key the SPA envelope uses for this island, and it has to match the `data-spa-island` attribute on the markup. `BuildParametersAsync` receives the [`ContentRoute`](xref:reference.extension-points.routing) for the page being rendered — inspect `CanonicalPath` and return `null` for any route that does not carry this island so the base class skips rendering. Returning parameters on every route wastes work and produces orphan HTML in pages with no slot to hold it.
+`IslandName` is the key the SPA envelope uses for this island, and it has to match the `data-spa-island` attribute on the markup. `BuildParametersAsync` receives the [`ContentRoute`](xref:reference.api.content-route) for the page being rendered — inspect `CanonicalPath` and return `null` for any route that does not carry this island so the base class skips rendering. Returning parameters on every route wastes work and produces orphan HTML in pages with no slot to hold it.
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.ChartIslandRenderer.BuildParametersAsync(Pennington.Routing.ContentRoute)
@@ -110,7 +110,7 @@ app.UseSpaNavigation();
 
 ## Related
 
-- Reference: [_Island rendering interfaces_](xref:reference.extension-points.islands)
-- Reference: [_Routing types_](xref:reference.extension-points.routing)
+- Reference: [_Island rendering interfaces_](xref:reference.api.i-island-renderer)
+- Reference: [_Routing types_](xref:reference.api.content-route)
 - Background: [_SPA navigation and island architecture_](xref:explanation.spa.islands)
 - Background: [_The content pipeline and union types_](xref:explanation.core.content-pipeline)

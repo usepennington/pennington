@@ -52,6 +52,6 @@ The shape an author lands on: declare a `record`, implement `IFrontMatter`, add 
 
 ## Further reading
 
-- Reference: [IFrontMatter and capability defaults](xref:reference.front-matter.ifrontmatter)
+- Reference: [IFrontMatter and capability defaults](xref:reference.api.i-front-matter)
 - Reference: [Front matter key reference](xref:reference.front-matter.keys)
 - How-to: [Work with front matter](xref:how-to.content-authoring.front-matter)

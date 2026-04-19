@@ -9,7 +9,7 @@ uid: reference.front-matter.keys
 
 The flat catalog of YAML keys parsed into the four shipped `IFrontMatter` records — `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter` — via `FrontMatterParser` with `CamelCaseNamingConvention`. Keys are declared as `init`-only properties on records in `Pennington.FrontMatter` (core), `Pennington.DocSite`, and `Pennington.BlogSite`.
 
-The base `IFrontMatter` interface every front-matter record implements supplies default member values (`IsDraft = false`, `Search = true`, `Llms = true`, `Uid = null`, `Description = null`, `Date = null`) so records only declare what they parse. See <xref:reference.front-matter.ifrontmatter> for the interface surface.
+The base `IFrontMatter` interface every front-matter record implements supplies default member values (`IsDraft = false`, `Search = true`, `Llms = true`, `Uid = null`, `Description = null`, `Date = null`) so records only declare what they parse. See <xref:reference.api.i-front-matter> for the interface surface.
 
 ## Keys
 
@@ -48,7 +48,7 @@ A `DocSiteFrontMatter` page populating `title`, `description`, `tags`, `sectionL
 
 ## See also
 
-- Related reference: [`IFrontMatter` and capability defaults](xref:reference.front-matter.ifrontmatter)
-- Related reference: [Built-in front-matter types](xref:reference.front-matter.built-in-types)
+- Related reference: [`IFrontMatter` and capability defaults](xref:reference.api.i-front-matter)
+- Related reference: [Built-in front-matter types](xref:reference.api.doc-front-matter)
 - How-to: [Work with front matter](xref:how-to.content-authoring.front-matter)
 - Background: [The front-matter capability system](xref:explanation.core.front-matter-capabilities)

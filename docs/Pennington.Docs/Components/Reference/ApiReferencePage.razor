@@ -1,0 +1,54 @@
+@page "/reference/api/{Key}"
+@layout Pennington.DocSite.Components.Layout.MainLayout
+@using Microsoft.AspNetCore.Components.Web
+@using Pennington.Docs.ApiReference
+@inject ApiReferenceIndex Index
+
+@if (_entry is null)
+{
+    <p>Unknown API reference key: <code>@Key</code></p>
+}
+else
+{
+    <PageTitle>@_entry.TypeName — Pennington</PageTitle>
+    <HeadContent>
+        @if (!string.IsNullOrEmpty(_entry.Summary))
+        {
+            <meta name="description" content="@_entry.Summary" />
+        }
+    </HeadContent>
+
+    <header class="mb-8">
+        <p class="text-xs font-display font-semibold tracking-widest uppercase text-base-500 dark:text-base-400 mb-2">
+            @_entry.Namespace
+        </p>
+        <h1 class="font-display text-3xl lg:text-4xl font-bold tracking-tight text-base-900 dark:text-base-50">
+            @_entry.TypeName
+        </h1>
+    </header>
+
+    <section class="prose dark:prose-invert max-w-none">
+        <ApiSummary XmlDocId="@_entry.XmlDocId" />
+    </section>
+
+    <section class="mt-8">
+        <ApiMemberTable XmlDocId="@_entry.XmlDocId" Kind="All" />
+    </section>
+}
+
+@code {
+    [Parameter] public required string Key { get; set; }
+
+    private ApiReferenceEntry? _entry;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Key)) return;
+
+        var entries = await Index.GetEntriesAsync();
+        if (entries.TryGetValue(Key, out var found))
+        {
+            _entry = found;
+        }
+    }
+}

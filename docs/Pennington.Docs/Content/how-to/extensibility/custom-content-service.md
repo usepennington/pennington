@@ -37,7 +37,7 @@ T:ExtensibilityLabExample.ReleaseEntry
 
 **Implement `IContentService` and load the records once**
 
-Create a sealed class implementing <xref:reference.extension-points.content-pipeline>, inject whatever reads the source (here, `IWebHostEnvironment` for `ContentRootPath`), and cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source. The full example lives in `examples/ExtensibilityLabExample/ReleaseNotesContentService.cs`; the subsequent steps fence each member in turn.
+Create a sealed class implementing <xref:reference.api.i-content-service>, inject whatever reads the source (here, `IWebHostEnvironment` for `ContentRootPath`), and cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source. The full example lives in `examples/ExtensibilityLabExample/ReleaseNotesContentService.cs`; the subsequent steps fence each member in turn.
 
 </Step>
 <Step StepNumber="3">
@@ -113,7 +113,7 @@ builder.Services.AddSingleton<IContentService>(sp =>
 
 ## Related
 
-- Reference: [Content pipeline interfaces](xref:reference.extension-points.content-pipeline)
-- Reference: [Routing types](xref:reference.extension-points.routing)
+- Reference: [Content pipeline interfaces](xref:reference.api.i-content-service)
+- Reference: [Routing types](xref:reference.api.content-route)
 - Background: [The content pipeline and union types](xref:explanation.core.content-pipeline)
 - Background: [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning)

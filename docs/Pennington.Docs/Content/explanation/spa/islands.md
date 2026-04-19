@@ -57,6 +57,6 @@ Because every page is fully server-rendered on first load, the site works withou
 
 ## Further reading
 
-- Reference: [Island rendering interfaces](xref:reference.extension-points.islands)
+- Reference: [Island rendering interfaces](xref:reference.api.i-island-renderer)
 - How-to: [Register an island renderer](xref:how-to.extensibility.island-renderer)
 - External: [Islands Architecture (Jason Miller)](https://jasonformat.com/islands-architecture/)

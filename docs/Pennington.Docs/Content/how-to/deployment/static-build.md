@@ -70,7 +70,7 @@ dotnet run -- build --base-url=/my-site --output=dist
 
 **Read the `BuildReport` printed to stdout**
 
-When the crawl finishes, `RunOrBuildAsync` writes a human-readable report and exits with a non-zero code when `HasErrors` is true — triggered by any error diagnostic, failed page, or broken internal link. The key collections are `GeneratedPages`, `SkippedPages` (drafts), `FailedPages`, `BrokenLinks`, and `Diagnostics`; see <xref:reference.diagnostics.build-report> for the full field list.
+When the crawl finishes, `RunOrBuildAsync` writes a human-readable report and exits with a non-zero code when `HasErrors` is true — triggered by any error diagnostic, failed page, or broken internal link. The key collections are `GeneratedPages`, `SkippedPages` (drafts), `FailedPages`, `BrokenLinks`, and `Diagnostics`; see <xref:reference.api.build-report> for the full field list.
 
 For a custom CI presentation such as a GitHub Actions summary, print the report directly:
 
@@ -99,5 +99,5 @@ M:SubPathDeployableExample.BuildHost.PrintBuildReport(Pennington.Generation.Buil
 ## Related
 
 - Reference: [CLI and build arguments](xref:reference.host.cli)
-- Reference: [Build report fields](xref:reference.diagnostics.build-report)
+- Reference: [Build report fields](xref:reference.api.build-report)
 - Background: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build)

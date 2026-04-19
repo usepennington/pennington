@@ -104,14 +104,18 @@ public sealed class RedirectContentService : IContentService
             builder[NormalizeSource(source)] = target;
         }
 
-        // Scan every other content service for RedirectSource emissions.
+        // Ask every other content service for its redirect sources. The default
+        // IContentService.GetRedirectSourcesAsync returns empty without doing any
+        // work, so services that have no redirects don't pay discovery costs here
+        // (the old shape iterated each service's DiscoverAsync which, for example,
+        // forced the Roslyn workspace to load for the auto-generated API reference).
         using var scope = _serviceProvider.CreateScope();
         var services = scope.ServiceProvider.GetServices<IContentService>();
         foreach (var service in services)
         {
             if (ReferenceEquals(service, this)) continue;
 
-            await foreach (var item in service.DiscoverAsync())
+            foreach (var item in await service.GetRedirectSourcesAsync())
             {
                 if (item.Source.Value is RedirectSource redirect)
                 {

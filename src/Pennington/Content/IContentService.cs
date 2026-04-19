@@ -66,6 +66,18 @@ public interface IContentService
     Task<ImmutableList<CrossReference>> GetCrossReferencesAsync();
 
     /// <summary>
+    /// Redirect sources this service emits (each item's <see cref="DiscoveredItem.Source"/>
+    /// is a <see cref="Pipeline.RedirectSource"/>). Consumed by
+    /// <see cref="RedirectContentService"/> to build the unified redirect map without
+    /// iterating every service's <see cref="DiscoverAsync"/> — which would force
+    /// services that have no redirects to pay the full cost of discovery just to
+    /// return nothing. Default: empty. Services backed by front-matter records that
+    /// implement <see cref="FrontMatter.IRedirectable"/> override this.
+    /// </summary>
+    Task<ImmutableList<DiscoveredItem>> GetRedirectSourcesAsync()
+        => Task.FromResult(ImmutableList<DiscoveredItem>.Empty);
+
+    /// <summary>
     /// Default section label applied to discovered items that do not supply one via front matter.
     /// </summary>
     string DefaultSectionLabel { get; }

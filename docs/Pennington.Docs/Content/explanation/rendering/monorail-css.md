@@ -33,7 +33,7 @@ The shared `CssClassCollector` is a singleton protected by a `ReaderWriterLockSl
 
 The on-demand approach has a pleasant property: there is no configuration file mapping source paths to output. The stylesheet's contents are always a direct consequence of what the HTTP pipeline emitted, which makes the system self-auditing — if a class appears in the stylesheet, it was in a response.
 
-The edge case that `ContentPaths` exists to solve is classes that live only in client-side JavaScript — a template literal in a search-modal script, for instance. These never appear in an HTML `class=` attribute, so the response-processor pass cannot see them. `MonorailCssOptions.ContentPaths` accepts a list of static-file paths that `UseMonorailCss` scans once at startup with a broader token-extractor, seeding the collector before the first request arrives. See <xref:reference.options.monorail-css-options> for the full options surface.
+The edge case that `ContentPaths` exists to solve is classes that live only in client-side JavaScript — a template literal in a search-modal script, for instance. These never appear in an HTML `class=` attribute, so the response-processor pass cannot see them. `MonorailCssOptions.ContentPaths` accepts a list of static-file paths that `UseMonorailCss` scans once at startup with a broader token-extractor, seeding the collector before the first request arrives. See <xref:reference.api.monorail-css-options> for the full options surface.
 
 `ColorScheme` on `MonorailCssOptions` is the hook that feeds the MonorailCSS theme, and it comes in two distinct flavors.
 
@@ -64,6 +64,6 @@ The key property that earns OKLCH its spot here is perceptual uniformity. Steppi
 
 ## Further reading
 
-- Reference: [`MonorailCssOptions`](xref:reference.options.monorail-css-options) — the full option surface with defaults.
+- Reference: [`MonorailCssOptions`](xref:reference.api.monorail-css-options) — the full option surface with defaults.
 - How-to: [Customize MonorailCSS](xref:how-to.configuration.monorail-css) — swapping schemes, injecting `CustomCssFrameworkSettings`, and wiring `ContentPaths`.
 - External: [MonorailCSS upstream documentation](https://monorailcss.com/) — TODO confirm the canonical MonorailCSS docs URL before publish; currently a placeholder.

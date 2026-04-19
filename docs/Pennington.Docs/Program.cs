@@ -1,5 +1,7 @@
 using Mdazor;
+using Pennington.Content;
 using Pennington.Docs;
+using Pennington.Docs.ApiReference;
 using Pennington.Docs.Components.Reference;
 using Pennington.DocSite;
 using Pennington.Infrastructure;
@@ -82,6 +84,11 @@ builder.Services
     .AddMdazorComponent<ApiReturns>()
     .AddMdazorComponent<ApiRemarks>()
     .AddMdazorComponent<ApiSeeAlso>();
+
+// Auto-publishes /reference/api/{slug}/ pages (one per public Pennington type)
+// backed by ApiReferencePage.razor. Out of the sidebar TOC; in search and llms.txt.
+builder.Services.AddSingleton<ApiReferenceIndex>();
+builder.Services.AddSingleton<IContentService, ApiReferenceContentService>();
 
 var app = builder.Build();
 app.UseDocSite();

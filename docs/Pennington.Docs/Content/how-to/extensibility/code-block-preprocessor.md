@@ -89,6 +89,6 @@ builder.Services.AddSingleton<ICodeBlockPreprocessor, LineCountPreprocessor>();
 
 ## Related
 
-- Reference: [Highlighting interfaces](xref:reference.extension-points.highlighting) — full signatures for `ICodeHighlighter`, `ICodeBlockPreprocessor`, `HighlightingService`, and `TextMateLanguageRegistry`
+- Reference: [Highlighting interfaces](xref:reference.api.i-code-highlighter) — full signatures for `ICodeHighlighter`, `ICodeBlockPreprocessor`, `HighlightingService`, and `TextMateLanguageRegistry`
 - How-to: [Annotate code blocks](xref:how-to.content-authoring.code-annotations) — trailing-comment directives when only line classes are needed and the preprocessor does not need to take over rendering
 - Background: [The syntax-highlighting cascade](xref:explanation.rendering.highlighting) — why preprocessors run before the highlighter and how `CodeTransformer` interacts with `SkipTransform`

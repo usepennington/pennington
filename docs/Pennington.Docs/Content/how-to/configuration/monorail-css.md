@@ -13,7 +13,7 @@ To re-skin a working DocSite or BlogSite rendering through MonorailCSS — chang
 
 - A running Pennington site (see <xref:tutorials.getting-started.first-site> if not)
 - An `AddDocSite` or `AddBlogSite` host (which already calls `AddMonorailCss` internally); wiring `AddPennington` directly requires a separate `AddMonorailCss` call
-- Familiarity with the `NamedColorScheme` defaults baked into `MonorailCssOptions` (read <xref:reference.options.monorail-css-options> first if needed)
+- Familiarity with the `NamedColorScheme` defaults baked into `MonorailCssOptions` (read <xref:reference.api.monorail-css-options> first if needed)
 
 The `ServiceConfiguration` helpers referenced below are backed by `examples/DocSiteKitchenSinkExample`.
 
@@ -118,6 +118,6 @@ M:ExtensibilityLabExample.MonorailCssCustomization.BuildOptions
 
 ## Related
 
-- Reference: <xref:reference.options.monorail-css-options>
+- Reference: <xref:reference.api.monorail-css-options>
 - Background: <xref:explanation.core.docsite-positioning>
 - Background: <xref:explanation.rendering.monorail-css>

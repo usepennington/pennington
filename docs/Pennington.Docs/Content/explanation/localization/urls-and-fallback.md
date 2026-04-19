@@ -33,7 +33,7 @@ There is exactly one fallback rung: the default locale. A missing `/es/guides/in
 
 The default locale is not a special kind of locale — it is the locale that owns the unprefixed URL space. `StripLocalePrefix` is a no-op for the default locale, `BuildLocaleUrl` emits unprefixed URLs for it, and content authored at `Content/guides/intro.md` is default-locale content by virtue of sitting outside every locale subdirectory. The fallback rule is a consequence of those URL-math rules, not a separate "fallback locale" setting.
 
-`StripLocalePrefix` (see <xref:reference.options.localization-options>) is pure URL math with no file-system knowledge. `ContentResolver` decides whether the stripped path resolves to a file on disk, and that separation is what lets the same helper serve both request-time fallback and build-time URL generation.
+`StripLocalePrefix` (see <xref:reference.api.localization-options>) is pure URL math with no file-system knowledge. `ContentResolver` decides whether the stripped path resolves to a file on disk, and that separation is what lets the same helper serve both request-time fallback and build-time URL generation.
 
 ### Per-locale search indices
 
@@ -50,6 +50,6 @@ A page that exists only in the default locale appears once, in the default-local
 
 ## Further reading
 
-- Reference: [`LocalizationOptions`](xref:reference.options.localization-options) — `DefaultLocale`, `AddLocale`, and the URL helpers that back this mechanism.
+- Reference: [`LocalizationOptions`](xref:reference.api.localization-options) — `DefaultLocale`, `AddLocale`, and the URL helpers that back this mechanism.
 - How-to: [Enable multiple locales](xref:how-to.configuration.localization) — the recipe for populating `LocalizationOptions`, organizing content subdirectories, and wiring `UsePenningtonLocaleRouting`.
 - External: [W3C — Language tags in HTML and XML](https://www.w3.org/International/articles/language-tags/) — background on BCP 47 locale codes, which the URL prefix scheme surfaces one-to-one.

@@ -93,4 +93,4 @@ M:SubPathDeployableExample.BuildHost.PrintBuildReport(Pennington.Generation.Buil
 - Recipe: [_Host under a sub-path (base URL)_](xref:how-to.deployment.base-url) — how `BaseUrlHtmlRewriter` handles the `/<repo>/` prefix for non-GitHub-Pages hosts.
 - Recipe: [_Adapt the deploy workflow for other hosts_](xref:how-to.deployment.adapt-for-other-hosts) — Azure Static Web Apps, Cloudflare Pages, and Netlify deltas against this workflow.
 - Reference: [_CLI and build arguments_](xref:reference.host.cli) — the `build [baseUrl] [outputDirectory]` surface this workflow drives.
-- Reference: [_Build report fields_](xref:reference.diagnostics.build-report) — `BuildReport`, `BuildDiagnostic`, and `BrokenLink` semantics for the CI step above.
+- Reference: [_Build report fields_](xref:reference.api.build-report) — `BuildReport`, `BuildDiagnostic`, and `BrokenLink` semantics for the CI step above.

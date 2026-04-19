@@ -37,7 +37,7 @@ When `CanonicalBaseUrl` is set on `PenningtonOptions`, `DocSiteOptions`, or `Blo
 M:BlogKitchenSinkExample.ServiceConfiguration.BuildBlogSiteOptions
 ```
 
-See <xref:reference.options.blogsite-options> for the backing `CanonicalBaseUrl` property.
+See <xref:reference.api.blog-site-options> for the backing `CanonicalBaseUrl` property.
 
 </Step>
 <Step StepNumber="3">
@@ -50,7 +50,7 @@ See <xref:reference.options.blogsite-options> for the backing `CanonicalBaseUrl`
 M:Pennington.Feeds.SitemapBuilder.Build(System.Collections.Generic.IReadOnlyList{Pennington.Feeds.SitemapCandidate})
 ```
 
-The two front-matter members that drive the filter are `IFrontMatter.IsDraft` and `IRedirectable.RedirectUrl`; see <xref:reference.front-matter.ifrontmatter>.
+The two front-matter members that drive the filter are `IFrontMatter.IsDraft` and `IRedirectable.RedirectUrl`; see <xref:reference.api.i-front-matter>.
 
 </Step>
 <Step StepNumber="4">
@@ -72,6 +72,6 @@ On an `AddBlogSite` host, `BlogSiteOptions.EnableSitemap` (default `true`) is th
 
 ## Related
 
-- Reference: [Auxiliary options](xref:reference.options.auxiliary-options)
+- Reference: [`SitemapService`](xref:reference.api.sitemap-service)
 - How-to: [Generate RSS feeds](xref:how-to.configuration.rss)
 - How-to: [Configure redirects](xref:how-to.content-authoring.redirects)

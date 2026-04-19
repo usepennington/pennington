@@ -66,6 +66,6 @@ T:ExtensibilityLabExample.DiagnosticsEmittingProcessor
 
 ## See also
 
-- Related reference: [Build report fields](xref:reference.diagnostics.build-report)
-- Related reference: [Response processing interfaces](xref:reference.extension-points.response-processing)
+- Related reference: [Build report fields](xref:reference.api.build-report)
+- Related reference: [Response processing interfaces](xref:reference.api.i-response-processor)
 - How-to: [Write a response processor](xref:how-to.extensibility.response-processor)

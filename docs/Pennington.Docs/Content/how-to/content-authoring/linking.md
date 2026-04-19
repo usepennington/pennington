@@ -62,7 +62,7 @@ Write the full URL directly: `[Markdig](https://github.com/xoofx/markdig)`. Penn
 
 **Deploy under a sub-path and let `BaseUrlHtmlRewriter` prepend the prefix**
 
-Set `OutputOptions.BaseUrl` (for example `/docs/`) so every rendered response has its `href`, `src`, and `action` attributes prefixed at response time. Write root-relative links like `/api/` in markdown, and the rewriter turns them into `/docs/api/` on the way out. Avoid hard-coding the prefix in markdown. See <xref:reference.extension-points.response-processing> for the rewriter chain.
+Set `OutputOptions.BaseUrl` (for example `/docs/`) so every rendered response has its `href`, `src`, and `action` attributes prefixed at response time. Write root-relative links like `/api/` in markdown, and the rewriter turns them into `/docs/api/` on the way out. Avoid hard-coding the prefix in markdown. See <xref:reference.api.i-response-processor> for the rewriter chain.
 
 </Step>
 </Steps>
@@ -77,5 +77,5 @@ Set `OutputOptions.BaseUrl` (for example `/docs/`) so every rendered response ha
 
 ## Related
 
-- Reference: [_`OutputOptions`_](xref:reference.options.auxiliary-options) — `BaseUrl` and the rest of the build-output surface.
-- Reference: [_Response rewriters_](xref:reference.extension-points.response-processing) — rewriter order (`XrefHtmlRewriter` → `LocaleLinkHtmlRewriter` → `BaseUrlHtmlRewriter`) and how they compose.
+- Reference: [_`OutputOptions`_](xref:reference.api.output-options) — `BaseUrl` and the rest of the build-output surface.
+- Reference: [_Response rewriters_](xref:reference.api.i-response-processor) — rewriter order (`XrefHtmlRewriter` → `LocaleLinkHtmlRewriter` → `BaseUrlHtmlRewriter`) and how they compose.

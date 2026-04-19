@@ -113,6 +113,6 @@ To swap the article body itself — the island whose `IslandName` is `"content"`
 
 ## Related
 
-- Reference: <xref:reference.options.docsite-options>
+- Reference: <xref:reference.api.doc-site-options>
 - Background: <xref:explanation.core.docsite-positioning>
 - Related how-to: <xref:how-to.extensibility.island-renderer>

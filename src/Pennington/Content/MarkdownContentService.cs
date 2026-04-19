@@ -189,6 +189,24 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
     }
 
     /// <inheritdoc/>
+    public async Task<ImmutableList<DiscoveredItem>> GetRedirectSourcesAsync()
+    {
+        var metadata = await _metadataLazy.Value;
+        var builder = ImmutableList.CreateBuilder<DiscoveredItem>();
+
+        foreach (var (route, fm) in metadata)
+        {
+            if (fm.IsDraft) continue;
+            if (fm is IRedirectable { RedirectUrl: { Length: > 0 } target })
+            {
+                builder.Add(new DiscoveredItem(route, new RedirectSource(new UrlPath(target))));
+            }
+        }
+
+        return builder.ToImmutable();
+    }
+
+    /// <inheritdoc/>
     public async Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
     {
         var metadata = await _metadataLazy.Value;

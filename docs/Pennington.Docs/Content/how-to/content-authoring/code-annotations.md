@@ -110,6 +110,6 @@ examples/DocSiteKitchenSinkExample/Content/main/code-annotations.md
 
 ## Related
 
-- Reference: [Highlighting interfaces](xref:reference.extension-points.highlighting) — `ICodeHighlighter`, `ICodeBlockPreprocessor`, `HighlightingService`, and `TextMateLanguageRegistry`
+- Reference: [Highlighting interfaces](xref:reference.api.i-code-highlighter) — `ICodeHighlighter`, `ICodeBlockPreprocessor`, `HighlightingService`, and `TextMateLanguageRegistry`
 - How-to: [Register a code-block preprocessor](xref:how-to.extensibility.code-block-preprocessor) — when a trailing-comment directive isn't enough and fence bodies need transformation
 - Background: [The syntax-highlighting cascade](xref:explanation.rendering.highlighting) — why the transformer runs after the highlighter and where custom highlighters plug in

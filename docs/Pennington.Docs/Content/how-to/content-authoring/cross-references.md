@@ -107,6 +107,6 @@ examples/DocSiteKitchenSinkExample/Content/main/cross-references-a.md
 
 ## Related
 
-- Reference: [Response processing interfaces](xref:reference.extension-points.response-processing)
+- Reference: [Response processing interfaces](xref:reference.api.i-response-processor)
 - Reference: [Front matter key reference](xref:reference.front-matter.keys)
 - Background: [Cross-reference resolution](xref:explanation.routing.cross-references)
