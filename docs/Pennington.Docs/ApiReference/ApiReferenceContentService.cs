@@ -1,7 +1,6 @@
 namespace Pennington.Docs.ApiReference;
 
 using System.Collections.Immutable;
-using Microsoft.Extensions.Logging;
 using Content;
 using Pipeline;
 using Routing;
@@ -20,14 +19,10 @@ using Routing;
 internal sealed class ApiReferenceContentService : IContentService
 {
     private readonly ApiReferenceIndex _index;
-    private readonly ILogger<ApiReferenceContentService> _logger;
 
-    public ApiReferenceContentService(
-        ApiReferenceIndex index,
-        ILogger<ApiReferenceContentService> logger)
+    public ApiReferenceContentService(ApiReferenceIndex index)
     {
         _index = index;
-        _logger = logger;
     }
 
     public string DefaultSectionLabel => "";
@@ -36,7 +31,7 @@ internal sealed class ApiReferenceContentService : IContentService
 
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
-         var entries = await _index.GetEntriesAsync();
+        var entries = await _index.GetEntriesAsync();
         var componentType = typeof(Components.Reference.ApiReferencePage);
         var sourceId = componentType.AssemblyQualifiedName
             ?? componentType.FullName
@@ -44,8 +39,7 @@ internal sealed class ApiReferenceContentService : IContentService
 
         foreach (var entry in entries.Values)
         {
-            var route = ContentRouteFactory.FromUrl(new UrlPath($"/reference/api/{entry.Slug}/"));
-            yield return new DiscoveredItem(route, new RazorPageSource(sourceId));
+            yield return new DiscoveredItem(RouteFor(entry), new RazorPageSource(sourceId));
         }
     }
 
@@ -65,7 +59,7 @@ internal sealed class ApiReferenceContentService : IContentService
 
         foreach (var entry in entries.Values)
         {
-            var route = ContentRouteFactory.FromUrl(new UrlPath($"/reference/api/{entry.Slug}/"));
+            var route = RouteFor(entry);
             var hierarchyParts = route.CanonicalPath.Value
                 .Trim('/')
                 .Split('/', StringSplitOptions.RemoveEmptyEntries);
@@ -92,10 +86,12 @@ internal sealed class ApiReferenceContentService : IContentService
 
         foreach (var entry in entries.Values)
         {
-            var route = ContentRouteFactory.FromUrl(new UrlPath($"/reference/api/{entry.Slug}/"));
-            builder.Add(new CrossReference($"reference.api.{entry.Slug}", entry.FullTypeName, route));
+            builder.Add(new CrossReference($"reference.api.{entry.Slug}", entry.FullTypeName, RouteFor(entry)));
         }
 
         return builder.ToImmutable();
     }
+
+    private static ContentRoute RouteFor(ApiReferenceEntry entry)
+        => ContentRouteFactory.FromUrl(new UrlPath($"/reference/api/{entry.Slug}/"));
 }

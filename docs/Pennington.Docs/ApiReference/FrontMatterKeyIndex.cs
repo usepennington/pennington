@@ -45,11 +45,7 @@ internal sealed class FrontMatterKeyIndex
 
     private async Task<ImmutableArray<FrontMatterKeyEntry>> BuildAsync()
     {
-        var projects = await _workspace.GetProjectsAsync(p =>
-            p.Name.StartsWith("Pennington", StringComparison.Ordinal)
-            && !p.Name.EndsWith(".Tests", StringComparison.Ordinal)
-            && !p.Name.EndsWith(".IntegrationTests", StringComparison.Ordinal)
-            && p.Name != "Pennington.Docs");
+        var projects = await ApiReferenceWorkspace.GetPenningtonProjectsAsync(_workspace);
 
         var observations = new List<(string YamlKey, string Clr, string TypeDisplay, string? DefaultValue, string Record, string Surface, string XmlDocId)>();
 
@@ -58,7 +54,7 @@ internal sealed class FrontMatterKeyIndex
             var compilation = await _workspace.GetCompilationAsync(project);
             if (compilation is null) continue;
 
-            foreach (var type in EnumerateTypes(compilation.Assembly.GlobalNamespace))
+            foreach (var type in ApiReferenceWorkspace.EnumerateTypes(compilation.Assembly.GlobalNamespace))
             {
                 if (type.TypeKind is not (TypeKind.Class or TypeKind.Struct)) continue;
                 if (type.DeclaredAccessibility != Accessibility.Public) continue;
@@ -184,29 +180,6 @@ internal sealed class FrontMatterKeyIndex
         type.AllInterfaces.Any(i =>
             i.Name == "IFrontMatter"
             && i.ContainingNamespace.ToDisplayString() == "Pennington.FrontMatter");
-
-    private static IEnumerable<INamedTypeSymbol> EnumerateTypes(INamespaceSymbol root)
-    {
-        var queue = new Queue<INamespaceOrTypeSymbol>();
-        queue.Enqueue(root);
-
-        while (queue.Count > 0)
-        {
-            var current = queue.Dequeue();
-            foreach (var member in current.GetMembers())
-            {
-                switch (member)
-                {
-                    case INamespaceSymbol ns:
-                        queue.Enqueue(ns);
-                        break;
-                    case INamedTypeSymbol type:
-                        yield return type;
-                        break;
-                }
-            }
-        }
-    }
 
     private static string ToCamelCase(string name)
     {

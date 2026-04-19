@@ -45,14 +45,7 @@ internal sealed partial class ApiReferenceIndex
 
     private async Task<ImmutableDictionary<string, ApiReferenceEntry>> BuildAsync()
     {
-        var projects = await _workspace.GetProjectsAsync(p =>
-        {
-            var name = StripTargetFrameworkSuffix(p.Name);
-            return name.StartsWith("Pennington", StringComparison.Ordinal)
-                && !name.EndsWith(".Tests", StringComparison.Ordinal)
-                && !name.EndsWith(".IntegrationTests", StringComparison.Ordinal)
-                && name != "Pennington.Docs";
-        });
+        var projects = await ApiReferenceWorkspace.GetPenningtonProjectsAsync(_workspace);
 
         var collected = new List<ApiReferenceEntry>();
         var seenXmlDocIds = new HashSet<string>(StringComparer.Ordinal);
@@ -62,7 +55,7 @@ internal sealed partial class ApiReferenceIndex
             var compilation = await _workspace.GetCompilationAsync(project);
             if (compilation is null) continue;
 
-            foreach (var type in EnumerateTypes(compilation.Assembly.GlobalNamespace))
+            foreach (var type in ApiReferenceWorkspace.EnumerateTypes(compilation.Assembly.GlobalNamespace, includeNested: true))
             {
                 if (!ShouldInclude(type)) continue;
 
@@ -82,29 +75,15 @@ internal sealed partial class ApiReferenceIndex
             }
         }
 
-        var bySlug = collected
+        var slugCounts = collected
             .GroupBy(e => e.Slug, StringComparer.Ordinal)
-            .ToList();
+            .ToDictionary(g => g.Key, g => g.Count(), StringComparer.Ordinal);
 
         var builder = ImmutableDictionary.CreateBuilder<string, ApiReferenceEntry>(StringComparer.Ordinal);
-        foreach (var group in bySlug)
+        foreach (var entry in collected)
         {
-            if (group.Count() == 1)
-            {
-                var entry = group.Single();
-                builder.Add(entry.Slug, entry);
-            }
-            else
-            {
-                foreach (var candidate in group)
-                {
-                    var nsTail = LastNamespaceSegment(candidate.Namespace);
-                    var disambiguated = string.IsNullOrEmpty(nsTail)
-                        ? candidate.Slug
-                        : $"{ToSlug(nsTail)}-{candidate.Slug}";
-                    builder.Add(disambiguated, candidate with { Slug = disambiguated });
-                }
-            }
+            var slug = slugCounts[entry.Slug] == 1 ? entry.Slug : Disambiguate(entry);
+            builder.Add(slug, entry with { Slug = slug });
         }
 
         _logger.LogInformation(
@@ -112,6 +91,12 @@ internal sealed partial class ApiReferenceIndex
             builder.Count);
 
         return builder.ToImmutable();
+    }
+
+    private static string Disambiguate(ApiReferenceEntry entry)
+    {
+        var nsTail = LastNamespaceSegment(entry.Namespace);
+        return string.IsNullOrEmpty(nsTail) ? entry.Slug : $"{ToSlug(nsTail)}-{entry.Slug}";
     }
 
     private static bool ShouldInclude(INamedTypeSymbol type)
@@ -133,32 +118,6 @@ internal sealed partial class ApiReferenceIndex
         return false;
     }
 
-    private static IEnumerable<INamedTypeSymbol> EnumerateTypes(INamespaceSymbol root)
-    {
-        var queue = new Queue<INamespaceOrTypeSymbol>();
-        queue.Enqueue(root);
-
-        while (queue.Count > 0)
-        {
-            var current = queue.Dequeue();
-            foreach (var member in current.GetMembers())
-            {
-                if (member is INamespaceSymbol ns)
-                {
-                    queue.Enqueue(ns);
-                }
-                else if (member is INamedTypeSymbol type)
-                {
-                    yield return type;
-                    foreach (var nested in type.GetTypeMembers())
-                    {
-                        yield return nested;
-                    }
-                }
-            }
-        }
-    }
-
     internal static string ToSlug(string name)
     {
         if (string.IsNullOrEmpty(name)) return name;
@@ -175,13 +134,6 @@ internal sealed partial class ApiReferenceIndex
         }
 
         return sb.ToString();
-    }
-
-    private static string StripTargetFrameworkSuffix(string name)
-    {
-        var open = name.LastIndexOf('(');
-        if (open < 0 || !name.EndsWith(')')) return name;
-        return name[..open];
     }
 
     private static string LastNamespaceSegment(string ns)

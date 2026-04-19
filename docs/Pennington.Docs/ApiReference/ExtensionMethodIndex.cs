@@ -36,11 +36,7 @@ internal sealed class ExtensionMethodIndex
 
     private async Task<ImmutableDictionary<string, ImmutableArray<ExtensionMethodEntry>>> BuildAsync()
     {
-        var projects = await _workspace.GetProjectsAsync(p =>
-            p.Name.StartsWith("Pennington", StringComparison.Ordinal)
-            && !p.Name.EndsWith(".Tests", StringComparison.Ordinal)
-            && !p.Name.EndsWith(".IntegrationTests", StringComparison.Ordinal)
-            && p.Name != "Pennington.Docs");
+        var projects = await ApiReferenceWorkspace.GetPenningtonProjectsAsync(_workspace);
 
         var collected = new List<ExtensionMethodEntry>();
 
@@ -49,7 +45,10 @@ internal sealed class ExtensionMethodIndex
             var compilation = await _workspace.GetCompilationAsync(project);
             if (compilation is null) continue;
 
-            foreach (var type in EnumerateStaticExtensionTypes(compilation.Assembly.GlobalNamespace))
+            foreach (var type in ApiReferenceWorkspace.EnumerateTypes(compilation.Assembly.GlobalNamespace)
+                .Where(t => t.IsStatic
+                    && t.DeclaredAccessibility == Accessibility.Public
+                    && t.Name.EndsWith("Extensions", StringComparison.Ordinal)))
             {
                 foreach (var member in type.GetMembers())
                 {
@@ -83,30 +82,6 @@ internal sealed class ExtensionMethodIndex
                     .ThenBy(e => e.Signature.Length)
                     .ToImmutableArray(),
                 StringComparer.Ordinal);
-    }
-
-    private static IEnumerable<INamedTypeSymbol> EnumerateStaticExtensionTypes(INamespaceSymbol root)
-    {
-        var queue = new Queue<INamespaceOrTypeSymbol>();
-        queue.Enqueue(root);
-
-        while (queue.Count > 0)
-        {
-            var current = queue.Dequeue();
-            foreach (var member in current.GetMembers())
-            {
-                switch (member)
-                {
-                    case INamespaceSymbol ns:
-                        queue.Enqueue(ns);
-                        break;
-                    case INamedTypeSymbol { IsStatic: true, DeclaredAccessibility: Accessibility.Public } type
-                        when type.Name.EndsWith("Extensions", StringComparison.Ordinal):
-                        yield return type;
-                        break;
-                }
-            }
-        }
     }
 
     private static string FormatName(IMethodSymbol method) => method.TypeParameters.Length == 0
