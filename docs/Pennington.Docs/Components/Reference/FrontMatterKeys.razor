@@ -1,0 +1,52 @@
+@* Renders the full catalog of YAML front-matter keys observed across every
+   IFrontMatter implementation in the solution. One row per YAML key; the body
+   prefixes "Applies to:" and "Declared on:" lines pulled from Roslyn. *@
+
+@using Pennington.Docs.ApiReference
+@inject FrontMatterKeyIndex Index
+@inject IXmlDocParser Parser
+@inject IXmlDocHtmlRenderer Renderer
+@inject Pennington.Roslyn.Symbols.ISymbolExtractionService SymbolService
+
+@if (_rows.Count == 0)
+{
+    <p><em>No front-matter keys found.</em></p>
+}
+else
+{
+    <ApiDefinitionList Rows="_rows" />
+}
+
+@code {
+    private IReadOnlyList<ApiDefinitionRow> _rows = [];
+
+    protected override void OnParametersSet()
+    {
+        var entries = AsyncHelpers.RunSync(() => Index.GetEntriesAsync());
+        var rows = new List<ApiDefinitionRow>(entries.Length);
+
+        foreach (var entry in entries)
+        {
+            var info = string.IsNullOrEmpty(entry.XmlDocId)
+                ? null
+                : AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(entry.XmlDocId));
+            var parsed = info is null ? null : Parser.Parse(info.Symbol.GetDocumentationCommentXml());
+            var summaryHtml = parsed?.HasSummary == true
+                ? Renderer.RenderInlineHtml(parsed.Summary)
+                : string.Empty;
+
+            var appliesTo = string.Join(", ", entry.AppliesTo);
+            var metaLine = $"<p class=\"text-xs text-base-500 dark:text-base-400\">Applies to: {WebUtility.HtmlEncode(appliesTo)}. Declared on: <code>{WebUtility.HtmlEncode(entry.DeclaringSurface)}</code>.</p>";
+            var description = metaLine + summaryHtml;
+
+            rows.Add(new ApiDefinitionRow(
+                Name: entry.YamlKey,
+                TypeDisplay: entry.TypeDisplay,
+                DefaultValue: entry.DefaultValue,
+                Required: false,
+                DescriptionHtml: description));
+        }
+
+        _rows = rows;
+    }
+}

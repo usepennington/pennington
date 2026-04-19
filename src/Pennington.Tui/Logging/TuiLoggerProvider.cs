@@ -13,10 +13,10 @@ public sealed class TuiLoggerProvider(BoundedSequenceLog<LogEntry> buffer, LogLe
 {
     private readonly ConcurrentDictionary<string, TuiLogger> _loggers = new();
 
-    /// <inheritdoc/>
+    /// <summary>Returns the <see cref="TuiLogger"/> for the given category, creating one on first use.</summary>
     public ILogger CreateLogger(string categoryName) =>
         _loggers.GetOrAdd(categoryName, name => new TuiLogger(name, buffer, minLevel));
 
-    /// <inheritdoc/>
+    /// <summary>Drops cached loggers; the underlying buffer is owned elsewhere.</summary>
     public void Dispose() => _loggers.Clear();
 }

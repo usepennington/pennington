@@ -10,12 +10,27 @@
 </div>
 
 @code {
+    /// <summary>CSS selector the client-side outline script queries to discover heading elements; must be non-empty for the outline to populate.</summary>
     [Parameter, EditorRequired] public string ContentSelector { get; set; } = "";
+
+    /// <summary>Textual label accepted for parity with other outline skins; not rendered by the default template.</summary>
     [Parameter] public string Title { get; set; } = "On This Page";
+
+    /// <summary>Layout and border classes applied to the outer <c>data-role="page-outline"</c> container.</summary>
     [Parameter] public string ContainerStructureClass { get; set; } = "border-l border-base-200 dark:border-base-800";
+
+    /// <summary>CSS classes applied to the outer container for color treatment, composed after <see cref="ContainerStructureClass"/>.</summary>
     [Parameter] public string ContainerColorClass { get; set; } = "";
+
+    /// <summary>Layout classes applied to the outline <c>&lt;ul&gt;</c>.</summary>
     [Parameter] public string ListStructureClass { get; set; } = "list-none pl-4" ;
+
+    /// <summary>CSS classes applied to the <c>&lt;ul&gt;</c> that holds outline links, composed after <see cref="ListStructureClass"/>.</summary>
     [Parameter] public string ListColorClass { get; set; } = "text-neutral-500 dark:text-neutral-400";
+
+    /// <summary>CSS classes emitted on the container as <c>data-outline-link-color-class</c> and applied by the client-side script to each generated <c>&lt;li&gt;&lt;a&gt;</c> for color and <c>data-selected=true</c> state.</summary>
     [Parameter] public string OutlineLinkColorClass { get; set; } = "transition-colors duration-250 hover:text-base-900 dark:hover:text-base-50/90 data-[selected=true]:text-base-800 dark:data-[selected=true]:text-base-50";
+
+    /// <summary>Layout classes emitted on the container as <c>data-outline-link-structure-class</c> and applied by the client-side script to each generated <c>&lt;li&gt;&lt;a&gt;</c>.</summary>
     [Parameter] public string OutlineLinkStructureClass { get; set; } = "py-1 ml-[calc(-1*(4em-1px))] pl-[calc(4em+1px)] ";
 }

@@ -9,6 +9,8 @@ uid: reference.markdown.code-block-args
 
 Pennington applies two grammars to a fenced code block: info-string tokens on the opening fence line (language, suffix, key/value attributes), and `[!code …]` directives embedded in line-trailing comments. Info-string parsing is implemented by `CodeBlockExtensions.GetArgumentPairs` in `Pennington.Markdown.Extensions`; directive handling is implemented by `CodeTransformer.Transform` in the same namespace, consumed by `CodeHighlightRenderer`.
 
+This page is the grammar spec. For task-oriented usage see the [Markdown extensions catalog](xref:reference.markdown.extensions) and the How-To guides linked below.
+
 ## Fence info-string grammar
 
 The info string is the text on the opening fence line after the three backticks, tokenised left-to-right by the Markdig parser and post-processed by `CodeBlockExtensions.GetArgumentPairs`. Tokens are whitespace-separated; the first token is the language (optionally with a colon-suffix), and remaining tokens are `key=value` attribute pairs. Values may be bare, single-quoted, or double-quoted — quoting is required only when the value contains whitespace.

@@ -8,6 +8,7 @@ namespace Pennington.MonorailCss;
 /// A color reference that provides IntelliSense discoverability for known Tailwind colors
 /// while still accepting arbitrary custom color names via implicit string conversion.
 /// </summary>
+/// <param name="Value">Underlying color name (Tailwind palette key or custom identifier).</param>
 public readonly record struct ColorName(string Value)
 {
     /// <summary>Converts a plain string to a <see cref="ColorName"/>.</summary>

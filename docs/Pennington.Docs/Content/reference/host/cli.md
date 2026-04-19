@@ -7,7 +7,7 @@ tags: [host, cli, build, arguments]
 uid: reference.host.cli
 ---
 
-The command-line surface `RunOrBuildAsync` dispatches on — one positional verb (`build`) followed by an optional base URL and output directory, or equivalent `--base-url` / `--output` named flags. Parsed by `Pennington.Generation.OutputOptions.FromArgs` in `src/Pennington/Generation/OutputOptions.cs` and consumed by `OutputGenerationService.GenerateAsync`; any invocation whose first argument is not `build` falls through to `app.RunAsync()` with default `OutputOptions`.
+The command-line surface `RunOrBuildAsync` dispatches on — one positional verb (`build`) followed by an optional base URL and output directory, or equivalent `--base-url` / `--output` named flags. Parsing lives in `OutputOptions.FromArgs`; any invocation whose first argument is not `build` falls through to `app.RunAsync()` with default `OutputOptions`.
 
 ## Commands
 

@@ -1,5 +1,7 @@
 @inject IMemberEnumerator Enumerator
 @inject IXmlDocHtmlRenderer Renderer
+@inject ISymbolExtractionService SymbolService
+@inject ICodeHighlighter Highlighter
 @inject IHttpContextAccessor HttpContextAccessor
 
 @if (_error is not null)
@@ -10,9 +12,87 @@ else if (_empty is not null)
 {
     <p><em>@_empty</em></p>
 }
-else
+else if (_groups is null)
 {
     <ApiDefinitionList Rows="_rows" />
+}
+else
+{
+    @foreach (var group in _groups)
+    {
+        <h2 class="not-prose text-xs font-semibold uppercase tracking-wide text-base-500 dark:text-base-400 mt-10 mb-3">@group.Label</h2>
+
+        @if (group.Rows is not null)
+        {
+            <ApiDefinitionList Rows="group.Rows" />
+        }
+        else
+        {
+            <div class="not-prose divide-y divide-base-200 dark:divide-base-800">
+                @foreach (var entry in group.Entries!)
+                {
+                    <article id="@entry.Anchor" class="py-6 first:pt-0 scroll-mt-20 group">
+                        <header class="flex items-baseline gap-2 mb-2">
+                            <h3 class="font-mono text-base font-semibold text-base-900 dark:text-base-50">@entry.Name</h3>
+                            <a href="#@entry.Anchor"
+                               class="text-base-300 dark:text-base-600 hover:text-accent-500 dark:hover:text-accent-400 text-sm opacity-0 group-hover:opacity-100 transition"
+                               aria-label="Permalink">#</a>
+                        </header>
+
+                        @if (!string.IsNullOrEmpty(entry.SignatureHtml))
+                        {
+                            <div class="font-mono text-xs leading-relaxed text-base-800 dark:text-base-200 bg-base-50 dark:bg-base-900/60 border border-base-200 dark:border-base-800 rounded-md px-3 py-2 mb-4 overflow-x-auto">
+                                @((MarkupString)entry.SignatureHtml)
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(entry.SummaryHtml))
+                        {
+                            <div class="prose prose-sm dark:prose-invert max-w-none">@((MarkupString)entry.SummaryHtml)</div>
+                        }
+
+                        @if (entry.Parameters.Count > 0)
+                        {
+                            <h4 class="text-xs font-semibold uppercase tracking-wide text-base-500 dark:text-base-400 mt-5 mb-2">Parameters</h4>
+                            <dl class="space-y-3">
+                                @foreach (var p in entry.Parameters)
+                                {
+                                    <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] gap-x-6 gap-y-1">
+                                        <dt class="flex flex-col gap-0.5 min-w-0">
+                                            <code class="font-mono text-sm text-base-900 dark:text-base-50 break-words">@p.Name</code>
+                                            <code class="font-mono text-xs text-accent-600 dark:text-accent-400 break-words">@p.TypeDisplay</code>
+                                        </dt>
+                                        <dd class="text-sm text-base-700 dark:text-base-300 min-w-0">
+                                            @if (!string.IsNullOrEmpty(p.DescriptionHtml))
+                                            {
+                                                @((MarkupString)p.DescriptionHtml)
+                                            }
+                                        </dd>
+                                    </div>
+                                }
+                            </dl>
+                        }
+
+                        @if (!string.IsNullOrEmpty(entry.ReturnTypeDisplay))
+                        {
+                            <h4 class="text-xs font-semibold uppercase tracking-wide text-base-500 dark:text-base-400 mt-5 mb-2">Returns</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] gap-x-6 gap-y-1">
+                                <div class="min-w-0">
+                                    <code class="font-mono text-xs text-accent-600 dark:text-accent-400 break-words">@entry.ReturnTypeDisplay</code>
+                                </div>
+                                <div class="text-sm text-base-700 dark:text-base-300 min-w-0">
+                                    @if (!string.IsNullOrEmpty(entry.ReturnsHtml))
+                                    {
+                                        @((MarkupString)entry.ReturnsHtml)
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </article>
+                }
+            </div>
+        }
+    }
 }
 
 @code {
@@ -21,7 +101,14 @@ else
     [Parameter] public string Access { get; set; } = "public";
     [Parameter] public string Order { get; set; } = "alphabetical";
 
+    private static readonly Microsoft.CodeAnalysis.SymbolDisplayFormat ParameterTypeFormat = new(
+        genericsOptions: Microsoft.CodeAnalysis.SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        miscellaneousOptions: Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.UseSpecialTypes
+            | Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier,
+        typeQualificationStyle: Microsoft.CodeAnalysis.SymbolDisplayTypeQualificationStyle.NameAndContainingTypes);
+
     private IReadOnlyList<ApiDefinitionRow> _rows = [];
+    private IReadOnlyList<MemberGroup>? _groups;
     private string? _error;
     private string? _empty;
 
@@ -33,6 +120,7 @@ else
         _error = null;
         _empty = null;
         _rows = [];
+        _groups = null;
 
         if (string.IsNullOrWhiteSpace(XmlDocId))
         {
@@ -60,10 +148,53 @@ else
         if (members.Count == 0)
         {
             Diagnostics?.AddWarning($"<ApiMemberTable> no {Kind.ToLowerInvariant()} matched for {XmlDocId}");
-            _empty = $"No {Kind.ToLowerInvariant()} documented.";
+            _empty = kind == MemberKind.All ? "No members documented." : $"No {Kind.ToLowerInvariant()} documented.";
             return;
         }
 
+        if (kind == MemberKind.All)
+        {
+            _groups = BuildGroups(members);
+        }
+        else
+        {
+            _rows = BuildRows(members);
+        }
+    }
+
+    private IReadOnlyList<MemberGroup> BuildGroups(IReadOnlyList<MemberDescriptor> members)
+    {
+        // Display order for grouped rendering: Properties, Constructors, Fields, Methods, Events.
+        var order = new[]
+        {
+            MemberKind.Properties,
+            MemberKind.Constructors,
+            MemberKind.Fields,
+            MemberKind.Methods,
+            MemberKind.Events,
+        };
+
+        var groups = new List<MemberGroup>(order.Length);
+        foreach (var k in order)
+        {
+            var bucket = members.Where(m => m.Kind == k).ToList();
+            if (bucket.Count == 0) continue;
+
+            if (k is MemberKind.Properties or MemberKind.Fields)
+            {
+                groups.Add(new MemberGroup(LabelFor(k), BuildRows(bucket), null));
+            }
+            else
+            {
+                groups.Add(new MemberGroup(LabelFor(k), null, BuildEntries(bucket)));
+            }
+        }
+
+        return groups;
+    }
+
+    private IReadOnlyList<ApiDefinitionRow> BuildRows(IReadOnlyList<MemberDescriptor> members)
+    {
         var rows = new List<ApiDefinitionRow>(members.Count);
         foreach (var m in members)
         {
@@ -79,7 +210,160 @@ else
                 Required: m.IsRequired,
                 DescriptionHtml: Renderer.RenderInlineHtml(m.Xmldoc.Summary)));
         }
-
-        _rows = rows;
+        return rows;
     }
+
+    private IReadOnlyList<MemberEntry> BuildEntries(IReadOnlyList<MemberDescriptor> members)
+    {
+        var entries = new List<MemberEntry>(members.Count);
+        foreach (var m in members)
+        {
+            if (!m.Xmldoc.HasSummary)
+            {
+                Diagnostics?.AddWarning($"Member {m.XmlDocId} has no <summary>");
+            }
+
+            string declaration = string.Empty;
+            try
+            {
+                declaration = AsyncHelpers.RunSync(() => SymbolService.ExtractDeclarationSignatureAsync(m.XmlDocId));
+            }
+            catch (Exception ex)
+            {
+                Diagnostics?.AddWarning($"Failed to extract declaration for {m.XmlDocId}: {ex.Message}");
+            }
+
+            var signatureHtml = string.IsNullOrEmpty(declaration)
+                ? string.Empty
+                : Highlighter.Highlight(declaration, "csharp");
+
+            var parameters = ResolveParameters(m);
+            var returnType = ResolveReturnType(m);
+
+            entries.Add(new MemberEntry(
+                Name: m.Name,
+                Anchor: Slugify(m.XmlDocId),
+                SignatureHtml: signatureHtml,
+                SummaryHtml: m.Xmldoc.HasSummary ? Renderer.RenderHtml(m.Xmldoc.Summary) : string.Empty,
+                ReturnsHtml: m.Xmldoc.HasReturns ? Renderer.RenderInlineHtml(m.Xmldoc.Returns) : string.Empty,
+                ReturnTypeDisplay: returnType,
+                Parameters: parameters));
+        }
+        return entries;
+    }
+
+    private IReadOnlyList<ParameterInfo> ResolveParameters(MemberDescriptor m)
+    {
+        SymbolInfo? info;
+        try
+        {
+            info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(m.XmlDocId));
+        }
+        catch (Exception ex)
+        {
+            Diagnostics?.AddWarning($"Failed to resolve {m.XmlDocId}: {ex.Message}");
+            return [];
+        }
+
+        if (info?.Symbol is not Microsoft.CodeAnalysis.IMethodSymbol method || method.Parameters.Length == 0)
+        {
+            return [];
+        }
+
+        var list = new List<ParameterInfo>(method.Parameters.Length);
+        foreach (var p in method.Parameters)
+        {
+            var typeDisplay = FormatParameterType(p);
+            var descriptionHtml = m.Xmldoc.Params.TryGetValue(p.Name, out var nodes)
+                ? Renderer.RenderInlineHtml(nodes)
+                : string.Empty;
+
+            list.Add(new ParameterInfo(p.Name, typeDisplay, descriptionHtml));
+        }
+        return list;
+    }
+
+    private string ResolveReturnType(MemberDescriptor m)
+    {
+        if (m.Kind != MemberKind.Methods)
+        {
+            return string.Empty;
+        }
+
+        Microsoft.CodeAnalysis.IMethodSymbol? method;
+        try
+        {
+            var info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(m.XmlDocId));
+            method = info?.Symbol as Microsoft.CodeAnalysis.IMethodSymbol;
+        }
+        catch
+        {
+            method = null;
+        }
+
+        if (method is null || method.ReturnsVoid)
+        {
+            return string.Empty;
+        }
+
+        return method.ReturnType.ToDisplayString(ParameterTypeFormat);
+    }
+
+    private static string FormatParameterType(Microsoft.CodeAnalysis.IParameterSymbol p)
+    {
+        var prefix = p.RefKind switch
+        {
+            Microsoft.CodeAnalysis.RefKind.Ref => "ref ",
+            Microsoft.CodeAnalysis.RefKind.Out => "out ",
+            Microsoft.CodeAnalysis.RefKind.In => "in ",
+            _ => string.Empty,
+        };
+        var typeText = p.Type.ToDisplayString(ParameterTypeFormat);
+        var suffix = p.HasExplicitDefaultValue ? " (optional)" : string.Empty;
+        return $"{prefix}{typeText}{suffix}";
+    }
+
+    private static string LabelFor(MemberKind kind) => kind switch
+    {
+        MemberKind.Properties => "Properties",
+        MemberKind.Constructors => "Constructors",
+        MemberKind.Fields => "Fields",
+        MemberKind.Methods => "Methods",
+        MemberKind.Events => "Events",
+        _ => kind.ToString(),
+    };
+
+    private static string Slugify(string name)
+    {
+        var sb = new StringBuilder(name.Length);
+        foreach (var ch in name)
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                sb.Append(char.ToLowerInvariant(ch));
+            }
+            else if (ch is '-' or '_')
+            {
+                sb.Append(ch);
+            }
+            else if (ch is ' ' or '.' or ',' or '(' or ')')
+            {
+                sb.Append('-');
+            }
+        }
+        return sb.ToString().Trim('-');
+    }
+
+    private sealed record MemberGroup(string Label, IReadOnlyList<ApiDefinitionRow>? Rows, IReadOnlyList<MemberEntry>? Entries);
+
+    private sealed record MemberEntry(
+        string Name,
+        string Anchor,
+        string SignatureHtml,
+        string SummaryHtml,
+        string ReturnsHtml,
+        string ReturnTypeDisplay,
+        IReadOnlyList<ParameterInfo> Parameters);
+
+    private sealed record ParameterInfo(string Name, string TypeDisplay, string DescriptionHtml);
 }

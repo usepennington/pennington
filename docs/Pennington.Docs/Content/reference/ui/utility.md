@@ -11,11 +11,7 @@ tags: [ui, components, localization, structured-data]
 
 ## `LanguageSwitcher`
 
-Declared at `src/Pennington.UI/Components/LanguageSwitcher.razor`. Renders a `<details>`-backed dropdown of alternate-language links pre-wired for SPA reload via the `data-spa-reload` attribute; hides itself when fewer than two locales are available, and auto-computes the list from `LocaleContext` and `LocalizationOptions` when `AlternateLanguages` is null or empty.
-
-| Field | Value |
-|---|---|
-| Renders | `<details>` dropdown of alternate-language `<a>` links in the page chrome. |
+Renders a `<details>`-backed dropdown of alternate-language links pre-wired for SPA reload via the `data-spa-reload` attribute; hides itself when fewer than two locales are available, and auto-computes the list from `LocaleContext` and `LocalizationOptions` when `AlternateLanguages` is null or empty.
 
 ### Parameters
 
@@ -55,10 +51,6 @@ src/Pennington.UI/Components/StructuredData.razor
 
 Emits up to three `<script type="application/ld+json">` tags into the document `<head>` via `<HeadContent>`, one each for `JsonLdArticle`, `JsonLdBreadcrumbList`, and `JsonLdWebSite`; each payload is serialized with `JsonLdSerializer` and rendered only when the corresponding parameter is non-null.
 
-| Field | Value |
-|---|---|
-| Renders | Zero to three `<script type="application/ld+json">` tags injected into `<head>`. |
-
 ### Parameters
 
 | Name | Type | Default | Description |
@@ -87,10 +79,6 @@ src/Pennington.UI/Components/FallbackNotice.razor
 ```
 
 Renders an inline amber notice banner above the article region when the requested locale has no translation and the page is being served from the default locale; renders nothing when `RequestedLocale` is null or empty.
-
-| Field | Value |
-|---|---|
-| Renders | Amber-styled notice `<div>` above the article when a fallback is active; nothing otherwise. |
 
 ### Parameters
 

@@ -52,6 +52,6 @@ public readonly record struct UrlPath(string Value)
         return s.ToLowerInvariant();
     }
 
-    /// <inheritdoc/>
+    /// <summary>Returns the underlying URL string.</summary>
     public override string ToString() => Value;
 }

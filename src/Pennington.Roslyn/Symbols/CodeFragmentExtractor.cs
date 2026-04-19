@@ -12,6 +12,39 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 internal static class CodeFragmentExtractor
 {
     /// <summary>
+    /// Extracts the declaration signature (no body, no accessor list) for a method, constructor, operator,
+    /// conversion operator, or property-style event. Falls back to the full node text for any other kind.
+    /// </summary>
+    public static Task<string> ExtractSignatureAsync(SyntaxNode node, string fullText)
+    {
+        var end = node switch
+        {
+            MethodDeclarationSyntax m => m.ConstraintClauses.Count > 0
+                ? m.ConstraintClauses[^1].Span.End
+                : m.ParameterList?.Span.End ?? m.Identifier.Span.End,
+            ConstructorDeclarationSyntax c => c.Initializer?.Span.End ?? c.ParameterList.Span.End,
+            OperatorDeclarationSyntax o => o.ParameterList.Span.End,
+            ConversionOperatorDeclarationSyntax cv => cv.ParameterList.Span.End,
+            EventDeclarationSyntax ev => ev.Identifier.Span.End,
+            _ => -1,
+        };
+
+        if (end < 0)
+        {
+            return Task.FromResult(ToStringWithLineIndent(node, fullText));
+        }
+
+        var spanStart = node.SpanStart;
+        var lineStart = spanStart;
+        while (lineStart > 0 && fullText[lineStart - 1] is ' ' or '\t')
+        {
+            lineStart--;
+        }
+
+        return Task.FromResult(fullText[lineStart..end] + ";");
+    }
+
+    /// <summary>
     /// Extracts a code fragment from the given syntax node.
     /// When <paramref name="includeLeadingTrivia"/> is false, leading comments/xmldoc
     /// attached to the node as leading trivia are stripped — useful when the caller

@@ -36,10 +36,14 @@ Each fenced block in the consecutive run becomes a tab panel; only the first blo
 
 ### Arguments
 
-| Name | Values | Default | Applies to | Description |
-|---|---|---|---|---|
-| `tabs` | `true` | — (absent) | First fence in the group | Marks a fenced block as the start of a tabbed run; consecutive subsequent fences join the same group. |
-| `title` | string (optionally quoted) | Pretty language name derived from the info string | Each fence in the group | Overrides the label shown on the tab button. |
+<FieldList>
+<Field Name="tabs" Type="true" Default="(absent)">
+Applies to the first fence in the group. Marks a fenced block as the start of a tabbed run; consecutive subsequent fences join the same group.
+</Field>
+<Field Name="title" Type="string (optionally quoted)" Default="pretty language name derived from the info string">
+Applies to each fence in the group. Overrides the label shown on the tab button.
+</Field>
+</FieldList>
 
 Arguments are `key=value` pairs; quoted values are allowed. See [Code-block argument reference](xref:reference.markdown.code-block-args) for the full grammar.
 
@@ -118,20 +122,40 @@ var z = 3; // [!code word:z|renamed from q]
 
 The directive must appear inside a recognized comment marker for the language (`//`, `#`, `--`, `<!-- -->`, `*`, `%`, `'`, `REM`, `;`, `/* */`); the directive and any now-empty comment wrapper are removed, leaving trailing content intact.
 
-### Arguments (notations)
+### Notations
 
-| Notation | Line class | `<pre>` class added | Effect |
-|---|---|---|---|
-| `highlight` (alias `hl`) | `highlight` | `has-highlighted` | Marks a line as emphasized. |
-| `++` | `diff-add` | `has-diff` | Marks a line as an addition. |
-| `--` | `diff-remove` | `has-diff` | Marks a line as a removal. |
-| `focus` | `focused` | `has-focused` | Focuses listed lines; all others receive `blurred`. |
-| `error` | `error` | `has-errors` | Marks a line as an error. |
-| `warning` | `warning` | `has-warnings` | Marks a line as a warning. |
-| `word:<text>` | — (wraps substring) | `has-word-highlights` | Wraps first occurrence of `<text>` in `<span class="word-highlight">`. |
-| `word:<text>\|<msg>` | — (wraps + callout) | `has-word-highlights` | As above, but wraps in `word-highlight-with-message` with an adjacent `word-highlight-message` callout. |
-| `include-start` / `include-end` | — (structural) | — | Keep only lines between the matching start/end markers; markers are removed. |
-| `exclude-start` / `exclude-end` | — (structural) | — | Drop lines between the matching start/end markers; markers are removed. |
+<FieldList>
+<Field Name="highlight">
+Line class `highlight`, `<pre>` class `has-highlighted`. Marks a line as emphasized. Alias: `hl`.
+</Field>
+<Field Name="++">
+Line class `diff-add`, `<pre>` class `has-diff`. Marks a line as an addition.
+</Field>
+<Field Name="--">
+Line class `diff-remove`, `<pre>` class `has-diff`. Marks a line as a removal.
+</Field>
+<Field Name="focus">
+Line class `focused`, `<pre>` class `has-focused`. Focuses listed lines; all others receive `blurred`.
+</Field>
+<Field Name="error">
+Line class `error`, `<pre>` class `has-errors`. Marks a line as an error.
+</Field>
+<Field Name="warning">
+Line class `warning`, `<pre>` class `has-warnings`. Marks a line as a warning.
+</Field>
+<Field Name="word:<text>">
+`<pre>` class `has-word-highlights`. Wraps the first occurrence of `<text>` in `<span class="word-highlight">`.
+</Field>
+<Field Name="word:<text>|<msg>">
+`<pre>` class `has-word-highlights`. As above, but wraps in `word-highlight-with-message` with an adjacent `word-highlight-message` callout.
+</Field>
+<Field Name="include-start / include-end">
+Structural. Keep only lines between the matching start/end markers; markers are removed.
+</Field>
+<Field Name="exclude-start / exclude-end">
+Structural. Drop lines between the matching start/end markers; markers are removed.
+</Field>
+</FieldList>
 
 The backing transformer is `CodeTransformer` in `Pennington.Markdown.Extensions`.
 

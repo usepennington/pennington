@@ -22,7 +22,7 @@ public sealed class PenningtonStringLocalizer : IStringLocalizer
         _localization = localization;
     }
 
-    /// <inheritdoc/>
+    /// <summary>Returns the translation for <paramref name="name"/>, or the key itself when no translation is registered.</summary>
     public LocalizedString this[string name]
     {
         get
@@ -32,7 +32,7 @@ public sealed class PenningtonStringLocalizer : IStringLocalizer
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>Returns the translation for <paramref name="name"/> formatted with <paramref name="arguments"/>.</summary>
     public LocalizedString this[string name, params object[] arguments]
     {
         get
@@ -45,7 +45,7 @@ public sealed class PenningtonStringLocalizer : IStringLocalizer
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>Enumerates registered strings for the active locale, optionally including default-locale fallbacks.</summary>
     public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
     {
         var locale = ResolveLocale();

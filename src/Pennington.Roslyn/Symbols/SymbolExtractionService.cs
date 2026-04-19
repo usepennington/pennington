@@ -35,6 +35,7 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
     {
         var symbols = new ConcurrentDictionary<string, SymbolInfo>(StringComparer.Ordinal);
         var documentByPath = new ConcurrentDictionary<string, (Document Document, Project Project)>(StringComparer.Ordinal);
+        var fallbackByProject = new ConcurrentDictionary<ProjectId, (Document Document, Project Project)>();
 
         await Parallel.ForEachAsync(solution.Projects, async (project, ct) =>
         {
@@ -50,7 +51,10 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
                 try
                 {
                     if (document.FilePath is { Length: > 0 } path)
+                    {
                         documentByPath[path] = (document, project);
+                        fallbackByProject.TryAdd(project.Id, (document, project));
+                    }
                     await ExtractDocumentSymbolsAsync(document, compilation, project, symbols, ct2);
                 }
                 catch (Exception ex)
@@ -61,11 +65,12 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
 
             // Fallback pass — walk compilation symbols for types the syntax-only
             // pass missed (e.g. C# 15 unions whose declaration node is not a
-            // TypeDeclarationSyntax, or members synthesized from primary-constructor
-            // parameter lists like record `#ctor` overloads).
+            // TypeDeclarationSyntax, members synthesized from primary-constructor
+            // parameter lists like record `#ctor` overloads, or Razor-generated
+            // component classes whose syntax tree path is not a user document).
             try
             {
-                await ExtractCompilationSymbolsAsync(compilation, documentByPath, symbols);
+                await ExtractCompilationSymbolsAsync(compilation, documentByPath, fallbackByProject, project, symbols);
             }
             catch (Exception ex)
             {
@@ -80,34 +85,44 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
     private async Task ExtractCompilationSymbolsAsync(
         Compilation compilation,
         ConcurrentDictionary<string, (Document Document, Project Project)> documentByPath,
+        ConcurrentDictionary<ProjectId, (Document Document, Project Project)> fallbackByProject,
+        Project currentProject,
         ConcurrentDictionary<string, SymbolInfo> symbols)
     {
         var visited = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
-        var queue = new Queue<INamespaceOrTypeSymbol>();
-        queue.Enqueue(compilation.Assembly.GlobalNamespace);
+        var namespaceQueue = new Queue<INamespaceSymbol>();
+        var typeQueue = new Queue<INamedTypeSymbol>();
+        namespaceQueue.Enqueue(compilation.Assembly.GlobalNamespace);
 
-        while (queue.Count > 0)
+        while (namespaceQueue.Count > 0)
         {
-            var current = queue.Dequeue();
-            foreach (var member in current.GetMembers())
+            var ns = namespaceQueue.Dequeue();
+            foreach (var member in ns.GetMembers())
             {
-                if (member is INamespaceSymbol ns)
+                switch (member)
                 {
-                    queue.Enqueue(ns);
+                    case INamespaceSymbol child:
+                        namespaceQueue.Enqueue(child);
+                        break;
+                    case INamedTypeSymbol type when visited.Add(type):
+                        typeQueue.Enqueue(type);
+                        break;
                 }
-                else if (member is INamedTypeSymbol type)
+            }
+        }
+
+        while (typeQueue.Count > 0)
+        {
+            var type = typeQueue.Dequeue();
+            await TryAddSymbolFromCompilationAsync(type, documentByPath, fallbackByProject, currentProject, symbols);
+            foreach (var typeMember in type.GetMembers())
+            {
+                if (typeMember is INamedTypeSymbol nested)
                 {
-                    if (!visited.Add(type)) continue;
-                    await TryAddSymbolFromCompilationAsync(type, documentByPath, symbols);
-                    foreach (var typeMember in type.GetMembers())
-                    {
-                        await TryAddSymbolFromCompilationAsync(typeMember, documentByPath, symbols);
-                    }
-                    foreach (var nested in type.GetTypeMembers())
-                    {
-                        queue.Enqueue(nested);
-                    }
+                    if (visited.Add(nested)) typeQueue.Enqueue(nested);
+                    continue;
                 }
+                await TryAddSymbolFromCompilationAsync(typeMember, documentByPath, fallbackByProject, currentProject, symbols);
             }
         }
     }
@@ -115,6 +130,8 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
     private async Task TryAddSymbolFromCompilationAsync(
         ISymbol symbol,
         ConcurrentDictionary<string, (Document Document, Project Project)> documentByPath,
+        ConcurrentDictionary<ProjectId, (Document Document, Project Project)> fallbackByProject,
+        Project currentProject,
         ConcurrentDictionary<string, SymbolInfo> symbols)
     {
         var docId = symbol.GetDocumentationCommentId();
@@ -124,12 +141,30 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
         if (symbols.ContainsKey(normalizedId)) return;
 
         var syntaxRef = symbol.DeclaringSyntaxReferences.FirstOrDefault();
-        if (syntaxRef is null) return;
+        var path = syntaxRef?.SyntaxTree.FilePath;
+        (Document Document, Project Project) entry;
+        SyntaxNode node;
+        TextSpan span;
 
-        var path = syntaxRef.SyntaxTree.FilePath;
-        if (string.IsNullOrEmpty(path) || !documentByPath.TryGetValue(path, out var entry)) return;
+        if (syntaxRef is not null && !string.IsNullOrEmpty(path) && documentByPath.TryGetValue(path, out entry))
+        {
+            node = await syntaxRef.GetSyntaxAsync();
+            span = node.Span;
+        }
+        else if (syntaxRef is not null && fallbackByProject.TryGetValue(currentProject.Id, out entry))
+        {
+            // Compiler-synthesized symbols (e.g. record primary constructors whose
+            // syntax reference points to the record declaration but whose path
+            // lookup misses) register with a placeholder span; downstream source
+            // extraction will no-op against it.
+            node = await syntaxRef.GetSyntaxAsync();
+            span = default;
+        }
+        else
+        {
+            return;
+        }
 
-        var node = await syntaxRef.GetSyntaxAsync();
         var sourceText = await entry.Document.GetTextAsync();
         var xmlDoc = symbol.GetDocumentationCommentXml();
 
@@ -138,7 +173,7 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
             Document: entry.Document,
             SyntaxNode: node,
             SourceText: sourceText,
-            TextSpan: node.Span,
+            TextSpan: span,
             XmlDocumentation: string.IsNullOrWhiteSpace(xmlDoc) ? null : xmlDoc,
             Project: entry.Project
         );
@@ -186,6 +221,34 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
         var fullText = sourceText.ToString();
 
         var fragment = await CodeFragmentExtractor.ExtractCodeFragmentAsync(node, fullText, bodyOnly, includeLeadingTrivia);
+        return TextFormatter.NormalizeIndents(fragment);
+    }
+
+    public async Task<string> ExtractDeclarationSignatureAsync(string xmlDocId)
+    {
+        var symbolInfo = await FindSymbolAsync(xmlDocId);
+        if (symbolInfo is null)
+        {
+            _logger.LogWarning("Cannot extract declaration signature — symbol not found: {XmlDocId}", xmlDocId);
+            return string.Empty;
+        }
+
+        var root = await symbolInfo.Document.GetSyntaxRootAsync();
+        if (root is null)
+        {
+            return string.Empty;
+        }
+
+        var node = root.FindNode(symbolInfo.TextSpan);
+        if (node is null)
+        {
+            return string.Empty;
+        }
+
+        var sourceText = await symbolInfo.Document.GetTextAsync();
+        var fullText = sourceText.ToString();
+
+        var fragment = await CodeFragmentExtractor.ExtractSignatureAsync(node, fullText);
         return TextFormatter.NormalizeIndents(fragment);
     }
 

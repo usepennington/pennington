@@ -16,7 +16,11 @@ internal sealed record ApiReferenceEntry(
     string XmlDocId,
     string TypeName,
     string Namespace,
-    string? Summary);
+    string? Summary)
+{
+    public string FullTypeName =>
+        string.IsNullOrEmpty(Namespace) ? TypeName : $"{Namespace}.{TypeName}";
+}
 
 /// <summary>
 /// Singleton that walks the Roslyn workspace once and publishes a
@@ -42,10 +46,13 @@ internal sealed partial class ApiReferenceIndex
     private async Task<ImmutableDictionary<string, ApiReferenceEntry>> BuildAsync()
     {
         var projects = await _workspace.GetProjectsAsync(p =>
-            p.Name.StartsWith("Pennington", StringComparison.Ordinal)
-            && !p.Name.EndsWith(".Tests", StringComparison.Ordinal)
-            && !p.Name.EndsWith(".IntegrationTests", StringComparison.Ordinal)
-            && p.Name != "Pennington.Docs");
+        {
+            var name = StripTargetFrameworkSuffix(p.Name);
+            return name.StartsWith("Pennington", StringComparison.Ordinal)
+                && !name.EndsWith(".Tests", StringComparison.Ordinal)
+                && !name.EndsWith(".IntegrationTests", StringComparison.Ordinal)
+                && name != "Pennington.Docs";
+        });
 
         var collected = new List<ApiReferenceEntry>();
         var seenXmlDocIds = new HashSet<string>(StringComparer.Ordinal);
@@ -168,6 +175,13 @@ internal sealed partial class ApiReferenceIndex
         }
 
         return sb.ToString();
+    }
+
+    private static string StripTargetFrameworkSuffix(string name)
+    {
+        var open = name.LastIndexOf('(');
+        if (open < 0 || !name.EndsWith(')')) return name;
+        return name[..open];
     }
 
     private static string LastNamespaceSegment(string ns)

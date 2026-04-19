@@ -20,7 +20,7 @@ public sealed class PenningtonUrlRequestCultureProvider : IRequestCultureProvide
         _localization = localization;
     }
 
-    /// <inheritdoc/>
+    /// <summary>Derives the request culture from the URL locale prefix.</summary>
     public Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
     {
         var path = httpContext.Request.Path.Value ?? "/";

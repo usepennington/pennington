@@ -10,10 +10,6 @@ search: false
 llms: false
 ---
 
-> **In this page.** _One sentence — paste from `docs-toc.md` "Covers" line, trim if needed._
->
-> **Not in this page.** _One sentence pointing to the neighboring how-to / explanation — paste from `docs-toc.md` "Does not cover" line._
-
 ## Summary
 
 _**One sentence: what it is.** E.g., "The options class that configures a Markdown content source."_
@@ -29,26 +25,43 @@ T:Pennington._Namespace_._TypeName_
 
 _Show the declaration of the primary type / method / interface this page documents. Use the real production symbol, not an example project — reference pages describe the library, not sample usage._
 
-## Properties / Parameters / Members
+## Members / Parameters / Keys
 
-_Table format for option classes and parameter lists. Delete the sections that don't apply to this page._
+Pick the authoring mode that matches the source of truth:
 
-_Order members alphabetically unless the API has an obvious ceremonial order (construction → lifecycle → teardown, or required → optional). Alphabetical wins by default — it makes ctrl-F reliable._
+### Auto-generated (preferred when the content mirrors declared code)
 
-| Name | Type | Default | Description |
-|---|---|---|---|
-| `_PropertyName_` | `_Type_` | `_default_` | _One-sentence description. No "how to use it" — link to a how-to page instead._ |
-| `_AnotherProperty_` | `_Type_` | `_default_` | _Description._ |
+_Use an existing generator component when the page's content is a 1:1 projection of types, members, or methods:_
 
-_For interfaces / method references, list each member with its own subheading:_
+- `<ApiMemberTable XmlDocId="T:..." Kind="Properties" />` — properties / methods / fields of a type (also covers Razor component `[Parameter]` props).
+- `<ExtensionMethods Receiver="IServiceCollection" />` — every `*Extensions` method whose first (this) parameter short-name matches.
+- `<FrontMatterKeys />` — the merged YAML catalog across every `IFrontMatter` implementation.
 
-### `_MemberName_`
+_These components pull descriptions from xmldoc on the declaring symbol; make sure the xmldoc is accurate before the doc builds. Each row renders through `ApiDefinitionList` (Stripe-style `<dl>`)._
 
-```csharp:xmldocid
-M:Pennington._Namespace_._TypeName_._MemberName_
+### Hand-authored (for content that isn't a single type or member set)
+
+_Wrap each item in a `<Field>` inside a `<FieldList>`. The `Name` is required; `Type`, `Required`, and `Default` render as metadata pills. The body is markdown — use the first line for extra metadata like "Applies to", "Package", or "Call site" when the minimal Field API does not cover it._
+
+```markdown
+<FieldList>
+<Field Name="_keyOrArg_" Type="_type_" Default="_default_">
+Applies to: _scope_.
+
+_One-sentence description. No "how to use it" — link to a how-to page instead._
+</Field>
+</FieldList>
 ```
 
-_One to three sentences describing what it does, what it returns, and any invariants. No examples here._
+### Markdown tables (for trivial name → value mappings)
+
+_When a block is genuinely tabular — every row is a short name with no prose — keep a compact markdown table. Don't force a `<FieldList>` when a table is shorter and reads fine._
+
+```markdown
+| Kind | Class |
+|---|---|
+| note | markdown-alert-note |
+```
 
 ## Example
 

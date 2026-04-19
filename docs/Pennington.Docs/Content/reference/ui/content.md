@@ -26,7 +26,7 @@ Each component is listed alphabetically below with its declaration fence, parame
 
 ## `Badge`
 
-Declared at `src/Pennington.UI/Components/Badge.razor`. Inline pill with ring and tinted background, variant-mapped to a MonorailCSS color palette; renders a `<span>` and is safe inside flowing prose and table cells.
+Inline pill with ring and tinted background, variant-mapped to a MonorailCSS color palette; renders a `<span>` and is safe inside flowing prose and table cells.
 
 ### Parameters
 
@@ -44,7 +44,7 @@ Declared at `src/Pennington.UI/Components/Badge.razor`. Inline pill with ring an
 
 ## `BigTable`
 
-Declared at `src/Pennington.UI/Components/BigTable.razor`. Overflow wrapper for tables wider than the main column; emits a `<div>` with horizontal scroll and reduced text size, with the table supplied as `ChildContent`.
+Overflow wrapper for tables wider than the main column; emits a `<div>` with horizontal scroll and reduced text size, with the table supplied as `ChildContent`.
 
 ### Parameters
 
@@ -62,7 +62,7 @@ Declared at `src/Pennington.UI/Components/BigTable.razor`. Overflow wrapper for 
 
 ## `Card`
 
-Declared at `src/Pennington.UI/Components/Card.razor`. Static non-clickable callout card; renders a rounded, tinted panel with an optional icon region and bold heading, with `not-prose` applied inside so surrounding prose styles do not affect card body content.
+Static non-clickable callout card; renders a rounded, tinted panel with an optional icon region and bold heading, with `not-prose` applied inside so surrounding prose styles do not affect card body content.
 
 ### Parameters
 
@@ -83,7 +83,7 @@ Declared at `src/Pennington.UI/Components/Card.razor`. Static non-clickable call
 
 ## `CardGrid`
 
-Declared at `src/Pennington.UI/Components/CardGrid.razor`. Responsive grid container for `Card` or `LinkCard` children; renders one column on small viewports and a `Columns`-wide grid from the `sm` breakpoint up, with `Columns` interpolated into a MonorailCSS class.
+Responsive grid container for `Card` or `LinkCard` children; renders one column on small viewports and a `Columns`-wide grid from the `sm` breakpoint up, with `Columns` interpolated into a MonorailCSS class.
 
 ### Parameters
 
@@ -104,7 +104,7 @@ Declared at `src/Pennington.UI/Components/CardGrid.razor`. Responsive grid conta
 
 ## `CodeBlock`
 
-Declared at `src/Pennington.UI/Components/CodeBlock.razor`. Razor-level wrapper around `ICodeHighlighter`; accepts code via `Code` or `ChildContent`, normalizes leading whitespace from `ChildContent`, delegates to the injected highlighter, and emits output as a `MarkupString`. An empty or missing `Language` renders an inline error element.
+Razor-level wrapper around `ICodeHighlighter`; accepts code via `Code` or `ChildContent`, normalizes leading whitespace from `ChildContent`, delegates to the injected highlighter, and emits output as a `MarkupString`. An empty or missing `Language` renders an inline error element.
 
 ### Parameters
 
@@ -125,7 +125,7 @@ Declared at `src/Pennington.UI/Components/CodeBlock.razor`. Razor-level wrapper 
 
 ## `LinkCard`
 
-Declared at `src/Pennington.UI/Components/LinkCard.razor`. Clickable variant of `Card`; wraps the entire card body in an `<a>` bound to `Href`, with hover states tinting the background using the `Color` palette.
+Clickable variant of `Card`; wraps the entire card body in an `<a>` bound to `Href`, with hover states tinting the background using the `Color` palette.
 
 ### Parameters
 
@@ -147,7 +147,7 @@ Declared at `src/Pennington.UI/Components/LinkCard.razor`. Clickable variant of 
 
 ## `Step`
 
-Declared at `src/Pennington.UI/Components/Step.razor`. One numbered item inside a `Steps` list; renders an `<li>` with an absolute-positioned number badge pinned to the left rail and must be nested directly inside `<Steps>` for the rail border to align.
+One numbered item inside a `Steps` list; renders an `<li>` with an absolute-positioned number badge pinned to the left rail and must be nested directly inside `<Steps>` for the rail border to align.
 
 ### Parameters
 
@@ -167,7 +167,7 @@ Declared at `src/Pennington.UI/Components/Step.razor`. One numbered item inside 
 
 ## `Steps`
 
-Declared at `src/Pennington.UI/Components/Steps.razor`. Container for a vertical numbered-step list; emits a `<div>` wrapping an `<ol>` with a left border as the connecting rail, populated by `Step` children.
+Container for a vertical numbered-step list; emits a `<div>` wrapping an `<ol>` with a left border as the connecting rail, populated by `Step` children.
 
 ### Parameters
 

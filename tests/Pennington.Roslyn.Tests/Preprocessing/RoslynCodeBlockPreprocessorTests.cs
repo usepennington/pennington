@@ -334,6 +334,9 @@ public sealed class RoslynCodeBlockPreprocessorTests
         public Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true)
             => Task.FromResult(string.Empty);
 
+        public Task<string> ExtractDeclarationSignatureAsync(string xmlDocId)
+            => Task.FromResult(string.Empty);
+
         public void ClearCache() { }
     }
 

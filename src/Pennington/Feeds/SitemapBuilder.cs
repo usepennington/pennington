@@ -11,6 +11,8 @@ using Routing;
 /// For programmatic / Razor sources we typically have no metadata, which is
 /// fine: those entries are emitted with their URL and no lastmod.
 /// </summary>
+/// <param name="Route">Route to emit in the sitemap.</param>
+/// <param name="Metadata">Front matter for the route, when available.</param>
 public sealed record SitemapCandidate(ContentRoute Route, IFrontMatter? Metadata);
 
 /// <summary>

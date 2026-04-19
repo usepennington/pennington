@@ -23,16 +23,16 @@ Renders an ordered `<nav><ul>` of `NavigationTreeItem` entries, recursing one le
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `ChildListClass` | `string` | `"mt-4"` | CSS classes applied to the nested `<ul>` that holds a section's child entries. |
-| `LinkColorClass` | `string` | theme-aware color utilities (see source) | CSS classes applied to each child-level `<a>` for color and `data-current=true` state, composed after `LinkStructureClass`. |
-| `LinkStructureClass` | `string` | `"block text-sm w-full border-l pl-3.5 py-1.5"` | Layout and typography classes applied to each child-level `<a>` element under a section. |
-| `ListGapClass` | `string` | `"gap-4"` | CSS classes applied to the outer `<ul>` that holds the top-level navigation entries. |
-| `RootLinkColorClass` | `string` | theme-aware color utilities (see source) | CSS classes applied to a leaf root-level `<a>` (a top-level entry with no children), composed after `RootLinkStructureClass`. |
-| `RootLinkStructureClass` | `string` | `"block w-full py-1"` | Layout classes applied to a leaf root-level `<a>` when a top-level entry has no children. |
-| `SectionHeaderColorClass` | `string` | theme-aware color utilities (see source) | CSS classes applied to section-header text — both the plain `<div>` for empty-route entries and the `<a>` when a top-level entry has children. |
-| `SectionHeaderStructureClass` | `string` | `"font-display font-medium first:pt-0"` | Layout and typography classes applied to the section-header element. |
-| `SectionLabel` | `string?` | `null` | Optional label forwarded from the caller's `NavigationInfo.SectionName`; not rendered by the default template. |
 | `TableOfContents` | `ImmutableList<NavigationTreeItem>?` | `null` | Navigation tree to render; when `null` the component renders nothing, and entries are sorted by `NavigationTreeItem.Order` at each level. |
+| `SectionLabel` | `string?` | `null` | Optional label forwarded from the caller's `NavigationInfo.SectionName`; not rendered by the default template. |
+| `ListGapClass` | `string` | `"gap-4"` | CSS classes applied to the outer `<ul>` that holds the top-level navigation entries. |
+| `ChildListClass` | `string` | `"mt-4"` | CSS classes applied to the nested `<ul>` that holds a section's child entries. |
+| `SectionHeaderStructureClass` | `string` | `"font-display font-medium first:pt-0"` | Layout and typography classes applied to the section-header element. |
+| `SectionHeaderColorClass` | `string` | `"text-base-900 dark:text-base-50"` | CSS classes applied to section-header text — both the plain `<div>` for empty-route entries and the `<a>` when a top-level entry has children. |
+| `LinkStructureClass` | `string` | `"block text-sm w-full border-l pl-3.5 py-1.5"` | Layout and typography classes applied to each child-level `<a>` element under a section. |
+| `LinkColorClass` | `string` | see source | CSS classes applied to each child-level `<a>` for color and `data-current=true` state, composed after `LinkStructureClass`. |
+| `RootLinkStructureClass` | `string` | `"block w-full py-1"` | Layout classes applied to a leaf root-level `<a>` when a top-level entry has no children. |
+| `RootLinkColorClass` | `string` | see source | CSS classes applied to a leaf root-level `<a>` (a top-level entry with no children), composed after `RootLinkStructureClass`. |
 
 ### Slots
 
@@ -58,14 +58,14 @@ Emits a `data-role="page-outline"` container and an empty `<ul>` whose items are
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `ContainerColorClass` | `string` | `""` | CSS classes applied to the outer container for color treatment, composed after `ContainerStructureClass`. |
-| `ContainerStructureClass` | `string` | `"border-l border-base-200 dark:border-base-800"` | Layout and border classes applied to the outer `data-role="page-outline"` container. |
-| `ContentSelector` | `string` | `""` (`[EditorRequired]`) | CSS selector the client-side outline script queries to discover heading elements; must be non-empty for the outline to populate. |
-| `ListColorClass` | `string` | theme-aware color utilities (see source) | CSS classes applied to the `<ul>` that holds outline links, composed after `ListStructureClass`. |
-| `ListStructureClass` | `string` | `"list-none pl-4"` | Layout classes applied to the outline `<ul>`. |
-| `OutlineLinkColorClass` | `string` | theme-aware color utilities (see source) | CSS classes emitted on the container as `data-outline-link-color-class` and applied by the client-side script to each generated `<li><a>` for color and `data-selected=true` state. |
-| `OutlineLinkStructureClass` | `string` | `"py-1 ml-[calc(-1*(4em-1px))] pl-[calc(4em+1px)] "` | Layout classes emitted on the container as `data-outline-link-structure-class` and applied by the client-side script to each generated `<li><a>`. |
+| `ContentSelector` | `string` | `""` (required) | CSS selector the client-side outline script queries to discover heading elements; must be non-empty for the outline to populate. |
 | `Title` | `string` | `"On This Page"` | Textual label accepted for parity with other outline skins; not rendered by the default template. |
+| `ContainerStructureClass` | `string` | `"border-l border-base-200 dark:border-base-800"` | Layout and border classes applied to the outer `data-role="page-outline"` container. |
+| `ContainerColorClass` | `string` | `""` | CSS classes applied to the outer container for color treatment, composed after `ContainerStructureClass`. |
+| `ListStructureClass` | `string` | `"list-none pl-4"` | Layout classes applied to the outline `<ul>`. |
+| `ListColorClass` | `string` | `"text-neutral-500 dark:text-neutral-400"` | CSS classes applied to the `<ul>` that holds outline links, composed after `ListStructureClass`. |
+| `OutlineLinkColorClass` | `string` | see source | CSS classes emitted on the container as `data-outline-link-color-class` and applied by the client-side script to each generated `<li><a>` for color and `data-selected=true` state. |
+| `OutlineLinkStructureClass` | `string` | see source | Layout classes emitted on the container as `data-outline-link-structure-class` and applied by the client-side script to each generated `<li><a>`. |
 
 ### Slots
 

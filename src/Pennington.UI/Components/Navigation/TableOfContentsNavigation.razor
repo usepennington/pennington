@@ -11,15 +11,34 @@
 }
 
 @code {
+    /// <summary>Navigation tree to render; when null the component renders nothing, and entries are sorted by <see cref="NavigationTreeItem.Order"/> at each level.</summary>
     [Parameter] public ImmutableList<NavigationTreeItem>? TableOfContents { get; set; }
+
+    /// <summary>Optional label forwarded from the caller's <c>NavigationInfo.SectionName</c>; not rendered by the default template.</summary>
     [Parameter] public string? SectionLabel { get; set; }
+
+    /// <summary>CSS classes applied to the outer <c>&lt;ul&gt;</c> that holds the top-level navigation entries.</summary>
     [Parameter] public string ListGapClass { get; set; } = "gap-4";
+
+    /// <summary>CSS classes applied to the nested <c>&lt;ul&gt;</c> that holds a section's child entries.</summary>
     [Parameter] public string ChildListClass { get; set; } = "mt-4";
+
+    /// <summary>Layout and typography classes applied to the section-header element.</summary>
     [Parameter] public string SectionHeaderStructureClass { get; set; } = "font-display font-medium first:pt-0";
+
+    /// <summary>CSS classes applied to section-header text — both the plain <c>&lt;div&gt;</c> for empty-route entries and the <c>&lt;a&gt;</c> when a top-level entry has children.</summary>
     [Parameter] public string SectionHeaderColorClass { get; set; } = "text-base-900 dark:text-base-50";
+
+    /// <summary>Layout and typography classes applied to each child-level <c>&lt;a&gt;</c> element under a section.</summary>
     [Parameter] public string LinkStructureClass { get; set; } = "block text-sm w-full border-l pl-3.5 py-1.5";
+
+    /// <summary>CSS classes applied to each child-level <c>&lt;a&gt;</c> for color and <c>data-current=true</c> state, composed after <see cref="LinkStructureClass"/>.</summary>
     [Parameter] public string LinkColorClass { get; set; } = "transition-colors transition-300 border-base-300 dark:border-base-800 data-[current=true]:border-primary-400 text-base-500 dark:text-base-400 data-[current=true]:text-primary-800 dark:data-[current=true]:text-primary-500 hover:text-accent-400 dark:hover:text-base-50";
+
+    /// <summary>Layout classes applied to a leaf root-level <c>&lt;a&gt;</c> when a top-level entry has no children.</summary>
     [Parameter] public string RootLinkStructureClass { get; set; } = "block w-full py-1";
+
+    /// <summary>CSS classes applied to a leaf root-level <c>&lt;a&gt;</c> (a top-level entry with no children), composed after <see cref="RootLinkStructureClass"/>.</summary>
     [Parameter] public string RootLinkColorClass { get; set; } = "transition-colors transition-300 text-base-700 dark:text-base-400 data-[current=true]:text-primary-800 dark:data-[current=true]:text-primary-500 hover:text-accent-400 dark:hover:text-base-50";
 
 

@@ -83,12 +83,18 @@ builder.Services
     .AddMdazorComponent<ApiSummary>()
     .AddMdazorComponent<ApiReturns>()
     .AddMdazorComponent<ApiRemarks>()
-    .AddMdazorComponent<ApiSeeAlso>();
+    .AddMdazorComponent<ApiSeeAlso>()
+    .AddMdazorComponent<FieldList>()
+    .AddMdazorComponent<Field>()
+    .AddMdazorComponent<ExtensionMethods>()
+    .AddMdazorComponent<FrontMatterKeys>();
 
 // Auto-publishes /reference/api/{slug}/ pages (one per public Pennington type)
 // backed by ApiReferencePage.razor. Out of the sidebar TOC; in search and llms.txt.
 builder.Services.AddSingleton<ApiReferenceIndex>();
 builder.Services.AddSingleton<IContentService, ApiReferenceContentService>();
+builder.Services.AddSingleton<ExtensionMethodIndex>();
+builder.Services.AddSingleton<FrontMatterKeyIndex>();
 
 var app = builder.Build();
 app.UseDocSite();

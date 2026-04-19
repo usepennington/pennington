@@ -20,6 +20,11 @@ public static class SpaEnvelopeSerializer
 }
 
 /// <summary>DTO for JSON serialization (SpaEnvelope uses ImmutableDictionary which needs a simpler shape).</summary>
+/// <param name="Title">Page title, surfaced in the browser tab and hero.</param>
+/// <param name="Description">Short page description, when available.</param>
+/// <param name="Islands">Island id to rendered HTML payload.</param>
+/// <param name="Diagnostics">Per-request diagnostics emitted during rendering.</param>
+/// <param name="Reload">When set, directs the SPA shell to perform a full reload instead of a client-side swap.</param>
 public record SpaEnvelopeDto(
     string Title,
     string? Description,

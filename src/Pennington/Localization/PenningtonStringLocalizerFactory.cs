@@ -18,9 +18,9 @@ public sealed class PenningtonStringLocalizerFactory : IStringLocalizerFactory
         _localizer = new PenningtonStringLocalizer(translations, localization);
     }
 
-    /// <inheritdoc/>
+    /// <summary>Returns the shared localizer; <paramref name="resourceSource"/> is ignored.</summary>
     public IStringLocalizer Create(Type resourceSource) => _localizer;
 
-    /// <inheritdoc/>
+    /// <summary>Returns the shared localizer; <paramref name="baseName"/> and <paramref name="location"/> are ignored.</summary>
     public IStringLocalizer Create(string baseName, string location) => _localizer;
 }

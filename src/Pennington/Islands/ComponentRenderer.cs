@@ -30,7 +30,7 @@ public sealed class ComponentRenderer(
         });
     }
 
-    /// <inheritdoc/>
+    /// <summary>Disposes the underlying HTML renderer.</summary>
     public async ValueTask DisposeAsync()
     {
         await _renderer.DisposeAsync();

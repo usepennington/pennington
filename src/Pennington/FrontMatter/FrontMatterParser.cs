@@ -86,4 +86,6 @@ public sealed class FrontMatterParser
 /// <summary>
 /// Result of front matter parsing.
 /// </summary>
+/// <param name="Metadata">Deserialized front matter, or <c>null</c> when the content had no front matter block.</param>
+/// <param name="Body">Markdown body with the front matter block stripped.</param>
 public record FrontMatterResult<T>(T? Metadata, string Body) where T : IFrontMatter;

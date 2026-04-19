@@ -7,7 +7,7 @@ tags: [blogsite, routes, razor-pages, rss]
 uid: reference.blogsite.routes
 ---
 
-`UseBlogSite` mounts five Razor pages from `Pennington.BlogSite.Components.Pages` — discovered via `RazorPageContentService` because `AddBlogSite` adds the BlogSite assembly to `PenningtonOptions.AdditionalRoutingAssemblies` — plus an optional `/rss.xml` `MapGet` endpoint that renders the homepage, archive, tag index, per-tag listings, individual posts, and the RSS feed.
+`UseBlogSite` mounts the Razor pages that serve the homepage, archive, tag index, per-tag listing, and individual posts, plus an optional `/rss.xml` endpoint. Pages are discovered via `RazorPageContentService`; `AddBlogSite` registers `Pennington.BlogSite` as an additional routing assembly so Razor picks them up.
 
 ## Entry point
 

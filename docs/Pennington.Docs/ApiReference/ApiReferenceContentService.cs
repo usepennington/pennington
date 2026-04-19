@@ -71,7 +71,7 @@ internal sealed class ApiReferenceContentService : IContentService
                 .Split('/', StringSplitOptions.RemoveEmptyEntries);
 
             builder.Add(new ContentTocItem(
-                Title: entry.TypeName,
+                Title: entry.FullTypeName,
                 Route: route,
                 Order: int.MaxValue,
                 HierarchyParts: hierarchyParts,
@@ -93,7 +93,7 @@ internal sealed class ApiReferenceContentService : IContentService
         foreach (var entry in entries.Values)
         {
             var route = ContentRouteFactory.FromUrl(new UrlPath($"/reference/api/{entry.Slug}/"));
-            builder.Add(new CrossReference($"reference.api.{entry.Slug}", entry.TypeName, route));
+            builder.Add(new CrossReference($"reference.api.{entry.Slug}", entry.FullTypeName, route));
         }
 
         return builder.ToImmutable();

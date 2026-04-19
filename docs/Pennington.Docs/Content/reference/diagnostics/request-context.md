@@ -29,11 +29,17 @@ Immutable record carrying one diagnostic event. Route-agnostic — the request t
 
 ### Parameters
 
-| Name | Type | Default | Description |
-|---|---|---|---|
-| `Severity` | `DiagnosticSeverity` | — | The severity band controlling how the overlay colors the entry and whether `HasErrors` flips. |
-| `Message` | `string` | — | Human-readable body rendered into the overlay panel and after the first pipe in the `X-Pennington-Diagnostic` header value. |
-| `Source` | `string?` | `null` | Optional label identifying the producer (for example, `"XrefResolver"`); rendered as the small subtitle next to the severity pill in the overlay and appended after a second pipe in the header value when non-null. |
+<FieldList>
+<Field Name="Severity" Type="DiagnosticSeverity">
+The severity band controlling how the overlay colors the entry and whether `HasErrors` flips.
+</Field>
+<Field Name="Message" Type="string">
+Human-readable body rendered into the overlay panel and after the first pipe in the `X-Pennington-Diagnostic` header value.
+</Field>
+<Field Name="Source" Type="string?" Default="null">
+Optional label identifying the producer (for example, `"XrefResolver"`); rendered as the small subtitle next to the severity pill in the overlay and appended after a second pipe in the header value when non-null.
+</Field>
+</FieldList>
 
 ## `DiagnosticSeverity`
 

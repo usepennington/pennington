@@ -1,0 +1,77 @@
+@* Renders every public extension method whose first (this) parameter short-name
+   matches Receiver, grouped from every *Extensions static class in the solution.
+   Descriptions come from xmldoc; package is prefixed into the description body. *@
+
+@using Pennington.Docs.ApiReference
+@inject ExtensionMethodIndex Index
+@inject IXmlDocParser Parser
+@inject IXmlDocHtmlRenderer Renderer
+@inject Pennington.Roslyn.Symbols.ISymbolExtractionService SymbolService
+@inject IHttpContextAccessor HttpContextAccessor
+
+@if (_error is not null)
+{
+    <div class="diag-error">@((MarkupString)_error)</div>
+}
+else if (_empty is not null)
+{
+    <p><em>@_empty</em></p>
+}
+else
+{
+    <ApiDefinitionList Rows="_rows" />
+}
+
+@code {
+    [Parameter, EditorRequired] public string Receiver { get; set; } = string.Empty;
+
+    private IReadOnlyList<ApiDefinitionRow> _rows = [];
+    private string? _error;
+    private string? _empty;
+
+    private DiagnosticContext? Diagnostics =>
+        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
+
+    protected override void OnParametersSet()
+    {
+        _error = null;
+        _empty = null;
+        _rows = [];
+
+        if (string.IsNullOrWhiteSpace(Receiver))
+        {
+            Diagnostics?.AddError("<ExtensionMethods> missing Receiver");
+            _error = "&lt;ExtensionMethods&gt; missing Receiver";
+            return;
+        }
+
+        var index = AsyncHelpers.RunSync(() => Index.GetEntriesAsync());
+        if (!index.TryGetValue(Receiver, out var entries) || entries.Length == 0)
+        {
+            Diagnostics?.AddWarning($"<ExtensionMethods> no methods found for receiver {Receiver}");
+            _empty = $"No extension methods found for receiver {Receiver}.";
+            return;
+        }
+
+        var rows = new List<ApiDefinitionRow>(entries.Length);
+        foreach (var entry in entries)
+        {
+            var info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(entry.XmlDocId));
+            var parsed = info is null ? null : Parser.Parse(info.Symbol.GetDocumentationCommentXml());
+            var summaryHtml = parsed?.HasSummary == true
+                ? Renderer.RenderInlineHtml(parsed.Summary)
+                : string.Empty;
+
+            var descriptionHtml = $"<p><span class=\"text-xs text-base-500 dark:text-base-400\">Package <code>{WebUtility.HtmlEncode(entry.Package)}</code></span></p>{summaryHtml}";
+
+            rows.Add(new ApiDefinitionRow(
+                Name: entry.Name,
+                TypeDisplay: entry.Signature,
+                DefaultValue: null,
+                Required: false,
+                DescriptionHtml: descriptionHtml));
+        }
+
+        _rows = rows;
+    }
+}

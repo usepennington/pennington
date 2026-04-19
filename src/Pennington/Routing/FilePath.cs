@@ -26,6 +26,6 @@ public readonly record struct FilePath(string Value)
     /// <summary>The file name with extension.</summary>
     public string FileName => Path.GetFileName(Value);
 
-    /// <inheritdoc/>
+    /// <summary>Returns the underlying path string.</summary>
     public override string ToString() => Value;
 }
