@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Pennington.Roslyn.Documentation;
+using Xunit;
 
 public sealed class InheritDocResolverTests
 {
@@ -47,7 +48,9 @@ public sealed class InheritDocResolverTests
         var (_, type) = Compile(source, "Fixtures.Thing");
         var property = type.GetMembers("Name").OfType<IPropertySymbol>().Single();
 
-        var resolved = InheritDocResolver.Resolve(property.GetDocumentationCommentXml(), property);
+        var resolved = InheritDocResolver.Resolve(
+            property.GetDocumentationCommentXml(cancellationToken: TestContext.Current.CancellationToken),
+            property);
 
         resolved.ShouldNotBeNull();
         resolved.ShouldContain("The thing's name.");
@@ -77,7 +80,9 @@ public sealed class InheritDocResolverTests
         var (_, type) = Compile(source, "Fixtures.Thing");
         var property = type.GetMembers("Name").OfType<IPropertySymbol>().Single();
 
-        var resolved = InheritDocResolver.Resolve(property.GetDocumentationCommentXml(), property);
+        var resolved = InheritDocResolver.Resolve(
+            property.GetDocumentationCommentXml(cancellationToken: TestContext.Current.CancellationToken),
+            property);
 
         resolved.ShouldNotBeNull();
         resolved.ShouldContain("Record summary.");
@@ -99,7 +104,7 @@ public sealed class InheritDocResolverTests
 
         var (_, type) = Compile(source, "Fixtures.Thing");
         var property = type.GetMembers("Name").OfType<IPropertySymbol>().Single();
-        var raw = property.GetDocumentationCommentXml();
+        var raw = property.GetDocumentationCommentXml(cancellationToken: TestContext.Current.CancellationToken);
 
         var resolved = InheritDocResolver.Resolve(raw, property);
 
@@ -127,7 +132,7 @@ public sealed class InheritDocResolverTests
 
         var (_, type) = Compile(source, "Fixtures.Thing");
         var property = type.GetMembers("Name").OfType<IPropertySymbol>().Single();
-        var raw = property.GetDocumentationCommentXml();
+        var raw = property.GetDocumentationCommentXml(cancellationToken: TestContext.Current.CancellationToken);
 
         var resolved = InheritDocResolver.Resolve(raw, property);
 
@@ -155,7 +160,7 @@ public sealed class InheritDocResolverTests
 
         var (_, type) = Compile(source, "Fixtures.Thing");
         var property = type.GetMembers("Name").OfType<IPropertySymbol>().Single();
-        var raw = property.GetDocumentationCommentXml();
+        var raw = property.GetDocumentationCommentXml(cancellationToken: TestContext.Current.CancellationToken);
 
         var resolved = InheritDocResolver.Resolve(raw, property);
 
@@ -192,7 +197,9 @@ public sealed class InheritDocResolverTests
         var (_, type) = Compile(source, "Fixtures.Thing");
         var property = type.GetMembers("Name").OfType<IPropertySymbol>().Single();
 
-        var resolved = InheritDocResolver.Resolve(property.GetDocumentationCommentXml(), property);
+        var resolved = InheritDocResolver.Resolve(
+            property.GetDocumentationCommentXml(cancellationToken: TestContext.Current.CancellationToken),
+            property);
 
         resolved.ShouldNotBeNull();
         resolved.ShouldContain("Root summary.");
@@ -223,7 +230,9 @@ public sealed class InheritDocResolverTests
         var (_, type) = Compile(source, "Fixtures.Thing");
         var method = type.GetMembers("Do").OfType<IMethodSymbol>().Single();
 
-        var resolved = InheritDocResolver.Resolve(method.GetDocumentationCommentXml(), method);
+        var resolved = InheritDocResolver.Resolve(
+            method.GetDocumentationCommentXml(cancellationToken: TestContext.Current.CancellationToken),
+            method);
 
         resolved.ShouldNotBeNull();
         resolved.ShouldContain("Does a thing.");

@@ -3,6 +3,7 @@
 ## Framework & style
 - xunit.v3 with Shouldly assertions (`value.ShouldBe(...)`, `collection.ShouldContain(...)`).
 - Test classes named `<ClassUnderTest>Tests`. No shared fixtures across unit tests — each test builds its own state.
+- Any API overload that takes a `CancellationToken` must receive `TestContext.Current.CancellationToken` (xUnit1051). Don't leave the default — the analyzer treats it as a warning, and tests should cancel responsively.
 
 ## Unit tests (`Pennington.Tests`)
 - Tests use a `CreateTestService(...)` factory pattern to assemble the service under test with a `Testably.Abstractions` `MockFileSystem`.
