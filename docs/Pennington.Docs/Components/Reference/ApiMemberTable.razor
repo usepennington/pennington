@@ -20,7 +20,7 @@ else
 {
     @foreach (var group in _groups)
     {
-        <h2 class="not-prose text-xs font-semibold uppercase tracking-wide text-base-500 dark:text-base-400 mt-10 mb-3">@group.Label</h2>
+        <h2 id="@Slugify(group.Label)" class="not-prose text-xs font-semibold uppercase tracking-wide text-base-500 dark:text-base-400 mt-10 mb-3 scroll-mt-20">@group.Label</h2>
 
         @if (group.Rows is not null)
         {
@@ -31,9 +31,9 @@ else
             <div class="not-prose divide-y divide-base-200 dark:divide-base-800">
                 @foreach (var entry in group.Entries!)
                 {
-                    <article id="@entry.Anchor" class="py-6 first:pt-0 scroll-mt-20 group">
+                    <article class="py-6 first:pt-0 group">
                         <header class="flex items-baseline gap-2 mb-2">
-                            <h3 class="font-mono text-base font-semibold text-base-900 dark:text-base-50">@entry.Name</h3>
+                            <h3 id="@entry.Anchor" class="font-mono text-base font-semibold text-base-900 dark:text-base-50 scroll-mt-20">@entry.Name</h3>
                             <a href="#@entry.Anchor"
                                class="text-base-300 dark:text-base-600 hover:text-accent-500 dark:hover:text-accent-400 text-sm opacity-0 group-hover:opacity-100 transition"
                                aria-label="Permalink">#</a>
