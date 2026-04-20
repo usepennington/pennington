@@ -338,6 +338,8 @@ public sealed class RoslynCodeBlockPreprocessorTests
             => Task.FromResult(string.Empty);
 
         public void ClearCache() { }
+
+        public Task WarmupAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
     /// <summary>Records what the preprocessor forwards to the highlighting pipeline.</summary>

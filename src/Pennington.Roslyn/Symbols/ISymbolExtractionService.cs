@@ -19,4 +19,7 @@ public interface ISymbolExtractionService
 
     /// <summary>Clears any cached symbol lookups so the next query re-walks the solution.</summary>
     void ClearCache();
+
+    /// <summary>Triggers the symbol table walk if it has not already run. Safe to call concurrently with real queries — both share one <see cref="Infrastructure.AsyncLazy{T}"/> task.</summary>
+    Task WarmupAsync(CancellationToken cancellationToken = default);
 }

@@ -148,5 +148,7 @@ public sealed class SolutionWorkspaceServiceTests
             => Task.FromResult(string.Empty);
 
         public void ClearCache() => ClearCacheCallCount++;
+
+        public Task WarmupAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 }

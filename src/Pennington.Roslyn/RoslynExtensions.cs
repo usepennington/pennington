@@ -42,6 +42,8 @@ public static class RoslynExtensions
             services.AddSingleton<IXmlDocParser, XmlDocParser>();
             services.AddSingleton<IXmlDocHtmlRenderer, XmlDocHtmlRenderer>();
             services.AddSingleton<IMemberEnumerator, MemberEnumerator>();
+
+            services.AddHostedService<SymbolExtractionWarmupService>();
         }
 
         return services;

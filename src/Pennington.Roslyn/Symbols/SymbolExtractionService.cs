@@ -256,6 +256,11 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
         _symbolsLazy.Reset();
     }
 
+    public async Task WarmupAsync(CancellationToken cancellationToken = default)
+    {
+        await _symbolsLazy.Value.WaitAsync(cancellationToken);
+    }
+
     private async Task<IReadOnlyDictionary<string, SymbolInfo>> LoadAllSymbolsAsync()
     {
         _logger.LogDebug("Loading all symbols from workspace");
