@@ -2,7 +2,8 @@ namespace Pennington.IntegrationTests.DocsSite;
 
 using Infrastructure;
 
-public class DocsHttpTests : IClassFixture<DocsWebApplicationFactory>
+[Collection(DocsTestServerCollection.Name)]
+public class DocsHttpTests
 {
     private readonly HttpClient _client;
 

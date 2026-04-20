@@ -1,13 +1,13 @@
 ---
-title: "Customize the sidebar"
-description: "Reorder, promote, rename, and hide pages in the auto-built sidebar using folder layout and front-matter keys."
+title: "Reorder, rename, or hide entries in the sidebar"
+description: "Use front-matter keys and folder layout to control the auto-built sidebar — reorder siblings, promote a section landing, override the section header, and hide drafts."
 uid: how-to.content-authoring.customize-sidebar
 order: 201030
 sectionLabel: Content Authoring
 tags: [navigation, sidebar, sections, ordering]
 ---
 
-When a DocSite groups pages under subfolders, the auto-generated sidebar may need adjustment — reordering siblings, making one page the section landing, renaming the section header, or hiding a page. These adjustments use front-matter keys and folder naming. To replace the sidebar component itself, see the extensibility guide for overriding DocSite components.
+The sidebar is generated from folder layout and front matter. Each adjustment below is independent — pick the one that matches the change you need. To replace the sidebar component itself, see the extensibility guide for overriding DocSite components.
 
 ## Assumptions
 
@@ -19,12 +19,9 @@ For a working reference, see `examples/DocSiteKitchenSinkExample` — `Content/m
 
 ---
 
-## Steps
+## Options
 
-<Steps>
-<Step StepNumber="1">
-
-**Reorder pages within a section**
+### Reorder pages within a section
 
 Lower `order:` values sort earlier inside a section; ties break alphabetically on `Title`. Use 10/20/30 spacing so later inserts land between siblings without renumbering every file.
 
@@ -41,10 +38,7 @@ Backing symbol on the DocSite front-matter record:
 P:Pennington.DocSite.DocSiteFrontMatter.Order
 ```
 
-</Step>
-<Step StepNumber="2">
-
-**Promote a page to be the section landing**
+### Promote a page to be the section landing
 
 Name the file `index.md` inside the section subfolder (for example `Content/main/widgets/index.md`). Pennington routes it at the subfolder URL and `NavigationBuilder` surfaces it as the section's lead entry rather than a separate child. A low `order:` — typically `10` — sorts the entire section earlier, because the section's aggregate sort key is the minimum `order:` of its direct children.
 
@@ -61,12 +55,7 @@ The area-root landing follows the same pattern at one level up:
 examples/DocSiteKitchenSinkExample/Content/main/index.md
 ```
 
-<!-- TODO: xmldocid needed — replace above with a section-level index.md fixture once one exists in examples/ -->
-
-</Step>
-<Step StepNumber="3">
-
-**Override the displayed section title**
+### Override the displayed section title
 
 The sidebar section header comes from the folder name, with kebab-case converted to title case by `NavigationBuilder` (for example `getting-started` becomes "Getting Started"). Renaming the folder changes what the sidebar prints. The front-matter `sectionLabel:` key is separate — it sets the page-context label surfaced on `NavigationInfo.SectionName` for breadcrumbs and current-page context, not the sidebar group header.
 
@@ -83,10 +72,7 @@ Backing symbol for the front-matter key:
 P:Pennington.DocSite.DocSiteFrontMatter.SectionLabel
 ```
 
-</Step>
-<Step StepNumber="4">
-
-**Hide a page from the sidebar**
+### Hide a page from the sidebar
 
 Set `isDraft: true` to keep the page compiled — so `xref:` links still resolve — while dropping it from the sidebar, the search index, and `llms.txt`. A page with `redirectUrl:` is also omitted from the sidebar regardless of other keys; the engine treats redirects as transport hops rather than content.
 
@@ -102,9 +88,6 @@ Backing symbol on `IFrontMatter` (the draft key is not specific to DocSite):
 ```csharp:xmldocid
 P:Pennington.FrontMatter.IFrontMatter.IsDraft
 ```
-
-</Step>
-</Steps>
 
 ---
 

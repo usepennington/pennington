@@ -1,0 +1,127 @@
+@using System.IO.Abstractions
+@using Markdig
+@using Microsoft.AspNetCore.Hosting
+@using Pennington.FrontMatter
+@inject MarkdownPipeline Pipeline
+@inject IFileSystem FileSystem
+@inject IWebHostEnvironment Environment
+@inject FrontMatterParser FrontMatterParser
+
+@if (_error is not null)
+{
+    <div class="not-prose my-6 rounded-lg border border-base-300 dark:border-base-700 bg-base-100 dark:bg-base-900 p-4 text-sm text-base-700 dark:text-base-300">
+        <span class="font-semibold">RenderedFixture:</span> @_error
+    </div>
+}
+else
+{
+    <figure class="rendered-fixture not-prose my-6 rounded-lg border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-950 overflow-hidden">
+        <figcaption class="px-4 py-2 border-b border-base-200 dark:border-base-800 text-xs uppercase tracking-wide text-base-600 dark:text-base-400 bg-base-100 dark:bg-base-900">
+            @(string.IsNullOrWhiteSpace(Caption) ? "Rendered output" : Caption)
+        </figcaption>
+        <div class="p-6 prose prose-sm dark:prose-invert max-w-none">
+            @((MarkupString)_html)
+        </div>
+    </figure>
+}
+
+@code {
+    /// <summary>Solution-relative path to the fixture file (e.g. "examples/Foo/Content/bar.md").</summary>
+    [Parameter, EditorRequired]
+    public string Path { get; set; } = string.Empty;
+
+    /// <summary>Optional caption shown above the rendered output. Defaults to "Rendered output".</summary>
+    [Parameter]
+    public string? Caption { get; set; }
+
+    private string _html = string.Empty;
+    private string? _error;
+
+    private static string? _cachedSolutionDir;
+
+    protected override void OnParametersSet()
+    {
+        _error = null;
+        _html = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(Path))
+        {
+            _error = "Path parameter is required.";
+            return;
+        }
+
+        if (Path.Contains("..") || System.IO.Path.IsPathRooted(Path))
+        {
+            _error = $"Invalid fixture path: {Path}";
+            return;
+        }
+
+        var solutionDir = ResolveSolutionDir();
+        if (solutionDir is null)
+        {
+            _error = "Could not locate solution root (.slnx/.sln) above the content root.";
+            return;
+        }
+
+        var fullPath = System.IO.Path.Combine(solutionDir, Path);
+        if (!FileSystem.File.Exists(fullPath))
+        {
+            _error = $"Fixture not found: {Path}";
+            return;
+        }
+
+        var raw = FileSystem.File.ReadAllText(fullPath);
+        var ext = System.IO.Path.GetExtension(fullPath).ToLowerInvariant();
+
+        _html = ext switch
+        {
+            ".md" or ".markdown" => RenderMarkdown(raw),
+            ".html" or ".htm" => raw,
+            _ => $"<pre><code>{System.Net.WebUtility.HtmlEncode(raw)}</code></pre>"
+        };
+    }
+
+    private string RenderMarkdown(string raw)
+    {
+        var result = FrontMatterParser.Parse<EmptyFrontMatter>(raw);
+        var body = result.Body;
+        return Markdown.ToHtml(body, Pipeline);
+    }
+
+    private string? ResolveSolutionDir()
+    {
+        if (_cachedSolutionDir is not null) return _cachedSolutionDir;
+
+        // Walk up from ContentRootPath looking for the repo root.
+        // .slnx (the SDK-style root marker) takes priority over .sln so we
+        // don't stop early at a per-project .sln nested under the repo root.
+        var dir = new DirectoryInfo(Environment.ContentRootPath);
+        while (dir is not null)
+        {
+            if (dir.GetFiles("*.slnx").Length > 0)
+            {
+                _cachedSolutionDir = dir.FullName;
+                return _cachedSolutionDir;
+            }
+            dir = dir.Parent;
+        }
+
+        // Fallback: walk up again accepting any .sln if no .slnx was found.
+        dir = new DirectoryInfo(Environment.ContentRootPath);
+        while (dir is not null)
+        {
+            if (dir.GetFiles("*.sln").Length > 0)
+            {
+                _cachedSolutionDir = dir.FullName;
+                return _cachedSolutionDir;
+            }
+            dir = dir.Parent;
+        }
+        return null;
+    }
+
+    private sealed class EmptyFrontMatter : IFrontMatter
+    {
+        public string Title { get; set; } = string.Empty;
+    }
+}

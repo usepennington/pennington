@@ -1,13 +1,13 @@
 ---
-title: "Generate RSS feeds"
-description: "Turn on /rss.xml for a BlogSite, confirm posts carry a date, and point CanonicalBaseUrl at your production origin so feed links resolve."
+title: "Publish an RSS feed"
+description: "Confirm /rss.xml is on, give every post a date so it appears in the channel, and point CanonicalBaseUrl at your production origin so links resolve."
 uid: how-to.configuration.rss
 order: 202070
 sectionLabel: Configuration
 tags: [configuration, rss, blogsite, feeds]
 ---
 
-`BlogSiteOptions.EnableRss` is `true` by default, so the `/rss.xml` endpoint is wired by `UseBlogSite` out of the box. This page covers the two things that most often break a feed: missing `date:` front matter (the post is silently dropped from the channel) and an unset `CanonicalBaseUrl` (feed links emit relative URLs that aggregators cannot follow). On bare `AddPennington` without `AddBlogSite`, see <xref:tutorials.blogsite.scaffold> first — the feed endpoint ships with the BlogSite template, not with core Pennington.
+When subscribers should be able to follow the blog from a reader, `/rss.xml` is wired by `UseBlogSite` out of the box (`BlogSiteOptions.EnableRss` defaults to `true`). The two things that most often break a working feed are missing `date:` front matter — the post is silently dropped from the channel — and an unset `CanonicalBaseUrl` — feed links emit relative URLs that aggregators cannot follow. On bare `AddPennington` without `AddBlogSite`, see <xref:tutorials.blogsite.scaffold> first; the feed endpoint ships with the BlogSite template, not with core Pennington.
 
 ## Assumptions
 
@@ -17,12 +17,9 @@ tags: [configuration, rss, blogsite, feeds]
 
 ---
 
-## Steps
+## Options
 
-<Steps>
-<Step StepNumber="1">
-
-**Confirm `EnableRss` is on**
+### Confirm `EnableRss` is on
 
 `BlogSiteOptions.EnableRss` defaults to `true`. Setting it explicitly in the options builder makes the intent visible and guards against a future default change.
 
@@ -32,10 +29,7 @@ The kitchen-sink example wires `EnableRss`, `CanonicalBaseUrl`, and `AuthorName`
 M:BlogKitchenSinkExample.ServiceConfiguration.BuildBlogSiteOptions
 ```
 
-</Step>
-<Step StepNumber="2">
-
-**Give every post a `date:`**
+### Give every post a `date:`
 
 `BlogSiteContentService` builds the channel from posts where `Date` is non-null, ordered by descending date. A post without `date:` renders normally at its URL but does not appear in the feed. Use ISO-8601 (`2024-01-15`) so YAML parses the value as a `DateTimeOffset`.
 
@@ -49,24 +43,36 @@ author: Jamie Rivers
 tags: [pennington, getting-started]
 ```
 
-</Step>
-<Step StepNumber="3">
-
-**Set `CanonicalBaseUrl` to your production origin**
+### Set `CanonicalBaseUrl` to your production origin
 
 `RssFeedBuilder` prefixes every `<link>` and `<guid>` with the canonical base. Without it, aggregators receive relative URLs that do not resolve. Use the production scheme and host with no trailing slash, even when running locally.
 
-</Step>
-<Step StepNumber="4">
-
-**Verify the feed URL**
+### Where the feed is served and discovered
 
 In dev mode the feed is served live by the `MapGet("/rss.xml", ...)` handler registered in `UseBlogSite`. In a static build it is written to `wwwroot/rss.xml` alongside the other generated routes. The `<link rel="alternate" type="application/rss+xml">` tag is injected into `<head>` automatically when `EnableRss` is on, so browser RSS extensions detect it without further configuration.
 
-</Step>
-</Steps>
-
 ---
+
+## Result
+
+`/rss.xml` returns an RSS 2.0 channel listing every dated post, newest first, with absolute URLs:
+
+```xml
+<rss version="2.0">
+  <channel>
+    <title>Jamie's Blog</title>
+    <link>https://blog.example.com/</link>
+    <description>Notes on shipping software.</description>
+    <item>
+      <title>Getting started with Pennington</title>
+      <link>https://blog.example.com/blog/getting-started-with-pennington/</link>
+      <guid>https://blog.example.com/blog/getting-started-with-pennington/</guid>
+      <pubDate>Mon, 15 Jan 2024 00:00:00 +0000</pubDate>
+      <description>A first-post walkthrough.</description>
+    </item>
+  </channel>
+</rss>
+```
 
 ## Verify
 

@@ -64,6 +64,7 @@ public static class DocSiteServiceExtensions
                 .AddMdazorComponent<CardGrid>()
                 .AddMdazorComponent<CodeBlock>()
                 .AddMdazorComponent<LinkCard>()
+                .AddMdazorComponent<RenderedFixture>()
                 .AddMdazorComponent<Step>()
                 .AddMdazorComponent<Steps>();
 

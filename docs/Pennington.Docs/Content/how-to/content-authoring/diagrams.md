@@ -1,5 +1,5 @@
 ---
-title: "Embed diagrams"
+title: "Embed a Mermaid diagram in a markdown page"
 description: "Author Mermaid diagrams in markdown with a fenced `mermaid` block and let the DocSite render them client-side with theme awareness."
 uid: how-to.content-authoring.diagrams
 order: 201080
@@ -7,64 +7,77 @@ sectionLabel: Content Authoring
 tags: [markdown, mermaid, diagrams, client-side]
 ---
 
-To drop a flowchart, sequence diagram, or other visual into a markdown article without authoring SVG by hand, use a fenced `mermaid` block. The DocSite's bundled client script picks it up at page load and re-renders it whenever the theme toggles between light and dark. For the fence info-string grammar, see [Code-block argument reference](xref:reference.markdown.code-block-args).
+To drop a flowchart, sequence diagram, or other visual into a markdown article without authoring SVG by hand, fence the diagram with `mermaid` as the language. The DocSite ships a client script (`MermaidManager` in `Pennington.UI/wwwroot/scripts.js`) that scans the DOM for `code.language-mermaid` on page load, lazy-loads Mermaid from CDN, and swaps each `<code>` block for the rendered SVG. The same script re-renders every diagram when the theme toggle flips light or dark. For the fence info-string grammar, see <xref:reference.markdown.code-block-args>.
 
 ## Assumptions
 
-- An existing Pennington site renders markdown (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
-- The host uses `AddDocSite` / `AddBlogSite`, or otherwise serves the Pennington.UI script bundle — the `MermaidManager` lives in `Pennington.UI/wwwroot/scripts.js` and renders the diagrams.
-- Basic Mermaid syntax (flowchart, sequence, class, etc.) is familiar — this page does not teach Mermaid itself; see the [upstream Mermaid docs](https://mermaid.js.org/) for the grammar.
+- An existing Pennington site renders markdown (see <xref:tutorials.getting-started.first-site> if not).
+- The host uses `AddDocSite` or `AddBlogSite`, or otherwise serves the Pennington.UI script bundle that includes `MermaidManager`.
+- Basic Mermaid syntax (flowchart, sequence, class, etc.) is familiar — this page does not teach Mermaid; see the [upstream Mermaid docs](https://mermaid.js.org/) for the grammar.
 
-For a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample) — `Content/main/diagrams.md` is the fixture page this how-to fences from.
+## Diagram syntaxes
 
----
+Each H3 below shows the markdown source above the rendered diagram. Pennington does not preprocess the body, so anything valid in Mermaid works as is.
 
-## Steps
+### Flowchart
 
-<Steps>
-<Step StepNumber="1">
+Fence a block with `mermaid` as the language and write a `flowchart` body. The client script swaps the `<code>` element for an SVG at page load.
 
-**Fence the diagram with `mermaid` as the language**
+````markdown
+```mermaid
+flowchart LR
+    A[Markdown file] --> B[MarkdownContentParser]
+    B --> C[ContentPipeline]
+    C --> D[MarkdownContentRenderer]
+    D --> E[Response processors]
+    E --> F[Rendered HTML]
+```
+````
 
-Open a fenced code block with three backticks and the word `mermaid`, then write ordinary Mermaid text inside. CommonMark keeps the block as a `<pre><code class="language-mermaid">…</code></pre>` in the rendered HTML — Pennington does not preprocess the body, so anything valid in Mermaid works as is.
-
-```markdown:path
-examples/DocSiteKitchenSinkExample/Content/main/diagrams.md
+```mermaid
+flowchart LR
+    A[Markdown file] --> B[MarkdownContentParser]
+    B --> C[ContentPipeline]
+    C --> D[MarkdownContentRenderer]
+    D --> E[Response processors]
+    E --> F[Rendered HTML]
 ```
 
-</Step>
-<Step StepNumber="2">
+### Sequence diagram
 
-**Let the bundled client script render it**
+Sequence diagrams use the same `mermaid` fence with a `sequenceDiagram` body.
 
-The DocSite ships `Pennington.UI/wwwroot/scripts.js`, which includes a `MermaidManager` that scans the DOM for `code.language-mermaid` on page load, lazy-loads Mermaid from CDN, and swaps each `<code>` block for the rendered SVG. No server-side registration is needed — the fence renders verbatim and the script takes over in the browser.
+````markdown
+```mermaid
+sequenceDiagram
+    Browser->>Pennington: GET /main/diagrams
+    Pennington-->>Browser: HTML with <code class="language-mermaid">
+    Note right of Browser: MermaidManager scans the DOM
+    Browser->>CDN: import('mermaid')
+    CDN-->>Browser: mermaid module
+    Browser->>Browser: render diagrams in place
+```
+````
 
-<!-- TODO: MermaidManager is a JS class inside Pennington.UI/wwwroot/scripts.js, not a C# symbol — there is no xmldocid to fence here. If a future refactor exposes the script wiring as a C# type (for example, a `MermaidScriptAsset`), replace this callout with its xmldocid. For now, point the reader at the source file. -->
+```mermaid
+sequenceDiagram
+    Browser->>Pennington: GET /main/diagrams
+    Pennington-->>Browser: HTML with <code class="language-mermaid">
+    Note right of Browser: MermaidManager scans the DOM
+    Browser->>CDN: import('mermaid')
+    CDN-->>Browser: mermaid module
+    Browser->>Browser: render diagrams in place
+```
 
-See [`src/Pennington.UI/wwwroot/scripts.js`](https://github.com/usepennington/pennington/blob/main/src/Pennington.UI/wwwroot/scripts.js) (`MermaidManager` class) for the full behavior — including how it dynamically imports Mermaid from `cdn.jsdelivr.net` the first time a diagram appears on a page.
+## What the renderer emits
 
-</Step>
-<Step StepNumber="3">
+CommonMark keeps each fence as `<pre><code class="language-mermaid">…</code></pre>` in the rendered HTML. The body is verbatim — Pennington does not transform it server-side. At page load, `MermaidManager` walks the DOM, dynamically imports Mermaid from `cdn.jsdelivr.net` the first time a diagram appears, and replaces every matching `<code>` element with an inline SVG. When the theme toggle changes, `MermaidManager.reinitializeForTheme()` reinitialises Mermaid with the matching built-in theme (`default` vs. `dark`) and re-renders every diagram in place. Diagrams render on both the live dev server and the static build output; the client-side script walks the DOM either way.
 
-**Let theme changes re-render the diagram**
-
-When the DocSite theme toggle flips light/dark, the page manager calls `MermaidManager.reinitializeForTheme()`, which reinitializes Mermaid with a matching built-in theme (`default` vs. `dark`) and re-renders every diagram in place. There is no per-diagram configuration to opt into — all `mermaid` fences on the page participate automatically.
-
-<!-- Mermaid's own theme config (neutral, forest, etc.) is not exposed through Pennington. For a non-default theme per diagram, use Mermaid's inline `%%{init: { 'theme': '…' } }%%` directive at the top of the fence body — that is Mermaid syntax, not Pennington syntax. -->
-
-</Step>
-</Steps>
-
----
-
-## Verify
-
-- Run `dotnet run` and visit the page — each `mermaid` fence renders as an SVG, not as a code block; view-source still shows the original `<code class="language-mermaid">` markup.
-- Open the browser dev-tools Network tab on first load — one request to `cdn.jsdelivr.net/npm/mermaid@11/…` appears, fetched lazily.
-- Toggle the theme (light ↔ dark) — every diagram re-renders with matching colors, no page reload required.
+For per-diagram theme overrides, use Mermaid's inline `%%{init: { 'theme': '…' } }%%` directive at the top of the fence body — that is Mermaid syntax, not Pennington syntax.
 
 ## Related
+
 - Reference: [Markdown extensions catalog](xref:reference.markdown.extensions) — the full list of non-CommonMark features, for context on what Pennington does and does not preprocess
 - Reference: [Code-block argument reference](xref:reference.markdown.code-block-args) — the info-string grammar (`mermaid` is a bare language token, no arguments needed)
-- How-to: [Add alerts and callouts](xref:how-to.content-authoring.alerts) — the neighboring visual-element authoring surface, for comparison
+- How-to: <xref:how-to.content-authoring.alerts> — the neighbouring visual-element authoring surface, for comparison
 - Background: [MonorailCSS integration](xref:explanation.rendering.monorail-css) — how the DocSite's theme tokens (the same ones Mermaid tracks) are generated

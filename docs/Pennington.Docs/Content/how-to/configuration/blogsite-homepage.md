@@ -1,5 +1,5 @@
 ---
-title: "Configure the BlogSite homepage"
+title: "Wire the blog homepage hero"
 description: "Populate the four BlogSite homepage surfaces — HeroContent, MyWork, Socials, and MainSiteLinks — on BlogSiteOptions in one pass."
 uid: how-to.configuration.blogsite-homepage
 order: 202090
@@ -7,10 +7,9 @@ sectionLabel: Configuration
 tags: [blogsite, homepage, socials, hero]
 ---
 
-To wire all four homepage surfaces on a running BlogSite — the hero block, "My Work" card, social-icon row, and top-nav links — in one pass, follow this recipe. For the hand-held walkthrough, see [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials).
+When a BlogSite homepage needs its hero block, "My Work" card, social-icon row, and top-nav links populated in one pass, the four init-only properties on `BlogSiteOptions` cover it. For the hand-held walkthrough, see [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials).
 
 ## Assumptions
-
 
 - A running BlogSite built with `AddBlogSite` / `UseBlogSite` (see [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold) if not).
 - At least one post under `BlogContentPath` so the recent-posts slot is not empty (see [Author your first post with BlogSiteFrontMatter](xref:tutorials.blogsite.first-post)).
@@ -20,13 +19,9 @@ For a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](https:/
 
 ---
 
-## Steps
+## Options
 
-
-<Steps>
-<Step StepNumber="1">
-
-**Set `HeroContent` for the headline block**
+### Set `HeroContent` for the headline block
 
 `HeroContent` is a two-field positional record (`Title`, `Description`) rendered at the top of `/`. `Description` is emitted as a `MarkupString` in `Home.razor`, so light HTML is permitted; plain prose works for most sites.
 
@@ -38,10 +33,7 @@ T:Pennington.BlogSite.HeroContent
 M:BlogSiteHeroProjectsSocialsExample.Stage1.Run(System.String[])
 ```
 
-</Step>
-<Step StepNumber="2">
-
-**Fill `MyWork` with `Project` entries**
+### Fill `MyWork` with `Project` entries
 
 `MyWork` takes a `Project[]`, where each `Project(Title, Description, Url)` renders as a linked entry in the "My Work" sidebar card. The array is rendered verbatim, so ordering entries in the initializer controls their display order.
 
@@ -53,10 +45,7 @@ T:Pennington.BlogSite.Project
 M:BlogSiteHeroProjectsSocialsExample.Stage2.Run(System.String[])
 ```
 
-</Step>
-<Step StepNumber="3">
-
-**Wire `Socials` with the built-in icon fragments**
+### Wire `Socials` with the built-in icon fragments
 
 `Socials` takes a `SocialLink[]`, where `SocialLink(Icon, Url)` pairs a `RenderFragment` with an `<a href>` target. The four built-in fragments — `GithubIcon`, `BlueskyIcon`, `LinkedInIcon`, `MastodonIcon` — are `static readonly` fields on `Pennington.BlogSite.Components.SocialIcons` and are passed directly without any wrapper type or component registration.
 
@@ -68,10 +57,7 @@ T:Pennington.BlogSite.SocialLink
 src/Pennington.BlogSite/Components/SocialIcons.razor
 ```
 
-</Step>
-<Step StepNumber="4">
-
-**Populate `MainSiteLinks` for the top nav**
+### Populate `MainSiteLinks` for the top nav
 
 `MainSiteLinks` takes a `HeaderLink[]`, where each `HeaderLink(Title, Url)` appears in both the site header and footer via `MainLayout.razor`. Use relative URLs (`/`, `/archive`, `/tags`) so `BaseUrlHtmlRewriter` can prefix them correctly on sub-path deployments.
 
@@ -83,10 +69,11 @@ T:Pennington.BlogSite.HeaderLink
 M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])
 ```
 
-</Step>
-</Steps>
-
 ---
+
+## Result
+
+The homepage at `/` renders the hero block above the post list, the "My Work" card and social-icon row in the right rail, and every `HeaderLink` in both the top nav and the footer. The four surfaces are independent; populating any one renders that surface and leaves the rest at their template defaults.
 
 ## Verify
 

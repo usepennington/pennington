@@ -1,5 +1,5 @@
 ---
-title: "Enable multiple locales"
+title: "Serve the site in multiple languages"
 description: "Populate LocalizationOptions, lay out translated content in locale subdirectories, register UI translations, and wire the locale-routing middleware."
 uid: how-to.configuration.localization
 order: 202050
@@ -7,7 +7,7 @@ sectionLabel: Configuration
 tags: [localization, locales, translations, routing]
 ---
 
-To add one or more additional languages to a working single-locale Pennington site, follow these steps. The page covers wiring options, content layout on disk, routing middleware, and UI translations — everything needed to go live with multiple locales.
+When the site needs to ship in more than one language, the knobs below cover wiring options, content layout on disk, routing middleware, and UI translations — everything needed to take a single-locale site multilingual.
 
 > [!TIP]
 > For a first locale, start with the tutorial [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale); it walks through the same moving parts at a teaching pace.
@@ -22,12 +22,9 @@ For a complete reference setup, the `BeyondLocaleExample` project has English un
 
 ---
 
-## Steps
+## Options
 
-<Steps>
-<Step StepNumber="1">
-
-**Populate `LocalizationOptions` with the default locale and every additional locale**
+### Populate `LocalizationOptions` with the default locale and every additional locale
 
 On a DocSite host, set `DefaultLocale` and call `AddLocale` once per additional language inside `ConfigureLocalization`. On a bare `AddPennington` host, configure `PenningtonOptions.Localization` the same way. The default locale owns the URL root; each additional locale gets a URL prefix matching its code, so choose codes that read well in URLs.
 
@@ -37,10 +34,7 @@ M:BeyondLocaleExample.Stage3.Run(System.String[])
 
 See <xref:reference.api.localization-options> for the `LocalizationOptions` members (`DefaultLocale`, `Locales`, `AddLocale`, `LocaleInfo`).
 
-</Step>
-<Step StepNumber="2">
-
-**Mirror your content tree under `Content/<locale>/` for every non-default locale**
+### Mirror your content tree under `Content/<locale>/` for every non-default locale
 
 Default-locale files stay directly under `ContentRootPath` with no prefix. For each additional locale, create a sibling folder named after the locale code and place translated files there, mirroring the default-locale filenames so `ContentResolver` can pair them. Pages without a translation fall back to the default locale automatically, so shipping does not require a full translation pass.
 
@@ -48,10 +42,7 @@ Default-locale files stay directly under `ContentRootPath` with no prefix. For e
 examples/BeyondLocaleExample/Content/es/about.md
 ```
 
-</Step>
-<Step StepNumber="3">
-
-**Confirm `UsePenningtonLocaleRouting` is in the pipeline**
+### Confirm `UsePenningtonLocaleRouting` is in the pipeline
 
 `UseDocSite` and `UseBlogSite` already register `UsePenningtonLocaleRouting` as the first middleware — template hosts need no extra call. On a bare `AddPennington` host, insert it before `UseRouting` so `LocaleDetectionMiddleware` can strip the locale prefix into `PathBase` ahead of endpoint matching.
 
@@ -59,10 +50,7 @@ examples/BeyondLocaleExample/Content/es/about.md
 app.UsePenningtonLocaleRouting();
 ```
 
-</Step>
-<Step StepNumber="4">
-
-**Add UI string translations through `TranslationOptions`**
+### Add UI string translations through `TranslationOptions`
 
 UI strings rendered by Razor components flow through `IStringLocalizer`, which Pennington backs with the in-memory `TranslationOptions` on `PenningtonOptions.Translations`. Register one entry per locale/key pair inside the `AddPennington` or `AddDocSite` configuration. Keys are free-form, and missing keys fall back to the default locale automatically.
 
@@ -76,10 +64,7 @@ builder.Services.AddPennington(options =>
 
 See <xref:reference.api.translation-options> for the full `TranslationOptions` surface.
 
-</Step>
-<Step StepNumber="5">
-
-**Surface the language switcher**
+### Surface the language switcher
 
 On DocSite, the `LanguageSwitcher` component is already wired into `MainLayout.razor` and activates automatically when `LocalizationOptions.IsMultiLocale` is true; no extra markup required. On a bare host, drop `<LanguageSwitcher />` into the layout wherever the locale picker should appear:
 
@@ -89,10 +74,21 @@ On DocSite, the `LanguageSwitcher` component is already wired into `MainLayout.r
 
 See <xref:reference.ui.utility> for the `LanguageSwitcher` parameter surface.
 
-</Step>
-</Steps>
-
 ---
+
+## Result
+
+The default locale owns the URL root; each additional locale gets a prefix that matches its code. For a site with English (default) and Spanish:
+
+```text
+/                       English home
+/about/                 English about page
+/es/                    Spanish home
+/es/about/              Spanish about page
+/es/missing-page/       falls back to the English page with a fallback banner
+```
+
+The language switcher in the layout lists one entry per registered locale, and each `IStringLocalizer["nav.home"]` resolves to the locale-specific value from `TranslationOptions`.
 
 ## Verify
 

@@ -35,7 +35,10 @@ The personality stays the same; the *register* shifts.
 **Goal:** Solve a specific problem. **Register:** Direct, efficient — get in, solve it, get out.
 - Title describes the outcome, not the feature: "Deploy to GitHub Pages", not "Using the GitHub Pages integration."
 - Open with one sentence of context if needed; often it isn't.
-- Numbered steps, no detours, no concept teaching. Link to Explanation for background.
+- Use `<Steps>` only when each step depends on the previous one being done. For independent options or interface members, use H3 subheadings under a topical H2 — `<Steps>` implies ordering and readers will follow them in sequence. Pages that walk a feature member-by-member are reference, not how-to; re-frame around the user's goal or move them.
+- Default page shape: enumerate variants under topical H2 + H3-per-variant. Inside each H3, write a fenced source block then the actual feature usage right below it so the rendered output appears next to its source — this is what the reader needs for alerts, code-block options, Mdazor components, front-matter keys, etc. Do not wrap variant pages in `<Steps>`.
+- For non-visual output (CLI dump, sitemap.xml, llms.txt, build report), paste a real fenced block. `<RenderedFixture Path="examples/.../foo.md" />` is the exception — only when a complete composed configuration is the unit the reader needs to see; do not use it as a default "show output" mechanism.
+- No concept teaching in the body; link to Explanation for background.
 - **Language:** "To do X…", "When you need…", "If you're working with…"
 
 ### Explanations (understanding-oriented)
