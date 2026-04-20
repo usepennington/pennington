@@ -52,4 +52,14 @@ public record MemberDescriptor(
     string? DefaultValue,
     bool IsRequired,
     ParsedXmlDoc Xmldoc,
-    MemberKind Kind);
+    MemberKind Kind)
+{
+    /// <summary>
+    /// True when the source xmldoc carried an <c>&lt;inheritdoc/&gt;</c> directive,
+    /// regardless of whether <see cref="Xmldoc"/> ultimately resolved a summary from
+    /// the inherited base. Consumers use this to suppress "missing summary" warnings
+    /// when the author opted into inheritance but the workspace couldn't resolve
+    /// the base member (e.g. <c>IDisposable.Dispose</c> from external metadata).
+    /// </summary>
+    public bool HasInheritDocDirective { get; init; }
+}

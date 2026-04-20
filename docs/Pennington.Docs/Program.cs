@@ -71,9 +71,20 @@ builder.Services.AddPenningtonRoslyn(roslyn =>
 
 // Auto-publishes /reference/api/{slug}/ pages and registers the reference
 // Mdazor components (<ApiMemberTable>, <ApiSummary>, <ExtensionMethods>, ...).
-// Default ProjectFilter excludes Pennington.Docs (the entry assembly) and
-// any *.Tests / *.IntegrationTests projects.
-builder.Services.AddApiReference();
+// Scope to Pennington.* projects so example apps in Pennington.slnx don't
+// leak into /reference/api/.
+var defaultApiFilter = ApiReferenceOptions.DefaultProjectFilter();
+builder.Services.AddApiReference(opts =>
+{
+    opts.ProjectFilter = project =>
+    {
+        if (!defaultApiFilter(project)) return false;
+        var name = project.Name;
+        var paren = name.IndexOf('(');
+        if (paren > 0) name = name[..paren];
+        return name == "Pennington" || name.StartsWith("Pennington.", StringComparison.Ordinal);
+    };
+});
 
 // Pennington-specific front-matter key catalog. Stays here because it is
 // coupled to Pennington.FrontMatter.IFrontMatter and the capability interfaces.

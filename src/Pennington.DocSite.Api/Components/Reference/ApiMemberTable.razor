@@ -197,7 +197,7 @@ else
         var rows = new List<ApiDefinitionRow>(members.Count);
         foreach (var m in members)
         {
-            if (!m.Xmldoc.HasSummary)
+            if (!m.Xmldoc.HasSummary && !m.HasInheritDocDirective)
             {
                 Diagnostics?.AddWarning($"Member {m.XmlDocId} has no <summary>");
             }
@@ -217,7 +217,7 @@ else
         var entries = new List<MemberEntry>(members.Count);
         foreach (var m in members)
         {
-            if (!m.Xmldoc.HasSummary)
+            if (!m.Xmldoc.HasSummary && !m.HasInheritDocDirective)
             {
                 Diagnostics?.AddWarning($"Member {m.XmlDocId} has no <summary>");
             }

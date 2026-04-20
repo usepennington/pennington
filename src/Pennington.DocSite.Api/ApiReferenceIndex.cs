@@ -116,10 +116,14 @@ public sealed partial class ApiReferenceIndex
         if (type.DeclaredAccessibility != Accessibility.Public) return false;
         if (type.IsImplicitlyDeclared) return false;
         if (type.TypeKind is TypeKind.Delegate or TypeKind.Error or TypeKind.Module) return false;
+        if (IsTopLevelStatementsProgram(type)) return false;
         if (InheritsFrom(type, "System.Attribute")) return false;
         if (InheritsFrom(type, "Microsoft.AspNetCore.Components.ComponentBase")) return false;
         return true;
     }
+
+    private static bool IsTopLevelStatementsProgram(INamedTypeSymbol type)
+        => type.Name == "Program" && type.ContainingNamespace.IsGlobalNamespace;
 
     private static bool InheritsFrom(INamedTypeSymbol type, string fullyQualifiedBase)
     {

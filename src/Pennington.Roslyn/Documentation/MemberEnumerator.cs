@@ -73,6 +73,8 @@ internal sealed class MemberEnumerator : IMemberEnumerator
 
         var docId = symbol.GetDocumentationCommentId() ?? string.Empty;
         var rawXml = symbol.GetDocumentationCommentXml();
+        var hasInheritDoc = !string.IsNullOrWhiteSpace(rawXml)
+            && rawXml.Contains("inheritdoc", System.StringComparison.Ordinal);
         var resolvedXml = InheritDocResolver.Resolve(rawXml, symbol);
         resolvedXml = RecordParamFallbackResolver.Resolve(resolvedXml, symbol);
         var parsedXml = _xmlDocParser.Parse(resolvedXml);
@@ -86,7 +88,8 @@ internal sealed class MemberEnumerator : IMemberEnumerator
                 DefaultValue: ExtractPropertyDefault(p),
                 IsRequired: p.IsRequired,
                 Xmldoc: parsedXml,
-                Kind: memberKind.Value),
+                Kind: memberKind.Value)
+            { HasInheritDocDirective = hasInheritDoc },
             IFieldSymbol f => new MemberDescriptor(
                 Name: f.Name,
                 XmlDocId: docId,
@@ -94,7 +97,8 @@ internal sealed class MemberEnumerator : IMemberEnumerator
                 DefaultValue: ExtractFieldDefault(f),
                 IsRequired: f.IsRequired,
                 Xmldoc: parsedXml,
-                Kind: memberKind.Value),
+                Kind: memberKind.Value)
+            { HasInheritDocDirective = hasInheritDoc },
             IMethodSymbol m => new MemberDescriptor(
                 Name: FormatMethodName(m),
                 XmlDocId: docId,
@@ -102,7 +106,8 @@ internal sealed class MemberEnumerator : IMemberEnumerator
                 DefaultValue: null,
                 IsRequired: false,
                 Xmldoc: parsedXml,
-                Kind: memberKind.Value),
+                Kind: memberKind.Value)
+            { HasInheritDocDirective = hasInheritDoc },
             IEventSymbol e => new MemberDescriptor(
                 Name: e.Name,
                 XmlDocId: docId,
@@ -110,7 +115,8 @@ internal sealed class MemberEnumerator : IMemberEnumerator
                 DefaultValue: null,
                 IsRequired: false,
                 Xmldoc: parsedXml,
-                Kind: memberKind.Value),
+                Kind: memberKind.Value)
+            { HasInheritDocDirective = hasInheritDoc },
             _ => null,
         };
     }

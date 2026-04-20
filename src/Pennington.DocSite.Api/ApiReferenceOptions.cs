@@ -14,16 +14,22 @@ public sealed record ApiReferenceOptions
     /// projects and the entry assembly's own project (so a doc site doesn't publish
     /// reference pages for itself).
     /// </summary>
-    public Predicate<Project>? ProjectFilter { get; init; }
+    public Predicate<Project>? ProjectFilter { get; set; }
 
     /// <summary>
     /// Additional per-type inclusion predicate applied on top of the built-in
     /// rules (public, non-delegate, non-attribute, non-<c>ComponentBase</c>, has xmldoc).
     /// When null, no extra filtering is applied.
     /// </summary>
-    public Predicate<INamedTypeSymbol>? TypeFilter { get; init; }
+    public Predicate<INamedTypeSymbol>? TypeFilter { get; set; }
 
-    internal static Predicate<Project> DefaultProjectFilter()
+    /// <summary>
+    /// The built-in project filter applied when <see cref="ProjectFilter"/> is null:
+    /// excludes <c>*.Tests</c> / <c>*.IntegrationTests</c> projects and the entry
+    /// assembly. Returned as a delegate so consumers can compose it with extra
+    /// constraints (e.g. AND-ing a <c>Name.StartsWith("MyLibrary")</c> check).
+    /// </summary>
+    public static Predicate<Project> DefaultProjectFilter()
     {
         var entryName = Assembly.GetEntryAssembly()?.GetName().Name;
         return project =>
