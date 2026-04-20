@@ -1,28 +1,31 @@
-namespace Pennington.Docs.ApiReference;
+namespace Pennington.DocSite.Api;
 
 using Microsoft.CodeAnalysis;
 using Pennington.Roslyn.Workspace;
 
-internal static class ApiReferenceWorkspace
+/// <summary>
+/// Workspace helpers used by the API reference indexes to enumerate the
+/// configured projects and their public types.
+/// </summary>
+public static class ApiReferenceWorkspace
 {
-    public static Task<IEnumerable<Project>> GetPenningtonProjectsAsync(ISolutionWorkspaceService workspace)
-        => workspace.GetProjectsAsync(IsPenningtonSourceProject);
-
-    private static bool IsPenningtonSourceProject(Project project)
+    /// <summary>
+    /// Returns every project in the solution that passes <paramref name="filter"/>.
+    /// When <paramref name="filter"/> is null, the default filter from
+    /// <see cref="ApiReferenceOptions.DefaultProjectFilter"/> is used.
+    /// </summary>
+    public static Task<IEnumerable<Project>> GetFilteredProjectsAsync(
+        ISolutionWorkspaceService workspace,
+        Predicate<Project>? filter)
     {
-        var name = StripTargetFrameworkSuffix(project.Name);
-        return name.StartsWith("Pennington", StringComparison.Ordinal)
-            && !name.EndsWith(".Tests", StringComparison.Ordinal)
-            && !name.EndsWith(".IntegrationTests", StringComparison.Ordinal)
-            && name != "Pennington.Docs";
+        var effective = filter ?? ApiReferenceOptions.DefaultProjectFilter();
+        return workspace.GetProjectsAsync(p => effective(p));
     }
 
-    private static string StripTargetFrameworkSuffix(string name)
-    {
-        var open = name.LastIndexOf('(');
-        return open >= 0 && name.EndsWith(')') ? name[..open] : name;
-    }
-
+    /// <summary>
+    /// Walks every type (optionally including nested types) under
+    /// <paramref name="root"/>.
+    /// </summary>
     public static IEnumerable<INamedTypeSymbol> EnumerateTypes(
         INamespaceSymbol root,
         bool includeNested = false)

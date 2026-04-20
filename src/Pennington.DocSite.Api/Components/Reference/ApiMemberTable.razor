@@ -164,7 +164,6 @@ else
 
     private IReadOnlyList<MemberGroup> BuildGroups(IReadOnlyList<MemberDescriptor> members)
     {
-        // Display order for grouped rendering: Properties, Constructors, Fields, Methods, Events.
         var order = new[]
         {
             MemberKind.Properties,

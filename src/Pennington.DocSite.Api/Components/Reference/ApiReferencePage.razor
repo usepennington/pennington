@@ -1,7 +1,6 @@
 @page "/reference/api/{Key}"
 @layout Pennington.DocSite.Components.Layout.MainLayout
 @using Microsoft.AspNetCore.Components.Web
-@using Pennington.Docs.ApiReference
 @inject ApiReferenceIndex Index
 
 @if (_entry is null)
@@ -10,7 +9,7 @@
 }
 else
 {
-    <PageTitle>@_entry.FullTypeName — Pennington</PageTitle>
+    <PageTitle>@_entry.FullTypeName</PageTitle>
     <HeadContent>
         @if (!string.IsNullOrEmpty(_entry.Summary))
         {

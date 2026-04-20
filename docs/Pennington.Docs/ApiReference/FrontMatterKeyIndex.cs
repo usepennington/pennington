@@ -2,6 +2,7 @@ namespace Pennington.Docs.ApiReference;
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Pennington.DocSite.Api;
 using Pennington.Infrastructure;
 using Pennington.Roslyn.Workspace;
 
@@ -33,11 +34,13 @@ internal sealed class FrontMatterKeyIndex
     ];
 
     private readonly ISolutionWorkspaceService _workspace;
+    private readonly ApiReferenceOptions _options;
     private readonly AsyncLazy<ImmutableArray<FrontMatterKeyEntry>> _entries;
 
-    public FrontMatterKeyIndex(ISolutionWorkspaceService workspace)
+    public FrontMatterKeyIndex(ISolutionWorkspaceService workspace, ApiReferenceOptions options)
     {
         _workspace = workspace;
+        _options = options;
         _entries = new AsyncLazy<ImmutableArray<FrontMatterKeyEntry>>(BuildAsync);
     }
 
@@ -45,7 +48,7 @@ internal sealed class FrontMatterKeyIndex
 
     private async Task<ImmutableArray<FrontMatterKeyEntry>> BuildAsync()
     {
-        var projects = await ApiReferenceWorkspace.GetPenningtonProjectsAsync(_workspace);
+        var projects = await ApiReferenceWorkspace.GetFilteredProjectsAsync(_workspace, _options.ProjectFilter);
 
         var observations = new List<(string YamlKey, string Clr, string TypeDisplay, string? DefaultValue, string Record, string Surface, string XmlDocId)>();
 

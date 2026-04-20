@@ -1,9 +1,9 @@
 using Mdazor;
-using Pennington.Content;
 using Pennington.Docs;
 using Pennington.Docs.ApiReference;
 using Pennington.Docs.Components.Reference;
 using Pennington.DocSite;
+using Pennington.DocSite.Api;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
 using Pennington.Roslyn;
@@ -69,31 +69,20 @@ builder.Services.AddPenningtonRoslyn(roslyn =>
     roslyn.SolutionPath = "../../Pennington.slnx";
 });
 
+// Auto-publishes /reference/api/{slug}/ pages and registers the reference
+// Mdazor components (<ApiMemberTable>, <ApiSummary>, <ExtensionMethods>, ...).
+// Default ProjectFilter excludes Pennington.Docs (the entry assembly) and
+// any *.Tests / *.IntegrationTests projects.
+builder.Services.AddApiReference();
+
+// Pennington-specific front-matter key catalog. Stays here because it is
+// coupled to Pennington.FrontMatter.IFrontMatter and the capability interfaces.
+builder.Services.AddSingleton<FrontMatterKeyIndex>();
+builder.Services.AddMdazorComponent<FrontMatterKeys>();
+
 // Dev-time full-screen dashboard. No-ops when the host is launched with
 // `dotnet run -- build`, so the static build path is unchanged.
 builder.Services.AddPenningtonTui();
-
-// Reference-doc Mdazor components: generate property tables, member lists, and
-// xmldoc content directly from the source via Roslyn.
-builder.Services
-    .AddMdazorComponent<ApiMemberTable>()
-    .AddMdazorComponent<ApiMemberList>()
-    .AddMdazorComponent<ApiParameterTable>()
-    .AddMdazorComponent<ApiSummary>()
-    .AddMdazorComponent<ApiReturns>()
-    .AddMdazorComponent<ApiRemarks>()
-    .AddMdazorComponent<ApiSeeAlso>()
-    .AddMdazorComponent<FieldList>()
-    .AddMdazorComponent<Field>()
-    .AddMdazorComponent<ExtensionMethods>()
-    .AddMdazorComponent<FrontMatterKeys>();
-
-// Auto-publishes /reference/api/{slug}/ pages (one per public Pennington type)
-// backed by ApiReferencePage.razor. Out of the sidebar TOC; in search and llms.txt.
-builder.Services.AddSingleton<ApiReferenceIndex>();
-builder.Services.AddSingleton<IContentService, ApiReferenceContentService>();
-builder.Services.AddSingleton<ExtensionMethodIndex>();
-builder.Services.AddSingleton<FrontMatterKeyIndex>();
 
 var app = builder.Build();
 app.UseDocSite();

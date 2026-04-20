@@ -1,14 +1,14 @@
-namespace Pennington.Docs.ApiReference;
+namespace Pennington.DocSite.Api;
 
 using System.Collections.Immutable;
-using Content;
-using Pipeline;
-using Routing;
+using Pennington.Content;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
 /// <summary>
-/// Publishes one <c>/reference/api/{slug}/</c> entry per public Pennington
-/// type (discovered via <see cref="ApiReferenceIndex"/>), backed by the
-/// parameterized <c>ApiReferencePage.razor</c> template.
+/// Publishes one <c>/reference/api/{slug}/</c> entry per discovered public
+/// type (via <see cref="ApiReferenceIndex"/>), backed by the parameterized
+/// <c>ApiReferencePage.razor</c> template.
 /// <para>
 /// TOC entries are deliberately empty — these pages do not appear in the
 /// sidebar. Search and llms.txt indexing stay on via

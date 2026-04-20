@@ -1,99 +1,120 @@
 ---
 title: "Auto-generate an API reference tree for a class library"
-description: "Walk the Roslyn workspace once on startup, emit one `/reference/api/{type}/` page per public type, and render member tables from xmldoc comments — the same pipeline Pennington's own docs site uses."
+description: "Add Pennington.DocSite.Api, call AddApiReference, and get one /reference/api/{type}/ page per public type plus inline Mdazor components for member tables, summaries, and extension-method catalogs."
 uid: how-to.extensibility.auto-api-reference
 order: 203080
 sectionLabel: Extensibility
 tags: [extensibility, roslyn, xmldoc, api-reference, content-service]
 ---
 
-To ship a DocSite whose reference section stays in sync with a class library's public surface — no hand-written type pages, no member lists to keep current — pair `Pennington.Roslyn`'s documentation primitives (`IMemberEnumerator`, `IXmlDocParser`, `IXmlDocHtmlRenderer`) with a custom `IContentService` that enumerates types from the Roslyn workspace. The three pieces to write are an *index* (walks the workspace once, publishes slug → type entries), a *content service* (yields one route per entry), and a *Razor page* (reads the xmldocid from its route parameter and renders members via the injected primitives).
-
-This is the same plumbing Pennington's own docs site uses. The source lives at `docs/Pennington.Docs/ApiReference/` and `docs/Pennington.Docs/Components/Reference/` — fenced below as the worked example.
+To ship a DocSite whose reference section stays in sync with a class library's public surface, add the `Pennington.DocSite.Api` package and call `AddApiReference()`. One Razor template renders every public type, and a handful of Mdazor components (`<ApiMemberTable>`, `<ApiSummary>`, `<ExtensionMethods>`, `<ApiParameterTable>`) are available inline in markdown for hand-authored reference pages. The Roslyn workspace is walked once on first request; every downstream page, search entry, and xref keys off that single pass.
 
 ## Before you begin
 
-- Completed <xref:tutorials.beyond-basics.connect-roslyn>, so `AddPenningtonRoslyn` is wired and `SolutionPath` points at a solution containing the library you want to document.
+- Completed <xref:tutorials.beyond-basics.connect-roslyn>, so `AddPenningtonRoslyn` is wired and `SolutionPath` points at the solution containing the library you want to document.
 - The target library has `<GenerateDocumentationFile>true</GenerateDocumentationFile>` — without that, `ISymbol.GetDocumentationCommentXml()` returns empty strings and the generated pages have no prose.
-- Familiarity with <xref:how-to.extensibility.custom-content-service> — this how-to layers an auto-generated source on top of the `IContentService` contract covered there.
+- `AddDocSite` is already wired: `AddApiReference` appends its own assembly to `DocSiteOptions.AdditionalRoutingAssemblies` at registration time, so it must run after `AddDocSite`.
 
-## 1. Build the index
+## Wire the package
 
-Walk the workspace once on first request, filter to the types you want to document, and publish a `slug → entry` map. Every downstream component (the content service, the Razor page, xref resolution) keys off one of those slugs, so the index is the single place where discovery rules live.
-
-The snippet below collects every public type across the matching projects, skips attributes and `ComponentBase` subclasses, and falls back to a namespace-qualified slug when two types share a name. `ISolutionWorkspaceService` is the interface `AddPenningtonRoslyn` registers for low-level workspace access.
-
-```csharp:path
-docs/Pennington.Docs/ApiReference/ApiReferenceIndex.cs
-```
-
-The `ApiReferenceWorkspace` helper narrows the project set (replace the `Pennington`-prefixed check with a predicate that matches your library) and flattens nested types:
-
-```csharp:path
-docs/Pennington.Docs/ApiReference/ApiReferenceWorkspace.cs
-```
-
-## 2. Emit one route per entry
-
-The content service is thin — its entire job is to project index entries into `DiscoveredItem`s and cross-references. No sidebar entries (the generated API pages live under `/reference/api/` but are reached from type-name search and xref, not from the TOC), no content-to-copy, no content-to-create.
-
-```csharp:path
-docs/Pennington.Docs/ApiReference/ApiReferenceContentService.cs
-```
-
-Two details worth noting:
-
-- `DiscoverAsync` yields a `RazorPageSource` with the component's `AssemblyQualifiedName`. Combined with the `@page "/reference/api/{Key}"` route on the Razor page below, that's how one Razor file renders thousands of URLs.
-- `GetIndexableEntriesAsync` is the opt-in channel for "this content should be searchable and llms.txt-indexed, but not sidebar-listed". Returning entries there without also returning them from `GetContentTocEntriesAsync` is exactly the pattern for auto-generated reference surfaces.
-
-## 3. Render a page per type
-
-The Razor page is parameterised on a route key, looks the entry up in the index, and delegates all the member rendering to the Pennington.UI reference components (`<ApiSummary>`, `<ApiMemberTable>`) which in turn inject `IMemberEnumerator` and `IXmlDocHtmlRenderer`.
-
-```razor:path
-docs/Pennington.Docs/Components/Reference/ApiReferencePage.razor
-```
-
-`<ApiMemberTable XmlDocId="@_entry.XmlDocId" Kind="All" />` pulls the full member set in one call; narrow it to `Kind="Properties"` or `Kind="Methods"` if the layout calls for separate tables per kind.
-
-### Available primitives
-
-`AddPenningtonRoslyn` registers these three services; inject them directly into Razor components or plain C# services as needed:
-
-| Interface | Purpose |
-|---|---|
-| `IMemberEnumerator` | `EnumerateAsync(xmldocid, kind, access, order)` returns a list of `MemberDescriptor` records with parsed xmldoc and a formatted type signature. |
-| `IXmlDocParser` | Turns the raw XML string from `ISymbol.GetDocumentationCommentXml()` into a `ParsedXmlDoc` tree. Use when authoring a custom renderer. |
-| `IXmlDocHtmlRenderer` | Renders `ParsedXmlDoc` nodes to HTML (`RenderHtml` for block, `RenderInlineHtml` for table-cell contexts). |
-
-## 4. Wire it into the host
-
-Register the index as a singleton, the content service both concretely and via `IContentService`, and make sure `AddPenningtonRoslyn` runs first so the workspace is available.
+Add a project reference to `Pennington.DocSite.Api` and call `AddApiReference` after `AddDocSite` and `AddPenningtonRoslyn`. With no arguments, the default `ProjectFilter` excludes `*.Tests` / `*.IntegrationTests` projects and the entry assembly itself (so the docs host does not publish reference pages for its own types).
 
 ```csharp
-builder.Services.AddPenningtonRoslyn(opts =>
-    opts.SolutionPath = "../MyLibrary.slnx");
-
-builder.Services.AddSingleton<ApiReferenceIndex>();
-builder.Services.AddSingleton<ApiReferenceContentService>();
-builder.Services.AddSingleton<IContentService>(sp =>
-    sp.GetRequiredService<ApiReferenceContentService>());
+builder.Services.AddDocSite(() => new DocSiteOptions { /* ... */ });
+builder.Services.AddPenningtonRoslyn(r => r.SolutionPath = "../MyLibrary.slnx");
+builder.Services.AddApiReference();
 ```
+
+The call registers the `/reference/api/` index page, the per-type `/reference/api/{slug}/` template, the `IContentService` that publishes them, and every Mdazor component listed below.
+
+## Narrow what gets published
+
+### Limit the projects walked with `ProjectFilter`
+
+Pass a predicate when a single solution mixes libraries you want to document with ones you do not — integration fixtures, sample apps, unrelated utility projects. The predicate receives the Roslyn `Project` directly, so filters on `Name`, `AssemblyName`, or language work equally well.
+
+```csharp
+builder.Services.AddApiReference(opts =>
+{
+    opts.ProjectFilter = project =>
+        project.Name.StartsWith("MyLibrary", StringComparison.Ordinal)
+        && !project.Name.EndsWith(".Tests", StringComparison.Ordinal);
+});
+```
+
+### Hide individual types with `TypeFilter`
+
+`TypeFilter` runs on top of the built-in rules (public, non-delegate, non-attribute, non-`ComponentBase`, has xmldoc). Use it to drop a namespace that is public only by build necessity, or to skip types tagged with a marker attribute.
+
+```csharp
+builder.Services.AddApiReference(opts =>
+{
+    opts.TypeFilter = type =>
+        type.ContainingNamespace.ToDisplayString() != "MyLibrary.Internal"
+        && !type.GetAttributes().Any(a => a.AttributeClass?.Name == "InternalApiAttribute");
+});
+```
+
+## Render reference fragments inline
+
+### Summarize one symbol with `<ApiSummary>`
+
+Pulls the `<summary>` tag off a type or member and renders it as prose. Pass an xmldocid as `XmlDocId`.
+
+````markdown
+<ApiSummary XmlDocId="T:Pennington.DocSite.Api.ApiReferenceOptions" />
+````
+
+<ApiSummary XmlDocId="T:Pennington.DocSite.Api.ApiReferenceOptions" />
+
+### Enumerate type members with `<ApiMemberTable>`
+
+`Kind="All"` groups members by category (Properties, Constructors, Fields, Methods, Events) with headings between; narrow it with `Kind="Properties"` or `Kind="Methods"` for a single bucket.
+
+````markdown
+<ApiMemberTable XmlDocId="T:Pennington.DocSite.Api.ApiReferenceOptions" Kind="Properties" />
+````
+
+<ApiMemberTable XmlDocId="T:Pennington.DocSite.Api.ApiReferenceOptions" Kind="Properties" />
+
+### List a method's parameters with `<ApiParameterTable>`
+
+Pass a method xmldocid (`M:...`). The table pulls parameter names and types from the symbol and descriptions from each `<param>` tag.
+
+````markdown
+<ApiParameterTable XmlDocId="M:Pennington.DocSite.Api.ApiReferenceServiceExtensions.AddApiReference(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.DocSite.Api.ApiReferenceOptions})" />
+````
+
+<ApiParameterTable XmlDocId="M:Pennington.DocSite.Api.ApiReferenceServiceExtensions.AddApiReference(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Pennington.DocSite.Api.ApiReferenceOptions})" />
+
+### Catalog extension methods by receiver with `<ExtensionMethods>`
+
+Groups every public extension method in the workspace by the unqualified short name of its first (receiver) parameter. `Receiver="IServiceCollection"` gathers every `services.AddX()` helper the library ships.
+
+````markdown
+<ExtensionMethods Receiver="IServiceCollection" />
+````
 
 ## Result
 
-One page per public type appears at `/reference/api/{slug}/`, with summary, member table, and xref ids auto-published:
+Every public type with an xmldoc comment gets a route under `/reference/api/{slug}/`:
 
 ```text
-/reference/api/calculator/        -> uid: reference.api.calculator
-/reference/api/greeter/           -> uid: reference.api.greeter
-/reference/api/options-record/    -> uid: reference.api.options-record
+/reference/api/                        -> uid: reference.api
+/reference/api/api-reference-options/  -> uid: reference.api.api-reference-options
+/reference/api/extension-method-index/ -> uid: reference.api.extension-method-index
 ```
 
-`<xref:reference.api.calculator>` in any markdown page now links to the generated page, and the pages flow through search and llms.txt the same as hand-authored content.
+Xref links like `<xref:reference.api.api-reference-options>` resolve, the pages flow through search and llms.txt, and the index page at `/reference/api/` lists every type grouped by namespace. Nothing appears in the sidebar TOC — the generated pages are reached via type-name search, xref links, and the index page.
+
+## Verify
+
+- Run `dotnet run` and visit `/reference/api/` — expect one `<li>` per public documented type, grouped by namespace.
+- Visit `/reference/api/{some-type-slug}/` for a type you know has an xmldoc `<summary>` — expect the summary prose and a member table grouped by kind.
+- Add `<xref:reference.api.{slug}>` to any markdown page and confirm it resolves to the generated page after a rebuild.
 
 ## Related
 
-- Tutorial: <xref:tutorials.beyond-basics.connect-roslyn> — the `AddPenningtonRoslyn` / `SolutionPath` wire-up this how-to extends.
-- How-to: <xref:how-to.extensibility.custom-content-service> — the generic `IContentService` recipe; this page is a specialization.
-- Reference: <xref:reference.api.i-member-enumerator>, <xref:reference.api.i-xml-doc-parser>, <xref:reference.api.i-xml-doc-html-renderer> — the three primitives.
+- Tutorial: <xref:tutorials.beyond-basics.connect-roslyn> — the `AddPenningtonRoslyn` / `SolutionPath` wire-up this how-to builds on.
+- How-to: <xref:how-to.extensibility.custom-content-service> — hand-write an `IContentService` when `AddApiReference`'s discovery rules are not the right shape.
+- Reference: <xref:reference.api.api-reference-options>, <xref:reference.api.api-reference-service-extensions>.

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Pennington.DocSite\Pennington.DocSite.csproj" />
+    <ProjectReference Include="..\Pennington.Roslyn\Pennington.Roslyn.csproj" />
+  </ItemGroup>
+</Project>

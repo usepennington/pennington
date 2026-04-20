@@ -1,4 +1,4 @@
-namespace Pennington.Docs.ApiReference;
+namespace Pennington.DocSite.Api;
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
@@ -6,9 +6,10 @@ using Pennington.Infrastructure;
 using Pennington.Roslyn.Workspace;
 
 /// <summary>
-/// One public static extension method discovered in a Pennington assembly, projected for reference-doc rendering.
+/// One public static extension method discovered in a workspace assembly,
+/// projected for reference-doc rendering.
 /// </summary>
-internal sealed record ExtensionMethodEntry(
+public sealed record ExtensionMethodEntry(
     string Name,
     string Signature,
     string Package,
@@ -16,27 +17,32 @@ internal sealed record ExtensionMethodEntry(
     string ReceiverTypeName);
 
 /// <summary>
-/// Singleton that walks every <c>*Extensions</c> static class in the Pennington solution once and groups public
-/// extension methods by the unqualified short name of their receiver type (<c>IServiceCollection</c>,
-/// <c>WebApplication</c>, <c>IEndpointRouteBuilder</c>, etc.) for the host-integration reference page.
+/// Singleton that walks every <c>*Extensions</c> static class in the configured
+/// projects and groups public extension methods by the unqualified short name
+/// of their receiver type (<c>IServiceCollection</c>, <c>WebApplication</c>,
+/// etc.) for the host-integration reference page.
 /// </summary>
-internal sealed class ExtensionMethodIndex
+public sealed class ExtensionMethodIndex
 {
     private readonly ISolutionWorkspaceService _workspace;
+    private readonly ApiReferenceOptions _options;
     private readonly AsyncLazy<ImmutableDictionary<string, ImmutableArray<ExtensionMethodEntry>>> _entries;
 
-    public ExtensionMethodIndex(ISolutionWorkspaceService workspace)
+    /// <summary>Initializes the index.</summary>
+    public ExtensionMethodIndex(ISolutionWorkspaceService workspace, ApiReferenceOptions options)
     {
         _workspace = workspace;
+        _options = options;
         _entries = new AsyncLazy<ImmutableDictionary<string, ImmutableArray<ExtensionMethodEntry>>>(BuildAsync);
     }
 
+    /// <summary>Gets the receiver-name → extension-method-entries map, building it on first access.</summary>
     public Task<ImmutableDictionary<string, ImmutableArray<ExtensionMethodEntry>>> GetEntriesAsync()
         => _entries.Value;
 
     private async Task<ImmutableDictionary<string, ImmutableArray<ExtensionMethodEntry>>> BuildAsync()
     {
-        var projects = await ApiReferenceWorkspace.GetPenningtonProjectsAsync(_workspace);
+        var projects = await ApiReferenceWorkspace.GetFilteredProjectsAsync(_workspace, _options.ProjectFilter);
 
         var collected = new List<ExtensionMethodEntry>();
 

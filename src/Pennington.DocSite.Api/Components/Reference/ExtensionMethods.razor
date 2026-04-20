@@ -1,12 +1,7 @@
-@* Renders every public extension method whose first (this) parameter short-name
-   matches Receiver, grouped from every *Extensions static class in the solution.
-   Descriptions come from xmldoc; package is prefixed into the description body. *@
-
-@using Pennington.Docs.ApiReference
 @inject ExtensionMethodIndex Index
 @inject IXmlDocParser Parser
 @inject IXmlDocHtmlRenderer Renderer
-@inject Pennington.Roslyn.Symbols.ISymbolExtractionService SymbolService
+@inject ISymbolExtractionService SymbolService
 @inject IHttpContextAccessor HttpContextAccessor
 
 @if (_error is not null)

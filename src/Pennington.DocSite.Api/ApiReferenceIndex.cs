@@ -1,23 +1,24 @@
-namespace Pennington.Docs.ApiReference;
+namespace Pennington.DocSite.Api;
 
 using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Infrastructure;
-using Roslyn.Workspace;
+using Pennington.Infrastructure;
+using Pennington.Roslyn.Workspace;
 
 /// <summary>
-/// One auto-discovered Pennington public type, slugged for use as the
+/// One auto-discovered public type, slugged for use as the
 /// <c>{key}</c> segment of the <c>/reference/api/{key}</c> Razor route.
 /// </summary>
-internal sealed record ApiReferenceEntry(
+public sealed record ApiReferenceEntry(
     string Slug,
     string XmlDocId,
     string TypeName,
     string Namespace,
     string? Summary)
 {
+    /// <summary>Fully-qualified type name (namespace + dot + type name).</summary>
     public string FullTypeName =>
         string.IsNullOrEmpty(Namespace) ? TypeName : $"{Namespace}.{TypeName}";
 }
@@ -26,26 +27,31 @@ internal sealed record ApiReferenceEntry(
 /// Singleton that walks the Roslyn workspace once and publishes a
 /// slug → entry map for the API-reference Razor page and content service.
 /// </summary>
-internal sealed partial class ApiReferenceIndex
+public sealed partial class ApiReferenceIndex
 {
     private readonly ISolutionWorkspaceService _workspace;
+    private readonly ApiReferenceOptions _options;
     private readonly ILogger<ApiReferenceIndex> _logger;
     private readonly AsyncLazy<ImmutableDictionary<string, ApiReferenceEntry>> _entries;
 
+    /// <summary>Initializes the index.</summary>
     public ApiReferenceIndex(
         ISolutionWorkspaceService workspace,
+        ApiReferenceOptions options,
         ILogger<ApiReferenceIndex> logger)
     {
         _workspace = workspace;
+        _options = options;
         _logger = logger;
         _entries = new AsyncLazy<ImmutableDictionary<string, ApiReferenceEntry>>(BuildAsync);
     }
 
+    /// <summary>Gets the slug → entry map, building it on first access.</summary>
     public Task<ImmutableDictionary<string, ApiReferenceEntry>> GetEntriesAsync() => _entries.Value;
 
     private async Task<ImmutableDictionary<string, ApiReferenceEntry>> BuildAsync()
     {
-        var projects = await ApiReferenceWorkspace.GetPenningtonProjectsAsync(_workspace);
+        var projects = await ApiReferenceWorkspace.GetFilteredProjectsAsync(_workspace, _options.ProjectFilter);
 
         var collected = new List<ApiReferenceEntry>();
         var seenXmlDocIds = new HashSet<string>(StringComparer.Ordinal);
@@ -58,6 +64,7 @@ internal sealed partial class ApiReferenceIndex
             foreach (var type in ApiReferenceWorkspace.EnumerateTypes(compilation.Assembly.GlobalNamespace, includeNested: true))
             {
                 if (!ShouldInclude(type)) continue;
+                if (_options.TypeFilter is { } extra && !extra(type)) continue;
 
                 var xmldoc = type.GetDocumentationCommentXml();
                 if (string.IsNullOrWhiteSpace(xmldoc)) continue;
