@@ -31,7 +31,7 @@ public sealed class RedirectContentService : IContentService
     private readonly IServiceProvider _serviceProvider;
     private readonly PenningtonOptions _pennOptions;
     private readonly IFileSystem _fileSystem;
-    private readonly AsyncLazy<ImmutableDictionary<string, string>> _mappingsLazy;
+    private AsyncLazy<ImmutableDictionary<string, string>> _mappingsLazy;
 
     /// <summary>
     /// Initializes the service and prepares lazy loading of the unified redirect map.
@@ -39,12 +39,21 @@ public sealed class RedirectContentService : IContentService
     public RedirectContentService(
         IServiceProvider serviceProvider,
         PenningtonOptions pennOptions,
-        IFileSystem fileSystem)
+        IFileSystem fileSystem,
+        IFileWatcher fileWatcher)
     {
         _serviceProvider = serviceProvider;
         _pennOptions = pennOptions;
         _fileSystem = fileSystem;
         _mappingsLazy = new AsyncLazy<ImmutableDictionary<string, string>>(LoadMappingsAsync);
+
+        // Reset the cached redirect map on any file change so edits to
+        // _redirects.yml or to per-page redirectUrl front matter flow through
+        // the middleware without a restart.
+        fileWatcher.SubscribeToChanges(() =>
+        {
+            _mappingsLazy = new AsyncLazy<ImmutableDictionary<string, string>>(LoadMappingsAsync);
+        });
     }
 
     /// <inheritdoc/>

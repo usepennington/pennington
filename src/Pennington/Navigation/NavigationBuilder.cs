@@ -1,5 +1,6 @@
 namespace Pennington.Navigation;
 
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using Content;
 using Routing;
@@ -7,6 +8,17 @@ using Routing;
 /// <summary>Builds hierarchical navigation trees and related navigation metadata from flat TOC entries.</summary>
 public sealed class NavigationBuilder
 {
+    private static readonly ContentRoute EmptySectionRoute = new()
+    {
+        CanonicalPath = new UrlPath(""),
+        OutputFile = new FilePath("")
+    };
+
+    // Cache of structural (unselected) trees keyed by (locale, fingerprint of input items).
+    // Populated lazily per unique (items, locale) combination; cleared when the enclosing
+    // FileWatchDependencyFactory drops this instance on a file-change signal.
+    private readonly ConcurrentDictionary<CacheKey, ImmutableList<NavigationTreeItem>> _structuralCache = new();
+
     /// <summary>
     /// Build a navigation tree from flat TOC items.
     /// When <paramref name="locale"/> is specified, filters to that locale and
@@ -17,8 +29,10 @@ public sealed class NavigationBuilder
         ContentRoute? currentRoute = null,
         string? locale = null)
     {
-        var filtered = FilterByLocale(items, locale);
-        return BuildLevel(filtered, [], currentRoute);
+        var structural = GetOrBuildStructural(items, locale);
+        return currentRoute is null
+            ? structural
+            : StampSelection(structural, currentRoute);
     }
 
     /// <summary>
@@ -50,118 +64,202 @@ public sealed class NavigationBuilder
         );
     }
 
-    private ImmutableList<NavigationTreeItem> BuildLevel(
-        IReadOnlyList<ContentTocItem> allItems,
-        string[] parentParts,
-        ContentRoute? currentRoute)
+    private ImmutableList<NavigationTreeItem> GetOrBuildStructural(
+        IReadOnlyList<ContentTocItem> items, string? locale)
     {
-        var depth = parentParts.Length;
+        var key = ComputeCacheKey(items, locale);
+        return _structuralCache.GetOrAdd(key, _ =>
+        {
+            var filtered = FilterByLocale(items, locale);
+            return BuildLevel(filtered, depth: 0, isRoot: true);
+        });
+    }
 
-        // Find items exactly at this level. DistinctBy(CanonicalPath) is a defensive
-        // pass against two content sources registering overlapping subtrees (e.g. a
+    private static ImmutableList<NavigationTreeItem> BuildLevel(
+        IReadOnlyList<ContentTocItem> items, int depth, bool isRoot)
+    {
+        // Partition the incoming slice in a single pass:
+        //  - overview: only at the root, items with no hierarchy parts (area index)
+        //  - atLevel:  items whose depth in the tree matches this level
+        //  - deeper:   items nested below this level, grouped later by their next segment
+        List<ContentTocItem>? atLevel = null;
+        List<ContentTocItem>? deeper = null;
+        ContentTocItem? overview = null;
+
+        foreach (var item in items)
+        {
+            var len = item.HierarchyParts.Length;
+            if (isRoot && len == 0)
+            {
+                overview ??= item;
+            }
+            else if (len == depth + 1)
+            {
+                (atLevel ??= []).Add(item);
+            }
+            else if (len > depth + 1)
+            {
+                (deeper ??= []).Add(item);
+            }
+        }
+
+        // Sort + dedup direct items. DistinctBy(CanonicalPath) is a defensive pass
+        // against two content sources registering overlapping subtrees (e.g. a
         // catch-all DocFrontMatter source and a specialized ChangelogFrontMatter
-        // source both walking `Content/changelog/`). The pipeline emits a diagnostic
-        // warning for that misconfiguration, but dedup here prevents the visible
-        // symptom (every sidebar listing each overlapping page twice).
-        var itemsAtLevel = allItems
-            .Where(item => item.HierarchyParts.Length == depth + 1
-                        && PartsMatch(item.HierarchyParts, parentParts))
-            .OrderBy(item => item.Order)
-            .ThenBy(item => item.Title, StringComparer.OrdinalIgnoreCase)
-            .DistinctBy(item => item.Route.CanonicalPath.Value, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        // source both walking `Content/changelog/`). The pipeline emits a
+        // diagnostic warning for that misconfiguration, but dedup here prevents
+        // the visible symptom (every sidebar listing each overlapping page twice).
+        var atLevelSorted = atLevel is null
+            ? (IReadOnlyList<ContentTocItem>)Array.Empty<ContentTocItem>()
+            : atLevel
+                .OrderBy(i => i.Order)
+                .ThenBy(i => i.Title, StringComparer.OrdinalIgnoreCase)
+                .DistinctBy(i => i.Route.CanonicalPath.Value, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+        // Group deeper items by their segment at this depth so recursion only
+        // touches the items belonging to that subtree instead of rescanning the
+        // full list.
+        ILookup<string, ContentTocItem>? deeperByKey = deeper is null
+            ? null
+            : deeper.ToLookup(i => i.HierarchyParts[depth], StringComparer.OrdinalIgnoreCase);
+
+        var directNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in atLevelSorted)
+            directNames.Add(item.HierarchyParts[depth]);
+
+        var builder = ImmutableList.CreateBuilder<NavigationTreeItem>();
 
         // At the tree root, an item with empty HierarchyParts represents the
         // "overview" page for the tree — typically an area's index.md whose
         // hierarchy was stripped by GetTocItemsForAreaAsync. Include it so the
         // landing page is reachable from the sidebar, not only from the area
-        // tab in the top nav.
-        var overviewItem = depth == 0
-            ? allItems.FirstOrDefault(item => item.HierarchyParts.Length == 0)
-            : null;
-
-        // Find distinct section names at this depth that have deeper descendants
-        // but no direct item (auto-create folder nodes)
-        var sectionsWithDescendants = allItems
-            .Where(item => item.HierarchyParts.Length > depth + 1
-                        && PartsMatch(item.HierarchyParts, parentParts))
-            .Select(item => item.HierarchyParts[depth])
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Where(section => !itemsAtLevel.Any(i =>
-                string.Equals(i.HierarchyParts[depth], section, StringComparison.OrdinalIgnoreCase)))
-            .ToList();
-
-        var builder = ImmutableList.CreateBuilder<NavigationTreeItem>();
-
-        // Add the overview entry first (area index) so it lands at the top of
-        // the sidebar regardless of other items' Order values.
-        if (overviewItem is not null)
+        // tab in the top nav. Order=int.MinValue pins it to the top.
+        if (overview is not null)
         {
-            var overviewSelected = currentRoute != null
-                && overviewItem.Route.CanonicalPath.Matches(currentRoute.CanonicalPath);
             builder.Add(new NavigationTreeItem(
-                Title: overviewItem.Title,
-                Route: overviewItem.Route,
+                Title: overview.Title,
+                Route: overview.Route,
                 Order: int.MinValue,
-                SectionLabel: overviewItem.SectionLabel,
-                IsSelected: overviewSelected,
+                SectionLabel: overview.SectionLabel,
+                IsSelected: false,
                 IsExpanded: false,
                 Children: []
             ));
         }
 
-        // Add auto-created section nodes first
-        foreach (var section in sectionsWithDescendants)
+        // Auto-created section nodes for subtrees without a direct landing item
+        if (deeperByKey is not null)
         {
-            var sectionParts = parentParts.Append(section).ToArray();
-            var children = BuildLevel(allItems, sectionParts, currentRoute);
-            var isExpanded = children.Any(c => c.IsSelected || c.IsExpanded);
-
-            // Find the minimum order among children to use for section ordering
-            var minOrder = children.Any() ? children.Min(c => c.Order) : int.MaxValue;
-
-            // Create a section title from the folder name
-            var sectionTitle = FormatSectionTitle(section);
-
-            // Use an empty route for section headers (they're not navigable)
-            var sectionRoute = new ContentRoute
+            foreach (var group in deeperByKey)
             {
-                CanonicalPath = new UrlPath(""),
-                OutputFile = new FilePath("")
-            };
+                if (directNames.Contains(group.Key)) continue;
 
-            builder.Add(new NavigationTreeItem(
-                Title: sectionTitle,
-                Route: sectionRoute,
-                Order: minOrder,
-                SectionLabel: null,
-                IsSelected: false,
-                IsExpanded: isExpanded,
-                Children: children
-            ));
+                var children = BuildLevel(group.ToList(), depth + 1, isRoot: false);
+                var minOrder = children.Count > 0 ? children.Min(c => c.Order) : int.MaxValue;
+
+                builder.Add(new NavigationTreeItem(
+                    Title: FormatSectionTitle(group.Key),
+                    Route: EmptySectionRoute,
+                    Order: minOrder,
+                    SectionLabel: null,
+                    IsSelected: false,
+                    IsExpanded: false,
+                    Children: children
+                ));
+            }
         }
 
-        // Add direct items
-        foreach (var item in itemsAtLevel)
+        // Direct items and their descendants
+        foreach (var item in atLevelSorted)
         {
-            var children = BuildLevel(allItems, item.HierarchyParts, currentRoute);
-            var isSelected = currentRoute != null
-                && item.Route.CanonicalPath.Matches(currentRoute.CanonicalPath);
-            var isExpanded = isSelected || children.Any(c => c.IsSelected || c.IsExpanded);
+            IReadOnlyList<ContentTocItem> childItems = deeperByKey is not null
+                && deeperByKey.Contains(item.HierarchyParts[depth])
+                ? deeperByKey[item.HierarchyParts[depth]].ToList()
+                : Array.Empty<ContentTocItem>();
+            var children = BuildLevel(childItems, depth + 1, isRoot: false);
 
             builder.Add(new NavigationTreeItem(
                 Title: item.Title,
                 Route: item.Route,
                 Order: item.Order,
                 SectionLabel: item.SectionLabel,
-                IsSelected: isSelected,
-                IsExpanded: isExpanded,
+                IsSelected: false,
+                IsExpanded: false,
                 Children: children
             ));
         }
 
-        // Sort all items by order, then title
-        return builder.OrderBy(i => i.Order).ThenBy(i => i.Title, StringComparer.OrdinalIgnoreCase).ToImmutableList();
+        return builder
+            .OrderBy(i => i.Order)
+            .ThenBy(i => i.Title, StringComparer.OrdinalIgnoreCase)
+            .ToImmutableList();
+    }
+
+    /// <summary>
+    /// Walks the cached structural tree and produces a tree with IsSelected/IsExpanded
+    /// stamped along the path to <paramref name="currentRoute"/>. Subtrees that don't
+    /// contain the selection are returned by reference — the cache is shared across
+    /// page renders, so only the selected ancestor chain allocates new records.
+    /// </summary>
+    private static ImmutableList<NavigationTreeItem> StampSelection(
+        ImmutableList<NavigationTreeItem> tree, ContentRoute currentRoute)
+    {
+        var builder = ImmutableList.CreateBuilder<NavigationTreeItem>();
+        var anyChanged = false;
+        foreach (var node in tree)
+        {
+            var stamped = StampNode(node, currentRoute);
+            if (!ReferenceEquals(node, stamped)) anyChanged = true;
+            builder.Add(stamped);
+        }
+        return anyChanged ? builder.ToImmutable() : tree;
+    }
+
+    private static NavigationTreeItem StampNode(NavigationTreeItem node, ContentRoute currentRoute)
+    {
+        var isSelected = node.Route.CanonicalPath.Matches(currentRoute.CanonicalPath);
+
+        if (node.Children.Count == 0)
+        {
+            return isSelected
+                ? node with { IsSelected = true, IsExpanded = false }
+                : node;
+        }
+
+        ImmutableList<NavigationTreeItem>.Builder? childBuilder = null;
+        var anyChildExpanded = false;
+        for (var i = 0; i < node.Children.Count; i++)
+        {
+            var original = node.Children[i];
+            var stamped = StampNode(original, currentRoute);
+            if (!ReferenceEquals(original, stamped))
+            {
+                if (childBuilder is null)
+                {
+                    childBuilder = ImmutableList.CreateBuilder<NavigationTreeItem>();
+                    for (var j = 0; j < i; j++) childBuilder.Add(node.Children[j]);
+                }
+                childBuilder.Add(stamped);
+            }
+            else
+            {
+                childBuilder?.Add(stamped);
+            }
+            if (stamped.IsSelected || stamped.IsExpanded) anyChildExpanded = true;
+        }
+
+        var isExpanded = isSelected || anyChildExpanded;
+
+        if (!isSelected && !isExpanded && childBuilder is null)
+            return node;
+
+        return node with
+        {
+            IsSelected = isSelected,
+            IsExpanded = isExpanded,
+            Children = childBuilder?.ToImmutable() ?? node.Children
+        };
     }
 
     /// <summary>
@@ -178,7 +276,6 @@ public sealed class NavigationBuilder
                 || string.Equals(i.Locale, locale, StringComparison.OrdinalIgnoreCase))
             .Select(i =>
             {
-                // Strip locale prefix from hierarchy parts for non-default locales
                 if (i.HierarchyParts.Length > 0
                     && string.Equals(i.HierarchyParts[0], locale, StringComparison.OrdinalIgnoreCase)
                     && i.Locale != null)
@@ -192,20 +289,8 @@ public sealed class NavigationBuilder
 
     private static string FormatSectionTitle(string folderName)
     {
-        // Convert kebab-case to title case: "getting-started" → "Getting Started"
         return string.Join(' ', folderName.Split('-')
             .Select(w => w.Length > 0 ? char.ToUpper(w[0]) + w[1..] : w));
-    }
-
-    private static bool PartsMatch(string[] itemParts, string[] parentParts)
-    {
-        if (itemParts.Length < parentParts.Length) return false;
-        for (var i = 0; i < parentParts.Length; i++)
-        {
-            if (!string.Equals(itemParts[i], parentParts[i], StringComparison.OrdinalIgnoreCase))
-                return false;
-        }
-        return true;
     }
 
     /// <summary>
@@ -256,4 +341,23 @@ public sealed class NavigationBuilder
         }
         return false;
     }
+
+    private static CacheKey ComputeCacheKey(IReadOnlyList<ContentTocItem> items, string? locale)
+    {
+        var hash = new HashCode();
+        foreach (var item in items)
+        {
+            hash.Add(item.Title);
+            hash.Add(item.Route.CanonicalPath.Value, StringComparer.OrdinalIgnoreCase);
+            hash.Add(item.Order);
+            hash.Add(item.SectionLabel);
+            hash.Add(item.Locale);
+            hash.Add(item.HierarchyParts.Length);
+            foreach (var part in item.HierarchyParts)
+                hash.Add(part, StringComparer.OrdinalIgnoreCase);
+        }
+        return new CacheKey(locale, items.Count, hash.ToHashCode());
+    }
+
+    private readonly record struct CacheKey(string? Locale, int Count, int Fingerprint);
 }

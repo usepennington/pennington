@@ -21,7 +21,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
     private readonly LocalizationOptions _localization;
     private readonly string _absoluteContentPath;
     private readonly ImmutableArray<string> _normalizedExcludePaths;
-    private readonly AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>> _metadataLazy;
+    private AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>> _metadataLazy;
 
     /// <summary>
     /// Initializes the service, registers the content directory with the watcher, and prepares lazy metadata loading.
@@ -41,10 +41,13 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         _normalizedExcludePaths = NormalizeExcludePaths(options.ExcludePaths);
         _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>>(LoadMetadataAsync);
 
-        // Register content directory for watching so the central watcher
-        // knows about it. The FileWatchDependencyFactory handles instance
-        // recreation — no manual cache invalidation needed here.
-        fileWatcher.AddPathWatch(_absoluteContentPath, "*.*", (_, _) => { });
+        // Reset the metadata cache on any change to the watched tree. Without
+        // this, TOC / discovery results are fixed to whatever was on disk at
+        // app startup — new/renamed/deleted files never flow into the nav.
+        fileWatcher.AddPathWatch(_absoluteContentPath, "*.*", (_, _) =>
+        {
+            _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>>(LoadMetadataAsync);
+        });
     }
 
     /// <inheritdoc/>

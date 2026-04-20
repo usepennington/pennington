@@ -80,7 +80,10 @@ public static class BlogSiteServiceExtensions
         // BlogContentResolver so it doesn't take a circular dependency on the
         // still-initializing IContentService set during DiscoverAsync.
         services.AddFileWatched<BlogSiteContentService>();
-        services.AddSingleton<IContentService>(sp =>
+        // Transient wrapper — AddSingleton here would capture the first
+        // file-watched instance and never see a refresh, defeating the
+        // AddFileWatched above.
+        services.AddTransient<IContentService>(sp =>
             sp.GetRequiredService<BlogSiteContentService>());
 
         return services;

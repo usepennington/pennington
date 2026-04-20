@@ -393,6 +393,66 @@ public class NavigationBuilderTests
     }
 
     [Fact]
+    public void BuildTree_RepeatedCalls_ReuseStructuralSubtrees()
+    {
+        // Structural tree is cached per (locale, input fingerprint). Branches
+        // off the selection path must be returned by reference — otherwise
+        // every page render reallocates the full tree.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Docs", "/docs", 1, "Docs"),
+            MakeTocItem("API", "/docs/api", 1, "Docs", "API"),
+            MakeTocItem("Guide", "/guide", 2, "Guide"),
+            MakeTocItem("Guide Setup", "/guide/setup", 1, "Guide", "Setup"),
+        };
+
+        // Two renders against the same current route — Guide subtree has no
+        // selection under it, so it reuses the cached structural node.
+        var a = _builder.BuildTree(items, MakeRoute("/docs/api"));
+        var b = _builder.BuildTree(items, MakeRoute("/docs/api"));
+        ReferenceEquals(a[1], b[1]).ShouldBeTrue();
+        ReferenceEquals(a[1].Children[0], b[1].Children[0]).ShouldBeTrue();
+
+        // Two renders against different current routes — the Docs branch is
+        // still structurally shared in the "no selection here" case.
+        var onGuide = _builder.BuildTree(items, MakeRoute("/guide/setup"));
+        var onApi = _builder.BuildTree(items, MakeRoute("/docs/api"));
+        ReferenceEquals(onGuide[0], onApi[0]).ShouldBeFalse(); // Docs differs — API is selected under it in onApi
+        // But the unselected leaf under Guide in onApi is the same structural
+        // reference as in the no-route render.
+        var bare = _builder.BuildTree(items);
+        ReferenceEquals(onApi[1].Children[0], bare[1].Children[0]).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void BuildTree_SelectionChanges_TrackedAcrossCalls()
+    {
+        // Confirms the cached structural tree correctly re-stamps selection
+        // when currentRoute changes between calls.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Docs", "/docs", 1, "Docs"),
+            MakeTocItem("API", "/docs/api", 1, "Docs", "API"),
+            MakeTocItem("Auth", "/docs/api/auth", 1, "Docs", "API", "Auth"),
+            MakeTocItem("Guide", "/guide", 2, "Guide"),
+        };
+
+        var onAuth = _builder.BuildTree(items, MakeRoute("/docs/api/auth"));
+        onAuth[0].Children[0].Children[0].IsSelected.ShouldBeTrue();
+        onAuth[1].IsSelected.ShouldBeFalse();
+
+        var onGuide = _builder.BuildTree(items, MakeRoute("/guide"));
+        onGuide[0].Children[0].Children[0].IsSelected.ShouldBeFalse();
+        onGuide[0].IsExpanded.ShouldBeFalse();
+        onGuide[1].IsSelected.ShouldBeTrue();
+
+        // Back to no selection → whole tree collapses.
+        var bare = _builder.BuildTree(items);
+        bare[0].IsExpanded.ShouldBeFalse();
+        bare[0].Children[0].Children[0].IsSelected.ShouldBeFalse();
+    }
+
+    [Fact]
     public void BuildTree_DuplicateCanonicalPaths_CaseInsensitive_Deduped()
     {
         // Canonical paths are compared case-insensitively — the second entry

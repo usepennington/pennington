@@ -25,7 +25,7 @@ public class RedirectContentServiceTests
         foreach (var svc in extraServices) services.AddSingleton(svc);
         var options = new PenningtonOptions { ContentRootPath = contentRoot };
         var provider = services.BuildServiceProvider();
-        return new RedirectContentService(provider, options, fs);
+        return new RedirectContentService(provider, options, fs, new FileWatcher(fs));
     }
 
     [Fact]
@@ -137,7 +137,7 @@ public class RedirectContentServiceTests
 
         var serviceCollection = new ServiceCollection();
         var options = new PenningtonOptions { ContentRootPath = "/content" };
-        var service = new RedirectContentService(serviceCollection.BuildServiceProvider(), options, fs);
+        var service = new RedirectContentService(serviceCollection.BuildServiceProvider(), options, fs, new FileWatcher(fs));
         serviceCollection.AddSingleton<IContentService>(service);
 
         var map = await service.GetRedirectMappingsAsync();

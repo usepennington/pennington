@@ -72,7 +72,7 @@ public static class PenningtonExtensions
 
         // Core services
         services.AddSingleton<FrontMatterParser>();
-        services.AddSingleton<NavigationBuilder>();
+        services.AddFileWatched<NavigationBuilder>();
 
         // File system abstraction
         services.TryAddSingleton<IFileSystem>(new RealFileSystem());
