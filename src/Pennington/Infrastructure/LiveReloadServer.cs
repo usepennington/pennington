@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
@@ -15,12 +16,14 @@ public sealed class LiveReloadServer
 {
     private readonly ConcurrentDictionary<string, WebSocket> _clients = new();
     private readonly ILogger<LiveReloadServer>? _logger;
+    private readonly CancellationToken _shutdownToken;
     private Timer? _debounceTimer;
 
     /// <summary>Initializes the server and subscribes to watched-file change notifications.</summary>
-    public LiveReloadServer(IFileWatcher fileWatcher, ILogger<LiveReloadServer>? logger = null)
+    public LiveReloadServer(IFileWatcher fileWatcher, IHostApplicationLifetime lifetime, ILogger<LiveReloadServer>? logger = null)
     {
         _logger = logger;
+        _shutdownToken = lifetime.ApplicationStopping;
         fileWatcher.SubscribeToChanges(DebouncedNotify);
     }
 
@@ -41,7 +44,7 @@ public sealed class LiveReloadServer
         {
             if (socket.State == WebSocketState.Open)
             {
-                _ = socket.SendAsync(message, WebSocketMessageType.Text, endOfMessage: true, CancellationToken.None);
+                _ = socket.SendAsync(message, WebSocketMessageType.Text, endOfMessage: true, _shutdownToken);
             }
             else
             {
@@ -52,26 +55,30 @@ public sealed class LiveReloadServer
         _logger?.LogDebug("Sent reload to {Count} connected client(s)", _clients.Count);
     }
 
-    internal async Task HandleAsync(WebSocket socket)
+    internal async Task HandleAsync(WebSocket socket, CancellationToken requestAborted)
     {
         var id = Guid.NewGuid().ToString("N");
         _clients[id] = socket;
         _logger?.LogDebug("Live reload client connected ({Id})", id);
 
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(_shutdownToken, requestAborted);
         try
         {
             var buffer = new byte[64];
             while (socket.State == WebSocketState.Open)
             {
-                var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
+                var result = await socket.ReceiveAsync(buffer, linked.Token);
                 if (result.MessageType == WebSocketMessageType.Close)
                     break;
             }
         }
+        catch (OperationCanceledException)
+        {
+        }
         finally
         {
             _clients.TryRemove(id, out _);
-            if (socket.State == WebSocketState.Open)
+            if (socket.State == WebSocketState.Open && !_shutdownToken.IsCancellationRequested)
             {
                 await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
             }
@@ -102,7 +109,7 @@ public static class LiveReloadExtensions
             {
                 var server = context.RequestServices.GetRequiredService<LiveReloadServer>();
                 using var socket = await context.WebSockets.AcceptWebSocketAsync();
-                await server.HandleAsync(socket);
+                await server.HandleAsync(socket, context.RequestAborted);
             }
             else
             {
