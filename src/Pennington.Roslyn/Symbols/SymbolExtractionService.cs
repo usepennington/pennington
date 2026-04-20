@@ -166,7 +166,6 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
         }
 
         var sourceText = await entry.Document.GetTextAsync();
-        var xmlDoc = symbol.GetDocumentationCommentXml();
 
         var info = new SymbolInfo(
             Symbol: symbol,
@@ -174,7 +173,6 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
             SyntaxNode: node,
             SourceText: sourceText,
             TextSpan: span,
-            XmlDocumentation: string.IsNullOrWhiteSpace(xmlDoc) ? null : xmlDoc,
             Project: entry.Project
         );
 
@@ -348,15 +346,12 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
 
         var normalizedId = XmlDocIdNormalizer.Normalize(docId);
 
-        var xmlDoc = symbol.GetDocumentationCommentXml();
-
         var info = new SymbolInfo(
             Symbol: symbol,
             Document: document,
             SyntaxNode: node,
             SourceText: sourceText,
             TextSpan: node.Span,
-            XmlDocumentation: string.IsNullOrWhiteSpace(xmlDoc) ? null : xmlDoc,
             Project: project
         );
 
