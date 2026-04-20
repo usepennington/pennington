@@ -11,9 +11,9 @@ Why are there two extension points for rewriting the response body — a general
 
 ## Context
 
-Before the consolidation in "refactor: unify HTML response rewriting into a single AngleSharp pass," every HTML-mutating concern — xref resolution, locale link prefixing, base-URL stamping — was its own `IResponseProcessor`. Each one independently parsed the response body into an AngleSharp document, mutated it, and serialized it back out. That produced an N-parse/serialize cycle per response with N DOM copies floating around, and it left the cross-processor ordering question — "does locale prefixing see xref-resolved hrefs or raw `xref:` attributes?" — implicit in DI registration order, invisible to anyone reading the registrations later.
+Two kinds of work want to touch the response body. Some concerns care about HTML structure — rewriting `href` attributes, inserting elements at specific selectors, normalizing document shape. Others treat the body as an opaque string — appending a script before `</body>`, scraping class names out of whatever HTML arrived, injecting a dev overlay into HTML responses only.
 
-A purely string-to-string chain would not have helped: each stage would still reparse anyway. A single monolithic rewriter would have solved the parse cost but closed off the extensibility story entirely. Pennington landed on a two-tier shape: a generic string-in/string-out contract for body-level concerns that have no need for a DOM, and one shared parse that all DOM-shaped concerns participate in together.
+A single chain of string-to-string processors forces the structure-aware concerns to either reparse the body themselves or rewrite HTML with regex, neither of which composes. A single HTML-shaped rewriter forces the opaque-string concerns to take an AngleSharp dependency they do not need. Pennington splits the work along that fault line: a generic string-in/string-out contract for body-level concerns that have no need for a DOM, and one shared parse that all DOM-shaped concerns participate in together.
 
 ## How it works
 
@@ -35,7 +35,7 @@ The invariant worth internalizing: N rewriters, one parse, one serialize, one DO
 
 ### Why two tiers, not one
 
-Collapsing everything into `IHtmlResponseRewriter` would be wrong in both directions. Pulling the string processors into Tier B forces an AngleSharp parse on operations that do not benefit from a DOM, and it also means the parser tries to fix partially-valid or framework-generated HTML that those processors are content to treat as an opaque string. Conversely, collapsing everything back into bare `IResponseProcessor` instances — the shape before the consolidation — paid N-1 extra parses for no reason and hid the cross-concern ordering assumptions behind DI registration sequence.
+Collapsing everything into `IHtmlResponseRewriter` would be wrong in both directions. Pulling the string processors into Tier B forces an AngleSharp parse on operations that do not benefit from a DOM, and it also means the parser tries to fix partially-valid or framework-generated HTML that those processors are content to treat as an opaque string. Conversely, letting every DOM-shaped concern be its own `IResponseProcessor` means each one parses, mutates, and serializes independently — N parses and N DOM copies where one of each would do — and it hides the cross-concern ordering assumptions behind DI registration sequence.
 
 The split follows a natural fault line: does this concern care about HTML structure? Body-level injection and scraping live on one side; link rewriting and attribute manipulation live on the other. Each contract stays narrow to its side of that line.
 
@@ -51,7 +51,7 @@ The three built-in HTML rewriters run in a specific sequence because each one pr
 
 `BaseUrlHtmlRewriter` at `Order 30` prefixes root-relative URLs with the configured deployment base URL and stamps `data-base-url` on `<body>`. Running last means it acts as the outermost transport layer: the two earlier rewriters can work with clean `/`-rooted paths and never have to strip a base URL before operating.
 
-Reversing any two of these breaks one of the others' invariants. The monolithic-per-rewriter-parse-and-serialize model used to hide exactly this kind of bug behind DI registration order, where the ordering was real but unstated.
+Reversing any two of these breaks one of the others' invariants. Keeping the ordering explicit in the `Order` property — rather than implicit in DI registration sequence — is what makes the dependency between rewriters visible at the call site.
 
 ## Trade-offs
 

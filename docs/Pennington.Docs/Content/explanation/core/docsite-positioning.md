@@ -23,15 +23,13 @@ A single `AddDocSite` call wires quite a bit: the Pennington engine with site ti
 
 The payoff is not the feature count. It is that every one of those registrations lands in a compatible order with the others. Getting that ordering right — especially between the pipeline, the response processor, and the search index scoping — is most of what trips up a hand-rolled host on the first attempt.
 
-The `DocSiteServiceExtensions.AddDocSite` method reads top-to-bottom as the specification for what "a DocSite" means. When a question arises about exactly what DocSite decides on a host's behalf, that method is the source of truth — more reliable than any page of prose that can drift over time.
-
 ### What DocSite caps
 
 DocSite owns exactly one `AddMarkdownContent<DocSiteFrontMatter>` registration. Wiring a second front-matter type — say, a blog post shape alongside docs — is not reachable by setting a `DocSiteOptions` property. It takes either the `ConfigurePennington` escape hatch, which hands back the underlying `PenningtonOptions` after DocSite's defaults land, or dropping to bare `AddPennington` outright. The escape hatch is enough for adding one more source. It falls short when the extra source needs different theming, a different layout, or a different slot renderer.
 
 `DocSiteOptions.ColorScheme`, `DisplayFontFamily`, `BodyFontFamily`, `ExtraStyles`, and `CustomCssFrameworkSettings` offer tweak points against MonorailCSS, but the theme composition itself — `AddMonorailCss` plus the DocSite `App` component plus the article slot renderer — is fixed. Replacing the `App` component or introducing a non-article layout means registering extra routing assemblies via `AdditionalRoutingAssemblies` and accepting that custom components ride alongside DocSite's, not in place of them.
 
-Earlier versions of DocSite pinned `SearchIndexOptions.ContentSelector` and `LlmsTxtOptions.ContentSelector` to `#main-content` with no override. The current shape exposes `SearchIndexContentSelector` and `LlmsTxtContentSelector` on `DocSiteOptions`; both default to `#main-content` (because that is what the stock layout wraps the article in) but accept any CSS selector, including the empty string to index the full body when the layout has been replaced. Older how-tos and TOC notes still describe these as hard caps — they are now soft defaults that happen to match the stock layout.
+`SearchIndexContentSelector` and `LlmsTxtContentSelector` on `DocSiteOptions` both default to `#main-content` — the wrapper the stock layout places around the article — and accept any CSS selector, including the empty string to index the full body when the layout has been replaced.
 
 To summarize the current caps precisely: one markdown source registration, extendable via `ConfigurePennington` or by dropping a level; a fixed theme composition (`AddMonorailCss` plus the DocSite layout shell) that is tweakable but not swappable; and a fixed slot renderer and `App` component that can only be extended through additional routing assemblies, not replaced.
 
@@ -59,7 +57,7 @@ When none of those shapes describes the work, `AddDocSite` is almost certainly t
 
 `AddDocSite` and `AddPennington` are two APIs with two learning surfaces. A host that starts on the template and later needs bare access has to learn both — the template's options, and then the underlying options the template was composing over. Pennington accepts this cost because the alternative — `AddPennington` with twenty configuration callbacks collapsed into one record — makes the common case noisier in exchange for making the advanced case fractionally more discoverable.
 
-A single `AddPennington` with a `UseDefaultDocSiteLayout = true` flag was considered and set aside. It would force every bare-host consumer to carry the layout code in their dependency graph — Razor components, MonorailCSS configuration — even when the layout is unused. It also conflates "engine configuration" with "layout configuration" in one record that then has to explain which knobs apply in which mode.
+A single `AddPennington` with a `UseDefaultDocSiteLayout` flag would force every bare-host consumer to carry the layout code — Razor components, MonorailCSS configuration — even when unused, and would conflate engine configuration with layout configuration in one record that has to explain which knobs apply in which mode.
 
 The consequence of that decision is that `DocSiteOptions` is a curated subset of `PenningtonOptions` on purpose, and the design intent is for it to stay that way. New DocSite-specific knobs land when the template needs them; new engine knobs land on `PenningtonOptions`; and `ConfigurePennington` is the bridge when an engine knob is needed from inside a template-shaped host. The tradeoff is a clean separation that takes knowing which layer a given option belongs to, rather than one surface that tries to hold everything.
 

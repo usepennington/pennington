@@ -7,7 +7,7 @@ tags: [markdown, extensions, alerts, tabs]
 uid: reference.markdown.extensions
 ---
 
-The catalog of non-CommonMark Markdown features wired into Pennington's Markdig pipeline. Extensions are registered in `MarkdownPipelineFactory.CreateWithExtensions` from `Pennington.Markdown.Extensions` (alerts, tabs, highlighting/code annotations) and `Pennington.Infrastructure` (xref resolution). Markdig's own built-in syntax (tables, footnotes, and so on) is not covered here.
+The catalog of non-CommonMark Markdown features wired into Pennington's Markdig pipeline. Markdig's own built-in syntax (tables, footnotes, and so on) is not covered here.
 
 | Extension | Syntax | Controlled by | Doc page |
 |---|---|---|---|
@@ -96,8 +96,6 @@ Every alert receives two classes: `markdown-alert` (constant) and `markdown-aler
 | `WARNING` | `markdown-alert-warning` | Something likely to go wrong. |
 | `IMPORTANT` | `markdown-alert-important` | Must-read information. |
 
-Backing parser and class-emission logic live in `CustomAlertInlineParser` (`Pennington.Markdown.Extensions`).
-
 ### Minimal example
 
 Markdown excerpt from the DocSite authoring example showing a `[!NOTE]` block in context:
@@ -108,7 +106,7 @@ examples/DocSiteAuthorExample/snippets/stage2.md
 
 ## Code annotations
 
-After syntax highlighting, `CodeTransformer` scans each rendered line for a `[!code …]` directive inside a language-appropriate comment, strips the comment, and applies a CSS class to the line and optionally to the enclosing `<pre>`. The `word:` variant wraps a matching substring in a span rather than acting on the whole line; the `include-start` / `include-end` / `exclude-start` / `exclude-end` directives remove surrounding lines from the output.
+After syntax highlighting, each rendered line is scanned for a `[!code …]` directive inside a language-appropriate comment. The comment is stripped and a CSS class is applied to the line and optionally to the enclosing `<pre>`. The `word:` variant wraps a matching substring in a span rather than acting on the whole line; the `include-start` / `include-end` / `exclude-start` / `exclude-end` directives remove surrounding lines from the output.
 
 ### Syntax
 
@@ -120,7 +118,7 @@ var z = 3; // [!code word:z|renamed from q]
 ```
 ````
 
-The directive must appear inside a recognized comment marker for the language (`//`, `#`, `--`, `<!-- -->`, `*`, `%`, `'`, `REM`, `;`, `/* */`); the directive and any now-empty comment wrapper are removed, leaving trailing content intact.
+The directive must appear inside a recognized comment marker for the language (`//`, `#`, `--`, `<!-- -->`, `*`, `%`, `'`, `REM`, `;`, `/* */`). The directive and any now-empty comment wrapper are removed, leaving trailing content intact.
 
 ### Notations
 
@@ -157,8 +155,6 @@ Structural. Drop lines between the matching start/end markers; markers are remov
 </Field>
 </FieldList>
 
-The backing transformer is `CodeTransformer` in `Pennington.Markdown.Extensions`.
-
 ### Emitted CSS classes
 
 Line-level classes (`highlight`, `diff-add`, `diff-remove`, `focused` / `blurred`, `error`, `warning`) are added to the `<span class="line">` wrapper. Block-level classes (`has-highlighted`, `has-diff`, `has-focused`, `has-errors`, `has-warnings`, `has-word-highlights`) are added to the outer `<pre>`. The `word:` notation emits `word-highlight` or `word-highlight-with-message` on the wrapped span, plus the callout elements `word-highlight-wrapper`, `word-highlight-message`, `word-highlight-arrow-container`, `word-highlight-arrow-outer`, and `word-highlight-arrow-inner`.
@@ -177,7 +173,7 @@ var removed = "gone";    // [!code --]
 
 ## Cross-reference tags
 
-`xref:` links authored in markdown are resolved after rendering by `XrefHtmlRewriter` against the uid-to-route map owned by `XrefResolver`. Two surface forms are supported: the tag form `<xref:uid>` is handled in a pre-parse string pass (it is not valid HTML), and the attribute form `[text](xref:uid)` has its rendered `href="xref:uid"` rewritten during the DOM pass; unknown uids emit a diagnostic via `DiagnosticContext` and surface in the dev overlay.
+`xref:` links authored in markdown are resolved after rendering against the uid-to-route map built from every page's front-matter `uid:`. Two surface forms are supported: the tag form `<xref:uid>` is handled in a pre-parse string pass (it is not valid HTML), and the attribute form `[text](xref:uid)` has its rendered `href="xref:uid"` rewritten during the DOM pass. Unknown uids emit a diagnostic that surfaces in the dev overlay and in the static-build report.
 
 ### Syntax
 
@@ -206,8 +202,6 @@ See <xref:reference.api.pennington-options> for the full options catalog.
 
 Configure MonorailCSS through [the options record](xref:reference.api.monorail-css-options).
 ```
-
-The backing rewriter is `XrefHtmlRewriter` in `Pennington.Infrastructure`.
 
 ## See also
 

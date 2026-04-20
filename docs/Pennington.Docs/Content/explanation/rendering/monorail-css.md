@@ -66,4 +66,3 @@ The key property that earns OKLCH its spot here is perceptual uniformity. Steppi
 
 - Reference: [`MonorailCssOptions`](xref:reference.api.monorail-css-options) — the full option surface with defaults.
 - How-to: [Customize MonorailCSS](xref:how-to.configuration.monorail-css) — swapping schemes, injecting `CustomCssFrameworkSettings`, and wiring `ContentPaths`.
-- External: [MonorailCSS upstream documentation](https://monorailcss.com/) — TODO confirm the canonical MonorailCSS docs URL before publish; currently a placeholder.
