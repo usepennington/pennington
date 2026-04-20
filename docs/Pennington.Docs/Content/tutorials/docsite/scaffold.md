@@ -14,8 +14,11 @@ This tutorial covers swapping a plain Pennington host for the DocSite template, 
 ## Prerequisites
 
 - .NET 11 SDK installed
-- Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site)
+- Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site) — in particular the `<LangVersion>preview</LangVersion>` opt-in from step 1.3, which Pennington requires across every project that references it
 - Completed [Add your first markdown page](xref:tutorials.getting-started.first-page) (so `Content/` already has at least one page)
+
+> [!IMPORTANT]
+> If `dotnet build` here fails with `error CS8652: The feature 'unions' is currently in Preview`, the host csproj is missing `<LangVersion>preview</LangVersion>`. See step 1.3 of [Create your first Pennington site](xref:tutorials.getting-started.first-site) for the property and the multi-project `Directory.Build.props` form.
 
 The finished code for this tutorial lives in [`examples/DocSiteScaffoldExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteScaffoldExample).
 
@@ -181,9 +184,51 @@ The `Areas` block in the stage 3 host has exactly two `ContentArea` entries. The
 
 ---
 
+## 5. Give the root `/` a landing page
+
+With `Areas` configured, the URL `/` sits **outside** every area — it is not a default redirect into the first area, and the area selector shows no active tab there. To make `/` render something other than a 404, drop a markdown file at `Content/index.md` (next to the area folders, not inside them).
+
+<Steps>
+<Step StepNumber="1">
+
+**Author `Content/index.md`**
+
+Use the same `DocSiteFrontMatter` shape as any other page. The page resolves through the same content pipeline as area pages — the only thing that makes it the root is its location at `Content/index.md`.
+
+```markdown
+---
+title: Welcome to Scaffold Docs
+description: Pick an area to get started.
+---
+
+# Welcome
+
+- [Guides](/guides/) — task walk-throughs and onboarding.
+- [Reference](/reference/) — every option, key, and surface.
+```
+
+</Step>
+<Step StepNumber="2">
+
+**Verify the root renders without an active area**
+
+Visit `http://localhost:5000/` — the page renders inside the DocSite chrome, the area selector shows no active tab (because the root is outside every area), and the sidebar is empty for the same reason. Any `/guides/...` or `/reference/...` link inside the page navigates into the matching area and lights up the corresponding sidebar tab.
+
+</Step>
+</Steps>
+
+### Checkpoint — `/` is a real page, not a 404
+
+- `http://localhost:5000/` returns the rendered `Content/index.md` page with the DocSite chrome around it
+- The area selector shows neither *Guides* nor *Reference* as active until the reader clicks into one
+- A request to `/some-area/` still resolves the matching area as in unit 4
+
+---
+
 ## Summary
 
 - The bare `AddPennington` host was replaced with `AddDocSite` + `UseDocSite` + `RunDocSiteAsync`, and the full Razor chrome renders.
 - `DocSiteOptions` carries `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`, and each field appears in the rendered layout.
 - Two `ContentArea` entries bind top-level folders under `Content/` to URL prefixes and to sidebar tabs.
+- The root `/` is served by `Content/index.md`, which sits outside every area — without it, `/` returns a 404 even when areas are configured.
 - DocSite is a fast-path template — for the knobs it hard-codes, see [Positioning DocSite as a fast path](xref:explanation.core.docsite-positioning).

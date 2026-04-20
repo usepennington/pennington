@@ -85,12 +85,15 @@ examples/BeyondRoslynExample/BeyondRoslynExample.slnx
 
 A single DI call turns on the xmldocid preprocessor. Once `AddPenningtonRoslyn` runs with `SolutionPath` set, every markdown page in the content folder gains the `:xmldocid`, `:xmldocid,bodyonly`, `:xmldocid-diff`, and `:path` fence modifiers.
 
+> [!IMPORTANT]
+> **`Pennington.Roslyn` requires three package references**, not one. `Pennington.Roslyn` itself, `Microsoft.CodeAnalysis.Workspaces.MSBuild`, and `Microsoft.Build.Framework` (with runtime excluded). Skipping either of the last two leaves the MSBuild workspace unable to launch its out-of-process `BuildHost`, and every `csharp:xmldocid` fence renders an error comment instead of source. The full csproj fragment is in the next step.
+
 <Steps>
 <Step StepNumber="1">
 
-**Add a package reference**
+**Add the three package references**
 
-Reference `Pennington.Roslyn` from the host csproj. It brings in `SyntaxHighlighter` and `RoslynCodeBlockPreprocessor`. The MSBuild workspace itself needs two extra references so its out-of-process `BuildHost` subprocess can resolve at runtime:
+Add all three to the host csproj. `Pennington.Roslyn` brings in `SyntaxHighlighter` and `RoslynCodeBlockPreprocessor`; the other two are runtime requirements of `Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace`.
 
 ```xml
 <PackageReference Include="Pennington.Roslyn" Version="*" />
@@ -98,7 +101,7 @@ Reference `Pennington.Roslyn` from the host csproj. It brings in `SyntaxHighligh
 <PackageReference Include="Microsoft.Build.Framework" Version="18.4.0" ExcludeAssets="runtime" PrivateAssets="all" />
 ```
 
-The `Microsoft.CodeAnalysis.Workspaces.MSBuild` package ships the `BuildHost-netcore/` content DLLs the workspace launches at solution-load time. Without it, every `csharp:xmldocid` fence renders an `<!-- Error processing xmldocid: … BuildHost.dll not found -->` comment. The `Microsoft.Build.Framework` reference (with runtime excluded) silences the MSBuild-locator resolution error without changing runtime behaviour.
+`Microsoft.CodeAnalysis.Workspaces.MSBuild` ships the `BuildHost-netcore/` content DLLs the workspace launches at solution-load time. Without it, every `csharp:xmldocid` fence renders an `<!-- Error processing xmldocid: … BuildHost.dll not found -->` comment. The `Microsoft.Build.Framework` reference (with runtime excluded) silences the MSBuild-locator resolution error without changing runtime behaviour.
 
 </Step>
 <Step StepNumber="2">
@@ -111,6 +114,8 @@ Point it at the inner `.slnx`. That's the whole wire-up — no middleware call, 
 builder.Services.AddPenningtonRoslyn(opts =>
     opts.SolutionPath = "path/to/your.slnx");
 ```
+
+`SolutionPath` is resolved with `Path.GetFullPath`, so a relative value is interpreted against the **process working directory** — that is, the folder you run `dotnet run` from, which is normally the host csproj folder. The example string `"BeyondRoslynExample.slnx"` works because the inner `.slnx` sits next to the csproj. To point at a sibling folder, use a relative path like `"../OtherProject/Other.slnx"`; an absolute path also works.
 
 </Step>
 <Step StepNumber="3">

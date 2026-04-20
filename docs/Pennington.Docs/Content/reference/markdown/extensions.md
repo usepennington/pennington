@@ -141,11 +141,11 @@ Line class `error`, `<pre>` class `has-errors`. Marks a line as an error.
 <Field Name="warning">
 Line class `warning`, `<pre>` class `has-warnings`. Marks a line as a warning.
 </Field>
-<Field Name="word:<text>">
-`<pre>` class `has-word-highlights`. Wraps the first occurrence of `<text>` in `<span class="word-highlight">`.
+<Field Name="word:TEXT">
+`<pre>` class `has-word-highlights`. Wraps the first occurrence of `TEXT` in a `<span class="word-highlight">`. Replace `TEXT` with the substring to highlight (the literal directive uses `word:` followed by the text, with no angle brackets or quoting — for example `[!code word:Multiply]`).
 </Field>
-<Field Name="word:<text>|<msg>">
-`<pre>` class `has-word-highlights`. As above, but wraps in `word-highlight-with-message` with an adjacent `word-highlight-message` callout.
+<Field Name="word:TEXT|MESSAGE">
+`<pre>` class `has-word-highlights`. As above, but wraps the match in `word-highlight-with-message` and renders an adjacent `word-highlight-message` callout containing `MESSAGE`. Use a literal `|` to separate the matched text from the message — for example `[!code word:queue|renamed from buffer]`.
 </Field>
 <Field Name="include-start / include-end">
 Structural. Keep only lines between the matching start/end markers; markers are removed.
