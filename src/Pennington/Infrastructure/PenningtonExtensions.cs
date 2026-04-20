@@ -181,15 +181,18 @@ public static class PenningtonExtensions
         // Xref resolution — factory-managed, recreated on file changes
         services.AddFileWatched<XrefResolver>();
 
-        // Response processors.
-        // Single HTML rewriting processor that walks the parsed document once
-        // and runs every registered IHtmlResponseRewriter in Order.
-        services.AddSingleton<XrefResolvingService>();
-        services.AddSingleton<IHtmlResponseRewriter, XrefHtmlRewriter>();
+        // Response processors. The XrefResolvingService -> XrefHtmlRewriter ->
+        // HtmlResponseRewritingProcessor chain transitively depends on the
+        // file-watched XrefResolver, so every link in the chain is transient:
+        // the middleware resolves IEnumerable<IResponseProcessor> per request
+        // via InvokeAsync parameter injection, which rebuilds the chain with
+        // the current XrefResolver each time.
+        services.AddTransient<XrefResolvingService>();
+        services.AddTransient<IHtmlResponseRewriter, XrefHtmlRewriter>();
         services.AddSingleton<IHtmlResponseRewriter, LocaleLinkHtmlRewriter>();
         services.AddSingleton<IHtmlResponseRewriter>(sp =>
             new BaseUrlHtmlRewriter(sp.GetRequiredService<OutputOptions>()));
-        services.AddSingleton<IResponseProcessor, HtmlResponseRewritingProcessor>();
+        services.AddTransient<IResponseProcessor, HtmlResponseRewritingProcessor>();
         services.AddSingleton<IResponseProcessor, LiveReloadScriptProcessor>();
         services.AddSingleton<IResponseProcessor, DiagnosticOverlayProcessor>();
 
@@ -256,7 +259,9 @@ public static class PenningtonExtensions
         {
             services.AddSingleton(llmsTxtOptions);
             services.AddFileWatched<LlmsTxtService>();
-            services.AddSingleton<IContentService, LlmsTxtContentService>();
+            // Transient so each resolution captures the current file-watched
+            // LlmsTxtService — a singleton here would pin the first instance.
+            services.AddTransient<IContentService, LlmsTxtContentService>();
         }
 
         // Per-request diagnostic context

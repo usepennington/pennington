@@ -4,7 +4,6 @@ using Pennington.Generation;
 using Pennington.Infrastructure;
 using Pennington.Localization;
 using Pennington.Routing;
-using Testably.Abstractions.Testing;
 
 namespace Pennington.Tests.Infrastructure;
 
@@ -21,16 +20,8 @@ public class LocaleAndBaseUrlPipelineTests
 {
     private const string BaseUrl = "/preview/";
 
-    private static FileWatchDependencyFactory<XrefResolver> CreateXrefFactory()
-    {
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddSingleton<System.IO.Abstractions.IFileSystem>(new MockFileSystem());
-        services.AddSingleton<IFileWatcher, FileWatcher>();
-        services.AddFileWatched<XrefResolver>();
-        return services.BuildServiceProvider()
-            .GetRequiredService<FileWatchDependencyFactory<XrefResolver>>();
-    }
+    private static XrefResolver CreateEmptyResolver() =>
+        new XrefResolver([]);
 
     private static LocalizationOptions CreateLocalization()
     {
@@ -74,7 +65,7 @@ public class LocaleAndBaseUrlPipelineTests
 
         IHtmlResponseRewriter[] rewriters =
         [
-            new XrefHtmlRewriter(new XrefResolvingService(CreateXrefFactory())),
+            new XrefHtmlRewriter(new XrefResolvingService(CreateEmptyResolver())),
             new LocaleLinkHtmlRewriter(localization),
             new BaseUrlHtmlRewriter(outputOptions),
         ];
@@ -203,7 +194,7 @@ public class LocaleAndBaseUrlPipelineTests
     {
         // Locks in the 10/20/30 sub-order sequence inside HtmlResponseRewritingProcessor.
         // Adding a new rewriter? Slot it at 15, 25, or 35 — don't disturb the sequence.
-        var xref = new XrefHtmlRewriter(new XrefResolvingService(CreateXrefFactory()));
+        var xref = new XrefHtmlRewriter(new XrefResolvingService(CreateEmptyResolver()));
         var locale = new LocaleLinkHtmlRewriter(CreateLocalization());
         var baseUrl = new BaseUrlHtmlRewriter(CreateOutputOptions());
 

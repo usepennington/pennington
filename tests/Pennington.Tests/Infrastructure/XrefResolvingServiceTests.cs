@@ -1,10 +1,8 @@
 using System.Collections.Immutable;
-using Microsoft.Extensions.DependencyInjection;
 using Pennington.Content;
 using Pennington.Infrastructure;
 using Pennington.Pipeline;
 using Pennington.Routing;
-using Testably.Abstractions.Testing;
 
 namespace Pennington.Tests.Infrastructure;
 
@@ -19,15 +17,8 @@ public class XrefResolvingServiceTests
     private static XrefResolvingService CreateService(params CrossReference[] refs)
     {
         var contentService = new StubContentService(refs.ToImmutableList());
-        var services = new ServiceCollection();
-        services.AddSingleton<IContentService>(contentService);
-        services.AddLogging();
-        services.AddSingleton<System.IO.Abstractions.IFileSystem>(new MockFileSystem());
-        services.AddSingleton<IFileWatcher, FileWatcher>();
-        services.AddFileWatched<XrefResolver>();
-        var provider = services.BuildServiceProvider();
-        return new XrefResolvingService(
-            provider.GetRequiredService<FileWatchDependencyFactory<XrefResolver>>());
+        var resolver = new XrefResolver([contentService]);
+        return new XrefResolvingService(resolver);
     }
 
     // --- Resolved xref tag: title with angle brackets is encoded ---

@@ -27,23 +27,23 @@ using Diagnostics;
 /// raw HTML strings with no caller-owned document.
 /// </para>
 /// <para>
-/// Reads <see cref="XrefResolver"/> via its <see cref="FileWatchDependencyFactory{T}"/>
-/// so it always gets the current instance — a direct ctor capture would pin the
-/// first instance and miss every subsequent file-change rebuild.
+/// Registered as a transient so every resolution picks up the current
+/// file-watched <see cref="XrefResolver"/> instance. The orchestrator
+/// (and rewriter that wraps this service) are transient too; the whole
+/// chain is rebuilt per request when the middleware resolves its
+/// processors, so no capture pins a stale <see cref="XrefResolver"/>.
 /// </para>
 /// </summary>
 public sealed partial class XrefResolvingService
 {
-    private readonly FileWatchDependencyFactory<XrefResolver> _resolverFactory;
+    private readonly XrefResolver _resolver;
     private readonly IBrowsingContext _browsingContext = BrowsingContext.New(Configuration.Default);
 
-    /// <summary>Initializes the service with the factory used to read the current <see cref="XrefResolver"/> on demand.</summary>
-    public XrefResolvingService(FileWatchDependencyFactory<XrefResolver> resolverFactory)
+    /// <summary>Initializes the service with the current <see cref="XrefResolver"/> from DI.</summary>
+    public XrefResolvingService(XrefResolver resolver)
     {
-        _resolverFactory = resolverFactory;
+        _resolver = resolver;
     }
-
-    private XrefResolver Resolver => _resolverFactory.Current;
 
     /// <summary>
     /// Standalone entrypoint for callers that have a raw HTML string and
@@ -88,7 +88,7 @@ public sealed partial class XrefResolvingService
             if (IsInsideSkipRange(match.Index, skipRanges)) continue;
 
             var uid = match.Groups[1].Value;
-            var xref = await Resolver.ResolveAsync(uid);
+            var xref = await _resolver.ResolveAsync(uid);
 
             string replacement;
             if (xref is not null)
@@ -144,7 +144,7 @@ public sealed partial class XrefResolvingService
                 continue;
 
             var uid = href[5..];
-            var xref = await Resolver.ResolveAsync(uid);
+            var xref = await _resolver.ResolveAsync(uid);
 
             if (xref is not null)
             {
