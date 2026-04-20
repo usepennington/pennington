@@ -4,6 +4,7 @@ using Pennington.Content;
 using Pennington.Infrastructure;
 using Pennington.Pipeline;
 using Pennington.Routing;
+using Testably.Abstractions.Testing;
 
 namespace Pennington.Tests.Infrastructure;
 
@@ -20,9 +21,13 @@ public class XrefResolvingServiceTests
         var contentService = new StubContentService(refs.ToImmutableList());
         var services = new ServiceCollection();
         services.AddSingleton<IContentService>(contentService);
-        services.AddSingleton<XrefResolver>();
+        services.AddLogging();
+        services.AddSingleton<System.IO.Abstractions.IFileSystem>(new MockFileSystem());
+        services.AddSingleton<IFileWatcher, FileWatcher>();
+        services.AddFileWatched<XrefResolver>();
         var provider = services.BuildServiceProvider();
-        return new XrefResolvingService(provider);
+        return new XrefResolvingService(
+            provider.GetRequiredService<FileWatchDependencyFactory<XrefResolver>>());
     }
 
     // --- Resolved xref tag: title with angle brackets is encoded ---

@@ -33,6 +33,14 @@ public sealed class FileWatchDependencyFactory<T> : IDisposable where T : class
         }
     }
 
+    /// <summary>
+    /// Current live instance — equivalent to <see cref="GetInstance"/> but reads
+    /// as a property at call sites. Prefer this over injecting
+    /// <see cref="IServiceProvider"/> and calling <c>GetRequiredService&lt;T&gt;()</c>
+    /// when a singleton needs to hold a reference to a file-watched dependency.
+    /// </summary>
+    public T Current => GetInstance();
+
     /// <summary>Disposes the current instance (if any) so the next call to <see cref="GetInstance"/> builds a fresh one.</summary>
     public void InvalidateInstance()
     {

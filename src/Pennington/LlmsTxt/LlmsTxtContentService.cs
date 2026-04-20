@@ -3,24 +3,28 @@ namespace Pennington.LlmsTxt;
 using System.Collections.Immutable;
 using System.Text;
 using Content;
+using Infrastructure;
 using Pipeline;
 using Routing;
 
 /// <summary>
 /// Thin <see cref="IContentService"/> adapter that delegates to <see cref="LlmsTxtService"/>
-/// for file generation during static builds.
+/// for file generation during static builds. Reads the current <see cref="LlmsTxtService"/>
+/// via its <see cref="FileWatchDependencyFactory{T}"/> so file-change rebuilds propagate.
 /// </summary>
 public sealed class LlmsTxtContentService : IContentService
 {
-    private readonly LlmsTxtService _service;
+    private readonly FileWatchDependencyFactory<LlmsTxtService> _serviceFactory;
     private readonly LlmsTxtOptions _options;
 
-    /// <summary>Creates a content service that emits llms.txt and stripped markdown files produced by the given service.</summary>
-    public LlmsTxtContentService(LlmsTxtService service, LlmsTxtOptions options)
+    /// <summary>Creates a content service that emits llms.txt and stripped markdown files produced by the current <see cref="LlmsTxtService"/>.</summary>
+    public LlmsTxtContentService(FileWatchDependencyFactory<LlmsTxtService> serviceFactory, LlmsTxtOptions options)
     {
-        _service = service;
+        _serviceFactory = serviceFactory;
         _options = options;
     }
+
+    private LlmsTxtService Service => _serviceFactory.Current;
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
@@ -41,11 +45,11 @@ public sealed class LlmsTxtContentService : IContentService
         // llms.txt index
         builder.Add(new ContentToCreate(
             new FilePath("llms.txt"),
-            async () => Encoding.UTF8.GetBytes(await _service.GetLlmsTxtAsync()),
+            async () => Encoding.UTF8.GetBytes(await Service.GetLlmsTxtAsync()),
             "text/plain"));
 
         // Individual stripped markdown files
-        var markdownFiles = await _service.GetMarkdownFilesAsync();
+        var markdownFiles = await Service.GetMarkdownFilesAsync();
         foreach (var file in markdownFiles)
         {
             var captured = file;
@@ -60,7 +64,7 @@ public sealed class LlmsTxtContentService : IContentService
         {
             builder.Add(new ContentToCreate(
                 new FilePath("llms-full.txt"),
-                async () => Encoding.UTF8.GetBytes(await _service.GetLlmsFullTxtAsync() ?? ""),
+                async () => Encoding.UTF8.GetBytes(await Service.GetLlmsFullTxtAsync() ?? ""),
                 "text/plain"));
         }
 

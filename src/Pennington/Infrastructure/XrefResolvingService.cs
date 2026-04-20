@@ -6,7 +6,6 @@ using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Resolves xref: cross-reference links in HTML.
@@ -28,22 +27,23 @@ using Microsoft.Extensions.DependencyInjection;
 /// raw HTML strings with no caller-owned document.
 /// </para>
 /// <para>
-/// Resolves <see cref="XrefResolver"/> lazily from the service provider
-/// so it always gets the current instance from the file-watch factory.
+/// Reads <see cref="XrefResolver"/> via its <see cref="FileWatchDependencyFactory{T}"/>
+/// so it always gets the current instance — a direct ctor capture would pin the
+/// first instance and miss every subsequent file-change rebuild.
 /// </para>
 /// </summary>
 public sealed partial class XrefResolvingService
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly FileWatchDependencyFactory<XrefResolver> _resolverFactory;
     private readonly IBrowsingContext _browsingContext = BrowsingContext.New(Configuration.Default);
 
-    /// <summary>Initializes the service with the provider used to resolve the current <see cref="XrefResolver"/> on demand.</summary>
-    public XrefResolvingService(IServiceProvider serviceProvider)
+    /// <summary>Initializes the service with the factory used to read the current <see cref="XrefResolver"/> on demand.</summary>
+    public XrefResolvingService(FileWatchDependencyFactory<XrefResolver> resolverFactory)
     {
-        _serviceProvider = serviceProvider;
+        _resolverFactory = resolverFactory;
     }
 
-    private XrefResolver Resolver => _serviceProvider.GetRequiredService<XrefResolver>();
+    private XrefResolver Resolver => _resolverFactory.Current;
 
     /// <summary>
     /// Standalone entrypoint for callers that have a raw HTML string and
