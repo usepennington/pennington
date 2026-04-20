@@ -96,10 +96,13 @@ public static class BlogSiteServiceExtensions
 
         app.UseAntiforgery();
         app.UseStaticFiles();
+        app.UseMonorailCss();
+        // UsePennington wires the redirect middleware; call it before mapping
+        // the Razor component endpoint so `redirectUrl:` pages short-circuit
+        // with 301 instead of falling through to the catch-all page route.
+        app.UsePennington();
         app.MapRazorComponents<Components.App>()
             .AddAdditionalAssemblies(options.AdditionalRoutingAssemblies);
-        app.UseMonorailCss();
-        app.UsePennington();
 
         if (options.EnableRss)
         {

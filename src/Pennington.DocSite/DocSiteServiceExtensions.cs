@@ -107,15 +107,18 @@ public static class DocSiteServiceExtensions
         app.UsePenningtonLocaleRouting();
         app.UseAntiforgery();
         app.UseStaticFiles();
+        app.UseMonorailCss();
+        app.UseSpaNavigation();
+        // UsePennington wires the redirect middleware; call it before mapping
+        // the Razor component endpoint so `redirectUrl:` pages short-circuit
+        // with 301 instead of falling through to the catch-all page route.
+        app.UsePennington();
         // The runtime Blazor router needs the same augmented assembly list the static
         // content service uses, otherwise a consumer's `@page` (and its `@layout`
         // directive) is invisible at runtime — the catch-all Pages.razor would win and
         // strip the layout by rendering via DynamicComponent.
         app.MapRazorComponents<Components.App>()
             .AddAdditionalAssemblies(BuildRoutingAssemblies(options));
-        app.UseMonorailCss();
-        app.UseSpaNavigation();
-        app.UsePennington();
 
         return app;
     }

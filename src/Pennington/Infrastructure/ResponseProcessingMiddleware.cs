@@ -60,9 +60,14 @@ public sealed class ResponseProcessingMiddleware(RequestDelegate next)
 
         foreach (var diag in diagnosticContext.Diagnostics)
         {
+            // HTTP headers must be ASCII; percent-encode so non-ASCII values
+            // (locale display names like "Español", content titles with accents)
+            // survive instead of crashing Kestrel's header writer.
+            var severity = Uri.EscapeDataString(diag.Severity.ToString());
+            var message = Uri.EscapeDataString(diag.Message);
             var value = diag.Source is not null
-                ? $"{diag.Severity}|{diag.Message}|{diag.Source}"
-                : $"{diag.Severity}|{diag.Message}";
+                ? $"{severity}|{message}|{Uri.EscapeDataString(diag.Source)}"
+                : $"{severity}|{message}";
             context.Response.Headers.Append("X-Pennington-Diagnostic", value);
         }
     }

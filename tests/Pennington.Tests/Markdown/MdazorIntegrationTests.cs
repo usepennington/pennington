@@ -38,6 +38,36 @@ public class MdazorIntegrationTests
     }
 
     [Fact]
+    public void Pipeline_RendersComponent_WhenComponentRegisteredAfterPipelineFactoryRuns()
+    {
+        // Mirrors AddDocSite / AddBlogSite: AddMdazor is called first, then
+        // AddMdazorComponent<T>() entries follow. The singleton MarkdownPipeline
+        // factory must observe the full registry when it runs lazily on first use.
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddMdazor();
+        services.AddSingleton(new HighlightingService([]));
+        services.AddSingleton<Markdig.MarkdownPipeline>(sp =>
+            MarkdownPipelineFactory.CreateWithExtensions(sp, sp.GetRequiredService<HighlightingService>()));
+        services.AddMdazorComponent<MdazorTestGreeting>();
+
+        using var sp = services.BuildServiceProvider();
+        var pipeline = sp.GetRequiredService<Markdig.MarkdownPipeline>();
+
+        const string markdown = "<MdazorTestGreeting Name=\"late-bound\" />";
+        using var writer = new StringWriter();
+        var renderer = new HtmlRenderer(writer);
+        pipeline.Setup(renderer);
+        var document = Markdig.Markdown.Parse(markdown, pipeline);
+        renderer.Render(document);
+        writer.Flush();
+
+        var html = writer.ToString();
+        html.ShouldContain("hello-world-from-mdazor");
+        html.ShouldContain("late-bound");
+    }
+
+    [Fact]
     public void Pipeline_PassesThroughMarkdown_WhenNoMdazorComponentsRegistered()
     {
         var services = new ServiceCollection();

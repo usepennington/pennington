@@ -9,7 +9,6 @@ using Markdig.Parsers.Inlines;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Mdazor;
-using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Creates a configured Markdig MarkdownPipeline.
@@ -43,11 +42,14 @@ public static class MarkdownPipelineFactory
             .UseYamlFrontMatter()
             .UseSyntaxHighlighting(highlightingService, codeOptions, preprocessors)
             .UseTabbedCodeBlocks(tabOptions)
-            .UseCustomAlerts();
-
-        // Mdazor wires itself from DI; only enable when AddMdazor() has populated the registry.
-        if (serviceProvider.GetService<IComponentRegistry>() is not null)
-            builder = builder.UseMdazor(serviceProvider);
+            .UseCustomAlerts()
+            // Mdazor resolves IComponentRegistry lazily at render time, so the pipeline
+            // is always wired when AddPennington has registered Mdazor. The old shape
+            // of gating on a registry lookup here captured an empty registry when
+            // AddMdazorComponent<T>() calls ran *after* AddPennington (as they do in
+            // AddDocSite/AddBlogSite), leaving built-in components rendering as literal
+            // lowercased HTML in DocSite.
+            .UseMdazor(serviceProvider);
 
         configure?.Invoke(builder, serviceProvider);
         return builder.Build();

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Pennington.Infrastructure;
 
 namespace Pennington.Tests.Infrastructure;
@@ -70,6 +71,34 @@ public class ResponseProcessingMiddlewareTests
         responseBody.Seek(0, SeekOrigin.Begin);
         var body = await new StreamReader(responseBody).ReadToEndAsync(TestContext.Current.CancellationToken);
         body.ShouldBe(expectedBody);
+    }
+
+    [Fact]
+    public async Task Middleware_PercentEncodesNonAsciiDiagnosticHeaders()
+    {
+        var diagnostics = new DiagnosticContext();
+        diagnostics.AddWarning("Locale fallback: requested 'es', falling back to 'en'", source: "Español");
+
+        var services = new ServiceCollection();
+        services.AddSingleton(diagnostics);
+
+        var middleware = new ResponseProcessingMiddleware(async context =>
+        {
+            context.Response.ContentType = "text/html";
+            await context.Response.WriteAsync("<html><body>Hola</body></html>");
+        });
+
+        var context = new DefaultHttpContext { RequestServices = services.BuildServiceProvider() };
+        var responseBody = new MemoryStream();
+        context.Response.Body = responseBody;
+
+        await middleware.InvokeAsync(context, []);
+
+        var header = context.Response.Headers["X-Pennington-Diagnostic"].ToString();
+        header.ShouldNotBeEmpty();
+        header.ShouldNotContain("ñ");
+        header.ShouldNotContain("ó");
+        header.ShouldContain("Espa%C3%B1ol");
     }
 
     /// <summary>A processor that always applies and appends text to the body.</summary>
