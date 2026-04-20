@@ -45,7 +45,7 @@ Paste the Stage 1 markdown body into the new file. These three fields are the sm
 examples/BlogSiteFirstPostExample/snippets/stage1.md
 ```
 
-The two `---` fences delimit the YAML front matter block. The `date:` value parses as an ISO-8601 date; any format that round-trips as a date string works. For the full list of recognised front-matter keys, see the <xref:reference.api.blog-front-matter> reference page.
+The two `---` fences delimit the YAML front matter block. The `date:` value parses as an ISO-8601 date; any format that round-trips as a date string works. For the full list of recognised front-matter keys, see the <xref:reference.api.blog-site-front-matter> reference page.
 
 </Step>
 </Steps>
@@ -81,7 +81,7 @@ Replace the Stage 1 YAML block with the Stage 2 block below. Here's what each ne
 examples/BlogSiteFirstPostExample/snippets/stage2.md
 ```
 
-The list-of-strings shape for `tags:` is YAML's block sequence (`- value` per line). For the full record definition, see <xref:reference.api.blog-front-matter>.
+The list-of-strings shape for `tags:` is YAML's block sequence (`- value` per line). For the full record definition, see <xref:reference.api.blog-site-front-matter>.
 
 </Step>
 <Step StepNumber="2">

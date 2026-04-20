@@ -11,6 +11,11 @@ using Pennington.Roslyn.Workspace;
 /// One auto-discovered public type, slugged for use as the
 /// <c>{key}</c> segment of the <c>/reference/api/{key}</c> Razor route.
 /// </summary>
+/// <param name="Slug">URL slug used as the <c>{key}</c> route segment.</param>
+/// <param name="XmlDocId">Roslyn documentation comment ID (<c>T:Namespace.TypeName</c>) of the underlying type.</param>
+/// <param name="TypeName">Short type name without the namespace.</param>
+/// <param name="Namespace">Fully-qualified containing namespace, used for the index page's grouping headings.</param>
+/// <param name="Summary">First sentence of the type's xmldoc summary, or <c>null</c> if absent.</param>
 public sealed record ApiReferenceEntry(
     string Slug,
     string XmlDocId,

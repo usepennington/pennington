@@ -482,14 +482,19 @@ public sealed class OutputGenerationService
         if (!response.Headers.TryGetValues("X-Pennington-Diagnostic", out var values))
             return [];
 
+        return ParseDiagnosticHeaderValues(values);
+    }
+
+    internal static List<Diagnostic> ParseDiagnosticHeaderValues(IEnumerable<string> values)
+    {
         var diagnostics = new List<Diagnostic>();
         foreach (var value in values)
         {
             var parts = value.Split('|', 3);
             if (parts.Length < 2) continue;
-            if (!Enum.TryParse<DiagnosticSeverity>(parts[0], out var severity)) continue;
-            var message = parts[1];
-            var source = parts.Length > 2 ? parts[2] : null;
+            if (!Enum.TryParse<DiagnosticSeverity>(Uri.UnescapeDataString(parts[0]), out var severity)) continue;
+            var message = Uri.UnescapeDataString(parts[1]);
+            var source = parts.Length > 2 ? Uri.UnescapeDataString(parts[2]) : null;
             diagnostics.Add(new Diagnostic(severity, message, source));
         }
         return diagnostics;

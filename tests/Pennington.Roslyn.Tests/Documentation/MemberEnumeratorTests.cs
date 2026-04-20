@@ -54,6 +54,22 @@ public sealed class MemberEnumeratorTests
             bool IsDraft => false;
             int Priority { get; }
         }
+
+        /// <summary>One auto-discovered public type, slugged for the route segment.</summary>
+        /// <param name="Slug">Slug used as the {key} route segment.</param>
+        /// <param name="XmlDocId">XmlDocId of the type.</param>
+        /// <param name="TypeName">Short type name without namespace.</param>
+        public sealed record PositionalEntry(string Slug, string XmlDocId, string TypeName);
+
+        /// <summary>Mixed positional + body — only the param-backed ones get the fallback.</summary>
+        /// <param name="Name">The receiver name.</param>
+        public sealed record MixedEntry(string Name)
+        {
+            /// <summary>Has its own summary already.</summary>
+            public string Description { get; init; } = string.Empty;
+
+            public string Untouched { get; init; } = string.Empty;
+        }
         """;
 
     private static async Task<IMemberEnumerator> BuildEnumeratorAsync()
@@ -259,6 +275,53 @@ public sealed class MemberEnumeratorTests
 
         members.Single(m => m.Name == "IsDraft").DefaultValue.ShouldBe("false");
         members.Single(m => m.Name == "Priority").DefaultValue.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Positional_Record_Property_Inherits_Summary_From_Param()
+    {
+        var enumerator = await BuildEnumeratorAsync();
+
+        var members = await enumerator.EnumerateAsync(
+            "T:Fixtures.PositionalEntry",
+            MemberKind.Properties,
+            AccessFilter.Public,
+            MemberOrder.Alphabetical);
+
+        var slug = members.Single(m => m.Name == "Slug");
+        slug.Xmldoc.HasSummary.ShouldBeTrue();
+        slug.Xmldoc.Summary[0].ShouldBeCase<TextNode>().Text.ShouldBe("Slug used as the {key} route segment.");
+
+        var typeName = members.Single(m => m.Name == "TypeName");
+        typeName.Xmldoc.HasSummary.ShouldBeTrue();
+        typeName.Xmldoc.Summary[0].ShouldBeCase<TextNode>().Text.ShouldBe("Short type name without namespace.");
+    }
+
+    [Fact]
+    public async Task Param_Fallback_Does_Not_Override_Existing_Summary()
+    {
+        var enumerator = await BuildEnumeratorAsync();
+
+        var members = await enumerator.EnumerateAsync(
+            "T:Fixtures.MixedEntry",
+            MemberKind.Properties,
+            AccessFilter.Public,
+            MemberOrder.Alphabetical);
+
+        // Positional `Name` gets its summary from <param name="Name">.
+        var name = members.Single(m => m.Name == "Name");
+        name.Xmldoc.HasSummary.ShouldBeTrue();
+        name.Xmldoc.Summary[0].ShouldBeCase<TextNode>().Text.ShouldBe("The receiver name.");
+
+        // Body-defined `Description` keeps its own summary.
+        var description = members.Single(m => m.Name == "Description");
+        description.Xmldoc.HasSummary.ShouldBeTrue();
+        description.Xmldoc.Summary[0].ShouldBeCase<TextNode>().Text.ShouldBe("Has its own summary already.");
+
+        // Body-defined `Untouched` has no doc and stays without one — the fallback
+        // must only fire for positional record parameters, not arbitrary undocumented members.
+        var untouched = members.Single(m => m.Name == "Untouched");
+        untouched.Xmldoc.HasSummary.ShouldBeFalse();
     }
 
     private sealed class StubWorkspaceService(Solution solution) : ISolutionWorkspaceService

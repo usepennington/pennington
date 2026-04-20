@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Pennington.Generation;
 using Pennington.Infrastructure;
 
 namespace Pennington.Tests.Infrastructure;
@@ -99,6 +100,40 @@ public class ResponseProcessingMiddlewareTests
         header.ShouldNotContain("ñ");
         header.ShouldNotContain("ó");
         header.ShouldContain("Espa%C3%B1ol");
+    }
+
+    [Fact]
+    public async Task Middleware_DiagnosticHeader_RoundTripsThroughBuildReportParser()
+    {
+        var diagnostics = new DiagnosticContext();
+        var originalMessage = "Member P:Foo.Bar has no <summary>";
+        var originalSource = "/reference/api/foo-bar/";
+        diagnostics.AddWarning(originalMessage, source: originalSource);
+
+        var services = new ServiceCollection();
+        services.AddSingleton(diagnostics);
+
+        var middleware = new ResponseProcessingMiddleware(async context =>
+        {
+            context.Response.ContentType = "text/html";
+            await context.Response.WriteAsync("<html></html>");
+        });
+
+        var context = new DefaultHttpContext { RequestServices = services.BuildServiceProvider() };
+        context.Response.Body = new MemoryStream();
+
+        await middleware.InvokeAsync(context, []);
+
+        var headers = context.Response.Headers["X-Pennington-Diagnostic"]
+            .Where(v => v is not null)
+            .Cast<string>()
+            .ToList();
+        var parsed = OutputGenerationService.ParseDiagnosticHeaderValues(headers);
+
+        parsed.Count.ShouldBe(1);
+        parsed[0].Severity.ShouldBe(DiagnosticSeverity.Warning);
+        parsed[0].Message.ShouldBe(originalMessage);
+        parsed[0].Source.ShouldBe(originalSource);
     }
 
     /// <summary>A processor that always applies and appends text to the body.</summary>
