@@ -29,34 +29,12 @@ Components in `src/Pennington.UI/Components/` are single `.razor` files with inl
 
 ## DI lifetimes
 
-Three tiers. Pick deliberately — the wrong lifetime silently caches stale data.
+Three tiers:
 
-1. **Transient** (`AddTransient<T>`) — a new instance every resolve. The default choice. Use when the class has no state worth keeping between calls, or when it captures a file-watched service and is itself rebuilt often enough that direct ctor injection is safe.
-2. **File-scoped** (`AddFileWatched<T>` in `Pennington.Infrastructure`) — a singleton-like instance that is ejected and rebuilt when `IFileWatcher` fires. Use for anything that holds state derived from content files (TOC metadata, xref lookup, search index, sitemap, `llms.txt`).
-3. **Singleton** (`AddSingleton<T>`) — rare. Reserve for genuinely process-lifetime state: configuration records, the `IFileWatcher` itself, connection pools, registries that never change.
+- **Transient** (`AddTransient<T>`) — default. Stateless services, and anything that captures a file-watched dep.
+- **File-scoped** (`AddFileWatched<T>` in `Pennington.Infrastructure`) — holds state derived from content files. Ejected and rebuilt when `IFileWatcher` fires. Examples: `NavigationBuilder`, `XrefResolver`, `SearchIndexService`, `BlogSiteContentService`.
+- **Singleton** (`AddSingleton<T>`) — rare. Process-lifetime state only: options records, `IFileWatcher`, connection pools.
 
-**Rule of thumb:** if in doubt between singleton and file-scoped, pick file-scoped. If in doubt between singleton and transient, pick transient.
+**Ctors take deps by type.** No `IServiceProvider`, `FileWatchDependencyFactory<T>`, or `Func<T>` in domain ctors — that's plumbing. If a direct capture would go stale, fix the consumer's lifetime, not the injection shape. A singleton capturing a file-watched dep is a smell; push the dep down to a transient collaborator.
 
-### Services should inject file-watched deps directly — never reach for the factory
-
-Classes that consume a file-watched service (e.g. `XrefResolver`, `NavigationBuilder`) take it by type in their ctor. They must not know about `FileWatchDependencyFactory<T>` or `IServiceProvider.GetRequiredService<T>()` — that's infrastructure plumbing. Keep domain code DI-idiomatic.
-
-The knob you turn is **the consumer's own lifetime**, not the injection shape:
-
-- **Stateless delegator / wrapper** → `AddTransient`. Every resolve rebuilds, pulling the current file-watched instance through. Examples: `XrefResolvingService`, `XrefHtmlRewriter`, `HtmlResponseRewritingProcessor`, `LlmsTxtContentService`.
-- **Holds state that also depends on content files** → `AddFileWatched`. Rebuilds alongside its deps. Examples: `NavigationBuilder`, `LlmsTxtService`, `SearchIndexService`, `SitemapService`, `BlogSiteContentService`.
-- **Must be singleton** for real reasons → then the direct capture *is* stale. In that case, push the file-watched concern down into a lower-lifetime collaborator rather than papering over it at the singleton's call sites. If you genuinely cannot avoid the singleton, raise it — it's a design smell worth discussing before introducing service-locator workarounds.
-
-### The transient-chain property
-
-Middleware and endpoint handlers resolve their dependencies per request via parameter injection (`InvokeAsync(HttpContext, IEnumerable<IResponseProcessor>)`). When a chain of transient services all depend on each other, each request rebuilds the whole chain. That's how the HTML-rewriting pipeline stays current without any consumer touching `FileWatchDependencyFactory` — the top-of-chain transient resolution cascades a fresh `XrefResolver` all the way through.
-
-If you introduce a new link in such a chain, **keep it transient unless you have a specific reason not to**. A singleton in the middle pins the chain below it at its first resolution.
-
-### Interface wrapper gotcha
-
-`services.AddSingleton<IInterface>(sp => sp.GetRequiredService<ConcreteFileWatched>())` looks like a harmless forwarder but is a stale-reference factory — the outer `AddSingleton` caches the first `ConcreteFileWatched` it resolves and never asks again. Use `AddTransient<IInterface>(...)` so the inner `GetRequiredService` runs on every resolve and returns the factory's current instance. `BlogSite`'s `IContentService` wrapper and the core library's `LlmsTxtContentService` registration follow this pattern — copy it when registering a file-watched implementation behind an interface.
-
-### Razor `@inject` on file-watched services
-
-Blazor SSG / server-rendered pages resolve `@inject` from the per-request scope, so `@inject NavigationBuilder` picks up the current factory instance on each page render — no special handling needed for the built-in render path. If a component starts caching an injected file-watched service in a field between renders (e.g. persistent-state Blazor circuits), switch to per-call resolution at that site rather than spreading the pattern.
+**Interface wrapper gotcha.** `AddSingleton<IFoo>(sp => sp.GetRequiredService<FileWatchedFoo>())` caches the first concrete and never refreshes. Use `AddTransient<IFoo>` — the inner resolve runs per call.
