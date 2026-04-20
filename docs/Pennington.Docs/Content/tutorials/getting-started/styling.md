@@ -166,3 +166,23 @@ Now reload `/about` in the browser. The paragraph renders in pink italic because
 - The generated stylesheet is mounted at `/styles.css` with `UseMonorailCss`.
 - A utility-class layout feeds the class-collector, which discovers every token on its way through the response pipeline.
 - A new utility class added at runtime regenerates the stylesheet without a restart.
+
+## Pulling in Pennington.UI's stylesheet
+
+If the layout uses Pennington.UI components (`Badge`, `Card`, `Steps`, etc.), pair the `<link rel="stylesheet" href="/styles.css">` tag above with a reference to the Pennington.UI bundle so the component-scoped rules ship alongside MonorailCSS output. The bundle is an RCL static web asset — add a package reference to `Pennington.UI` and reference it by the conventional path:
+
+```html
+<link rel="stylesheet" href="/_content/Pennington.UI/styles.css">
+```
+
+`AddDocSite` and `AddBlogSite` emit this automatically in their built-in layouts; a bare-`AddPennington` host that wants the same components needs the tag explicitly.
+
+## Listening port
+
+Pennington uses the standard ASP.NET host, so the usual port-binding knobs apply. Pick one:
+
+- CLI flag: `dotnet run -- --urls http://localhost:5101`
+- Env var: `ASPNETCORE_URLS=http://localhost:5101`
+- `Properties/launchSettings.json` → `profiles.<name>.applicationUrl`
+
+Nothing in Pennington overrides these — the library only adds its own middleware and endpoints on top of whatever URL Kestrel is told to listen on.

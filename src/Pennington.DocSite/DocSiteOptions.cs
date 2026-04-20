@@ -68,9 +68,6 @@ public record DocSiteOptions
     /// <summary>Additional assemblies scanned for Razor components so out-of-project pages participate in routing.</summary>
     public Assembly[] AdditionalRoutingAssemblies { get; init; } = [];
 
-    /// <summary>Path to .sln or .slnx for Roslyn integration. Requires Pennington.Roslyn package.</summary>
-    public string? SolutionPath { get; init; }
-
     /// <summary>Configure localization options (locales, default locale).</summary>
     public Action<LocalizationOptions>? ConfigureLocalization { get; init; }
 

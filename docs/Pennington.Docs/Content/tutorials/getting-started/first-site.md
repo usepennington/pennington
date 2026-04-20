@@ -49,8 +49,34 @@ Add the Pennington package so the `AddPennington` extension method resolves. The
 dotnet add package Pennington
 ```
 
+> [!IMPORTANT]
+> Every `Pennington.*` package (`Pennington`, `Pennington.DocSite`, `Pennington.BlogSite`, `Pennington.MonorailCss`, `Pennington.Roslyn`, `Pennington.UI`) must share a version. Mixing versions produces `NU1605 Detected package downgrade` warnings at restore time. When adding a second package, pin it to the same version as `Pennington`: `dotnet add package Pennington.DocSite --version 0.0.2`.
+
 </Step>
 <Step StepNumber="3">
+
+**Opt into C# preview language features**
+
+Pennington is built on C# 15 union types, and the samples in this tutorial use `union` pattern matching. The .NET 11 preview SDK does not enable preview language features by default, so compiling against Pennington without the opt-in produces `error CS8652: The feature 'unions' is currently in Preview and *unsupported*`. Edit the csproj to add `<LangVersion>preview</LangVersion>`:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Pennington" Version="*" />
+  </ItemGroup>
+</Project>
+```
+
+For a multi-project host, dropping a `Directory.Build.props` at the solution root with the same `<LangVersion>preview</LangVersion>` property keeps every project aligned.
+
+</Step>
+<Step StepNumber="4">
 
 **Confirm the bare host runs**
 
@@ -65,7 +91,7 @@ M:GettingStartedMinimalSiteExample.Stage1.Run(System.String[])
 
 ### Checkpoint — Bare host responds
 
-The browser shows the literal text `Hello from ASP.NET.` — no markdown involved at this stage. If HTML output appears instead, double-check that the running project is the bare scaffold from step 1.3, not a later stage.
+The browser shows the literal text `Hello from ASP.NET.` — no markdown involved at this stage. If HTML output appears instead, double-check that the running project is the bare scaffold from step 1.4, not a later stage.
 
 - Run `dotnet run` from the project folder.
 - Open `http://localhost:5000/` and confirm the page body reads `Hello from ASP.NET.`

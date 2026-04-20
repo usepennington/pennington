@@ -12,8 +12,18 @@ To drop a flowchart, sequence diagram, or other visual into a markdown article w
 ## Assumptions
 
 - An existing Pennington site renders markdown (see <xref:tutorials.getting-started.first-site> if not).
-- The host uses `AddDocSite` or `AddBlogSite`, or otherwise serves the Pennington.UI script bundle that includes `MermaidManager`.
+- The host uses `AddDocSite` or `AddBlogSite`, or otherwise serves the Pennington.UI script bundle that includes `MermaidManager` — see [Bare-host wiring](#bare-host-wiring) below.
 - Basic Mermaid syntax (flowchart, sequence, class, etc.) is familiar — this page does not teach Mermaid; see the [upstream Mermaid docs](https://mermaid.js.org/) for the grammar.
+
+### Bare-host wiring
+
+`AddDocSite` and `AddBlogSite` include `Pennington.UI` and reference its script bundle from the built-in layout. On a bare-`AddPennington` host the bundle still ships as a static web asset — add a package reference to `Pennington.UI` in the host csproj and emit this one `<script>` tag from your layout:
+
+```html
+<script type="module" src="/_content/Pennington.UI/scripts.js" defer></script>
+```
+
+`MermaidManager` auto-bootstraps on load, scans for `code.language-mermaid`, and takes over every fenced diagram in the rendered HTML. The same path serves the Pennington.UI stylesheet (`/_content/Pennington.UI/styles.css`) if the layout doesn't already pull it in through MonorailCSS.
 
 ## Diagram syntaxes
 

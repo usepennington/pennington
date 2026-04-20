@@ -7,7 +7,7 @@ tags: [blogsite, template, scaffold, options]
 uid: tutorials.blogsite.scaffold
 ---
 
-By the end of this tutorial, a running BlogSite host titled "Scaffold Blog" serves a home listing, `/archive`, `/blog/<slug>`, `/tags`, `/tags/<name>` (plus the `/topics` aliases), and `/rss.xml` — all from a single placeholder post under `Content/Blog/`.
+By the end of this tutorial, a running BlogSite host titled "Scaffold Blog" serves a home listing, `/archive`, `/blog/<slug>/`, `/tags/`, `/tags/<name>/` (plus the `/topics` aliases), and `/rss.xml` — all from a single placeholder post under `Content/Blog/`.
 
 Along the way, you'll see how to swap any plain Pennington host for the BlogSite template in three calls and populate the core `BlogSiteOptions` surface, with a clear mental model of how `ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, and `TagsPageUrl` work together.
 

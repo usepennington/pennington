@@ -67,6 +67,9 @@ Create an inner `.slnx` that registers only the Sample library. `SolutionPath` p
 examples/BeyondRoslynExample/BeyondRoslynExample.slnx
 ```
 
+> [!NOTE]
+> On the .NET 11 preview SDK, `dotnet new sln` emits an XML `.slnx` by default. If you prefer the legacy `.sln` format, pass `--format sln`. `SolutionPath` accepts either extension — `Pennington.Roslyn` uses `Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace`, which opens both.
+
 </Step>
 </Steps>
 
@@ -87,7 +90,15 @@ A single DI call turns on the xmldocid preprocessor. Once `AddPenningtonRoslyn` 
 
 **Add a package reference**
 
-Reference `Pennington.Roslyn` from the host csproj. It brings in the MSBuild workspace, `SyntaxHighlighter`, and `RoslynCodeBlockPreprocessor`.
+Reference `Pennington.Roslyn` from the host csproj. It brings in `SyntaxHighlighter` and `RoslynCodeBlockPreprocessor`. The MSBuild workspace itself needs two extra references so its out-of-process `BuildHost` subprocess can resolve at runtime:
+
+```xml
+<PackageReference Include="Pennington.Roslyn" Version="*" />
+<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.3.0" />
+<PackageReference Include="Microsoft.Build.Framework" Version="18.4.0" ExcludeAssets="runtime" PrivateAssets="all" />
+```
+
+The `Microsoft.CodeAnalysis.Workspaces.MSBuild` package ships the `BuildHost-netcore/` content DLLs the workspace launches at solution-load time. Without it, every `csharp:xmldocid` fence renders an `<!-- Error processing xmldocid: … BuildHost.dll not found -->` comment. The `Microsoft.Build.Framework` reference (with runtime excluded) silences the MSBuild-locator resolution error without changing runtime behaviour.
 
 </Step>
 <Step StepNumber="2">

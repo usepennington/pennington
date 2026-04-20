@@ -12,8 +12,22 @@ To keep an unfinished page out of navigation, attach grouping keywords to a page
 ## Assumptions
 
 - A working Pennington site has markdown under `Content/` (see <xref:how-to.content-authoring.front-matter> if not)
-- Pages use `DocSiteFrontMatter` (the default after `AddDocSite`) or another type that implements `ITaggable` + `IOrderable`
+- Pages use a front-matter record that implements the capability each key relies on (see the applicability note below)
 - The sidebar currently renders in file-order; `TableOfContentsNavigation` has not been customized
+
+### Which front-matter types support which keys
+
+`isDraft:` is always available — `IFrontMatter` has a default `IsDraft` member that every record inherits. `tags:` and `order:` only apply to records that opt in through `ITaggable` and `IOrderable` respectively.
+
+| Front-matter type | `isDraft:` | `tags:` | `order:` |
+|---|---|---|---|
+| `DocSiteFrontMatter` (default after `AddDocSite`) | yes | yes | yes |
+| `BlogSiteFrontMatter` (default after `AddBlogSite`) | yes | yes | **no** — date-driven ordering instead |
+| `DocFrontMatter` (bare-host default) | yes | yes | yes |
+| `BlogFrontMatter` (bare-host default) | yes | yes | **no** |
+| Custom record | depends on which capability interfaces it implements | | |
+
+Setting `order:` on a `BlogSiteFrontMatter` page has no effect — blog posts sort newest-first by `date:`. To reorder posts, adjust the date; to hide a post, use `isDraft: true`.
 
 ## Options
 

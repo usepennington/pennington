@@ -19,6 +19,7 @@ Rows are alphabetical by YAML key. Each entry shows the records that expose the 
 
 ### Notes
 
+- YAML keys are the camelCase form of the C# record property names — `SectionLabel` is written `sectionLabel:`, `CanonicalBaseUrl` is `canonicalBaseUrl:`. This is `CamelCaseNamingConvention` applied to YamlDotNet's default PascalCase binding; the `FrontMatterKeys` table above shows both the key and its backing symbol.
 - YAML keys are matched case-insensitively under `CamelCaseNamingConvention` (`src/Pennington/FrontMatter/FrontMatterParser.cs`); unknown keys are silently ignored (`IgnoreUnmatchedProperties`).
 - Absent keys fall through to the record's `init` default; `IFrontMatter` default members (`IsDraft`, `Search`, `Llms`, `Uid`, `Description`, `Date`) apply when the implementing record does not declare the property itself.
 - The concrete records `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, and `BlogSiteFrontMatter` all re-declare every default-member key explicitly, so their defaults are the ones listed above (not the interface defaults) when parsing is wired to a specific record type.
