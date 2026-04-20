@@ -1,5 +1,4 @@
-@inject ISymbolExtractionService SymbolService
-@inject IXmlDocParser Parser
+@inject IServiceProvider Services
 @inject IXmlDocHtmlRenderer Renderer
 @inject IHttpContextAccessor HttpContextAccessor
 
@@ -18,6 +17,8 @@ else
 
 @code {
     [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
+    [Parameter] public string? Source { get; set; }
+    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private IReadOnlyList<ApiDefinitionRow> _rows = [];
     private string? _error;
@@ -39,10 +40,11 @@ else
             return;
         }
 
-        SymbolInfo? info;
+        ApiMember? member;
         try
         {
-            info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(XmlDocId));
+            var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
+            member = AsyncHelpers.RunSync(() => provider.GetMemberAsync(XmlDocId));
         }
         catch (Exception ex)
         {
@@ -51,41 +53,28 @@ else
             return;
         }
 
-        if (info?.Symbol is not Microsoft.CodeAnalysis.IMethodSymbol method)
+        if (member is null || member.Kind is not (MemberKind.Methods or MemberKind.Constructors))
         {
             Diagnostics?.AddError($"<ApiParameterTable> expected a method xmldocid (M:...), got {XmlDocId}");
             _error = $"Expected a method xmldocid (M:...), got <code>{WebUtility.HtmlEncode(XmlDocId)}</code>";
             return;
         }
 
-        if (method.Parameters.Length == 0)
+        if (member.Parameters.Length == 0)
         {
             _empty = "This method takes no parameters.";
             return;
         }
 
-        var parsed = Parser.Parse(method.GetDocumentationCommentXml());
-
-        var rows = new List<ApiDefinitionRow>(method.Parameters.Length);
-        var displayFormat = new Microsoft.CodeAnalysis.SymbolDisplayFormat(
-            genericsOptions: Microsoft.CodeAnalysis.SymbolDisplayGenericsOptions.IncludeTypeParameters,
-            miscellaneousOptions: Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.UseSpecialTypes
-                | Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier,
-            typeQualificationStyle: Microsoft.CodeAnalysis.SymbolDisplayTypeQualificationStyle.NameAndContainingTypes);
-
-        foreach (var p in method.Parameters)
+        var rows = new List<ApiDefinitionRow>(member.Parameters.Length);
+        foreach (var p in member.Parameters)
         {
-            var typeDisplay = p.Type.ToDisplayString(displayFormat);
-            var description = parsed.Params.TryGetValue(p.Name, out var nodes)
-                ? Renderer.RenderInlineHtml(nodes)
-                : string.Empty;
-
             rows.Add(new ApiDefinitionRow(
                 Name: p.Name,
-                TypeDisplay: typeDisplay,
+                TypeDisplay: p.TypeDisplay,
                 DefaultValue: null,
                 Required: false,
-                DescriptionHtml: description));
+                DescriptionHtml: Renderer.RenderInlineHtml(p.Description)));
         }
 
         _rows = rows;

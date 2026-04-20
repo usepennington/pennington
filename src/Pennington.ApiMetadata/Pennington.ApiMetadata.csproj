@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>Pluggable API metadata abstractions shared by Roslyn and DocFx-YAML backends for Pennington</Description>
+    <PackageTags>dotnet api-docs xmldoc managed-reference</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Pennington\Infrastructure\UnionPolyfills.cs" Link="Infrastructure\UnionPolyfills.cs" />
+  </ItemGroup>
+</Project>

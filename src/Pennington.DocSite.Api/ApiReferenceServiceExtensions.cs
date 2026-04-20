@@ -3,6 +3,8 @@ namespace Pennington.DocSite.Api;
 using Components.Reference;
 using Mdazor;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Pennington.ApiMetadata;
 using Pennington.Content;
 
 /// <summary>
@@ -11,31 +13,65 @@ using Pennington.Content;
 public static class ApiReferenceServiceExtensions
 {
     /// <summary>
-    /// Registers the API reference package: auto-publishes <c>/reference/api/</c>
-    /// pages for every public type in the configured projects, and registers the
-    /// <c>ApiMemberTable</c>, <c>ApiSummary</c>, <c>ExtensionMethods</c>, etc.
-    /// Mdazor components for inline use in markdown.
+    /// Registers one named API-reference tree. Call once per library you want to
+    /// document. Each call pairs with a matching <c>AddApiMetadataFrom*(name, …)</c>
+    /// provider registration and publishes its type pages at the configured
+    /// <see cref="ApiReferenceRegistrationOptions.RoutePrefix"/>.
     /// </summary>
     /// <remarks>
-    /// Call after <see cref="Pennington.DocSite.DocSiteServiceExtensions.AddDocSite"/>
-    /// and <see cref="Pennington.Roslyn.RoslynExtensions.AddPenningtonRoslyn"/>:
-    /// the extension mutates the registered <see cref="DocSiteOptions"/> singleton
-    /// to include this library's assembly in
-    /// <see cref="DocSiteOptions.AdditionalRoutingAssemblies"/>, so Blazor's
-    /// runtime router can resolve the package's <c>@page</c> components.
+    /// Call after <see cref="Pennington.DocSite.DocSiteServiceExtensions.AddDocSite"/>.
+    /// Shared services (Mdazor components, routing-assembly hook, registry singleton)
+    /// are installed once regardless of how many times this extension is called.
     /// </remarks>
+    /// <param name="services">Service collection.</param>
+    /// <param name="name">Registration name. Must match the name used in the provider extension. Defaults to <c>"default"</c>.</param>
+    /// <param name="configure">Optional options configuration; leave null to take all defaults (<c>/reference/api/</c> prefix).</param>
     public static IServiceCollection AddApiReference(
         this IServiceCollection services,
-        Action<ApiReferenceOptions>? configure = null)
+        string name = "default",
+        Action<ApiReferenceRegistrationOptions>? configure = null)
     {
-        var options = new ApiReferenceOptions();
+        var options = new ApiReferenceRegistrationOptions();
         configure?.Invoke(options);
-        services.AddSingleton(options);
+        var prefix = NormalizePrefix(options.RoutePrefix);
+        var registration = new ApiReferenceRegistration(name, prefix, options.TocTitle, options.TocSectionLabel);
 
-        services.AddSingleton<ApiReferenceIndex>();
-        services.AddSingleton<ExtensionMethodIndex>();
-        services.AddSingleton<IContentService, ApiReferenceContentService>();
+        services.AddSingleton(registration);
 
+        services.AddKeyedSingleton<ApiReferenceIndex>(name, (sp, key) =>
+            ActivatorUtilities.CreateInstance<ApiReferenceIndex>(sp,
+                sp.GetRequiredKeyedService<IApiMetadataProvider>(key),
+                (string)key!));
+
+        services.AddSingleton<IContentService>(sp =>
+            new ApiReferenceContentService(
+                sp.GetRequiredKeyedService<ApiReferenceIndex>(name),
+                registration));
+
+        RegisterSharedOnce(services);
+        return services;
+    }
+
+    private static string NormalizePrefix(string raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            throw new ArgumentException("RoutePrefix must be non-empty.", nameof(raw));
+        }
+        var trimmed = raw.Trim('/');
+        return trimmed.Length == 0 ? "/" : "/" + trimmed + "/";
+    }
+
+    private static void RegisterSharedOnce(IServiceCollection services)
+    {
+        services.TryAddSingleton<ApiReferenceRegistrationRegistry>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            Microsoft.AspNetCore.Hosting.IStartupFilter,
+            ApiReferenceStartupFilter>());
+
+        // Idempotent Mdazor component registrations — AddMdazorComponent is safe
+        // to call repeatedly for the same component type, but we still guard so
+        // the routing-assembly hook runs exactly once.
         services.AddMdazorComponent<ApiMemberTable>()
                 .AddMdazorComponent<ApiMemberList>()
                 .AddMdazorComponent<ApiParameterTable>()
@@ -49,8 +85,6 @@ public static class ApiReferenceServiceExtensions
                 .AddMdazorComponent<ExtensionMethods>();
 
         AppendRoutingAssembly(services);
-
-        return services;
     }
 
     private static void AppendRoutingAssembly(IServiceCollection services)

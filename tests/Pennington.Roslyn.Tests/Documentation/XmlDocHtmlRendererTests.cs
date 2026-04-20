@@ -1,7 +1,7 @@
 namespace Pennington.Roslyn.Tests.Documentation;
 
 using System.Collections.Immutable;
-using Pennington.Roslyn.Documentation;
+using Pennington.ApiMetadata;
 
 public sealed class XmlDocHtmlRendererTests
 {

@@ -1,7 +1,5 @@
-@inject IMemberEnumerator Enumerator
+@inject IServiceProvider Services
 @inject IXmlDocHtmlRenderer Renderer
-@inject ISymbolExtractionService SymbolService
-@inject ICodeHighlighter Highlighter
 @inject IHttpContextAccessor HttpContextAccessor
 
 @if (_error is not null)
@@ -100,12 +98,8 @@ else
     [Parameter] public string Kind { get; set; } = "Properties";
     [Parameter] public string Access { get; set; } = "public";
     [Parameter] public string Order { get; set; } = "alphabetical";
-
-    private static readonly Microsoft.CodeAnalysis.SymbolDisplayFormat ParameterTypeFormat = new(
-        genericsOptions: Microsoft.CodeAnalysis.SymbolDisplayGenericsOptions.IncludeTypeParameters,
-        miscellaneousOptions: Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.UseSpecialTypes
-            | Microsoft.CodeAnalysis.SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier,
-        typeQualificationStyle: Microsoft.CodeAnalysis.SymbolDisplayTypeQualificationStyle.NameAndContainingTypes);
+    [Parameter] public string? Source { get; set; }
+    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private IReadOnlyList<ApiDefinitionRow> _rows = [];
     private IReadOnlyList<MemberGroup>? _groups;
@@ -133,10 +127,11 @@ else
         var access = MemberOptionParser.ParseAccess(Access);
         var order = MemberOptionParser.ParseOrder(Order);
 
-        IReadOnlyList<MemberDescriptor> members;
+        System.Collections.Immutable.ImmutableArray<ApiMember> members;
         try
         {
-            members = AsyncHelpers.RunSync(() => Enumerator.EnumerateAsync(XmlDocId, kind, access, order));
+            var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
+            members = AsyncHelpers.RunSync(() => provider.GetMembersAsync(XmlDocId, kind, access, order));
         }
         catch (Exception ex)
         {
@@ -145,7 +140,7 @@ else
             return;
         }
 
-        if (members.Count == 0)
+        if (members.Length == 0)
         {
             Diagnostics?.AddWarning($"<ApiMemberTable> no {Kind.ToLowerInvariant()} matched for {XmlDocId}");
             _empty = kind == MemberKind.All ? "No members documented." : $"No {Kind.ToLowerInvariant()} documented.";
@@ -162,7 +157,7 @@ else
         }
     }
 
-    private IReadOnlyList<MemberGroup> BuildGroups(IReadOnlyList<MemberDescriptor> members)
+    private IReadOnlyList<MemberGroup> BuildGroups(System.Collections.Immutable.ImmutableArray<ApiMember> members)
     {
         var order = new[]
         {
@@ -192,14 +187,14 @@ else
         return groups;
     }
 
-    private IReadOnlyList<ApiDefinitionRow> BuildRows(IReadOnlyList<MemberDescriptor> members)
+    private IReadOnlyList<ApiDefinitionRow> BuildRows(IReadOnlyList<ApiMember> members)
     {
         var rows = new List<ApiDefinitionRow>(members.Count);
         foreach (var m in members)
         {
             if (!m.Xmldoc.HasSummary && !m.HasInheritDocDirective)
             {
-                Diagnostics?.AddWarning($"Member {m.XmlDocId} has no <summary>");
+                Diagnostics?.AddWarning($"Member {m.Uid} has no <summary>");
             }
 
             rows.Add(new ApiDefinitionRow(
@@ -212,114 +207,30 @@ else
         return rows;
     }
 
-    private IReadOnlyList<MemberEntry> BuildEntries(IReadOnlyList<MemberDescriptor> members)
+    private IReadOnlyList<MemberEntry> BuildEntries(IReadOnlyList<ApiMember> members)
     {
         var entries = new List<MemberEntry>(members.Count);
         foreach (var m in members)
         {
             if (!m.Xmldoc.HasSummary && !m.HasInheritDocDirective)
             {
-                Diagnostics?.AddWarning($"Member {m.XmlDocId} has no <summary>");
+                Diagnostics?.AddWarning($"Member {m.Uid} has no <summary>");
             }
 
-            string declaration = string.Empty;
-            try
-            {
-                declaration = AsyncHelpers.RunSync(() => SymbolService.ExtractDeclarationSignatureAsync(m.XmlDocId));
-            }
-            catch (Exception ex)
-            {
-                Diagnostics?.AddWarning($"Failed to extract declaration for {m.XmlDocId}: {ex.Message}");
-            }
-
-            var signatureHtml = string.IsNullOrEmpty(declaration)
-                ? string.Empty
-                : Highlighter.Highlight(declaration, "csharp");
-
-            var parameters = ResolveParameters(m);
-            var returnType = ResolveReturnType(m);
+            var parameters = m.Parameters
+                .Select(p => new ParameterInfo(p.Name, p.TypeDisplay, Renderer.RenderInlineHtml(p.Description)))
+                .ToList();
 
             entries.Add(new MemberEntry(
                 Name: m.Name,
-                Anchor: Slugify(m.XmlDocId),
-                SignatureHtml: signatureHtml,
+                Anchor: Slugify(m.Uid),
+                SignatureHtml: m.SignatureHtml ?? string.Empty,
                 SummaryHtml: m.Xmldoc.HasSummary ? Renderer.RenderHtml(m.Xmldoc.Summary) : string.Empty,
                 ReturnsHtml: m.Xmldoc.HasReturns ? Renderer.RenderInlineHtml(m.Xmldoc.Returns) : string.Empty,
-                ReturnTypeDisplay: returnType,
+                ReturnTypeDisplay: m.ReturnTypeDisplay ?? string.Empty,
                 Parameters: parameters));
         }
         return entries;
-    }
-
-    private IReadOnlyList<ParameterInfo> ResolveParameters(MemberDescriptor m)
-    {
-        SymbolInfo? info;
-        try
-        {
-            info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(m.XmlDocId));
-        }
-        catch (Exception ex)
-        {
-            Diagnostics?.AddWarning($"Failed to resolve {m.XmlDocId}: {ex.Message}");
-            return [];
-        }
-
-        if (info?.Symbol is not Microsoft.CodeAnalysis.IMethodSymbol method || method.Parameters.Length == 0)
-        {
-            return [];
-        }
-
-        var list = new List<ParameterInfo>(method.Parameters.Length);
-        foreach (var p in method.Parameters)
-        {
-            var typeDisplay = FormatParameterType(p);
-            var descriptionHtml = m.Xmldoc.Params.TryGetValue(p.Name, out var nodes)
-                ? Renderer.RenderInlineHtml(nodes)
-                : string.Empty;
-
-            list.Add(new ParameterInfo(p.Name, typeDisplay, descriptionHtml));
-        }
-        return list;
-    }
-
-    private string ResolveReturnType(MemberDescriptor m)
-    {
-        if (m.Kind != MemberKind.Methods)
-        {
-            return string.Empty;
-        }
-
-        Microsoft.CodeAnalysis.IMethodSymbol? method;
-        try
-        {
-            var info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(m.XmlDocId));
-            method = info?.Symbol as Microsoft.CodeAnalysis.IMethodSymbol;
-        }
-        catch
-        {
-            method = null;
-        }
-
-        if (method is null || method.ReturnsVoid)
-        {
-            return string.Empty;
-        }
-
-        return method.ReturnType.ToDisplayString(ParameterTypeFormat);
-    }
-
-    private static string FormatParameterType(Microsoft.CodeAnalysis.IParameterSymbol p)
-    {
-        var prefix = p.RefKind switch
-        {
-            Microsoft.CodeAnalysis.RefKind.Ref => "ref ",
-            Microsoft.CodeAnalysis.RefKind.Out => "out ",
-            Microsoft.CodeAnalysis.RefKind.In => "in ",
-            _ => string.Empty,
-        };
-        var typeText = p.Type.ToDisplayString(ParameterTypeFormat);
-        var suffix = p.HasExplicitDefaultValue ? " (optional)" : string.Empty;
-        return $"{prefix}{typeText}{suffix}";
     }
 
     private static string LabelFor(MemberKind kind) => kind switch

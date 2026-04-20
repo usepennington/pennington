@@ -7,8 +7,8 @@ using Pennington.Highlighting;
 using Markdown.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Pennington.Infrastructure;
 using Symbols;
-using Utilities;
 
 /// <summary>
 /// Preprocesses code blocks with :xmldocid, :path, and :xmldocid-diff modifiers.

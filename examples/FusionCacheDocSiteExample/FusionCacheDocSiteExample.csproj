@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Pennington.DocSite\Pennington.DocSite.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.DocSite.Api\Pennington.DocSite.Api.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.ApiMetadata.Reflection\Pennington.ApiMetadata.Reflection.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The reflection backend reads FusionCache's shipped .dll + .xml pair
+         directly out of the NuGet package via Assembly.Load, so no staging
+         step or committed lib/ folder is needed — just the reference. -->
+    <PackageReference Include="ZiggyCreatures.FusionCache" Version="*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Watch Include="Content\**\*.*" />
+  </ItemGroup>
+</Project>

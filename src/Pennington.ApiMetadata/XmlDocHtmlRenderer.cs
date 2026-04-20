@@ -1,4 +1,4 @@
-namespace Pennington.Roslyn.Documentation;
+namespace Pennington.ApiMetadata;
 
 using System.Collections.Generic;
 using System.Net;
@@ -105,7 +105,7 @@ public sealed class XmlDocHtmlRenderer : IXmlDocHtmlRenderer
                 break;
             case CrefNode cref:
                 sb.Append("<code>")
-                    .Append(WebUtility.HtmlEncode(cref.DisplayText ?? ShortenCref(cref.CrefId)))
+                    .Append(WebUtility.HtmlEncode(cref.DisplayText ?? UidDisplay.Shorten(cref.CrefId)))
                     .Append("</code>");
                 break;
             case ParamRefNode pr:
@@ -150,24 +150,4 @@ public sealed class XmlDocHtmlRenderer : IXmlDocHtmlRenderer
         return sb.ToString();
     }
 
-    private static string ShortenCref(string crefId)
-    {
-        var cleaned = crefId.Length >= 2 && crefId[1] == ':'
-            ? crefId[2..]
-            : crefId;
-
-        var parenIndex = cleaned.IndexOf('(');
-        if (parenIndex >= 0)
-        {
-            cleaned = cleaned[..parenIndex];
-        }
-
-        var lastDot = cleaned.LastIndexOf('.');
-        var name = lastDot >= 0 ? cleaned[(lastDot + 1)..] : cleaned;
-
-        // Strip generic-arity markers Roslyn emits in crefIds: `N for type arity,
-        // ``N for method arity (e.g. "List`1" → "List", "AddMarkdownContent``1" → "AddMarkdownContent").
-        var backtickIndex = name.IndexOf('`');
-        return backtickIndex >= 0 ? name[..backtickIndex] : name;
-    }
 }

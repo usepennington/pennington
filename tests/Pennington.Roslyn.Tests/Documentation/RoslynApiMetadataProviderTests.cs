@@ -4,11 +4,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging.Abstractions;
-using Pennington.Roslyn.Documentation;
+using Pennington.ApiMetadata;
+using Pennington.Highlighting;
+using Pennington.Roslyn.ApiMetadata;
 using Pennington.Roslyn.Symbols;
 using Pennington.Roslyn.Workspace;
 
-public sealed class MemberEnumeratorTests
+public sealed class RoslynApiMetadataProviderTests
 {
     private const string Source = """
         namespace Fixtures;
@@ -72,7 +74,7 @@ public sealed class MemberEnumeratorTests
         }
         """;
 
-    private static async Task<IMemberEnumerator> BuildEnumeratorAsync()
+    private static RoslynApiMetadataProvider BuildProvider()
     {
         var workspace = new AdhocWorkspace();
         var projectId = ProjectId.CreateNewId();
@@ -97,15 +99,21 @@ public sealed class MemberEnumeratorTests
 
         var workspaceService = new StubWorkspaceService(workspace.CurrentSolution);
         var symbolService = new SymbolExtractionService(workspaceService, NullLogger<SymbolExtractionService>.Instance);
-        return new MemberEnumerator(symbolService, new XmlDocParser());
+
+        return new RoslynApiMetadataProvider(
+            workspaceService,
+            symbolService,
+            new XmlDocParser(),
+            new NullHighlighter(),
+            new ApiReferenceOptions());
     }
 
     [Fact]
     public async Task Enumerates_Public_Properties_Alphabetically()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var members = await enumerator.EnumerateAsync(
+        var members = await provider.GetMembersAsync(
             "T:Fixtures.Options",
             MemberKind.Properties,
             AccessFilter.Public,
@@ -117,9 +125,9 @@ public sealed class MemberEnumeratorTests
     [Fact]
     public async Task Extracts_Property_Defaults_From_Initializer()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var members = await enumerator.EnumerateAsync(
+        var members = await provider.GetMembersAsync(
             "T:Fixtures.Options",
             MemberKind.Properties,
             AccessFilter.Public,
@@ -128,8 +136,6 @@ public sealed class MemberEnumeratorTests
         var title = members.Single(m => m.Name == "Title");
         title.DefaultValue.ShouldBe("\"Untitled\"");
 
-        // Nullable reference without an initializer falls back to the literal "null"
-        // default so the Default column shows something useful instead of "—".
         var baseUrl = members.Single(m => m.Name == "BaseUrl");
         baseUrl.DefaultValue.ShouldBe("null");
     }
@@ -137,9 +143,9 @@ public sealed class MemberEnumeratorTests
     [Fact]
     public async Task Formats_Nullable_Type_Display()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var members = await enumerator.EnumerateAsync(
+        var members = await provider.GetMembersAsync(
             "T:Fixtures.Options",
             MemberKind.Properties,
             AccessFilter.Public,
@@ -150,11 +156,11 @@ public sealed class MemberEnumeratorTests
     }
 
     [Fact]
-    public async Task Parses_Summary_Xmldoc_Into_Descriptor()
+    public async Task Parses_Summary_Xmldoc_Into_Member()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var members = await enumerator.EnumerateAsync(
+        var members = await provider.GetMembersAsync(
             "T:Fixtures.Options",
             MemberKind.Properties,
             AccessFilter.Public,
@@ -168,9 +174,9 @@ public sealed class MemberEnumeratorTests
     [Fact]
     public async Task Enumerates_Methods_Excluding_Property_Accessors()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var methods = await enumerator.EnumerateAsync(
+        var methods = await provider.GetMembersAsync(
             "T:Fixtures.Options",
             MemberKind.Methods,
             AccessFilter.Public,
@@ -183,9 +189,9 @@ public sealed class MemberEnumeratorTests
     [Fact]
     public async Task Returns_Empty_For_Unresolved_Type()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var members = await enumerator.EnumerateAsync(
+        var members = await provider.GetMembersAsync(
             "T:Does.Not.Exist",
             MemberKind.Properties,
             AccessFilter.Public,
@@ -197,9 +203,9 @@ public sealed class MemberEnumeratorTests
     [Fact]
     public async Task Interface_Members_Are_Enumerable()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var props = await enumerator.EnumerateAsync(
+        var props = await provider.GetMembersAsync(
             "T:Fixtures.IExample",
             MemberKind.Properties,
             AccessFilter.Public,
@@ -207,7 +213,7 @@ public sealed class MemberEnumeratorTests
 
         props.Single().Name.ShouldBe("Count");
 
-        var methods = await enumerator.EnumerateAsync(
+        var methods = await provider.GetMembersAsync(
             "T:Fixtures.IExample",
             MemberKind.Methods,
             AccessFilter.Public,
@@ -219,9 +225,9 @@ public sealed class MemberEnumeratorTests
     [Fact]
     public async Task Required_Property_Is_Marked_Required_With_Null_Default()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var members = await enumerator.EnumerateAsync(
+        var members = await provider.GetMembersAsync(
             "T:Fixtures.RequiredOptions",
             MemberKind.Properties,
             AccessFilter.Public,
@@ -235,9 +241,9 @@ public sealed class MemberEnumeratorTests
     [Fact]
     public async Task Auto_Property_Without_Initializer_Falls_Back_To_Clr_Default()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var members = await enumerator.EnumerateAsync(
+        var members = await provider.GetMembersAsync(
             "T:Fixtures.RequiredOptions",
             MemberKind.Properties,
             AccessFilter.Public,
@@ -251,9 +257,9 @@ public sealed class MemberEnumeratorTests
     [Fact]
     public async Task Concrete_Expression_Bodied_Property_Reports_No_Default()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var members = await enumerator.EnumerateAsync(
+        var members = await provider.GetMembersAsync(
             "T:Fixtures.RequiredOptions",
             MemberKind.Properties,
             AccessFilter.Public,
@@ -265,9 +271,9 @@ public sealed class MemberEnumeratorTests
     [Fact]
     public async Task Interface_Expression_Bodied_Literal_Is_Reported_As_Default()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var members = await enumerator.EnumerateAsync(
+        var members = await provider.GetMembersAsync(
             "T:Fixtures.IDefaults",
             MemberKind.Properties,
             AccessFilter.Public,
@@ -280,9 +286,9 @@ public sealed class MemberEnumeratorTests
     [Fact]
     public async Task Positional_Record_Property_Inherits_Summary_From_Param()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var members = await enumerator.EnumerateAsync(
+        var members = await provider.GetMembersAsync(
             "T:Fixtures.PositionalEntry",
             MemberKind.Properties,
             AccessFilter.Public,
@@ -300,26 +306,22 @@ public sealed class MemberEnumeratorTests
     [Fact]
     public async Task Param_Fallback_Does_Not_Override_Existing_Summary()
     {
-        var enumerator = await BuildEnumeratorAsync();
+        var provider = BuildProvider();
 
-        var members = await enumerator.EnumerateAsync(
+        var members = await provider.GetMembersAsync(
             "T:Fixtures.MixedEntry",
             MemberKind.Properties,
             AccessFilter.Public,
             MemberOrder.Alphabetical);
 
-        // Positional `Name` gets its summary from <param name="Name">.
         var name = members.Single(m => m.Name == "Name");
         name.Xmldoc.HasSummary.ShouldBeTrue();
         name.Xmldoc.Summary[0].ShouldBeCase<TextNode>().Text.ShouldBe("The receiver name.");
 
-        // Body-defined `Description` keeps its own summary.
         var description = members.Single(m => m.Name == "Description");
         description.Xmldoc.HasSummary.ShouldBeTrue();
         description.Xmldoc.Summary[0].ShouldBeCase<TextNode>().Text.ShouldBe("Has its own summary already.");
 
-        // Body-defined `Untouched` has no doc and stays without one — the fallback
-        // must only fire for positional record parameters, not arbitrary undocumented members.
         var untouched = members.Single(m => m.Name == "Untouched");
         untouched.Xmldoc.HasSummary.ShouldBeFalse();
     }
@@ -338,5 +340,12 @@ public sealed class MemberEnumeratorTests
         public void UpdateDocument(string filePath) { }
 
         public void Dispose() { }
+    }
+
+    private sealed class NullHighlighter : ICodeHighlighter
+    {
+        public IReadOnlySet<string> SupportedLanguages { get; } = new HashSet<string> { "csharp" };
+        public int Priority => 0;
+        public string Highlight(string code, string language) => code;
     }
 }

@@ -1,5 +1,4 @@
-@inject ISymbolExtractionService SymbolService
-@inject IXmlDocParser Parser
+@inject IServiceProvider Services
 @inject IXmlDocHtmlRenderer Renderer
 @inject IHttpContextAccessor HttpContextAccessor
 
@@ -14,6 +13,8 @@ else if (!string.IsNullOrEmpty(_html))
 
 @code {
     [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
+    [Parameter] public string? Source { get; set; }
+    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private string _html = string.Empty;
     private string? _error;
@@ -33,10 +34,11 @@ else if (!string.IsNullOrEmpty(_html))
             return;
         }
 
-        SymbolInfo? info;
+        ParsedXmlDoc parsed;
         try
         {
-            info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(XmlDocId));
+            var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
+            parsed = AsyncHelpers.RunSync(() => provider.GetXmldocAsync(XmlDocId));
         }
         catch (Exception ex)
         {
@@ -45,14 +47,6 @@ else if (!string.IsNullOrEmpty(_html))
             return;
         }
 
-        if (info is null)
-        {
-            Diagnostics?.AddError($"<ApiSummary> unresolved xmldocid: {XmlDocId}");
-            _error = $"Unresolved xmldocid: <code>{WebUtility.HtmlEncode(XmlDocId)}</code>";
-            return;
-        }
-
-        var parsed = Parser.Parse(info.Symbol.GetDocumentationCommentXml());
         if (!parsed.HasSummary)
         {
             Diagnostics?.AddWarning($"<ApiSummary> {XmlDocId} has no <summary>");

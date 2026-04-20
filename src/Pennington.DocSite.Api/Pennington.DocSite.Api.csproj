@@ -7,6 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Pennington.DocSite\Pennington.DocSite.csproj" />
-    <ProjectReference Include="..\Pennington.Roslyn\Pennington.Roslyn.csproj" />
+    <ProjectReference Include="..\Pennington.ApiMetadata\Pennington.ApiMetadata.csproj" />
   </ItemGroup>
 </Project>

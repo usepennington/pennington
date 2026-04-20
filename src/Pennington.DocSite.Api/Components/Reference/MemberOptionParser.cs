@@ -1,6 +1,6 @@
 namespace Pennington.DocSite.Api.Components.Reference;
 
-using Pennington.Roslyn.Documentation;
+using Pennington.ApiMetadata;
 
 internal static class MemberOptionParser
 {

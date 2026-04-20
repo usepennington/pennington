@@ -1,6 +1,6 @@
 namespace Pennington.Roslyn.Tests.Documentation;
 
-using Pennington.Roslyn.Documentation;
+using Pennington.ApiMetadata;
 
 public sealed class XmlDocParserTests
 {

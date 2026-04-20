@@ -1,11 +1,12 @@
-@inject ISymbolExtractionService SymbolService
-@inject IXmlDocParser Parser
+@inject IServiceProvider Services
 @inject IHttpContextAccessor HttpContextAccessor
 
 @((MarkupString)_html)
 
 @code {
     [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
+    [Parameter] public string? Source { get; set; }
+    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private string _html = string.Empty;
 
@@ -25,14 +26,8 @@
             return "<div class=\"diag-error\">&lt;ApiSeeAlso&gt; missing XmlDocId</div>";
         }
 
-        var info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(XmlDocId));
-        if (info is null)
-        {
-            Diagnostics?.AddError($"<ApiSeeAlso> unresolved xmldocid: {XmlDocId}");
-            return $"<div class=\"diag-error\">Unresolved xmldocid: <code>{WebUtility.HtmlEncode(XmlDocId)}</code></div>";
-        }
-
-        var parsed = Parser.Parse(info.Symbol.GetDocumentationCommentXml());
+        var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
+        var parsed = AsyncHelpers.RunSync(() => provider.GetXmldocAsync(XmlDocId));
         if (parsed.SeeAlso.Length == 0)
         {
             return string.Empty;
@@ -41,23 +36,10 @@
         var sb = new StringBuilder("<ul>");
         foreach (var cref in parsed.SeeAlso)
         {
-            sb.Append("<li><code>").Append(WebUtility.HtmlEncode(Shorten(cref))).Append("</code></li>");
+            sb.Append("<li><code>").Append(WebUtility.HtmlEncode(UidDisplay.Shorten(cref))).Append("</code></li>");
         }
 
         sb.Append("</ul>");
         return sb.ToString();
-    }
-
-    private static string Shorten(string crefId)
-    {
-        var cleaned = crefId.Length >= 2 && crefId[1] == ':' ? crefId[2..] : crefId;
-        var parenIndex = cleaned.IndexOf('(');
-        if (parenIndex >= 0)
-        {
-            cleaned = cleaned[..parenIndex];
-        }
-
-        var lastDot = cleaned.LastIndexOf('.');
-        return lastDot >= 0 ? cleaned[(lastDot + 1)..] : cleaned;
     }
 }

@@ -4,6 +4,7 @@ using Documentation;
 using Highlighting;
 using Markdown.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Pennington.ApiMetadata;
 using Pennington.Highlighting;
 using Preprocessing;
 using Symbols;
@@ -41,7 +42,6 @@ public static class RoslynExtensions
 
             services.AddSingleton<IXmlDocParser, XmlDocParser>();
             services.AddSingleton<IXmlDocHtmlRenderer, XmlDocHtmlRenderer>();
-            services.AddSingleton<IMemberEnumerator, MemberEnumerator>();
 
             services.AddHostedService<SymbolExtractionWarmupService>();
         }

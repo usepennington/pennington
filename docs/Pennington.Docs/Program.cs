@@ -7,6 +7,7 @@ using Pennington.DocSite.Api;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
 using Pennington.Roslyn;
+using Pennington.Roslyn.ApiMetadata;
 using Pennington.Tui;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -69,12 +70,11 @@ builder.Services.AddPenningtonRoslyn(roslyn =>
     roslyn.SolutionPath = "../../Pennington.slnx";
 });
 
-// Auto-publishes /reference/api/{slug}/ pages and registers the reference
-// Mdazor components (<ApiMemberTable>, <ApiSummary>, <ExtensionMethods>, ...).
-// Scope to Pennington.* projects so example apps in Pennington.slnx don't
-// leak into /reference/api/.
+// Roslyn-backed API metadata: enumerate public types from the live Pennington
+// workspace. Scope to Pennington.* projects so example apps in Pennington.slnx
+// don't leak into /reference/api/.
 var defaultApiFilter = ApiReferenceOptions.DefaultProjectFilter();
-builder.Services.AddApiReference(opts =>
+builder.Services.AddApiMetadataFromRoslyn(configure: opts =>
 {
     opts.ProjectFilter = project =>
     {
@@ -85,6 +85,10 @@ builder.Services.AddApiReference(opts =>
         return name == "Pennington" || name.StartsWith("Pennington.", StringComparison.Ordinal);
     };
 });
+
+// Auto-publishes /reference/api/{slug}/ pages and registers the reference
+// Mdazor components (<ApiMemberTable>, <ApiSummary>, <ExtensionMethods>, ...).
+builder.Services.AddApiReference();
 
 // Pennington-specific front-matter key catalog. Stays here because it is
 // coupled to Pennington.FrontMatter.IFrontMatter and the capability interfaces.

@@ -1,7 +1,5 @@
-@inject IMemberEnumerator Enumerator
+@inject IServiceProvider Services
 @inject IXmlDocHtmlRenderer Renderer
-@inject ISymbolExtractionService SymbolService
-@inject SyntaxHighlighter Highlighter
 @inject IHttpContextAccessor HttpContextAccessor
 
 @((MarkupString)_html)
@@ -12,6 +10,8 @@
     [Parameter] public string Access { get; set; } = "public";
     [Parameter] public string Order { get; set; } = "alphabetical";
     [Parameter] public int HeadingLevel { get; set; } = 3;
+    [Parameter] public string? Source { get; set; }
+    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private string _html = string.Empty;
 
@@ -35,10 +35,11 @@
         var access = MemberOptionParser.ParseAccess(Access);
         var order = MemberOptionParser.ParseOrder(Order);
 
-        IReadOnlyList<MemberDescriptor> members;
+        System.Collections.Immutable.ImmutableArray<ApiMember> members;
         try
         {
-            members = AsyncHelpers.RunSync(() => Enumerator.EnumerateAsync(XmlDocId, kind, access, order));
+            var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
+            members = AsyncHelpers.RunSync(() => provider.GetMembersAsync(XmlDocId, kind, access, order));
         }
         catch (Exception ex)
         {
@@ -46,7 +47,7 @@
             return $"<div class=\"diag-error\">Failed to enumerate {WebUtility.HtmlEncode(XmlDocId)}: {WebUtility.HtmlEncode(ex.Message)}</div>";
         }
 
-        if (members.Count == 0)
+        if (members.Length == 0)
         {
             Diagnostics?.AddWarning($"<ApiMemberList> no {Kind.ToLowerInvariant()} matched for {XmlDocId}");
             return $"<p><em>No {WebUtility.HtmlEncode(Kind.ToLowerInvariant())} documented.</em></p>";
@@ -65,7 +66,10 @@
             }
             sb.Append("</").Append(headingTag).Append('>');
 
-            sb.Append(RenderDeclaration(m.XmlDocId));
+            if (!string.IsNullOrEmpty(m.SignatureHtml))
+            {
+                sb.Append(m.SignatureHtml);
+            }
 
             if (m.Xmldoc.HasSummary)
             {
@@ -73,7 +77,7 @@
             }
             else
             {
-                Diagnostics?.AddWarning($"Member {m.XmlDocId} has no <summary>");
+                Diagnostics?.AddWarning($"Member {m.Uid} has no <summary>");
             }
 
             if (m.Xmldoc.HasReturns)
@@ -83,26 +87,6 @@
         }
 
         return sb.ToString();
-    }
-
-    private string RenderDeclaration(string xmlDocId)
-    {
-        try
-        {
-            var fragment = AsyncHelpers.RunSync(() => SymbolService.ExtractCodeFragmentAsync(xmlDocId, bodyOnly: false, includeLeadingTrivia: false));
-            if (string.IsNullOrEmpty(fragment))
-            {
-                Diagnostics?.AddWarning($"Unresolved xmldocid when rendering declaration: {xmlDocId}");
-                return $"<pre><code class=\"language-csharp\"><span class=\"comment\">// Error: Symbol not found for '{WebUtility.HtmlEncode(xmlDocId)}'</span></code></pre>";
-            }
-
-            return Highlighter.Highlight(fragment, SyntaxHighlighter.Language.CSharp);
-        }
-        catch (Exception ex)
-        {
-            Diagnostics?.AddError($"Failed to render declaration for {xmlDocId}: {ex.Message}");
-            return $"<pre><code><!-- Error: {WebUtility.HtmlEncode(ex.Message)} --></code></pre>";
-        }
     }
 
     private static string Slugify(string name)

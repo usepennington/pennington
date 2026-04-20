@@ -1,7 +1,11 @@
-@page "/reference/api/"
+@* Internal route for the per-registration index page. Public-facing URLs come
+   in at {RoutePrefix} (e.g. /api/, /api/spectre/) and are rewritten onto
+   /_pnn_api/{Name}/ by ApiReferenceRewriteMiddleware before Blazor routes. *@
+@page "/_pnn_api/{Name}/"
 @layout Pennington.DocSite.Components.Layout.MainLayout
 @using Microsoft.AspNetCore.Components.Web
-@inject ApiReferenceIndex Index
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceProvider Services
 
 <PageTitle>API reference</PageTitle>
 
@@ -26,7 +30,7 @@
                 @foreach (var entry in group.Entries)
                 {
                     <li class="m-0">
-                        <a href="/reference/api/@(entry.Slug)/"
+                        <a href="@(_prefix + entry.Slug + "/")"
                            class="font-mono text-sm text-primary-700 dark:text-primary-400 hover:underline">@entry.TypeName</a>
                     </li>
                 }
@@ -36,15 +40,20 @@
 }
 
 @code {
-    [Parameter] public string? Key { get; set; }
+    [Parameter] public required string Name { get; set; }
 
     private NamespaceGroup[] _groups = [];
+    private string _prefix = "/";
 
     private sealed record NamespaceGroup(string Namespace, ApiReferenceEntry[] Entries);
 
     protected override async Task OnInitializedAsync()
     {
-        var entries = await Index.GetEntriesAsync();
+        var index = Services.GetRequiredKeyedService<ApiReferenceIndex>(Name);
+        var registrations = Services.GetServices<ApiReferenceRegistration>();
+        _prefix = registrations.FirstOrDefault(r => r.Name == Name)?.RoutePrefix ?? "/";
+
+        var entries = await index.GetEntriesAsync();
         _groups = entries.Values
             .GroupBy(e => e.Namespace, StringComparer.Ordinal)
             .OrderBy(g => g.Key, StringComparer.Ordinal)

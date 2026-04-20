@@ -2,7 +2,7 @@ namespace Pennington.Roslyn.Tests.Documentation;
 
 using System.Collections.Generic;
 using System.Linq;
-using Pennington.Roslyn.Documentation;
+using Pennington.ApiMetadata;
 
 internal static class XmlDocNodeAssertions
 {

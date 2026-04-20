@@ -5,6 +5,8 @@
     <Project Path="src/Pennington.MonorailCss/Pennington.MonorailCss.csproj" />
     <Project Path="src/Pennington.DocSite/Pennington.DocSite.csproj" />
     <Project Path="src/Pennington.DocSite.Api/Pennington.DocSite.Api.csproj" />
+    <Project Path="src/Pennington.ApiMetadata/Pennington.ApiMetadata.csproj" />
+    <Project Path="src/Pennington.ApiMetadata.Reflection/Pennington.ApiMetadata.Reflection.csproj" />
     <Project Path="src/Pennington.Roslyn/Pennington.Roslyn.csproj" />
     <Project Path="src/Pennington.BlogSite/Pennington.BlogSite.csproj" />
     <Project Path="src/Pennington.Tui/Pennington.Tui.csproj" />
@@ -40,5 +42,7 @@
     <Project Path="examples/SubPathDeployableExample/SubPathDeployableExample.csproj" />
     <Project Path="examples/FocusedCodeSamplesExample/FocusedCodeSamplesExample.csproj" />
     <Project Path="examples/BeyondTuiExample/BeyondTuiExample.csproj" />
+    <Project Path="examples/FusionCacheDocSiteExample/FusionCacheDocSiteExample.csproj" />
+    <Project Path="examples/SpectreConsoleDocSiteExample/SpectreConsoleDocSiteExample.csproj" />
   </Folder>
 </Solution>

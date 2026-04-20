@@ -1,5 +1,4 @@
-@inject ISymbolExtractionService SymbolService
-@inject IXmlDocParser Parser
+@inject IServiceProvider Services
 @inject IXmlDocHtmlRenderer Renderer
 @inject IHttpContextAccessor HttpContextAccessor
 
@@ -7,6 +6,8 @@
 
 @code {
     [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
+    [Parameter] public string? Source { get; set; }
+    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private string _html = string.Empty;
 
@@ -26,14 +27,8 @@
             return "<div class=\"diag-error\">&lt;ApiReturns&gt; missing XmlDocId</div>";
         }
 
-        var info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(XmlDocId));
-        if (info is null)
-        {
-            Diagnostics?.AddError($"<ApiReturns> unresolved xmldocid: {XmlDocId}");
-            return $"<div class=\"diag-error\">Unresolved xmldocid: <code>{WebUtility.HtmlEncode(XmlDocId)}</code></div>";
-        }
-
-        var parsed = Parser.Parse(info.Symbol.GetDocumentationCommentXml());
+        var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
+        var parsed = AsyncHelpers.RunSync(() => provider.GetXmldocAsync(XmlDocId));
         if (!parsed.HasReturns)
         {
             Diagnostics?.AddWarning($"{XmlDocId} has no <returns>");

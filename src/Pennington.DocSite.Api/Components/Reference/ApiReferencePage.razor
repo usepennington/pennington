@@ -1,7 +1,12 @@
-@page "/reference/api/{Key}"
+@* Internal route. Public-facing URLs come in through configured
+   {RoutePrefix}/{slug}/ shapes and are rewritten onto this path by
+   ApiReferenceRewriteMiddleware, which runs before Blazor routing. Users
+   never type or see the /_pnn_api/ prefix. *@
+@page "/_pnn_api/{Name}/{Key}"
 @layout Pennington.DocSite.Components.Layout.MainLayout
 @using Microsoft.AspNetCore.Components.Web
-@inject ApiReferenceIndex Index
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceProvider Services
 
 @if (_entry is null)
 {
@@ -24,16 +29,19 @@ else
         </h1>
     </header>
 
-    <section class="prose dark:prose-invert max-w-none">
-        <ApiSummary XmlDocId="@_entry.XmlDocId" />
-    </section>
+    <CascadingValue Name="ApiSource" Value="@Name">
+        <section class="prose dark:prose-invert max-w-none">
+            <ApiSummary XmlDocId="@_entry.Uid" />
+        </section>
 
-    <section class="mt-8">
-        <ApiMemberTable XmlDocId="@_entry.XmlDocId" Kind="All" />
-    </section>
+        <section class="mt-8">
+            <ApiMemberTable XmlDocId="@_entry.Uid" Kind="All" />
+        </section>
+    </CascadingValue>
 }
 
 @code {
+    [Parameter] public required string Name { get; set; }
     [Parameter] public required string Key { get; set; }
 
     private ApiReferenceEntry? _entry;
@@ -42,7 +50,8 @@ else
     {
         if (string.IsNullOrWhiteSpace(Key)) return;
 
-        var entries = await Index.GetEntriesAsync();
+        var index = Services.GetRequiredKeyedService<ApiReferenceIndex>(Name);
+        var entries = await index.GetEntriesAsync();
         if (entries.TryGetValue(Key, out var found))
         {
             _entry = found;

@@ -2,8 +2,8 @@ namespace Pennington.Docs.ApiReference;
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Pennington.DocSite.Api;
 using Pennington.Infrastructure;
+using Pennington.Roslyn.ApiMetadata;
 using Pennington.Roslyn.Workspace;
 
 /// <summary>
@@ -48,7 +48,8 @@ internal sealed class FrontMatterKeyIndex
 
     private async Task<ImmutableArray<FrontMatterKeyEntry>> BuildAsync()
     {
-        var projects = await ApiReferenceWorkspace.GetFilteredProjectsAsync(_workspace, _options.ProjectFilter);
+        var filter = _options.ProjectFilter ?? ApiReferenceOptions.DefaultProjectFilter();
+        var projects = await _workspace.GetProjectsAsync(p => filter(p));
 
         var observations = new List<(string YamlKey, string Clr, string TypeDisplay, string? DefaultValue, string Record, string Surface, string XmlDocId)>();
 
@@ -57,7 +58,7 @@ internal sealed class FrontMatterKeyIndex
             var compilation = await _workspace.GetCompilationAsync(project);
             if (compilation is null) continue;
 
-            foreach (var type in ApiReferenceWorkspace.EnumerateTypes(compilation.Assembly.GlobalNamespace))
+            foreach (var type in EnumerateTypes(compilation.Assembly.GlobalNamespace))
             {
                 if (type.TypeKind is not (TypeKind.Class or TypeKind.Struct)) continue;
                 if (type.DeclaredAccessibility != Accessibility.Public) continue;
@@ -133,6 +134,27 @@ internal sealed class FrontMatterKeyIndex
             })
             .OrderBy(e => e.YamlKey, StringComparer.Ordinal)
             .ToImmutableArray();
+    }
+
+    private static IEnumerable<INamedTypeSymbol> EnumerateTypes(INamespaceSymbol root)
+    {
+        var queue = new Queue<INamespaceOrTypeSymbol>();
+        queue.Enqueue(root);
+
+        while (queue.Count > 0)
+        {
+            foreach (var member in queue.Dequeue().GetMembers())
+            {
+                if (member is INamespaceSymbol ns)
+                {
+                    queue.Enqueue(ns);
+                }
+                else if (member is INamedTypeSymbol type)
+                {
+                    yield return type;
+                }
+            }
+        }
     }
 
     private static readonly SymbolDisplayFormat TypeFormat = new(

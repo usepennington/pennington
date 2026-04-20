@@ -1,4 +1,4 @@
-namespace Pennington.Roslyn.Utilities;
+namespace Pennington.Infrastructure;
 
 /// <summary>Run async code synchronously without deadlocks.</summary>
 public static class AsyncHelpers

@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Pennington\Pennington.csproj" />
+    <ProjectReference Include="..\Pennington.ApiMetadata\Pennington.ApiMetadata.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Pennington\Infrastructure\UnionPolyfills.cs" Link="Infrastructure\UnionPolyfills.cs" />

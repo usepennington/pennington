@@ -1,7 +1,5 @@
-@inject ExtensionMethodIndex Index
-@inject IXmlDocParser Parser
+@inject IServiceProvider Services
 @inject IXmlDocHtmlRenderer Renderer
-@inject ISymbolExtractionService SymbolService
 @inject IHttpContextAccessor HttpContextAccessor
 
 @if (_error is not null)
@@ -19,6 +17,8 @@ else
 
 @code {
     [Parameter, EditorRequired] public string Receiver { get; set; } = string.Empty;
+    [Parameter] public string? Source { get; set; }
+    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private IReadOnlyList<ApiDefinitionRow> _rows = [];
     private string? _error;
@@ -40,8 +40,9 @@ else
             return;
         }
 
-        var index = AsyncHelpers.RunSync(() => Index.GetEntriesAsync());
-        if (!index.TryGetValue(Receiver, out var entries) || entries.Length == 0)
+        var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
+        var entries = AsyncHelpers.RunSync(() => provider.GetExtensionMethodsForAsync(Receiver));
+        if (entries.Length == 0)
         {
             Diagnostics?.AddWarning($"<ExtensionMethods> no methods found for receiver {Receiver}");
             _empty = $"No extension methods found for receiver {Receiver}.";
@@ -51,10 +52,8 @@ else
         var rows = new List<ApiDefinitionRow>(entries.Length);
         foreach (var entry in entries)
         {
-            var info = AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(entry.XmlDocId));
-            var parsed = info is null ? null : Parser.Parse(info.Symbol.GetDocumentationCommentXml());
-            var summaryHtml = parsed?.HasSummary == true
-                ? Renderer.RenderInlineHtml(parsed.Summary)
+            var summaryHtml = entry.Xmldoc.HasSummary
+                ? Renderer.RenderInlineHtml(entry.Xmldoc.Summary)
                 : string.Empty;
 
             var descriptionHtml = $"<p><span class=\"text-xs text-base-500 dark:text-base-400\">Package <code>{WebUtility.HtmlEncode(entry.Package)}</code></span></p>{summaryHtml}";

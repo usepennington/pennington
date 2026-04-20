@@ -1,4 +1,4 @@
-namespace Pennington.Roslyn.Documentation;
+namespace Pennington.ApiMetadata;
 
 using System.Collections.Immutable;
 using System.Xml.Linq;
