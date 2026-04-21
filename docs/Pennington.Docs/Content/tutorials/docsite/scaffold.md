@@ -9,7 +9,7 @@ uid: tutorials.docsite.scaffold
 
 By the end of this tutorial the DocSite host runs with a "Scaffold Docs" title, GitHub icon, header/footer chrome, and two content areas — Guides and Reference — each serving an index page from its own top-level folder.
 
-This tutorial covers swapping a plain Pennington host for the DocSite template, populating `DocSiteOptions`, and understanding how area slugs bind top-level folders to URL prefixes and sidebar tabs.
+This tutorial covers swapping a plain Pennington host for the DocSite template, populating `DocSiteOptions`, and understanding how area slugs bind top-level folders to URL prefixes and sidebar tabs. For the shape the template hard-codes — and the seams it leaves open — read [Positioning DocSite as a fast path](xref:explanation.core.docsite-positioning) first.
 
 ## Prerequisites
 

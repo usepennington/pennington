@@ -31,6 +31,16 @@ Create a sealed class implementing <xref:reference.api.i-content-service>, injec
 
 `DiscoverAsync` yields one `DiscoveredItem` per page. Build each item's `ContentRoute` through `ContentRouteFactory.FromUrl` (synthetic URL, no backing file) or `ContentRouteFactory.FromCustom` (URL plus an on-disk `FilePath` so file-watching picks up edits), and pair it with a `ContentSource` case. Use `RedirectSource` as the placeholder when an endpoint elsewhere in `Program.cs` produces the actual HTML. Yield an index route, then one route per record.
 
+`ContentSource` is a union that wraps exactly one of `MarkdownFileSource`, `RazorPageSource`, `RedirectSource`, `ProgrammaticSource`, or `EndpointSource` — it is not a base class. Implicit conversions from each case type make the shorthand form work; pick whichever reads more clearly.
+
+```csharp
+// Explicit — the union wrap is visible
+yield return new DiscoveredItem(route, new ContentSource(new RedirectSource(target)));
+
+// Shorthand — implicit conversion wraps the case for you
+yield return new DiscoveredItem(route, new RedirectSource(target));
+```
+
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.ReleaseNotesContentService.DiscoverAsync
 ```

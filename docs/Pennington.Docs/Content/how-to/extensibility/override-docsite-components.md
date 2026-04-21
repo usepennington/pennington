@@ -85,6 +85,18 @@ The chrome on every page is replaced by the configured fragments. The header rea
 - Navigate to a route defined by a Razor component in your app assembly (for example `/extra`) and confirm it renders. A 404 here means `AdditionalRoutingAssemblies` is not including the right assembly.
 - Run `dotnet run -- build output` and search `output/index.html` for your head fragment and `output/styles.css` for your `ExtraStyles` rules to confirm the overrides survive publish.
 
+## Other DocSite extension points
+
+The four chrome seams above are the most common overrides. DocSite exposes three more on `DocSiteOptions` plus two through direct DI registration, and together they cover every extension that does not require forking the template.
+
+| Seam | What it does |
+|---|---|
+| `DocSiteOptions.ConfigurePennington` | Callback against the underlying `PenningtonOptions`. Register extra markdown sources, islands, or highlighters without leaving the template — see <xref:how-to.configuration.multiple-sources> and <xref:how-to.extensibility.island-renderer>. |
+| `DocSiteOptions.AdditionalRoutingAssemblies` | Widens the router to pick up `@page` components in your host assembly. Covered in the section above. |
+| `DocSiteOptions.CustomCssFrameworkSettings` | Mutates the MonorailCSS `CssFrameworkSettings` after DocSite applies its theme. Use for custom palettes, variants, or plugins beyond what the defaults ship. |
+| `services.AddSingleton<IContentService, T>()` | A concrete `IContentService` registered directly on the DI container is picked up by the pipeline alongside DocSite's own markdown service — see <xref:how-to.extensibility.custom-content-service>. |
+| `services.AddScoped<IIslandRenderer, T>()` | Scoped lifetime is required (the backing `ComponentRenderer` is scoped). See <xref:how-to.extensibility.island-renderer> for the full recipe. |
+
 ## Related
 
 - Reference: <xref:reference.api.doc-site-options>

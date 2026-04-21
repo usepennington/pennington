@@ -41,7 +41,9 @@ public static class SpaNavigationExtensions
     /// <summary>Map the SPA data endpoint.</summary>
     public static IEndpointRouteBuilder UseSpaNavigation(this IEndpointRouteBuilder app)
     {
-        var options = app.ServiceProvider.GetRequiredService<SpaNavigationOptions>();
+        var options = app.ServiceProvider.GetService<SpaNavigationOptions>()
+            ?? throw new InvalidOperationException(
+                "UseSpaNavigation() was called but AddSpaNavigation() was not registered — the SPA data endpoint will not be mapped and islands will not hydrate. Call services.AddSpaNavigation() during startup.");
         var dataPath = options.DataPath.TrimStart('/');
 
         app.MapGet($"/{dataPath}/{{*slug}}", async (string? slug, SpaPageDataService service, IEnumerable<IContentService> contentServices, DiagnosticContext diagnosticContext, XrefResolvingService xrefService) =>
