@@ -236,11 +236,24 @@ public class MonorailCssService(MonorailCssOptions options, CssClassCollector cs
         var styleSheet = cssFramework.Process(cssClassValues);
 
         return $"""
+                {ContentVisibilityRules}
+
                 {options.ExtraStyles}
 
                 {styleSheet}
                 """;
     }
+
+    // Paired content-visibility classes consumed by the llms.txt and search pipelines.
+    // .humans-only has no browser-side effect — it's a marker the extractor honors.
+    // .robots-only hides from browsers via display:none; the markup is still emitted,
+    // so automated extraction keeps it.
+    private const string ContentVisibilityRules = """
+        /* Pennington content-visibility markers. */
+        /* .humans-only — visible in the browser; stripped from llms.txt extraction. */
+        /* .robots-only — hidden in the browser; kept in llms.txt extraction. */
+        .robots-only { display: none; }
+        """;
 
     private CssFramework GetCssFramework()
     {

@@ -54,6 +54,12 @@ internal static class HtmlToMarkdownConverter
 
     private static void RenderElement(IElement element, StringBuilder sb, int listDepth, Stack<(bool Ordered, int Index)> orderedStack, Func<string, string>? rewriteHref)
     {
+        // Content-visibility marker: `.humans-only` is for browser display only —
+        // strip it (and its subtree) from the extracted markdown. The paired
+        // `.robots-only` class is hidden from browsers via CSS but stays in the
+        // markup, so it naturally flows through without a special case here.
+        if (element.ClassList.Contains("humans-only")) return;
+
         var tag = element.TagName;
 
         switch (tag)

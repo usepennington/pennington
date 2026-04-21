@@ -213,4 +213,42 @@ public class HtmlToMarkdownConverterTests
         md.ShouldContain("Section");
         md.ShouldNotContain("](#section)");
     }
+
+    [Fact]
+    public void HumansOnlyElement_IsStrippedWithSubtree()
+    {
+        var md = ConvertFragment(
+            "<p>Before</p>" +
+            "<div class=\"humans-only\"><p>Interactive widget</p><p>More widget</p></div>" +
+            "<p>After</p>");
+
+        md.ShouldContain("Before");
+        md.ShouldContain("After");
+        md.ShouldNotContain("Interactive widget");
+        md.ShouldNotContain("More widget");
+    }
+
+    [Fact]
+    public void RobotsOnlyElement_IsKept()
+    {
+        var md = ConvertFragment(
+            "<p>Before</p>" +
+            "<div class=\"robots-only\"><p>Full signature detail</p></div>" +
+            "<p>After</p>");
+
+        md.ShouldContain("Before");
+        md.ShouldContain("Full signature detail");
+        md.ShouldContain("After");
+    }
+
+    [Fact]
+    public void HumansOnlyClass_AlongsideOtherClasses_StillStrips()
+    {
+        var md = ConvertFragment(
+            "<p>Visible</p>" +
+            "<div class=\"prose humans-only mt-4\"><p>Hidden from llms</p></div>");
+
+        md.ShouldContain("Visible");
+        md.ShouldNotContain("Hidden from llms");
+    }
 }

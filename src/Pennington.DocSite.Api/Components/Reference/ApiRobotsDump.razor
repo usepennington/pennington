@@ -1,0 +1,124 @@
+@* Source-authoritative markdown-shaped HTML for llms.txt extraction.
+   Render inside a .robots-only wrapper so browsers hide it while the
+   HtmlToMarkdownConverter walks the semantic tags (h2/h3/p/pre/ul)
+   into clean fenced markdown. *@
+@inject IServiceProvider Services
+@inject IXmlDocHtmlRenderer Renderer
+@inject IHttpContextAccessor HttpContextAccessor
+
+@if (_detail is not null)
+{
+    <h1>@_detail.Summary.FullTypeName</h1>
+    <p><strong>Namespace:</strong> <code>@(string.IsNullOrEmpty(_detail.Summary.Namespace) ? "(global)" : _detail.Summary.Namespace)</code></p>
+    <p><strong>Kind:</strong> <code>@_detail.Summary.Kind</code></p>
+    <p><strong>Assembly:</strong> <code>@_detail.Summary.Assembly</code></p>
+
+    @if (_detail.Xmldoc.HasSummary)
+    {
+        @((MarkupString)Renderer.RenderHtml(_detail.Xmldoc.Summary))
+    }
+
+    @if (!string.IsNullOrEmpty(_detail.SignatureHtml))
+    {
+        <pre><code class="language-csharp">@((MarkupString)_detail.SignatureHtml)</code></pre>
+    }
+
+    @if (_detail.Xmldoc.HasRemarks)
+    {
+        <p><strong>Remarks:</strong></p>
+        @((MarkupString)Renderer.RenderHtml(_detail.Xmldoc.Remarks))
+    }
+
+    @if (_members.Length > 0)
+    {
+        <h2>Members</h2>
+        @foreach (var m in _members)
+        {
+            <h3>@m.Name</h3>
+            <p><strong>Kind:</strong> <code>@m.Kind</code>@(m.IsRequired ? " (required)" : "")</p>
+
+            @if (!string.IsNullOrEmpty(m.SignatureHtml))
+            {
+                <pre><code class="language-csharp">@((MarkupString)m.SignatureHtml)</code></pre>
+            }
+
+            @if (m.Xmldoc.HasSummary)
+            {
+                @((MarkupString)Renderer.RenderHtml(m.Xmldoc.Summary))
+            }
+
+            @if (m.Parameters.Length > 0)
+            {
+                <p><strong>Parameters:</strong></p>
+                <ul>
+                    @foreach (var p in m.Parameters)
+                    {
+                        <li>
+                            <code>@p.Name</code> : <code>@p.TypeDisplay</code>
+                            @if (p.Description.Length > 0)
+                            {
+                                <text> — </text>
+                                @((MarkupString)Renderer.RenderInlineHtml(p.Description))
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+
+            @if (!string.IsNullOrEmpty(m.ReturnTypeDisplay))
+            {
+                <p>
+                    <strong>Returns:</strong> <code>@m.ReturnTypeDisplay</code>
+                    @if (m.Xmldoc.HasReturns)
+                    {
+                        <text> — </text>
+                        @((MarkupString)Renderer.RenderInlineHtml(m.Xmldoc.Returns))
+                    }
+                </p>
+            }
+
+            @if (!string.IsNullOrEmpty(m.DefaultValue))
+            {
+                <p><strong>Default:</strong> <code>@m.DefaultValue</code></p>
+            }
+        }
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
+    [Parameter] public string? Source { get; set; }
+    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
+
+    private ApiTypeDetail? _detail;
+    private System.Collections.Immutable.ImmutableArray<ApiMember> _members = [];
+
+    private DiagnosticContext? Diagnostics =>
+        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
+
+    protected override void OnParametersSet()
+    {
+        _detail = null;
+        _members = [];
+
+        if (string.IsNullOrWhiteSpace(XmlDocId)) return;
+
+        try
+        {
+            var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
+            _detail = AsyncHelpers.RunSync(() => provider.GetTypeAsync(XmlDocId));
+            if (_detail is not null)
+            {
+                _members = AsyncHelpers.RunSync(() => provider.GetMembersAsync(
+                    XmlDocId,
+                    MemberKind.All,
+                    AccessFilter.Public,
+                    MemberOrder.Alphabetical));
+            }
+        }
+        catch (Exception ex)
+        {
+            Diagnostics?.AddError($"<ApiRobotsDump> failed for {XmlDocId}: {ex.Message}");
+        }
+    }
+}

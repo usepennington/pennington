@@ -39,6 +39,25 @@ P:Pennington.DocSite.DocSiteFrontMatter.Llms
 
 For a custom `ContentSelector` (different article wrapper or a non-DocSite layout), set `DocSiteOptions.LlmsTxtContentSelector`. It defaults to `#main-content` and is overridable without leaving DocSite. See [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning) for cases that do require bare `AddPennington`.
 
+### Split content per-fragment with `humans-only` / `robots-only`
+
+For finer control than page-level opt-out, two paired classes mark a fragment as intended for one audience or the other. Both ship as part of the MonorailCSS base styles, so no registration is needed.
+
+- `humans-only` — visible in the browser, stripped from the llms.txt extraction. Reach for it when a widget, interactive demo, or layout flourish carries no information an LLM needs.
+- `robots-only` — hidden in the browser via `display: none`, kept in the llms.txt extraction. Reach for it when an LLM needs context the human reader already has visually (a full signature next to a compact hover card, prose that mirrors a diagram, etc.).
+
+```razor
+<div class="humans-only">
+  <InteractiveTour />
+</div>
+
+<div class="robots-only">
+  <p>Full method signature: <code>Task&lt;Result&gt; ProcessAsync(Options options, CancellationToken ct = default)</code>.</p>
+</div>
+```
+
+The classes work anywhere inside the `ContentSelector` — markdown bodies, Razor components, auto-generated reference pages.
+
 ### (Bare Pennington) Enable `LlmsTxtOptions` with `AddLlmsTxt`
 
 On a bare host nothing is wired until `penn.AddLlmsTxt(...)` is called. The options surface covers `OutputDirectory` (where per-page stripped-markdown sidecars land, defaults to `_llms`), `GenerateFullFile`, and `ContentSelector` (CSS selector that scopes HTML-to-markdown extraction; null means the whole `<body>`).
