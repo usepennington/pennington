@@ -111,6 +111,48 @@ public class OutputGenerationServiceTests
             d.Message.Contains("shared/index.html")).ShouldBeTrue();
     }
 
+    [Fact]
+    public async Task GenerateAsync_DuplicateWebRootEntries_CopiesEachPathOnce()
+    {
+        // Regression: WebRootFileProvider is a CompositeFileProvider whose children
+        // (physical wwwroot + RCL manifest providers) can each expose the same
+        // logical path, e.g. `_content/Pennington.UI/scripts.js`. Without dedup,
+        // File.Copy ran twice on the same target and Windows returned
+        // ERROR_SHARING_VIOLATION between the two calls.
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("sourceA/_content/Pennington.UI");
+        fs.Directory.CreateDirectory("sourceB/_content/Pennington.UI");
+        fs.File.WriteAllText("sourceA/_content/Pennington.UI/scripts.js", "A");
+        fs.File.WriteAllText("sourceB/_content/Pennington.UI/scripts.js", "B");
+
+        var providerA = new StubFileProvider("_content/Pennington.UI/scripts.js", "sourceA/_content/Pennington.UI/scripts.js");
+        var providerB = new StubFileProvider("_content/Pennington.UI/scripts.js", "sourceB/_content/Pennington.UI/scripts.js");
+        var composite = new Microsoft.Extensions.FileProviders.CompositeFileProvider(providerA, providerB);
+
+        var options = new OutputOptions
+        {
+            OutputDirectory = new FilePath("output"),
+            CleanOutput = false,
+        };
+
+        var env = new StubWebHostEnvironment { WebRootFileProvider = composite };
+        var service = new OutputGenerationService(
+            [],
+            options,
+            new PenningtonOptions(),
+            env,
+            new StubEndpointDataSource(),
+            fs,
+            NullLogger<OutputGenerationService>.Instance);
+
+        var report = await service.GenerateAsync("http://localhost:9999");
+
+        // First-wins: only providerA's copy should run. If dedup is broken, providerB
+        // would overwrite and the output would be "B".
+        fs.File.ReadAllText("output/_content/Pennington.UI/scripts.js").ShouldBe("A");
+        report.Diagnostics.Any(d => d.Message.Contains("Failed to copy")).ShouldBeFalse();
+    }
+
     // --- Stubs ---
 
     private sealed class StubContentService(ContentRoute route) : IContentService
@@ -154,5 +196,50 @@ public class OutputGenerationServiceTests
         public override IReadOnlyList<Endpoint> Endpoints => [];
 
         public override IChangeToken GetChangeToken() => NullChangeToken.Singleton;
+    }
+
+    private sealed class StubFileProvider(string relativePath, string physicalPath) : IFileProvider
+    {
+        public IDirectoryContents GetDirectoryContents(string subpath)
+        {
+            var segments = relativePath.Split('/');
+            var normalizedSubpath = subpath.Trim('/');
+            var depth = string.IsNullOrEmpty(normalizedSubpath) ? 0 : normalizedSubpath.Split('/').Length;
+
+            if (depth >= segments.Length)
+                return NotFoundDirectoryContents.Singleton;
+
+            var expectedPrefix = string.Join('/', segments.Take(depth));
+            if (!string.Equals(normalizedSubpath, expectedPrefix, StringComparison.Ordinal))
+                return NotFoundDirectoryContents.Singleton;
+
+            var isLeaf = depth == segments.Length - 1;
+            var entry = isLeaf
+                ? (IFileInfo)new StubFileInfo(segments[depth], physicalPath, isDirectory: false)
+                : new StubFileInfo(segments[depth], physicalPath: null, isDirectory: true);
+            return new StubDirectoryContents(entry);
+        }
+
+        public IFileInfo GetFileInfo(string subpath) => new NotFoundFileInfo(subpath);
+
+        public IChangeToken Watch(string filter) => NullChangeToken.Singleton;
+    }
+
+    private sealed class StubDirectoryContents(IFileInfo entry) : IDirectoryContents
+    {
+        public bool Exists => true;
+        public IEnumerator<IFileInfo> GetEnumerator() { yield return entry; }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    private sealed class StubFileInfo(string name, string? physicalPath, bool isDirectory) : IFileInfo
+    {
+        public bool Exists => true;
+        public long Length => 0;
+        public string? PhysicalPath => physicalPath;
+        public string Name => name;
+        public DateTimeOffset LastModified => DateTimeOffset.MinValue;
+        public bool IsDirectory => isDirectory;
+        public Stream CreateReadStream() => throw new NotSupportedException();
     }
 }

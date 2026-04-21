@@ -331,12 +331,16 @@ public sealed class OutputGenerationService
         }
 
         // Copy wwwroot + RCL static web assets. WebRootFileProvider is a CompositeFileProvider
-        // whose GetDirectoryContents already merges every child (physical wwwroot + the RCL
-        // manifest providers that expose _content/<Rcl>/*), so one recursive walk enumerates
-        // every asset exactly once. A previous implementation re-walked each child provider
-        // after the top-level walk, producing duplicate File.Copy calls for every RCL asset.
+        // whose GetDirectoryContents concatenates each child provider's entries without
+        // deduping by name — so when the physical wwwroot and an RCL manifest provider both
+        // own `_content/<Rcl>/`, the same logical path is yielded more than once and File.Copy
+        // races itself on Windows ("file is being used by another process"). Dedupe by
+        // relative path as we walk.
         if (writeToDisk)
-            CopyFileProvider(_environment.WebRootFileProvider, "", outputDir, reportBuilder);
+        {
+            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            CopyFileProvider(_environment.WebRootFileProvider, "", outputDir, reportBuilder, visited);
+        }
 
         return copiedPaths;
     }
@@ -458,16 +462,19 @@ public sealed class OutputGenerationService
         }
     }
 
-    private void CopyFileProvider(IFileProvider provider, string subpath, string outputDir, BuildReportBuilder reportBuilder)
+    private void CopyFileProvider(IFileProvider provider, string subpath, string outputDir, BuildReportBuilder reportBuilder, HashSet<string> visited)
     {
         var contents = provider.GetDirectoryContents(subpath);
         foreach (var item in contents)
         {
             var relativePath = string.IsNullOrEmpty(subpath) ? item.Name : $"{subpath}/{item.Name}";
 
+            if (!visited.Add(relativePath))
+                continue;
+
             if (item.IsDirectory)
             {
-                CopyFileProvider(provider, relativePath, outputDir, reportBuilder);
+                CopyFileProvider(provider, relativePath, outputDir, reportBuilder, visited);
             }
             else if (item.PhysicalPath != null)
             {
