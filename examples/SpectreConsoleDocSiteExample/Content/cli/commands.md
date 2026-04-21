@@ -3,7 +3,7 @@ title: Commands with Spectre.Console.Cli
 description: Type-safe commands, sub-commands, and settings driven by your DI container.
 uid: guides.cli
 order: 20
-sectionLabel: Guides
+sectionLabel: Cli
 ---
 
 Spectre.Console.Cli ships a mini-framework for building multi-command console apps in the shape of `git` or `dotnet`. The entry type is `CommandApp` — build one, register commands and settings classes, call `Run(args)`.

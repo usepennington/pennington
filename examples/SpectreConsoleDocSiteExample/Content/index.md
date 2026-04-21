@@ -13,6 +13,7 @@ This docsite documents both as **separate API reference trees** on one site, dri
 
 ## Browse
 
-- <xref:reference.core-types> — the landmark types in both packages.
-- [`/api/spectre/`](/api/spectre/) — full Spectre.Console reference.
-- [`/api/spectre-cli/`](/api/spectre-cli/) — full Spectre.Console.Cli reference.
+- <xref:console> — rendering with `Spectre.Console`.
+- <xref:cli> — commands with `Spectre.Console.Cli`.
+- [`/console/api/`](/console/api/) — full `Spectre.Console` reference.
+- [`/cli/api/`](/cli/api/) — full `Spectre.Console.Cli` reference.

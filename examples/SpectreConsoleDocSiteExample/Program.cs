@@ -13,8 +13,8 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Spectre.Console © Patrik Svensson & contributors. Rendered by Pennington.</footer>""",
     Areas =
     [
-        new ContentArea("Guides", "guides"),
-        new ContentArea("Reference", "reference"),
+        new ContentArea("Console", "console"),
+        new ContentArea("Cli", "cli"),
     ],
 });
 
@@ -30,13 +30,13 @@ builder.Services.AddApiMetadataFromCompiledAssembly("spectre-console-cli", opts 
 // Two registrations, two URL prefixes. Names match the metadata registrations.
 builder.Services.AddApiReference("spectre-console", opts =>
 {
-    opts.RoutePrefix = "/api/spectre/";
-    opts.TocTitle = "Spectre.Console";
+    opts.RoutePrefix = "/console/api/";
+    opts.TocTitle = "API reference";
 });
 builder.Services.AddApiReference("spectre-console-cli", opts =>
 {
-    opts.RoutePrefix = "/api/spectre-cli/";
-    opts.TocTitle = "Spectre.Console.Cli";
+    opts.RoutePrefix = "/cli/api/";
+    opts.TocTitle = "API reference";
 });
 
 var app = builder.Build();

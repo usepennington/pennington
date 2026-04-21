@@ -3,6 +3,7 @@ namespace Pennington.DocSite.Api;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Pennington.DocSite;
 
 /// <summary>
 /// Rewrites inbound request paths under any configured public
@@ -34,6 +35,11 @@ public sealed class ApiReferenceRewriteMiddleware
             foreach (var reg in _registry.Registrations)
             {
                 if (!path.StartsWith(reg.RoutePrefix, StringComparison.Ordinal)) continue;
+
+                // Preserve the public path so MainLayout can resolve the active
+                // area and stamp TOC selection against the URL the user sees,
+                // not the /_pnn_api/... route Blazor actually dispatches on.
+                context.Items[DocSiteHttpContextKeys.OriginalPath] = path;
 
                 var remainder = path[reg.RoutePrefix.Length..];
                 context.Request.Path = new PathString(

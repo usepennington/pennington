@@ -95,7 +95,9 @@ class PageManager {
         document.querySelectorAll('[data-current="true"]')
             .forEach(el => el.setAttribute('data-current', 'false'));
         const norm = pathname.replace(/\/$/, '') || '/';
-        for (const a of document.querySelectorAll('nav a[href]')) {
+        // Area pills signal themselves via aria-current; skip them so they don't
+        // shadow a TOC anchor with the same href when the URL is an area root.
+        for (const a of document.querySelectorAll('nav a[href]:not([data-area])')) {
             if ((a.getAttribute('href') || '').replace(/\/$/, '') === norm) {
                 a.setAttribute('data-current', 'true');
                 break;

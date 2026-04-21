@@ -7,6 +7,7 @@
 @inject NavigationManager NavigationManager
 @inject DocSiteOptions DocSiteOptions
 @inject LocalizationOptions Localization
+@inject IHttpContextAccessor HttpContextAccessor
 
 <HeadContent>
     @if (!string.IsNullOrEmpty(DocSiteOptions.SocialImageUrl))
@@ -138,6 +139,14 @@
     protected override async Task OnInitializedAsync()
     {
         var currentPath = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath;
+
+        // Middleware such as the API reference rewriter swaps Request.Path for
+        // internal routing; honor the preserved public path so area resolution
+        // and TOC selection match the URL the user actually sees.
+        if (HttpContextAccessor.HttpContext?.Items[DocSiteHttpContextKeys.OriginalPath] is string originalPath)
+        {
+            currentPath = originalPath;
+        }
 
         // The 404-generation sentinel produces 404.html, not a real content route.
         // Normalize it so the TOC "current page" marker and language switcher treat
