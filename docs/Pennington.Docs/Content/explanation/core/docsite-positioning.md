@@ -19,7 +19,7 @@ The distinction matters because `DocSiteOptions` is not a mirror of `PenningtonO
 
 ### What DocSite gives you for free
 
-A single `AddDocSite` call wires quite a bit: the Pennington engine with site title, description, canonical URL, and content root forwarded from `DocSiteOptions`; one `AddMarkdownContent<DocSiteFrontMatter>` registration rooted at the content folder; a pre-scoped `llms.txt` and search index (both defaulting to `#main-content`, the wrapper around the stock article); the Razor `App` component with the article slot renderer; Mdazor inline components — `Badge`, `Card`, `CodeBlock`, `Step`, and others — registered so markdown can embed UI without per-site plumbing; MonorailCSS with the DocSite theme; and SPA navigation.
+A single `AddDocSite` call wires quite a bit: the Pennington engine with site title, description, canonical URL, and content root forwarded from `DocSiteOptions`; one `AddMarkdownContent<DocSiteFrontMatter>` registration rooted at the content folder; a pre-scoped `llms.txt` and search index (both defaulting to `#main-content`, the wrapper around the stock article); the Razor `App` component with the article slot renderer; Mdazor inline components — `Badge`, `Card`, `Step`, and others — registered so markdown can embed UI without per-site plumbing; MonorailCSS with the DocSite theme; and SPA navigation.
 
 The payoff is not the feature count. It is that every one of those registrations lands in a compatible order with the others. Getting that ordering right — especially between the pipeline, the response processor, and the search index scoping — is most of what trips up a hand-rolled host on the first attempt.
 

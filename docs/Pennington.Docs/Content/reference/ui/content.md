@@ -1,13 +1,13 @@
 ---
 title: "Content components"
-description: "Parameter and usage reference for the eight Pennington.UI content components — Card, CardGrid, LinkCard, Badge, Step, Steps, CodeBlock, and BigTable."
+description: "Parameter and usage reference for the eight Pennington.UI content components — Card, CardGrid, LinkCard, Badge, Step, Steps, BigTable (Mdazor-registered), and CodeBlock (Razor-page only)."
 sectionLabel: "UI Components"
 order: 404020
 tags: [ui, components, mdazor, razor]
 uid: reference.ui.content
 ---
 
-The content-oriented subset of the `Pennington.UI.Components` Razor component library, covering callout cards, numbered steps, syntax-highlighted code, and wide-table overflow handling. Components live in namespace `Pennington.UI.Components` (`src/Pennington.UI/`) and are pre-registered with Mdazor by `DocSiteServiceExtensions.AddDocSite`, making them available as tags inside markdown without additional wiring.
+The content-oriented subset of the `Pennington.UI.Components` Razor component library, covering callout cards, numbered steps, syntax-highlighted code, and wide-table overflow handling. Components live in namespace `Pennington.UI.Components` (`src/Pennington.UI/`). All but `CodeBlock` are pre-registered with Mdazor by `DocSiteServiceExtensions.AddDocSite`, making them available as tags inside markdown without additional wiring; `CodeBlock` is Razor-page-only — markdown authors use fenced code blocks instead.
 
 ## Overview
 
@@ -17,7 +17,6 @@ The content-oriented subset of the `Pennington.UI.Components` Razor component li
 | `BigTable` | Wraps a wide table in a horizontal-scroll container. | `<BigTable>@ChildContent</BigTable>` | `<BigTable>` ... markdown table ... `</BigTable>` |
 | `Card` | Static callout card with optional icon and title. | `<Card Title="..." Color="primary">@ChildContent</Card>` | `<Card Title="..." Color="primary">` ... `</Card>` |
 | `CardGrid` | Responsive grid container for Card / LinkCard children. | `<CardGrid Columns="3">@ChildContent</CardGrid>` | `<CardGrid Columns="3">` ... `</CardGrid>` |
-| `CodeBlock` | Renders syntax-highlighted code through `ICodeHighlighter`. | `<CodeBlock Language="csharp" Code="var x = 1;" />` | `<CodeBlock Language="csharp">var x = 1;</CodeBlock>` |
 | `LinkCard` | Clickable card wrapping its content in an anchor. | `<LinkCard Title="..." Href="/foo">@ChildContent</LinkCard>` | `<LinkCard Title="..." Href="/foo">` ... `</LinkCard>` |
 | `Step` | Single numbered list item inside a `Steps` container. | `<Step StepNumber="1">@ChildContent</Step>` | `<Step StepNumber="1">` ... `</Step>` |
 | `Steps` | Vertical numbered-step list container for `Step` children. | `<Steps>@ChildContent</Steps>` | `<Steps>` ... `</Steps>` |
@@ -104,24 +103,26 @@ Responsive grid container for `Card` or `LinkCard` children; renders one column 
 
 ## `CodeBlock`
 
-Razor-level wrapper around `ICodeHighlighter`; accepts code via `Code` or `ChildContent`, normalizes leading whitespace from `ChildContent`, delegates to the injected highlighter, and emits output as a `MarkupString`. An empty or missing `Language` renders an inline error element.
+Razor-page entry to the shared code-block rendering pipeline — registered `ICodeBlockPreprocessor` implementations (including Roslyn `:xmldocid` and `:path` fences when `AddPenningtonRoslyn` is wired), highlighter dispatch via `HighlightingService`, `[!code …]` line transformations, and the standard `code-highlight-wrapper` container. Not registered with Mdazor — markdown authors should use a fenced code block (same pipeline, same output shape) instead.
 
 ### Parameters
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `ChildContent` | `RenderFragment?` | `null` | Alternative code source; extracted as text and de-indented before highlighting. |
-| `Code` | `string?` | `null` | Literal code string to highlight; takes precedence over `ChildContent` when both are set. |
-| `IsInTabGroup` | `bool` | `false` | When `true`, the component omits standalone container classes so the block composes inside a tabbed code group. |
-| `Language` | `string` | `""` | Required (`EditorRequired`) highlighter language id such as `"csharp"`, `"javascript"`, `"shell"`. |
+| `ChildContent` | `RenderFragment?` | `null` | Code content as the component's child text; de-indented before rendering. |
+| `Code` | `string?` | `null` | Code content as a string attribute; takes precedence over `ChildContent` when both are set. Useful for single-token XmlDocIds on `:xmldocid` fences. |
+| `IsInTabGroup` | `bool` | `false` | When `true`, omits standalone container classes so the block composes inside a tabbed code group. |
+| `Language` | `string` | `""` | Required (`EditorRequired`) [fence info-string](xref:reference.markdown.code-block-args) — a bare language like `"csharp"` or a modifier-bearing form like `"csharp:xmldocid,bodyonly"`. |
 
 ### Example
 
 ```razor
-<CodeBlock Language="csharp" Code="var x = 1;" />
-```
+<CodeBlock Language="csharp">
+var x = 1;
+</CodeBlock>
 
-`<CodeBlock>` is intended for Razor pages and Mdazor tag invocations; for fenced-code-block authoring inside markdown prose, use the standard triple-backtick fence with an info string instead.
+<CodeBlock Language="csharp:xmldocid,bodyonly">M:Ns.Type.Method</CodeBlock>
+```
 
 ## `LinkCard`
 
@@ -188,20 +189,19 @@ Container for a vertical numbered-step list; emits a `<div>` wrapping an `<ol>` 
 
 ## Mdazor registration
 
-All eight components are pre-registered with Mdazor by `DocSiteServiceExtensions.AddDocSite`, which means any site built on `AddDocSite` can invoke these tags directly inside markdown without calling `AddMdazorComponent<T>()` manually:
+Seven components are pre-registered with Mdazor by `DocSiteServiceExtensions.AddDocSite`, so any site built on `AddDocSite` can invoke these tags directly inside markdown without calling `AddMdazorComponent<T>()` manually.
 
 ```csharp
 services.AddMdazorComponent<Badge>()
         .AddMdazorComponent<BigTable>()
         .AddMdazorComponent<Card>()
         .AddMdazorComponent<CardGrid>()
-        .AddMdazorComponent<CodeBlock>()
         .AddMdazorComponent<LinkCard>()
         .AddMdazorComponent<Step>()
         .AddMdazorComponent<Steps>();
 ```
 
-For sites that do not use `AddDocSite` (for example, `AddBlogSite` or a hand-rolled `AddPennington` host), call `AddMdazorComponent<T>()` for each of the eight types to match the doc-site surface.
+For sites that do not use `AddDocSite` (for example, `AddBlogSite` or a hand-rolled `AddPennington` host), call `AddMdazorComponent<T>()` for each of the seven types to match the doc-site surface.
 
 ## See also
 

@@ -1,5 +1,5 @@
 @using Microsoft.AspNetCore.Components.RenderTree
-@inject ICodeHighlighter CodeHighlighter
+@inject CodeBlockRenderingService Renderer
 
 @((MarkupString)_highlightedHtml)
 
@@ -58,10 +58,11 @@
         // Normalize indentation (especially important for ChildContent which includes .razor file indentation)
         codeToHighlight = NormalizeIndents(codeToHighlight);
 
-        // Highlight the code using the service
-        _highlightedHtml = CodeHighlighter.Highlight(
+        _highlightedHtml = Renderer.Render(
             code: codeToHighlight.Trim(),
-            language: Language);
+            languageId: Language,
+            options: null,
+            isInTabGroup: IsInTabGroup);
     }
 
     private string ExtractTextFromRenderFragment()

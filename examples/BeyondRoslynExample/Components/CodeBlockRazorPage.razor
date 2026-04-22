@@ -1,0 +1,25 @@
+@page "/codeblock-razor"
+@namespace BeyondRoslynExample.Components
+
+<PageTitle>CodeBlock razor repro</PageTitle>
+
+<article class="prose mx-auto py-12">
+    <h1>CodeBlock razor repro</h1>
+    <p>
+        Four <code>&lt;CodeBlock&gt;</code> invocations authored in a real
+        Razor <code>@@page</code>. Confirms that the Razor-side component
+        runs the Roslyn preprocessor when a modifier is present.
+    </p>
+
+    <h2 id="whole-type">Whole type via <code>Code</code></h2>
+    <CodeBlock Language="csharp:xmldocid" Code="T:BeyondRoslynExample.Sample.Calculator" />
+
+    <h2 id="body-only">Body only via <code>ChildContent</code></h2>
+    <CodeBlock Language="csharp:xmldocid,bodyonly">M:BeyondRoslynExample.Sample.Calculator.Multiply(System.Int32,System.Int32)</CodeBlock>
+
+    <h2 id="plain-csharp">Plain csharp sentinel</h2>
+    <CodeBlock Language="csharp">var x = 1;</CodeBlock>
+
+    <h2 id="method-with-decl">Method with declaration via <code>ChildContent</code></h2>
+    <CodeBlock Language="csharp:xmldocid">M:BeyondRoslynExample.Sample.Calculator.Add(System.Int32,System.Int32)</CodeBlock>
+</article>

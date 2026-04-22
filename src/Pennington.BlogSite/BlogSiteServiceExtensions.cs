@@ -54,11 +54,12 @@ public static class BlogSiteServiceExtensions
         });
 
         // Make Pennington.UI components available inline in markdown via Mdazor.
+        // <CodeBlock> is intentionally excluded: markdown authors should use fenced
+        // code blocks, not a component round-trip through Mdazor+Markdig.
         services.AddMdazorComponent<Badge>()
                 .AddMdazorComponent<BigTable>()
                 .AddMdazorComponent<Card>()
                 .AddMdazorComponent<CardGrid>()
-                .AddMdazorComponent<CodeBlock>()
                 .AddMdazorComponent<LinkCard>()
                 .AddMdazorComponent<Step>()
                 .AddMdazorComponent<Steps>();

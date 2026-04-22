@@ -36,9 +36,9 @@ or use `ChildContent` for rich content.
 
 ## Built-ins
 
-Pennington.UI ships eight components pre-registered by `AddDocSite` —
-`<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<CodeBlock>`,
-`<LinkCard>`, `<Step>`, and `<Steps>`. Use them directly without
-writing your own components.
+Pennington.UI ships seven components pre-registered by `AddDocSite` —
+`<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<LinkCard>`,
+`<Step>`, and `<Steps>`. Use them directly without writing your
+own components.
 
 <Badge>Kitchen sink</Badge>

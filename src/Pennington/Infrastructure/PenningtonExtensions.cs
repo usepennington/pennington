@@ -92,14 +92,20 @@ public static class PenningtonExtensions
         services.AddSingleton<HighlightingService>(sp =>
             new HighlightingService(sp.GetServices<ICodeHighlighter>()));
 
+        // Shared pipeline for fenced code blocks — used by Markdig's CodeHighlightRenderer
+        // and by the <CodeBlock> Razor component so both emit identical HTML.
+        services.AddTransient<CodeBlockRenderingService>(sp =>
+            new CodeBlockRenderingService(
+                sp.GetRequiredService<HighlightingService>(),
+                sp.GetServices<ICodeBlockPreprocessor>()));
+
         // Markdown pipeline — includes highlighting, tabs, custom alerts, Mdazor,
         // and any consumer-supplied extensions via options.ConfigureMarkdownPipeline.
         services.AddSingleton<MarkdownPipeline>(sp =>
             MarkdownPipelineFactory.CreateWithExtensions(
                 sp,
-                sp.GetRequiredService<HighlightingService>(),
+                sp.GetRequiredService<CodeBlockRenderingService>(),
                 tabOptions: options.TabbedCodeBlockOptions,
-                preprocessors: sp.GetServices<ICodeBlockPreprocessor>(),
                 configure: options.ConfigureMarkdownPipeline));
 
         // Relative-link resolver — factory-managed so it rebuilds its source → URL

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Pennington.Highlighting;
 using Pennington.Markdown;
+using Pennington.Markdown.Extensions;
 
 namespace Pennington.Tests.Markdown;
 
@@ -21,7 +22,7 @@ public class MdazorIntegrationTests
 
         var pipeline = MarkdownPipelineFactory.CreateWithExtensions(
             sp,
-            new HighlightingService([]));
+            new CodeBlockRenderingService(new HighlightingService([])));
 
         const string markdown = "Before\n\n<MdazorTestGreeting Name=\"world\" />\n\nAfter";
 
@@ -47,8 +48,9 @@ public class MdazorIntegrationTests
         services.AddLogging();
         services.AddMdazor();
         services.AddSingleton(new HighlightingService([]));
+        services.AddSingleton(sp => new CodeBlockRenderingService(sp.GetRequiredService<HighlightingService>()));
         services.AddSingleton<Markdig.MarkdownPipeline>(sp =>
-            MarkdownPipelineFactory.CreateWithExtensions(sp, sp.GetRequiredService<HighlightingService>()));
+            MarkdownPipelineFactory.CreateWithExtensions(sp, sp.GetRequiredService<CodeBlockRenderingService>()));
         services.AddMdazorComponent<MdazorTestGreeting>();
 
         using var sp = services.BuildServiceProvider();
@@ -77,7 +79,7 @@ public class MdazorIntegrationTests
 
         var pipeline = MarkdownPipelineFactory.CreateWithExtensions(
             sp,
-            new HighlightingService([]));
+            new CodeBlockRenderingService(new HighlightingService([])));
 
         const string markdown = "# Heading\n\nPlain paragraph.";
 

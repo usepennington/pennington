@@ -12,12 +12,12 @@ To place a Razor component tag — `<Badge>`, `<Card>`, or one of your own — d
 ## Assumptions
 
 - A working Pennington site that renders markdown (see <xref:tutorials.getting-started.first-site> if not).
-- The host calls `AddDocSite`, `AddBlogSite`, or `AddPennington`. The first two register the eight Pennington.UI components automatically; bare `AddPennington` requires the one-line registration shown under "Register components on a bare host" below.
+- The host calls `AddDocSite`, `AddBlogSite`, or `AddPennington`. The first two register seven of the eight Pennington.UI components automatically (everything but `CodeBlock`, which is Razor-page-only); bare `AddPennington` requires the one-line registration shown under "Register components on a bare host" below.
 - Component tag names start with an uppercase letter and match the Razor component type name — case-sensitive on the leading character (`<Card>`, not `<card>`).
 
-## The eight built-in components
+## The seven built-in components
 
-`AddDocSite` and `AddBlogSite` pre-register `<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<CodeBlock>`, `<LinkCard>`, `<Step>`, and `<Steps>`. Each H3 below shows the source markdown above the rendered output for the most common authoring shapes.
+`AddDocSite` and `AddBlogSite` pre-register `<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<LinkCard>`, `<Step>`, and `<Steps>`. Each H3 below shows the source markdown above the rendered output for the most common authoring shapes.
 
 ### Inline a built-in tag
 

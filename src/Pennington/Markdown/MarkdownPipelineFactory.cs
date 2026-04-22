@@ -2,7 +2,6 @@ namespace Pennington.Markdown;
 
 using Extensions;
 using Extensions.Tabs;
-using Highlighting;
 using Markdig;
 using Markdig.Extensions.Alerts;
 using Markdig.Parsers.Inlines;
@@ -31,16 +30,15 @@ public static class MarkdownPipelineFactory
     /// </summary>
     public static MarkdownPipeline CreateWithExtensions(
         IServiceProvider serviceProvider,
-        HighlightingService highlightingService,
+        CodeBlockRenderingService renderingService,
         Func<CodeHighlightRenderOptions>? codeOptions = null,
         Func<TabbedCodeBlockRenderOptions>? tabOptions = null,
-        IEnumerable<ICodeBlockPreprocessor>? preprocessors = null,
         Action<MarkdownPipelineBuilder, IServiceProvider>? configure = null)
     {
         var builder = new MarkdownPipelineBuilder()
             .UseAdvancedExtensions()
             .UseYamlFrontMatter()
-            .UseSyntaxHighlighting(highlightingService, codeOptions, preprocessors)
+            .UseSyntaxHighlighting(renderingService, codeOptions)
             .UseTabbedCodeBlocks(tabOptions)
             .UseCustomAlerts()
             // Mdazor resolves IComponentRegistry lazily at render time, so the pipeline
@@ -66,11 +64,10 @@ internal static class MarkdownPipelineBuilderExtensions
     /// </summary>
     public static MarkdownPipelineBuilder UseSyntaxHighlighting(
         this MarkdownPipelineBuilder builder,
-        HighlightingService highlightingService,
-        Func<CodeHighlightRenderOptions>? options = null,
-        IEnumerable<ICodeBlockPreprocessor>? preprocessors = null)
+        CodeBlockRenderingService renderingService,
+        Func<CodeHighlightRenderOptions>? options = null)
     {
-        builder.Extensions.AddIfNotAlready(new CodeHighlightingExtension(highlightingService, options, preprocessors));
+        builder.Extensions.AddIfNotAlready(new CodeHighlightingExtension(renderingService, options));
         return builder;
     }
 
@@ -96,9 +93,8 @@ internal static class MarkdownPipelineBuilderExtensions
     }
 
     private sealed class CodeHighlightingExtension(
-        HighlightingService highlightingService,
-        Func<CodeHighlightRenderOptions>? options,
-        IEnumerable<ICodeBlockPreprocessor>? preprocessors) : IMarkdownExtension
+        CodeBlockRenderingService renderingService,
+        Func<CodeHighlightRenderOptions>? options) : IMarkdownExtension
     {
         public void Setup(MarkdownPipelineBuilder pipeline)
         {
@@ -115,7 +111,7 @@ internal static class MarkdownPipelineBuilderExtensions
             }
 
             htmlRenderer.ObjectRenderers.AddIfNotAlready(
-                new CodeHighlightRenderer(highlightingService, options, preprocessors));
+                new CodeHighlightRenderer(renderingService, options));
         }
     }
 

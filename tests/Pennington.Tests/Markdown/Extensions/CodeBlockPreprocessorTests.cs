@@ -13,11 +13,11 @@ public class CodeBlockPreprocessorTests
         IEnumerable<ICodeBlockPreprocessor>? preprocessors = null)
     {
         var highlightingService = new HighlightingService([]);
+        var renderingService = new CodeBlockRenderingService(highlightingService, preprocessors);
         using var sp = new ServiceCollection().BuildServiceProvider();
         var pipeline = MarkdownPipelineFactory.CreateWithExtensions(
             sp,
-            highlightingService,
-            preprocessors: preprocessors);
+            renderingService);
 
         using var writer = new StringWriter();
         var renderer = new HtmlRenderer(writer);
