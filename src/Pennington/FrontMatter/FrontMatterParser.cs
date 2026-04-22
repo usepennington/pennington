@@ -12,12 +12,14 @@ public sealed class FrontMatterParser
     private readonly IDeserializer _deserializer;
 
     /// <summary>
-    /// Initializes the parser with a camelCase YAML deserializer that ignores unmatched properties.
+    /// Initializes the parser with a camelCase YAML deserializer that matches keys case-insensitively
+    /// and ignores unmatched properties. <c>Title:</c>, <c>title:</c>, and <c>TITLE:</c> all bind to the same property.
     /// </summary>
     public FrontMatterParser()
     {
         _deserializer = new DeserializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .WithCaseInsensitivePropertyMatching()
             .IgnoreUnmatchedProperties()
             .Build();
     }

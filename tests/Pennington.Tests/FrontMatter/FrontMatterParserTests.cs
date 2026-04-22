@@ -227,4 +227,76 @@ public class FrontMatterParserTests
         result.Metadata.ShouldNotBeNull();
         result.Metadata.Title.ShouldBe("Anchors & aliases * are fine in strings");
     }
+
+    [Fact]
+    public void Parse_PascalCaseKeys_BindToProperties()
+    {
+        var content = """
+            ---
+            Title: Pascal Case Page
+            Description: Capitalized keys should bind the same as camelCase
+            IsDraft: false
+            Tags: [routing, setup]
+            SectionLabel: Documentation
+            Order: 1
+            ---
+            Body.
+            """;
+
+        var result = _parser.Parse<DocFrontMatter>(content);
+
+        result.Metadata.ShouldNotBeNull();
+        result.Metadata.Title.ShouldBe("Pascal Case Page");
+        result.Metadata.Description.ShouldBe("Capitalized keys should bind the same as camelCase");
+        result.Metadata.IsDraft.ShouldBeFalse();
+        result.Metadata.Tags.ShouldBe(new[] { "routing", "setup" });
+        result.Metadata.SectionLabel.ShouldBe("Documentation");
+        result.Metadata.Order.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Parse_UpperCaseKeys_BindToProperties()
+    {
+        var content = """
+            ---
+            TITLE: Upper Case Page
+            ISDRAFT: true
+            TAGS: [one, two]
+            ---
+            Body.
+            """;
+
+        var result = _parser.Parse<DocFrontMatter>(content);
+
+        result.Metadata.ShouldNotBeNull();
+        result.Metadata.Title.ShouldBe("Upper Case Page");
+        result.Metadata.IsDraft.ShouldBeTrue();
+        result.Metadata.Tags.ShouldBe(new[] { "one", "two" });
+    }
+
+    [Fact]
+    public void Parse_BlogFrontMatter_MixedCaseKeysBind()
+    {
+        var content = """
+            ---
+            Title: Mixed Case Post
+            Description: Should bind
+            Date: 2026-04-21
+            Author: Jane Doe
+            Series: Launch Week
+            Tags: [announcement]
+            ---
+            Body.
+            """;
+
+        var result = _parser.Parse<BlogFrontMatter>(content);
+
+        result.Metadata.ShouldNotBeNull();
+        result.Metadata.Title.ShouldBe("Mixed Case Post");
+        result.Metadata.Description.ShouldBe("Should bind");
+        result.Metadata.Date.ShouldBe(new DateTime(2026, 4, 21));
+        result.Metadata.Author.ShouldBe("Jane Doe");
+        result.Metadata.Series.ShouldBe("Launch Week");
+        result.Metadata.Tags.ShouldBe(new[] { "announcement" });
+    }
 }
