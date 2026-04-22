@@ -270,7 +270,7 @@ public class MarkdownContentServiceTests
         var toCopy = await service.GetContentToCopyAsync();
 
         toCopy.Count.ShouldBe(1);
-        toCopy[0].OutputPath.Value.ShouldBe("images/logo.png");
+        toCopy[0].OutputPath.Value.ShouldBe("docs/images/logo.png");
     }
 
     [Fact]
@@ -290,8 +290,8 @@ public class MarkdownContentServiceTests
 
         toCopy.Count.ShouldBe(2);
         var outputPaths = toCopy.Select(c => c.OutputPath.Value).ToList();
-        outputPaths.ShouldContain("image.jpg");
-        outputPaths.ShouldContain("script.js");
+        outputPaths.ShouldContain("docs/image.jpg");
+        outputPaths.ShouldContain("docs/script.js");
     }
 
     [Fact]
@@ -641,6 +641,45 @@ public class MarkdownContentServiceTests
         toCopy.ShouldContain(c => c.OutputPath.Value == "fr/images/logo-fr.png");
     }
 
+    [Fact]
+    public async Task GetContentToCopyAsync_BasePageUrlPrefix_AssetOutputMatchesRouteUrl()
+    {
+        // Regression: a post at /blog/2016/10/hello/ that references a sibling
+        // image (commits.png) produces HTML pointing at /blog/2016/10/commits.png.
+        // The copied asset output path must match that URL or the image 404s on
+        // deploy (crawler flags this as a broken link and fails the build).
+        var fs = CreateFs(
+            ("2016/10/hello.md", "---\ntitle: Hello\n---\n![](commits.png)"),
+            ("2016/10/commits.png", "fake-png"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/blog"));
+
+        var toCopy = await service.GetContentToCopyAsync();
+
+        toCopy.Count.ShouldBe(1);
+        toCopy[0].OutputPath.Value.ShouldBe("blog/2016/10/commits.png");
+    }
+
+    [Fact]
+    public async Task GetContentToCopyAsync_BasePageUrlPrefix_MultiLocaleAssetOutputMatchesRouteUrl()
+    {
+        // Non-default locale must include both the locale and BasePageUrl in the
+        // asset output path. A post at /fr/blog/post/ referencing sibling img.png
+        // produces HTML pointing at /fr/blog/post/img.png.
+        var fs = CreateMultiLocaleFs(
+            ("post/img.png", "fake-png"),
+            ("fr/post/img.png", "fake-png-fr"));
+        var service = CreateTestService(
+            fs,
+            basePageUrl: new UrlPath("/blog"),
+            localization: CreateMultiLocale());
+
+        var toCopy = await service.GetContentToCopyAsync();
+
+        toCopy.Count.ShouldBe(2);
+        toCopy.ShouldContain(c => c.OutputPath.Value == "blog/post/img.png");
+        toCopy.ShouldContain(c => c.OutputPath.Value == "fr/blog/post/img.png");
+    }
+
     // --- ExcludePaths tests: the outer catch-all source can carve out a subtree
     // owned by a more specific source registered nearby (Phase 6 of the Pennington
     // examples remediation plan). Without this, two overlapping sources emit
@@ -748,8 +787,8 @@ public class MarkdownContentServiceTests
         var toCopy = await service.GetContentToCopyAsync();
 
         var paths = toCopy.Select(c => c.OutputPath.Value).ToList();
-        paths.ShouldContain("images/logo.png");
-        paths.ShouldNotContain(p => p.StartsWith("changelog/", StringComparison.Ordinal));
+        paths.ShouldContain("docs/images/logo.png");
+        paths.ShouldNotContain(p => p.Contains("/changelog/", StringComparison.Ordinal));
     }
 
     [Fact]

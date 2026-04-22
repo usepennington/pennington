@@ -237,6 +237,11 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         var excludedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".md", ".mdx", ".razor", ".yml", ".yaml" };
         var localeSubfolders = GetNonDefaultLocaleSubfolders();
+        // Matches the URL prefix ContentRouteFactory applies to routes from this
+        // source. Post at `/blog/foo/bar/` with sibling `commits.png` references
+        // `/blog/foo/bar/commits.png` in its rendered HTML; without this prefix
+        // the file would be copied to `/foo/bar/commits.png` and 404.
+        var outputPrefix = _options.BasePageUrl.Value.Trim('/');
 
         foreach (var file in _fileSystem.Directory.EnumerateFiles(contentPath, "*.*", SearchOption.AllDirectories))
         {
@@ -252,7 +257,10 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
             // (typically because another content source owns that subtree).
             if (IsRelativePathExcluded(relativePath)) continue;
 
-            builder.Add(new ContentToCopy(new FilePath(file), new FilePath(relativePath)));
+            var outputPath = outputPrefix.Length == 0
+                ? relativePath
+                : $"{outputPrefix}/{relativePath}";
+            builder.Add(new ContentToCopy(new FilePath(file), new FilePath(outputPath)));
         }
 
         // Also enumerate static files from non-default locale subdirectories
@@ -267,8 +275,12 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
                 if (excludedExtensions.Contains(ext)) continue;
 
                 var relativeToLocale = _fileSystem.Path.GetRelativePath(localePath, file).Replace('\\', '/');
-                // Output at /{locale}/relative/path so they serve at the locale-prefixed URL
-                builder.Add(new ContentToCopy(new FilePath(file), new FilePath($"{locale}/{relativeToLocale}")));
+                // Output at /{locale}{basePageUrl}/relative/path so they serve at
+                // the locale-prefixed URL that matches ContentRouteFactory's output.
+                var outputPath = outputPrefix.Length == 0
+                    ? $"{locale}/{relativeToLocale}"
+                    : $"{locale}/{outputPrefix}/{relativeToLocale}";
+                builder.Add(new ContentToCopy(new FilePath(file), new FilePath(outputPath)));
             }
         }
 
