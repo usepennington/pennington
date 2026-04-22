@@ -50,6 +50,9 @@ builder.Services.AddSingleton<ReleaseNotesContentService>();
 builder.Services.AddSingleton<IContentService>(sp =>
     sp.GetRequiredService<ReleaseNotesContentService>());
 
+// 2.3.90 Emit-only IContentService — writes robots.txt and nothing else.
+builder.Services.AddTransient<IContentService, RobotsTxtContentService>();
+
 // 2.3.20 Code-block preprocessor — handles "linecount" fences.
 builder.Services.AddSingleton<ICodeBlockPreprocessor, LineCountPreprocessor>();
 
