@@ -50,7 +50,7 @@ dotnet add package Pennington
 ```
 
 > [!IMPORTANT]
-> Every `Pennington.*` package (`Pennington`, `Pennington.DocSite`, `Pennington.BlogSite`, `Pennington.MonorailCss`, `Pennington.Roslyn`, `Pennington.UI`) must share a version. Mixing versions produces `NU1605 Detected package downgrade` warnings at restore time. When adding a second package, pin it to the same version as `Pennington`: `dotnet add package Pennington.DocSite --version 0.0.2`.
+> Pennington is in alpha — check NuGet for the current prerelease and pin every `Pennington.*` package to that same version.
 
 </Step>
 <Step StepNumber="3">
@@ -68,7 +68,7 @@ Pennington is built on C# 15 union types, and the samples in this tutorial use `
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Pennington" Version="*" />
+    <PackageReference Include="Pennington" Version="0.1.0-alpha.0.20" />
   </ItemGroup>
 </Project>
 ```

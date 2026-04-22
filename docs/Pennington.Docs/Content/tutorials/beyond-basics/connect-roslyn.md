@@ -96,7 +96,7 @@ A single DI call turns on the xmldocid preprocessor. Once `AddPenningtonRoslyn` 
 Add all three to the host csproj. `Pennington.Roslyn` brings in `SyntaxHighlighter` and `RoslynCodeBlockPreprocessor`; the other two are runtime requirements of `Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace`.
 
 ```xml
-<PackageReference Include="Pennington.Roslyn" Version="*" />
+<PackageReference Include="Pennington.Roslyn" Version="0.1.0-alpha.0.20" />
 <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.3.0" />
 <PackageReference Include="Microsoft.Build.Framework" Version="18.4.0" ExcludeAssets="runtime" PrivateAssets="all" />
 ```
