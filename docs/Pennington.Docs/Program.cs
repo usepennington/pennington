@@ -27,7 +27,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         Comment  = "pewter",
     },
     GitHubUrl = "https://github.com/usepennington/pennington",
-    CanonicalBaseUrl = "https://phil-scott-78.github.io/pennington/",
+    CanonicalBaseUrl = "https://usepennington.github.io/pennington/",
     DisplayFontFamily = "Lexend, sans-serif",
     BodyFontFamily = "'Noto Sans', sans-serif",
     FontPreloads =

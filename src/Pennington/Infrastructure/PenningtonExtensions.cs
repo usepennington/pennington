@@ -199,29 +199,24 @@ public static class PenningtonExtensions
         // Live reload
         services.AddSingleton<LiveReloadServer>();
 
-        // Feed builders. When CanonicalBaseUrl is set (typically a fully-qualified
-        // https://host/sub URL) we respect it verbatim — that's the correct form
-        // per sitemap / RSS protocol. When CanonicalBaseUrl is not set but the
-        // static build is targeting a sub-path (e.g. `build /sub/`), fall back
-        // to OutputOptions.BaseUrl so the generated sitemap produces
-        // `<loc>/sub/page/</loc>` instead of root-relative `<loc>/page/</loc>`.
-        // Crawlers resolve the relative URL against the sitemap.xml's own URL,
-        // so this still produces a reachable target.
+        // Effective canonical base. When PenningtonOptions.CanonicalBaseUrl is
+        // set (typically a fully-qualified https://host/sub URL) we respect it
+        // verbatim — that's the correct form per sitemap / RSS protocol. When
+        // it is not set but the static build is targeting a sub-path (e.g.
+        // `build /sub/`), fall back to OutputOptions.BaseUrl so generators
+        // still produce `/sub/page/` instead of root-relative `/page/`.
+        // Crawlers resolve relative URLs against the sitemap.xml's own URL, so
+        // this still produces a reachable target.
         var explicitCanonicalBase = options.CanonicalBaseUrl;
         services.AddSingleton(sp =>
         {
             var effectiveBase = !string.IsNullOrEmpty(explicitCanonicalBase)
                 ? new UrlPath(explicitCanonicalBase)
                 : sp.GetRequiredService<Generation.OutputOptions>().BaseUrl;
-            return new SitemapBuilder(effectiveBase);
+            return new CanonicalBaseUrl(effectiveBase);
         });
-        services.AddSingleton(sp =>
-        {
-            var effectiveBase = !string.IsNullOrEmpty(explicitCanonicalBase)
-                ? new UrlPath(explicitCanonicalBase)
-                : sp.GetRequiredService<Generation.OutputOptions>().BaseUrl;
-            return new RssFeedBuilder(effectiveBase);
-        });
+        services.AddSingleton(sp => new SitemapBuilder(sp.GetRequiredService<CanonicalBaseUrl>().Value));
+        services.AddSingleton(sp => new RssFeedBuilder(sp.GetRequiredService<CanonicalBaseUrl>().Value));
 
         // Shared helper for fetching post-pipeline rendered HTML from the running host.
         // Used by LlmsTxtService and SearchIndexService so their outputs reflect

@@ -82,7 +82,9 @@ P:Pennington.LlmsTxt.LlmsTxtOptions.GenerateFullFile
 
 ## Result
 
-`/llms.txt` lists each indexed page as a markdown link grouped by section, and each page gets a stripped-markdown sidecar at `/_llms/<page>.md`. A typical excerpt:
+`/llms.txt` lists each indexed page as a markdown link grouped by section, and each page gets a stripped-markdown sidecar at `/_llms/<page>.md`. Links are fully qualified when `PenningtonOptions.CanonicalBaseUrl` is set (or `build --base-url https://…` is passed); otherwise they fall back to root-relative `/_llms/...` so an agent that fetched `/llms.txt` can still resolve them against the origin.
+
+A typical excerpt:
 
 ```text
 # Pennington Docs

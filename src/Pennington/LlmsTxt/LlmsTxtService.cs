@@ -32,12 +32,13 @@ public sealed class LlmsTxtService
         IServiceProvider serviceProvider,
         PenningtonOptions pennOptions,
         LlmsTxtOptions llmsTxtOptions,
+        CanonicalBaseUrl canonicalBase,
         NavigationBuilder navigationBuilder,
         RenderedHtmlFetcher fetcher,
         ILogger<LlmsTxtService> logger)
     {
         _dataLazy = new AsyncLazy<LlmsTxtData>(
-            () => BuildAsync(serviceProvider, pennOptions, llmsTxtOptions, navigationBuilder, fetcher, logger));
+            () => BuildAsync(serviceProvider, pennOptions, llmsTxtOptions, canonicalBase, navigationBuilder, fetcher, logger));
     }
 
     /// <summary>Returns the generated llms.txt index content.</summary>
@@ -53,6 +54,7 @@ public sealed class LlmsTxtService
         IServiceProvider sp,
         PenningtonOptions pennOptions,
         LlmsTxtOptions llmsTxtOptions,
+        CanonicalBaseUrl canonicalBase,
         NavigationBuilder navigationBuilder,
         RenderedHtmlFetcher fetcher,
         ILogger<LlmsTxtService> logger)
@@ -119,10 +121,10 @@ public sealed class LlmsTxtService
         // at sibling stripped files.
         var linkablePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         CollectLeafPaths(tree, linkablePaths);
-        var rewriteHref = BuildLinkRewriter(linkablePaths, llmsTxtOptions.OutputDirectory);
+        var rewriteHref = BuildLinkRewriter(linkablePaths, llmsTxtOptions.OutputDirectory, canonicalBase);
 
         await WriteTreeAsync(tree, sb, markdownFiles, fullContentBuilder, metadataByPath,
-            llmsTxtOptions, fetcher, rewriteHref, logger);
+            llmsTxtOptions, canonicalBase, fetcher, rewriteHref, logger);
 
         return new LlmsTxtData(
             sb.ToString().TrimEnd() + "\n",
@@ -141,7 +143,10 @@ public sealed class LlmsTxtService
         }
     }
 
-    private static Func<string, string> BuildLinkRewriter(HashSet<string> linkablePaths, string outputDirectory)
+    private static Func<string, string> BuildLinkRewriter(
+        HashSet<string> linkablePaths,
+        string outputDirectory,
+        CanonicalBaseUrl canonicalBase)
     {
         return href =>
         {
@@ -168,8 +173,19 @@ public sealed class LlmsTxtService
             if (string.IsNullOrEmpty(key) || !linkablePaths.Contains(key))
                 return href;
 
-            return $"{outputDirectory}/{key}.md{query}{fragment}";
+            return BuildStrippedMarkdownUrl(canonicalBase, outputDirectory, key) + query + fragment;
         };
+    }
+
+    /// <summary>
+    /// Builds the public URL for a stripped markdown file, combining the canonical
+    /// base with the <c>{outputDirectory}/{key}.md</c> suffix. Produces an absolute
+    /// URL when the base has an http(s) scheme; otherwise a root-relative path.
+    /// </summary>
+    private static string BuildStrippedMarkdownUrl(CanonicalBaseUrl canonicalBase, string outputDirectory, string key)
+    {
+        var relative = new UrlPath($"/{outputDirectory}/{key}.md");
+        return canonicalBase.Combine(relative).Value;
     }
 
     private static async Task WriteTreeAsync(
@@ -179,6 +195,7 @@ public sealed class LlmsTxtService
         StringBuilder? fullContent,
         Dictionary<string, IFrontMatter> metadataByPath,
         LlmsTxtOptions llmsTxtOptions,
+        CanonicalBaseUrl canonicalBase,
         RenderedHtmlFetcher fetcher,
         Func<string, string> rewriteHref,
         ILogger logger)
@@ -193,7 +210,7 @@ public sealed class LlmsTxtService
 
                 // Write leaf entries for this section, then recurse into subsections
                 await WriteTreeAsync(item.Children, sb, markdownFiles, fullContent, metadataByPath,
-                    llmsTxtOptions, fetcher, rewriteHref, logger);
+                    llmsTxtOptions, canonicalBase, fetcher, rewriteHref, logger);
             }
             else
             {
@@ -214,11 +231,12 @@ public sealed class LlmsTxtService
                 var markdown = HtmlToMarkdownConverter.Convert(element, rewriteHref);
 
                 var mdPath = $"{llmsTxtOptions.OutputDirectory}/{key}.md";
+                var linkUrl = BuildStrippedMarkdownUrl(canonicalBase, llmsTxtOptions.OutputDirectory, key);
                 var description = metadata?.Description is { } desc
                     ? $": {desc}"
                     : "";
 
-                sb.AppendLine($"- [{item.Title}]({mdPath}){description}");
+                sb.AppendLine($"- [{item.Title}]({linkUrl}){description}");
 
                 markdownFiles.Add(new MarkdownFile(
                     new FilePath(mdPath),

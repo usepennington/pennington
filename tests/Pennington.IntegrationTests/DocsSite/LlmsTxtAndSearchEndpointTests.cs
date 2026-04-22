@@ -29,7 +29,11 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         content.ShouldContain("# ");                // site title heading
         content.ShouldContain("_llms/");            // at least one stripped-md entry reference
-        content.ShouldContain("](_llms/");          // markdown-link to stripped md
+        // Without a CanonicalBaseUrl configured, the fixture falls back to
+        // OutputOptions.BaseUrl ("/"), so links are root-relative. An LLM that
+        // fetches /llms.txt can resolve these against the origin.
+        content.ShouldContain("](/_llms/");
+        content.ShouldNotContain("](_llms/");       // bare relative form has no origin — unusable for LLMs
     }
 
     [Fact]
@@ -144,8 +148,9 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
         var llmsService = _fixture.Services.GetRequiredService<LlmsTxtService>();
         var files = await llmsService.GetMarkdownFilesAsync();
 
-        // Count rewritten internal links across all files. Form: "_llms/…md".
-        var linkRegex = new System.Text.RegularExpressions.Regex(@"\[[^\]]*\]\((_llms/[^)]+\.md[^)]*)\)");
+        // Count rewritten internal links across all files. Form: "/_llms/…md"
+        // (root-relative; fixture has no canonical origin configured).
+        var linkRegex = new System.Text.RegularExpressions.Regex(@"\[[^\]]*\]\((/_llms/[^)]+\.md[^)]*)\)");
 
         var rewrittenInternalLinks = 0;
         foreach (var file in files)
