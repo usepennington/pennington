@@ -10,21 +10,22 @@ using Microsoft.Extensions.DependencyInjection;
 /// output quality is visible in test logs. Not an assertion test; skip in CI
 /// if too noisy.
 /// </summary>
-public class LlmsTxtSmokeTest : IClassFixture<DocsRealServerFixture>
+[Collection(DocsTestServerCollection.Name)]
+public class LlmsTxtSmokeTest
 {
-    private readonly DocsRealServerFixture _fixture;
+    private readonly DocsWebApplicationFactory _factory;
     private readonly ITestOutputHelper _output;
 
-    public LlmsTxtSmokeTest(DocsRealServerFixture fixture, ITestOutputHelper output)
+    public LlmsTxtSmokeTest(DocsWebApplicationFactory factory, ITestOutputHelper output)
     {
-        _fixture = fixture;
+        _factory = factory;
         _output = output;
     }
 
     [Fact]
     public async Task DumpFirstMarkdownFile()
     {
-        var llmsService = _fixture.Services.GetRequiredService<LlmsTxtService>();
+        var llmsService = _factory.Services.GetRequiredService<LlmsTxtService>();
         var files = await llmsService.GetMarkdownFilesAsync();
 
         files.Count.ShouldBeGreaterThan(0);
@@ -39,7 +40,7 @@ public class LlmsTxtSmokeTest : IClassFixture<DocsRealServerFixture>
     [Fact]
     public async Task DumpWritingMarkdownFile()
     {
-        var llmsService = _fixture.Services.GetRequiredService<LlmsTxtService>();
+        var llmsService = _factory.Services.GetRequiredService<LlmsTxtService>();
         var files = await llmsService.GetMarkdownFilesAsync();
 
         var target = files.FirstOrDefault(f =>
@@ -61,7 +62,7 @@ public class LlmsTxtSmokeTest : IClassFixture<DocsRealServerFixture>
     [Fact]
     public async Task DumpLlmsTxtIndex()
     {
-        var llmsService = _fixture.Services.GetRequiredService<LlmsTxtService>();
+        var llmsService = _factory.Services.GetRequiredService<LlmsTxtService>();
         var index = await llmsService.GetLlmsTxtAsync();
 
         _output.WriteLine($"=== /llms.txt ({index.Length} chars) ===");

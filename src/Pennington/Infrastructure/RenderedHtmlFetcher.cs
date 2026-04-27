@@ -5,8 +5,8 @@ using AngleSharp.Dom;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
-/// Fetches fully rendered page HTML from the running web host and exposes a
-/// section of it (via CSS selector) as an AngleSharp <see cref="IElement"/>.
+/// Fetches fully rendered page HTML from the running app and exposes a section
+/// of it (via CSS selector) as an AngleSharp <see cref="IElement"/>.
 /// <para>
 /// Both <c>LlmsTxtService</c> and <c>SearchIndexService</c> use this to get
 /// post-pipeline HTML — i.e., after Markdig extensions, Razor SSR, xref
@@ -15,37 +15,34 @@ using Microsoft.Extensions.Logging;
 /// misses request-pipeline transforms for everything else.
 /// </para>
 /// <para>
-/// The base URL is resolved lazily per call by the <see cref="IHttpClientFactory"/>
-/// named-client config registered in <c>AddPennington</c>, so this works
-/// identically in dev-serve mode and in static-build mode (both run Kestrel).
-/// http:// addresses are preferred over https:// to avoid dev-cert trust issues.
+/// Requests are dispatched via <see cref="IInProcessHttpDispatcher"/>, which
+/// delivers them in-memory through <c>TestServer</c> (build mode + integration
+/// tests) or over Kestrel's listening socket (dev mode). The middleware pipeline
+/// runs identically in either case.
 /// </para>
 /// </summary>
 public sealed class RenderedHtmlFetcher
 {
-    /// <summary>Named-client key used to resolve the configured <see cref="HttpClient"/>.</summary>
-    public const string HttpClientName = "Pennington.RenderedHtml";
-
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IInProcessHttpDispatcher _dispatcher;
     private readonly ILogger<RenderedHtmlFetcher> _logger;
     private readonly IBrowsingContext _browsingContext = BrowsingContext.New(Configuration.Default);
 
-    /// <summary>Initializes the fetcher with the HTTP client factory and a logger.</summary>
-    public RenderedHtmlFetcher(IHttpClientFactory httpClientFactory, ILogger<RenderedHtmlFetcher> logger)
+    /// <summary>Initializes the fetcher with the in-process dispatcher and a logger.</summary>
+    public RenderedHtmlFetcher(IInProcessHttpDispatcher dispatcher, ILogger<RenderedHtmlFetcher> logger)
     {
-        _httpClientFactory = httpClientFactory;
+        _dispatcher = dispatcher;
         _logger = logger;
     }
 
     /// <summary>
-    /// Fetches <paramref name="path"/> from the running host, parses the response
+    /// Fetches <paramref name="path"/> from the running app, parses the response
     /// body as HTML, and returns the element matching <paramref name="selector"/>.
     /// When <paramref name="selector"/> is null or no match is found, returns
     /// <see cref="IDocument.Body"/>. Returns null on non-success responses.
     /// </summary>
     public async Task<IElement?> FetchContentAsync(string path, string? selector, CancellationToken ct = default)
     {
-        var client = _httpClientFactory.CreateClient(HttpClientName);
+        using var client = _dispatcher.CreateClient();
 
         HttpResponseMessage response;
         try

@@ -25,8 +25,7 @@ public static class BuildHost
         {
             await app.StartAsync();
             var generator = app.Services.GetRequiredService<OutputGenerationService>();
-            var addresses = app.Urls.Any() ? app.Urls : ["http://localhost:5000"];
-            var report = await generator.GenerateAsync(addresses.First());
+            var report = await generator.GenerateAsync();
             await app.StopAsync();
 
             PrintBuildReport(report);

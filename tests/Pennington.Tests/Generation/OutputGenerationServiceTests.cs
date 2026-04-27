@@ -32,6 +32,7 @@ public class OutputGenerationServiceTests
             env,
             endpoints,
             fs,
+            new StubInProcessHttpDispatcher(),
             logger);
     }
 
@@ -49,7 +50,7 @@ public class OutputGenerationServiceTests
         };
 
         var service = CreateService(fs, options);
-        await service.GenerateAsync("http://localhost:9999");
+        await service.GenerateAsync();
 
         fs.File.Exists("output/existing.html").ShouldBeFalse();
         fs.Directory.Exists("output").ShouldBeTrue();
@@ -69,7 +70,7 @@ public class OutputGenerationServiceTests
         };
 
         var service = CreateService(fs, options);
-        await service.GenerateAsync("http://localhost:9999");
+        await service.GenerateAsync();
 
         fs.File.Exists("output/existing.html").ShouldBeTrue();
         fs.Directory.Exists("output").ShouldBeTrue();
@@ -102,7 +103,7 @@ public class OutputGenerationServiceTests
         ];
 
         var service = CreateService(fs, options, services);
-        var report = await service.GenerateAsync("http://localhost:9999");
+        var report = await service.GenerateAsync();
 
         // The duplicate must surface as a warning, not a crash.
         report.Diagnostics.Any(d =>
@@ -143,9 +144,10 @@ public class OutputGenerationServiceTests
             env,
             new StubEndpointDataSource(),
             fs,
+            new StubInProcessHttpDispatcher(),
             NullLogger<OutputGenerationService>.Instance);
 
-        var report = await service.GenerateAsync("http://localhost:9999");
+        var report = await service.GenerateAsync();
 
         // First-wins: only providerA's copy should run. If dedup is broken, providerB
         // would overwrite and the output would be "B".
@@ -196,6 +198,23 @@ public class OutputGenerationServiceTests
         public override IReadOnlyList<Endpoint> Endpoints => [];
 
         public override IChangeToken GetChangeToken() => NullChangeToken.Singleton;
+    }
+
+    private sealed class StubInProcessHttpDispatcher : IInProcessHttpDispatcher
+    {
+        public HttpClient CreateClient() => new(new StubHandler())
+        {
+            BaseAddress = new Uri("http://stub/"),
+        };
+
+        private sealed class StubHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) =>
+                Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent("<html></html>", System.Text.Encoding.UTF8, "text/html"),
+                });
+        }
     }
 
     private sealed class StubFileProvider(string relativePath, string physicalPath) : IFileProvider

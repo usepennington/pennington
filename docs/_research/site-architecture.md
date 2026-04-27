@@ -48,7 +48,7 @@ Markdig pipeline wiring and project-specific extensions.
 
 ### `Pennington.Generation` — `src/Pennington/Generation/`
 Static site crawler and build reporting.
-- `OutputGenerationService.GenerateAsync(string appUrl)` — HTTP-crawls the running ASP.NET pipeline. Constant `NotFoundGeneratorPath = "/__pennington-404-generator"` drives `404.html` rendering.
+- `OutputGenerationService.GenerateAsync()` — crawls the running ASP.NET pipeline via `IInProcessHttpDispatcher` (TestServer in build mode, Kestrel in dev). Constant `NotFoundGeneratorPath = "/__pennington-404-generator"` drives `404.html` rendering.
 - `OutputOptions` — `OutputDirectory`, `BaseUrl`, `CleanOutput`; `FromArgs(args)` parses the `build [baseUrl] [output]` CLI shape and no-ops on non-`build` invocations.
 - `BuildReport`, `BuildReportBuilder`, `BuildDiagnostic`, `BrokenLink`.
 

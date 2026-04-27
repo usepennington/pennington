@@ -34,6 +34,7 @@ public sealed class OutputGenerationService
     private readonly IWebHostEnvironment _environment;
     private readonly EndpointDataSource _endpointDataSource;
     private readonly IFileSystem _fileSystem;
+    private readonly IInProcessHttpDispatcher _dispatcher;
     private readonly ILogger<OutputGenerationService> _logger;
 
     /// <summary>
@@ -46,6 +47,7 @@ public sealed class OutputGenerationService
         IWebHostEnvironment environment,
         EndpointDataSource endpointDataSource,
         IFileSystem fileSystem,
+        IInProcessHttpDispatcher dispatcher,
         ILogger<OutputGenerationService> logger)
     {
         _contentServices = contentServices;
@@ -53,25 +55,24 @@ public sealed class OutputGenerationService
         _environment = environment;
         _endpointDataSource = endpointDataSource;
         _fileSystem = fileSystem;
+        _dispatcher = dispatcher;
         _logger = logger;
     }
 
-    /// <summary>
-    /// Crawls the running app at <paramref name="appUrl"/> and writes every discovered route to the output directory.
-    /// </summary>
-    public Task<BuildReport> GenerateAsync(string appUrl) => GenerateAsync(appUrl, writeToDisk: true);
+    /// <summary>Crawls the running app and writes every discovered route to the output directory.</summary>
+    public Task<BuildReport> GenerateAsync() => GenerateAsync(writeToDisk: true);
 
     /// <summary>
-    /// Crawls the running app at <paramref name="appUrl"/> and returns a <see cref="BuildReport"/>.
-    /// When <paramref name="writeToDisk"/> is <c>false</c> the output directory is left untouched —
-    /// the HTTP crawl, diagnostic collection, and link verification still run, which makes this mode
-    /// suitable for dev-time validators that want the same warnings a real build would produce.
+    /// Crawls the running app and returns a <see cref="BuildReport"/>. When
+    /// <paramref name="writeToDisk"/> is <c>false</c> the output directory is left
+    /// untouched — the HTTP crawl, diagnostic collection, and link verification still
+    /// run, which makes this mode suitable for dev-time validators that want the
+    /// same warnings a real build would produce.
     /// </summary>
-    public async Task<BuildReport> GenerateAsync(string appUrl, bool writeToDisk)
+    public async Task<BuildReport> GenerateAsync(bool writeToDisk)
     {
         var reportBuilder = new BuildReportBuilder();
-        using var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
-        client.BaseAddress = new Uri(appUrl);
+        using var client = _dispatcher.CreateClient();
 
         var outputDir = _outputOptions.OutputDirectory.Value;
 

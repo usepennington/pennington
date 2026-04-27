@@ -16,8 +16,8 @@ using Mdazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,6 +57,16 @@ public static class PenningtonExtensions
         var args = Environment.GetCommandLineArgs();
         var outputOptions = OutputOptions.FromArgs(args.Length > 1 ? args[1..] : []);
         services.AddSingleton(outputOptions);
+
+        // Build mode: replace Kestrel with TestServer so the crawler dispatches
+        // in-memory through the same middleware pipeline. No socket bind, no
+        // dev-cert prompt, no random-port races in CI. Last-registered IServer
+        // wins, so this overrides the Kestrel registration that
+        // WebApplication.CreateBuilder() puts in place.
+        if (args.Length > 1 && args[1].Equals("build", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IServer, TestServer>();
+        }
 
         // Register islands from the options API
         foreach (var (_, islandType) in options.Islands.RegisteredIslands)
@@ -224,26 +234,14 @@ public static class PenningtonExtensions
         services.AddSingleton(sp => new SitemapBuilder(sp.GetRequiredService<CanonicalBaseUrl>().Value));
         services.AddSingleton(sp => new RssFeedBuilder(sp.GetRequiredService<CanonicalBaseUrl>().Value));
 
-        // Shared helper for fetching post-pipeline rendered HTML from the running host.
+        // In-memory dispatcher: routes self-fetches through TestServer (build mode +
+        // integration tests) or Kestrel's listening socket (dev mode). Replaces the
+        // old named-HttpClient + IServerAddressesFeature lookup.
+        services.AddSingleton<IInProcessHttpDispatcher, HttpDispatcher>();
+
+        // Shared helper for fetching post-pipeline rendered HTML from the running app.
         // Used by LlmsTxtService and SearchIndexService so their outputs reflect
         // Markdig extensions, Razor SSR, xref resolution, etc.
-        services.AddHttpClient(RenderedHtmlFetcher.HttpClientName, (sp, client) =>
-            {
-                var server = sp.GetRequiredService<IServer>();
-                var addresses = server.Features.Get<IServerAddressesFeature>()?.Addresses;
-                if (addresses is null || addresses.Count == 0)
-                {
-                    throw new InvalidOperationException(
-                        "RenderedHtmlFetcher requires the web host to be listening. " +
-                        "IServerAddressesFeature has no addresses — is the app started yet?");
-                }
-
-                // Prefer http:// to avoid dev-cert trust issues.
-                var baseAddress = addresses.FirstOrDefault(a => a.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-                    ?? addresses.First();
-                client.BaseAddress = new Uri(baseAddress);
-            })
-            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
         services.AddSingleton<RenderedHtmlFetcher>();
 
         // Search index
@@ -481,8 +479,7 @@ public static class PenningtonExtensions
         {
             await app.StartAsync();
             var generator = app.Services.GetRequiredService<OutputGenerationService>();
-            var addresses = app.Urls.Any() ? app.Urls : ["http://localhost:5000"];
-            var report = await generator.GenerateAsync(addresses.First());
+            var report = await generator.GenerateAsync();
             await app.StopAsync();
 
             report.WriteTo(Console.Out);

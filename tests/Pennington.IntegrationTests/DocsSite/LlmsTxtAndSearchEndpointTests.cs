@@ -10,30 +10,36 @@ using Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Regression tests for the bug where llms.txt and search-index.json were
 /// generated from pre-render markdown instead of the post-pipeline HTML.
-/// Hits a real Kestrel instance because the endpoints self-fetch pages via
-/// HttpClient, which TestServer (WebApplicationFactory) cannot service.
+/// Runs against TestServer via <see cref="DocsWebApplicationFactory"/> — the
+/// in-process dispatcher routes self-fetches through the same pipeline that
+/// serves browser requests, so the assertions below reflect post-pipeline HTML.
 /// </summary>
-public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture>
+[Collection(DocsTestServerCollection.Name)]
+public class LlmsTxtAndSearchEndpointTests
 {
-    private readonly DocsRealServerFixture _fixture;
+    private readonly DocsWebApplicationFactory _factory;
+    private readonly HttpClient _client;
 
-    public LlmsTxtAndSearchEndpointTests(DocsRealServerFixture fixture)
-        => _fixture = fixture;
+    public LlmsTxtAndSearchEndpointTests(DocsWebApplicationFactory factory)
+    {
+        _factory = factory;
+        _client = factory.CreateClient();
+    }
 
     [Fact]
     public async Task LlmsTxt_ReturnsIndexWithEntries()
     {
-        var response = await _fixture.Client.GetAsync("/llms.txt", TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync("/llms.txt", TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         content.ShouldContain("# ");                // site title heading
-        content.ShouldContain("_llms/");            // at least one stripped-md entry reference
-        // Without a CanonicalBaseUrl configured, the fixture falls back to
-        // OutputOptions.BaseUrl ("/"), so links are root-relative. An LLM that
-        // fetches /llms.txt can resolve these against the origin.
-        content.ShouldContain("](/_llms/");
-        content.ShouldNotContain("](_llms/");       // bare relative form has no origin — unusable for LLMs
+        content.ShouldContain("/_llms/");           // at least one stripped-md entry reference
+        // The docs site configures an absolute CanonicalBaseUrl, so sidecar links are
+        // emitted as absolute URLs. The assertion below rejects the bare-relative form
+        // (no origin, no scheme) which would be unusable for LLMs that fetch /llms.txt
+        // and try to resolve links against the origin.
+        content.ShouldNotContain("](_llms/");
     }
 
     [Fact]
@@ -41,7 +47,7 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
     {
         // _llms/*.md files are emitted at static-build time, not served as live
         // endpoints, so we fetch them directly from the service.
-        var llmsService = _fixture.Services.GetRequiredService<LlmsTxtService>();
+        var llmsService = _factory.Services.GetRequiredService<LlmsTxtService>();
         var files = await llmsService.GetMarkdownFilesAsync();
 
         files.Count.ShouldBeGreaterThan(0);
@@ -59,7 +65,7 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
     [Fact]
     public async Task SearchIndex_ReturnsJsonArrayOfDocuments()
     {
-        var response = await _fixture.Client.GetAsync("/search-index-en.json", TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync("/search-index-en.json", TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -84,7 +90,7 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
         // Before this fix, bodies came from StripHtml(IContentRenderer.Render(...)),
         // which produced empty bodies for Razor pages and missed code-block text
         // that only materializes after the full pipeline runs.
-        var response = await _fixture.Client.GetAsync("/search-index-en.json", TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync("/search-index-en.json", TestContext.Current.CancellationToken);
         var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         using var doc = JsonDocument.Parse(json);
 
@@ -100,7 +106,7 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
         // Pick any indexed doc whose rendered page has a <pre> block, then verify
         // a distinctive token from inside that <pre> does not appear in the search
         // body for the same URL. Content-agnostic — walks pages until one qualifies.
-        var json = await _fixture.Client.GetStringAsync("/search-index-en.json", TestContext.Current.CancellationToken);
+        var json = await _client.GetStringAsync("/search-index-en.json", TestContext.Current.CancellationToken);
         using var doc = JsonDocument.Parse(json);
 
         var context = BrowsingContext.New(Configuration.Default);
@@ -112,7 +118,7 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
             var url = entry.GetProperty("url").GetString();
             if (string.IsNullOrEmpty(url)) continue;
 
-            var html = await _fixture.Client.GetStringAsync(url, TestContext.Current.CancellationToken);
+            var html = await _client.GetStringAsync(url, TestContext.Current.CancellationToken);
             var page = await context.OpenAsync(req => req.Content(html), TestContext.Current.CancellationToken);
             var pre = page.QuerySelector("#main-content pre") ?? page.QuerySelector("pre");
             if (pre is null) continue;
@@ -141,13 +147,13 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
     [Fact]
     public async Task LlmsTxt_FrontDoor_StaysCompact()
     {
-        // The /reference/ subtree (declared via _llms.yaml) splits the densest area out
-        // of the front door. The fixture doesn't wire AddApiReference, so this measures
-        // the content-tree subtree benefit only; production also pulls /reference/api/
-        // out via the programmatic registration, shrinking the front door further.
-        var content = await _fixture.Client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
-        content.Length.ShouldBeLessThan(16_000,
-            $"front door is {content.Length} bytes; the /reference/ subtree split should keep it under 16KB");
+        // The /reference/ subtree (declared via _llms.yaml) and the /reference/api/
+        // subtree (declared programmatically by AddApiReference) split the densest
+        // area out of the front door. The threshold accounts for the docs site's
+        // absolute CanonicalBaseUrl, which adds ~50 bytes per entry vs. root-relative.
+        var content = await _client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
+        content.Length.ShouldBeLessThan(24_000,
+            $"front door is {content.Length} bytes; the subtree splits should keep it under 24KB");
     }
 
     [Fact]
@@ -156,7 +162,7 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
         // After the subtree split, the front door only contains a See-also pointer to
         // /reference/llms.txt; individual /reference/.../*.md sidecar links must live
         // inside the subtree file, not the front door.
-        var content = await _fixture.Client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
+        var content = await _client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
 
         content.ShouldNotContain("/_llms/reference/");
         content.ShouldContain("/reference/llms.txt");
@@ -165,7 +171,7 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
     [Fact]
     public async Task LlmsTxt_FrontDoor_EmbedsMetadataBlock()
     {
-        var content = await _fixture.Client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
+        var content = await _client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
 
         // Front-door identity: site origin, self-canonical, generation timestamp,
         // and the generator string for tooling that wants to disambiguate.
@@ -187,7 +193,7 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
     [Fact]
     public async Task LlmsTxt_FrontDoor_HasMapBlockListingSubtrees()
     {
-        var content = await _fixture.Client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
+        var content = await _client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
 
         // Map block replaces See-also: same purpose (point at subtree splits) but with
         // entry counts and token estimates so a budget-aware client can plan its fetches.
@@ -204,7 +210,7 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
     {
         // The subtree's llms.txt is emitted as a static-build artifact alongside per-page
         // sidecars; pull it directly from the service rather than the live HTTP endpoint.
-        var llmsService = _fixture.Services.GetRequiredService<LlmsTxtService>();
+        var llmsService = _factory.Services.GetRequiredService<LlmsTxtService>();
         var subtreeFiles = await llmsService.GetSubtreeFilesAsync();
 
         var refFile = subtreeFiles.FirstOrDefault(f =>
@@ -220,7 +226,7 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
     [Fact]
     public async Task Sidecar_HasRichYamlFrontMatter()
     {
-        var llmsService = _fixture.Services.GetRequiredService<LlmsTxtService>();
+        var llmsService = _factory.Services.GetRequiredService<LlmsTxtService>();
         var files = await llmsService.GetMarkdownFilesAsync();
 
         files.Count.ShouldBeGreaterThan(0);
@@ -253,12 +259,12 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
         // should be rewritten to _llms/{path}.md so an LLM following them stays
         // inside the stripped-markdown corpus instead of jumping back into
         // HTML with all the chrome.
-        var llmsService = _fixture.Services.GetRequiredService<LlmsTxtService>();
+        var llmsService = _factory.Services.GetRequiredService<LlmsTxtService>();
         var files = await llmsService.GetMarkdownFilesAsync();
 
-        // Count rewritten internal links across all files. Form: "/_llms/…md"
-        // (root-relative; fixture has no canonical origin configured).
-        var linkRegex = new System.Text.RegularExpressions.Regex(@"\[[^\]]*\]\((/_llms/[^)]+\.md[^)]*)\)");
+        // Count rewritten internal links across all files. Match URLs of any form
+        // (absolute or root-relative) that point at the _llms sidecar tree.
+        var linkRegex = new System.Text.RegularExpressions.Regex(@"\[[^\]]*\]\(([^)]*?/_llms/[^)]+\.md[^)]*)\)");
 
         var rewrittenInternalLinks = 0;
         foreach (var file in files)
