@@ -34,10 +34,10 @@ public static class DocSiteServiceExtensions
                 md.BasePageUrl = "/";
             });
 
-            // llms.txt generation and search index. The stock DocSite layout wraps
-            // page body inside <article id="main-content">, so both outputs scope
-            // extraction there by default. Both selectors are overridable via
-            // DocSiteOptions when the layout has been customized.
+            // llms.txt generation: markdown content uses the rendition channel; non-markdown
+            // (Razor pages, API symbol pages) falls back to HTTP-fetching the rendered page
+            // and scoping via ContentSelector to strip layout chrome. Both selectors default
+            // to #main-content and are overridable through DocSiteOptions.
             var llmsSelector = options.LlmsTxtContentSelector ?? "#main-content";
             penn.AddLlmsTxt(opts => opts.ContentSelector ??= llmsSelector);
             penn.SearchIndex.ContentSelector ??= options.SearchIndexContentSelector ?? "#main-content";

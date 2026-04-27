@@ -57,6 +57,17 @@ public sealed class LlmsTxtContentService : IContentService
                 "text/markdown"));
         }
 
+        // Per-subtree {prefix}llms.txt files (split out of the front door)
+        var subtreeFiles = await _service.GetSubtreeFilesAsync();
+        foreach (var file in subtreeFiles)
+        {
+            var captured = file;
+            builder.Add(new ContentToCreate(
+                captured.OutputPath,
+                () => Task.FromResult(captured.Content),
+                "text/plain"));
+        }
+
         // Optional full concatenated file
         if (_options.GenerateFullFile)
         {

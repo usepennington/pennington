@@ -2,6 +2,7 @@ namespace Pennington.DocSite.Api;
 
 using System.Collections.Immutable;
 using Pennington.Content;
+using Pennington.LlmsTxt;
 using Pennington.Pipeline;
 using Pennington.Routing;
 
@@ -14,10 +15,12 @@ using Pennington.Routing;
 /// titled via <see cref="ApiReferenceRegistrationOptions.TocTitle"/>. Per-type
 /// pages are kept out of the sidebar — the index page lists them. Search and
 /// llms.txt indexing stay on via <see cref="GetIndexableEntriesAsync"/>, and
-/// xref links resolve via <see cref="GetCrossReferencesAsync"/>.
+/// xref links resolve via <see cref="GetCrossReferencesAsync"/>. Subtree
+/// declaration is surfaced via <see cref="GetLlmsSubtreesAsync"/> so the
+/// registration's prefix gets its own <c>{prefix}llms.txt</c> split file.
 /// </para>
 /// </summary>
-internal sealed class ApiReferenceContentService : IContentService
+internal sealed class ApiReferenceContentService : IContentService, ILlmsSubtreeProvider
 {
     private readonly ApiReferenceIndex _index;
     private readonly ApiReferenceRegistration _registration;
@@ -27,6 +30,13 @@ internal sealed class ApiReferenceContentService : IContentService
         _index = index;
         _registration = registration;
     }
+
+    /// <inheritdoc/>
+    public Task<ImmutableList<LlmsSubtree>> GetLlmsSubtreesAsync()
+        => Task.FromResult(ImmutableList.Create(new LlmsSubtree(
+            routePrefix: _registration.RoutePrefix,
+            title: _registration.TocTitle ?? "API reference",
+            description: "Type and member reference for this library.")));
 
     public string DefaultSectionLabel => "";
 

@@ -38,15 +38,23 @@ internal static class CodeBlockHtmlBuilder
     /// <summary>
     /// Builds the complete HTML structure for a code block.
     /// </summary>
+    /// <param name="highlightedHtml">Highlighted inner HTML (typically <c>&lt;pre&gt;&lt;code&gt;…&lt;/code&gt;&lt;/pre&gt;</c>).</param>
+    /// <param name="options">CSS class configuration.</param>
+    /// <param name="isInTabGroup">Whether this block lives inside a tabbed code block.</param>
+    /// <param name="languageId">Original Markdig fence info-string (e.g. <c>csharp</c>, <c>csharp:demo</c>). Emitted as <c>data-language</c> on the outer wrapper so the LLM HTML→markdown converter can recover the original fence language.</param>
     public static string BuildHtml(
         string highlightedHtml,
         CodeHighlightRenderOptions options,
-        bool isInTabGroup = false)
+        bool isInTabGroup = false,
+        string? languageId = null)
     {
         var (containerCss, preCss) = GetCssClasses(options, isInTabGroup);
 
         var html = new StringBuilder();
-        html.AppendLine($"<div class=\"{options.OuterWrapperCss}\">");
+        var languageAttr = string.IsNullOrEmpty(languageId)
+            ? ""
+            : $" data-language=\"{System.Net.WebUtility.HtmlEncode(languageId)}\"";
+        html.AppendLine($"<div class=\"{options.OuterWrapperCss}\"{languageAttr}>");
 
         if (!string.IsNullOrEmpty(containerCss))
         {

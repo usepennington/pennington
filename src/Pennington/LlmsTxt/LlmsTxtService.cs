@@ -2,7 +2,10 @@ namespace Pennington.LlmsTxt;
 
 using System.Collections.Immutable;
 using System.IO.Abstractions;
+using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
+using AngleSharp;
 using Content;
 using FrontMatter;
 using Infrastructure;
@@ -18,13 +21,18 @@ using Routing;
 /// When managed by <see cref="FileWatchDependencyFactory{T}"/>, the instance is
 /// recreated on file changes — no manual watcher subscription needed.
 /// <para>
-/// Post-pipeline HTML is fetched from the running host via <see cref="RenderedHtmlFetcher"/>
-/// and converted to markdown, so the output reflects Markdig extensions, Razor SSR,
-/// xref resolution, and other middleware transforms.
+/// Markdown bodies come from the same <see cref="IContentRenderer"/> the build
+/// pipeline uses, so the output reflects Markdig extensions and Razor-component
+/// SSR (Mdazor) without an HTTP self-fetch.
 /// </para>
 /// </summary>
 public sealed class LlmsTxtService
 {
+    private static readonly string PackageVersion = ResolvePackageVersion();
+
+    private static readonly IBrowsingContext BrowsingContext =
+        AngleSharp.BrowsingContext.New(Configuration.Default);
+
     private readonly AsyncLazy<LlmsTxtData> _dataLazy;
 
     /// <summary>Creates the service; data is computed lazily on first request.</summary>
@@ -34,11 +42,10 @@ public sealed class LlmsTxtService
         LlmsTxtOptions llmsTxtOptions,
         CanonicalBaseUrl canonicalBase,
         NavigationBuilder navigationBuilder,
-        RenderedHtmlFetcher fetcher,
         ILogger<LlmsTxtService> logger)
     {
         _dataLazy = new AsyncLazy<LlmsTxtData>(
-            () => BuildAsync(serviceProvider, pennOptions, llmsTxtOptions, canonicalBase, navigationBuilder, fetcher, logger));
+            () => BuildAsync(serviceProvider, pennOptions, llmsTxtOptions, canonicalBase, navigationBuilder, logger));
     }
 
     /// <summary>Returns the generated llms.txt index content.</summary>
@@ -46,6 +53,9 @@ public sealed class LlmsTxtService
 
     /// <summary>Returns the per-page stripped markdown files emitted alongside llms.txt.</summary>
     public async Task<ImmutableList<MarkdownFile>> GetMarkdownFilesAsync() => (await _dataLazy.Value).MarkdownFiles;
+
+    /// <summary>Returns per-subtree <c>{prefix}llms.txt</c> index files split out of the front door.</summary>
+    public async Task<ImmutableList<MarkdownFile>> GetSubtreeFilesAsync() => (await _dataLazy.Value).SubtreeFiles;
 
     /// <summary>Returns the optional concatenated llms-full.txt content, or null when disabled.</summary>
     public async Task<string?> GetLlmsFullTxtAsync() => (await _dataLazy.Value).FullContent;
@@ -56,23 +66,35 @@ public sealed class LlmsTxtService
         LlmsTxtOptions llmsTxtOptions,
         CanonicalBaseUrl canonicalBase,
         NavigationBuilder navigationBuilder,
-        RenderedHtmlFetcher fetcher,
         ILogger<LlmsTxtService> logger)
     {
-        var contentServices = sp.GetServices<IContentService>();
+        var contentServices = sp.GetServices<IContentService>()
+            .Where(s => s is not LlmsTxtContentService)
+            .ToList();
         var parser = sp.GetRequiredService<IContentParser>();
+        var renderer = sp.GetRequiredService<IContentRenderer>();
+        // XrefResolvingService is the same one the response pipeline uses; calling it
+        // here lets us resolve `[text](xref:uid)` and `<xref:uid>` to canonical URLs
+        // without an HTTP self-fetch through the response middleware chain.
+        var xrefResolver = sp.GetRequiredService<XrefResolvingService>();
+        // Fallback fetcher for non-markdown content (Razor pages, API symbol pages):
+        // these have no markdown source to render, so we self-fetch the rendered HTML
+        // and run it through the same converter rules as the rendition channel output.
+        var fetcher = sp.GetRequiredService<RenderedHtmlFetcher>();
 
-        // Collect TOC entries and parsed metadata from all services
         var allTocItems = new List<ContentTocItem>();
-        var metadataByPath = new Dictionary<string, IFrontMatter>(StringComparer.OrdinalIgnoreCase);
+        var parsedByPath = new Dictionary<string, ParsedItem>(StringComparer.OrdinalIgnoreCase);
+        var tocByPath = new Dictionary<string, ContentTocItem>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var service in contentServices)
         {
-            // Skip the LlmsTxtContentService to avoid circular queries
-            if (service is LlmsTxtContentService) continue;
-
             var tocItems = await service.GetIndexableEntriesAsync();
-            allTocItems.AddRange(tocItems.Where(t => !t.ExcludeFromLlms));
+            foreach (var toc in tocItems.Where(t => !t.ExcludeFromLlms))
+            {
+                allTocItems.Add(toc);
+                var tocKey = NormalizePath(toc.Route.CanonicalPath.Value);
+                tocByPath[tocKey] = toc;
+            }
 
             await foreach (var discovered in service.DiscoverAsync())
             {
@@ -81,25 +103,116 @@ public sealed class LlmsTxtService
                 var parseResult = await parser.ParseAsync(discovered);
                 if (parseResult is not ParsedItem parsed) continue;
 
-                // Skip redirects
                 if (parsed.Metadata is IRedirectable { RedirectUrl: not null }) continue;
 
                 var key = NormalizePath(parsed.Route.CanonicalPath.Value);
-                metadataByPath[key] = parsed.Metadata;
+                parsedByPath[key] = parsed;
             }
         }
 
-        // Build navigation tree for hierarchical structure
         var tree = navigationBuilder.BuildTree(allTocItems);
-
-        // Check for a user-provided llms.txt header in the content root
+        var subtrees = await CollectSubtreesAsync(sp, contentServices);
         var header = await ReadUserHeaderAsync(sp, pennOptions);
 
-        // Generate index and collect markdown files
-        var sb = new StringBuilder();
-        if (header is not null)
+        var linkablePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        CollectLeafPaths(tree, linkablePaths);
+
+        var ctx = new BuildContext(
+            Renderer: renderer,
+            XrefResolver: xrefResolver,
+            Fetcher: fetcher,
+            Options: llmsTxtOptions,
+            CanonicalBase: canonicalBase,
+            Logger: logger,
+            ParsedByPath: parsedByPath,
+            TocByPath: tocByPath,
+            RewriteHref: BuildLinkRewriter(linkablePaths, llmsTxtOptions.OutputDirectory, canonicalBase),
+            Nodes: new List<RenderedNode>(),
+            MarkdownFiles: ImmutableList.CreateBuilder<MarkdownFile>(),
+            FullContent: llmsTxtOptions.GenerateFullFile ? new StringBuilder() : null);
+
+        await CollectAsync(tree, depth: 0, ctx);
+
+        // Front-door index
+        var mainSb = new StringBuilder();
+        AppendFrontDoorPreamble(mainSb, header, pennOptions, canonicalBase);
+        AppendMapBlock(mainSb, subtrees, ctx.Nodes);
+        RenderBucket(ctx.Nodes, mainSb, leaf => MatchSubtree(leaf.CanonicalPath, subtrees) is null);
+
+        // Per-subtree index files
+        var subtreeFiles = ImmutableList.CreateBuilder<MarkdownFile>();
+        foreach (var subtree in subtrees)
         {
-            sb.AppendLine(header.TrimEnd());
+            var sb = new StringBuilder();
+            sb.AppendLine($"# {subtree.Title}");
+            sb.AppendLine();
+            if (!string.IsNullOrWhiteSpace(subtree.Description))
+            {
+                sb.AppendLine($"> {subtree.Description}");
+                sb.AppendLine();
+            }
+
+            var (entryCount, totalTokens) = SummarizeSubtree(ctx.Nodes, subtree, subtrees);
+            var canonicalSelf = canonicalBase.Combine(new UrlPath($"/{subtree.RoutePrefix.TrimStart('/')}llms.txt")).Value;
+            sb.AppendLine($"canonical: {canonicalSelf}");
+            sb.AppendLine($"entries: {entryCount}");
+            sb.AppendLine($"tokens: ~{FormatTokenEstimate(totalTokens)}");
+            sb.AppendLine();
+
+            RenderBucket(ctx.Nodes, sb,
+                leaf => ReferenceEquals(MatchSubtree(leaf.CanonicalPath, subtrees), subtree));
+
+            var path = new FilePath(subtree.RoutePrefix.TrimStart('/') + "llms.txt");
+            subtreeFiles.Add(new MarkdownFile(path, Encoding.UTF8.GetBytes(sb.ToString().TrimEnd() + "\n")));
+        }
+
+        return new LlmsTxtData(
+            mainSb.ToString().TrimEnd() + "\n",
+            ctx.MarkdownFiles.ToImmutable(),
+            subtreeFiles.ToImmutable(),
+            ctx.FullContent?.ToString().TrimEnd());
+    }
+
+    private static async Task<ImmutableList<LlmsSubtree>> CollectSubtreesAsync(
+        IServiceProvider sp, IEnumerable<IContentService> contentServices)
+    {
+        // Programmatic registrations win on prefix collision: collect discovered first, overwrite with programmatic.
+        var byPrefix = new Dictionary<string, LlmsSubtree>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var service in contentServices)
+        {
+            if (service is not ILlmsSubtreeProvider provider) continue;
+            var discovered = await provider.GetLlmsSubtreesAsync();
+            foreach (var s in discovered)
+                byPrefix[s.RoutePrefix] = s;
+        }
+
+        foreach (var s in sp.GetServices<LlmsSubtree>())
+            byPrefix[s.RoutePrefix] = s;
+
+        // Order by descending prefix length so longest-prefix match is first when iterating.
+        return byPrefix.Values
+            .OrderByDescending(s => s.RoutePrefix.Length)
+            .ThenBy(s => s.RoutePrefix, StringComparer.Ordinal)
+            .ToImmutableList();
+    }
+
+    private static LlmsSubtree? MatchSubtree(string canonicalPath, ImmutableList<LlmsSubtree> subtrees)
+    {
+        // Subtrees are pre-sorted by descending RoutePrefix length, so the first match is the longest.
+        foreach (var s in subtrees)
+        {
+            if (canonicalPath.StartsWith(s.RoutePrefix, StringComparison.OrdinalIgnoreCase))
+                return s;
+        }
+        return null;
+    }
+
+    private static void AppendFrontDoorPreamble(StringBuilder sb, string? userHeader, PenningtonOptions pennOptions, CanonicalBaseUrl canonicalBase)
+    {
+        if (userHeader is not null)
+        {
+            sb.AppendLine(userHeader.TrimEnd());
             sb.AppendLine();
         }
         else
@@ -113,23 +226,258 @@ public sealed class LlmsTxtService
             }
         }
 
-        var markdownFiles = ImmutableList.CreateBuilder<MarkdownFile>();
-        var fullContentBuilder = llmsTxtOptions.GenerateFullFile ? new StringBuilder() : null;
+        var canonicalSelf = canonicalBase.Combine(new UrlPath("/llms.txt")).Value;
+        sb.AppendLine($"site: {canonicalBase.Value.Value}");
+        sb.AppendLine($"canonical: {canonicalSelf}");
+        sb.AppendLine($"generated: {DateTime.UtcNow:O}");
+        sb.AppendLine($"generator: pennington/{PackageVersion}");
+        sb.AppendLine();
+    }
 
-        // Collect the set of leaf paths that will have _llms/*.md files so we
-        // can rewrite intra-site links inside the converted markdown to point
-        // at sibling stripped files.
-        var linkablePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        CollectLeafPaths(tree, linkablePaths);
-        var rewriteHref = BuildLinkRewriter(linkablePaths, llmsTxtOptions.OutputDirectory, canonicalBase);
+    private static void AppendMapBlock(StringBuilder sb, ImmutableList<LlmsSubtree> subtrees, List<RenderedNode> renderedNodes)
+    {
+        if (subtrees.Count == 0) return;
 
-        await WriteTreeAsync(tree, sb, markdownFiles, fullContentBuilder, metadataByPath,
-            llmsTxtOptions, canonicalBase, fetcher, rewriteHref, logger);
+        sb.AppendLine("## Map");
+        sb.AppendLine();
+        // Subtrees are sorted by descending RoutePrefix length for matching; readers
+        // prefer top-level prefixes first.
+        foreach (var s in subtrees.OrderBy(x => x.RoutePrefix, StringComparer.Ordinal))
+        {
+            var url = $"{s.RoutePrefix}llms.txt";
+            var (entryCount, totalTokens) = SummarizeSubtree(renderedNodes, s, subtrees);
+            var tokenLabel = FormatTokenEstimate(totalTokens);
+            var entryLabel = entryCount == 1 ? "1 entry" : $"{entryCount} entries";
+            var desc = string.IsNullOrWhiteSpace(s.Description) ? "" : $" — {s.Description}";
+            sb.AppendLine($"- [{s.Title}]({url}) ({entryLabel}, ~{tokenLabel} tokens){desc}");
+        }
+        sb.AppendLine();
+    }
 
-        return new LlmsTxtData(
-            sb.ToString().TrimEnd() + "\n",
-            markdownFiles.ToImmutable(),
-            fullContentBuilder?.ToString().TrimEnd());
+    /// <summary>Counts entries and sums token estimates for leaves whose nearest matching subtree is <paramref name="target"/>.</summary>
+    private static (int Count, int Tokens) SummarizeSubtree(List<RenderedNode> renderedNodes, LlmsSubtree target, ImmutableList<LlmsSubtree> allSubtrees)
+    {
+        var count = 0;
+        var tokens = 0;
+        foreach (var node in renderedNodes)
+        {
+            if (node is LeafNode leaf && ReferenceEquals(MatchSubtree(leaf.CanonicalPath, allSubtrees), target))
+            {
+                count++;
+                tokens += leaf.Tokens;
+            }
+        }
+        return (count, tokens);
+    }
+
+    /// <summary>Formats an integer token count as <c>1.2k</c> / <c>84k</c> / <c>500</c>.</summary>
+    private static string FormatTokenEstimate(int tokens)
+    {
+        if (tokens >= 1000)
+        {
+            var thousands = tokens / 1000.0;
+            return thousands >= 10 ? $"{(int)thousands}k" : $"{thousands:0.#}k";
+        }
+        return tokens.ToString();
+    }
+
+    private static async Task CollectAsync(ImmutableList<NavigationTreeItem> items, int depth, BuildContext ctx)
+    {
+        foreach (var item in items)
+        {
+            if (item.Children.Count > 0)
+            {
+                ctx.Nodes.Add(new SectionNode(depth, item.Title));
+                await CollectAsync(item.Children, depth + 1, ctx);
+                continue;
+            }
+
+            var key = NormalizePath(item.Route.CanonicalPath.Value);
+            ctx.TocByPath.TryGetValue(key, out var tocItem);
+
+            string markdown;
+            IFrontMatter? metadata;
+
+            if (ctx.ParsedByPath.TryGetValue(key, out var parsed))
+            {
+                // Markdown source: render via the rendition channel.
+                if (!parsed.Metadata.Llms) continue;
+
+                var renderResult = await ctx.Renderer.RenderAsync(parsed);
+                if (renderResult.Value is not RenderedItem rendered)
+                {
+                    ctx.Logger.LogWarning("LlmsTxtService: failed to render {Path}, skipping", item.Route.CanonicalPath.Value);
+                    continue;
+                }
+
+                // Resolve xref links the same way the response pipeline does, so
+                // `[text](xref:uid)` and `<xref:uid>` end up as canonical paths
+                // that the link rewriter can map to sidecar URLs.
+                var resolvedHtml = await ctx.XrefResolver.ResolveAsync(rendered.Content.Html);
+                markdown = await ConvertHtmlToMarkdownAsync(resolvedHtml, ctx.RewriteHref);
+                if (string.IsNullOrWhiteSpace(markdown)) continue;
+                metadata = parsed.Metadata;
+            }
+            else
+            {
+                // Non-markdown source (Razor / API symbol page): self-fetch the rendered
+                // page and run the converter on it. Fetcher hits the live host so the
+                // HTML reflects every response-stage transform (xref resolution, locale
+                // links, etc.) — same fidelity the human reader gets.
+                var element = await ctx.Fetcher.FetchContentAsync(item.Route.CanonicalPath.Value, ctx.Options.ContentSelector);
+                if (element is null)
+                {
+                    ctx.Logger.LogWarning("LlmsTxtService: failed to fetch {Path}, skipping", item.Route.CanonicalPath.Value);
+                    continue;
+                }
+
+                markdown = HtmlToMarkdownConverter.Convert(element, ctx.RewriteHref).Trim();
+                if (string.IsNullOrWhiteSpace(markdown)) continue;
+                metadata = null;
+            }
+
+            var rendition = BuildRendition(markdown);
+            var body = rendition.MarkdownBody;
+            // Root-level pages (canonical path "/") have an empty key; use "index" as the
+            // slug so the sidecar lands at /_llms/index.md instead of /_llms/.md.
+            var sidecarKey = string.IsNullOrEmpty(key) ? "index" : key;
+            var mdPath = $"{ctx.Options.OutputDirectory}/{sidecarKey}.md";
+            var linkUrl = BuildStrippedMarkdownUrl(ctx.CanonicalBase, ctx.Options.OutputDirectory, sidecarKey);
+            var description = metadata?.Description ?? tocItem?.Description;
+            var sidecarHeader = BuildSidecarHeader(item, metadata, description, ctx.CanonicalBase, linkUrl, rendition);
+            var sidecarContent = sidecarHeader + body;
+
+            ctx.MarkdownFiles.Add(new MarkdownFile(new FilePath(mdPath), Encoding.UTF8.GetBytes(sidecarContent)));
+
+            ctx.Nodes.Add(new LeafNode(
+                Title: item.Title,
+                CanonicalPath: item.Route.CanonicalPath.Value,
+                SidecarUrl: linkUrl,
+                Description: description,
+                Tokens: rendition.TokenEstimate));
+
+            if (ctx.FullContent is not null)
+            {
+                ctx.FullContent.AppendLine($"# {item.Title}");
+                ctx.FullContent.AppendLine();
+                ctx.FullContent.AppendLine(body);
+                ctx.FullContent.AppendLine();
+                ctx.FullContent.AppendLine("---");
+                ctx.FullContent.AppendLine();
+            }
+        }
+    }
+
+    /// <summary>Parses an HTML body string and runs it through the markdown converter with link rewriting.</summary>
+    private static async Task<string> ConvertHtmlToMarkdownAsync(string html, Func<string, string> rewriteHref)
+    {
+        if (string.IsNullOrWhiteSpace(html)) return "";
+        var document = await BrowsingContext.OpenAsync(req => req.Content(html));
+        var root = document.Body ?? document.DocumentElement;
+        return root is null ? "" : HtmlToMarkdownConverter.Convert(root, rewriteHref).Trim();
+    }
+
+    private static LlmRendition BuildRendition(string markdown)
+    {
+        var bytes = Encoding.UTF8.GetBytes(markdown);
+        var hash = "sha256:" + Convert.ToHexStringLower(SHA256.HashData(bytes));
+        var tokens = markdown.Length / 4;
+        return new LlmRendition(markdown, hash, tokens);
+    }
+
+    private static void RenderBucket(List<RenderedNode> nodes, StringBuilder sb, Func<LeafNode, bool> include)
+    {
+        var pendingSections = new List<SectionNode>();
+        var anyLeafEmittedSinceFlush = false;
+
+        foreach (var node in nodes)
+        {
+            switch (node)
+            {
+                case SectionNode section:
+                    // Pop pending sections at depth >= this one — they're now closed without contributing.
+                    while (pendingSections.Count > 0 && pendingSections[^1].Depth >= section.Depth)
+                        pendingSections.RemoveAt(pendingSections.Count - 1);
+                    pendingSections.Add(section);
+                    if (anyLeafEmittedSinceFlush)
+                    {
+                        sb.AppendLine();
+                        anyLeafEmittedSinceFlush = false;
+                    }
+                    break;
+
+                case LeafNode leaf when include(leaf):
+                    foreach (var s in pendingSections)
+                    {
+                        // Heading level reflects depth in the original nav tree:
+                        // top-level area → ##, subsection → ###, etc. Capped at H6 per HTML.
+                        var level = Math.Min(s.Depth + 2, 6);
+                        sb.AppendLine($"{new string('#', level)} {s.Title}");
+                        sb.AppendLine();
+                    }
+                    pendingSections.Clear();
+                    var desc = leaf.Description is { Length: > 0 } d ? $": {d}" : "";
+                    sb.AppendLine($"- [{leaf.Title}]({leaf.SidecarUrl}){desc}");
+                    anyLeafEmittedSinceFlush = true;
+                    break;
+            }
+        }
+
+        if (anyLeafEmittedSinceFlush)
+            sb.AppendLine();
+    }
+
+    private static string BuildSidecarHeader(
+        NavigationTreeItem item,
+        IFrontMatter? metadata,
+        string? description,
+        CanonicalBaseUrl canonicalBase,
+        string sidecarUrl,
+        LlmRendition rendition)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("---");
+        sb.AppendLine($"title: {YamlScalar(metadata?.Title ?? item.Title)}");
+        if (!string.IsNullOrEmpty(description))
+            sb.AppendLine($"description: {YamlScalar(description)}");
+        // URLs and hashes contain `:` but never `: ` (colon-space) or whitespace, so they
+        // parse correctly as bare YAML scalars. Bare emission keeps them readable.
+        sb.AppendLine($"canonical_url: {canonicalBase.Combine(new UrlPath(item.Route.CanonicalPath.Value)).Value}");
+        sb.AppendLine($"sidecar_url: {sidecarUrl}");
+        sb.AppendLine($"content_hash: {rendition.ContentHash}");
+        sb.AppendLine($"tokens: {rendition.TokenEstimate}");
+        if (metadata?.Uid is { Length: > 0 } uid)
+            sb.AppendLine($"uid: {YamlScalar(uid)}");
+        if (metadata?.Date is { } date)
+            sb.AppendLine($"last_modified: {date:yyyy-MM-dd}");
+        sb.AppendLine("---");
+        sb.AppendLine();
+        return sb.ToString();
+    }
+
+    /// <summary>Quotes a YAML scalar when it contains characters that would change parsing semantics; otherwise returns it bare.</summary>
+    private static string YamlScalar(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return "\"\"";
+        // Conservative: quote anything that isn't plain printable text to avoid YAML edge cases.
+        var needsQuote = false;
+        foreach (var c in s)
+        {
+            if (c is ':' or '#' or '\n' or '\r' or '\t' or '"' or '\'' or '\\' or '{' or '}' or '[' or ']' or ',' or '&' or '*' or '!' or '|' or '>' or '%' or '@' or '`')
+            {
+                needsQuote = true;
+                break;
+            }
+        }
+        if (!needsQuote && (s.StartsWith(' ') || s.EndsWith(' '))) needsQuote = true;
+        if (!needsQuote) return s;
+        return "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+    }
+
+    private static string ResolvePackageVersion()
+    {
+        var attr = typeof(LlmsTxtService).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+        return attr?.InformationalVersion ?? "unknown";
     }
 
     private static void CollectLeafPaths(ImmutableList<NavigationTreeItem> items, HashSet<string> acc)
@@ -150,7 +498,6 @@ public sealed class LlmsTxtService
     {
         return href =>
         {
-            // Pass through anything that isn't a path on this site.
             if (href.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
                 || href.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
                 || href.StartsWith("//")
@@ -160,7 +507,6 @@ public sealed class LlmsTxtService
                 return href;
             }
 
-            // Split off query and fragment so we can keep them on the rewritten URL.
             var fragmentIdx = href.IndexOf('#');
             var fragment = fragmentIdx >= 0 ? href[fragmentIdx..] : "";
             var beforeFragment = fragmentIdx >= 0 ? href[..fragmentIdx] : href;
@@ -188,77 +534,6 @@ public sealed class LlmsTxtService
         return canonicalBase.Combine(relative).Value;
     }
 
-    private static async Task WriteTreeAsync(
-        ImmutableList<NavigationTreeItem> items,
-        StringBuilder sb,
-        ImmutableList<MarkdownFile>.Builder markdownFiles,
-        StringBuilder? fullContent,
-        Dictionary<string, IFrontMatter> metadataByPath,
-        LlmsTxtOptions llmsTxtOptions,
-        CanonicalBaseUrl canonicalBase,
-        RenderedHtmlFetcher fetcher,
-        Func<string, string> rewriteHref,
-        ILogger logger)
-    {
-        foreach (var item in items)
-        {
-            if (item.Children.Count > 0)
-            {
-                // Section header
-                sb.AppendLine($"## {item.Title}");
-                sb.AppendLine();
-
-                // Write leaf entries for this section, then recurse into subsections
-                await WriteTreeAsync(item.Children, sb, markdownFiles, fullContent, metadataByPath,
-                    llmsTxtOptions, canonicalBase, fetcher, rewriteHref, logger);
-            }
-            else
-            {
-                // Leaf node — fetch rendered HTML and write entry
-                var key = NormalizePath(item.Route.CanonicalPath.Value);
-                // May be absent for Razor pages or synthetic nav leaves — treat as no metadata.
-                metadataByPath.TryGetValue(key, out var metadata);
-
-                var element = await fetcher.FetchContentAsync(
-                    item.Route.CanonicalPath.Value, llmsTxtOptions.ContentSelector);
-
-                if (element is null)
-                {
-                    logger.LogWarning("LlmsTxtService: failed to fetch {Path}, skipping", item.Route.CanonicalPath.Value);
-                    continue;
-                }
-
-                var markdown = HtmlToMarkdownConverter.Convert(element, rewriteHref);
-
-                var mdPath = $"{llmsTxtOptions.OutputDirectory}/{key}.md";
-                var linkUrl = BuildStrippedMarkdownUrl(canonicalBase, llmsTxtOptions.OutputDirectory, key);
-                var description = metadata?.Description is { } desc
-                    ? $": {desc}"
-                    : "";
-
-                sb.AppendLine($"- [{item.Title}]({linkUrl}){description}");
-
-                markdownFiles.Add(new MarkdownFile(
-                    new FilePath(mdPath),
-                    Encoding.UTF8.GetBytes(markdown)));
-
-                if (fullContent is not null)
-                {
-                    fullContent.AppendLine($"# {item.Title}");
-                    fullContent.AppendLine();
-                    fullContent.AppendLine(markdown);
-                    fullContent.AppendLine();
-                    fullContent.AppendLine("---");
-                    fullContent.AppendLine();
-                }
-            }
-        }
-
-        // Add blank line after a section's entries for readability
-        if (items.Any(i => i.Children.Count == 0))
-            sb.AppendLine();
-    }
-
     private static async Task<string?> ReadUserHeaderAsync(IServiceProvider sp, PenningtonOptions pennOptions)
     {
         var fileSystem = sp.GetRequiredService<IFileSystem>();
@@ -281,10 +556,36 @@ public sealed class LlmsTxtService
     internal record LlmsTxtData(
         string IndexContent,
         ImmutableList<MarkdownFile> MarkdownFiles,
+        ImmutableList<MarkdownFile> SubtreeFiles,
         string? FullContent);
 
     /// <summary>A stripped markdown file produced for the llms output.</summary>
     /// <param name="OutputPath">Relative output path for the markdown file.</param>
     /// <param name="Content">UTF-8 bytes of the stripped markdown body.</param>
     public record MarkdownFile(FilePath OutputPath, byte[] Content);
+
+    private abstract record RenderedNode;
+    private sealed record SectionNode(int Depth, string Title) : RenderedNode;
+    private sealed record LeafNode(
+        string Title,
+        string CanonicalPath,
+        string SidecarUrl,
+        string? Description,
+        int Tokens) : RenderedNode;
+
+    private sealed record LlmRendition(string MarkdownBody, string ContentHash, int TokenEstimate);
+
+    private sealed record BuildContext(
+        IContentRenderer Renderer,
+        XrefResolvingService XrefResolver,
+        RenderedHtmlFetcher Fetcher,
+        LlmsTxtOptions Options,
+        CanonicalBaseUrl CanonicalBase,
+        ILogger Logger,
+        Dictionary<string, ParsedItem> ParsedByPath,
+        Dictionary<string, ContentTocItem> TocByPath,
+        Func<string, string> RewriteHref,
+        List<RenderedNode> Nodes,
+        ImmutableList<MarkdownFile>.Builder MarkdownFiles,
+        StringBuilder? FullContent);
 }

@@ -102,6 +102,7 @@ public sealed class ContentPipeline : IContentPipeline
                     result = new FailedItem(parsed.Route,
                         new ContentError($"Render failed: {ex.Message}", ex));
                 }
+
                 yield return result;
             }
             else

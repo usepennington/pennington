@@ -30,7 +30,9 @@ public sealed class ApiReferenceRewriteMiddleware
     public Task InvokeAsync(HttpContext context)
     {
         var path = context.Request.Path.Value;
-        if (!string.IsNullOrEmpty(path) && !path.StartsWith(InternalPrefix, StringComparison.Ordinal))
+        if (!string.IsNullOrEmpty(path)
+            && !path.StartsWith(InternalPrefix, StringComparison.Ordinal)
+            && !LooksLikeStaticFile(path))
         {
             foreach (var reg in _registry.Registrations)
             {
@@ -51,6 +53,14 @@ public sealed class ApiReferenceRewriteMiddleware
         }
 
         return _next(context);
+    }
+
+    /// <summary>True when the last path segment contains a dot, indicating a file (e.g. <c>llms.txt</c>, <c>foo.md</c>) rather than an API reference slug.</summary>
+    private static bool LooksLikeStaticFile(string path)
+    {
+        var lastSlash = path.LastIndexOf('/');
+        var lastSegment = lastSlash < 0 ? path : path[(lastSlash + 1)..];
+        return lastSegment.Contains('.');
     }
 }
 

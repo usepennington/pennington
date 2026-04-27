@@ -251,4 +251,111 @@ public class HtmlToMarkdownConverterTests
         md.ShouldContain("Visible");
         md.ShouldNotContain("Hidden from llms");
     }
+
+    [Fact]
+    public void CodeHighlightWrapper_RecoversLanguageFromDataAttribute()
+    {
+        // Pennington's syntax-highlighted code blocks lose the original Markdig fence
+        // info-string when TextMate tokenizes — the language is preserved on the wrapper
+        // div as data-language so the converter can put it back on the markdown fence.
+        var md = ConvertFragment(
+            "<div class=\"code-highlight-wrapper not-prose\" data-language=\"csharp\">" +
+                "<div class=\"standalone-code-container\">" +
+                    "<div class=\"standalone-code-highlight\">" +
+                        "<pre><code><span class=\"line\"><span class=\"hljs-keyword\">var</span> x = <span class=\"hljs-number\">42</span>;</span></code></pre>" +
+                    "</div>" +
+                "</div>" +
+            "</div>");
+
+        md.ShouldContain("```csharp\n");
+        md.ShouldContain("var x = 42;");
+        md.ShouldContain("\n```");
+        md.ShouldNotContain("hljs");
+        md.ShouldNotContain("class=");
+    }
+
+    [Fact]
+    public void CodeHighlightWrapper_StripsLineSpansToTextContent()
+    {
+        var md = ConvertFragment(
+            "<div class=\"code-highlight-wrapper\" data-language=\"python\">" +
+                "<pre><code><span class=\"line\">def foo():</span>\n<span class=\"line\">    return 42</span></code></pre>" +
+            "</div>");
+
+        md.ShouldContain("```python\n");
+        md.ShouldContain("def foo():");
+        md.ShouldContain("    return 42");
+    }
+
+    [Fact]
+    public void CodeHighlightWrapper_NoLanguageData_EmitsBareFence()
+    {
+        var md = ConvertFragment(
+            "<div class=\"code-highlight-wrapper\">" +
+                "<pre><code>plain</code></pre>" +
+            "</div>");
+
+        md.ShouldContain("```\nplain");
+    }
+
+    [Fact]
+    public void MarkdownAlert_EmitsGfmAdmonition()
+    {
+        var md = ConvertFragment(
+            "<div class=\"markdown-alert markdown-alert-warning\">" +
+                "<p class=\"markdown-alert-title\">Warning</p>" +
+                "<p>Something dangerous.</p>" +
+            "</div>");
+
+        md.ShouldContain("> [!WARNING]");
+        md.ShouldContain("> Something dangerous.");
+        // The title paragraph "Warning" is encoded in the marker line, not duplicated as body.
+        md.IndexOf("Warning\n").ShouldBe(-1);
+    }
+
+    [Fact]
+    public void MarkdownAlert_PreservesMultilineBody()
+    {
+        var md = ConvertFragment(
+            "<div class=\"markdown-alert markdown-alert-note\">" +
+                "<p class=\"markdown-alert-title\">Note</p>" +
+                "<p>First sentence.</p>" +
+                "<p>Second sentence.</p>" +
+            "</div>");
+
+        md.ShouldContain("> [!NOTE]");
+        md.ShouldContain("> First sentence.");
+        md.ShouldContain("> Second sentence.");
+    }
+
+    [Fact]
+    public void TabbedCodeBlock_EmitsAllTabsAsH3Sections()
+    {
+        // Multi-language tabs (e.g. C# / F# / VB) — emit every variant so an LLM sees
+        // each option, never just the first tab.
+        var md = ConvertFragment(
+            "<div class=\"not-prose\">" +
+                "<div class=\"tab-container\">" +
+                    "<div role=\"tablist\">" +
+                        "<button role=\"tab\" id=\"btn-1-0\">C#</button>" +
+                        "<button role=\"tab\" id=\"btn-1-1\">F#</button>" +
+                    "</div>" +
+                    "<div aria-labelledby=\"btn-1-0\" class=\"tab-panel\">" +
+                        "<div class=\"code-highlight-wrapper\" data-language=\"csharp\"><pre><code>var x = 1;</code></pre></div>" +
+                    "</div>" +
+                    "<div aria-labelledby=\"btn-1-1\" class=\"tab-panel\">" +
+                        "<div class=\"code-highlight-wrapper\" data-language=\"fsharp\"><pre><code>let x = 1</code></pre></div>" +
+                    "</div>" +
+                "</div>" +
+            "</div>");
+
+        md.ShouldContain("### C#");
+        md.ShouldContain("### F#");
+        md.ShouldContain("```csharp");
+        md.ShouldContain("var x = 1;");
+        md.ShouldContain("```fsharp");
+        md.ShouldContain("let x = 1");
+        // Verify ordering: C# section appears before F# section.
+        md.IndexOf("### C#").ShouldBeLessThan(md.IndexOf("### F#"));
+    }
 }

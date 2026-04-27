@@ -12,7 +12,8 @@ public static class LlmsTxtConfiguration
 {
     /// <summary>
     /// Default output directory, an <c>article</c> scoping selector matching
-    /// the Lab's minimal HTML template, and <c>GenerateFullFile = false</c>
+    /// the Lab's minimal HTML template (only used when the LLM channel falls
+    /// back to HTTP-fetching non-markdown pages), and <c>GenerateFullFile = false</c>
     /// for the common per-page-sidecar case.
     /// </summary>
     public static void Configure(LlmsTxtOptions opts)

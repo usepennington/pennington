@@ -60,6 +60,34 @@ internal static class HtmlToMarkdownConverter
         // markup, so it naturally flows through without a special case here.
         if (element.ClassList.Contains("humans-only")) return;
 
+        // Pennington-aware: syntax-highlighted code blocks. `<div class="code-highlight-wrapper">`
+        // wraps a `<pre><code>…<span class="line">…</span>…</pre>` tree. Strip the highlight
+        // markup and emit a clean fenced code block with the original Markdig fence info-string
+        // recovered from the `data-language` attribute.
+        if (element.TagName == "DIV" && element.ClassList.Contains("code-highlight-wrapper"))
+        {
+            EmitCodeHighlightWrapper(element, sb);
+            return;
+        }
+
+        // Pennington-aware: tabbed code blocks. `<div class="tab-container">` holds a tablist
+        // of buttons and panels with the highlighted code per tab. Emit every tab as a labeled
+        // H3 section so an LLM sees all language variants instead of just the first one.
+        if (element.TagName == "DIV" && element.ClassList.Contains("tab-container"))
+        {
+            EmitTabbedCodeBlock(element, sb, listDepth, orderedStack, rewriteHref);
+            return;
+        }
+
+        // Pennington-aware: GFM-style alerts. `<div class="markdown-alert markdown-alert-{type}">`
+        // wraps a `markdown-alert-title` paragraph and the body. Emit as GFM admonition syntax
+        // (`> [!NOTE]\n> body`) which both GitHub and Claude recognize.
+        if (element.TagName == "DIV" && element.ClassList.Contains("markdown-alert"))
+        {
+            EmitMarkdownAlert(element, sb, listDepth, orderedStack, rewriteHref);
+            return;
+        }
+
         var tag = element.TagName;
 
         switch (tag)
@@ -249,6 +277,98 @@ internal static class HtmlToMarkdownConverter
                 return cls["lang-".Length..];
         }
         return "";
+    }
+
+    /// <summary>
+    /// Emits the markdown form of a Pennington syntax-highlighted code block. Reads the
+    /// original Markdig fence info-string from <c>data-language</c> on the wrapper, then
+    /// extracts the inner <c>&lt;pre&gt;</c>'s text content (which strips all the highlight
+    /// span markup automatically).
+    /// </summary>
+    private static void EmitCodeHighlightWrapper(IElement wrapper, StringBuilder sb)
+    {
+        EnsureBlockStart(sb);
+
+        var languageId = wrapper.GetAttribute("data-language") ?? "";
+        var preElement = wrapper.QuerySelector("pre");
+        var codeText = preElement?.TextContent.TrimEnd('\n') ?? "";
+
+        sb.Append("```").Append(languageId).Append('\n');
+        sb.Append(codeText);
+        sb.Append("\n```\n\n");
+    }
+
+    /// <summary>
+    /// Emits a Pennington alert block as GFM admonition syntax. Alert type is read from
+    /// the <c>markdown-alert-{type}</c> class; the <c>markdown-alert-title</c> paragraph
+    /// is dropped (the type name appears in the GFM marker line) and the body is rendered
+    /// as quoted markdown.
+    /// </summary>
+    private static void EmitMarkdownAlert(IElement element, StringBuilder sb, int listDepth, Stack<(bool Ordered, int Index)> orderedStack, Func<string, string>? rewriteHref)
+    {
+        EnsureBlockStart(sb);
+
+        var alertType = "NOTE";
+        foreach (var cls in element.ClassList)
+        {
+            if (cls.StartsWith("markdown-alert-", StringComparison.OrdinalIgnoreCase))
+            {
+                alertType = cls["markdown-alert-".Length..].ToUpperInvariant();
+                break;
+            }
+        }
+
+        var inner = new StringBuilder();
+        foreach (var child in element.Children)
+        {
+            // Skip the title paragraph — its content is the alert type, which is already
+            // encoded in the `[!TYPE]` marker line.
+            if (child.ClassList.Contains("markdown-alert-title")) continue;
+            RenderElement(child, inner, listDepth, orderedStack, rewriteHref);
+        }
+
+        var bodyText = inner.ToString().TrimEnd();
+        sb.Append("> [!").Append(alertType).Append("]\n");
+        foreach (var line in bodyText.Split('\n'))
+        {
+            sb.Append("> ").Append(line).Append('\n');
+        }
+        sb.Append('\n');
+    }
+
+    /// <summary>
+    /// Emits a Pennington tabbed code block as labeled H3 sections — one per tab. LLMs
+    /// see every language variant rather than just the first, which is the correct read
+    /// when the same operation is shown across (e.g.) C#, F#, and VB.
+    /// </summary>
+    private static void EmitTabbedCodeBlock(IElement container, StringBuilder sb, int listDepth, Stack<(bool Ordered, int Index)> orderedStack, Func<string, string>? rewriteHref)
+    {
+        EnsureBlockStart(sb);
+
+        var buttons = container.QuerySelectorAll("[role='tab'], button.tab-button").ToList();
+        var titleById = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var button in buttons)
+        {
+            var id = button.GetAttribute("id");
+            if (string.IsNullOrEmpty(id)) continue;
+            titleById[id] = button.TextContent.Trim();
+        }
+
+        foreach (var panel in container.QuerySelectorAll("[aria-labelledby], .tab-panel"))
+        {
+            var labelledBy = panel.GetAttribute("aria-labelledby");
+            var title = labelledBy is not null && titleById.TryGetValue(labelledBy, out var t)
+                ? t
+                : "";
+
+            if (!string.IsNullOrEmpty(title))
+            {
+                sb.Append("### ").Append(title).Append("\n\n");
+            }
+
+            Walk(panel, sb, listDepth, orderedStack, rewriteHref);
+            EnsureBlockStart(sb);
+        }
     }
 
     private static string CollapseWhitespace(string text)

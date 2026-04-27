@@ -4,17 +4,23 @@ using System.Collections.Immutable;
 using System.IO.Abstractions;
 using FrontMatter;
 using Infrastructure;
+using LlmsTxt;
 using Pipeline;
 using Routing;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 /// <summary>
 /// Discovers and provides markdown content from a directory.
 /// When <see cref="LocalizationOptions"/> has multiple locales, also discovers
 /// content from locale subdirectories (e.g., Content/fr/, Content/de/).
 /// </summary>
-public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMarkdownContentSource
+public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMarkdownContentSource, ILlmsSubtreeProvider
     where TFrontMatter : IFrontMatter, new()
 {
+    /// <summary>Sidecar filename that, when dropped at any folder under the content root, declares that folder as an llms.txt subtree.</summary>
+    public const string LlmsSubtreeSidecarFileName = "_llms.yaml";
+
     private readonly MarkdownContentServiceOptions _options;
     private readonly FrontMatterParser _parser;
     private readonly IFileSystem _fileSystem;
@@ -22,6 +28,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
     private readonly string _absoluteContentPath;
     private readonly ImmutableArray<string> _normalizedExcludePaths;
     private AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>> _metadataLazy;
+    private AsyncLazy<ImmutableList<LlmsSubtree>> _subtreesLazy;
 
     /// <summary>
     /// Initializes the service, registers the content directory with the watcher, and prepares lazy metadata loading.
@@ -40,6 +47,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         _absoluteContentPath = _fileSystem.Path.GetFullPath(options.ContentPath.Value);
         _normalizedExcludePaths = NormalizeExcludePaths(options.ExcludePaths);
         _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>>(LoadMetadataAsync);
+        _subtreesLazy = new AsyncLazy<ImmutableList<LlmsSubtree>>(LoadSubtreesAsync);
 
         // Reset the metadata cache on any change to the watched tree. Without
         // this, TOC / discovery results are fixed to whatever was on disk at
@@ -47,6 +55,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         fileWatcher.AddPathWatch(_absoluteContentPath, "*.*", (_, _) =>
         {
             _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>>(LoadMetadataAsync);
+            _subtreesLazy = new AsyncLazy<ImmutableList<LlmsSubtree>>(LoadSubtreesAsync);
         });
     }
 
@@ -356,6 +365,78 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         }
 
         return builder.ToImmutable();
+    }
+
+    /// <inheritdoc/>
+    public Task<ImmutableList<LlmsSubtree>> GetLlmsSubtreesAsync() => _subtreesLazy.Value;
+
+    private async Task<ImmutableList<LlmsSubtree>> LoadSubtreesAsync()
+    {
+        if (!_fileSystem.Directory.Exists(_absoluteContentPath))
+            return ImmutableList<LlmsSubtree>.Empty;
+
+        var basePrefix = NormalizeBasePageUrl(_options.BasePageUrl.Value);
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .IgnoreUnmatchedProperties()
+            .Build();
+
+        var builder = ImmutableList.CreateBuilder<LlmsSubtree>();
+
+        foreach (var file in _fileSystem.Directory.EnumerateFiles(
+            _absoluteContentPath, LlmsSubtreeSidecarFileName, SearchOption.AllDirectories))
+        {
+            string content;
+            try
+            {
+                content = await _fileSystem.File.ReadAllTextAsync(file);
+            }
+            catch
+            {
+                continue;
+            }
+
+            LlmsSubtreeSidecar? sidecar;
+            try
+            {
+                sidecar = deserializer.Deserialize<LlmsSubtreeSidecar?>(content);
+            }
+            catch
+            {
+                continue;
+            }
+
+            if (sidecar is null || string.IsNullOrWhiteSpace(sidecar.Title)) continue;
+
+            var folder = _fileSystem.Path.GetDirectoryName(file) ?? _absoluteContentPath;
+            var relativeFolder = _fileSystem.Path
+                .GetRelativePath(_absoluteContentPath, folder)
+                .Replace('\\', '/')
+                .Trim('/');
+
+            // GetRelativePath returns "." when folder == base; treat that as the content root.
+            if (relativeFolder == ".") relativeFolder = "";
+
+            var prefix = relativeFolder.Length == 0
+                ? basePrefix
+                : basePrefix + relativeFolder + "/";
+
+            builder.Add(new LlmsSubtree(prefix, sidecar.Title, sidecar.Description ?? ""));
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static string NormalizeBasePageUrl(string raw)
+    {
+        var trimmed = (raw ?? "").Trim('/');
+        return trimmed.Length == 0 ? "/" : "/" + trimmed + "/";
+    }
+
+    private sealed class LlmsSubtreeSidecar
+    {
+        public string? Title { get; set; }
+        public string? Description { get; set; }
     }
 
     /// <summary>Returns locale codes for non-default locales when multi-locale is configured.</summary>

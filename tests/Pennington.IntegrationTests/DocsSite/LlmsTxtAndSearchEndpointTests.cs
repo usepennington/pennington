@@ -139,6 +139,114 @@ public class LlmsTxtAndSearchEndpointTests : IClassFixture<DocsRealServerFixture
     }
 
     [Fact]
+    public async Task LlmsTxt_FrontDoor_StaysCompact()
+    {
+        // The /reference/ subtree (declared via _llms.yaml) splits the densest area out
+        // of the front door. The fixture doesn't wire AddApiReference, so this measures
+        // the content-tree subtree benefit only; production also pulls /reference/api/
+        // out via the programmatic registration, shrinking the front door further.
+        var content = await _fixture.Client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
+        content.Length.ShouldBeLessThan(16_000,
+            $"front door is {content.Length} bytes; the /reference/ subtree split should keep it under 16KB");
+    }
+
+    [Fact]
+    public async Task LlmsTxt_FrontDoor_DoesNotInlineSubtreeLeafSidecars()
+    {
+        // After the subtree split, the front door only contains a See-also pointer to
+        // /reference/llms.txt; individual /reference/.../*.md sidecar links must live
+        // inside the subtree file, not the front door.
+        var content = await _fixture.Client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
+
+        content.ShouldNotContain("/_llms/reference/");
+        content.ShouldContain("/reference/llms.txt");
+    }
+
+    [Fact]
+    public async Task LlmsTxt_FrontDoor_EmbedsMetadataBlock()
+    {
+        var content = await _fixture.Client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
+
+        // Front-door identity: site origin, self-canonical, generation timestamp,
+        // and the generator string for tooling that wants to disambiguate.
+        content.ShouldContain("site:");
+        content.ShouldContain("canonical:");
+        content.ShouldContain("generated:");
+        content.ShouldContain("generator: pennington/");
+
+        // The generator version should match the LlmsTxtService assembly's informational version
+        // (MinVer-populated in Directory.Build.props).
+        var attr = typeof(LlmsTxtService).Assembly
+            .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
+            .Cast<System.Reflection.AssemblyInformationalVersionAttribute>()
+            .FirstOrDefault();
+        var expected = attr?.InformationalVersion ?? "unknown";
+        content.ShouldContain($"generator: pennington/{expected}");
+    }
+
+    [Fact]
+    public async Task LlmsTxt_FrontDoor_HasMapBlockListingSubtrees()
+    {
+        var content = await _fixture.Client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
+
+        // Map block replaces See-also: same purpose (point at subtree splits) but with
+        // entry counts and token estimates so a budget-aware client can plan its fetches.
+        content.ShouldContain("## Map");
+        // The docs site declares /reference/ as a subtree via _llms.yaml, so the Map must point at it.
+        content.ShouldContain("](/reference/llms.txt)");
+        // Entries-and-tokens parenthetical attached to each subtree entry.
+        content.ShouldContain("entries,");
+        content.ShouldContain("tokens)");
+    }
+
+    [Fact]
+    public async Task ReferenceSubtree_LlmsTxt_ContainsReferenceEntries()
+    {
+        // The subtree's llms.txt is emitted as a static-build artifact alongside per-page
+        // sidecars; pull it directly from the service rather than the live HTTP endpoint.
+        var llmsService = _fixture.Services.GetRequiredService<LlmsTxtService>();
+        var subtreeFiles = await llmsService.GetSubtreeFilesAsync();
+
+        var refFile = subtreeFiles.FirstOrDefault(f =>
+            f.OutputPath.Value.Equals("reference/llms.txt", StringComparison.OrdinalIgnoreCase));
+
+        refFile.ShouldNotBeNull("expected /reference/llms.txt subtree file");
+        var text = Encoding.UTF8.GetString(refFile!.Content);
+        text.ShouldContain("# Reference");
+        // Should contain at least one entry linked to its sidecar markdown.
+        text.ShouldContain("/_llms/reference/");
+    }
+
+    [Fact]
+    public async Task Sidecar_HasRichYamlFrontMatter()
+    {
+        var llmsService = _fixture.Services.GetRequiredService<LlmsTxtService>();
+        var files = await llmsService.GetMarkdownFilesAsync();
+
+        files.Count.ShouldBeGreaterThan(0);
+
+        foreach (var file in files)
+        {
+            var text = Encoding.UTF8.GetString(file.Content);
+            var firstLine = text.Split('\n', 2)[0];
+            text.StartsWith("---", StringComparison.Ordinal).ShouldBeTrue(
+                $"sidecar {file.OutputPath.Value} should start with YAML frontmatter; got: {firstLine}");
+
+            // Required fields per the LLM-output spec: identifies the page,
+            // pins it to a canonical URL, and gives a budget-aware client the
+            // hash + token estimate it needs.
+            text.ShouldContain("title:");
+            text.ShouldContain("canonical_url:");
+            text.ShouldContain("sidecar_url:");
+            text.ShouldContain("content_hash: sha256:");
+            text.ShouldContain("tokens:");
+
+            var headerEnd = text.IndexOf("\n---", 4, StringComparison.Ordinal);
+            headerEnd.ShouldBeGreaterThan(0, $"sidecar {file.OutputPath.Value} has unterminated YAML header");
+        }
+    }
+
+    [Fact]
     public async Task LlmsTxt_MarkdownFiles_RewriteInternalLinksToStrippedMarkdown()
     {
         // Links inside a stripped _llms/*.md that point to another indexed page

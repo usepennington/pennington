@@ -10,9 +10,16 @@ public sealed class LlmsTxtOptions
     public bool GenerateFullFile { get; set; }
 
     /// <summary>
-    /// CSS selector identifying the main content element inside the rendered page HTML
-    /// (e.g. "#main-content", "article", "main"). The matched element is converted to
-    /// markdown for the llms.txt output. When null, the entire &lt;body&gt; is used.
+    /// CSS selector used to scope the HTML-to-markdown conversion when a page is fetched
+    /// over HTTP for the LLM channel. Markdown-source pages render via the rendition
+    /// channel and ignore this setting — this only applies to Razor pages and other
+    /// non-markdown content where the LlmsTxtService falls back to fetching the live
+    /// rendered HTML and stripping the layout chrome.
+    /// <para>
+    /// Default <see langword="null"/> means the whole <c>&lt;body&gt;</c> is used.
+    /// Hosts with a layout shell (e.g. DocSite's <c>#main-content</c>) should set this
+    /// so navigation, footers, and other chrome don't bleed into the LLM sidecars.
+    /// </para>
     /// </summary>
     public string? ContentSelector { get; set; }
 }

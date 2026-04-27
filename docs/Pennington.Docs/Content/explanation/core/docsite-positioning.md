@@ -29,7 +29,7 @@ DocSite owns exactly one `AddMarkdownContent<DocSiteFrontMatter>` registration. 
 
 `DocSiteOptions.ColorScheme`, `DisplayFontFamily`, `BodyFontFamily`, `ExtraStyles`, and `CustomCssFrameworkSettings` offer tweak points against MonorailCSS, but the theme composition itself — `AddMonorailCss` plus the DocSite `App` component plus the article slot renderer — is fixed. Replacing the `App` component or introducing a non-article layout means registering extra routing assemblies via `AdditionalRoutingAssemblies` and accepting that custom components ride alongside DocSite's, not in place of them.
 
-`SearchIndexContentSelector` and `LlmsTxtContentSelector` on `DocSiteOptions` both default to `#main-content` — the wrapper the stock layout places around the article — and accept any CSS selector, including the empty string to index the full body when the layout has been replaced.
+`SearchIndexContentSelector` and `LlmsTxtContentSelector` on `DocSiteOptions` both default to `#main-content` — the wrapper the stock layout places around the article — and accept any CSS selector, including the empty string to index the full body when the layout has been replaced. The LLM channel renders markdown content through the engine's rendition channel directly; the selector only applies to the HTTP-fetch fallback used for Razor pages and API symbol pages.
 
 To summarize the current caps precisely: one markdown source registration, extendable via `ConfigurePennington` or by dropping a level; a fixed theme composition (`AddMonorailCss` plus the DocSite layout shell) that is tweakable but not swappable; and a fixed slot renderer and `App` component that can only be extended through additional routing assemblies, not replaced.
 

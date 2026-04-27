@@ -7,13 +7,12 @@ sectionLabel: Configuration
 tags: [configuration, llms-txt, discovery, front-matter]
 ---
 
-When LLM crawlers and agents should ingest the site without scraping HTML, the `/llms.txt` index plus per-page stripped-markdown sidecars give them a direct surface. On `AddDocSite` hosts the wiring is automatic and output is controlled through front matter; on bare `AddPennington` hosts `AddLlmsTxt(...)` is called explicitly with a chosen `ContentSelector`. If no site exists yet, start with [Your first Pennington site](xref:tutorials.getting-started.first-page).
+When LLM crawlers and agents should ingest the site without scraping HTML, the `/llms.txt` index plus per-page stripped-markdown sidecars give them a direct surface. On `AddDocSite` hosts the wiring is automatic and output is controlled through front matter; on bare `AddPennington` hosts a single `AddLlmsTxt(...)` call enables it. If no site exists yet, start with [Your first Pennington site](xref:tutorials.getting-started.first-page).
 
 ## Assumptions
 
 - A working Pennington site (see [Your first Pennington site](xref:tutorials.getting-started.first-page) if not)
 - The chosen host extension — `AddDocSite` vs bare `AddPennington` — and the reason for that choice (see [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning))
-- Pages that should be indexed are reachable over HTTP in dev mode (llms.txt generation fetches each rendered page through the running host)
 
 For a working DocSite setup with one opted-out page, refer to `Content/main/llms-hidden.md` in `examples/DocSiteKitchenSinkExample`.
 
@@ -23,7 +22,7 @@ For a working DocSite setup with one opted-out page, refer to `Content/main/llms
 
 ### Decide: DocSite front matter, or bare `AddLlmsTxt`?
 
-`AddDocSite` already calls `AddLlmsTxt` internally and defaults `ContentSelector` to `#main-content`. On a DocSite host, per-page inclusion is controlled through front matter (below), with an optional selector override through `DocSiteOptions.LlmsTxtContentSelector`. On a bare `AddPennington` host nothing is wired — `AddLlmsTxt(...)` needs an explicit call with a chosen `ContentSelector`.
+`AddDocSite` already calls `AddLlmsTxt` internally and defaults `ContentSelector` to `#main-content`. On a DocSite host, per-page inclusion is controlled through front matter (below), with an optional selector override through `DocSiteOptions.LlmsTxtContentSelector`. On a bare `AddPennington` host nothing is wired — `AddLlmsTxt(...)` needs an explicit call. Markdown content always renders through the engine's rendition channel; the selector applies only to the HTTP-fetch fallback used for Razor pages and API symbol pages, where it scopes the live HTML to the article and strips layout chrome.
 
 ### (DocSite) Opt a page out with `llms: false`
 
@@ -56,11 +55,11 @@ For finer control than page-level opt-out, two paired classes mark a fragment as
 </div>
 ```
 
-The classes work anywhere inside the `ContentSelector` — markdown bodies, Razor components, auto-generated reference pages.
+The classes work anywhere in the rendered page — markdown bodies, Razor components, auto-generated reference pages.
 
 ### (Bare Pennington) Enable `LlmsTxtOptions` with `AddLlmsTxt`
 
-On a bare host nothing is wired until `penn.AddLlmsTxt(...)` is called. The options surface covers `OutputDirectory` (where per-page stripped-markdown sidecars land, defaults to `_llms`), `GenerateFullFile`, and `ContentSelector` (CSS selector that scopes HTML-to-markdown extraction; null means the whole `<body>`).
+On a bare host nothing is wired until `penn.AddLlmsTxt(...)` is called. The options surface covers `OutputDirectory` (where per-page sidecars land, defaults to `_llms`), `GenerateFullFile` (emit a concatenated `/llms-full.txt` for one-shot ingest), and `ContentSelector` (CSS selector applied to the HTTP-fetched HTML for non-markdown content; null means the whole `<body>`).
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.LlmsTxtConfiguration.Configure(Pennington.LlmsTxt.LlmsTxtOptions)
@@ -103,8 +102,8 @@ A typical excerpt:
 
 ## Verify
 
-- Run `dotnet run` and fetch `/llms.txt`. Expect one line per indexed page, and no line for any page marked `llms: false`
-- Fetch one per-page sidecar (for example, `/_llms/<page>.md`). Expect stripped markdown scoped to the `ContentSelector`, with navigation chrome gone
+- Run `dotnet run` and fetch `/llms.txt`. Expect a metadata block, a `## Map` section listing per-subtree splits with token estimates, then nav-grouped links — and no line for any page marked `llms: false`
+- Fetch one per-page sidecar (for example, `/_llms/<page>.md`). Expect a YAML header with `canonical_url`, `content_hash`, `tokens`, and the body stripped to clean markdown
 - With `GenerateFullFile = true`, fetch `/llms-full.txt`. Expect every sidecar concatenated in one response
 
 ## Related

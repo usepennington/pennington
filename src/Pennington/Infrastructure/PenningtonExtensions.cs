@@ -438,6 +438,14 @@ public static class PenningtonExtensions
         // and publish share one code path for redirects.
         app.UseMiddleware<PenningtonRedirectMiddleware>();
 
+        // Llms.txt subtree files and per-page sidecars. Runs as middleware so
+        // /reference/api/llms.txt isn't claimed by the API-reference Razor route's
+        // {slug} segment.
+        if (app.Services.GetService<LlmsTxtOptions>() is not null)
+        {
+            app.UseMiddleware<LlmsTxt.LlmsTxtMiddleware>();
+        }
+
         // Search index and sitemap endpoints (auto-discovered by static build).
         // One search-index file per configured locale so clients only fetch their
         // locale's documents. Use concrete URLs (not a {locale} route param) so

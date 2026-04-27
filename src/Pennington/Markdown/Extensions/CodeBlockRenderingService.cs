@@ -47,7 +47,7 @@ public sealed class CodeBlockRenderingService
                 var html = result.SkipTransform
                     ? result.HighlightedHtml
                     : CodeTransformer.Transform(result.HighlightedHtml);
-                return CodeBlockHtmlBuilder.BuildHtml(html, effectiveOptions, isInTabGroup);
+                return CodeBlockHtmlBuilder.BuildHtml(html, effectiveOptions, isInTabGroup, languageId);
             }
         }
 
@@ -61,12 +61,12 @@ public sealed class CodeBlockRenderingService
                 highlightedHtml = CodeTransformer.Transform(highlightedHtml);
             }
 
-            return CodeBlockHtmlBuilder.BuildHtml(highlightedHtml, effectiveOptions, isInTabGroup);
+            return CodeBlockHtmlBuilder.BuildHtml(highlightedHtml, effectiveOptions, isInTabGroup, languageId);
         }
         catch
         {
             var fallbackHtml = $"<pre><code>{WebUtility.HtmlEncode(code)}</code></pre>";
-            return CodeBlockHtmlBuilder.BuildHtml(fallbackHtml, effectiveOptions, isInTabGroup);
+            return CodeBlockHtmlBuilder.BuildHtml(fallbackHtml, effectiveOptions, isInTabGroup, languageId);
         }
     }
 

@@ -96,9 +96,12 @@ public record DocSiteOptions
     public string? SearchIndexContentSelector { get; init; }
 
     /// <summary>
-    /// Override the CSS selector used to scope llms.txt raw-markdown extraction.
-    /// Default is <c>#main-content</c>. Same conventions as
-    /// <see cref="SearchIndexContentSelector"/>.
+    /// Override the CSS selector used to scope HTML-to-markdown extraction for the
+    /// LLM-channel HTTP-fetch fallback (used for Razor pages and other non-markdown
+    /// content that don't have a markdown source to render). Markdown content uses
+    /// the rendition channel directly and ignores this. Default is <c>#main-content</c>;
+    /// override when the layout has been replaced. Set to an empty string to extract
+    /// the full body.
     /// </summary>
     public string? LlmsTxtContentSelector { get; init; }
 
