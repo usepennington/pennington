@@ -23,7 +23,7 @@ These ship to readers right now.
 
 - [x] **Resolve TODO marker in `how-to/deployment/base-url.md:86`.** Bullet says `<!-- TODO: xmldocid needed --> 'BaseUrlHtmlRewriter' API reference`. Confirm the type still exists in `src/Pennington/`, then either link to its API ref page via `xref:` or delete the bullet.
 
-- [ ] **Resolve TODO marker in `how-to/configuration/localization.md:105`.** Bullet says `TODO — Explanation page on locale routing and content fallback (not yet written in TOC)`. The page does exist (`explanation/localization/urls-and-fallback.md`); replace the TODO with `<xref:explanation.localization.urls-and-fallback>` (verify the actual uid in that file's front matter).
+- [x] **Resolve TODO marker in `how-to/configuration/localization.md:105`.** Bullet says `TODO — Explanation page on locale routing and content fallback (not yet written in TOC)`. The page does exist (`explanation/localization/urls-and-fallback.md`); replace the TODO with `<xref:explanation.localization.urls-and-fallback>` (verify the actual uid in that file's front matter).
 
 - [ ] **Resolve TODO marker in `how-to/deployment/self-host.md:86`.** Bullet says `TODO — add link to the "Unified dev-and-build path" explanation page once published`. The page exists at `explanation/core/dev-vs-build.md`; replace the TODO with the corresponding `xref:` link (verify uid in front matter).
 

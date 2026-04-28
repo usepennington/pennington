@@ -102,4 +102,4 @@ The language switcher in the layout lists one entry per registered locale, and e
 - Tutorial: [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale)
 - Reference: [`LocalizationOptions`](xref:reference.api.localization-options)
 - Reference: [`TranslationOptions`](xref:reference.api.translation-options)
-- Background: TODO — Explanation page on locale routing and content fallback (not yet written in TOC)
+- Background: [Locale-aware URLs and content fallback](xref:explanation.localization.urls-and-fallback)
