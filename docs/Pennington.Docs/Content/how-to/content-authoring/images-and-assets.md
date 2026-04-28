@@ -43,9 +43,11 @@ When deploying under a sub-path, `BaseUrlHtmlRewriter` prepends the base URL at 
 
 ### Excluded subtrees
 
-To keep a folder under `Content/` out of the output, list it in `MarkdownContentServiceOptions.ExcludePaths` when calling `AddMarkdownContent<T>`. The copy pass skips any relative path matched by `ExcludePaths`.
+To keep a folder under `Content/` out of the output, list it in `MarkdownContentOptions.ExcludePaths` when calling `AddMarkdownContent<T>`. The copy pass skips any relative path matched by `ExcludePaths`.
 
-<!-- TODO: xmldocid needed -->
+```csharp:xmldocid
+P:Pennington.Infrastructure.MarkdownContentOptions.ExcludePaths
+```
 
 ## Verify
 
