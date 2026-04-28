@@ -25,7 +25,7 @@ public sealed class FileWatcher : IFileWatcher
     /// <inheritdoc/>
     public void AddPathWatch(string path, string filePattern, Action<string, WatcherChangeTypes> onFileChanged, bool includeSubdirectories = true)
     {
-        _logger?.LogInformation("Adding file watch: {Path} with pattern {Pattern}", path, filePattern);
+        _logger?.LogDebug("Adding file watch: {Path} with pattern {Pattern}", path, filePattern);
         var fullPath = _fileSystem.Path.GetFullPath(path);
         var key = $"{fullPath}|{filePattern}";
 

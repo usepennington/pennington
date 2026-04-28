@@ -106,7 +106,38 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
         var workspace = MSBuildWorkspace.Create(properties);
         workspace.RegisterWorkspaceFailedHandler(args =>
         {
-            _logger.LogWarning("Workspace failed: {Diagnostic}", args.Diagnostic);
+            var diagnostic = args.Diagnostic;
+            var message = diagnostic.Message;
+
+            // [Warning] kind from MSBuildWorkspace is its own "informational" tier —
+            // typically "found project reference without a matching metadata reference"
+            // emitted while parallel multi-target evaluation is in flight. Roslyn falls
+            // back to source compilation when a metadata reference is missing, so the
+            // resulting symbols are still correct. Real config mistakes (a project
+            // reference pointing at a missing csproj, etc.) would have already failed
+            // `dotnet build` before we got here.
+            if (diagnostic.Kind == WorkspaceDiagnosticKind.Warning)
+            {
+                _logger.LogDebug("Workspace warning (suppressed): {Diagnostic}", diagnostic);
+                return;
+            }
+
+            // [Failure] kind: MSBuildWorkspace evaluates project references in parallel;
+            // multi-targeted inner builds race on the same per-TFM cache files under
+            // our redirected _tempBuildPath ("AssemblyReference.cache",
+            // "GlobalUsings.g.cs", "AssemblyInfoInputs.cache", "AssemblyAttributes.cs").
+            // Roslyn builds compilations from in-memory state — these on-disk caches
+            // don't affect the symbols we extract — so demote the race to Debug rather
+            // than surface a confusing temp-path warning.
+            if (message.Contains(_tempBuildPath, StringComparison.OrdinalIgnoreCase) &&
+                (message.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
+                 message.Contains("being used by another process", StringComparison.OrdinalIgnoreCase)))
+            {
+                _logger.LogDebug("Workspace cache race in temp build dir (suppressed): {Diagnostic}", diagnostic);
+                return;
+            }
+
+            _logger.LogWarning("Workspace failed: {Diagnostic}", diagnostic);
         });
 
         try

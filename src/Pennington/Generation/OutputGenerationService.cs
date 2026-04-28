@@ -76,6 +76,8 @@ public sealed class OutputGenerationService
 
         var outputDir = _outputOptions.OutputDirectory.Value;
 
+        _logger.LogInformation("Discovering content");
+
         // Phase 0: Detect markdown content source overlap (e.g. a catch-all source
         // whose ContentPath includes a subfolder owned by a more specific source).
         // Surfaced as warnings so users can see and fix the misconfig; duplicate
@@ -137,7 +139,7 @@ public sealed class OutputGenerationService
             mapGetPages.Add(page);
         }
 
-        _logger.LogDebug("Static generation: {ContentCount} content pages, {MapGetCount} MapGet routes",
+        _logger.LogInformation("Found {ContentCount} content pages, {EndpointCount} static endpoints",
             contentPages.Count, mapGetPages.Count);
 
         // Phase 3: Clean output directory (if configured) and ensure it exists
@@ -175,6 +177,7 @@ public sealed class OutputGenerationService
         }
 
         // Phase 6: Fetch all HTML content pages (in parallel)
+        _logger.LogInformation("Generating pages");
         var contentResults = await FetchPagesAsync(client, contentPages, outputDir, writeToDisk);
         ProcessFetchResults(reportBuilder, contentResults);
 
@@ -203,6 +206,7 @@ public sealed class OutputGenerationService
         }
 
         // Phase 9: Verify internal links across all fetched HTML pages
+        _logger.LogInformation("Verifying links");
         var allRoutes = contentPages.Concat(mapGetPages).Select(p => p.Route);
         var linkVerifier = new LinkVerificationService(
             allRoutes,

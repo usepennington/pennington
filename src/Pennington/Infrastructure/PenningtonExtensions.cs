@@ -25,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Navigation;
 using Pipeline;
 using Routing;
@@ -66,6 +67,20 @@ public static class PenningtonExtensions
         if (args.Length > 1 && args[1].Equals("build", StringComparison.OrdinalIgnoreCase))
         {
             services.AddSingleton<IServer, TestServer>();
+
+            // Mute the host's "Application started / Hosting environment / Content root"
+            // chatter — the build is in-process and the user wants Pennington's own
+            // progress messages, not lifetime breadcrumbs. Pennington.* is bumped to
+            // Information so the phase logs surface even when the host's appsettings
+            // sets a Default of Warning. The custom formatter strips the
+            // "info: Category[0]" prefix so the build reads like a CLI tool.
+            services.AddLogging(b =>
+            {
+                b.AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Warning);
+                b.AddFilter("Pennington", LogLevel.Information);
+                b.AddConsole(o => o.FormatterName = BuildConsoleFormatter.Name);
+                b.AddConsoleFormatter<BuildConsoleFormatter, ConsoleFormatterOptions>();
+            });
         }
 
         // Register islands from the options API
