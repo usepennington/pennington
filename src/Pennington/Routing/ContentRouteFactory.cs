@@ -75,9 +75,7 @@ public static class ContentRouteFactory
     /// <summary>Razor: @page directive to route.</summary>
     public static ContentRoute FromRazorPage(string pageRoute, string locale = "")
     {
-        var path = new UrlPath(pageRoute).EnsureLeadingSlash().RemoveTrailingSlash();
-        if (!string.IsNullOrEmpty(locale))
-            path = new UrlPath($"/{locale}{path.Value}");
+        var path = ApplyLocalePrefix(new UrlPath(pageRoute).EnsureLeadingSlash().RemoveTrailingSlash(), locale);
 
         return new ContentRoute
         {
@@ -90,9 +88,7 @@ public static class ContentRouteFactory
     /// <summary>Programmatic: explicit URL to route.</summary>
     public static ContentRoute FromUrl(UrlPath url, string locale = "")
     {
-        var path = url.EnsureLeadingSlash().RemoveTrailingSlash();
-        if (!string.IsNullOrEmpty(locale))
-            path = new UrlPath($"/{locale}{path.Value}");
+        var path = ApplyLocalePrefix(url.EnsureLeadingSlash().RemoveTrailingSlash(), locale);
 
         return new ContentRoute
         {
@@ -105,9 +101,7 @@ public static class ContentRouteFactory
     /// <summary>Custom: for non-markdown content services.</summary>
     public static ContentRoute FromCustom(UrlPath url, FilePath? sourceFile = null, string locale = "")
     {
-        var path = url.EnsureLeadingSlash().RemoveTrailingSlash();
-        if (!string.IsNullOrEmpty(locale))
-            path = new UrlPath($"/{locale}{path.Value}");
+        var path = ApplyLocalePrefix(url.EnsureLeadingSlash().RemoveTrailingSlash(), locale);
 
         return new ContentRoute
         {
@@ -161,4 +155,7 @@ public static class ContentRouteFactory
     // Normalize URL segment: lowercase, replace backslashes
     private static string NormalizeSegment(string segment)
         => segment.Replace('\\', '/').ToLowerInvariant();
+
+    private static UrlPath ApplyLocalePrefix(UrlPath path, string locale)
+        => string.IsNullOrEmpty(locale) ? path : new UrlPath($"/{locale}{path.Value}");
 }
