@@ -92,7 +92,11 @@ builder.Services.AddApiReference();
 
 // Pennington-specific front-matter key catalog. Stays here because it is
 // coupled to Pennington.FrontMatter.IFrontMatter and the capability interfaces.
-builder.Services.AddSingleton<FrontMatterKeyIndex>();
+// AddApiMetadataFromRoslyn registers ApiReferenceOptions as a keyed singleton,
+// so resolve it explicitly when activating the index.
+builder.Services.AddSingleton<FrontMatterKeyIndex>(sp =>
+    ActivatorUtilities.CreateInstance<FrontMatterKeyIndex>(sp,
+        sp.GetRequiredKeyedService<ApiReferenceOptions>("default")));
 builder.Services.AddMdazorComponent<FrontMatterKeys>();
 
 // Dev-time full-screen dashboard. No-ops when the host is launched with

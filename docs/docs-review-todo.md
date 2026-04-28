@@ -39,11 +39,11 @@ Reference pages invoke Mdazor components that may or may not be wired. If a comp
 
 For each item: build the docs site (`dotnet run --project docs/Pennington.Docs`), open the page in a browser, and confirm the component produces visible output. If it doesn't, either wire the component (see `docs/Pennington.Docs/Program.cs:96` for the pattern used for `FrontMatterKeys`) or replace the invocation with a static markdown table.
 
-- [ ] **Verify `<ExtensionMethods Receiver="…" />` renders in `reference/host/extensions.md`.** The page invokes the component three times (`Receiver="IServiceCollection"`, `"WebApplication"`, `"IEndpointRouteBuilder"`). Confirm a component by that name and contract exists. If not, swap to a markdown table.
+- [x] **Verify `<ExtensionMethods Receiver="…" />` renders in `reference/host/extensions.md`.** The page invokes the component three times (`Receiver="IServiceCollection"`, `"WebApplication"`, `"IEndpointRouteBuilder"`). Confirm a component by that name and contract exists. If not, swap to a markdown table.
 
-- [ ] **Verify `<FieldList>` and `<Field>` render in `reference/diagnostics/request-context.md:31-40`.** These wrap the positional parameters of the `Diagnostic` record. If unwired, replace with a `| Name | Type | Default | Description |` table.
+- [x] **Verify `<FieldList>` and `<Field>` render in `reference/diagnostics/request-context.md:31-40`.** These wrap the positional parameters of the `Diagnostic` record. If unwired, replace with a `| Name | Type | Default | Description |` table.
 
-- [ ] **Confirm `<FrontMatterKeys />` in `reference/front-matter/keys.md:18` produces the expected catalog.** The component is registered (`docs/Pennington.Docs/Program.cs:96`), so this is a sanity check rather than a likely fix.
+- [x] **Confirm `<FrontMatterKeys />` in `reference/front-matter/keys.md:18` produces the expected catalog.** The component is registered (`docs/Pennington.Docs/Program.cs:96`), so this is a sanity check rather than a likely fix. _Caught a real bug: the index couldn't activate because `ApiReferenceOptions` is registered as a keyed singleton by `AddApiMetadataFromRoslyn`. Fixed by resolving the keyed option at registration time in `Program.cs`._
 
 ---
 
