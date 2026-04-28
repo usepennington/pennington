@@ -10,7 +10,6 @@ using Content;
 using FrontMatter;
 using Infrastructure;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Navigation;
 using Pipeline;
@@ -37,7 +36,14 @@ public sealed class LlmsTxtService
 
     /// <summary>Creates the service; data is computed lazily on first request.</summary>
     public LlmsTxtService(
-        IServiceProvider serviceProvider,
+        IEnumerable<IContentService> contentServices,
+        IContentParser parser,
+        IContentRenderer renderer,
+        XrefResolvingService xrefResolver,
+        RenderedHtmlFetcher fetcher,
+        IEnumerable<LlmsSubtree> subtrees,
+        IFileSystem fileSystem,
+        IWebHostEnvironment hostingEnvironment,
         PenningtonOptions pennOptions,
         LlmsTxtOptions llmsTxtOptions,
         CanonicalBaseUrl canonicalBase,
@@ -45,7 +51,10 @@ public sealed class LlmsTxtService
         ILogger<LlmsTxtService> logger)
     {
         _dataLazy = new AsyncLazy<LlmsTxtData>(
-            () => BuildAsync(serviceProvider, pennOptions, llmsTxtOptions, canonicalBase, navigationBuilder, logger));
+            () => BuildAsync(
+                contentServices, parser, renderer, xrefResolver, fetcher, subtrees,
+                fileSystem, hostingEnvironment,
+                pennOptions, llmsTxtOptions, canonicalBase, navigationBuilder, logger));
     }
 
     /// <summary>Returns the generated llms.txt index content.</summary>
@@ -61,26 +70,20 @@ public sealed class LlmsTxtService
     public async Task<string?> GetLlmsFullTxtAsync() => (await _dataLazy.Value).FullContent;
 
     private static async Task<LlmsTxtData> BuildAsync(
-        IServiceProvider sp,
+        IEnumerable<IContentService> contentServices,
+        IContentParser parser,
+        IContentRenderer renderer,
+        XrefResolvingService xrefResolver,
+        RenderedHtmlFetcher fetcher,
+        IEnumerable<LlmsSubtree> programmaticSubtrees,
+        IFileSystem fileSystem,
+        IWebHostEnvironment hostingEnvironment,
         PenningtonOptions pennOptions,
         LlmsTxtOptions llmsTxtOptions,
         CanonicalBaseUrl canonicalBase,
         NavigationBuilder navigationBuilder,
         ILogger<LlmsTxtService> logger)
     {
-        var contentServices = sp.GetServices<IContentService>()
-            .Where(s => s is not LlmsTxtContentService)
-            .ToList();
-        var parser = sp.GetRequiredService<IContentParser>();
-        var renderer = sp.GetRequiredService<IContentRenderer>();
-        // XrefResolvingService is the same one the response pipeline uses; calling it
-        // here lets us resolve `[text](xref:uid)` and `<xref:uid>` to canonical URLs
-        // without an HTTP self-fetch through the response middleware chain.
-        var xrefResolver = sp.GetRequiredService<XrefResolvingService>();
-        // Fallback fetcher for non-markdown content (Razor pages, API symbol pages):
-        // these have no markdown source to render, so we self-fetch the rendered HTML
-        // and run it through the same converter rules as the rendition channel output.
-        var fetcher = sp.GetRequiredService<RenderedHtmlFetcher>();
 
         var allTocItems = new List<ContentTocItem>();
         var parsedByPath = new Dictionary<string, ParsedItem>(StringComparer.OrdinalIgnoreCase);
@@ -111,8 +114,8 @@ public sealed class LlmsTxtService
         }
 
         var tree = navigationBuilder.BuildTree(allTocItems);
-        var subtrees = await CollectSubtreesAsync(sp, contentServices);
-        var header = await ReadUserHeaderAsync(sp, pennOptions);
+        var subtrees = await CollectSubtreesAsync(contentServices, programmaticSubtrees);
+        var header = await ReadUserHeaderAsync(fileSystem, hostingEnvironment, pennOptions);
 
         var linkablePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         CollectLeafPaths(tree, linkablePaths);
@@ -174,7 +177,8 @@ public sealed class LlmsTxtService
     }
 
     private static async Task<ImmutableList<LlmsSubtree>> CollectSubtreesAsync(
-        IServiceProvider sp, IEnumerable<IContentService> contentServices)
+        IEnumerable<IContentService> contentServices,
+        IEnumerable<LlmsSubtree> programmaticSubtrees)
     {
         // Programmatic registrations win on prefix collision: collect discovered first, overwrite with programmatic.
         var byPrefix = new Dictionary<string, LlmsSubtree>(StringComparer.OrdinalIgnoreCase);
@@ -187,7 +191,7 @@ public sealed class LlmsTxtService
                 byPrefix[s.RoutePrefix] = s;
         }
 
-        foreach (var s in sp.GetServices<LlmsSubtree>())
+        foreach (var s in programmaticSubtrees)
             byPrefix[s.RoutePrefix] = s;
 
         // Order by descending prefix length so longest-prefix match is first when iterating.
@@ -534,15 +538,14 @@ public sealed class LlmsTxtService
         return canonicalBase.Combine(relative).Value;
     }
 
-    private static async Task<string?> ReadUserHeaderAsync(IServiceProvider sp, PenningtonOptions pennOptions)
+    private static async Task<string?> ReadUserHeaderAsync(
+        IFileSystem fileSystem,
+        IWebHostEnvironment hostingEnvironment,
+        PenningtonOptions pennOptions)
     {
-        var fileSystem = sp.GetRequiredService<IFileSystem>();
-        var env = sp.GetService<IWebHostEnvironment>();
-        if (env is null) return null;
-
         var contentRoot = Path.IsPathRooted(pennOptions.ContentRootPath)
             ? pennOptions.ContentRootPath
-            : Path.Combine(env.ContentRootPath, pennOptions.ContentRootPath);
+            : Path.Combine(hostingEnvironment.ContentRootPath, pennOptions.ContentRootPath);
 
         var llmsTxtPath = fileSystem.Path.Combine(contentRoot, "llms.txt");
         if (!fileSystem.File.Exists(llmsTxtPath)) return null;

@@ -30,6 +30,7 @@ public sealed class OutputGenerationService
     public const string NotFoundGeneratorPath = "/__pennington-404-generator";
 
     private readonly IEnumerable<IContentService> _contentServices;
+    private readonly IEnumerable<IContentEmitter> _contentEmitters;
     private readonly OutputOptions _outputOptions;
     private readonly IWebHostEnvironment _environment;
     private readonly EndpointDataSource _endpointDataSource;
@@ -42,6 +43,7 @@ public sealed class OutputGenerationService
     /// </summary>
     public OutputGenerationService(
         IEnumerable<IContentService> contentServices,
+        IEnumerable<IContentEmitter> contentEmitters,
         OutputOptions outputOptions,
         IWebHostEnvironment environment,
         EndpointDataSource endpointDataSource,
@@ -50,6 +52,7 @@ public sealed class OutputGenerationService
         ILogger<OutputGenerationService> logger)
     {
         _contentServices = contentServices;
+        _contentEmitters = contentEmitters;
         _outputOptions = outputOptions;
         _environment = environment;
         _endpointDataSource = endpointDataSource;
@@ -351,9 +354,14 @@ public sealed class OutputGenerationService
 
     private async Task CreateContentFilesAsync(string outputDir, BuildReportBuilder reportBuilder)
     {
-        foreach (var service in _contentServices)
+        // IContentService extends IContentEmitter, but DI does not widen — services
+        // registered as IContentService are not in the IContentEmitter set. So we
+        // iterate both: services for their IContentService responsibilities
+        // (incl. GetContentToCreateAsync), then standalone emitters (e.g. the
+        // llms.txt adapter) registered directly as IContentEmitter.
+        foreach (var emitter in _contentServices.Cast<IContentEmitter>().Concat(_contentEmitters))
         {
-            var toCreate = await service.GetContentToCreateAsync();
+            var toCreate = await emitter.GetContentToCreateAsync();
             foreach (var item in toCreate)
             {
                 try

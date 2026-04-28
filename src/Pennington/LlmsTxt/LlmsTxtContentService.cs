@@ -7,33 +7,22 @@ using Pipeline;
 using Routing;
 
 /// <summary>
-/// Thin <see cref="IContentService"/> adapter that delegates to <see cref="LlmsTxtService"/>
+/// Thin <see cref="IContentEmitter"/> adapter that delegates to <see cref="LlmsTxtService"/>
 /// for file generation during static builds. Registered as transient so each
-/// resolution from the content-service enumerable picks up the current
-/// file-watched <see cref="LlmsTxtService"/>.
+/// resolution from the emitter enumerable picks up the current file-watched
+/// <see cref="LlmsTxtService"/>.
 /// </summary>
-public sealed class LlmsTxtContentService : IContentService
+public sealed class LlmsTxtContentService : IContentEmitter
 {
     private readonly LlmsTxtService _service;
     private readonly LlmsTxtOptions _options;
 
-    /// <summary>Creates a content service that emits llms.txt and stripped markdown files produced by the given <see cref="LlmsTxtService"/>.</summary>
+    /// <summary>Creates an emitter backed by the given <see cref="LlmsTxtService"/>.</summary>
     public LlmsTxtContentService(LlmsTxtService service, LlmsTxtOptions options)
     {
         _service = service;
         _options = options;
     }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
-    {
-        await Task.CompletedTask;
-        yield break;
-    }
-
-    /// <inheritdoc/>
-    public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
-        => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
     /// <inheritdoc/>
     public async Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
@@ -79,18 +68,4 @@ public sealed class LlmsTxtContentService : IContentService
 
         return builder.ToImmutable();
     }
-
-    /// <inheritdoc/>
-    public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
-        => Task.FromResult(ImmutableList<ContentTocItem>.Empty);
-
-    /// <inheritdoc/>
-    public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
-        => Task.FromResult(ImmutableList<CrossReference>.Empty);
-
-    /// <inheritdoc/>
-    public string DefaultSectionLabel => "";
-
-    /// <inheritdoc/>
-    public int SearchPriority => 0;
 }

@@ -6,7 +6,7 @@ using Pipeline;
 /// <summary>
 /// Discovers and provides content for the pipeline.
 /// </summary>
-public interface IContentService
+public interface IContentService : IContentEmitter
 {
     /// <summary>
     /// Discover all content items this service is responsible for.
@@ -17,11 +17,6 @@ public interface IContentService
     /// Static files to copy to output (images, downloads, etc.)
     /// </summary>
     Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync();
-
-    /// <summary>
-    /// Dynamically generated files (search index, etc.)
-    /// </summary>
-    Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync();
 
     /// <summary>
     /// Navigation entries for table of contents.

@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Content;
 using Infrastructure;
-using LlmsTxt;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
@@ -68,9 +67,6 @@ public sealed class SearchIndexService
 
         foreach (var service in contentServices)
         {
-            // Skip the LlmsTxtContentService to avoid indexing the llms.txt artifacts themselves.
-            if (service is LlmsTxtContentService) continue;
-
             var tocItems = await service.GetIndexableEntriesAsync();
             foreach (var toc in tocItems)
             {

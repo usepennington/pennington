@@ -275,7 +275,11 @@ public static class PenningtonExtensions
             services.AddFileWatched<LlmsTxtService>();
             // Transient so each resolution captures the current file-watched
             // LlmsTxtService — a singleton here would pin the first instance.
-            services.AddTransient<IContentService, LlmsTxtContentService>();
+            // Registered as IContentEmitter (not IContentService) to keep it
+            // out of LlmsTxtService's own IEnumerable<IContentService>; the
+            // build crawler picks it up via OutputGenerationService's emitter
+            // pass.
+            services.AddTransient<IContentEmitter, LlmsTxtContentService>();
         }
 
         // Per-request diagnostic context

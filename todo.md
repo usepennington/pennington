@@ -32,18 +32,18 @@ Build/verify commands (used throughout):
 
 ---
 
-## 2. Drop `IServiceProvider` from feature service constructors — PARTIAL ✅ (Search, Sitemap) / ❌ (LlmsTxt blocked by cycle)
+## 2. Drop `IServiceProvider` from feature service constructors ✅ DONE
 
-**Why:** Violates the "no infrastructure plumbing in domain service ctors" rule (memory: feedback_no_infra_plumbing_in_ctors.md). Each of these services captures `IServiceProvider` to lazily resolve `IContentService` instances inside async methods — a workaround for a lifetime mismatch that should be fixed at the registration, not the injection.
+**Why:** Violates the "no infrastructure plumbing in domain service ctors" rule (memory: feedback_no_infra_plumbing_in_ctors.md). Each of these services captured `IServiceProvider` to lazily resolve `IContentService` instances inside async methods — a workaround for a lifetime mismatch that should be fixed at the registration, not the injection.
 
-**Sites:**
-- `src/Pennington/Search/SearchIndexService.cs` — ✅ DONE: now injects `IEnumerable<IContentService>` directly
-- `src/Pennington/Feeds/SitemapService.cs` — ✅ DONE: now injects `IEnumerable<IContentService>`, `LocalizationOptions`, `IEnumerable<IContentParser>`
-- `src/Pennington/LlmsTxt/LlmsTxtService.cs` — ❌ BLOCKED: see "Cycle" below
+**Sites (all DONE):**
+- `src/Pennington/Search/SearchIndexService.cs` — injects `IEnumerable<IContentService>` directly; `LlmsTxtContentService` filter dropped (no longer in the set).
+- `src/Pennington/Feeds/SitemapService.cs` — injects `IEnumerable<IContentService>`, `LocalizationOptions`, `IEnumerable<IContentParser>`.
+- `src/Pennington/LlmsTxt/LlmsTxtService.cs` — injects `IEnumerable<IContentService>`, `IContentParser`, `IContentRenderer`, `XrefResolvingService`, `RenderedHtmlFetcher`, `IEnumerable<LlmsSubtree>`, `IFileSystem`, `IWebHostEnvironment`. Filter dropped.
 
-**Cycle blocking LlmsTxtService:** `LlmsTxtService` injecting `IEnumerable<IContentService>` triggers `LlmsTxtContentService` → `LlmsTxtService` → `IEnumerable<IContentService>` → … infinite recursion through `FileWatchDependencyFactory<LlmsTxtService>`. The original `IServiceProvider` deferred the enumerable to call time, breaking the cycle. Fixing this requires either (a) excluding `LlmsTxtContentService` from the `IContentService` registration (it only emits files at build time — promote it to a separate `IContentEmitter` abstraction consumed by `OutputGenerationService`/`ContentPipeline` only), or (b) breaking `LlmsTxtContentService`'s direct dep on `LlmsTxtService` via Lazy/Func (also anti-pattern). Track as its own task once a structural answer is chosen.
+**Cycle resolution (for LlmsTxtService):** Direct injection of `IEnumerable<IContentService>` originally created a cycle: `LlmsTxtService` → enumerable → `LlmsTxtContentService` → `LlmsTxtService` → … . Fixed by promoting `LlmsTxtContentService` to a new `IContentEmitter` interface (just `GetContentToCreateAsync`). `IContentService` now extends `IContentEmitter`, so existing services keep their build-time emission for free. `LlmsTxtContentService` is registered as `IContentEmitter` only, so it isn't in the `IContentService` set that `LlmsTxtService` consumes — cycle broken. `OutputGenerationService` iterates both the IContentService set (for content discovery + emission) and the standalone IContentEmitter set (for emitter-only sources).
 
-**Verify (for the two completed sites):** Build + tests pass at baseline parity (1312 passing, 11 skipped). `dotnet run --project docs/Pennington.Docs -- build` writes `output/sitemap.xml`, `output/search-index-en.json`, `output/llms.txt` (399 pages, 35s).
+**Verify:** Build + tests pass at baseline parity (1312 passing, 11 skipped). `dotnet run --project docs/Pennington.Docs -- build` writes `output/sitemap.xml`, `output/search-index-en.json`, `output/llms.txt`, plus per-page sidecars under `output/_llms/` and per-subtree `output/{prefix}/llms.txt` files (400 pages, 35s).
 
 ---
 

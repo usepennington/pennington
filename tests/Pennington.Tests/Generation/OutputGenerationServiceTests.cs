@@ -27,6 +27,7 @@ public class OutputGenerationServiceTests
 
         return new OutputGenerationService(
             contentServices ?? [],
+            [],
             outputOptions,
             env,
             endpoints,
@@ -137,6 +138,7 @@ public class OutputGenerationServiceTests
 
         var env = new StubWebHostEnvironment { WebRootFileProvider = composite };
         var service = new OutputGenerationService(
+            [],
             [],
             options,
             env,
