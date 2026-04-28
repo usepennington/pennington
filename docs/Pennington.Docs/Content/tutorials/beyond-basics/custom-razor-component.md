@@ -19,7 +19,6 @@ Along the way, the tutorial covers authoring a Razor component with `[Parameter]
 
 - .NET 11 SDK installed
 - Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the `AddDocSite` / `UseDocSite` / `RunDocSiteAsync` host shape this tutorial extends)
-- Completed [Connect to a Roslyn solution for live API snippets](xref:tutorials.beyond-basics.connect-roslyn) (previous tutorial in the Beyond the Basics section)
 - Basic Razor familiarity — a `.razor` file with `@code {}` and `[Parameter]` properties should feel routine
 
 The finished code for this tutorial lives in [`examples/BeyondCustomRazorComponentExample`](https://github.com/usepennington/pennington/tree/main/examples/BeyondCustomRazorComponentExample).

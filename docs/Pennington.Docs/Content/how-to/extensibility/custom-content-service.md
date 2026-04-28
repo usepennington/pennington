@@ -27,45 +27,22 @@ T:ExtensibilityLabExample.ReleaseEntry
 
 ## Implement the service
 
-Create a sealed class implementing <xref:reference.api.i-content-service>, inject whatever reads the source (here, `IWebHostEnvironment` for `ContentRootPath`), and cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source. The full example lives in `examples/ExtensibilityLabExample/ReleaseNotesContentService.cs`; the snippets below cover each member.
+Create a sealed class implementing <xref:reference.api.i-content-service>, inject whatever reads the source (here, `IWebHostEnvironment` for `ContentRootPath`), and cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source.
 
-`DiscoverAsync` yields one `DiscoveredItem` per page. Build each item's `ContentRoute` through `ContentRouteFactory.FromUrl` (synthetic URL, no backing file) or `ContentRouteFactory.FromCustom` (URL plus an on-disk `FilePath` so file-watching picks up edits), and pair it with a `ContentSource` case. Use `EndpointSource` when an endpoint elsewhere in `Program.cs` produces the HTML — the build crawler still discovers the URL and fetches it through the live pipeline, but the route is excluded from `sitemap.xml` because the canonical HTML is owned by the endpoint, not by this service. Reach for `RedirectSource(targetUrl)` only for genuine 30x redirects to another URL.
+Five members carry everything this how-to needs:
 
-`ContentSource` is a union that wraps exactly one of `MarkdownFileSource`, `RazorPageSource`, `RedirectSource`, `ProgrammaticSource`, or `EndpointSource` — it is not a base class. Implicit conversions from each case type make the shorthand form work; pick whichever reads more clearly.
+- `DiscoverAsync` yields one `DiscoveredItem` per page. Build each item's `ContentRoute` with `ContentRouteFactory.FromUrl` (synthetic URL, no backing file) or `ContentRouteFactory.FromCustom` (URL plus an on-disk `FilePath` so file-watching picks up edits), then pair the route with a `ContentSource` case. `EndpointSource` is used here so the build crawler fetches each URL through a sibling `MapGet` endpoint; the route is excluded from `sitemap.xml` because the canonical HTML is owned by the endpoint.
+- `GetContentTocEntriesAsync` returns one `ContentTocItem` per row for the sidebar and the search index. Set `Title`, `Route`, `Order` (tidy 10/20/30 sequences), `HierarchyParts` (sidebar nesting), and `SectionLabel` (group header).
+- `GetContentToCopyAsync` and `GetContentToCreateAsync` cover static assets (copied verbatim) and dynamically-generated sidecar files; both return `ImmutableList.Empty` when HTML served by an endpoint is the only output. `LlmsTxtContentService` uses the latter for stripped-markdown sidecars.
+- `GetCrossReferencesAsync` publishes one `CrossReference(uid, title, route)` per record so authors can deep-link specific entries with `<xref:uid>`. Pick a stable prefix (`release-1.0.0` here) so the uid does not depend on a URL that may move.
 
-```csharp
-// Explicit — the union wrap is visible
-yield return new DiscoveredItem(route, new ContentSource(new EndpointSource()));
+`ContentSource` is a union over `MarkdownFileSource`, `RazorPageSource`, `RedirectSource`, `ProgrammaticSource`, and `EndpointSource` — implicit conversions make the case-name shorthand work, so `new EndpointSource()` and `new ContentSource(new EndpointSource())` are equivalent.
 
-// Shorthand — implicit conversion wraps the case for you
-yield return new DiscoveredItem(route, new EndpointSource());
+```csharp:xmldocid
+T:ExtensibilityLabExample.ReleaseNotesContentService
 ```
 
-```csharp:xmldocid,bodyonly
-M:ExtensibilityLabExample.ReleaseNotesContentService.DiscoverAsync
-```
-
-`GetContentTocEntriesAsync` returns one `ContentTocItem` per row in the sidebar and document in the search index. Set `Title`, `Route`, `Order` (use tidy 10/20/30 sequences), `HierarchyParts` (the path segments that drive sidebar nesting), and `SectionLabel` (group header). Return an index entry first, then one per record.
-
-```csharp:xmldocid,bodyonly
-M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentTocEntriesAsync
-```
-
-`GetContentToCopyAsync` is for static assets copied verbatim into the output tree (images, downloads). `GetContentToCreateAsync` is for dynamically generated files that are not routes the crawler will visit — the `LlmsTxtContentService` uses it for stripped-markdown sidecars. For a service whose only output is HTML served by a `MapGet` endpoint, both return `ImmutableList.Empty`.
-
-```csharp:xmldocid,bodyonly
-M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentToCopyAsync
-```
-
-```csharp:xmldocid,bodyonly
-M:ExtensibilityLabExample.ReleaseNotesContentService.GetContentToCreateAsync
-```
-
-`GetCrossReferencesAsync` publishes one `CrossReference(uid, title, route)` per record, registering a uid that other content can target with `<xref:uid>` or `href="xref:uid"`. Pick a stable prefix (`release-1.0.0` here) so authors can deep-link specific entries without pasting URLs that may change.
-
-```csharp:xmldocid,bodyonly
-M:ExtensibilityLabExample.ReleaseNotesContentService.GetCrossReferencesAsync
-```
+For full member signatures (return types, default implementations, and the parent `IContentEmitter` interface), see <xref:reference.api.i-content-service>.
 
 ## Register the implementation
 

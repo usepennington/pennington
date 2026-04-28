@@ -75,13 +75,6 @@ The content-path quartet controls where posts live on disk and what URLs they pr
 The full options surface — including the homepage-specific knobs `HeroContent`, `MyWork`, `Socials`, and `MainSiteLinks` — is covered in <xref:reference.api.blog-site-options>. Those knobs are skipped here and introduced in the third tutorial of this section.
 
 </Step>
-<Step StepNumber="3">
-
-**Contrast with `DocSite` defaults**
-
-Two differences distinguish BlogSite from DocSite at the template level. First, `AddBlogSite` binds `AddMarkdownContent<BlogSiteFrontMatter>` — not `DocSiteFrontMatter` and not the lower-level `BlogFrontMatter` from the core library. Second, BlogSite resolves URLs from a single content-path pair (`ContentRootPath` + `BlogContentPath`) served at a fixed `BlogBaseUrl`, while DocSite drives URLs from `ContentArea` slugs under `ContentRootPath`. The rest of what differs between the two templates — the hard-coded chrome, the RSS-first layout, the absence of an area switcher — follows from those two choices.
-
-</Step>
 </Steps>
 
 ### Checkpoint — Services registered, middleware not yet mounted

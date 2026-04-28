@@ -9,6 +9,10 @@ uid: reference.ui.content
 
 The content-oriented subset of the `Pennington.UI.Components` Razor component library, covering callout cards, numbered steps, syntax-highlighted code, and wide-table overflow handling. Components live in namespace `Pennington.UI.Components` (`src/Pennington.UI/`). All but `CodeBlock` are pre-registered with Mdazor by `DocSiteServiceExtensions.AddDocSite`, making them available as tags inside markdown without additional wiring; `CodeBlock` is Razor-page-only — markdown authors use fenced code blocks instead.
 
+## Stylesheet
+
+The components ship in MonorailCSS utility classes — no separate stylesheet from the package. Sites that mount `UseMonorailCss` (the DocSite default) get the components styled automatically: the class-collector picks up utility tokens from the rendered HTML, and the single `<link rel="stylesheet" href="/styles.css">` tag is sufficient. There is no `_content/Pennington.UI/styles.css` to load.
+
 ## Overview
 
 | Component | Purpose | Razor usage | Markdown (Mdazor) usage |

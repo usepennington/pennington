@@ -38,6 +38,18 @@ The command-line surface `RunOrBuildAsync` dispatches on — one positional verb
 | `ASPNETCORE_URLS` | ASP.NET Core host | Standard ASP.NET binding. `RunOrBuildAsync` resolves `app.Urls.First()` after `StartAsync`, falling back to `http://localhost:5000` only when `app.Urls` is empty, so overriding this variable moves the crawler target. |
 | `ASPNETCORE_ENVIRONMENT` | ASP.NET Core host | Standard environment selection; Pennington's dev tooling (live reload, diagnostic overlay) gates on the `build` command-line argument, not on this variable. |
 
+## Listening port
+
+Pennington uses the standard ASP.NET Core host, so the usual port-binding mechanisms apply.
+
+| Mechanism | Form | Notes |
+|---|---|---|
+| CLI flag | `dotnet run -- --urls http://localhost:5101` | Pass-through to the ASP.NET Core host argument parser. |
+| Environment variable | `ASPNETCORE_URLS=http://localhost:5101` | Same variable as the entry above. |
+| `launchSettings.json` | `profiles.<name>.applicationUrl` | Standard `Properties/launchSettings.json` profile entry. |
+
+Pennington does not override any of these — the library adds middleware and endpoints on top of whatever URL Kestrel is told to listen on.
+
 ## Exit codes
 
 - `0` — `build` completed without errors (`BuildReport.HasErrors == false`), or dev-serve exited cleanly.
