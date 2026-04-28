@@ -13,13 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public sealed class DiagnosticOverlayProcessor : IResponseProcessor
 {
-    private readonly bool _isDevMode = !IsBuildMode();
-
-    private static bool IsBuildMode()
-    {
-        var args = Environment.GetCommandLineArgs();
-        return args.Length > 1 && args[1].Equals("build", StringComparison.OrdinalIgnoreCase);
-    }
+    private readonly bool _isDevMode = !PenningtonBuildMode.IsBuildMode();
 
     // Runs after the HTML rewriting pipeline (10).
     /// <inheritdoc/>

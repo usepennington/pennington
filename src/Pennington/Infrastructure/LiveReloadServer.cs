@@ -93,12 +93,11 @@ public static class LiveReloadExtensions
 
     /// <summary>
     /// Adds live reload WebSocket support for development.
-    /// Skipped during static build (<c>args[0] == "build"</c>).
+    /// Skipped during static build (see <see cref="PenningtonBuildMode"/>).
     /// </summary>
     public static WebApplication UsePenningtonLiveReload(this WebApplication app)
     {
-        var args = Environment.GetCommandLineArgs();
-        if (args.Length > 1 && args[1].Equals("build", StringComparison.OrdinalIgnoreCase))
+        if (PenningtonBuildMode.IsBuildMode())
             return app;
 
         app.UseWebSockets();

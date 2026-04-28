@@ -8,13 +8,7 @@ using Microsoft.AspNetCore.Http;
 /// </summary>
 public sealed class LiveReloadScriptProcessor : IResponseProcessor
 {
-    private readonly bool _isDevMode = !IsBuildMode();
-
-    private static bool IsBuildMode()
-    {
-        var args = Environment.GetCommandLineArgs();
-        return args.Length > 1 && args[1].Equals("build", StringComparison.OrdinalIgnoreCase);
-    }
+    private readonly bool _isDevMode = !PenningtonBuildMode.IsBuildMode();
 
     // Runs after the HTML rewriting pipeline (10) but before the
     // diagnostic overlay (30).

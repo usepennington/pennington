@@ -64,7 +64,7 @@ public static class PenningtonExtensions
         // dev-cert prompt, no random-port races in CI. Last-registered IServer
         // wins, so this overrides the Kestrel registration that
         // WebApplication.CreateBuilder() puts in place.
-        if (args.Length > 1 && args[1].Equals("build", StringComparison.OrdinalIgnoreCase))
+        if (PenningtonBuildMode.IsBuildMode())
         {
             services.AddSingleton<IServer, TestServer>();
 
@@ -490,7 +490,7 @@ public static class PenningtonExtensions
     {
         StaticWebAssetsLoader.UseStaticWebAssets(app.Environment, app.Configuration);
 
-        if (args.Length > 0 && args[0].Equals("build", StringComparison.OrdinalIgnoreCase))
+        if (PenningtonBuildMode.IsBuildMode(args))
         {
             await app.StartAsync();
             var generator = app.Services.GetRequiredService<OutputGenerationService>();
