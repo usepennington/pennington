@@ -15,7 +15,7 @@ Use this approach for fences tagged with a language token — a DSL, config form
 - A target language not already served by `TextMateHighlighter` (priority 50) or `ShellHighlighter` (priority 75) — confirm by rendering a fence and inspecting the emitted HTML for the built-in token spans.
 - Comfort producing HTML for a fence body by hand — `ICodeHighlighter.Highlight` returns a raw HTML string, so the implementation owns escaping and the outer `<pre><code>` wrapper.
 
-For a working setup, see [`examples/ExtensibilityLabExample`](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample) — `PipelineHighlighter.cs` stakes out a fictional `pipeline` DSL and `Program.cs` registers it against a bare `AddPennington` host.
+For a working setup, see `examples/ExtensibilityLabExample` — `PipelineHighlighter.cs` stakes out a fictional `pipeline` DSL and `Program.cs` registers it against a bare `AddPennington` host.
 
 ---
 

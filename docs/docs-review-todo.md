@@ -25,11 +25,11 @@ These ship to readers right now.
 
 - [x] **Resolve TODO marker in `how-to/configuration/localization.md:105`.** Bullet says `TODO — Explanation page on locale routing and content fallback (not yet written in TOC)`. The page does exist (`explanation/localization/urls-and-fallback.md`); replace the TODO with `<xref:explanation.localization.urls-and-fallback>` (verify the actual uid in that file's front matter).
 
-- [ ] **Resolve TODO marker in `how-to/deployment/self-host.md:86`.** Bullet says `TODO — add link to the "Unified dev-and-build path" explanation page once published`. The page exists at `explanation/core/dev-vs-build.md`; replace the TODO with the corresponding `xref:` link (verify uid in front matter).
+- [x] **Resolve TODO marker in `how-to/deployment/self-host.md:86`.** Bullet says `TODO — add link to the "Unified dev-and-build path" explanation page once published`. The page exists at `explanation/core/dev-vs-build.md`; replace the TODO with the corresponding `xref:` link (verify uid in front matter).
 
-- [ ] **Fix duplicate `order` between two extensibility how-tos.** Both `how-to/extensibility/razor-page-on-bare-host.md` and `how-to/extensibility/override-docsite-components.md` declare `order: 203070`. Pick distinct values per the project's tidy-sequential convention (10/20/30…). Verify the resulting sidebar order looks intentional after the change.
+- [x] **Fix duplicate `order` between two extensibility how-tos.** Both `how-to/extensibility/razor-page-on-bare-host.md` and `how-to/extensibility/override-docsite-components.md` declare `order: 203070`. Pick distinct values per the project's tidy-sequential convention (10/20/30…). Verify the resulting sidebar order looks intentional after the change.
 
-- [ ] **Replace hardcoded GitHub URL in `how-to/extensibility/custom-highlighter.md:18`.** The file links `[examples/ExtensibilityLabExample](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample)`. Either drop the link entirely (the path in prose is enough) or, if a link is wanted, point at the in-repo example via the same syntax used elsewhere in the docs.
+- [x] **Replace hardcoded GitHub URL in `how-to/extensibility/custom-highlighter.md:18`.** The file links `[examples/ExtensibilityLabExample](https://github.com/usepennington/pennington/tree/main/examples/ExtensibilityLabExample)`. Either drop the link entirely (the path in prose is enough) or, if a link is wanted, point at the in-repo example via the same syntax used elsewhere in the docs.
 
 ---
 

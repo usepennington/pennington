@@ -2,7 +2,7 @@
 title: "Render a Razor component as a page on a bare host"
 description: "Use HtmlRenderer.RenderComponentAsync inside a MapGet to make a Razor component the entire response body, no DocSite layout pipeline required."
 uid: how-to.extensibility.razor-page-on-bare-host
-order: 203070
+order: 203080
 sectionLabel: Extensibility
 tags: [extensibility, razor-components, bare-host, html-renderer]
 ---

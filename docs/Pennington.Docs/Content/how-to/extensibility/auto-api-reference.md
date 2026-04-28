@@ -2,7 +2,7 @@
 title: "Auto-generate an API reference tree for a class library"
 description: "Wire a metadata backend (Roslyn workspace or a compiled .dll + .xml pair), call AddApiReference, and get one /reference/api/{type}/ page per public type plus inline Mdazor components for member tables, summaries, and extension-method catalogs."
 uid: how-to.extensibility.auto-api-reference
-order: 203080
+order: 203090
 sectionLabel: Extensibility
 tags: [extensibility, roslyn, reflection, xmldoc, api-reference, content-service]
 ---

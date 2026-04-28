@@ -83,4 +83,4 @@ Nginx's default `mime.types` usually covers everything Pennington emits, but IIS
 - Recipe: [Build a static site](xref:how-to.deployment.static-build) — what `build [baseUrl] [outputDirectory]` produces before you copy `output/` onto the server.
 - Recipe: [Host under a sub-path (base URL)](xref:how-to.deployment.base-url) — how `BaseUrlHtmlRewriter` handles a `/docs/` prefix when your Nginx or IIS site does not own the domain root.
 - Reference: [CLI and build arguments](xref:reference.host.cli) — the `build [baseUrl] [outputDirectory]` surface that produces the `output/` directory this page serves.
-- Background: TODO — add link to the "Unified dev-and-build path" explanation page once published, since it motivates why `404.html` is generated as a real HTTP response rather than a static template.
+- Background: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build) — motivates why `404.html` is generated as a real HTTP response rather than a static template.

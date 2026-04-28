@@ -2,7 +2,7 @@
 title: "Emit generated output artifacts"
 description: "Implement an IContentService whose only job is to write a byte artifact to the output — robots.txt, search-index sidecars, social images — with no pages, TOC entries, or xrefs."
 uid: how-to.extensibility.emit-generated-artifacts
-order: 203090
+order: 203100
 sectionLabel: Extensibility
 tags: [extensibility, content-service, artifacts]
 ---
