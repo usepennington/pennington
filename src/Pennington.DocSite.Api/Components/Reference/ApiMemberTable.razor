@@ -20,15 +20,22 @@ else
     {
         <h2 id="@Slugify(group.Label)" class="not-prose text-xs font-semibold uppercase tracking-wide text-base-500 dark:text-base-400 mt-10 mb-3 scroll-mt-20">@group.Label</h2>
 
-        @if (group.Rows is not null)
+        @foreach (var section in group.Sections)
         {
-            <ApiDefinitionList Rows="group.Rows" />
-        }
-        else
-        {
-            <div class="not-prose divide-y divide-base-200 dark:divide-base-800">
-                @foreach (var entry in group.Entries!)
-                {
+            @if (!string.IsNullOrEmpty(section.SubLabel))
+            {
+                <h3 class="not-prose text-xs font-medium text-base-500 dark:text-base-400 mt-6 mb-2">@section.SubLabel</h3>
+            }
+
+            @if (section.Rows is not null)
+            {
+                <ApiDefinitionList Rows="section.Rows" />
+            }
+            else
+            {
+                <div class="not-prose divide-y divide-base-200 dark:divide-base-800">
+                    @foreach (var entry in section.Entries!)
+                    {
                     <article class="py-6 first:pt-0 group">
                         <header class="flex items-baseline gap-2 mb-2">
                             <h3 id="@entry.Anchor" class="font-mono text-base font-semibold text-base-900 dark:text-base-50 scroll-mt-20">@entry.Name</h3>
@@ -87,8 +94,9 @@ else
                             </div>
                         }
                     </article>
-                }
-            </div>
+                    }
+                </div>
+            }
         }
     }
 }
@@ -161,6 +169,7 @@ else
     {
         var order = new[]
         {
+            MemberKind.UnionCases,
             MemberKind.Properties,
             MemberKind.Constructors,
             MemberKind.Fields,
@@ -174,14 +183,28 @@ else
             var bucket = members.Where(m => m.Kind == k).ToList();
             if (bucket.Count == 0) continue;
 
-            if (k is MemberKind.Properties or MemberKind.Fields)
-            {
-                groups.Add(new MemberGroup(LabelFor(k), BuildRows(bucket), null));
-            }
-            else
-            {
-                groups.Add(new MemberGroup(LabelFor(k), null, BuildEntries(bucket)));
-            }
+            // Split by declaring type so inherited members render under their own subheading.
+            // Members declared on the queried type itself come first (key = null), then base
+            // interfaces grouped by name. UnionCases never originate from a base interface, so
+            // a single section is always emitted for them.
+            var sections = bucket
+                .GroupBy(m => m.InheritedFromUid, StringComparer.Ordinal)
+                .OrderBy(g => g.Key is null ? 0 : 1)
+                .ThenBy(g => g.First().InheritedFromName, StringComparer.OrdinalIgnoreCase)
+                .Select(g =>
+                {
+                    var sectionMembers = g.ToList();
+                    var subLabel = g.Key is null
+                        ? null
+                        : $"Inherited from {g.First().InheritedFromName ?? "base"}";
+
+                    return k is MemberKind.Properties or MemberKind.Fields or MemberKind.UnionCases
+                        ? new MemberSection(subLabel, BuildRows(sectionMembers), null)
+                        : new MemberSection(subLabel, null, BuildEntries(sectionMembers));
+                })
+                .ToList();
+
+            groups.Add(new MemberGroup(LabelFor(k), sections));
         }
 
         return groups;
@@ -240,6 +263,7 @@ else
         MemberKind.Fields => "Fields",
         MemberKind.Methods => "Methods",
         MemberKind.Events => "Events",
+        MemberKind.UnionCases => "Cases",
         _ => kind.ToString(),
     };
 
@@ -264,7 +288,9 @@ else
         return sb.ToString().Trim('-');
     }
 
-    private sealed record MemberGroup(string Label, IReadOnlyList<ApiDefinitionRow>? Rows, IReadOnlyList<MemberEntry>? Entries);
+    private sealed record MemberGroup(string Label, IReadOnlyList<MemberSection> Sections);
+
+    private sealed record MemberSection(string? SubLabel, IReadOnlyList<ApiDefinitionRow>? Rows, IReadOnlyList<MemberEntry>? Entries);
 
     private sealed record MemberEntry(
         string Name,

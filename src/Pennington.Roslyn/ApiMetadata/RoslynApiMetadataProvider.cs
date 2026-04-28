@@ -84,16 +84,23 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
         var info = await _symbolService.FindSymbolAsync(typeUid);
         if (info?.Symbol is not INamedTypeSymbol type) return [];
 
-        var matched = type.GetMembers()
-            .Where(m => IncludeSymbol(m, access) && MatchesKind(m, kind))
+        var matched = EnumerateMemberSymbols(type, access)
+            .Where(m => MatchesKind(m.Symbol, kind))
             .ToList();
-        if (matched.Count == 0) return [];
 
-        var builder = ImmutableArray.CreateBuilder<ApiMember>(matched.Count);
-        foreach (var symbol in matched)
+        var builder = ImmutableArray.CreateBuilder<ApiMember>();
+        foreach (var (symbol, declaringType) in matched)
         {
-            var apiMember = await BuildMemberAsync(symbol);
+            var apiMember = await BuildMemberAsync(symbol, declaringType);
             if (apiMember is not null) builder.Add(apiMember);
+        }
+
+        if (kind is MemberKind.UnionCases or MemberKind.All && IsUnion(type))
+        {
+            foreach (var caseMember in await BuildUnionCaseMembersAsync(type))
+            {
+                builder.Add(caseMember);
+            }
         }
 
         return order switch
@@ -103,6 +110,114 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
                 .ToImmutableArray(),
             _ => builder.ToImmutable(),
         };
+    }
+
+    private static IEnumerable<(ISymbol Symbol, INamedTypeSymbol? InheritedFrom)> EnumerateMemberSymbols(
+        INamedTypeSymbol type, AccessFilter access)
+    {
+        // Walk the type itself, then any base interfaces it inherits from. The type-level
+        // `GetMembers()` only returns directly-declared members, so a recently-split base
+        // interface (e.g. IContentService -> IContentEmitter) would otherwise drop the
+        // inherited surface from the API page.
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var member in type.GetMembers())
+        {
+            if (!IncludeSymbol(member, access)) continue;
+            var key = member.GetDocumentationCommentId() ?? $"{member.Kind}:{member.Name}";
+            if (seen.Add(key)) yield return (member, null);
+        }
+
+        if (type.TypeKind != TypeKind.Interface) yield break;
+
+        foreach (var baseInterface in type.AllInterfaces)
+        {
+            // Skip interfaces that come from a metadata reference rather than source — for
+            // example, `IDisposable` from System.Runtime when the queried interface inherits
+            // it transitively. Their members don't have source we can extract a signature
+            // from, and they aren't part of the user's API surface that this page documents.
+            if (baseInterface.Locations.All(l => l.IsInMetadata)) continue;
+
+            foreach (var member in baseInterface.GetMembers())
+            {
+                if (!IncludeSymbol(member, access)) continue;
+                var key = member.GetDocumentationCommentId() ?? $"{member.Kind}:{member.Name}";
+                if (seen.Add(key)) yield return (member, baseInterface);
+            }
+        }
+    }
+
+    private static bool IsUnion(INamedTypeSymbol type)
+    {
+        if (type.TypeKind != TypeKind.Struct) return false;
+
+        // Both the C# 15 `union` keyword (net11.0+) and the polyfill shim (net10.0)
+        // emit/declare `[Union]` on the struct and implement `IUnion`. Either signal
+        // alone is enough — having both is the common case.
+        var hasUnionAttr = type.GetAttributes()
+            .Any(a => a.AttributeClass?.Name == "UnionAttribute"
+                && a.AttributeClass.ContainingNamespace?.ToDisplayString() == "System.Runtime.CompilerServices");
+        if (hasUnionAttr) return true;
+
+        return type.AllInterfaces.Any(i => i.Name == "IUnion"
+            && i.ContainingNamespace?.ToDisplayString() == "System.Runtime.CompilerServices");
+    }
+
+    private async Task<List<ApiMember>> BuildUnionCaseMembersAsync(INamedTypeSymbol type)
+    {
+        // Cases surface as the parameter type of single-arg constructors. The compiler
+        // (and the polyfill) generate one ctor per case taking that case type as its
+        // sole argument, so this enumeration is stable across both shapes.
+        var cases = type.InstanceConstructors
+            .Where(c => c.Parameters.Length == 1)
+            .Select(c => c.Parameters[0].Type)
+            .OfType<INamedTypeSymbol>()
+            .Distinct(SymbolEqualityComparer.Default)
+            .OfType<INamedTypeSymbol>()
+            .ToList();
+
+        var built = new List<ApiMember>(cases.Count);
+        foreach (var caseType in cases)
+        {
+            var docId = caseType.GetDocumentationCommentId();
+            if (string.IsNullOrEmpty(docId)) continue;
+
+            var rawXml = caseType.GetDocumentationCommentXml();
+            var hasInheritDoc = !string.IsNullOrWhiteSpace(rawXml)
+                && rawXml.Contains("inheritdoc", StringComparison.Ordinal);
+            var resolvedXml = InheritDocResolver.Resolve(rawXml, caseType);
+            resolvedXml = RecordParamFallbackResolver.Resolve(resolvedXml, caseType);
+            var parsedXml = _xmlDocParser.Parse(resolvedXml);
+
+            string? signatureHtml = null;
+            try
+            {
+                var decl = await _symbolService.ExtractDeclarationSignatureAsync(docId);
+                if (!string.IsNullOrEmpty(decl))
+                {
+                    signatureHtml = _highlighter.Highlight(decl, "csharp");
+                }
+            }
+            catch
+            {
+                // Best-effort signature; the case row is still useful without it.
+            }
+
+            built.Add(new ApiMember(
+                Uid: docId,
+                Name: caseType.Name,
+                Kind: MemberKind.UnionCases,
+                TypeDisplay: caseType.ToDisplayString(MemberTypeFormat),
+                DefaultValue: null,
+                IsRequired: false,
+                HasInheritDocDirective: hasInheritDoc,
+                Xmldoc: parsedXml,
+                SignatureHtml: signatureHtml,
+                Parameters: ImmutableArray<ApiParameter>.Empty,
+                ReturnTypeDisplay: null));
+        }
+
+        return built;
     }
 
     /// <inheritdoc />
@@ -128,7 +243,7 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
     {
         var info = await _symbolService.FindSymbolAsync(uid);
         if (info?.Symbol is not { } symbol || symbol is INamedTypeSymbol) return null;
-        return await BuildMemberAsync(symbol);
+        return await BuildMemberAsync(symbol, inheritedFrom: null);
     }
 
     private async Task<ApiTypeDetail?> BuildDetailAsync(string uid)
@@ -182,7 +297,7 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
             Source: null);
     }
 
-    private async Task<ApiMember?> BuildMemberAsync(ISymbol symbol)
+    private async Task<ApiMember?> BuildMemberAsync(ISymbol symbol, INamedTypeSymbol? inheritedFrom = null)
     {
         var kind = ClassifyMemberKind(symbol);
         if (kind is null) return null;
@@ -274,7 +389,9 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
             Xmldoc: parsedXml,
             SignatureHtml: signatureHtml,
             Parameters: parameters,
-            ReturnTypeDisplay: returnType);
+            ReturnTypeDisplay: returnType,
+            InheritedFromUid: inheritedFrom?.GetDocumentationCommentId(),
+            InheritedFromName: inheritedFrom?.Name);
     }
 
     private async Task<ImmutableArray<ApiTypeSummary>> BuildTypesAsync()

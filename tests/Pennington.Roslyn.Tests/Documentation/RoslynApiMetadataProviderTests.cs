@@ -72,6 +72,50 @@ public sealed class RoslynApiMetadataProviderTests
 
             public string Untouched { get; init; } = string.Empty;
         }
+
+        public interface IBaseEmitter
+        {
+            /// <summary>Emits a thing.</summary>
+            void Emit();
+
+            /// <summary>The base count.</summary>
+            int BaseCount { get; }
+        }
+
+        public interface IDerivedService : IBaseEmitter
+        {
+            /// <summary>Discovers things.</summary>
+            void Discover();
+
+            /// <summary>The derived label.</summary>
+            string Label { get; }
+        }
+
+        /// <summary>Case A.</summary>
+        public record CaseA(int X);
+        /// <summary>Case B.</summary>
+        public record CaseB(string Y);
+
+        /// <summary>A two-case union.</summary>
+        [System.Runtime.CompilerServices.Union]
+        public readonly struct UnionAlpha : System.Runtime.CompilerServices.IUnion
+        {
+            public object? Value { get; }
+            public UnionAlpha(CaseA value) { Value = value; }
+            public UnionAlpha(CaseB value) { Value = value; }
+            public static implicit operator UnionAlpha(CaseA v) => new(v);
+            public static implicit operator UnionAlpha(CaseB v) => new(v);
+        }
+        """;
+
+    private const string UnionPolyfillSource = """
+        namespace System.Runtime.CompilerServices
+        {
+            public interface IUnion;
+
+            [System.AttributeUsage(System.AttributeTargets.Struct)]
+            public sealed class UnionAttribute : System.Attribute;
+        }
         """;
 
     private static RoslynApiMetadataProvider BuildProvider()
@@ -96,6 +140,12 @@ public sealed class RoslynApiMetadataProviderTests
             documentId,
             "Fixture.cs",
             loader: TextLoader.From(TextAndVersion.Create(SourceText.From(Source), VersionStamp.Create()))));
+
+        var polyfillId = DocumentId.CreateNewId(projectId);
+        workspace.AddDocument(DocumentInfo.Create(
+            polyfillId,
+            "UnionPolyfill.cs",
+            loader: TextLoader.From(TextAndVersion.Create(SourceText.From(UnionPolyfillSource), VersionStamp.Create()))));
 
         var workspaceService = new StubWorkspaceService(workspace.CurrentSolution);
         var symbolService = new SymbolExtractionService(workspaceService, NullLogger<SymbolExtractionService>.Instance);
@@ -301,6 +351,78 @@ public sealed class RoslynApiMetadataProviderTests
         var typeName = members.Single(m => m.Name == "TypeName");
         typeName.Xmldoc.HasSummary.ShouldBeTrue();
         typeName.Xmldoc.Summary[0].ShouldBeCase<TextNode>().Text.ShouldBe("Short type name without namespace.");
+    }
+
+    [Fact]
+    public async Task Interface_Members_Include_Inherited_From_Base_Interfaces()
+    {
+        var provider = BuildProvider();
+
+        var all = await provider.GetMembersAsync(
+            "T:Fixtures.IDerivedService",
+            MemberKind.All,
+            AccessFilter.Public,
+            MemberOrder.Alphabetical);
+
+        // Direct members + base interface members should both appear.
+        all.Select(m => m.Name).ShouldContain("Discover");
+        all.Select(m => m.Name).ShouldContain("Label");
+        all.Select(m => m.Name).ShouldContain("Emit");
+        all.Select(m => m.Name).ShouldContain("BaseCount");
+
+        var emit = all.Single(m => m.Name == "Emit");
+        emit.InheritedFromName.ShouldBe("IBaseEmitter");
+        emit.InheritedFromUid.ShouldBe("T:Fixtures.IBaseEmitter");
+
+        var discover = all.Single(m => m.Name == "Discover");
+        discover.InheritedFromName.ShouldBeNull();
+        discover.InheritedFromUid.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Interface_Methods_Filter_Includes_Inherited_Methods()
+    {
+        var provider = BuildProvider();
+
+        var methods = await provider.GetMembersAsync(
+            "T:Fixtures.IDerivedService",
+            MemberKind.Methods,
+            AccessFilter.Public,
+            MemberOrder.Alphabetical);
+
+        methods.Select(m => m.Name).ShouldBe(["Discover", "Emit"]);
+    }
+
+    [Fact]
+    public async Task Union_Cases_Are_Surfaced_For_Polyfill_Marked_Struct()
+    {
+        var provider = BuildProvider();
+
+        var cases = await provider.GetMembersAsync(
+            "T:Fixtures.UnionAlpha",
+            MemberKind.UnionCases,
+            AccessFilter.Public,
+            MemberOrder.Alphabetical);
+
+        cases.Select(m => m.Name).ShouldBe(["CaseA", "CaseB"]);
+        cases.All(m => m.Kind == MemberKind.UnionCases).ShouldBeTrue();
+        cases.Single(m => m.Name == "CaseA").Uid.ShouldBe("T:Fixtures.CaseA");
+    }
+
+    [Fact]
+    public async Task Union_Cases_Appear_In_All_Members()
+    {
+        var provider = BuildProvider();
+
+        var all = await provider.GetMembersAsync(
+            "T:Fixtures.UnionAlpha",
+            MemberKind.All,
+            AccessFilter.Public,
+            MemberOrder.Alphabetical);
+
+        all.Where(m => m.Kind == MemberKind.UnionCases)
+           .Select(m => m.Name)
+           .ShouldBe(["CaseA", "CaseB"]);
     }
 
     [Fact]

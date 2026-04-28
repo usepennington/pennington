@@ -14,6 +14,8 @@ using System.Collections.Immutable;
 /// <param name="SignatureHtml">Pre-highlighted declaration HTML ready to inject with <c>@((MarkupString)…)</c>, or <see langword="null"/> when no declaration signature is available.</param>
 /// <param name="Parameters">Formatted parameter list for methods/constructors; empty for properties/fields/events.</param>
 /// <param name="ReturnTypeDisplay">Formatted return type for methods that return a value; <see langword="null"/> otherwise.</param>
+/// <param name="InheritedFromUid">When the member is inherited from a base interface (rather than declared on the queried type), the xmldocid of the declaring type. <see langword="null"/> for directly-declared members.</param>
+/// <param name="InheritedFromName">When the member is inherited, the short name of the declaring type for grouping headers (e.g. <c>IContentEmitter</c>). <see langword="null"/> for directly-declared members.</param>
 public sealed record ApiMember(
     string Uid,
     string Name,
@@ -25,4 +27,6 @@ public sealed record ApiMember(
     ParsedXmlDoc Xmldoc,
     string? SignatureHtml,
     ImmutableArray<ApiParameter> Parameters,
-    string? ReturnTypeDisplay);
+    string? ReturnTypeDisplay,
+    string? InheritedFromUid = null,
+    string? InheritedFromName = null);

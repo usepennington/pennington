@@ -13,6 +13,8 @@ public enum MemberKind
     Constructors,
     /// <summary>Events declared on the type.</summary>
     Events,
+    /// <summary>Cases of a discriminated union (the case types it wraps).</summary>
+    UnionCases,
     /// <summary>All kinds of members.</summary>
     All,
 }
