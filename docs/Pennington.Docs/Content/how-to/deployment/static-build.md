@@ -83,7 +83,7 @@ M:SubPathDeployableExample.BuildHost.PrintBuildReport(Pennington.Generation.Buil
 
 **Fix what the report flags before shipping**
 
-`BrokenLinks` surfaces internal hrefs that did not resolve to a generated page — usually a typo or a moved file that no xref caught. `FailedPages` surfaces routes whose parse or render raised an exception, each carrying the originating `ContentRoute` so the source is easy to locate. Warnings are advisory and do not set `HasErrors` on their own, but a warning that represents a broken link flips the flag.
+`BrokenLinks` surfaces internal hrefs that did not resolve to a generated page — usually a typo or a moved file that no xref caught. `FailedPages` surfaces routes whose parse or render raised an exception, each carrying the originating `ContentRoute`. Warnings are advisory and do not set `HasErrors` on their own, but a warning that represents a broken link flips the flag.
 
 </Step>
 </Steps>

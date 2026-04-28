@@ -43,7 +43,7 @@ All routes registered by `UseBlogSite`, ordered by the surface they serve.
 
 ## Example
 
-A minimal BlogSite host that mounts every route on this page via a single `UseBlogSite` call.
+A BlogSite host that mounts every route on this page via a single `UseBlogSite` call.
 
 ```csharp:path
 examples/BlogSiteScaffoldExample/Program.cs

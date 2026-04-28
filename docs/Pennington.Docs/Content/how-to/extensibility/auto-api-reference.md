@@ -12,7 +12,7 @@ To ship a DocSite whose reference section stays in sync with a class library's p
 Two backends are available:
 
 - `Pennington.Roslyn.ApiMetadata.AddApiMetadataFromRoslyn()` — walks a live Roslyn workspace. Use when you build the documented library from source alongside the docs host.
-- `Pennington.ApiMetadata.Reflection.AddApiMetadataFromCompiledAssembly()` — reflects over a compiled `.dll` and parses the companion xmldoc `.xml` file. Use when you document a third-party assembly (e.g. a NuGet package) without vendoring its source.
+- `Pennington.ApiMetadata.Reflection.AddApiMetadataFromCompiledAssembly()` — reflects over a compiled `.dll` and parses the companion xmldoc `.xml` file. Use when you document a third-party assembly (for example, a NuGet package) without vendoring its source.
 
 ## Before you begin
 
@@ -43,7 +43,7 @@ builder.Services.AddApiMetadataFromCompiledAssembly(opts =>
 builder.Services.AddApiReference();
 ```
 
-`FromPackageReference` calls `Assembly.Load` against the project's deps.json and grabs the resolved `.dll` path out of the NuGet cache. The companion `.xml` file ships alongside the dll for any package built with `<GenerateDocumentationFile>true</GenerateDocumentationFile>`; the provider picks it up automatically. No staging, no committed binary, and bumping the documented version is just a `<PackageReference Version=…>` change.
+`FromPackageReference` calls `Assembly.Load` against the project's deps.json and grabs the resolved `.dll` path out of the NuGet cache. The companion `.xml` file ships alongside the dll for any package built with `<GenerateDocumentationFile>true</GenerateDocumentationFile>`; the provider picks it up automatically. No staging, no committed binary, and bumping the documented version is a `<PackageReference Version=…>` change.
 
 When the target isn't a normal NuGet reference — a locally-built assembly, a single-file bundle, or something else without a file location — fall back to the explicit form:
 
@@ -81,9 +81,9 @@ builder.Services.AddApiReference("spectre-console-cli", opts =>
     opts.RoutePrefix = "/api/spectre-cli/");
 ```
 
-Each `FromPackageReference` call resolves one DLL from its matching `<PackageReference>`. Cross-package type references (e.g. Spectre.Console.Cli reaching back into Spectre.Console) resolve automatically because both packages live under the same NuGet cache root, which `MetadataLoadContext` already searches.
+Each `FromPackageReference` call resolves one DLL from its matching `<PackageReference>`. Cross-package type references (for example, Spectre.Console.Cli reaching back into Spectre.Console) resolve automatically because both packages live under the same NuGet cache root, which `MetadataLoadContext` already searches.
 
-**Cross-references between named trees:** uids pick up a qualifier. Default-named registrations emit `reference.api.{slug}` (unchanged). Named registrations emit `reference.api.{name}.{slug}` — e.g. `<xref:reference.api.spectre-console.ansi-console>` and `<xref:reference.api.spectre-console-cli.command-app>`.
+**Cross-references between named trees:** uids pick up a qualifier. Default-named registrations emit `reference.api.{slug}` (unchanged). Named registrations emit `reference.api.{name}.{slug}` — for example, `<xref:reference.api.spectre-console.ansi-console>` and `<xref:reference.api.spectre-console-cli.command-app>`.
 
 **Hand-authored markdown:** components like `<ApiSummary>` auto-pick up the source from the enclosing generated page. For markdown pages outside the generated tree that reach into a specific named registration, add an explicit `Source` attribute:
 

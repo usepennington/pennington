@@ -57,7 +57,7 @@ public string Describe(ContentSource source) => source.Value switch
 };
 ```
 
-For one specific case, the `is` form is just as clean:
+For one specific case, the `is` form is equally clean:
 
 ```csharp
 if (source.Value is RedirectSource redirect)

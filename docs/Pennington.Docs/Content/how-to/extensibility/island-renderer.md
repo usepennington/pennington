@@ -73,7 +73,7 @@ app.UseSpaNavigation();
 
 ## Result
 
-On first load of `/chart-demo/`, the `ChartIsland` component is rendered directly into the page inside the `data-spa-island="chart"` element — the chart `<figure>` appears in view-source, not just in devtools. On client-side navigation back to `/chart-demo/` from another page, the SPA runtime fetches `/_spa-data/chart-demo.json`, reads the `islands.chart` HTML from the envelope, and swaps it into the same slot without a full page reload. Routes whose `CanonicalPath` does not match `/chart-demo` get a `null` parameters dictionary and no chart HTML in their envelope.
+On first load of `/chart-demo/`, the `ChartIsland` component is rendered directly into the page inside the `data-spa-island="chart"` element — the chart `<figure>` appears in view-source, not only in devtools. On client-side navigation back to `/chart-demo/` from another page, the SPA runtime fetches `/_spa-data/chart-demo.json`, reads the `islands.chart` HTML from the envelope, and swaps it into the same slot without a full page reload. Routes whose `CanonicalPath` does not match `/chart-demo` get a `null` parameters dictionary and no chart HTML in their envelope.
 
 ## Verify
 

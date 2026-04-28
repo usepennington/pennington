@@ -7,7 +7,7 @@ tags: [diagnostics, request-context, dev-overlay, response-headers]
 uid: reference.diagnostics.request-context
 ---
 
-The scoped accumulator and record types that collect per-request warnings, errors, and info messages, plus the two dev-mode transports (`X-Pennington-Diagnostic` header, on-page overlay) that surface them to the author. The accumulator and record types live in namespace `Pennington.Diagnostics` (`src/Pennington/Diagnostics/`); the header emission and overlay processor live in `Pennington.Infrastructure` (`src/Pennington/Infrastructure/`).
+The scoped accumulator and record types that collect per-request warnings, errors, and info messages, plus the two dev-mode transports (`X-Pennington-Diagnostic` header, on-page overlay) that surface them to the author. The accumulator and record types live in `Pennington.Diagnostics`; the header emission and overlay processor live in `Pennington.Infrastructure`.
 
 ## `DiagnosticContext`
 

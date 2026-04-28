@@ -35,7 +35,7 @@ When a change notification arrives, the factory drops its cached instance — di
 
 ### Build-mode gating
 
-Both `LiveReloadScriptProcessor` and `UsePenningtonLiveReload` check whether the first command-line argument is `build`. When it is — i.e. during `dotnet run -- build` — the processor's `ShouldProcess` returns `false` and the middleware skips endpoint registration entirely. This means the `OutputGenerationService` crawler sees clean HTML with no script and no WebSocket endpoint: no publish-time stripping step, no build configuration to set, and no dev-only flag to forget.
+Both `LiveReloadScriptProcessor` and `UsePenningtonLiveReload` check whether the first command-line argument is `build`. When it is, the processor's `ShouldProcess` returns `false` and the middleware skips endpoint registration entirely. This means the `OutputGenerationService` crawler sees clean HTML with no script and no WebSocket endpoint: no publish-time stripping step, no build configuration to set, and no dev-only flag to forget.
 
 ## Trade-offs
 

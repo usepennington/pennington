@@ -73,18 +73,19 @@ Each of these moves content to the right quadrant or reshapes a page that's pret
 
 Eight banned-word hits across seven files. Fix in one sweep — each is a single-line edit. After the edits, re-grep `docs/Pennington.Docs/Content/` for `\b(simply|just|easy|obviously|please|e\.g\.|i\.e\.)\b` to confirm nothing slipped back in.
 
-- [ ] `explanation/core/content-source.md:60` — "just as clean" → "equally clean" (or rewrite to drop the comparator).
-- [ ] `explanation/localization/urls-and-fallback.md:32` — "a cascade is easy to write and hard to reason about" → reframe without "easy" (suggested: "a cascade is quick to write but hard to reason about" — though that still hedges; prefer something like "a cascade hides coverage gaps").
-- [ ] `explanation/dev-experience/hot-reload.md:38` — "i.e. during `dotnet run -- build`" → "that is, during `dotnet run -- build`" or restructure to drop the parenthetical.
-- [ ] `explanation/spa/islands.md:52` — "expecting them to 'just work'" → "expecting drop-in compatibility".
-- [ ] `how-to/deployment/static-build.md:86` — "the source is easy to locate" → "the source is straightforward to locate" (or just describe where it is).
-- [ ] `how-to/extensibility/auto-api-reference.md:15,84,86` — three "e.g." → "for example".
-- [ ] `how-to/extensibility/auto-api-reference.md:46` — "bumping the documented version is just a `<PackageReference Version=…>` change" → "bumping the documented version is a `<PackageReference Version=…>` change".
+- [x] `explanation/core/content-source.md:60` — "just as clean" → "equally clean".
+- [x] `explanation/localization/urls-and-fallback.md:32` — reframed to "a cascade hides coverage gaps" (states the actual problem rather than hedging on writing-effort).
+- [x] `explanation/dev-experience/hot-reload.md:38` — dropped the parenthetical entirely; `dotnet run -- build` is already named in the same paragraph elsewhere.
+- [x] `explanation/spa/islands.md:52` — "expecting them to 'just work'" → "expecting drop-in compatibility".
+- [x] `how-to/deployment/static-build.md:86` — dropped the trailing "so the source is easy to locate" clause; the originating `ContentRoute` is already named in the sentence.
+- [x] `how-to/extensibility/auto-api-reference.md:15,84,86` — three "e.g." → "for example" (line 86 dropped the parenthetical comma since it's already inline).
+- [x] `how-to/extensibility/auto-api-reference.md:46` — dropped "just".
+- [x] `how-to/extensibility/island-renderer.md:76` — caught one extra hit during the post-edit re-grep; "not just in devtools" → "not only in devtools".
 
 Bonus voice slips worth fixing in the same pass:
-- [ ] `reference/diagnostics/request-context.md:14` — opening sentence is tour-guide ("the accumulator and record types live in namespace…"). Lead with what the types *do*; mention the namespace second.
-- [ ] `reference/host/cli.md:51-52` — paragraph about BlogSite routes is out of scope for a CLI reference page. Delete or move to `reference/blogsite/routes.md`.
-- [ ] `reference/blogsite/routes.md:46` — "A minimal BlogSite host…" → drop "minimal" (filler).
+- [x] `reference/diagnostics/request-context.md` opening — kept the function-first lead, dropped the `(src/Pennington/Diagnostics/)` and `(src/Pennington/Infrastructure/)` paths from the namespace mentions.
+- [x] `reference/host/cli.md:51-52` — already absent after Phase 3 restructure (the `## Listening port` section added in Phase 3 shifted the line numbers; lines 51-52 are now the on-topic wrap-up sentence for that section, not BlogSite content).
+- [x] `reference/blogsite/routes.md:46` — dropped "minimal".
 
 ---
 
