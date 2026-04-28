@@ -13,7 +13,7 @@ This covers front-matter-based redirects only. HTTP 301 responses and batch redi
 
 ## Assumptions
 
-- An existing Pennington doc site using `AddDocSite` (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
+- An existing Pennington doc site using `AddDocSite` (see [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) if not).
 - Both the old URL (the page being retired) and the new URL (the canonical destination) are known.
 - The front-matter type implements `IRedirectable` — `DocSiteFrontMatter` and `BlogSiteFrontMatter` both do.
 

@@ -7,7 +7,7 @@ sectionLabel: Configuration
 tags: [fonts, typography, preload, docsite]
 ---
 
-When a DocSite needs custom display and body typefaces instead of the defaults, and those faces should load without a flash of fallback text on first paint, the knobs below cover it. If no DocSite is running yet, start with [Create your first Pennington site](xref:tutorials.getting-started.first-site) first.
+When a DocSite needs custom display and body typefaces instead of the defaults, and those faces should load without a flash of fallback text on first paint, the knobs below cover it. If no DocSite is running yet, start with [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) first.
 
 ## Assumptions
 

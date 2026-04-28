@@ -11,7 +11,7 @@ To replace the bundled DocSite header or footer (or inject head tags, append CSS
 
 ## Before you begin
 
-- An existing Pennington site wired through `AddDocSite(...)` (see <xref:tutorials.getting-started.first-site> if not).
+- An existing Pennington site wired through `AddDocSite(...)` (see <xref:tutorials.docsite.scaffold> if not).
 - Edits made in the `DocSiteOptions` factory passed to `AddDocSite`, not the DocSite source — forking the template is out of scope (see <xref:explanation.core.docsite-positioning>).
 - Awareness that `ExtraStyles` is appended to the generated `/styles.css`, so rules added there ship alongside the MonorailCSS utility output rather than as a separate stylesheet.
 - Awareness that these seams are set at host-build time — changes require a restart, or `dotnet watch` for hot-reload.
