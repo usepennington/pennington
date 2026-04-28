@@ -1,11 +1,14 @@
 @using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Hosting
+@using Microsoft.Extensions.DependencyInjection
 @using Pennington.Infrastructure
+@using Pennington.LlmsTxt
 @inject IWebHostEnvironment WebHostEnvironment
 @inject DocSiteOptions DocSiteOptions
 @inject LocalizationOptions Localization
 @inject Localization.LocaleContext Locale
+@inject IServiceProvider Services
 
 <!DOCTYPE html>
 <html lang="@Locale.HtmlLang" dir="@Locale.Direction">
@@ -21,6 +24,14 @@
     <link rel="stylesheet" href="@GetVersioned("/styles.css")">
     <script src="@GetVersioned("/_content/Pennington.UI/scripts.js")" defer></script>
     <script src="@GetVersioned("/_content/Pennington.UI/spa-engine.js")" defer></script>
+
+    @* When llms.txt is enabled the host registers LlmsTxtOptions; advertise the
+       site index as an alternate markdown representation so an agent reading the
+       page head can discover it without knowing the conventional path. *@
+    @if (Services.GetService<LlmsTxtOptions>() is not null)
+    {
+        <link rel="alternate" type="text/markdown" title="LLM-friendly site index" href="/llms.txt" />
+    }
 
     @if (!string.IsNullOrEmpty(DocSiteOptions.AdditionalHtmlHeadContent))
     {

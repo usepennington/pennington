@@ -1,7 +1,10 @@
 @using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.Extensions.DependencyInjection
+@using Pennington.LlmsTxt
 @inject PenningtonOptions Options
 @inject BlogSiteOptions BlogOptions
 @inject IWebHostEnvironment WebHostEnvironment
+@inject IServiceProvider Services
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,6 +15,10 @@
     @if (BlogOptions.EnableRss)
     {
         <link type="application/rss+xml" rel="alternate" title="@Options.SiteTitle" href="/rss.xml" />
+    }
+    @if (Services.GetService<LlmsTxtOptions>() is not null)
+    {
+        <link rel="alternate" type="text/markdown" title="LLM-friendly site index" href="/llms.txt" />
     }
     @foreach (var font in BlogOptions.FontPreloads)
     {
