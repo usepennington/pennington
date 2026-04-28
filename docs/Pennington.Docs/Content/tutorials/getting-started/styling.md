@@ -167,15 +167,9 @@ Now reload `/about` in the browser. The paragraph renders in pink italic because
 - A utility-class layout feeds the class-collector, which discovers every token on its way through the response pipeline.
 - A new utility class added at runtime regenerates the stylesheet without a restart.
 
-## Pulling in Pennington.UI's stylesheet
+## Pennington.UI components and MonorailCSS
 
-If the layout uses Pennington.UI components (`Badge`, `Card`, `Steps`, etc.), pair the `<link rel="stylesheet" href="/styles.css">` tag above with a reference to the Pennington.UI bundle so the component-scoped rules ship alongside MonorailCSS output. The bundle is an RCL static web asset — add a package reference to `Pennington.UI` and reference it by the conventional path:
-
-```html
-<link rel="stylesheet" href="/_content/Pennington.UI/styles.css">
-```
-
-`AddDocSite` and `AddBlogSite` emit this automatically in their built-in layouts; a bare-`AddPennington` host that wants the same components needs the tag explicitly.
+Pennington.UI's components (`Badge`, `Card`, `Steps`, etc.) are written in MonorailCSS utility classes — no extra stylesheet ships with the package. Add the `Pennington.UI` package reference, drop the components into a layout, and the MonorailCSS class-collector picks up their utilities from the rendered HTML the same way it picks up your own. The single `<link rel="stylesheet" href="/styles.css">` tag is enough; there is no separate `_content/Pennington.UI/styles.css` to load.
 
 ## Listening port
 

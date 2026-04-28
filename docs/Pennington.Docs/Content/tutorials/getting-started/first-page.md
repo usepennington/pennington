@@ -53,7 +53,7 @@ The `title:` value flows to both the HTML `<title>` tag and the nav link label. 
 M:GettingStartedFirstPageExample.Stage1.Run(System.String[])
 ```
 
-Notice the `NavigationBuilder.BuildTree(tocItems)` call and the string join that becomes `navHtml` — that's the piece that grows in later steps without any edits.
+Notice the `NavigationBuilder.BuildTree(tocItems)` call and the string join that becomes `navHtml` — that's the piece that grows in later steps without any edits. The flat join here only renders the top level; once a section gains nested children, switch to <xref:reference.ui.navigation>'s `TableOfContentsNavigation` component, which walks the full `Children` tree.
 
 </Step>
 </Steps>

@@ -29,16 +29,16 @@ T:ExtensibilityLabExample.ReleaseEntry
 
 Create a sealed class implementing <xref:reference.api.i-content-service>, inject whatever reads the source (here, `IWebHostEnvironment` for `ContentRootPath`), and cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source. The full example lives in `examples/ExtensibilityLabExample/ReleaseNotesContentService.cs`; the snippets below cover each member.
 
-`DiscoverAsync` yields one `DiscoveredItem` per page. Build each item's `ContentRoute` through `ContentRouteFactory.FromUrl` (synthetic URL, no backing file) or `ContentRouteFactory.FromCustom` (URL plus an on-disk `FilePath` so file-watching picks up edits), and pair it with a `ContentSource` case. Use `RedirectSource` as the placeholder when an endpoint elsewhere in `Program.cs` produces the actual HTML. Yield an index route, then one route per record.
+`DiscoverAsync` yields one `DiscoveredItem` per page. Build each item's `ContentRoute` through `ContentRouteFactory.FromUrl` (synthetic URL, no backing file) or `ContentRouteFactory.FromCustom` (URL plus an on-disk `FilePath` so file-watching picks up edits), and pair it with a `ContentSource` case. Use `EndpointSource` when an endpoint elsewhere in `Program.cs` produces the HTML — the build crawler still discovers the URL and fetches it through the live pipeline, but the route is excluded from `sitemap.xml` because the canonical HTML is owned by the endpoint, not by this service. Reach for `RedirectSource(targetUrl)` only for genuine 30x redirects to another URL.
 
 `ContentSource` is a union that wraps exactly one of `MarkdownFileSource`, `RazorPageSource`, `RedirectSource`, `ProgrammaticSource`, or `EndpointSource` — it is not a base class. Implicit conversions from each case type make the shorthand form work; pick whichever reads more clearly.
 
 ```csharp
 // Explicit — the union wrap is visible
-yield return new DiscoveredItem(route, new ContentSource(new RedirectSource(target)));
+yield return new DiscoveredItem(route, new ContentSource(new EndpointSource()));
 
 // Shorthand — implicit conversion wraps the case for you
-yield return new DiscoveredItem(route, new RedirectSource(target));
+yield return new DiscoveredItem(route, new EndpointSource());
 ```
 
 ```csharp:xmldocid,bodyonly

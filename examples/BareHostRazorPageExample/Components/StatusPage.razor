@@ -1,0 +1,38 @@
+@* StatusPage — a Razor component used as the entire page body for routes like
+   /status/{slug}. Program.cs renders it through HtmlRenderer.RenderComponentAsync
+   inside a MapGet, so the component owns the whole document including <html>,
+   <head>, and <body>. *@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@Title</title>
+    <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="bg-base-50 text-base-900 dark:bg-base-950 dark:text-base-50">
+    <main class="mx-auto max-w-2xl px-6 py-12">
+        <header class="mb-8">
+            <p class="text-xs font-semibold uppercase tracking-wide text-accent-500">@Slug</p>
+            <h1 class="mt-1 font-display text-3xl font-bold">@Title</h1>
+        </header>
+
+        <p class="text-base-700 dark:text-base-300">@Summary</p>
+
+        <dl class="mt-8 grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-[10rem_1fr]">
+            @foreach (var item in Facts)
+            {
+                <dt class="text-xs font-semibold uppercase tracking-wide text-base-500 dark:text-base-400">@item.Key</dt>
+                <dd class="text-sm text-base-700 dark:text-base-300">@item.Value</dd>
+            }
+        </dl>
+    </main>
+</body>
+</html>
+
+@code {
+    [Parameter, EditorRequired] public string Slug { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Summary { get; set; } = string.Empty;
+    [Parameter] public IReadOnlyList<KeyValuePair<string, string>> Facts { get; set; } = [];
+}

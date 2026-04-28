@@ -45,19 +45,26 @@ public sealed class ReleaseNotesContentService : IContentService
     public ReleaseEntry? TryGet(string version) =>
         _entriesLazy.Value.FirstOrDefault(e => e.Version == version);
 
-    /// <summary>One discovered item for the index plus one per JSON file.</summary>
+    /// <summary>
+    /// One discovered item for the index plus one per JSON file. Each route is
+    /// paired with <see cref="EndpointSource"/> — the build crawler discovers
+    /// the URL and fetches it through the live pipeline, where the sibling
+    /// <c>MapGet</c> endpoint in <c>Program.cs</c> produces the HTML. These
+    /// items do not appear in <c>sitemap.xml</c>; that's the intended tradeoff
+    /// for routes whose canonical HTML lives behind a custom endpoint.
+    /// </summary>
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
         yield return new DiscoveredItem(
             ContentRouteFactory.FromUrl(new UrlPath("/releases/")),
-            new RedirectSource(new UrlPath("/releases/")));
+            new EndpointSource());
 
         foreach (var entry in _entriesLazy.Value)
         {
             var route = ContentRouteFactory.FromCustom(
                 url: new UrlPath($"/releases/{entry.Version}/"),
                 sourceFile: new FilePath(entry.SourcePath));
-            yield return new DiscoveredItem(route, new RedirectSource(route.CanonicalPath));
+            yield return new DiscoveredItem(route, new EndpointSource());
         }
 
         await Task.CompletedTask;

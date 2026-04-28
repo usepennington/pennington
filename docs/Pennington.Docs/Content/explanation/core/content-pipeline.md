@@ -35,7 +35,7 @@ A `DiscoveredItem` pairs a `ContentRoute` with a second union, `ContentSource`, 
 src/Pennington/Pipeline/ContentSource.cs
 ```
 
-The four cases cover every origin Pennington ships, and downstream stages — parsers, renderers, the output writer — never pattern-match on `ContentSource`; by the time they run, the source has been replaced by the parsed shape.
+The five cases cover every origin Pennington ships, and downstream stages — parsers, renderers, the output writer — never pattern-match on `ContentSource`; by the time they run, the source has been replaced by the parsed shape. For the construction and consumption shapes in detail, including the `.Value` pattern that works across both target frameworks, see <xref:explanation.core.content-source>.
 
 ### Stage transitions replace the item
 
