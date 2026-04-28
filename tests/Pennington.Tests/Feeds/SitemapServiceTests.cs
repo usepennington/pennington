@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using Microsoft.Extensions.DependencyInjection;
 using Pennington.Content;
 using Pennington.Feeds;
 using Pennington.FrontMatter;
@@ -73,14 +72,11 @@ public class SitemapServiceTests
         IContentParser parser,
         string canonicalBase = "https://example.com")
     {
-        var services = new ServiceCollection();
-        services.AddSingleton<IContentService>(contentService);
-        services.AddSingleton(parser);
-        services.AddSingleton(new LocalizationOptions());
-        var sp = services.BuildServiceProvider();
-
-        var builder = new SitemapBuilder(new UrlPath(canonicalBase));
-        return new SitemapService(sp, builder);
+        return new SitemapService(
+            contentServices: [contentService],
+            localization: new LocalizationOptions(),
+            parsers: [parser],
+            builder: new SitemapBuilder(new UrlPath(canonicalBase)));
     }
 
     [Fact]

@@ -32,23 +32,18 @@ Build/verify commands (used throughout):
 
 ---
 
-## 2. Drop `IServiceProvider` from feature service constructors
+## 2. Drop `IServiceProvider` from feature service constructors — PARTIAL ✅ (Search, Sitemap) / ❌ (LlmsTxt blocked by cycle)
 
 **Why:** Violates the "no infrastructure plumbing in domain service ctors" rule (memory: feedback_no_infra_plumbing_in_ctors.md). Each of these services captures `IServiceProvider` to lazily resolve `IContentService` instances inside async methods — a workaround for a lifetime mismatch that should be fixed at the registration, not the injection.
 
 **Sites:**
-- `src/Pennington/Search/SearchIndexService.cs` — ctor captures `IServiceProvider`
-- `src/Pennington/Feeds/SitemapService.cs` — ctor captures `IServiceProvider`
-- `src/Pennington/LlmsTxt/LlmsTxtService.cs` — ctor captures `IServiceProvider`
+- `src/Pennington/Search/SearchIndexService.cs` — ✅ DONE: now injects `IEnumerable<IContentService>` directly
+- `src/Pennington/Feeds/SitemapService.cs` — ✅ DONE: now injects `IEnumerable<IContentService>`, `LocalizationOptions`, `IEnumerable<IContentParser>`
+- `src/Pennington/LlmsTxt/LlmsTxtService.cs` — ❌ BLOCKED: see "Cycle" below
 
-**Fix per service:**
-1. Read the constructor + the method that calls `_serviceProvider.GetServices<IContentService>()`. Confirm what's actually being resolved (likely `IEnumerable<IContentService>`).
-2. Change the ctor to accept `IEnumerable<IContentService>` directly. If the lifetime story breaks (the services are singletons but content services are transient/scoped), the right fix is to register them at the matching lifetime, not to keep `IServiceProvider`.
-3. If a scoped→singleton bridge is genuinely needed, document it on the registration with one-line `// Why:` comment — but first try fixing the lifetime.
+**Cycle blocking LlmsTxtService:** `LlmsTxtService` injecting `IEnumerable<IContentService>` triggers `LlmsTxtContentService` → `LlmsTxtService` → `IEnumerable<IContentService>` → … infinite recursion through `FileWatchDependencyFactory<LlmsTxtService>`. The original `IServiceProvider` deferred the enumerable to call time, breaking the cycle. Fixing this requires either (a) excluding `LlmsTxtContentService` from the `IContentService` registration (it only emits files at build time — promote it to a separate `IContentEmitter` abstraction consumed by `OutputGenerationService`/`ContentPipeline` only), or (b) breaking `LlmsTxtContentService`'s direct dep on `LlmsTxtService` via Lazy/Func (also anti-pattern). Track as its own task once a structural answer is chosen.
 
-**Verify:** Build, test, then run docs site and check `/sitemap.xml`, `/search-index.json`, `/llms.txt` all render with the same content as before.
-
-**Related (separate task — see #3):** `Infrastructure/FileWatchDependencyFactory.cs:17` does the same anti-pattern with `ActivatorUtilities.CreateInstance<T>`. Tackle that with whatever lifetime mismatch it was introduced to bridge.
+**Verify (for the two completed sites):** Build + tests pass at baseline parity (1312 passing, 11 skipped). `dotnet run --project docs/Pennington.Docs -- build` writes `output/sitemap.xml`, `output/search-index-en.json`, `output/llms.txt` (399 pages, 35s).
 
 ---
 
@@ -116,98 +111,7 @@ Both also independently fetch rendered HTML and apply a CSS scope selector (`Sea
 
 **Verify:** Build + test. Tests that exercised the Builder directly (if any) need to retarget the Service.
 
----
-
-## 7. Extract DocSite/BlogSite shared template scaffolding
-
-**Why:** Two parallel implementations of the same site-template concept. Diverging APIs guarantee one will silently lag behind the other (BlogSite is already missing `RenderedFixture` from the Mdazor list).
-
-**Duplicate sites:**
-- `src/Pennington.DocSite/DocSiteServiceExtensions.cs` AddMonorailCss block (~line 41-43) ↔ `src/Pennington.BlogSite/BlogSiteServiceExtensions.cs` (~line 67-75)
-- `DocSiteServiceExtensions` Mdazor registration (~line 45-46) ↔ `BlogSiteServiceExtensions` (~line 56-65) — and BlogSite is missing `RenderedFixture`
-- `DocSiteServiceExtensions.BuildRoutingAssemblies` (~line 133-149) ↔ inline assembly dedup in `BlogSiteServiceExtensions` (~line 43-52)
-- `ContentResolver` (DocSite) ↔ `BlogContentResolver` (BlogSite) — same shape, different API
-
-**Fix (staged — pick one sub-task per session):**
-- 7a. Extract `BuildRoutingAssemblies` to `Pennington.Infrastructure` (or wherever fits) and call from both.
-- 7b. Extract `AddMdazorPenningtonComponents()` extension that registers the canonical Pennington Mdazor component set; both site templates call it. Backfill the missing components in BlogSite.
-- 7c. Extract MonorailCSS setup helper.
-- 7d. (Bigger) Unify the two resolvers behind a shared base type or strategy. Defer until 7a–7c land — they're cheap and de-risk the bigger one.
-
-**Verify:** `dotnet run --project docs/Pennington.Docs` and at least one example blog site (find under `examples/`). Pages render, navigation works, code blocks highlight.
-
----
-
-## 8. Replace `LlmsTxtContentService` with an `IFileGenerator`
-
-**Why:** `LlmsTxtContentService` implements `IContentService` but stubs out `DiscoverAsync`, `GetContentToCopyAsync`, `GetContentTocEntriesAsync` (all return empty). It exists only to emit `ContentToCreate` for one file. The interface implementation is dishonest; nobody mocks it.
-
-**Site:**
-- `src/Pennington/LlmsTxt/LlmsTxtContentService.cs:15-96`
-
-**Fix:**
-1. Define a minimal `IFileGenerator` interface in `Pennington.Generation` (or `Pennington.Pipeline`): `IAsyncEnumerable<ContentToCreate> GenerateFilesAsync(CancellationToken ct)`.
-2. Make `LlmsTxtService` implement `IFileGenerator` directly. Delete `LlmsTxtContentService`.
-3. Update the build pipeline to collect `IEnumerable<IFileGenerator>` and emit their files alongside the `IContentService` outputs.
-
-**Verify:** `/llms.txt` and any subtree-split llms files still appear in the build output unchanged.
-
----
-
-## 9. Dead-code sweep ✅ DONE
-
-Pure deletes — quickest wins, do in one session.
-
-- `src/Pennington/Generation/BuildReport.cs` — `BuildDiagnostic.Exception` is set in `BuildReportBuilder.AddError()` but never serialized in `WriteTo()`. Either render it (preferred — exceptions help debugging) or delete the field. Pick one.
-- `src/Pennington/Diagnostics/DiagnosticSeverity.cs` + `DiagnosticContext.AddInfo()` + `BuildReportBuilder.AddInfo()` — `Info` severity is never produced and `WriteTo` has no Info section. Delete the enum value and both `AddInfo` methods. (If you'd rather keep `Info` for future use, render it in `WriteTo` — but no half-state.)
-- `src/Pennington/Generation/OutputGenerationService.cs:46` — ctor parameter `pennOptions` is captured but never used. Remove it.
-- `src/Pennington.UI/Components/Steps.razor:8` — `[Parameter] public string Type` is declared, never referenced. Remove.
-- `src/Pennington.MonorailCss/CssClassCollector.cs:52` — `ShouldProcess()` always returns true and is documented as no-op. Remove the method (and decide: if `Classes` is meant to be static singleton, drop the `AddSingleton<CssClassCollector>` registration; if instance-based, remove the static).
-
-**Verify:** Build + test after each removal.
-
----
-
-## 10. UI palette violations
-
-**Why:** Direct Tailwind color classes (`text-gray-*`, `amber-*`) bypass the semantic palette (memory: feedback_semantic_color_tokens.md).
-
-**Sites:**
-- `src/Pennington.UI/Components/Steps.razor:3` — `text-gray-500` → `text-base-500`
-- `src/Pennington.UI/Components/FallbackNotice.razor:3` — `border-amber-300 bg-amber-50 text-amber-800` → semantic equivalent (likely `accent-one` family, but check the existing palette in `Pennington.MonorailCss` for the warning/caution tone).
-
-**Fix:** Replace direct color classes with palette tokens. If the right semantic token doesn't exist for "caution," either pick the closest one or extend the palette in `Pennington.MonorailCss` (preferred over inventing a one-off CSS rule per memory: feedback_tailwind_utility_styling.md).
-
-**Verify:** Run docs site; confirm Steps and any FallbackNotice rendering still looks right in light + dark.
-
----
-
-## 11. Card / LinkCard duplication
-
-**Why:** ~90% identical markup; LinkCard wraps Card's body in `<a>`.
-
-**Sites:**
-- `src/Pennington.UI/Components/Card.razor`
-- `src/Pennington.UI/Components/LinkCard.razor`
-
-**Fix:** Make `LinkCard` compose `Card` (render `<a>` around or as the root, with `Card` as `ChildContent`), or extract a shared internal partial. Pick whichever keeps consumer call sites unchanged.
-
-**Verify:** `git grep -E '<(Card|LinkCard)\b'` across `examples/` and `docs/`; render each and eyeball.
-
----
-
-## 12. RazorPageContentService TOC duplication
-
-**Site:**
-- `src/Pennington/Content/RazorPageContentService.cs:88-161` — `GetContentTocEntriesAsync` and `GetIndexableEntriesAsync` are near-identical loops differing only in filter and title-fallback.
-
-**Fix:** Extract a private helper that takes a `Func<Entry,bool>` filter and a `Func<Entry,string>` title-source. Both public methods become thin call-throughs.
-
-**Verify:** Build + test. Diff the docs site's TOC and its rendered search index — both should be unchanged.
-
----
-
-## 13. ContentRouteFactory locale-prefix duplication
+## 7. ContentRouteFactory locale-prefix duplication
 
 **Site:**
 - `src/Pennington/Routing/ContentRouteFactory.cs:46-119` — locale prefix logic appears in `FromRazorPage`, `FromUrl`, `FromCustom` (lines ~78, 93, 109).
@@ -218,7 +122,7 @@ Pure deletes — quickest wins, do in one session.
 
 ---
 
-## 14. BlogContentResolver silent exception swallow
+## 8. BlogContentResolver silent exception swallow
 
 **Site:**
 - `src/Pennington.BlogSite/Services/BlogContentResolver.cs:67, 69` — `catch { /* skip unparseable */ }`
@@ -227,23 +131,3 @@ Pure deletes — quickest wins, do in one session.
 
 **Verify:** Drop a malformed `.md` in a blog example; confirm a single warning is logged and the rest of the site still builds.
 
----
-
-## 15. Pre-warm Roslyn symbol extraction (don't `RunSync` in request path)
-
-**Site:**
-- `src/Pennington.Roslyn/RoslynCodeBlockPreprocessor.cs:122` — `AsyncHelpers.RunSync()` blocks the HTTP pipeline.
-
-**Fix:** A `SymbolExtractionWarmupService` may already exist (per the agent report — verify with `grep`). If yes, ensure it's run at startup and that `RoslynCodeBlockPreprocessor` reads from the warm cache synchronously. If no, add an `IHostedService` that warms symbols once per solution before the first request.
-
-**Verify:** Cold-start the docs site; first page with Roslyn-highlighted code blocks should not hang.
-
----
-
-## Suggested order
-
-Phase 1 (small, mechanical, high signal): 1, 9, 10, 13
-Phase 2 (lifetime/DI cleanup): 2, 3, 4
-Phase 3 (extraction): 5, 6, 8, 11, 12, 14
-Phase 4 (structural): 7 (in stages 7a → 7b → 7c → 7d)
-Phase 5 (perf): 15

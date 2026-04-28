@@ -4,7 +4,6 @@ using System.Xml.Linq;
 using Content;
 using FrontMatter;
 using Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
 using Pipeline;
 
 /// <summary>
@@ -52,9 +51,18 @@ public sealed class SitemapService
     /// <summary>
     /// Initializes the service and prepares lazy sitemap generation driven by the provided builder.
     /// </summary>
-    public SitemapService(IServiceProvider serviceProvider, SitemapBuilder builder)
+    public SitemapService(
+        IEnumerable<IContentService> contentServices,
+        LocalizationOptions localization,
+        IEnumerable<IContentParser> parsers,
+        SitemapBuilder builder)
     {
-        _sitemapLazy = new AsyncLazy<string>(() => BuildSitemapAsync(serviceProvider, builder));
+        // Preserve the prior `GetService<IContentParser>()` semantic: optional, last
+        // registration wins. Sites with only programmatic / Razor sources register no
+        // parser at all — fall through to a metadata-less entry per route.
+        var parser = parsers.LastOrDefault();
+        _sitemapLazy = new AsyncLazy<string>(
+            () => BuildSitemapAsync(contentServices, localization, parser, builder));
     }
 
     /// <summary>
@@ -62,14 +70,12 @@ public sealed class SitemapService
     /// </summary>
     public Task<string> GetSitemapXmlAsync() => _sitemapLazy.Value;
 
-    private static async Task<string> BuildSitemapAsync(IServiceProvider sp, SitemapBuilder builder)
+    private static async Task<string> BuildSitemapAsync(
+        IEnumerable<IContentService> contentServices,
+        LocalizationOptions localization,
+        IContentParser? parser,
+        SitemapBuilder builder)
     {
-        var contentServices = sp.GetServices<IContentService>();
-        var localization = sp.GetRequiredService<LocalizationOptions>();
-        // Parser is only required for MarkdownFileSource entries. Sites that
-        // only expose programmatic / Razor sources never register one, so
-        // resolve optionally and fall back to metadata-less entries.
-        var parser = sp.GetService<IContentParser>();
         var candidates = new List<SitemapCandidate>();
 
         foreach (var service in contentServices)

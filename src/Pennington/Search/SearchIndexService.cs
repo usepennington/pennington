@@ -5,7 +5,6 @@ using System.Text.Json.Serialization;
 using Content;
 using Infrastructure;
 using LlmsTxt;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
@@ -27,7 +26,7 @@ public sealed class SearchIndexService
 
     /// <summary>Creates the service; the per-locale index is computed lazily on first request.</summary>
     public SearchIndexService(
-        IServiceProvider serviceProvider,
+        IEnumerable<IContentService> contentServices,
         SearchIndexBuilder builder,
         SearchIndexOptions options,
         RenderedHtmlFetcher fetcher,
@@ -36,7 +35,7 @@ public sealed class SearchIndexService
     {
         _localization = localization;
         _indexLazy = new AsyncLazy<IReadOnlyDictionary<string, string>>(
-            () => BuildAllAsync(serviceProvider, builder, options, fetcher, localization, logger));
+            () => BuildAllAsync(contentServices, builder, options, fetcher, localization, logger));
     }
 
     /// <summary>
@@ -50,7 +49,7 @@ public sealed class SearchIndexService
     }
 
     private static async Task<IReadOnlyDictionary<string, string>> BuildAllAsync(
-        IServiceProvider sp,
+        IEnumerable<IContentService> contentServices,
         SearchIndexBuilder builder,
         SearchIndexOptions options,
         RenderedHtmlFetcher fetcher,
@@ -66,8 +65,6 @@ public sealed class SearchIndexService
             ? (IEnumerable<string>)localization.Locales.Keys
             : [localization.DefaultLocale];
         foreach (var code in configuredLocales) groups[code] = [];
-
-        var contentServices = sp.GetServices<IContentService>();
 
         foreach (var service in contentServices)
         {
