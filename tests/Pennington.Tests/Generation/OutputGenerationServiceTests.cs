@@ -28,7 +28,6 @@ public class OutputGenerationServiceTests
         return new OutputGenerationService(
             contentServices ?? [],
             outputOptions,
-            new PenningtonOptions(),
             env,
             endpoints,
             fs,
@@ -140,7 +139,6 @@ public class OutputGenerationServiceTests
         var service = new OutputGenerationService(
             [],
             options,
-            new PenningtonOptions(),
             env,
             new StubEndpointDataSource(),
             fs,

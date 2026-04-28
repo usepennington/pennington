@@ -19,10 +19,6 @@ public sealed class BuildReportBuilder
     /// <summary>Appends a pre-built diagnostic to the report.</summary>
     public void AddDiagnostic(BuildDiagnostic diagnostic) => _diagnostics.Add(diagnostic);
 
-    /// <summary>Records an informational diagnostic attached to a specific route.</summary>
-    public void AddInfo(ContentRoute route, string message)
-        => _diagnostics.Add(new BuildDiagnostic(DiagnosticSeverity.Info, route, message));
-
     /// <summary>Records a warning diagnostic attached to a specific route.</summary>
     public void AddWarning(ContentRoute route, string message)
         => _diagnostics.Add(new BuildDiagnostic(DiagnosticSeverity.Warning, route, message));

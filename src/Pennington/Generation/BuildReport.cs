@@ -126,6 +126,9 @@ public sealed class BuildReport
         {
             writer.WriteLine($"  {diag.Message}");
         }
+
+        if (diag.Exception is { } ex)
+            writer.WriteLine($"    Exception: {ex.GetType().Name}: {ex.Message}");
     }
 
     /// <summary>Returns the human-readable summary as a single formatted string.</summary>

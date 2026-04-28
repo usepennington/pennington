@@ -45,9 +45,4 @@ public class CssClassCollector
             ProcessingLock.ExitReadLock();
         }
     }
-
-    /// <summary>Returns whether CSS classes should be collected for the given URL.</summary>
-    // Much like the other timing issue, at one point we were using this to determine if we should process the URL
-    // then clearing it out on a hot reload. But the timing was off. For now, we'll always just return true.
-    public bool ShouldProcess(string url) => true;
 }

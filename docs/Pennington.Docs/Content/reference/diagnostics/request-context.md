@@ -18,10 +18,9 @@ Scoped accumulator registered in DI as `Scoped` — a fresh instance per HTTP re
 - **`Add(Diagnostic diagnostic)`** — appends a pre-constructed `Diagnostic` to the request's list. Used when the caller already has a `Diagnostic` instance (for example, one forwarded from a helper service).
 - **`AddError(string message, string? source = null)`** — appends a new `Diagnostic` with `Severity = DiagnosticSeverity.Error`. Causes `HasErrors` to return `true` for the remainder of the request.
 - **`AddWarning(string message, string? source = null)`** — appends a new `Diagnostic` with `Severity = DiagnosticSeverity.Warning`. Contributes to the overlay warning count but does not flip `HasErrors`.
-- **`AddInfo(string message, string? source = null)`** — appends a new `Diagnostic` with `Severity = DiagnosticSeverity.Info`. Surfaces in the overlay and headers but does not flip `HasErrors`.
 - **`Diagnostics`** (property) — read-only view of the diagnostics accumulated so far, in insertion order. Read by `ResponseProcessingMiddleware.WriteDiagnosticHeaders` and `DiagnosticOverlayProcessor.ProcessAsync`.
 - **`HasAny`** (property) — `true` when at least one diagnostic has been appended. Gate before enumerating the list to emit `X-Pennington-Diagnostic` headers.
-- **`HasErrors`** (property) — `true` when at least one appended diagnostic has `Severity = Error`. A context with only warnings/info returns `true` from `HasAny` and `false` from `HasErrors`.
+- **`HasErrors`** (property) — `true` when at least one appended diagnostic has `Severity = Error`. A context with only warnings returns `true` from `HasAny` and `false` from `HasErrors`.
 
 ## `Diagnostic`
 
@@ -43,15 +42,14 @@ Optional label identifying the producer (for example, `"XrefResolver"`); rendere
 
 ## `DiagnosticSeverity`
 
-Three-value enum in ascending severity order. The overlay's aggregate badge color picks the highest present severity (`Error` > `Warning` > `Info`); `DiagnosticContext.HasErrors` fires only on `Error`.
+Two-value enum in ascending severity order. The overlay's aggregate badge color picks the highest present severity (`Error` > `Warning`); `DiagnosticContext.HasErrors` fires only on `Error`.
 
 ### Values
 
 | Name | Value | Description |
 |---|---|---|
-| `Info` | `0` | Informational diagnostic; counted toward the badge total but renders in blue and never flips `HasErrors`. |
-| `Warning` | `1` | Recoverable issue (for example, an unresolved xref); contributes to the overlay warning count and the amber badge color. |
-| `Error` | `2` | Fatal issue for the request's output; flips `HasErrors` and renders with the red badge color. |
+| `Warning` | `0` | Recoverable issue (for example, an unresolved xref); contributes to the overlay warning count and the amber badge color. |
+| `Error` | `1` | Fatal issue for the request's output; flips `HasErrors` and renders with the red badge color. |
 
 ## Dev-mode overlay and `X-Pennington-Diagnostic` header
 
@@ -64,7 +62,7 @@ Two transports surface the accumulated diagnostics, both wired inside `UsePennin
 
 ## Example
 
-The canonical in-repo consumer is `XrefResolvingService`, which reports unresolved uids. Any service or response processor that resolves `DiagnosticContext` and calls `AddWarning` / `AddError` / `AddInfo` during request handling flows entries into the `X-Pennington-Diagnostic` response header and the dev overlay without further wiring. The `examples/ExtensibilityLabExample` lab registers a scoped `IResponseProcessor` that follows this shape:
+The canonical in-repo consumer is `XrefResolvingService`, which reports unresolved uids. Any service or response processor that resolves `DiagnosticContext` and calls `AddWarning` / `AddError` during request handling flows entries into the `X-Pennington-Diagnostic` response header and the dev overlay without further wiring. The `examples/ExtensibilityLabExample` lab registers a scoped `IResponseProcessor` that follows this shape:
 
 ```csharp:xmldocid,bodyonly
 T:ExtensibilityLabExample.DiagnosticsEmittingProcessor

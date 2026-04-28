@@ -154,7 +154,7 @@ Both also independently fetch rendered HTML and apply a CSS scope selector (`Sea
 
 ---
 
-## 9. Dead-code sweep
+## 9. Dead-code sweep ✅ DONE
 
 Pure deletes — quickest wins, do in one session.
 

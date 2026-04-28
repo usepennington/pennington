@@ -43,7 +43,6 @@ public sealed class OutputGenerationService
     public OutputGenerationService(
         IEnumerable<IContentService> contentServices,
         OutputOptions outputOptions,
-        PenningtonOptions pennOptions,
         IWebHostEnvironment environment,
         EndpointDataSource endpointDataSource,
         IFileSystem fileSystem,

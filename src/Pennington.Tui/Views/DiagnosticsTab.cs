@@ -68,7 +68,6 @@ internal static class DiagnosticsTab
                 {
                     DiagnosticSeverity.Error => ("ERR", "red"),
                     DiagnosticSeverity.Warning => ("WRN", "yellow"),
-                    DiagnosticSeverity.Info => ("INF", "cyan"),
                     _ => ("OK ", "green"),
                 };
                 diagnostics.AppendMarkupLine($"[{color}]{tag}[/] [bold]{Escape(entry.Path)}[/]  [dim]{entry.CapturedAt:HH:mm:ss}[/]");

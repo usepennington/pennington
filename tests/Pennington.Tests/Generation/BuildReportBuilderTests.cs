@@ -41,7 +41,7 @@ public class BuildReportBuilderTests
     public void AddDiagnostic_AddsDirectly()
     {
         var builder = new BuildReportBuilder();
-        var diagnostic = new BuildDiagnostic(DiagnosticSeverity.Info, MakeRoute(), "direct add");
+        var diagnostic = new BuildDiagnostic(DiagnosticSeverity.Warning, MakeRoute(), "direct add");
         builder.AddDiagnostic(diagnostic);
 
         var report = builder.Build();
@@ -77,9 +77,6 @@ public class BuildReportBuilderTests
         // 1 warning
         builder.AddWarning(MakeRoute("/docs/old-page"), "redirect target not found");
 
-        // 1 info
-        builder.AddInfo(MakeRoute("/docs/api-reference"), "API docs generated from 42 types");
-
         var report = builder.Build();
 
         report.GeneratedPages.Count.ShouldBe(5);
@@ -90,7 +87,6 @@ public class BuildReportBuilderTests
         report.HasErrors.ShouldBeTrue(); // errors + broken links
 
         // Diagnostics breakdown
-        report.Diagnostics.Count(d => d.Severity is DiagnosticSeverity.Info).ShouldBe(1);
         report.Diagnostics.Count(d => d.Severity is DiagnosticSeverity.Warning).ShouldBe(1);
         report.Diagnostics.Count(d => d.Severity is DiagnosticSeverity.Error).ShouldBe(1);
     }
@@ -109,12 +105,11 @@ public class BuildReportBuilderTests
     }
 
     [Fact]
-    public void OnlyWarningsAndInfo_HasErrorsFalse()
+    public void OnlyWarnings_HasErrorsFalse()
     {
         var builder = new BuildReportBuilder();
         builder.AddGeneratedPage(MakeRoute("/page"));
         builder.AddWarning(MakeRoute("/old"), "deprecated");
-        builder.AddInfo(MakeRoute("/page"), "processed in 50ms");
 
         var report = builder.Build();
 
