@@ -78,7 +78,9 @@ T:DocSiteKitchenSinkExample.ApiFrontMatter
 
 Pass the record type to `AddMarkdownContent<T>` so the pipeline deserializes the YAML into that type. `AddDocSite` and `AddBlogSite` each already register one source — chaining a second record requires bare `AddPennington` (see [Use multiple content sources](xref:how-to.configuration.multiple-sources)).
 
-<!-- TODO: xmldocid needed -->
+```csharp:xmldocid
+M:Pennington.Infrastructure.PenningtonOptions.AddMarkdownContent``1(System.Action{Pennington.Infrastructure.MarkdownContentOptions})
+```
 
 </Step>
 </Steps>
