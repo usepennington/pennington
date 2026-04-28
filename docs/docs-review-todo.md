@@ -65,7 +65,7 @@ Each of these moves content to the right quadrant or reshapes a page that's pret
 
 ## Phase 4 — Drift in reference
 
-- [ ] **Fix internal-API claims in `reference/markdown/code-block-args.md:10`.** The page cites `CodeBlockExtensions.GetArgumentPairs` and `CodeTransformer.Transform` as part of the public surface. Both are `internal` (verify by grepping `src/Pennington/Markdown/`). Reframe the sentence around the public boundary: Markdig's `FencedCodeBlock.Arguments` and the user-visible info-string contract. Don't expose internal types in a reference page.
+- [x] **Fix internal-API claims in `reference/markdown/code-block-args.md:10`.** The page cites `CodeBlockExtensions.GetArgumentPairs` and `CodeTransformer.Transform` as part of the public surface. Both are `internal` (verify by grepping `src/Pennington/Markdown/`). Reframe the sentence around the public boundary: Markdig's `FencedCodeBlock.Arguments` and the user-visible info-string contract. Don't expose internal types in a reference page. _Reframed every internal-type citation around the public surface: opener now leads with `FencedCodeBlock.Info`/`FencedCodeBlock.Arguments` and the directive pass against highlighted HTML; the "what `GetArgumentPairs` returns" paragraph is replaced with what Markdig exposes; the attribute-table preamble drops the false claim that `ICodeBlockPreprocessor` reads args (it receives `code`+`languageId` only) and points custom Markdig extensions at `FencedCodeBlock.Arguments`; the directive paragraph drops the `CodeTransformer.FindDirective` reference. Spot-check found `TabbedCodeBlocksExtension`/`TabbedCodeBlockRenderer` are also internal — replaced their bare-name mentions in the attribute table with behavioural descriptions._
 
 ---
 

@@ -7,13 +7,13 @@ tags: [markdown, code-blocks, directives]
 uid: reference.markdown.code-block-args
 ---
 
-Pennington applies two grammars to a fenced code block: info-string tokens on the opening fence line (language, suffix, key/value attributes), and `[!code …]` directives embedded in line-trailing comments. Info-string parsing is implemented by `CodeBlockExtensions.GetArgumentPairs` in `Pennington.Markdown.Extensions`; directive handling is implemented by `CodeTransformer.Transform` in the same namespace, consumed by `CodeHighlightRenderer`.
+Pennington applies two grammars to a fenced code block: info-string tokens on the opening fence line (language, optional colon-suffix, `key=value` attributes), and `[!code …]` directives embedded in line-trailing comments. Markdig parses the info string and exposes the language token on `FencedCodeBlock.Info` and the attribute tail on `FencedCodeBlock.Arguments`; the directive pass runs against the highlighted HTML before the block is rendered.
 
 This page is the grammar spec. For task-oriented usage see the [Markdown extensions catalog](xref:reference.markdown.extensions) and the How-To guides linked below.
 
 ## Fence info-string grammar
 
-The info string is the text on the opening fence line after the three backticks, tokenised left-to-right by the Markdig parser and post-processed by `CodeBlockExtensions.GetArgumentPairs`. Tokens are whitespace-separated; the first token is the language (optionally with a colon-suffix), and remaining tokens are `key=value` attribute pairs. Values may be bare, single-quoted, or double-quoted — quoting is required only when the value contains whitespace.
+The info string is the text on the opening fence line after the three backticks. Markdig tokenises it left-to-right: the first whitespace-separated token is the language (with an optional colon-suffix), and remaining tokens are `key=value` attribute pairs. Values may be bare, single-quoted, or double-quoted — quoting is required only when the value contains whitespace.
 
 ```text
 info-string   := language [ ":" suffix ] ( WS attribute )*
@@ -26,16 +26,16 @@ bare-value    := any run of non-whitespace chars
 quoted-value  := any chars up to the matching quote
 ```
 
-`CodeBlockExtensions.GetArgumentPairs` returns a case-insensitive `Dictionary<string, string>` containing only the `key=value` attributes — it does not return the language or suffix, which Markdig exposes separately on `FencedCodeBlock.Info` and `FencedCodeBlock.Arguments`.
+Markdig exposes the language and colon-suffix on `FencedCodeBlock.Info` and the attribute tail on `FencedCodeBlock.Arguments`. Pennington's built-in extensions read attribute keys case-insensitively.
 
 ## Attributes
 
-The table below lists the `key=value` attributes Pennington's built-in extensions consume from the info string; custom extensions registered via `ICodeBlockPreprocessor` or a Markdig extension may read additional keys from the same dictionary.
+The table below lists the `key=value` attributes Pennington's built-in extensions consume from the info string. A custom Markdig extension registered into the pipeline can read additional keys directly from `FencedCodeBlock.Arguments`.
 
 | Name | Values | Description | Example |
 |---|---|---|---|
-| `tabs` | `true` | Marks adjacent fenced blocks for grouping into a single tabbed widget by `TabbedCodeBlocksExtension`. | ` ```csharp tabs=true title="C#"` |
-| `title` | any quoted string | Tab label shown by `TabbedCodeBlockRenderer`; falls back to the normalised language name when omitted. | ` ```csharp tabs=true title="Program.cs"` |
+| `tabs` | `true` | Marks adjacent fenced blocks for grouping into a single tabbed widget. | ` ```csharp tabs=true title="C#"` |
+| `title` | any quoted string | Tab label shown on the tabbed widget; falls back to the normalised language name when omitted. | ` ```csharp tabs=true title="Program.cs"` |
 
 ## Suffix forms (code-embedding)
 
@@ -50,7 +50,7 @@ The four colon-suffix forms switch a fenced block from literal content to a code
 
 ## `[!code …]` directives
 
-A directive is the literal text `[!code <notation>]` wrapped in a line-trailing comment marker recognised for the block's language (`//`, `#`, `--`, `<!--`, `*`, `%`, `'`, `REM`, `;`, `/*`), matched by `CodeTransformer.FindDirective` after highlighting. The comment marker is stripped when the directive consumes the whole comment and preserved when trailing content remains; the directive itself is always removed from the rendered line.
+A directive is the literal text `[!code <notation>]` wrapped in a line-trailing comment marker recognised for the block's language (`//`, `#`, `--`, `<!--`, `*`, `%`, `'`, `REM`, `;`, `/*`); the directive pass runs against the highlighted HTML. The comment marker is stripped when the directive consumes the whole comment and preserved when trailing content remains; the directive itself is always removed from the rendered line.
 
 | Directive | Behavior | Example |
 |---|---|---|
