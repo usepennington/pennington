@@ -83,6 +83,6 @@ const href = `${base}/guides/first-page/`;
 ## Related
 
 - Reference: <xref:reference.host.cli> — the `build [baseUrl] [outputDirectory]` surface this page drives.
-- Reference: <!-- TODO: xmldocid needed --> `BaseUrlHtmlRewriter` API reference (check docs-toc.md; drop this bullet if absent).
+- Reference: <xref:reference.api.base-url-html-rewriter> — the rewriter that prefixes every root-relative `href`, `src`, and `action` and stamps `data-base-url` on `<body>`.
 - Background: <xref:explanation.core.response-processing> — why base-URL rewriting runs at `Order => 30`, after xref and locale rewriters.
 - Background: <xref:explanation.core.dev-vs-build> — why the same rewriter runs identically in `dotnet run` and `dotnet run -- build`.

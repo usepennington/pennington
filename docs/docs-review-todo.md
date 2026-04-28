@@ -21,7 +21,7 @@ These ship to readers right now.
 
 - [x] **Resolve TODO marker in `how-to/content-authoring/images-and-assets.md:48`.** Same `<!-- TODO: xmldocid needed -->` after `MarkdownContentServiceOptions.ExcludePaths`. Either fence `T:Pennington.Content.MarkdownContentServiceOptions` (or the specific property xmldocid) or remove the reference if the type was renamed.
 
-- [ ] **Resolve TODO marker in `how-to/deployment/base-url.md:86`.** Bullet says `<!-- TODO: xmldocid needed --> 'BaseUrlHtmlRewriter' API reference`. Confirm the type still exists in `src/Pennington/`, then either link to its API ref page via `xref:` or delete the bullet.
+- [x] **Resolve TODO marker in `how-to/deployment/base-url.md:86`.** Bullet says `<!-- TODO: xmldocid needed --> 'BaseUrlHtmlRewriter' API reference`. Confirm the type still exists in `src/Pennington/`, then either link to its API ref page via `xref:` or delete the bullet.
 
 - [ ] **Resolve TODO marker in `how-to/configuration/localization.md:105`.** Bullet says `TODO — Explanation page on locale routing and content fallback (not yet written in TOC)`. The page does exist (`explanation/localization/urls-and-fallback.md`); replace the TODO with `<xref:explanation.localization.urls-and-fallback>` (verify the actual uid in that file's front matter).
 
