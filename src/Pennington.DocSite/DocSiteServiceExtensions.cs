@@ -74,12 +74,31 @@ public static class DocSiteServiceExtensions
         {
             var options = sp.GetRequiredService<DocSiteOptions>();
 
+            // Sensible cross-platform sans-serif stack used when the consumer
+            // doesn't supply DisplayFontFamily / BodyFontFamily. Both `font-display`
+            // and `font-sans` utilities must resolve to something — the docs site
+            // chrome (headers, body) leans on them.
+            const string defaultFontStack =
+                "-apple-system, BlinkMacSystemFont, 'avenir next', avenir, 'segoe ui', " +
+                "'helvetica neue', 'Adwaita Sans', Cantarell, Ubuntu, roboto, noto, " +
+                "helvetica, arial, sans-serif";
+            var displayFont = options.DisplayFontFamily ?? defaultFontStack;
+            var bodyFont = options.BodyFontFamily ?? defaultFontStack;
+            var userCustomization = options.CustomCssFrameworkSettings ?? (settings => settings);
+
             var monoOptions = new MonorailCssOptions
             {
                 ColorScheme = options.ColorScheme ?? new MonorailCssOptions().ColorScheme,
                 SyntaxTheme = options.SyntaxTheme ?? SyntaxTheme.Default,
                 ExtraStyles = options.ExtraStyles ?? string.Empty,
-                CustomCssFrameworkSettings = options.CustomCssFrameworkSettings ?? (settings => settings),
+                // Register fonts first so the user's CustomCssFrameworkSettings
+                // hook still gets the last word if it wants to swap them.
+                CustomCssFrameworkSettings = settings => userCustomization(settings with
+                {
+                    Theme = settings.Theme
+                        .AddFontFamily("display", displayFont)
+                        .AddFontFamily("sans", bodyFont),
+                }),
             };
 
             return monoOptions;
