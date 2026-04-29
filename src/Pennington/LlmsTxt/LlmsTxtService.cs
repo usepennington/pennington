@@ -481,7 +481,10 @@ public sealed class LlmsTxtService
     private static string ResolvePackageVersion()
     {
         var attr = typeof(LlmsTxtService).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-        return attr?.InformationalVersion ?? "unknown";
+        var raw = attr?.InformationalVersion ?? "unknown";
+        // MinVer appends "+<sha>" build metadata; trim it so the value matches the published NuGet PackageVersion.
+        var plus = raw.IndexOf('+');
+        return plus >= 0 ? raw[..plus] : raw;
     }
 
     private static void CollectLeafPaths(ImmutableList<NavigationTreeItem> items, HashSet<string> acc)

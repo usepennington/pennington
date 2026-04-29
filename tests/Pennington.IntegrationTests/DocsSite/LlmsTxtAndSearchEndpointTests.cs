@@ -181,12 +181,15 @@ public class LlmsTxtAndSearchEndpointTests
         content.ShouldContain("penningtonVersion:");
 
         // The version should match the LlmsTxtService assembly's informational version
-        // (MinVer-populated in Directory.Build.props).
+        // (MinVer-populated in Directory.Build.props), with MinVer's "+<sha>" build
+        // metadata trimmed so the value matches the published NuGet PackageVersion.
         var attr = typeof(LlmsTxtService).Assembly
             .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
             .Cast<System.Reflection.AssemblyInformationalVersionAttribute>()
             .FirstOrDefault();
-        var expected = attr?.InformationalVersion ?? "unknown";
+        var raw = attr?.InformationalVersion ?? "unknown";
+        var plus = raw.IndexOf('+');
+        var expected = plus >= 0 ? raw[..plus] : raw;
         content.ShouldContain($"penningtonVersion: {expected}");
     }
 
