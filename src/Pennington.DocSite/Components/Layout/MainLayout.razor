@@ -65,13 +65,13 @@
                             <div data-area-toc="@area.Slug" class="@(isActive ? null : "hidden")">
                                 <TableOfContentsNavigation TableOfContents="_areaTocs.GetValueOrDefault(area.Slug)"
                                     ListGapClass="gap-4"
-                                    ChildListClass="mt-1"
-                                    SectionHeaderStructureClass="text-xs font-semibold uppercase tracking-wider mt-6 first:mt-01 mb-2"
-                                    SectionHeaderColorClass="text-base-400 dark:text-base-500"
+                                    ChildListClass="@TocChildListClass"
+                                    SectionHeaderStructureClass="text-xs font-semibold uppercase tracking-wider mt-6 first:mt-0 mb-2"
+                                    SectionHeaderColorClass="@TocSectionHeaderColorClass"
                                     LinkStructureClass="block text-sm leading-relaxed border-l pl-3 py-1"
-                                    LinkColorClass="transition-colors duration-150 border-base-200 dark:border-base-800 text-base-500 dark:text-base-400 data-[current=true]:border-primary-500 data-[current=true]:text-primary-700 dark:data-[current=true]:text-primary-400 data-[current=true]:font-medium hover:text-base-900 dark:hover:text-base-200"
-                                    RootLinkStructureClass="block py-1 text-base leading-relaxed"
-                                    RootLinkColorClass="transition-colors duration-150 text-base-600 dark:text-base-400 data-[current=true]:text-primary-700 dark:data-[current=true]:text-primary-400 data-[current=true]:font-medium hover:text-base-900 dark:hover:text-base-200" />
+                                    LinkColorClass="@TocLinkColorClass"
+                                    RootLinkStructureClass="block py-1 text-sm leading-relaxed"
+                                    RootLinkColorClass="@TocRootLinkColorClass" />
                             </div>
                         }
                     }
@@ -79,13 +79,13 @@
                     {
                         <TableOfContentsNavigation TableOfContents="_toc"
                             ListGapClass="gap-0"
-                            ChildListClass="mt-1"
+                            ChildListClass="@TocChildListClass"
                             SectionHeaderStructureClass="text-xs font-semibold uppercase tracking-wider mt-5 first:mt-0 mb-1.5"
-                            SectionHeaderColorClass="text-base-400 dark:text-base-500"
+                            SectionHeaderColorClass="@TocSectionHeaderColorClass"
                             LinkStructureClass="block text-sm leading-relaxed border-l pl-3 py-[3px]"
-                            LinkColorClass="transition-colors duration-150 border-base-200 dark:border-base-800 text-base-500 dark:text-base-400 data-[current=true]:border-primary-500 data-[current=true]:text-primary-700 dark:data-[current=true]:text-primary-400 data-[current=true]:font-medium hover:text-base-900 dark:hover:text-base-200"
+                            LinkColorClass="@TocLinkColorClass"
                             RootLinkStructureClass="block py-[3px] text-sm leading-relaxed"
-                            RootLinkColorClass="transition-colors duration-150 text-base-600 dark:text-base-400 data-[current=true]:text-primary-700 dark:data-[current=true]:text-primary-400 data-[current=true]:font-medium hover:text-base-900 dark:hover:text-base-200" />
+                            RootLinkColorClass="@TocRootLinkColorClass" />
                     }
                 </div>
             </nav>
@@ -109,6 +109,25 @@
 </div>
 
 @code{
+    // Shared TOC styling — both the area-aware and single-tree branches above
+    // pass the same color/spacing strings; only the structure classes
+    // (gaps, vertical rhythm) genuinely diverge.
+    private const string TocChildListClass = "mt-1";
+
+    private const string TocSectionHeaderColorClass = "text-base-400 dark:text-base-500";
+
+    private const string TocLinkColorClass =
+        "transition-colors duration-150 border-base-200 dark:border-base-800 " +
+        "text-base-500 dark:text-base-400 " +
+        "data-[current=true]:border-primary-500 data-[current=true]:text-primary-700 " +
+        "dark:data-[current=true]:text-primary-400 data-[current=true]:font-medium " +
+        "hover:text-base-900 dark:hover:text-base-200";
+
+    private const string TocRootLinkColorClass =
+        "transition-colors duration-150 text-base-600 dark:text-base-400 " +
+        "data-[current=true]:text-primary-700 dark:data-[current=true]:text-primary-400 " +
+        "data-[current=true]:font-medium hover:text-base-900 dark:hover:text-base-200";
+
     private ImmutableList<NavigationTreeItem>? _toc;
     private Dictionary<string, ImmutableList<NavigationTreeItem>> _areaTocs = new();
     private Dictionary<string, string> _areaHrefs = new();
