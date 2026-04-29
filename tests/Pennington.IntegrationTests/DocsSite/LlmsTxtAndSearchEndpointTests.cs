@@ -174,20 +174,20 @@ public class LlmsTxtAndSearchEndpointTests
         var content = await _client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
 
         // Front-door identity: site origin, self-canonical, generation timestamp,
-        // and the generator string for tooling that wants to disambiguate.
+        // and the Pennington version for tooling that wants to disambiguate.
         content.ShouldContain("site:");
         content.ShouldContain("canonical:");
         content.ShouldContain("generated:");
-        content.ShouldContain("generator: pennington/");
+        content.ShouldContain("penningtonVersion:");
 
-        // The generator version should match the LlmsTxtService assembly's informational version
+        // The version should match the LlmsTxtService assembly's informational version
         // (MinVer-populated in Directory.Build.props).
         var attr = typeof(LlmsTxtService).Assembly
             .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
             .Cast<System.Reflection.AssemblyInformationalVersionAttribute>()
             .FirstOrDefault();
         var expected = attr?.InformationalVersion ?? "unknown";
-        content.ShouldContain($"generator: pennington/{expected}");
+        content.ShouldContain($"penningtonVersion: {expected}");
     }
 
     [Fact]

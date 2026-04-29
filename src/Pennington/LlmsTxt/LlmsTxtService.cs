@@ -234,7 +234,7 @@ public sealed class LlmsTxtService
         sb.AppendLine($"site: {canonicalBase.Value.Value}");
         sb.AppendLine($"canonical: {canonicalSelf}");
         sb.AppendLine($"generated: {DateTime.UtcNow:O}");
-        sb.AppendLine($"generator: pennington/{PackageVersion}");
+        sb.AppendLine($"penningtonVersion: {PackageVersion}");
         sb.AppendLine();
     }
 
