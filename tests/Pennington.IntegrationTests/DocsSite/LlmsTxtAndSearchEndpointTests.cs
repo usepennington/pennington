@@ -256,6 +256,28 @@ public class LlmsTxtAndSearchEndpointTests
     }
 
     [Fact]
+    public async Task DocsPage_BodyCarriesRobotsOnlyCueToLlmsTxt()
+    {
+        // <link rel="alternate" type="text/markdown"> in <head> is stripped by
+        // WebFetch-style extractors. App.razor mirrors the same hint inside
+        // <body> as a .robots-only paragraph, which is display:none for humans
+        // but flows through the extractor — verified empirically against
+        // Claude WebFetch on the deployed API reference pages, where other
+        // .robots-only content survives. Both gates share the LlmsTxtOptions
+        // DI check, so when one is registered the other must render too.
+        var html = await _client.GetStringAsync("/", TestContext.Current.CancellationToken);
+
+        var context = BrowsingContext.New(Configuration.Default);
+        var page = await context.OpenAsync(req => req.Content(html), TestContext.Current.CancellationToken);
+
+        var cue = page.QuerySelector("body > p.robots-only");
+        cue.ShouldNotBeNull("expected a .robots-only cue paragraph at the top of <body>");
+        cue!.TextContent.ShouldContain("/llms.txt");
+        cue.QuerySelector("a[href='/llms.txt']").ShouldNotBeNull(
+            "the cue should link to /llms.txt so an extractor sees the path verbatim");
+    }
+
+    [Fact]
     public async Task LlmsTxt_MarkdownFiles_RewriteInternalLinksToStrippedMarkdown()
     {
         // Links inside a stripped _llms/*.md that point to another indexed page

@@ -51,6 +51,15 @@
       class="data-[mobile-menu-open=true]:overflow-hidden"
       data-locales="@(Localization.IsMultiLocale ? string.Join(",", Localization.Locales.Keys) : "")"
       data-default-locale="@Localization.DefaultLocale">
+@* WebFetch-style HTML extractors strip <head> metadata (including the
+   <link rel="alternate"> above) but preserve display:none body content, so
+   the .robots-only paragraph carries the same hint through to extracting
+   agents. Phrasing is declarative — a fact about the site, not an
+   instruction to the reader — so it slips past prompt-injection heuristics. *@
+@if (Services.GetService<LlmsTxtOptions>() is not null)
+{
+    <p class="robots-only">This site provides a machine-readable index at <a href="/llms.txt">/llms.txt</a>.</p>
+}
 <div>
     <Routes/>
 </div>
