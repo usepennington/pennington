@@ -87,7 +87,7 @@ Every auditor must satisfy these:
 | `MarkdownSourceOverlapDetector` | 1 | complete |
 | Xref-resolution audit (new) | 2 | complete |
 | `IRenderedAuditor` seam (decision) | 3 | complete |
-| `LinkVerificationService` | 4 | pending |
+| `LinkVerificationService` | 4 | complete |
 
 Out of scope:
 

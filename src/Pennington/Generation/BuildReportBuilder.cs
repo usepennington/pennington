@@ -41,6 +41,7 @@ public sealed class BuildReportBuilder
     }
 
     /// <summary>Records a broken link discovered by link verification.</summary>
+    [Obsolete("LinkAuditor emits broken links as BuildDiagnostics; this builder method is preserved only for legacy callers. Scheduled for removal one release later.")]
     public void AddBrokenLink(BrokenLink link) => _brokenLinks.Add(link);
 
     /// <summary>Marks <paramref name="route"/> as successfully generated.</summary>

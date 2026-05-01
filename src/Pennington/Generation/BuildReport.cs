@@ -14,6 +14,7 @@ public sealed class BuildReport
     public ImmutableList<BuildDiagnostic> Diagnostics { get; }
 
     /// <summary>Broken links discovered by link verification.</summary>
+    [Obsolete("Read Diagnostics filtered by source 'content.links/' instead. Scheduled for removal one release later.")]
     public ImmutableList<BrokenLink> BrokenLinks { get; }
 
     /// <summary>Routes that were successfully written to the output directory.</summary>
@@ -30,7 +31,9 @@ public sealed class BuildReport
 
     /// <summary>True when the build produced any errors, failed pages, or broken links.</summary>
     public bool HasErrors => Diagnostics.Any(d => d.Severity is DiagnosticSeverity.Error)
+#pragma warning disable CS0618
                           || BrokenLinks.Count > 0
+#pragma warning restore CS0618
                           || FailedPages.Count > 0;
 
     /// <summary>Total number of pages considered, including generated, skipped, and failed.</summary>
@@ -46,7 +49,9 @@ public sealed class BuildReport
         TimeSpan duration)
     {
         Diagnostics = diagnostics;
+#pragma warning disable CS0618
         BrokenLinks = brokenLinks;
+#pragma warning restore CS0618
         GeneratedPages = generatedPages;
         SkippedPages = skippedPages;
         FailedPages = failedPages;
@@ -84,7 +89,10 @@ public sealed class BuildReport
 
         // Warnings section
         var warningDiags = Diagnostics.Where(d => d.Severity is DiagnosticSeverity.Warning).ToList();
-        if (warningDiags.Count > 0 || BrokenLinks.Count > 0)
+#pragma warning disable CS0618
+        var brokenLinks = BrokenLinks;
+#pragma warning restore CS0618
+        if (warningDiags.Count > 0 || brokenLinks.Count > 0)
         {
             writer.WriteLine("WARNINGS");
             foreach (var diag in warningDiags)
@@ -94,10 +102,10 @@ public sealed class BuildReport
                 else
                     writer.WriteLine($"  {diag.Message}");
             }
-            if (BrokenLinks.Count > 0)
+            if (brokenLinks.Count > 0)
             {
-                writer.WriteLine($"  {BrokenLinks.Count} broken links found:");
-                foreach (var link in BrokenLinks)
+                writer.WriteLine($"  {brokenLinks.Count} broken links found:");
+                foreach (var link in brokenLinks)
                 {
                     writer.WriteLine($"    {link.SourcePage.CanonicalPath} links to {link.Url} ({link.Reason})");
                 }

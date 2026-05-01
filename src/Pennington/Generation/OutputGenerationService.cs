@@ -7,7 +7,6 @@ using Diagnostics;
 using Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Routing;
@@ -145,13 +144,11 @@ public sealed class OutputGenerationService
             _fileSystem.Directory.CreateDirectory(outputDir);
         }
 
-        // Phase 4: Copy static assets. In dry-run mode we still enumerate so copiedAssetPaths
-        // is populated — LinkVerificationService needs those paths to recognize legitimate
-        // asset URLs, otherwise every <img src="/media/foo.svg"> would flag as broken.
-        var copiedAssetPaths = new List<string>();
+        // Phase 4: Copy static assets. LinkAuditor walks IContentService.GetContentToCopyAsync()
+        // directly to build its known-asset set, so this phase only needs to copy bytes.
         try
         {
-            copiedAssetPaths = await CopyStaticAssetsAsync(outputDir, reportBuilder, writeToDisk);
+            await CopyStaticAssetsAsync(outputDir, reportBuilder, writeToDisk);
         }
         catch (Exception ex)
         {
@@ -207,32 +204,44 @@ public sealed class OutputGenerationService
         foreach (var diag in _auditCache.Diagnostics)
         {
             reportBuilder.AddDiagnostic(diag);
-        }
-
-        // Phase 9: Verify internal links across all fetched HTML pages
-        _logger.LogInformation("Verifying links");
-        var allRoutes = contentPages.Concat(mapGetPages).Select(p => p.Route);
-        var linkVerifier = new LinkVerificationService(
-            allRoutes,
-            copiedAssetPaths,
-            _outputOptions.BaseUrl.Value);
-        foreach (var result in contentResults.Concat(mapGetResults))
-        {
-            if (result is { Outcome: FetchOutcome.Generated, HtmlContent: { } html })
+            // Mirror LinkAuditor diagnostics into BuildReport.BrokenLinks for
+            // backward compatibility. The diagnostics list is the canonical channel;
+            // BrokenLinks remains populated until consumers migrate.
+            if (TryParseBrokenLink(diag, out var brokenLink))
             {
-                var linkResults = linkVerifier.VerifyLinks(result.Page.Route, html);
-                foreach (var linkResult in linkResults)
-                {
-                    if (linkResult.Value is BrokenLinkResult broken)
-                    {
-                        reportBuilder.AddBrokenLink(
-                            new BrokenLink(broken.SourcePage, broken.Url, broken.Type, broken.Reason));
-                    }
-                }
+#pragma warning disable CS0618
+                reportBuilder.AddBrokenLink(brokenLink);
+#pragma warning restore CS0618
             }
         }
 
         return reportBuilder.Build();
+    }
+
+    private static bool TryParseBrokenLink(BuildDiagnostic diagnostic, out BrokenLink brokenLink)
+    {
+        brokenLink = default!;
+        if (diagnostic.Route is not { } route) return false;
+        if (diagnostic.SourceFile is not { } source) return false;
+        const string prefix = "content.links/";
+        if (!source.StartsWith(prefix, StringComparison.Ordinal)) return false;
+
+        var rest = source[prefix.Length..];
+        var slash = rest.IndexOf('/');
+        if (slash <= 0) return false;
+        if (!Enum.TryParse<LinkType>(rest[..slash], out var type)) return false;
+        var url = rest[(slash + 1)..];
+        var reason = ExtractReason(diagnostic.Message);
+        brokenLink = new BrokenLink(route, url, type, reason);
+        return true;
+    }
+
+    private static string ExtractReason(string message)
+    {
+        var open = message.LastIndexOf('(');
+        var close = message.LastIndexOf(')');
+        if (open < 0 || close <= open) return message;
+        return message[(open + 1)..close];
     }
 
     private static void ProcessFetchResults(BuildReportBuilder reportBuilder, List<FetchResult> results)
@@ -263,70 +272,16 @@ public sealed class OutputGenerationService
     private List<PageToGenerate> DiscoverMapGetRoutes()
     {
         var pages = new List<PageToGenerate>();
-
-        foreach (var endpoint in _endpointDataSource.Endpoints)
+        foreach (var route in MapGetRouteDiscovery.Discover(_endpointDataSource))
         {
-            if (endpoint is not RouteEndpoint routeEndpoint)
-                continue;
-
-            var httpMethods = routeEndpoint.Metadata.GetMetadata<HttpMethodMetadata>();
-            if (httpMethods?.HttpMethods.Contains("GET") != true)
-                continue;
-
-            // Skip endpoints registered by app.MapStaticAssets(). Their DisplayName does not
-            // contain "static files" (that pattern matched the legacy UseStaticFiles middleware),
-            // so the old string filter missed them. Letting these routes through caused Phase 7's
-            // parallel HTTP fetcher to overwrite files that Phase 4 (CopyStaticAssetsAsync) had
-            // already emitted, producing "file is being used by another process" races on Windows
-            // for /_content/<Rcl>/*.js and their fingerprinted aliases.
-            if (routeEndpoint.Metadata.GetMetadata<StaticAssetDescriptor>() is not null)
-                continue;
-
-            var rawText = routeEndpoint.RoutePattern.RawText;
-            if (string.IsNullOrWhiteSpace(rawText))
-                continue;
-
-            // Skip Blazor component routes, framework routes, legacy static files, and parameterized routes
-            if (rawText.Contains("{") ||
-                rawText.Contains("_framework") ||
-                rawText.Contains("_blazor") ||
-                endpoint.DisplayName?.Contains("static files") == true)
-                continue;
-
-            // Skip fallback routes (catch-all page routes)
-            if (endpoint.Metadata.Any(m => m.GetType().Name == "FallbackMetadata"))
-                continue;
-
-            // Skip component-based routes
-            if (endpoint.Metadata.Any(m => m.GetType().Name == "ComponentTypeMetadata"))
-                continue;
-
-            var url = rawText.StartsWith('/') ? rawText : "/" + rawText;
-
-            // Determine output file — for something like /styles.css, output as styles.css
-            var outputPath = url.TrimStart('/');
-            if (string.IsNullOrEmpty(outputPath)) outputPath = "index.html";
-
-            var route = new ContentRoute
-            {
-                CanonicalPath = new UrlPath(url),
-                OutputFile = new FilePath(outputPath),
-            };
             pages.Add(new PageToGenerate(route));
-            _logger.LogDebug("Discovered MapGet route: {Url} -> {OutputFile}", url, outputPath);
+            _logger.LogDebug("Discovered MapGet route: {Url} -> {OutputFile}", route.CanonicalPath.Value, route.OutputFile.Value);
         }
-
         return pages;
     }
 
-    private async Task<List<string>> CopyStaticAssetsAsync(string outputDir, BuildReportBuilder reportBuilder, bool writeToDisk)
+    private async Task CopyStaticAssetsAsync(string outputDir, BuildReportBuilder reportBuilder, bool writeToDisk)
     {
-        // Track the relative output paths of every asset we copied from a content
-        // service. These get handed to LinkVerificationService so it doesn't flag
-        // <img src="/media/foo.svg"> as broken when the engine already copied the
-        // file there itself.
-        var copiedPaths = new List<string>();
-
         // Copy content directory assets (non-markdown files)
         foreach (var service in _contentServices)
         {
@@ -335,7 +290,6 @@ public sealed class OutputGenerationService
             {
                 if (writeToDisk)
                     CopyFile(item.SourcePath.Value, _fileSystem.Path.Combine(outputDir, item.OutputPath.Value), reportBuilder);
-                copiedPaths.Add(item.OutputPath.Value);
             }
         }
 
@@ -350,8 +304,6 @@ public sealed class OutputGenerationService
             var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CopyFileProvider(_environment.WebRootFileProvider, "", outputDir, reportBuilder, visited);
         }
-
-        return copiedPaths;
     }
 
     private async Task CreateContentFilesAsync(string outputDir, BuildReportBuilder reportBuilder)

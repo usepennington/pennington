@@ -1,0 +1,154 @@
+using System.Collections.Immutable;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Primitives;
+using Pennington.Content;
+using Pennington.Diagnostics;
+using Pennington.Generation;
+using Pennington.Infrastructure;
+using Pennington.Pipeline;
+using Pennington.Routing;
+
+namespace Pennington.Tests.Generation;
+
+public class LinkAuditorTests
+{
+    [Fact]
+    public async Task AuditAsync_BrokenInternalLink_EmitsWarning()
+    {
+        var page = MakeRoute("/page/", "/repo/page.md");
+        var service = new FakeService([page], []);
+        var auditor = new LinkAuditor(
+            [service],
+            new EmptyEndpointDataSource(),
+            new OutputOptions { OutputDirectory = new FilePath("output") });
+
+        var context = new RenderedAuditContext(
+            ImmutableList.Create(new ContentTocItem("Page", page, 0, [], null, null)),
+            new LocalizationOptions(),
+            (route, ct) => Task.FromResult<string?>("""<a href="/missing/">link</a>"""));
+
+        var diagnostics = await auditor.AuditAsync(context, TestContext.Current.CancellationToken);
+
+        diagnostics.Count.ShouldBe(1);
+        diagnostics[0].Severity.ShouldBe(DiagnosticSeverity.Warning);
+        diagnostics[0].Route.ShouldBe(page);
+        diagnostics[0].Message.ShouldContain("/missing/");
+        diagnostics[0].SourceFile.ShouldStartWith("content.links/Internal/");
+    }
+
+    [Fact]
+    public async Task AuditAsync_LinkResolvesToKnownRoute_NoWarning()
+    {
+        var page = MakeRoute("/page/", "/repo/page.md");
+        var other = MakeRoute("/other/", "/repo/other.md");
+        var service = new FakeService([page, other], []);
+        var auditor = new LinkAuditor(
+            [service],
+            new EmptyEndpointDataSource(),
+            new OutputOptions { OutputDirectory = new FilePath("output") });
+
+        var context = new RenderedAuditContext(
+            ImmutableList.Create(new ContentTocItem("Page", page, 0, [], null, null)),
+            new LocalizationOptions(),
+            (route, ct) => Task.FromResult<string?>("""<a href="/other/">link</a>"""));
+
+        var diagnostics = await auditor.AuditAsync(context, TestContext.Current.CancellationToken);
+
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AuditAsync_LinkToCopiedAsset_NoWarning()
+    {
+        var page = MakeRoute("/page/", "/repo/page.md");
+        var service = new FakeService(
+            [page],
+            [new ContentToCopy(new FilePath("/repo/media/foo.svg"), new FilePath("media/foo.svg"))]);
+        var auditor = new LinkAuditor(
+            [service],
+            new EmptyEndpointDataSource(),
+            new OutputOptions { OutputDirectory = new FilePath("output") });
+
+        var context = new RenderedAuditContext(
+            ImmutableList.Create(new ContentTocItem("Page", page, 0, [], null, null)),
+            new LocalizationOptions(),
+            (route, ct) => Task.FromResult<string?>("""<img src="/media/foo.svg">"""));
+
+        var diagnostics = await auditor.AuditAsync(context, TestContext.Current.CancellationToken);
+
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AuditAsync_NullHtml_PageSkipped()
+    {
+        var page = MakeRoute("/page/", "/repo/page.md");
+        var service = new FakeService([page], []);
+        var auditor = new LinkAuditor(
+            [service],
+            new EmptyEndpointDataSource(),
+            new OutputOptions { OutputDirectory = new FilePath("output") });
+
+        var context = new RenderedAuditContext(
+            ImmutableList.Create(new ContentTocItem("Page", page, 0, [], null, null)),
+            new LocalizationOptions(),
+            (route, ct) => Task.FromResult<string?>(null));
+
+        var diagnostics = await auditor.AuditAsync(context, TestContext.Current.CancellationToken);
+
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AuditAsync_DiagnosticEncodesLinkType()
+    {
+        var page = MakeRoute("/page/", "/repo/page.md");
+        var service = new FakeService([page], []);
+        var auditor = new LinkAuditor(
+            [service],
+            new EmptyEndpointDataSource(),
+            new OutputOptions { OutputDirectory = new FilePath("output") });
+
+        var context = new RenderedAuditContext(
+            ImmutableList.Create(new ContentTocItem("Page", page, 0, [], null, null)),
+            new LocalizationOptions(),
+            (route, ct) => Task.FromResult<string?>("""<img src="/missing.png">"""));
+
+        var diagnostics = await auditor.AuditAsync(context, TestContext.Current.CancellationToken);
+
+        diagnostics.Count.ShouldBe(1);
+        diagnostics[0].SourceFile.ShouldBe("content.links/Image//missing.png");
+    }
+
+    private static ContentRoute MakeRoute(string canonical, string sourcePath) => new()
+    {
+        CanonicalPath = new UrlPath(canonical),
+        OutputFile = new FilePath(canonical.Trim('/') + ".html"),
+        SourceFile = new FilePath(sourcePath),
+    };
+
+    private sealed class FakeService(IReadOnlyList<ContentRoute> routes, IReadOnlyList<ContentToCopy> assets) : IContentService
+    {
+        public string DefaultSectionLabel => "";
+        public int SearchPriority => 0;
+
+        public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
+        {
+            await Task.Yield();
+            foreach (var route in routes)
+                yield return new DiscoveredItem(route, new MarkdownFileSource(route.SourceFile ?? new FilePath("stub.md")));
+        }
+
+        public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync() => Task.FromResult(assets.ToImmutableList());
+        public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync() => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
+        public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync() => Task.FromResult(ImmutableList<ContentTocItem>.Empty);
+        public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync() => Task.FromResult(ImmutableList<CrossReference>.Empty);
+    }
+
+    private sealed class EmptyEndpointDataSource : EndpointDataSource
+    {
+        public override IReadOnlyList<Endpoint> Endpoints => [];
+        public override IChangeToken GetChangeToken() => new CancellationChangeToken(CancellationToken.None);
+    }
+}

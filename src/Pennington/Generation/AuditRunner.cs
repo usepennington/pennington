@@ -106,29 +106,45 @@ public sealed class AuditRunner : IHostedService
 
             if (renderedAuditors.Count > 0)
             {
-                var dispatcher = scope.ServiceProvider.GetService<IInProcessHttpDispatcher>();
-                if (dispatcher is null)
+                HttpClient? client = null;
+                try
                 {
-                    _logger.LogWarning("Rendered auditors registered but no IInProcessHttpDispatcher available; skipping.");
+                    var dispatcher = scope.ServiceProvider.GetService<IInProcessHttpDispatcher>();
+                    client = dispatcher?.CreateClient();
+                }
+                catch (Exception ex)
+                {
+                    // In dev mode, the listener may not have bound yet when this hosted
+                    // service's first run lands. Skip rendered auditors this pass; the
+                    // next file-change tick will retry against a ready host.
+                    _logger.LogDebug(ex, "Rendered auditors skipped — HTTP dispatcher not ready.");
+                }
+
+                if (client is null)
+                {
+                    if (renderedAuditors.Count > 0)
+                        _logger.LogDebug("Rendered auditors registered but no HTTP client available; skipping this pass.");
                 }
                 else
                 {
-                    using var client = dispatcher.CreateClient();
-                    var renderedContext = new RenderedAuditContext(
-                        pagesSnapshot,
-                        _localization,
-                        async (route, ct) => await FetchRenderedHtmlAsync(client, route, ct));
-
-                    foreach (var auditor in renderedAuditors)
+                    using (client)
                     {
-                        try
+                        var renderedContext = new RenderedAuditContext(
+                            pagesSnapshot,
+                            _localization,
+                            async (route, ct) => await FetchRenderedHtmlAsync(client, route, ct));
+
+                        foreach (var auditor in renderedAuditors)
                         {
-                            var produced = await auditor.AuditAsync(renderedContext, cancellationToken);
-                            allDiagnostics.AddRange(produced);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "Rendered auditor '{Code}' threw; skipping its diagnostics.", auditor.Code);
+                            try
+                            {
+                                var produced = await auditor.AuditAsync(renderedContext, cancellationToken);
+                                allDiagnostics.AddRange(produced);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning(ex, "Rendered auditor '{Code}' threw; skipping its diagnostics.", auditor.Code);
+                            }
                         }
                     }
                 }
