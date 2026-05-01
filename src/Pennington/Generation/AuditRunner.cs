@@ -74,7 +74,8 @@ public sealed class AuditRunner : IHostedService
             // keeps anything they capture (e.g. file-watched content services) fresh.
             using var scope = _services.CreateScope();
             var auditors = scope.ServiceProvider.GetServices<IBuildAuditor>().ToList();
-            if (auditors.Count == 0)
+            var renderedAuditors = scope.ServiceProvider.GetServices<IRenderedAuditor>().ToList();
+            if (auditors.Count == 0 && renderedAuditors.Count == 0)
             {
                 _cache.Set(ImmutableList<BuildDiagnostic>.Empty);
                 return;
@@ -87,7 +88,8 @@ public sealed class AuditRunner : IHostedService
                 pages.AddRange(await service.GetContentTocEntriesAsync());
             }
 
-            var context = new BuildAuditContext(pages.ToImmutable(), _localization);
+            var pagesSnapshot = pages.ToImmutable();
+            var context = new BuildAuditContext(pagesSnapshot, _localization);
             var allDiagnostics = ImmutableList.CreateBuilder<BuildDiagnostic>();
             foreach (var auditor in auditors)
             {
@@ -102,6 +104,36 @@ public sealed class AuditRunner : IHostedService
                 }
             }
 
+            if (renderedAuditors.Count > 0)
+            {
+                var dispatcher = scope.ServiceProvider.GetService<IInProcessHttpDispatcher>();
+                if (dispatcher is null)
+                {
+                    _logger.LogWarning("Rendered auditors registered but no IInProcessHttpDispatcher available; skipping.");
+                }
+                else
+                {
+                    using var client = dispatcher.CreateClient();
+                    var renderedContext = new RenderedAuditContext(
+                        pagesSnapshot,
+                        _localization,
+                        async (route, ct) => await FetchRenderedHtmlAsync(client, route, ct));
+
+                    foreach (var auditor in renderedAuditors)
+                    {
+                        try
+                        {
+                            var produced = await auditor.AuditAsync(renderedContext, cancellationToken);
+                            allDiagnostics.AddRange(produced);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Rendered auditor '{Code}' threw; skipping its diagnostics.", auditor.Code);
+                        }
+                    }
+                }
+            }
+
             var snapshot = allDiagnostics.ToImmutable();
             _cache.Set(snapshot);
 
@@ -111,6 +143,20 @@ public sealed class AuditRunner : IHostedService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Audit pass failed; cache left unchanged.");
+        }
+    }
+
+    private static async Task<string?> FetchRenderedHtmlAsync(HttpClient client, Routing.ContentRoute route, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await client.GetAsync(route.CanonicalPath.Value, cancellationToken);
+            if (!response.IsSuccessStatusCode) return null;
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
+        catch (HttpRequestException)
+        {
+            return null;
         }
     }
 
