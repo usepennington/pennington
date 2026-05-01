@@ -85,7 +85,7 @@ Every auditor must satisfy these:
 | Check | Phase | Status |
 |---|---|---|
 | `MarkdownSourceOverlapDetector` | 1 | complete |
-| Xref-resolution audit (new) | 2 | pending |
+| Xref-resolution audit (new) | 2 | complete |
 | `IRenderedAuditor` seam (decision) | 3 | pending |
 | `LinkVerificationService` | 4 | pending |
 

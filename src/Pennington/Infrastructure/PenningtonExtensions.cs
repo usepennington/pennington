@@ -238,6 +238,7 @@ public static class PenningtonExtensions
         services.AddSingleton<IAuditCache>(sp => sp.GetRequiredService<AuditCache>());
         services.AddHostedService<AuditRunner>();
         services.AddTransient<IBuildAuditor, OverlapAuditor>();
+        services.AddTransient<IBuildAuditor, XrefAuditor>();
 
         // Live reload
         services.AddSingleton<LiveReloadServer>();
