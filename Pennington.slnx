@@ -8,6 +8,7 @@
     <Project Path="src/Pennington.ApiMetadata/Pennington.ApiMetadata.csproj" />
     <Project Path="src/Pennington.ApiMetadata.Reflection/Pennington.ApiMetadata.Reflection.csproj" />
     <Project Path="src/Pennington.Roslyn/Pennington.Roslyn.csproj" />
+    <Project Path="src/Pennington.TranslationAudit/Pennington.TranslationAudit.csproj" />
     <Project Path="src/Pennington.BlogSite/Pennington.BlogSite.csproj" />
     <Project Path="src/Pennington.Tui/Pennington.Tui.csproj" />
     <Project Path="src/Pennington.Templates/Pennington.Templates.csproj" />
@@ -31,6 +32,7 @@
     <Project Path="examples/BlogSiteFirstPostExample/BlogSiteFirstPostExample.csproj" />
     <Project Path="examples/BlogSiteHeroProjectsSocialsExample/BlogSiteHeroProjectsSocialsExample.csproj" />
     <Project Path="examples/BeyondLocaleExample/BeyondLocaleExample.csproj" />
+    <Project Path="examples/BeyondTranslationAuditExample/BeyondTranslationAuditExample.csproj" />
     <Project Path="examples/BeyondRoslynExample/BeyondRoslynExample.csproj" />
     <Project Path="examples/BeyondRoslynExample/Sample/BeyondRoslynExample.Sample.csproj" />
     <Project Path="examples/BeyondCustomRazorComponentExample/BeyondCustomRazorComponentExample.csproj" />

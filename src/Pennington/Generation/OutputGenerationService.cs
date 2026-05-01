@@ -36,6 +36,7 @@ public sealed class OutputGenerationService
     private readonly EndpointDataSource _endpointDataSource;
     private readonly IFileSystem _fileSystem;
     private readonly IInProcessHttpDispatcher _dispatcher;
+    private readonly IAuditCache _auditCache;
     private readonly ILogger<OutputGenerationService> _logger;
 
     /// <summary>
@@ -49,6 +50,7 @@ public sealed class OutputGenerationService
         EndpointDataSource endpointDataSource,
         IFileSystem fileSystem,
         IInProcessHttpDispatcher dispatcher,
+        IAuditCache auditCache,
         ILogger<OutputGenerationService> logger)
     {
         _contentServices = contentServices;
@@ -58,6 +60,7 @@ public sealed class OutputGenerationService
         _endpointDataSource = endpointDataSource;
         _fileSystem = fileSystem;
         _dispatcher = dispatcher;
+        _auditCache = auditCache;
         _logger = logger;
     }
 
@@ -205,6 +208,15 @@ public sealed class OutputGenerationService
             {
                 _logger.LogDebug(ex, "Failed to generate 404.html");
             }
+        }
+
+        // Phase 8.5: Copy auditor diagnostics into the report. AuditRunner has been
+        // priming IAuditCache on every file change since startup, so by the time the
+        // build crawls the running app the cache reflects the same state the dev
+        // overlay was showing locally — same diagnostics, two surfaces.
+        foreach (var diag in _auditCache.Diagnostics)
+        {
+            reportBuilder.AddDiagnostic(diag);
         }
 
         // Phase 9: Verify internal links across all fetched HTML pages

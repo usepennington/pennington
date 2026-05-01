@@ -228,6 +228,15 @@ public static class PenningtonExtensions
             new BaseUrlCssResponseProcessor(sp.GetRequiredService<OutputOptions>()));
         services.AddSingleton<IResponseProcessor, LiveReloadScriptProcessor>();
         services.AddSingleton<IResponseProcessor, DiagnosticOverlayProcessor>();
+        services.AddSingleton<IResponseProcessor, AuditDiagnosticProcessor>();
+
+        // Audit pipeline: AuditCache holds the latest snapshot from every IBuildAuditor;
+        // AuditRunner refreshes it at startup and on file change. AuditDiagnosticProcessor
+        // (registered above) feeds per-route entries into the dev overlay; the build report
+        // copies the same snapshot in OutputGenerationService.
+        services.AddSingleton<AuditCache>();
+        services.AddSingleton<IAuditCache>(sp => sp.GetRequiredService<AuditCache>());
+        services.AddHostedService<AuditRunner>();
 
         // Live reload
         services.AddSingleton<LiveReloadServer>();

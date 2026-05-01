@@ -33,6 +33,7 @@ public class OutputGenerationServiceTests
             endpoints,
             fs,
             new StubInProcessHttpDispatcher(),
+            new AuditCache(),
             logger);
     }
 
@@ -145,6 +146,7 @@ public class OutputGenerationServiceTests
             new StubEndpointDataSource(),
             fs,
             new StubInProcessHttpDispatcher(),
+            new AuditCache(),
             NullLogger<OutputGenerationService>.Instance);
 
         var report = await service.GenerateAsync();
