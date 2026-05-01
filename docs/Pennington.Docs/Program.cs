@@ -64,7 +64,11 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     ],
 });
 
-
+// Roslyn integration for :xmldocid and :path code extraction
+builder.Services.AddPenningtonRoslyn(roslyn =>
+{
+    roslyn.SolutionPath = "../../Pennington.slnx";
+});
 
 // Roslyn-backed API metadata: enumerate public types from the live Pennington
 // workspace. Scope to Pennington.* projects so example apps in Pennington.slnx
