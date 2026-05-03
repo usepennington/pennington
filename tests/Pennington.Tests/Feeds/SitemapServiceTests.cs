@@ -155,13 +155,13 @@ public class SitemapServiceTests
     [Fact]
     public async Task GetSitemapXml_ExcludesNonHtmlOutputs()
     {
-        // SpaNavigationContentService discovers routes for /_spa-data/*.json
-        // pages — they're transport for the SPA shell, not canonical URLs.
-        // The sitemap must skip anything whose output file is not HTML.
+        // Custom IContentService impls can emit non-HTML outputs (JSON feeds,
+        // generated CSV, etc.). Those routes are transport, not canonical
+        // pages; the sitemap must skip anything whose output file is not HTML.
         var jsonRoute = new ContentRoute
         {
-            CanonicalPath = new UrlPath("/_spa-data/docs/intro.json"),
-            OutputFile = new FilePath("_spa-data/docs/intro.json"),
+            CanonicalPath = new UrlPath("/data/intro.json"),
+            OutputFile = new FilePath("data/intro.json"),
         };
         var htmlRoute = MakeRoute("/docs/intro");
         var discovered = new[]
@@ -176,16 +176,16 @@ public class SitemapServiceTests
 
         var xml = await service.GetSitemapXmlAsync();
 
-        xml.ShouldNotContain("_spa-data");
+        xml.ShouldNotContain("data/intro.json");
         xml.ShouldContain("https://example.com/docs/intro/");
     }
 
     [Fact]
     public async Task GetSitemapXml_ExcludesRedirectSources()
     {
-        // Routes backed by RedirectSource — whether explicit redirects or
-        // framework-internal placeholders like SpaNavigationContentService's
-        // /_spa-data pages — should never appear in the sitemap.
+        // Routes backed by RedirectSource — explicit redirects from
+        // _redirects.yml or per-page redirectUrl front matter — should never
+        // appear in the sitemap.
         var route = MakeRoute("/legacy-page");
         var source = new ContentSource(new RedirectSource(new UrlPath("/new-page/")));
         var discovered = new DiscoveredItem(route, source);

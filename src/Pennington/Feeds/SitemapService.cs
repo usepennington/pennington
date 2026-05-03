@@ -82,10 +82,9 @@ public sealed class SitemapService
         {
             await foreach (var discovered in service.DiscoverAsync())
             {
-                // Skip non-HTML outputs (SPA page-data JSON, static assets, etc.).
-                // The SPA navigation content service surfaces /_spa-data/*.json
-                // routes through DiscoverAsync — those are transport for the
-                // SPA shell and must not appear as canonical URLs.
+                // Skip non-HTML outputs (custom JSON feeds, static assets, etc.).
+                // Programmatic content services can surface non-HTML routes through
+                // DiscoverAsync — those are transport, not canonical URLs.
                 var outputFile = discovered.Route.OutputFile.Value;
                 var ext = Path.GetExtension(outputFile);
                 if (!string.IsNullOrEmpty(ext)
@@ -97,8 +96,8 @@ public sealed class SitemapService
 
                 // RedirectSource items are explicit redirects — no canonical value.
                 // EndpointSource items are framework-internal routes served by a
-                // live HTTP endpoint (e.g., /_spa-data/*.json) and must not appear
-                // as canonical URLs either. Skip both.
+                // live HTTP endpoint (e.g., /sitemap.xml, /llms.txt) and must not
+                // appear as canonical URLs either. Skip both.
                 if (discovered.Source.Value is RedirectSource or EndpointSource) continue;
 
                 IFrontMatter? metadata = null;

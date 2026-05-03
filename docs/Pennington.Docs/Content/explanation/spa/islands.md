@@ -1,62 +1,65 @@
 ---
-title: "SPA navigation and island architecture"
-description: "Why Pennington ships a JSON envelope at a data path and selectively hydrates server-rendered islands instead of swapping full pages or going full SPA."
-sectionLabel: "SPA and Islands"
+title: "SPA navigation through region swaps"
+description: "Why Pennington's SPA fetches the canonical HTML page and swaps marked regions — one render path, one set of rewriters, no parallel JSON envelope."
+sectionLabel: "SPA"
 order: 304010
-tags: [spa, islands, architecture, hydration]
+tags: [spa, navigation, regions, hydration]
 uid: explanation.spa.islands
 ---
 
-Why does in-site navigation fetch a small JSON file from `/_spa-data/...` instead of either reloading the full HTML page or booting a client-side SPA framework?
+Why does in-site navigation fetch the same URL the address bar shows and parse it client-side, instead of round-tripping a small JSON envelope or letting the browser do a full reload?
 
 ## Context
 
-Classic server-rendered sites swap the whole document on every click — simple, full-fidelity, but heavy and visually jarring when the shared chrome redrawing is indistinguishable from the content changing. Full SPAs take the opposite position: hydrate the entire app in the browser, make every navigation instant, and pay for it with a multi-megabyte runtime on first load, a separate SEO story, and a rendering path that diverges from whatever the server would have produced. Documentation sites sit awkwardly between those two extremes. Most of each page is static prose that does not benefit from client rendering, yet a handful of regions — the active-page highlight in the sidebar, an interactive search overlay, a page outline — genuinely want to survive navigation without re-initializing from scratch.
+Classic server-rendered sites swap the whole document on every click — simple, full-fidelity, but heavy and visually jarring when the shared chrome redrawing is indistinguishable from the content changing. Full SPAs hydrate the entire app in the browser, make every navigation instant, and pay for it with a multi-megabyte runtime on first load, a separate SEO story, and a rendering path that diverges from whatever the server would have produced. Documentation sites sit awkwardly between those two extremes. Most of each page is static prose that does not benefit from client rendering, yet a handful of regions — the active-page highlight in the sidebar, the page outline, the language switcher — genuinely want to update without re-initializing from scratch.
 
-The position Pennington takes is neither extreme. Every page arrives fully server-rendered on first load. When the visitor clicks an in-site link, the browser fetches a small JSON envelope of pre-rendered HTML fragments — one per registered island — and swaps only those regions into the existing DOM. The shell, sidebar, scripts, and stylesheets never move. The rest of this page unpacks why that shape was chosen and what it costs.
+Pennington takes a third position. Every page is fully server-rendered on first load. When the visitor clicks an in-site link, the browser fetches the same URL — the canonical HTML page — parses it with `DOMParser`, swaps regions tagged `data-spa-region` from the new document into the current one, and merges head metadata. There is one rendering path, one set of HTML rewriters, and no parallel envelope to keep in sync.
 
 ## How it works
 
-### The JSON envelope
+### One render, many slices
 
-The first request to any URL returns complete server-rendered HTML, exactly as it would without SPA support in the picture — good for cold loads, good for crawlers, functional when JavaScript is disabled. Once the browser has that page and the `spa-engine.js` script from `Pennington.UI` is active, the client intercepts same-origin link clicks and issues a GET for a sibling JSON document at the configured data path (default `/_spa-data/<slug>.json`). `SpaPageDataService` assembles an `SpaEnvelope` record carrying only a title, description, optional social metadata, and an `Islands` dictionary of pre-rendered HTML strings — no chrome, no layout, no asset references.
+The first request to any URL returns complete server-rendered HTML, exactly as it would without SPA support — good for cold loads, good for crawlers, functional when JavaScript is disabled. Once the browser has that page and the `spa-engine.js` script from `Pennington.UI` is active, the client intercepts same-origin link clicks and re-fetches the destination URL. The response is parsed into a `Document` and used as a source of truth for both the regions that change and the head deltas that follow them.
 
-```csharp:xmldocid
-T:Pennington.Islands.SpaEnvelope
-```
+Every server-side rewriter — xref resolution, locale-aware link rewriting, base-URL prefixing, anything else registered as `IHtmlResponseRewriter` — applies to that response by default, because it travelled through the same `ResponseProcessingMiddleware` as a fresh-tab visit. There is no second pipeline to mirror.
 
-The envelope is typically a small fraction of the full-page HTML because everything outside the island slots is already in the DOM from the first load. Contrast this with a naive partial-HTML approach that round-trips the whole `<body>`: the envelope pays for exactly the regions that changed, and nothing more. The typed metadata header also separates concerns cleanly — title, description, and social data are first-class fields rather than HTML the client has to parse out of a `<head>` fragment.
+### The `data-spa-region` contract
 
-### Island hydration
+Anywhere in the layout that should update on navigation gets a `data-spa-region="name"` attribute. The DocSite layout marks three regions out of the box:
 
-The word "hydration" in the broader ecosystem usually implies shipping a framework runtime and re-running component constructors in the browser to attach event listeners to server-rendered markup. In Pennington it means something far more modest: swapping an HTML substring into a DOM node marked with `data-spa-island="<name>"`. The server did the render; the client routes the fragment to the right slot.
+- `content` — the article body, including breadcrumbs and prev/next links.
+- `sidebar` — the table of contents, with the per-page active state.
+- `header` — the top bar, including the language switcher and area pills.
 
-```csharp:xmldocid
-T:Pennington.Islands.IIslandRenderer
-```
+Anything outside a marked region — the outer page chrome, the mobile menu's expanded state, scroll position — stays put.
 
-Each `IIslandRenderer` registered in DI produces one keyed HTML string per route. `SpaPageDataService` composes them into the `Islands` dictionary. The browser engine iterates elements with `data-spa-island` attributes and replaces each one's `innerHTML` with the matching entry. Regions outside islands — chrome, navigation, scripts — stay put across navigations. Scroll position on the sidebar survives. Focused elements outside the swapped region keep focus. Nothing re-downloads a runtime because there is no runtime.
+The client picks the regions in the current document, finds elements with the same name in the parsed response, and swaps `innerHTML`. If the set of regions does not match — for example, navigating from a `MainLayout` page (three regions) to a `FullWidthLayout` page (only `content`) — the engine triggers a full page load. That is the explicit layout boundary, not a silent half-update.
 
-### The loading lifecycle
+### Head merging
 
-The round trip to fetch the envelope is small but not instant, and a click that does nothing visible for 200ms feels broken. Each island opts into one of three loading behaviors via a `data-spa-loading` attribute. The `keep` mode (the default) leaves the previous HTML visible until new HTML arrives, which works well for regions whose content is broadly similar across pages. The `clear` mode empties the island immediately on navigation start, which makes sense for regions whose stale content would actively mislead — an outline panel showing headings from the previous page, for example. The `skeleton` mode shows a shimmer placeholder, but only after a configurable threshold has elapsed, so navigations that resolve quickly never flash a placeholder at all; the engine then holds the skeleton for a minimum duration to avoid strobing.
+The `<head>` of the parsed response is the source of truth for everything page-specific. The client updates the title and a fixed list of managed tags: the description meta, OpenGraph and Twitter card metadata, the canonical link, hreflang alternates, and JSON-LD scripts. Stylesheet `<link>` elements are merged by href — any new ones append to the head before the region swap so the browser has the rules ready when the new content paints. A stylesheet tagged `data-spa-reload` re-fetches with a cache buster on every navigation, the opt-in workaround for JIT stylesheets like MonorailCSS in dev where the URL stays constant but the contents diverge per page.
 
-The tradeoff across those three modes is a classic perceived-latency question — stale, blank, or shimmer — and the answer differs by region. That is why the choice is made per-island rather than globally.
+### Loading lifecycle
 
-### Why server-render first, then hydrate
+The round trip is small but not instant, and a click that does nothing visible for 200ms feels broken. Each region opts into a loading behavior via `data-spa-loading`. The `keep` mode (the default) leaves the previous content visible until new HTML arrives, which works for regions whose content is broadly similar across pages. The `clear` mode empties the region immediately on navigation, which suits regions whose stale content would mislead — an outline panel showing headings from the previous page. The `skeleton` mode shows a shimmer placeholder, but only after a configurable threshold elapses, so navigations that resolve quickly never flash; the engine then holds the skeleton for a minimum duration to avoid strobing.
 
-Because every page is fully server-rendered on first load, the site works without JavaScript, is crawlable by search engines and LLM indexers byte-for-byte, and satisfies Core Web Vitals against real HTML rather than a blank shell waiting on a bundle. Because in-site navigation uses the same server-rendered HTML — delivered in a JSON envelope and swapped into islands — there is no second rendering path to keep in sync with the first. The rendering that happens in the browser is string-to-DOM assignment. The rendering that happens on the server is Razor-to-string. They produce the same HTML, through the same pipeline, for both the initial load and every subsequent island swap. Adding an island does not mean adding a client-side component.
+That choice is per-region rather than global because the right answer differs by region. For prefetched destinations the entire skeleton path is bypassed.
+
+### Why one render path
+
+A second rendering path — the JSON-envelope shape an earlier version of this engine used — looked elegant on paper: a small payload, a typed metadata header, no head parsing. In practice it carved a permanent fork down the middle of the codebase. Locale rewriting did not apply to JSON responses unless re-implemented. Per-island parameter dictionaries duplicated whatever the page's Razor render already built. Active-state nav, breadcrumbs in the sidebar, language-switcher hrefs — anything outside the swapped region went stale, and consumers patched it back up with bespoke client-side JavaScript. Each new HTML rewriter had to be applied twice, or quietly skipped on SPA navigation.
+
+The single-path approach trades some payload size for the elimination of all of that. The full HTML response gzips to within a few KB of the JSON envelope it replaced, and the prefetch-on-hover path hides whatever cost remains.
 
 ## Trade-offs
 
-- **Cost — islands must be side-effect-free and round-trip over JSON.** Island HTML is assembled on the server per request, serialized as a JSON string, and re-inserted with `innerHTML` on the client. `<script>` tags inside islands do not execute on swap; stateful client widgets must hook `spa:commit` lifecycle events rather than assume `DOMContentLoaded` fires again. This rules out dropping arbitrary JS-heavy components into an island and expecting drop-in compatibility.
-- **Alternative considered — full client-side SPA (Blazor WebAssembly, React, etc.).** Would make every navigation instant at the cost of a multi-megabyte runtime on first load, a separate SEO story, and a second rendering path diverging from the server one. Rejected for a content engine where most of each page is prose the client doesn't need to render.
-- **Alternative considered — full-document partial HTML (htmx-style `hx-swap="outerHTML"` on `<body>`).** Simpler than the envelope (no JSON layer) but pays for the whole document body on every navigation, including chrome that never changed, and leaves the client with no structured way to tell title/description/social metadata apart from island content. The envelope is strictly a superset: it's the partial HTML approach plus a typed metadata header plus per-region granularity.
-- **Consequence — the set of islands is known at DI registration time.** A page cannot invent a new island on the fly; `SpaPageDataService` iterates the registered `IIslandRenderer` collection, and the host markup must declare matching `data-spa-island` attributes. That ceiling is the price of a statically-known envelope shape, and in exchange you get full server-side type safety on what an island renders.
-- **Consequence — the `_spa-data` endpoint runs the same response processors as HTML pages, minus the HTML rewriters.** Xref resolution, diagnostics, and locale handling still apply inside island HTML (the handler resolves xrefs explicitly because the default HTML rewriter chain only fires on `text/html` responses). Treat the envelope as a first-class output of the pipeline, not a side channel.
+- **Cost — payload is the full page including chrome the client throws away.** Mitigated by HTTP-level caching, prefetch-on-hover, and View Transitions API masking the latency. If profiling shows it matters, a server-side response processor can detect a `Sec-Fetch-Dest`/`X-Spa-Fragment` header and pre-extract regions before send, opt-in.
+- **Cost — `innerHTML` swap blows away form state and focus inside swapped regions.** Acceptable for a docs site. A morphing strategy (Idiomorph or similar) is the upgrade path if interactive controls move into a swapped region later. The contract — mark regions, server renders them — does not change.
+- **Cost — inline `<script>` tags in fetched HTML do not execute on `parseFromString`.** This is a feature for chrome scripts that should not re-run; it is a constraint for any future region whose content includes a JS-driven widget. Hook the `spa:commit` event from outside the region and re-initialize from there.
+- **Alternative considered — full client-side SPA (Blazor WebAssembly, React, etc.).** Would make every navigation instant at the cost of a multi-megabyte runtime on first load and a separate SEO story. Rejected for a content engine where most of each page is prose the client doesn't need to render.
+- **Alternative considered — JSON envelope of pre-rendered region fragments.** The previous shape, removed for the reasons enumerated above. The fact that the rewriter pipeline already produces correct HTML for the canonical URL is what makes the simpler approach work; the envelope was solving for a problem that did not exist once the rewriters were robust enough to trust.
 
 ## Further reading
 
-- Reference: [Island rendering interfaces](xref:reference.api.i-island-renderer)
-- How-to: [Register an island renderer](xref:how-to.extensibility.island-renderer)
-- External: [Islands Architecture (Jason Miller)](https://jasonformat.com/islands-architecture/)
+- Reference: <xref:reference.api.doc-site-options>
+- External: [Islands Architecture (Jason Miller)](https://jasonformat.com/islands-architecture/) — the term "island" originates here; Pennington's regions are a degenerate case where the server renders every "island" itself.

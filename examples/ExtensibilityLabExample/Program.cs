@@ -2,7 +2,6 @@ using ExtensibilityLabExample;
 using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
-using Pennington.Islands;
 using Pennington.Markdown.Extensions;
 using Pennington.MonorailCss;
 using Pennington.Pipeline;
@@ -29,9 +28,6 @@ builder.Services.AddPennington(penn =>
 
     // 2.3.30 Custom highlighter — priority 100 wins for "pipeline" fences.
     penn.Highlighting.AddHighlighter(new PipelineHighlighter());
-
-    // 2.3.60 Island renderer — name matches data-spa-island="chart".
-    penn.Islands.Register<ChartIslandRenderer>("chart");
 
     // 2.2.50 Tabbed-code class-name override — swap the default tab-*
     // classes for the lab-tabs-* variants styled via MonorailCssCustomization.
@@ -68,11 +64,6 @@ builder.Services.AddScoped<IResponseProcessor, DiagnosticsEmittingProcessor>();
 // ApplyAsync lowercases marked anchor text.
 builder.Services.AddSingleton<IHtmlResponseRewriter, AnchorLowercaseRewriter>();
 
-// 2.3.60 (cont.) — wire SPA navigation so /_spa-data/{slug}.json is
-// served and ChartIslandRenderer actually gets invoked.
-builder.Services.AddScoped<ComponentRenderer>();
-builder.Services.AddSpaNavigation();
-
 // 2.2.30 MonorailCSS — utility CSS registers an endpoint the Playwright
 // smoke test can fetch, and gives the injected chart/feedback HTML a
 // place to theme. MonorailCssCustomization.BuildOptions pairs the color
@@ -84,7 +75,6 @@ var app = builder.Build();
 
 app.UsePennington();
 app.UseMonorailCss();
-app.UseSpaNavigation();
 
 // Single catch-all fallback. Dispatches markdown via the pipeline and
 // release notes via ReleaseNotesContentService so the route comes from
@@ -149,7 +139,7 @@ static string RenderMarkdownPage(RenderedItem item) => $$"""
       <link rel="stylesheet" href="/styles.css" />
     </head>
     <body>
-      <article id="main-content" data-spa-island="content">
+      <article id="main-content" data-spa-region="content">
         <h1>{{item.Metadata.Title}}</h1>
         {{item.Content.Html}}
       </article>

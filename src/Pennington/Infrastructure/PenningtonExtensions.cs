@@ -6,7 +6,6 @@ using Feeds;
 using FrontMatter;
 using Generation;
 using Highlighting;
-using Islands;
 using LlmsTxt;
 using Localization;
 using Markdig;
@@ -82,18 +81,6 @@ public static class PenningtonExtensions
                 b.AddConsoleFormatter<BuildConsoleFormatter, ConsoleFormatterOptions>();
             });
         }
-
-        // Register islands from the options API
-        foreach (var (_, islandType) in options.Islands.RegisteredIslands)
-        {
-            services.AddTransient(typeof(IIslandRenderer), islandType);
-        }
-
-        // Component renderer for SPA islands. RazorIslandRenderer<T> depends on
-        // this; registering it here (rather than in AddDocSite only) means bare
-        // AddPennington hosts can consume RazorIslandRenderer without having to
-        // hand-wire the dependency. See postmortem-ExtensibilityLabExample.md.
-        services.AddScoped<ComponentRenderer>();
 
         // Core services
         services.AddSingleton<FrontMatterParser>();

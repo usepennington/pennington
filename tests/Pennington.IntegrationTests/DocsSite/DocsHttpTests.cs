@@ -69,35 +69,16 @@ public class DocsHttpTests
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
     }
 
-    [Fact(Skip = "Docs content restructuring in progress")]
-    public async Task SpaDataEndpoint_ReturnsJsonForContentPage()
-    {
-        var response = await _client.GetAsync("/_spa-data/getting-started/creating-first-site.json", TestContext.Current.CancellationToken);
-        response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        content.ShouldContain("Creating Your First Site");
-        content.ShouldContain("islands");
-        content.ShouldContain("content");
-    }
-
-    [Fact(Skip = "Docs content restructuring in progress")]
-    public async Task SpaDataEndpoint_ReturnsIslandHtmlWithArticle()
-    {
-        var response = await _client.GetAsync("/_spa-data/getting-started/creating-first-site.json", TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        // The "content" island should contain the rendered article with prose styling.
-        // Angle brackets are JSON-encoded (\u003C), so check for the class name and tag.
-        content.ShouldContain("prose");
-        content.ShouldContain("header");
-    }
-
     [Fact]
-    public async Task SpaDataEndpoint_ReturnsReloadForNonExistentPage()
+    public async Task ContentPage_EmitsSpaRegionMarkup()
     {
-        var response = await _client.GetAsync("/_spa-data/does-not-exist.json", TestContext.Current.CancellationToken);
+        // SPA navigation parses the rendered page and swaps elements marked
+        // data-spa-region. The DocSite layout must emit at least the content
+        // region for that contract to work.
+        var response = await _client.GetAsync("/", TestContext.Current.CancellationToken);
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        content.ShouldContain("reload");
+        content.ShouldContain("data-spa-region=\"content\"");
     }
 
     [Fact]

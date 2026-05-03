@@ -27,7 +27,7 @@ examples/BareHostRazorPageExample/Components/StatusPage.razor
 
 ## Register the Blazor renderer services
 
-`HtmlRenderer` needs Blazor's component services and an `IHttpContextAccessor` so cascading values can resolve. Register both alongside the Pennington and MonorailCSS hosts. No SPA wiring is required — `HtmlRenderer` is a one-shot server-side renderer, distinct from the `RazorIslandRenderer<T>` shape used by <xref:how-to.extensibility.island-renderer>.
+`HtmlRenderer` needs Blazor's component services and an `IHttpContextAccessor` so cascading values can resolve. Register both alongside the Pennington and MonorailCSS hosts.
 
 ```csharp:path
 examples/BareHostRazorPageExample/Program.cs
@@ -48,5 +48,4 @@ A custom `IContentService` yields one `EndpointSource` per route so the build cr
 ## Related
 
 - How-to: [Source content from outside the file system](xref:how-to.extensibility.custom-content-service)
-- How-to: [Hydrate a Razor component as a client island](xref:how-to.extensibility.island-renderer)
 - Background: [The content pipeline and union types](xref:explanation.core.content-pipeline)

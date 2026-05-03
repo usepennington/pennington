@@ -30,7 +30,6 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - `Pennington.Highlighting` — ICodeHighlighter, TextMateHighlighter, ShellHighlighter, HighlightingService
 - `Pennington.Generation` — BuildReport, OutputGenerationService, OutputOptions
 - `Pennington.Navigation` — NavigationBuilder, NavigationTreeItem, NavigationInfo
-- `Pennington.Islands` — SpaPageDataService, SpaNavigationExtensions, IIslandRenderer
 - `Pennington.Localization` — LocaleContext, LocaleDetectionMiddleware, LocaleLinkHtmlRewriter, PenningtonStringLocalizer, TranslationOptions
 - `Pennington.Search` — SearchIndexBuilder, SearchIndexService, SearchIndexOptions (per-locale index from post-pipeline HTML)
 - `Pennington.Feeds` — RssFeedBuilder, SitemapBuilder, SitemapService

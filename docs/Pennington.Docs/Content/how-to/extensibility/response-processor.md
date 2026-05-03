@@ -64,7 +64,7 @@ Every `text/html` response carries the widget aside immediately before its closi
 </html>
 ```
 
-Non-HTML endpoints (`/styles.css`, `/_spa-data/*.json`) are unmodified because `ShouldProcess` returns `false` for them.
+Non-HTML endpoints (`/styles.css`, `/sitemap.xml`) are unmodified because `ShouldProcess` returns `false` for them.
 
 ## Verify
 

@@ -1,6 +1,6 @@
 ---
 title: "DI and middleware extension methods"
-description: "Index of every AddPennington/UsePennington/Run* extension method across the Pennington, DocSite, BlogSite, MonorailCSS, Islands, and Roslyn packages."
+description: "Index of every AddPennington/UsePennington/Run* extension method across the Pennington, DocSite, BlogSite, MonorailCSS, and Roslyn packages."
 sectionLabel: "Host Integration"
 order: 406010
 tags: [host, di, middleware, extensions]
@@ -15,13 +15,11 @@ DI registration entry points. Each method's options surface is documented on its
 
 <ExtensionMethods Receiver="IServiceCollection" />
 
-## `WebApplication` and endpoint extensions
+## `WebApplication` extensions
 
 Middleware and endpoint wiring. Ordering within a `Use*` call chain is load-bearing; see each method's xmldoc for the invariant.
 
 <ExtensionMethods Receiver="WebApplication" />
-
-<ExtensionMethods Receiver="IEndpointRouteBuilder" />
 
 ## Host runtime helpers
 

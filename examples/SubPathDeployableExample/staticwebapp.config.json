@@ -30,7 +30,6 @@
     "rewrite": "/404.html",
     "exclude": [
       "/_content/*",
-      "/_spa-data/*",
       "/*.{css,js,json,png,jpg,jpeg,gif,svg,webp,ico,woff,woff2,ttf,xml,txt,webmanifest}"
     ]
   },

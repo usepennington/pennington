@@ -11,7 +11,7 @@ When does `AddDocSite` earn its keep, and when is the ceremony of `AddPennington
 
 ## Context
 
-Pennington ships two entry points that sit at different levels of the stack. `AddPennington` is the engine: content discovery, the rendering pipeline, response processing, and diagnostics. It assumes the host brings its own layout, routing, and CSS wiring. `AddDocSite` is a template built on top of that engine — it composes `AddPennington`, `AddMonorailCss`, `AddSpaNavigation`, a Razor `App` component, and a `DocSiteArticleSlotRenderer` into a single call with a small `DocSiteOptions` surface.
+Pennington ships two entry points that sit at different levels of the stack. `AddPennington` is the engine: content discovery, the rendering pipeline, response processing, and diagnostics. It assumes the host brings its own layout, routing, and CSS wiring. `AddDocSite` is a template built on top of that engine — it composes `AddPennington`, `AddMonorailCss`, and a Razor `App` component into a single call with a small `DocSiteOptions` surface.
 
 The distinction matters because `DocSiteOptions` is not a mirror of `PenningtonOptions`. It is a curated subset plus a handful of DocSite-specific knobs, and the things it deliberately does not expose are the signal for whether to stay on the template or drop a level.
 
@@ -19,7 +19,7 @@ The distinction matters because `DocSiteOptions` is not a mirror of `PenningtonO
 
 ### What DocSite gives you for free
 
-A single `AddDocSite` call wires quite a bit: the Pennington engine with site title, description, canonical URL, and content root forwarded from `DocSiteOptions`; one `AddMarkdownContent<DocSiteFrontMatter>` registration rooted at the content folder; a pre-scoped `llms.txt` and search index (both defaulting to `#main-content`, the wrapper around the stock article); the Razor `App` component with the article slot renderer; Mdazor inline components — `Badge`, `Card`, `Step`, and others — registered so markdown can embed UI without per-site plumbing; MonorailCSS with the DocSite theme; and SPA navigation.
+A single `AddDocSite` call wires quite a bit: the Pennington engine with site title, description, canonical URL, and content root forwarded from `DocSiteOptions`; one `AddMarkdownContent<DocSiteFrontMatter>` registration rooted at the content folder; a pre-scoped `llms.txt` and search index (both defaulting to `#main-content`, the wrapper around the stock article); the Razor `App` component and `DocSiteArticle` rendering shell; Mdazor inline components — `Badge`, `Card`, `Step`, and others — registered so markdown can embed UI without per-site plumbing; MonorailCSS with the DocSite theme; and SPA navigation through the `data-spa-region` markup the layout emits (no extra DI registration required — the client script lives in `Pennington.UI`).
 
 The payoff is not the feature count. It is that every one of those registrations lands in a compatible order with the others. Getting that ordering right — especially between the pipeline, the response processor, and the search index scoping — is most of what trips up a hand-rolled host on the first attempt.
 
@@ -27,11 +27,11 @@ The payoff is not the feature count. It is that every one of those registrations
 
 DocSite owns exactly one `AddMarkdownContent<DocSiteFrontMatter>` registration. Wiring a second front-matter type — say, a blog post shape alongside docs — is not reachable by setting a `DocSiteOptions` property. It takes either the `ConfigurePennington` escape hatch, which hands back the underlying `PenningtonOptions` after DocSite's defaults land, or dropping to bare `AddPennington` outright. The escape hatch is enough for adding one more source. It falls short when the extra source needs different theming, a different layout, or a different slot renderer.
 
-`DocSiteOptions.ColorScheme`, `DisplayFontFamily`, `BodyFontFamily`, `ExtraStyles`, and `CustomCssFrameworkSettings` offer tweak points against MonorailCSS, but the theme composition itself — `AddMonorailCss` plus the DocSite `App` component plus the article slot renderer — is fixed. Replacing the `App` component or introducing a non-article layout means registering extra routing assemblies via `AdditionalRoutingAssemblies` and accepting that custom components ride alongside DocSite's, not in place of them.
+`DocSiteOptions.ColorScheme`, `DisplayFontFamily`, `BodyFontFamily`, `ExtraStyles`, and `CustomCssFrameworkSettings` offer tweak points against MonorailCSS, but the theme composition itself — `AddMonorailCss` plus the DocSite `App` component plus the `DocSiteArticle` shell — is fixed. Replacing the `App` component or introducing a non-article layout means registering extra routing assemblies via `AdditionalRoutingAssemblies` and accepting that custom components ride alongside DocSite's, not in place of them.
 
 `SearchIndexContentSelector` and `LlmsTxtContentSelector` on `DocSiteOptions` both default to `#main-content` — the wrapper the stock layout places around the article — and accept any CSS selector, including the empty string to index the full body when the layout has been replaced. The LLM channel renders markdown content through the engine's rendition channel directly; the selector only applies to the HTTP-fetch fallback used for Razor pages and API symbol pages.
 
-To summarize the current caps precisely: one markdown source registration, extendable via `ConfigurePennington` or by dropping a level; a fixed theme composition (`AddMonorailCss` plus the DocSite layout shell) that is tweakable but not swappable; and a fixed slot renderer and `App` component that can only be extended through additional routing assemblies, not replaced.
+To summarize the current caps precisely: one markdown source registration, extendable via `ConfigurePennington` or by dropping a level; a fixed theme composition (`AddMonorailCss` plus the DocSite layout shell) that is tweakable but not swappable; and a fixed `App` component that can only be extended through additional routing assemblies, not replaced.
 
 ### The escape hatch — DocSite's source as reference
 
@@ -46,7 +46,7 @@ The example host is intentionally minimal — no Razor layout, no slot renderer,
 A few shapes genuinely do not fit the template. Recognizing them early saves the cost of learning both surfaces in sequence:
 
 - Multiple markdown front-matter types served from the same host with different themes or different layouts. `ConfigurePennington` can register a second source, but it cannot give that source a separate layout shell.
-- Replacing the `App` component or the article slot renderer with a layout that is not article-shaped — a dashboard, a directory, a storefront.
+- Replacing the `App` component or the `DocSiteArticle` shell with a layout that is not article-shaped — a dashboard, a directory, a storefront.
 - A non-Razor rendering story: custom `MapGet` handlers, Minimal API endpoints that emit HTML strings, or a reverse-proxy shape where the engine feeds a different front-end entirely.
 - Embedding Pennington inside an existing ASP.NET app that already owns its routing, authentication, or layout conventions. Adding `AddDocSite` on top tends to fight those choices rather than cooperate with them.
 - Shipping the engine as a library into another product where only the pipeline is needed, not the layout.

@@ -25,7 +25,7 @@ This page covers serving an `output/` directory produced by `dotnet run -- build
 
 **Upload `output/` to the web root**
 
-Copy the full contents of `output/` to the directory the web server will serve — `/var/www/pennington/` for Nginx or the IIS site's **Physical path** for IIS. Keep the `_content/` and `_spa-data/` folders intact; fingerprinted assets and island payloads live under those underscore-prefixed paths and ship verbatim.
+Copy the full contents of `output/` to the directory the web server will serve — `/var/www/pennington/` for Nginx or the IIS site's **Physical path** for IIS. Keep the `_content/` folder intact; fingerprinted static-web-asset bundles (Razor library CSS and JS) live under that underscore-prefixed path and ship verbatim.
 
 </Step>
 <Step StepNumber="2">

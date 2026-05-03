@@ -7,7 +7,7 @@ sectionLabel: Extensibility
 tags: [docsite, theming, slots, routing]
 ---
 
-To replace the bundled DocSite header or footer (or inject head tags, append CSS, route additional `@page` components) without forking the template, populate the four slot seams on `DocSiteOptions`. The bundled layout, content pipeline, SPA navigation, and MonorailCSS wiring keep working. To replace the article content island itself, follow <xref:how-to.extensibility.island-renderer>. To rearrange the layout shell fundamentally, read <xref:explanation.core.docsite-positioning> before deciding whether `AddDocSite` is still the right starting point.
+To replace the bundled DocSite header or footer (or inject head tags, append CSS, route additional `@page` components) without forking the template, populate the four slot seams on `DocSiteOptions`. The bundled layout, content pipeline, SPA navigation, and MonorailCSS wiring keep working. To rearrange the layout shell fundamentally, read <xref:explanation.core.docsite-positioning> before deciding whether `AddDocSite` is still the right starting point.
 
 ## Before you begin
 
@@ -63,10 +63,6 @@ The DocSite shell only discovers `@page` directives in its own assembly by defau
 M:DocSiteChromeOverridesExample.SiteChromeOverrides.BuildAdditionalRoutingAssemblies
 ```
 
-### Replace the content island through the islands system
-
-To swap the article body itself — the island whose `IslandName` is `"content"` — follow <xref:how-to.extensibility.island-renderer> and register an `IIslandRenderer` with `IslandName => "content"` to displace the shipped `DocSiteArticleSlotRenderer`. This seam lives in the islands system rather than `DocSiteOptions`, which is why it is a separate recipe.
-
 ## Register the implementation
 
 `AddDocSite` takes a `Func<DocSiteOptions>` factory, so the most direct wiring is to pass the helper as a method reference and keep the host file short. The example's `Program.cs` runs this exact shape end-to-end.
@@ -91,14 +87,13 @@ The four chrome seams above are the most common overrides. DocSite exposes three
 
 | Seam | What it does |
 |---|---|
-| `DocSiteOptions.ConfigurePennington` | Callback against the underlying `PenningtonOptions`. Register extra markdown sources, islands, or highlighters without leaving the template — see <xref:how-to.configuration.multiple-sources> and <xref:how-to.extensibility.island-renderer>. |
+| `DocSiteOptions.ConfigurePennington` | Callback against the underlying `PenningtonOptions`. Register extra markdown sources, highlighters, or response processors without leaving the template — see <xref:how-to.configuration.multiple-sources>. |
 | `DocSiteOptions.AdditionalRoutingAssemblies` | Widens the router to pick up `@page` components in your host assembly. Covered in the section above. |
 | `DocSiteOptions.CustomCssFrameworkSettings` | Mutates the MonorailCSS `CssFrameworkSettings` after DocSite applies its theme. Use for custom palettes, variants, or plugins beyond what the defaults ship. |
 | `services.AddSingleton<IContentService, T>()` | A concrete `IContentService` registered directly on the DI container is picked up by the pipeline alongside DocSite's own markdown service — see <xref:how-to.extensibility.custom-content-service>. |
-| `services.AddScoped<IIslandRenderer, T>()` | Scoped lifetime is required (the backing `ComponentRenderer` is scoped). See <xref:how-to.extensibility.island-renderer> for the full recipe. |
+| `data-spa-region="name"` markup | Mark regions in your custom layout components for SPA navigation to update them. The DocSite layout already marks `content`, `sidebar`, and `header`. See <xref:explanation.spa.islands>. |
 
 ## Related
 
 - Reference: <xref:reference.api.doc-site-options>
 - Background: <xref:explanation.core.docsite-positioning>
-- Related how-to: <xref:how-to.extensibility.island-renderer>

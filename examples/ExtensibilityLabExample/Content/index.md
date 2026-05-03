@@ -14,9 +14,6 @@ so the effect is observable in the rendered HTML.
 - [Line-count preprocessor demo](/line-count-demo/) —
   `LineCountPreprocessor` implements `ICodeBlockPreprocessor` and annotates
   fences tagged `linecount`.
-- [Chart island demo](/chart-demo/) — `ChartIslandRenderer` is registered
-  under `IslandsOptions.Register<T>("chart")` and the content page embeds
-  `<div data-spa-island="chart">`.
 - [Releases index](/releases/) — `ReleaseNotesContentService` implements
   `IContentService` over `Content/releases/*.json`.
 

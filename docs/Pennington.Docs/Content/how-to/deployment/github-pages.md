@@ -52,7 +52,7 @@ The template targets `examples/SubPathDeployableExample`; edit the `--project` a
 
 **Keep `.nojekyll` in the artifact**
 
-GitHub Pages runs content through Jekyll by default, which silently strips any path starting with an underscore — that removes Pennington's `_content/` copy folder and SPA `_spa-data/` payloads. The `touch output/.nojekyll` step in the workflow disables Jekyll processing; leave it in place.
+GitHub Pages runs content through Jekyll by default, which silently strips any path starting with an underscore — that removes Pennington's `_content/` static-web-asset folder. The `touch output/.nojekyll` step in the workflow disables Jekyll processing; leave it in place.
 
 </Step>
 <Step StepNumber="5">

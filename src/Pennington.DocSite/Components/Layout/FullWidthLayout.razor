@@ -25,11 +25,11 @@
         <div class="flex flex-col min-h-screen w-full">
             <DocSiteHeader ShowMobileMenuButton="false" CenterSearch="true" AlternateLanguages="_langSwitcherItems" />
             <main class="mx-auto max-w-7xl w-full px-4 lg:px-8 mt-4 lg:mt-8">
-                @* No data-spa-island: the landing page uses a different chrome than
-                   the docs layout, so an island swap would leave the sidebar stripped.
-                   Without islands, spa-engine.js falls back to a full page load for
-                   any link — the correct behavior when crossing layout boundaries. *@
-                <article id="main-content" class="min-w-0">
+                @* FullWidthLayout exposes only a `content` region. Navigating to a
+                   MainLayout page (which has additional `sidebar`/`header` regions)
+                   triggers a full page reload because the region sets diverge —
+                   the explicit layout-boundary fallback in spa-engine.js. *@
+                <article id="main-content" data-spa-region="content" class="min-w-0">
                     @Body
                 </article>
                 <DocSiteFooter />

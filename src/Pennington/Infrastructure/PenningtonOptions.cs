@@ -3,7 +3,6 @@ namespace Pennington.Infrastructure;
 using System.Collections.Immutable;
 using System.Reflection;
 using Highlighting;
-using Islands;
 using LlmsTxt;
 using Localization;
 using Markdig;
@@ -27,9 +26,6 @@ public sealed class PenningtonOptions
 
     /// <summary>Code-highlighting configuration.</summary>
     public HighlightingOptions Highlighting { get; } = new();
-
-    /// <summary>Island (interactive component) registration.</summary>
-    public IslandsOptions Islands { get; } = new();
 
     /// <summary>Localization configuration, including locales and defaults.</summary>
     public LocalizationOptions Localization { get; } = new();
@@ -124,19 +120,6 @@ public sealed class HighlightingOptions
 
     /// <summary>Highlighters registered via <see cref="AddHighlighter(ICodeHighlighter)"/> or the generic overload.</summary>
     public IReadOnlyList<ICodeHighlighter> Highlighters => _highlighters;
-}
-
-/// <summary>Options for island registration.</summary>
-public sealed class IslandsOptions
-{
-    private readonly Dictionary<string, Type> _islands = [];
-
-    /// <summary>Registers an island renderer under <paramref name="name"/>.</summary>
-    public void Register<T>(string name) where T : IIslandRenderer
-        => _islands[name] = typeof(T);
-
-    /// <summary>Islands registered via <see cref="Register{T}"/>, keyed by island name.</summary>
-    public IReadOnlyDictionary<string, Type> RegisteredIslands => _islands;
 }
 
 /// <summary>Options for localization.</summary>

@@ -2,7 +2,6 @@ namespace Pennington.DocSite;
 
 using System.Reflection;
 using Infrastructure;
-using Islands;
 using Mdazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -104,15 +103,6 @@ public static class DocSiteServiceExtensions
             return monoOptions;
         });
 
-        // SPA navigation
-        services.AddSpaNavigation();
-
-        // ComponentRenderer is registered by AddPennington (required by
-        // RazorIslandRenderer<T> on any host, not just DocSite).
-
-        // Register the article island renderer
-        services.AddTransient<IIslandRenderer, Slots.DocSiteArticleSlotRenderer>();
-
         // Content resolver
         services.AddTransient<Services.ContentResolver>();
 
@@ -128,7 +118,6 @@ public static class DocSiteServiceExtensions
         app.UseAntiforgery();
         app.UseStaticFiles();
         app.UseMonorailCss();
-        app.UseSpaNavigation();
         // UsePennington wires the redirect middleware; call it before mapping
         // the Razor component endpoint so `redirectUrl:` pages short-circuit
         // with 301 instead of falling through to the catch-all page route.

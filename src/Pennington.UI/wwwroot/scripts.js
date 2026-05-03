@@ -44,65 +44,15 @@ class PageManager {
         if (outlineUl) outlineUl.innerHTML = '';
     }
 
-    onSpaCommit(url) {
+    onSpaCommit() {
+        // Re-run content-derived JS for the freshly-swapped regions. Active nav
+        // states, language switcher hrefs, and area pills are now produced by
+        // the server's per-page render of the sidebar/header regions, so no
+        // client-side patching is needed.
         this.syntaxHighlighter?.init();
         this.tabManager?.init();
         this.mermaidManager?.init();
         this.outlineManager?.init();
-        this.updateActiveNavLink(url.pathname);
-        this.updateLanguageSwitcher(url.pathname);
-        this.areaNavManager?.onSpaCommit(url.pathname);
-    }
-
-    updateLanguageSwitcher(pathname) {
-        const switcher = document.querySelector('[data-lang-switcher]');
-        if (!switcher) return;
-
-        const defaultLocale = switcher.dataset.defaultLocale || '';
-        const locales = (document.body.getAttribute('data-locales') || '').split(',').filter(Boolean);
-        if (locales.length <= 1) return;
-
-        // Strip locale prefix from current path to get content-relative path
-        const trimmed = pathname.replace(/^\//, '').replace(/\/$/, '');
-        const firstSegment = trimmed.split('/')[0];
-        let contentPath = trimmed;
-        let currentLocale = defaultLocale;
-
-        if (firstSegment && locales.includes(firstSegment) && firstSegment !== defaultLocale) {
-            currentLocale = firstSegment;
-            contentPath = trimmed.substring(firstSegment.length).replace(/^\//, '');
-        }
-
-        // Update each locale link
-        switcher.querySelectorAll('a[data-locale]').forEach(link => {
-            const locale = link.dataset.locale;
-            const isDefault = locale === defaultLocale;
-            const newPath = isDefault
-                ? (contentPath ? `/${contentPath}/` : '/')
-                : (contentPath ? `/${locale}/${contentPath}/` : `/${locale}/`);
-            link.href = newPath;
-        });
-
-        // Update current locale indicator
-        const currentLabel = switcher.querySelector('[data-lang-current]');
-        if (currentLabel) {
-            const currentLink = switcher.querySelector(`a[data-locale="${currentLocale}"]`);
-            if (currentLink) currentLabel.textContent = currentLink.textContent.trim();
-        }
-    }
-
-    updateActiveNavLink(pathname) {
-        document.querySelectorAll('[data-current="true"]')
-            .forEach(el => el.setAttribute('data-current', 'false'));
-        const norm = pathname.replace(/\/$/, '') || '/';
-        // Area pills signal themselves via aria-current; skip them so they don't
-        // shadow a TOC anchor with the same href when the URL is an area root.
-        for (const a of document.querySelectorAll('nav a[href]:not([data-area])')) {
-            if ((a.getAttribute('href') || '').replace(/\/$/, '') === norm) {
-                a.setAttribute('data-current', 'true');
-                break;
-            }
-        }
     }
 }
 
@@ -1102,18 +1052,6 @@ class AreaNavManager {
 
         this.nav.dataset.activeArea = slug;
     }
-
-    onSpaCommit(pathname) {
-        if (!this.nav) return;
-        const segments = pathname.replace(/^\//, '').split('/').filter(Boolean);
-        if (segments.length === 0) return;
-
-        const firstSegment = segments[0];
-        const pill = this.nav.querySelector(`[data-area="${firstSegment}"]`);
-        if (pill && pill.getAttribute('aria-current') !== 'true') {
-            this.switchToArea(firstSegment);
-        }
-    }
 }
 
 /**
@@ -1653,7 +1591,7 @@ window.pageManager = pageManager;
 document.addEventListener('spa:before-navigate', () => {
     window.pageManager?.onSpaNavigating();
 });
-document.addEventListener('spa:commit', (e) => {
-    window.pageManager?.onSpaCommit(e.detail.url);
+document.addEventListener('spa:commit', () => {
+    window.pageManager?.onSpaCommit();
 });
 

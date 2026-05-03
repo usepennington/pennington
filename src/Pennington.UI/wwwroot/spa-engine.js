@@ -1,53 +1,47 @@
 /**
  * SPA Engine — Generic single-page navigation for content sites.
  *
- * Declarative island system: mark DOM regions with data-spa-island="name",
- * and the engine updates them from a JSON envelope on navigation.
+ * One render path: navigation fetches the actual destination URL, parses the
+ * full HTML response with DOMParser, swaps regions marked
+ * `data-spa-region="name"` from the new document into the current one, and
+ * merges head deltas (title, meta, canonical, hreflang, stylesheets, JSON-LD).
  *
- * JSON envelope format:
- * {
- *   "title":       "Page Title",
- *   "description": "Page description",
- *   "islands": {
- *     "content": "<html>…</html>",
- *     "sidebar": "<html>…</html>"
- *   }
- * }
+ * No JSON envelope. No parallel server endpoint. The static `.html` produced
+ * for each page is the SPA fragment source.
  *
- * First page load: full static HTML (normal browser behaviour).
- * Subsequent in-site navigation: intercept link clicks, fetch the
- * pre-generated JSON, and swap island contents without a full reload.
+ * Markup contract:
+ *   <main data-spa-region="content">…</main>
+ *   <aside data-spa-region="sidebar">…</aside>
  *
- * Island loading modes (via data-spa-loading attribute):
+ * Region loading modes (via data-spa-loading attribute):
  *   "skeleton" — show shimmer placeholder (or a custom <template>)
- *   "clear"    — empty the island immediately
- *   "keep"     — leave previous content until new data arrives (default)
+ *   "clear"    — empty the region immediately
+ *   "keep"     — leave previous content until new HTML arrives (default)
+ *
+ * Stylesheet handling:
+ *   - New <link rel="stylesheet"> hrefs are appended to <head> before swap.
+ *   - Any stylesheet tagged `data-spa-reload` is re-fetched with a cache
+ *     buster on every navigation (use for JIT stylesheets like MonorailCSS in
+ *     dev where the URL doesn't change but the content does).
+ *
+ * Layout switching:
+ *   - If the new document is missing a region the current document marks,
+ *     fall back to a full page load. Explicit boundary, not a silent break.
  *
  * Lifecycle events dispatched on `document`:
- *   spa:before-navigate  { url, slug }
- *   spa:commit           { url, slug, data }
+ *   spa:before-navigate { url, slug }
+ *   spa:commit          { url, slug, doc }
+ *   spa:diagnostics     [...]   (when a diagnostics script block is present)
  */
 (function () {
     'use strict';
 
-    // -----------------------------------------------------------------------
-    // Configuration (from data attributes or sensible defaults)
-    // -----------------------------------------------------------------------
-
     const _root = document.documentElement;
-    const BASE_PATH = (document.body.dataset.baseUrl || '').replace(/\/$/, '');
-    const DATA_PATH = _root.dataset.spaDataPath || '/_spa-data';
     const SKELETON_DELAY = parseInt(_root.dataset.spaSkeletonDelay || '100', 10);
     const MIN_SKELETON_MS = parseInt(_root.dataset.spaMinSkeleton || '250', 10);
+    const REGION_SELECTOR = '[data-spa-region]';
 
-    // Derive site title once: "SiteTitle - PageTitle" → "SiteTitle".
-    const _dash = document.title.indexOf(' - ');
-    const SITE_TITLE = _dash > -1 ? document.title.substring(0, _dash) : document.title;
-
-    // -----------------------------------------------------------------------
-    // Inject minimal global styles
-    // -----------------------------------------------------------------------
-
+    // Inject minimal global styles (shimmer + view-transition timing).
     const _style = document.createElement('style');
     _style.textContent = [
         '@keyframes spa-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}',
@@ -58,10 +52,7 @@
     ].join('');
     document.head.appendChild(_style);
 
-    // -----------------------------------------------------------------------
-    // Accessibility — ARIA live region for page-change announcements
-    // -----------------------------------------------------------------------
-
+    // ARIA live region for page-change announcements.
     const _announcer = document.createElement('div');
     _announcer.setAttribute('role', 'status');
     _announcer.setAttribute('aria-live', 'polite');
@@ -76,13 +67,6 @@
     // -----------------------------------------------------------------------
 
     const delay = (ms) => new Promise(r => setTimeout(r, ms));
-    function isReloadSignal(data) { return data && data.reload === true; }
-
-    function getSlug(url) {
-        let p = url.pathname;
-        if (BASE_PATH && p.startsWith(BASE_PATH)) p = p.substring(BASE_PATH.length) || '/';
-        return (!p || p === '/') ? 'index' : p.replace(/^\//, '').replace(/\/$/, '');
-    }
 
     function isSpaLink(anchor) {
         if (!anchor.href) return false;
@@ -91,7 +75,6 @@
         try {
             const url = new URL(anchor.href);
             if (url.origin !== location.origin) return false;
-            if (url.pathname.includes(DATA_PATH)) return false;
             if (url.pathname === location.pathname && url.hash) return false;
             return !(anchor.target === '_blank' || anchor.hasAttribute('download'));
         } catch { return false; }
@@ -105,78 +88,83 @@
         document.startViewTransition ? document.startViewTransition(fn) : fn();
     }
 
-    function reloadDevStylesheet() {
-        if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
-        const link = document.querySelector('link[rel="stylesheet"]');
-        if (!link) return;
-        const u = new URL(link.href);
-        u.searchParams.set('_t', Date.now());
-        const next = link.cloneNode();
-        next.href = u.toString();
-        next.onload = () => link.remove();
-        link.after(next);
-    }
-
     // -----------------------------------------------------------------------
-    // Island management
+    // Region management
     // -----------------------------------------------------------------------
 
-    function discoverIslands() {
-        const islands = {};
-        document.querySelectorAll('[data-spa-island]').forEach(el => {
-            const name = el.dataset.spaIsland;
-            islands[name] = {
+    function discoverRegions() {
+        const regions = {};
+        document.querySelectorAll(REGION_SELECTOR).forEach(el => {
+            const name = el.dataset.spaRegion;
+            regions[name] = {
                 el,
                 loadingMode: el.dataset.spaLoading || 'keep',
                 skeletonTpl: document.querySelector(
                     `template[data-spa-skeleton-for="${name}"]`
                 ),
             };
-            // Auto-assign a view-transition-name so each island animates independently.
+            // Auto-assign a view-transition-name so each region animates independently.
             if (!el.style.viewTransitionName) {
-                el.style.viewTransitionName = `spa-island-${name}`;
+                el.style.viewTransitionName = `spa-region-${name}`;
             }
         });
-        return islands;
+        return regions;
     }
 
-    function showLoadingState(islands) {
-        for (const [, island] of Object.entries(islands)) {
-            switch (island.loadingMode) {
+    function showLoadingState(regions) {
+        for (const region of Object.values(regions)) {
+            switch (region.loadingMode) {
                 case 'skeleton':
-                    if (island.skeletonTpl) {
-                        island.el.innerHTML = '';
-                        island.el.appendChild(island.skeletonTpl.content.cloneNode(true));
+                    region.el.innerHTML = '';
+                    if (region.skeletonTpl) {
+                        region.el.appendChild(region.skeletonTpl.content.cloneNode(true));
                     } else {
-                        island.el.innerHTML = defaultSkeleton();
+                        region.el.innerHTML = defaultSkeleton();
                     }
                     break;
                 case 'clear':
-                    island.el.innerHTML = '';
+                    region.el.innerHTML = '';
                     break;
                 // 'keep' — leave current content in place.
             }
         }
     }
 
-    function commitIslands(islands, data) {
-        const provided = data.islands || {};
-        for (const [name, island] of Object.entries(islands)) {
-            island.el.innerHTML = provided[name] ?? '';
+    /**
+     * Returns true when the set of region names in the current document
+     * exactly matches the set in the incoming document. Any divergence is
+     * treated as a layout boundary and triggers a full page load.
+     */
+    function regionsAlign(regions, doc) {
+        const currentNames = new Set(Object.keys(regions));
+        const incomingNames = new Set(
+            Array.from(doc.querySelectorAll(REGION_SELECTOR)).map(el => el.dataset.spaRegion)
+        );
+        if (currentNames.size !== incomingNames.size) return false;
+        for (const name of currentNames) if (!incomingNames.has(name)) return false;
+        return true;
+    }
+
+    function commitRegions(regions, doc) {
+        for (const [name, region] of Object.entries(regions)) {
+            const incoming = doc.querySelector(`[data-spa-region="${cssEscape(name)}"]`);
+            region.el.innerHTML = incoming ? incoming.innerHTML : '';
         }
     }
 
-    function announceNavigation(title, islands) {
-        // Screen reader announcement.
+    function cssEscape(value) {
+        return (window.CSS && CSS.escape) ? CSS.escape(value) : value.replace(/"/g, '\\"');
+    }
+
+    function announceNavigation(title, regions) {
         _announcer.textContent = '';
         // Brief delay so the live region registers a change even for repeated titles.
         requestAnimationFrame(() => {
             _announcer.textContent = title ? `Navigated to ${title}` : 'Page updated';
         });
 
-        // Move focus to the first content island so keyboard users land in context.
-        // Find a heading inside, or fall back to the island element itself.
-        const first = islands[Object.keys(islands)[0]];
+        // Move focus to the first content region's heading so keyboard users land in context.
+        const first = regions[Object.keys(regions)[0]];
         if (!first) return;
         const target = first.el.querySelector('h1, h2, h3') || first.el;
         if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
@@ -195,29 +183,97 @@
     }
 
     // -----------------------------------------------------------------------
-    // Meta & scroll
+    // Head merging
     // -----------------------------------------------------------------------
 
-    function applyMeta(data, url) {
-        document.title = data.title
-            ? `${SITE_TITLE} - ${data.title}`
-            : SITE_TITLE;
+    /**
+     * Replace the current document head's title and managed meta/link tags
+     * with the incoming document's. Tags handled: title, description meta,
+     * og:* / twitter:* meta, canonical, hreflang alternates, JSON-LD scripts.
+     */
+    function applyHead(doc) {
+        if (doc.title) document.title = doc.title;
 
-        const setMeta = (sel, val) => {
-            const el = document.querySelector(sel);
-            if (!el) return;
-            val ? el.setAttribute('content', val) : el.removeAttribute('content');
+        const swap = (sel) => {
+            const incoming = doc.head.querySelector(sel);
+            const current = document.head.querySelector(sel);
+            if (incoming && current) {
+                current.replaceWith(incoming.cloneNode(true));
+            } else if (incoming) {
+                document.head.appendChild(incoming.cloneNode(true));
+            } else if (current) {
+                current.remove();
+            }
         };
 
-        setMeta('meta[name="description"]', data.description);
-        setMeta('meta[property="og:description"]', data.description);
-        setMeta('meta[property="og:title"]', data.title);
-        setMeta('meta[property="og:url"]', url.href);
-        setMeta('meta[name="twitter:title"]', data.title);
-        setMeta('meta[name="twitter:description"]', data.description);
+        swap('meta[name="description"]');
+        swap('meta[property="og:title"]');
+        swap('meta[property="og:description"]');
+        swap('meta[property="og:url"]');
+        swap('meta[name="twitter:title"]');
+        swap('meta[name="twitter:description"]');
+        swap('link[rel="canonical"]');
 
-        const canon = document.querySelector('link[rel="canonical"]');
-        if (canon) canon.href = url.href;
+        // Hreflang alternates: replace the whole set.
+        document.head.querySelectorAll('link[rel="alternate"][hreflang]').forEach(n => n.remove());
+        doc.head.querySelectorAll('link[rel="alternate"][hreflang]').forEach(n => {
+            document.head.appendChild(n.cloneNode(true));
+        });
+
+        // JSON-LD: replace the whole set.
+        document.head.querySelectorAll('script[type="application/ld+json"]').forEach(n => n.remove());
+        doc.head.querySelectorAll('script[type="application/ld+json"]').forEach(n => {
+            document.head.appendChild(n.cloneNode(true));
+        });
+    }
+
+    /**
+     * Bring stylesheets into sync. New hrefs are appended (and we wait for
+     * load before resolving). Stylesheets tagged data-spa-reload re-fetch
+     * with a cache buster on every navigation — opt-in workaround for JIT
+     * stylesheets that rebuild content but keep the same URL.
+     */
+    function syncStylesheets(doc) {
+        const currentHrefs = new Set(
+            Array.from(document.head.querySelectorAll('link[rel="stylesheet"]'))
+                .map(l => l.href)
+        );
+        const additions = [];
+        doc.head.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+            if (!currentHrefs.has(link.href)) additions.push(link.cloneNode(true));
+        });
+
+        const reloadable = document.head.querySelectorAll('link[rel="stylesheet"][data-spa-reload]');
+
+        if (additions.length === 0 && reloadable.length === 0) return Promise.resolve();
+
+        const waits = [];
+        for (const link of additions) {
+            waits.push(new Promise(resolve => {
+                link.addEventListener('load', resolve, { once: true });
+                link.addEventListener('error', resolve, { once: true });
+                document.head.appendChild(link);
+            }));
+        }
+        for (const link of reloadable) {
+            const u = new URL(link.href);
+            u.searchParams.set('_spa', Date.now());
+            const next = link.cloneNode();
+            next.href = u.toString();
+            waits.push(new Promise(resolve => {
+                next.addEventListener('load', () => { link.remove(); resolve(); }, { once: true });
+                next.addEventListener('error', () => { link.remove(); resolve(); }, { once: true });
+                link.after(next);
+            }));
+        }
+        return Promise.all(waits);
+    }
+
+    function readDiagnostics(doc) {
+        const block = doc.querySelector('script[type="application/spa-diagnostics+json"]');
+        if (!block) return null;
+        try { return JSON.parse(block.textContent || '[]'); }
+        catch { return null; }
     }
 
     function scrollToTarget(url) {
@@ -234,17 +290,23 @@
 
     const _prefetchCache = new Map();
     const PREFETCH_LIMIT = 20;
+    const _parser = new DOMParser();
 
-    function prefetch(slug) {
-        if (_prefetchCache.has(slug)) return;
+    function fetchDoc(href, signal) {
+        return fetch(href, { signal, headers: { 'Accept': 'text/html' } })
+            .then(r => {
+                if (!r.ok) throw new Error(r.status);
+                return r.text();
+            })
+            .then(html => _parser.parseFromString(html, 'text/html'));
+    }
+
+    function prefetch(href) {
+        if (_prefetchCache.has(href)) return;
         if (_prefetchCache.size >= PREFETCH_LIMIT) {
             _prefetchCache.delete(_prefetchCache.keys().next().value);
         }
-        const promise = fetch(`${BASE_PATH}${DATA_PATH}/${slug}.json`)
-            .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-            .then(d => { if (isReloadSignal(d)) throw new Error('reload'); return d; })
-            .catch(() => null);
-        _prefetchCache.set(slug, promise);
+        _prefetchCache.set(href, fetchDoc(href).catch(() => null));
     }
 
     // -----------------------------------------------------------------------
@@ -266,33 +328,30 @@
             history.replaceState({ ...cur, scrollY: window.scrollY }, '');
         }
 
-        const slug = getSlug(url);
-        const islands = discoverIslands();
+        const regions = discoverRegions();
 
-        // No islands found — fall back to a full page load.
-        if (Object.keys(islands).length === 0) {
+        // No regions found — fall back to a full page load.
+        if (Object.keys(regions).length === 0) {
             location.href = url.href;
             return;
         }
 
-        fire('spa:before-navigate', { url, slug });
+        fire('spa:before-navigate', { url, slug: url.pathname });
 
-        let fetchData = null, fetchFail = false;
+        let fetchedDoc = null, fetchFail = false;
 
-        // Use prefetched data if available, otherwise fetch fresh.
-        const cached = _prefetchCache.get(slug);
-        _prefetchCache.delete(slug);
+        const cached = _prefetchCache.get(url.href);
+        _prefetchCache.delete(url.href);
 
-        const dataPromise = (
+        const docPromise = (
             cached
                 ? cached.then(d => { if (!d) throw new Error('prefetch-miss'); return d; })
-                : fetch(`${BASE_PATH}${DATA_PATH}/${slug}.json`, { signal: ctrl.signal })
-                    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-        ).then(d => { fetchData = d; })
+                : fetchDoc(url.href, ctrl.signal)
+        ).then(d => { fetchedDoc = d; })
          .catch(e => { if (e.name !== 'AbortError') fetchFail = true; });
 
         // Race the fetch against a threshold: fast/cached responses skip the skeleton.
-        await Promise.race([dataPromise, delay(SKELETON_DELAY)]);
+        await Promise.race([docPromise, delay(SKELETON_DELAY)]);
         if (ctrl.signal.aborted) return;
 
         if (fetchFail) {
@@ -300,43 +359,48 @@
             return;
         }
 
-        const doCommit = (data) => {
-            _currentPathname = url.pathname;
-            if (pushState) history.pushState({ title: data.title }, data.title, url.href);
-            applyMeta(data, url);
-            commitIslands(islands, data);
-            announceNavigation(data.title, islands);
-            fire('spa:commit', { url, slug, data });
-            fire('spa:diagnostics', data.diagnostics || []);
-            restoreScrollY != null ? window.scrollTo(0, restoreScrollY) : scrollToTarget(url);
-            reloadDevStylesheet();
-        };
-
-        if (fetchData) {
-            if (isReloadSignal(fetchData)) { location.href = url.href; return; }
-            // Fast path — data arrived before the threshold.
-            maybeTransition(() => doCommit(fetchData));
-        } else {
-            // Slow path — show skeleton while we wait.
-            window.scrollTo(0, 0);
-            showLoadingState(islands);
-            const skeletonShownAt = performance.now();
-
-            await dataPromise;
-            if (ctrl.signal.aborted) return;
-
-            if (fetchFail) {
+        const doCommit = async (doc) => {
+            // Layout switch — current page has regions the new page doesn't. Full reload.
+            if (!regionsAlign(regions, doc)) {
                 location.href = url.href;
                 return;
             }
+
+            // Stylesheets first so newly-required CSS is parsed before the swap.
+            await syncStylesheets(doc);
+
+            _currentPathname = url.pathname;
+            if (pushState) history.pushState({ title: doc.title }, doc.title, url.href);
+            applyHead(doc);
+            commitRegions(regions, doc);
+            announceNavigation(doc.title, regions);
+            fire('spa:commit', { url, slug: url.pathname, doc });
+
+            const diagnostics = readDiagnostics(doc);
+            if (diagnostics) fire('spa:diagnostics', diagnostics);
+
+            restoreScrollY != null ? window.scrollTo(0, restoreScrollY) : scrollToTarget(url);
+        };
+
+        if (fetchedDoc) {
+            // Fast path — data arrived before the threshold.
+            maybeTransition(() => doCommit(fetchedDoc));
+        } else {
+            // Slow path — show skeleton while we wait.
+            window.scrollTo(0, 0);
+            showLoadingState(regions);
+            const skeletonShownAt = performance.now();
+
+            await docPromise;
+            if (ctrl.signal.aborted) return;
+            if (fetchFail) { location.href = url.href; return; }
 
             // Hold the skeleton long enough to feel intentional.
             const remaining = MIN_SKELETON_MS - (performance.now() - skeletonShownAt);
             if (remaining > 0) await delay(remaining);
             if (ctrl.signal.aborted) return;
 
-            if (isReloadSignal(fetchData)) { location.href = url.href; return; }
-            maybeTransition(() => doCommit(fetchData));
+            maybeTransition(() => doCommit(fetchedDoc));
         }
     }
 
@@ -356,7 +420,7 @@
     function maybePrefetch(e) {
         const anchor = e.target.closest('a');
         if (!anchor || !isSpaLink(anchor)) return;
-        prefetch(getSlug(new URL(anchor.href)));
+        prefetch(new URL(anchor.href).href);
     }
     document.addEventListener('pointerover', maybePrefetch);
     document.addEventListener('focusin', maybePrefetch);
