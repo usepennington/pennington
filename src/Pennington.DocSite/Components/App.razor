@@ -39,9 +39,14 @@
     }
 
     <script>
-        const isDarkMode = localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
-        document.documentElement.classList.toggle("dark", isDarkMode);
-        document.documentElement.dataset.theme = isDarkMode ? "dark" : "light";
+        (function () {
+            try {
+                const stored = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const dark = stored ? stored === 'dark' : prefersDark;
+                if (dark) document.documentElement.classList.add('dark');
+            } catch (e) { }
+        })();
     </script>
 
     <HeadOutlet/>

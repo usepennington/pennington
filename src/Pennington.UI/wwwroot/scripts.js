@@ -79,19 +79,24 @@ class ThemeManager {
     }
 
     swapTheme() {
-        const isDark = document.documentElement.classList.contains('dark');
+        const dark = !document.documentElement.classList.contains('dark');
 
-        if (isDark) {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.dataset.theme = 'light';
-            localStorage.theme = 'light';
-        } else {
-            document.documentElement.classList.add('dark');
-            document.documentElement.dataset.theme = 'dark';
-            localStorage.theme = 'dark';
-        }
+        // Suppress transitions for one frame so the swap is atomic. Without
+        // this, elements with `transition-colors` / `transition-all` (search
+        // button, GitHub icon, toggle) lag ~150ms behind the header/body —
+        // which have no transition and snap instantly — producing a flash.
+        const css = document.createElement('style');
+        css.appendChild(document.createTextNode(
+            '*,*::before,*::after{transition:none !important}'
+        ));
+        document.head.appendChild(css);
+        document.documentElement.classList.toggle('dark', dark);
+        try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch (e) { }
+        // Force the override into the same paint as the class flip, then drop
+        // it on the next frame so hover transitions keep working normally.
+        window.getComputedStyle(css).opacity;
+        requestAnimationFrame(function () { document.head.removeChild(css); });
 
-        // Re-initialize mermaid with new theme
         if (window.pageManager && window.pageManager.mermaidManager) {
             window.pageManager.mermaidManager.reinitializeForTheme();
         }
