@@ -935,12 +935,85 @@ public class MarkdownContentServiceTests
             ("hidden.md", "---\ntitle: Hidden\nsearch: false\n---\n# Hidden"));
         var service = CreateTestService(fs);
 
-        // GetIndexableEntriesAsync uses the DIM which delegates to GetContentTocEntriesAsync
         IContentService svc = service;
         var entries = await svc.GetIndexableEntriesAsync();
 
-        // Both are returned (DIM delegates to TOC), but consumer should filter ExcludeFromSearch
+        // Both pages appear; the hidden one carries ExcludeFromSearch so search/llms consumers can filter.
         entries.Count.ShouldBe(2);
         entries.First(e => e.Title == "Hidden").ExcludeFromSearch.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_LlmsMd_ProducesLlmsOnlySource()
+    {
+        var fs = CreateFs(
+            ("regular.md", "---\ntitle: Regular\n---\n# Regular"),
+            ("agent-context.llms.md", "---\ntitle: Agent Context\n---\n# Agent Context"));
+        var service = CreateTestService(fs);
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        items.Count.ShouldBe(2);
+        var regular = items.Single(i => i.Source is MarkdownFileSource);
+        var llmsOnly = items.Single(i => i.Source is LlmsOnlySource);
+        regular.Route.CanonicalPath.Value.ShouldBe("/docs/regular/");
+        llmsOnly.Route.CanonicalPath.Value.ShouldBe("/docs/agent-context/");
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_LlmsMd_PreservesActualSourceFile()
+    {
+        var fs = CreateFs(
+            ("agent-context.llms.md", "---\ntitle: Agent Context\n---\n# Agent Context"));
+        var service = CreateTestService(fs);
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        var llmsOnly = items.Single();
+        if (llmsOnly.Source is LlmsOnlySource llms)
+        {
+            llms.Path.Value.ShouldEndWith("agent-context.llms.md");
+        }
+        else
+        {
+            throw new Shouldly.ShouldAssertException("Source was not LlmsOnlySource");
+        }
+        // Route's SourceFile should also point at the real file on disk so diagnostics can locate it.
+        llmsOnly.Route.SourceFile?.Value.ShouldEndWith("agent-context.llms.md");
+    }
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_ExcludesLlmsOnlyFiles()
+    {
+        var fs = CreateFs(
+            ("regular.md", "---\ntitle: Regular\n---\n# Regular"),
+            ("agent-context.llms.md", "---\ntitle: Agent Context\n---\n# Agent Context"));
+        var service = CreateTestService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(1);
+        entries[0].Title.ShouldBe("Regular");
+    }
+
+    [Fact]
+    public async Task GetIndexableEntriesAsync_IncludesLlmsOnlyFilesAsSearchExcluded()
+    {
+        var fs = CreateFs(
+            ("regular.md", "---\ntitle: Regular\n---\n# Regular"),
+            ("agent-context.llms.md", "---\ntitle: Agent Context\n---\n# Agent Context"));
+        var service = CreateTestService(fs);
+
+        IContentService svc = service;
+        var entries = await svc.GetIndexableEntriesAsync();
+
+        entries.Count.ShouldBe(2);
+        var llmsEntry = entries.Single(e => e.Title == "Agent Context");
+        llmsEntry.ExcludeFromSearch.ShouldBeTrue();
+        llmsEntry.ExcludeFromLlms.ShouldBeFalse();
     }
 }

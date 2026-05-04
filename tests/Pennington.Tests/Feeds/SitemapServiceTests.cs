@@ -217,4 +217,27 @@ public class SitemapServiceTests
 
         xml.ShouldNotContain("/corrupt");
     }
+
+    [Fact]
+    public async Task GetSitemapXml_ExcludesLlmsOnlySource()
+    {
+        // Llms-only pages have no HTML at the canonical URL — they shouldn't
+        // be advertised to crawlers or other sitemap consumers.
+        var visibleRoute = MakeRoute("/visible");
+        var visibleItem = new DiscoveredItem(visibleRoute,
+            new ContentSource(new MarkdownFileSource("content/visible.md")));
+
+        var llmsRoute = MakeRoute("/agent-context");
+        var llmsItem = new DiscoveredItem(llmsRoute,
+            new ContentSource(new LlmsOnlySource("content/agent-context.llms.md")));
+
+        var service = CreateService(
+            new StubContentService(visibleItem, llmsItem),
+            new StubParser(new TestFrontMatter()));
+
+        var xml = await service.GetSitemapXmlAsync();
+
+        xml.ShouldContain("/visible");
+        xml.ShouldNotContain("/agent-context");
+    }
 }

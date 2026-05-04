@@ -27,9 +27,20 @@ public record ProgrammaticSource(IProgrammaticContentGenerator Generator);
 /// </summary>
 public record EndpointSource();
 
+/// <summary>
+/// A markdown file that contributes only to the llms.txt index and its sidecar
+/// markdown — no HTML page is emitted, and the route is excluded from
+/// navigation, sitemap, RSS, and the search index. Conventionally produced by
+/// <see cref="Content.MarkdownContentService{T}"/> when it sees a <c>*.llms.md</c>
+/// file: the discovered route uses the slug with the <c>.llms</c> suffix
+/// stripped, and downstream stages key off the source type to skip HTML.
+/// </summary>
+/// <param name="Path">Absolute path to the markdown file.</param>
+public record LlmsOnlySource(FilePath Path);
+
 /// <summary>Union of all ways content can be sourced for a route.</summary>
 #if NET11_0_OR_GREATER
-public union ContentSource(MarkdownFileSource, RazorPageSource, RedirectSource, ProgrammaticSource, EndpointSource);
+public union ContentSource(MarkdownFileSource, RazorPageSource, RedirectSource, ProgrammaticSource, EndpointSource, LlmsOnlySource);
 #else
 [System.Runtime.CompilerServices.Union]
 public readonly struct ContentSource : System.Runtime.CompilerServices.IUnion
@@ -46,6 +57,8 @@ public readonly struct ContentSource : System.Runtime.CompilerServices.IUnion
     public ContentSource(ProgrammaticSource value) { Value = value; }
     /// <summary>Wraps an <see cref="EndpointSource"/>.</summary>
     public ContentSource(EndpointSource value) { Value = value; }
+    /// <summary>Wraps an <see cref="LlmsOnlySource"/>.</summary>
+    public ContentSource(LlmsOnlySource value) { Value = value; }
     /// <summary>Implicit conversion from <see cref="MarkdownFileSource"/>.</summary>
     public static implicit operator ContentSource(MarkdownFileSource value) => new(value);
     /// <summary>Implicit conversion from <see cref="RazorPageSource"/>.</summary>
@@ -56,5 +69,7 @@ public readonly struct ContentSource : System.Runtime.CompilerServices.IUnion
     public static implicit operator ContentSource(ProgrammaticSource value) => new(value);
     /// <summary>Implicit conversion from <see cref="EndpointSource"/>.</summary>
     public static implicit operator ContentSource(EndpointSource value) => new(value);
+    /// <summary>Implicit conversion from <see cref="LlmsOnlySource"/>.</summary>
+    public static implicit operator ContentSource(LlmsOnlySource value) => new(value);
 }
 #endif

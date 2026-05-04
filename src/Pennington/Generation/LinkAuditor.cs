@@ -42,6 +42,11 @@ public sealed class LinkAuditor : IRenderedAuditor
         {
             await foreach (var item in service.DiscoverAsync().WithCancellation(cancellationToken))
             {
+                // Llms-only items have no HTML page at the canonical URL — a
+                // link from a regular page to that URL would 404, so leaving
+                // them out of knownRoutes lets the link verifier flag the
+                // broken reference instead of silently allowing it.
+                if (item.Source is Pipeline.LlmsOnlySource) continue;
                 knownRoutes.Add(item.Route);
             }
 

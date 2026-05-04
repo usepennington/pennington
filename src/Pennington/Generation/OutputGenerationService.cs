@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Pipeline;
 using Routing;
 
 /// <summary>
@@ -93,6 +94,13 @@ public sealed class OutputGenerationService
         {
             await foreach (var item in service.DiscoverAsync())
             {
+                // Llms-only items contribute to the llms.txt sidecar and front
+                // door but never produce an HTML page. Skip them so the crawler
+                // doesn't try to fetch a route that has no rendered output and
+                // so the output file isn't claimed (the same canonical slug may
+                // legitimately host an HTML page from another service).
+                if (item.Source is LlmsOnlySource) continue;
+
                 var outputFile = item.Route.OutputFile.Value;
                 if (!claimedOutputFiles.Add(outputFile))
                 {

@@ -21,13 +21,16 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
     /// <summary>Sidecar filename that, when dropped at any folder under the content root, declares that folder as an llms.txt subtree.</summary>
     public const string LlmsSubtreeSidecarFileName = "_llms.yaml";
 
+    /// <summary>File-name suffix that marks a markdown file as llms-only — emitted to the llms.txt sidecar but never as an HTML page.</summary>
+    public const string LlmsOnlyFileSuffix = ".llms.md";
+
     private readonly MarkdownContentServiceOptions _options;
     private readonly FrontMatterParser _parser;
     private readonly IFileSystem _fileSystem;
     private readonly LocalizationOptions _localization;
     private readonly string _absoluteContentPath;
     private readonly ImmutableArray<string> _normalizedExcludePaths;
-    private AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>> _metadataLazy;
+    private AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>> _metadataLazy;
     private AsyncLazy<ImmutableList<LlmsSubtree>> _subtreesLazy;
 
     /// <summary>
@@ -46,7 +49,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         _localization = localization;
         _absoluteContentPath = _fileSystem.Path.GetFullPath(options.ContentPath.Value);
         _normalizedExcludePaths = NormalizeExcludePaths(options.ExcludePaths);
-        _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>>(LoadMetadataAsync);
+        _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>>(LoadMetadataAsync);
         _subtreesLazy = new AsyncLazy<ImmutableList<LlmsSubtree>>(LoadSubtreesAsync);
 
         // Reset the metadata cache on any change to the watched tree. Without
@@ -54,7 +57,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         // app startup — new/renamed/deleted files never flow into the nav.
         fileWatcher.AddPathWatch(_absoluteContentPath, "*.*", (_, _) =>
         {
-            _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>>(LoadMetadataAsync);
+            _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>>(LoadMetadataAsync);
             _subtreesLazy = new AsyncLazy<ImmutableList<LlmsSubtree>>(LoadSubtreesAsync);
         });
     }
@@ -149,6 +152,12 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
                 continue;
             }
 
+            if (IsLlmsOnlyFile(sourceFile))
+            {
+                yield return new DiscoveredItem(route, new LlmsOnlySource(sourceFile));
+                continue;
+            }
+
             yield return new DiscoveredItem(route, new MarkdownFileSource(sourceFile));
         }
     }
@@ -159,45 +168,80 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         var metadata = await _metadataLazy.Value;
         var builder = ImmutableList.CreateBuilder<ContentTocItem>();
 
-        foreach (var (route, fm) in metadata)
+        foreach (var entry in metadata)
         {
-            if (fm.IsDraft) continue;
-            // Redirects are transport-only — they shouldn't appear in navigation,
-            // search results, or llms.txt (all of which iterate this TOC). The
-            // engine emits a meta-refresh page at the route, which has no
-            // meaningful title or body to index.
-            if (fm is IRedirectable { RedirectUrl: { Length: > 0 } }) continue;
-            // Defensive: a parsed file with no title produces an empty search
-            // entry (title="", body=""). This typically indicates a redirect
-            // whose frontmatter type doesn't implement IRedirectable, or a
-            // file with only frontmatter and no body. Either way, it's not
-            // useful content — skip it.
-            if (string.IsNullOrWhiteSpace(fm.Title)) continue;
+            // Llms-only pages are surfaced through GetIndexableEntriesAsync so
+            // LlmsTxtService can pick them up, but they must stay out of nav
+            // and the search index — drop them from the TOC channel.
+            if (entry.IsLlmsOnly) continue;
 
-            var order = fm is IOrderable orderable ? orderable.Order : int.MaxValue;
-            var sectionLabel = fm is ISectionable sectionable ? sectionable.SectionLabel : _options.SectionLabel;
-            var excludeFromSearch = !fm.Search;
-            var excludeFromLlms = !fm.Llms;
-            var hierarchyParts = route.CanonicalPath.Value
-                .Trim('/')
-                .Split('/', StringSplitOptions.RemoveEmptyEntries);
-
-            builder.Add(new ContentTocItem(
-                Title: fm.Title,
-                Route: route,
-                Order: order,
-                HierarchyParts: hierarchyParts,
-                SectionLabel: sectionLabel ?? DefaultSectionLabel,
-                Locale: string.IsNullOrEmpty(route.Locale) ? null : route.Locale
-            )
-            {
-                Description = fm.Description,
-                ExcludeFromSearch = excludeFromSearch,
-                ExcludeFromLlms = excludeFromLlms,
-            });
+            var toc = BuildTocItem(entry.Route, entry.FrontMatter, isLlmsOnly: false);
+            if (toc is null) continue;
+            builder.Add(toc);
         }
 
         return builder.ToImmutable();
+    }
+
+    /// <inheritdoc/>
+    public async Task<ImmutableList<ContentTocItem>> GetIndexableEntriesAsync()
+    {
+        var metadata = await _metadataLazy.Value;
+        var builder = ImmutableList.CreateBuilder<ContentTocItem>();
+
+        foreach (var entry in metadata)
+        {
+            var toc = BuildTocItem(entry.Route, entry.FrontMatter, entry.IsLlmsOnly);
+            if (toc is null) continue;
+            builder.Add(toc);
+        }
+
+        return builder.ToImmutable();
+    }
+
+    /// <summary>
+    /// Builds a single TOC item, applying draft/redirect/empty-title filters.
+    /// Returns <c>null</c> when the entry should be dropped from the channel.
+    /// Llms-only entries are forced to <see cref="ContentTocItem.ExcludeFromSearch"/>
+    /// regardless of front matter — by definition the page has no human-facing URL
+    /// for a search hit to point at.
+    /// </summary>
+    private ContentTocItem? BuildTocItem(ContentRoute route, TFrontMatter fm, bool isLlmsOnly)
+    {
+        if (fm.IsDraft) return null;
+        // Redirects are transport-only — they shouldn't appear in navigation,
+        // search results, or llms.txt (all of which iterate this TOC). The
+        // engine emits a meta-refresh page at the route, which has no
+        // meaningful title or body to index.
+        if (fm is IRedirectable { RedirectUrl: { Length: > 0 } }) return null;
+        // Defensive: a parsed file with no title produces an empty search
+        // entry (title="", body=""). This typically indicates a redirect
+        // whose frontmatter type doesn't implement IRedirectable, or a
+        // file with only frontmatter and no body. Either way, it's not
+        // useful content — skip it.
+        if (string.IsNullOrWhiteSpace(fm.Title)) return null;
+
+        var order = fm is IOrderable orderable ? orderable.Order : int.MaxValue;
+        var sectionLabel = fm is ISectionable sectionable ? sectionable.SectionLabel : _options.SectionLabel;
+        var excludeFromSearch = !fm.Search || isLlmsOnly;
+        var excludeFromLlms = !fm.Llms;
+        var hierarchyParts = route.CanonicalPath.Value
+            .Trim('/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        return new ContentTocItem(
+            Title: fm.Title,
+            Route: route,
+            Order: order,
+            HierarchyParts: hierarchyParts,
+            SectionLabel: sectionLabel ?? DefaultSectionLabel,
+            Locale: string.IsNullOrEmpty(route.Locale) ? null : route.Locale
+        )
+        {
+            Description = fm.Description,
+            ExcludeFromSearch = excludeFromSearch,
+            ExcludeFromLlms = excludeFromLlms,
+        };
     }
 
     /// <inheritdoc/>
@@ -206,7 +250,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         var metadata = await _metadataLazy.Value;
         var builder = ImmutableList.CreateBuilder<DiscoveredItem>();
 
-        foreach (var (route, fm) in metadata)
+        foreach (var (route, fm, _) in metadata)
         {
             if (fm.IsDraft) continue;
             if (fm is IRedirectable { RedirectUrl: { Length: > 0 } target })
@@ -224,7 +268,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         var metadata = await _metadataLazy.Value;
         var builder = ImmutableList.CreateBuilder<CrossReference>();
 
-        foreach (var (route, fm) in metadata)
+        foreach (var (route, fm, _) in metadata)
         {
             if (fm.Uid is { } uid && !string.IsNullOrEmpty(uid))
             {
@@ -345,9 +389,9 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         return results;
     }
 
-    private async Task<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter)>> LoadMetadataAsync()
+    private async Task<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>> LoadMetadataAsync()
     {
-        var builder = ImmutableList.CreateBuilder<(ContentRoute, TFrontMatter)>();
+        var builder = ImmutableList.CreateBuilder<(ContentRoute, TFrontMatter, bool)>();
 
         foreach (var (route, sourceFile) in DiscoverRoutesWithFallbacks())
         {
@@ -356,7 +400,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
                 var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
                 var parsed = _parser.Parse<TFrontMatter>(content);
                 var fm = parsed.Metadata ?? new TFrontMatter();
-                builder.Add((route, fm));
+                builder.Add((route, fm, IsLlmsOnlyFile(sourceFile)));
             }
             catch
             {
@@ -366,6 +410,10 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
 
         return builder.ToImmutable();
     }
+
+    /// <summary>True when the file's path ends with the <c>.llms.md</c> suffix.</summary>
+    private static bool IsLlmsOnlyFile(FilePath file) =>
+        file.Value.EndsWith(LlmsOnlyFileSuffix, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
     public Task<ImmutableList<LlmsSubtree>> GetLlmsSubtreesAsync() => _subtreesLazy.Value;
@@ -451,6 +499,8 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
     /// <summary>
     /// Creates a ContentRoute for a discovered file, handling default-locale tagging.
     /// Default locale files get no URL prefix but are tagged with the locale code.
+    /// For <c>*.llms.md</c> files the canonical slug has the <c>.llms</c> marker
+    /// stripped so the sidecar URL is <c>/_llms/{slug}.md</c>, not <c>/_llms/{slug}.llms.md</c>.
     /// </summary>
     private ContentRoute CreateRouteForFile(FilePath file, string locale)
     {
@@ -458,11 +508,24 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         var isDefaultLocale = _localization.IsMultiLocale
             && string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase);
         var route = ContentRouteFactory.FromMarkdownFile(
-            file, contentRoot, _options.BasePageUrl, isDefaultLocale ? "" : locale);
+            RoutePathFor(file), contentRoot, _options.BasePageUrl, isDefaultLocale ? "" : locale);
         if (isDefaultLocale)
             route = route with { Locale = locale };
+        if (IsLlmsOnlyFile(file))
+            route = route with { SourceFile = file };
         return route;
     }
+
+    /// <summary>
+    /// Returns the path the routing factory should use for slug computation.
+    /// For <c>*.llms.md</c> files this strips the <c>.llms</c> marker so the
+    /// canonical URL matches the bare slug. The factory only inspects the path
+    /// lexically, so the virtual <c>.md</c> path doesn't need to exist on disk.
+    /// </summary>
+    private static FilePath RoutePathFor(FilePath file) =>
+        IsLlmsOnlyFile(file)
+            ? new FilePath(file.Value[..^LlmsOnlyFileSuffix.Length] + ".md")
+            : file;
 
     /// <summary>
     /// Produces routes for all discovered files plus fallback entries for missing locale content.
@@ -512,8 +575,10 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
                 if (existing.Contains(relativePath)) continue;
 
                 var route = ContentRouteFactory.FromMarkdownFile(
-                    file, new FilePath(_absoluteContentPath), _options.BasePageUrl, locale);
+                    RoutePathFor(file), new FilePath(_absoluteContentPath), _options.BasePageUrl, locale);
                 route = route with { IsFallback = true };
+                if (IsLlmsOnlyFile(file))
+                    route = route with { SourceFile = file };
                 yield return (route, file);
             }
         }

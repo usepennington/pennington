@@ -3,6 +3,7 @@ namespace Pennington.Markdown;
 using System.IO.Abstractions;
 using FrontMatter;
 using Pipeline;
+using Routing;
 
 /// <summary>
 /// Parses discovered markdown files into ParsedItems using FrontMatterParser.
@@ -23,16 +24,22 @@ public sealed class MarkdownContentParser<TFrontMatter> : IContentParser
     /// <inheritdoc/>
     public async Task<ContentItem> ParseAsync(DiscoveredItem item)
     {
-        if (item.Source is not MarkdownFileSource markdownSource)
+        // MarkdownFileSource and LlmsOnlySource both wrap a markdown file on disk;
+        // they parse identically — the source-type discrimination only matters
+        // downstream (HTML emission vs. llms-only sidecar).
+        FilePath path;
+        switch (item.Source)
         {
-            return new FailedItem(item.Route,
-                new ContentError("Unsupported content source type for parser"));
+            case MarkdownFileSource md: path = md.Path; break;
+            case LlmsOnlySource llms: path = llms.Path; break;
+            default:
+                return new FailedItem(item.Route,
+                    new ContentError("Unsupported content source type for parser"));
         }
 
         try
         {
-            var filePath = markdownSource.Path.Value;
-            var content = await _fileSystem.File.ReadAllTextAsync(filePath);
+            var content = await _fileSystem.File.ReadAllTextAsync(path.Value);
 
             var result = _frontMatterParser.Parse<TFrontMatter>(content);
             var metadata = result.Metadata ?? new TFrontMatter();
@@ -42,7 +49,7 @@ public sealed class MarkdownContentParser<TFrontMatter> : IContentParser
         catch (Exception ex)
         {
             return new FailedItem(item.Route,
-                new ContentError($"Failed to parse {markdownSource.Path}: {ex.Message}", ex));
+                new ContentError($"Failed to parse {path}: {ex.Message}", ex));
         }
     }
 }

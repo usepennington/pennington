@@ -97,8 +97,10 @@ public sealed class SitemapService
                 // RedirectSource items are explicit redirects — no canonical value.
                 // EndpointSource items are framework-internal routes served by a
                 // live HTTP endpoint (e.g., /sitemap.xml, /llms.txt) and must not
-                // appear as canonical URLs either. Skip both.
-                if (discovered.Source.Value is RedirectSource or EndpointSource) continue;
+                // appear as canonical URLs either. LlmsOnlySource items have no
+                // HTML page at all — they only exist as llms.txt sidecars and
+                // shouldn't be advertised to crawlers. Skip all three.
+                if (discovered.Source.Value is RedirectSource or EndpointSource or LlmsOnlySource) continue;
 
                 IFrontMatter? metadata = null;
 

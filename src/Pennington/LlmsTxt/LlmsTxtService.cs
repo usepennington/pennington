@@ -10,6 +10,7 @@ using Content;
 using FrontMatter;
 using Infrastructure;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Navigation;
 using Pipeline;
@@ -48,13 +49,15 @@ public sealed class LlmsTxtService
         LlmsTxtOptions llmsTxtOptions,
         CanonicalBaseUrl canonicalBase,
         NavigationBuilder navigationBuilder,
+        EndpointDataSource endpointDataSource,
         ILogger<LlmsTxtService> logger)
     {
         _dataLazy = new AsyncLazy<LlmsTxtData>(
             () => BuildAsync(
                 contentServices, parser, renderer, xrefResolver, fetcher, subtrees,
                 fileSystem, hostingEnvironment,
-                pennOptions, llmsTxtOptions, canonicalBase, navigationBuilder, logger));
+                pennOptions, llmsTxtOptions, canonicalBase, navigationBuilder,
+                endpointDataSource, logger));
     }
 
     /// <summary>Returns the generated llms.txt index content.</summary>
@@ -82,12 +85,14 @@ public sealed class LlmsTxtService
         LlmsTxtOptions llmsTxtOptions,
         CanonicalBaseUrl canonicalBase,
         NavigationBuilder navigationBuilder,
+        EndpointDataSource endpointDataSource,
         ILogger<LlmsTxtService> logger)
     {
 
         var allTocItems = new List<ContentTocItem>();
         var parsedByPath = new Dictionary<string, ParsedItem>(StringComparer.OrdinalIgnoreCase);
         var tocByPath = new Dictionary<string, ContentTocItem>(StringComparer.OrdinalIgnoreCase);
+        var mapGetDirectByPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var service in contentServices)
         {
@@ -101,7 +106,10 @@ public sealed class LlmsTxtService
 
             await foreach (var discovered in service.DiscoverAsync())
             {
-                if (discovered.Source is not MarkdownFileSource) continue;
+                // Both MarkdownFileSource and LlmsOnlySource wrap a markdown
+                // file on disk that we want to parse and render through the
+                // same channel — only HTML emission differs downstream.
+                if (discovered.Source is not (MarkdownFileSource or LlmsOnlySource)) continue;
 
                 var parseResult = await parser.ParseAsync(discovered);
                 if (parseResult is not ParsedItem parsed) continue;
@@ -111,6 +119,21 @@ public sealed class LlmsTxtService
                 var key = NormalizePath(parsed.Route.CanonicalPath.Value);
                 parsedByPath[key] = parsed;
             }
+        }
+
+        // Endpoints opted into llms.txt via WithLlmsTxtEntry surface as
+        // synthetic TOC entries. The endpoint URL is the link target in the
+        // generated index — no sidecar is manufactured, since the user-defined
+        // MapGet response is the content llms.txt consumers fetch directly.
+        foreach (var (toc, url) in CollectEndpointEntries(endpointDataSource))
+        {
+            var key = NormalizePath(toc.Route.CanonicalPath.Value);
+            // Don't let an endpoint metadata entry overwrite a real content
+            // service TOC entry at the same canonical path.
+            if (tocByPath.ContainsKey(key)) continue;
+            allTocItems.Add(toc);
+            tocByPath[key] = toc;
+            mapGetDirectByPath[key] = url;
         }
 
         var tree = navigationBuilder.BuildTree(allTocItems);
@@ -129,6 +152,7 @@ public sealed class LlmsTxtService
             Logger: logger,
             ParsedByPath: parsedByPath,
             TocByPath: tocByPath,
+            MapGetDirectByPath: mapGetDirectByPath,
             RewriteHref: BuildLinkRewriter(linkablePaths, llmsTxtOptions.OutputDirectory, canonicalBase),
             Nodes: new List<RenderedNode>(),
             MarkdownFiles: ImmutableList.CreateBuilder<MarkdownFile>(),
@@ -174,6 +198,47 @@ public sealed class LlmsTxtService
             ctx.MarkdownFiles.ToImmutable(),
             subtreeFiles.ToImmutable(),
             ctx.FullContent?.ToString().TrimEnd());
+    }
+
+    /// <summary>
+    /// Walks the registered endpoints looking for routes opted into llms.txt
+    /// via <see cref="LlmsTxtEndpointExtensions.WithLlmsTxtEntry{TBuilder}"/>
+    /// and yields synthetic TOC items keyed off the endpoint URL. Skips
+    /// endpoints whose URL contains a route parameter — the index needs a
+    /// concrete URL, not a pattern.
+    /// </summary>
+    private static IEnumerable<(ContentTocItem Toc, string Url)> CollectEndpointEntries(EndpointDataSource endpointDataSource)
+    {
+        foreach (var endpoint in endpointDataSource.Endpoints)
+        {
+            if (endpoint is not RouteEndpoint route) continue;
+            var meta = route.Metadata.GetMetadata<LlmsTxtEntryMetadata>();
+            if (meta is null) continue;
+
+            var rawText = route.RoutePattern.RawText;
+            if (string.IsNullOrWhiteSpace(rawText) || rawText.Contains('{')) continue;
+
+            var url = rawText.StartsWith('/') ? rawText : "/" + rawText;
+            var canonicalPath = new UrlPath(url);
+            var contentRoute = new ContentRoute
+            {
+                CanonicalPath = canonicalPath,
+                OutputFile = new FilePath(url.TrimStart('/')),
+            };
+            var hierarchyParts = url.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+            yield return (
+                new ContentTocItem(
+                    Title: meta.Title,
+                    Route: contentRoute,
+                    Order: int.MaxValue,
+                    HierarchyParts: hierarchyParts,
+                    SectionLabel: null,
+                    Locale: null)
+                {
+                    Description = meta.Description,
+                },
+                url);
+        }
     }
 
     private static async Task<ImmutableList<LlmsSubtree>> CollectSubtreesAsync(
@@ -298,6 +363,21 @@ public sealed class LlmsTxtService
 
             var key = NormalizePath(item.Route.CanonicalPath.Value);
             ctx.TocByPath.TryGetValue(key, out var tocItem);
+
+            // MapGet endpoints opted in via WithLlmsTxtEntry: the user-defined
+            // response URL is the link target. We don't manufacture a sidecar
+            // or fetch the body — clients pull markdown directly from the URL
+            // the user registered.
+            if (ctx.MapGetDirectByPath.TryGetValue(key, out var directUrl))
+            {
+                ctx.Nodes.Add(new LeafNode(
+                    Title: item.Title,
+                    CanonicalPath: item.Route.CanonicalPath.Value,
+                    SidecarUrl: ctx.CanonicalBase.Combine(new UrlPath(directUrl)).Value,
+                    Description: tocItem?.Description,
+                    Tokens: 0));
+                continue;
+            }
 
             string markdown;
             IFrontMatter? metadata;
@@ -590,6 +670,7 @@ public sealed class LlmsTxtService
         ILogger Logger,
         Dictionary<string, ParsedItem> ParsedByPath,
         Dictionary<string, ContentTocItem> TocByPath,
+        Dictionary<string, string> MapGetDirectByPath,
         Func<string, string> RewriteHref,
         List<RenderedNode> Nodes,
         ImmutableList<MarkdownFile>.Builder MarkdownFiles,
