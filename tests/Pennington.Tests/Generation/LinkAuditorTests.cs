@@ -20,6 +20,7 @@ public class LinkAuditorTests
         var service = new FakeService([page], []);
         var auditor = new LinkAuditor(
             [service],
+            [],
             new EmptyEndpointDataSource(),
             new OutputOptions { OutputDirectory = new FilePath("output") });
 
@@ -45,6 +46,7 @@ public class LinkAuditorTests
         var service = new FakeService([page, other], []);
         var auditor = new LinkAuditor(
             [service],
+            [],
             new EmptyEndpointDataSource(),
             new OutputOptions { OutputDirectory = new FilePath("output") });
 
@@ -67,6 +69,7 @@ public class LinkAuditorTests
             [new ContentToCopy(new FilePath("/repo/media/foo.svg"), new FilePath("media/foo.svg"))]);
         var auditor = new LinkAuditor(
             [service],
+            [],
             new EmptyEndpointDataSource(),
             new OutputOptions { OutputDirectory = new FilePath("output") });
 
@@ -87,6 +90,7 @@ public class LinkAuditorTests
         var service = new FakeService([page], []);
         var auditor = new LinkAuditor(
             [service],
+            [],
             new EmptyEndpointDataSource(),
             new OutputOptions { OutputDirectory = new FilePath("output") });
 
@@ -101,12 +105,40 @@ public class LinkAuditorTests
     }
 
     [Fact]
+    public async Task AuditAsync_LinkToEmittedFile_NoWarning()
+    {
+        var page = MakeRoute("/page/", "/repo/page.md");
+        var service = new FakeService([page], []);
+        var emitter = new FakeEmitter([
+            new ContentToCreate(
+                new FilePath("utility/llms.txt"),
+                () => Task.FromResult(Array.Empty<byte>()),
+                "text/markdown"),
+        ]);
+        var auditor = new LinkAuditor(
+            [service],
+            [emitter],
+            new EmptyEndpointDataSource(),
+            new OutputOptions { OutputDirectory = new FilePath("output") });
+
+        var context = new RenderedAuditContext(
+            ImmutableList.Create(new ContentTocItem("Page", page, 0, [], null, null)),
+            new LocalizationOptions(),
+            (route, ct) => Task.FromResult<string?>("""<a href="/utility/llms.txt">subtree</a>"""));
+
+        var diagnostics = await auditor.AuditAsync(context, TestContext.Current.CancellationToken);
+
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task AuditAsync_DiagnosticEncodesLinkType()
     {
         var page = MakeRoute("/page/", "/repo/page.md");
         var service = new FakeService([page], []);
         var auditor = new LinkAuditor(
             [service],
+            [],
             new EmptyEndpointDataSource(),
             new OutputOptions { OutputDirectory = new FilePath("output") });
 
@@ -144,6 +176,11 @@ public class LinkAuditorTests
         public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync() => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
         public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync() => Task.FromResult(ImmutableList<ContentTocItem>.Empty);
         public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync() => Task.FromResult(ImmutableList<CrossReference>.Empty);
+    }
+
+    private sealed class FakeEmitter(IReadOnlyList<ContentToCreate> items) : IContentEmitter
+    {
+        public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync() => Task.FromResult(items.ToImmutableList());
     }
 
     private sealed class EmptyEndpointDataSource : EndpointDataSource

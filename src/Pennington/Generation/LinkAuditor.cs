@@ -15,19 +15,22 @@ using Microsoft.AspNetCore.Routing;
 public sealed class LinkAuditor : IRenderedAuditor
 {
     private readonly IEnumerable<IContentService> _contentServices;
+    private readonly IEnumerable<IContentEmitter> _contentEmitters;
     private readonly EndpointDataSource _endpointDataSource;
     private readonly OutputOptions _outputOptions;
 
     /// <summary>Stable identifier surfaced on every diagnostic this auditor emits.</summary>
     public string Code => "content.links";
 
-    /// <summary>Wires the auditor to the content discovery surface, the endpoint table, and the output options.</summary>
+    /// <summary>Wires the auditor to the content discovery surface, standalone content emitters, the endpoint table, and the output options.</summary>
     public LinkAuditor(
         IEnumerable<IContentService> contentServices,
+        IEnumerable<IContentEmitter> contentEmitters,
         EndpointDataSource endpointDataSource,
         OutputOptions outputOptions)
     {
         _contentServices = contentServices;
+        _contentEmitters = contentEmitters;
         _endpointDataSource = endpointDataSource;
         _outputOptions = outputOptions;
     }
@@ -54,6 +57,17 @@ public sealed class LinkAuditor : IRenderedAuditor
             {
                 copiedAssetPaths.Add(copy.OutputPath.Value);
             }
+        }
+
+        // IContentService extends IContentEmitter, but DI does not widen — services
+        // registered as IContentService are not in the IContentEmitter set. Mirror
+        // OutputGenerationService.CreateContentFilesAsync so files emitted via
+        // GetContentToCreateAsync (e.g. per-subtree llms.txt files) are treated as
+        // known assets rather than broken links.
+        foreach (var emitter in _contentServices.Cast<IContentEmitter>().Concat(_contentEmitters))
+        {
+            foreach (var item in await emitter.GetContentToCreateAsync())
+                copiedAssetPaths.Add(item.OutputPath.Value);
         }
 
         knownRoutes.AddRange(MapGetRouteDiscovery.Discover(_endpointDataSource));
