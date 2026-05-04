@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <!-- SDK 11 preview races the inner-build apphost copy on Windows; serialize TFMs so net10/net11 don't trample obj. -->
+    <BuildInParallel>false</BuildInParallel>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="*" />

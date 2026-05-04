@@ -34,7 +34,16 @@ jobs:
             11.0.x
 
       - name: Build
-        run: dotnet build Pennington.slnx -c Release
+        run: dotnet build Pennington.slnx -c Release /bl:msbuild.binlog
+
+      - name: Upload binlog
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: msbuild-binlog-${{ matrix.os }}
+          path: msbuild.binlog
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: Install Playwright
         shell: pwsh
