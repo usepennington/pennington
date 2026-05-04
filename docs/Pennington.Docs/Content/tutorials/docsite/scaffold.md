@@ -35,7 +35,7 @@ The starting host wires `AddPennington`, `UsePennington`, and a hand-written `Ma
 
 The starting state has three moving parts: DI registration, middleware, and the fallback endpoint.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:DocSiteScaffoldExample.Stage1.Run(System.String[])
 ```
 
@@ -76,7 +76,7 @@ This tutorial uses five fields: `SiteTitle`, `Description`, `GitHubUrl`, `Header
 
 At this point `AddDocSite` is wired but `UseDocSite` hasn't been called yet. The host builds, but the middleware stack is still the ASP.NET default. The `await app.RunAsync()` call is a placeholder that the next section replaces.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:DocSiteScaffoldExample.Stage2.Run(System.String[])
 ```
 
@@ -123,7 +123,7 @@ await app.RunDocSiteAsync(args);
 
 The canonical final shape has three calls that match `Program.cs` verbatim: `AddDocSite`, `UseDocSite`, `RunDocSiteAsync`.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:DocSiteScaffoldExample.Stage3.Run(System.String[])
 ```
 

@@ -18,7 +18,10 @@ The info string is the text on the opening fence line after the three backticks.
 ```text
 info-string   := language [ ":" suffix ] ( WS attribute )*
 language      := IDENT                              ; for example csharp, razor, text
-suffix        := "path" | "xmldocid" | "xmldocid,bodyonly" | "xmldocid-diff" | "xmldocid-diff,bodyonly"
+suffix        := "path"
+              |  "xmldocid" xmldocid-flags
+              |  "xmldocid-diff" [ ",bodyonly" ]
+xmldocid-flags := ( "," ( "bodyonly" | "usings" ) )*  ; flags may appear in any order
 attribute     := key "=" value
 key           := IDENT
 value         := bare-value | "'" quoted-value "'" | '"' quoted-value '"'
@@ -39,13 +42,14 @@ The table below lists the `key=value` attributes Pennington's built-in extension
 
 ## Suffix forms (code-embedding)
 
-The four colon-suffix forms switch a fenced block from literal content to a code-embedding directive preprocessed before highlighting; suffix forms are resolved by an `ICodeBlockPreprocessor`, with `Pennington.Roslyn` shipping the implementation for `xmldocid` and `xmldocid-diff`.
+The colon-suffix forms switch a fenced block from literal content to a code-embedding directive preprocessed before highlighting; suffix forms are resolved by an `ICodeBlockPreprocessor`, with `Pennington.Roslyn` shipping the implementation for `xmldocid` and `xmldocid-diff`.
 
 | Form | Body shape | Description |
 |---|---|---|
 | `<lang>:path` | one file path relative to the solution directory | Embeds the entire file contents as the code-block body. |
 | `<lang>:xmldocid` | one XmlDocId per line (`T:`, `M:`, `P:`, `F:`, `E:`) | Embeds each symbol's declaration and body, concatenated in order. |
 | `<lang>:xmldocid,bodyonly` | one XmlDocId per line | Embeds only the member body, stripping the declaration line and enclosing braces. |
+| `<lang>:xmldocid,usings` | one XmlDocId per line | Prepends the file-local `using` directives the fragment references, unioned across all listed XmlDocIds. Composes with `,bodyonly` in any order. Skips `global using` directives and implicit usings. |
 | `<lang>:xmldocid-diff` | exactly two XmlDocIds, before then after | Emits a unified diff between the two symbols' source text; accepts the `,bodyonly` suffix. |
 
 ## `[!code …]` directives

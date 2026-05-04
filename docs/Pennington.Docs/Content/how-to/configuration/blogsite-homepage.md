@@ -29,7 +29,7 @@ For a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](https:/
 T:Pennington.BlogSite.HeroContent
 ```
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BlogSiteHeroProjectsSocialsExample.Stage1.Run(System.String[])
 ```
 
@@ -41,7 +41,7 @@ M:BlogSiteHeroProjectsSocialsExample.Stage1.Run(System.String[])
 T:Pennington.BlogSite.Project
 ```
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BlogSiteHeroProjectsSocialsExample.Stage2.Run(System.String[])
 ```
 
@@ -65,7 +65,7 @@ src/Pennington.BlogSite/Components/SocialIcons.razor
 T:Pennington.BlogSite.HeaderLink
 ```
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])
 ```
 

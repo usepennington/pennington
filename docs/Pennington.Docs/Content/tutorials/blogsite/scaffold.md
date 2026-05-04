@@ -34,7 +34,7 @@ The host you built in the getting-started tutorials calls `AddPennington`, regis
 
 Here is what that host looks like. The three moving parts are the DI registration, the `UsePennington` call, and the hand-rolled `MapGet` fallback. Notice what is absent: the home listing, `/archive`, `/blog/<slug>` pages, `/tags` and `/topics` aliases, the `/rss.xml` feed, and the MonorailCSS chrome. The next unit brings all of that in with a single `AddBlogSite` call.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BlogSiteScaffoldExample.Stage1.Run(System.String[])
 ```
 
@@ -117,7 +117,7 @@ await app.RunBlogSiteAsync(args);
 
 Here is the complete `Program.cs` after the swap. Three calls replace the entire stage-1 setup — the diff says the rest.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BlogSiteScaffoldExample.Stage2.Run(System.String[])
 ```
 

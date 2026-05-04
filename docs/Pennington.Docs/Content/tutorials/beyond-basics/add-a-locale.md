@@ -36,7 +36,7 @@ Start with a plain DocSite host serving three English pages from `Content/` — 
 
 Here's the starting host. There is no `ConfigureLocalization` action on `DocSiteOptions`. That means `LocalizationOptions.IsMultiLocale` is false, `UseDocSite`'s built-in `UsePenningtonLocaleRouting` is a no-op, and the built-in `LanguageSwitcher` in `MainLayout.razor` renders nothing.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BeyondLocaleExample.Stage1.Run(System.String[])
 ```
 
@@ -83,7 +83,7 @@ Now let's make the site aware of Spanish. A single `ConfigureLocalization` actio
 
 Here's the updated host:
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BeyondLocaleExample.Stage2.Run(System.String[])
 ```
 
@@ -169,7 +169,7 @@ The [`LanguageSwitcher`](xref:reference.ui.utility) component is already baked i
 
 Here's the final host — identical to what section 2 produced. This is a sanity-check step, not a new code change. Nothing in `UseDocSite()` or `RunDocSiteAsync(args)` changes when a second locale is added.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BeyondLocaleExample.Stage3.Run(System.String[])
 ```
 

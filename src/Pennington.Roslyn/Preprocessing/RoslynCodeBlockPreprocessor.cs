@@ -61,8 +61,10 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
 
         return modifier switch
         {
-            "xmldocid" => ProcessXmlDocId(baseLanguage, code, bodyOnly: false),
-            "xmldocid,bodyonly" => ProcessXmlDocId(baseLanguage, code, bodyOnly: true),
+            "xmldocid" => ProcessXmlDocId(baseLanguage, code, bodyOnly: false, includeUsings: false),
+            "xmldocid,bodyonly" => ProcessXmlDocId(baseLanguage, code, bodyOnly: true, includeUsings: false),
+            "xmldocid,usings" => ProcessXmlDocId(baseLanguage, code, bodyOnly: false, includeUsings: true),
+            "xmldocid,bodyonly,usings" => ProcessXmlDocId(baseLanguage, code, bodyOnly: true, includeUsings: true),
             "xmldocid-diff" => ProcessXmlDocIdDiff(baseLanguage, code),
             "xmldocid-diff,bodyonly" => ProcessXmlDocIdDiff(baseLanguage, code, bodyOnly: true),
             "path" => ProcessPath(baseLanguage, code),
@@ -95,9 +97,8 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
         {
             var baseIndex = trimmed.IndexOf(xmlDocIdMarker, StringComparison.OrdinalIgnoreCase);
             var baseLanguage = trimmed[..baseIndex];
-            var modifierPart = trimmed.Contains(",bodyonly", StringComparison.OrdinalIgnoreCase)
-                ? "xmldocid,bodyonly"
-                : "xmldocid";
+            var afterMarker = trimmed[(baseIndex + xmlDocIdMarker.Length)..];
+            var modifierPart = NormalizeXmlDocIdModifier(afterMarker);
             return (baseLanguage, modifierPart);
         }
 
@@ -110,16 +111,66 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
         return (trimmed, null);
     }
 
-    private CodeBlockPreprocessResult? ProcessXmlDocId(string baseLanguage, string code, bool bodyOnly)
+    /// <summary>
+    /// Recognises optional flags <c>bodyonly</c> and <c>usings</c> after <c>:xmldocid</c> in any order
+    /// (e.g. <c>:xmldocid,usings,bodyonly</c>) and returns a normalised modifier string. Bodyonly is
+    /// emitted before usings so the dispatch <c>switch</c> stays exhaustive without listing every
+    /// permutation.
+    /// </summary>
+    private static string NormalizeXmlDocIdModifier(string afterMarker)
+    {
+        var bodyOnly = false;
+        var usings = false;
+
+        foreach (var rawFlag in afterMarker.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (rawFlag.Equals("bodyonly", StringComparison.OrdinalIgnoreCase))
+            {
+                bodyOnly = true;
+            }
+            else if (rawFlag.Equals("usings", StringComparison.OrdinalIgnoreCase))
+            {
+                usings = true;
+            }
+        }
+
+        return (bodyOnly, usings) switch
+        {
+            (false, false) => "xmldocid",
+            (true, false) => "xmldocid,bodyonly",
+            (false, true) => "xmldocid,usings",
+            (true, true) => "xmldocid,bodyonly,usings",
+        };
+    }
+
+    private CodeBlockPreprocessResult? ProcessXmlDocId(string baseLanguage, string code, bool bodyOnly, bool includeUsings)
     {
         try
         {
             var xmlDocIds = code.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             var htmlFragments = new List<string>();
+            var aggregatedUsings = new List<string>();
+            var seenUsings = new HashSet<string>(StringComparer.Ordinal);
 
             foreach (var xmlDocId in xmlDocIds)
             {
-                var fragment = AsyncHelpers.RunSync(() => _symbolService.ExtractCodeFragmentAsync(xmlDocId, bodyOnly));
+                string fragment;
+                if (includeUsings)
+                {
+                    var result = AsyncHelpers.RunSync(() => _symbolService.ExtractCodeFragmentWithUsingsAsync(xmlDocId, bodyOnly));
+                    fragment = result.Fragment;
+                    foreach (var directive in result.Usings)
+                    {
+                        if (seenUsings.Add(directive))
+                        {
+                            aggregatedUsings.Add(directive);
+                        }
+                    }
+                }
+                else
+                {
+                    fragment = AsyncHelpers.RunSync(() => _symbolService.ExtractCodeFragmentAsync(xmlDocId, bodyOnly));
+                }
 
                 if (string.IsNullOrEmpty(fragment))
                 {
@@ -135,7 +186,22 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
                 htmlFragments.Add(innerHtml);
             }
 
-            var combinedHtml = string.Join("\n\n", htmlFragments);
+            var bodyHtml = string.Join("\n\n", htmlFragments);
+
+            string combinedHtml;
+            if (includeUsings && aggregatedUsings.Count > 0)
+            {
+                var usingsBlock = string.Join("\n", aggregatedUsings);
+                var lang = DetectHighlighterLanguage(baseLanguage);
+                var highlightedUsings = _highlighter.Highlight(usingsBlock, lang);
+                var usingsHtml = ExtractInnerCodeHtml(highlightedUsings);
+                combinedHtml = usingsHtml + "\n\n" + bodyHtml;
+            }
+            else
+            {
+                combinedHtml = bodyHtml;
+            }
+
             var wrappedHtml = $"""<pre><code class="language-{baseLanguage} highlighted">{combinedHtml}</code></pre>""";
 
             return new CodeBlockPreprocessResult(wrappedHtml, baseLanguage, SkipTransform: false);

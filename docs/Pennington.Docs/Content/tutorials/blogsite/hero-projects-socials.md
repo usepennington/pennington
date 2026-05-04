@@ -30,7 +30,7 @@ The BlogSite home page renders a headline block at the very top, driven entirely
 
 Open the `AddBlogSite` call from the previous tutorial and add one property. `HeroContent` is a two-field positional record — `Title` and `Description` — so a single constructor call is all it takes.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BlogSiteHeroProjectsSocialsExample.Stage1.Run(System.String[])
 ```
 
@@ -57,7 +57,7 @@ The `HeroContent = new HeroContent(Title: …, Description: …)` assignment is 
 
 `Project` is a three-field positional record — `Title`, `Description`, `Url` — populated with a C# collection expression right below `HeroContent`. The `Url` becomes the `<a href>` around each rendered entry, so it can point at a GitHub repo, a product page, or any other URL.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BlogSiteHeroProjectsSocialsExample.Stage2.Run(System.String[])
 ```
 
@@ -84,7 +84,7 @@ Social links are `SocialLink(RenderFragment Icon, string Url)` records. The four
 
 This step adds two things: a `using Pennington.BlogSite.Components;` directive at the top of `Program.cs` so `SocialIcons.GithubIcon` resolves, and a `Socials = [...]` block with four entries covering all four built-ins (`GithubIcon`, `BlueskyIcon`, `LinkedInIcon`, `MastodonIcon`). Each field is a `RenderFragment` value — pass the field itself, not `typeof(...)` and not `<GithubIcon />`.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])
 ```
 

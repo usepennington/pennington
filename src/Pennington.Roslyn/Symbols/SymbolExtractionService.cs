@@ -1,6 +1,7 @@
 namespace Pennington.Roslyn.Symbols;
 
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -220,6 +221,55 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
 
         var fragment = await CodeFragmentExtractor.ExtractCodeFragmentAsync(node, fullText, bodyOnly, includeLeadingTrivia);
         return TextFormatter.NormalizeIndents(fragment);
+    }
+
+    public async Task<CodeFragmentResult> ExtractCodeFragmentWithUsingsAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true)
+    {
+        var symbolInfo = await FindSymbolAsync(xmlDocId);
+        if (symbolInfo is null)
+        {
+            _logger.LogWarning("Cannot extract code fragment with usings — symbol not found: {XmlDocId}", xmlDocId);
+            return new CodeFragmentResult(string.Empty, ImmutableList<string>.Empty);
+        }
+
+        var root = await symbolInfo.Document.GetSyntaxRootAsync();
+        if (root is null)
+        {
+            return new CodeFragmentResult(string.Empty, ImmutableList<string>.Empty);
+        }
+
+        var node = symbolInfo.TextSpan.Length > 0 ? root.FindNode(symbolInfo.TextSpan) : null;
+        if (node is null)
+        {
+            return new CodeFragmentResult(string.Empty, ImmutableList<string>.Empty);
+        }
+
+        var sourceText = await symbolInfo.Document.GetTextAsync();
+        var fullText = sourceText.ToString();
+
+        var fragment = await CodeFragmentExtractor.ExtractCodeFragmentAsync(node, fullText, bodyOnly, includeLeadingTrivia);
+        var dedented = TextFormatter.NormalizeIndents(fragment);
+
+        var usings = await ResolveRequiredUsingsAsync(symbolInfo, root, node);
+        return new CodeFragmentResult(dedented, usings);
+    }
+
+    private async Task<ImmutableList<string>> ResolveRequiredUsingsAsync(SymbolInfo symbolInfo, SyntaxNode root, SyntaxNode fragmentNode)
+    {
+        if (root is not CompilationUnitSyntax compilationUnit)
+        {
+            return ImmutableList<string>.Empty;
+        }
+
+        var compilation = await symbolInfo.Project.GetCompilationAsync();
+        if (compilation is null)
+        {
+            return ImmutableList<string>.Empty;
+        }
+
+        var semanticModel = compilation.GetSemanticModel(fragmentNode.SyntaxTree);
+        var directives = RequiredUsingsAnalyzer.Analyze(fragmentNode, semanticModel, compilationUnit);
+        return directives.Select(d => d.ToString().Trim()).ToImmutableList();
     }
 
     public async Task<string> ExtractDeclarationSignatureAsync(string xmlDocId)

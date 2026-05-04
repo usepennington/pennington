@@ -64,6 +64,26 @@ M:FocusedCodeSamplesExample.MonolithWordCounter.CountWords(System.String,System.
 
 `,bodyonly` also works on types (members between the braces, skipping the class header) and properties (the `get`/`set` accessors without the leading xmldoc).
 
+## Make the snippet copy-pasteable with `,usings`
+
+A `,bodyonly` fence shows the body, but a reader copying it into a fresh file still has to guess which `using` directives the body needs. Append `,usings` to prepend the file-local `using` directives the fragment actually references. Only the directives whose namespaces or aliases appear in the body are emitted — the rest of the file's using block is suppressed.
+
+````markdown
+```csharp:xmldocid,bodyonly,usings
+M:FocusedCodeSamplesExample.MonolithWordCounter.CountWords(System.String,System.Int32)
+```
+````
+
+Which renders as:
+
+```csharp:xmldocid,bodyonly,usings
+M:FocusedCodeSamplesExample.MonolithWordCounter.CountWords(System.String,System.Int32)
+```
+
+The body uses `StringBuilder`, so `using System.Text;` lands above the snippet. `List<>`, `Dictionary<>`, and the `OrderByDescending` chain resolve through implicit/global usings — those are skipped by design, on the assumption that a reader who has `<ImplicitUsings>enable</ImplicitUsings>` already has them.
+
+`,usings` and `,bodyonly` compose in any order, and the flag works on full-declaration fences too. For multi-symbol fences (one XmlDocId per line), the required usings are unioned and rendered in a single block at the top.
+
 ## Break a long method into named helpers
 
 When the target method runs 25+ lines across distinct phases, no fence form will make it short and intelligible — the source itself is too large. Fix the source, not the fence: extract each phase into a named helper with its own xmldoc summary, then fence the helpers one at a time.

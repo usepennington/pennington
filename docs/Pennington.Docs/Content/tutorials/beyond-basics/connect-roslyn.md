@@ -30,7 +30,7 @@ Before `Pennington.Roslyn` can pull source, there needs to be a `.slnx` listing 
 
 This is the plain DocSite from the scaffold tutorial with no Roslyn wired yet. A `csharp:xmldocid` fence dropped into a markdown page right now renders as a literal code block, because no preprocessor is registered.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BeyondRoslynExample.Stage1.Run(System.String[])
 ```
 
@@ -131,7 +131,7 @@ builder.Services.AddPenningtonRoslyn(opts =>
 
 Here is the stage 2 host: the same `AddDocSite` block as stage 1 plus one `AddPenningtonRoslyn` call. Nothing else changes.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BeyondRoslynExample.Stage2.Run(System.String[])
 ```
 

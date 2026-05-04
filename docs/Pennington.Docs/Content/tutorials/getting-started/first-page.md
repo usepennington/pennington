@@ -49,7 +49,7 @@ The `title:` value flows to both the HTML `<title>` tag and the nav link label. 
 
 `Program.cs` calls `AddPennington`, registers `AddMarkdownContent<DocFrontMatter>`, applies `UsePennington`, and maps every route with a single `MapGet("/{*path}", ...)` that walks `IContentService` instances. The only addition since the previous tutorial is a `NavigationBuilder` injection — nothing else changes for the rest of this tutorial.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:GettingStartedFirstPageExample.Stage1.Run(System.String[])
 ```
 
@@ -90,7 +90,7 @@ Keep an eye on the `order: 20` line — its role becomes apparent once the third
 
 The Stage 2 host method delegates entirely to `Stage1.Run` — zero code changes between steps 1 and 2. The only thing that moved was a file on disk.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:GettingStartedFirstPageExample.Stage2.Run(System.String[])
 ```
 
@@ -131,7 +131,7 @@ The example body invites a filename rename — that's coming in step 3.3.
 
 Stage 3 also delegates to `Stage1.Run`. Three files on disk, one host method, nothing edited between any of the stages.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:GettingStartedFirstPageExample.Stage3.Run(System.String[])
 ```
 

@@ -73,7 +73,7 @@ DocSite already calls `AddMdazor()` and registers the built-in Pennington.UI com
 
 Open `Program.cs` and add a single `builder.Services.AddMdazorComponent<PricingCard>()` line after the `AddDocSite` block. The extension lives in the `Mdazor` namespace and ships from the `Mdazor` NuGet package, already transitively referenced through `Pennington.DocSite` — no package add required.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BeyondCustomRazorComponentExample.Stage2.Run(System.String[])
 ```
 

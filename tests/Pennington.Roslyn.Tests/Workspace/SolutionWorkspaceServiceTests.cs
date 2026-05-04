@@ -144,6 +144,9 @@ public sealed class SolutionWorkspaceServiceTests
         public Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true)
             => Task.FromResult(string.Empty);
 
+        public Task<Pennington.Roslyn.Symbols.CodeFragmentResult> ExtractCodeFragmentWithUsingsAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true)
+            => Task.FromResult(new Pennington.Roslyn.Symbols.CodeFragmentResult(string.Empty, System.Collections.Immutable.ImmutableList<string>.Empty));
+
         public Task<string> ExtractDeclarationSignatureAsync(string xmlDocId)
             => Task.FromResult(string.Empty);
 

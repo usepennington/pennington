@@ -82,7 +82,7 @@ For a multi-project host, dropping a `Directory.Build.props` at the solution roo
 
 Before adding Pennington, `Program.cs` looks like this — a plain `WebApplication` with a single `MapGet` that returns a string. This is the baseline we'll build on.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:GettingStartedMinimalSiteExample.Stage1.Run(System.String[])
 ```
 
@@ -121,7 +121,7 @@ examples/GettingStartedMinimalSiteExample/Content/index.md
 
 Replace the body of `Program.cs` with the service-registration block below, which walks through `WebApplication.CreateBuilder` → `AddPennington` → `AddMarkdownContent<DocFrontMatter>` → `app.Build()`.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:GettingStartedMinimalSiteExample.Stage2.Run(System.String[])
 ```
 
@@ -150,7 +150,7 @@ Now we mount the middleware chain with `app.UsePennington()`, add a `MapGet` tha
 
 Update `Program.cs` to match the snapshot below.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:GettingStartedMinimalSiteExample.Stage3.Run(System.String[])
 ```
 

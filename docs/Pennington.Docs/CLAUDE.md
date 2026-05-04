@@ -96,12 +96,21 @@ M:Ns.Type.Method
 ```
 ````
 
+Add `,usings` to prepend the file-local `using` directives the fragment references — only the ones referenced, not the file's whole using block. Composes with `,bodyonly` in any order. Skips global/implicit usings.
+
+````markdown
+```csharp:xmldocid,bodyonly,usings
+M:Ns.Type.Method
+```
+````
+
 ### Diff two symbols — `<lang>:xmldocid-diff`
 Body must contain exactly 2 XmlDocIds (before/after). Supports the same `,bodyonly` suffix.
 
 ### When to use which
 - **`:xmldocid`** — **C# or VB only.** Default for C# examples; survives renames, refactors, and line shifts. Non-Roslyn languages (`markdown`, `razor`, `html`, `css`, etc.) are rejected — use `:path` instead.
 - **`:xmldocid,bodyonly`** — when the declaration is noise (showing what's inside a method). Same C#/VB-only restriction.
+- **`,usings`** — append to any `:xmldocid[,bodyonly]` fence when the snippet should be copy-pasteable. Emits only the file-local usings the body actually references; skipped when the body needs nothing or only relies on global/implicit usings.
 - **`:path`** — the right fence for anything that isn't C#/VB code: markdown snippets (including staged tutorial `.md` files), Razor components, HTML, CSS, config files, top-level-statements `Program.cs`.
 - **`:xmldocid-diff`** — before/after comparisons in explanation pages. C#/VB only.
 

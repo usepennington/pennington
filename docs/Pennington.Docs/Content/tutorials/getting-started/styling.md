@@ -33,7 +33,7 @@ Let's confirm the baseline before touching anything. The starting point is an un
 
 Here's the host as it stands at the start of this tutorial. Run it and load `/` to see the bare, unstyled HTML — no class-based styling has entered the picture yet.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:GettingStartedStylingExample.Stage1.Run(System.String[])
 ```
 
@@ -85,7 +85,7 @@ Now let's add the MonorailCSS service registration, pick a named color scheme, a
 
 Here's the updated host. Each of `PrimaryColorName`, `AccentColorName`, and `BaseColorName` takes a `ColorName` value. This tutorial uses indigo/pink/slate, but any `ColorName` constant works — swap freely.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:GettingStartedStylingExample.Stage2.Run(System.String[])
 ```
 
@@ -110,7 +110,7 @@ One line stands between here and a live stylesheet. Adding `UseMonorailCss` to t
 
 The updated host is Stage 2 with one line added: `app.UseMonorailCss()`. The default path is `/styles.css`, which already matches the `<link>` tag in `Layout.Render`.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:GettingStartedStylingExample.Stage3.Run(System.String[])
 ```
 

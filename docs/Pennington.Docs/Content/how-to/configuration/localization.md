@@ -28,7 +28,7 @@ For a complete reference setup, the `BeyondLocaleExample` project has English un
 
 On a DocSite host, set `DefaultLocale` and call `AddLocale` once per additional language inside `ConfigureLocalization`. On a bare `AddPennington` host, configure `PenningtonOptions.Localization` the same way. The default locale owns the URL root; each additional locale gets a URL prefix matching its code, so choose codes that read well in URLs.
 
-```csharp:xmldocid,bodyonly
+```csharp:xmldocid,bodyonly,usings
 M:BeyondLocaleExample.Stage3.Run(System.String[])
 ```
 

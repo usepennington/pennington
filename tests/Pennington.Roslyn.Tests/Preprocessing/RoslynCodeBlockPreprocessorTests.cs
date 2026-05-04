@@ -45,6 +45,42 @@ public sealed class RoslynCodeBlockPreprocessorTests
     }
 
     [Fact]
+    public void ParseLanguageId_Extracts_Usings()
+    {
+        var (baseLanguage, modifier) = RoslynCodeBlockPreprocessor.ParseLanguageId("csharp:xmldocid,usings");
+
+        baseLanguage.ShouldBe("csharp");
+        modifier.ShouldBe("xmldocid,usings");
+    }
+
+    [Fact]
+    public void ParseLanguageId_Extracts_Bodyonly_And_Usings()
+    {
+        var (baseLanguage, modifier) = RoslynCodeBlockPreprocessor.ParseLanguageId("csharp:xmldocid,bodyonly,usings");
+
+        baseLanguage.ShouldBe("csharp");
+        modifier.ShouldBe("xmldocid,bodyonly,usings");
+    }
+
+    [Fact]
+    public void ParseLanguageId_Normalises_Flag_Order_For_Usings_Then_Bodyonly()
+    {
+        var (baseLanguage, modifier) = RoslynCodeBlockPreprocessor.ParseLanguageId("csharp:xmldocid,usings,bodyonly");
+
+        baseLanguage.ShouldBe("csharp");
+        modifier.ShouldBe("xmldocid,bodyonly,usings");
+    }
+
+    [Fact]
+    public void ParseLanguageId_Usings_Is_Case_Insensitive()
+    {
+        var (baseLanguage, modifier) = RoslynCodeBlockPreprocessor.ParseLanguageId("csharp:xmldocid,Usings");
+
+        baseLanguage.ShouldBe("csharp");
+        modifier.ShouldBe("xmldocid,usings");
+    }
+
+    [Fact]
     public void ParseLanguageId_Extracts_XmlDocIdDiff_Bodyonly()
     {
         var (baseLanguage, modifier) = RoslynCodeBlockPreprocessor.ParseLanguageId("csharp:xmldocid-diff,bodyonly");
@@ -333,6 +369,9 @@ public sealed class RoslynCodeBlockPreprocessorTests
 
         public Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true)
             => Task.FromResult(string.Empty);
+
+        public Task<Pennington.Roslyn.Symbols.CodeFragmentResult> ExtractCodeFragmentWithUsingsAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true)
+            => Task.FromResult(new Pennington.Roslyn.Symbols.CodeFragmentResult(string.Empty, System.Collections.Immutable.ImmutableList<string>.Empty));
 
         public Task<string> ExtractDeclarationSignatureAsync(string xmlDocId)
             => Task.FromResult(string.Empty);

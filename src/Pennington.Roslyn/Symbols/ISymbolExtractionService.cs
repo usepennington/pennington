@@ -14,6 +14,9 @@ public interface ISymbolExtractionService
     /// <summary>Returns the source-code fragment for the symbol identified by <paramref name="xmlDocId"/>, optionally limited to the member body and optionally including leading trivia (comments/attributes).</summary>
     Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true);
 
+    /// <summary>Returns the source-code fragment for the symbol identified by <paramref name="xmlDocId"/> together with the file-local <c>using</c> directives the fragment depends on. <see cref="CodeFragmentResult.Usings"/> is empty when the symbol cannot be resolved.</summary>
+    Task<CodeFragmentResult> ExtractCodeFragmentWithUsingsAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true);
+
     /// <summary>Returns the declaration signature (no body, no accessor list) for the member identified by <paramref name="xmlDocId"/>. Falls back to the full declaration for symbols that have no separable body.</summary>
     Task<string> ExtractDeclarationSignatureAsync(string xmlDocId);
 
