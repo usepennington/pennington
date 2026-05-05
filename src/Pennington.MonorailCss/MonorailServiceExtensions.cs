@@ -1,19 +1,23 @@
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Pennington.Infrastructure;
+using Microsoft.Extensions.Options;
+using MonorailCss;
+using MonorailCss.Discovery;
 
 namespace Pennington.MonorailCss;
 
 /// <summary>
 /// Extension methods for registering and configuring MonorailCSS services.
 /// </summary>
-public static partial class MonorailServiceExtensions
+public static class MonorailServiceExtensions
 {
     /// <summary>
-    /// Registers MonorailCSS services including the CSS class collector and stylesheet generator.
+    /// Registers MonorailCSS services and the runtime class-discovery pipeline.
+    /// With no configuration, the discovery pipeline force-loads every non-BCL assembly the
+    /// app references, scans each one's IL, watches the project's source files in development,
+    /// and loads <c>wwwroot/app.css</c> as the source CSS prefix when present. The CSS endpoint
+    /// served by <see cref="UseMonorailCss"/> regenerates whenever the class set changes.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="optionFactory">Optional factory for configuring MonorailCSS options.</param>
@@ -27,128 +31,58 @@ public static partial class MonorailServiceExtensions
         }
         else
         {
-            services.AddTransient(optionFactory);
+            // Singleton (was Transient) so the framework + discovery share a single configured
+            // instance for the lifetime of the app — required since the discovery service
+            // validates candidates against this exact framework.
+            services.AddSingleton(optionFactory);
         }
 
-        services.AddSingleton<CssClassCollector>();
-        services.AddTransient<MonorailCssService>();
-        services.AddSingleton<IResponseProcessor, CssClassCollectorProcessor>();
+        services.AddSingleton<CssFramework>(sp =>
+        {
+            var options = sp.GetRequiredService<MonorailCssOptions>();
+            return MonorailCssService.BuildFramework(options);
+        });
+
+        services.AddSingleton<MonorailCssService>();
+
+        // Backwards-compatible facade for code that still injects CssClassCollector.
+        services.AddSingleton<CssClassCollector>(sp =>
+            new CssClassCollector(sp.GetRequiredService<IClassRegistry>()));
+
+        services.AddMonorailClassDiscovery();
+
+        // Hand Pennington's configured CssFramework to the discovery pipeline so the candidate
+        // parser, class registry, and stylesheet generator all share one theme. Pennington.UI
+        // and the rest of the Pennington.* packages ride along automatically — Discovery
+        // force-loads every non-BCL assembly the entry app references.
+        services.AddSingleton<IConfigureOptions<MonorailDiscoveryOptions>>(sp =>
+            new ConfigureNamedOptions<MonorailDiscoveryOptions>(Options.DefaultName, opts =>
+            {
+                opts.Framework = sp.GetRequiredService<CssFramework>();
+            }));
 
         return services;
     }
 
     /// <summary>
-    /// Maps the MonorailCSS stylesheet endpoint and scans configured content files for CSS classes.
+    /// Maps the MonorailCSS stylesheet endpoint. The endpoint pulls the current class set
+    /// from the discovery pipeline registered in <see cref="AddMonorailCss"/>, generates CSS,
+    /// and serves it.
     /// </summary>
     /// <param name="app">The web application.</param>
     /// <param name="path">The URL path for the stylesheet endpoint. Defaults to "/styles.css".</param>
     /// <returns>The web application for chaining.</returns>
     public static WebApplication UseMonorailCss(this WebApplication app, string path = "/styles.css")
     {
-        // Ensure the MonorailCssService is available
         if (app.Services.GetService<MonorailCssService>() is null)
         {
             throw new InvalidOperationException(
                 "MonorailCssService is not registered. Please call AddMonorailCss() in ConfigureServices.");
         }
 
-        // Ensure the CssClassCollector is available
-        if (app.Services.GetService<CssClassCollector>() is null)
-        {
-            throw new InvalidOperationException(
-                "CssClassCollector is not registered. Please call AddMonorailCss() in ConfigureServices.");
-        }
-
-        // Scan configured content files for CSS classes at startup.
-        // This catches classes that only exist in client-side JS or other non-HTML files
-        // (the Tailwind "content" problem).
-        var options = app.Services.GetRequiredService<MonorailCssOptions>();
-        if (options.ContentPaths.Length > 0)
-        {
-            var collector = app.Services.GetRequiredService<CssClassCollector>();
-            var fileProvider = app.Environment.WebRootFileProvider;
-            ScanContentFiles(collector, fileProvider, options.ContentPaths);
-        }
-
-        // Custom CSS. The Blazor Static service will discover the mapped URL automatically
-        // and include it with the static generation.
-        // Note: CSS class collection happens via CssClassCollectorProcessor registered as
-        // IResponseProcessor in AddMonorailCss, run by the unified ResponseProcessingMiddleware.
-        app.MapGet(path, (MonorailCssService cssService) => Results.Content(cssService.GetStyleSheet(), "text/css"));
+        app.MapGet(path, (MonorailCssService cssService) =>
+            Results.Content(cssService.GetStyleSheet(), "text/css"));
 
         return app;
     }
-
-    /// <summary>
-    /// Scans files for potential CSS class names and registers them with the collector.
-    /// Uses a broad extraction approach — false positives are harmless since MonorailCSS
-    /// ignores tokens it doesn't recognize as utility classes.
-    /// </summary>
-    internal static void ScanContentFiles(CssClassCollector collector, IFileProvider fileProvider, string[] contentPaths)
-    {
-        foreach (var contentPath in contentPaths)
-        {
-            var fileInfo = fileProvider.GetFileInfo(contentPath);
-            if (!fileInfo.Exists)
-                continue;
-
-            using var stream = fileInfo.CreateReadStream();
-            using var reader = new StreamReader(stream);
-            var content = reader.ReadToEnd();
-
-            var classes = ExtractPotentialClasses(content);
-            if (classes.Count == 0)
-                continue;
-
-            collector.BeginProcessing();
-            try
-            {
-                collector.AddClasses(contentPath, classes);
-            }
-            finally
-            {
-                collector.EndProcessing();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Extracts potential CSS class names from file content using two strategies:
-    /// 1. HTML class attribute extraction (class="..." patterns)
-    /// 2. Broad token extraction — splits on delimiters and keeps tokens that look
-    ///    like utility classes (contain hyphens, colons, slashes, or dots).
-    /// </summary>
-    internal static List<string> ExtractPotentialClasses(string content)
-    {
-        var classes = new HashSet<string>(StringComparer.Ordinal);
-
-        // Strategy 1: Extract from class="..." attributes (works for HTML, Razor, and JS template literals)
-        foreach (Match match in CssClassAttributeRegex().Matches(content))
-        {
-            foreach (var cls in match.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
-            {
-                classes.Add(cls);
-            }
-        }
-
-        // Strategy 2: Split on delimiter characters and treat every token as a potential class.
-        // This catches classes in JS string constants like: const PROSE = 'prose dark:prose-invert ...'
-        // False positives (e.g. JS keywords like "function") are harmless — MonorailCSS
-        // ignores tokens it doesn't recognize as utility classes.
-        foreach (var token in TokenSplitRegex().Split(content))
-        {
-            if (token.Length > 0)
-            {
-                classes.Add(token);
-            }
-        }
-
-        return classes.ToList();
-    }
-
-    [GeneratedRegex("""class\s*=\s*["']([^"']+)["']""", RegexOptions.IgnoreCase, "en-US")]
-    private static partial Regex CssClassAttributeRegex();
-
-    [GeneratedRegex("""[\s"'`<>{}()=;,!?#@$^&*|~\[\]\\]+""")]
-    private static partial Regex TokenSplitRegex();
 }

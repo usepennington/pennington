@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using MonorailCss;
+using MonorailCss.Parser.Custom;
 using MonorailCss.Theme;
 
 namespace Pennington.MonorailCss;
@@ -220,28 +221,52 @@ public class NamedColorScheme : IColorScheme
 /// Generates CSS stylesheets using MonorailCSS with collected utility classes.
 /// </summary>
 /// <param name="options">MonorailCSS configuration options.</param>
-/// <param name="cssClassCollector">Collector containing discovered CSS class names.</param>
-public class MonorailCssService(MonorailCssOptions options, CssClassCollector cssClassCollector)
+/// <param name="cssFramework">Configured framework instance shared with the discovery pipeline.</param>
+/// <param name="classRegistry">Live snapshot of classes discovered by the runtime scanner.</param>
+public class MonorailCssService(
+    MonorailCssOptions options,
+    CssFramework cssFramework,
+    global::MonorailCss.Discovery.IClassRegistry classRegistry)
 {
+    private string? _cachedStyleSheet;
+    private string? _cachedRegistryVersion;
+    private readonly Lock _cacheLock = new();
+
     /// <summary>
-    /// Processes collected CSS classes and returns the generated stylesheet.
+    /// Processes the discovered CSS classes and returns the generated stylesheet. The result
+    /// is cached until the discovery registry's version token changes, so repeated GETs of
+    /// <c>/styles.css</c> are served from memory.
     /// </summary>
     public string GetStyleSheet()
     {
-        // we are only scanning razor files, not the generated files. if you use
-        // code like bg-{color}-400 in the razor as a variable, that's not going to be detected.
-        var cssClassValues = cssClassCollector.GetClasses();
-        var cssFramework = GetCssFramework();
+        var version = classRegistry.Version;
 
-        var styleSheet = cssFramework.Process(cssClassValues);
+        lock (_cacheLock)
+        {
+            if (_cachedStyleSheet is not null && _cachedRegistryVersion == version)
+            {
+                return _cachedStyleSheet;
+            }
+        }
 
-        return $"""
+        var classes = classRegistry.GetClasses();
+        var styleSheet = cssFramework.Process(classes);
+
+        var result = $"""
                 {ContentVisibilityRules}
 
                 {options.ExtraStyles}
 
                 {styleSheet}
                 """;
+
+        lock (_cacheLock)
+        {
+            _cachedStyleSheet = result;
+            _cachedRegistryVersion = version;
+        }
+
+        return result;
     }
 
     // Paired content-visibility classes consumed by the llms.txt and search pipelines.
@@ -255,7 +280,13 @@ public class MonorailCssService(MonorailCssOptions options, CssClassCollector cs
         .robots-only { display: none; }
         """;
 
-    private CssFramework GetCssFramework()
+    /// <summary>
+    /// Builds a fully-configured <see cref="CssFramework"/> from Pennington's options.
+    /// Called once during DI registration so the framework can be reused by both the
+    /// discovery pipeline (for candidate validation) and the stylesheet endpoint
+    /// (for CSS generation), keeping the theme consistent across both.
+    /// </summary>
+    public static CssFramework BuildFramework(MonorailCssOptions options)
     {
         var theme = Theme.CreateWithDefaults();
         theme = options.ColorScheme.ApplyToTheme(theme);
@@ -270,6 +301,8 @@ public class MonorailCssService(MonorailCssOptions options, CssClassCollector cs
                 .AddRange(MarkdownAlertApplies())
                 .AddRange(HljsApplies(options.SyntaxTheme))
                 .AddRange(SearchModalApplies()),
+
+            CustomUtilities = ScrollbarUtilities(),
 
             ProseCustomization = GetCustomProseSettings()
         };
@@ -637,6 +670,43 @@ public class MonorailCssService(MonorailCssOptions options, CssClassCollector cs
                 { ".hljs-link", "text-blue-800 dark:text-blue-300" },
             });
     }
+
+    private static ImmutableList<UtilityDefinition> ScrollbarUtilities() =>
+        ImmutableList.Create(
+            new UtilityDefinition
+            {
+                Pattern = "scrollbar-thin",
+                Declarations = ImmutableList.Create(
+                    new CssDeclaration("scrollbar-width", "thin")),
+            },
+            new UtilityDefinition
+            {
+                Pattern = "scrollbar-thumb-*",
+                IsWildcard = true,
+                Declarations = ImmutableList.Create(
+                    new CssDeclaration("--tw-scrollbar-thumb-color", "--value(--color-*)")),
+            },
+            new UtilityDefinition
+            {
+                Pattern = "scrollbar-track-*",
+                IsWildcard = true,
+                Declarations = ImmutableList.Create(
+                    new CssDeclaration("--tw-scrollbar-track-color", "--value(--color-*)")),
+            },
+            new UtilityDefinition
+            {
+                Pattern = "scrollbar-track-transparent",
+                Declarations = ImmutableList.Create(
+                    new CssDeclaration("--tw-scrollbar-track-color", "transparent")),
+            },
+            new UtilityDefinition
+            {
+                Pattern = "scrollbar-color",
+                Declarations = ImmutableList.Create(
+                    new CssDeclaration(
+                        "scrollbar-color",
+                        "var(--tw-scrollbar-thumb-color) var(--tw-scrollbar-track-color)")),
+            });
 
     private static ImmutableDictionary<string, string> SearchModalApplies()
     {

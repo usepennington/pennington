@@ -71,21 +71,21 @@ Each kind below shows the source markdown above the rendered output. Every line 
 
 ## What the renderer emits
 
-The parser rewrites the blockquote into an `AlertBlock` and stamps it with two classes: `markdown-alert` (always present) and `markdown-alert-{kind}` where `{kind}` is the lower-cased token. Stylesheets target those two classes for the colour treatment. Any other token fails the parse and the block falls back to a plain `<blockquote>` with no alert styling — useful for confirming you typed `[!NOTE]` and not `[!NOET]`.
+The parser rewrites the blockquote into an `AlertBlock` and stamps it with two classes: `markdown-alert` (always present) and `markdown-alert-{kind}` where `{kind}` is the lower-cased token. Stylesheets target those two classes for the colour treatment. Any token outside the five recognised kinds fails the parse and the block falls back to a plain `<blockquote>` with no alert styling — so a marker the engine doesn't know stays visible in the rendered output instead of turning into a misleading callout.
 
 ````markdown
-> [!NOET]
+> [!INFO]
 > Unknown kind: this falls back to a plain blockquote.
 ````
 
-> [!NOET]
+> [!INFO]
 > Unknown kind: this falls back to a plain blockquote.
 
 ## Verify
 
 - Each alert renders as a coloured callout with no `[!KIND]` text in the body.
 - View source — the outer element carries `class="markdown-alert markdown-alert-note"` (or the matching kind).
-- A typo like `[!NOET]` falls back to a plain `<blockquote>`, signalling that the parser rejected an unknown kind.
+- An unrecognised kind like `[!INFO]` falls back to a plain `<blockquote>`, signalling that the parser rejected the marker.
 
 ## Related
 

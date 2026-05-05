@@ -11,6 +11,11 @@ using Markdig.Syntax;
 /// </summary>
 internal sealed class CustomAlertInlineParser : InlineParser
 {
+    private static readonly HashSet<string> KnownKinds = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION",
+    };
+
     public CustomAlertInlineParser()
     {
         OpeningCharacters = ['['];
@@ -51,6 +56,12 @@ internal sealed class CustomAlertInlineParser : InlineParser
         }
 
         var alertType = new StringSlice(slice.Text, start, end);
+        if (!KnownKinds.Contains(alertType.AsSpan().ToString()))
+        {
+            slice = saved;
+            return false;
+        }
+
         c = slice.NextChar(); // Skip ]
 
         start = slice.Start;
