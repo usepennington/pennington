@@ -988,6 +988,15 @@ class SidebarToggleManager {
                 this.closeSidebar();
             }
         });
+
+        // Close sidebar when a link inside the panel is tapped (mobile)
+        if (this.sidebarPanel) {
+            this.sidebarPanel.addEventListener('click', (e) => {
+                if (e.target.closest('a[href]')) {
+                    this.closeSidebar();
+                }
+            });
+        }
     }
 
     toggleSidebar() {
