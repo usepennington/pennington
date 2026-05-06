@@ -221,11 +221,11 @@ public class NamedColorScheme : IColorScheme
 /// Generates CSS stylesheets using MonorailCSS with collected utility classes.
 /// </summary>
 /// <param name="options">MonorailCSS configuration options.</param>
-/// <param name="cssFramework">Configured framework instance shared with the discovery pipeline.</param>
+/// <param name="engine">Configured framework wrapper shared with the discovery pipeline.</param>
 /// <param name="classRegistry">Live snapshot of classes discovered by the runtime scanner.</param>
 public class MonorailCssService(
     MonorailCssOptions options,
-    CssFramework cssFramework,
+    MonorailCssEngine engine,
     global::MonorailCss.Discovery.IClassRegistry classRegistry)
 {
     private string? _cachedStyleSheet;
@@ -250,7 +250,7 @@ public class MonorailCssService(
         }
 
         var classes = classRegistry.GetClasses();
-        var styleSheet = cssFramework.Process(classes);
+        var styleSheet = engine.Framework.Process(classes);
 
         var result = $"""
                 {ContentVisibilityRules}

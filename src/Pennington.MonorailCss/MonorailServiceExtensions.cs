@@ -37,10 +37,18 @@ public static class MonorailServiceExtensions
             services.AddSingleton(optionFactory);
         }
 
-        services.AddSingleton<CssFramework>(sp =>
+        // The engine owns the CssFramework instance Pennington built from the user's
+        // MonorailCssOptions, and is the only way Pennington's internals touch the framework.
+        // Pennington deliberately does NOT register CssFramework in DI: a host that wants its
+        // own CssFramework (for ad-hoc CompileUtilityClass calls, theme inspection, anything
+        // outside Pennington's stylesheet pipeline) registers one themselves with whatever
+        // settings they want, and there's no chance of shadowing or DI ordering surprises.
+        // Components that specifically want Pennington's instance inject MonorailCssEngine
+        // and read .Framework.
+        services.AddSingleton<MonorailCssEngine>(sp =>
         {
             var options = sp.GetRequiredService<MonorailCssOptions>();
-            return MonorailCssService.BuildFramework(options);
+            return new MonorailCssEngine(MonorailCssService.BuildFramework(options));
         });
 
         services.AddSingleton<MonorailCssService>();
@@ -51,14 +59,14 @@ public static class MonorailServiceExtensions
 
         services.AddMonorailClassDiscovery();
 
-        // Hand Pennington's configured CssFramework to the discovery pipeline so the candidate
+        // Hand Pennington's engine framework to the discovery pipeline so the candidate
         // parser, class registry, and stylesheet generator all share one theme. Pennington.UI
         // and the rest of the Pennington.* packages ride along automatically — Discovery
         // force-loads every non-BCL assembly the entry app references.
         services.AddSingleton<IConfigureOptions<MonorailDiscoveryOptions>>(sp =>
             new ConfigureNamedOptions<MonorailDiscoveryOptions>(Options.DefaultName, opts =>
             {
-                opts.Framework = sp.GetRequiredService<CssFramework>();
+                opts.Framework = sp.GetRequiredService<MonorailCssEngine>().Framework;
             }));
 
         return services;
