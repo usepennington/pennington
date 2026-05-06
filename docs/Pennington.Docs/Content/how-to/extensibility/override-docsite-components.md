@@ -36,7 +36,7 @@ M:DocSiteChromeOverridesExample.SiteChromeOverrides.BuildHtmlHeadContent
 
 ### Append rules to the generated stylesheet via `ExtraStyles`
 
-`ExtraStyles` is a CSS string concatenated onto the MonorailCSS-generated `/styles.css`, making it the right home for `@font-face` declarations, custom-property overrides, and any selector the utility-class scanner will not discover on its own. Keep this string small — anything expressible as MonorailCSS utilities in Razor markup gets picked up automatically by `CssClassCollectorProcessor`.
+`ExtraStyles` is a CSS string concatenated onto the MonorailCSS-generated `/styles.css`, making it the right home for `@font-face` declarations, custom-property overrides, and any selector the utility-class scanner will not discover on its own. Keep this string small — anything expressible as MonorailCSS utilities in Razor markup gets picked up automatically by the `MonorailCss.Discovery` pipeline.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteChromeOverridesExample.SiteChromeOverrides.BuildExtraStyles

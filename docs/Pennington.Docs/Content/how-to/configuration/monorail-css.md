@@ -7,7 +7,7 @@ sectionLabel: Configuration
 tags: [monorailcss, color-scheme, styling, theming]
 ---
 
-When the site needs a different palette, a tweak to prose rules, or a chunk of site-wide CSS, the knobs below live on `MonorailCssOptions`. `DocSiteOptions` and `BlogSiteOptions` forward `ColorScheme`, `ExtraStyles`, and `CustomCssFrameworkSettings` directly, so most reskins do not need to leave the template. `ContentPaths` and other non-CSS capabilities still require the bare-`AddPennington` + `AddMonorailCss` path — see [When is DocSite the right starting point?](xref:explanation.core.docsite-positioning).
+When the site needs a different palette, a tweak to prose rules, or a chunk of site-wide CSS, the knobs below live on `MonorailCssOptions`. `DocSiteOptions` and `BlogSiteOptions` forward `ColorScheme`, `ExtraStyles`, and `CustomCssFrameworkSettings` directly, so most reskins do not need to leave the template.
 
 ## Assumptions
 
@@ -69,7 +69,7 @@ P:Pennington.DocSite.DocSiteOptions.ExtraStyles
 
 ### Tweak prose rules with `CustomCssFrameworkSettings`
 
-`DocSiteOptions.CustomCssFrameworkSettings` mirrors the `MonorailCssOptions` delegate — it post-processes the `CssFrameworkSettings` after the DocSite theme is applied, so it fits prose tweaks, color maps, or apply directives without leaving DocSite. When `ContentPaths` (the glob list scanned at startup for classes used in non-HTML files) or other capabilities outside DocSite's scope are needed, drop to bare `AddPennington` + `AddMonorailCss`; see <xref:explanation.core.docsite-positioning> for the authoritative breakdown.
+`DocSiteOptions.CustomCssFrameworkSettings` mirrors the `MonorailCssOptions` delegate — it post-processes the `CssFrameworkSettings` after the DocSite theme is applied, so it fits prose tweaks, color maps, or apply directives without leaving DocSite. When customisations outside DocSite's scope are needed, drop to bare `AddPennington` + `AddMonorailCss`; see <xref:explanation.core.docsite-positioning> for the authoritative breakdown.
 
 ```csharp:xmldocid
 P:Pennington.DocSite.DocSiteOptions.CustomCssFrameworkSettings
@@ -97,7 +97,6 @@ Every `bg-primary-*`, `text-accent-*`, `border-base-*` utility on the site resol
 
 - Run `dotnet run` and visit any page. Inspect a `bg-primary-500` element; the rendered color matches the palette set above.
 - Fetch `/styles.css` and confirm the `ExtraStyles` block appears above the generated utility rules.
-- When `ContentPaths` is wired, add a class that only appears in a referenced non-HTML file (such as `wwwroot/app.js`) and verify it lands in `/styles.css` on the next reload.
 
 ## Related
 

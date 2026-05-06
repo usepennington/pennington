@@ -53,10 +53,6 @@ public static class MonorailServiceExtensions
 
         services.AddSingleton<MonorailCssService>();
 
-        // Backwards-compatible facade for code that still injects CssClassCollector.
-        services.AddSingleton<CssClassCollector>(sp =>
-            new CssClassCollector(sp.GetRequiredService<IClassRegistry>()));
-
         services.AddMonorailClassDiscovery();
 
         // Hand Pennington's engine framework to the discovery pipeline so the candidate

@@ -12,6 +12,7 @@ by front matter — picking up MonorailCSS did not move that logic into code.
 
 <p class="text-primary-700 font-semibold">This paragraph uses an inline utility class.</p>
 
-When the response is observed by `CssClassCollectorProcessor`, the
-`text-primary-700` and `font-semibold` tokens are registered and the next
-request to `/styles.css` includes their rules.
+Because the literal `text-primary-700 font-semibold` string lives inside this
+markdown file (and ends up baked into the rendered HTML at build time), the
+MonorailCSS discovery pipeline picks both tokens up and the next request to
+`/styles.css` includes their rules.

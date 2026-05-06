@@ -11,7 +11,7 @@ Why doesn't Pennington have a separate offline build step — one that reads mar
 
 ## Context
 
-Most static site generators are built as compilers: read content files, transform them, write HTML. That shape is intuitive, and it was on the table for Pennington too. The problem with a separate publish renderer surfaces not at the first feature but at the second. Locale middleware runs in dev, so it needs a second implementation in the offline path; response processors run in dev, so they need it too; Blazor SSR for islands, the xref rewriter, the CSS class collector — each one accrues a corresponding "also do this in build" edit. The two implementations then diverge over time, invisibly, until a feature that works in development produces different output in publish.
+Most static site generators are built as compilers: read content files, transform them, write HTML. That shape is intuitive, and it was on the table for Pennington too. The problem with a separate publish renderer surfaces not at the first feature but at the second. Locale middleware runs in dev, so it needs a second implementation in the offline path; response processors run in dev, so they need it too; Blazor SSR for islands, the xref rewriter, the CSS discovery pipeline — each one accrues a corresponding "also do this in build" edit. The two implementations then diverge over time, invisibly, until a feature that works in development produces different output in publish.
 
 Pennington keeps one host. Dev mode is that host serving requests; build mode is a crawler pointed at the same host. The invariant the rest of this page unfolds: there is exactly one HTTP pipeline, and the static build is a consumer of it.
 
@@ -33,7 +33,7 @@ The 404 page is a small special case: the service fetches a sentinel URL (`"/__p
 
 ### The shared pipeline
 
-Because the build is HTTP-driven, every cross-cutting system runs identically in both modes. `ResponseProcessingMiddleware` captures and rewrites bodies. `IHtmlResponseRewriter` resolves xref links and applies locale prefixes and the base URL. `CssClassCollectorProcessor` observes HTML class names across content pages before `/styles.css` is fetched — a deliberate serialization: the crawler issues content-page GETs first and `MapGet` handler GETs last, so class collection completes before the stylesheet is materialized. That phase ordering lives in `OutputGenerationService.GenerateAsync` and nowhere else.
+Because the build is HTTP-driven, every cross-cutting system runs identically in both modes. `ResponseProcessingMiddleware` captures and rewrites bodies. `IHtmlResponseRewriter` resolves xref links and applies locale prefixes and the base URL. The MonorailCSS discovery pipeline scans loaded assemblies and watched source files at startup, so the class registry is already populated before the crawler starts; content-page GETs run first and `MapGet` GETs last as a separate ordering rule, ensuring `/styles.css` and other generated endpoints see a fully-warm system. That phase ordering lives in `OutputGenerationService.GenerateAsync` and nowhere else.
 
 The consequence is that output drift has no place to hide. The pipeline that produced `localhost:5000/foo` is the pipeline that produced `output/foo/index.html`. A feature that works in dev works in build; one that breaks in build would have broken in dev first.
 
@@ -46,9 +46,9 @@ The HTTP overhead of build mode is measurable on very small sites and mostly irr
 ## Trade-offs
 
 - **Cost — the build boots the full host.** Generation is not a pure function of the content directory; it starts Kestrel, binds a port, and loads every service `AddPennington` registers. For tiny sites this is measurable overhead. In exchange, nothing that works in dev fails in publish.
-- **Alternative considered — an offline renderer.** A second code path reading markdown and driving Markdig directly would skip the HTTP round-trip. It was rejected because the engine's value lives in the response-processor chain (xref, locale, base URL, CSS collection, diagnostics); a renderer that bypasses that chain silently drops half the feature surface.
+- **Alternative considered — an offline renderer.** A second code path reading markdown and driving Markdig directly would skip the HTTP round-trip. It was rejected because the engine's value lives in the response-processor chain (xref, locale, base URL, diagnostics) and the MonorailCSS discovery pipeline; a renderer that bypasses those silently drops half the feature surface.
 - **Consequence — every feature pays one integration tax, not two.** A new response processor, rewriter, or endpoint works in build the moment it works in dev, with no "also wire this into the static generator" step. That is the invariant, and designs that split dev-serve and build-publish into separate implementations work against it.
-- **Consequence — the `/styles.css` (and other MapGet) endpoints tolerate being fetched after content pages.** The crawler deliberately serializes content-first, MapGet-last so class collection completes before the stylesheet is materialized. An endpoint whose correctness depends on fetch order is fighting this invariant.
+- **Consequence — the `/styles.css` (and other MapGet) endpoints are fetched after content pages.** The crawler issues content-page GETs first and `MapGet` GETs last so the class registry is fully resolved by the time the stylesheet is materialized. An endpoint whose correctness depends on fetch order is fighting this invariant.
 
 ## Further reading
 

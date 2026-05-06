@@ -5,10 +5,9 @@ using Pennington.Navigation;
 /// <summary>
 /// Minimal HTML layout helper — the bare-host equivalent of a DocSite/Razor
 /// layout component. It wraps every rendered markdown page in a consistent
-/// shell of utility-class-styled elements. Because the HTML returned here is
-/// what flows through the ASP.NET response pipeline,
-/// <c>CssClassCollectorProcessor</c> sees every utility token on its way to
-/// the browser and the generated stylesheet stays in sync.
+/// shell of utility-class-styled elements. Because the literal class strings
+/// live in compiled IL, the <c>MonorailCss.Discovery</c> pipeline picks them
+/// up automatically and the generated stylesheet stays in sync.
 /// </summary>
 /// <remarks>
 /// Teaching points:
@@ -17,7 +16,7 @@ using Pennington.Navigation;
 ///   tag points at the endpoint registered by <c>UseMonorailCss()</c>.</description></item>
 /// <item><description>Utility classes on <c>&lt;body&gt;</c>,
 ///   <c>&lt;header&gt;</c>, <c>&lt;nav&gt;</c>, <c>&lt;article&gt;</c>, and
-///   <c>&lt;footer&gt;</c> all feed the collector once the page is rendered.</description></item>
+///   <c>&lt;footer&gt;</c> all feed the discovery pipeline at startup.</description></item>
 /// <item><description>Swap <c>PrimaryColorName</c> in <c>Program.cs</c> and
 ///   the color behind every <c>text-primary-*</c>/<c>bg-primary-*</c>
 ///   token changes on the next request.</description></item>

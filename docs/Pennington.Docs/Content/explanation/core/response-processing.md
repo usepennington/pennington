@@ -21,9 +21,9 @@ A single chain of string-to-string processors forces the structure-aware concern
 
 `ResponseProcessingMiddleware` wraps the response body stream, captures it into memory, runs every registered `IResponseProcessor` whose `ShouldProcess` returns `true` in ascending `Order`, then flushes the final string back to the socket. The contract is intentionally narrow — an ordering integer, a predicate over `HttpContext`, and an async body transform — so anything that wants to touch the response body can participate without taking an AngleSharp dependency.
 
-The built-in processors illustrate why the tier exists. `HtmlResponseRewritingProcessor` at `Order 10` hosts the entire Tier B pass. `LiveReloadScriptProcessor` at `Order 20` injects the reconnect script immediately before `</body>` during development. `DiagnosticOverlayProcessor` at `Order 30` renders the collected `DiagnosticContext` into a corner panel, also in dev mode. `CssClassCollectorProcessor`, contributed by the MonorailCSS integration, scrapes utility classes out of emitted HTML so the stylesheet endpoint can regenerate on the next request.
+The built-in processors illustrate why the tier exists. `HtmlResponseRewritingProcessor` at `Order 10` hosts the entire Tier B pass. `LiveReloadScriptProcessor` at `Order 20` injects the reconnect script immediately before `</body>` during development. `DiagnosticOverlayProcessor` at `Order 30` renders the collected `DiagnosticContext` into a corner panel, also in dev mode.
 
-Three of those four are pure string operations — a targeted string insert, a before-`</body>` append, a regex scan. Routing them through AngleSharp would parse and serialize the document for no benefit. The tier boundary exists because "touches the body" is a broader category than "cares about HTML structure."
+Two of those three are pure string operations — a targeted string insert and a before-`</body>` append. Routing them through AngleSharp would parse and serialize the document for no benefit. The tier boundary exists because "touches the body" is a broader category than "cares about HTML structure."
 
 ### Tier B: `IHtmlResponseRewriter` (shared AngleSharp pass)
 

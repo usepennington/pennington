@@ -41,9 +41,9 @@ var app = builder.Build();
 
 app.UsePennington();
 
-// Map `/styles.css`. The endpoint returns the currently-collected utility
-// classes as a real stylesheet; `CssClassCollectorProcessor` watches every
-// rendered HTML response and adds any new class tokens it finds.
+// Map `/styles.css`. The endpoint returns the currently-discovered utility
+// classes as a real stylesheet; the `MonorailCss.Discovery` pipeline scans
+// loaded assemblies and watched source files to keep that set fresh.
 app.UseMonorailCss();
 
 // Serve any URL by walking the configured IContentService instances, parsing
