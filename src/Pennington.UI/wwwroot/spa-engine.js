@@ -18,6 +18,16 @@
  *   "clear"    — empty the region immediately
  *   "keep"     — leave previous content until new HTML arrives (default)
  *
+ * Opting out of view transitions (via data-spa-no-transition):
+ *   A region marked data-spa-no-transition is not assigned a
+ *   view-transition-name and is swapped before startViewTransition runs.
+ *   With no name, the region's content falls under the root snapshot —
+ *   and because the swap happens before the browser captures, both old
+ *   and new root snapshots already show the new content, so nothing
+ *   animates there. Use this for regions inside sticky/overflow ancestors
+ *   where a per-region snapshot would escape the parent's clip and flash
+ *   through pinned chrome.
+ *
  * Stylesheet handling:
  *   - New <link rel="stylesheet"> hrefs are appended to <head> before swap.
  *   - Any stylesheet tagged `data-spa-reload` is re-fetched with a cache
@@ -101,15 +111,19 @@
         const regions = {};
         document.querySelectorAll(REGION_SELECTOR).forEach(el => {
             const name = el.dataset.spaRegion;
+            const noTransition = el.hasAttribute('data-spa-no-transition');
             regions[name] = {
                 el,
                 loadingMode: el.dataset.spaLoading || 'keep',
+                noTransition,
                 skeletonTpl: document.querySelector(
                     `template[data-spa-skeleton-for="${name}"]`
                 ),
             };
-            // Auto-assign a view-transition-name so each region animates independently.
-            if (!el.style.viewTransitionName) {
+            // Auto-assign a view-transition-name so each region animates
+            // independently. Opted-out regions stay nameless — they swap
+            // before startViewTransition and are not captured per-region.
+            if (!noTransition && !el.style.viewTransitionName) {
                 el.style.viewTransitionName = `spa-region-${name}`;
             }
         });
@@ -150,8 +164,9 @@
         return true;
     }
 
-    function commitRegions(regions, doc) {
+    function commitRegions(regions, doc, filter) {
         for (const [name, region] of Object.entries(regions)) {
+            if (filter && !filter(region)) continue;
             const incoming = doc.querySelector(`[data-spa-region="${cssEscape(name)}"]`);
             region.el.innerHTML = incoming ? incoming.innerHTML : '';
             executeScripts(region.el);
@@ -385,37 +400,47 @@
             return;
         }
 
-        const doCommit = async (doc) => {
+        const commit = async (doc) => {
             // Layout switch — current page has regions the new page doesn't. Full reload.
             if (!regionsAlign(regions, doc)) {
                 location.href = url.href;
                 return;
             }
 
-            // Stylesheets first so newly-required CSS is parsed before the swap.
+            // Stylesheets first so newly-required CSS is parsed before any swap.
             await syncStylesheets(doc);
 
-            _currentPathname = url.pathname;
-            if (pushState) history.pushState({ title: doc.title }, doc.title, url.href);
-            applyHead(doc);
-            commitRegions(regions, doc);
-            announceNavigation(doc.title, regions);
-            fire('spa:commit', { url, slug: url.pathname, doc });
+            // Opted-out regions swap before the transition starts. Without a
+            // view-transition-name they fall under the root snapshot, and
+            // because the swap completes before the browser captures, both
+            // old and new root snapshots show the new content — no animation
+            // runs there and the snapshot can't escape a sticky/overflow
+            // ancestor to flash through pinned chrome.
+            commitRegions(regions, doc, r => r.noTransition);
 
-            const diagnostics = readDiagnostics(doc);
-            if (diagnostics) fire('spa:diagnostics', diagnostics);
-
-            restoreScrollY != null ? window.scrollTo(0, restoreScrollY) : scrollToTarget(url);
-        };
-
-        if (fetchedDoc) {
-            // Fast path — data arrived before the threshold.
             // The browser preserves scrollTop on inner overflow scrollers
             // across the innerHTML swap in commitRegions, so a region's
             // view-transition bounds match in old and new snapshots without
             // any explicit reset. Sticky elements that must stay put during
             // the transition opt in via data-spa-pin.
-            maybeTransition(() => doCommit(fetchedDoc));
+            maybeTransition(() => {
+                _currentPathname = url.pathname;
+                if (pushState) history.pushState({ title: doc.title }, doc.title, url.href);
+                applyHead(doc);
+                commitRegions(regions, doc, r => !r.noTransition);
+                announceNavigation(doc.title, regions);
+                fire('spa:commit', { url, slug: url.pathname, doc });
+
+                const diagnostics = readDiagnostics(doc);
+                if (diagnostics) fire('spa:diagnostics', diagnostics);
+
+                restoreScrollY != null ? window.scrollTo(0, restoreScrollY) : scrollToTarget(url);
+            });
+        };
+
+        if (fetchedDoc) {
+            // Fast path — data arrived before the threshold.
+            await commit(fetchedDoc);
         } else {
             // Slow path — show skeleton while we wait.
             window.scrollTo(0, 0);
@@ -431,7 +456,7 @@
             if (remaining > 0) await delay(remaining);
             if (ctrl.signal.aborted) return;
 
-            maybeTransition(() => doCommit(fetchedDoc));
+            await commit(fetchedDoc);
         }
     }
 
