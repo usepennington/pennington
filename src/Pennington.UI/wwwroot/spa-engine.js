@@ -177,6 +177,25 @@
         for (const [name, region] of Object.entries(regions)) {
             const incoming = doc.querySelector(`[data-spa-region="${cssEscape(name)}"]`);
             region.el.innerHTML = incoming ? incoming.innerHTML : '';
+            executeScripts(region.el);
+        }
+    }
+
+    /**
+     * Re-create every <script> in a swapped region so the parser actually runs
+     * it. Scripts assigned via innerHTML are inert by spec; cloning into a fresh
+     * element re-enters the parser. Skips JSON-LD and SPA diagnostics blocks
+     * (data scripts handled elsewhere or not meant to execute).
+     */
+    function executeScripts(root) {
+        const scripts = root.querySelectorAll('script');
+        for (const old of scripts) {
+            const t = (old.type || '').toLowerCase();
+            if (t === 'application/ld+json' || t === 'application/spa-diagnostics+json') continue;
+            const next = document.createElement('script');
+            for (const { name, value } of old.attributes) next.setAttribute(name, value);
+            if (!old.src) next.textContent = old.textContent;
+            old.replaceWith(next);
         }
     }
 
@@ -331,6 +350,8 @@
 
     function prefetch(href) {
         if (_prefetchCache.has(href)) return;
+        // Respect the user's data-saving preference.
+        if (navigator.connection && navigator.connection.saveData) return;
         if (_prefetchCache.size >= PREFETCH_LIMIT) {
             _prefetchCache.delete(_prefetchCache.keys().next().value);
         }
@@ -454,13 +475,36 @@
     });
 
     // Prefetch on hover and keyboard focus for near-instant navigation.
-    function maybePrefetch(e) {
+    // Hover requires a brief dwell so links the cursor merely grazes past
+    // (e.g. while traveling toward another target) don't trigger fetches.
+    // Focus is high-intent — fire immediately.
+    const HOVER_PREFETCH_MS = 65;
+    let _hoverTimer = 0;
+    let _hoverAnchor = null;
+
+    function hoverPrefetch(e) {
+        const anchor = e.target.closest('a');
+        if (anchor === _hoverAnchor) return;
+        cancelHoverPrefetch();
+        if (!anchor || !isSpaLink(anchor)) return;
+        _hoverAnchor = anchor;
+        _hoverTimer = setTimeout(() => {
+            prefetch(new URL(anchor.href).href);
+            _hoverAnchor = null;
+        }, HOVER_PREFETCH_MS);
+    }
+    function cancelHoverPrefetch() {
+        if (_hoverTimer) { clearTimeout(_hoverTimer); _hoverTimer = 0; }
+        _hoverAnchor = null;
+    }
+    function focusPrefetch(e) {
         const anchor = e.target.closest('a');
         if (!anchor || !isSpaLink(anchor)) return;
         prefetch(new URL(anchor.href).href);
     }
-    document.addEventListener('pointerover', maybePrefetch);
-    document.addEventListener('focusin', maybePrefetch);
+    document.addEventListener('pointerover', hoverPrefetch);
+    document.addEventListener('pointerout', cancelHoverPrefetch);
+    document.addEventListener('focusin', focusPrefetch);
 
     window.addEventListener('popstate', (e) => {
         const url = new URL(location.href);
