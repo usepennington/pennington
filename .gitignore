@@ -494,3 +494,7 @@ output/
 
 # Playwright MCP runtime logs
 .playwright-mcp/
+
+# Local scratch
+feature-requests/
+/*.png
