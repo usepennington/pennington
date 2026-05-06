@@ -46,6 +46,11 @@
     _style.textContent = [
         '@keyframes spa-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}',
         '::view-transition-group(*){animation-duration:150ms}',
+        // Pinned elements (sticky headers, etc.) stack above region groups
+        // so a named region animating from a scrolled-up position to its
+        // resting position cannot visually slide through the pinned bar.
+        '[data-spa-pin]{view-transition-name:var(--spa-pin-name,spa-pin)}',
+        '::view-transition-group(spa-pin){z-index:9999}',
         '@media(prefers-reduced-motion:reduce){' +
             '::view-transition-group(*),::view-transition-old(*),::view-transition-new(*)' +
             '{animation:none !important}}'
@@ -109,6 +114,29 @@
             }
         });
         return regions;
+    }
+
+    /**
+     * Reset scrollTop on every scrollable ancestor between each region and
+     * the document root. A region with view-transition-name nested inside
+     * an overflow:auto/scroll element (e.g. a sticky sidebar with its own
+     * scroller) gets a different bounding box across the transition unless
+     * those inner scrollers are realigned: the new content always starts at
+     * scrollTop=0, so an old scrollTop>0 leaves the old snapshot's bounds
+     * shifted upward — and during the animation the named group slides
+     * through the sticky header.
+     */
+    function resetRegionScrollers(regions) {
+        for (const region of Object.values(regions)) {
+            for (let node = region.el.parentElement;
+                node && node !== document.body && node !== document.documentElement;
+                node = node.parentElement) {
+                if (node.scrollTop === 0) continue;
+                const cs = getComputedStyle(node);
+                const oy = cs.overflowY;
+                if (oy === 'auto' || oy === 'scroll') node.scrollTop = 0;
+            }
+        }
     }
 
     function showLoadingState(regions) {
@@ -384,10 +412,19 @@
 
         if (fetchedDoc) {
             // Fast path — data arrived before the threshold.
+            // Reset inner scrollers (e.g. a sticky sidebar's overflow-y
+            // pane) before the transition so each region's view-transition
+            // bounds match between old and new snapshots. Window scroll is
+            // intentionally NOT reset here — letting it animate inside the
+            // transition preserves the natural "page slides into new
+            // content" feel. Elements that must stay put during the slide
+            // (typically the site header) opt in via data-spa-pin.
+            resetRegionScrollers(regions);
             maybeTransition(() => doCommit(fetchedDoc));
         } else {
             // Slow path — show skeleton while we wait.
             window.scrollTo(0, 0);
+            resetRegionScrollers(regions);
             showLoadingState(regions);
             const skeletonShownAt = performance.now();
 
