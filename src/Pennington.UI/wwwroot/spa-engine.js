@@ -116,29 +116,6 @@
         return regions;
     }
 
-    /**
-     * Reset scrollTop on every scrollable ancestor between each region and
-     * the document root. A region with view-transition-name nested inside
-     * an overflow:auto/scroll element (e.g. a sticky sidebar with its own
-     * scroller) gets a different bounding box across the transition unless
-     * those inner scrollers are realigned: the new content always starts at
-     * scrollTop=0, so an old scrollTop>0 leaves the old snapshot's bounds
-     * shifted upward — and during the animation the named group slides
-     * through the sticky header.
-     */
-    function resetRegionScrollers(regions) {
-        for (const region of Object.values(regions)) {
-            for (let node = region.el.parentElement;
-                node && node !== document.body && node !== document.documentElement;
-                node = node.parentElement) {
-                if (node.scrollTop === 0) continue;
-                const cs = getComputedStyle(node);
-                const oy = cs.overflowY;
-                if (oy === 'auto' || oy === 'scroll') node.scrollTop = 0;
-            }
-        }
-    }
-
     function showLoadingState(regions) {
         for (const region of Object.values(regions)) {
             switch (region.loadingMode) {
@@ -433,19 +410,15 @@
 
         if (fetchedDoc) {
             // Fast path — data arrived before the threshold.
-            // Reset inner scrollers (e.g. a sticky sidebar's overflow-y
-            // pane) before the transition so each region's view-transition
-            // bounds match between old and new snapshots. Window scroll is
-            // intentionally NOT reset here — letting it animate inside the
-            // transition preserves the natural "page slides into new
-            // content" feel. Elements that must stay put during the slide
-            // (typically the site header) opt in via data-spa-pin.
-            resetRegionScrollers(regions);
+            // The browser preserves scrollTop on inner overflow scrollers
+            // across the innerHTML swap in commitRegions, so a region's
+            // view-transition bounds match in old and new snapshots without
+            // any explicit reset. Sticky elements that must stay put during
+            // the transition opt in via data-spa-pin.
             maybeTransition(() => doCommit(fetchedDoc));
         } else {
             // Slow path — show skeleton while we wait.
             window.scrollTo(0, 0);
-            resetRegionScrollers(regions);
             showLoadingState(regions);
             const skeletonShownAt = performance.now();
 
