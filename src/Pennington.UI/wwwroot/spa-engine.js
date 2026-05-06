@@ -28,6 +28,16 @@
  *   where a per-region snapshot would escape the parent's clip and flash
  *   through pinned chrome.
  *
+ * Scroll preservation (via data-spa-region-key):
+ *   The browser keeps scrollTop on inner overflow scrollers across an
+ *   innerHTML swap, which is what you want when navigating between pages
+ *   that share a region's content (e.g. clicking another doc page in the
+ *   same section). When the content changes meaningfully — switching doc
+ *   sections, tabs, etc. — set data-spa-region-key on the region element
+ *   to a value that identifies the content set. If the incoming element's
+ *   key differs from the current one, the region and its closest
+ *   scrollable ancestor have scrollTop reset to 0 after the swap.
+ *
  * Stylesheet handling:
  *   - New <link rel="stylesheet"> hrefs are appended to <head> before swap.
  *   - Any stylesheet tagged `data-spa-reload` is re-fetched with a cache
@@ -168,9 +178,37 @@
         for (const [name, region] of Object.entries(regions)) {
             if (filter && !filter(region)) continue;
             const incoming = doc.querySelector(`[data-spa-region="${cssEscape(name)}"]`);
+            const oldKey = region.el.dataset.spaRegionKey;
+            const newKey = incoming ? incoming.dataset.spaRegionKey : undefined;
+
             region.el.innerHTML = incoming ? incoming.innerHTML : '';
+            if (incoming) {
+                if (newKey === undefined) delete region.el.dataset.spaRegionKey;
+                else region.el.dataset.spaRegionKey = newKey;
+            }
             executeScripts(region.el);
+
+            // When the content set changes (e.g. switching doc sections),
+            // reset scroll on the region and its closest scrollable ancestor.
+            // The browser preserves scrollTop across innerHTML swaps, which is
+            // the right default for same-section navigation but leaves the
+            // user mid-list in unrelated content otherwise.
+            if (oldKey !== newKey) {
+                if (region.el.scrollTop) region.el.scrollTop = 0;
+                const scroller = findScrollableAncestor(region.el);
+                if (scroller) scroller.scrollTop = 0;
+            }
         }
+    }
+
+    function findScrollableAncestor(el) {
+        let p = el.parentElement;
+        while (p && p !== document.body) {
+            const o = getComputedStyle(p).overflowY;
+            if (o === 'auto' || o === 'scroll') return p;
+            p = p.parentElement;
+        }
+        return null;
     }
 
     /**
