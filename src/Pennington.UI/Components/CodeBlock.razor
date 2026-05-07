@@ -11,7 +11,15 @@
 #pragma warning disable BL0006
 
     /// <summary>
-    /// The programming language for syntax highlighting (e.g., "csharp", "python", "javascript").
+    /// The language id passed to <see cref="CodeBlockRenderingService"/>. A bare language
+    /// (e.g. <c>csharp</c>, <c>python</c>) goes straight to the highlighter; appending a
+    /// modifier — <c>csharp:xmldocid</c>, <c>csharp:xmldocid,bodyonly</c>, <c>csharp:path</c>,
+    /// or <c>csharp:xmldocid-diff</c> — routes through the registered
+    /// <see cref="ICodeBlockPreprocessor"/> chain (e.g.
+    /// <see cref="Pennington.Roslyn.Preprocessing.RoslynCodeBlockPreprocessor"/> when
+    /// <c>AddPenningtonRoslyn</c> is wired). The <c>Code</c> parameter or
+    /// <c>ChildContent</c> supplies the body the preprocessor operates on
+    /// (XmlDocId for <c>:xmldocid</c>, file path for <c>:path</c>).
     /// </summary>
     [Parameter, EditorRequired]
     public string Language { get; set; } = string.Empty;
