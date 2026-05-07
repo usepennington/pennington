@@ -19,6 +19,10 @@ public sealed class DiagnosticContext
     public void AddError(string message, string? source = null)
         => _diagnostics.Add(new Diagnostic(DiagnosticSeverity.Error, message, source));
 
+    /// <summary>Records an info-severity diagnostic with the given message and optional source label.</summary>
+    public void AddInfo(string message, string? source = null)
+        => _diagnostics.Add(new Diagnostic(DiagnosticSeverity.Info, message, source));
+
     /// <summary>Diagnostics accumulated for the current request, in insertion order.</summary>
     public IReadOnlyList<Diagnostic> Diagnostics => _diagnostics;
 

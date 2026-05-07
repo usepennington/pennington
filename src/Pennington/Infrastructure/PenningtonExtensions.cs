@@ -108,7 +108,9 @@ public static class PenningtonExtensions
             services.AddSingleton<ICodeHighlighter>(highlighter);
         }
         services.AddSingleton<HighlightingService>(sp =>
-            new HighlightingService(sp.GetServices<ICodeHighlighter>()));
+            new HighlightingService(
+                sp.GetServices<ICodeHighlighter>(),
+                sp.GetService<IHttpContextAccessor>()));
 
         // Shared pipeline for fenced code blocks — used by Markdig's CodeHighlightRenderer
         // and by the <CodeBlock> Razor component so both emit identical HTML.

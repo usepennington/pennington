@@ -7,4 +7,6 @@ public enum DiagnosticSeverity
     Warning,
     /// <summary>Failure that indicates broken content or misconfiguration.</summary>
     Error,
+    /// <summary>Informational notice about degraded but non-broken behavior.</summary>
+    Info,
 }
