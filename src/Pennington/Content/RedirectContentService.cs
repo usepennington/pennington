@@ -26,6 +26,12 @@ using YamlDotNet.Serialization.NamingConventions;
 /// — a request to the redirect source URL returns HTTP 301 with a meta-refresh body,
 /// and <see cref="Generation.OutputGenerationService"/> writes that body to disk.
 /// </summary>
+/// <remarks>
+/// File-reading service registered as plain singleton (aliased as both <see cref="RedirectContentService"/>
+/// and <see cref="IContentService"/>). Cannot use <c>AddFileWatched&lt;T&gt;()</c> because the
+/// alias registration would yield two different instances; instead, the cached redirect map
+/// is reset via an internal <see cref="IFileWatcher.SubscribeToChanges(System.Action)"/> hook.
+/// </remarks>
 public sealed class RedirectContentService : IContentService
 {
     private readonly IServiceProvider _serviceProvider;

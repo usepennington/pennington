@@ -16,6 +16,12 @@ using Routing;
 /// <c>/rss.xml</c> feed file. Without these the static build is missing
 /// the tag listing pages and the RSS file the BlogSite header links to.
 /// </summary>
+/// <remarks>
+/// File-reading service registered via <c>AddFileWatched&lt;BlogSiteContentService&gt;()</c>
+/// and aliased as <see cref="IContentService"/> through a transient indirection so each
+/// resolution sees the current factory-managed instance. The internal <see cref="AsyncLazy{T}"/>
+/// post cache is dropped when the factory rebuilds on file-change events.
+/// </remarks>
 public sealed class BlogSiteContentService : IContentService
 {
     private readonly BlogSiteOptions _options;
