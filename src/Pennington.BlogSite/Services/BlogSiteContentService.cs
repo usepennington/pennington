@@ -178,7 +178,7 @@ public sealed class BlogSiteContentService : IContentService
             BlogSiteFrontMatter fm;
             try
             {
-                var parsed = _parser.Parse<BlogSiteFrontMatter>(raw);
+                var parsed = _parser.Parse<BlogSiteFrontMatter>(raw, file);
                 fm = parsed.Metadata ?? new BlogSiteFrontMatter();
             }
             catch

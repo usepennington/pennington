@@ -232,7 +232,7 @@ public sealed partial class RazorPageContentService : IContentService
             if (string.IsNullOrWhiteSpace(yamlContent))
                 return null;
 
-            var metadata = _frontMatterParser.DeserializeYaml<DocFrontMatter>(yamlContent);
+            var metadata = _frontMatterParser.DeserializeYaml<DocFrontMatter>(yamlContent, sidecarPath);
             _logger.LogDebug("Loaded metadata for component {ComponentName} from {SidecarPath}",
                 component.Name, sidecarPath);
             return metadata;

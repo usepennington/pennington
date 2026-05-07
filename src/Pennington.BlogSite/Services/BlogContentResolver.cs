@@ -53,7 +53,7 @@ public sealed class BlogContentResolver
                 try
                 {
                     var content = await File.ReadAllTextAsync(source.Path.Value);
-                    var parsed = _parser.Parse<BlogSiteFrontMatter>(content);
+                    var parsed = _parser.Parse<BlogSiteFrontMatter>(content, source.Path.Value);
                     var fm = parsed.Metadata ?? new BlogSiteFrontMatter();
 
                     if (fm.IsDraft) continue;
@@ -89,7 +89,7 @@ public sealed class BlogContentResolver
                 if (item.Source is not MarkdownFileSource source) continue;
 
                 var content = await File.ReadAllTextAsync(source.Path.Value);
-                var parsed = _parser.Parse<BlogSiteFrontMatter>(content);
+                var parsed = _parser.Parse<BlogSiteFrontMatter>(content, source.Path.Value);
                 var fm = parsed.Metadata ?? new BlogSiteFrontMatter();
 
                 var tags = fm.Tags

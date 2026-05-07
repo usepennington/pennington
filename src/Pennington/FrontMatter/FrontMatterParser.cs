@@ -1,6 +1,13 @@
 namespace Pennington.FrontMatter;
 
+using System.Collections.Concurrent;
+using System.Collections.Frozen;
+using System.Reflection;
+using Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using YamlDotNet.Core;
+using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -9,47 +16,168 @@ using YamlDotNet.Serialization.NamingConventions;
 /// </summary>
 public sealed class FrontMatterParser
 {
-    private readonly IDeserializer _deserializer;
+    private const string DiagnosticSource = "FrontMatterParser";
+
+    private readonly FrontMatterParserOptions _options;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IDeserializer _lenientDeserializer;
+    private readonly IDeserializer _strictDeserializer;
+    private readonly ConcurrentDictionary<Type, FrozenSet<string>> _knownKeyCache = new();
 
     /// <summary>
-    /// Initializes the parser with a camelCase YAML deserializer that matches keys case-insensitively
-    /// and ignores unmatched properties. <c>Title:</c>, <c>title:</c>, and <c>TITLE:</c> all bind to the same property.
+    /// Initializes the parser with a camelCase YAML deserializer that matches keys case-insensitively.
+    /// In lenient mode (the default outside build) unknown keys are dropped silently after a warning is emitted;
+    /// in strict mode unknown keys also throw a <see cref="YamlException"/>.
     /// </summary>
-    public FrontMatterParser()
+    /// <param name="options">Parser options controlling strict-mode behavior.</param>
+    /// <param name="httpContextAccessor">Used to resolve the request-scoped <see cref="DiagnosticContext"/>.</param>
+    public FrontMatterParser(FrontMatterParserOptions options, IHttpContextAccessor httpContextAccessor)
     {
-        _deserializer = new DeserializerBuilder()
+        _options = options;
+        _httpContextAccessor = httpContextAccessor;
+        _lenientDeserializer = BuildDeserializer(strict: false);
+        _strictDeserializer = BuildDeserializer(strict: true);
+    }
+
+    /// <summary>
+    /// Convenience constructor for direct instantiation (tests, scripts) that defaults to
+    /// lenient mode and emits no diagnostics. Production hosts should resolve the parser
+    /// from DI so the configured <see cref="FrontMatterParserOptions"/> apply.
+    /// </summary>
+    public FrontMatterParser() : this(new FrontMatterParserOptions(), NullHttpContextAccessor.Instance) { }
+
+    private sealed class NullHttpContextAccessor : IHttpContextAccessor
+    {
+        public static readonly NullHttpContextAccessor Instance = new();
+        public HttpContext? HttpContext { get => null; set { } }
+    }
+
+    private static IDeserializer BuildDeserializer(bool strict)
+    {
+        var builder = new DeserializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .WithCaseInsensitivePropertyMatching()
-            .IgnoreUnmatchedProperties()
-            .Build();
+            .WithCaseInsensitivePropertyMatching();
+        if (!strict)
+            builder = builder.IgnoreUnmatchedProperties();
+        return builder.Build();
     }
 
     /// <summary>
     /// Parse front matter and return the metadata + remaining markdown body.
     /// Returns null metadata if no front matter block is present.
     /// </summary>
-    public FrontMatterResult<T> Parse<T>(string content) where T : IFrontMatter, new()
+    /// <param name="content">Markdown content with optional <c>---</c>-delimited front-matter block.</param>
+    /// <param name="sourcePath">Source file path used in diagnostic messages. Optional.</param>
+    /// <param name="diagnostics">
+    /// Diagnostic context to receive unknown-key warnings. When omitted, the parser falls back
+    /// to the per-request <see cref="DiagnosticContext"/> from <see cref="IHttpContextAccessor"/>.
+    /// </param>
+    public FrontMatterResult<T> Parse<T>(string content, string? sourcePath = null, DiagnosticContext? diagnostics = null)
+        where T : IFrontMatter, new()
     {
         if (!TryExtractYaml(content, out var yaml, out var body))
         {
             return new FrontMatterResult<T>(default, content);
         }
 
+        diagnostics ??= ResolveAmbientDiagnostics();
+        ScanUnknownKeys<T>(yaml, lineOffset: 1, sourcePath, diagnostics);
+
         var metadata = SafeDeserialize<T>(yaml) ?? new T();
         return new FrontMatterResult<T>(metadata, body);
     }
 
     /// <summary>
-    /// Deserialize raw YAML content (no --- delimiters) into a front matter type.
+    /// Deserialize raw YAML content (no <c>---</c> delimiters) into a front matter type.
     /// Used for sidecar metadata files.
     /// </summary>
-    public T DeserializeYaml<T>(string yaml) where T : IFrontMatter, new()
-        => SafeDeserialize<T>(yaml) ?? new T();
+    /// <param name="yaml">Raw YAML text.</param>
+    /// <param name="sourcePath">Source file path used in diagnostic messages. Optional.</param>
+    /// <param name="diagnostics">
+    /// Diagnostic context to receive unknown-key warnings. When omitted, the parser falls back
+    /// to the per-request <see cref="DiagnosticContext"/> from <see cref="IHttpContextAccessor"/>.
+    /// </param>
+    public T DeserializeYaml<T>(string yaml, string? sourcePath = null, DiagnosticContext? diagnostics = null)
+        where T : IFrontMatter, new()
+    {
+        diagnostics ??= ResolveAmbientDiagnostics();
+        ScanUnknownKeys<T>(yaml, lineOffset: 0, sourcePath, diagnostics);
+        return SafeDeserialize<T>(yaml) ?? new T();
+    }
 
     private T? SafeDeserialize<T>(string yaml)
     {
         var parser = new SafeYamlParser(new Parser(new StringReader(yaml)));
-        return _deserializer.Deserialize<T>(parser);
+        var deserializer = _options.StrictUnknownKeys ? _strictDeserializer : _lenientDeserializer;
+        return deserializer.Deserialize<T>(parser);
+    }
+
+    private DiagnosticContext? ResolveAmbientDiagnostics()
+        => _httpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
+
+    private void ScanUnknownKeys<T>(string yaml, int lineOffset, string? sourcePath, DiagnosticContext? diagnostics)
+    {
+        if (diagnostics is null || string.IsNullOrWhiteSpace(yaml))
+            return;
+
+        YamlStream stream;
+        try
+        {
+            stream = new YamlStream();
+            var parser = new SafeYamlParser(new Parser(new StringReader(yaml)));
+            stream.Load(parser);
+        }
+        catch (YamlException)
+        {
+            // Malformed or security-rejected YAML — let the deserialize step surface
+            // the canonical error rather than emitting a partial unknown-key list here.
+            return;
+        }
+
+        if (stream.Documents.Count == 0 || stream.Documents[0].RootNode is not YamlMappingNode mapping)
+            return;
+
+        var known = _knownKeyCache.GetOrAdd(typeof(T), BuildKnownKeySet);
+        var location = sourcePath ?? "<unknown>";
+
+        foreach (var entry in mapping.Children)
+        {
+            if (entry.Key is not YamlScalarNode keyNode || keyNode.Value is null)
+                continue;
+
+            var keyName = keyNode.Value;
+            if (known.Contains(keyName))
+                continue;
+
+            var line = keyNode.Start.Line + lineOffset;
+            diagnostics.AddWarning(
+                $"Unknown front-matter key '{keyName}' in {location}:{line}",
+                DiagnosticSource);
+        }
+    }
+
+    private static FrozenSet<string> BuildKnownKeySet(Type t)
+    {
+        // Mirror what WithNamingConvention(CamelCase) + WithCaseInsensitivePropertyMatching
+        // accept on the deserializer. Include declared and interface-default members from
+        // both T and any IFrontMatter capability mixins T implements.
+        var convention = CamelCaseNamingConvention.Instance;
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var prop in t.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            seen.Add(convention.Apply(prop.Name));
+        }
+
+        foreach (var iface in t.GetInterfaces())
+        {
+            foreach (var prop in iface.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                seen.Add(convention.Apply(prop.Name));
+            }
+        }
+
+        return seen.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>

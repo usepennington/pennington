@@ -83,6 +83,12 @@ public static class PenningtonExtensions
         }
 
         // Core services
+        // Build mode defaults StrictUnknownKeys to true so typo'd keys fail the build.
+        // The user wins if they already flipped it on; flip-down for build is rare and
+        // can still be done by registering a replacement options instance after AddPennington.
+        if (PenningtonBuildMode.IsBuildMode() && !options.FrontMatter.StrictUnknownKeys)
+            options.FrontMatter.StrictUnknownKeys = true;
+        services.AddSingleton(options.FrontMatter);
         services.AddSingleton<FrontMatterParser>();
         services.AddFileWatched<NavigationBuilder>();
 

@@ -270,7 +270,7 @@ public sealed class ContentResolver
         if (item.Source is not MarkdownFileSource source) return null;
 
         var content = await File.ReadAllTextAsync(source.Path.Value);
-        var result = _parser.Parse<DocSiteFrontMatter>(content);
+        var result = _parser.Parse<DocSiteFrontMatter>(content, source.Path.Value);
         var metadata = result.Metadata ?? new DocSiteFrontMatter();
 
         return new ParsedItem(item.Route, metadata, result.Body);

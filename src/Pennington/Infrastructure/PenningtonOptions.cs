@@ -2,6 +2,7 @@ namespace Pennington.Infrastructure;
 
 using System.Collections.Immutable;
 using System.Reflection;
+using FrontMatter;
 using Highlighting;
 using LlmsTxt;
 using Localization;
@@ -26,6 +27,9 @@ public sealed class PenningtonOptions
 
     /// <summary>Code-highlighting configuration.</summary>
     public HighlightingOptions Highlighting { get; } = new();
+
+    /// <summary>Front-matter parser configuration (strict-mode toggle).</summary>
+    public FrontMatterParserOptions FrontMatter { get; } = new();
 
     /// <summary>Localization configuration, including locales and defaults.</summary>
     public LocalizationOptions Localization { get; } = new();

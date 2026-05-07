@@ -133,7 +133,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
             try
             {
                 var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
-                var parsed = _parser.Parse<TFrontMatter>(content);
+                var parsed = _parser.Parse<TFrontMatter>(content, sourceFile.Value);
                 if (parsed.Metadata is { IsDraft: true })
                     continue;
                 frontMatter = parsed.Metadata;
@@ -398,7 +398,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
             try
             {
                 var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
-                var parsed = _parser.Parse<TFrontMatter>(content);
+                var parsed = _parser.Parse<TFrontMatter>(content, sourceFile.Value);
                 var fm = parsed.Metadata ?? new TFrontMatter();
                 builder.Add((route, fm, IsLlmsOnlyFile(sourceFile)));
             }

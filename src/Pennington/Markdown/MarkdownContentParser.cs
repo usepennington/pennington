@@ -41,7 +41,7 @@ public sealed class MarkdownContentParser<TFrontMatter> : IContentParser
         {
             var content = await _fileSystem.File.ReadAllTextAsync(path.Value);
 
-            var result = _frontMatterParser.Parse<TFrontMatter>(content);
+            var result = _frontMatterParser.Parse<TFrontMatter>(content, path.Value);
             var metadata = result.Metadata ?? new TFrontMatter();
 
             return new ParsedItem(item.Route, metadata, result.Body);
