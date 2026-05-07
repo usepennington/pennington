@@ -37,4 +37,7 @@ public record DocFrontMatter : IFrontMatter, ITaggable,
 
     /// <inheritdoc/>
     public bool Llms { get; init; } = true;
+
+    /// <inheritdoc/>
+    public bool SearchOnly { get; init; }
 }

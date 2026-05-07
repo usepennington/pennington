@@ -50,4 +50,7 @@ public record BlogSiteFrontMatter : IFrontMatter, ITaggable,
 
     /// <summary>When false, the post is excluded from the generated llms.txt output.</summary>
     public bool Llms { get; init; } = true;
+
+    /// <summary>When true, the post is indexed for search/llms but hidden from the rendered navigation tree.</summary>
+    public bool SearchOnly { get; init; }
 }

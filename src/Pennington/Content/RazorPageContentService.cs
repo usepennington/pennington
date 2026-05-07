@@ -16,6 +16,13 @@ using Routing;
 /// non-parameterized [RouteAttribute] routes. Optionally loads metadata
 /// from sidecar .razor.metadata.yml files placed alongside the component.
 /// </summary>
+/// <remarks>
+/// File-reading service registered as plain singleton with internal <see cref="Lazy{T}"/>
+/// caches. Does not subscribe to <see cref="Infrastructure.IFileWatcher"/>: <c>@page</c>
+/// routes are compile-time, so a .razor edit recompiles and restarts the host; sidecar
+/// <c>.razor.metadata.yml</c> reloads only on app restart. If live sidecar reload becomes
+/// a requirement, switch to <c>AddFileWatched&lt;RazorPageContentService&gt;()</c>.
+/// </remarks>
 public sealed partial class RazorPageContentService : IContentService
 {
     private readonly Assembly[] _assemblies;
@@ -112,6 +119,7 @@ public sealed partial class RazorPageContentService : IContentService
             )
             {
                 Description = entry.Metadata.Description,
+                SearchOnly = entry.Metadata.SearchOnly,
             });
         }
 
@@ -154,6 +162,7 @@ public sealed partial class RazorPageContentService : IContentService
                 Description = entry.Metadata?.Description,
                 ExcludeFromSearch = excludeFromSearch,
                 ExcludeFromLlms = excludeFromLlms,
+                SearchOnly = entry.Metadata?.SearchOnly ?? false,
             });
         }
 

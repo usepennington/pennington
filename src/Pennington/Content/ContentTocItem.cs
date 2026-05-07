@@ -28,4 +28,11 @@ public record ContentTocItem(
 
     /// <summary>When true, excluded from llms.txt.</summary>
     public bool ExcludeFromLlms { get; init; }
+
+    /// <summary>
+    /// When true, the entry is indexed for search/llms but filtered out of the rendered navigation tree by
+    /// <see cref="Pennington.Navigation.NavigationBuilder.BuildTree"/>. Search-index and llms.txt consumers
+    /// keep the entry as long as <see cref="ExcludeFromSearch"/> / <see cref="ExcludeFromLlms"/> allow it.
+    /// </summary>
+    public bool SearchOnly { get; init; }
 }

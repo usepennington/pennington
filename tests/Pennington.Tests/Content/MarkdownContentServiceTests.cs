@@ -1016,4 +1016,37 @@ public class MarkdownContentServiceTests
         llmsEntry.ExcludeFromSearch.ShouldBeTrue();
         llmsEntry.ExcludeFromLlms.ShouldBeFalse();
     }
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_SearchOnlyFrontMatter_FlowsToTocItem()
+    {
+        var fs = CreateFs(
+            ("visible.md", "---\ntitle: Visible Page\n---\n# Visible"),
+            ("hidden.md", "---\ntitle: Hidden FAQ\nsearchOnly: true\n---\n# Hidden"));
+        var service = CreateTestService(fs);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(2);
+        entries.Single(e => e.Title == "Visible Page").SearchOnly.ShouldBeFalse();
+        entries.Single(e => e.Title == "Hidden FAQ").SearchOnly.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task GetIndexableEntriesAsync_SearchOnlyFrontMatter_StillIndexable()
+    {
+        // SearchOnly entries flow into the indexable channel as ExcludeFromSearch=false,
+        // so SearchIndexService keeps them. NavigationBuilder filters them at render time.
+        var fs = CreateFs(
+            ("hidden.md", "---\ntitle: Hidden FAQ\nsearchOnly: true\n---\n# Hidden"));
+        var service = CreateTestService(fs);
+
+        IContentService svc = service;
+        var entries = await svc.GetIndexableEntriesAsync();
+
+        entries.Count.ShouldBe(1);
+        entries[0].SearchOnly.ShouldBeTrue();
+        entries[0].ExcludeFromSearch.ShouldBeFalse();
+        entries[0].ExcludeFromLlms.ShouldBeFalse();
+    }
 }

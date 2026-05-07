@@ -6,6 +6,12 @@ using Content;
 using Routing;
 
 /// <summary>Builds hierarchical navigation trees and related navigation metadata from flat TOC entries.</summary>
+/// <remarks>
+/// Composing service with a per-instance memo cache (<see cref="ConcurrentDictionary{TKey,TValue}"/>
+/// keyed by locale + items fingerprint). Registered via <c>AddFileWatched&lt;NavigationBuilder&gt;()</c>
+/// so the cache is dropped when content files change; trees rebuilt on next access reflect the
+/// fresh TOC.
+/// </remarks>
 public sealed class NavigationBuilder
 {
     private static readonly ContentRoute EmptySectionRoute = new()
@@ -70,7 +76,11 @@ public sealed class NavigationBuilder
         var key = ComputeCacheKey(items, locale);
         return _structuralCache.GetOrAdd(key, _ =>
         {
-            var filtered = FilterByLocale(items, locale);
+            // SearchOnly entries are indexed for search/llms but excluded from the
+            // rendered navigation tree. Filter here so the structural cache holds
+            // only the items that will appear in the sidebar.
+            var localised = FilterByLocale(items, locale);
+            var filtered = localised.Where(i => !i.SearchOnly).ToList();
             return BuildLevel(filtered, depth: 0, isRoot: true);
         });
     }
@@ -352,6 +362,7 @@ public sealed class NavigationBuilder
             hash.Add(item.Order);
             hash.Add(item.SectionLabel);
             hash.Add(item.Locale);
+            hash.Add(item.SearchOnly);
             hash.Add(item.HierarchyParts.Length);
             foreach (var part in item.HierarchyParts)
                 hash.Add(part, StringComparer.OrdinalIgnoreCase);

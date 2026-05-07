@@ -19,6 +19,13 @@ public interface IFrontMatter
     /// <summary>True when the page should be included in llms.txt output.</summary>
     bool Llms => true;
 
+    /// <summary>
+    /// When true, the page is included in indexing channels (search, llms.txt) but excluded
+    /// from the rendered navigation tree. Useful for FAQ entries, glossary terms, or other
+    /// content that should be discoverable by search but should not clutter the sidebar.
+    /// </summary>
+    bool SearchOnly => false;
+
     /// <summary>Stable cross-reference identifier used by xref links.</summary>
     string? Uid => null;
 

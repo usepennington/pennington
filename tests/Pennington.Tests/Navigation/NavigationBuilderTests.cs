@@ -467,4 +467,64 @@ public class NavigationBuilderTests
 
         tree.Count.ShouldBe(1);
     }
+
+    [Fact]
+    public void BuildTree_SearchOnlyItem_FilteredFromTree()
+    {
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Visible", "/guides/visible", 10, "visible"),
+            MakeTocItem("Hidden", "/guides/hidden", 20, "hidden") with { SearchOnly = true },
+        };
+
+        var tree = _builder.BuildTree(items);
+
+        tree.Count.ShouldBe(1);
+        tree[0].Title.ShouldBe("Visible");
+    }
+
+    [Fact]
+    public void BuildTree_SearchOnlyItem_DoesNotCreateAutoSection()
+    {
+        // A SearchOnly item with hierarchy "guides/faq/q1" should not cause a synthetic
+        // "faq" auto-section node to appear when no other guides/faq/* items exist.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Installation", "/guides/installation", 10, "installation"),
+            MakeTocItem("Hidden FAQ", "/guides/faq/q1", 20, "faq", "q1") with { SearchOnly = true },
+        };
+
+        var tree = _builder.BuildTree(items);
+
+        tree.Count.ShouldBe(1);
+        tree[0].Title.ShouldBe("Installation");
+    }
+
+    [Fact]
+    public void BuildTree_AllSearchOnly_ProducesEmptyTree()
+    {
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("A", "/a", 10, "a") with { SearchOnly = true },
+            MakeTocItem("B", "/b", 20, "b") with { SearchOnly = true },
+        };
+
+        var tree = _builder.BuildTree(items);
+
+        tree.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void BuildTree_SearchOnlyChangeBetweenCalls_DoesNotReturnStaleCache()
+    {
+        // Cache key includes SearchOnly, so toggling the flag invalidates the cached tree.
+        var visible = MakeTocItem("Topic", "/topic", 10, "topic");
+        var hidden = visible with { SearchOnly = true };
+
+        var first = _builder.BuildTree([visible]);
+        var second = _builder.BuildTree([hidden]);
+
+        first.Count.ShouldBe(1);
+        second.ShouldBeEmpty();
+    }
 }

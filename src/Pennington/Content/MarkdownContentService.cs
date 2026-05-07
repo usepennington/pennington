@@ -15,6 +15,14 @@ using YamlDotNet.Serialization.NamingConventions;
 /// When <see cref="LocalizationOptions"/> has multiple locales, also discovers
 /// content from locale subdirectories (e.g., Content/fr/, Content/de/).
 /// </summary>
+/// <remarks>
+/// File-reading service registered as plain singleton (the open-generic shape over
+/// <typeparamref name="TFrontMatter"/> and per-source <c>ContentPath</c> rule out
+/// <c>AddFileWatched&lt;T&gt;()</c>). The cached metadata <see cref="AsyncLazy{T}"/> is reset
+/// via an internal <see cref="IFileWatcher.AddPathWatch"/> scoped to this source's
+/// content directory — functionally equivalent to instance replacement, with the bonus
+/// that watcher events outside this content path don't perturb the cache.
+/// </remarks>
 public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMarkdownContentSource, ILlmsSubtreeProvider
     where TFrontMatter : IFrontMatter, new()
 {
@@ -241,6 +249,7 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
             Description = fm.Description,
             ExcludeFromSearch = excludeFromSearch,
             ExcludeFromLlms = excludeFromLlms,
+            SearchOnly = fm.SearchOnly,
         };
     }
 

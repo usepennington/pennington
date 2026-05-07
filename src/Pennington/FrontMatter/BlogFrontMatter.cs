@@ -39,4 +39,7 @@ public record BlogFrontMatter : IFrontMatter, ITaggable
 
     /// <inheritdoc/>
     public bool Llms { get; init; } = true;
+
+    /// <inheritdoc/>
+    public bool SearchOnly { get; init; }
 }

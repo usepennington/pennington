@@ -132,4 +132,19 @@ public class SearchIndexBuilderTests
 
         doc.Headings.ShouldBe("Install Getting started Advanced");
     }
+
+    [Fact]
+    public void Build_SearchOnlyToc_ProducesIndexedDocument()
+    {
+        // SearchOnly entries are excluded from navigation but must still be
+        // emitted to the search index. The builder is the indexing seam — it
+        // must not silently drop SearchOnly inputs.
+        var toc = MakeToc("Hidden FAQ", "/faq/hidden") with { SearchOnly = true };
+
+        var doc = _builder.Build(toc, "<p>FAQ answer body</p>", "");
+
+        doc.Title.ShouldBe("Hidden FAQ");
+        doc.Url.ShouldBe("/faq/hidden/");
+        doc.Body.ShouldBe("FAQ answer body");
+    }
 }
