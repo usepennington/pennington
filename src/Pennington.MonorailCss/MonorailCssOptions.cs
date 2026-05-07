@@ -98,9 +98,29 @@ public class MonorailCssOptions
     public SyntaxTheme SyntaxTheme { get; init; } = SyntaxTheme.Default;
 
     /// <summary>
-    /// Gets or sets a function to customize the CSS framework settings.
-    /// This allows for advanced customization of the MonorailCSS framework.
+    /// Gets or sets a function to customize the CSS framework settings before construction.
+    /// The callback receives a fully-baked <see cref="CssFrameworkSettings"/> with Pennington's
+    /// defaults already applied (theme, applies, scrollbar utilities, prose rules) and returns
+    /// the settings the framework is built from.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// To <b>add</b> custom utilities without losing Pennington's defaults (<c>scrollbar-thin</c>,
+    /// <c>scrollbar-thumb-*</c>, <c>scrollbar-track-*</c>, <c>scrollbar-color</c>), append rather
+    /// than replace:
+    /// </para>
+    /// <code>
+    /// CustomCssFrameworkSettings = settings => settings with
+    /// {
+    ///     CustomUtilities = settings.CustomUtilities.AddRange([myUtility]),
+    /// }
+    /// </code>
+    /// <para>
+    /// Plain assignment (<c>CustomUtilities = [myUtility]</c>) silently clobbers the engine
+    /// defaults — scrollbar styling vanishes from the rendered CSS. The same <c>AddRange</c>
+    /// pattern applies to <c>Applies</c> and the other collection-shaped settings.
+    /// </para>
+    /// </remarks>
     public Func<CssFrameworkSettings, CssFrameworkSettings> CustomCssFrameworkSettings { get; init; } =
         settings => settings;
 
