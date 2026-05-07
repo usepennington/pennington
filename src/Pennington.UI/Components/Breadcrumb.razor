@@ -1,0 +1,57 @@
+@* Visible breadcrumb trail rendered above content. Pairs with the
+   ImmutableList<BreadcrumbItem> exposed by Pennington.Navigation.NavigationInfo
+   (built by NavigationBuilder). Use TrailingContent for an "Edit on GitHub"
+   link or other right-aligned chrome. *@
+@using System.Collections.Immutable
+@using Pennington.Navigation
+
+@if (Items.Count > 0)
+{
+    <nav class="border-b border-base-100 dark:border-base-800 bg-base-50/50 dark:bg-base-900/40" aria-label="Breadcrumb">
+        <div class="max-w-[1280px] mx-auto px-6 h-10 flex items-center font-mono text-[11.5px] gap-2">
+            @for (var i = 0; i < Items.Count; i++)
+            {
+                var item = Items[i];
+                var isLast = i == Items.Count - 1;
+                var url = item.Route?.CanonicalPath.Value;
+                var hasUrl = !string.IsNullOrEmpty(url);
+                var classes = isLast
+                    ? "text-base-800 dark:text-primary-300"
+                    : "text-base-500 hover:text-base-800 dark:text-base-400 dark:hover:text-base-200";
+                if (hasUrl && !isLast)
+                {
+                    <a href="@url" class="@classes">@item.Title</a>
+                }
+                else if (isLast)
+                {
+                    <span class="@classes" aria-current="page">@item.Title</span>
+                }
+                else
+                {
+                    <span class="@classes">@item.Title</span>
+                }
+                if (!isLast)
+                {
+                    <span class="text-base-300 dark:text-base-600" aria-hidden="true">/</span>
+                }
+            }
+            @if (TrailingContent is not null)
+            {
+                <span class="ml-auto flex items-center gap-3 text-[11px]">
+                    @TrailingContent
+                </span>
+            }
+        </div>
+    </nav>
+}
+
+@code {
+    /// <summary>The breadcrumb trail to render. Empty list renders nothing.</summary>
+    [Parameter] public ImmutableList<BreadcrumbItem> Items { get; set; } = [];
+
+    /// <summary>
+    /// Optional content rendered on the trailing edge of the breadcrumb bar
+    /// (e.g. "Edit on GitHub" link). Pushed right via <c>ml-auto</c>.
+    /// </summary>
+    [Parameter] public RenderFragment? TrailingContent { get; set; }
+}
