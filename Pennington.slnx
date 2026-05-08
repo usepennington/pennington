@@ -47,5 +47,6 @@
     <Project Path="examples/BeyondTuiExample/BeyondTuiExample.csproj" />
     <Project Path="examples/FusionCacheDocSiteExample/FusionCacheDocSiteExample.csproj" />
     <Project Path="examples/SpectreConsoleDocSiteExample/SpectreConsoleDocSiteExample.csproj" />
+    <Project Path="examples/SpaPlaygroundExample/SpaPlaygroundExample.csproj" />
   </Folder>
 </Solution>

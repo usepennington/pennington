@@ -11,7 +11,7 @@ Why does in-site navigation fetch the same URL the address bar shows and parse i
 
 ## Context
 
-Classic server-rendered sites swap the whole document on every click — simple, full-fidelity, but heavy and visually jarring when the shared chrome redrawing is indistinguishable from the content changing. Full SPAs hydrate the entire app in the browser, make every navigation instant, and pay for it with a multi-megabyte runtime on first load, a separate SEO story, and a rendering path that diverges from whatever the server would have produced. Documentation sites sit awkwardly between those two extremes. Most of each page is static prose that does not benefit from client rendering, yet a handful of regions — the active-page highlight in the sidebar, the page outline, the language switcher — genuinely want to update without re-initializing from scratch.
+Classic server-rendered sites swap the whole document on every click — simple, full-fidelity, but heavy and visually jarring when the shared chrome redrawing is indistinguishable from the content changing. Full SPAs hydrate the entire app in the browser, make every navigation instant, and pay for it with a multi-megabyte runtime on first load, a separate SEO story, and a rendering path that diverges from whatever the server would have produced. Documentation sites sit awkwardly between those two extremes. Most of each page is static prose that does not benefit from client rendering, a couple of areas — the article body, the top bar with the language switcher — genuinely want to update on each navigation, and a third category of chrome (the sidebar's active link, the page outline) should not re-render at all but does need its state nudged when the page changes around it.
 
 Pennington takes a third position. Every page is fully server-rendered on first load. When the visitor clicks an in-site link, the browser fetches the same URL — the canonical HTML page — parses it with `DOMParser`, swaps regions tagged `data-spa-region` from the new document into the current one, and merges head metadata. There is one rendering path, one set of HTML rewriters, and no parallel envelope to keep in sync.
 
@@ -25,15 +25,22 @@ Every server-side rewriter — xref resolution, locale-aware link rewriting, bas
 
 ### The `data-spa-region` contract
 
-Anywhere in the layout that should update on navigation gets a `data-spa-region="name"` attribute. The DocSite layout marks three regions out of the box:
+Anywhere in the layout that should update on navigation gets a `data-spa-region="name"` attribute. The DocSite layout marks two regions out of the box:
 
 - `content` — the article body, including breadcrumbs and prev/next links.
-- `sidebar` — the table of contents, with the per-page active state.
 - `header` — the top bar, including the language switcher and area pills.
 
-Anything outside a marked region — the outer page chrome, the mobile menu's expanded state, scroll position — stays put.
+Anything outside a marked region — the outer page chrome, the mobile menu's expanded state, scroll position — stays put. The sidebar is intentionally one of those things, for reasons covered in the next section.
 
-The client picks the regions in the current document, finds elements with the same name in the parsed response, and swaps `innerHTML`. If the set of regions does not match — for example, navigating from a `MainLayout` page (three regions) to a `FullWidthLayout` page (only `content`) — the engine triggers a full page load. That is the explicit layout boundary, not a silent half-update.
+The client picks the regions in the current document, finds elements with the same name in the parsed response, and swaps `innerHTML`. If the set of regions does not match — for example, navigating from a `MainLayout` page (`content` plus `header`) to a `FullWidthLayout` page (only `content`) — the engine triggers a full page load. That is the explicit layout boundary, not a silent half-update.
+
+### Persistent chrome
+
+Some chrome has the same shape on every page. The DocSite sidebar is the canonical example — across every doc page within a layout, the table of contents is structurally identical, and the only thing that varies is which link carries `data-current="true"`. Marking that as a swap region works, but it throws away DOM nodes the engine is about to rebuild to the same shape, and along with them: the user's scroll position in a long sidebar, focus on the link they tabbed to, any expand/collapse state a reader interacted with, and any iframe or animation state inside the region.
+
+Leaving the element outside `data-spa-region` is the answer. The engine never queries it, never swaps its `innerHTML`, never re-runs scripts inside it. The same DOM nodes survive every navigation — `scrollTop`, focus, and live state are preserved by the browser for free, because nothing relocates them. The cost is that the active-state attributes no longer change automatically; the server-rendered destination has the right `data-current` flags, but they live in HTML the engine no longer looks at.
+
+The `spa:commit` event is the seam. It fires after each navigation with `detail.doc` — the parsed `Document` of the destination, the same HTML the server would have rendered for that URL. Consumers read the destination's chrome out of `doc`, copy whatever state actually changed onto the live nodes, and let server-side selection logic stay the source of truth. Active-state flags, the active-area pill, anything the server already computes — gets patched in place rather than re-derived on the client. The DocSite uses this to keep the sidebar's `data-current` flags in sync without ever rebuilding the tree.
 
 ### Head merging
 
@@ -54,7 +61,7 @@ The single-path approach trades some payload size for the elimination of all of 
 ## Trade-offs
 
 - **Cost — payload is the full page including chrome the client throws away.** Mitigated by HTTP-level caching, prefetch-on-hover, and View Transitions API masking the latency. If profiling shows it matters, a server-side response processor can detect a `Sec-Fetch-Dest`/`X-Spa-Fragment` header and pre-extract regions before send, opt-in.
-- **Cost — `innerHTML` swap blows away form state and focus inside swapped regions.** Acceptable for a docs site. A morphing strategy (Idiomorph or similar) is the upgrade path if interactive controls move into a swapped region later. The contract — mark regions, server renders them — does not change.
+- **Cost — `innerHTML` swap blows away form state and focus inside swapped regions.** Acceptable for a docs site, and the persistent-chrome path above is the answer when the cost matters: leave the element unmarked and patch state on `spa:commit`. A morphing strategy (Idiomorph or similar) is the upgrade path if interactive controls eventually need to live inside a swapped region. The contract — mark regions, server renders them — does not change.
 - **Cost — inline `<script>` tags in fetched HTML do not execute on `parseFromString`.** This is a feature for chrome scripts that should not re-run; it is a constraint for any future region whose content includes a JS-driven widget. Hook the `spa:commit` event from outside the region and re-initialize from there.
 - **Alternative considered — full client-side SPA (Blazor WebAssembly, React, etc.).** Would make every navigation instant at the cost of a multi-megabyte runtime on first load and a separate SEO story. Rejected for a content engine where most of each page is prose the client doesn't need to render.
 - **Alternative considered — JSON envelope of pre-rendered region fragments.** The previous shape, removed for the reasons enumerated above. The fact that the rewriter pipeline already produces correct HTML for the canonical URL is what makes the simpler approach work; the envelope was solving for a problem that did not exist once the rewriters were robust enough to trust.

@@ -26,6 +26,7 @@ class PageManager {
         this.sidebarToggleManager = new SidebarToggleManager();
         this.searchManager = new SearchManager();
         this.areaNavManager = new AreaNavManager();
+        this.sidebarStateManager = new SidebarStateManager(this.areaNavManager);
 
         // Initialize all components
         this.outlineManager.init();
@@ -37,6 +38,7 @@ class PageManager {
         this.sidebarToggleManager.init();
         this.searchManager.init();
         this.areaNavManager.init();
+        this.sidebarStateManager.init();
     }
 
     onSpaNavigating() {
@@ -44,11 +46,14 @@ class PageManager {
         if (outlineUl) outlineUl.innerHTML = '';
     }
 
-    onSpaCommit() {
-        // Re-run content-derived JS for the freshly-swapped regions. Active nav
-        // states, language switcher hrefs, and area pills are now produced by
-        // the server's per-page render of the sidebar/header regions, so no
-        // client-side patching is needed.
+    onSpaCommit(doc) {
+        // The sidebar lives outside any data-spa-region so its DOM, scroll
+        // position, focus, and user-driven state survive navigation. Patch
+        // active state from the destination's server-rendered sidebar so
+        // server-side IsSelected stamping stays the source of truth.
+        this.sidebarStateManager?.patch(doc);
+
+        // Re-run content-derived JS for the freshly-swapped regions.
         this.syntaxHighlighter?.init();
         this.tabManager?.init();
         this.mermaidManager?.init();
@@ -1069,6 +1074,65 @@ class AreaNavManager {
 }
 
 /**
+ * Sidebar State Manager - Patches active state on the persistent sidebar after
+ * SPA navigation. The sidebar lives outside any data-spa-region so its DOM,
+ * scroll position, focus, and any user-driven state survive across navigations.
+ * On spa:commit, this manager reads the destination's server-rendered sidebar
+ * from the parsed doc and copies data-current values onto the live anchors by
+ * href match - so server-side selection logic (locale prefixes, area resolution,
+ * IsSelected stamping) stays the source of truth without re-implementing route
+ * inference on the client.
+ */
+class SidebarStateManager {
+    constructor(areaNavManager) {
+        this.areaNavManager = areaNavManager;
+        this.sidebar = null;
+    }
+
+    init() {
+        this.sidebar = document.getElementById('nav-sidebar');
+    }
+
+    patch(doc) {
+        if (!this.sidebar || !doc) return;
+
+        const incomingSidebar = doc.getElementById('nav-sidebar');
+        if (!incomingSidebar) return;
+
+        // Build href -> data-current map from the incoming sidebar. Match by
+        // the raw href attribute (not the resolved .href property) because the
+        // parsed doc has no base URL, so .href would not normalize consistently.
+        const incomingState = new Map();
+        for (const a of incomingSidebar.querySelectorAll('a[data-current]')) {
+            const href = a.getAttribute('href');
+            if (href) incomingState.set(href, a.getAttribute('data-current'));
+        }
+
+        // Apply to live anchors. Anchors absent from the incoming map fall back
+        // to "false" so the previously-active link does not retain its highlight.
+        for (const a of this.sidebar.querySelectorAll('a[data-current]')) {
+            const href = a.getAttribute('href');
+            const next = href && incomingState.has(href) ? incomingState.get(href) : 'false';
+            if (a.getAttribute('data-current') !== next) {
+                a.setAttribute('data-current', next);
+            }
+        }
+
+        // Multi-area sites: route active-area changes through AreaNavManager so
+        // pill aria-current and [data-area-toc] visibility stay consistent.
+        const incomingNav = doc.querySelector('[data-area-nav]');
+        const liveNav = this.sidebar.querySelector('[data-area-nav]');
+        if (incomingNav && liveNav) {
+            const incomingArea = incomingNav.getAttribute('data-active-area');
+            const liveArea = liveNav.getAttribute('data-active-area');
+            if (incomingArea && incomingArea !== liveArea) {
+                this.areaNavManager.switchToArea(incomingArea);
+            }
+        }
+    }
+}
+
+/**
  * Search Manager - Handles custom search with FlexSearch
  */
 class SearchManager {
@@ -1605,7 +1669,7 @@ window.pageManager = pageManager;
 document.addEventListener('spa:before-navigate', () => {
     window.pageManager?.onSpaNavigating();
 });
-document.addEventListener('spa:commit', () => {
-    window.pageManager?.onSpaCommit();
+document.addEventListener('spa:commit', (e) => {
+    window.pageManager?.onSpaCommit(e.detail?.doc);
 });
 
