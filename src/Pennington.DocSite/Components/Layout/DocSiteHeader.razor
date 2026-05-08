@@ -41,17 +41,16 @@
         <div class="lg:flex-1 @(CenterSearch ? "lg:basis-0 lg:flex lg:justify-center" : "")">
             <button type="button"
                     id="search-input"
-                    class="w-8 md:w-32 lg:w-full m-0 max-w-xl h-8 transition-all pr-4 items-center gap-2 rounded-full bg-base-50 pl-1 text-sm text-base-500 ring-1 ring-base-900/10 transition hover:ring-base-900/20 md:flex dark:bg-base-950/5 dark:text-base-400 dark:ring-base-50/10 dark:ring-inset dark:hover:ring-base-50/20">
-                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-6 w-6 stroke-current">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M12.01 12a4.25 4.25 0 1 0-6.02-6 4.25 4.25 0 0 0 6.02 6Zm0 0 3.24 3.25"></path>
+                    class="w-8 md:w-32 lg:w-full m-0 max-w-md h-9 px-2 lg:px-3 flex items-center gap-2 rounded-lg bg-base-100 border border-base-200 text-sm text-base-500 transition-colors hover:bg-base-200 hover:border-base-300 dark:bg-base-900 dark:border-base-800 dark:text-base-400 dark:hover:bg-base-800 dark:hover:border-base-700">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="h-4 w-4 stroke-current shrink-0" stroke-width="2">
+                    <circle cx="11" cy="11" r="7"/>
+                    <path stroke-linecap="round" d="m21 21-4.3-4.3"/>
                 </svg>
-                <span class="hidden md:inline-block">
-                    Search
+                <span class="hidden md:inline-block flex-1 text-left">
+                    Search docs
                 </span>
-                <kbd class="hidden lg:inline-block ml-auto text-xs text-base-500 dark:text-base-400">
-                    <kbd class="font-sans">Ctrl </kbd>
-                    <kbd class="font-sans">K</kbd>
+                <kbd class="hidden lg:inline-flex items-center gap-0.5 ml-auto text-[11px] font-mono px-1.5 py-0.5 rounded border border-base-300 dark:border-base-700 text-base-500 dark:text-base-400">
+                    <span>Ctrl</span><span>K</span>
                 </kbd>
             </button>
         </div>

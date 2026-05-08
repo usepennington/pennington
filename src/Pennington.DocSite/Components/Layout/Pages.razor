@@ -28,7 +28,10 @@
     }
     <DocSiteArticle
         Title="@_resolved.Title"
+        Description="@_resolved.Description"
         HtmlContent="@_resolved.Html"
+        AreaTitle="@_activeArea?.Title"
+        AreaIconHtml="@_activeArea?.Icon"
         PreviousPageName="@_navInfo?.PreviousPage?.Title"
         PreviousPageHref="@_navInfo?.PreviousPage?.Route.CanonicalPath.Value"
         NextPageName="@_navInfo?.NextPage?.Title"
@@ -56,6 +59,7 @@ else if (_notFound)
 
     private ResolvedContent? _resolved;
     private NavigationInfo? _navInfo;
+    private ContentArea? _activeArea;
     private bool _notFound;
     private Type? _homeComponentType;
     private ImmutableList<AlternateLanguagePage> _alternateLanguages = ImmutableList<AlternateLanguagePage>.Empty;
@@ -110,8 +114,8 @@ else if (_notFound)
 
         if (_resolved != null)
         {
-            var area = ContentResolver.ResolveCurrentArea(url);
-            _navInfo = await ContentResolver.GetNavigationInfoForAreaAsync(url, area);
+            _activeArea = ContentResolver.ResolveCurrentArea(url);
+            _navInfo = await ContentResolver.GetNavigationInfoForAreaAsync(url, _activeArea);
             if (Localization.IsMultiLocale)
             {
                 _alternateLanguages = await ContentResolver.GetAlternateLanguagesAsync(url);

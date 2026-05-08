@@ -61,6 +61,20 @@ internal static class CodeBlockHtmlBuilder
             html.AppendLine($"<div class=\"{containerCss}\">");
         }
 
+        // Standalone code blocks get a head bar showing the language label so
+        // readers can identify the snippet at a glance. Tabbed children skip
+        // the head — the tab list above the panels already plays that role.
+        if (!isInTabGroup && !string.IsNullOrEmpty(languageId))
+        {
+            var displayLang = ParseDisplayLanguage(languageId);
+            if (!string.IsNullOrEmpty(displayLang))
+            {
+                html.AppendLine("<div class=\"codeblock-head\">");
+                html.AppendLine($"<span class=\"codeblock-lang\">{System.Net.WebUtility.HtmlEncode(displayLang)}</span>");
+                html.AppendLine("</div>");
+            }
+        }
+
         html.AppendLine($"<div class=\"{preCss}\">");
         html.AppendLine(highlightedHtml);
         html.AppendLine("</div>");
@@ -73,6 +87,13 @@ internal static class CodeBlockHtmlBuilder
         html.AppendLine("</div>");
 
         return html.ToString();
+    }
+
+    private static string ParseDisplayLanguage(string languageId)
+    {
+        var trimmed = languageId.Trim();
+        var colonIndex = trimmed.IndexOf(':');
+        return colonIndex >= 0 ? trimmed[..colonIndex] : trimmed;
     }
 
     private static (string containerCss, string preCss) GetCssClasses(

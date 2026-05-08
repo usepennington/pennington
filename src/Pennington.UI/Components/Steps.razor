@@ -1,9 +1,12 @@
+@* Container for ordered step-by-step instructions. Renders a vertical thread
+   line on the left of the column; each child <Step> punches a numbered medallion
+   onto the thread. Marked not-prose so the markdown prose layer doesn't restyle
+   our chrome. *@
 
-<div class="mx-4">
-<ol class="relative text-gray-500 border-l-2 border-base-200 dark:border-base-800 dark:text-base-400 list-none ">
+<div class="steps-thread not-prose">
     @ChildContent
-</ol>
 </div>
+
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
 }

@@ -30,10 +30,12 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     CanonicalBaseUrl = "https://usepennington.github.io/pennington/",
     DisplayFontFamily = "Lexend, sans-serif",
     BodyFontFamily = "'Noto Sans', sans-serif",
+    MonoFontFamily = "'JetBrains Mono', ui-monospace, SFMono-Regular, monospace",
     FontPreloads =
     [
         new FontPreload("/fonts/lexend.woff2"),
         new FontPreload("/fonts/noto-sans.woff2"),
+        new FontPreload("/fonts/jetbrains-mono.woff2"),
     ],
     HeaderIcon = "",
     HeaderContent = """<a href="/" class="text-primary-700 dark:text-primary-400 font-bold text-lg">Pennington</a>""",
@@ -54,6 +56,17 @@ builder.Services.AddDocSite(() => new DocSiteOptions
             src: url(/fonts/noto-sans.woff2) format('woff2');
             unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
         }
+        @font-face {
+            font-family: 'JetBrains Mono';
+            font-style: normal;
+            font-weight: 100 800;
+            font-display: swap;
+            src: url(/fonts/jetbrains-mono.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+        html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+        body { font-feature-settings: "ss01", "cv11"; }
+        .font-display { letter-spacing: -0.012em; }
     """,
     Areas =
     [

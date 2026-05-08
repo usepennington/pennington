@@ -1,13 +1,35 @@
+@* One step in a <Steps> sequence. Renders a numbered medallion to the left
+   of the body content, an optional title, and an optional Checkpoint slot
+   for the "verify the result" callout that ends some tutorial steps. *@
 
-<li class="mb-10 ">
-    <span class="humans-only not-prose -start-3 lg:-start-4 absolute flex items-center font-display text-xs lg:text-base font-bold justify-center mt-0.5 lg:mt-0 w-6 h-6 lg:w-8 lg:h-8 bg-base-100 rounded-full ring-2 ring-base-300 dark:ring-base-800 dark:bg-base-900">
-        @StepNumber
-    </span>
-
-    @ChildContent
-</li>
+<section class="step">
+    <span class="step-num humans-only">@StepNumber</span>
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <div class="step-title">@Title</div>
+    }
+    <div class="step-body">
+        @ChildContent
+    </div>
+    @if (Checkpoint is not null)
+    {
+        <div class="step-checkpoint">
+            <span class="step-checkpoint-label">Checkpoint</span>
+            <div class="step-checkpoint-body">@Checkpoint</div>
+        </div>
+    }
+</section>
 
 @code {
+    /// <summary>The label rendered inside the medallion. Usually a numeral, but accepts any short string.</summary>
     [Parameter] public string StepNumber { get; set; } = "1";
+
+    /// <summary>Optional title rendered above the body content.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Body content of the step.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Optional "Checkpoint" callout rendered after the body to verify a result.</summary>
+    [Parameter] public RenderFragment? Checkpoint { get; set; }
 }

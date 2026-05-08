@@ -28,11 +28,11 @@ Every server-side rewriter — xref resolution, locale-aware link rewriting, bas
 Anywhere in the layout that should update on navigation gets a `data-spa-region="name"` attribute. The DocSite layout marks two regions out of the box:
 
 - `content` — the article body, including breadcrumbs and prev/next links.
-- `header` — the top bar, including the language switcher and area pills.
+- `outline` — the right-rail page outline, populated client-side from the article headings on every commit.
 
-Anything outside a marked region — the outer page chrome, the mobile menu's expanded state, scroll position — stays put. The sidebar is intentionally one of those things, for reasons covered in the next section.
+Anything outside a marked region — the top bar, the sidebar, the outer page chrome, the mobile menu's expanded state, scroll position — stays put. The header and sidebar are intentionally outside the region system: the search button keeps its event handlers across navigations, and the sidebar keeps its scroll position and active-state can be patched in place. Both follow the persistent-chrome pattern covered in the next section.
 
-The client picks the regions in the current document, finds elements with the same name in the parsed response, and swaps `innerHTML`. If the set of regions does not match — for example, navigating from a `MainLayout` page (`content` plus `header`) to a `FullWidthLayout` page (only `content`) — the engine triggers a full page load. That is the explicit layout boundary, not a silent half-update.
+The client picks the regions in the current document, finds elements with the same name in the parsed response, and swaps `innerHTML`. If the set of regions does not match — for example, navigating from a `MainLayout` page (`content` plus `outline`) to a `FullWidthLayout` page (only `content`) — the engine triggers a full page load. That is the explicit layout boundary, not a silent half-update.
 
 ### Persistent chrome
 

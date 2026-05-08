@@ -1,5 +1,9 @@
+@if (!string.IsNullOrWhiteSpace(Title))
+{
+    <div class="@TitleStructureClass @TitleColorClass">@Title</div>
+}
 <div data-role="page-outline" data-content-selector="@ContentSelector" class="relative @ContainerStructureClass @ContainerColorClass">
-    <div data-role="page-outline-highlighter" class="absolute transition-all duration-500 opacity-0 left-[-1px] w-[1px] bg-primary-400"></div>
+    <div data-role="page-outline-highlighter" class="absolute transition-all duration-500 opacity-0 left-[-1px] w-[2px] rounded-sm bg-primary-600 dark:bg-primary-300"></div>
     <div>
         <ul class="@ListStructureClass @ListColorClass"
             data-outline-link-structure-class="@OutlineLinkStructureClass"
@@ -13,8 +17,14 @@
     /// <summary>CSS selector the client-side outline script queries to discover heading elements; must be non-empty for the outline to populate.</summary>
     [Parameter, EditorRequired] public string ContentSelector { get; set; } = "";
 
-    /// <summary>Textual label accepted for parity with other outline skins; not rendered by the default template.</summary>
-    [Parameter] public string Title { get; set; } = "On This Page";
+    /// <summary>Optional eyebrow rendered above the outline; pass an empty string to suppress.</summary>
+    [Parameter] public string Title { get; set; } = "On this page";
+
+    /// <summary>Layout and typography classes applied to the eyebrow above the outline list.</summary>
+    [Parameter] public string TitleStructureClass { get; set; } = "font-display text-[13px] font-semibold mb-3";
+
+    /// <summary>CSS classes applied to the eyebrow text.</summary>
+    [Parameter] public string TitleColorClass { get; set; } = "text-base-600 dark:text-base-300";
 
     /// <summary>Layout and border classes applied to the outer <c>data-role="page-outline"</c> container.</summary>
     [Parameter] public string ContainerStructureClass { get; set; } = "border-l border-base-200 dark:border-base-800";
@@ -26,11 +36,11 @@
     [Parameter] public string ListStructureClass { get; set; } = "list-none pl-4" ;
 
     /// <summary>CSS classes applied to the <c>&lt;ul&gt;</c> that holds outline links, composed after <see cref="ListStructureClass"/>.</summary>
-    [Parameter] public string ListColorClass { get; set; } = "text-neutral-500 dark:text-neutral-400";
+    [Parameter] public string ListColorClass { get; set; } = "text-base-500 dark:text-base-400";
 
     /// <summary>CSS classes emitted on the container as <c>data-outline-link-color-class</c> and applied by the client-side script to each generated <c>&lt;li&gt;&lt;a&gt;</c> for color and <c>data-selected=true</c> state.</summary>
-    [Parameter] public string OutlineLinkColorClass { get; set; } = "transition-colors duration-250 hover:text-base-900 dark:hover:text-base-50/90 data-[selected=true]:text-base-800 dark:data-[selected=true]:text-base-50";
+    [Parameter] public string OutlineLinkColorClass { get; set; } = "transition-colors duration-150 hover:text-base-900 dark:hover:text-base-50 data-[selected=true]:text-primary-700 dark:data-[selected=true]:text-primary-300 data-[selected=true]:font-medium";
 
     /// <summary>Layout classes emitted on the container as <c>data-outline-link-structure-class</c> and applied by the client-side script to each generated <c>&lt;li&gt;&lt;a&gt;</c>.</summary>
-    [Parameter] public string OutlineLinkStructureClass { get; set; } = "py-1 ml-[calc(-1*(4em-1px))] pl-[calc(4em+1px)] ";
+    [Parameter] public string OutlineLinkStructureClass { get; set; } = "block py-1 ml-[calc(-1*(4em-1px))] pl-[calc(4em+1px)]";
 }

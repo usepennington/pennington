@@ -17,11 +17,30 @@ internal static class PenningtonApplies
     /// </summary>
     public static ImmutableDictionary<string, string> All(SyntaxTheme syntax) =>
         ImmutableDictionary<string, string>.Empty
+            .AddRange(ProsePseudoApplies)
             .AddRange(CodeBlockApplies)
             .AddRange(TabApplies)
             .AddRange(MarkdownAlertApplies)
+            .AddRange(StepApplies)
             .AddRange(HljsApplies(syntax))
             .AddRange(SearchModalApplies);
+
+    // Prose pseudo-elements live here rather than in PenningtonProseRules because
+    // MonorailCSS's prose customization currently strips pseudo-element selectors.
+    // The H2 accent bar and the bullet dot are visual rhythm chrome; they must
+    // render to land the doc-site article aesthetic.
+    private static readonly ImmutableDictionary<string, string> ProsePseudoApplies =
+        ImmutableDictionary.CreateRange(new Dictionary<string, string>
+        {
+            {
+                ".prose h2",
+                "before:content-[''] before:absolute before:left-0 before:top-[0.32em] before:bottom-[0.18em] before:w-[3px] before:rounded-sm before:bg-gradient-to-b before:from-primary-500 before:to-primary-700 dark:before:from-primary-300 dark:before:to-primary-500"
+            },
+            {
+                ".prose ul > li",
+                "before:content-[''] before:absolute before:left-[0.35rem] before:top-[0.7em] before:w-[5px] before:h-[5px] before:rounded-full before:bg-primary-500/55 dark:before:bg-primary-300/55"
+            },
+        });
 
     /// <summary>
     /// Custom utilities (scrollbar styling) registered with the MonorailCSS framework.
@@ -65,17 +84,32 @@ internal static class PenningtonApplies
     private static readonly ImmutableDictionary<string, string> CodeBlockApplies =
         ImmutableDictionary.CreateRange(new Dictionary<string, string>
         {
+            // Outer chrome — rounded card with subtle border and surface tint.
+            // Dark-mode surface uses base-900 so code reads against a slightly
+            // raised plane against the page's base-950 background.
+            {
+                ".code-highlight-wrapper",
+                "my-6 rounded-xl border border-base-200 bg-base-50 dark:bg-base-900 dark:border-base-800 overflow-hidden"
+            },
             {
                 ".code-highlight-wrapper .standalone-code-container",
-                "bg-white/50 border border-base-300/75 shadow-xs rounded rounded-xl overflow-x-auto dark:bg-black/20 dark:border-base-700/50"
+                "overflow-x-auto"
             },
+
+            // Head bar — language label sits above the body. Standalone blocks only;
+            // tabbed children inherit their own head from the surrounding tab list.
+            {
+                ".code-highlight-wrapper .codeblock-head",
+                "flex items-center justify-between px-4 py-1.5 border-b border-base-200 dark:border-base-800 bg-base-100 dark:bg-base-900 font-mono text-[12px]"
+            },
+            {
+                ".code-highlight-wrapper .codeblock-lang",
+                "text-base-500 dark:text-base-400"
+            },
+
             {
                 ".code-highlight-wrapper pre ",
-                "py-2 md:py-3 px-4 md:px-8  overflow-x-auto  font-mono text-xs md:text-sm  leading-relaxed w-full dark:scheme-dark"
-            },
-            {
-                ".code-highlight-wrapper .standalone-code-highlight pre",
-                "text-base-900/90 dark:text-base-100/90"
+                "py-4 px-4 md:px-5 overflow-x-auto font-mono text-[13px] leading-[1.6] w-full dark:scheme-dark"
             },
             {
                 ".code-highlight-wrapper pre code",
@@ -85,7 +119,7 @@ internal static class PenningtonApplies
             // Code transformation line containers
             {
                 ".code-highlight-wrapper .line",
-                "inline-block transition-all duration-300 lg:py-[1px] px-8 -mx-8 w-[calc(100%+4rem)] relative"
+                "inline-block transition-all duration-300 lg:py-[1px] px-5 -mx-5 w-[calc(100%+2.5rem)] relative"
             },
             {
                 ".code-highlight-wrapper pre.has-focused .line",
@@ -99,21 +133,23 @@ internal static class PenningtonApplies
             // Line highlighting
             {
                 ".code-highlight-wrapper .line.highlight",
-                "bg-primary-700/20 dark:bg-primary-500/20"
+                "bg-primary-700/15 dark:bg-primary-500/15"
             },
 
-            // Diff notation
+            // Diff notation — GitHub-style green/red lines with inset gutter bar
+            // and a +/- glyph in the left margin. Colors chosen to match GitHub's
+            // accessibility palette so the diff is legible in both themes.
             {
                 ".code-highlight-wrapper .line.diff-add",
-                "bg-emerald-600/20 dark:bg-emerald-900/20 before:font-bold before:content-['+'] before:hidden md:before:block before:text-sm before:absolute before:left-1 before:green:text-green-500 before:text-green-700"
+                "bg-emerald-500/10 dark:bg-emerald-500/15 shadow-[inset_2px_0_0_var(--color-emerald-600)] dark:shadow-[inset_2px_0_0_var(--color-emerald-400)] before:absolute before:left-1 before:font-semibold before:content-['+'] before:text-emerald-700 dark:before:text-emerald-400"
             },
             {
                 ".code-highlight-wrapper .line.diff-remove",
-                "bg-red-600/20 dark:bg-red-900/20 before:font-bold  before:content-['-'] before:hidden md:before:block before:text-sm before:absolute before:left-1 before:dark:text-red-500 before:text-red-700"
+                "bg-rose-500/10 dark:bg-rose-500/15 shadow-[inset_2px_0_0_var(--color-rose-600)] dark:shadow-[inset_2px_0_0_var(--color-rose-400)] before:absolute before:left-1 before:font-semibold before:content-['-'] before:text-rose-700 dark:before:text-rose-400"
             },
             {
                 ".code-highlight-wrapper .line.diff-remove > *",
-                "opacity-50 contrast-50"
+                "opacity-60"
             },
 
             // Focus and blur
@@ -164,19 +200,54 @@ internal static class PenningtonApplies
         {
             {
                 ".tab-container",
-                "flex flex-col bg-base-100 border border-base-300/75 shadow-xs rounded rounded-xl overflow-x-auto dark:bg-base-950/25 dark:border-base-700/50"
+                "flex flex-col rounded-xl overflow-hidden border border-base-200 bg-base-50 dark:bg-base-900 dark:border-base-800"
             },
             {
                 ".tab-list",
-                "flex flex-row flex-wrap px-4 pt-1 bg-base-200/90 gap-x-2 lg:gap-x-4 dark:bg-base-800/50"
+                "flex flex-row flex-nowrap overflow-x-auto px-2 border-b border-base-200 dark:border-base-800 bg-base-100 dark:bg-base-900 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             },
             {
                 ".tab-button",
-                "whitespace-nowrap border-b border-transparent py-2 text-xs text-base-900/90 font-medium transition-colors hover:text-accent-500 disabled:pointer-events-none disabled:opacity-50 data-[selected=true]:text-accent-700 data-[selected=true]:border-accent-700 dark:text-base-100/90 dark:hover:text-accent-300 dark:data-[selected=true]:text-accent-400 dark:data-[selected=true]:border-accent-400"
+                "whitespace-nowrap border-b-2 border-transparent -mb-px px-3 py-2.5 text-[12px] font-mono font-medium text-base-500 dark:text-base-400 transition-colors hover:text-base-800 dark:hover:text-base-200 disabled:pointer-events-none disabled:opacity-50 data-[selected=true]:text-primary-700 data-[selected=true]:border-primary-600 dark:data-[selected=true]:text-primary-300 dark:data-[selected=true]:border-primary-300"
             },
             {
                 ".tab-panel",
-                "hidden data-[selected=true]:block py-3 "
+                "hidden data-[selected=true]:block"
+            },
+        });
+
+    private static readonly ImmutableDictionary<string, string> StepApplies =
+        ImmutableDictionary.CreateRange(new Dictionary<string, string>
+        {
+            // Container — the vertical thread line lives in a ::before pseudo at left:1.05rem
+            // so the medallion (positioned at left:0 of the step body) lands centered on it.
+            {
+                ".steps-thread",
+                "relative my-8 pl-10 before:content-[''] before:absolute before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:rounded-full before:bg-base-200 dark:before:bg-base-800"
+            },
+            {
+                ".steps-thread .step",
+                "relative pb-8 last:pb-1"
+            },
+            {
+                ".steps-thread .step-num",
+                "absolute -left-10 -top-0.5 inline-flex items-center justify-center w-8 h-8 rounded-full font-display font-bold text-[13px] text-primary-700 dark:text-primary-300 bg-base-50 dark:bg-base-900 border-[1.5px] border-primary-300 dark:border-primary-300/40 ring-4 ring-base-50 dark:ring-base-950"
+            },
+            {
+                ".steps-thread .step-title",
+                "font-display font-semibold text-base text-base-900 dark:text-base-50 mb-2"
+            },
+            {
+                ".steps-thread .step-checkpoint",
+                "mt-3 flex gap-2.5 items-start px-3 py-2.5 rounded-lg bg-primary-500/6 border border-primary-500/20 dark:bg-primary-300/8 dark:border-primary-300/20 text-[13.5px] leading-snug"
+            },
+            {
+                ".steps-thread .step-checkpoint-label",
+                "font-display font-semibold text-primary-800 dark:text-primary-200 shrink-0"
+            },
+            {
+                ".steps-thread .step-checkpoint-body",
+                "text-base-700 dark:text-base-300"
             },
         });
 
@@ -185,20 +256,39 @@ internal static class PenningtonApplies
 
     private static ImmutableDictionary<string, string> BuildMarkdownAlertApplies()
     {
+        // Per-flavor coloring: tinted background + matching border, body text in
+        // base-* (the alert palette only stains the chrome, not the body copy).
+        // Title color is one shade darker than the chrome tint so it reads as the
+        // anchor of the box.
         const string alertFormatString =
-            "fill-{0}-700 dark:fill-{0}-500 bg-{0}-100/75 border-{0}-500/20 dark:border-{0}-500/30 dark:bg-{0}-900/25 text-{0}-800 dark:text-{0}-200";
+            "bg-{0}-500/8 border-{0}-500/22 dark:bg-{0}-500/10 dark:border-{0}-500/25 fill-{0}-700 dark:fill-{0}-300";
+        const string titleFormatString =
+            "text-{0}-800 dark:text-{0}-200";
 
         return ImmutableDictionary.CreateRange(new Dictionary<string, string>
         {
-            { ".markdown-alert", "my-6 px-4 flex flex-row gap-2.5 rounded-2xl border text-sm items-center" },
+            // Box anatomy — rounded rectangle with tinted bg and border, body text inherits base color.
+            { ".markdown-alert", "my-6 p-4 rounded-[10px] border text-[14.5px] leading-[1.6] text-base-700 dark:text-base-300" },
             { ".markdown-alert a", "underline" },
-            { ".markdown-alert-note", string.Format(alertFormatString, "emerald") },
-            { ".markdown-alert-tip", string.Format(alertFormatString, "blue") },
-            { ".markdown-alert-caution", string.Format(alertFormatString, "amber") },
-            { ".markdown-alert-warning", string.Format(alertFormatString, "rose") },
-            { ".markdown-alert-important", string.Format(alertFormatString, "sky") },
-            { ".markdown-alert-title", "text-[0px]" },
-            { ".markdown-alert svg", "h-4 w-4 mt-0.5" },
+            { ".markdown-alert > p", "m-0" },
+            { ".markdown-alert > p + p", "mt-2" },
+
+            // Title — visible, sentence-case, with the icon inline as a flex child.
+            { ".markdown-alert-title", "flex items-center gap-2 mb-1 font-display font-semibold text-[14px]" },
+            { ".markdown-alert-title svg", "w-4 h-4 shrink-0" },
+
+            // Flavor remap — design fidelity: note=sky, tip=emerald, important=primary,
+            // warning=amber, caution=orange (kept distinct from warning).
+            { ".markdown-alert-note", string.Format(alertFormatString, "sky") },
+            { ".markdown-alert-note .markdown-alert-title", string.Format(titleFormatString, "sky") },
+            { ".markdown-alert-tip", string.Format(alertFormatString, "emerald") },
+            { ".markdown-alert-tip .markdown-alert-title", string.Format(titleFormatString, "emerald") },
+            { ".markdown-alert-important", "bg-primary-500/8 border-primary-500/22 dark:bg-primary-500/10 dark:border-primary-500/25 fill-primary-700 dark:fill-primary-300" },
+            { ".markdown-alert-important .markdown-alert-title", "text-primary-800 dark:text-primary-200" },
+            { ".markdown-alert-warning", string.Format(alertFormatString, "amber") },
+            { ".markdown-alert-warning .markdown-alert-title", string.Format(titleFormatString, "amber") },
+            { ".markdown-alert-caution", string.Format(alertFormatString, "orange") },
+            { ".markdown-alert-caution .markdown-alert-title", string.Format(titleFormatString, "orange") },
         });
     }
 

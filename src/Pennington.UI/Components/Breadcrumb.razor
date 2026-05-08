@@ -1,47 +1,43 @@
-@* Visible breadcrumb trail rendered above content. Pairs with the
-   ImmutableList<BreadcrumbItem> exposed by Pennington.Navigation.NavigationInfo
-   (built by NavigationBuilder). Use TrailingContent for an "Edit on GitHub"
-   link or other right-aligned chrome. *@
+@* Visible breadcrumb trail intended to live inside an article header.
+   Pairs with the ImmutableList<BreadcrumbItem> exposed by
+   Pennington.Navigation.NavigationInfo (built by NavigationBuilder).
+   Use TrailingContent for an "Edit on GitHub" link or other right-aligned
+   chrome on the same line. *@
 @using System.Collections.Immutable
 @using Pennington.Navigation
 
 @if (Items.Count > 0)
 {
-    <nav class="border-b border-base-100 dark:border-base-800 bg-base-50/50 dark:bg-base-900/40" aria-label="Breadcrumb">
-        <div class="max-w-[1280px] mx-auto px-6 h-10 flex items-center font-mono text-[11.5px] gap-2">
-            @for (var i = 0; i < Items.Count; i++)
+    <nav class="flex items-center gap-2 font-display text-[12.5px] font-medium text-base-500 dark:text-base-400 min-w-0 flex-wrap" aria-label="Breadcrumb">
+        @for (var i = 0; i < Items.Count; i++)
+        {
+            var item = Items[i];
+            var isLast = i == Items.Count - 1;
+            var url = item.Route?.CanonicalPath.Value;
+            var hasUrl = !string.IsNullOrEmpty(url);
+            if (hasUrl && !isLast)
             {
-                var item = Items[i];
-                var isLast = i == Items.Count - 1;
-                var url = item.Route?.CanonicalPath.Value;
-                var hasUrl = !string.IsNullOrEmpty(url);
-                var classes = isLast
-                    ? "text-base-800 dark:text-primary-300"
-                    : "text-base-500 hover:text-base-800 dark:text-base-400 dark:hover:text-base-200";
-                if (hasUrl && !isLast)
-                {
-                    <a href="@url" class="@classes">@item.Title</a>
-                }
-                else if (isLast)
-                {
-                    <span class="@classes" aria-current="page">@item.Title</span>
-                }
-                else
-                {
-                    <span class="@classes">@item.Title</span>
-                }
-                if (!isLast)
-                {
-                    <span class="text-base-300 dark:text-base-600" aria-hidden="true">/</span>
-                }
+                <a href="@url" class="hover:text-base-900 dark:hover:text-base-50 transition-colors">@item.Title</a>
             }
-            @if (TrailingContent is not null)
+            else if (isLast)
             {
-                <span class="ml-auto flex items-center gap-3 text-[11px]">
-                    @TrailingContent
-                </span>
+                <span class="text-base-700 dark:text-base-200" aria-current="page">@item.Title</span>
             }
-        </div>
+            else
+            {
+                <span>@item.Title</span>
+            }
+            if (!isLast)
+            {
+                <span class="text-base-300 dark:text-base-700" aria-hidden="true">/</span>
+            }
+        }
+        @if (TrailingContent is not null)
+        {
+            <span class="ml-auto flex items-center gap-3">
+                @TrailingContent
+            </span>
+        }
     </nav>
 }
 
@@ -50,7 +46,7 @@
     [Parameter] public ImmutableList<BreadcrumbItem> Items { get; set; } = [];
 
     /// <summary>
-    /// Optional content rendered on the trailing edge of the breadcrumb bar
+    /// Optional content rendered on the trailing edge of the breadcrumb row
     /// (e.g. "Edit on GitHub" link). Pushed right via <c>ml-auto</c>.
     /// </summary>
     [Parameter] public RenderFragment? TrailingContent { get; set; }

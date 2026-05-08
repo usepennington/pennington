@@ -6,6 +6,9 @@
 # dotenv files
 .env
 
+# Design handoff scratch (extracted prototype HTML; do not commit)
+.design-tmp/
+
 # User-specific files
 *.rsuser
 *.suo

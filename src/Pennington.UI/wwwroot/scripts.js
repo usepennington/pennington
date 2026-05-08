@@ -27,6 +27,7 @@ class PageManager {
         this.searchManager = new SearchManager();
         this.areaNavManager = new AreaNavManager();
         this.sidebarStateManager = new SidebarStateManager(this.areaNavManager);
+        this.languageSwitcherManager = new LanguageSwitcherManager();
 
         // Initialize all components
         this.outlineManager.init();
@@ -39,6 +40,7 @@ class PageManager {
         this.searchManager.init();
         this.areaNavManager.init();
         this.sidebarStateManager.init();
+        this.languageSwitcherManager.init();
     }
 
     onSpaNavigating() {
@@ -47,11 +49,13 @@ class PageManager {
     }
 
     onSpaCommit(doc) {
-        // The sidebar lives outside any data-spa-region so its DOM, scroll
-        // position, focus, and user-driven state survive navigation. Patch
-        // active state from the destination's server-rendered sidebar so
-        // server-side IsSelected stamping stays the source of truth.
+        // The sidebar and header live outside any data-spa-region so their
+        // DOM, scroll position, focus, and user-driven state (including the
+        // SearchManager's #search-input reference) survive navigation. Patch
+        // their per-page state from the destination's server-rendered markup
+        // so server-side selection logic stays the source of truth.
         this.sidebarStateManager?.patch(doc);
+        this.languageSwitcherManager?.patch(doc);
 
         // Re-run content-derived JS for the freshly-swapped regions.
         this.syntaxHighlighter?.init();
@@ -1059,9 +1063,18 @@ class AreaNavManager {
     switchToArea(slug) {
         if (!this.nav) return;
 
-        // Update pills
+        // Update pills. The dot indicator's bg color is server-stamped from
+        // the active-area ternary, not derived from aria-current at the CSS
+        // layer, so flip its class alongside the aria attribute — otherwise
+        // the dot stays the previous page's color after spa:commit.
         for (const p of this.nav.querySelectorAll('[data-area]')) {
-            p.setAttribute('aria-current', p.dataset.area === slug ? 'true' : 'false');
+            const isActive = p.dataset.area === slug;
+            p.setAttribute('aria-current', isActive ? 'true' : 'false');
+            const dot = p.querySelector('[data-area-dot]');
+            if (dot) {
+                dot.classList.toggle('bg-primary-500', isActive);
+                dot.classList.toggle('bg-base-400', !isActive);
+            }
         }
 
         // Show/hide TOCs
@@ -1129,6 +1142,37 @@ class SidebarStateManager {
                 this.areaNavManager.switchToArea(incomingArea);
             }
         }
+    }
+}
+
+/**
+ * Language Switcher Manager - Patches the persistent header's language
+ * switcher after SPA navigation. The header lives outside any data-spa-region
+ * so the search button's handlers survive, but that means the per-page
+ * alternate-language URLs and current-locale highlight no longer refresh on
+ * their own. On spa:commit, this manager copies the destination's
+ * server-rendered switcher contents onto the live <details> element. The
+ * outer element survives so the dropdown's open/closed state is preserved.
+ */
+class LanguageSwitcherManager {
+    constructor() {
+        this.switcher = null;
+    }
+
+    init() {
+        this.switcher = document.querySelector('[data-lang-switcher]');
+    }
+
+    patch(doc) {
+        if (!this.switcher || !doc) return;
+
+        const incoming = doc.querySelector('[data-lang-switcher]');
+        if (!incoming) return;
+
+        // innerHTML swap covers the current-locale display name, every
+        // alternate's href and active styling, and any items added/removed
+        // when the destination has different alternates available.
+        this.switcher.innerHTML = incoming.innerHTML;
     }
 }
 

@@ -91,7 +91,7 @@ The engine falls back to `location.href = url` (full page load) in three cases. 
 | Trigger | Reason |
 |---|---|
 | No `[data-spa-region]` on the current page | Nothing to swap. |
-| Incoming document's region set differs from the current one | Layout boundary; for example, `MainLayout` (`content`, `header`) → `FullWidthLayout` (`content`). |
+| Incoming document's region set differs from the current one | Layout boundary; for example, `MainLayout` (`content`, `outline`) → `FullWidthLayout` (`content`). |
 | Fetch fails | Network or server error; the browser handles the navigation. |
 
 ## Persistent chrome

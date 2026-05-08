@@ -91,7 +91,7 @@ The four chrome seams above are the most common overrides. DocSite exposes three
 | `DocSiteOptions.AdditionalRoutingAssemblies` | Widens the router to pick up `@page` components in your host assembly. Covered in the section above. |
 | `DocSiteOptions.CustomCssFrameworkSettings` | Mutates the MonorailCSS `CssFrameworkSettings` after DocSite applies its theme. Use for custom palettes, variants, or plugins beyond what the defaults ship. |
 | `services.AddSingleton<IContentService, T>()` | A concrete `IContentService` registered directly on the DI container is picked up by the pipeline alongside DocSite's own markdown service — see <xref:how-to.extensibility.custom-content-service>. |
-| `data-spa-region="name"` markup | Mark regions in your custom layout components for SPA navigation to update them. The DocSite layout already marks `content` and `header`; the sidebar persists across navigations and patches state on `spa:commit`. See <xref:explanation.spa.islands>. |
+| `data-spa-region="name"` markup | Mark regions in your custom layout components for SPA navigation to update them. The DocSite layout already marks `content` and `outline`; the header and sidebar persist across navigations (the search button keeps its handlers; sidebar state is patched on `spa:commit`). See <xref:explanation.spa.islands>. |
 
 ## Related
 

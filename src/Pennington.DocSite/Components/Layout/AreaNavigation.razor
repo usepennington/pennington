@@ -1,36 +1,30 @@
 @if (Areas is { Count: > 1 })
 {
     <nav aria-label="Content areas"
-         class="my-10 -ml-3 px-1 py-3 rounded-lg bg-base-100 dark:bg-base-900/60 ring-1 ring-base-200/70 dark:ring-base-800/70"
+         class="my-6 p-1.5 rounded-[10px] bg-base-100 dark:bg-base-900/60 border border-base-200 dark:border-base-800 flex flex-col gap-0.5"
          data-area-nav data-active-area="@(ActiveArea?.Slug ?? "")">
-        <ul class="flex flex-col gap-1">
-            @foreach (var area in Areas)
-            {
-                var isActive = ActiveArea != null
-                    && string.Equals(area.Slug, ActiveArea.Slug, StringComparison.OrdinalIgnoreCase);
-                var href = AreaHrefs.TryGetValue(area.Slug, out var resolved) ? resolved : $"/{area.Slug}/";
-                <li>
-                    <a href="@href"
-                       data-area="@area.Slug"
-                       aria-current="@(isActive ? "true" : "false")"
-                       class="flex items-center px-2 mx-1 py-1.5 rounded-md text-base transition-colors duration-150
-                              aria-[current=true]:bg-base-500/50 dark:aria-[current=true]:bg-base-800/50
-                              aria-[current=true]:text-primary-700 aria-[current=true]:dark:text-primary-400
-                              aria-[current=true]:font-medium
-                              aria-[current=true]:shadow-sm aria-[current=true]:dark:shadow-none
-                              aria-[current=true]:ring-1 aria-[current=true]:ring-base-200/60 aria-[current=true]:dark:ring-base-700/60
-                              aria-[current=false]:text-base-500 aria-[current=false]:dark:text-base-400
-                              aria-[current=false]:hover:text-base-800 aria-[current=false]:dark:hover:text-base-200
-                              aria-[current=false]:hover:bg-base-200/50 aria-[current=false]:dark:hover:bg-base-800/40">
-                        @if (area.Icon != null)
-                        {
-                            <span class="w-4 h-4 shrink-0 opacity-70">@((MarkupString)area.Icon)</span>
-                        }
-                        <span>@area.Title</span>
-                    </a>
-                </li>
-            }
-        </ul>
+        @foreach (var area in Areas)
+        {
+            var isActive = ActiveArea != null
+                && string.Equals(area.Slug, ActiveArea.Slug, StringComparison.OrdinalIgnoreCase);
+            var href = AreaHrefs.TryGetValue(area.Slug, out var resolved) ? resolved : $"/{area.Slug}/";
+            <a href="@href"
+               data-area="@area.Slug"
+               aria-current="@(isActive ? "true" : "false")"
+               class="flex items-center gap-2 px-2.5 py-1.5 rounded-[7px] font-display text-[13px] font-medium transition-colors
+                      aria-[current=true]:bg-base-50 aria-[current=true]:dark:bg-base-800
+                      aria-[current=true]:text-base-900 aria-[current=true]:dark:text-base-50
+                      aria-[current=true]:shadow-sm aria-[current=true]:dark:shadow-none
+                      aria-[current=false]:text-base-500 aria-[current=false]:dark:text-base-400
+                      aria-[current=false]:hover:text-base-900 aria-[current=false]:dark:hover:text-base-100">
+                <span data-area-dot class="@(isActive ? "bg-primary-500" : "bg-base-400") w-1.5 h-1.5 rounded-full shrink-0"></span>
+                @if (area.Icon != null)
+                {
+                    <span class="w-3.5 h-3.5 shrink-0 opacity-80">@((MarkupString)area.Icon)</span>
+                }
+                <span>@area.Title</span>
+            </a>
+        }
     </nav>
 }
 

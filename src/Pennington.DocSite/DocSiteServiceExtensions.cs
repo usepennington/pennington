@@ -81,8 +81,12 @@ public static class DocSiteServiceExtensions
                 "-apple-system, BlinkMacSystemFont, 'avenir next', avenir, 'segoe ui', " +
                 "'helvetica neue', 'Adwaita Sans', Cantarell, Ubuntu, roboto, noto, " +
                 "helvetica, arial, sans-serif";
+            const string defaultMonoStack =
+                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', " +
+                "'Courier New', monospace";
             var displayFont = options.DisplayFontFamily ?? defaultFontStack;
             var bodyFont = options.BodyFontFamily ?? defaultFontStack;
+            var monoFont = options.MonoFontFamily ?? defaultMonoStack;
             var userCustomization = options.CustomCssFrameworkSettings ?? (settings => settings);
 
             var monoOptions = new MonorailCssOptions
@@ -96,7 +100,8 @@ public static class DocSiteServiceExtensions
                 {
                     Theme = settings.Theme
                         .AddFontFamily("display", displayFont)
-                        .AddFontFamily("sans", bodyFont),
+                        .AddFontFamily("sans", bodyFont)
+                        .AddFontFamily("mono", monoFont),
                 }),
             };
 

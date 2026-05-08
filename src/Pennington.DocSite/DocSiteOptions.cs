@@ -56,6 +56,9 @@ public record DocSiteOptions
     /// <summary>CSS font-family stack used for body copy.</summary>
     public string? BodyFontFamily { get; init; }
 
+    /// <summary>CSS font-family stack used for monospaced contexts (code blocks, inline code, kbd).</summary>
+    public string? MonoFontFamily { get; init; }
+
     /// <summary>Additional CSS appended to the generated stylesheet.</summary>
     public string? ExtraStyles { get; init; }
 

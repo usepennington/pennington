@@ -67,14 +67,14 @@
                                 && string.Equals(area.Slug, _activeArea.Slug, StringComparison.OrdinalIgnoreCase);
                             <div data-area-toc="@area.Slug" class="@(isActive ? null : "hidden")">
                                 <TableOfContentsNavigation TableOfContents="_areaTocs.GetValueOrDefault(area.Slug)"
-                                    ListGapClass="gap-4"
+                                    ListGapClass="gap-1"
                                     ChildListClass="@TocChildListClass"
-                                    SectionHeaderStructureClass="text-xs font-semibold uppercase tracking-wider mt-6 first:mt-0 mb-2"
+                                    SectionHeaderStructureClass="@TocSectionHeaderStructureClass"
                                     SectionHeaderColorClass="@TocSectionHeaderColorClass"
-                                    LinkStructureClass="block text-sm leading-relaxed border-l pl-3 py-1"
+                                    LinkStructureClass="@TocLinkStructureClass"
                                     LinkColorClass="@TocLinkColorClass"
-                                    RootLinkStructureClass="block py-1 text-sm leading-relaxed"
-                                    RootLinkColorClass="@TocRootLinkColorClass" />
+                                    RootLinkStructureClass="@TocLinkStructureClass"
+                                    RootLinkColorClass="@TocLinkColorClass" />
                             </div>
                         }
                     }
@@ -83,25 +83,36 @@
                         <TableOfContentsNavigation TableOfContents="_toc"
                             ListGapClass="gap-0"
                             ChildListClass="@TocChildListClass"
-                            SectionHeaderStructureClass="text-xs font-semibold uppercase tracking-wider mt-5 first:mt-0 mb-1.5"
+                            SectionHeaderStructureClass="@TocSectionHeaderStructureClass"
                             SectionHeaderColorClass="@TocSectionHeaderColorClass"
-                            LinkStructureClass="block text-sm leading-relaxed border-l pl-3 py-[3px]"
+                            LinkStructureClass="@TocLinkStructureClass"
                             LinkColorClass="@TocLinkColorClass"
-                            RootLinkStructureClass="block py-[3px] text-sm leading-relaxed"
-                            RootLinkColorClass="@TocRootLinkColorClass" />
+                            RootLinkStructureClass="@TocLinkStructureClass"
+                            RootLinkColorClass="@TocLinkColorClass" />
                     }
                 </div>
             </nav>
             <div class="flex-1 min-w-0 lg:ml-0">
-                <div data-spa-region="header">
-                    <DocSiteHeader ShowMobileMenuButton="true" AlternateLanguages="_langSwitcherItems" />
-                </div>
+                @* Header is intentionally NOT a data-spa-region: SearchManager
+                   keeps a reference to #search-input, and swapping the header
+                   on every navigation replaces that node and breaks the
+                   click-to-open-modal handler. The LanguageSwitcher's per-page
+                   alternates and current-locale highlight are kept in sync via
+                   LanguageSwitcherManager.patch on spa:commit, mirroring the
+                   sidebar pattern. *@
+                <DocSiteHeader ShowMobileMenuButton="true" AlternateLanguages="_langSwitcherItems" />
                 <main class="mx-auto max-w-7xl">
                     <div class="flex lg:gap-x-8 xl:gap-x-12">
                         <article id="main-content" data-spa-region="content" data-spa-loading="skeleton" class="flex-1 mt-4 lg:mt-8 ml-4 lg:ml-8 mr-4 xl:mr-0 min-w-0">
                             @Body
                         </article>
-                        <div class="hidden xl:block sticky top-24 h-min  lg:max-h-[calc(100vh-7rem)] overflow-y-auto w-80  font-display tracking-tight text-sm">
+                        @* `outline` is a swap region so the MainLayout region
+                           set differs from FullWidthLayout's (`content` only),
+                           preserving the explicit layout-boundary fallback in
+                           spa-engine.js. The list inside is JS-populated by
+                           OutlineManager on every spa:commit, so swapping the
+                           empty server-rendered shell is harmless. *@
+                        <div data-spa-region="outline" data-spa-no-transition class="hidden xl:block sticky top-24 h-min  lg:max-h-[calc(100vh-7rem)] overflow-y-auto w-80  font-display tracking-tight text-sm">
                             <OutlineNavigation ContentSelector="#main-content" />
                         </div>
                     </div>
@@ -114,24 +125,26 @@
 </div>
 
 @code{
-    // Shared TOC styling — both the area-aware and single-tree branches above
-    // pass the same color/spacing strings; only the structure classes
-    // (gaps, vertical rhythm) genuinely diverge.
-    private const string TocChildListClass = "mt-1";
+    // Shared TOC styling — area-aware and single-tree branches pass the same strings.
+    // The pill-style nav links replaced the previous border-l indicator; the active
+    // state is now a tinted background, matching the area-pill / outline-rail family.
+    private const string TocChildListClass = "mt-1 flex flex-col gap-0.5";
 
-    private const string TocSectionHeaderColorClass = "text-base-400 dark:text-base-500";
+    private const string TocSectionHeaderStructureClass =
+        "font-display text-[12.5px] font-semibold mt-6 first:mt-0 mb-2 px-2.5";
+
+    private const string TocSectionHeaderColorClass = "text-base-500 dark:text-base-500";
+
+    private const string TocLinkStructureClass =
+        "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm leading-snug";
 
     private const string TocLinkColorClass =
-        "transition-colors duration-150 border-base-200 dark:border-base-800 " +
+        "transition-colors duration-150 " +
         "text-base-500 dark:text-base-400 " +
-        "data-[current=true]:border-primary-500 data-[current=true]:text-primary-700 " +
-        "dark:data-[current=true]:text-primary-400 data-[current=true]:font-medium " +
-        "hover:text-base-900 dark:hover:text-base-200";
-
-    private const string TocRootLinkColorClass =
-        "transition-colors duration-150 text-base-600 dark:text-base-400 " +
-        "data-[current=true]:text-primary-700 dark:data-[current=true]:text-primary-400 " +
-        "data-[current=true]:font-medium hover:text-base-900 dark:hover:text-base-200";
+        "hover:text-base-900 hover:bg-base-100 dark:hover:text-base-50 dark:hover:bg-base-900 " +
+        "data-[current=true]:text-primary-700 data-[current=true]:bg-primary-500/8 " +
+        "dark:data-[current=true]:text-primary-300 dark:data-[current=true]:bg-primary-300/8 " +
+        "data-[current=true]:font-medium";
 
     private ImmutableList<NavigationTreeItem>? _toc;
     private Dictionary<string, ImmutableList<NavigationTreeItem>> _areaTocs = new();
