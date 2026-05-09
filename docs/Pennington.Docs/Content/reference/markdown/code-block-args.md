@@ -71,7 +71,7 @@ A directive is the literal text `[!code <notation>]` wrapped in a line-trailing 
 
 ## See also
 
-- How-to: [Annotate code blocks](xref:how-to.content-authoring.code-annotations)
-- How-to: [Create tabbed code groups](xref:how-to.content-authoring.tabbed-code)
+- How-to: [Annotate code blocks](xref:how-to.code-samples.code-annotations)
+- How-to: [Create tabbed code groups](xref:how-to.code-samples.tabbed-code)
 - Related reference: [Markdown extensions catalog](xref:reference.markdown.extensions)
 - Background: [The syntax-highlighting cascade](xref:explanation.rendering.highlighting)

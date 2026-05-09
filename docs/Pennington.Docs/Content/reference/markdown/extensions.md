@@ -11,10 +11,10 @@ The catalog of non-CommonMark Markdown features wired into Pennington's Markdig 
 
 | Extension | Syntax | Controlled by | Doc page |
 |---|---|---|---|
-| Tabs | Adjacent fences with `tabs=true` | `UseTabbedCodeBlocks` | [Tabbed code](xref:how-to.content-authoring.tabbed-code) |
-| Alerts | `> [!KIND]` inside blockquote | `UseCustomAlerts` | [Alerts](xref:how-to.content-authoring.alerts) |
-| Code annotations | Trailing-comment `[!code …]` directive | `UseSyntaxHighlighting` | [Code annotations](xref:how-to.content-authoring.code-annotations) |
-| Cross-reference tags | `<xref:uid>` or `href="xref:uid"` | `XrefHtmlRewriter` (response stage) | [Cross-references](xref:how-to.content-authoring.cross-references) |
+| Tabs | Adjacent fences with `tabs=true` | `UseTabbedCodeBlocks` | [Tabbed code](xref:how-to.code-samples.tabbed-code) |
+| Alerts | `> [!KIND]` inside blockquote | `UseCustomAlerts` | [Alerts](xref:how-to.rich-content.alerts) |
+| Code annotations | Trailing-comment `[!code …]` directive | `UseSyntaxHighlighting` | [Code annotations](xref:how-to.code-samples.code-annotations) |
+| Cross-reference tags | `<xref:uid>` or `href="xref:uid"` | `XrefHtmlRewriter` (response stage) | [Cross-references](xref:how-to.navigation.cross-references) |
 
 ## Tabs
 
@@ -205,8 +205,8 @@ Configure MonorailCSS through [the options record](xref:reference.api.monorail-c
 
 ## See also
 
-- How-to: [Tabbed code](xref:how-to.content-authoring.tabbed-code)
-- How-to: [Alerts](xref:how-to.content-authoring.alerts)
-- How-to: [Code annotations](xref:how-to.content-authoring.code-annotations)
-- How-to: [Cross-references](xref:how-to.content-authoring.cross-references)
+- How-to: [Tabbed code](xref:how-to.code-samples.tabbed-code)
+- How-to: [Alerts](xref:how-to.rich-content.alerts)
+- How-to: [Code annotations](xref:how-to.code-samples.code-annotations)
+- How-to: [Cross-references](xref:how-to.navigation.cross-references)
 - Related reference: [Code-block argument reference](xref:reference.markdown.code-block-args)

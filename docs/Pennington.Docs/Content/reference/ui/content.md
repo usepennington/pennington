@@ -209,6 +209,6 @@ For sites that do not use `AddDocSite` (for example, `AddBlogSite` or a hand-rol
 
 ## See also
 
-- How-to: [Use UI components inside markdown](xref:how-to.content-authoring.ui-components-in-markdown)
+- How-to: [Use UI components inside markdown](xref:how-to.rich-content.ui-components-in-markdown)
 - Related reference: [Navigation components](xref:reference.ui.navigation)
 - Related reference: [Utility components](xref:reference.ui.utility)

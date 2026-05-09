@@ -54,5 +54,5 @@ M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])
 
 - Related reference: [`BlogSiteOptions`](xref:reference.api.blog-site-options) (see the `SocialLink` helper record and the `Socials` property)
 - Related reference: [Built-in BlogSite routes](xref:reference.blogsite.routes)
-- How-to: [Configure the BlogSite homepage](xref:how-to.configuration.blogsite-homepage)
-- How-to: [Customize DocSite layouts and components](xref:how-to.extensibility.override-docsite-components)
+- How-to: [Configure the BlogSite homepage](xref:how-to.feeds.blogsite-homepage)
+- How-to: [Customize DocSite layouts and components](xref:how-to.response-pipeline.override-docsite-components)

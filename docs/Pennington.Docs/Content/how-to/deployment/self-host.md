@@ -2,8 +2,8 @@
 title: "Self-host behind Nginx or IIS"
 description: "Serve the generated `output/` directory from Nginx or IIS with pretty-URL rewrites and the generated `404.html` as the fallback."
 uid: how-to.deployment.self-host
-order: 204040
-sectionLabel: Publishing & Deployment
+order: 211040
+sectionLabel: "Publishing & Deployment"
 tags: [deployment, self-host, nginx, iis]
 ---
 

@@ -9,7 +9,7 @@ tags: [getting-started, hosting, markdown, pipeline]
 
 By the end of this tutorial a runnable ASP.NET project — `MyFirstPenningtonSite` — serves `Content/index.md` as HTML at `http://localhost:5000/`, with the front-matter `title` appearing in both the `<title>` tag and the page's `<h1>`.
 
-The tutorial covers how to wire `AddPennington`, `UsePennington`, and `RunOrBuildAsync` into a minimal web host — the same foundation underneath every Pennington-powered site, whether DocSite, BlogSite, or hand-rolled. For when a bundled template is the faster path instead, [Positioning DocSite as a fast path](xref:explanation.core.docsite-positioning) walks through the tradeoffs before you pick.
+The tutorial covers how to wire `AddPennington`, `UsePennington`, and `RunOrBuildAsync` into a minimal web host — the same foundation underneath every Pennington-powered site, whether DocSite, BlogSite, or hand-rolled. For when a bundled template is the faster path instead, [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning) walks through the tradeoffs before you pick.
 
 ## Prerequisites
 

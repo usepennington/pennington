@@ -2,8 +2,8 @@
 title: "Deploy to GitHub Pages"
 description: "Ship a Pennington site to GitHub Pages with a ready-to-copy Actions workflow, base-URL injection, and the `.nojekyll` marker."
 uid: how-to.deployment.github-pages
-order: 204020
-sectionLabel: Publishing & Deployment
+order: 211020
+sectionLabel: "Publishing & Deployment"
 tags: [deployment, github-pages, ci, base-url]
 ---
 

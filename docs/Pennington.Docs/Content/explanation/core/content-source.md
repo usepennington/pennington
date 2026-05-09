@@ -82,5 +82,5 @@ Pennington multi-targets `net10.0;net11.0`. On `net10.0` the polyfill is a `read
 ## See also
 
 - Background: [The content pipeline and union types](xref:explanation.core.content-pipeline)
-- How-to: [Source content from outside the file system](xref:how-to.extensibility.custom-content-service)
-- Reference: [Sitemap configuration](xref:how-to.configuration.sitemap)
+- How-to: [Source content from outside the file system](xref:how-to.content-services.custom-content-service)
+- Reference: [Sitemap configuration](xref:how-to.feeds.sitemap)

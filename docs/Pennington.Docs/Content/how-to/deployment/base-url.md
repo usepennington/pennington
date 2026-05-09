@@ -2,8 +2,8 @@
 title: "Host under a sub-path (base URL)"
 description: "Serve a Pennington site from a non-root URL by passing `[baseUrl]` to the build and letting `BaseUrlHtmlRewriter` prefix every internal href, src, and action."
 uid: how-to.deployment.base-url
-order: 204050
-sectionLabel: Publishing & Deployment
+order: 211050
+sectionLabel: "Publishing & Deployment"
 tags: [deployment, base-url, rewriter, sub-path]
 ---
 

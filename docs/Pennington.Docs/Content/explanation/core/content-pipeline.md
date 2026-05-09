@@ -71,4 +71,4 @@ Treating failure as a data case is what makes the exhaustive match in `GenerateA
 ## Further reading
 
 - Reference: [Content pipeline interfaces](xref:reference.api.i-content-service) — the catalog of `IContentService`, `IContentParser`, `IContentRenderer`, and every case record with members.
-- How-to: [Implement a custom `IContentService`](xref:how-to.extensibility.custom-content-service) — how to plug a new source into the discovery stage.
+- How-to: [Implement a custom `IContentService`](xref:how-to.content-services.custom-content-service) — how to plug a new source into the discovery stage.

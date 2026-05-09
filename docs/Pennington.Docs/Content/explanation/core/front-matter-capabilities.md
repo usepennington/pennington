@@ -54,4 +54,4 @@ Declare a `record`, implement `IFrontMatter`, add whichever capability interface
 
 - Reference: [IFrontMatter and capability defaults](xref:reference.api.i-front-matter)
 - Reference: [Front matter key reference](xref:reference.front-matter.keys)
-- How-to: [Work with front matter](xref:how-to.content-authoring.front-matter)
+- How-to: [Work with front matter](xref:how-to.pages.front-matter)

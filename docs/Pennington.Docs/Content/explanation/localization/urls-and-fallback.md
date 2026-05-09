@@ -51,5 +51,5 @@ A page that exists only in the default locale appears once, in the default-local
 ## Further reading
 
 - Reference: [`LocalizationOptions`](xref:reference.api.localization-options) — `DefaultLocale`, `AddLocale`, and the URL helpers that back this mechanism.
-- How-to: [Enable multiple locales](xref:how-to.configuration.localization) — the recipe for populating `LocalizationOptions`, organizing content subdirectories, and wiring `UsePenningtonLocaleRouting`.
+- How-to: [Enable multiple locales](xref:how-to.discovery.localization) — the recipe for populating `LocalizationOptions`, organizing content subdirectories, and wiring `UsePenningtonLocaleRouting`.
 - External: [W3C — Language tags in HTML and XML](https://www.w3.org/International/articles/language-tags/) — background on BCP 47 locale codes, which the URL prefix scheme surfaces one-to-one.

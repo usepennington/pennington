@@ -81,5 +81,5 @@ Non-default locales are stored on disk under a locale folder (`Content/fr/...`),
 ## Further reading
 
 - Reference: [Navigation components (`TableOfContentsNavigation`, `OutlineNavigation`)](xref:reference.ui.navigation) — the UI that consumes the tree `NavigationBuilder` returns.
-- How-to: [Customize the sidebar](xref:how-to.content-authoring.customize-sidebar) — the recipe that leans on the ordering rules this page explains.
+- How-to: [Customize the sidebar](xref:how-to.navigation.customize-sidebar) — the recipe that leans on the ordering rules this page explains.
 - Tutorial: [Organize content with sections and areas](xref:tutorials.docsite.sections-and-areas) — the tutorial that introduces folder-driven grouping for new authors.

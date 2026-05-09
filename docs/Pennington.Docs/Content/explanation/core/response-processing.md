@@ -64,6 +64,6 @@ Reversing any two of these breaks one of the others' invariants. Keeping the ord
 ## Further reading
 
 - Reference: [Response processing interfaces](xref:reference.api.i-response-processor) — the member-by-member catalog of `IResponseProcessor`, `IHtmlResponseRewriter`, and the three built-in rewriters.
-- How-to: [Write a response processor](xref:how-to.extensibility.response-processor) — for touching the raw body.
-- How-to: [Write an HTML rewriter](xref:how-to.extensibility.html-rewriter) — for working inside the shared DOM pass.
+- How-to: [Write a response processor](xref:how-to.response-pipeline.response-processor) — for touching the raw body.
+- How-to: [Write an HTML rewriter](xref:how-to.response-pipeline.html-rewriter) — for working inside the shared DOM pass.
 - Related explanation: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build) — why the same processor chain runs against both live requests and the static-build crawler.
