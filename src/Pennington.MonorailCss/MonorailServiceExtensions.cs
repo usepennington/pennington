@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using MonorailCss;
 using MonorailCss.Discovery;
+using Pennington.MonorailCss.Internal;
 
 namespace Pennington.MonorailCss;
 
@@ -37,32 +38,38 @@ public static class MonorailServiceExtensions
             services.AddSingleton(optionFactory);
         }
 
-        // The engine owns the CssFramework instance Pennington built from the user's
-        // MonorailCssOptions, and is the only way Pennington's internals touch the framework.
-        // Pennington deliberately does NOT register CssFramework in DI: a host that wants its
-        // own CssFramework (for ad-hoc CompileUtilityClass calls, theme inspection, anything
-        // outside Pennington's stylesheet pipeline) registers one themselves with whatever
-        // settings they want, and there's no chance of shadowing or DI ordering surprises.
-        // Components that specifically want Pennington's instance inject MonorailCssEngine
-        // and read .Framework.
-        services.AddSingleton<MonorailCssEngine>(sp =>
-        {
-            var options = sp.GetRequiredService<MonorailCssOptions>();
-            return new MonorailCssEngine(MonorailCssService.BuildFramework(options));
-        });
-
         services.AddSingleton<MonorailCssService>();
 
         services.AddMonorailClassDiscovery();
 
-        // Hand Pennington's engine framework to the discovery pipeline so the candidate
-        // parser, class registry, and stylesheet generator all share one theme. Pennington.UI
-        // and the rest of the Pennington.* packages ride along automatically — Discovery
-        // force-loads every non-BCL assembly the entry app references.
+        // Seed the discovery pipeline with a framework built from Pennington's options so the
+        // candidate parser, class registry, and stylesheet generator all share one theme until
+        // discovery rebuilds the framework from source CSS (if any). Pennington.UI and the
+        // rest of the Pennington.* packages ride along automatically — Discovery force-loads
+        // every non-BCL assembly the entry app references.
+        //
+        // In development we also expand WatchSourceDirectories beyond the lone ContentRootPath
+        // Discovery's defaults provide. PDBs of the loaded non-system assemblies tell us which
+        // .csproj produced each one; under dotnet watch, the IL on disk goes stale on EnC
+        // deltas, so the source-file watcher in those project dirs is what keeps the class
+        // set fresh for .razor edits in referenced libraries (e.g., Pennington.DocSite,
+        // Pennington.UI) that live outside the entry app's content root.
         services.AddSingleton<IConfigureOptions<MonorailDiscoveryOptions>>(sp =>
             new ConfigureNamedOptions<MonorailDiscoveryOptions>(Options.DefaultName, opts =>
             {
-                opts.Framework = sp.GetRequiredService<MonorailCssEngine>().Framework;
+                var options = sp.GetRequiredService<MonorailCssOptions>();
+                opts.Framework = MonorailCssService.BuildFramework(options);
+
+                var hostEnv = sp.GetService<IHostEnvironment>();
+                if (hostEnv?.IsDevelopment() != true) return;
+
+                // Adding anything to WatchSourceDirectories disables Discovery's
+                // ApplyEnvironmentDefaults fill-in of ContentRootPath, so re-add it ourselves.
+                if (!string.IsNullOrEmpty(hostEnv.ContentRootPath))
+                    AddIfMissing(opts.WatchSourceDirectories, hostEnv.ContentRootPath);
+
+                foreach (var dir in SourceWatchProbe.GetProjectDirectories())
+                    AddIfMissing(opts.WatchSourceDirectories, dir);
             }));
 
         return services;
@@ -88,5 +95,21 @@ public static class MonorailServiceExtensions
             Results.Content(cssService.GetStyleSheet(), "text/css"));
 
         return app;
+    }
+
+    private static void AddIfMissing(List<string> list, string value)
+    {
+        var normalized = Path.TrimEndingDirectorySeparator(Path.GetFullPath(value));
+        foreach (var existing in list)
+        {
+            if (string.Equals(
+                    Path.TrimEndingDirectorySeparator(Path.GetFullPath(existing)),
+                    normalized,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+        }
+        list.Add(normalized);
     }
 }

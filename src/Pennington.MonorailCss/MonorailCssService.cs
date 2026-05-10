@@ -6,14 +6,14 @@ using Pennington.MonorailCss.Internal;
 namespace Pennington.MonorailCss;
 
 /// <summary>
-/// Generates CSS stylesheets using MonorailCSS with collected utility classes.
+/// Wraps the discovery-pipeline output with Pennington's stylesheet prefix
+/// (<see cref="ContentVisibilityRules"/> + <see cref="MonorailCssOptions.ExtraStyles"/>)
+/// and serves the result on every <c>/styles.css</c> hit.
 /// </summary>
 /// <param name="options">MonorailCSS configuration options.</param>
-/// <param name="engine">Configured framework wrapper shared with the discovery pipeline.</param>
-/// <param name="classRegistry">Live snapshot of classes discovered by the runtime scanner.</param>
+/// <param name="classRegistry">Live snapshot of classes + generated CSS from the runtime scanner.</param>
 public class MonorailCssService(
     MonorailCssOptions options,
-    MonorailCssEngine engine,
     IClassRegistry classRegistry)
 {
     private string? _cachedStyleSheet;
@@ -21,8 +21,8 @@ public class MonorailCssService(
     private readonly Lock _cacheLock = new();
 
     /// <summary>
-    /// Processes the discovered CSS classes and returns the generated stylesheet. The result
-    /// is cached until the discovery registry's version token changes, so repeated GETs of
+    /// Returns the registry's generated CSS wrapped with Pennington's prefix. The result is
+    /// cached until the discovery registry's version token changes, so repeated GETs of
     /// <c>/styles.css</c> are served from memory.
     /// </summary>
     public string GetStyleSheet()
@@ -37,15 +37,12 @@ public class MonorailCssService(
             }
         }
 
-        var classes = classRegistry.GetClasses();
-        var styleSheet = engine.Framework.Process(classes);
-
         var result = $"""
                 {ContentVisibilityRules}
 
                 {options.ExtraStyles}
 
-                {styleSheet}
+                {classRegistry.Css}
                 """;
 
         lock (_cacheLock)
@@ -70,9 +67,8 @@ public class MonorailCssService(
 
     /// <summary>
     /// Builds a fully-configured <see cref="CssFramework"/> from Pennington's options.
-    /// Called once during DI registration so the framework can be reused by both the
-    /// discovery pipeline (for candidate validation) and the stylesheet endpoint
-    /// (for CSS generation), keeping the theme consistent across both.
+    /// Used during DI registration to seed <see cref="MonorailDiscoveryOptions.Framework"/>;
+    /// the discovery pipeline may then rebuild the framework when it processes source CSS.
     /// </summary>
     public static CssFramework BuildFramework(MonorailCssOptions options)
     {
