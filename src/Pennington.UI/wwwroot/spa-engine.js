@@ -59,9 +59,10 @@
     const _root = document.documentElement;
     const SKELETON_DELAY = parseInt(_root.dataset.spaSkeletonDelay || '100', 10);
     const MIN_SKELETON_MS = parseInt(_root.dataset.spaMinSkeleton || '250', 10);
+    const PROGRESS_DELAY = parseInt(_root.dataset.spaProgressDelay || '100', 10);
     const REGION_SELECTOR = '[data-spa-region]';
 
-    // Inject minimal global styles (shimmer + view-transition timing).
+    // Inject minimal global styles (shimmer + view-transition timing + progress bar).
     const _style = document.createElement('style');
     _style.textContent = [
         '@keyframes spa-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}',
@@ -71,9 +72,16 @@
         // resting position cannot visually slide through the pinned bar.
         '[data-spa-pin]{view-transition-name:var(--spa-pin-name,spa-pin)}',
         '::view-transition-group(spa-pin){z-index:9999}',
+        '.spa-progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:9999;' +
+            'pointer-events:none;opacity:0;transition:opacity 200ms ease-out}',
+        '.spa-progress.is-active{opacity:1}',
+        '.spa-progress-bar{height:100%;width:100%;transform:scaleX(0);' +
+            'transform-origin:left center;background:var(--color-primary-500,#3b82f6);' +
+            'transition:transform 200ms ease-out;will-change:transform}',
         '@media(prefers-reduced-motion:reduce){' +
             '::view-transition-group(*),::view-transition-old(*),::view-transition-new(*)' +
-            '{animation:none !important}}'
+            '{animation:none !important}' +
+            '.spa-progress,.spa-progress-bar{transition:none}}'
     ].join('');
     document.head.appendChild(_style);
 
@@ -86,6 +94,96 @@
         'position:absolute;width:1px;height:1px;padding:0;margin:-1px;' +
         'overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0';
     document.body.appendChild(_announcer);
+
+    // Top-of-viewport progress bar for slow navigations. The PROGRESS_DELAY
+    // gate keeps fast/cached navigations silent. The trickle is fake — the
+    // engine has no body-progress signal, just an atomic fetch — but a
+    // diminishing-return curve plus a 100% snap on commit reads honestly at
+    // varying durations (e.g. 100ms vs a 5–10s Roslyn cold-start).
+    const progressBar = {
+        _outer: null,
+        _bar: null,
+        _value: 0,
+        _showTimer: 0,
+        _trickleTimer: 0,
+        _fadeTimer: 0,
+        _ensure() {
+            if (this._outer) return;
+            const outer = document.createElement('div');
+            outer.className = 'spa-progress';
+            const bar = document.createElement('div');
+            bar.className = 'spa-progress-bar';
+            outer.appendChild(bar);
+            document.body.appendChild(outer);
+            this._outer = outer;
+            this._bar = bar;
+        },
+        _set(v) {
+            this._value = v;
+            if (this._bar) this._bar.style.transform = 'scaleX(' + v + ')';
+        },
+        _resetInstant() {
+            if (!this._bar) return;
+            this._bar.style.transition = 'none';
+            this._set(0);
+            // Force layout so the next transform animates from 0 instead of
+            // collapsing into a single transition.
+            void this._bar.offsetWidth;
+            this._bar.style.transition = '';
+        },
+        _trickle() {
+            const v = this._value;
+            let inc;
+            if (v < 0.2) inc = 0.10;
+            else if (v < 0.5) inc = 0.04;
+            else if (v < 0.8) inc = 0.02;
+            else if (v < 0.99) inc = 0.005;
+            else return;
+            this._set(Math.min(v + inc, 0.994));
+        },
+        start() {
+            // Re-entrant before the fade completes: cancel it and wipe back to
+            // 0 so trickle restarts cleanly. complete()'s scaleX(1) snap would
+            // otherwise leave the bar stuck at full.
+            if (this._fadeTimer) {
+                clearTimeout(this._fadeTimer);
+                this._fadeTimer = 0;
+                if (this._outer) this._outer.classList.remove('is-active');
+                this._resetInstant();
+            }
+            if (this._showTimer) return;
+            if (this._outer && this._outer.classList.contains('is-active')) return;
+            this._showTimer = setTimeout(() => {
+                this._showTimer = 0;
+                this._ensure();
+                this._set(0.08);
+                this._outer.classList.add('is-active');
+                this._trickleTimer = setInterval(() => this._trickle(), 400);
+            }, PROGRESS_DELAY);
+        },
+        complete() {
+            if (this._showTimer) {
+                clearTimeout(this._showTimer);
+                this._showTimer = 0;
+                return;
+            }
+            if (!this._outer) return;
+            if (this._trickleTimer) {
+                clearInterval(this._trickleTimer);
+                this._trickleTimer = 0;
+            }
+            this._set(1);
+            // Hold at 100% briefly so the fill is visible, then fade opacity,
+            // then snap transform back to 0 off-screen for the next start.
+            this._fadeTimer = setTimeout(() => {
+                this._outer.classList.remove('is-active');
+                this._fadeTimer = setTimeout(() => {
+                    this._fadeTimer = 0;
+                    this._resetInstant();
+                }, 220);
+            }, 220);
+        }
+    };
 
     // -----------------------------------------------------------------------
     // Utilities
@@ -416,6 +514,10 @@
         }
 
         fire('spa:before-navigate', { url, slug: url.pathname });
+        // Abort/fail paths intentionally don't tear this down: a re-entrant
+        // navigate() calls start() again (idempotent), and fetchFail bails to
+        // location.href which discards the DOM.
+        progressBar.start();
 
         let fetchedDoc = null, fetchFail = false;
 
@@ -468,6 +570,7 @@
                 commitRegions(regions, doc, r => !r.noTransition);
                 announceNavigation(doc.title, regions);
                 fire('spa:commit', { url, slug: url.pathname, doc });
+                progressBar.complete();
 
                 const diagnostics = readDiagnostics(doc);
                 if (diagnostics) fire('spa:diagnostics', diagnostics);
