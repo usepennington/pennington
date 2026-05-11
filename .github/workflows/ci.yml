@@ -45,10 +45,6 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
 
-      - name: Install Playwright
-        shell: pwsh
-        run: tests/Pennington.IntegrationTests/bin/Release/net11.0/playwright.ps1 install chromium --with-deps
-
       - name: Test
         run: dotnet test Pennington.slnx -c Release --no-build
 

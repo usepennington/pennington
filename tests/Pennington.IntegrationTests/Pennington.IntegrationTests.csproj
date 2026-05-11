@@ -14,7 +14,6 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="*" />
     <PackageReference Include="Shouldly" Version="*" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="*" />
-    <PackageReference Include="Microsoft.Playwright" Version="*" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\docs\Pennington.Docs\Pennington.Docs.csproj" />
