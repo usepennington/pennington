@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
@@ -80,6 +81,15 @@ public static class PenningtonExtensions
                 b.AddConsole(o => o.FormatterName = BuildConsoleFormatter.Name);
                 b.AddConsoleFormatter<BuildConsoleFormatter, ConsoleFormatterOptions>();
             });
+        }
+        else
+        {
+            // Default WebHost ShutdownTimeout is 5s. The live-reload WebSocket
+            // (LiveReloadServer) holds connections open across the dev session,
+            // so Kestrel waits the full window on every Ctrl-C / IDE terminate
+            // before forcing the socket closed — a 5–10s hang. 500ms is plenty
+            // for a dev host to drain; anything still in flight gets cancelled.
+            services.Configure<HostOptions>(opts => opts.ShutdownTimeout = TimeSpan.FromMilliseconds(500));
         }
 
         // Core services

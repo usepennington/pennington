@@ -54,13 +54,6 @@ public static class PenningtonTuiExtensions
             services.AddTransient<IStartupFilter, TuiStartupFilter>();
             services.AddTransient<TuiRequestTrackingMiddleware>();
             services.AddTransient<TuiDiagnosticsCaptureMiddleware>();
-
-            // Shorten the host shutdown window. The default is 5s, and when Quit is
-            // pressed Kestrel waits for that full window before closing active
-            // connections — a noticeable hang after the TUI already unwound. 500ms
-            // is plenty for a dev dashboard to drain; anything still in flight
-            // gets cancelled.
-            services.Configure<HostOptions>(opts => opts.ShutdownTimeout = TimeSpan.FromMilliseconds(500));
         }
 
         return services;
