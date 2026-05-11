@@ -75,6 +75,15 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         new ContentArea("Under the Hood", "explanation"),
         new ContentArea("Reference", "reference"),
     ],
+    // Brand styling lives in BrandStyling.cs — pseudo-element @apply blocks
+    // (H2 gradient bar, bullet dot) and the prose flair (animated underline,
+    // primary blockquote, pre inset shadow, inline-code chip) re-applied on top
+    // of MonorailCSS's neutral defaults.
+    CustomCssFrameworkSettings = settings => settings with
+    {
+        Applies = settings.Applies.AddRange(BrandStyling.Applies),
+    },
+    ExtendProseCustomization = BrandStyling.Extend,
 });
 
 // Roslyn integration for :xmldocid and :path code extraction

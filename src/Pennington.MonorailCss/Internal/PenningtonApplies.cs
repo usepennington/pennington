@@ -17,30 +17,12 @@ internal static class PenningtonApplies
     /// </summary>
     public static ImmutableDictionary<string, string> All(SyntaxTheme syntax) =>
         ImmutableDictionary<string, string>.Empty
-            .AddRange(ProsePseudoApplies)
             .AddRange(CodeBlockApplies)
             .AddRange(TabApplies)
             .AddRange(MarkdownAlertApplies)
             .AddRange(StepApplies)
             .AddRange(HljsApplies(syntax))
             .AddRange(SearchModalApplies);
-
-    // Prose pseudo-elements live here rather than in PenningtonProseRules because
-    // MonorailCSS's prose customization currently strips pseudo-element selectors.
-    // The H2 accent bar and the bullet dot are visual rhythm chrome; they must
-    // render to land the doc-site article aesthetic.
-    private static readonly ImmutableDictionary<string, string> ProsePseudoApplies =
-        ImmutableDictionary.CreateRange(new Dictionary<string, string>
-        {
-            {
-                ".prose h2",
-                "before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[4px] before:rounded-sm before:bg-gradient-to-b before:from-primary-500 before:to-primary-700 dark:before:from-primary-300 dark:before:to-primary-500"
-            },
-            {
-                ".prose ul > li",
-                "before:content-[''] before:absolute before:left-[0.35rem] before:top-[0.7em] before:w-[5px] before:h-[5px] before:rounded-full before:bg-primary-500/55 dark:before:bg-primary-300/55"
-            },
-        });
 
     /// <summary>
     /// Custom utilities (scrollbar styling) registered with the MonorailCSS framework.

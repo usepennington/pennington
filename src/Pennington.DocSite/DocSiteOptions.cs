@@ -114,4 +114,10 @@ public record DocSiteOptions
     /// <see cref="Pennington.MonorailCss.MonorailCssOptions.CustomCssFrameworkSettings"/>.
     /// </summary>
     public Func<global::MonorailCss.CssFrameworkSettings, global::MonorailCss.CssFrameworkSettings>? CustomCssFrameworkSettings { get; init; }
+
+    /// <summary>
+    /// Wraps the baseline <see cref="global::MonorailCss.Theme.ProseCustomization"/>. Forwarded to
+    /// <see cref="Pennington.MonorailCss.MonorailCssOptions.ExtendProseCustomization"/>.
+    /// </summary>
+    public Func<global::MonorailCss.Theme.ProseCustomization, global::MonorailCss.Theme.ProseCustomization>? ExtendProseCustomization { get; init; }
 }

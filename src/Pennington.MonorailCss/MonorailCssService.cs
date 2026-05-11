@@ -79,7 +79,7 @@ public class MonorailCssService(
             Theme = theme,
             Applies = PenningtonApplies.All(options.SyntaxTheme),
             CustomUtilities = PenningtonApplies.ScrollbarUtilities,
-            ProseCustomization = PenningtonProseRules.Default,
+            ProseCustomization = options.ExtendProseCustomization(PenningtonProseRules.Default),
         };
 
         return new CssFramework(options.CustomCssFrameworkSettings(settings));

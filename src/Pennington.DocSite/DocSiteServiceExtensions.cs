@@ -104,6 +104,7 @@ public static class DocSiteServiceExtensions
                         .AddFontFamily("sans", bodyFont)
                         .AddFontFamily("mono", monoFont),
                 }),
+                ExtendProseCustomization = options.ExtendProseCustomization ?? (prose => prose),
             };
 
             return monoOptions;
