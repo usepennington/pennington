@@ -41,10 +41,12 @@ M:BlogSiteScaffoldExample.Stage1.Run(System.String[])
 </Step>
 </Steps>
 
-### Checkpoint — The bare host runs
+<Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/blog/hello-world`
 - The page shows unstyled HTML for the markdown — no home listing, no archive, no tag pages, no RSS feed
+
+</Checkpoint>
 
 ---
 
@@ -77,10 +79,12 @@ The full options surface — including the homepage-specific knobs `HeroContent`
 </Step>
 </Steps>
 
-### Checkpoint — Services registered, middleware not yet mounted
+<Checkpoint>
 
 - `dotnet build` succeeds
 - `dotnet run` starts the host, but `/` still returns whatever the pre-BlogSite pipeline produced — BlogSite services sit in DI while the middleware and endpoints remain unmounted
+
+</Checkpoint>
 
 ---
 
@@ -124,10 +128,12 @@ M:BlogSiteScaffoldExample.Stage2.Run(System.String[])
 </Step>
 </Steps>
 
-### Checkpoint — Full chrome renders
+<Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/`
 - The BlogSite home layout appears: site title "Scaffold Blog", a recent-posts list with one entry, header chrome, and MonorailCSS styling
+
+</Checkpoint>
 
 ---
 
@@ -163,10 +169,12 @@ Visit each URL in order and confirm the placeholder post's metadata appears on e
 </Step>
 </Steps>
 
-### Checkpoint — Every built-in route responds
+<Checkpoint>
 
 - Each URL above returns 200 and renders the placeholder post's metadata
 - `/rss.xml` returns `application/rss+xml` content with one item whose `<guid>` matches the canonical post URL
+
+</Checkpoint>
 
 ---
 

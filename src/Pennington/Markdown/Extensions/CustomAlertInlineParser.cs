@@ -108,6 +108,10 @@ internal sealed class CustomAlertInlineParser : InlineParser
         var attributes = alertBlock.GetAttributes();
         attributes.AddClass("markdown-alert");
         attributes.AddClass($"markdown-alert-{alertType.AsSpan().ToString().ToLowerInvariant()}");
+        // not-prose isolates the alert from page-prose typography (list bullets,
+        // paragraph margins, link color) so the box's interior renders the same
+        // here as inside the Mdazor <Checkpoint> component.
+        attributes.AddClass("not-prose");
 
         quoteBlock.ReplaceBy(alertBlock);
         processor.ReplaceParentContainer(quoteBlock, alertBlock);

@@ -40,10 +40,12 @@ M:GettingStartedStylingExample.Stage1.Run(System.String[])
 </Step>
 </Steps>
 
-### Checkpoint — Unstyled pages render
+<Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/`, `/about`, and `/contact`
 - Three pages render with plain browser defaults — black text on white, browser-default link underlines, and no layout chrome beyond `<nav>`/`<article>`
+
+</Checkpoint>
 
 ---
 
@@ -67,10 +69,12 @@ Notice that `<link rel="stylesheet" href="/styles.css">` points at an endpoint t
 </Step>
 </Steps>
 
-### Checkpoint — Layout file compiles
+<Checkpoint>
 
 - The project builds with `dotnet build`
 - `Layout.Render` is visible from `Program.cs`; pages still render unstyled because the route handler hasn't been updated to call it yet
+
+</Checkpoint>
 
 ---
 
@@ -92,10 +96,12 @@ M:GettingStartedStylingExample.Stage2.Run(System.String[])
 </Step>
 </Steps>
 
-### Checkpoint — Services registered, pages still unstyled
+<Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/` — the page now has the layout's `<header>`, `<nav>`, `<article>`, and `<footer>` shell, but no styles apply
 - Visit `http://localhost:5000/styles.css` and the response is a 404; the endpoint isn't mounted yet
+
+</Checkpoint>
 
 ---
 
@@ -117,11 +123,13 @@ M:GettingStartedStylingExample.Stage3.Run(System.String[])
 </Step>
 </Steps>
 
-### Checkpoint — Styled pages and a live stylesheet
+<Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/` — the header, nav, article, and footer now render with indigo accents, slate neutrals, and the layout spacing from the utility classes
 - Visit `http://localhost:5000/styles.css` and a populated stylesheet appears, containing rules for every utility class the layout emits
 - Visit `http://localhost:5000/contact` — the inline `<p class="text-primary-700 font-semibold">` in `contact.md` picks up the indigo color because the collector observed the class on its way through the response pipeline
+
+</Checkpoint>
 
 ---
 
@@ -152,11 +160,13 @@ Now reload `/about` in the browser. The paragraph renders in pink italic because
 </Step>
 </Steps>
 
-### Checkpoint — New class, new rule, no restart
+<Checkpoint>
 
 - `http://localhost:5000/about` renders the new paragraph in pink italic
 - `http://localhost:5000/styles.css` now contains a rule for `text-accent-600` that wasn't there before the markdown edit
 - No server restart was required — the collector picked up the class the first time the page was served
+
+</Checkpoint>
 
 ---
 

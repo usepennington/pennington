@@ -39,10 +39,12 @@ The `HeroContent = new HeroContent(Title: …, Description: …)` assignment is 
 </Step>
 </Steps>
 
-### Checkpoint — The hero renders
+<Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/`
 - The hero title "Field notes from a weekend content engine" and the description paragraph stack above the recent-posts list from the first-post tutorial
+
+</Checkpoint>
 
 ---
 
@@ -66,10 +68,12 @@ The `MyWork` property is typed as `IReadOnlyList<Project>` on `BlogSiteOptions`.
 </Step>
 </Steps>
 
-### Checkpoint — The sidebar card appears
+<Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/`
 - A "My Work" card appears in the home-page right rail with three linked entries — Pennington, MonorailCSS, Mdazor — each clickable
+
+</Checkpoint>
 
 ---
 
@@ -93,10 +97,12 @@ Notice that `new SocialLink(SocialIcons.GithubIcon, "https://github.com/example"
 </Step>
 </Steps>
 
-### Checkpoint — The icon row renders under "My Work"
+<Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/`
 - A horizontal row of four SVG icons — GitHub, Bluesky, LinkedIn, Mastodon — sits below the "My Work" card, each linking out to its `Url`
+
+</Checkpoint>
 
 ---
 
@@ -114,11 +120,13 @@ Look at the `MainSiteLinks = [...]` block pasted in Step 3.1. It contains three 
 </Step>
 </Steps>
 
-### Checkpoint — The top-nav and footer populate
+<Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/`
 - A "Home / Archive / Tags" link row appears in the site header, and the same three links repeat in the footer nav
 - Click **Archive** — the archive page lists the first post from the previous tutorial
+
+</Checkpoint>
 
 ---
 

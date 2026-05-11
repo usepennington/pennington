@@ -50,12 +50,14 @@ The two `---` fences delimit the YAML front matter block. The `date:` value pars
 </Step>
 </Steps>
 
-### Checkpoint — The new post replaces the scaffold placeholder
+<Checkpoint>
 
 - Run `dotnet run` from the example project
 - Visit `http://localhost:5000/` — a single recent-posts card titled **Shipping a tiny content engine for weekend projects** appears with the stage-1 description
 - Visit `http://localhost:5000/archive` — the same post appears as the only archive entry, dated **2026-04-10**
 - Visit `http://localhost:5000/blog/my-first-post/` — the post body renders with its H1 and paragraph text
+
+</Checkpoint>
 
 ---
 
@@ -93,11 +95,13 @@ With the file saved, reload the running site and verify each new field in turn. 
 </Step>
 </Steps>
 
-### Checkpoint — Each field has a visible home
+<Checkpoint>
 
 - Visit `http://localhost:5000/blog/my-first-post/` — the post header shows the byline **Author Name**, the series banner **Pennington Field Notes**, three tag chips (**pennington**, **dotnet**, **blogging**), and a **Source Code** link card pointing at the `repository:` URL
 - Visit `http://localhost:5000/tags/pennington/` — the post appears on the per-tag index; repeat for `/tags/dotnet/` and `/tags/blogging/`
 - Visit `http://localhost:5000/archive` — the archive card carries the longer description from the Stage 2 block
+
+</Checkpoint>
 
 ---
 
@@ -128,11 +132,13 @@ Visit `http://localhost:5000/rss.xml` in the browser (or `curl` it). Confirm the
 </Step>
 </Steps>
 
-### Checkpoint — A valid RSS feed with the populated post
+<Checkpoint>
 
 - Visit `http://localhost:5000/rss.xml` — the browser either renders the feed (Firefox) or shows raw XML (Chrome/Edge)
 - The `<channel>` carries the site title **First Post Blog** and the configured description
 - A single `<item>` element contains `<title>Shipping a tiny content engine for weekend projects</title>`, `<description>` with the stage-2 text, `<pubDate>` for **10 Apr 2026**, `<author>Author Name</author>`, and a `<link>` whose value starts with the configured `CanonicalBaseUrl`
+
+</Checkpoint>
 
 ---
 

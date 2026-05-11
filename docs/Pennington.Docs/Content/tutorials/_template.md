@@ -65,12 +65,14 @@ T:_ExampleProjectName_._Type_
 </Step>
 </Steps>
 
-### Checkpoint — _What you should see now_
+<Checkpoint>
 
 _Concrete verifiable state: a URL returns something, a file exists, a log line appears. If the step cannot be verified, the unit is wrong — tighten it._
 
 - Run `dotnet run` and visit `http://localhost:5000/_path_`
 - The page shows _X_
+
+</Checkpoint>
 
 ---
 
@@ -90,9 +92,11 @@ M:_ExampleProjectName_._Type_._Member_
 </Step>
 </Steps>
 
-### Checkpoint — _What you should see now_
+<Checkpoint>
 
 _Concrete verification._
+
+</Checkpoint>
 
 ---
 

@@ -56,9 +56,11 @@ The file is a regular Blazor component — there is nothing Pennington-specific 
 </Step>
 </Steps>
 
-### Checkpoint — The component compiles but markdown cannot see it
+<Checkpoint>
 
 Run `dotnet build` from `examples/BeyondCustomRazorComponentExample`. The build succeeds and produces `BeyondCustomRazorComponentExample.dll`. The `PricingCard` type exists at `BeyondCustomRazorComponentExample.Components.PricingCard` but is not yet wired to Mdazor, so a `<PricingCard />` tag in markdown renders as a literal custom element.
+
+</Checkpoint>
 
 ---
 
@@ -89,9 +91,11 @@ Run the DocSite host to verify the extra DI line did not break startup. No markd
 </Step>
 </Steps>
 
-### Checkpoint — Mdazor knows about PricingCard
+<Checkpoint>
 
 Run `dotnet run` from `examples/BeyondCustomRazorComponentExample` and visit `http://localhost:5000/`. The landing page renders without errors and the log shows the site serving on port 5000. `PricingCard` is now a registered Mdazor component; rendering is proved in the next unit.
+
+</Checkpoint>
 
 ---
 
@@ -122,9 +126,11 @@ With `dotnet run` still active, open `http://localhost:5000/pricing`. Mdazor int
 </Step>
 </Steps>
 
-### Checkpoint — Two cards render on the pricing page
+<Checkpoint>
 
 Visit `http://localhost:5000/pricing`. Two pricing cards appear: a plain **Basic** card at `$9 / month` and a **Pro** card at `$49 / month` with a "Most Popular" pill and a thicker accent border. View the page source — `<PricingCard>` has been replaced by real HTML (a `<div>` tree with the card classes), not left as a literal custom element.
+
+</Checkpoint>
 
 ---
 
@@ -149,13 +155,15 @@ Add `Highlighted="true"` to the first `<PricingCard Tier="Basic" ... />` tag. Bo
 </Step>
 </Steps>
 
-### Checkpoint — The rendered cards reflect the edits
+<Checkpoint>
 
 Reload `http://localhost:5000/pricing`. The dev host picks up markdown changes as you save, so no rebuild is required.
 
 - The Pro card now reads **$99 / month** and lists the extra feature bullet
 - The Basic card now has the "Most Popular" pill and the highlighted border
 - Open the browser's dev tools — the generated HTML under each `<PricingCard>` has changed to match
+
+</Checkpoint>
 
 ---
 

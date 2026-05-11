@@ -34,7 +34,7 @@ internal static class PenningtonApplies
         {
             {
                 ".prose h2",
-                "before:content-[''] before:absolute before:left-0 before:top-[0.32em] before:bottom-[0.18em] before:w-[3px] before:rounded-sm before:bg-gradient-to-b before:from-primary-500 before:to-primary-700 dark:before:from-primary-300 dark:before:to-primary-500"
+                "before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[4px] before:rounded-sm before:bg-gradient-to-b before:from-primary-500 before:to-primary-700 dark:before:from-primary-300 dark:before:to-primary-500"
             },
             {
                 ".prose ul > li",
@@ -237,18 +237,6 @@ internal static class PenningtonApplies
                 ".steps-thread .step-title",
                 "font-display font-semibold text-base text-base-900 dark:text-base-50 mb-2"
             },
-            {
-                ".steps-thread .step-checkpoint",
-                "mt-3 flex gap-2.5 items-start px-3 py-2.5 rounded-lg bg-primary-500/6 border border-primary-500/20 dark:bg-primary-300/8 dark:border-primary-300/20 text-[13.5px] leading-snug"
-            },
-            {
-                ".steps-thread .step-checkpoint-label",
-                "font-display font-semibold text-primary-800 dark:text-primary-200 shrink-0"
-            },
-            {
-                ".steps-thread .step-checkpoint-body",
-                "text-base-700 dark:text-base-300"
-            },
         });
 
     private static readonly ImmutableDictionary<string, string> MarkdownAlertApplies =
@@ -265,30 +253,59 @@ internal static class PenningtonApplies
         const string titleFormatString =
             "text-{0}-800 dark:text-{0}-200";
 
+        // `markdown-alert-checkpoint` shares the primary-tinted chrome of
+        // `important`. The chrome string can't go through the format helper
+        // because `primary` is theme-keyed (--color-primary-*) and the helper
+        // is for static palette colors.
+        const string primaryChrome =
+            "bg-primary-500/8 border-primary-500/22 dark:bg-primary-500/10 dark:border-primary-500/25 fill-primary-700 dark:fill-primary-300";
+        const string primaryTitle = "text-primary-800 dark:text-primary-200";
+
         return ImmutableDictionary.CreateRange(new Dictionary<string, string>
         {
             // Box anatomy — rounded rectangle with tinted bg and border, body text inherits base color.
             { ".markdown-alert", "my-6 p-4 rounded-[10px] border text-[14.5px] leading-[1.6] text-base-700 dark:text-base-300" },
-            { ".markdown-alert a", "underline" },
-            { ".markdown-alert > p", "m-0" },
-            { ".markdown-alert > p + p", "mt-2" },
 
-            // Title — visible, sentence-case, with the icon inline as a flex child.
-            { ".markdown-alert-title", "flex items-center gap-2 mb-1 font-display font-semibold text-[14px]" },
+            // Title — visible, sentence-case, with the icon (Markdig alerts) or
+            // text label (<Checkpoint>) inline as a flex child.
+            { ".markdown-alert-title", "flex items-center gap-2 font-display font-semibold text-[14px]" },
             { ".markdown-alert-title svg", "w-4 h-4 shrink-0" },
 
+            // Body typography — re-established because the alert carries
+            // `not-prose` so page-prose rules (list bullets, link color,
+            // paragraph margins) do not bleed inside the box. Direct-child
+            // selectors keep these scoped to top-level body content; nested
+            // structures fall through to defaults.
+            { ".markdown-alert > p", "m-0" },
+            { ".markdown-alert > ul, .markdown-alert > ol", "m-0 pl-5 list-outside" },
+            { ".markdown-alert > ul", "list-disc" },
+            { ".markdown-alert > ol", "list-decimal" },
+            {
+                ".markdown-alert > p + p, .markdown-alert > p + ul, .markdown-alert > p + ol, .markdown-alert > ul + p, .markdown-alert > ol + p",
+                "mt-2"
+            },
+            { ".markdown-alert li", "marker:text-base-500/60 dark:marker:text-base-400/60 my-0.5" },
+            { ".markdown-alert li > p", "m-0" },
+            { ".markdown-alert code", "font-mono text-[0.86em] px-1 py-px rounded border border-base-200 dark:border-base-700 bg-base-100 dark:bg-base-800 text-base-700 dark:text-base-200" },
+            { ".markdown-alert strong", "font-semibold text-base-900 dark:text-base-50" },
+            { ".markdown-alert em", "italic" },
+            { ".markdown-alert a", "underline underline-offset-[3px]" },
+
             // Flavor remap — design fidelity: note=sky, tip=emerald, important=primary,
-            // warning=amber, caution=orange (kept distinct from warning).
+            // warning=amber, caution=orange (kept distinct from warning),
+            // checkpoint=primary (Mdazor component with a text label, not an SVG icon).
             { ".markdown-alert-note", string.Format(alertFormatString, "sky") },
             { ".markdown-alert-note .markdown-alert-title", string.Format(titleFormatString, "sky") },
             { ".markdown-alert-tip", string.Format(alertFormatString, "emerald") },
             { ".markdown-alert-tip .markdown-alert-title", string.Format(titleFormatString, "emerald") },
-            { ".markdown-alert-important", "bg-primary-500/8 border-primary-500/22 dark:bg-primary-500/10 dark:border-primary-500/25 fill-primary-700 dark:fill-primary-300" },
-            { ".markdown-alert-important .markdown-alert-title", "text-primary-800 dark:text-primary-200" },
+            { ".markdown-alert-important", primaryChrome },
+            { ".markdown-alert-important .markdown-alert-title", primaryTitle },
             { ".markdown-alert-warning", string.Format(alertFormatString, "amber") },
             { ".markdown-alert-warning .markdown-alert-title", string.Format(titleFormatString, "amber") },
             { ".markdown-alert-caution", string.Format(alertFormatString, "orange") },
             { ".markdown-alert-caution .markdown-alert-title", string.Format(titleFormatString, "orange") },
+            { ".markdown-alert-checkpoint", primaryChrome },
+            { ".markdown-alert-checkpoint .markdown-alert-title", primaryTitle },
         });
     }
 

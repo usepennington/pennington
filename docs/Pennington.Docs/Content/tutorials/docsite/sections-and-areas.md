@@ -60,13 +60,15 @@ Paste the YAML-plus-markdown content above into `Content/guides/install.md`. Wit
 </Step>
 </Steps>
 
-### Checkpoint — A single ungrouped entry under Guides
+<Checkpoint>
 
 The sidebar shows the page directly, with no section header above it.
 
 - Run `dotnet run` from `examples/DocSiteSectionsExample`
 - Visit `http://localhost:5000/guides/install`
 - The Guides sidebar shows the **Install Pennington** link at the top of the area with no section header above it
+
+</Checkpoint>
 
 ---
 
@@ -99,11 +101,13 @@ One section, one subfolder. `sectionLabel:` names it in breadcrumbs.
 </Step>
 </Steps>
 
-### Checkpoint — One grouped section under Guides
+<Checkpoint>
 
 - Reload `http://localhost:5000/guides/installation`
 - The Guides sidebar shows a non-navigable **Getting Started** header with the **Install Pennington** link indented under it
 - The breadcrumb at the top of the article reads *Guides › Getting Started › Install Pennington*
+
+</Checkpoint>
 
 ---
 
@@ -152,11 +156,13 @@ Stagger `order:` values across sibling sections — 10/20/30 inside `getting-sta
 </Step>
 </Steps>
 
-### Checkpoint — Two sections under Guides, in the intended order
+<Checkpoint>
 
 - Revisit `http://localhost:5000/guides/installation`
 - The Guides sidebar shows, top to bottom: **Getting Started** (with *Install Pennington*, *Create your first project*, *Configure Pennington*) then **Advanced** (with *Custom layouts*, *The response pipeline*)
 - Click around — breadcrumbs and prev/next labels reflect the `sectionLabel:` on each page
+
+</Checkpoint>
 
 ---
 
@@ -208,12 +214,14 @@ Click the area selector pill at the top of the sidebar — the control that togg
 </Step>
 </Steps>
 
-### Checkpoint — Both areas render correctly, independently
+<Checkpoint>
 
 - With the host running, visit `http://localhost:5000/reference/core-api/pennington-options`
 - The sidebar shows **Core API** above **Extensions**, with two pages under each in `order:` sequence
 - Click the area selector to **Guides** — the sidebar replaces itself with the *Getting Started* / *Advanced* groups from unit 3
 - The area selector tracks the current area as navigation moves between pages
+
+</Checkpoint>
 
 ---
 

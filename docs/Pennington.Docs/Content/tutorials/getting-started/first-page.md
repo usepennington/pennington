@@ -58,11 +58,13 @@ Notice the `NavigationBuilder.BuildTree(tocItems)` call and the string join that
 </Step>
 </Steps>
 
-### Checkpoint — A single page renders at `/`
+<Checkpoint>
 
 - Run `dotnet run` from the example project
 - Visit `http://localhost:5000/`
 - The page shows the heading **Welcome to the site** and a nav strip with one link: **Welcome** pointing at `/`
+
+</Checkpoint>
 
 ---
 
@@ -99,11 +101,13 @@ M:GettingStartedFirstPageExample.Stage2.Run(System.String[])
 </Step>
 </Steps>
 
-### Checkpoint — Two pages, two nav entries, zero code edits
+<Checkpoint>
 
 - With the host still running (or after a `dotnet run` restart), visit `http://localhost:5000/about`
 - The page shows the heading **About this site** and a nav strip with two links: **Welcome** (`/`) and **About** (`/about`)
 - Revisit `/` — the same two-item nav strip appears there too
+
+</Checkpoint>
 
 ---
 
@@ -147,11 +151,13 @@ With the host running, rename `Content/contact.md` to `Content/reach-out.md`. On
 </Step>
 </Steps>
 
-### Checkpoint — Three pages, sorted by front matter
+<Checkpoint>
 
 - Visit `/`, `/about`, and `/contact` in turn — each renders its own H1 and body
 - The nav strip on every page lists three links in this order: **Welcome**, **About**, **Contact**
 - Temporarily rename `contact.md` to `reach-out.md` and refresh — the nav link's href becomes `/reach-out`; rename it back afterward
+
+</Checkpoint>
 
 ---
 

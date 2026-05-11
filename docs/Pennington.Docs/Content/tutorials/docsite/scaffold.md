@@ -44,10 +44,12 @@ Everything the DocSite template adds — sidebar, header chrome, MonorailCSS, SP
 </Step>
 </Steps>
 
-### Checkpoint — The bare host runs
+<Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/`
 - The markdown renders as unstyled HTML — no sidebar, no header, no theme
+
+</Checkpoint>
 
 ---
 
@@ -83,10 +85,12 @@ M:DocSiteScaffoldExample.Stage2.Run(System.String[])
 </Step>
 </Steps>
 
-### Checkpoint — Services registered, middleware not yet mounted
+<Checkpoint>
 
 - `dotnet build` succeeds
 - `dotnet run` starts the host, but `/` returns a default ASP.NET response — the DocSite middleware is registered in DI but not mounted in the pipeline
+
+</Checkpoint>
 
 ---
 
@@ -130,10 +134,12 @@ M:DocSiteScaffoldExample.Stage3.Run(System.String[])
 </Step>
 </Steps>
 
-### Checkpoint — Full chrome renders
+<Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/`
 - The DocSite layout renders: left sidebar, header with site title, search affordance, dark-mode toggle, GitHub icon linking to `GitHubUrl`, and the footer HTML from `FooterContent`
+
+</Checkpoint>
 
 ---
 
@@ -177,10 +183,12 @@ The `Areas` block in the stage 3 host has exactly two `ContentArea` entries. The
 </Step>
 </Steps>
 
-### Checkpoint — Both areas resolve and switch independently
+<Checkpoint>
 
 - Visit `http://localhost:5000/guides/` — the Guides index page renders with the Guides tab selected in the sidebar
 - Visit `http://localhost:5000/reference/` — the Reference index page renders, the Reference tab is now selected, and the sidebar TOC filters to the Reference area only
+
+</Checkpoint>
 
 ---
 
@@ -217,11 +225,13 @@ Visit `http://localhost:5000/` — the page renders inside the DocSite chrome, t
 </Step>
 </Steps>
 
-### Checkpoint — `/` is a real page, not a 404
+<Checkpoint>
 
 - `http://localhost:5000/` returns the rendered `Content/index.md` page with the DocSite chrome around it
 - The area selector shows neither *Guides* nor *Reference* as active until the reader clicks into one
 - A request to `/some-area/` still resolves the matching area as in unit 4
+
+</Checkpoint>
 
 ---
 

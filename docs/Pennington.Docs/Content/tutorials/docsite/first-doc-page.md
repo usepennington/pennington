@@ -51,11 +51,13 @@ examples/DocSiteAuthorExample/snippets/stage1.md
 </Step>
 </Steps>
 
-### Checkpoint — Stage-1 page renders
+<Checkpoint>
 
 - Run `dotnet run` from the project folder and visit `http://localhost:5000/guides/authoring`.
 - The h1 reads "Authoring a doc page", the description renders as meta, and a sidebar entry labelled "Authoring a doc page" appears under the `Guides` area.
 - The outline nav on the right is empty — there are no `##` headings yet. That changes in unit 2.
+
+</Checkpoint>
 
 ---
 
@@ -79,11 +81,13 @@ The supported kinds are `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, and `CAUTION`. Pe
 </Step>
 </Steps>
 
-### Checkpoint — Alert and first outline entry
+<Checkpoint>
 
 - Reload `http://localhost:5000/guides/authoring`.
 - The `[!NOTE]` block now renders as a blue-bordered callout with an info icon — not a plain block quote.
 - The outline nav on the right shows a single entry, "Callouts", linking to `#callouts`.
+
+</Checkpoint>
 
 ---
 
@@ -107,11 +111,13 @@ Each fence still gets normal syntax highlighting based on its language (`bash`, 
 </Step>
 </Steps>
 
-### Checkpoint — Tabs render and outline nav populates
+<Checkpoint>
 
 - Reload `http://localhost:5000/guides/authoring`.
 - The three fenced blocks under "Tabbed code groups" render as one component with three selectable tabs ("dotnet CLI", "PowerShell", "csproj"); clicking a tab swaps the visible code.
 - The outline nav on the right shows two entries — "Callouts" and "Tabbed code groups" — each linking to its heading anchor.
+
+</Checkpoint>
 
 ---
 

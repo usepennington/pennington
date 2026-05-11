@@ -39,18 +39,15 @@ internal static class PenningtonProseRules
                         ("transition", "color .15s, text-decoration-color .15s")),
                     Rule("a:hover",
                         ("text-decoration-color", Mix(Color("primary", "700"), "90%"))),
-
                     Rule("strong",
                         ("color", Color("base", "900")),
                         ("font-weight", "600")),
-
                     Rule("ul",
                         ("list-style", "none"),
                         ("padding-left", "0")),
                     Rule("ul > li",
                         ("position", "relative"),
                         ("padding-left", "1.4rem")),
-
                     Rule("hr",
                         ("border", "0"),
                         ("border-top", $"1px solid {Color("base", "200")}"),
@@ -65,15 +62,12 @@ internal static class PenningtonProseRules
                         ("position", "relative"),
                         ("padding-left", "0.85rem"),
                         ("scroll-margin-top", "5rem")),
-
                     Rule("h3",
                         ("scroll-margin-top", "5rem")),
-
                     Rule("blockquote",
                         ("border-left-width", "4px"),
                         ("padding-left", "1rem"),
                         ("border-color", Color("primary", "700"))),
-
                     Rule("pre",
                         ("background-color", Mix(Color("base", "200"), "50%")),
                         ("box-shadow", "inset 0 0 0 1px oklch(87.1% .006 286.286)"),
@@ -88,15 +82,14 @@ internal static class PenningtonProseRules
                         ("border", $"1px solid {Color("base", "200")}"),
                         ("color", Color("base", "700")),
                         ("white-space", "nowrap"))),
-
                 ["base"] = Rules(
                     Rule("pre > code", ("font-size", "inherit")),
                     Rule(":not(pre) > code", ("font-size", "0.86em"))),
-
                 ["sm"] = Rules(
                     Rule("pre > code", ("font-size", "inherit")),
-                    Rule(":not(pre) > code", ("font-size", "0.86em"))),
-
+                    Rule(":not(pre) > code", ("font-size", "0.86em")),
+                    Rule("ul", ("list-style", "none"), ("padding-left", "0")),
+                    Rule("ul > li", ("position", "relative"), ("padding-left", "1.4rem"))),
                 ["invert"] = Rules(
                     Rule("a",
                         ("color", Color("primary", "300")),
@@ -119,14 +112,13 @@ internal static class PenningtonProseRules
         },
     };
 
-    private static ProseElementRule Rule(string selector, params (string Property, string Value)[] declarations) => new()
-    {
-        Selector = selector,
-        Declarations = [.. declarations.Select(d => new ProseDeclaration { Property = d.Property, Value = d.Value })],
-    };
+    private static ProseElementRule Rule(string selector, params (string Property, string Value)[] declarations) =>
+        new()
+        {
+            Selector = selector,
+            Declarations =
+                [.. declarations.Select(d => new ProseDeclaration { Property = d.Property, Value = d.Value })],
+        };
 
-    private static ProseElementRules Rules(params ProseElementRule[] rules) => new()
-    {
-        Rules = [.. rules],
-    };
+    private static ProseElementRules Rules(params ProseElementRule[] rules) => new() { Rules = [.. rules], };
 }

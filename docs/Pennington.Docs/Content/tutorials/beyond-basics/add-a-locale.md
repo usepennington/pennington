@@ -64,11 +64,13 @@ examples/BeyondLocaleExample/Content/getting-started.md
 </Step>
 </Steps>
 
-### Checkpoint — Three English pages, no switcher
+<Checkpoint>
 
 - Run `dotnet run` from `examples/BeyondLocaleExample`
 - Visit `http://localhost:5000/`, `http://localhost:5000/about`, and `http://localhost:5000/getting-started` — each English page renders
 - The DocSite header shows the site title and GitHub link but **no language switcher pill** — because only one locale is registered
+
+</Checkpoint>
 
 ---
 
@@ -107,11 +109,13 @@ There's no need to add `app.UsePenningtonLocaleRouting()` to `Program.cs`. `UseD
 </Step>
 </Steps>
 
-### Checkpoint — The switcher appears, but Spanish URLs still 404
+<Checkpoint>
 
 - Rebuild and run the site (or let hot reload pick up the change)
 - Refresh `http://localhost:5000/` — the DocSite header now shows a **language switcher pill** offering *English* and *Español*
 - Click *Español* — the URL becomes `http://localhost:5000/es/` and you see a DocSite fallback notice explaining that Spanish content is missing, because no `Content/es/` files exist yet
+
+</Checkpoint>
 
 ---
 
@@ -150,11 +154,13 @@ examples/BeyondLocaleExample/Content/es/getting-started.md
 </Step>
 </Steps>
 
-### Checkpoint — Spanish URLs serve Spanish content
+<Checkpoint>
 
 - With the host still running, visit `http://localhost:5000/es/` — the page renders in Spanish with no fallback banner
 - Visit `http://localhost:5000/es/about` and `http://localhost:5000/es/getting-started` — both serve Spanish translations
 - Inspect the `<html>` element in dev tools on a Spanish page — `lang="es"` (from the `LocaleInfo.HtmlLang` set in step 2.1)
+
+</Checkpoint>
 
 ---
 
@@ -183,11 +189,13 @@ Navigate to `http://localhost:5000/es/about`, open the language switcher in the 
 </Step>
 </Steps>
 
-### Checkpoint — Locale switching preserves the current page
+<Checkpoint>
 
 - From `http://localhost:5000/es/about`, click *English* — the URL becomes `http://localhost:5000/about`
 - From `http://localhost:5000/getting-started`, click *Español* — the URL becomes `http://localhost:5000/es/getting-started`
 - From `http://localhost:5000/`, click *Español* — the URL becomes `http://localhost:5000/es/` (the default locale's root maps to the secondary locale's prefix root)
+
+</Checkpoint>
 
 ---
 

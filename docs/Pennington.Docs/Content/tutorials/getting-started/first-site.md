@@ -89,13 +89,15 @@ M:GettingStartedMinimalSiteExample.Stage1.Run(System.String[])
 </Step>
 </Steps>
 
-### Checkpoint — Bare host responds
+<Checkpoint>
 
 The browser shows the literal text `Hello from ASP.NET.` — no markdown involved at this stage. If HTML output appears instead, double-check that the running project is the bare scaffold from step 1.4, not a later stage.
 
 - Run `dotnet run` from the project folder.
 - Open `http://localhost:5000/` and confirm the page body reads `Hello from ASP.NET.`
 - Stop the process with `Ctrl+C` before continuing.
+
+</Checkpoint>
 
 ---
 
@@ -130,12 +132,14 @@ M:GettingStartedMinimalSiteExample.Stage2.Run(System.String[])
 </Step>
 </Steps>
 
-### Checkpoint — Services resolve
+<Checkpoint>
 
 `dotnet build` succeeds with no errors. The host does **not** yet render the markdown page — stage 2 only registers services, so running it at this point returns a 404 for `/`. That's expected; hold off until step 3 adds the middleware.
 
 - Run `dotnet build` and confirm the build succeeds with no errors.
 - Do not run the site yet — the middleware arrives in the next step.
+
+</Checkpoint>
 
 ---
 
@@ -172,13 +176,15 @@ This `MapGet` is deliberately minimal — in the DocSite and BlogSite tutorials 
 </Step>
 </Steps>
 
-### Checkpoint — The page renders with its front-matter title
+<Checkpoint>
 
 That's the working site. `dotnet run` serves live, and `http://localhost:5000/` returns HTML whose `<title>` element and top-level `<h1>` both read `Welcome to your first Pennington site`, pulled straight from `Content/index.md`'s front matter.
 
 - Run `dotnet run` from the project folder.
 - Open `http://localhost:5000/` and confirm the page title in the browser tab reads `Welcome to your first Pennington site`.
 - View source and confirm the same string appears inside the `<title>` tag and the article's `<h1>`.
+
+</Checkpoint>
 
 ---
 
@@ -207,13 +213,15 @@ Open `Content/index.md` and change the `title:` value to something recognizable 
 </Step>
 </Steps>
 
-### Checkpoint — Live reload fires
+<Checkpoint>
 
 Without any terminal input, the browser tab updates to show the new title in both the `<h1>` and the tab title. The `dotnet watch` console logs a file-change line naming `Content/index.md`.
 
 - Edit `Content/index.md`'s `title:` field and save.
 - The browser tab title and page heading update to match — no manual refresh needed.
 - `dotnet watch` logs the change in the terminal.
+
+</Checkpoint>
 
 ---
 

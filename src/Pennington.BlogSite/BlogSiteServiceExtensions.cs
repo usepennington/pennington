@@ -60,6 +60,7 @@ public static class BlogSiteServiceExtensions
                 .AddMdazorComponent<BigTable>()
                 .AddMdazorComponent<Card>()
                 .AddMdazorComponent<CardGrid>()
+                .AddMdazorComponent<Checkpoint>()
                 .AddMdazorComponent<LinkCard>()
                 .AddMdazorComponent<Step>()
                 .AddMdazorComponent<Steps>();

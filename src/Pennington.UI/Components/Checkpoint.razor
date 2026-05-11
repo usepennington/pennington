@@ -1,0 +1,19 @@
+@* Standalone "verify what you should see now" callout for tutorial pages.
+   Sits at the end of a unit (after a <Steps> block, but valid anywhere) and
+   is rendered as a styled box rather than a heading so the right-side
+   "On this page" outline only lists actual section headings.
+
+   Shares chrome and body typography with GitHub-style `[!KIND]` alerts via
+   `markdown-alert` + `markdown-alert-checkpoint`. The label is text rather
+   than an SVG icon — that is the sole difference from a Markdig-rendered
+   alert. *@
+
+<div class="markdown-alert markdown-alert-checkpoint not-prose">
+    <p class="markdown-alert-title">Checkpoint</p>
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>Body of the checkpoint callout — usually one or two paragraphs and a verification list.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

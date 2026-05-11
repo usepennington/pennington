@@ -1,6 +1,6 @@
 ---
 title: "Content components"
-description: "Parameter and usage reference for the eight Pennington.UI content components — Card, CardGrid, LinkCard, Badge, Step, Steps, BigTable (Mdazor-registered), and CodeBlock (Razor-page only)."
+description: "Parameter and usage reference for the nine Pennington.UI content components — Card, CardGrid, LinkCard, Badge, Step, Steps, Checkpoint, BigTable (Mdazor-registered), and CodeBlock (Razor-page only)."
 sectionLabel: "UI Components"
 order: 404020
 tags: [ui, components, mdazor, razor]
@@ -21,6 +21,7 @@ The components ship in MonorailCSS utility classes — no separate stylesheet fr
 | `BigTable` | Wraps a wide table in a horizontal-scroll container. | `<BigTable>@ChildContent</BigTable>` | `<BigTable>` ... markdown table ... `</BigTable>` |
 | `Card` | Static callout card with optional icon and title. | `<Card Title="..." Color="primary">@ChildContent</Card>` | `<Card Title="..." Color="primary">` ... `</Card>` |
 | `CardGrid` | Responsive grid container for Card / LinkCard children. | `<CardGrid Columns="3">@ChildContent</CardGrid>` | `<CardGrid Columns="3">` ... `</CardGrid>` |
+| `Checkpoint` | "Verify what you should see now" callout for tutorial pages. | `<Checkpoint>@ChildContent</Checkpoint>` | `<Checkpoint>` ... `</Checkpoint>` |
 | `LinkCard` | Clickable card wrapping its content in an anchor. | `<LinkCard Title="..." Href="/foo">@ChildContent</LinkCard>` | `<LinkCard Title="..." Href="/foo">` ... `</LinkCard>` |
 | `Step` | Single numbered list item inside a `Steps` container. | `<Step StepNumber="1">@ChildContent</Step>` | `<Step StepNumber="1">` ... `</Step>` |
 | `Steps` | Vertical numbered-step list container for `Step` children. | `<Steps>@ChildContent</Steps>` | `<Steps>` ... `</Steps>` |
@@ -103,6 +104,29 @@ Responsive grid container for `Card` or `LinkCard` children; renders one column 
     <LinkCard Title="How-to guides" Href="/how-to" />
     <LinkCard Title="Reference" Href="/reference" />
 </CardGrid>
+```
+
+## `Checkpoint`
+
+Standalone "verify what you should see now" callout for tutorial pages; renders a primary-tinted box with a literal **Checkpoint** label and the body content beneath it. Authored as a Mdazor component rather than a heading so the right-side outline nav lists only real section headings.
+
+### Parameters
+
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `ChildContent` | `RenderFragment?` | `null` | Body of the checkpoint callout — usually one or two paragraphs and a verification list. |
+
+### Example
+
+```razor
+<Checkpoint>
+
+Run `dotnet run` and visit `http://localhost:5000/`.
+
+- The page renders with the expected H1.
+- The right-side outline lists only the real section headings.
+
+</Checkpoint>
 ```
 
 ## `CodeBlock`
@@ -193,19 +217,20 @@ Container for a vertical numbered-step list; emits a `<div>` wrapping an `<ol>` 
 
 ## Mdazor registration
 
-Seven components are pre-registered with Mdazor by `DocSiteServiceExtensions.AddDocSite`, so any site built on `AddDocSite` can invoke these tags directly inside markdown without calling `AddMdazorComponent<T>()` manually.
+Eight components are pre-registered with Mdazor by `DocSiteServiceExtensions.AddDocSite`, so any site built on `AddDocSite` can invoke these tags directly inside markdown without calling `AddMdazorComponent<T>()` manually.
 
 ```csharp
 services.AddMdazorComponent<Badge>()
         .AddMdazorComponent<BigTable>()
         .AddMdazorComponent<Card>()
         .AddMdazorComponent<CardGrid>()
+        .AddMdazorComponent<Checkpoint>()
         .AddMdazorComponent<LinkCard>()
         .AddMdazorComponent<Step>()
         .AddMdazorComponent<Steps>();
 ```
 
-For sites that do not use `AddDocSite` (for example, `AddBlogSite` or a hand-rolled `AddPennington` host), call `AddMdazorComponent<T>()` for each of the seven types to match the doc-site surface.
+For sites that do not use `AddDocSite` (for example, `AddBlogSite` or a hand-rolled `AddPennington` host), call `AddMdazorComponent<T>()` for each of the eight types to match the doc-site surface.
 
 ## See also
 

@@ -63,6 +63,7 @@ public static class DocSiteServiceExtensions
                 .AddMdazorComponent<BigTable>()
                 .AddMdazorComponent<Card>()
                 .AddMdazorComponent<CardGrid>()
+                .AddMdazorComponent<Checkpoint>()
                 .AddMdazorComponent<LinkCard>()
                 .AddMdazorComponent<RenderedFixture>()
                 .AddMdazorComponent<Step>()

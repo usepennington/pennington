@@ -73,11 +73,13 @@ examples/BeyondRoslynExample/BeyondRoslynExample.slnx
 </Step>
 </Steps>
 
-### Checkpoint — Two projects, one inner slnx
+<Checkpoint>
 
 - Run `dotnet build` on both csprojs — they compile independently
 - `BeyondRoslynExample.slnx` lives next to the host csproj and lists only `Sample/BeyondRoslynExample.Sample.csproj`
 - Run `dotnet run` on the host — DocSite still serves, nothing has changed in the browser yet
+
+</Checkpoint>
 
 ---
 
@@ -138,11 +140,13 @@ M:BeyondRoslynExample.Stage2.Run(System.String[])
 </Step>
 </Steps>
 
-### Checkpoint — The workspace loads at startup
+<Checkpoint>
 
 - Run `dotnet run` on the host
 - The first request takes a beat longer while `SolutionWorkspaceService` (`T:Pennington.Roslyn.Workspace.SolutionWorkspaceService`) loads the inner slnx
 - No errors in the console — the workspace is hot and ready to resolve XmlDocIds
+
+</Checkpoint>
 
 ---
 
@@ -182,11 +186,13 @@ M:BeyondRoslynExample.Sample.Calculator.Add(System.Int32,System.Int32)
 </Step>
 </Steps>
 
-### Checkpoint — Real source renders inside the docs
+<Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/api-pulls`
 - The `Calculator` class and the `Add` method render as syntax-highlighted C#, pulled directly from `Sample/Calculator.cs`
 - Right-click → View Source: the markup is real `<pre><code>` with TextMate-style token spans, not an image
+
+</Checkpoint>
 
 ---
 
@@ -211,11 +217,13 @@ Change the body of `Add` in `Sample/Calculator.cs` — add a comment or rename a
 </Step>
 </Steps>
 
-### Checkpoint — The page reflects the edit
+<Checkpoint>
 
 - Refresh `/api-pulls`
 - The `Add` method snippet now shows the change, pulled fresh from `Calculator.cs`
 - No manual docs rebuild was required — the workspace picked it up
+
+</Checkpoint>
 
 ---
 
@@ -249,11 +257,13 @@ M:BeyondRoslynExample.Sample.Calculator.Mean(System.Collections.Generic.IReadOnl
 </Step>
 </Steps>
 
-### Checkpoint — Both fence variants render
+<Checkpoint>
 
 - Refresh `/api-pulls`
 - The `Multiply` fence shows the `return a * b;` line only — no `public int Multiply(...)` declaration
 - The concatenated fence shows `Greet` and `Mean` back-to-back in one highlighted code block
+
+</Checkpoint>
 
 ---
 
