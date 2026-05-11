@@ -207,8 +207,14 @@
         document.dispatchEvent(new CustomEvent(name, { detail }));
     }
 
-    function maybeTransition(fn) {
-        document.startViewTransition ? document.startViewTransition(fn) : fn();
+    function maybeTransition(fn, after) {
+        if (document.startViewTransition) {
+            const t = document.startViewTransition(fn);
+            if (after) t.finished.then(after, after);
+        } else {
+            fn();
+            if (after) after();
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -454,9 +460,9 @@
     function scrollToTarget(url) {
         if (url.hash) {
             const t = document.querySelector(url.hash);
-            if (t) { t.scrollIntoView(); return; }
+            if (t) { t.scrollIntoView({ behavior: 'instant' }); return; }
         }
-        window.scrollTo(0, 0);
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
 
     // -----------------------------------------------------------------------
@@ -563,20 +569,33 @@
             // view-transition bounds match in old and new snapshots without
             // any explicit reset. Sticky elements that must stay put during
             // the transition opt in via data-spa-pin.
-            maybeTransition(() => {
-                _currentPathname = url.pathname;
-                if (pushState) history.pushState({ title: doc.title }, doc.title, url.href);
-                applyHead(doc);
-                commitRegions(regions, doc, r => !r.noTransition);
-                announceNavigation(doc.title, regions);
-                fire('spa:commit', { url, slug: url.pathname, doc });
-                progressBar.complete();
+            //
+            // Scroll BEFORE startViewTransition so the old and new snapshots
+            // are captured at the same scrollY. Otherwise named region groups
+            // interpolate between old-scrolled and new-at-top viewport
+            // positions, which reads as a smooth scroll even with
+            // behavior:'instant'. Hash targets only exist in the new DOM, so
+            // they're handled via the after-callback once the transition
+            // settles.
+            const hasHash = !!url.hash;
+            const preY = restoreScrollY != null ? restoreScrollY : 0;
+            window.scrollTo({ top: preY, left: 0, behavior: 'instant' });
 
-                const diagnostics = readDiagnostics(doc);
-                if (diagnostics) fire('spa:diagnostics', diagnostics);
+            maybeTransition(
+                () => {
+                    _currentPathname = url.pathname;
+                    if (pushState) history.pushState({ title: doc.title }, doc.title, url.href);
+                    applyHead(doc);
+                    commitRegions(regions, doc, r => !r.noTransition);
+                    announceNavigation(doc.title, regions);
+                    fire('spa:commit', { url, slug: url.pathname, doc });
+                    progressBar.complete();
 
-                restoreScrollY != null ? window.scrollTo(0, restoreScrollY) : scrollToTarget(url);
-            });
+                    const diagnostics = readDiagnostics(doc);
+                    if (diagnostics) fire('spa:diagnostics', diagnostics);
+                },
+                hasHash ? () => scrollToTarget(url) : null
+            );
         };
 
         if (fetchedDoc) {
@@ -584,7 +603,7 @@
             await commit(fetchedDoc);
         } else {
             // Slow path — show skeleton while we wait.
-            window.scrollTo(0, 0);
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
             showLoadingState(regions);
             const skeletonShownAt = performance.now();
 
