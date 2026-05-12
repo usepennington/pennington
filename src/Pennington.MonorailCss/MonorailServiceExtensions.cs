@@ -61,15 +61,22 @@ public static class MonorailServiceExtensions
                 opts.Framework = MonorailCssService.BuildFramework(options);
 
                 var hostEnv = sp.GetService<IHostEnvironment>();
-                if (hostEnv?.IsDevelopment() != true) return;
+                if (hostEnv?.IsDevelopment() != true && Environment.GetEnvironmentVariable("DOTNET_WATCH") != "1")
+                {
+                    return;
+                }
 
                 // Adding anything to WatchSourceDirectories disables Discovery's
                 // ApplyEnvironmentDefaults fill-in of ContentRootPath, so re-add it ourselves.
-                if (!string.IsNullOrEmpty(hostEnv.ContentRootPath))
+                if (hostEnv != null && !string.IsNullOrEmpty(hostEnv.ContentRootPath))
+                {
                     AddIfMissing(opts.WatchSourceDirectories, hostEnv.ContentRootPath);
+                }
 
                 foreach (var dir in SourceWatchProbe.GetProjectDirectories())
+                {
                     AddIfMissing(opts.WatchSourceDirectories, dir);
+                }
             }));
 
         return services;
