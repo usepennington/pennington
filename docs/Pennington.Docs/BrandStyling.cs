@@ -19,12 +19,12 @@ internal static class BrandStyling
         {
             // H2 left gradient bar — main vertical landmark between sections.
             {
-                ".prose h2",
+                ".prose :where(h2):not(:where([class~=\"not-prose\"],[class~=\"not-prose\"] *))",
                 "before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[4px] before:rounded-sm before:bg-gradient-to-b before:from-primary-500 before:to-primary-700 dark:before:from-primary-300 dark:before:to-primary-500"
             },
             // List bullet dot — replaces the native bullet that the neutral baseline would emit.
             {
-                ".prose ul > li",
+                ".prose :where(ul > li):not(:where([class~=\"not-prose\"],[class~=\"not-prose\"] *))",
                 "before:content-[''] before:absolute before:left-[0.35rem] before:top-[0.7em] before:w-[5px] before:h-[5px] before:rounded-full before:bg-primary-500/55 dark:before:bg-primary-300/55"
             },
         });
