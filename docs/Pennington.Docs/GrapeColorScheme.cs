@@ -6,70 +6,70 @@ namespace Pennington.Docs;
 
 /// <summary>
 /// Hand-tuned OKLCH palette scoped to the Pennington docs site.
-/// Registers four brand palettes (snugglepuss, pewter, aventurine, winchester)
+/// Registers four brand palettes (grape, english, windmill, dogs)
 /// and four syntax-highlight accents (accent-one through accent-four), then
-/// maps snugglepuss/winchester/pewter onto the primary/accent/base slots.
+/// maps grape/windmill/english onto the primary/accent/base slots.
 /// </summary>
-internal sealed class SnugglepussColorScheme : IColorScheme
+internal sealed class GrapeColorScheme : IColorScheme
 {
-    private static readonly ImmutableDictionary<string, string> Snugglepuss = new Dictionary<string, string>
+    private static readonly ImmutableDictionary<string, string> Grape = new Dictionary<string, string>
     {
-        ["50"]  = "oklch(97% 0.006 311.054)",
-        ["100"] = "oklch(94% 0.014 311.054)",
-        ["200"] = "oklch(89% 0.026 311.054)",
-        ["300"] = "oklch(82% 0.046 311.054)",
-        ["400"] = "oklch(72% 0.076 311.054)",
-        ["500"] = "oklch(64% 0.099 311.054)",
-        ["600"] = "oklch(56% 0.104 311.054)",
-        ["700"] = "oklch(49% 0.095 311.054)",
-        ["800"] = "oklch(43% 0.077 311.054)",
-        ["900"] = "oklch(38% 0.061 311.054)",
-        ["950"] = "oklch(27% 0.042 311.054)",
+        ["50"]  = "oklch(97% 0.010 301.039)",
+        ["100"] = "oklch(94% 0.022 301.039)",
+        ["200"] = "oklch(89% 0.041 301.039)",
+        ["300"] = "oklch(82% 0.075 301.039)",
+        ["400"] = "oklch(72% 0.123 301.039)",
+        ["500"] = "oklch(64% 0.159 301.039)",
+        ["600"] = "oklch(56% 0.167 301.039)",
+        ["700"] = "oklch(49% 0.153 301.039)",
+        ["800"] = "oklch(43% 0.124 301.039)",
+        ["900"] = "oklch(38% 0.099 301.039)",
+        ["950"] = "oklch(27% 0.067 301.039)",
     }.ToImmutableDictionary();
 
-    private static readonly ImmutableDictionary<string, string> Pewter = new Dictionary<string, string>
+    private static readonly ImmutableDictionary<string, string> English = new Dictionary<string, string>
     {
-        ["50"]  = "oklch(98.5% 0.003 311.054)",
-        ["100"] = "oklch(97% 0.004 311.054)",
-        ["200"] = "oklch(92.5% 0.007 311.054)",
-        ["300"] = "oklch(87% 0.014 311.054)",
-        ["400"] = "oklch(71% 0.026 311.054)",
-        ["500"] = "oklch(55% 0.040 311.054)",
-        ["600"] = "oklch(44% 0.036 311.054)",
-        ["700"] = "oklch(37% 0.034 311.054)",
-        ["800"] = "oklch(27% 0.029 311.054)",
-        ["900"] = "oklch(21% 0.025 311.054)",
-        ["950"] = "oklch(14% 0.020 311.054)",
+        ["50"]  = "oklch(98.5% 0.004 301.039)",
+        ["100"] = "oklch(97% 0.005 301.039)",
+        ["200"] = "oklch(92.5% 0.009 301.039)",
+        ["300"] = "oklch(87% 0.018 301.039)",
+        ["400"] = "oklch(71% 0.032 301.039)",
+        ["500"] = "oklch(55% 0.050 301.039)",
+        ["600"] = "oklch(44% 0.045 301.039)",
+        ["700"] = "oklch(37% 0.042 301.039)",
+        ["800"] = "oklch(27% 0.036 301.039)",
+        ["900"] = "oklch(21% 0.031 301.039)",
+        ["950"] = "oklch(14% 0.025 301.039)",
     }.ToImmutableDictionary();
 
-    private static readonly ImmutableDictionary<string, string> Aventurine = new Dictionary<string, string>
+    private static readonly ImmutableDictionary<string, string> Windmill = new Dictionary<string, string>
     {
-        ["50"]  = "oklch(97% 0.006 101.054)",
-        ["100"] = "oklch(94% 0.014 101.054)",
-        ["200"] = "oklch(89% 0.026 101.054)",
-        ["300"] = "oklch(82% 0.046 101.054)",
-        ["400"] = "oklch(72% 0.076 101.054)",
-        ["500"] = "oklch(64% 0.099 101.054)",
-        ["600"] = "oklch(56% 0.104 101.054)",
-        ["700"] = "oklch(49% 0.095 101.054)",
-        ["800"] = "oklch(43% 0.077 101.054)",
-        ["900"] = "oklch(38% 0.061 101.054)",
-        ["950"] = "oklch(27% 0.042 101.054)",
+        ["50"]  = "oklch(97% 0.010 271.039)",
+        ["100"] = "oklch(94% 0.022 271.039)",
+        ["200"] = "oklch(89% 0.041 271.039)",
+        ["300"] = "oklch(82% 0.075 271.039)",
+        ["400"] = "oklch(72% 0.123 271.039)",
+        ["500"] = "oklch(64% 0.159 271.039)",
+        ["600"] = "oklch(56% 0.167 271.039)",
+        ["700"] = "oklch(49% 0.153 271.039)",
+        ["800"] = "oklch(43% 0.124 271.039)",
+        ["900"] = "oklch(38% 0.099 271.039)",
+        ["950"] = "oklch(27% 0.067 271.039)",
     }.ToImmutableDictionary();
 
-    private static readonly ImmutableDictionary<string, string> Winchester = new Dictionary<string, string>
+    private static readonly ImmutableDictionary<string, string> Dogs = new Dictionary<string, string>
     {
-        ["50"]  = "oklch(97% 0.006 161.054)",
-        ["100"] = "oklch(94% 0.014 161.054)",
-        ["200"] = "oklch(89% 0.026 161.054)",
-        ["300"] = "oklch(82% 0.046 161.054)",
-        ["400"] = "oklch(72% 0.076 161.054)",
-        ["500"] = "oklch(64% 0.099 161.054)",
-        ["600"] = "oklch(56% 0.104 161.054)",
-        ["700"] = "oklch(49% 0.095 161.054)",
-        ["800"] = "oklch(43% 0.077 161.054)",
-        ["900"] = "oklch(38% 0.061 161.054)",
-        ["950"] = "oklch(27% 0.042 161.054)",
+        ["50"]  = "oklch(97% 0.010 331.039)",
+        ["100"] = "oklch(94% 0.022 331.039)",
+        ["200"] = "oklch(89% 0.041 331.039)",
+        ["300"] = "oklch(82% 0.075 331.039)",
+        ["400"] = "oklch(72% 0.123 331.039)",
+        ["500"] = "oklch(64% 0.159 331.039)",
+        ["600"] = "oklch(56% 0.167 331.039)",
+        ["700"] = "oklch(49% 0.153 331.039)",
+        ["800"] = "oklch(43% 0.124 331.039)",
+        ["900"] = "oklch(38% 0.099 331.039)",
+        ["950"] = "oklch(27% 0.067 331.039)",
     }.ToImmutableDictionary();
 
     private static readonly ImmutableDictionary<string, string> AccentOne = new Dictionary<string, string>
@@ -134,15 +134,15 @@ internal sealed class SnugglepussColorScheme : IColorScheme
 
     /// <inheritdoc />
     public Theme ApplyToTheme(Theme theme) =>
-        theme.AddColorPalette("snugglepuss", Snugglepuss)
-             .AddColorPalette("pewter", Pewter)
-             .AddColorPalette("aventurine", Aventurine)
-             .AddColorPalette("winchester", Winchester)
+        theme.AddColorPalette("grape", Grape)
+             .AddColorPalette("english", English)
+             .AddColorPalette("windmill", Windmill)
+             .AddColorPalette("dogs", Dogs)
              .AddColorPalette("accent-one", AccentOne)
              .AddColorPalette("accent-two", AccentTwo)
              .AddColorPalette("accent-three", AccentThree)
              .AddColorPalette("accent-four", AccentFour)
-             .MapColorPalette("snugglepuss", "primary")
-             .MapColorPalette("winchester", "accent")
-             .MapColorPalette(ColorNames.Zinc, "base");
+             .MapColorPalette("grape", "primary")
+             .MapColorPalette("windmill", "accent")
+             .MapColorPalette("english", "base");
 }

@@ -17,14 +17,14 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     SiteTitle = "Pennington",
     Description = "A Content Engine for .NET",
     SocialImageUrl = "/social.png",
-    ColorScheme = new SnugglepussColorScheme(),
+    ColorScheme = new GrapeColorScheme(),
     SyntaxTheme = new SyntaxTheme
     {
         Keyword  = "accent-four",
         String   = "accent-two",
         Variable = "accent-one",
         Function = "accent-three",
-        Comment  = "pewter",
+        Comment  = "english",
     },
     GitHubUrl = "https://github.com/usepennington/pennington",
     CanonicalBaseUrl = "https://usepennington.github.io/pennington/",
