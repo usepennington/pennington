@@ -120,7 +120,7 @@ builder.Services.AddMdazorComponent<FrontMatterKeys>();
 
 // Dev-time full-screen dashboard. No-ops when the host is launched with
 // `dotnet run -- build`, so the static build path is unchanged.
-builder.Services.AddPenningtonTui();
+// builder.Services.AddPenningtonTui();
 
 var app = builder.Build();
 app.UseDocSite();
