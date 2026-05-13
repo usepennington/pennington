@@ -24,7 +24,7 @@ All 25 examples build and run. Highlights worth triaging:
 
 ### Cross-cutting framework concerns (touch multiple examples)
 - **SPA engine prefetch leakage** between example sessions on the same port (#8, #14, #19). One-line fix in `spa-engine.js` to invalidate prefetch on host fingerprint change. — resolved 2026-05-13 (LiveReloadScriptProcessor emits per-process `<meta name="x-pennington-host">`; spa-engine.js compares and full-reloads on mismatch)
-- **"Post not found" returns HTTP 200** instead of 404 in BlogSite (#7, #10) — bad for SEO and link-checkers.
+- **"Post not found" returns HTTP 200** instead of 404 in BlogSite (#7, #10) — bad for SEO and link-checkers. — resolved 2026-05-13 (BlogSite/Blog.razor sets `HttpContext.Response.StatusCode = 404` when the post resolves null)
 - **`HEAD /styles.css` returns 405** while GET returns 200 (#1) — affects every example using `AddMonorailCss()`.
 - **Stage-1 of tutorials storing markdown/razor in C# raw strings** leaks `"""` delimiters into the rendered docs (#2). Violates `examples/CLAUDE.md`.
 
@@ -339,7 +339,7 @@ All 25 examples build and run. Highlights worth triaging:
 **Findings:**
 - **[DOC] (minor)** README's bullet "BlogSite template defaults (`BlogContentPath`, `BlogBaseUrl`, `TagsPageUrl`)" implies these are showcased — but the scaffold uses defaults, so a reader sees no `BlogContentPath = ...` etc. assignment in `Program.cs`. The README should clarify that these are *defaults* that you can read about in reference docs.
 - **[DOC] (minor)** README mentions `/tags/<name>` as a route but with only one post the `/tags/<name>` route is reachable only by guessing. Add `<TagsBadge>` or "View tag" links from the post page to make this discoverable.
-- **[FW] (minor)** Same "Post not found" 200-status issue observed in #7 is implicit here: any wrong slug returns 200 with stub content instead of 404. (Not retested.)
+- **[FW] (minor)** Same "Post not found" 200-status issue observed in #7 is implicit here: any wrong slug returns 200 with stub content instead of 404. (Not retested.) **Resolved 2026-05-13 (cross-cutting):** `BlogSite/Blog.razor` now sets `HttpContext.Response.StatusCode = 404` when `BlogContentResolver` returns null; verified on this example's scaffold.
 
 **No fixes applied.**
 
@@ -401,7 +401,7 @@ All 25 examples build and run. Highlights worth triaging:
 
 **Findings:**
 - **[FW+DOC] (major)** Blog post URLs include the leading `YYYY-MM-DD-` slug taken from the filename (`2024-01-15-getting-started-with-pennington`). This is implementation detail leaking into the public URL — readers expect a `/blog/<slug>/` route based on the front matter's `slug` or stripped filename, not the raw filename. README does not document the date-prefix convention. Either strip the leading date prefix when computing route slugs (and document it), or document the current behaviour and explain the recommendation.
-- **[FW+DOC] (major)** Page returns 200 for `/blog/getting-started-with-pennington/` rendering "Post not found" body. Should be a proper 404. Returning 200 on a not-found surface poisons search-engine indexing and any link-checking tool relying on HTTP status.
+- **[FW+DOC] (major)** Page returns 200 for `/blog/getting-started-with-pennington/` rendering "Post not found" body. Should be a proper 404. Returning 200 on a not-found surface poisons search-engine indexing and any link-checking tool relying on HTTP status. **Resolved 2026-05-13 (cross-cutting):** `BlogSite/Blog.razor` now sets `HttpContext.Response.StatusCode = 404` when `BlogContentResolver` returns null; verified `/blog/getting-started-with-pennington/` returns 404.
 - **[DOC] (minor)** README mentions "RSS channel + sitemap" but does not specify the URLs (`/rss.xml`, `/sitemap.xml`). For a docs-feed example, the discoverable path is part of the teaching.
 - **[FW] (minor)** Individual blog post page has no `og:title` / `og:description` / `twitter:card` meta tags. For a kitchen-sink BlogSite example that includes structured data (`StructuredDataBuilder`), Open Graph / Twitter Card metadata would be the natural sibling. README says "structured data" — OG is the most common form most readers will expect.
 - **[DOC] (minor)** README references `docs/.../how-to/feeds/rss.md` and `docs/.../how-to/feeds/sitemap.md`. Verify those pages actually `xmldocid` into `ServiceConfiguration` helpers — broken xref would silently break the docs.
