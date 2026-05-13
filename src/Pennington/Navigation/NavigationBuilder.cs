@@ -297,10 +297,27 @@ public sealed class NavigationBuilder
             .ToList();
     }
 
+    // Words that should render entirely upper-case when a folder-derived section
+    // label would otherwise title-case them (e.g. `core-api/` -> "Core API" rather
+    // than "Core Api"). Set is small and intentionally conservative — adding too
+    // many acronyms catches false positives like "io" in "studio". Authors who
+    // need other acronyms can use a folder `index.md` with explicit `title:` or
+    // `section:` front matter, which short-circuits this fallback.
+    private static readonly HashSet<string> UpperCaseAcronyms = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "api", "cli", "css", "html", "http", "https", "json", "sdk",
+        "sql", "svg", "ui", "url", "xml", "yaml", "rss", "pdf", "png",
+    };
+
     private static string FormatSectionTitle(string folderName)
     {
         return string.Join(' ', folderName.Split('-')
-            .Select(w => w.Length > 0 ? char.ToUpper(w[0]) + w[1..] : w));
+            .Select(w =>
+            {
+                if (w.Length == 0) return w;
+                if (UpperCaseAcronyms.Contains(w)) return w.ToUpperInvariant();
+                return char.ToUpper(w[0]) + w[1..];
+            }));
     }
 
     /// <summary>
