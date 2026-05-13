@@ -43,6 +43,7 @@ public sealed class DiagnosticOverlayProcessor : IResponseProcessor
 
         var overlay = $$"""
             <div id="penn-diag-root" style="position:fixed;bottom:20px;right:20px;z-index:99999;font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;font-size:13px;line-height:1.5"></div>
+            <script type="application/spa-diagnostics+json">{{json}}</script>
             <script>
             (function(){
                 var root=document.getElementById('penn-diag-root');
