@@ -124,6 +124,7 @@ builder.Services.AddMdazorComponent<FrontMatterKeys>();
 // builder.Services.AddPenningtonTui();
 
 var app = builder.Build();
-app.UseWordBreak();
 app.UseDocSite();
+app.UseWordBreak();
+
 await app.RunDocSiteAsync(args);
