@@ -22,7 +22,12 @@
     }
     @foreach (var font in BlogOptions.FontPreloads)
     {
-        <link rel="preload" href="@font.Href" as="font" type="@font.Type" crossorigin>
+        @* Skip when the referenced file isn't shipped — emitting a preload hint
+           for a non-existent file causes a 404 on every page load. *@
+        @if (FontPreloadExists(font.Href))
+        {
+            <link rel="preload" href="@font.Href" as="font" type="@font.Type" crossorigin>
+        }
     }
     <link rel="stylesheet" href="@GetVersioned("/styles.css")">
     <script src="@GetVersioned("/_content/Pennington.UI/scripts.js")" defer></script>
@@ -56,4 +61,17 @@
     string GetVersioned(string url) => WebHostEnvironment.IsDevelopment()
             ? url
             : QueryHelpers.AddQueryString(url, "v", Version);
+
+    bool FontPreloadExists(string href)
+    {
+        if (string.IsNullOrEmpty(href)) return false;
+        var path = href.StartsWith('/') ? href[1..] : href;
+        if (WebHostEnvironment.WebRootFileProvider.GetFileInfo(path).Exists) return true;
+        // Pennington also serves Content/ as static files — check there before
+        // declaring the preload broken.
+        var contentRoot = System.IO.Path.IsPathRooted(Options.ContentRootPath)
+            ? Options.ContentRootPath
+            : System.IO.Path.Combine(WebHostEnvironment.ContentRootPath, Options.ContentRootPath);
+        return System.IO.File.Exists(System.IO.Path.Combine(contentRoot, path));
+    }
 }
