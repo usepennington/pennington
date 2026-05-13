@@ -84,8 +84,17 @@ public sealed class FileWatcher : IFileWatcher
         _disposed = true;
         foreach (var watcher in _watchers.Values)
         {
-            watcher.EnableRaisingEvents = false;
-            watcher.Dispose();
+            // On Windows, disposing a FileSystemWatcher with a pending event can throw.
+            // Isolate each disposal so one bad watcher doesn't skip the rest.
+            try
+            {
+                watcher.EnableRaisingEvents = false;
+                watcher.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Error disposing file system watcher");
+            }
         }
         _watchers.Clear();
     }

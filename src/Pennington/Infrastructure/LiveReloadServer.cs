@@ -12,12 +12,13 @@ using Microsoft.Extensions.Logging;
 /// When watched files change, debounces rapid notifications and sends
 /// a single reload message to all connected browsers.
 /// </summary>
-public sealed class LiveReloadServer
+public sealed class LiveReloadServer : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<string, WebSocket> _clients = new();
     private readonly ILogger<LiveReloadServer>? _logger;
     private readonly CancellationToken _shutdownToken;
     private Timer? _debounceTimer;
+    private bool _disposed;
 
     /// <summary>Initializes the server and subscribes to watched-file change notifications.</summary>
     public LiveReloadServer(IFileWatcher fileWatcher, IHostApplicationLifetime lifetime, ILogger<LiveReloadServer>? logger = null)
@@ -81,6 +82,37 @@ public sealed class LiveReloadServer
             if (socket.State == WebSocketState.Open && !_shutdownToken.IsCancellationRequested)
             {
                 await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
+            }
+        }
+    }
+
+    /// <summary>Disposes the debounce timer and closes any open client sockets.</summary>
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        if (_debounceTimer is { } timer)
+        {
+            _debounceTimer = null;
+            try { await timer.DisposeAsync(); }
+            catch (Exception ex) { _logger?.LogWarning(ex, "Error disposing live reload debounce timer"); }
+        }
+
+        // Give each socket a short window to close cleanly; never let a wedged
+        // client stall teardown.
+        using var closeCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        foreach (var (id, socket) in _clients)
+        {
+            _clients.TryRemove(id, out _);
+            if (socket.State != WebSocketState.Open) continue;
+            try
+            {
+                await socket.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, null, closeCts.Token);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogDebug(ex, "Error closing live reload socket {Id}", id);
             }
         }
     }

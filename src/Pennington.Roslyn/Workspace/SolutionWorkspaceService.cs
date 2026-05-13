@@ -591,22 +591,54 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
 
         lock (_lock)
         {
-            _workspace?.Dispose();
+            // MSBuildWorkspace.Dispose() can throw on Windows when assembly handles
+            // are still mapped. Swallow so the temp-folder cleanup below still runs.
+            try
+            {
+                _workspace?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error disposing MSBuild workspace");
+            }
             _compilationCache.Clear();
             _isDisposed = true;
         }
 
-        // Clean up temp folder
-        if (Directory.Exists(_tempBuildPath))
+        DeleteTempBuildFolderWithRetry();
+    }
+
+    private void DeleteTempBuildFolderWithRetry()
+    {
+        if (!Directory.Exists(_tempBuildPath))
+        {
+            return;
+        }
+
+        // On Windows, MSBuild can hold transient file locks during shutdown.
+        // Brief retries cover that without making the happy path slower.
+        int[] delaysMs = [100, 200, 400];
+        for (var attempt = 0; attempt <= delaysMs.Length; attempt++)
         {
             try
             {
                 Directory.Delete(_tempBuildPath, recursive: true);
                 _logger.LogDebug("Cleaned up temp build folder: {Path}", _tempBuildPath);
+                return;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                if (attempt == delaysMs.Length)
+                {
+                    _logger.LogWarning(ex, "Failed to clean up temp build folder: {Path}", _tempBuildPath);
+                    return;
+                }
+                Thread.Sleep(delaysMs[attempt]);
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to clean up temp build folder: {Path}", _tempBuildPath);
+                return;
             }
         }
     }
