@@ -27,7 +27,7 @@ All 25 examples build and run. Highlights worth triaging:
 - **"Post not found" returns HTTP 200** instead of 404 in BlogSite (#7, #10) — bad for SEO and link-checkers. — resolved 2026-05-13 (BlogSite/Blog.razor sets `HttpContext.Response.StatusCode = 404` when the post resolves null)
 - **`HEAD /styles.css` returns 405** while GET returns 200 (#1) — affects every example using `AddMonorailCss()`. — resolved 2026-05-13 (`UseMonorailCss` now uses `MapMethods("/styles.css", ["GET", "HEAD"], …)`)
 - **Stage-1 of tutorials storing markdown/razor in C# raw strings** leaks `"""` delimiters into the rendered docs (#2). Violates `examples/CLAUDE.md`. — resolved 2026-05-13 (BeyondCustomRazorComponentExample/snippets/stage1/PricingCard.razor + `razor:path` fence; csproj excludes `snippets/**` from compile)
-- **Markdig/AnglesharpHeadingId auto-IDs leak onto Mdazor-component-internal headings** (#2) — `<h3>Tier</h3>` inside a `<PricingCard />` gets an auto-generated `id` because the heading-id processor runs over the post-Mdazor HTML. Not catastrophic but bleeds component-internal headings into the page's outline.
+- **Markdig/AnglesharpHeadingId auto-IDs leak onto Mdazor-component-internal headings** (#2) — `<h3>Tier</h3>` inside a `<PricingCard />` gets an auto-generated `id` because the heading-id processor runs over the post-Mdazor HTML. Not catastrophic but bleeds component-internal headings into the page's outline. — resolved 2026-05-13 (verified no current leakage: Markdig's AutoIdentifier only runs on Markdig-parsed heading blocks; h3s emitted by Razor components are outside that AST and stay id-less in both dev and build output — no framework change needed)
 
 ### Framework bugs surfaced as blockers/major
 - **#5** Dev overlay for missing translations doesn't render (build report works). — resolved 2026-05-13 (verified rendering; the audit's CSS-selector probe missed the actual `#penn-diag-root` element — no framework change needed)
@@ -90,7 +90,7 @@ All 25 examples build and run. Highlights worth triaging:
 
 **Resolved 2026-05-13:**
 - DOC major (Stage 1 vs disk disagreement) — added a clarifying paragraph in `docs/Pennington.Docs/Content/tutorials/beyond-basics/custom-razor-component.md:54` distinguishing the minimal Stage 1 starting point (snippet) from the styled `Components/PricingCard.razor` final form on disk.
-- FW minor (h3-id leakage) — **promoted to cross-cutting**; see new bullet under "### Cross-cutting framework concerns" for the next Phase 1 iteration.
+- FW minor (h3-id leakage) — **promoted to cross-cutting** then verified: current rendered output (dev and build) shows `<h3 class="...">Basic</h3>` with no `id` attribute. Markdig's AutoIdentifier only annotates headings in its own AST; h3s emitted by Razor components via Mdazor never enter that AST. No framework change required.
 - DOC minor (open/close form claim) — the current `README.md` no longer makes the self-closing-vs-open/close claim the audit cited (only mentions parameters bound from attributes), so there is no remaining mismatch to address.
 
 **Fixes applied.**
