@@ -66,6 +66,11 @@ internal sealed class PenningtonTuiHostedService(
     internal static bool IsDotnetWatchMode() =>
         !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH"));
 
+    // When stdout isn't a TTY (CI logs, container logs, `dotnet run > log.txt`)
+    // the TUI's ANSI control sequences are unreadable. Step aside so the host's
+    // default Console logging produces plain log lines the operator can grep.
+    internal static bool IsConsoleRedirected() => Console.IsOutputRedirected;
+
     private void OnApplicationStarted()
     {
         try

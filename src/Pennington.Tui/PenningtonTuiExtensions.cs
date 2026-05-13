@@ -26,6 +26,12 @@ public static class PenningtonTuiExtensions
             return services;
         }
 
+        // Non-TTY stdout (CI, container logs, shell redirection) can't render the
+        // TUI's ANSI frames into something a human or grep can read. Bail out so
+        // the host's default ILogger Console output stays as line-mode log entries.
+        if (PenningtonTuiHostedService.IsConsoleRedirected())
+            return services;
+
         var options = new PenningtonTuiOptions();
         configure?.Invoke(options);
         services.AddSingleton(options);
