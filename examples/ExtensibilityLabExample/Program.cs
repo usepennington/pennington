@@ -16,6 +16,10 @@ builder.Services.AddPennington(penn =>
 {
     penn.SiteTitle = "Extensibility Lab";
     penn.ContentRootPath = "Content";
+    // Bare-host CanonicalBaseUrl lets the framework auto-emit
+    // <link rel="canonical"> on every rendered page; DiagnosticsEmittingProcessor
+    // (the in-project canonical-tag check) finds the tag and stays quiet.
+    penn.CanonicalBaseUrl = "https://example.com";
 
     penn.AddMarkdownContent<DocFrontMatter>(md =>
     {
