@@ -25,7 +25,7 @@ All 25 examples build and run. Highlights worth triaging:
 ### Cross-cutting framework concerns (touch multiple examples)
 - **SPA engine prefetch leakage** between example sessions on the same port (#8, #14, #19). One-line fix in `spa-engine.js` to invalidate prefetch on host fingerprint change. — resolved 2026-05-13 (LiveReloadScriptProcessor emits per-process `<meta name="x-pennington-host">`; spa-engine.js compares and full-reloads on mismatch)
 - **"Post not found" returns HTTP 200** instead of 404 in BlogSite (#7, #10) — bad for SEO and link-checkers. — resolved 2026-05-13 (BlogSite/Blog.razor sets `HttpContext.Response.StatusCode = 404` when the post resolves null)
-- **`HEAD /styles.css` returns 405** while GET returns 200 (#1) — affects every example using `AddMonorailCss()`.
+- **`HEAD /styles.css` returns 405** while GET returns 200 (#1) — affects every example using `AddMonorailCss()`. — resolved 2026-05-13 (`UseMonorailCss` now uses `MapMethods("/styles.css", ["GET", "HEAD"], …)`)
 - **Stage-1 of tutorials storing markdown/razor in C# raw strings** leaks `"""` delimiters into the rendered docs (#2). Violates `examples/CLAUDE.md`.
 
 ### Framework bugs surfaced as blockers/major
@@ -62,7 +62,7 @@ All 25 examples build and run. Highlights worth triaging:
 **Build mode (`-- build`):** Crawler discovered both `EndpointSource` entries; `output/status/{intro,verify}/index.html` written + sitemap.xml + search-index-en.json + styles.css. 5 pages in 0.3s. ✓
 
 **Findings:**
-- **[FW] (minor)** `HEAD /styles.css` returns `405 Method Not Allowed` while `GET` returns `200`. MonorailCSS endpoint accepts only GET — could break HEAD-based health/probe checks and feed crawlers that HEAD before GET. Worth a one-line `app.MapMethods(..., new[] { "GET", "HEAD" })` or equivalent in the MonorailCSS integration. Same likely applies across every example using `AddMonorailCss()`.
+- **[FW] (minor)** `HEAD /styles.css` returns `405 Method Not Allowed` while `GET` returns `200`. MonorailCSS endpoint accepts only GET — could break HEAD-based health/probe checks and feed crawlers that HEAD before GET. Worth a one-line `app.MapMethods(..., new[] { "GET", "HEAD" })` or equivalent in the MonorailCSS integration. Same likely applies across every example using `AddMonorailCss()`. **Resolved 2026-05-13 (cross-cutting):** `UseMonorailCss` switched from `MapGet` to `MapMethods` with both GET and HEAD; verified on BareHostRazorPageExample (HEAD returns 200 with `text/css`).
 - **[DOC] (minor)** Doc page says "View source on a rendered page — the markup ends with `</html>`, with no surrounding chrome injected by the framework." It does end with `</html>` but Pennington injects a live-reload `<script>` block before `</body>` (visible: `…cript></body></html>`). That injection is a side-effect of `UseMonorailCss`/dev-mode live-reload — the doc's "no surrounding chrome" claim is slightly misleading. Either mention the dev-time injection or note that build-mode output is the one that is truly chrome-free.
 - **[DOC] (minor)** README under `Concepts` lists `GetContentTocEntriesAsync` / `GetCrossReferencesAsync` as concepts on the hand-rolled service, but the doc page does not link to a TOC/xref reference — readers landing here won't know what those return shapes mean. Either add a one-line "and why" to the README or link to a TOC/xref reference page from the how-to.
 

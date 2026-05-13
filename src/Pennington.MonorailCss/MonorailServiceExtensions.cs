@@ -100,7 +100,10 @@ public static class MonorailServiceExtensions
                 "MonorailCssService is not registered. Please call AddMonorailCss() in ConfigureServices.");
         }
 
-        app.MapGet(path, (MonorailCssService cssService) =>
+        // HEAD is mapped alongside GET so feed crawlers and health probes that
+        // HEAD before GET don't get a 405. ASP.NET runs the same handler and
+        // suppresses the response body for HEAD requests.
+        app.MapMethods(path, ["GET", "HEAD"], (MonorailCssService cssService) =>
             Results.Content(cssService.GetStyleSheet(), "text/css"));
 
         return app;
