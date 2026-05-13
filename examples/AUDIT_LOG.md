@@ -29,7 +29,7 @@ All 25 examples build and run. Highlights worth triaging:
 - **Stage-1 of tutorials storing markdown/razor in C# raw strings** leaks `"""` delimiters into the rendered docs (#2). Violates `examples/CLAUDE.md`. — resolved 2026-05-13 (BeyondCustomRazorComponentExample/snippets/stage1/PricingCard.razor + `razor:path` fence; csproj excludes `snippets/**` from compile)
 
 ### Framework bugs surfaced as blockers/major
-- **#5** Dev overlay for missing translations doesn't render (build report works).
+- **#5** Dev overlay for missing translations doesn't render (build report works). — resolved 2026-05-13 (verified rendering; the audit's CSS-selector probe missed the actual `#penn-diag-root` element — no framework change needed)
 - **#5** English content served with `<html lang="es">` when es translation is missing.
 - **#6** TUI emits raw ANSI when stdout isn't a TTY — no line-mode fallback.
 - **#11** No "on this page" outline visible in DocSiteAuthorExample despite README advertising it.
@@ -443,7 +443,7 @@ All 25 examples build and run. Highlights worth triaging:
 - ✓ Audit warning surfaces with locale label, route, and title. This half of the claim works perfectly.
 
 **Findings:**
-- **[FW] (major)** README claims the dev overlay surfaces the translation warning when visiting `/es/getting-started/`. No overlay is visible in the rendered page — no fixed-position element, no Pennington-branded badge, no banner. Either the overlay opt-in is implicit and not actually wired in the example, or the overlay UI is gated behind a toggle the README doesn't mention, or the overlay was never built. Build-report half works; UI half does not appear.
+- **[FW] (major)** README claims the dev overlay surfaces the translation warning when visiting `/es/getting-started/`. No overlay is visible in the rendered page — no fixed-position element, no Pennington-branded badge, no banner. Either the overlay opt-in is implicit and not actually wired in the example, or the overlay UI is gated behind a toggle the README doesn't mention, or the overlay was never built. Build-report half works; UI half does not appear. **Resolved 2026-05-13 (framework-blocker re-check):** the overlay does render — `#penn-diag-root` is positioned fixed at `bottom:20px;right:20px;z-index:99999` and `#penn-diag-badge` reads "1 warning" on `/es/getting-started/`. The original audit's CSS selectors (`[id*=overlay]`, `[class*=audit]`, `[class*=translation]`) just never matched the actual id `penn-diag-root`. Verified via Playwright (`audit5-overlay-verification.png`). No framework change required.
 - **[FW+DOC] (major)** When a translation is missing on a non-default locale, the fallback page renders with `<html lang="es">` (the request locale) but English body content. Either the fallback should switch `lang` to the actual content locale (`en`), or the page should show some user-visible indicator that this is an English fallback. The audit knows; the rendered page does not.
 - **[DOC] (minor)** README says "Repository auto-discovers from the current working directory." Worth documenting what happens when the cwd isn't a git repo or the example is consumed outside a clone (e.g. user copies the folder into their own repo).
 - **[DOC] (minor)** README says the example exists "as a working reference for the `Pennington.TranslationAudit` package" but the package is in the docs site nowhere — there is no how-to or reference page linking back. Either add one, or add at least a "see also" callout on the example so the docs surface this audit workflow.
