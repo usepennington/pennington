@@ -78,8 +78,40 @@ public sealed class OutputOptions
         return new OutputOptions
         {
             OutputDirectory = new FilePath(outputDir ?? "output"),
-            BaseUrl = new UrlPath(baseUrl ?? "/"),
+            BaseUrl = new UrlPath(NormalizeBaseUrl(baseUrl) ?? "/"),
         };
+    }
+
+    /// <summary>
+    /// Normalizes a base-URL argument and warns on shapes that suggest the
+    /// shell mangled the input. Accepts bare segments (e.g. <c>my-app</c>) and
+    /// promotes them to <c>/my-app</c> so POSIX shells can pass the value
+    /// without a leading slash that MSYS would otherwise rewrite to a Windows
+    /// path. Returns <c>null</c> when <paramref name="raw"/> is null/empty.
+    /// </summary>
+    internal static string? NormalizeBaseUrl(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+
+        // Windows-absolute path leaked into the base URL — almost certainly
+        // Git Bash's MSYS path translation rewriting a leading-slash argument
+        // (e.g. `dotnet run -- build /my-app` becomes
+        // `C:/Program Files/Git/my-app` before .NET sees it). Warn loudly and
+        // strip the prefix so the deploy still produces something usable.
+        if (raw.Length >= 3 && char.IsLetter(raw[0]) && raw[1] == ':' && (raw[2] == '/' || raw[2] == '\\'))
+        {
+            Console.Error.WriteLine(
+                $"warning: base-URL '{raw}' looks like a Windows absolute path — your shell likely rewrote a leading '/'. " +
+                $"Pass `--base-url <segment>` (no leading slash) or set MSYS_NO_PATHCONV=1.");
+            // Take the last segment as a best-effort recovery so links aren't
+            // completely broken even when the warning is ignored.
+            var lastSep = raw.LastIndexOfAny(['/', '\\']);
+            raw = lastSep >= 0 ? raw[(lastSep + 1)..] : raw;
+            if (string.IsNullOrWhiteSpace(raw)) return "/";
+        }
+
+        // POSIX-friendly form: `--base-url my-app` is accepted as `/my-app`.
+        return raw.StartsWith('/') ? raw : "/" + raw;
     }
 
     /// <summary>
