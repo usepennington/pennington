@@ -226,6 +226,7 @@ public static class PenningtonExtensions
         services.AddTransient<XrefResolvingService>();
         services.AddTransient<IHtmlResponseRewriter, XrefHtmlRewriter>();
         services.AddSingleton<IHtmlResponseRewriter, LocaleLinkHtmlRewriter>();
+        services.AddSingleton<IHtmlResponseRewriter, FallbackLangHtmlRewriter>();
         services.AddSingleton<IHtmlResponseRewriter>(sp =>
             new BaseUrlHtmlRewriter(sp.GetRequiredService<OutputOptions>()));
         services.AddTransient<IResponseProcessor, HtmlResponseRewritingProcessor>();

@@ -8,6 +8,7 @@
 @inject DocSiteOptions DocSiteOptions
 @inject NavigationManager NavigationManager
 @inject LocalizationOptions Localization
+@inject IHttpContextAccessor HttpContextAccessor
 
 @if (_resolved != null)
 {
@@ -111,6 +112,15 @@ else if (_notFound)
         if (string.IsNullOrWhiteSpace(url) || url == "/") url = "index";
 
         _resolved = await ContentResolver.GetContentByUrlAsync(url);
+
+        if (_resolved is { IsFallback: true, Locale: { Length: > 0 } actualLocale }
+            && HttpContextAccessor.HttpContext is { } ctx)
+        {
+            // Surface the actual content locale to FallbackLangHtmlRewriter so
+            // <html lang> ends up matching the body's language rather than the
+            // URL's locale prefix.
+            ctx.Items[FallbackLangHtmlRewriter.FallbackContentLocaleKey] = actualLocale;
+        }
 
         if (_resolved != null)
         {
