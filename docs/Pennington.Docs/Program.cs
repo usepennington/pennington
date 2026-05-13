@@ -9,6 +9,7 @@ using Pennington.MonorailCss;
 using Pennington.Roslyn;
 using Pennington.Roslyn.ApiMetadata;
 using Pennington.Tui;
+using WordbreakMiddleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -123,5 +124,6 @@ builder.Services.AddMdazorComponent<FrontMatterKeys>();
 // builder.Services.AddPenningtonTui();
 
 var app = builder.Build();
+app.UseWordBreak();
 app.UseDocSite();
 await app.RunDocSiteAsync(args);
