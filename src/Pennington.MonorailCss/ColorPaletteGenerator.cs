@@ -1,230 +1,157 @@
 using System.Collections.Immutable;
+using System.Globalization;
+using MonorailCss.Theme;
 
 namespace Pennington.MonorailCss;
 
 /// <summary>
-/// Generates OKLCH color palettes from hue values for use with MonorailCSS themes.
+/// Selects accent hues relative to the primary hue.
+/// </summary>
+public enum CoordinatingScheme
+{
+    /// <summary>Single accent at +180°.</summary>
+    Complementary,
+
+    /// <summary>Two accents at +150° and +210°.</summary>
+    SplitComplementary,
+
+    /// <summary>Two accents at +120° and +240°.</summary>
+    Triadic,
+
+    /// <summary>Two accents at -30° and +30°.</summary>
+    Analogous,
+}
+
+/// <summary>
+/// Generates Tailwind-style 11-step OKLCH palettes from a seed hue and chroma,
+/// plus the coordinating accent and neutral base palettes that go with them.
 /// </summary>
 public static class ColorPaletteGenerator
 {
-    // Chroma values following Gaussian distribution (peaks at 500-600 range)
-    // Based on Tailwind v4 actual red palette analysis
-    private static readonly double[] ChromaLevels =
+    private static readonly string[] StepKeys =
     [
-        0.013, 0.032, 0.062, 0.114, 0.191, 0.237, 0.245, 0.213, 0.177, 0.141, 0.092
+        "50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950",
     ];
 
-    private static readonly double[] LightnessLevels =
+    private static readonly double[] LForeground =
     [
-        97.10, 93.60, 88.50, 80.80, 70.40, 63.70, 57.70, 50.50, 44.40, 39.60, 25.80
+        0.970, 0.940, 0.890, 0.820, 0.720, 0.640, 0.560, 0.490, 0.430, 0.380, 0.270,
     ];
 
-    // Keys for the palette
-    private static readonly string[] PaletteKeys =
+    private static readonly double[] LNeutral =
     [
-        "50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"
+        0.985, 0.970, 0.925, 0.870, 0.710, 0.550, 0.440, 0.370, 0.270, 0.210, 0.140,
     ];
 
-    /// <summary>
-    /// Generates a primary and accent color palette based on a hue value in degrees (0-360)
-    /// </summary>
-    public static ImmutableDictionary<string, string> GenerateFromHue(double hue)
-    {
-        // Normalize the hue to 0-360 range
-        hue = (hue % 360 + 360) % 360;
+    private static readonly double[] CForegroundFraction =
+    [
+        0.06, 0.14, 0.26, 0.47, 0.77, 1.00, 1.05, 0.96, 0.78, 0.62, 0.42,
+    ];
 
-        // Generate a primary palette (with the exact hue)
-        return GeneratePaletteFromHue(hue);
+    private static readonly double[] CNeutralBase =
+    [
+        0.002, 0.003, 0.005, 0.010, 0.018, 0.028, 0.024, 0.022, 0.016, 0.012, 0.006,
+    ];
+
+    private static readonly double[] CNeutralHeldTail =
+    [
+        0.002, 0.003, 0.005, 0.010, 0.018, 0.028, 0.026, 0.025, 0.024, 0.023, 0.022,
+    ];
+
+    // Step 500 is the anchor: foreground chroma is scaled so the 500 stop lands on the seed chroma,
+    // and neutral chroma is scaled so the 500 stop matches its base curve at the seed's intensity.
+    private const int AnchorIndex = 5;
+
+    // Blend between the tapered tail (C_NEUTRAL_BASE 600..950) and the held-high tail
+    // (C_NEUTRAL_HELD_TAIL). 0.5 splits the difference, keeping dark neutrals with a usable tint.
+    private const double DarkChromaRetention = 0.5;
+
+    // Base chroma derives from primary chroma but is clamped — saturated primaries shouldn't
+    // produce a 100% tinted base, and near-gray primaries still need a faint hue cast to read.
+    private const double BaseChromaFraction = 0.33;
+    private const double BaseChromaMin = 0.02;
+    private const double BaseChromaMax = 0.05;
+
+    /// <summary>
+    /// Wires algorithmic palettes (base + primary + accents) onto the theme.
+    /// Primary is a foreground palette at <paramref name="hue"/>/<paramref name="chroma"/>;
+    /// base is a desaturated neutral palette at the same hue; accents are foreground palettes
+    /// at hues picked by <paramref name="scheme"/>. Schemes with multiple accents register the
+    /// first as <c>accent</c> and additional ones as <c>accent-2</c>, <c>accent-3</c>, ….
+    /// </summary>
+    public static Theme ApplyAlgorithmicColorScheme(this Theme theme, double hue, double chroma, CoordinatingScheme scheme)
+    {
+        var primary = GenerateForeground(hue, chroma);
+        var baseChroma = Math.Clamp(chroma * BaseChromaFraction, BaseChromaMin, BaseChromaMax);
+        var basePalette = GenerateNeutral(hue, baseChroma);
+
+        theme = theme.AddColorPalette("primary", primary)
+            .AddColorPalette("base", basePalette);
+
+        var offsets = GetOffsets(scheme);
+        for (var i = 0; i < offsets.Length; i++)
+        {
+            var accent = GenerateForeground(hue + offsets[i], chroma);
+            var slot = i == 0 ? "accent" : $"accent-{i + 1}";
+            theme = theme.AddColorPalette(slot, accent);
+        }
+
+        return theme;
     }
 
     /// <summary>
-    /// Generates a palette from a specific hue value
+    /// Generates a vibrant foreground 11-step OKLCH palette. The 500 stop lands on
+    /// <paramref name="chroma"/>; other stops scale relative to it via the foreground chroma curve.
     /// </summary>
-    private static ImmutableDictionary<string, string> GeneratePaletteFromHue(double hue)
+    public static ImmutableDictionary<string, string> GenerateForeground(double hue, double chroma)
     {
-        var palette = new Dictionary<string, string>();
+        var h = NormalizeHue(hue);
+        var peak = chroma / CForegroundFraction[AnchorIndex];
 
-        // Generate colors for each step in the palette
-        for (var i = 0; i < PaletteKeys.Length; i++)
+        var builder = ImmutableDictionary.CreateBuilder<string, string>();
+        for (var i = 0; i < StepKeys.Length; i++)
         {
-            // Apply per-hue lightness adjustment (yellows/greens are lighter)
-            var adjustedLightnessPercent = LightnessLevels[i] + GetLightnessAdjustment(hue, i);
-            var lightness = adjustedLightnessPercent / 100.0; // Convert to 0-1 range for OKLCH
-
-            // Apply per-hue chroma adjustment (yellows have lower chroma)
-            var chroma = ChromaLevels[i] * GetChromaMultiplier(hue);
-
-            // Apply hue rotation for more vibrant colors in dark shades
-            var adjustedHue = hue + CalculateHueShift(hue, i);
-
-            // Apply smoothing at extremes to prevent over-desaturation
-            var adjustedChroma = chroma * GetSmoothingFactor(i);
-
-            // Create the OKLCH color
-            var oklchColor = $"oklch({lightness:F3} {adjustedChroma:F3} {adjustedHue:F3})";
-            palette.Add(PaletteKeys[i], oklchColor);
+            var c = Math.Max(0, peak * CForegroundFraction[i]);
+            builder.Add(StepKeys[i], FormatOklch(LForeground[i], c, h));
         }
 
-        return palette.ToImmutableDictionary();
+        return builder.ToImmutable();
     }
 
     /// <summary>
-    /// Calculates hue shift based on color range and palette position
-    /// Yellows shift toward orange, blues toward violet in darker shades
+    /// Generates a near-gray neutral 11-step OKLCH palette. Chroma scales by intensity
+    /// (<paramref name="chroma"/> / curve at 500) and the dark tail blends between tapered
+    /// and held-high shapes via <see cref="DarkChromaRetention"/>.
     /// </summary>
-    private static double CalculateHueShift(double baseHue, int paletteIndex)
+    public static ImmutableDictionary<string, string> GenerateNeutral(double hue, double chroma)
     {
-        // Normalize hue to 0-360
-        var normalizedHue = (baseHue % 360 + 360) % 360;
+        var h = NormalizeHue(hue);
+        var intensity = chroma / CNeutralBase[AnchorIndex];
 
-        // No shift for lightest shade (50)
-        if (paletteIndex == 0) return 0.0;
-
-        // Yellows and golds (45-110) shift strongly toward orange/red in dark shades
-        // Uses a gentler curve - balanced shift progression
-        if (normalizedHue >= 45 && normalizedHue <= 110)
+        var builder = ImmutableDictionary.CreateBuilder<string, string>();
+        for (var i = 0; i < StepKeys.Length; i++)
         {
-            // Curve calibrated to match Tailwind: ~30% at shade 500, 100% at shade 950
-            var yellowIntensity = Math.Pow(paletteIndex / 10.0, 1.8);
-            return -48.0 * yellowIntensity;
+            var shape = i < 6
+                ? CNeutralBase[i]
+                : CNeutralBase[i] * (1 - DarkChromaRetention) + CNeutralHeldTail[i] * DarkChromaRetention;
+            var c = Math.Max(0, shape * intensity);
+            builder.Add(StepKeys[i], FormatOklch(LNeutral[i], c, h));
         }
 
-        // Calculate shift intensity using a curve that peaks around shade 700
-        // Parabolic curve: starts small, builds through 500, peaks at 700, slightly decreases
-        double shiftIntensity;
-        if (paletteIndex <= 7) // Shades 100-700
-        {
-            // Quadratic growth from 0 to 1
-            shiftIntensity = Math.Pow(paletteIndex / 7.0, 1.5);
-        }
-        else // Shades 800-950
-        {
-            // Slight decrease after peak
-            shiftIntensity = 1.0 - (paletteIndex - 7) * 0.05;
-        }
-
-        // Blues (200-260) shift toward violet (increase hue)
-        if (normalizedHue >= 200 && normalizedHue <= 260)
-        {
-            return 15.0 * shiftIntensity;
-        }
-
-        // Reds (330-360 or 0-30) shift toward orange-red for vibrant darker shades
-        if (normalizedHue >= 330 || normalizedHue <= 30)
-        {
-            return 14.0 * shiftIntensity;
-        }
-
-        // Cyans/teals (150-200) shift slightly toward blue
-        if (normalizedHue >= 150 && normalizedHue < 200)
-        {
-            return 8.0 * shiftIntensity;
-        }
-
-        // Other hues: minimal adjustment
-        return 0.0;
+        return builder.ToImmutable();
     }
 
-    /// <summary>
-    /// Applies smoothing factor at extreme ends to prevent full desaturation
-    /// </summary>
-    private static double GetSmoothingFactor(int paletteIndex)
+    private static double[] GetOffsets(CoordinatingScheme scheme) => scheme switch
     {
-        // Reduce chroma slightly at the lightest shade (50)
-        if (paletteIndex == 0) return 0.8;
+        CoordinatingScheme.Complementary => [180.0],
+        CoordinatingScheme.SplitComplementary => [150.0, 210.0],
+        CoordinatingScheme.Triadic => [120.0, 240.0],
+        CoordinatingScheme.Analogous => [-30.0, 30.0],
+        _ => throw new ArgumentOutOfRangeException(nameof(scheme), scheme, null),
+    };
 
-        // Slight reduction at 100
-        if (paletteIndex == 1) return 0.9;
+    private static double NormalizeHue(double hue) => ((hue % 360) + 360) % 360;
 
-        // Full chroma in middle range (200-900)
-        if (paletteIndex >= 2 && paletteIndex <= 9) return 1.0;
-
-        // Slight reduction at darkest shade (950)
-        if (paletteIndex == 10) return 0.85;
-
-        return 1.0;
-    }
-
-    /// <summary>
-    /// Calculates lightness adjustment based on hue to match Tailwind v4's per-color curves
-    /// Yellows and greens are lighter in middle shades, blues slightly lighter in dark shades
-    /// </summary>
-    private static double GetLightnessAdjustment(double hue, int paletteIndex)
-    {
-        // Normalize hue to 0-360
-        var normalizedHue = (hue % 360 + 360) % 360;
-
-        // Yellows and golds (45-110) - significantly lighter in middle ranges
-        if (normalizedHue >= 45 && normalizedHue <= 110)
-        {
-            return paletteIndex switch
-            {
-                0 => 1.6,   // 50: +1.6%
-                1 => 0.0,   // 100: no adjustment
-                2 => 0.0,   // 200: no adjustment
-                3 => 7.0,   // 300: +7%
-                4 => 12.0,  // 400: +12%
-                5 => 15.8,  // 500: +15.8%
-                6 => 10.0,  // 600: +10%
-                7 => 7.0,   // 700: +7%
-                8 => 5.0,   // 800: +5%
-                9 => 3.5,   // 900: +3.5%
-                10 => 2.8,  // 950: +2.8%
-                _ => 0.0
-            };
-        }
-
-        // Greens (110-170) - moderately lighter in middle ranges
-        if (normalizedHue >= 110 && normalizedHue <= 170)
-        {
-            return paletteIndex switch
-            {
-                0 => 1.1,   // 50: +1.1%
-                1 => 0.0,   // 100: no adjustment
-                2 => 0.0,   // 200: no adjustment
-                3 => 4.5,   // 300: +4.5%
-                4 => 7.5,   // 400: +7.5%
-                5 => 8.6,   // 500: +8.6%
-                6 => 7.0,   // 600: +7%
-                7 => 5.0,   // 700: +5%
-                8 => 3.0,   // 800: +3%
-                9 => 1.5,   // 900: +1.5%
-                10 => 0.8,  // 950: +0.8%
-                _ => 0.0
-            };
-        }
-
-        // Blues (200-260) - slightly lighter only in darkest shade
-        if (normalizedHue >= 200 && normalizedHue <= 260)
-        {
-            return paletteIndex switch
-            {
-                0 => -0.1,  // 50: -0.1%
-                10 => 2.4,  // 950: +2.4%
-                _ => 0.0
-            };
-        }
-
-        // All other hues (reds, magentas, cyans, etc.) use base curve
-        return 0.0;
-    }
-
-    /// <summary>
-    /// Calculates chroma adjustment based on hue to match Tailwind v4's per-color curves
-    /// Yellows have lower chroma than reds
-    /// </summary>
-    private static double GetChromaMultiplier(double hue)
-    {
-        // Normalize hue to 0-360
-        var normalizedHue = (hue % 360 + 360) % 360;
-
-        // Yellows and golds (45-110) have lower chroma than reds
-        if (normalizedHue >= 45 && normalizedHue <= 110)
-        {
-            return 0.78; // 22% reduction to match Tailwind yellow
-        }
-
-        // All other hues use base chroma curve
-        return 1.0;
-    }
+    private static string FormatOklch(double l, double c, double h) =>
+        string.Format(CultureInfo.InvariantCulture, "oklch({0:F3} {1:F3} {2:F3})", l, c, h);
 }

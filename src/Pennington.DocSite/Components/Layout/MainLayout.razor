@@ -128,17 +128,17 @@
     // Shared TOC styling — area-aware and single-tree branches pass the same strings.
     // The pill-style nav links replaced the previous border-l indicator; the active
     // state is now a tinted background, matching the area-pill / outline-rail family.
-    private const string TocChildListClass = "mt-1 flex flex-col gap-0.5";
+    private string TocChildListClass = "mt-1 flex flex-col gap-0.5";
 
-    private const string TocSectionHeaderStructureClass =
+    private string TocSectionHeaderStructureClass =
         "font-display text-[12.5px] font-semibold mt-6 first:mt-0 mb-2 px-2.5";
 
-    private const string TocSectionHeaderColorClass = "text-base-500 dark:text-base-500";
+    private string TocSectionHeaderColorClass = "text-base-700 dark:text-base-200 uppercase";
 
-    private const string TocLinkStructureClass =
+    private string TocLinkStructureClass =
         "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm leading-snug";
 
-    private const string TocLinkColorClass =
+    private string TocLinkColorClass =
         "transition-colors duration-150 " +
         "text-base-500 dark:text-base-400 " +
         "hover:text-base-900 hover:bg-base-100 dark:hover:text-base-50 dark:hover:bg-base-900 " +

@@ -35,7 +35,7 @@ The version-keyed cache is what makes the dev-serve loop feel right. The first p
 
 A `NamedColorScheme` maps three role names — `primary`, `accent`, `base` — onto built-in MonorailCSS palettes by name (for example, `Blue` or `Slate`). It is the default, and it suits sites where the designer thinks in terms of recognizable Tailwind-style palettes and picks by name rather than by hue.
 
-An `AlgorithmicColorScheme` takes a single `PrimaryHue` number in degrees plus a `ColorSchemeGenerator` function — defaulting to the complementary hue — and synthesizes `primary` and `accent` from scratch. This second shape is what makes "my brand color is hue 214, derive everything from that" viable without hand-authoring a full palette table.
+An `AlgorithmicColorScheme` takes a `PrimaryHue` in degrees, a seed `Chroma`, and a `CoordinatingScheme` enum (Complementary, SplitComplementary, Triadic, Analogous) and synthesizes `primary`, `base`, and one or more `accent` palettes from scratch. The base palette is a desaturated neutral at the primary hue; the accents come from the scheme's hue offsets. This second shape is what makes "my brand color is hue 214 at chroma 0.18, derive everything from that" viable without hand-authoring a full palette table.
 
 The two schemes are not a legacy/modern pair or a simple/advanced pair — they occupy different spots on the designer-versus-programmer axis. Named is the choice when a designer says "I want Tailwind Purple for primary"; Algorithmic is the choice when the starting point is a brand hue expressed in degrees and the palette needs to be coherent rather than cherry-picked.
 
@@ -43,11 +43,11 @@ Syntax-highlight colors are deliberately kept off the brand scheme. `SyntaxTheme
 
 ### OKLCH palette generation
 
-The algorithmic scheme delegates to `ColorPaletteGenerator.GenerateFromHue`, which produces a dictionary keyed by the familiar `50` through `950` shade names. The generator walks three tables in parallel — a chroma curve, a lightness curve, and a palette-key list — and emits one OKLCH color per shade. Two nonlinearities make the output match the hand-tuned Tailwind v4 reference: a per-hue lightness adjustment (yellows and greens are lighter in the mid-range to match perceptual brightness) and a per-hue chroma multiplier (yellows sit at 78% of base chroma because a full-chroma yellow reads as lemon highlighter rather than a design color). A hue-shift curve also rotates the darker shades slightly toward an adjacent family — blues drift toward violet, reds toward orange — because that is what Tailwind's designers do by eye.
+The algorithmic scheme delegates to the `ApplyAlgorithmicColorScheme` extension method on `Theme`, which generates each palette as an 11-stop dictionary keyed by the familiar `50` through `950` shade names. Two curve families do the work. Foreground palettes (used for primary and accents) scale a fixed lightness curve fitted from averaged Tailwind palettes, and chroma is anchored at step 500 to the seed value — every other step is a relative fraction of that peak. Neutral palettes (used for the base) follow a flatter lightness curve and an absolute chroma curve scaled by the seed's intensity, with the dark tail blending between a tapered and a held-high shape so deep base colors keep a usable hue cast.
 
 The key property that earns OKLCH its spot here is perceptual uniformity. Stepping lightness by a fixed amount produces steps that look evenly spaced regardless of hue, which is not true of HSL — a 500-weight green at HSL lightness 40% looks brighter than a 500-weight blue at the same value. OKLCH makes the generated scheme feel visually coherent without per-hue handwork from the caller, which is what makes "give me a palette from hue 214" a reasonable thing to ask.
 
-`ColorPaletteGenerator.GenerateFromHue` is a plain static method, so nothing in the color story depends on DI — a test or a small designer tool can call it directly to preview a palette before committing to a hue.
+`ColorPaletteGenerator.GenerateForeground` and `GenerateNeutral` are plain static methods, so nothing in the color story depends on DI — a test or a small designer tool can call them directly to preview a palette before committing to a seed.
 
 ## Trade-offs
 

@@ -24,7 +24,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         String   = "accent-two",
         Variable = "accent-one",
         Function = "accent-three",
-        Comment  = "english",
+        Comment  = "base",
     },
     GitHubUrl = "https://github.com/usepennington/pennington",
     CanonicalBaseUrl = "https://usepennington.github.io/pennington/",

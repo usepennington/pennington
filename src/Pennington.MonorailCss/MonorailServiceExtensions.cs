@@ -28,17 +28,19 @@ public static class MonorailServiceExtensions
     {
         if (optionFactory == null)
         {
-            services.AddSingleton(new MonorailCssOptions());
+            services.AddTransient(_ => new MonorailCssOptions());
         }
         else
         {
-            // Singleton (was Transient) so the framework + discovery share a single configured
-            // instance for the lifetime of the app — required since the discovery service
-            // validates candidates against this exact framework.
-            services.AddSingleton(optionFactory);
+            // Transient so dotnet-watch hot-reload edits to the options factory (ColorScheme,
+            // SyntaxTheme, ExtraStyles, CustomCssFrameworkSettings, ExtendProseCustomization)
+            // are picked up on the next /styles.css fetch. The discovery pipeline seeds its own
+            // framework snapshot at startup via IConfigureOptions<MonorailDiscoveryOptions> for
+            // candidate validation, which is independent of palette values.
+            services.AddTransient(optionFactory);
         }
 
-        services.AddSingleton<MonorailCssService>();
+        services.AddTransient<MonorailCssService>();
 
         services.AddMonorailClassDiscovery();
 

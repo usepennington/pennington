@@ -69,10 +69,13 @@ public static class DocSiteServiceExtensions
                 .AddMdazorComponent<Step>()
                 .AddMdazorComponent<Steps>();
 
-        // MonorailCSS
-        services.AddMonorailCss(sp =>
+        // MonorailCSS — re-invoke the user's factory per resolve (rather than reading the
+        // singleton snapshot) so dotnet-watch hot-reload edits to Program.cs flow into the
+        // served stylesheet. The MonorailCSS option factory is registered transient by
+        // AddMonorailCss, so this lambda runs on every /styles.css request.
+        services.AddMonorailCss(_ =>
         {
-            var options = sp.GetRequiredService<DocSiteOptions>();
+            var options = configureOptions();
 
             // Sensible cross-platform sans-serif stack used when the consumer
             // doesn't supply DisplayFontFamily / BodyFontFamily. Both `font-display`
@@ -89,6 +92,8 @@ public static class DocSiteServiceExtensions
             var bodyFont = options.BodyFontFamily ?? defaultFontStack;
             var monoFont = options.MonoFontFamily ?? defaultMonoStack;
             var userCustomization = options.CustomCssFrameworkSettings ?? (settings => settings);
+
+
 
             var monoOptions = new MonorailCssOptions
             {

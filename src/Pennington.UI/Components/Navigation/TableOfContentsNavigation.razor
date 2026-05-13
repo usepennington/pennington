@@ -43,7 +43,7 @@
 
 
     private RenderFragment TocEntry(NavigationTreeItem tocEntry) =>
-        @<li class="block">
+        @<li class="block mt-4 first:mt-0">
             @if (tocEntry.Route.CanonicalPath.Value == "")
             {
                 <div class="@SectionHeaderStructureClass @SectionHeaderColorClass">@tocEntry.Title</div>

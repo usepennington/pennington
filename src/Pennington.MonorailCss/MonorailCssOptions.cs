@@ -152,26 +152,28 @@ public interface IColorScheme
 }
 
 /// <summary>
-/// A color scheme that generates palettes algorithmically from hue values.
+/// A color scheme that generates palettes algorithmically from a seed hue and chroma.
+/// The scheme synthesises <c>primary</c>, <c>base</c>, and one or more <c>accent</c> palettes;
+/// see <see cref="ColorPaletteGenerator.ApplyAlgorithmicColorScheme"/> for the underlying mechanics.
 /// </summary>
 public class AlgorithmicColorScheme : IColorScheme
 {
     /// <summary>
-    /// Gets or sets the primary hue value (0-360).
+    /// Gets or sets the primary hue value in degrees (0-360).
     /// </summary>
-    public required int PrimaryHue { get; init; }
+    public required double PrimaryHue { get; init; }
 
     /// <summary>
-    /// Gets or sets the base color name from the MonorailCSS color palette.
-    /// The default value is "Gray".
+    /// Gets or sets the seed chroma for the primary palette. Typical range is 0.05 (muted) to 0.30 (vivid);
+    /// the 500 stop of the generated primary lands on this value.
     /// </summary>
-    public ColorName BaseColorName { get; init; } = ColorName.Gray;
+    public double Chroma { get; init; } = 0.18;
 
     /// <summary>
-    /// Gets or sets the function that generates the accent hue from the primary hue.
-    /// Defaults to the complementary hue (primary + 180Â°).
+    /// Gets or sets the coordinating scheme that picks accent hues relative to <see cref="PrimaryHue"/>.
+    /// Defaults to <see cref="CoordinatingScheme.Complementary"/>.
     /// </summary>
-    public Func<int, int> ColorSchemeGenerator { get; init; } = primary => primary + 180;
+    public CoordinatingScheme Scheme { get; init; } = CoordinatingScheme.Complementary;
 
     /// <summary>
     /// Gets or sets additional color mappings beyond the core slots.
@@ -182,13 +184,7 @@ public class AlgorithmicColorScheme : IColorScheme
     /// <inheritdoc />
     public Theme ApplyToTheme(Theme theme)
     {
-        var primary = ColorPaletteGenerator.GenerateFromHue(PrimaryHue);
-        var accentHue = ColorSchemeGenerator(PrimaryHue);
-        var accent = ColorPaletteGenerator.GenerateFromHue(accentHue);
-
-        theme = theme.AddColorPalette("primary", primary)
-             .AddColorPalette("accent", accent)
-             .MapColorPalette(BaseColorName.Value, "base");
+        theme = theme.ApplyAlgorithmicColorScheme(PrimaryHue, Chroma, Scheme);
 
         foreach (var (slot, color) in AdditionalMappings)
             theme = theme.MapColorPalette(color.Value, slot);

@@ -16,42 +16,31 @@ public class MonorailCssService(
     MonorailCssOptions options,
     IClassRegistry classRegistry)
 {
-    private string? _cachedStyleSheet;
-    private string? _cachedRegistryVersion;
-    private readonly Lock _cacheLock = new();
-
     /// <summary>
-    /// Returns the registry's generated CSS wrapped with Pennington's prefix. The result is
-    /// cached until the discovery registry's version token changes, so repeated GETs of
-    /// <c>/styles.css</c> are served from memory.
+    /// Builds the stylesheet from scratch on every call: a fresh <see cref="CssFramework"/>
+    /// processes the current class set from <see cref="IClassRegistry.GetClasses"/>.
+    /// This deliberately skips <see cref="IClassRegistry.Css"/> (which caches against the
+    /// framework that was baked into <c>MonorailDiscoveryOptions.Framework</c> at startup).
+    /// Combined with transient lifetimes on <see cref="MonorailCssOptions"/> and this service
+    /// (see <c>MonorailServiceExtensions.AddMonorailCss</c>), dotnet-watch hot-reload edits to
+    /// <see cref="MonorailCssOptions.ColorScheme"/>, prose customizations, and
+    /// <see cref="MonorailCssOptions.CustomCssFrameworkSettings"/> flow into the served
+    /// stylesheet on the next request without a process restart.
+    /// Pennington is a static content engine — the build is one-shot and the dev server
+    /// is the only other consumer, so per-call rebuild is the right tradeoff.
     /// </summary>
     public string GetStyleSheet()
     {
-        var version = classRegistry.Version;
+        var framework = BuildFramework(options);
+        var css = framework.Process(classRegistry.GetClasses());
 
-        lock (_cacheLock)
-        {
-            if (_cachedStyleSheet is not null && _cachedRegistryVersion == version)
-            {
-                return _cachedStyleSheet;
-            }
-        }
-
-        var result = $"""
+        return $"""
                 {ContentVisibilityRules}
 
                 {options.ExtraStyles}
 
-                {classRegistry.Css}
+                {css}
                 """;
-
-        lock (_cacheLock)
-        {
-            _cachedStyleSheet = result;
-            _cachedRegistryVersion = version;
-        }
-
-        return result;
     }
 
     // Paired content-visibility classes consumed by the llms.txt and search pipelines.

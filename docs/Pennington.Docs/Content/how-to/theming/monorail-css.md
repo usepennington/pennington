@@ -31,7 +31,7 @@ T:Pennington.MonorailCss.NamedColorScheme
 
 ### Pick `AlgorithmicColorScheme` for hue-driven palettes
 
-`AlgorithmicColorScheme` synthesises primary and accent palettes from one `PrimaryHue` plus a `ColorSchemeGenerator` delegate (hue → accent hue), so the whole site repigments by changing a single number. The kitchen-sink helper below shows a plausible generator wired against `ColorName.Zinc`.
+`AlgorithmicColorScheme` synthesises primary, base, and accent palettes from one `PrimaryHue` plus a `Chroma` and a `CoordinatingScheme` enum. The base palette is a desaturated neutral derived from the same hue; the accents come from offsets picked by the scheme (Complementary, SplitComplementary, Triadic, Analogous). The whole site repigments by changing a single number.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildColorScheme

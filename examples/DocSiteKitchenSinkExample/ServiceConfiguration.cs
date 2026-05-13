@@ -38,16 +38,16 @@ internal static class ServiceConfiguration
     }
 
     /// <summary>
-    /// Algorithmic color scheme seeded from a single primary hue.
-    /// The generator function derives the accent hue so the whole palette
-    /// moves with one number.
+    /// Algorithmic color scheme seeded from a single primary hue and chroma.
+    /// The coordinating scheme picks the accent hues, and the matching neutral
+    /// base palette is synthesised from the same hue.
     /// </summary>
     public static AlgorithmicColorScheme BuildColorScheme() =>
         new()
         {
             PrimaryHue = 220,
-            ColorSchemeGenerator = primary => primary + 140,
-            BaseColorName = ColorName.Zinc,
+            Chroma = 0.18,
+            Scheme = CoordinatingScheme.SplitComplementary,
         };
 
     /// <summary>
