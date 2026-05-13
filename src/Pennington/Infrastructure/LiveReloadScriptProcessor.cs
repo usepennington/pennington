@@ -10,6 +10,12 @@ public sealed class LiveReloadScriptProcessor : IResponseProcessor
 {
     private readonly bool _isDevMode = !PenningtonBuildMode.IsBuildMode();
 
+    // Per-process fingerprint. Lets the SPA engine in a still-open browser tab
+    // from a previous dev session detect that it's now talking to a different
+    // host (port reuse across `dotnet run` invocations) and drop its prefetch
+    // cache instead of committing stale content.
+    private static readonly string HostFingerprint = Guid.NewGuid().ToString("N");
+
     // Runs after the HTML rewriting pipeline (10) but before the
     // diagnostic overlay (30).
     /// <inheritdoc/>
@@ -52,10 +58,17 @@ public sealed class LiveReloadScriptProcessor : IResponseProcessor
             </script>
             """;
 
-        var idx = responseBody.LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase);
-        if (idx >= 0)
+        var bodyIdx = responseBody.LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase);
+        if (bodyIdx >= 0)
         {
-            responseBody = responseBody.Insert(idx, script);
+            responseBody = responseBody.Insert(bodyIdx, script);
+        }
+
+        var hostMeta = $"<meta name=\"x-pennington-host\" content=\"{HostFingerprint}\">";
+        var headIdx = responseBody.IndexOf("</head>", StringComparison.OrdinalIgnoreCase);
+        if (headIdx >= 0)
+        {
+            responseBody = responseBody.Insert(headIdx, hostMeta);
         }
 
         return Task.FromResult(responseBody);

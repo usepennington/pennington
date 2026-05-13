@@ -50,6 +50,12 @@
     const PROGRESS_DELAY = parseInt(_root.dataset.spaProgressDelay || '100', 10);
     const REGION_SELECTOR = '[data-spa-region]';
 
+    // Per-process server fingerprint emitted in dev mode. Lets a still-open
+    // tab detect that port 5000 now hosts a different example and refuse to
+    // commit cached prefetches against it.
+    const _hostMeta = document.querySelector('meta[name="x-pennington-host"]');
+    const _hostFingerprint = _hostMeta ? _hostMeta.getAttribute('content') : null;
+
     // Progress bar styles. No view-transition or shimmer rules — the engine
     // swaps synchronously and never shows placeholders.
     const _style = document.createElement('style');
@@ -459,6 +465,19 @@
             return;
         }
         if (ctrl.signal.aborted) return;
+
+        // Host fingerprint mismatch — the port is now serving a different
+        // process (e.g. a new example replaced the previous one). Drop the
+        // prefetch cache and force a full reload so the new app's chrome wins.
+        if (_hostFingerprint) {
+            const incomingMeta = doc.querySelector('meta[name="x-pennington-host"]');
+            const incoming = incomingMeta ? incomingMeta.getAttribute('content') : null;
+            if (incoming && incoming !== _hostFingerprint) {
+                _prefetchCache.clear();
+                location.href = url.href;
+                return;
+            }
+        }
 
         // Layout switch — current page has regions the new page doesn't. Full reload.
         if (!regionsAlign(regions, doc)) {
