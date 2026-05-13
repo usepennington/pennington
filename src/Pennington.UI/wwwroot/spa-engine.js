@@ -13,20 +13,10 @@
  *   <main data-spa-region="content">…</main>
  *   <aside data-spa-region="sidebar">…</aside>
  *
- * Region loading modes (via data-spa-loading attribute):
- *   "skeleton" — show shimmer placeholder (or a custom <template>)
- *   "clear"    — empty the region immediately
- *   "keep"     — leave previous content until new HTML arrives (default)
- *
- * Opting out of view transitions (via data-spa-no-transition):
- *   A region marked data-spa-no-transition is not assigned a
- *   view-transition-name and is swapped before startViewTransition runs.
- *   With no name, the region's content falls under the root snapshot —
- *   and because the swap happens before the browser captures, both old
- *   and new root snapshots already show the new content, so nothing
- *   animates there. Use this for regions inside sticky/overflow ancestors
- *   where a per-region snapshot would escape the parent's clip and flash
- *   through pinned chrome.
+ * Navigation is instantaneous: old content stays on screen until the new
+ * document is fetched and its stylesheets are loaded, then the swap, scroll
+ * reset, and head update all happen in a single synchronous block so the
+ * browser paints them as one frame. No animation, no skeleton, no flash.
  *
  * Scroll preservation (via data-spa-region-key):
  *   The browser keeps scrollTop on inner overflow scrollers across an
@@ -57,21 +47,13 @@
     'use strict';
 
     const _root = document.documentElement;
-    const SKELETON_DELAY = parseInt(_root.dataset.spaSkeletonDelay || '100', 10);
-    const MIN_SKELETON_MS = parseInt(_root.dataset.spaMinSkeleton || '250', 10);
     const PROGRESS_DELAY = parseInt(_root.dataset.spaProgressDelay || '100', 10);
     const REGION_SELECTOR = '[data-spa-region]';
 
-    // Inject minimal global styles (shimmer + view-transition timing + progress bar).
+    // Progress bar styles. No view-transition or shimmer rules — the engine
+    // swaps synchronously and never shows placeholders.
     const _style = document.createElement('style');
     _style.textContent = [
-        '@keyframes spa-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}',
-        '::view-transition-group(*){animation-duration:150ms}',
-        // Pinned elements (sticky headers, etc.) stack above region groups
-        // so a named region animating from a scrolled-up position to its
-        // resting position cannot visually slide through the pinned bar.
-        '[data-spa-pin]{view-transition-name:var(--spa-pin-name,spa-pin)}',
-        '::view-transition-group(spa-pin){z-index:9999}',
         '.spa-progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:9999;' +
             'pointer-events:none;opacity:0;transition:opacity 200ms ease-out}',
         '.spa-progress.is-active{opacity:1}',
@@ -79,8 +61,6 @@
             'transform-origin:left center;background:var(--color-primary-500,#3b82f6);' +
             'transition:transform 200ms ease-out;will-change:transform}',
         '@media(prefers-reduced-motion:reduce){' +
-            '::view-transition-group(*),::view-transition-old(*),::view-transition-new(*)' +
-            '{animation:none !important}' +
             '.spa-progress,.spa-progress-bar{transition:none}}'
     ].join('');
     document.head.appendChild(_style);
@@ -189,8 +169,6 @@
     // Utilities
     // -----------------------------------------------------------------------
 
-    const delay = (ms) => new Promise(r => setTimeout(r, ms));
-
     function isSpaLink(anchor) {
         if (!anchor.href) return false;
         if ((anchor.getAttribute('href') || '').startsWith('#')) return false;
@@ -207,16 +185,6 @@
         document.dispatchEvent(new CustomEvent(name, { detail }));
     }
 
-    function maybeTransition(fn, after) {
-        if (document.startViewTransition) {
-            const t = document.startViewTransition(fn);
-            if (after) t.finished.then(after, after);
-        } else {
-            fn();
-            if (after) after();
-        }
-    }
-
     // -----------------------------------------------------------------------
     // Region management
     // -----------------------------------------------------------------------
@@ -224,43 +192,9 @@
     function discoverRegions() {
         const regions = {};
         document.querySelectorAll(REGION_SELECTOR).forEach(el => {
-            const name = el.dataset.spaRegion;
-            const noTransition = el.hasAttribute('data-spa-no-transition');
-            regions[name] = {
-                el,
-                loadingMode: el.dataset.spaLoading || 'keep',
-                noTransition,
-                skeletonTpl: document.querySelector(
-                    `template[data-spa-skeleton-for="${name}"]`
-                ),
-            };
-            // Auto-assign a view-transition-name so each region animates
-            // independently. Opted-out regions stay nameless — they swap
-            // before startViewTransition and are not captured per-region.
-            if (!noTransition && !el.style.viewTransitionName) {
-                el.style.viewTransitionName = `spa-region-${name}`;
-            }
+            regions[el.dataset.spaRegion] = { el };
         });
         return regions;
-    }
-
-    function showLoadingState(regions) {
-        for (const region of Object.values(regions)) {
-            switch (region.loadingMode) {
-                case 'skeleton':
-                    region.el.innerHTML = '';
-                    if (region.skeletonTpl) {
-                        region.el.appendChild(region.skeletonTpl.content.cloneNode(true));
-                    } else {
-                        region.el.innerHTML = defaultSkeleton();
-                    }
-                    break;
-                case 'clear':
-                    region.el.innerHTML = '';
-                    break;
-                // 'keep' — leave current content in place.
-            }
-        }
     }
 
     /**
@@ -278,9 +212,8 @@
         return true;
     }
 
-    function commitRegions(regions, doc, filter) {
+    function commitRegions(regions, doc) {
         for (const [name, region] of Object.entries(regions)) {
-            if (filter && !filter(region)) continue;
             const incoming = doc.querySelector(`[data-spa-region="${cssEscape(name)}"]`);
             const oldKey = region.el.dataset.spaRegionKey;
             const newKey = incoming ? incoming.dataset.spaRegionKey : undefined;
@@ -350,17 +283,6 @@
         const target = first.el.querySelector('h1, h2, h3') || first.el;
         if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
         target.focus({ preventScroll: true });
-    }
-
-    function defaultSkeleton() {
-        const line = (w) =>
-            `<div style="height:.875rem;width:${w}%;border-radius:.375rem;margin-bottom:.75rem;` +
-            `background:linear-gradient(90deg,rgba(128,128,128,.1) 25%,rgba(128,128,128,.2) 50%,` +
-            `rgba(128,128,128,.1) 75%);background-size:200% 100%;` +
-            `animation:spa-shimmer 1.4s ease-in-out infinite"></div>`;
-        return line(88) + line(72) + line(80) +
-            `<div style="height:1.5rem"></div>` +
-            line(92) + line(65) + line(78) + line(55);
     }
 
     // -----------------------------------------------------------------------
@@ -457,12 +379,10 @@
         catch { return null; }
     }
 
-    function scrollToTarget(url) {
-        if (url.hash) {
-            const t = document.querySelector(url.hash);
-            if (t) { t.scrollIntoView({ behavior: 'instant' }); return; }
-        }
-        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    function scrollToHash(url) {
+        if (!url.hash) return;
+        const t = document.querySelector(url.hash);
+        if (t) t.scrollIntoView({ behavior: 'instant' });
     }
 
     // -----------------------------------------------------------------------
@@ -525,99 +445,47 @@
         // location.href which discards the DOM.
         progressBar.start();
 
-        let fetchedDoc = null, fetchFail = false;
-
         const cached = _prefetchCache.get(url.href);
         _prefetchCache.delete(url.href);
 
-        const docPromise = (
-            cached
-                ? cached.then(d => { if (!d) throw new Error('prefetch-miss'); return d; })
-                : fetchDoc(url.href, ctrl.signal)
-        ).then(d => { fetchedDoc = d; })
-         .catch(e => { if (e.name !== 'AbortError') fetchFail = true; });
-
-        // Race the fetch against a threshold: fast/cached responses skip the skeleton.
-        await Promise.race([docPromise, delay(SKELETON_DELAY)]);
+        let doc;
+        try {
+            doc = cached
+                ? await cached.then(d => { if (!d) throw new Error('prefetch-miss'); return d; })
+                : await fetchDoc(url.href, ctrl.signal);
+        } catch (e) {
+            if (e && e.name === 'AbortError') return;
+            location.href = url.href;
+            return;
+        }
         if (ctrl.signal.aborted) return;
 
-        if (fetchFail) {
+        // Layout switch — current page has regions the new page doesn't. Full reload.
+        if (!regionsAlign(regions, doc)) {
             location.href = url.href;
             return;
         }
 
-        const commit = async (doc) => {
-            // Layout switch — current page has regions the new page doesn't. Full reload.
-            if (!regionsAlign(regions, doc)) {
-                location.href = url.href;
-                return;
-            }
+        // Preload new stylesheets before the swap so the first paint of the
+        // new DOM is already styled — no FOUC.
+        await syncStylesheets(doc);
+        if (ctrl.signal.aborted) return;
 
-            // Stylesheets first so newly-required CSS is parsed before any swap.
-            await syncStylesheets(doc);
+        // Synchronous swap block: DOM replacement, scroll reset, head update,
+        // and event dispatch all happen before the browser gets a chance to
+        // paint, so the user sees a single atomic frame change.
+        _currentPathname = url.pathname;
+        if (pushState) history.pushState({ title: doc.title }, doc.title, url.href);
+        applyHead(doc);
+        commitRegions(regions, doc);
+        window.scrollTo({ top: restoreScrollY != null ? restoreScrollY : 0, left: 0, behavior: 'instant' });
+        if (url.hash) scrollToHash(url);
+        announceNavigation(doc.title, regions);
+        fire('spa:commit', { url, slug: url.pathname, doc });
+        progressBar.complete();
 
-            // Opted-out regions swap before the transition starts. Without a
-            // view-transition-name they fall under the root snapshot, and
-            // because the swap completes before the browser captures, both
-            // old and new root snapshots show the new content — no animation
-            // runs there and the snapshot can't escape a sticky/overflow
-            // ancestor to flash through pinned chrome.
-            commitRegions(regions, doc, r => r.noTransition);
-
-            // The browser preserves scrollTop on inner overflow scrollers
-            // across the innerHTML swap in commitRegions, so a region's
-            // view-transition bounds match in old and new snapshots without
-            // any explicit reset. Sticky elements that must stay put during
-            // the transition opt in via data-spa-pin.
-            //
-            // Scroll BEFORE startViewTransition so the old and new snapshots
-            // are captured at the same scrollY. Otherwise named region groups
-            // interpolate between old-scrolled and new-at-top viewport
-            // positions, which reads as a smooth scroll even with
-            // behavior:'instant'. Hash targets only exist in the new DOM, so
-            // they're handled via the after-callback once the transition
-            // settles.
-            const hasHash = !!url.hash;
-            const preY = restoreScrollY != null ? restoreScrollY : 0;
-            window.scrollTo({ top: preY, left: 0, behavior: 'instant' });
-
-            maybeTransition(
-                () => {
-                    _currentPathname = url.pathname;
-                    if (pushState) history.pushState({ title: doc.title }, doc.title, url.href);
-                    applyHead(doc);
-                    commitRegions(regions, doc, r => !r.noTransition);
-                    announceNavigation(doc.title, regions);
-                    fire('spa:commit', { url, slug: url.pathname, doc });
-                    progressBar.complete();
-
-                    const diagnostics = readDiagnostics(doc);
-                    if (diagnostics) fire('spa:diagnostics', diagnostics);
-                },
-                hasHash ? () => scrollToTarget(url) : null
-            );
-        };
-
-        if (fetchedDoc) {
-            // Fast path — data arrived before the threshold.
-            await commit(fetchedDoc);
-        } else {
-            // Slow path — show skeleton while we wait.
-            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-            showLoadingState(regions);
-            const skeletonShownAt = performance.now();
-
-            await docPromise;
-            if (ctrl.signal.aborted) return;
-            if (fetchFail) { location.href = url.href; return; }
-
-            // Hold the skeleton long enough to feel intentional.
-            const remaining = MIN_SKELETON_MS - (performance.now() - skeletonShownAt);
-            if (remaining > 0) await delay(remaining);
-            if (ctrl.signal.aborted) return;
-
-            await commit(fetchedDoc);
-        }
+        const diagnostics = readDiagnostics(doc);
+        if (diagnostics) fire('spa:diagnostics', diagnostics);
     }
 
     // -----------------------------------------------------------------------

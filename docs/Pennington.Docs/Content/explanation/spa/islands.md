@@ -46,11 +46,11 @@ The `spa:commit` event is the seam. It fires after each navigation with `detail.
 
 The `<head>` of the parsed response is the source of truth for everything page-specific. The client updates the title and a fixed list of managed tags: the description meta, OpenGraph and Twitter card metadata, the canonical link, hreflang alternates, and JSON-LD scripts. Stylesheet `<link>` elements are merged by href — any new ones append to the head before the region swap so the browser has the rules ready when the new content paints. A stylesheet tagged `data-spa-reload` re-fetches with a cache buster on every navigation, the opt-in workaround for JIT stylesheets like MonorailCSS in dev where the URL stays constant but the contents diverge per page.
 
-### Loading lifecycle
+### Synchronous swap, no animation
 
-The round trip is small but not instant, and a click that does nothing visible for 200ms feels broken. Each region opts into a loading behavior via `data-spa-loading`. The `keep` mode (the default) leaves the previous content visible until new HTML arrives, which works for regions whose content is broadly similar across pages. The `clear` mode empties the region immediately on navigation, which suits regions whose stale content would mislead — an outline panel showing headings from the previous page. The `skeleton` mode shows a shimmer placeholder, but only after a configurable threshold elapses, so navigations that resolve quickly never flash; the engine then holds the skeleton for a minimum duration to avoid strobing.
+The round trip is small but not instant, and the earliest version of this engine wrapped each swap in `document.startViewTransition` with a 150ms cross-fade and offered a per-region skeleton placeholder for slower fetches. Both layers turned out to introduce more visible motion than they masked. The cross-fade is a flash for the eye to notice; the skeleton replaces real content with shimmer the moment the network takes longer than a tick. The engine now waits — old content stays on screen while the fetch runs — and the swap, scroll reset, and head update all execute in one synchronous block so the browser paints the new page as a single frame. Hover-prefetch hides the wait for the cases where it would otherwise be felt.
 
-That choice is per-region rather than global because the right answer differs by region. For prefetched destinations the entire skeleton path is bypassed.
+A top-of-viewport progress bar handles the unusual case where the response takes longer than the engine's silent threshold — a Roslyn cold start, a slow CDN edge. It only shows after the threshold elapses, so fast navigations never see it.
 
 ### Why one render path
 
@@ -60,7 +60,7 @@ The single-path approach trades some payload size for the elimination of all of 
 
 ## Trade-offs
 
-- **Cost — payload is the full page including chrome the client throws away.** Mitigated by HTTP-level caching, prefetch-on-hover, and View Transitions API masking the latency. If profiling shows it matters, a server-side response processor can detect a `Sec-Fetch-Dest`/`X-Spa-Fragment` header and pre-extract regions before send, opt-in.
+- **Cost — payload is the full page including chrome the client throws away.** Mitigated by HTTP-level caching and prefetch-on-hover. If profiling shows it matters, a server-side response processor can detect a `Sec-Fetch-Dest`/`X-Spa-Fragment` header and pre-extract regions before send, opt-in.
 - **Cost — `innerHTML` swap blows away form state and focus inside swapped regions.** Acceptable for a docs site, and the persistent-chrome path above is the answer when the cost matters: leave the element unmarked and patch state on `spa:commit`. A morphing strategy (Idiomorph or similar) is the upgrade path if interactive controls eventually need to live inside a swapped region. The contract — mark regions, server renders them — does not change.
 - **Cost — inline `<script>` tags in fetched HTML do not execute on `parseFromString`.** This is a feature for chrome scripts that should not re-run; it is a constraint for any future region whose content includes a JS-driven widget. Hook the `spa:commit` event from outside the region and re-initialize from there.
 - **Alternative considered — full client-side SPA (Blazor WebAssembly, React, etc.).** Would make every navigation instant at the cost of a multi-megabyte runtime on first load and a separate SEO story. Rejected for a content engine where most of each page is prose the client doesn't need to render.

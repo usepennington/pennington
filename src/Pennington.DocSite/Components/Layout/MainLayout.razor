@@ -103,7 +103,7 @@
                 <DocSiteHeader ShowMobileMenuButton="true" AlternateLanguages="_langSwitcherItems" />
                 <main class="mx-auto max-w-7xl">
                     <div class="flex lg:gap-x-8 xl:gap-x-12">
-                        <article id="main-content" data-spa-region="content" data-spa-loading="skeleton" class="flex-1 mt-4 lg:mt-8 ml-4 lg:ml-8 mr-4 xl:mr-0 min-w-0">
+                        <article id="main-content" data-spa-region="content" class="flex-1 mt-4 lg:mt-8 ml-4 lg:ml-8 mr-4 xl:mr-0 min-w-0">
                             @Body
                         </article>
                         @* `outline` is a swap region so the MainLayout region
@@ -112,7 +112,7 @@
                            spa-engine.js. The list inside is JS-populated by
                            OutlineManager on every spa:commit, so swapping the
                            empty server-rendered shell is harmless. *@
-                        <div data-spa-region="outline" data-spa-no-transition class="hidden xl:block sticky top-24 h-min  lg:max-h-[calc(100vh-7rem)] overflow-y-auto w-80  font-display tracking-tight text-sm">
+                        <div data-spa-region="outline" class="hidden xl:block sticky top-24 h-min  lg:max-h-[calc(100vh-7rem)] overflow-y-auto w-80  font-display tracking-tight text-sm">
                             <OutlineNavigation ContentSelector="#main-content" />
                         </div>
                     </div>
