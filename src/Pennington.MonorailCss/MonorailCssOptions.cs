@@ -125,7 +125,7 @@ public class MonorailCssOptions
         settings => settings;
 
     /// <summary>
-    /// Wraps the baseline <see cref="MonorailCss.Theme.ProseCustomization"/> Pennington
+    /// Wraps the baseline <see cref="ProseCustomization"/> Pennington
     /// registers, letting consumers add or override prose rules without rebuilding the
     /// customization from scratch. The callback receives the framework's prose
     /// customization and returns the one used.

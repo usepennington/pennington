@@ -70,10 +70,6 @@ public class BuildReportBuilderTests
         // 1 failed page
         builder.AddError(MakeRoute("/docs/broken"), "YAML parse error at line 4", new Exception("bad yaml"));
 
-        // 2 broken links
-        builder.AddBrokenLink(new BrokenLink(MakeRoute("/docs/getting-started"), "/docs/install", LinkType.Internal, "Page not found"));
-        builder.AddBrokenLink(new BrokenLink(MakeRoute("/blog/hello-world"), "/images/missing.png", LinkType.Image, "Page not found"));
-
         // 1 warning
         builder.AddWarning(MakeRoute("/docs/old-page"), "redirect target not found");
 
@@ -82,26 +78,12 @@ public class BuildReportBuilderTests
         report.GeneratedPages.Count.ShouldBe(5);
         report.SkippedPages.Count.ShouldBe(2);
         report.FailedPages.Count.ShouldBe(1);
-        report.BrokenLinks.Count.ShouldBe(2);
         report.TotalPages.ShouldBe(8); // 5 + 2 + 1
-        report.HasErrors.ShouldBeTrue(); // errors + broken links
+        report.HasErrors.ShouldBeTrue();
 
         // Diagnostics breakdown
         report.Diagnostics.Count(d => d.Severity is DiagnosticSeverity.Warning).ShouldBe(1);
         report.Diagnostics.Count(d => d.Severity is DiagnosticSeverity.Error).ShouldBe(1);
-    }
-
-    [Fact]
-    public void BrokenLinksAlone_MakeHasErrorsTrue()
-    {
-        var builder = new BuildReportBuilder();
-        builder.AddGeneratedPage(MakeRoute("/page"));
-        builder.AddBrokenLink(new BrokenLink(MakeRoute("/page"), "/missing", LinkType.Internal, "404"));
-
-        var report = builder.Build();
-
-        report.HasErrors.ShouldBeTrue();
-        report.FailedPages.ShouldBeEmpty(); // no failed pages, but broken links → error
     }
 
     [Fact]

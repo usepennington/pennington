@@ -78,7 +78,7 @@ public static class PenningtonExtensions
             {
                 b.AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Warning);
                 b.AddFilter("Pennington", LogLevel.Information);
-                b.AddConsole(o => o.FormatterName = BuildConsoleFormatter.Name);
+                b.AddConsole(o => o.FormatterName = BuildConsoleFormatter.FormatterName);
                 b.AddConsoleFormatter<BuildConsoleFormatter, ConsoleFormatterOptions>();
             });
         }

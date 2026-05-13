@@ -13,9 +13,9 @@ using Microsoft.Extensions.Logging.Console;
 /// </summary>
 internal sealed class BuildConsoleFormatter : ConsoleFormatter
 {
-    public const string Name = "pennington-build";
+    public const string FormatterName = "pennington-build";
 
-    public BuildConsoleFormatter() : base(Name) { }
+    public BuildConsoleFormatter() : base(FormatterName) { }
 
     public override void Write<TState>(in LogEntry<TState> logEntry, IExternalScopeProvider? scopeProvider, TextWriter textWriter)
     {
