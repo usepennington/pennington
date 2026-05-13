@@ -27,6 +27,7 @@ All 25 examples build and run. Highlights worth triaging:
 - **"Post not found" returns HTTP 200** instead of 404 in BlogSite (#7, #10) — bad for SEO and link-checkers. — resolved 2026-05-13 (BlogSite/Blog.razor sets `HttpContext.Response.StatusCode = 404` when the post resolves null)
 - **`HEAD /styles.css` returns 405** while GET returns 200 (#1) — affects every example using `AddMonorailCss()`. — resolved 2026-05-13 (`UseMonorailCss` now uses `MapMethods("/styles.css", ["GET", "HEAD"], …)`)
 - **Stage-1 of tutorials storing markdown/razor in C# raw strings** leaks `"""` delimiters into the rendered docs (#2). Violates `examples/CLAUDE.md`. — resolved 2026-05-13 (BeyondCustomRazorComponentExample/snippets/stage1/PricingCard.razor + `razor:path` fence; csproj excludes `snippets/**` from compile)
+- **Markdig/AnglesharpHeadingId auto-IDs leak onto Mdazor-component-internal headings** (#2) — `<h3>Tier</h3>` inside a `<PricingCard />` gets an auto-generated `id` because the heading-id processor runs over the post-Mdazor HTML. Not catastrophic but bleeds component-internal headings into the page's outline.
 
 ### Framework bugs surfaced as blockers/major
 - **#5** Dev overlay for missing translations doesn't render (build report works). — resolved 2026-05-13 (verified rendering; the audit's CSS-selector probe missed the actual `#penn-diag-root` element — no framework change needed)
@@ -87,7 +88,12 @@ All 25 examples build and run. Highlights worth triaging:
 - **[FW] (minor)** `H3` headings injected via Razor components inside markdown get auto-generated `id` attributes (visible on `<h3>Tier</h3>` inside each card). This bleeds the page's "TOC outline" anchor system into ad-hoc component-internal headings. Likely a Markdig/AnglesharpHeadingId processor running over the post-Mdazor HTML. Not catastrophic but unexpected for component authors who don't want their card titles in the page outline.
 - **[DOC] (minor)** README mentions "Self-closing (`<PricingCard ... />`) and open/close (`<PricingCard ...></PricingCard>`) forms" supporting `ChildContent`. The tutorial does not test the open/close form. No verification possible here without amending the example.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC major (Stage 1 vs disk disagreement) — added a clarifying paragraph in `docs/Pennington.Docs/Content/tutorials/beyond-basics/custom-razor-component.md:54` distinguishing the minimal Stage 1 starting point (snippet) from the styled `Components/PricingCard.razor` final form on disk.
+- FW minor (h3-id leakage) — **promoted to cross-cutting**; see new bullet under "### Cross-cutting framework concerns" for the next Phase 1 iteration.
+- DOC minor (open/close form claim) — the current `README.md` no longer makes the self-closing-vs-open/close claim the audit cited (only mentions parameters bound from attributes), so there is no remaining mismatch to address.
+
+**Fixes applied.**
 
 ## 25. SubPathDeployableExample
 

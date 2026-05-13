@@ -53,6 +53,8 @@ examples/BeyondCustomRazorComponentExample/snippets/stage1/PricingCard.razor
 
 The file is a regular Blazor component — there is nothing Pennington-specific about it yet. Mdazor discovers it in the next unit.
 
+The snippet above is the minimal Stage 1 form. The example folder on disk ships a fully styled `Components/PricingCard.razor` (dark-mode utility classes, "Most Popular" badge polish, a richer feature-row layout) so the `/pricing/` page demo is presentable when you check out the repo. Treat the snippet as the starting point and the disk file as the production-ready endpoint — the tutorial never re-fences the styled version because once the wiring works (next unit), styling is just utility-class swaps.
+
 </Step>
 </Steps>
 
