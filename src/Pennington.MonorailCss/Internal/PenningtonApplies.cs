@@ -196,6 +196,12 @@ internal static class PenningtonApplies
                 ".tab-panel",
                 "hidden data-[selected=true]:block"
             },
+            // Code blocks inside a tab panel inherit chrome from .tab-container,
+            // so strip the standalone wrapper's margin, border, radius, and surface tint.
+            {
+                ".tab-panel .code-highlight-wrapper",
+                "my-0 rounded-none border-0 bg-transparent dark:bg-transparent"
+            },
         });
 
     private static readonly ImmutableDictionary<string, string> StepApplies =
