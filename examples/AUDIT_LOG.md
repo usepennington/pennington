@@ -66,7 +66,11 @@ All 25 examples build and run. Highlights worth triaging:
 - **[DOC] (minor)** Doc page says "View source on a rendered page — the markup ends with `</html>`, with no surrounding chrome injected by the framework." It does end with `</html>` but Pennington injects a live-reload `<script>` block before `</body>` (visible: `…cript></body></html>`). That injection is a side-effect of `UseMonorailCss`/dev-mode live-reload — the doc's "no surrounding chrome" claim is slightly misleading. Either mention the dev-time injection or note that build-mode output is the one that is truly chrome-free.
 - **[DOC] (minor)** README under `Concepts` lists `GetContentTocEntriesAsync` / `GetCrossReferencesAsync` as concepts on the hand-rolled service, but the doc page does not link to a TOC/xref reference — readers landing here won't know what those return shapes mean. Either add a one-line "and why" to the README or link to a TOC/xref reference page from the how-to.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC chrome-claim — clarified the "no surrounding chrome" sentence in `docs/Pennington.Docs/Content/how-to/response-pipeline/razor-page-on-bare-host.md:46` to scope the claim to build-mode output and enumerate the dev-time injections (live-reload script, host fingerprint meta, canonical link).
+- DOC concept hint — expanded the `GetContentTocEntriesAsync` / `GetCrossReferencesAsync` bullet in `examples/BareHostRazorPageExample/README.md` with a one-line "what each returns and where it feeds" annotation.
+
+**Fixes applied.**
 
 ## 2. BeyondCustomRazorComponentExample
 

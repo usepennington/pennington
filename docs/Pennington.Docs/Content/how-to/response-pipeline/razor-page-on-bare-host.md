@@ -43,7 +43,7 @@ A custom `IContentService` yields one `EndpointSource` per route so the build cr
 
 - Run `dotnet run --project examples/BareHostRazorPageExample` and visit `http://localhost:5000/status/intro/` and `http://localhost:5000/status/verify/`. Each renders the `StatusPage` component as a full HTML page styled by `/styles.css`.
 - Confirm the static build picks up both routes: `dotnet run --project examples/BareHostRazorPageExample -- build` writes `output/status/intro/index.html` and `output/status/verify/index.html`.
-- View source on a rendered page — the markup ends with `</html>`, with no surrounding chrome injected by the framework.
+- View source on a rendered page in **build mode** (`output/status/*/index.html`) — the markup ends with `</html>`, with no surrounding chrome injected by the framework. Dev-mode responses still ship the same component HTML, but Pennington appends a `<script>` block for live reload, a `<meta name="x-pennington-host">` fingerprint, and a `<link rel="canonical">` (when `CanonicalBaseUrl` is set) before the closing tags — those are stripped from build output.
 
 ## Related
 
