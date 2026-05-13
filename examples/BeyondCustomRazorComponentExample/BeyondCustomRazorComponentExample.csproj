@@ -4,6 +4,10 @@
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Keep snippets/ out of the compile — the .razor files there are stage
+         artifacts read by the tutorial via `razor:path`, not components the
+         host should compile. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);snippets\**</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pennington.DocSite\Pennington.DocSite.csproj" />

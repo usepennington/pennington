@@ -1,0 +1,29 @@
+<div class="not-prose my-6">
+    <div class="@CardClasses">
+        <h3 class="text-xl font-bold">@Tier</h3>
+        <div class="mt-2 flex items-baseline gap-1">
+            <span class="text-4xl font-extrabold">$@Price</span>
+            <span class="text-sm">/ month</span>
+        </div>
+        <ul class="mt-4 space-y-2 text-sm">
+            @foreach (var feature in ParsedFeatures)
+            {
+                <li>@feature</li>
+            }
+        </ul>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Tier { get; set; } = "Basic";
+    [Parameter] public string Price { get; set; } = "0";
+    [Parameter] public string Features { get; set; } = "";
+    [Parameter] public bool Highlighted { get; set; }
+
+    private IEnumerable<string> ParsedFeatures =>
+        (Features ?? "").Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    private string CardClasses => Highlighted
+        ? "rounded-xl border-2 border-primary-500 p-6"
+        : "rounded-xl border border-base-200 p-6";
+}
