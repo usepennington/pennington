@@ -12,15 +12,6 @@ namespace Pennington.Docs;
 /// </summary>
 internal sealed class GrapeColorScheme : IColorScheme
 {
-    private static int _instanceCounter;
-    private readonly int _instanceId;
-
-    public GrapeColorScheme()
-    {
-        _instanceId = Interlocked.Increment(ref _instanceCounter);
-        Console.WriteLine($"[GrapeColorScheme] ctor #{_instanceId} @ {DateTime.Now:HH:mm:ss.fff}");
-    }
-
     private static readonly ImmutableDictionary<string, string> Grape = new Dictionary<string, string>
     {
         ["50"]  = "oklch(97% 0.010 301.039)",
@@ -142,9 +133,8 @@ internal sealed class GrapeColorScheme : IColorScheme
     }.ToImmutableDictionary();
 
     /// <inheritdoc />
-    public Theme ApplyToTheme(Theme theme)
-    {
-        return theme.AddColorPalette("grape", Grape)
+    public Theme ApplyToTheme(Theme theme) =>
+        theme.AddColorPalette("grape", Grape)
              .AddColorPalette("english", English)
              .AddColorPalette("windmill", Windmill)
              .AddColorPalette("dogs", Dogs)
@@ -155,5 +145,4 @@ internal sealed class GrapeColorScheme : IColorScheme
              .MapColorPalette("grape", "primary")
              .MapColorPalette("windmill", "accent")
              .MapColorPalette("mauve", "base");
-    }
 }
