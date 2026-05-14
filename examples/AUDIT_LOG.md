@@ -254,7 +254,12 @@ All 25 examples build and run. Highlights worth triaging:
 - **[DOC] (minor)** The release notes JSON-backed service generates `/releases/1.0.0/` and `/releases/1.1.0/` (semver in URL); README mentions "JSON-backed" but a reader trying to probe these by intuition would more naturally write `/releases/v1.0/`. Add the slug convention to the README.
 - **[INFRA] (minor)** This example lights up 10+ extension seams in one project. That makes it useful as a reference but unwieldy to teach from. Worth a "minimal index" file in this folder that maps each registered service to its single-purpose how-to so a reader knows where to start reading. The README has the list, but no in-project links.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC emit-only build-mode-only — the "Emit-only `IContentService`" bullet now bolds **Build-mode only** and explicitly notes that `/robots.txt` is a 404 under `dotnet run`. Spells out the central design difference (discoverable vs. emit-only `IContentService`).
+- DOC release-notes slug convention — the "Custom `IContentService`" bullet now spells out the routes (`/releases/1.0.0/`, `/releases/1.1.0/`) and that the slug is the raw SemVer without a `v` prefix; `/releases/v1.0/` would 404.
+- INFRA "minimal index" — the existing README already maps every seam to its single-purpose how-to file via paths next to each bullet (e.g. `how-to/markdown-pipeline/custom-highlighter.md`). The audit's "no in-project links" concern was a stale read; treating the file-path annotations as the index is sufficient for the README's reference purpose. No new file added.
+
+**Fixes applied.**
 
 ## 15. DocSiteSectionsExample
 
