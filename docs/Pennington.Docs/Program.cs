@@ -125,6 +125,9 @@ builder.Services.AddMdazorComponent<FrontMatterKeys>();
 
 var app = builder.Build();
 app.UseDocSite();
-app.UseWordBreak();
+app.UseWordBreak(new WordbreakMiddlewareOptions()
+{
+    CssSelector = "h1, h1 *, h2, h2 *, h3, h3 *, h4, h4 *, h5, h5 *, h6, h6 *, p, p *, li, li *, dt, dt *, dd, dd *, th, th *, td, td *"
+});
 
 await app.RunDocSiteAsync(args);
