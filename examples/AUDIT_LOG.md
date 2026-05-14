@@ -175,7 +175,11 @@ All 25 examples build and run. Highlights worth triaging:
 - **[DOC] (minor)** "Brand palette vs. syntax theme split" is mentioned but the example does not actually demonstrate a syntax-highlighted code block, so the syntax-theme claim is invisible. Add a code fence in the markdown so the reader sees the syntax palette applied.
 - **[DOC] (minor)** README does not link to a reference page enumerating the `NamedColorScheme` values (sand, indigo, etc.). Worth a `reference/theming/color-schemes.md` page listing the built-ins.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC syntax-theme demonstration — added a "Brand palette vs. syntax theme" section to `Content/index.md` with a real C# fence (a `Greeter.Hello` example). Build verified: `dotnet run -- build` emits `output/index.html` containing `<pre><code>` with `hljs-keyword`/`hljs-string`/`hljs-type`/`hljs-variable` spans, so the syntax theme paints the tokens while the surrounding chrome stays on the brand palette (`examples/GettingStartedStylingExample/Content/index.md:17`).
+- DOC NamedColorScheme reference pointer — README's "Concepts" bullet now lists the static `ColorName` properties shipped (`Red`, `Orange`, …, `Slate`, `Mauve`, `Olive`, `Mist`, `Taupe`, `Black`, `White`) and points readers at the auto-generated type page `<xref:reference.api.color-name>` for full summaries. No hand-authored reference page added — the auto-API-reference tree already covers it, and `<xref:reference.api.monorail-css-options>` plus the how-to/theming page round out the linkage (`examples/GettingStartedStylingExample/README.md:10`).
+
+**Fixes applied.**
 
 ## 20. GettingStartedMinimalSiteExample
 
