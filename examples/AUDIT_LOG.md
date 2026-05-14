@@ -318,7 +318,12 @@ All 25 examples build and run. Highlights worth triaging:
 - **[FW+DOC] (minor)** The custom `@page "/extra"` route does not use a trailing slash (DocSite's other routes do). `/extra` returns 200; `/extra/` also returns 200 (presumably via redirect or both — not verified). README could call out the canonical form to use.
 - **[DOC] (minor)** README does not mention what happens if you set `AdditionalRoutingAssemblies` to a list containing a non-routable assembly — does the host throw, log a warning, or silently ignore? Worth documenting since this is a public API surface.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC file pointers — README's four-seam bullet list now bolds the seam name and annotates each with the concrete file (e.g. `AdditionalRoutingAssemblies = [typeof(Program).Assembly]` is in `SiteChromeOverrides.cs`).
+- FW+DOC trailing-slash — verified both `/extra` and `/extra/` return 200 (no redirect); README spells out that Blazor's `@page "/extra"` matches both forms and notes the convention: `@page` routes typically skip the trailing slash while DocSite content routes keep it — pick one form for your own internal links.
+- DOC AdditionalRoutingAssemblies non-routable — README documents the silent-no-op behavior: passing an assembly without `@page` directives produces zero routes, no throw, no log.
+
+**Fixes applied.**
 
 ## 11. DocSiteAuthorExample
 
