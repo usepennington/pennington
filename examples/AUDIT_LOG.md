@@ -285,7 +285,10 @@ All 25 examples build and run. Highlights worth triaging:
 - **[INFRA] (minor)** First request on startup hit `/main/ui-components-in-markdown/` (logged in process). That URL doesn't exist in this example — it's the route from the previous DocSiteKitchenSink run still cached in the live-reload SPA engine or browser history. Suggests the SPA prefetch persists across hot-reload restarts where the same port is recycled. Same observation as #8. **Resolved 2026-05-13 (cross-cutting):** dev-mode pages now carry a per-process `<meta name="x-pennington-host">` and the SPA engine clears its prefetch cache + full-reloads when a fetched doc's fingerprint differs.
 - **[DOC] (minor)** README claims `UseDocSite` orders middleware (locale → antiforgery → static files → routing → MonorailCSS → SPA → Pennington middleware). That order is invisible to the reader unless they trace `src/Pennington.DocSite`. A diagnostics endpoint that dumps the middleware order would make this concrete; absent that, document the order on the `reference/host/extensions.md` page explicitly.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC UseDocSite ordering — added a "UseDocSite middleware order" section to `docs/Pennington.Docs/Content/reference/host/extensions.md` enumerating the six-step sequence (`UsePenningtonLocaleRouting` → `UseAntiforgery` → `UseStaticFiles` → `UseMonorailCss` → `UsePennington` → `MapRazorComponents`) with the load-bearing rationale per step. Notes that `UseBlogSite` follows the same shape minus locale-routing.
+
+**Fixes applied.**
 
 ## 13. DocSiteKitchenSinkExample
 
