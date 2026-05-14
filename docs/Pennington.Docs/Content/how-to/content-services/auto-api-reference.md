@@ -34,13 +34,10 @@ The target library needs `<GenerateDocumentationFile>true</GenerateDocumentation
 
 ## Wire the reflection backend
 
-Add a project reference to `Pennington.ApiMetadata.Reflection`, add a `<PackageReference>` to the library you want to document, and have Pennington resolve the assembly by simple name:
+Add a project reference to `Pennington.ApiMetadata.Reflection`, add a `<PackageReference>` to the library you want to document, and have Pennington resolve the assembly by simple name. A complete single-package DocSite host:
 
-```csharp
-builder.Services.AddDocSite(() => new DocSiteOptions { /* ... */ });
-builder.Services.AddApiMetadataFromCompiledAssembly(opts =>
-    opts.FromPackageReference("Spectre.Console"));
-builder.Services.AddApiReference();
+```csharp:path
+examples/FusionCacheDocSiteExample/Program.cs
 ```
 
 `FromPackageReference` calls `Assembly.Load` against the project's deps.json and grabs the resolved `.dll` path out of the NuGet cache. The companion `.xml` file ships alongside the dll for any package built with `<GenerateDocumentationFile>true</GenerateDocumentationFile>`; the provider picks it up automatically. No staging, no committed binary, and bumping the documented version is a `<PackageReference Version=…>` change.

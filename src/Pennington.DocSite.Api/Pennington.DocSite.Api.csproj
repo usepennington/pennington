@@ -6,6 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Pennington.IntegrationTests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Pennington.DocSite\Pennington.DocSite.csproj" />
     <ProjectReference Include="..\Pennington.ApiMetadata\Pennington.ApiMetadata.csproj" />
   </ItemGroup>

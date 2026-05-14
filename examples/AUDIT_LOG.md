@@ -220,7 +220,12 @@ All 25 examples build and run. Highlights worth triaging:
 - **[DOC] (minor)** README says the example is unreferenced from docs. For a real-target showcase of `Pennington.ApiMetadata.Reflection`, add at least an "Auto-generating API reference from a NuGet package" how-to with this example as the canonical fence target.
 - **[FW] (minor)** Type slugs use kebab-cased PascalCase split (`FusionCache` → `fusion-cache`). Multi-word acronyms might split awkwardly (e.g. `FusionCacheXMLOptions` would become `fusion-cache-x-m-l-options`). Worth a regression test on acronym-heavy type names.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- FW+DOC `<ApiMemberTable>` terminology — README's "Concepts" bullet now spells out that `ApiMemberTable` is the Razor component name, not the rendered element: it emits a `<dl>`-based definition list with per-member `<article>` blocks for methods/constructors/events. Readers styling the output target `dl`/`dt`/`dd`/`article`, not `table`/`tr`/`td`.
+- DOC NuGet how-to anchor — `docs/.../how-to/content-services/auto-api-reference.md` already covers `AddApiMetadataFromCompiledAssembly` + `FromPackageReference` for both backends. The "Wire the reflection backend" section now fences `examples/FusionCacheDocSiteExample/Program.cs` as the canonical single-package target, replacing the inline Spectre snippet (Spectre still anchors the multi-library section). README's "Referenced from" list updated accordingly.
+- FW acronym slugs — audit's claim was stale: `ApiReferenceIndex.ToSlug` already preserves acronym runs because the hyphen rule (`char.IsUpper(c) && (prev is lower || next is lower)`) skips insertion between two upper-case letters. Traced: `FusionCacheXMLOptions` → `fusion-cache-xml-options` (not `…-x-m-l-…`). New regression suite `tests/Pennington.IntegrationTests/DocsSite/ApiReferenceIndexSlugTests.cs` locks in `FusionCacheXMLOptions`, `IOStream`, `HTTPSConfig`, `ParseURL`, `XML`, `URLBuilder` plus a couple of generic-marker cases. `<InternalsVisibleTo Include="Pennington.IntegrationTests" />` added to `Pennington.DocSite.Api.csproj` so the test can hit the `internal static ToSlug`. README now documents the slug rules and points at the test.
+
+**Fixes applied.**
 
 ## 17. FocusedCodeSamplesExample
 
