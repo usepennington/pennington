@@ -204,7 +204,10 @@ All 25 examples build and run. Highlights worth triaging:
 - **[INFRA] (confirmed)** Log shows a stale SPA prefetch `/api/fusion-cache/` request hitting the new process within the first second of startup. Cross-session SPA prefetch leakage — same as #8, #14. Worth a one-line fix in `spa-engine.js` to invalidate its prefetch cache on host fingerprint change. **Resolved 2026-05-13 (cross-cutting):** dev-mode pages now carry a per-process `<meta name="x-pennington-host">` and the SPA engine clears its prefetch cache + full-reloads when a fetched doc's fingerprint differs.
 - **[DOC] (minor)** README's third concept ("Rendering a nav alongside the article in a hand-rolled layout") implies the nav and article live in the same render — `dotnet run` confirms this works, but no source pointer is given. Add "(see `Stage3_AddContactPage.cs` / `Program.cs`)" so a reader knows where to look.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC nav-alongside-article pointer — README's third concept bullet now names the source: `Program.cs`'s `MapGet("/{*path}", …)` handler composes `<nav>` and `<article>` in one template literal, and `Stage3_AddContactPage.cs` is the staged form the tutorial walks through (`examples/GettingStartedFirstPageExample/README.md:9`).
+
+**Fixes applied.**
 
 ## 18. FusionCacheDocSiteExample
 
