@@ -61,10 +61,10 @@ Classes are configurable via `TabbedCodeBlockRenderOptions` passed to `UseTabbed
 
 ### Minimal example
 
-Markdown source showing a two-fence tabbed group from the DocSite authoring example:
+Markdown source showing a two-fence tabbed group:
 
 ```markdown:path
-examples/DocSiteAuthorExample/snippets/stage3.md
+examples/DocSitePagesAndLinksExample/snippets/markdown-tabs-example.md
 ```
 
 ## Alerts
@@ -98,10 +98,10 @@ Every alert receives two classes: `markdown-alert` (constant) and `markdown-aler
 
 ### Minimal example
 
-Markdown excerpt from the DocSite authoring example showing a `[!NOTE]` block in context:
+Markdown excerpt showing a `[!NOTE]` block in context:
 
 ```markdown:path
-examples/DocSiteAuthorExample/snippets/stage2.md
+examples/DocSitePagesAndLinksExample/snippets/markdown-alert-example.md
 ```
 
 ## Code annotations

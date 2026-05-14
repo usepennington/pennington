@@ -26,7 +26,7 @@
     <Project Path="examples/GettingStartedBlazorPagesExample/GettingStartedBlazorPagesExample.csproj" />
     <Project Path="examples/GettingStartedStylingExample/GettingStartedStylingExample.csproj" />
     <Project Path="examples/DocSiteScaffoldExample/DocSiteScaffoldExample.csproj" />
-    <Project Path="examples/DocSiteAuthorExample/DocSiteAuthorExample.csproj" />
+    <Project Path="examples/DocSitePagesAndLinksExample/DocSitePagesAndLinksExample.csproj" />
     <Project Path="examples/DocSiteSectionsExample/DocSiteSectionsExample.csproj" />
     <Project Path="examples/BlogSiteScaffoldExample/BlogSiteScaffoldExample.csproj" />
     <Project Path="examples/BlogSiteFirstPostExample/BlogSiteFirstPostExample.csproj" />

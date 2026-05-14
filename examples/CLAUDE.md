@@ -29,7 +29,7 @@ Every example folder has a `README.md` describing its purpose, the concepts it t
 | `BlogSiteFirstPostExample` | Extend the BlogSite scaffold with a fully populated post exercising every `BlogSiteFrontMatter` field. | `tutorials/blogsite/first-post.md`, `reference/front-matter/keys.md` |
 | `BlogSiteHeroProjectsSocialsExample` | Populate `HeroContent`, `MyWork`, `Socials`, and `MainSiteLinks` with the built-in `SocialIcons` fragments. | `tutorials/blogsite/hero-projects-socials.md`, `how-to/feeds/blogsite-homepage.md` |
 | `BlogSiteScaffoldExample` | Smallest BlogSite — `AddBlogSite` / `UseBlogSite` / `RunBlogSiteAsync` with one post under `Content/Blog/`. | `tutorials/blogsite/scaffold.md`, `reference/blogsite/routes.md` |
-| `DocSiteAuthorExample` | Single-area DocSite focused on *authoring* a doc page (front matter, alerts, tabbed code, outline). Markdown stages under `snippets/`. | `tutorials/docsite/first-doc-page.md`, `reference/markdown/extensions.md` |
+| `DocSitePagesAndLinksExample` | Single-area DocSite with two content pages (`install`, `configure`) and a hub `index` demonstrating relative, absolute, and `uid:`-based linking. `snippets/markdown-{alert,tabs}-example.md` back the alerts/tabs sections of the markdown reference. | `tutorials/docsite/first-doc-page.md`, `reference/markdown/extensions.md` |
 | `DocSiteChromeOverridesExample` | Override DocSite chrome via `DocSiteOptions` + head-slot fragment + custom routed `@page` + `AdditionalRoutingAssemblies`. | `how-to/response-pipeline/override-docsite-components.md` |
 | `DocSiteKitchenSinkExample` | Wide DocSite configuration (areas, locales, theming, fonts, custom front matter, custom Mdazor component) split across helpers for xmldocid fencing. | `how-to/navigation/{customize-sidebar,cross-references}.md`, `how-to/theming/{monorail-css,fonts}.md`, `how-to/pages/{front-matter,redirects}.md`, `how-to/discovery/{search,multiple-sources}.md`, `how-to/feeds/llms-txt.md`, `how-to/rich-content/ui-components-in-markdown.md`, `reference/front-matter/keys.md` |
 | `DocSiteScaffoldExample` | Smallest DocSite — `AddDocSite` / `UseDocSite` / `RunDocSiteAsync` with two areas. | `tutorials/docsite/scaffold.md`, `reference/host/extensions.md` |
@@ -48,7 +48,7 @@ Every example folder has a `README.md` describing its purpose, the concepts it t
 ## Staged tutorial files
 Examples used by step-by-step tutorials split the teaching into per-stage artifacts:
 - **C# stages** live at the project root as `StageN_<Label>.cs` (e.g., `Stage1_BareHost.cs`, `Stage2_AddPennington.cs`). Docs pull them via `csharp:xmldocid[,bodyonly]` fences.
-- **Markdown (or other non-C#) stages** live under `snippets/` as `stageN.md` (e.g., `examples/DocSiteAuthorExample/snippets/stage1.md`). Docs pull them via `markdown:path` fences — `:xmldocid` is C#/VB-only.
+- **Markdown (or other non-C#) stages** live under `snippets/` as `stageN.md` (e.g., `examples/DocSiteSectionsExample/snippets/stageN.md`). Docs pull them via `markdown:path` fences — `:xmldocid` is C#/VB-only.
 
 Don't store markdown-as-a-C#-raw-string just to reach it by xmldocid; the `"""` delimiters leak into the rendered code block. Don't collapse stages into a single file.
 

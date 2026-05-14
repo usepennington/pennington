@@ -1,121 +1,174 @@
 ---
-title: "Author a documentation page with DocFrontMatter"
-description: "Write a DocSite page end-to-end: populate DocSiteFrontMatter, add a GitHub-style alert, and group code samples into a tabbed block with a live outline nav."
+title: "Add doc pages and link between them"
+description: "Build out a Guides area with two content pages, wire sibling navigation, hub-style absolute links, and rename-safe uid cross-references."
 sectionLabel: "Getting Started with DocSite"
 order: 102020
 tags:
   - docsite
-  - front-matter
-  - markdown
   - authoring
+  - linking
+  - cross-references
 uid: tutorials.docsite.first-doc-page
 ---
 
-By the end of this tutorial the DocSite has a `guides/authoring.md` page showing a fully-populated front-matter block, a rendered `[!NOTE]` alert, and a three-panel tabbed code group — with the outline nav on the right listing every `##` heading on the page.
+By the end of this tutorial the Guides area has two new pages — `install.md` and `configure.md` — wired into the sidebar in `order:` sequence, cross-linked with relative paths, and reachable from a hub `index.md` that uses both absolute paths and a `uid:`-based `xref:` link.
 
-This tutorial covers populating `DocSiteFrontMatter`, reaching for Pennington's GitHub-style alerts, and grouping adjacent fenced code blocks into a tabbed component without writing a single line of Razor or JavaScript.
+The tutorial covers the move every docs site makes right after the scaffold lands: drop a couple of markdown files into an area folder and decide how they should reference each other. Three link forms come up — relative paths between siblings, absolute paths from a hub, and `uid:` cross-references that survive page renames — each with the use case that makes it the right pick.
 
 ## Prerequisites
 
 - .NET 11 SDK installed
-- Completed [Scaffold a DocSite](xref:tutorials.docsite.scaffold) (or have an equivalent single-area DocSite project ready with a `Guides` area pointed at `Content/guides/`)
+- Completed [Scaffold a DocSite](xref:tutorials.docsite.scaffold) (or have a single-area DocSite project ready with a `Guides` area pointed at `Content/guides/`)
 
-The finished code for this tutorial lives in [`examples/DocSiteAuthorExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteAuthorExample).
+The finished code for this tutorial lives in [`examples/DocSitePagesAndLinksExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSitePagesAndLinksExample).
 
 ---
 
-## 1. Populate `DocSiteFrontMatter`
+## 1. Add two content pages
 
-Let's start with the metadata block that drives the sidebar entry, the `<title>`, the meta description, and the tag chips. This first step is front matter plus a single heading — the skeleton later sections build on.
+Let's drop two markdown files into the Guides area and watch them slot into the sidebar. The pages stand alone for now — linking arrives in the next unit.
 
 <Steps>
 <Step StepNumber="1">
 
-**Create `Content/guides/authoring.md`**
+**Create `Content/guides/install.md`**
 
-In the `Guides` area folder (`Content/guides/`), create a new file named `authoring.md` and leave it empty for now. The next step fills it in.
+Add a new file at `Content/guides/install.md` with the markdown below. The four front-matter keys are the ones `DocSiteFrontMatter` reads for sidebar wiring: `title` is the link label, `description` becomes the meta tag, `sectionLabel` carries through to breadcrumbs and prev/next chrome, and `order` decides where the page sorts among siblings.
+
+```markdown:path
+examples/DocSitePagesAndLinksExample/snippets/install-step1.md
+```
 
 </Step>
 <Step StepNumber="2">
 
-**Paste the markdown below**
+**Create `Content/guides/configure.md`**
 
-Copy the block below verbatim into `authoring.md`. The five keys — `title`, `description`, `tags`, `sectionLabel`, `order` — are the ones `DocSiteFrontMatter` reads to build the sidebar, meta tags, and tag chips. Everything below the closing `---` is the page body.
+Add a second file next to the first with the markdown below. Note `order: 30` — a larger number than install's `order: 20`, so configure sorts after install in the sidebar.
 
 ```markdown:path
-examples/DocSiteAuthorExample/snippets/stage1.md
+examples/DocSitePagesAndLinksExample/snippets/configure-step1.md
 ```
 
-`sectionLabel` controls the prev/next breadcrumb label shown beneath the page header; it's not what groups pages into the sidebar (subfolder layout does that). `order` decides where this page sits relative to its siblings.
+The 20 / 30 spacing leaves room to drop a page between them later without renumbering. For deeper coverage of section grouping and `order:` strategy, see <xref:tutorials.docsite.sections-and-areas>.
 
 </Step>
 </Steps>
 
 <Checkpoint>
 
-- Run `dotnet run` from the project folder and visit `http://localhost:5000/guides/authoring`.
-- The h1 reads "Authoring a doc page", the description renders as meta, and a sidebar entry labelled "Authoring a doc page" appears under the `Guides` area.
-- The outline nav on the right is empty — there are no `##` headings yet. That changes in unit 2.
+- Run `dotnet run` and visit `http://localhost:5000/guides/install` — the Install Pennington page renders.
+- Visit `http://localhost:5000/guides/configure` — the Configure the site page renders.
+- The Guides sidebar lists both new pages, with **Install Pennington** above **Configure the site** (sorted by `order:`).
 
 </Checkpoint>
 
 ---
 
-## 2. Add a GitHub-style alert
+## 2. Link siblings with relative paths
 
-Pennington recognises the GitHub alert syntax: a block quote whose first line is `[!KIND]`. Adding one produces a coloured callout and — because the callout introduces a `##` heading above it — the first outline-nav entry.
+Both pages exist but neither knows about the other. Adding a relative-path link at the bottom of each one creates a natural "previous / next" flow without hardcoding the area slug.
 
 <Steps>
 <Step StepNumber="1">
 
-**Replace the file body with the markdown below**
+**Add a "Next" footer to `install.md`**
 
-Swap the current contents of `authoring.md` for the block below. It keeps the same front matter and adds a `## Callouts` section containing a `[!NOTE]` alert.
+Append a `## Next` heading and a relative-path link to the bottom of `install.md`. `./configure` resolves against the current page's URL (`/guides/install`), so it points at `/guides/configure` no matter where the area sits.
 
 ```markdown:path
-examples/DocSiteAuthorExample/snippets/stage2.md
+examples/DocSitePagesAndLinksExample/snippets/install-with-next.md
 ```
 
-The supported kinds are `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, and `CAUTION`. Pennington wraps the surrounding block quote in a `markdown-alert` container so CSS can style it.
+</Step>
+<Step StepNumber="2">
+
+**Add a "Previously" footer to `configure.md`**
+
+Mirror the same shape on `configure.md` with a `./install` link back to the first page. Both pages now link to their sibling with a path that survives any move of the `Content/guides/` folder.
+
+```markdown:path
+examples/DocSitePagesAndLinksExample/Content/guides/configure.md
+```
 
 </Step>
 </Steps>
 
 <Checkpoint>
 
-- Reload `http://localhost:5000/guides/authoring`.
-- The `[!NOTE]` block now renders as a blue-bordered callout with an info icon — not a plain block quote.
-- The outline nav on the right shows a single entry, "Callouts", linking to `#callouts`.
+- Reload `http://localhost:5000/guides/install` — a **Configure the site** link sits at the bottom of the page. Click it.
+- The browser lands on `/guides/configure`. A **Install Pennington** link at the bottom of that page returns home.
+- Both transitions are instant — the SPA navigation that ships with DocSite swaps the article without a full page reload.
+
+</Checkpoint>
+
+> [!TIP]
+> Relative paths are the right pick for tightly coupled siblings. Reach for the other two forms in the next two units when the source and target are further apart or when the file might get renamed.
+
+---
+
+## 3. Turn the index into a hub with absolute paths
+
+The `Content/guides/index.md` page from the scaffold still says "Authoring walkthroughs live in this area" or similar — a placeholder that no longer matches the content under it. Let's rewrite it as a hub that links to both pages with absolute paths.
+
+<Steps>
+<Step StepNumber="1">
+
+**Replace `index.md` with the hub markdown below**
+
+Absolute paths (`/guides/install`) are stable across folder moves of the source page — handy on a hub that may itself migrate later. Use them when the target sits in a different folder than the source, or when the link is structural rather than narrative.
+
+```markdown:path
+examples/DocSitePagesAndLinksExample/snippets/index-as-hub.md
+```
+
+</Step>
+</Steps>
+
+<Checkpoint>
+
+- Visit `http://localhost:5000/guides/` — the Guides landing page now lists the two walkthroughs.
+- Click **Install Pennington** — the browser navigates to `/guides/install`.
+- Click **Configure the site** — the browser navigates to `/guides/configure`.
 
 </Checkpoint>
 
 ---
 
-## 3. Add a tabbed code group
+## 4. Make one link rename-safe with `uid:` + `xref:`
 
-Marking two or more adjacent fenced code blocks with `tabs=true` and a `title="…"` fence argument tells Pennington to group them into a single ARIA tablist. The tab labels come from each block's `title`.
+Absolute paths break the moment the target file moves or gets renamed. A `uid:` declared in the page's front matter gives the page a stable identifier; `xref:` links resolve through it, so the link survives the file moving or even the URL changing.
 
 <Steps>
 <Step StepNumber="1">
 
-**Replace the file body with the markdown below**
+**Add `uid: guides.install` to `install.md`'s front matter**
 
-Paste the block below over the current contents of `authoring.md`. It keeps the front matter and alert from the previous step and adds a `## Tabbed code groups` section with three adjacent fenced blocks.
+Open `install.md` and add one front-matter key — the page is now reachable by `xref:guides.install` no matter where the file lives.
 
 ```markdown:path
-examples/DocSiteAuthorExample/snippets/stage3.md
+examples/DocSitePagesAndLinksExample/Content/guides/install.md
 ```
 
-Each fence still gets normal syntax highlighting based on its language (`bash`, `powershell`, `xml`). The `tabs=true` flag and `title="…"` label are what tell the tabbed renderer these three blocks belong together — drop either one and the blocks render independently.
+</Step>
+<Step StepNumber="2">
+
+**Swap the install link in `index.md` to use `xref:`**
+
+Open `index.md` and replace `/guides/install` with `xref:guides.install`. The configure link stays as an absolute path — handy for seeing both forms side by side in the rendered output.
+
+```markdown:path
+examples/DocSitePagesAndLinksExample/Content/guides/index.md
+```
 
 </Step>
 </Steps>
 
 <Checkpoint>
 
-- Reload `http://localhost:5000/guides/authoring`.
-- The three fenced blocks under "Tabbed code groups" render as one component with three selectable tabs ("dotnet CLI", "PowerShell", "csproj"); clicking a tab swaps the visible code.
-- The outline nav on the right shows two entries — "Callouts" and "Tabbed code groups" — each linking to its heading anchor.
+- Reload `http://localhost:5000/guides/` — both links in the hub still work. The rendered HTML on the **Install Pennington** link resolves to `/guides/install` exactly as before.
+- Try renaming `install.md` to something else (don't commit it). The configure link in the hub breaks, but `xref:guides.install` still resolves — `XrefResolver` looks the page up by uid, not URL.
+- Restore the filename when done experimenting.
 
 </Checkpoint>
 
@@ -123,8 +176,8 @@ Each fence still gets normal syntax highlighting based on its language (`bash`, 
 
 ## Summary
 
-- Every key `DocSiteFrontMatter` reads — `title`, `description`, `tags`, `sectionLabel`, `order` — flows through to the sidebar, meta description, and prev/next label.
-- A GitHub-style `[!NOTE]` alert goes through Pennington's `CustomAlertInlineParser` and renders as a styled callout.
-- Three adjacent fenced code blocks with `tabs=true` and `title="…"` become a single tabbed component.
-- The outline nav populates automatically from the page's `##` headings — no manual nav wiring.
-
+- Two markdown files under `Content/guides/` showed up in the sidebar without any extra wiring, sorted by `order:` from front matter.
+- Relative paths (`./configure`) link tightly coupled sibling pages — the form that survives area-folder renames.
+- Absolute paths (`/guides/configure`) link from a hub where the source page may move but the target's location is stable.
+- `uid:` plus `xref:` — the rename-safe form — turns the page identifier itself into the link target. Use it when the target file is likely to move or get renamed.
+- For the full link-form reference (anchors, assets, sub-path deployments), see <xref:how-to.navigation.linking>. For deeper `uid:` semantics, see <xref:how-to.navigation.cross-references>.

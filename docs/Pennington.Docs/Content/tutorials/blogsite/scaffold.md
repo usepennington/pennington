@@ -52,29 +52,26 @@ M:BlogSiteScaffoldExample.Stage1.Run(System.String[])
 
 ## 2. Swap `AddPennington` for `AddBlogSite`
 
-`AddBlogSite` is a single DI call that registers Pennington core, MonorailCSS, the Razor-component chrome (home, archive, post, and tag pages), the file-watched `BlogContentResolver`, and the `BlogSiteContentService` that yields per-tag routes and the `/rss.xml` feed — all driven from one options record.
+`AddBlogSite` is the BlogSite template's single registration call. It stands in for `AddPennington` and the `AddMarkdownContent<DocFrontMatter>` line from stage 1, wiring Pennington core, MonorailCSS, the Razor chrome, `BlogContentResolver`, and `BlogSiteContentService` in one call.
 
 <Steps>
 <Step StepNumber="1">
 
-**Replace the registration call**
+**Replace the stage-1 registration with the call below**
 
-`AddBlogSite` takes a `Func<BlogSiteOptions>` — the delegate constructs and returns a fresh options record rather than mutating one through an `Action`. Remove the earlier `AddMarkdownContent<DocFrontMatter>` call; the template registers `AddMarkdownContent<BlogSiteFrontMatter>` internally, and the next tutorial walks through that front-matter record. `AddBlogSite` also calls `AddPennington`, `AddMonorailCss`, and `AddRazorComponents` under the hood, so a BlogSite project does not register those separately. See <xref:reference.host.extensions> for the full signature.
+The `UsePennington` line and the hand-rolled `MapGet` fallback also come out — `await app.RunAsync()` stands in for them until the next section. The green diff markers show what's new; everything outside them is plain ASP.NET scaffolding.
 
-</Step>
-<Step StepNumber="2">
+```csharp:xmldocid,bodyonly,usings
+M:BlogSiteScaffoldExample.Stage2.Run(System.String[])
+```
 
-**Populate the core `BlogSiteOptions`**
+The options fall into three families:
 
-The options this tutorial covers fall into three groups.
+- **Site identity** — `SiteTitle`, `Description`, `CanonicalBaseUrl` feed page headers, the RSS channel, sitemap entries, and JSON-LD.
+- **Content paths** — `ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, `TagsPageUrl` set where posts live on disk and what URLs they get. Shown at their defaults — drop them once the shape is familiar.
+- **Author defaults** — `AuthorName` and `AuthorBio` are the site-wide fallbacks for posts that don't set their own `author:` front-matter value.
 
-The identity trio drives metadata shared across every page and feed: `SiteTitle` is the name that appears in the site header, RSS channel title, and JSON-LD; `Description` populates the RSS channel description and the default meta description; `CanonicalBaseUrl` is the absolute origin (for example `https://myblog.example`) used in RSS `<link>` elements, sitemaps, and JSON-LD `@id` values.
-
-The content-path quartet controls where posts live on disk and what URLs they produce: `ContentRootPath` is the folder relative to `wwwroot` that contains all content (default `"Content"`); `BlogContentPath` is the subfolder within that root where post files live (default `"Blog"`, resolved against `ContentRootPath`); `BlogBaseUrl` is the route prefix for individual post pages (default `"/blog"`); `TagsPageUrl` is the base route for the tag listing and per-tag pages (default `"/tags"`).
-
-`AuthorName` and `AuthorBio` provide site-wide author defaults. They populate the RSS channel, JSON-LD article markup, and any post that omits its own `author:` front-matter field.
-
-The full options surface — including the homepage-specific knobs `HeroContent`, `MyWork`, `Socials`, and `MainSiteLinks` — is covered in <xref:reference.api.blog-site-options>. Those knobs are skipped here and introduced in the third tutorial of this section.
+The full surface, including the homepage knobs `HeroContent`, `MyWork`, `Socials`, and `MainSiteLinks`, lives in <xref:reference.api.blog-site-options>. The next tutorial walks through `BlogSiteFrontMatter`, which the template registers internally in place of the stage-1 `DocFrontMatter`.
 
 </Step>
 </Steps>
@@ -82,7 +79,7 @@ The full options surface — including the homepage-specific knobs `HeroContent`
 <Checkpoint>
 
 - `dotnet build` succeeds
-- `dotnet run` starts the host, but `/` still returns whatever the pre-BlogSite pipeline produced — BlogSite services sit in DI while the middleware and endpoints remain unmounted
+- `dotnet run` starts the host, but `/` returns a default ASP.NET response — BlogSite services are registered in DI but the middleware and endpoints are not mounted yet
 
 </Checkpoint>
 
@@ -97,7 +94,7 @@ The full options surface — including the homepage-specific knobs `HeroContent`
 
 **Call `UseBlogSite` after `Build()`**
 
-This single call replaces both the `UsePennington` line and the hand-written `MapGet` fallback from stage 1. After it runs, the BlogSite Razor components own `/`, `/archive`, `/blog/{*fileName}`, `/tags`, `/tags/{TagEncodedName}`, and the `/topics` aliases, with `BlogContentResolver` handling per-request rendering.
+This is the middleware counterpart to `AddBlogSite`. After it runs, the BlogSite Razor components own `/`, `/archive`, `/blog/{*fileName}`, `/tags`, `/tags/{TagEncodedName}`, and the `/topics` aliases, with `BlogContentResolver` handling per-request rendering.
 
 ```csharp
 app.UseBlogSite();
@@ -122,7 +119,7 @@ await app.RunBlogSiteAsync(args);
 Here is the complete `Program.cs` after the swap. Three calls replace the entire setup from the previous step — the diff says the rest.
 
 ```csharp:xmldocid,bodyonly,usings
-M:BlogSiteScaffoldExample.Stage2.Run(System.String[])
+M:BlogSiteScaffoldExample.Stage3.Run(System.String[])
 ```
 
 </Step>

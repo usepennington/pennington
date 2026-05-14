@@ -11,7 +11,7 @@ The smallest possible BlogSite. `AddBlogSite` / `UseBlogSite` / `RunBlogSiteAsyn
 
 ## Tutorial stages
 
-`Stage1_BeforeAddBlogSite.cs` → `Stage2_AfterAddBlogSite.cs`.
+`Stage1_BeforeAddBlogSite.cs` → `Stage2_AddBlogSiteOnly.cs` → `Stage3_UseBlogSite.cs`.
 
 ## Referenced from
 
