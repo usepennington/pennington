@@ -393,7 +393,14 @@ All 25 examples build and run. Highlights worth triaging:
 - **[FW] (minor)** Same "Post not found" 200 status from #7 applies if you guess the URL wrong here. (Not retested, but the BlogSite template is shared.)
 - **[INFRA] (minor)** Server log shows incoming traffic for `/blog/2024-01-15-getting-started-with-pennington/` before any browser request, suggesting a stale prefetch from the previous BlogKitchenSinkExample run hit this process via a kept-alive SPA connection or browser tab. Worth verifying that the SPA-engine's prefetch cache isn't accidentally cross-contaminating across separate ports/sessions. **Resolved 2026-05-13 (cross-cutting):** dev-mode pages now carry a per-process `<meta name="x-pennington-host">` and the SPA engine clears its prefetch cache + full-reloads when a fetched doc's fingerprint differs.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- FW+DOC series badge — verified rendering: `BlogPost.razor` already ships a "This post is part of a series" panel with the post listed; visible at `/blog/my-first-post/` (`<p class="text-sm font-medium ...">This post is part of a series</p>` followed by a `<ul>` containing the bolded current-post entry). The audit's "no visible affordance" claim doesn't match current code. README now documents that the badge appears with one entry and grows when more posts share the same `series:` value.
+- DOC redirectUrl semantics — README's new "Field semantics" section explains that the blank value is the "this post stays here" state and that setting it emits a client-side redirect (meta-refresh + `<link rel="canonical">`). Calls out the intentional blank.
+- DOC sectionLabel invisible — README explicitly notes the field only takes visible effect once a second post sets the same label; with one post, no peer to group against.
+- FW post-not-found 200 — resolved cross-cutting in 6e9c168 (shared BlogSite Blog.razor fix; same NotFoundStatusProcessor pipeline now applies).
+- INFRA SPA prefetch — already noted resolved cross-cutting above.
+
+**Fixes applied.**
 
 ## 7. BlogKitchenSinkExample
 
