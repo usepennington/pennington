@@ -271,7 +271,11 @@ All 25 examples build and run. Highlights worth triaging:
 - **[DOC] (minor)** README says ordering uses `order:` "with title as the tiebreaker". A reader exploring `installation.md`, `configuration.md`, `first-project.md` would benefit from a callout showing what happens without `order:` — does the engine alphabetize the slug, the title, or fall back to filename?
 - **[DOC] (minor)** README doesn't link to or define `section:` front matter — the key is mentioned but its semantics ("override the folder-derived label") are not explained inline. Confirm whether any of this example's pages actually exercise `section:` or if it's purely demonstrating folder-based grouping.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC order tiebreaker — README's `order:` bullet now spells out the rule: `Order` defaults to `int.MaxValue` when the front-matter line is absent, then ties break by `Title` alphabetically. Worked example with installation (`order: 10`), configuration (`order: 20`), and a hypothetical un-ordered first-project page shows where each lands.
+- DOC `section:` key naming — README corrected: the actual front-matter key is `sectionLabel:` (no `section:` key in `DocSiteFrontMatter`). The README's "Concepts" section now describes `sectionLabel:` as an opt-in override for the folder-derived section header, with a note that this example's pages set it explicitly to match what the folder name would produce anyway (so removing the line is still safe). Cross-referenced the `NavigationBuilder.FormatSectionTitle` acronym set so a reader knows `core-api/` becomes "Core API" rather than "Core Api".
+
+**Fixes applied.**
 
 ## 14. DocSiteScaffoldExample
 
