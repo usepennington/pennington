@@ -353,7 +353,11 @@ All 25 examples build and run. Highlights worth triaging:
 - **[DOC] (minor)** README mentions `/tags/<name>` as a route but with only one post the `/tags/<name>` route is reachable only by guessing. Add `<TagsBadge>` or "View tag" links from the post page to make this discoverable.
 - **[FW] (minor)** Same "Post not found" 200-status issue observed in #7 is implicit here: any wrong slug returns 200 with stub content instead of 404. (Not retested.) **Resolved 2026-05-13 (cross-cutting):** `BlogSite/Blog.razor` now sets `HttpContext.Response.StatusCode = 404` when `BlogContentResolver` returns null; verified on this example's scaffold.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC defaults clarification — README's "Concepts" bullet now bolds **defaults** and quotes the actual default values (`BlogContentPath = "Blog"`, `BlogBaseUrl = "/blog"`, `TagsPageUrl = "/tags"`) with a note that the scaffold's `Program.cs` does **not** assign them; pointed readers at `reference/blogsite/options.md`.
+- DOC `/tags/<name>` discoverability — added one `tags: [scaffold]` line to `Content/Blog/hello-world.md` so `BlogPost.razor`'s tag chip renders. Verified `/blog/hello-world/` now shows a "Tags" block with a chip linking to `/tags/scaffold` (200). README documents the linkage and that dropping the front-matter line breaks discoverability — a real teaching artifact, not a bug.
+
+**Fixes applied.**
 
 ## 9. BlogSiteHeroProjectsSocialsExample
 

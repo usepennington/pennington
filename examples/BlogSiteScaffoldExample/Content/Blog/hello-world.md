@@ -3,6 +3,8 @@ title: Hello world
 description: A placeholder post so the scaffold has something to render. Tutorial 1.3.20 teaches the real BlogSiteFrontMatter fields.
 date: 2026-04-13
 author: Author Name
+tags:
+  - scaffold
 ---
 
 # Hello world
