@@ -46,8 +46,14 @@
             document.documentElement.classList.remove('dark');
         }
     </script>
-    <HeadOutlet/>
+    @* Default title — pages override via their own <PageTitle> from a child
+       component. Must register BEFORE <HeadOutlet/>, otherwise the
+       SectionContent registered here lands after the outlet has already
+       rendered and never makes it into the response. The same ordering
+       constraint is why pages' <HeadContent> emits the og/twitter meta tags
+       only when HeadOutlet sits last in <head>. *@
     <PageTitle>@Options.SiteTitle</PageTitle>
+    <HeadOutlet/>
 </head>
 
 <body data-mobile-menu-open="false" class="data-[mobile-menu-open=true]:overflow-hidden">
