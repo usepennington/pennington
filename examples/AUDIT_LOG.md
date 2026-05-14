@@ -432,7 +432,11 @@ All 25 examples build and run. Highlights worth triaging:
 - **[DOC] (minor)** README mentions "dry-run validator on startup + debounced re-runs on file change" — those terms aren't defined anywhere in the docs site. A reference/how-to page documenting what the validator checks (broken xrefs, missing translations, dead links, etc.) would be valuable so readers know what value the TUI adds.
 - **[DOC] (minor)** README says the example is unreferenced. Add a how-to/reference page for `Pennington.Tui` so this example becomes discoverable from the docs site.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC validator-terminology — README gains a "What the TUI surfaces" section enumerating the four panels (Main / Content / Diagnostics / Log replacement), naming the actual classes (`PenningtonTuiHostedService`, `IAuditCache`, `IFileWatcher`, `IBuildAuditor`, `IRenderedAuditor`), and listing the three early-exit gates (`build` verb, `DOTNET_WATCH=1`, `Console.IsOutputRedirected`).
+- DOC docs-surface gap — README gains a "See also" section pointing at the four TUI source files (extensions, hosted service, options, TuiApp) as the authoritative surface until a dedicated `how-to/dev-loop/tui-dashboard.md` lands. "Referenced from" flags the follow-up explicitly.
+
+**Fixes applied.**
 
 ## 5. BeyondTranslationAuditExample
 
