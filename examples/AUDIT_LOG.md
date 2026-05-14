@@ -302,7 +302,10 @@ All 25 examples build and run. Highlights worth triaging:
 - **[FW+DOC] (minor)** README lists "Sidebar customization (sections, ordering, hidden pages, redirects)" — verified in `/llms.txt` listing that `hidden.md` and `llms-hidden.md` are excluded from the respective indexes, but the rendered sidebar effect isn't directly testable from a single page. Worth a separate sidebar-visibility how-to.
 - **[FW] (minor)** The 404 on font files happens despite `wwwroot/` directory existing on the example — `wwwroot` is set up but empty of fonts. Pennington's font-preload helper should either log a build-time warning when a referenced font file does not exist, or fall back gracefully. **Resolved 2026-05-13 (framework-blocker):** chose the "fall back gracefully" half — `App.razor` now skips emission for missing files. Build-time warning could be added later if needed.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- FW+DOC sidebar customization bullet — reworked the README's "Concepts" section to clarify what each opt-out switch *actually does*: `search: false` excludes only from `/search-index-en.json` (page still in sidebar), `llms: false` excludes only from `/llms.txt` (page still in sidebar), and the kitchen-sink does **not** demonstrate a "hide from sidebar" front-matter switch (no such switch ships today; `redirectUrl:` covers the redirect case). Each bullet now spells out the inspect-via-curl/JSON way to verify the effect.
+
+**Fixes applied.**
 
 ## 12. DocSiteChromeOverridesExample
 
