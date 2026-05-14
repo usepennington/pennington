@@ -186,6 +186,8 @@ That's the working site. `dotnet run` serves live, and `http://localhost:5000/` 
 
 </Checkpoint>
 
+The rendered page is plain unstyled HTML — Times-New-Roman serif, default browser margins, blue underlined links. That is on purpose: this host wires only the content pipeline, not the CSS layer. Adding MonorailCSS for a Tailwind-style utility set is the next tutorial: [Style the minimal site with MonorailCSS](xref:tutorials.getting-started.styling).
+
 ---
 
 ## 4. Verify dev-mode hot reload
@@ -224,6 +226,42 @@ Without any terminal input, the browser tab updates to show the new title in bot
 </Checkpoint>
 
 ---
+
+## From `MapGet` to `UseDocSite`
+
+The hand-rolled `MapGet("/{*path}", …)` block above is intentional — it makes every step of "URL → markdown file → rendered HTML" visible. When the host outgrows that shape (multiple pages, sidebar navigation, a search index, sitemap.xml, llms.txt), the DocSite template collapses it.
+
+Side-by-side:
+
+```csharp
+// This tutorial — bare AddPennington host.
+builder.Services.AddPennington(penn =>
+{
+    penn.SiteTitle = "My First Pennington Site";
+    penn.ContentRootPath = "Content";
+    penn.AddMarkdownContent<DocFrontMatter>(md => { md.ContentPath = "Content"; md.BasePageUrl = "/"; });
+});
+
+var app = builder.Build();
+app.UsePennington();
+app.MapGet("/{*path}", async (string? path, IEnumerable<IContentService> services,
+                              IContentParser parser, IContentRenderer renderer) =>
+{
+    // walk services → match route → parser.ParseAsync → renderer.RenderAsync → Results.Content(html)
+});
+await app.RunOrBuildAsync(args);
+```
+
+```csharp
+// DocSite template — same content pipeline, plus chrome.
+builder.Services.AddDocSite(() => new DocSiteOptions { SiteTitle = "My First Pennington Site" });
+
+var app = builder.Build();
+app.UseDocSite();
+await app.RunDocSiteAsync(args);
+```
+
+`AddDocSite` registers the same `AddPennington` core, adds an `AddMarkdownContent<DocFrontMatter>` reader rooted at `Content/`, wires MonorailCSS, ships a sidebar layout, and maps a Razor catch-all that replaces the hand-rolled `MapGet`. The trade is verbosity for visibility: the bare host above is what `AddDocSite` is doing for you under the hood. [Scaffold a DocSite](xref:tutorials.docsite.scaffold) walks through the template form once you're ready to drop the `MapGet`.
 
 ## Summary
 

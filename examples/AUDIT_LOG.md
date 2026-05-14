@@ -189,7 +189,11 @@ All 25 examples build and run. Highlights worth triaging:
 - **[DOC] (minor)** README does not call out the unstyled output — the minimal host has no MonorailCSS wired, so the page is text without any CSS. A reader following the tutorial might wonder if something is broken. Tutorial should note that styling is the next step (`GettingStartedStylingExample`).
 - **[DOC] (minor)** README's "Manual catch-all rendering loop (the shape DocSite later replaces)" claim is exactly the kind of progression a tutorial reader would benefit from. Add a sibling diff/before-after section in the tutorial that contrasts this `MapGet` shape against the DocSite `UseDocSite` shape.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC unstyled-output pointer — the tutorial's step-3 checkpoint now explains that the rendered output is plain unstyled HTML (Times-New-Roman serif, browser defaults) and links forward to `tutorials.getting-started.styling` for the MonorailCSS step. README's "Concepts" section also lists the unstyled-output trait so a reader skimming the example folder knows it's intentional (`docs/.../tutorials/getting-started/first-site.md` after the working-site Checkpoint; `examples/GettingStartedMinimalSiteExample/README.md:11`).
+- DOC MapGet-vs-UseDocSite contrast — added a "From `MapGet` to `UseDocSite`" section between the hot-reload step and the Summary. Two side-by-side code blocks show the bare host's full wiring versus the three-line DocSite collapse, with a one-paragraph explanation that `AddDocSite` is exactly what the hand-rolled `MapGet` is doing under the hood. Cross-linked to `tutorials.docsite.scaffold` (`docs/.../tutorials/getting-started/first-site.md` "From `MapGet` to `UseDocSite`").
+
+**Fixes applied.**
 
 ## 19. GettingStartedFirstPageExample
 
