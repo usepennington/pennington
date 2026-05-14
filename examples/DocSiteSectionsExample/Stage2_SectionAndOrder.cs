@@ -18,8 +18,8 @@ public static class Stage2
         ---
         title: Install Pennington
         description: Add the Pennington package to a new or existing ASP.NET project.
-        sectionLabel: Getting Started
-        order: 10
+        sectionLabel: Getting Started # [!code ++]
+        order: 10 # [!code ++]
         ---
 
         # Install Pennington

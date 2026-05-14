@@ -1,7 +1,7 @@
 namespace GettingStartedMinimalSiteExample;
 
-using Pennington.FrontMatter;
-using Pennington.Infrastructure;
+using Pennington.FrontMatter; // [!code ++]
+using Pennington.Infrastructure; // [!code ++]
 
 /// <summary>
 /// Stage 2 — register Pennington in the service container and point it at a
@@ -16,17 +16,17 @@ public static class Stage2
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddPennington(penn =>
-        {
-            penn.SiteTitle = "My First Pennington Site";
-            penn.ContentRootPath = "Content";
+        builder.Services.AddPennington(penn => // [!code ++]
+        { // [!code ++]
+            penn.SiteTitle = "My First Pennington Site"; // [!code ++]
+            penn.ContentRootPath = "Content"; // [!code ++]
 
-            penn.AddMarkdownContent<DocFrontMatter>(md =>
-            {
-                md.ContentPath = "Content";
-                md.BasePageUrl = "/";
-            });
-        });
+            penn.AddMarkdownContent<DocFrontMatter>(md => // [!code ++]
+            { // [!code ++]
+                md.ContentPath = "Content"; // [!code ++]
+                md.BasePageUrl = "/"; // [!code ++]
+            }); // [!code ++]
+        }); // [!code ++]
 
         var app = builder.Build();
 

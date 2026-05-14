@@ -33,8 +33,8 @@ public static class Stage3
 
         var app = builder.Build();
 
-        app.UsePennington();
+        app.UsePennington(); // [!code ++]
 
-        await app.RunOrBuildAsync(args);
+        await app.RunOrBuildAsync(args); // [!code ++]
     }
 }

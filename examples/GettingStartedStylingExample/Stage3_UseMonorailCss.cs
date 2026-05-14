@@ -48,9 +48,9 @@ public static class Stage3
 
         app.UsePennington();
 
-        // New in this stage: mount /styles.css. The default path matches the
-        // <link> tag in MainLayout.razor.
-        app.UseMonorailCss();
+        // New in this stage: mount /styles.css. The default path matches the // [!code ++]
+        // <link> tag in MainLayout.razor. // [!code ++]
+        app.UseMonorailCss(); // [!code ++]
 
         app.UseAntiforgery();
         app.MapRazorComponents<App>();

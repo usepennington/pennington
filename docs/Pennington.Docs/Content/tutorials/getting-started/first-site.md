@@ -63,13 +63,13 @@ Pennington uses C# 15 union types, which are still a preview language feature in
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>preview</LangVersion> <!-- [!code ++] -->
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Pennington" Version="0.1.0-alpha.0.20" />
-  </ItemGroup>
+  <ItemGroup> <!-- [!code ++] -->
+    <PackageReference Include="Pennington" Version="0.1.0-alpha.0.20" /> <!-- [!code ++] -->
+  </ItemGroup> <!-- [!code ++] -->
 </Project>
 ```
 

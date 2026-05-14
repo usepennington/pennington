@@ -10,10 +10,13 @@ using AngleSharp.Html.Parser;
 /// </summary>
 internal static class CodeTransformer
 {
-    private static readonly string[] CommentMarkers = ["//", "#", "--", "<!--", "*", "%", "'", "REM", ";", "/*"];
+    // Ordered longest-first so multi-char markers win the LastIndexOf race against
+    // their own substrings — e.g. `<!--` must match before `--`, otherwise the `--`
+    // inside an HTML comment captures the directive and leaves `<!-- -->` behind.
+    private static readonly string[] CommentMarkers = ["<!--", "REM", "//", "--", "/*", "#", "*", "%", "'", ";"];
     private static readonly string[] BlockCommentEndings = ["-->", "*/"];
     private static readonly string[] EmptyCommentPatterns =
-        ["//", "#", "--", "<!--", "*", "%", "'", "REM", ";", "/*", "*/", "-->"];
+        ["<!--", "REM", "//", "--", "/*", "#", "*", "%", "'", ";", "*/", "-->"];
 
     private record DirectiveMatch(string FullMatch, string Notation, int Index, int EndIndex);
     private record WordHighlightInfo(string Word, string? Message);
@@ -259,11 +262,15 @@ internal static class CodeTransformer
         var directiveEnd = closeIndex + 1;
         var afterBracket = span[directiveEnd..];
 
+        var leadingWhitespace = 0;
+        while (leadingWhitespace < afterBracket.Length && char.IsWhiteSpace(afterBracket[leadingWhitespace]))
+            leadingWhitespace++;
+
         foreach (var ending in BlockCommentEndings)
         {
-            if (afterBracket.StartsWith(ending, StringComparison.OrdinalIgnoreCase))
+            if (afterBracket[leadingWhitespace..].StartsWith(ending, StringComparison.OrdinalIgnoreCase))
             {
-                directiveEnd += ending.Length;
+                directiveEnd += leadingWhitespace + ending.Length;
                 break;
             }
         }

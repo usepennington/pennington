@@ -1,7 +1,7 @@
 namespace BeyondRoslynExample;
 
 using Pennington.DocSite;
-using Pennington.Roslyn;
+using Pennington.Roslyn; // [!code ++]
 
 /// <summary>
 /// Stage 2 — adds <c>AddPenningtonRoslyn</c> pointed at the inner
@@ -28,10 +28,10 @@ public static class Stage2
             FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""",
         });
 
-        builder.Services.AddPenningtonRoslyn(roslyn =>
-        {
-            roslyn.SolutionPath = "BeyondRoslynExample.slnx";
-        });
+        builder.Services.AddPenningtonRoslyn(roslyn => // [!code ++]
+        { // [!code ++]
+            roslyn.SolutionPath = "BeyondRoslynExample.slnx"; // [!code ++]
+        }); // [!code ++]
 
         var app = builder.Build();
 

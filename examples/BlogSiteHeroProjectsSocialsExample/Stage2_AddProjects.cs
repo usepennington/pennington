@@ -31,21 +31,21 @@ public static class Stage2
                 Title: "Field notes from a weekend content engine",
                 Description: "I build small tools for small problems. This is where I write about them."),
 
-            MyWork =
-            [
-                new Project(
-                    Title: "Pennington",
-                    Description: "A tiny .NET content engine for docs and blogs.",
-                    Url: "https://github.com/example/pennington"),
-                new Project(
-                    Title: "MonorailCSS",
-                    Description: "Utility-first CSS generation for Razor.",
-                    Url: "https://github.com/example/monorailcss"),
-                new Project(
-                    Title: "Mdazor",
-                    Description: "Inline Razor components inside Markdown.",
-                    Url: "https://github.com/example/mdazor"),
-            ],
+            MyWork = // [!code ++]
+            [ // [!code ++]
+                new Project( // [!code ++]
+                    Title: "Pennington", // [!code ++]
+                    Description: "A tiny .NET content engine for docs and blogs.", // [!code ++]
+                    Url: "https://github.com/example/pennington"), // [!code ++]
+                new Project( // [!code ++]
+                    Title: "MonorailCSS", // [!code ++]
+                    Description: "Utility-first CSS generation for Razor.", // [!code ++]
+                    Url: "https://github.com/example/monorailcss"), // [!code ++]
+                new Project( // [!code ++]
+                    Title: "Mdazor", // [!code ++]
+                    Description: "Inline Razor components inside Markdown.", // [!code ++]
+                    Url: "https://github.com/example/mdazor"), // [!code ++]
+            ], // [!code ++]
         });
 
         var app = builder.Build();

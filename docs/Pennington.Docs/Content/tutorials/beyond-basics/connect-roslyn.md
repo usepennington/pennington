@@ -106,9 +106,9 @@ A single DI call turns on the xmldocid preprocessor. Once `AddPenningtonRoslyn` 
 Add all three to the host csproj. `Pennington.Roslyn` brings in `SyntaxHighlighter` and `RoslynCodeBlockPreprocessor`; the other two are runtime requirements of `Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace`.
 
 ```xml
-<PackageReference Include="Pennington.Roslyn" Version="0.1.0-alpha.0.20" />
-<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.3.0" />
-<PackageReference Include="Microsoft.Build.Framework" Version="18.4.0" ExcludeAssets="runtime" PrivateAssets="all" />
+<PackageReference Include="Pennington.Roslyn" Version="0.1.0-alpha.0.20" /> <!-- [!code ++] -->
+<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.3.0" /> <!-- [!code ++] -->
+<PackageReference Include="Microsoft.Build.Framework" Version="18.4.0" ExcludeAssets="runtime" PrivateAssets="all" /> <!-- [!code ++] -->
 ```
 
 `Microsoft.CodeAnalysis.Workspaces.MSBuild` ships the `BuildHost-netcore/` content DLLs the workspace launches at solution-load time. Without it, every `csharp:xmldocid` fence renders an `<!-- Error processing xmldocid: … BuildHost.dll not found -->` comment. The `Microsoft.Build.Framework` reference (with runtime excluded) silences the MSBuild-locator resolution error without changing runtime behaviour.

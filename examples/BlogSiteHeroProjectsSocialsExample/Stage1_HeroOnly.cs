@@ -27,9 +27,9 @@ public static class Stage1
             AuthorName = "Author Name",
             AuthorBio = "Writing about software, tools, and the occasional side project.",
 
-            HeroContent = new HeroContent(
-                Title: "Field notes from a weekend content engine",
-                Description: "I build small tools for small problems. This is where I write about them."),
+            HeroContent = new HeroContent( // [!code ++]
+                Title: "Field notes from a weekend content engine", // [!code ++]
+                Description: "I build small tools for small problems. This is where I write about them."), // [!code ++]
         });
 
         var app = builder.Build();

@@ -1,6 +1,6 @@
 namespace BlogSiteScaffoldExample;
 
-using Pennington.BlogSite;
+using Pennington.BlogSite; // [!code ++]
 
 /// <summary>
 /// Stage 2 — the fully-wired BlogSite host. `AddBlogSite` registers
@@ -22,25 +22,25 @@ public static class Stage2
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddBlogSite(() => new BlogSiteOptions
-        {
-            SiteTitle = "Scaffold Blog",
-            Description = "A minimal BlogSite scaffold showing AddBlogSite, UseBlogSite, and RunBlogSiteAsync.",
-            CanonicalBaseUrl = "https://example.com",
+        builder.Services.AddBlogSite(() => new BlogSiteOptions // [!code ++]
+        { // [!code ++]
+            SiteTitle = "Scaffold Blog", // [!code ++]
+            Description = "A minimal BlogSite scaffold showing AddBlogSite, UseBlogSite, and RunBlogSiteAsync.", // [!code ++]
+            CanonicalBaseUrl = "https://example.com", // [!code ++]
 
-            ContentRootPath = "Content",
-            BlogContentPath = "Blog",
-            BlogBaseUrl = "/blog",
-            TagsPageUrl = "/tags",
+            ContentRootPath = "Content", // [!code ++]
+            BlogContentPath = "Blog", // [!code ++]
+            BlogBaseUrl = "/blog", // [!code ++]
+            TagsPageUrl = "/tags", // [!code ++]
 
-            AuthorName = "Author Name",
-            AuthorBio = "Writing about software, tools, and the occasional side project.",
-        });
+            AuthorName = "Author Name", // [!code ++]
+            AuthorBio = "Writing about software, tools, and the occasional side project.", // [!code ++]
+        }); // [!code ++]
 
         var app = builder.Build();
 
-        app.UseBlogSite();
+        app.UseBlogSite(); // [!code ++]
 
-        await app.RunBlogSiteAsync(args);
+        await app.RunBlogSiteAsync(args); // [!code ++]
     }
 }

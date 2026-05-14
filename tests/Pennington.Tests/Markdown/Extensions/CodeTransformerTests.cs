@@ -53,6 +53,19 @@ public class CodeTransformerTests
         result.ShouldNotContain("[!code focus]");
     }
 
+    [Fact]
+    public void Transform_StripsHtmlBlockCommentShellAroundDirective()
+    {
+        var html = "<pre><code>&lt;LangVersion&gt;preview&lt;/LangVersion&gt; &lt;!-- [!code ++] --&gt;</code></pre>";
+
+        var result = CodeTransformerAccessor.Transform(html);
+
+        result.ShouldContain("diff-add");
+        result.ShouldNotContain("[!code ++]");
+        result.ShouldNotContain("&lt;!--");
+        result.ShouldNotContain("--&gt;");
+    }
+
 }
 
 /// <summary>

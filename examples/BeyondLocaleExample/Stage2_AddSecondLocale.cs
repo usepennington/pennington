@@ -1,7 +1,7 @@
 namespace BeyondLocaleExample;
 
 using Pennington.DocSite;
-using Pennington.Localization;
+using Pennington.Localization; // [!code ++]
 
 /// <summary>
 /// Stage 2 — add a <c>ConfigureLocalization</c> action to
@@ -29,12 +29,12 @@ public static class Stage2
             HeaderContent = """<a href="/">Beyond Locale</a>""",
             FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""",
 
-            ConfigureLocalization = loc =>
-            {
-                loc.DefaultLocale = "en";
-                loc.AddLocale("en", new LocaleInfo("English"));
-                loc.AddLocale("es", new LocaleInfo("Español", HtmlLang: "es"));
-            },
+            ConfigureLocalization = loc => // [!code ++]
+            { // [!code ++]
+                loc.DefaultLocale = "en"; // [!code ++]
+                loc.AddLocale("en", new LocaleInfo("English")); // [!code ++]
+                loc.AddLocale("es", new LocaleInfo("Español", HtmlLang: "es")); // [!code ++]
+            }, // [!code ++]
         });
 
         var app = builder.Build();

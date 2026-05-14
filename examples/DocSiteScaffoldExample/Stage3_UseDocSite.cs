@@ -1,7 +1,7 @@
 namespace DocSiteScaffoldExample;
 
 using Pennington.DocSite;
-using Pennington.Infrastructure;
+using Pennington.Infrastructure; // [!code ++]
 
 /// <summary>
 /// Stage 3 — the final wired state. `UseDocSite` mounts the DocSite
@@ -38,8 +38,8 @@ public static class Stage3
 
         var app = builder.Build();
 
-        app.UseDocSite();
+        app.UseDocSite(); // [!code ++]
 
-        await app.RunDocSiteAsync(args);
+        await app.RunDocSiteAsync(args); // [!code ++]
     }
 }

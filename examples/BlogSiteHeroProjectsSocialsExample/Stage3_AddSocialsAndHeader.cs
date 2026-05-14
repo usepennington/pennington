@@ -1,7 +1,7 @@
 namespace BlogSiteHeroProjectsSocialsExample;
 
 using Pennington.BlogSite;
-using Pennington.BlogSite.Components;
+using Pennington.BlogSite.Components; // [!code ++]
 
 /// <summary>
 /// Stage 3 — the final state, matching the top-level <c>Program.cs</c>. Adds
@@ -54,20 +54,20 @@ public static class Stage3
                     Url: "https://github.com/example/mdazor"),
             ],
 
-            Socials =
-            [
-                new SocialLink(SocialIcons.GithubIcon, "https://github.com/example"),
-                new SocialLink(SocialIcons.BlueskyIcon, "https://bsky.app/profile/example.bsky.social"),
-                new SocialLink(SocialIcons.LinkedInIcon, "https://www.linkedin.com/in/example"),
-                new SocialLink(SocialIcons.MastodonIcon, "https://hachyderm.io/@example"),
-            ],
+            Socials = // [!code ++]
+            [ // [!code ++]
+                new SocialLink(SocialIcons.GithubIcon, "https://github.com/example"), // [!code ++]
+                new SocialLink(SocialIcons.BlueskyIcon, "https://bsky.app/profile/example.bsky.social"), // [!code ++]
+                new SocialLink(SocialIcons.LinkedInIcon, "https://www.linkedin.com/in/example"), // [!code ++]
+                new SocialLink(SocialIcons.MastodonIcon, "https://hachyderm.io/@example"), // [!code ++]
+            ], // [!code ++]
 
-            MainSiteLinks =
-            [
-                new HeaderLink("Home", "/"),
-                new HeaderLink("Archive", "/archive"),
-                new HeaderLink("Tags", "/tags"),
-            ],
+            MainSiteLinks = // [!code ++]
+            [ // [!code ++]
+                new HeaderLink("Home", "/"), // [!code ++]
+                new HeaderLink("Archive", "/archive"), // [!code ++]
+                new HeaderLink("Tags", "/tags"), // [!code ++]
+            ], // [!code ++]
         });
 
         var app = builder.Build();
