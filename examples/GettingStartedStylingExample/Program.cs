@@ -1,15 +1,12 @@
-using GettingStartedStylingExample;
-using Pennington.Content;
+using GettingStartedStylingExample.Components;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
-using Pennington.Navigation;
-using Pennington.Pipeline;
-using Pennington.Routing;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register Pennington and a single markdown source, as in tutorial 1.1.20.
+// Same Blazor host as the previous tutorial — markdown rendered through a
+// catch-all @page in MarkdownPage.razor, wrapped in the styled MainLayout.
 builder.Services.AddPennington(penn =>
 {
     penn.SiteTitle = "My Styled Pennington Site";
@@ -22,11 +19,9 @@ builder.Services.AddPennington(penn =>
     });
 });
 
-// Register MonorailCSS. The NamedColorScheme below picks which named Tailwind
-// palettes resolve behind the `primary`, `accent`, and `base` utility prefixes.
-// Change `PrimaryColorName` and the next stylesheet regeneration reflects the
-// new palette. Syntax-highlight colors live on a separate `SyntaxTheme` option
-// so brand colors and code colors can vary independently.
+// Register MonorailCSS. The NamedColorScheme picks which named palettes back
+// the `primary`, `accent`, and `base` utility prefixes used throughout
+// MainLayout.razor. Swap any ColorName constant to re-skin on the next request.
 builder.Services.AddMonorailCss(_ => new MonorailCssOptions
 {
     ColorScheme = new NamedColorScheme
@@ -37,53 +32,17 @@ builder.Services.AddMonorailCss(_ => new MonorailCssOptions
     },
 });
 
+builder.Services.AddRazorComponents();
+
 var app = builder.Build();
 
 app.UsePennington();
 
-// Map `/styles.css`. The endpoint returns the currently-discovered utility
-// classes as a real stylesheet; the `MonorailCss.Discovery` pipeline scans
-// loaded assemblies and watched source files to keep that set fresh.
+// /styles.css. The class collector scans response HTML on every request and
+// keeps the stylesheet in sync with whatever utility classes show up.
 app.UseMonorailCss();
 
-// Serve any URL by walking the configured IContentService instances, parsing
-// the matching markdown file, rendering it, and wrapping the result in the
-// shared layout (which is the only place utility classes live by default).
-app.MapGet("/{*path}", async (
-    string? path,
-    IEnumerable<IContentService> services,
-    IContentParser parser,
-    IContentRenderer renderer,
-    NavigationBuilder navigation) =>
-{
-    var requested = new UrlPath("/" + (path ?? string.Empty).Trim('/'));
-
-    var tocItems = new List<ContentTocItem>();
-    foreach (var service in services)
-    {
-        var entries = await service.GetIndexableEntriesAsync();
-        tocItems.AddRange(entries);
-    }
-    var navTree = navigation.BuildTree(tocItems);
-
-    foreach (var service in services)
-    {
-        await foreach (var discovered in service.DiscoverAsync())
-        {
-            if (!discovered.Route.CanonicalPath.Matches(requested)) continue;
-
-            var parsed = await parser.ParseAsync(discovered);
-            if (parsed is not ParsedItem parsedItem) continue;
-
-            var rendered = await renderer.RenderAsync(parsedItem);
-            if (rendered is not RenderedItem renderedItem) continue;
-
-            var html = Layout.Render(renderedItem.Metadata.Title, navTree, renderedItem.Content.Html);
-            return Results.Content(html, "text/html");
-        }
-    }
-
-    return Results.NotFound();
-});
+app.UseAntiforgery();
+app.MapRazorComponents<App>();
 
 await app.RunOrBuildAsync(args);

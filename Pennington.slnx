@@ -23,7 +23,7 @@
   </Folder>
   <Folder Name="/examples/">
     <Project Path="examples/GettingStartedMinimalSiteExample/GettingStartedMinimalSiteExample.csproj" />
-    <Project Path="examples/GettingStartedFirstPageExample/GettingStartedFirstPageExample.csproj" />
+    <Project Path="examples/GettingStartedBlazorPagesExample/GettingStartedBlazorPagesExample.csproj" />
     <Project Path="examples/GettingStartedStylingExample/GettingStartedStylingExample.csproj" />
     <Project Path="examples/DocSiteScaffoldExample/DocSiteScaffoldExample.csproj" />
     <Project Path="examples/DocSiteAuthorExample/DocSiteAuthorExample.csproj" />

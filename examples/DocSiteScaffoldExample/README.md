@@ -1,6 +1,6 @@
 # DocSiteScaffoldExample
 
-Swaps the bare `AddPennington` host for the DocSite template — `AddDocSite` / `UseDocSite` / `RunDocSiteAsync`. Two areas (`Guides`, `Reference`) demonstrate the sidebar area selector with the minimum amount of content.
+Wires the DocSite template — `AddDocSite` / `UseDocSite` / `RunDocSiteAsync` — onto an empty ASP.NET project. Two areas (`Guides`, `Reference`) demonstrate the sidebar area selector with the minimum amount of content.
 
 ## Concepts
 

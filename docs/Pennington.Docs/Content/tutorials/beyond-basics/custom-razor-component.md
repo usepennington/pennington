@@ -53,7 +53,7 @@ examples/BeyondCustomRazorComponentExample/snippets/stage1/PricingCard.razor
 
 The file is a regular Blazor component — there is nothing Pennington-specific about it yet. Mdazor discovers it in the next unit.
 
-The snippet above is the minimal Stage 1 form. The example folder on disk ships a fully styled `Components/PricingCard.razor` (dark-mode utility classes, "Most Popular" badge polish, a richer feature-row layout) so the `/pricing/` page demo is presentable when you check out the repo. Treat the snippet as the starting point and the disk file as the production-ready endpoint — the tutorial never re-fences the styled version because once the wiring works (next unit), styling is just utility-class swaps.
+The snippet above is the minimal starting form. The example folder on disk ships a fully styled `Components/PricingCard.razor` (dark-mode utility classes, "Most Popular" badge polish, a richer feature-row layout) so the `/pricing/` page demo is presentable when you check out the repo. Treat the snippet as the starting point and the disk file as the production-ready endpoint — the tutorial never re-fences the styled version because once the wiring works (next unit), styling is just utility-class swaps.
 
 </Step>
 </Steps>
@@ -123,7 +123,7 @@ Two rules govern how the page works. Tag-name matching is case-sensitive on the 
 
 **Refresh the pricing page in the browser**
 
-With `dotnet run` still active, open `http://localhost:5000/pricing`. Mdazor intercepts each `<PricingCard ... />` tag, looks up the registered type, instantiates it, assigns parameters from the attributes, renders the component through Blazor's server-side `HtmlRenderer`, and inlines the resulting HTML back into the Markdig pipeline's output.
+With `dotnet run` still active, open `http://localhost:5000/pricing`. Mdazor intercepts each `<PricingCard ... />` tag, looks up the registered type, instantiates it, binds the attributes to its parameters, and inlines the rendered HTML in place of the tag.
 
 </Step>
 </Steps>

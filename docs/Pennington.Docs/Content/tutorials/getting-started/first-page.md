@@ -1,161 +1,213 @@
 ---
-title: "Add your first markdown page"
-description: "Write front-matter-driven markdown files and watch Pennington turn them into URLs and navigation on its own."
+title: "Using Blazor Pages"
+description: "Stand up a Pennington site whose markdown is served through a Blazor Server `@page` catch-all — the natural shape for a real app."
 sectionLabel: "Getting Started with Pennington"
 order: 101020
 tags:
-  - front-matter
-  - markdown
-  - navigation
+  - blazor
+  - razor
   - routing
+  - markdown
 uid: tutorials.getting-started.first-page
 ---
 
-By the end of this tutorial a site runs at `http://localhost:5000` with three markdown pages (`/`, `/about`, `/contact`) and a nav strip that sorts itself — with no edits to `Program.cs` after step 1.
-
-The tutorial covers how Pennington maps a `Content/**/*.md` path directly to a URL, what the `title:` key does for the page title and nav label, and how `order:` sorts siblings without any routing code.
+By the end of this tutorial a runnable ASP.NET project — `MyBlazorPenningtonSite` — serves markdown from `Content/` through a Blazor Server `@page "/{*Path}"` catch-all at `http://localhost:5000/`. The previous tutorial used a hand-rolled `MapGet` so the URL → markdown file → rendered HTML chain stayed visible in one place; that's a fine teaching shape, but it's not the shape a real app stays in. This tutorial spins up the production-shape host from scratch.
 
 ## Prerequisites
 
 - .NET 11 SDK installed
-- Completed [Spin up a minimal Pennington site](xref:tutorials.getting-started.first-site) (or that example's Program.cs ready to reuse)
-- A code editor that renders YAML front matter cleanly (VS Code, Rider, etc.)
+- (Optional) Completed [Spin up a minimal Pennington site](xref:tutorials.getting-started.first-site) — this tutorial repeats its `dotnet new web` + Pennington package + `<LangVersion>preview</LangVersion>` bootstrap
 
-The finished code for this tutorial lives in [`examples/GettingStartedFirstPageExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedFirstPageExample).
+The finished code for this tutorial lives in [`examples/GettingStartedBlazorPagesExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedBlazorPagesExample).
+
+> [!NOTE]
+> If a custom Blazor host is not what you need, the bundled DocSite template wires this same shape — Blazor catch-all included — out of the box. Skip ahead to <xref:tutorials.docsite.scaffold> when "I just want a docs site" is the goal.
 
 ---
 
-## 1. Write a single page with required front matter
+## 1. Set up the project shell
 
-Starting from the minimal site built in the previous tutorial, this step adds a real front-matter block and turns a single markdown file into a routed, titled page.
+Start from an empty ASP.NET web project and add the Pennington package. No Pennington code yet — just the shell `Program.cs` will go into in section 2.
 
 <Steps>
 <Step StepNumber="1">
 
-**Drop `Content/index.md` into the project**
+**Create the web project**
 
-Create a `Content/` folder at the project root if it isn't there yet — the previous tutorial already pointed `ContentRootPath` there. Add a file named `index.md` with a YAML front-matter block between two `---` fences. Pennington's `FrontMatterParser` reads that block into a `DocFrontMatter` record; `title` is the only key required to render a page. Any markdown body works below the closing fence.
+Run these two commands in a working folder. The `web` template produces a minimal top-level-statement `Program.cs` that returns `Hello from ASP.NET.` — the starting shape we'll replace in the next section.
 
-```markdown:path
-examples/GettingStartedFirstPageExample/Content/index.md
+```text
+dotnet new web -n MyBlazorPenningtonSite
+cd MyBlazorPenningtonSite
 ```
-
-The `title:` value flows to both the HTML `<title>` tag and the nav link label. For the full range of front-matter capability interfaces, see <xref:explanation.core.front-matter-capabilities> — for now, `title` is enough.
 
 </Step>
 <Step StepNumber="2">
 
-**Confirm the host from the previous tutorial is unchanged**
+**Add the Pennington package and opt into C# preview**
 
-`Program.cs` calls `AddPennington`, registers `AddMarkdownContent<DocFrontMatter>`, applies `UsePennington`, and maps every route with a single `MapGet("/{*path}", ...)` that walks `IContentService` instances. The only addition since the previous tutorial is a `NavigationBuilder` injection — nothing else changes for the rest of this tutorial.
+Add the Pennington package so the `AddPennington` extension method resolves, then edit the csproj to set `<LangVersion>preview</LangVersion>` (Pennington uses C# 15 union types, still a preview language feature in the .NET 11 SDK).
 
-```csharp:xmldocid,bodyonly,usings
-M:GettingStartedFirstPageExample.Stage1.Run(System.String[])
+```text
+dotnet add package Pennington
 ```
 
-Notice the `NavigationBuilder.BuildTree(tocItems)` call and the string join that becomes `navHtml` — that's the piece that grows in later steps without any edits. The flat join here only renders the top level; once a section gains nested children, switch to <xref:reference.ui.navigation>'s `TableOfContentsNavigation` component, which walks the full `Children` tree.
-
-</Step>
-</Steps>
-
-<Checkpoint>
-
-- Run `dotnet run` from the example project
-- Visit `http://localhost:5000/`
-- The page shows the heading **Welcome to the site** and a nav strip with one link: **Welcome** pointing at `/`
-
-</Checkpoint>
-
----
-
-## 2. Let the file path become the URL
-
-Now let's add a second file and watch Pennington map the on-disk path straight to a route — no router-table edits required.
-
-<Steps>
-<Step StepNumber="1">
-
-**Add `Content/about.md` with its own front matter**
-
-Create `about.md` in the same `Content/` folder. The filename (minus `.md`) becomes the URL segment: `about.md` serves at `/about`. Set `order: 20` so this file sorts predictably when the third one arrives. A short body — a paragraph or two — is enough.
-
-```markdown:path
-examples/GettingStartedFirstPageExample/Content/about.md
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Pennington" Version="0.1.0-alpha.0.20" />
+  </ItemGroup>
+</Project>
 ```
 
-Keep an eye on the `order: 20` line — its role becomes apparent once the third file lands in step 3.
-
-</Step>
-<Step StepNumber="2">
-
-**Reload and confirm the host code is still the same**
-
-The Stage 2 host method delegates entirely to `Stage1.Run` — zero code changes between steps 1 and 2. The only thing that moved was a file on disk.
-
-```csharp:xmldocid,bodyonly,usings
-M:GettingStartedFirstPageExample.Stage2.Run(System.String[])
-```
-
-`Stage2.Run(args) => Stage1.Run(args)` is intentional — the point is that the host is untouched.
-
-</Step>
-</Steps>
-
-<Checkpoint>
-
-- With the host still running (or after a `dotnet run` restart), visit `http://localhost:5000/about`
-- The page shows the heading **About this site** and a nav strip with two links: **Welcome** (`/`) and **About** (`/about`)
-- Revisit `/` — the same two-item nav strip appears there too
-
-</Checkpoint>
-
----
-
-## 3. Watch navigation auto-assemble from a third file
-
-With two pages confirmed, let's add a third and see both URL mapping and front-matter ordering click into place together.
-
-<Steps>
-<Step StepNumber="1">
-
-**Add `Content/contact.md` with `order: 30`**
-
-The `order:` field is how Pennington sorts siblings in the nav tree. Setting `order: 30` here — higher than About's `order: 20` — places Contact after About. The root `index.md` carries no `order:` and sorts first by convention.
-
-```markdown:path
-examples/GettingStartedFirstPageExample/Content/contact.md
-```
-
-The example body invites a filename rename — that's coming in step 3.3.
-
-</Step>
-<Step StepNumber="2">
-
-**Confirm the host is still unchanged in Stage 3**
-
-Stage 3 also delegates to `Stage1.Run`. Three files on disk, one host method, nothing edited between any of the stages.
-
-```csharp:xmldocid,bodyonly,usings
-M:GettingStartedFirstPageExample.Stage3.Run(System.String[])
-```
-
-The `NavigationBuilder` injected back in step 1.2 is what produces the three-item nav — it's been at work the whole time.
+> [!IMPORTANT]
+> Pennington is in alpha — check NuGet for the current prerelease and pin every `Pennington.*` package to that same version.
 
 </Step>
 <Step StepNumber="3">
 
-**Rename `contact.md` to see the URL follow the file**
+**Create `Content/index.md`**
 
-With the host running, rename `Content/contact.md` to `Content/reach-out.md`. On the next request the nav link's href becomes `/reach-out` — no config, no restart. This is file-path-to-URL mapping in action. Rename it back to `contact.md` before continuing so later tutorials match.
+Create a `Content/` folder beside `Program.cs` and add `index.md`. The catch-all you wire up in the next section serves anything under `Content/` — this is the file `/` will resolve to.
+
+```markdown:path
+examples/GettingStartedBlazorPagesExample/Content/index.md
+```
 
 </Step>
 </Steps>
 
 <Checkpoint>
 
-- Visit `/`, `/about`, and `/contact` in turn — each renders its own H1 and body
-- The nav strip on every page lists three links in this order: **Welcome**, **About**, **Contact**
-- Temporarily rename `contact.md` to `reach-out.md` and refresh — the nav link's href becomes `/reach-out`; rename it back afterward
+- `dotnet build` succeeds with no errors
+- `dotnet run` followed by visiting `http://localhost:5000/` returns the literal text `Hello from ASP.NET.` — the bare web template's response. Pennington takes over in the next section
+- Stop the process with `Ctrl+C` before continuing
+
+</Checkpoint>
+
+---
+
+## 2. Wire Pennington and Blazor in `Program.cs`
+
+Replace the `Program.cs` body with the host below. Two service registrations (`AddPennington` for the content pipeline, `AddRazorComponents` for Blazor's static server-side rendering) and three middleware calls (`UsePennington`, `UseAntiforgery`, `MapRazorComponents<App>()`) are all the wiring this host needs.
+
+```csharp:path
+examples/GettingStartedBlazorPagesExample/Program.cs
+```
+
+A walk-through of the calls:
+
+- `AddPennington` registers the core services and sets `ContentRootPath` to `Content/`, the folder it watches for changes.
+- `AddMarkdownContent<DocFrontMatter>` declares one markdown source rooted at `Content/`. Every `.md` file there becomes a discoverable content item.
+- `AddRazorComponents` registers Blazor's static server-side rendering — what `MapRazorComponents` needs to actually route to `@page` components.
+- `UsePennington` installs the static-files, response-processing, live-reload, and auto-registered endpoints (`/sitemap.xml`, `/llms.txt`).
+- `UseAntiforgery` is required because Blazor's routed components opt into antiforgery metadata even when no form ships in the page.
+- `MapRazorComponents<App>()` hands routing to Blazor. The next section adds the `App.razor` it points at.
+
+> [!IMPORTANT]
+> Endpoint ordering matters. `app.UsePennington()` must run before `app.MapRazorComponents<App>()`. Pennington's middleware registers redirect routes plus the `/sitemap.xml` and `/llms.txt` endpoints; the Blazor catch-all `@page "/{*Path}"` from the next section would swallow those routes if it were mapped first.
+
+<Checkpoint>
+
+- `dotnet build` succeeds
+- `dotnet run` and visit `http://localhost:5000/` — the response is a 404. The `App.razor` and `MarkdownPage.razor` that handle every URL arrive in the next section
+
+</Checkpoint>
+
+---
+
+## 3. Add the Blazor router and the markdown page
+
+Three Razor files give Blazor a router, a document shell, and the catch-all `@page` that resolves any URL to a markdown file.
+
+<Steps>
+<Step StepNumber="1">
+
+**Add `_Imports.razor` at the project root**
+
+`_Imports.razor` provides the `@using` set every `.razor` file in the project sees. Drop it next to `Program.cs`.
+
+```razor:path
+examples/GettingStartedBlazorPagesExample/_Imports.razor
+```
+
+</Step>
+<Step StepNumber="2">
+
+**Add `Components/App.razor`**
+
+`App.razor` is the root component `MapRazorComponents<App>()` mounts. It owns the entire HTML document in this tutorial: `<!DOCTYPE>`, `<html>`, `<head>` (with `<HeadOutlet>` so each routed page's `<PageTitle>` flows in), and `<body>`. The `<Router>` inside `<body>` scans the assembly for `@page` components and routes each request to the matching one.
+
+```razor:path
+examples/GettingStartedBlazorPagesExample/Components/App.razor
+```
+
+</Step>
+<Step StepNumber="3">
+
+**Add `Components/Pages/MarkdownPage.razor`**
+
+`MarkdownPage.razor` is the `@page "/{*Path}"` catch-all. Blazor binds the request path to the `Path` parameter; the component injects the same `IEnumerable<IContentService>`, `IContentParser`, and `IContentRenderer` the bare-host MapGet from the previous tutorial used, walks them to find the matching markdown, and injects the rendered HTML via `(MarkupString)`.
+
+```razor:path
+examples/GettingStartedBlazorPagesExample/Components/Pages/MarkdownPage.razor
+```
+
+</Step>
+</Steps>
+
+<Checkpoint>
+
+- `dotnet run` and visit `http://localhost:5000/` — the page renders `Content/index.md`
+- View source. The `<title>` and `<h1>` both pull from `index.md`'s front-matter `title:`
+
+</Checkpoint>
+
+---
+
+## 4. Add a second markdown file
+
+The file-path-to-URL convention is unchanged by routing through Blazor. Pennington's file watcher picks up new and renamed files in `Content/` while the host runs — no restart, no router-table edit.
+
+<Steps>
+<Step StepNumber="1">
+
+**Add `Content/about.md`**
+
+Leave `dotnet run` going from the previous section and drop this file in.
+
+```markdown:path
+examples/GettingStartedBlazorPagesExample/Content/about.md
+```
+
+</Step>
+<Step StepNumber="2">
+
+**Navigate to `/about`**
+
+Open `http://localhost:5000/about` in the browser. The catch-all serves the new file on the first request — no restart needed.
+
+</Step>
+<Step StepNumber="3">
+
+**Rename the file to see the URL follow it**
+
+Rename `Content/about.md` to `Content/reach-out.md` and visit `/reach-out`. The watcher re-discovers the file and the catch-all serves it at the new URL. Rename it back to `about.md` before continuing so the next tutorial matches.
+
+</Step>
+</Steps>
+
+<Checkpoint>
+
+- Visit `/about` — the page renders, served through the same catch-all as `/`
+- Rename `about.md` to `reach-out.md`, hit `/reach-out` — same page, new URL
+- Rename it back to `about.md`
 
 </Checkpoint>
 
@@ -163,8 +215,7 @@ With the host running, rename `Content/contact.md` to `Content/reach-out.md`. On
 
 ## Summary
 
-- A Pennington-ready markdown page needs a YAML front-matter block and the required `title:` key.
-- Any `Content/**/*.md` path becomes a URL automatically — no route table, no registration per file.
-- The nav strip builds itself from the content folder, sorted by the `order:` field, without changes to `Program.cs`.
-- Adding or renaming a markdown file predictably updates the URL and nav position.
-
+- A Pennington host plus a Blazor Server router is two service registrations (`AddPennington`, `AddRazorComponents`) and three middleware calls (`UsePennington`, `UseAntiforgery`, `MapRazorComponents<App>()`).
+- `app.UsePennington()` must run before `app.MapRazorComponents<App>()` — the catch-all would otherwise swallow Pennington's redirect, sitemap, and llms.txt routes.
+- A single `@page "/{*Path}"` component (`MarkdownPage.razor`) handles every URL, walks the content pipeline, and injects the rendered HTML via `(MarkupString)`.
+- The file-path-to-URL convention from the markdown pipeline still holds — adding or renaming a `.md` file under `Content/` is enough.

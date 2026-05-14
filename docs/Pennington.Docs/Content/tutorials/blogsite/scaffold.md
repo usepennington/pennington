@@ -17,7 +17,7 @@ No DocSite experience is required — BlogSite is a separate template. Before st
 
 - .NET 11 SDK installed
 - Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site)
-- Completed [Add your first markdown page](xref:tutorials.getting-started.first-page) (so `Content/` already has at least one markdown file)
+- Completed [Using Blazor Pages](xref:tutorials.getting-started.first-page) (so `Content/` already has at least one markdown file)
 
 The finished code for this tutorial lives in [`examples/BlogSiteScaffoldExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteScaffoldExample).
 
@@ -119,7 +119,7 @@ await app.RunBlogSiteAsync(args);
 
 **See the fully-wired host**
 
-Here is the complete `Program.cs` after the swap. Three calls replace the entire stage-1 setup — the diff says the rest.
+Here is the complete `Program.cs` after the swap. Three calls replace the entire setup from the previous step — the diff says the rest.
 
 ```csharp:xmldocid,bodyonly,usings
 M:BlogSiteScaffoldExample.Stage2.Run(System.String[])

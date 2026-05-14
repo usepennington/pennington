@@ -1,0 +1,51 @@
+@* Catch-all that matches every URL and asks the Pennington pipeline to
+   resolve it to a markdown file. Same shape as the previous tutorial — the
+   only thing that's changed is that it now renders into MainLayout's
+   utility-class shell. *@
+
+@page "/{*Path}"
+@inject IEnumerable<IContentService> ContentServices
+@inject IContentParser Parser
+@inject IContentRenderer Renderer
+
+@if (_html is not null)
+{
+    <PageTitle>@_title</PageTitle>
+    <h1 class="text-3xl font-bold text-base-900 mb-4">@_title</h1>
+    @((MarkupString)_html)
+}
+else
+{
+    <PageTitle>Not found</PageTitle>
+    <p>No content matches @Path.</p>
+}
+
+@code {
+    [Parameter] public string? Path { get; set; }
+
+    private string? _title;
+    private string? _html;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var requested = new UrlPath(Path ?? string.Empty).EnsureLeadingSlash();
+
+        foreach (var service in ContentServices)
+        {
+            await foreach (var discovered in service.DiscoverAsync())
+            {
+                if (!discovered.Route.CanonicalPath.Matches(requested)) continue;
+
+                var parsed = await Parser.ParseAsync(discovered);
+                if (parsed is not ParsedItem parsedItem) continue;
+
+                var rendered = await Renderer.RenderAsync(parsedItem);
+                if (rendered is not RenderedItem renderedItem) continue;
+
+                _title = renderedItem.Metadata.Title;
+                _html = renderedItem.Content.Html;
+                return;
+            }
+        }
+    }
+}

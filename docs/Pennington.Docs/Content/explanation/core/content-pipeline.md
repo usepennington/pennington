@@ -21,9 +21,17 @@ The conventional escape routes both have a cost. A single `ContentItem` class wi
 
 `ContentItem` is a union of four record cases: `DiscoveredItem`, `ParsedItem`, `RenderedItem`, and `FailedItem`. Each case is a plain record holding only the fields that make sense at its stage — there is no base class, no status enum, and no nullable placeholder for data that has not arrived yet. The union itself exposes a single `Route` property that all four cases share, because "every content item, even a failed one, belongs to a route" is a genuine invariant. Call sites that only need to know the route never have to pattern-match; call sites that need the rendered HTML must match and will get a compile error if they forget a case.
 
-```csharp:path
-src/Pennington/Pipeline/ContentItem.cs
-```
+`DiscoveredItem`
+:   Carries `Route` and `Source`. The shape returned by a content service before anything has been parsed.
+
+`ParsedItem`
+:   Carries `Route`, `Metadata`, and `RawMarkdown`. Front matter is resolved; the body is still markdown text.
+
+`RenderedItem`
+:   Carries `Route`, `Metadata`, and `Content`. HTML and the page outline are produced; ready for the writer.
+
+`FailedItem`
+:   Carries `Route` and `Error`. A parser or renderer exception demoted to data so it can ride the same stream.
 
 The four case records are siblings in the same union — none inherits from another, and there is no `Stage` or `Status` field anywhere. `Route` is the one projection lifted onto the union, and that narrowness is deliberate: every additional lifted property would need a sensible value for all four cases, which is exactly the nullable-field trap the union is meant to avoid.
 

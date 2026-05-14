@@ -39,7 +39,7 @@ The scaffold tutorial left a placeholder post named `hello-world.md` in `Content
 
 **Paste in title, description, and date only**
 
-Paste the Stage 1 markdown body into the new file. These three fields are the smallest front matter that lets a BlogSite post render cleanly: `title` is the only field required by `IFrontMatter`; `description` is what the home card, archive card, and RSS `<description>` element all pull from; and `date` drives both the archive sort order and the RSS `<pubDate>` element.
+Paste the markdown body below into the new file. These three fields are the smallest front matter that lets a BlogSite post render cleanly: `title` is the post's heading and link label; `description` is what the home card, archive card, and RSS `<description>` element all pull from; and `date` drives both the archive sort order and the RSS `<pubDate>` element.
 
 ```markdown:path
 examples/BlogSiteFirstPostExample/snippets/stage1.md
@@ -53,7 +53,7 @@ The two `---` fences delimit the YAML front matter block. The `date:` value pars
 <Checkpoint>
 
 - Run `dotnet run` from the example project
-- Visit `http://localhost:5000/` — a single recent-posts card titled **Shipping a tiny content engine for weekend projects** appears with the stage-1 description
+- Visit `http://localhost:5000/` — a single recent-posts card titled **Shipping a tiny content engine for weekend projects** appears with the description from the front matter
 - Visit `http://localhost:5000/archive` — the same post appears as the only archive entry, dated **2026-04-10**
 - Visit `http://localhost:5000/blog/my-first-post/` — the post body renders with its H1 and paragraph text
 
@@ -70,7 +70,7 @@ Next, the front-matter block expands to cover every `BlogSiteFrontMatter` field 
 
 **Replace the front matter with the fully-populated block**
 
-Replace the Stage 1 YAML block with the Stage 2 block below. Here's what each new key does:
+Replace the existing YAML block with the fully-populated block below. Here's what each new key does:
 
 - `author:` — becomes the byline on the post page and the `<author>` element in the RSS feed
 - `tags:` — builds `/tags/<tag>/` index pages and renders as chips on the post page
@@ -99,7 +99,7 @@ With the file saved, reload the running site and verify each new field in turn. 
 
 - Visit `http://localhost:5000/blog/my-first-post/` — the post header shows the byline **Author Name**, the series banner **Pennington Field Notes**, three tag chips (**pennington**, **dotnet**, **blogging**), and a **Source Code** link card pointing at the `repository:` URL
 - Visit `http://localhost:5000/tags/pennington/` — the post appears on the per-tag index; repeat for `/tags/dotnet/` and `/tags/blogging/`
-- Visit `http://localhost:5000/archive` — the archive card carries the longer description from the Stage 2 block
+- Visit `http://localhost:5000/archive` — the archive card carries the longer description from the expanded front matter
 
 </Checkpoint>
 
@@ -136,7 +136,7 @@ Visit `http://localhost:5000/rss.xml` in the browser (or `curl` it). Confirm the
 
 - Visit `http://localhost:5000/rss.xml` — the browser either renders the feed (Firefox) or shows raw XML (Chrome/Edge)
 - The `<channel>` carries the site title **First Post Blog** and the configured description
-- A single `<item>` element contains `<title>Shipping a tiny content engine for weekend projects</title>`, `<description>` with the stage-2 text, `<pubDate>` for **10 Apr 2026**, `<author>Author Name</author>`, and a `<link>` whose value starts with the configured `CanonicalBaseUrl`
+- A single `<item>` element contains `<title>Shipping a tiny content engine for weekend projects</title>`, `<description>` with the post's description, `<pubDate>` for **10 Apr 2026**, `<author>Author Name</author>`, and a `<link>` whose value starts with the configured `CanonicalBaseUrl`
 
 </Checkpoint>
 

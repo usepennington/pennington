@@ -1,6 +1,6 @@
 ---
 title: "Scaffold a documentation site with DocSite"
-description: "Swap the bare Pennington host for the DocSite template and map content areas to top-level folders."
+description: "Stand up the DocSite template on an empty ASP.NET project and map content areas to top-level folders."
 sectionLabel: Getting Started with DocSite
 order: 102010
 tags: [docsite, template, areas, scaffold]
@@ -9,60 +9,86 @@ uid: tutorials.docsite.scaffold
 
 By the end of this tutorial the DocSite host runs with a "Scaffold Docs" title, GitHub icon, header/footer chrome, and two content areas — Guides and Reference — each serving an index page from its own top-level folder.
 
-This tutorial covers swapping a plain Pennington host for the DocSite template, populating `DocSiteOptions`, and understanding how area slugs bind top-level folders to URL prefixes and sidebar tabs. For the shape the template hard-codes — and the seams it leaves open — read [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning) first.
+This tutorial covers starting from an empty ASP.NET project, wiring the DocSite template, populating `DocSiteOptions`, and understanding how area slugs bind top-level folders to URL prefixes and sidebar tabs. For the shape the template hard-codes — and the seams it leaves open — read [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning) first.
 
 ## Prerequisites
 
 - .NET 11 SDK installed
-- Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site) — in particular the `<LangVersion>preview</LangVersion>` opt-in from step 1.3, which Pennington requires across every project that references it
-- Completed [Add your first markdown page](xref:tutorials.getting-started.first-page) (so `Content/` already has at least one page)
-
-> [!IMPORTANT]
-> If `dotnet build` here fails with `error CS8652: The feature 'unions' is currently in Preview`, the host csproj is missing `<LangVersion>preview</LangVersion>`. See step 1.3 of [Create your first Pennington site](xref:tutorials.getting-started.first-site) for the property and the multi-project `Directory.Build.props` form.
+- A terminal and a text editor or IDE that understands C# 15
 
 The finished code for this tutorial lives in [`examples/DocSiteScaffoldExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteScaffoldExample).
 
 ---
 
-## 1. Start from the bare Pennington host
+## 1. Scaffold a new ASP.NET project
 
-The starting host wires `AddPennington`, `UsePennington`, and a hand-written `MapGet` fallback that walks `IContentService` to render pages. The DocSite template replaces all of that.
+Start from an empty ASP.NET web project. DocSite ships everything from routing to the Razor layout, so the project shell is the only scaffolding needed before `AddDocSite`.
 
 <Steps>
 <Step StepNumber="1">
 
-**Review the pre-DocSite host shape**
+**Create the web project**
 
-The starting state has three moving parts: DI registration, middleware, and the fallback endpoint.
-
-```csharp:xmldocid,bodyonly,usings
-M:DocSiteScaffoldExample.Stage1.Run(System.String[])
+```text
+dotnet new web -n DocSiteScaffold
+cd DocSiteScaffold
 ```
 
-Everything the DocSite template adds — sidebar, header chrome, MonorailCSS, SPA navigation, the Razor component layout — is absent here. The next step collapses those ~30 lines into a single DI call.
+</Step>
+<Step StepNumber="2">
+
+**Add the Pennington DocSite package**
+
+```text
+dotnet add package Pennington.DocSite
+```
+
+> [!IMPORTANT]
+> Pennington is in alpha — check NuGet for the current prerelease and pin every `Pennington.*` package to that same version.
+
+</Step>
+<Step StepNumber="3">
+
+**Opt into C# preview language features**
+
+Pennington uses C# 15 union types, which are still a preview language feature in the .NET 11 SDK. Edit the csproj to add `<LangVersion>preview</LangVersion>` so they compile:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Pennington.DocSite" Version="0.1.0-alpha.0.20" />
+  </ItemGroup>
+</Project>
+```
 
 </Step>
 </Steps>
 
 <Checkpoint>
 
-- Run `dotnet run` and visit `http://localhost:5000/`
-- The markdown renders as unstyled HTML — no sidebar, no header, no theme
+- `dotnet build` succeeds with no errors.
+- Hold off on `dotnet run` until the next section wires `AddDocSite`.
 
 </Checkpoint>
 
 ---
 
-## 2. Swap `AddPennington` for `AddDocSite`
+## 2. Register `AddDocSite`
 
 `AddDocSite` is a single DI call that registers Pennington core, MonorailCSS, SPA navigation, the `ContentResolver`, and the `DocSiteArticleSlotRenderer` Razor island — all driven from one options object.
 
 <Steps>
 <Step StepNumber="1">
 
-**Replace the registration call**
+**Add the registration call**
 
-`AddDocSite` takes a `Func<DocSiteOptions>` rather than an `Action`, so the call constructs and returns a fresh options record. The `AddMarkdownContent` call can also go — the template registers it internally. See <xref:reference.host.extensions> for the full signature.
+`AddDocSite` takes a `Func<DocSiteOptions>` rather than an `Action`, so the call constructs and returns a fresh options record. The template registers the markdown content reader internally — no separate `AddMarkdownContent` call is needed. See <xref:reference.host.extensions> for the full signature.
 
 </Step>
 <Step StepNumber="2">
@@ -103,7 +129,7 @@ M:DocSiteScaffoldExample.Stage2.Run(System.String[])
 
 **Call `UseDocSite` after `Build()`**
 
-This single call replaces both the old `UsePennington` line and the hand-written `MapGet` fallback from stage 1. The Razor `Pages.razor` component owns the `/{*fileName:nonfile}` route and resolves pages through `ContentResolver`.
+This single call mounts the entire DocSite middleware stack. The Razor `Pages.razor` component owns the `/{*fileName:nonfile}` route and resolves pages through `ContentResolver`.
 
 ```csharp
 app.UseDocSite();
@@ -178,7 +204,7 @@ examples/DocSiteScaffoldExample/Content/reference/index.md
 
 **Confirm the two-area `Areas` list**
 
-The `Areas` block in the stage 3 host has exactly two `ContentArea` entries. The sidebar only shows the area selector when more than one area is configured, so with both entries in place the tab switcher appears for the first time.
+The `Areas` block in the fully-wired host has exactly two `ContentArea` entries. The sidebar only shows the area selector when more than one area is configured, so with both entries in place the tab switcher appears for the first time.
 
 </Step>
 </Steps>
@@ -237,7 +263,7 @@ Visit `http://localhost:5000/` — the page renders inside the DocSite chrome, t
 
 ## Summary
 
-- The bare `AddPennington` host was replaced with `AddDocSite` + `UseDocSite` + `RunDocSiteAsync`, and the full Razor chrome renders.
+- An empty ASP.NET project picked up `AddDocSite` + `UseDocSite` + `RunDocSiteAsync`, and the full Razor chrome renders.
 - `DocSiteOptions` carries `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`, and each field appears in the rendered layout.
 - Two `ContentArea` entries bind top-level folders under `Content/` to URL prefixes and to sidebar tabs.
 - The root `/` is served by `Content/index.md`, which sits outside every area — without it, `/` returns a 404 even when areas are configured.

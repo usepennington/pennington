@@ -26,7 +26,7 @@ The finished code for this tutorial lives in [`examples/DocSiteAuthorExample`](h
 
 ## 1. Populate `DocSiteFrontMatter`
 
-Let's start with the metadata block that drives the sidebar entry, the `<title>`, the meta description, and the tag chips. Stage 1 is front matter plus a single heading — the skeleton every later stage builds on.
+Let's start with the metadata block that drives the sidebar entry, the `<title>`, the meta description, and the tag chips. This first step is front matter plus a single heading — the skeleton later sections build on.
 
 <Steps>
 <Step StepNumber="1">
@@ -38,7 +38,7 @@ In the `Guides` area folder (`Content/guides/`), create a new file named `author
 </Step>
 <Step StepNumber="2">
 
-**Paste the stage-1 markdown**
+**Paste the markdown below**
 
 Copy the block below verbatim into `authoring.md`. The five keys — `title`, `description`, `tags`, `sectionLabel`, `order` — are the ones `DocSiteFrontMatter` reads to build the sidebar, meta tags, and tag chips. Everything below the closing `---` is the page body.
 
@@ -68,7 +68,7 @@ Pennington recognises the GitHub alert syntax: a block quote whose first line is
 <Steps>
 <Step StepNumber="1">
 
-**Replace the file body with the stage-2 markdown**
+**Replace the file body with the markdown below**
 
 Swap the current contents of `authoring.md` for the block below. It keeps the same front matter and adds a `## Callouts` section containing a `[!NOTE]` alert.
 
@@ -76,7 +76,7 @@ Swap the current contents of `authoring.md` for the block below. It keeps the sa
 examples/DocSiteAuthorExample/snippets/stage2.md
 ```
 
-The supported kinds are `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, and `CAUTION`. Pennington's `CustomAlertInlineParser` rewrites the surrounding quote block into a `markdown-alert` container so CSS can style it.
+The supported kinds are `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, and `CAUTION`. Pennington wraps the surrounding block quote in a `markdown-alert` container so CSS can style it.
 
 </Step>
 </Steps>
@@ -93,14 +93,14 @@ The supported kinds are `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, and `CAUTION`. Pe
 
 ## 3. Add a tabbed code group
 
-Marking two or more adjacent fenced code blocks with `tabs=true` and a `title="…"` fence argument tells Pennington's `TabbedCodeBlockRenderer` to group them into a single ARIA tablist. The tab labels come from each block's `title`.
+Marking two or more adjacent fenced code blocks with `tabs=true` and a `title="…"` fence argument tells Pennington to group them into a single ARIA tablist. The tab labels come from each block's `title`.
 
 <Steps>
 <Step StepNumber="1">
 
-**Replace the file body with the stage-3 markdown**
+**Replace the file body with the markdown below**
 
-Paste the block below over the current contents of `authoring.md`. It keeps the front matter and alert from stage 2 and adds a `## Tabbed code groups` section with three adjacent fenced blocks.
+Paste the block below over the current contents of `authoring.md`. It keeps the front matter and alert from the previous step and adds a `## Tabbed code groups` section with three adjacent fenced blocks.
 
 ```markdown:path
 examples/DocSiteAuthorExample/snippets/stage3.md

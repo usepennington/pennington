@@ -1,18 +1,16 @@
 # GettingStartedStylingExample
 
-Adds MonorailCSS to the minimal host. Shows how `AddMonorailCss` + `UseMonorailCss` light up utility classes in a shared layout without leaving the bare-host shape.
+Layers MonorailCSS onto the Blazor-pages site from the previous tutorial. Adds a styled `MainLayout.razor` that wraps every routed `@page`, registers `AddMonorailCss` with a `NamedColorScheme`, and mounts `/styles.css` via `UseMonorailCss`.
 
 ## Concepts
 
-- `AddMonorailCss(_ => new MonorailCssOptions { ... })` with `NamedColorScheme`
-- `app.UseMonorailCss()` mounting `/styles.css` as a live endpoint
-- Where utility classes live (the layout, not the markdown body)
-- Brand palette vs. syntax theme split — `Content/index.md` includes a C# fence so the rendered home page shows both palettes side by side
-- Built-in `ColorName` values (`Red`, `Orange`, …, `Slate`, `Mauve`, `Olive`, `Mist`, `Taupe`, `Black`, `White`) ship as static properties on `Pennington.MonorailCss.ColorName`; the auto-generated type page at `<xref:reference.api.color-name>` lists them with summaries.
+- `MainLayout.razor` (Blazor `LayoutComponentBase`) holds the utility-class scaffold the class collector reads from.
+- `AddMonorailCss(...)` chooses the named palettes behind the `primary`, `accent`, and `base` utility prefixes.
+- `UseMonorailCss()` mounts `/styles.css`. The class collector scans rendered HTML on every request, so a new utility class added to a markdown body shows up in the stylesheet on the next request — no restart.
 
 ## Tutorial stages
 
-`Stage1_WithoutStyling.cs` → `Stage2_AddMonorailCss.cs` → `Stage3_UseMonorailCss.cs`; shared chrome in `Layout.cs`.
+`Stage1_BeforeStyling.cs` (Blazor catch-all, no MonorailCSS) → `Stage2_AddMonorailCss.cs` (DI registered, endpoint not mounted) → `Stage3_UseMonorailCss.cs` (`/styles.css` live, page renders styled).
 
 ## Referenced from
 

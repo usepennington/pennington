@@ -43,7 +43,7 @@ public static class Stage1
             IContentParser parser,
             IContentRenderer renderer) =>
         {
-            var requested = new UrlPath("/" + (path ?? string.Empty).Trim('/'));
+            var requested = new UrlPath(path ?? string.Empty).EnsureLeadingSlash();
             foreach (var service in services)
             {
                 await foreach (var discovered in service.DiscoverAsync())

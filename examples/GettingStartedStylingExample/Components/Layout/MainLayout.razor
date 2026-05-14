@@ -1,0 +1,28 @@
+@* Styled shell. Lives once and wraps every routed @page via App.razor's
+   DefaultLayout. The class strings (text-primary-700, bg-base-50, …) are what
+   the MonorailCSS class collector picks up to assemble /styles.css. *@
+
+@inherits LayoutComponentBase
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/styles.css" />
+    <HeadOutlet />
+</head>
+<body class="bg-base-50 text-base-900 min-h-screen">
+    <div class="max-w-3xl mx-auto px-6 py-10">
+        <header class="mb-8 border-b border-base-200 pb-4">
+            <a class="text-lg font-bold text-primary-700" href="/">My Styled Pennington Site</a>
+        </header>
+        <article class="prose">
+            @Body
+        </article>
+        <footer class="mt-12 pt-4 border-t border-base-200 text-xs text-base-500">
+            Styled with MonorailCSS.
+        </footer>
+    </div>
+</body>
+</html>

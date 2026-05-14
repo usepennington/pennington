@@ -4,11 +4,13 @@
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>GettingStartedBlazorPagesExample</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pennington\Pennington.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Watch Include="Content\**\*.*" />
+    <Watch Include="Components\**\*.razor" />
   </ItemGroup>
 </Project>

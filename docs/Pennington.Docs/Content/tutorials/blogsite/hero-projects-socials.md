@@ -108,7 +108,7 @@ Notice that `new SocialLink(SocialIcons.GithubIcon, "https://github.com/example"
 
 ## 4. Add header links for top-nav
 
-The same `Stage3.Run` listing from earlier includes the final surface: `MainSiteLinks`, a `HeaderLink[]` that BlogSite renders in both the top-nav of `MainLayout.razor` and the footer. Each entry is a `HeaderLink(string Title, string Url)` positional record.
+The same `Program.cs` listing from the previous step includes the final surface: `MainSiteLinks`, a `HeaderLink[]` that BlogSite renders in both the top-nav of `MainLayout.razor` and the footer. Each entry is a `HeaderLink(string Title, string Url)` positional record.
 
 <Steps>
 <Step StepNumber="1">

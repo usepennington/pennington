@@ -1,0 +1,23 @@
+@* Root component. Owns the entire HTML document — no MainLayout in this
+   tutorial. The Router scans this assembly for [@page] components and routes
+   each request to the matching one. <PageTitle> from each routed page flows
+   into <head> via <HeadOutlet>. *@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <HeadOutlet />
+</head>
+<body>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" />
+        </Found>
+        <NotFound>
+            <p>Not found.</p>
+        </NotFound>
+    </Router>
+</body>
+</html>

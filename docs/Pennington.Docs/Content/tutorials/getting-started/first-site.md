@@ -9,11 +9,11 @@ tags: [getting-started, hosting, markdown, pipeline]
 
 By the end of this tutorial a runnable ASP.NET project — `MyFirstPenningtonSite` — serves `Content/index.md` as HTML at `http://localhost:5000/`, with the front-matter `title` appearing in both the `<title>` tag and the page's `<h1>`.
 
-The tutorial covers how to wire `AddPennington`, `UsePennington`, and `RunOrBuildAsync` into a minimal web host — the same foundation underneath every Pennington-powered site, whether DocSite, BlogSite, or hand-rolled. For when a bundled template is the faster path instead, [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning) walks through the tradeoffs before you pick.
+The tutorial covers how to wire `AddPennington`, `UsePennington`, and `RunOrBuildAsync` into a minimal web host — the foundation under every Pennington-powered site. The next tutorial swaps the bare `MapGet` for a Blazor Server catch-all; for now, MapGet keeps the URL → markdown file → rendered HTML chain visible in one place.
 
 ## Prerequisites
 
-Pennington targets .NET 11 with C# 15 union types. On .NET 10 the build reports language-version errors, so use the .NET 11 SDK before starting.
+Pennington targets .NET 11 with C# 15 union types, so install the .NET 11 SDK before starting.
 
 - .NET 11 SDK installed (preview build — `dotnet --version` reports `11.0.*`)
 - A terminal and a text editor or IDE that understands C# 15
@@ -57,7 +57,7 @@ dotnet add package Pennington
 
 **Opt into C# preview language features**
 
-Pennington is built on C# 15 union types, and the samples in this tutorial use `union` pattern matching. The .NET 11 preview SDK does not enable preview language features by default, so compiling against Pennington without the opt-in produces `error CS8652: The feature 'unions' is currently in Preview and *unsupported*`. Edit the csproj to add `<LangVersion>preview</LangVersion>`:
+Pennington uses C# 15 union types, which are still a preview language feature in the .NET 11 SDK. Edit the csproj to add `<LangVersion>preview</LangVersion>` so they compile:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Web">
@@ -72,8 +72,6 @@ Pennington is built on C# 15 union types, and the samples in this tutorial use `
   </ItemGroup>
 </Project>
 ```
-
-For a multi-project host, dropping a `Directory.Build.props` at the solution root with the same `<LangVersion>preview</LangVersion>` property keeps every project aligned.
 
 </Step>
 <Step StepNumber="4">
@@ -145,7 +143,7 @@ M:GettingStartedMinimalSiteExample.Stage2.Run(System.String[])
 
 ## 3. Wire the middleware and render the page
 
-Now we mount the middleware chain with `app.UsePennington()`, add a `MapGet` that hands each request to the content pipeline, and hand control to `RunOrBuildAsync` — the same host that serves live today will generate static HTML tomorrow with no code change.
+Now we mount the middleware chain with `app.UsePennington()`, add a `MapGet` that hands each request to the content pipeline, and hand control to `RunOrBuildAsync` — the same host that serves live today will generate static HTML tomorrow with no code change. A Razor page would normally render the markdown, but a `MapGet` keeps the wiring visible in one place for this tutorial.
 
 <Steps>
 <Step StepNumber="1">
@@ -165,13 +163,13 @@ M:GettingStartedMinimalSiteExample.Stage3.Run(System.String[])
 
 **Add the page-rendering endpoint**
 
-The stage-3 snapshot registered services and middleware but didn't add a rendering endpoint. Here's the complete final `Program.cs`. It adds a `MapGet` that walks the `IContentService` set, finds the matching markdown, and returns rendered HTML.
+The previous step registered services and middleware but didn't add a rendering endpoint. Here's the complete final `Program.cs`. It adds a `MapGet` that walks the `IContentService` set, finds the matching markdown, and returns rendered HTML.
 
 ```csharp:path
 examples/GettingStartedMinimalSiteExample/Program.cs
 ```
 
-This `MapGet` is deliberately minimal — in the DocSite and BlogSite tutorials the template ships its own Razor layout and routing, so this endpoint falls away once we move past the bare host.
+This `MapGet` is deliberately minimal. The next tutorial replaces it with a Blazor Server `@page` catch-all — the shape a real Pennington app stays in.
 
 </Step>
 </Steps>
@@ -186,7 +184,7 @@ That's the working site. `dotnet run` serves live, and `http://localhost:5000/` 
 
 </Checkpoint>
 
-The rendered page is plain unstyled HTML — Times-New-Roman serif, default browser margins, blue underlined links. That is on purpose: this host wires only the content pipeline, not the CSS layer. Adding MonorailCSS for a Tailwind-style utility set is the next tutorial: [Style the minimal site with MonorailCSS](xref:tutorials.getting-started.styling).
+The rendered page is plain unstyled HTML — Times-New-Roman serif, default browser margins, blue underlined links. That is on purpose: this host wires only the content pipeline, not the CSS layer. Replacing the bare `MapGet` with a Blazor Server `@page` catch-all is the next tutorial: [Using Blazor Pages](xref:tutorials.getting-started.first-page).
 
 ---
 
@@ -227,41 +225,8 @@ Without any terminal input, the browser tab updates to show the new title in bot
 
 ---
 
-## From `MapGet` to `UseDocSite`
-
-The hand-rolled `MapGet("/{*path}", …)` block above is intentional — it makes every step of "URL → markdown file → rendered HTML" visible. When the host outgrows that shape (multiple pages, sidebar navigation, a search index, sitemap.xml, llms.txt), the DocSite template collapses it.
-
-Side-by-side:
-
-```csharp
-// This tutorial — bare AddPennington host.
-builder.Services.AddPennington(penn =>
-{
-    penn.SiteTitle = "My First Pennington Site";
-    penn.ContentRootPath = "Content";
-    penn.AddMarkdownContent<DocFrontMatter>(md => { md.ContentPath = "Content"; md.BasePageUrl = "/"; });
-});
-
-var app = builder.Build();
-app.UsePennington();
-app.MapGet("/{*path}", async (string? path, IEnumerable<IContentService> services,
-                              IContentParser parser, IContentRenderer renderer) =>
-{
-    // walk services → match route → parser.ParseAsync → renderer.RenderAsync → Results.Content(html)
-});
-await app.RunOrBuildAsync(args);
-```
-
-```csharp
-// DocSite template — same content pipeline, plus chrome.
-builder.Services.AddDocSite(() => new DocSiteOptions { SiteTitle = "My First Pennington Site" });
-
-var app = builder.Build();
-app.UseDocSite();
-await app.RunDocSiteAsync(args);
-```
-
-`AddDocSite` registers the same `AddPennington` core, adds an `AddMarkdownContent<DocFrontMatter>` reader rooted at `Content/`, wires MonorailCSS, ships a sidebar layout, and maps a Razor catch-all that replaces the hand-rolled `MapGet`. The trade is verbosity for visibility: the bare host above is what `AddDocSite` is doing for you under the hood. [Scaffold a DocSite](xref:tutorials.docsite.scaffold) walks through the template form once you're ready to drop the `MapGet`.
+> [!NOTE]
+> If a custom host isn't what you need, the bundled DocSite template ships this same wiring with a sidebar, search, and a Razor catch-all already in place. Skip ahead to <xref:tutorials.docsite.scaffold> when "I just want a docs site" is the goal.
 
 ## Summary
 

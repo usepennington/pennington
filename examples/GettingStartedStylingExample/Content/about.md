@@ -1,17 +1,14 @@
 ---
 title: About
-description: What this example demonstrates.
-order: 20
+description: Used by the tutorial to demonstrate runtime stylesheet regeneration.
 ---
 
 # About this site
 
-Three markdown files, one MonorailCSS registration, and a tiny layout helper
-that wraps every page in the same utility-class scaffold. That is the whole
+Two markdown files, one MonorailCSS registration, and a `MainLayout.razor`
+that wraps every page in the same utility-class scaffold. That's the whole
 styling story at the bare-host level.
 
 The `NamedColorScheme` picked in `Program.cs` decides which palette the
 `primary`, `accent`, and `base` utility prefixes resolve to. Swap the
-`PrimaryColorName` and the whole site re-skins on the next request.
-Syntax-highlight colors live on a separate `SyntaxTheme` option so code
-colors stay consistent when brand colors change.
+`PrimaryColorName` constant and the whole site re-skins on the next request.
