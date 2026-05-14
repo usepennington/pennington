@@ -1,6 +1,7 @@
 ---
 title: Authoring a doc page
 description: Populate DocSiteFrontMatter, add an alert, and group code samples into tabs.
+uid: guides.authoring
 tags:
   - authoring
   - front-matter

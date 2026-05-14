@@ -337,7 +337,12 @@ All 25 examples build and run. Highlights worth triaging:
 - **[DOC] (minor)** README mentions "alerts" and "tab groups" as part of markdown extensions but does not link to the `reference/markdown/extensions.md` page that ostensibly fences stage2/stage3 of this example. Add a cross-link so readers can jump to the extension reference.
 - **[DOC] (minor)** Front matter keys `uid` and `tags` are listed in README but `Content/guides/authoring.md` may or may not exercise all of them — worth a glance.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC cross-link to extensions reference — README's `Markdown extensions: alerts, tab groups` bullet now in-line-links to `reference/markdown/extensions.md` (in addition to the existing "Referenced from" footer).
+- DOC `uid` exercised — added `uid: guides.authoring` to `Content/guides/authoring.md` so the README claim that every shipped key is exercised actually holds. Verified `/guides/authoring/` still returns 200 with the correct `<title>` binding after the addition.
+- DOC outline-nav viewport note — README's outline bullet now spells out the `xl` breakpoint gating (`<div data-spa-region="outline" class="hidden xl:block …">`) so a reader inspecting a narrower viewport understands why the rail is hidden.
+
+**Fixes applied.**
 
 ## 10. BlogSiteScaffoldExample
 
