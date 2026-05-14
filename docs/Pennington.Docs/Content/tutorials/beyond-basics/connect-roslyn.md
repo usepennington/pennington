@@ -39,7 +39,15 @@ M:BeyondRoslynExample.Stage1.Run(System.String[])
 
 **Add a sibling `Sample` class library**
 
-Drop a `Sample/BeyondRoslynExample.Sample.csproj` folder next to the host csproj. Set `GenerateDocumentationFile=true` so XmlDocId lookups resolve. Also set `DefaultItemExcludes` on the host csproj to skip `Sample\**` — otherwise the two projects compete over the same `.cs` files.
+Drop a `Sample/BeyondRoslynExample.Sample.csproj` folder next to the host csproj. Set `GenerateDocumentationFile=true` so XmlDocId lookups resolve. Also set `DefaultItemExcludes` on the host csproj to skip `Sample\**` — otherwise the two projects compete over the same `.cs` files and the host build fails with duplicate-compile errors.
+
+The host csproj `<PropertyGroup>` ends up with exactly this line:
+
+```xml
+<DefaultItemExcludes>$(DefaultItemExcludes);Sample\**</DefaultItemExcludes>
+```
+
+`$(DefaultItemExcludes)` preserves the SDK's own excludes (bin/obj/etc.); the semicolon-separated `Sample\**` glob adds the sibling library on top.
 
 </Step>
 <Step StepNumber="3">
