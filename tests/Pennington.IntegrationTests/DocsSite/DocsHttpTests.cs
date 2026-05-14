@@ -89,11 +89,13 @@ public class DocsHttpTests
     }
 
     [Fact]
-    public async Task NonExistentPage_Returns200_WithNotFound()
+    public async Task NonExistentPage_Returns404_WithNotFoundBody()
     {
-        // Blazor SSR returns 200 with "Page not found" in body (not a 404)
+        // DocSite pages signal Pennington.NotFound when ContentResolver returns
+        // null; NotFoundStatusProcessor flips the response to 404 after every
+        // other rewriter has run, so the body still ships with localized chrome.
         var response = await _client.GetAsync("/this-does-not-exist/", TestContext.Current.CancellationToken);
-        response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(System.Net.HttpStatusCode.NotFound);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         content.ShouldContain("Page not found");
     }

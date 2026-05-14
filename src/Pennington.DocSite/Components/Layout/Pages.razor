@@ -9,6 +9,7 @@
 @inject NavigationManager NavigationManager
 @inject LocalizationOptions Localization
 @inject IHttpContextAccessor HttpContextAccessor
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Pages> Localizer
 
 @if (_resolved != null)
 {
@@ -51,8 +52,8 @@ else if (_homeComponentType != null)
 }
 else if (_notFound)
 {
-    <PageTitle>Not Found</PageTitle>
-    <p>Page not found.</p>
+    <PageTitle>@Localizer["pennington.notfound.title"]</PageTitle>
+    <p>@Localizer["pennington.notfound.body"]</p>
 }
 
 @code {
@@ -144,6 +145,14 @@ else if (_notFound)
         else
         {
             _notFound = true;
+            if (HttpContextAccessor.HttpContext is { } notFoundCtx)
+            {
+                // Signal to NotFoundStatusProcessor to flip status to 404 AFTER
+                // all body rewriting has run — setting it here directly would
+                // gate every IResponseProcessor (ShouldProcess returns false on
+                // non-2xx) and produce an empty response body.
+                notFoundCtx.Items["Pennington.NotFound"] = true;
+            }
         }
     }
 }

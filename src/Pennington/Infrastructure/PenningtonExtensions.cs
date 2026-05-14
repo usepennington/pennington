@@ -43,6 +43,14 @@ public static class PenningtonExtensions
     public static IServiceCollection AddPennington(this IServiceCollection services, Action<PenningtonOptions> configure)
     {
         var options = new PenningtonOptions();
+
+        // Seed framework-default English translations before the user callback
+        // runs so any `opts.Add("en", "pennington.notfound.title", ...)` call
+        // inside ConfigurePennington takes precedence. Non-English translations
+        // for these keys are the consumer's responsibility (TranslationOptions).
+        options.Translations.Add("en", "pennington.notfound.title", "Not Found");
+        options.Translations.Add("en", "pennington.notfound.body", "Page not found.");
+
         configure(options);
 
         // Register options
@@ -235,6 +243,7 @@ public static class PenningtonExtensions
             new BaseUrlCssResponseProcessor(sp.GetRequiredService<OutputOptions>()));
         services.AddSingleton<IResponseProcessor, LiveReloadScriptProcessor>();
         services.AddSingleton<IResponseProcessor, DiagnosticOverlayProcessor>();
+        services.AddSingleton<IResponseProcessor, NotFoundStatusProcessor>();
         services.AddSingleton<IResponseProcessor, AuditDiagnosticProcessor>();
 
         // Audit pipeline: AuditCache holds the latest snapshot from every IBuildAuditor;

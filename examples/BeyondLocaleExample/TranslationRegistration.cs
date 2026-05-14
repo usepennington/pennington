@@ -23,6 +23,10 @@ public static class TranslationRegistration
         {
             ["nav.docs"] = "Documentación",
             ["nav.blog"] = "Blog",
+            // Framework strings override the English defaults so a /es/missing
+            // request renders Spanish 404 chrome instead of falling back to "Not Found".
+            ["pennington.notfound.title"] = "No encontrada",
+            ["pennington.notfound.body"] = "Página no encontrada.",
         });
     }
 }

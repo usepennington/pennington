@@ -55,7 +55,10 @@
 
         if (_rendered == null && HttpContextAccessor.HttpContext is { } ctx)
         {
-            ctx.Response.StatusCode = 404;
+            // Signal to NotFoundStatusProcessor — setting StatusCode here
+            // directly would gate every IResponseProcessor (ShouldProcess
+            // skips on non-2xx) and ship an empty body to the client.
+            ctx.Items["Pennington.NotFound"] = true;
         }
 
         if (_rendered != null && !string.IsNullOrWhiteSpace(_rendered.Page.FrontMatter.Series))
