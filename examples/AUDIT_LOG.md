@@ -459,7 +459,11 @@ All 25 examples build and run. Highlights worth triaging:
 - **[DOC] (minor)** README says "Repository auto-discovers from the current working directory." Worth documenting what happens when the cwd isn't a git repo or the example is consumed outside a clone (e.g. user copies the folder into their own repo).
 - **[DOC] (minor)** README says the example exists "as a working reference for the `Pennington.TranslationAudit` package" but the package is in the docs site nowhere — there is no how-to or reference page linking back. Either add one, or add at least a "see also" callout on the example so the docs surface this audit workflow.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC repo-auto-discovery — README gains a "Repository auto-discovery" section enumerating the three cases (in-repo, no-repo-found, repo-open-fails), quoting the LibGit2GitHistoryReader warning verbatim, and noting that `missing` checks still run without git while `outdated` checks are skipped because both commit lookups resolve to null.
+- DOC docs-surface gap — README gains a "See also" section pointing at the three TranslationAudit source files (`TranslationAuditor.cs`, `TranslationAuditOptions.cs`, `LibGit2GitHistoryReader.cs`) as the authoritative surface until a dedicated how-to (`how-to/discovery/audit-translations.md`) lands. "Referenced from" now flags that follow-up explicitly instead of just claiming no docs reference exists.
+
+**Fixes applied.**
 
 ## 4. BeyondRoslynExample
 
