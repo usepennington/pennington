@@ -4,6 +4,7 @@ using Extensions;
 using Extensions.Tabs;
 using Markdig;
 using Markdig.Extensions.Alerts;
+using Markdig.Extensions.Tables;
 using Markdig.Parsers.Inlines;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
@@ -41,6 +42,7 @@ public static class MarkdownPipelineFactory
             .UseSyntaxHighlighting(renderingService, codeOptions)
             .UseTabbedCodeBlocks(tabOptions)
             .UseCustomAlerts()
+            .UseScrollableTables()
             // Mdazor resolves IComponentRegistry lazily at render time, so the pipeline
             // is always wired when AddPennington has registered Mdazor. The old shape
             // of gating on a registry lookup here captured an empty registry when
@@ -92,6 +94,17 @@ internal static class MarkdownPipelineBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Wraps every rendered <c>&lt;table&gt;</c> in a <c>&lt;div class="overflow-x-auto"&gt;</c>
+    /// so wide markdown tables scroll horizontally inside their content column instead of
+    /// forcing the surrounding layout to scroll.
+    /// </summary>
+    public static MarkdownPipelineBuilder UseScrollableTables(this MarkdownPipelineBuilder builder)
+    {
+        builder.Extensions.AddIfNotAlready(new ScrollableTablesExtension());
+        return builder;
+    }
+
     private sealed class CodeHighlightingExtension(
         CodeBlockRenderingService renderingService,
         Func<CodeHighlightRenderOptions>? options) : IMarkdownExtension
@@ -138,6 +151,34 @@ internal static class MarkdownPipelineBuilderExtensions
                     RenderKind = AlertBlockRenderer.DefaultRenderKind,
                 });
             }
+        }
+    }
+
+    private sealed class ScrollableTablesExtension : IMarkdownExtension
+    {
+        public void Setup(MarkdownPipelineBuilder pipeline)
+        {
+        }
+
+        public void Setup(MarkdownPipeline pipeline, IMarkdownRenderer renderer)
+        {
+            if (renderer is not TextRendererBase<HtmlRenderer> htmlRenderer) return;
+
+            var existing = htmlRenderer.ObjectRenderers.FindExact<HtmlTableRenderer>();
+            if (existing is null) return;
+
+            htmlRenderer.ObjectRenderers.Remove(existing);
+            htmlRenderer.ObjectRenderers.AddIfNotAlready(new ScrollableTableRenderer());
+        }
+    }
+
+    private sealed class ScrollableTableRenderer : HtmlTableRenderer
+    {
+        protected override void Write(HtmlRenderer renderer, Table table)
+        {
+            renderer.Write("<div class=\"overflow-x-auto\">");
+            base.Write(renderer, table);
+            renderer.Write("</div>");
         }
     }
 }
