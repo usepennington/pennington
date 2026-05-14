@@ -372,7 +372,12 @@ All 25 examples build and run. Highlights worth triaging:
 - **[FW+DOC] (minor)** Hero `<h1>` and project section share heading hierarchy on the home page (multiple h1/h2). No standout teaching of how to keep accessibility headings sane when both `HeroContent` and `Projects` titles compete.
 - **[DOC] (minor)** The README lists "Tutorial stages" but the tutorial page at `docs/.../tutorials/blogsite/hero-projects-socials.md` should be checked to confirm each stage is actually fenced. (Not verified live; would require navigating docs build.)
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC MastodonIcon — README's `SocialIcons` bullet now spells out that the Mastodon icon is a generic glyph and takes any instance URL (`hachyderm.io`, `mastodon.social`, etc.); the URL identifies the home server, not the icon.
+- DOC+FW heading hierarchy — README's `MyWork` bullet documents the intentional outline of the BlogSite homepage (hero h1 + projects h2 + posts-list h2 + about h2) so a reader knows the multi-h2 structure is by design, not an oversight.
+- DOC tutorial-stage fencing — verified: `docs/Pennington.Docs/Content/tutorials/blogsite/hero-projects-socials.md` lines 34 / 63 / 92 each fence `M:BlogSiteHeroProjectsSocialsExample.Stage{1,2,3}.Run` via `csharp:xmldocid`. README "Tutorial stages" section now notes the verification.
+
+**Fixes applied.**
 
 ## 8. BlogSiteFirstPostExample
 
