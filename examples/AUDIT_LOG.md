@@ -234,7 +234,12 @@ All 25 examples build and run. Highlights worth triaging:
 - **[APP] (minor)** `StringBuilderPool.cs` exists in the project but isn't referenced from either word-counter or the README. Either it's intended for a future stage, or it's leftover scaffolding — clarify.
 - **[DOC] (minor)** README says "Two implementations of the same word-counter" but `ModularWordCounter.cs` and `MonolithWordCounter.cs` are the *exact same outputs*. The teaching is "look at how the structure differs" but there's no in-file narration calling out the diff. A short doc comment at the top of each file ("This is the monolith version — note how all logic is in one method") would let the file stand alone.
 
-**No fixes applied.**
+**Resolved 2026-05-13:**
+- DOC rename-loop demo — added a "Rename → diagnostic loop" section to README walking through the four-step end-to-end scenario (fence in docs → rename method → docs build → see `Unresolved xmldocid` diagnostic → restore). Notes the loop lives in the docs build that consumes the assembly, not in a standalone script.
+- APP StringBuilderPool — the audit's "unused" claim was stale: `ModularWordCounter.FormatV2` (lines 89-102) rents from `StringBuilderPool.Get()` and returns via `StringBuilderPool.Return(sb)`. README now documents the intent: `FormatV2` exists as a "small focused delta" target for `csharp:xmldocid-diff,bodyonly` fences pairing `Format` vs `FormatV2`.
+- DOC in-file narration — also stale: both files already carry class-level xmldoc summaries explaining the variant's shape (`MonolithWordCounter` describes the inline-block shape; `ModularWordCounter` describes the public-helpers shape). README now points readers at those summaries so future audits don't re-flag.
+
+**Fixes applied.**
 
 ## 16. ExtensibilityLabExample
 
