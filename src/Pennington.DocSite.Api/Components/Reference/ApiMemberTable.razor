@@ -150,7 +150,13 @@ else
 
         if (members.Length == 0)
         {
-            Diagnostics?.AddWarning($"<ApiMemberTable> no {Kind.ToLowerInvariant()} matched for {XmlDocId}");
+            // Kind=All matching nothing is a legitimate state — marker interfaces,
+            // empty enums, and the like. The auto-generated type page always emits a
+            // Kind=All table, so a warning there is never actionable. A specific kind
+            // that matches nothing usually means the doc author picked the wrong one,
+            // so keep warning for that case.
+            if (kind != MemberKind.All)
+                Diagnostics?.AddWarning($"<ApiMemberTable> no {Kind.ToLowerInvariant()} matched for {XmlDocId}");
             _empty = kind == MemberKind.All ? "No members documented." : $"No {Kind.ToLowerInvariant()} documented.";
             return;
         }
