@@ -14,7 +14,7 @@
     <ProjectReference Include="..\Pennington\Pennington.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MonorailCss" Version="0.0.5-alpha.0.143" />
-    <PackageReference Include="MonorailCss.Discovery" Version="0.0.5-alpha.0.143" />
+    <PackageReference Include="MonorailCss" Version="0.0.5-alpha.0.146" />
+    <PackageReference Include="MonorailCss.Discovery" Version="0.0.5-alpha.0.146" />
   </ItemGroup>
 </Project>
