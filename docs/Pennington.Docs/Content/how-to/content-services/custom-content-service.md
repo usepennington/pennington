@@ -7,7 +7,7 @@ sectionLabel: "Content Services"
 tags: [extensibility, content-service, pipeline, cross-references]
 ---
 
-To source content from somewhere `MarkdownContentService<T>` can't reach — a folder of JSON release notes, a SQL table, a remote API, generated API reference — and have those pages appear in navigation, cross-references, search, and the static build the same way markdown pages do, implement `IContentService` directly. For a second markdown tree with a different front-matter type, use chained `AddMarkdownContent<T>` instead — see <xref:how-to.discovery.multiple-sources>.
+To source content from somewhere `MarkdownContentService<T>` can't reach — a folder of JSON release notes, a SQL table, a remote API, generated API reference — and have those pages appear in navigation, cross-references, search, and the static build the same way markdown pages do, implement `IContentService` directly. For a second markdown tree with a different front-matter type, use chained `AddMarkdownContent<T>` instead — see <xref:how-to.discovery.multiple-sources>. When a dataset feeds existing pages but needs no routes of its own, register it with `AddDataFile<T>` rather than a content service — see <xref:how-to.content-services.data-files>.
 
 The recipe references `examples/ExtensibilityLabExample/ReleaseNotesContentService.cs`, which turns `Content/releases/*.json` into `/releases/{version}/` routes.
 
@@ -65,5 +65,6 @@ Each `/releases/{version}/` URL renders through the sibling `MapGet` endpoint, t
 
 - Reference: [Content pipeline interfaces](xref:reference.api.i-content-service)
 - Reference: [Routing types](xref:reference.api.content-route)
+- How-to: [Use a YAML or JSON data file in pages](xref:how-to.content-services.data-files)
 - Background: [The content pipeline and union types](xref:explanation.core.content-pipeline)
 - Background: [When is DocSite the right starting point?](xref:explanation.positioning.docsite-positioning)

@@ -33,7 +33,7 @@ The default is `false`. For the full key catalog, see <xref:reference.front-matt
 
 ### Tag a page for grouping
 
-`tags:` accepts a free-form string array that flows through `ITaggable` into `RenderedContent.Tags`, making it available to client-side filtering widgets and future tag-index pages. Pennington does not currently emit `/tags/<name>` pages for DocSite — tag routing requires a custom content service.
+`tags:` accepts a free-form string array that flows through `ITaggable` into `RenderedContent.Tags`, making it available to client-side filtering widgets. Tags do not produce `/tags/<name>` index pages on their own; to generate browse-by-tag pages from a tagged front-matter record, register a taxonomy — see <xref:how-to.content-services.taxonomy>.
 
 ```yaml
 ---
@@ -71,4 +71,5 @@ For how sections inherit their own sort key from child `order:` values, see <xre
 
 - Reference: <xref:reference.front-matter.keys>
 - How-to: <xref:how-to.navigation.customize-sidebar>
+- How-to: <xref:how-to.content-services.taxonomy>
 - Background: <xref:explanation.core.front-matter-capabilities>
