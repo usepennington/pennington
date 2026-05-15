@@ -1,6 +1,7 @@
 @using Pennington.Infrastructure
 @inject DocSiteOptions DocSiteOptions
 @inject LocalizationOptions Localization
+@inject BlogFeature Blog
 
 <header class="sticky top-0 z-10 h-14 backdrop-blur-sm bg-base-50/90 dark:bg-base-950/90 flex items-center justify-between gap-x-8 border-b border-base-200 dark:border-base-800">
     <nav aria-label="Site" class="mx-auto px-4 lg:px-8 max-w-7xl flex flex-row items-center gap-x-2 w-full">
@@ -59,6 +60,14 @@
             @if (Localization.IsMultiLocale)
             {
                 <LanguageSwitcher AlternateLanguages="AlternateLanguages" />
+            }
+
+            @if (Blog.Enabled)
+            {
+                <a href="/blog"
+                   class="px-2 text-sm font-medium text-base-700 dark:text-base-300 hover:text-primary-700 dark:hover:text-primary-400">
+                    Blog
+                </a>
             }
 
             <!-- sun icon -->

@@ -1,0 +1,24 @@
+@using System.Globalization
+
+<li class="py-6 group">
+    <a href="@Post.Url" class="block">
+        @if (Post.FrontMatter.Date is { } date)
+        {
+            <p class="text-sm text-base-500 dark:text-base-400">
+                @date.ToString("MMMM d, yyyy", CultureInfo.InvariantCulture)
+            </p>
+        }
+        <h2 class="font-display text-xl font-semibold text-base-900 dark:text-base-50 group-hover:text-primary-700 dark:group-hover:text-primary-400">
+            @Post.FrontMatter.Title
+        </h2>
+        @if (!string.IsNullOrEmpty(Post.FrontMatter.Description))
+        {
+            <p class="mt-1 text-base-600 dark:text-base-300">@Post.FrontMatter.Description</p>
+        }
+    </a>
+</li>
+
+@code {
+    /// <summary>The post rendered as a list entry.</summary>
+    [Parameter] public required BlogPostSummary Post { get; set; }
+}

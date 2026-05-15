@@ -1,0 +1,33 @@
+@inherits LayoutComponentBase
+@inject DocSiteOptions DocSiteOptions
+
+<HeadContent>
+    @if (!string.IsNullOrEmpty(DocSiteOptions.SocialImageUrl))
+    {
+        <meta property="og:image" content="@DocSiteOptions.SocialImageUrl" />
+        <meta name="twitter:image" content="@DocSiteOptions.SocialImageUrl" />
+        <meta name="twitter:card" content="summary_large_image" />
+    }
+    <meta property="og:site_name" content="@DocSiteOptions.SiteTitle" />
+    <meta property="og:type" content="website" />
+    <link rel="alternate" type="application/rss+xml" title="@DocSiteOptions.SiteTitle" href="/rss.xml" />
+</HeadContent>
+
+<div class="dark:scheme-dark font-sans box-border bg-base-100 dark:bg-base-950 text-base-900 dark:text-base-50">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-primary-700 focus:text-white focus:p-3">Skip to main content</a>
+    <div style="scrollbar-gutter: stable both-edges;">
+        <div class="flex flex-col min-h-screen w-full">
+            <DocSiteHeader ShowMobileMenuButton="false" CenterSearch="true" />
+            <main class="mx-auto max-w-3xl w-full px-4 lg:px-8 mt-8 lg:mt-12">
+                @* BlogLayout exposes only a `content` region — the same shape as
+                   FullWidthLayout — so SPA navigation between them swaps cleanly.
+                   Navigating to a MainLayout page (which adds an `outline` region)
+                   triggers the documented full-reload fallback in spa-engine.js. *@
+                <article id="main-content" data-spa-region="content" class="min-w-0">
+                    @Body
+                </article>
+                <DocSiteFooter />
+            </main>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,52 @@
+@page "/blog/tags/{tagSlug}"
+@layout BlogLayout
+@using Pennington.DocSite.Services
+@inject BlogPostResolver Resolver
+@inject BlogFeature Feature
+@inject DocSiteOptions DocSiteOptions
+@inject IHttpContextAccessor HttpContextAccessor
+
+@if (_tag != null && _posts != null)
+{
+    <PageTitle>@_tag.Name — @DocSiteOptions.SiteTitle</PageTitle>
+
+    <header class="mb-8">
+        <p class="text-sm uppercase tracking-wide text-base-500 dark:text-base-400">Tag</p>
+        <h1 class="font-display text-3xl font-bold tracking-tight text-base-900 dark:text-base-50">@_tag.Name</h1>
+    </header>
+
+    <ul class="divide-y divide-base-200 dark:divide-base-800">
+        @foreach (var post in _posts)
+        {
+            <BlogPostCard Post="post" />
+        }
+    </ul>
+
+    <nav class="mt-12 border-t border-base-200 dark:border-base-800 pt-6">
+        <a href="/blog/tags" class="text-sm font-medium text-primary-700 dark:text-primary-400 hover:underline">All tags</a>
+    </nav>
+}
+
+@code {
+    /// <summary>URL-encoded tag name from the route.</summary>
+    [Parameter] public required string TagSlug { get; set; }
+
+    private BlogTag? _tag;
+    private ImmutableList<BlogPostSummary>? _posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Feature.Enabled && !string.IsNullOrWhiteSpace(TagSlug))
+        {
+            var result = await Resolver.GetPostsByTagAsync(TagSlug);
+            if (result != null)
+            {
+                (_tag, _posts) = result.Value;
+                return;
+            }
+        }
+
+        if (HttpContextAccessor.HttpContext is { } ctx)
+            ctx.Items["Pennington.NotFound"] = true;
+    }
+}

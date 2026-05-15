@@ -1,9 +1,11 @@
 namespace Pennington.DocSite;
 
 using System.Reflection;
+using Content;
 using Infrastructure;
 using Mdazor;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using MonorailCss;
 using Pennington.UI.Components;
@@ -19,6 +21,16 @@ public static class DocSiteServiceExtensions
         services.AddSingleton(options);
         services.AddRazorComponents();
 
+        // The blog activates only when the content project has a `blog` folder with at
+        // least one markdown article. Checked here (DI time, against the process working
+        // directory) so the second content source, the `/rss.xml` endpoint, and the
+        // header link are all wired conditionally.
+        var blogContentDir = Path.GetFullPath(
+            Path.Combine(options.ContentRootPath.Value, "blog"));
+        var hasBlog = Directory.Exists(blogContentDir)
+            && Directory.EnumerateFiles(blogContentDir, "*.md", SearchOption.AllDirectories).Any();
+        services.AddSingleton(new BlogFeature(hasBlog));
+
         // Pennington core
         services.AddPennington(penn =>
         {
@@ -31,7 +43,23 @@ public static class DocSiteServiceExtensions
             {
                 md.ContentPath = options.ContentRootPath.Value;
                 md.BasePageUrl = "/";
+                // Carve the blog subtree out of the doc source so blog posts aren't
+                // double-discovered as documentation pages.
+                if (hasBlog)
+                    md.ExcludePaths = ["blog"];
             });
+
+            // Blog posts: a separate markdown source parsed as BlogPostFrontMatter.
+            // BlogPostFrontMatter.SearchOnly keeps posts indexed for search/llms/sitemap
+            // while excluding them from the documentation sidebar.
+            if (hasBlog)
+            {
+                penn.AddMarkdownContent<BlogPostFrontMatter>(md =>
+                {
+                    md.ContentPath = Path.Combine(options.ContentRootPath.Value, "blog");
+                    md.BasePageUrl = "/blog";
+                });
+            }
 
             // llms.txt generation: markdown content uses the rendition channel; non-markdown
             // (Razor pages, API symbol pages) falls back to HTTP-fetching the rendered page
@@ -118,6 +146,18 @@ public static class DocSiteServiceExtensions
         // Content resolver
         services.AddTransient<Services.ContentResolver>();
 
+        // Blog services. The resolver renders posts with their own front matter; the
+        // content service yields the blog index, tag index, and per-tag routes for the
+        // static build and produces the RSS feed. Aliased to IContentService through a
+        // transient indirection so each resolve sees the current file-watched instance.
+        services.AddTransient<Services.BlogPostResolver>();
+        if (hasBlog)
+        {
+            services.AddFileWatched<Services.BlogContentService>();
+            services.AddTransient<IContentService>(sp =>
+                sp.GetRequiredService<Services.BlogContentService>());
+        }
+
         return services;
     }
 
@@ -140,6 +180,14 @@ public static class DocSiteServiceExtensions
         // strip the layout by rendering via DynamicComponent.
         app.MapRazorComponents<Components.App>()
             .AddAdditionalAssemblies(BuildRoutingAssemblies(options));
+
+        // RSS feed for the blog. The static crawler picks up MapGet routes, so /rss.xml
+        // lands in both dev-server responses and the generated output.
+        if (app.Services.GetRequiredService<BlogFeature>().Enabled)
+        {
+            app.MapGet("/rss.xml", async (Services.BlogContentService service) =>
+                Results.Content(await service.GetRssXmlAsync(), "application/xml"));
+        }
 
         return app;
     }

@@ -1,0 +1,52 @@
+@page "/blog/tags"
+@layout BlogLayout
+@using Pennington.DocSite.Services
+@inject BlogPostResolver Resolver
+@inject BlogFeature Blog
+@inject DocSiteOptions DocSiteOptions
+@inject IHttpContextAccessor HttpContextAccessor
+
+@if (Blog.Enabled)
+{
+    <PageTitle>Tags — @DocSiteOptions.SiteTitle</PageTitle>
+
+    <header class="mb-8">
+        <h1 class="font-display text-3xl font-bold tracking-tight text-base-900 dark:text-base-50">Tags</h1>
+        <a href="/blog" class="mt-1 inline-block text-sm text-primary-700 dark:text-primary-400 hover:underline">Back to blog</a>
+    </header>
+
+    @if (_tags is { Count: > 0 })
+    {
+        <ul class="flex flex-wrap gap-3">
+            @foreach (var (tag, count) in _tags)
+            {
+                <li>
+                    <a href="@tag.Url" class="inline-flex items-center gap-2 rounded-lg border border-base-200 dark:border-base-800 px-3 py-1.5 text-sm text-base-700 dark:text-base-300 hover:border-primary-300 dark:hover:border-primary-700 hover:text-primary-700 dark:hover:text-primary-400">
+                        <span>@tag.Name</span>
+                        <span class="text-xs text-base-500 dark:text-base-400">@count</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="text-base-600 dark:text-base-300">No tags yet.</p>
+    }
+}
+
+@code {
+    private ImmutableList<(BlogTag Tag, int Count)>? _tags;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Blog.Enabled)
+        {
+            if (HttpContextAccessor.HttpContext is { } ctx)
+                ctx.Items["Pennington.NotFound"] = true;
+            return;
+        }
+
+        _tags = await Resolver.GetTagsWithCountsAsync();
+    }
+}

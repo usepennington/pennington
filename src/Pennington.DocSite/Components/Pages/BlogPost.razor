@@ -1,0 +1,87 @@
+@page "/blog/{*slug:nonfile}"
+@layout BlogLayout
+@using System.Globalization
+@using System.Web
+@using Pennington.DocSite.Services
+@inject BlogPostResolver Resolver
+@inject BlogFeature Blog
+@inject DocSiteOptions DocSiteOptions
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+@if (_rendered != null)
+{
+    var fm = _rendered.Post.FrontMatter;
+    <PageTitle>@fm.Title — @DocSiteOptions.SiteTitle</PageTitle>
+    <HeadContent>
+        <meta name="description" content="@fm.Description" />
+        <meta property="og:title" content="@fm.Title" />
+        <meta property="og:type" content="article" />
+        @if (fm.Date is { } published)
+        {
+            <meta property="article:published_time" content="@published.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" />
+        }
+    </HeadContent>
+
+    <article>
+        <header class="mb-8">
+            @if (fm.Date is { } date)
+            {
+                <p class="text-sm text-base-500 dark:text-base-400">@date.ToString("MMMM d, yyyy", CultureInfo.InvariantCulture)</p>
+            }
+            <h1 class="mt-1 font-display text-3xl font-bold tracking-tight text-base-900 dark:text-base-50">@fm.Title</h1>
+            @if (!string.IsNullOrEmpty(fm.Author))
+            {
+                <p class="mt-2 text-base-600 dark:text-base-300">By @fm.Author</p>
+            }
+        </header>
+        <div class="prose dark:prose-invert prose-headings:font-display max-w-none">
+            @((MarkupString)_rendered.Html)
+        </div>
+        @if (fm.Tags.Length > 0)
+        {
+            <div class="mt-8 flex flex-wrap gap-2">
+                @foreach (var tag in fm.Tags)
+                {
+                    <a href="/blog/tags/@HttpUtility.UrlEncode(tag)"
+                       class="inline-flex items-center rounded-full border border-base-200 dark:border-base-800 px-3 py-1 text-xs font-medium text-base-600 dark:text-base-300 hover:border-primary-300 dark:hover:border-primary-700 hover:text-primary-700 dark:hover:text-primary-400">
+                        @tag
+                    </a>
+                }
+            </div>
+        }
+    </article>
+    <nav class="mt-12 border-t border-base-200 dark:border-base-800 pt-6">
+        <a href="/blog" class="text-sm font-medium text-primary-700 dark:text-primary-400 hover:underline">Back to blog</a>
+    </nav>
+}
+
+@code {
+    /// <summary>Catch-all route segment for the post slug. Resolution uses the request path instead.</summary>
+    [Parameter] public string? Slug { get; set; }
+
+    private RenderedBlogPost? _rendered;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Blog.Enabled)
+        {
+            MarkNotFound();
+            return;
+        }
+
+        // Use the full request path, not the Slug route value — Blazor routing sees a
+        // locale-stripped path (LocaleDetectionMiddleware moves the locale into PathBase).
+        var url = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath;
+        _rendered = await Resolver.GetPostByUrlAsync(url);
+
+        if (_rendered == null)
+            MarkNotFound();
+    }
+
+    private void MarkNotFound()
+    {
+        if (HttpContextAccessor.HttpContext is { } ctx)
+            ctx.Items["Pennington.NotFound"] = true;
+    }
+}

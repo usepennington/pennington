@@ -1,0 +1,50 @@
+@page "/blog"
+@layout BlogLayout
+@using Pennington.DocSite.Services
+@inject BlogPostResolver Resolver
+@inject BlogFeature Feature
+@inject DocSiteOptions DocSiteOptions
+@inject IHttpContextAccessor HttpContextAccessor
+
+@if (Feature.Enabled)
+{
+    <PageTitle>Blog — @DocSiteOptions.SiteTitle</PageTitle>
+    <HeadContent>
+        <meta name="description" content="@DocSiteOptions.Description" />
+    </HeadContent>
+
+    <header class="mb-8">
+        <h1 class="font-display text-3xl font-bold tracking-tight text-base-900 dark:text-base-50">Blog</h1>
+        <a href="/blog/tags" class="mt-1 inline-block text-sm text-base-500 dark:text-base-400 hover:text-primary-700 dark:hover:text-primary-400">Browse by tag</a>
+    </header>
+
+    @if (_posts is { Count: > 0 })
+    {
+        <ul class="divide-y divide-base-200 dark:divide-base-800">
+            @foreach (var post in _posts)
+            {
+                <BlogPostCard Post="post" />
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="text-base-600 dark:text-base-300">No posts have been published yet.</p>
+    }
+}
+
+@code {
+    private IReadOnlyList<BlogPostSummary>? _posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Feature.Enabled)
+        {
+            if (HttpContextAccessor.HttpContext is { } ctx)
+                ctx.Items["Pennington.NotFound"] = true;
+            return;
+        }
+
+        _posts = await Resolver.GetAllPostsAsync();
+    }
+}
