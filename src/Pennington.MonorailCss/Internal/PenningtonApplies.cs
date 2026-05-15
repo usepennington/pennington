@@ -21,6 +21,7 @@ internal static class PenningtonApplies
             .AddRange(TabApplies)
             .AddRange(MarkdownAlertApplies)
             .AddRange(StepApplies)
+            .AddRange(CardApplies)
             .AddRange(HljsApplies(syntax))
             .AddRange(SearchModalApplies);
 
@@ -61,6 +62,22 @@ internal static class PenningtonApplies
                 new CssDeclaration(
                     "scrollbar-color",
                     "var(--tw-scrollbar-thumb-color) var(--tw-scrollbar-track-color)")),
+        });
+
+    /// <summary>
+    /// Custom utilities for the Card / LinkCard components. The wildcard <c>card-tint-*</c>
+    /// captures one theme color into <c>--card-tint</c> (e.g. <c>card-tint-amber-500</c>
+    /// resolves <c>--card-tint: var(--color-amber-500)</c>); <see cref="CardApplies"/> then
+    /// derives every surface from that single variable via <c>color-mix()</c>. This replaces
+    /// a per-color enumeration that baked the whole palette into every consumer's stylesheet.
+    /// </summary>
+    public static readonly ImmutableList<UtilityDefinition> CardUtilities = ImmutableList.Create(
+        new UtilityDefinition
+        {
+            Pattern = "card-tint-*",
+            IsWildcard = true,
+            Declarations = ImmutableList.Create(
+                new CssDeclaration("--card-tint", "--value(--color-*)")),
         });
 
     private static readonly ImmutableDictionary<string, string> CodeBlockApplies =
@@ -224,6 +241,40 @@ internal static class PenningtonApplies
             {
                 ".steps-thread .step-title",
                 "font-display font-semibold text-base text-base-900 dark:text-base-50 mb-2"
+            },
+        });
+
+    // Card / LinkCard coloring. The component sets `--card-tint` via the `card-tint-*`
+    // wildcard utility; every surface here is mixed off that one variable, so a consumer
+    // generates a single tiny rule per color it uses instead of the whole 27-color palette.
+    // Dark mode shifts the mix percentages rather than restating per-color values.
+    private static readonly ImmutableDictionary<string, string> CardApplies =
+        ImmutableDictionary.CreateRange(new Dictionary<string, string>
+        {
+            // Wrapper — tinted surface + border; body and title text inherit this color.
+            {
+                ".pn-card",
+                "bg-[color-mix(in_oklch,var(--card-tint)_10%,transparent)] " +
+                "border-[color-mix(in_oklch,var(--card-tint)_30%,transparent)] " +
+                "text-[color-mix(in_oklch,var(--card-tint)_88%,var(--color-base-950))] " +
+                "dark:bg-[color-mix(in_oklch,var(--card-tint)_12%,transparent)] " +
+                "dark:border-[color-mix(in_oklch,var(--card-tint)_30%,transparent)] " +
+                "dark:text-[color-mix(in_oklch,var(--card-tint)_80%,white)]"
+            },
+            // LinkCard wrapper — adds the hover surface lift.
+            {
+                ".pn-card-link",
+                "transition-colors " +
+                "hover:bg-[color-mix(in_oklch,var(--card-tint)_20%,transparent)] " +
+                "dark:hover:bg-[color-mix(in_oklch,var(--card-tint)_22%,transparent)]"
+            },
+            // Icon — slightly stronger than body text; the SVG fill is a light tint.
+            {
+                ".pn-card-icon",
+                "text-[color-mix(in_oklch,var(--card-tint)_72%,var(--color-base-950))] " +
+                "fill-[color-mix(in_oklch,var(--card-tint)_28%,transparent)] " +
+                "dark:text-[var(--card-tint)] " +
+                "dark:fill-[color-mix(in_oklch,var(--card-tint)_25%,var(--color-base-950))]"
             },
         });
 
