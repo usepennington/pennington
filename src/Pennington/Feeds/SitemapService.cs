@@ -12,12 +12,13 @@ using Pipeline;
 /// When managed by <see cref="FileWatchDependencyFactory{T}"/>, the instance is
 /// recreated on file changes — trusts IContentService for fresh metadata.
 /// <para>
-/// Enumerates every <see cref="IContentService.DiscoverAsync"/> result. For
-/// markdown sources, the parser is invoked so <see cref="IFrontMatter.Date"/> metadata
-/// (lastmod) and <see cref="IFrontMatter.IsDraft"/> filtering apply. For programmatic /
-/// Razor page sources, the route is emitted with no extra metadata — those
-/// content types are rarely dateable and forcing every programmatic generator
-/// to run at sitemap-build time would be expensive.
+/// Enumerates every <see cref="IContentService.DiscoverAsync"/> result. Markdown
+/// sources carry the front matter their content service already parsed at
+/// discovery time, so <see cref="IFrontMatter.Date"/> (lastmod) is read straight
+/// off <see cref="DiscoveredItem.Metadata"/> — no re-parse, and no risk of
+/// applying one source's front-matter type to another's files. Programmatic /
+/// Razor page sources surface metadata only at render time and carry none on the
+/// discovered item, so their routes are emitted with no extra metadata.
 /// </para>
 /// <para>
 /// <b>Filtering philosophy.</b> Sitemap, search index, and llms.txt each
@@ -54,15 +55,10 @@ public sealed class SitemapService
     public SitemapService(
         IEnumerable<IContentService> contentServices,
         LocalizationOptions localization,
-        IEnumerable<IContentParser> parsers,
         SitemapBuilder builder)
     {
-        // Preserve the prior `GetService<IContentParser>()` semantic: optional, last
-        // registration wins. Sites with only programmatic / Razor sources register no
-        // parser at all — fall through to a metadata-less entry per route.
-        var parser = parsers.LastOrDefault();
         _sitemapLazy = new AsyncLazy<string>(
-            () => BuildSitemapAsync(contentServices, localization, parser, builder));
+            () => BuildSitemapAsync(contentServices, localization, builder));
     }
 
     /// <summary>
@@ -73,7 +69,6 @@ public sealed class SitemapService
     private static async Task<string> BuildSitemapAsync(
         IEnumerable<IContentService> contentServices,
         LocalizationOptions localization,
-        IContentParser? parser,
         SitemapBuilder builder)
     {
         var candidates = new List<SitemapCandidate>();
@@ -102,29 +97,14 @@ public sealed class SitemapService
                 // shouldn't be advertised to crawlers. Skip all three.
                 if (discovered.Source.Value is RedirectSource or EndpointSource or LlmsOnlySource) continue;
 
-                IFrontMatter? metadata = null;
-
-                // Only markdown sources go through the parser — it's the only
-                // source type that parses front matter from the file system.
-                // Programmatic/Razor sources surface metadata at generation /
-                // render time, which is too expensive to run here just for
-                // lastmod. Those entries get emitted with route + no metadata.
-                if (discovered.Source.Value is MarkdownFileSource && parser is not null)
-                {
-                    var parseResult = await parser.ParseAsync(discovered);
-                    if (parseResult.Value is ParsedItem parsed)
-                    {
-                        metadata = parsed.Metadata;
-                    }
-                    else
-                    {
-                        // Parse failed entirely — skip. (The page probably
-                        // won't render either, so omitting it is defensible.)
-                        continue;
-                    }
-                }
-
-                candidates.Add(new SitemapCandidate(discovered.Route, metadata));
+                // Markdown sources carry the front matter their content service
+                // parsed at discovery time (correct front-matter type, no re-parse);
+                // programmatic / Razor sources carry none. SitemapBuilder tolerates
+                // null metadata and re-filters drafts/redirects defensively. A
+                // markdown page whose front matter failed to parse arrives with
+                // null metadata — it still renders and is served, so it's emitted
+                // with no <lastmod> rather than dropped.
+                candidates.Add(new SitemapCandidate(discovered.Route, discovered.Metadata));
             }
         }
 

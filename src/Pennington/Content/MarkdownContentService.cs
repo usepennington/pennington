@@ -162,11 +162,11 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
 
             if (IsLlmsOnlyFile(sourceFile))
             {
-                yield return new DiscoveredItem(route, new LlmsOnlySource(sourceFile));
+                yield return new DiscoveredItem(route, new LlmsOnlySource(sourceFile)) { Metadata = frontMatter };
                 continue;
             }
 
-            yield return new DiscoveredItem(route, new MarkdownFileSource(sourceFile));
+            yield return new DiscoveredItem(route, new MarkdownFileSource(sourceFile)) { Metadata = frontMatter };
         }
     }
 

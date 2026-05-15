@@ -97,6 +97,26 @@ public class MarkdownContentServiceTests
     }
 
     [Fact]
+    public async Task DiscoverAsync_AttachesParsedFrontMatter()
+    {
+        // DiscoverAsync parses each file with its own TFrontMatter type and
+        // attaches the result to the DiscoveredItem, so downstream consumers
+        // (SitemapService) read it instead of re-parsing with a possibly
+        // mismatched parser.
+        var fs = CreateFs(
+            ("intro.md", "---\ntitle: Intro\norder: 3\n---\n# Intro"));
+        var service = CreateTestService(fs);
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+            items.Add(item);
+
+        items.Count.ShouldBe(1);
+        items[0].Metadata.ShouldNotBeNull();
+        items[0].Metadata!.Title.ShouldBe("Intro");
+    }
+
+    [Fact]
     public async Task DiscoverAsync_SkipsDrafts()
     {
         var fs = CreateFs(

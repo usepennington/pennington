@@ -5,10 +5,14 @@ using Routing;
 
 // Case types — each is a standalone record
 
-/// <summary>A content item discovered by a content service but not yet parsed.</summary>
+/// <summary>A content item discovered by a content service but not yet run through the pipeline.</summary>
 /// <param name="Route">Canonical route for the item.</param>
 /// <param name="Source">Origin describing how the item's content is produced.</param>
-public record DiscoveredItem(ContentRoute Route, ContentSource Source);
+public record DiscoveredItem(ContentRoute Route, ContentSource Source)
+{
+    /// <summary>Front matter the discovering service already parsed, when its source carried any; null for sources whose metadata is not known until parse or render time.</summary>
+    public IFrontMatter? Metadata { get; init; }
+}
 
 /// <summary>A content item whose front matter and raw markdown body have been parsed.</summary>
 /// <param name="Route">Canonical route for the item.</param>
