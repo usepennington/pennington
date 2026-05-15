@@ -1,0 +1,57 @@
+@page "/"
+@layout Pennington.DocSite.Components.Layout.FullWidthLayout
+@using Microsoft.AspNetCore.Components.Web
+
+@* A Razor component named Index with @page "/" owns the root URL. DocSite
+   registers this project's assembly in its routing assemblies, so the literal
+   "/" route is picked up by both the live Blazor router and the static build —
+   and it beats the catch-all in Pages.razor. @layout swaps the sidebar layout
+   for FullWidthLayout, which keeps the header and footer but drops the nav. *@
+
+<PageTitle>Pages &amp; Links</PageTitle>
+
+<section class="py-12 lg:py-20">
+    <p class="text-xs font-display font-semibold tracking-widest uppercase text-primary-600 dark:text-primary-400 mb-4">
+        Pennington DocSite
+    </p>
+    <h1 class="font-display text-4xl lg:text-6xl font-bold tracking-tight text-base-900 dark:text-base-50 leading-tight mb-6 text-balance">
+        A docs site with a front door.
+    </h1>
+    <p class="text-base lg:text-lg text-base-600 dark:text-base-400 max-w-2xl mb-8 leading-relaxed">
+        Every guide in one place — installing Pennington, configuring the host,
+        and the linking patterns that hold a documentation site together.
+    </p>
+    <div class="flex flex-wrap items-center gap-3">
+        <a href="/guides/"
+           class="inline-flex items-center font-display font-semibold bg-primary-600 hover:bg-primary-500 text-white rounded-xl px-6 py-3 transition-colors">
+            Read the guides
+        </a>
+        <a href="https://github.com/usepennington/pennington"
+           class="inline-flex items-center font-display font-semibold text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 rounded-xl px-5 py-3 ring-1 ring-base-300 dark:ring-base-700 transition-colors">
+            View on GitHub
+        </a>
+    </div>
+</section>
+
+<section class="pb-16 lg:pb-24">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <a href="/guides/install"
+           class="rounded-2xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-6 transition-colors hover:border-primary-400 dark:hover:border-primary-500">
+            <h2 class="font-display text-xl font-semibold text-base-900 dark:text-base-50 mb-2">
+                Install Pennington
+            </h2>
+            <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed">
+                Add the package and stand up the DocSite host.
+            </p>
+        </a>
+        <a href="/guides/configure"
+           class="rounded-2xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-6 transition-colors hover:border-primary-400 dark:hover:border-primary-500">
+            <h2 class="font-display text-xl font-semibold text-base-900 dark:text-base-50 mb-2">
+                Configure the site
+            </h2>
+            <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed">
+                Set the title, footer, and area routing.
+            </p>
+        </a>
+    </div>
+</section>
