@@ -145,7 +145,7 @@ M:BeyondRoslynExample.Stage2.Run(System.String[])
 <Checkpoint>
 
 - Run `dotnet run` on the host
-- The first request takes a beat longer while [`SolutionWorkspaceService`](xref:reference.api.solution-workspace-service) loads the inner slnx
+- The first request takes a beat longer while [`ISolutionWorkspaceService`](xref:reference.api.i-solution-workspace-service) loads the inner slnx
 - No errors in the console — the workspace is loaded and ready to resolve XmlDocIds
 
 </Checkpoint>
