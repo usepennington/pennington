@@ -46,12 +46,36 @@ jobs:
             10.0.x
             11.0.x
 
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Build docs site to static output
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: true
         run: |
           dotnet build -c Release
           dotnet run --project ${{ env.WEBAPP_PATH }} --configuration Release --no-build -- build ${{ env.GITHUB_REPOSITORY }}
+
+      - name: Tree-shake CSS with PurgeCSS
+        run: |
+          CSS="${{ env.WEBAPP_PATH }}output/styles.css"
+          before=$(wc -c < "$CSS")
+          npx --yes purgecss@7 --config purgecss.config.cjs --output ${{ env.WEBAPP_PATH }}output/
+          after=$(wc -c < "$CSS")
+          echo "styles.css: $before -> $after bytes ($(( (before - after) * 100 / before ))% removed)"
+
+      - name: Verify purged CSS retains runtime-toggled rules
+        run: |
+          CSS="${{ env.WEBAPP_PATH }}output/styles.css"
+          for needle in ':where(.dark' 'mobile-menu-open' '@keyframes'; do
+            grep -qF "$needle" "$CSS" || {
+              echo "::error::PurgeCSS dropped '$needle' — a runtime-toggled style would break. Update the safelist in purgecss.config.cjs."
+              exit 1
+            }
+          done
+          echo "purged styles.css retains dark-mode, mobile-menu and keyframe rules"
 
       - name: Install minify
         run: |
