@@ -1,5 +1,5 @@
 ---
-title: "Using Blazor Pages"
+title: "Serve markdown through a Blazor catch-all"
 description: "Stand up a Pennington site whose markdown is served through a Blazor Server `@page` catch-all — the natural shape for a real app."
 sectionLabel: "Getting Started with Pennington"
 order: 101020
@@ -11,17 +11,14 @@ tags:
 uid: tutorials.getting-started.first-page
 ---
 
-By the end of this tutorial a runnable ASP.NET project — `MyBlazorPenningtonSite` — serves markdown from `Content/` through a Blazor Server `@page "/{*Path}"` catch-all at `http://localhost:5000/`. The previous tutorial used a hand-rolled `MapGet` so the URL → markdown file → rendered HTML chain stayed visible in one place; that's a fine teaching shape, but it's not the shape a real app stays in. This tutorial spins up the production-shape host from scratch.
+By the end of this tutorial a runnable ASP.NET project — `MyBlazorPenningtonSite` — serves markdown from `Content/` through a Blazor Server `@page "/{*Path}"` catch-all at `http://localhost:5000/`. The previous tutorial used a hand-rolled `MapGet`; this one swaps it for the production-shape Blazor catch-all a real app stays in.
 
 ## Prerequisites
 
 - .NET 11 SDK installed
-- (Optional) Completed [Spin up a minimal Pennington site](xref:tutorials.getting-started.first-site) — this tutorial repeats its `dotnet new web` + Pennington package + `<LangVersion>preview</LangVersion>` bootstrap
+- (Optional) Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site) — this tutorial repeats its `dotnet new web` + Pennington package + `<LangVersion>preview</LangVersion>` bootstrap
 
-The finished code for this tutorial lives in [`examples/GettingStartedBlazorPagesExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedBlazorPagesExample).
-
-> [!NOTE]
-> If a custom Blazor host is not what you need, the bundled DocSite template wires this same shape — Blazor catch-all included — out of the box. Skip ahead to <xref:tutorials.docsite.scaffold> when "I just want a docs site" is the goal.
+The finished code for this tutorial lives in [`examples/GettingStartedBlazorPagesExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedBlazorPagesExample). If a custom Blazor host is not what you need, the bundled DocSite template wires this same shape out of the box — skip ahead to <xref:tutorials.docsite.scaffold>.
 
 ---
 
@@ -93,67 +90,50 @@ examples/GettingStartedBlazorPagesExample/Content/index.md
 
 ---
 
-## 2. Wire Pennington and Blazor in `Program.cs`
+## 2. Wire Pennington, Blazor, and the markdown page
 
-Replace the `Program.cs` body with the host below. Two service registrations (`AddPennington` for the content pipeline, `AddRazorComponents` for Blazor's static server-side rendering) and three middleware calls (`UsePennington`, `UseAntiforgery`, `MapRazorComponents<App>()`) are all the wiring this host needs.
+Replace the `Program.cs` body with the host below, then add three Razor files: a `_Imports.razor` for shared `@using` lines, an `App.razor` root component that owns the document shell, and a `MarkdownPage.razor` catch-all that renders any URL to a markdown file. Two service registrations (`AddPennington` for the content pipeline, `AddRazorComponents` for Blazor SSR) and three middleware calls (`UsePennington`, `UseAntiforgery`, `MapRazorComponents<App>()`) are all the host needs.
+
+> [!IMPORTANT]
+> `app.UsePennington()` must run before `app.MapRazorComponents<App>()`. The Blazor catch-all `@page "/{*Path}"` would otherwise swallow Pennington's redirect, sitemap, and llms.txt routes.
+
+<Steps>
+<Step StepNumber="1">
+
+**Replace `Program.cs`**
 
 ```csharp:path
 examples/GettingStartedBlazorPagesExample/Program.cs
 ```
 
-A walk-through of the calls:
-
-- `AddPennington` registers the core services and sets `ContentRootPath` to `Content/`, the folder it watches for changes.
-- `AddMarkdownContent<DocFrontMatter>` declares one markdown source rooted at `Content/`. Every `.md` file there becomes a discoverable content item.
-- `AddRazorComponents` registers Blazor's static server-side rendering — what `MapRazorComponents` needs to actually route to `@page` components.
-- `UsePennington` installs the static-files, response-processing, live-reload, and auto-registered endpoints (`/sitemap.xml`, `/llms.txt`).
-- `UseAntiforgery` is required because Blazor's routed components opt into antiforgery metadata even when no form ships in the page.
-- `MapRazorComponents<App>()` hands routing to Blazor. The next section adds the `App.razor` it points at.
-
-> [!IMPORTANT]
-> Endpoint ordering matters. `app.UsePennington()` must run before `app.MapRazorComponents<App>()`. Pennington's middleware registers redirect routes plus the `/sitemap.xml` and `/llms.txt` endpoints; the Blazor catch-all `@page "/{*Path}"` from the next section would swallow those routes if it were mapped first.
-
-<Checkpoint>
-
-- `dotnet build` succeeds
-- `dotnet run` and visit `http://localhost:5000/` — the response is a 404. The `App.razor` and `MarkdownPage.razor` that handle every URL arrive in the next section
-
-</Checkpoint>
-
----
-
-## 3. Add the Blazor router and the markdown page
-
-Three Razor files give Blazor a router, a document shell, and the catch-all `@page` that resolves any URL to a markdown file.
-
-<Steps>
-<Step StepNumber="1">
+</Step>
+<Step StepNumber="2">
 
 **Add `_Imports.razor` at the project root**
 
-`_Imports.razor` provides the `@using` set every `.razor` file in the project sees. Drop it next to `Program.cs`.
+`_Imports.razor` provides the `@using` set every `.razor` file in the project sees.
 
 ```razor:path
 examples/GettingStartedBlazorPagesExample/_Imports.razor
 ```
 
 </Step>
-<Step StepNumber="2">
+<Step StepNumber="3">
 
 **Add `Components/App.razor`**
 
-`App.razor` is the root component `MapRazorComponents<App>()` mounts. It owns the entire HTML document in this tutorial: `<!DOCTYPE>`, `<html>`, `<head>` (with `<HeadOutlet>` so each routed page's `<PageTitle>` flows in), and `<body>`. The `<Router>` inside `<body>` scans the assembly for `@page` components and routes each request to the matching one.
+`App.razor` is the root component `MapRazorComponents<App>()` mounts. It owns the entire HTML document — `<!DOCTYPE>`, `<html>`, `<head>` (with `<HeadOutlet>` so each routed page's `<PageTitle>` flows in), and `<body>`. The `<Router>` inside `<body>` scans the assembly for `@page` components and routes each request to the matching one.
 
 ```razor:path
 examples/GettingStartedBlazorPagesExample/Components/App.razor
 ```
 
 </Step>
-<Step StepNumber="3">
+<Step StepNumber="4">
 
 **Add `Components/Pages/MarkdownPage.razor`**
 
-`MarkdownPage.razor` is the `@page "/{*Path}"` catch-all. Blazor binds the request path to the `Path` parameter; the component injects the same `IEnumerable<IContentService>`, `IContentParser`, and `IContentRenderer` the bare-host MapGet from the previous tutorial used, walks them to find the matching markdown, and injects the rendered HTML via `(MarkupString)`.
+`MarkdownPage.razor` is the `@page "/{*Path}"` catch-all. Blazor binds the request path to the `Path` parameter; the component walks the content pipeline and injects the rendered HTML via `(MarkupString)`.
 
 ```razor:path
 examples/GettingStartedBlazorPagesExample/Components/Pages/MarkdownPage.razor
@@ -164,16 +144,16 @@ examples/GettingStartedBlazorPagesExample/Components/Pages/MarkdownPage.razor
 
 <Checkpoint>
 
-- `dotnet run` and visit `http://localhost:5000/` — the page renders `Content/index.md`
-- View source. The `<title>` and `<h1>` both pull from `index.md`'s front-matter `title:`
+- `dotnet run` and visit `http://localhost:5000/` — the page renders `Content/index.md`.
+- View source. The `<title>` and `<h1>` both pull from `index.md`'s front-matter `title:`.
 
 </Checkpoint>
 
 ---
 
-## 4. Add a second markdown file
+## 3. Add a second markdown file
 
-The file-path-to-URL convention is unchanged by routing through Blazor. Pennington's file watcher picks up new and renamed files in `Content/` while the host runs — no restart, no router-table edit.
+The file-path-to-URL convention is unchanged by routing through Blazor. Pennington's file watcher picks up new files in `Content/` while the host runs — no restart, no router-table edit.
 
 <Steps>
 <Step StepNumber="1">
@@ -194,20 +174,11 @@ examples/GettingStartedBlazorPagesExample/Content/about.md
 Open `http://localhost:5000/about` in the browser. The catch-all serves the new file on the first request — no restart needed.
 
 </Step>
-<Step StepNumber="3">
-
-**Rename the file to see the URL follow it**
-
-Rename `Content/about.md` to `Content/reach-out.md` and visit `/reach-out`. The watcher re-discovers the file and the catch-all serves it at the new URL. Rename it back to `about.md` before continuing so the next tutorial matches.
-
-</Step>
 </Steps>
 
 <Checkpoint>
 
-- Visit `/about` — the page renders, served through the same catch-all as `/`
-- Rename `about.md` to `reach-out.md`, hit `/reach-out` — same page, new URL
-- Rename it back to `about.md`
+- Visit `/about` — the page renders, served through the same catch-all as `/`.
 
 </Checkpoint>
 

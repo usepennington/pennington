@@ -1,85 +1,32 @@
 ---
-title: "Configure redirects"
-description: "Set redirectUrl in DocSiteFrontMatter to emit a meta-refresh stub page that sends visitors to a new URL."
+title: "Forward visitors from a renamed page"
+description: "Set redirectUrl in front matter to emit a meta-refresh stub that sends visitors from the old path to the new one."
 uid: how-to.pages.redirects
 order: 201040
 sectionLabel: "Pages"
 tags: [redirects, front-matter, routing]
 ---
 
-When a published page is renamed or deleted, the old URL needs to forward visitors and search engines to the new location. Setting `redirectUrl:` in the page's front matter causes Pennington to emit a meta-refresh stub at the old path — the body is not rendered or indexed.
+When a published page is renamed or deleted, set `redirectUrl:` in its front matter to forward visitors to the new URL. Pennington emits a meta-refresh stub at the old path; the page body is not rendered or indexed. For batch redirects or true HTTP 301s, configure them at the hosting layer instead — that is out of scope here.
 
-This covers front-matter-based redirects only. HTTP 301 responses and batch redirects via a sidecar file are handled at the hosting layer and fall outside this guide's scope.
-
-## Assumptions
-
-- An existing Pennington doc site using `AddDocSite` (see [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) if not).
+## Before you begin
+- An existing Pennington site using `AddDocSite` (see <xref:tutorials.docsite.scaffold> if not) or another host whose front-matter type implements `IRedirectable`. `DocSiteFrontMatter` and `BlogSiteFrontMatter` both do. For a custom record, add the interface — see <xref:explanation.core.front-matter-capabilities>.
 - Both the old URL (the page being retired) and the new URL (the canonical destination) are known.
-- The front-matter type implements `IRedirectable` — `DocSiteFrontMatter` and `BlogSiteFrontMatter` both do.
 
 To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample) — `Content/main/redirect-source.md` is the fixture this how-to is fenced from.
 
----
+## Add `redirectUrl:` to the old page
 
-## Steps
-
-<Steps>
-<Step StepNumber="1">
-
-**Add `redirectUrl:` to the old page's front matter**
-
-Open the markdown file at the old URL and set `redirectUrl:` to the new absolute path. Keep `title:` so diagnostics remain readable; the body is not rendered.
+Open the markdown file at the old URL and set `redirectUrl:` to the new absolute path. Keep `title:` so diagnostics stay readable; the body does not render.
 
 ```markdown:path
 examples/DocSiteKitchenSinkExample/Content/main/redirect-source.md
 ```
 
-</Step>
-<Step StepNumber="2">
-
-**Confirm the front-matter record implements `IRedirectable`**
-
-The engine looks for the `RedirectUrl` property via `IRedirectable` pattern-matching; `DocSiteFrontMatter` already declares it. For a custom front-matter record, add the interface so the pipeline surfaces the page as a redirect.
-
-```csharp:xmldocid
-T:Pennington.DocSite.DocSiteFrontMatter
-```
-
-```csharp:xmldocid
-T:Pennington.FrontMatter.IRedirectable
-```
-
-</Step>
-<Step StepNumber="3">
-
-**Understand what the pipeline emits**
-
-During discovery, `MarkdownContentService` detects `RedirectUrl` and yields a `RedirectSource` instead of a `MarkdownFileSource`, so the page skips parse/render and the redirect middleware handles it uniformly at dev serve and `build` time.
-
-```csharp:xmldocid
-M:Pennington.Content.MarkdownContentService`1.DiscoverAsync
-```
-
-</Step>
-<Step StepNumber="4">
-
-**Run the site and follow the old URL**
-
-Start the site with `dotnet run`. The old URL responds with a meta-refresh stub that forwards to `redirectUrl`; the static build writes the same stub to disk at the old page's output path.
-
-```bash
-dotnet run --project src/YourDocSite
-```
-
-</Step>
-</Steps>
-
----
-
 ## Verify
 
-- Visit the old URL in a browser: the page redirects immediately to the target set in `redirectUrl`.
-- View the old URL's source: the markup contains `<meta http-equiv="refresh" content="0;url=...">` and a `<link rel="canonical" href="...">` tag pointing at the redirect target.
+- Run `dotnet run` and visit the old URL: the page redirects immediately to the target set in `redirectUrl`.
+- View source on the old URL: the markup contains `<meta http-equiv="refresh" content="0;url=...">` and a `<link rel="canonical" href="...">` pointing at the redirect target.
 - Check `/sitemap.xml` and `/llms.txt`: the old URL does not appear (redirects are filtered by `SitemapBuilder` and `LlmsTxtService`).
 
 ## Related

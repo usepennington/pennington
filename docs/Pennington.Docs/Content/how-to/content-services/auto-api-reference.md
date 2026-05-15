@@ -49,7 +49,7 @@ builder.Services.AddApiMetadataFromCompiledAssembly(opts =>
     opts.AssemblyFiles.Add(Path.Combine(builder.Environment.ContentRootPath, "lib", "net9.0", "Foo.dll")));
 ```
 
-No MSBuild workspace, no docfx, no source code. The backend uses `MetadataLoadContext` under the hood — it inspects metadata without running any of the assembly's code. `<ExtensionMethods>` and the `:xmldocid` source fence require a live symbol graph and are unavailable under this backend.
+The reflection backend uses `MetadataLoadContext` to inspect metadata without running the assembly's code — no MSBuild workspace, no source needed. `<ExtensionMethods>` and the `:xmldocid` source fence require a live symbol graph and are unavailable under this backend.
 
 ## Customize the route prefix
 
@@ -78,7 +78,7 @@ builder.Services.AddApiReference("spectre-console-cli", opts =>
     opts.RoutePrefix = "/api/spectre-cli/");
 ```
 
-Each `FromPackageReference` call resolves one DLL from its matching `<PackageReference>`. Cross-package type references (for example, Spectre.Console.Cli reaching back into Spectre.Console) resolve automatically because both packages live under the same NuGet cache root, which `MetadataLoadContext` already searches.
+Each `FromPackageReference` call resolves one DLL from its matching `<PackageReference>`. Cross-package type references resolve automatically across the NuGet cache root.
 
 **Cross-references between named trees:** uids pick up a qualifier. Default-named registrations emit `reference.api.{slug}` (unchanged). Named registrations emit `reference.api.{name}.{slug}` — for example, `<xref:reference.api.spectre-console.ansi-console>` and `<xref:reference.api.spectre-console-cli.command-app>`.
 

@@ -9,8 +9,7 @@ tags: [search, front-matter, localization, configuration]
 
 When `/search-index-{locale}.json` is already live but results contain nav or footer noise, a page appears that should be hidden, or relative document weight needs adjusting, the options below tune the index without touching the search client.
 
-## Assumptions
-
+## Before you begin
 - A working Pennington site where `/search-index-en.json` (or the default locale code) already returns a JSON array
 - Pages using `DocSiteFrontMatter` or another `IFrontMatter` implementation (which carries the `Search` default member)
 - The default locale code (from `LocalizationOptions`) — it is the suffix in the index filename
@@ -51,11 +50,7 @@ P:Pennington.FrontMatter.IFrontMatter.Search
 
 ### Set the default document priority
 
-`SearchIndexOptions.DefaultPriority` (default `5`) is the baseline weight assigned to every document whose content service does not override `IContentService.SearchPriority`. Raise it for sources that should outrank neighbours; lower it for auxiliary content. Per-source priority takes precedence: `MarkdownContentServiceOptions.SearchPriority` defaults to `10`, `RazorPageContentService` is `5`, and the llms.txt/SPA/redirect services report `0` so their artifacts never appear in results.
-
-```csharp:xmldocid
-P:Pennington.Search.SearchIndexOptions.DefaultPriority
-```
+`SearchIndexOptions.DefaultPriority` (default `5`) is the baseline weight assigned to every document whose content service does not override `IContentService.SearchPriority`. Raise it for sources that should outrank neighbours; lower it for auxiliary content. Per-source overrides take precedence — see <xref:reference.api.search-index-options> for the shipped defaults.
 
 Under `AddDocSite` this property is reachable via the `ConfigurePennington` escape hatch (`opts.SearchIndex.DefaultPriority = …`), so this adjustment does not require dropping down to bare `AddPennington`.
 

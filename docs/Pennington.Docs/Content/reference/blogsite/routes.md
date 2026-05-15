@@ -19,7 +19,7 @@ All routes registered by `UseBlogSite`, ordered by the surface they serve.
 
 | Path | Method | Option controlling it | Description |
 |---|---|---|---|
-| `/` | `GET` | — (fixed) | Homepage Razor page (`Home.razor`); renders `BlogSiteOptions.HeroContent`, the ten most recent posts via `BlogSummary`, and the sidebar modules fed by `MyWork`/`Socials`/`AuthorBio`. |
+| `/` | `GET` | — (fixed) | Homepage Razor page (`Home.razor`); renders `BlogSiteOptions.HeroContent`, recent posts via `BlogSummary`, and sidebar modules from `MyWork`/`Socials`/`AuthorBio`. |
 | `/archive` | `GET` | — (fixed) | Full archive Razor page (`Archive.razor`); renders `BlogContentResolver.GetAllPostsAsync()` in reverse chronological order through `BlogSummary`. |
 | `/tags` | `GET` | `TagsPageUrl` (see note) | Tag index Razor page (`Tags.razor`); lists every `BlogTag` with post counts from `BlogContentResolver.GetTagsWithCountsAsync()`. |
 | `/topics` | `GET` | — (fixed alias) | Second `@page` directive on `Tags.razor` exposing the same component under `/topics` as a built-in alias. |
@@ -28,7 +28,7 @@ All routes registered by `UseBlogSite`, ordered by the surface they serve.
 | `/blog/{*fileName}` | `GET` | `BlogBaseUrl` (see note) | Post-rendering catch-all Razor page (`Blog.razor`); looks up the post by `{BlogBaseUrl}/{fileName}` via `BlogContentResolver.GetPostByUrlAsync` and renders it through `BlogPost` with OpenGraph and structured-data head tags. |
 | `/rss.xml` | `GET` | `EnableRss` | `MapGet` endpoint in `UseBlogSite` that delegates to `BlogSiteContentService.GetRssXmlAsync`; omitted entirely when `EnableRss` is `false`. |
 
-> **Note on `TagsPageUrl` and `BlogBaseUrl`.** The `@page` directives on `Tags.razor`, `Tag.razor`, and `Blog.razor` are string literals (`"/tags"`, `"/topics"`, `"/blog/{*fileName}"`) and are not templated from `BlogSiteOptions`. `TagsPageUrl` (default `"/tags"`) and `BlogBaseUrl` (default `"/blog"`) are used by `BlogContentResolver` / `BlogSiteContentService` to build tag and post URLs that match these page routes; changing them away from the defaults requires supplying replacement Razor pages via `AdditionalRoutingAssemblies`. See [`BlogSiteOptions`](xref:reference.api.blog-site-options).
+The `@page` directives on `Tags.razor`, `Tag.razor`, and `Blog.razor` are fixed string literals. `TagsPageUrl` and `BlogBaseUrl` only affect the URLs `BlogContentResolver` and `BlogSiteContentService` compose for tags and posts; the page routes themselves stay at `/tags`, `/topics`, and `/blog/{*fileName}` unless replacement Razor pages are supplied via `AdditionalRoutingAssemblies`.
 
 ## Option-to-route matrix
 
@@ -39,17 +39,15 @@ All routes registered by `UseBlogSite`, ordered by the surface they serve.
 | `BlogBaseUrl` | `"/blog"` | `/blog/{*fileName}` | Consumed by `BlogContentResolver.GetPostByUrlAsync` as the URL prefix; the `@page "/blog/{*fileName}"` directive on `Blog.razor` is a fixed string, so this value must match the literal route for posts to resolve. |
 | `EnableRss` | `true` | `/rss.xml` | Gates the `MapGet("/rss.xml", …)` call in `UseBlogSite`; when `false` the endpoint is not registered and the static crawler does not emit `rss.xml`. |
 | `EnableSitemap` | `true` | `/sitemap.xml` (from `UsePennington`) | Controls inclusion of BlogSite routes in the sitemap emitted by `SitemapService`; the sitemap endpoint itself is mounted by `UsePennington`, not `UseBlogSite`. |
-| `TagsPageUrl` | `"/tags"` | `/tags`, `/tags/{TagEncodedName}` | Consumed by `BlogContentResolver` when composing per-tag URLs; the `@page` directives on `Tags.razor` and `Tag.razor` are fixed string literals, so tag URLs and page routes only align at the default `"/tags"` value (the `/topics` aliases are always present). |
+| `TagsPageUrl` | `"/tags"` | `/tags`, `/tags/{TagEncodedName}` | Consumed by `BlogContentResolver` when composing per-tag URLs. The `/topics` aliases are always present. |
 
 ## Example
 
-A BlogSite host that mounts every route on this page via a single `UseBlogSite` call.
+A BlogSite host that mounts every route above via a single `UseBlogSite` call.
 
 ```csharp:path
 examples/BlogSiteScaffoldExample/Program.cs
 ```
-
-The example boots `Pennington.BlogSite` with scaffold options; all eight routes listed above — including `/rss.xml`, because `EnableRss` defaults to `true` — are live in dev and in the static build.
 
 ## See also
 

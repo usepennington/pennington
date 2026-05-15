@@ -17,9 +17,6 @@ Some documentation tools require a hand-written `nav.yml` that explicitly names 
 
 The result is a two-signal model: **folder structure** supplies the tree shape, and **front matter** supplies leaf ordering and breadcrumb labels. There is no third configuration surface sitting between them. The sections below trace how `NavigationBuilder` performs that fold — from flat list to tree, including what happens when a folder has no index page and how locale prefixes are removed before the recursion starts.
 
-> [!NOTE]
-> A common point of confusion: the **folder name** drives sidebar grouping and the section header text, while the `sectionLabel:` front-matter key controls only the label shown in breadcrumbs and the prev/next footer. The two serve different surfaces. Renaming the folder changes the sidebar header; changing `sectionLabel:` does not.
-
 ## How it works
 
 ### HierarchyParts folds the flat TOC into a tree
@@ -30,17 +27,13 @@ Recursing level-by-level rather than item-by-item is what lets sibling ordering 
 
 There is one special case at depth 0: a `ContentTocItem` whose `HierarchyParts.Length` is 0 is treated as the area's landing page. Its hierarchy was already stripped by the content service before the list was handed to the builder, so the builder injects it at the top of the tree with `Order = int.MinValue`. That anchors it above every other root entry regardless of what `order:` value was authored.
 
-```csharp:xmldocid
-T:Pennington.Content.ContentTocItem
-```
-
-Each field on `ContentTocItem` plays a distinct role in that algorithm: `HierarchyParts` shapes the tree, `Order` and `Title` sort siblings, `SectionLabel` surfaces only in prev/next and breadcrumbs, and `Locale` feeds the filter described below.
+Each field on `ContentTocItem` plays a distinct role in the algorithm: `HierarchyParts` shapes the tree, `Order` and `Title` sort siblings, `SectionLabel` surfaces only in prev/next and breadcrumbs, and `Locale` feeds the filter described below (see <xref:reference.api.content-toc-item> for the type).
 
 ```csharp:xmldocid
 M:Pennington.Navigation.NavigationBuilder.BuildTree(System.Collections.Generic.IReadOnlyList{Pennington.Content.ContentTocItem},Pennington.Routing.ContentRoute,System.String)
 ```
 
-The `currentRoute` parameter passed to `BuildTree` is what marks items `IsSelected` and propagates `IsExpanded` up the ancestor chain. The same tree therefore powers both the "where am I" highlight and the collapsed or expanded state of every surrounding folder — the UI does not need to maintain that state separately. The method returns an `ImmutableList<NavigationTreeItem>`, so the entire tree is a value rather than a mutable model the rendering layer binds to directly.
+The `currentRoute` parameter passed to `BuildTree` marks items `IsSelected` and propagates `IsExpanded` up the ancestor chain. The same tree therefore powers both the "where am I" highlight and the collapsed or expanded state of every surrounding folder. The method returns an `ImmutableList<NavigationTreeItem>`, so the entire tree is a value rather than a mutable model the rendering layer binds to directly.
 
 ### Sections without a direct content file
 
@@ -48,13 +41,9 @@ When `BuildLevel` finds deeper descendants under a hierarchy segment that has no
 
 This is the mechanism that lets an author drop markdown files into `/how-to/deployment/` without creating a `deployment/index.md` and still see "Deployment" appear as a collapsible sidebar heading. The folder itself is sufficient.
 
-The important distinction here is between this folder-derived grouping signal and the per-page `sectionLabel:` front-matter key. Grouping is determined entirely by which subfolder a file lives in. `sectionLabel:` controls only the label shown in breadcrumbs and the prev/next footer for leaf pages. Two files carrying identical `sectionLabel: "Advanced"` values in different folders render under two different sidebar headers — each named after its own folder — rather than merging into one shared "Advanced" group. That behavior is deliberate. Merging by label would let two unrelated folders collide under a single heading, reintroducing a configuration-surface conflict that the filesystem-driven approach was designed to eliminate.
+The important distinction is between folder-derived grouping and the per-page `sectionLabel:` front-matter key. Grouping comes entirely from subfolder; `sectionLabel:` controls only the label shown in breadcrumbs and prev/next. Two files carrying identical `sectionLabel: "Advanced"` values in different folders render under two different sidebar headers — each named after its own folder — rather than merging. Merging by label would let two unrelated folders collide under a single heading, reintroducing the configuration conflict the filesystem-driven approach was designed to eliminate.
 
-```csharp:xmldocid
-T:Pennington.Navigation.NavigationTreeItem
-```
-
-The synthesized section node and a real leaf page share the same `NavigationTreeItem` record shape. The rendering component distinguishes them by checking `Children.Count > 0 && Route.CanonicalPath.Value == ""` rather than consulting a discriminator field. Section headers are therefore first-class members of the tree rather than a parallel structure layered on top.
+The synthesized section node and a real leaf page share the same `NavigationTreeItem` record shape (see <xref:reference.api.navigation-tree-item>). The rendering component distinguishes them by checking `Children.Count > 0 && Route.CanonicalPath.Value == ""` rather than consulting a discriminator field.
 
 ### Ordering: min-of-children with alphabetic tie-break
 

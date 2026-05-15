@@ -7,21 +7,17 @@ tags: [markdown, code-blocks, directives]
 uid: reference.markdown.code-block-args
 ---
 
-Pennington applies two grammars to a fenced code block: info-string tokens on the opening fence line (language, optional colon-suffix, `key=value` attributes), and `[!code …]` directives embedded in line-trailing comments. Markdig parses the info string and exposes the language token on `FencedCodeBlock.Info` and the attribute tail on `FencedCodeBlock.Arguments`; the directive pass runs against the highlighted HTML before the block is rendered.
-
-This page is the grammar spec. For task-oriented usage see the [Markdown extensions catalog](xref:reference.markdown.extensions) and the How-To guides linked below.
+The fence info-string grammar: the opening-fence text after the three backticks, tokenised left-to-right into a language (with optional colon-suffix) followed by `key=value` attribute pairs. The `[!code …]` directive grammar runs separately, against the highlighted HTML.
 
 ## Fence info-string grammar
 
-The info string is the text on the opening fence line after the three backticks. Markdig tokenises it left-to-right: the first whitespace-separated token is the language (with an optional colon-suffix), and remaining tokens are `key=value` attribute pairs. Values may be bare, single-quoted, or double-quoted — quoting is required only when the value contains whitespace.
-
 ```text
 info-string   := language [ ":" suffix ] ( WS attribute )*
-language      := IDENT                              ; for example csharp, razor, text
+language      := IDENT
 suffix        := "path"
               |  "xmldocid" xmldocid-flags
               |  "xmldocid-diff" [ ",bodyonly" ]
-xmldocid-flags := ( "," ( "bodyonly" | "usings" ) )*  ; flags may appear in any order
+xmldocid-flags := ( "," ( "bodyonly" | "usings" ) )*
 attribute     := key "=" value
 key           := IDENT
 value         := bare-value | "'" quoted-value "'" | '"' quoted-value '"'
@@ -29,11 +25,9 @@ bare-value    := any run of non-whitespace chars
 quoted-value  := any chars up to the matching quote
 ```
 
-Markdig exposes the language and colon-suffix on `FencedCodeBlock.Info` and the attribute tail on `FencedCodeBlock.Arguments`. Pennington's built-in extensions read attribute keys case-insensitively.
+`language` is typically `csharp`, `razor`, `text`, etc. `xmldocid-flags` may appear in any order. Quoting is required only when a value contains whitespace. Markdig exposes the language and colon-suffix on `FencedCodeBlock.Info` and the attribute tail on `FencedCodeBlock.Arguments`; attribute keys are matched case-insensitively.
 
 ## Attributes
-
-The table below lists the `key=value` attributes Pennington's built-in extensions consume from the info string. A custom Markdig extension registered into the pipeline can read additional keys directly from `FencedCodeBlock.Arguments`.
 
 | Name | Values | Description | Example |
 |---|---|---|---|
@@ -42,15 +36,15 @@ The table below lists the `key=value` attributes Pennington's built-in extension
 
 ## Suffix forms (code-embedding)
 
-The colon-suffix forms switch a fenced block from literal content to a code-embedding directive preprocessed before highlighting; suffix forms are resolved by an `ICodeBlockPreprocessor`, with `Pennington.Roslyn` shipping the implementation for `xmldocid` and `xmldocid-diff`.
-
 | Form | Body shape | Description |
 |---|---|---|
-| `<lang>:path` | one file path relative to the solution directory | Embeds the entire file contents as the code-block body. |
+| `<lang>:path` | one file path relative to the solution directory | Embeds the entire file contents. Accepts any file type. |
 | `<lang>:xmldocid` | one XmlDocId per line (`T:`, `M:`, `P:`, `F:`, `E:`) | Embeds each symbol's declaration and body, concatenated in order. |
 | `<lang>:xmldocid,bodyonly` | one XmlDocId per line | Embeds only the member body, stripping the declaration line and enclosing braces. |
 | `<lang>:xmldocid,usings` | one XmlDocId per line | Prepends the file-local `using` directives the fragment references, unioned across all listed XmlDocIds. Composes with `,bodyonly` in any order. Skips `global using` directives and implicit usings. |
-| `<lang>:xmldocid-diff` | exactly two XmlDocIds, before then after | Emits a unified diff between the two symbols' source text; accepts the `,bodyonly` suffix. |
+| `<lang>:xmldocid-diff` | exactly two XmlDocIds, before then after | Emits a unified diff between the two symbols' source text. Accepts the `,bodyonly` suffix. |
+
+Suffix forms are resolved by an `ICodeBlockPreprocessor`; `Pennington.Roslyn` ships the implementations for `xmldocid` and `xmldocid-diff`.
 
 ## `[!code …]` directives
 

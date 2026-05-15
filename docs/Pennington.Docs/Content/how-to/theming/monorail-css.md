@@ -1,5 +1,5 @@
 ---
-title: "Recolor the site"
+title: "Customize MonorailCSS colors, syntax theme, and prose styles"
 description: "Swap palettes, override syntax-highlight colors, append site-wide rules, and tweak prose through MonorailCSS without leaving DocSite or BlogSite."
 uid: how-to.theming.monorail-css
 order: 205010
@@ -9,13 +9,12 @@ tags: [monorailcss, color-scheme, styling, theming]
 
 When the site needs a different palette, a tweak to prose rules, or a chunk of site-wide CSS, the knobs below live on `MonorailCssOptions`. `DocSiteOptions` and `BlogSiteOptions` forward `ColorScheme`, `ExtraStyles`, and `CustomCssFrameworkSettings` directly, so most reskins do not need to leave the template.
 
-## Assumptions
+## Before you begin
+- A running Pennington site (see <xref:tutorials.getting-started.first-site> if not).
+- An `AddDocSite` or `AddBlogSite` host (both call `AddMonorailCss` internally); bare `AddPennington` requires a separate `AddMonorailCss` call.
+- Familiarity with `MonorailCssOptions` and the named-palette defaults — see <xref:reference.api.monorail-css-options>.
 
-- A running Pennington site (see <xref:tutorials.getting-started.first-site> if not)
-- An `AddDocSite` or `AddBlogSite` host (which already calls `AddMonorailCss` internally); wiring `AddPennington` directly requires a separate `AddMonorailCss` call
-- Familiarity with the `NamedColorScheme` defaults baked into `MonorailCssOptions` (read <xref:reference.api.monorail-css-options> first if needed)
-
-The `ServiceConfiguration` helpers referenced below are backed by `examples/DocSiteKitchenSinkExample`.
+The `ServiceConfiguration` helpers referenced below come from `examples/DocSiteKitchenSinkExample`.
 
 ---
 
@@ -23,65 +22,42 @@ The `ServiceConfiguration` helpers referenced below are backed by `examples/DocS
 
 ### Pick `NamedColorScheme` for a Tailwind-named palette
 
-`NamedColorScheme` maps three MonorailCSS palette slots (primary, accent, base) onto named palettes from `MonorailCss.Theme.ColorNames`. The simplest re-skin is changing the three `*ColorName` values on the default options.
+Map the three palette slots — primary, accent, base — to named palettes from `MonorailCss.Theme.ColorNames`.
 
-```csharp:xmldocid
-T:Pennington.MonorailCss.NamedColorScheme
+```csharp
+ColorScheme = new NamedColorScheme
+{
+    PrimaryColorName = ColorName.Indigo,
+    AccentColorName = ColorName.Pink,
+    BaseColorName = ColorName.Slate,
+}
 ```
 
 ### Pick `AlgorithmicColorScheme` for hue-driven palettes
 
-`AlgorithmicColorScheme` synthesises primary, base, and accent palettes from one `PrimaryHue` plus a `Chroma` and a `CoordinatingScheme` enum. The base palette is a desaturated neutral derived from the same hue; the accents come from offsets picked by the scheme (Complementary, SplitComplementary, Triadic, Analogous). The whole site repigments by changing a single number.
+`AlgorithmicColorScheme` synthesises primary, base, and accent palettes from one `PrimaryHue` plus a `Chroma` and a `CoordinatingScheme` enum (Complementary, SplitComplementary, Triadic, Analogous). The whole site repigments by changing one number.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildColorScheme
 ```
 
-### Assign the color scheme on the DocSite options
-
-`DocSiteOptions.ColorScheme` is the forwarded knob — whichever `IColorScheme` is assigned becomes the seed for the generated stylesheet.
-
-```csharp:xmldocid
-P:Pennington.DocSite.DocSiteOptions.ColorScheme
-```
+Assign whichever scheme to `DocSiteOptions.ColorScheme`.
 
 ### Override syntax-highlight colors with `SyntaxTheme`
 
-`MonorailCssOptions.SyntaxTheme` holds the five Tailwind palettes used by `.hljs-*` token classes (keyword, string, variable, function, comment). It is independent of the brand `ColorScheme`, so code colors can stay consistent while the site reskins, or vice versa. `SyntaxTheme.Default` ships Sky / Emerald / Rose / Amber / Slate; replace the whole record to substitute your own.
-
-```csharp:xmldocid
-T:Pennington.MonorailCss.SyntaxTheme
-```
+`MonorailCssOptions.SyntaxTheme` holds the five palettes used by `.hljs-*` token classes (keyword, string, variable, function, comment). It is independent of the brand `ColorScheme`. `SyntaxTheme.Default` ships Sky / Emerald / Rose / Amber / Slate; replace the whole record to substitute your own.
 
 ### Append site-wide rules with `ExtraStyles`
 
-The `ExtraStyles` string is emitted verbatim above the generated utility stylesheet. It fits `@font-face` declarations, utility overrides, or one-off selectors that don't belong in a Razor component. The kitchen-sink helper below combines two font faces with a component-scoped tweak as a realistic reference.
+`ExtraStyles` is a CSS string emitted verbatim above the generated utility stylesheet — `@font-face` declarations, utility overrides, or one-off selectors. Assign to `DocSiteOptions.ExtraStyles`.
 
 ```csharp:xmldocid,bodyonly
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildExtraStyles
 ```
 
-Pass it through on the DocSite options:
-
-```csharp:xmldocid
-P:Pennington.DocSite.DocSiteOptions.ExtraStyles
-```
-
 ### Tweak prose rules with `CustomCssFrameworkSettings`
 
-`DocSiteOptions.CustomCssFrameworkSettings` mirrors the `MonorailCssOptions` delegate — it post-processes the `CssFrameworkSettings` after the DocSite theme is applied, so it fits prose tweaks, color maps, or apply directives without leaving DocSite. When customisations outside DocSite's scope are needed, drop to bare `AddPennington` + `AddMonorailCss`; see <xref:explanation.positioning.docsite-positioning> for the authoritative breakdown.
-
-```csharp:xmldocid
-P:Pennington.DocSite.DocSiteOptions.CustomCssFrameworkSettings
-```
-
-Backing options type for the delegate signature and the bare-host escape:
-
-```csharp:xmldocid
-T:Pennington.MonorailCss.MonorailCssOptions
-```
-
-For a bare `AddPennington` host the same knob sits on `MonorailCssOptions` directly; see the Lab's helper:
+`DocSiteOptions.CustomCssFrameworkSettings` post-processes the `CssFrameworkSettings` after the DocSite theme is applied — prose tweaks, color maps, or apply directives without leaving DocSite. For customisations outside DocSite's scope, see <xref:explanation.positioning.docsite-positioning>. On a bare `AddPennington` host, the same knob sits on `MonorailCssOptions` directly.
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.MonorailCssCustomization.BuildOptions

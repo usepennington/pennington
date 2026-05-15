@@ -13,27 +13,15 @@ Why does Pennington model its content flow as a union of four records instead of
 
 A content engine has to move each page through at least four distinct phases — discovery, parsing, rendering, and emission — and each phase legitimately knows different things about the item. A discovered file has a source location and a route, but no parsed front matter or markdown body. A parsed item has structured metadata and text, but no HTML. A rendered item has HTML and an outline, ready to write to disk. These are not the same data at different points in time; they are genuinely different shapes.
 
-The conventional escape routes both have a cost. A single `ContentItem` class with nullable `Metadata`, `Html`, and `Error` fields invites "is it safe to touch this yet?" checks at every call site, and the compiler has no way to enforce which combination of fields is populated at which stage. A traditional inheritance hierarchy — `ContentItem` → `ParsedItem` → `RenderedItem` — puts discovery-stage code and render-stage code in a subtyping relationship that does not reflect how they are actually used, and forces the failure case into either a parallel branch that breaks `is`-checks downstream or a nullable error field on every subclass. C# 15 discriminated unions offer a third path: the compiler tracks which case you hold, pattern matching is exhaustive, and each case carries exactly the fields that exist at that stage.
+The conventional escape routes both have a cost. A single `ContentItem` class with nullable `Metadata`, `Html`, and `Error` fields invites "is it safe to touch this yet?" checks at every call site, and the compiler has no way to enforce which combination of fields is populated at which stage. A traditional inheritance hierarchy — `ContentItem` → `ParsedItem` → `RenderedItem` — puts discovery-stage code and render-stage code in a subtyping relationship that does not reflect how they are actually used, and forces the failure case into either a parallel branch that breaks `is`-checks downstream or a nullable error field on every subclass. [C# 15 discriminated unions](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/union) offer a third path: the compiler tracks which case you hold, pattern matching is exhaustive, and each case carries exactly the fields that exist at that stage.
 
 ## How it works
 
 ### The union shape
 
-`ContentItem` is a union of four record cases: `DiscoveredItem`, `ParsedItem`, `RenderedItem`, and `FailedItem`. Each case is a plain record holding only the fields that make sense at its stage — there is no base class, no status enum, and no nullable placeholder for data that has not arrived yet. The union itself exposes a single `Route` property that all four cases share, because "every content item, even a failed one, belongs to a route" is a genuine invariant. Call sites that only need to know the route never have to pattern-match; call sites that need the rendered HTML must match and will get a compile error if they forget a case.
+`ContentItem` is a union of four record cases — `DiscoveredItem` (route + source), `ParsedItem` (adds metadata and raw markdown), `RenderedItem` (adds HTML and outline), and `FailedItem` (route + error). Each case is a plain record holding only the fields that make sense at its stage — no base class, no status enum, no nullable placeholders. The union itself exposes a single `Route` property that all four cases share, because "every content item, even a failed one, belongs to a route" is a genuine invariant. Call sites that need the rendered HTML must pattern-match and will get a compile error if they forget a case.
 
-`DiscoveredItem`
-:   Carries `Route` and `Source`. The shape returned by a content service before anything has been parsed.
-
-`ParsedItem`
-:   Carries `Route`, `Metadata`, and `RawMarkdown`. Front matter is resolved; the body is still markdown text.
-
-`RenderedItem`
-:   Carries `Route`, `Metadata`, and `Content`. HTML and the page outline are produced; ready for the writer.
-
-`FailedItem`
-:   Carries `Route` and `Error`. A parser or renderer exception demoted to data so it can ride the same stream.
-
-The four case records are siblings in the same union — none inherits from another, and there is no `Stage` or `Status` field anywhere. `Route` is the one projection lifted onto the union, and that narrowness is deliberate: every additional lifted property would need a sensible value for all four cases, which is exactly the nullable-field trap the union is meant to avoid.
+`Route` is the one projection lifted onto the union, and that narrowness is deliberate: every additional lifted property would need a sensible value for all four cases — which is exactly the nullable-field trap the union is meant to avoid. For full member lists, see <xref:reference.api.i-content-service>.
 
 ### `ContentSource` discriminates where an item came from
 

@@ -39,22 +39,26 @@ M:BeyondRoslynExample.Stage1.Run(System.String[])
 
 **Add a sibling `Sample` class library**
 
-Drop a `Sample/BeyondRoslynExample.Sample.csproj` folder next to the host csproj. Set `GenerateDocumentationFile=true` so XmlDocId lookups resolve. Also set `DefaultItemExcludes` on the host csproj to skip `Sample\**` — otherwise the two projects compete over the same `.cs` files and the host build fails with duplicate-compile errors.
+From the host folder, scaffold the class library and add `GenerateDocumentationFile=true` so XmlDocId lookups resolve:
 
-The host csproj `<PropertyGroup>` ends up with exactly this line:
+```text
+dotnet new classlib -n BeyondRoslynExample.Sample -o Sample
+```
+
+Then add this property to the host csproj — without it, the two projects compete over the same `.cs` files and the host build fails with duplicate-compile errors:
 
 ```xml
 <DefaultItemExcludes>$(DefaultItemExcludes);Sample\**</DefaultItemExcludes>
 ```
 
-`$(DefaultItemExcludes)` preserves the SDK's own excludes (bin/obj/etc.); the semicolon-separated `Sample\**` glob adds the sibling library on top.
+`$(DefaultItemExcludes)` preserves the SDK's own excludes (bin/obj); the semicolon-separated `Sample\**` glob adds the sibling library on top.
 
 </Step>
 <Step StepNumber="3">
 
 **Add two small types to fence**
 
-These are the symbols the rest of the tutorial points at. The XML doc comments on each member are what make them addressable by XmlDocId.
+Drop the two source files below into `Sample/`. They are the symbols the rest of the tutorial points at; the XML doc comments are what make them addressable by XmlDocId. (The fences below render from the in-repo example so the page can show what the disk file looks like — they are not yet wired into your local project.)
 
 ```csharp:xmldocid
 T:BeyondRoslynExample.Sample.Calculator
@@ -103,7 +107,7 @@ A single DI call turns on the xmldocid preprocessor. Once `AddPenningtonRoslyn` 
 
 **Add the three package references**
 
-Add all three to the host csproj. `Pennington.Roslyn` brings in `SyntaxHighlighter` and `RoslynCodeBlockPreprocessor`; the other two are runtime requirements of `Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace`.
+Add all three to the host csproj. `Pennington.Roslyn` brings in [`SyntaxHighlighter`](xref:reference.api.syntax-highlighter) and [`RoslynCodeBlockPreprocessor`](xref:reference.api.roslyn-code-block-preprocessor); the other two are runtime requirements of `Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace`.
 
 ```xml
 <PackageReference Include="Pennington.Roslyn" Version="0.1.0-alpha.0.20" /> <!-- [!code ++] -->
@@ -127,19 +131,9 @@ builder.Services.AddPenningtonRoslyn(opts =>
 
 `SolutionPath` is resolved with `Path.GetFullPath`, so a relative value is interpreted against the **process working directory** — that is, the folder you run `dotnet run` from, which is normally the host csproj folder. The example string `"BeyondRoslynExample.slnx"` works because the inner `.slnx` sits next to the csproj. To point at a sibling folder, use a relative path like `"../OtherProject/Other.slnx"`; an absolute path also works.
 
-</Step>
-<Step StepNumber="3">
+For the full `RoslynOptions` surface — including `ProjectFilter`, which narrows the workspace when the `.slnx` lists more than the docs need — see <xref:reference.api.roslyn-options>.
 
-**See the options surface**
-
-`RoslynOptions` carries `SolutionPath` (required for fence resolution) and `ProjectFilter` (narrows the workspace when the `.slnx` lists more than the docs need). For this tutorial, only `SolutionPath` matters. See <xref:reference.api.roslyn-options> for the full surface.
-
-</Step>
-<Step StepNumber="4">
-
-**See the registration-only state**
-
-Here is the stage 2 host: the same `AddDocSite` block as stage 1 plus one `AddPenningtonRoslyn` call. Nothing else changes.
+The complete stage 2 host adds one `AddPenningtonRoslyn` call to the stage 1 setup; nothing else changes.
 
 ```csharp:xmldocid,bodyonly,usings
 M:BeyondRoslynExample.Stage2.Run(System.String[])
@@ -151,8 +145,8 @@ M:BeyondRoslynExample.Stage2.Run(System.String[])
 <Checkpoint>
 
 - Run `dotnet run` on the host
-- The first request takes a beat longer while `SolutionWorkspaceService` (`T:Pennington.Roslyn.Workspace.SolutionWorkspaceService`) loads the inner slnx
-- No errors in the console — the workspace is hot and ready to resolve XmlDocIds
+- The first request takes a beat longer while [`SolutionWorkspaceService`](xref:reference.api.solution-workspace-service) loads the inner slnx
+- No errors in the console — the workspace is loaded and ready to resolve XmlDocIds
 
 </Checkpoint>
 
@@ -160,14 +154,24 @@ M:BeyondRoslynExample.Stage2.Run(System.String[])
 
 ## 3. Write your first `xmldocid` fence
 
-Now that `RoslynCodeBlockPreprocessor` (`T:Pennington.Roslyn.Preprocessing.RoslynCodeBlockPreprocessor`) is registered, any fenced code block whose info string ends in `:xmldocid` has its body parsed as one XmlDocId per line and resolved against the loaded workspace.
+Now that [`RoslynCodeBlockPreprocessor`](xref:reference.api.roslyn-code-block-preprocessor) is registered, any fenced code block whose info string ends in `:xmldocid` has its body parsed as one XmlDocId per line and resolved against the loaded workspace.
 
 <Steps>
 <Step StepNumber="1">
 
 **Create a new markdown page**
 
-Add `Content/api-pulls.md` with a front-matter block (`title`, `description`, `order`) and a heading. The next step fences a type from the Sample library into it.
+Add `Content/api-pulls.md` with the front matter and heading below. The next step adds a fence to it.
+
+```markdown
+---
+title: API pulls
+description: Live source from the Sample library.
+order: 30
+---
+
+# API pulls
+```
 
 </Step>
 <Step StepNumber="2">

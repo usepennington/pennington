@@ -9,25 +9,12 @@ tags: [front-matter, drafts, tags, ordering]
 
 To keep an unfinished page out of navigation, attach grouping keywords to a page, or change where a page appears within its sidebar section, set one of three front-matter keys. For how front matter is parsed, see <xref:how-to.pages.front-matter>.
 
-## Assumptions
+## Before you begin
+- A working Pennington site has markdown under `Content/` (see <xref:how-to.pages.front-matter> if not).
+- Pages use a front-matter record that implements the capability each key relies on. `isDraft:` is universally available; `tags:` requires `ITaggable`; `order:` requires `IOrderable`. The four shipped records — `DocFrontMatter`, `DocSiteFrontMatter`, `BlogFrontMatter`, `BlogSiteFrontMatter` — implement different subsets; see <xref:reference.front-matter.keys> for the per-record matrix.
+- The sidebar currently renders in file-order; `TableOfContentsNavigation` has not been customized.
 
-- A working Pennington site has markdown under `Content/` (see <xref:how-to.pages.front-matter> if not)
-- Pages use a front-matter record that implements the capability each key relies on (see the applicability note below)
-- The sidebar currently renders in file-order; `TableOfContentsNavigation` has not been customized
-
-### Which front-matter types support which keys
-
-`isDraft:` is always available — `IFrontMatter` has a default `IsDraft` member that every record inherits. `tags:` and `order:` only apply to records that opt in through `ITaggable` and `IOrderable` respectively.
-
-| Front-matter type | `isDraft:` | `tags:` | `order:` |
-|---|---|---|---|
-| `DocSiteFrontMatter` (default after `AddDocSite`) | yes | yes | yes |
-| `BlogSiteFrontMatter` (default after `AddBlogSite`) | yes | yes | **no** — date-driven ordering instead |
-| `DocFrontMatter` (bare-host default) | yes | yes | yes |
-| `BlogFrontMatter` (bare-host default) | yes | yes | **no** |
-| Custom record | depends on which capability interfaces it implements | | |
-
-Setting `order:` on a `BlogSiteFrontMatter` page has no effect — blog posts sort newest-first by `date:`. To reorder posts, adjust the date; to hide a post, use `isDraft: true`.
+Setting `order:` on a `BlogSiteFrontMatter` or `BlogFrontMatter` page has no effect — blog posts sort newest-first by `date:`. To reorder posts, adjust the date; to hide a post, use `isDraft: true`.
 
 ## Options
 
@@ -63,7 +50,7 @@ P:Pennington.DocSite.DocSiteFrontMatter.Tags
 
 ### Order a page inside its section
 
-Lower `order:` values sort earlier within a section. A section inherits its own sort key from the minimum `order:` among its children, so changing one page can reshuffle the whole section. Spacing like 10/20/30 leaves room for later inserts between existing siblings.
+Lower `order:` values sort earlier within a section. Spacing like 10/20/30 leaves room for later inserts between existing siblings.
 
 ```yaml
 ---
@@ -72,11 +59,7 @@ order: 201020
 ---
 ```
 
-Backing symbol:
-
-```csharp:xmldocid
-P:Pennington.DocSite.DocSiteFrontMatter.Order
-```
+For how sections inherit their own sort key from child `order:` values, see <xref:explanation.routing.navigation-tree>.
 
 ## Verify
 

@@ -7,7 +7,7 @@ sectionLabel: UI Components
 tags: [ui, navigation, razor, components]
 ---
 
-`TableOfContentsNavigation` and `OutlineNavigation` are the two Razor components in `Pennington.UI` that render, respectively, the sidebar page tree and the floating in-page heading outline. Both live in namespace `Pennington.UI.Components.Navigation` and are consumed by `Pennington.DocSite`'s `MainLayout`, but are available to any host referencing `Pennington.UI`. `TableOfContentsNavigation` binds to an `ImmutableList<NavigationTreeItem>` produced by `NavigationBuilder`; `OutlineNavigation` binds to a client-side DOM selector at runtime. Neither accepts a `NavigationInfo` directly.
+`TableOfContentsNavigation` and `OutlineNavigation` are the two Razor components in `Pennington.UI` that render, respectively, the sidebar page tree and the floating in-page heading outline. Both live in namespace `Pennington.UI.Components.Navigation` and are consumed by `Pennington.DocSite`'s `MainLayout`.
 
 ## `TableOfContentsNavigation`
 
@@ -34,13 +34,9 @@ Renders an ordered `<nav><ul>` of `NavigationTreeItem` entries, recursing one le
 | `RootLinkStructureClass` | `string` | `"block w-full py-1"` | Layout classes applied to a leaf root-level `<a>` when a top-level entry has no children. |
 | `RootLinkColorClass` | `string` | see source | CSS classes applied to a leaf root-level `<a>` (a top-level entry with no children), composed after `RootLinkStructureClass`. |
 
-### Slots
+### Binding
 
-This component has no `RenderFragment` slots; all customization is performed through the class-name parameters above.
-
-### Example
-
-The DocSite `MainLayout` (`src/Pennington.DocSite/Components/Layout/MainLayout.razor`) instantiates `TableOfContentsNavigation` twice — once per area when `DocSiteOptions.Areas` is populated and once against the root tree otherwise — passing the tree produced by `NavigationBuilder.BuildTree`.
+`TableOfContents` accepts an `ImmutableList<NavigationTreeItem>` produced by `NavigationBuilder.BuildTree(items, currentRoute, locale)`. It does not accept a `NavigationInfo`. `SectionLabel` is typically passed from `NavigationInfo.SectionName`. No `RenderFragment` slots.
 
 ## `OutlineNavigation`
 
@@ -67,23 +63,9 @@ Emits a `data-role="page-outline"` container and an empty `<ul>` whose items are
 | `OutlineLinkColorClass` | `string` | see source | CSS classes emitted on the container as `data-outline-link-color-class` and applied by the client-side script to each generated `<li><a>` for color and `data-selected=true` state. |
 | `OutlineLinkStructureClass` | `string` | see source | Layout classes emitted on the container as `data-outline-link-structure-class` and applied by the client-side script to each generated `<li><a>`. |
 
-### Slots
+### Binding
 
-This component has no `RenderFragment` slots; the outline list is populated at runtime by the companion client script.
-
-### Example
-
-The DocSite `MainLayout` drops a single `<OutlineNavigation ContentSelector="article main" />` into the right-hand rail so the script binds to headings inside the rendered article.
-
-## Binding to `NavigationInfo`
-
-`NavigationInfo` is the per-request record exposed by `NavigationBuilder.BuildNavigationInfo`; it carries `SectionName`, `SectionRoute`, `Breadcrumbs`, `PageTitle`, `PreviousPage`, and `NextPage`, not a navigation tree.
-
-```csharp:xmldocid
-T:Pennington.Navigation.NavigationInfo
-```
-
-`TableOfContentsNavigation.TableOfContents` is populated from the tree returned by `NavigationBuilder.BuildTree(items, currentRoute, locale)`, not from a `NavigationInfo`; `NavigationInfo.SectionName` is the value callers typically pass to `SectionLabel`. `OutlineNavigation` does not read `NavigationInfo` at all — it is a client-side component bound to a DOM selector — so previous/next navigation and breadcrumbs flow through other components or layout slots.
+The component performs no server-side heading extraction. The outline list is populated at runtime by the companion client script in `Pennington.UI/wwwroot/`, which queries the element matched by `ContentSelector` and reads `data-content-selector`, `data-outline-link-structure-class`, and `data-outline-link-color-class` from the container. `NavigationInfo` is not consulted. No `RenderFragment` slots.
 
 ## See also
 

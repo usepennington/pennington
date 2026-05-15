@@ -31,13 +31,7 @@ The version-keyed cache is what makes the dev-serve loop feel right. The first p
 
 ### Color schemes: named vs algorithmic
 
-`ColorScheme` on `MonorailCssOptions` is the hook that feeds the MonorailCSS theme, and it comes in two distinct flavors.
-
-A `NamedColorScheme` maps three role names — `primary`, `accent`, `base` — onto built-in MonorailCSS palettes by name (for example, `Blue` or `Slate`). It is the default, and it suits sites where the designer thinks in terms of recognizable Tailwind-style palettes and picks by name rather than by hue.
-
-An `AlgorithmicColorScheme` takes a `PrimaryHue` in degrees, a seed `Chroma`, and a `CoordinatingScheme` enum (Complementary, SplitComplementary, Triadic, Analogous) and synthesizes `primary`, `base`, and one or more `accent` palettes from scratch. The base palette is a desaturated neutral at the primary hue; the accents come from the scheme's hue offsets. This second shape is what makes "my brand color is hue 214 at chroma 0.18, derive everything from that" viable without hand-authoring a full palette table.
-
-The two schemes are not a legacy/modern pair or a simple/advanced pair — they occupy different spots on the designer-versus-programmer axis. Named is the choice when a designer says "I want Tailwind Purple for primary"; Algorithmic is the choice when the starting point is a brand hue expressed in degrees and the palette needs to be coherent rather than cherry-picked.
+`ColorScheme` on `MonorailCssOptions` ships in two flavors that occupy different spots on the designer-versus-programmer axis. `NamedColorScheme` is the choice when a designer says "I want Tailwind Purple for primary" — it maps `primary`, `accent`, and `base` onto built-in palettes by name. `AlgorithmicColorScheme` is the choice when the starting point is a brand hue expressed in degrees and the whole palette needs to be derived coherently — it synthesizes everything from a single `PrimaryHue`. See <xref:reference.api.monorail-css-options> for the full parameter surface.
 
 Syntax-highlight colors are deliberately kept off the brand scheme. `SyntaxTheme` on `MonorailCssOptions` holds the five roles `.hljs-*` token classes consume — keyword, string, variable, function, and comment — each mapped to its own Tailwind palette. The default picks a tuned combination (Sky / Emerald / Rose / Amber / Slate) that reads well against either a light or dark code background, so a site can pick primary and accent purely for brand reasons without constraining how code renders.
 
@@ -45,7 +39,7 @@ Syntax-highlight colors are deliberately kept off the brand scheme. `SyntaxTheme
 
 The algorithmic scheme delegates to the `ApplyAlgorithmicColorScheme` extension method on `Theme`, which generates each palette as an 11-stop dictionary keyed by the familiar `50` through `950` shade names. Two curve families do the work. Foreground palettes (used for primary and accents) scale a fixed lightness curve fitted from averaged Tailwind palettes, and chroma is anchored at step 500 to the seed value — every other step is a relative fraction of that peak. Neutral palettes (used for the base) follow a flatter lightness curve and an absolute chroma curve scaled by the seed's intensity, with the dark tail blending between a tapered and a held-high shape so deep base colors keep a usable hue cast.
 
-The key property that earns OKLCH its spot here is perceptual uniformity. Stepping lightness by a fixed amount produces steps that look evenly spaced regardless of hue, which is not true of HSL — a 500-weight green at HSL lightness 40% looks brighter than a 500-weight blue at the same value. OKLCH makes the generated scheme feel visually coherent without per-hue handwork from the caller, which is what makes "give me a palette from hue 214" a reasonable thing to ask.
+The key property that earns OKLCH its spot here is perceptual uniformity. OKLCH is a cylindrical coordinate system over the OK-Lab color space — lightness, chroma, and hue tuned so equal numeric steps look equal to the eye, which is famously not true of HSL (a 500-weight green at HSL lightness 40% looks brighter than a 500-weight blue at the same value). OKLCH makes the generated scheme feel visually coherent without per-hue handwork, which is what makes "give me a palette from hue 214" a reasonable thing to ask.
 
 `ColorPaletteGenerator.GenerateForeground` and `GenerateNeutral` are plain static methods, so nothing in the color story depends on DI — a test or a small designer tool can call them directly to preview a palette before committing to a seed.
 

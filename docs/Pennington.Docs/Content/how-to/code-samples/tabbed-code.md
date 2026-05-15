@@ -9,8 +9,7 @@ tags: [markdown, tabs, code-blocks, extensions]
 
 When two or more code variants show the same operation — bash vs. PowerShell, a `csproj` property vs. its CLI equivalent, C# vs. F# — a tabbed group lets the audience pick one without scrolling past the others. Author each variant as a normal fenced code block with `tabs=true title="..."` in the info string and Pennington collapses adjacent matches into a single ARIA tablist. For the info-string grammar, see <xref:reference.markdown.code-block-args>.
 
-## Assumptions
-
+## Before you begin
 - An existing Pennington site rendering markdown (see <xref:tutorials.getting-started.first-site> if not).
 - The host wires the default Pennington markdown pipeline, which already enables `UseTabbedCodeBlocks` under `AddDocSite`, `AddBlogSite`, or bare `AddPennington`.
 - Familiarity with the fence info-string shape (language token plus key/value attributes) — the reference page above covers the grammar.
@@ -21,7 +20,7 @@ Each H3 below shows the source markdown above the rendered widget. The first tab
 
 ### Adjacent fences become tabs
 
-Author two or more fenced blocks back-to-back, each with `tabs=true title="..."` in the info string. The extension walks the document, finds consecutive `FencedCodeBlock`s whose `tabs` attribute is `"true"`, and folds them into one tablist. The `title` value becomes the tab label; the language token before the attributes still drives syntax highlighting.
+Author two or more fenced blocks back-to-back, each with `tabs=true title="..."` in the info string. Consecutive matches collapse into one tablist; the `title` value becomes the tab label.
 
 `````markdown
 ````bash tabs=true title="bash"
@@ -31,10 +30,6 @@ dotnet add package Pennington
 ````powershell tabs=true title="PowerShell"
 Install-Package Pennington
 ````
-
-````xml tabs=true title="csproj"
-<PackageReference Include="Pennington" Version="1.0.0" />
-````
 `````
 
 ```bash tabs=true title="bash"
@@ -43,10 +38,6 @@ dotnet add package Pennington
 
 ```powershell tabs=true title="PowerShell"
 Install-Package Pennington
-```
-
-```xml tabs=true title="csproj"
-<PackageReference Include="Pennington" Version="1.0.0" />
 ```
 
 ### Prose between fences splits the group
@@ -79,19 +70,13 @@ echo "second group"
 
 The rendered HTML draws its CSS class names from `TabbedCodeBlockRenderOptions`. The `Default` instance ships with `not-prose` on the outer wrapper plus `tab-container`, `tab-list`, `tab-button`, and `tab-panel` on the nested elements — enough for the MonorailCSS preset to style them without extra work.
 
-```csharp:xmldocid
-T:Pennington.Markdown.Extensions.Tabs.TabbedCodeBlock
-```
-
-```csharp:xmldocid
-T:Pennington.Markdown.Extensions.Tabs.TabbedCodeBlockRenderOptions
-```
-
-To override the class names, set `PenningtonOptions.TabbedCodeBlockOptions` to a `Func<TabbedCodeBlockRenderOptions>` returning a modified `with` expression. The factory replaces the `Default` shape on the pipeline's single registration of the tabbed extension, so every rendered page picks up the new class names. This works identically on `AddPennington`, `AddDocSite`, and `AddBlogSite` because each surface plumbs the same property through to the pipeline factory.
+To override the class names, set `PenningtonOptions.TabbedCodeBlockOptions` to a `Func<TabbedCodeBlockRenderOptions>` returning a modified `with` expression.
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.TabbedCodeBlockStyling.ConfigureTabbedCodeBlocksOverride(Pennington.Infrastructure.PenningtonOptions)
 ```
+
+See <xref:reference.markdown.extensions> for the full `TabbedCodeBlockRenderOptions` surface.
 
 ## Related
 

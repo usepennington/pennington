@@ -18,7 +18,7 @@ The catalog of non-CommonMark Markdown features wired into Pennington's Markdig 
 
 ## Tabs
 
-The tabs extension collapses a run of consecutive fenced code blocks — starting with one that carries `tabs=true` — into a single tabbed container rendered as `role="tablist"` / `role="tab"` / panel regions, with the first tab active by default.
+Renders a run of consecutive fenced code blocks (starting with one that carries `tabs=true`) as a single tabbed container with `role="tablist"`, `role="tab"`, and panel regions. The first tab is active by default.
 
 ### Syntax
 
@@ -36,16 +36,12 @@ Each fenced block in the consecutive run becomes a tab panel; only the first blo
 
 ### Arguments
 
-<FieldList>
-<Field Name="tabs" Type="true" Default="(absent)">
-Applies to the first fence in the group. Marks a fenced block as the start of a tabbed run; consecutive subsequent fences join the same group.
-</Field>
-<Field Name="title" Type="string (optionally quoted)" Default="pretty language name derived from the info string">
-Applies to each fence in the group. Overrides the label shown on the tab button.
-</Field>
-</FieldList>
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `tabs` | `true` | (absent) | Applies to the first fence in the group. Marks a fenced block as the start of a tabbed run; consecutive subsequent fences join the same group. |
+| `title` | `string` (optionally quoted) | pretty language name derived from the info string | Applies to each fence in the group. Overrides the label shown on the tab button. |
 
-Arguments are `key=value` pairs; quoted values are allowed. See [Code-block argument reference](xref:reference.markdown.code-block-args) for the full grammar.
+Arguments are `key=value` pairs; quoted values are allowed. See <xref:reference.markdown.code-block-args> for the full grammar.
 
 ### Emitted CSS classes
 
@@ -69,7 +65,7 @@ examples/DocSitePagesAndLinksExample/snippets/markdown-tabs-example.md
 
 ## Alerts
 
-The alerts extension parses a GitHub-flavored `> [!KIND]` token as the first line of a blockquote and replaces the `QuoteBlock` with an `AlertBlock` carrying two CSS classes. Pennington registers its own `CustomAlertInlineParser` ahead of Markdig's built-in alert parser; the blockquote form is the only accepted syntax.
+Parses a GitHub-flavored `> [!KIND]` token as the first line of a blockquote and emits an `AlertBlock` with two CSS classes. The blockquote form is the only accepted syntax.
 
 ### Syntax
 
@@ -82,17 +78,19 @@ The alerts extension parses a GitHub-flavored `> [!KIND]` token as the first lin
 
 ### Arguments
 
-Alerts take no arguments; the kind token is the only variable and is drawn from the set listed under built-in kinds.
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `KIND` | identifier | — | One of `NOTE`, `TIP`, `CAUTION`, `WARNING`, `IMPORTANT`. Case-insensitive. Unrecognized tokens still parse, emitting `markdown-alert-<kind>` using the lowercased value. |
 
 ### Built-in kinds and emitted CSS classes
 
-Every alert receives two classes: `markdown-alert` (constant) and `markdown-alert-<kind>` (derived from the lowercased token). The five built-in GitHub-compatible kinds and their emitted secondary classes are listed below.
+Every alert receives two classes: `markdown-alert` (constant) and `markdown-alert-<kind>`.
 
-| Kind token | Secondary class | Typical use |
+| Kind | Secondary class | Typical use |
 |---|---|---|
 | `NOTE` | `markdown-alert-note` | Supplementary information. |
 | `TIP` | `markdown-alert-tip` | Helpful aside. |
-| `CAUTION` | `markdown-alert-caution` | Risky operation — consequences before action. |
+| `CAUTION` | `markdown-alert-caution` | Risky operation. |
 | `WARNING` | `markdown-alert-warning` | Something likely to go wrong. |
 | `IMPORTANT` | `markdown-alert-important` | Must-read information. |
 
@@ -106,7 +104,7 @@ examples/DocSitePagesAndLinksExample/snippets/markdown-alert-example.md
 
 ## Code annotations
 
-After syntax highlighting, each rendered line is scanned for a `[!code …]` directive inside a language-appropriate comment. The comment is stripped and a CSS class is applied to the line and optionally to the enclosing `<pre>`. The `word:` variant wraps a matching substring in a span rather than acting on the whole line; the `include-start` / `include-end` / `exclude-start` / `exclude-end` directives remove surrounding lines from the output.
+After syntax highlighting, each rendered line is scanned for a `[!code …]` directive inside a language-appropriate comment. The directive is stripped and a CSS class is applied to the line (and optionally to the enclosing `<pre>`). The `word:` variant wraps a matching substring; the `include-start`/`include-end`/`exclude-start`/`exclude-end` directives remove surrounding lines from the output.
 
 ### Syntax
 
@@ -122,38 +120,18 @@ The directive must appear inside a recognized comment marker for the language (`
 
 ### Notations
 
-<FieldList>
-<Field Name="highlight">
-Line class `highlight`, `<pre>` class `has-highlighted`. Marks a line as emphasized. Alias: `hl`.
-</Field>
-<Field Name="++">
-Line class `diff-add`, `<pre>` class `has-diff`. Marks a line as an addition.
-</Field>
-<Field Name="--">
-Line class `diff-remove`, `<pre>` class `has-diff`. Marks a line as a removal.
-</Field>
-<Field Name="focus">
-Line class `focused`, `<pre>` class `has-focused`. Focuses listed lines; all others receive `blurred`.
-</Field>
-<Field Name="error">
-Line class `error`, `<pre>` class `has-errors`. Marks a line as an error.
-</Field>
-<Field Name="warning">
-Line class `warning`, `<pre>` class `has-warnings`. Marks a line as a warning.
-</Field>
-<Field Name="word:TEXT">
-`<pre>` class `has-word-highlights`. Wraps the first occurrence of `TEXT` in a `<span class="word-highlight">`. Replace `TEXT` with the substring to highlight (the literal directive uses `word:` followed by the text, with no angle brackets or quoting — for example `[!code word:Multiply]`).
-</Field>
-<Field Name="word:TEXT|MESSAGE">
-`<pre>` class `has-word-highlights`. As above, but wraps the match in `word-highlight-with-message` and renders an adjacent `word-highlight-message` callout containing `MESSAGE`. Use a literal `|` to separate the matched text from the message — for example `[!code word:queue|renamed from buffer]`.
-</Field>
-<Field Name="include-start / include-end">
-Structural. Keep only lines between the matching start/end markers; markers are removed.
-</Field>
-<Field Name="exclude-start / exclude-end">
-Structural. Drop lines between the matching start/end markers; markers are removed.
-</Field>
-</FieldList>
+| Directive | Line class | `<pre>` class | Description |
+|---|---|---|---|
+| `highlight` (alias `hl`) | `highlight` | `has-highlighted` | Marks a line as emphasized. |
+| `++` | `diff-add` | `has-diff` | Marks a line as an addition. |
+| `--` | `diff-remove` | `has-diff` | Marks a line as a removal. |
+| `focus` | `focused` | `has-focused` | Focuses listed lines; all others receive `blurred`. |
+| `error` | `error` | `has-errors` | Marks a line as an error. |
+| `warning` | `warning` | `has-warnings` | Marks a line as a warning. |
+| `word:TEXT` | — | `has-word-highlights` | Wraps the first occurrence of `TEXT` in `<span class="word-highlight">`. Example: `[!code word:Multiply]`. |
+| `word:TEXT\|MESSAGE` | — | `has-word-highlights` | Wraps the match in `word-highlight-with-message` and renders an adjacent `word-highlight-message` callout containing `MESSAGE`. Example: `[!code word:queue\|renamed from buffer]`. |
+| `include-start` / `include-end` | — | — | Structural. Keep only lines between matching markers; markers are removed. |
+| `exclude-start` / `exclude-end` | — | — | Structural. Drop lines between matching markers; markers are removed. |
 
 ### Emitted CSS classes
 
@@ -173,7 +151,7 @@ var removed = "gone";    // [!code --]
 
 ## Cross-reference tags
 
-`xref:` links authored in markdown are resolved after rendering against the uid-to-route map built from every page's front-matter `uid:`. Two surface forms are supported: the tag form `<xref:uid>` is handled in a pre-parse string pass (it is not valid HTML), and the attribute form `[text](xref:uid)` has its rendered `href="xref:uid"` rewritten during the DOM pass. Unknown uids emit a diagnostic that surfaces in the dev overlay and in the static-build report.
+`xref:` links resolve after rendering against the uid-to-route map built from every page's front-matter `uid:`. Two surface forms are supported: the tag form `<xref:uid>` and the attribute form `[text](xref:uid)`. Unknown uids emit a diagnostic that surfaces in the dev overlay and in the static-build report.
 
 ### Syntax
 
@@ -187,7 +165,9 @@ See [PenningtonOptions](xref:reference.api.pennington-options).
 
 ### Arguments
 
-The only variable is the `uid` token. The tag form derives its link text from the target page's title; the attribute form uses the supplied link text verbatim.
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `uid` | identifier | — | Exact string declared in a page's front-matter `uid:` key. The tag form derives link text from the target page's title; the attribute form uses the supplied link text verbatim. |
 
 ### Emitted CSS classes
 

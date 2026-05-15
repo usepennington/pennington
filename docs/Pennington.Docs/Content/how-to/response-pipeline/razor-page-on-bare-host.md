@@ -7,7 +7,7 @@ sectionLabel: "Response Pipeline"
 tags: [extensibility, razor-components, bare-host, html-renderer]
 ---
 
-To render a Razor component as the whole response body for a custom route on a bare `AddPennington` host, render it through Blazor's server-side `HtmlRenderer` from inside a `MapGet`. The component owns the document — `<html>`, `<head>`, `<body>` — so the response is a complete HTML page without any DocSite or BlogSite layout machinery in between. This is the pattern to reach for when a custom `IContentService` discovers per-record routes (`/instructors/{slug}/`, `/status/{slug}/`, etc.) and the rendered output is too rich for string-interpolated HTML.
+To render a Razor component as the whole response body for a custom route on a bare `AddPennington` host, render it through Blazor's server-side `HtmlRenderer` from inside a `MapGet`. The component owns the document — `<html>`, `<head>`, `<body>` — so the response is a complete HTML page without DocSite or BlogSite layout machinery. Use this pattern when a custom `IContentService` discovers per-record routes (`/instructors/{slug}/`, `/status/{slug}/`) and the rendered output is too complex for inline HTML strings.
 
 ## Before you begin
 
@@ -37,13 +37,12 @@ The `RenderRazorPageAsync<TComponent>` helper at the bottom of `Program.cs` is t
 
 ## Publish the routes through `IContentService`
 
-A custom `IContentService` yields one `EndpointSource` per route so the build crawler discovers each URL and fetches it through the live pipeline — your `MapGet` produces the HTML the same way at build time as at request time. `EndpointSource` is the right case here (not `RedirectSource`); see <xref:how-to.content-services.custom-content-service> for why and what each case implies for `sitemap.xml`.
+A custom `IContentService` yields one `EndpointSource` per route so the build crawler discovers each URL and fetches it through the live pipeline — your `MapGet` produces the HTML the same way at build time as at request time. See <xref:how-to.content-services.custom-content-service> for the per-record discovery shape, including a worked `EndpointSource` example.
 
 ## Verify
 
 - Run `dotnet run --project examples/BareHostRazorPageExample` and visit `http://localhost:5000/status/intro/` and `http://localhost:5000/status/verify/`. Each renders the `StatusPage` component as a full HTML page styled by `/styles.css`.
 - Confirm the static build picks up both routes: `dotnet run --project examples/BareHostRazorPageExample -- build` writes `output/status/intro/index.html` and `output/status/verify/index.html`.
-- View source on a rendered page in **build mode** (`output/status/*/index.html`) — the markup ends with `</html>`, with no surrounding chrome injected by the framework. Dev-mode responses still ship the same component HTML, but Pennington appends a `<script>` block for live reload, a `<meta name="x-pennington-host">` fingerprint, and a `<link rel="canonical">` (when `CanonicalBaseUrl` is set) before the closing tags — those are stripped from build output.
 
 ## Related
 

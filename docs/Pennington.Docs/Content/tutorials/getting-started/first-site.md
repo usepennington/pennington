@@ -7,9 +7,7 @@ sectionLabel: "Getting Started with Pennington"
 tags: [getting-started, hosting, markdown, pipeline]
 ---
 
-By the end of this tutorial a runnable ASP.NET project — `MyFirstPenningtonSite` — serves `Content/index.md` as HTML at `http://localhost:5000/`, with the front-matter `title` appearing in both the `<title>` tag and the page's `<h1>`.
-
-The tutorial covers how to wire `AddPennington`, `UsePennington`, and `RunOrBuildAsync` into a minimal web host — the foundation under every Pennington-powered site. The next tutorial swaps the bare `MapGet` for a Blazor Server catch-all; for now, MapGet keeps the URL → markdown file → rendered HTML chain visible in one place.
+By the end of this tutorial a runnable ASP.NET project — `MyFirstPenningtonSite` — serves `Content/index.md` as HTML at `http://localhost:5000/`, with the front-matter `title` appearing in both the `<title>` tag and the page's `<h1>`. The next tutorial swaps the bare `MapGet` for a Blazor Server catch-all.
 
 ## Prerequisites
 
@@ -76,12 +74,12 @@ Pennington uses C# 15 union types, which are still a preview language feature in
 </Step>
 <Step StepNumber="4">
 
-**Confirm the bare host runs**
+**Run the bare host**
 
-Before adding Pennington, `Program.cs` looks like this — a plain `WebApplication` with a single `MapGet` that returns a string. This is the baseline we'll build on.
+The `dotnet new web` template produces a `Program.cs` with a single `MapGet` returning `"Hello from ASP.NET."`. Run it now to confirm the shell works before Pennington takes over.
 
-```csharp:xmldocid,bodyonly,usings
-M:GettingStartedMinimalSiteExample.Stage1.Run(System.String[])
+```text
+dotnet run
 ```
 
 </Step>
@@ -89,10 +87,7 @@ M:GettingStartedMinimalSiteExample.Stage1.Run(System.String[])
 
 <Checkpoint>
 
-The browser shows the literal text `Hello from ASP.NET.` — no markdown involved at this stage. If HTML output appears instead, double-check that the running project is the bare scaffold from step 1.4, not a later stage.
-
-- Run `dotnet run` from the project folder.
-- Open `http://localhost:5000/` and confirm the page body reads `Hello from ASP.NET.`
+- `http://localhost:5000/` returns the literal text `Hello from ASP.NET.`
 - Stop the process with `Ctrl+C` before continuing.
 
 </Checkpoint>
@@ -101,7 +96,7 @@ The browser shows the literal text `Hello from ASP.NET.` — no markdown involve
 
 ## 2. Register Pennington and point it at markdown
 
-Now let's swap the pass-through string endpoint for the Pennington content pipeline: `AddPennington` registers the core services, `AddMarkdownContent<DocFrontMatter>` names the markdown folder, and the host gains a `ContentRootPath` it will watch for changes.
+Now let's swap the pass-through string endpoint for the Pennington content pipeline: `AddPennington` registers the core services, `AddMarkdownContent<DocFrontMatter>` names the markdown folder (see [`DocFrontMatter`](xref:reference.api.doc-front-matter)), and the host gains a `ContentRootPath` it will watch for changes.
 
 <Steps>
 <Step StepNumber="1">
@@ -130,40 +125,16 @@ M:GettingStartedMinimalSiteExample.Stage2.Run(System.String[])
 </Step>
 </Steps>
 
-<Checkpoint>
-
-`dotnet build` succeeds with no errors. The host does **not** yet render the markdown page — stage 2 only registers services, so running it at this point returns a 404 for `/`. That's expected; hold off until step 3 adds the middleware.
-
-- Run `dotnet build` and confirm the build succeeds with no errors.
-- Do not run the site yet — the middleware arrives in the next step.
-
-</Checkpoint>
-
----
-
 ## 3. Wire the middleware and render the page
 
-Now we mount the middleware chain with `app.UsePennington()`, add a `MapGet` that hands each request to the content pipeline, and hand control to `RunOrBuildAsync` — the same host that serves live today will generate static HTML tomorrow with no code change. A Razor page would normally render the markdown, but a `MapGet` keeps the wiring visible in one place for this tutorial.
+Now we mount the middleware chain with `app.UsePennington()`, add a `MapGet` that hands each request to the content pipeline, and hand control to [`RunOrBuildAsync`](xref:reference.host.cli) — the same host that serves live today generates static HTML tomorrow with no code change. A Razor page would normally render the markdown, but a `MapGet` keeps the wiring visible in one place for this tutorial.
 
 <Steps>
 <Step StepNumber="1">
 
-**Add `UsePennington` and `RunOrBuildAsync`**
+**Add `UsePennington`, `RunOrBuildAsync`, and the rendering endpoint**
 
-Update `Program.cs` to match the snapshot below.
-
-```csharp:xmldocid,bodyonly,usings
-M:GettingStartedMinimalSiteExample.Stage3.Run(System.String[])
-```
-
-`UsePennington` installs static files, the response-processing middleware, live reload, and auto-registered endpoints like `/sitemap.xml`; `RunOrBuildAsync` serves live when called with no args and generates static HTML when passed `-- build`.
-
-</Step>
-<Step StepNumber="2">
-
-**Add the page-rendering endpoint**
-
-The previous step registered services and middleware but didn't add a rendering endpoint. Here's the complete final `Program.cs`. It adds a `MapGet` that walks the `IContentService` set, finds the matching markdown, and returns rendered HTML.
+Update `Program.cs` to match the complete file below. `UsePennington` installs static files, the response-processing middleware, live reload, and auto-registered endpoints like `/sitemap.xml`; `RunOrBuildAsync` serves live when called with no args and generates static HTML when passed `-- build`; the `MapGet` walks the `IContentService` set, finds the matching markdown, and returns rendered HTML.
 
 ```csharp:path
 examples/GettingStartedMinimalSiteExample/Program.cs

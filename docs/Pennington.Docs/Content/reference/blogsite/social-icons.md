@@ -23,32 +23,18 @@ All four fragments share `viewBox="0 0 24 24"`, `stroke="currentColor"`, and `fi
 
 | Name | `viewBox` | `stroke` | `fill` | Notes |
 |---|---|---|---|---|
-| `GithubIcon` | `0 0 24 24` | `currentColor` | `none` | Single-path Octocat silhouette. |
+| `GithubIcon` | `0 0 24 24` | `currentColor` | `none` | Single-path GitHub mark. |
 | `LinkedInIcon` | `0 0 24 24` | `currentColor` | `none` | Four-path "in" glyph inside a rounded square. |
 | `BlueskyIcon` | `0 0 24 24` | `currentColor` | `none` | Single-path butterfly silhouette using the same stroke-only, `currentColor` convention as the other icons. |
 | `MastodonIcon` | `0 0 24 24` | `currentColor` | `none` | Two-path elephant-trunk mark using `stroke-width="1.5"` and rounded joins. |
 
-## Reference from `SocialLink.Icon`
+## `SocialLink.Icon` shape
 
 ```csharp:xmldocid
 T:Pennington.BlogSite.SocialLink
 ```
 
-`SocialLink` is a `record SocialLink(RenderFragment Icon, string Url)`; pass the static field directly — `SocialIcons.GithubIcon` — not as a component tag `<SocialIcons.GithubIcon />`.
-
-One-line syntax:
-
-```csharp
-new SocialLink(SocialIcons.GithubIcon, "https://github.com/example")
-```
-
-## Example
-
-Excerpt from `BlogSiteHeroProjectsSocialsExample.Stage3.Run`, which populates `BlogSiteOptions.Socials` with all four built-in fragments.
-
-```csharp:xmldocid,bodyonly
-M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])
-```
+`SocialLink` is a `record SocialLink(RenderFragment Icon, string Url)`. The `Icon` field accepts the static `RenderFragment` directly (`SocialIcons.GithubIcon`), not the Razor component tag form. For consumer wiring see <xref:how-to.feeds.blogsite-homepage>.
 
 ## See also
 

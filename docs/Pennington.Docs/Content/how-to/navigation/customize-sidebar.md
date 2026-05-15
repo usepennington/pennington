@@ -7,10 +7,9 @@ sectionLabel: "Navigation & Links"
 tags: [navigation, sidebar, sections, ordering]
 ---
 
-The sidebar is generated from folder layout and front matter. Each adjustment below is independent — pick the one that matches the change you need. To replace the sidebar component itself, see the extensibility guide for overriding DocSite components.
+The sidebar is generated from folder layout and front matter. Each adjustment below is independent — pick the one that matches the change you need. To replace the sidebar component itself, see <xref:how-to.response-pipeline.override-docsite-components>.
 
-## Assumptions
-
+## Before you begin
 - A Pennington DocSite has markdown under `Content/<area>/` with at least one subfolder (the subfolder is what creates a sidebar group — see [Work with front matter](xref:how-to.pages.front-matter) if not)
 - Pages use `DocSiteFrontMatter` or another type that implements `IOrderable` + `ISectionable`
 - The basics of `order:` and `isDraft:` are familiar — if not, start with [Manage drafts, tags, and ordering](xref:how-to.pages.drafts-tags-ordering)
@@ -32,15 +31,9 @@ order: 204010
 ---
 ```
 
-Backing symbol on the DocSite front-matter record:
-
-```csharp:xmldocid
-P:Pennington.DocSite.DocSiteFrontMatter.Order
-```
-
 ### Promote a page to be the section landing
 
-Name the file `index.md` inside the section subfolder (for example `Content/main/widgets/index.md`). Pennington routes it at the subfolder URL and `NavigationBuilder` surfaces it as the section's lead entry rather than a separate child. A low `order:` — typically `10` — sorts the entire section earlier, because the section's aggregate sort key is the minimum `order:` of its direct children.
+Name the file `index.md` inside the section subfolder (for example `Content/main/widgets/index.md`). Pennington routes it at the subfolder URL and surfaces it as the section's lead entry rather than a separate child. A low `order:` (typically `10`) sorts the whole section earlier — see <xref:explanation.routing.navigation-tree> for how section sort keys are derived.
 
 ```yaml
 ---
@@ -49,15 +42,9 @@ order: 204010
 ---
 ```
 
-The area-root landing follows the same pattern at one level up:
-
-```markdown:path
-examples/DocSiteKitchenSinkExample/Content/main/index.md
-```
-
 ### Override the displayed section title
 
-The sidebar section header comes from the folder name, with kebab-case converted to title case by `NavigationBuilder` (for example `getting-started` becomes "Getting Started"). Renaming the folder changes what the sidebar prints. The front-matter `sectionLabel:` key is separate — it sets the page-context label surfaced on `NavigationInfo.SectionName` for breadcrumbs and current-page context, not the sidebar group header.
+The sidebar section header comes from the folder name (kebab-case converts to title case: `getting-started` → "Getting Started"). Rename the folder to change the printed header. The front-matter `sectionLabel:` key is separate — it sets the page-context label surfaced for breadcrumbs and current-page context, not the sidebar group header.
 
 ```yaml
 ---
@@ -66,27 +53,15 @@ sectionLabel: "Navigation & Links"
 ---
 ```
 
-Backing symbol for the front-matter key:
-
-```csharp:xmldocid
-P:Pennington.DocSite.DocSiteFrontMatter.SectionLabel
-```
-
 ### Hide a page from the sidebar
 
-Set `isDraft: true` to keep the page compiled — so `xref:` links still resolve — while dropping it from the sidebar, the search index, and `llms.txt`. A page with `redirectUrl:` is also omitted from the sidebar regardless of other keys; the engine treats redirects as transport hops rather than content.
+Set `isDraft: true` to keep the page compiled — so `xref:` links still resolve — while dropping it from the sidebar, the search index, and `llms.txt`. A page with `redirectUrl:` is also omitted from the sidebar.
 
 ```yaml
 ---
 title: Work in progress
 isDraft: true
 ---
-```
-
-Backing symbol on `IFrontMatter` (the draft key is not specific to DocSite):
-
-```csharp:xmldocid
-P:Pennington.FrontMatter.IFrontMatter.IsDraft
 ```
 
 ---

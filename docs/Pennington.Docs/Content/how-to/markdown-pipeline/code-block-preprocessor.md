@@ -1,53 +1,38 @@
 ---
 title: "Add a custom fence syntax"
-description: "Implement ICodeBlockPreprocessor to claim a fence language or :modifier suffix and return pre-rendered HTML before Pennington's default highlighter chain runs."
+description: "Implement ICodeBlockPreprocessor to claim a fence language or :modifier suffix and return pre-rendered HTML before the default highlighter chain runs."
 uid: how-to.markdown-pipeline.code-block-preprocessor
 order: 209010
 sectionLabel: "Markdown Pipeline"
 tags: [extensibility, markdown, highlighting, preprocessor]
 ---
 
-To add a custom fence syntax — a chart block, a plaintext wrapper, an xmldocid resolver — implement `ICodeBlockPreprocessor`. The preprocessor claims a fence language or `:modifier` suffix and returns pre-rendered HTML before the default highlighter chain runs. For line-level CSS classes on an otherwise normal code block, trailing-comment directives are the lighter-weight choice — see <xref:how-to.code-samples.code-annotations>.
+To intercept a fence language or `:modifier` suffix — a chart block, a plaintext wrapper, an xmldocid resolver — implement `ICodeBlockPreprocessor`. The preprocessor returns pre-rendered HTML before the default highlighter chain runs and owns the rendered `<pre><code>...</code></pre>`. For line-level CSS classes on an otherwise normal code block, trailing-comment directives are the lighter-weight choice — see <xref:how-to.code-samples.code-annotations>.
+
+The recipe references `examples/ExtensibilityLabExample/LineCountPreprocessor.cs`, which claims the `linecount` fence.
 
 ## Before you begin
 
 - An existing Pennington site with markdown rendering wired (see <xref:tutorials.getting-started.first-site> if not).
-- A chosen fence identifier — either a full `languageId` (`linecount`) or a `:modifier` suffix (`csharp:xmldocid`) — along with awareness of the other preprocessors currently registered, so the `Priority` slots in sensibly.
-- Comfort producing HTML by hand: the preprocessor owns the rendered `<pre><code>...</code></pre>` when it returns a result, and the default highlighter does not run again on that block.
+- A chosen fence identifier — either a full `languageId` (`linecount`) or a `:modifier` suffix (`csharp:xmldocid`).
 
-For a working setup, see `examples/ExtensibilityLabExample` — `LineCountPreprocessor` claims the `linecount` fence and is the fixture every snippet below references.
+## Write the preprocessor
 
-## Implement the preprocessor
+Implement <xref:reference.api.i-code-block-preprocessor> as a sealed class. `TryProcess(code, languageId)` receives the full fence info string unchanged. Compare it case-insensitively against the claimed language id or modifier, return `null` for anything else so the next preprocessor or the default highlighter can handle it, and otherwise build the wrapper HTML around the encoded source.
 
-`ICodeBlockPreprocessor` has two members: a `Priority` int and a `TryProcess(code, languageId)` method returning `CodeBlockPreprocessResult?`. Return `null` for any unclaimed fence so the next preprocessor — or the default highlighter — can handle it.
-
-```csharp:xmldocid
-T:Pennington.Markdown.Extensions.ICodeBlockPreprocessor
+```csharp:path
+examples/ExtensibilityLabExample/LineCountPreprocessor.cs
 ```
 
-The full fence info string reaches the preprocessor unchanged. Compare it case-insensitively against the claimed language id or `:modifier` suffix, return `null` immediately for anything else, and otherwise build the wrapper HTML around the encoded source.
-
-```csharp:xmldocid,bodyonly
-M:ExtensibilityLabExample.LineCountPreprocessor.TryProcess(System.String,System.String)
-```
-
-The result wraps the pre-rendered HTML, the `BaseLanguage` CSS class Pennington stamps on the block, and `SkipTransform`. Set `SkipTransform` to `true` when the output is final and the `[!code ...]` annotation pass should not re-process it.
-
-```csharp:xmldocid
-T:Pennington.Markdown.Extensions.CodeBlockPreprocessResult
-```
+The returned `CodeBlockPreprocessResult` carries the pre-rendered HTML, the `BaseLanguage` CSS class Pennington stamps on the block, and `SkipTransform`. Set `SkipTransform` to `true` when the output is final and the `[!code ...]` annotation pass should not re-process it.
 
 ## Pick a Priority value
 
-`CodeHighlightRenderer` sorts preprocessors by `Priority` descending and returns the first non-null result, so higher wins. The shipped `RoslynCodeBlockPreprocessor` uses `100`; `LineCountPreprocessor` uses `500` so its `linecount` fence is never intercepted by a lower-priority modifier preprocessor. Review the registered preprocessors before picking a value.
-
-```csharp:xmldocid
-P:ExtensibilityLabExample.LineCountPreprocessor.Priority
-```
+`CodeHighlightRenderer` sorts preprocessors by `Priority` descending and returns the first non-null result. The shipped `RoslynCodeBlockPreprocessor` uses `100`; `LineCountPreprocessor` uses `500` so its `linecount` fence is never intercepted by a lower-priority modifier preprocessor. Pick above `100` to win against the Roslyn preprocessor on a contested `:modifier`; pick below `100` to fall through to Roslyn first.
 
 ## Register the implementation
 
-Pennington collects every `ICodeBlockPreprocessor` from DI. Register with `AddSingleton<ICodeBlockPreprocessor, TPreprocessor>()` anywhere after `AddPennington` — there is no `PenningtonOptions` knob; the DI registration is the entire wiring step. (`AddPenningtonRoslyn` performs the equivalent registration for `RoslynCodeBlockPreprocessor`.)
+Pennington collects every `ICodeBlockPreprocessor` from DI. Register anywhere after `AddPennington` — there is no `PenningtonOptions` knob. `AddPenningtonRoslyn` performs the equivalent registration for `RoslynCodeBlockPreprocessor`.
 
 ```csharp
 builder.Services.AddSingleton<ICodeBlockPreprocessor, LineCountPreprocessor>();
@@ -70,12 +55,11 @@ Adjacent fences with other languages (`text`, `csharp`) keep flowing through the
 
 ## Verify
 
-- Run `dotnet run --project examples/ExtensibilityLabExample` and visit `/line-count-demo/` — the `linecount` fence renders inside a `<figure class="linecount">` with the line-count badge while the adjacent `text` fence highlights normally through the default chain.
-- View source on the rendered page and confirm the `linecount` figure carries `data-extensibility-lab="line-count-preprocessor"` — this shows `LineCountPreprocessor.TryProcess` returned a result rather than the default `CodeHighlightRenderer` path rendering the block.
-- Add a second preprocessor with a lower `Priority` that also claims `linecount`, reload, and confirm the higher-priority result still wins — priority ordering is descending.
+- Run `dotnet run --project examples/ExtensibilityLabExample` and visit `/line-count-demo/` — the `linecount` fence renders inside a `<figure class="linecount">` with the badge while the adjacent `text` fence highlights through the default chain.
+- View source and confirm the `linecount` figure carries `data-extensibility-lab="line-count-preprocessor"` — that attribute means `TryProcess` returned a result rather than the default `CodeHighlightRenderer` path rendering the block.
 
 ## Related
 
 - Reference: [Highlighting interfaces](xref:reference.api.i-code-highlighter) — full signatures for `ICodeHighlighter`, `ICodeBlockPreprocessor`, `HighlightingService`, and `TextMateLanguageRegistry`
-- How-to: [Annotate code blocks](xref:how-to.code-samples.code-annotations) — trailing-comment directives when only line classes are needed and the preprocessor does not need to take over rendering
+- How-to: [Annotate code blocks](xref:how-to.code-samples.code-annotations) — trailing-comment directives when only line classes are needed
 - Background: [The syntax-highlighting cascade](xref:explanation.rendering.highlighting) — why preprocessors run before the highlighter and how `CodeTransformer` interacts with `SkipTransform`

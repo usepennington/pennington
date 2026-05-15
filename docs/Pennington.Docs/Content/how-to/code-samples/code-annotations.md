@@ -1,5 +1,5 @@
 ---
-title: "Highlight, diff, focus, or flag lines inside a code block"
+title: "Annotate specific lines in a code block"
 description: "Apply highlight, diff, focus, and error/warning line classes to fenced code with trailing `[!code ...]` comment directives."
 uid: how-to.code-samples.code-annotations
 order: 202010
@@ -9,11 +9,9 @@ tags: [authoring, code, highlighting, annotations]
 
 To call out specific lines in a fenced code block — emphasising a change, diffing before/after, focusing attention, or surfacing a diagnostic — append a trailing `[!code ...]` comment directive to the line. The `CodeTransformer` runs after the highlighter, promotes the directive's class onto the enclosing `.line` span, and deletes the comment so the rendered code stays clean. For why the transformer sits where it does in the pipeline, see <xref:explanation.rendering.highlighting>.
 
-## Assumptions
-
+## Before you begin
 - An existing Pennington site renders markdown with highlighted code fences (see <xref:tutorials.getting-started.first-site> if not).
 - The fenced language supports a comment syntax the transformer recognises — `//`, `#`, `--`, `<!-- -->`, `*`, `%`, `'`, `REM`, `;`, or `/* */`.
-- Authoring happens in plain markdown; directives travel through the fence as comments and are stripped at render time.
 
 ## Annotation directives
 
@@ -101,9 +99,16 @@ var path = null; // [!code error]
 var length = path.Length; // [!code warning]
 ```
 
+## Verify
+
+- Run `dotnet run` and load the page with the annotated fence. The `[!code …]` comments are gone from the rendered HTML.
+- View source: each annotated `.line` span carries the matching class (`highlight`, `diff-add`, `diff-remove`, `focused` / `dimmed`, `error`, `warning`).
+
 ## What the renderer emits
 
-The `CodeTransformer` post-processes the highlighter output: it promotes each directive's class onto the enclosing `.line` span (`highlight`, `diff-add`, `diff-remove`, `focused`, `dimmed`, `error`, `warning`) and deletes the trailing comment. The directive text never appears in rendered HTML. Comment-marker variants (`#`, `--`, `<!-- -->`, etc.) are recognised the same way, so the same directive set works across languages without per-language wiring.
+The `CodeTransformer` promotes each directive's class onto the enclosing `.line` span — one of `highlight`, `diff-add`, `diff-remove`, `focused`, `dimmed`, `error`, `warning` — and deletes the trailing comment so the directive text never appears in rendered HTML. Comment-marker variants (`#`, `--`, `<!-- -->`, and so on) are recognised the same way, so the same directive set works across languages.
+
+See <xref:explanation.rendering.highlighting> for why the transformer runs after the highlighter.
 
 ## Related
 

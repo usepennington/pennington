@@ -7,22 +7,17 @@ sectionLabel: "Feeds & Indexes"
 tags: [configuration, llms-txt, discovery, front-matter]
 ---
 
-When LLM crawlers and agents should ingest the site without scraping HTML, the `/llms.txt` index plus per-page stripped-markdown sidecars give them a direct surface. On `AddDocSite` hosts the wiring is automatic and output is controlled through front matter; on bare `AddPennington` hosts a single `AddLlmsTxt(...)` call enables it. If no site exists yet, start with [Your first Pennington site](xref:tutorials.getting-started.first-page).
+Expose a `/llms.txt` index plus per-page stripped-markdown sidecars so LLM crawlers and agents can ingest the site without scraping HTML. On `AddDocSite` hosts the wiring is automatic; on bare `AddPennington` hosts a single `AddLlmsTxt(...)` call enables it.
 
-## Assumptions
+## Before you begin
+- A working Pennington site (see <xref:tutorials.getting-started.first-page> if not).
+- An `AddDocSite` host (LLM wiring is automatic) or a bare `AddPennington` host (needs an explicit `AddLlmsTxt(...)` call — see the "Bare Pennington" section below). The choice rationale is covered in <xref:explanation.positioning.docsite-positioning>.
 
-- A working Pennington site (see [Your first Pennington site](xref:tutorials.getting-started.first-page) if not)
-- The chosen host extension — `AddDocSite` vs bare `AddPennington` — and the reason for that choice (see [When is DocSite the right starting point?](xref:explanation.positioning.docsite-positioning))
-
-For a working DocSite setup with one opted-out page, refer to `Content/main/llms-hidden.md` in `examples/DocSiteKitchenSinkExample`.
+For a working DocSite setup with one opted-out page, see `Content/main/llms-hidden.md` in `examples/DocSiteKitchenSinkExample`.
 
 ---
 
 ## Options
-
-### Decide: DocSite front matter, or bare `AddLlmsTxt`?
-
-`AddDocSite` already calls `AddLlmsTxt` internally and defaults `ContentSelector` to `#main-content`. On a DocSite host, per-page inclusion is controlled through front matter (below), with an optional selector override through `DocSiteOptions.LlmsTxtContentSelector`. On a bare `AddPennington` host nothing is wired — `AddLlmsTxt(...)` needs an explicit call. Markdown content always renders through the engine's rendition channel; the selector applies only to the HTTP-fetch fallback used for Razor pages and API symbol pages, where it scopes the live HTML to the article and strips layout chrome.
 
 ### (DocSite) Opt a page out with `llms: false`
 
@@ -40,10 +35,10 @@ For a custom `ContentSelector` (different article wrapper or a non-DocSite layou
 
 ### Split content per-fragment with `humans-only` / `robots-only`
 
-For finer control than page-level opt-out, two paired classes mark a fragment as intended for one audience or the other. Both ship as part of the MonorailCSS base styles, so no registration is needed.
+For finer control than page-level opt-out, two paired classes mark a fragment as intended for one audience. Both ship in the MonorailCSS base styles — no registration needed.
 
-- `humans-only` — visible in the browser, stripped from the llms.txt extraction. Reach for it when a widget, interactive demo, or layout flourish carries no information an LLM needs.
-- `robots-only` — hidden in the browser via `display: none`, kept in the llms.txt extraction. Reach for it when an LLM needs context the human reader already has visually (a full signature next to a compact hover card, prose that mirrors a diagram, etc.).
+- `humans-only` — visible in the browser, stripped from the llms.txt extraction.
+- `robots-only` — hidden in the browser via `display: none`, kept in the llms.txt extraction.
 
 ```razor
 <div class="humans-only">
@@ -59,23 +54,13 @@ The classes work anywhere in the rendered page — markdown bodies, Razor compon
 
 ### (Bare Pennington) Enable `LlmsTxtOptions` with `AddLlmsTxt`
 
-On a bare host nothing is wired until `penn.AddLlmsTxt(...)` is called. The options surface covers `OutputDirectory` (where per-page sidecars land, defaults to `_llms`), `GenerateFullFile` (emit a concatenated `/llms-full.txt` for one-shot ingest), and `ContentSelector` (CSS selector applied to the HTTP-fetched HTML for non-markdown content; null means the whole `<body>`).
+On a bare host, call `penn.AddLlmsTxt(...)` once. The options surface (`OutputDirectory`, `GenerateFullFile`, `ContentSelector`) is documented at <xref:reference.api.llms-txt-options).
 
 ```csharp:xmldocid,bodyonly
 M:ExtensibilityLabExample.LlmsTxtConfiguration.Configure(Pennington.LlmsTxt.LlmsTxtOptions)
 ```
 
-```csharp:xmldocid
-T:Pennington.LlmsTxt.LlmsTxtOptions
-```
-
-### (Optional) Turn on `GenerateFullFile` for a concatenated snapshot
-
-`GenerateFullFile = true` emits `/llms-full.txt`, the same per-page markdown concatenated into one file — useful for one-shot ingest by agents that cannot follow per-page links. The default is `false` because the full file can be large; enable it when a known consumer needs it.
-
-```csharp:xmldocid
-P:Pennington.LlmsTxt.LlmsTxtOptions.GenerateFullFile
-```
+Set `GenerateFullFile = true` to also emit `/llms-full.txt` — every sidecar concatenated into one file, useful for one-shot ingest by agents that cannot follow per-page links. Off by default because the file can be large.
 
 ---
 

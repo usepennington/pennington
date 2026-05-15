@@ -7,10 +7,9 @@ sectionLabel: "Rich Content"
 tags: [authoring, alerts, markdown, callouts]
 ---
 
-To surface a note, tip, or warning inline without reaching for a Razor component, open a standard blockquote whose first line is `[!KIND]` in uppercase. The five built-in kinds — `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION` — fix the visual treatment; pick the one whose signal strength matches the message. The `CustomAlertInlineParser` fires only when the marker is the first inline of the first paragraph, so no leading text before it.
+To surface a note, tip, or warning inline without reaching for a Razor component, open a standard blockquote whose first line is `[!KIND]` in uppercase. The five built-in kinds — `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION` — fix the visual treatment; pick the one whose signal strength matches the message. The marker must be the first inline of the first paragraph — no leading text.
 
-## Assumptions
-
+## Before you begin
 - An existing Pennington site renders markdown (see <xref:tutorials.getting-started.first-site> if not).
 - The pipeline was built through `AddPennington` / `AddDocSite` / `AddBlogSite`, so `UseCustomAlerts()` is already wired into the default `MarkdownPipelineFactory`.
 - The default MonorailCSS integration or a stylesheet targets the `markdown-alert` / `markdown-alert-{kind}` classes.
@@ -71,7 +70,7 @@ Each kind below shows the source markdown above the rendered output. Every line 
 
 ## What the renderer emits
 
-The parser rewrites the blockquote into an `AlertBlock` and stamps it with two classes: `markdown-alert` (always present) and `markdown-alert-{kind}` where `{kind}` is the lower-cased token. Stylesheets target those two classes for the colour treatment. Any token outside the five recognised kinds fails the parse and the block falls back to a plain `<blockquote>` with no alert styling — so a marker the engine doesn't know stays visible in the rendered output instead of turning into a misleading callout.
+Each alert wraps in two CSS classes: `markdown-alert` (always present) and `markdown-alert-{kind}` where `{kind}` is the lower-cased token. Stylesheets target those two classes for the colour treatment. An unrecognised token falls back to a plain `<blockquote>` with no alert styling, so the marker stays visible instead of turning into a misleading callout.
 
 ````markdown
 > [!INFO]
@@ -80,6 +79,8 @@ The parser rewrites the blockquote into an `AlertBlock` and stamps it with two c
 
 > [!INFO]
 > Unknown kind: this falls back to a plain blockquote.
+
+See <xref:reference.markdown.extensions> for the full kind-to-class table.
 
 ## Verify
 

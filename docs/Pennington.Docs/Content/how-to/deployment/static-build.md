@@ -7,15 +7,12 @@ sectionLabel: "Publishing & Deployment"
 tags: [build, deployment, output-generation, build-report]
 ---
 
-To turn a working Pennington site running under `dotnet run` into a folder of static HTML for a static host, run the app in build mode. There is no separate build project — the same `Program.cs` that serves the site locally crawls itself over HTTP and writes the result to disk, so the locally tested site is exactly what ships.
+To turn a working Pennington site into a folder of static HTML for a static host, run the app in build mode. For why the same `Program.cs` works in both dev and build, see <xref:explanation.core.dev-vs-build>; for platform-specific upload steps, see <xref:how-to.deployment.github-pages>; for sub-path sites, see <xref:how-to.deployment.base-url>.
 
-For platform-specific upload steps, see <xref:how-to.deployment.github-pages>. For sites hosted under a sub-path, see <xref:how-to.deployment.base-url>.
-
-## Assumptions
-
-- A working Pennington site that serves under `dotnet run` (see <xref:tutorials.getting-started.first-site> if not)
-- The host composes `RunOrBuildAsync` (directly, or via `RunDocSiteAsync` / `RunBlogSiteAsync`)
-- A writable local directory — the build deletes and re-creates `output/` by default
+## Before you begin
+- A working Pennington site that serves under `dotnet run` (see <xref:tutorials.getting-started.first-site> if not).
+- The host composes `RunOrBuildAsync` directly or via `RunDocSiteAsync` / `RunBlogSiteAsync` (most apps do — confirm `Program.cs` ends with one of those calls).
+- A writable local directory — the build deletes and re-creates `output/` by default.
 
 ---
 
@@ -23,23 +20,6 @@ For platform-specific upload steps, see <xref:how-to.deployment.github-pages>. F
 
 <Steps>
 <Step StepNumber="1">
-
-**Confirm the host calls `RunOrBuildAsync`**
-
-`RunOrBuildAsync` is the single switch: no arguments means dev serve, `build` as the first argument triggers the crawl-and-write path. Most apps already route through it via `RunDocSiteAsync` or `RunBlogSiteAsync`. The tail of `Program.cs` confirms it.
-
-```csharp:path
-examples/SubPathDeployableExample/Program.cs
-```
-
-For custom exit-code semantics — for example, failing CI on broken links but not on warnings — replace the call with the explicit switch written out longhand:
-
-```csharp:xmldocid,bodyonly
-M:SubPathDeployableExample.BuildHost.RunOrBuildAsync(Microsoft.AspNetCore.Builder.WebApplication,System.String[])
-```
-
-</Step>
-<Step StepNumber="2">
 
 **Invoke the build verb**
 
@@ -56,34 +36,16 @@ dotnet run -- build /my-site dist
 dotnet run -- build --base-url=/my-site --output=dist
 ```
 
-`OutputOptions.FromArgs` is the single source of truth for the CLI surface; see <xref:reference.host.cli> for the full grammar.
+See <xref:reference.host.cli> for the full grammar.
 
 </Step>
-<Step StepNumber="3">
-
-**Understand what the crawler does**
-
-`OutputGenerationService` starts the real ASP.NET host, opens an `HttpClient` against the first bound URL, and issues a GET for every route discovered by `IContentService.DiscoverAsync` plus every `MapGet` endpoint. Every page passes through the live response-processor pipeline — xref resolution, locale prefixing, base-URL rewriting, MonorailCSS class collection, and diagnostics behave identically in dev and build. This is a deliberate invariant — the reasoning is covered in <xref:explanation.core.dev-vs-build>.
-
-</Step>
-<Step StepNumber="4">
+<Step StepNumber="2">
 
 **Read the `BuildReport` printed to stdout**
 
-When the crawl finishes, `RunOrBuildAsync` writes a human-readable report and exits with a non-zero code when `HasErrors` is true — triggered by any error diagnostic, failed page, or broken internal link. The key collections are `GeneratedPages`, `SkippedPages` (drafts), `FailedPages`, `BrokenLinks`, and `Diagnostics`; see <xref:reference.api.build-report> for the full field list.
+When the crawl finishes, `RunOrBuildAsync` writes a human-readable report and exits with a non-zero code when `HasErrors` is true. The key collections are `GeneratedPages`, `SkippedPages` (drafts), `FailedPages`, `BrokenLinks`, and `Diagnostics`; see <xref:reference.api.build-report> for the full field list. `BrokenLinks` and `FailedPages` are what blocks shipping; fix the listed routes before deploying.
 
-For a custom CI presentation such as a GitHub Actions summary, print the report directly:
-
-```csharp:xmldocid,bodyonly
-M:SubPathDeployableExample.BuildHost.PrintBuildReport(Pennington.Generation.BuildReport)
-```
-
-</Step>
-<Step StepNumber="5">
-
-**Fix what the report flags before shipping**
-
-`BrokenLinks` surfaces internal hrefs that did not resolve to a generated page — usually a typo or a moved file that no xref caught. `FailedPages` surfaces routes whose parse or render raised an exception, each carrying the originating `ContentRoute`. Warnings are advisory and do not set `HasErrors` on their own, but a warning that represents a broken link flips the flag.
+For custom CI presentation (a GitHub Actions summary, a Slack message), use `BuildHost.PrintBuildReport` in `examples/SubPathDeployableExample/BuildHost.cs` as a starting point.
 
 </Step>
 </Steps>

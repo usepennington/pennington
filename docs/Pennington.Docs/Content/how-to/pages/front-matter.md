@@ -1,101 +1,62 @@
 ---
-title: "Work with front matter"
-description: "Declare YAML front matter, pick a built-in record, or define your own for custom keys."
+title: "Define custom front-matter keys"
+description: "Declare a record implementing IFrontMatter with extra YAML keys and register it through AddMarkdownContent so a markdown source deserializes into the custom type."
 uid: how-to.pages.front-matter
 order: 201010
 sectionLabel: "Pages"
 tags: [front-matter, authoring, yaml]
 ---
 
-This guide covers declaring YAML front matter in a markdown file, selecting the built-in record that matches the host, and creating a custom record when the built-in types don't expose the keys needed. For the full key catalog, see <xref:reference.front-matter.keys>; for the design rationale, see <xref:explanation.core.front-matter-capabilities>.
+To surface YAML keys the shipped front-matter records do not expose — an `apiVersion`, a `gitHubUrl`, a `productName` — declare a custom `record` implementing `IFrontMatter` and the capability interfaces relevant to the keys, then register it with `AddMarkdownContent<T>` on a bare `AddPennington` host. For the full catalog of built-in keys, see <xref:reference.front-matter.keys>; for the design rationale behind the capability interfaces, see <xref:explanation.core.front-matter-capabilities>.
 
-## Assumptions
+The recipe references `examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs`, which adds `apiVersion` and `gitHubUrl` keys on top of the built-in surface.
 
-- An existing Pennington site with markdown content under a `Content/` folder (see the [Getting Started tutorial](xref:tutorials.getting-started.first-site) if not).
-- The host template in use — `AddDocSite`, `AddBlogSite`, or bare `AddPennington` with `AddMarkdownContent<T>`.
-- A markdown file open and ready to fill in (or extend) its YAML block.
+## Before you begin
 
-To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample) — `Content/main/front-matter.md` is the page this how-to is fenced from, and `ApiFrontMatter.cs` is the custom-record demo.
+- An existing Pennington site with markdown content under a `Content/` folder (see <xref:tutorials.getting-started.first-site> if not).
+- A bare `AddPennington` host or an existing `AddDocSite`/`AddBlogSite` host with room for a second markdown source. `AddDocSite` and `AddBlogSite` each register one source against their own front-matter type; chaining a second record requires bare `AddPennington` (see <xref:how-to.discovery.multiple-sources>).
 
----
+## Declare the record
 
-## Steps
+Implement <xref:reference.api.i-front-matter> as a `record` and add only the capability interfaces the new keys need — `ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`. Unimplemented capabilities pick up their default-member values, so a minimal record is short.
 
-<Steps>
-<Step StepNumber="1">
-
-**Declare the YAML block at the top of the file**
-
-Place the YAML between two `---` fences as the very first content in the markdown file — before any heading.
-
-```markdown:path
-examples/DocSiteKitchenSinkExample/Content/main/front-matter.md
+```csharp:path
+examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs
 ```
 
-</Step>
-<Step StepNumber="2">
+Property names map to YAML keys under `CamelCaseNamingConvention` — `ApiVersion` reads `apiVersion:`; `GitHubUrl` reads `gitHubUrl:`. Unknown keys in the YAML are silently ignored, so a typo on a custom key surfaces as a default value rather than a parse error.
 
-**Pick the built-in record that matches your host**
+## Register the record
 
-The record is determined by the host: `AddDocSite` binds `DocSiteFrontMatter`, `AddBlogSite` binds `BlogSiteFrontMatter`, and bare `AddPennington` accepts whichever type you pass to `AddMarkdownContent<T>`. The base doc-shaped record is `DocFrontMatter`:
+Pass the record type to `AddMarkdownContent<T>` so the pipeline deserializes the YAML into that type. The options delegate selects the content root the source reads from.
 
-```csharp:xmldocid
-T:Pennington.FrontMatter.DocFrontMatter
-```
-
-The blog-shaped counterpart for posts:
-
-```csharp:xmldocid
-T:Pennington.FrontMatter.BlogFrontMatter
-```
-
-</Step>
-<Step StepNumber="3">
-
-**Fill in only the keys needed**
-
-Every key on the built-in records has a default, so the YAML block can be as small as `title:` plus whatever the page needs — tags, order, description, uid. The DocSite template exposes the full superset via `DocSiteFrontMatter`:
-
-```csharp:xmldocid
-T:Pennington.DocSite.DocSiteFrontMatter
-```
-
-</Step>
-<Step StepNumber="4">
-
-**Define a custom record for extra keys**
-
-Declare a `public record` implementing `IFrontMatter` and any relevant capability interfaces — `ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`. See <xref:reference.api.i-front-matter> for the full list of optional interfaces.
-
-```csharp:xmldocid
-T:DocSiteKitchenSinkExample.ApiFrontMatter
-```
-
-</Step>
-<Step StepNumber="5">
-
-**Register the custom record with a markdown source**
-
-Pass the record type to `AddMarkdownContent<T>` so the pipeline deserializes the YAML into that type. `AddDocSite` and `AddBlogSite` each already register one source — chaining a second record requires bare `AddPennington` (see [Use multiple content sources](xref:how-to.discovery.multiple-sources)).
-
-```csharp:xmldocid
+```csharp:xmldocid,bodyonly
 M:Pennington.Infrastructure.PenningtonOptions.AddMarkdownContent``1(System.Action{Pennington.Infrastructure.MarkdownContentOptions})
 ```
 
-</Step>
-</Steps>
+## Result
 
+A page under the registered content source can now author the custom keys at the top of its YAML block:
+
+```yaml
 ---
+title: "Pennington API surface"
+apiVersion: "1.0-alpha"
+gitHubUrl: "https://github.com/usepennington/pennington"
+---
+```
+
+Consumers read the typed properties on the resolved `IFrontMatter` via the content services that produced the page.
 
 ## Verify
 
-- Run `dotnet run` and visit the page — the rendered `<h1>` matches the `title:` value.
-- The sidebar entry appears with the label from `title:` at the position set by `order:`.
-- When a custom record is in use, pages under its content source build without `FrontMatterParseError` diagnostics in the build report.
+- Run `dotnet run` and visit a page whose YAML uses the custom keys. The build report contains no `FrontMatterParseError` diagnostics for pages under the new source.
+- Consume the typed property in a Razor component (`@inject IFrontMatter Fm` then cast to the custom record) and confirm the value round-trips from the YAML.
 
 ## Related
 
 - Reference: [Front matter key reference](xref:reference.front-matter.keys) — every built-in key, type, and default
 - Reference: [Built-in front-matter types](xref:reference.api.doc-front-matter) — `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter`
-- Reference: [`IFrontMatter` and capability defaults](xref:reference.api.i-front-matter) — the capability interfaces you can add to a custom record
+- Reference: [`IFrontMatter` and capability defaults](xref:reference.api.i-front-matter) — the capability interfaces available to a custom record
 - Background: [The front-matter capability system](xref:explanation.core.front-matter-capabilities) — why the design collapsed ten interfaces into default members
+- How-to: [Use multiple content sources](xref:how-to.discovery.multiple-sources) — chain a second `AddMarkdownContent<T>` against a custom record

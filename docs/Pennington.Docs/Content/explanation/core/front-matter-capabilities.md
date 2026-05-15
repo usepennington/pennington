@@ -39,14 +39,14 @@ T:Pennington.FrontMatter.IOrderable
 
 The rule of thumb the shape encodes: if adoption is universal, the member lives on `IFrontMatter` with a sensible default. If adoption is selective, it lives on a capability interface so that pattern-matching on the interface remains meaningful. Seeing `IOrderable` on a record means the content type consciously opted into ordered navigation.
 
-### Writing your own front-matter type
+### Custom front-matter records
 
-Declare a `record`, implement `IFrontMatter`, add whichever capability interfaces the content type genuinely needs. Custom keys are ordinary extra properties on the record — `FrontMatterParser` picks them up through `YamlDotNet`'s `CamelCaseNamingConvention`, so adding a `stability` or `namespace` field is a one-line change with no interface ceremony attached.
+A custom record buys typed access to extra keys (an `apiVersion` or `gitHubUrl` field becomes a strongly-typed property) plus the same capability-opt-in surface. The defaults give what the shipped records would give for free; the custom record only declares what it adds. See <xref:how-to.pages.front-matter> for the recipe.
 
 ## Trade-offs
 
 - **Every `IFrontMatter` is draftable, searchable, and LLM-indexable by default.** Engine code cannot use `is IDraftable` as a gate — the capability is no longer selective. A content type that should never be a draft enforces that by overriding the default member to always return `false`, rather than by omitting an interface.
-- **Default members are an interface feature.** They live on the interface itself, not on every implementing type's vtable. Consumers that access `IFrontMatter` through reflection or multi-target older TFMs should keep that in mind.
+- **Default members are an interface feature** — they live on the interface itself, not on every implementing type's vtable. Reflection consumers must call `GetMembers()` against `IFrontMatter` (the declaring interface) rather than against the implementing type to see them; the typed defaults are invisible through reflection on the concrete record.
 - **A `Dictionary<string, object>` of keys was considered and set aside.** It would flatten the type system entirely — no interface hierarchy, no pattern-matching, no boilerplate — at the cost of IntelliSense on the authoring side and every type mistake moving from compile time to runtime. The typed-contract shape is worth the one-member-per-capability declaration it asks for.
 - **The four remaining interfaces carry signal, not boilerplate.** Their presence on a record means the content type opted into that behavior. A review that scans a new front-matter record for missing interfaces is reviewing an authoring decision, not chasing a missing ritual.
 

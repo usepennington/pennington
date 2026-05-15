@@ -13,8 +13,6 @@ uid: tutorials.docsite.first-doc-page
 
 By the end of this tutorial the Guides area has two new pages — `install.md` and `configure.md` — wired into the sidebar in `order:` sequence, cross-linked with relative paths, and reachable from a hub `index.md` that uses both absolute paths and a `uid:`-based `xref:` link.
 
-The tutorial covers the move every docs site makes right after the scaffold lands: drop a couple of markdown files into an area folder and decide how they should reference each other. Three link forms come up — relative paths between siblings, absolute paths from a hub, and `uid:` cross-references that survive page renames — each with the use case that makes it the right pick.
-
 ## Prerequisites
 
 - .NET 11 SDK installed
@@ -33,7 +31,7 @@ Let's drop two markdown files into the Guides area and watch them slot into the 
 
 **Create `Content/guides/install.md`**
 
-Add a new file at `Content/guides/install.md` with the markdown below. The four front-matter keys are the ones `DocSiteFrontMatter` reads for sidebar wiring: `title` is the link label, `description` becomes the meta tag, `sectionLabel` carries through to breadcrumbs and prev/next chrome, and `order` decides where the page sorts among siblings.
+Add a new file at `Content/guides/install.md` with the markdown below. The four front-matter keys are the ones [`DocSiteFrontMatter`](xref:reference.api.doc-site-front-matter) reads for sidebar wiring: `title` is the link label, `description` becomes the meta tag, `sectionLabel` carries through to breadcrumbs and prev/next chrome, and `order` decides where the page sorts among siblings.
 
 ```markdown:path
 examples/DocSitePagesAndLinksExample/snippets/install-step1.md
@@ -102,9 +100,6 @@ examples/DocSitePagesAndLinksExample/Content/guides/configure.md
 
 </Checkpoint>
 
-> [!TIP]
-> Relative paths are the right pick for tightly coupled siblings. Reach for the other two forms in the next two units when the source and target are further apart or when the file might get renamed.
-
 ---
 
 ## 3. Turn the index into a hub with absolute paths
@@ -116,7 +111,7 @@ The `Content/guides/index.md` page from the scaffold still says "Authoring walkt
 
 **Replace `index.md` with the hub markdown below**
 
-Absolute paths (`/guides/install`) are stable across folder moves of the source page — handy on a hub that may itself migrate later. Use them when the target sits in a different folder than the source, or when the link is structural rather than narrative.
+Absolute paths (`/guides/install`) survive folder moves of the source page. Use them when the target sits in a different folder than the source, or when the link is structural rather than narrative. For the full link-form rundown, see <xref:how-to.navigation.linking>.
 
 ```markdown:path
 examples/DocSitePagesAndLinksExample/snippets/index-as-hub.md
@@ -166,9 +161,8 @@ examples/DocSitePagesAndLinksExample/Content/guides/index.md
 
 <Checkpoint>
 
-- Reload `http://localhost:5000/guides/` — both links in the hub still work. The rendered HTML on the **Install Pennington** link resolves to `/guides/install` exactly as before.
-- Try renaming `install.md` to something else (don't commit it). The configure link in the hub breaks, but `xref:guides.install` still resolves — `XrefResolver` looks the page up by uid, not URL.
-- Restore the filename when done experimenting.
+- Reload `http://localhost:5000/guides/` — both links in the hub still work. The rendered `<a>` for **Install Pennington** points at `/guides/install` just as the absolute-path version did.
+- View source: the `xref:guides.install` href has been rewritten to the canonical URL. The xref form is the same shape an editor would have produced — but the source markdown now survives any rename of `install.md`.
 
 </Checkpoint>
 
@@ -179,5 +173,5 @@ examples/DocSitePagesAndLinksExample/Content/guides/index.md
 - Two markdown files under `Content/guides/` showed up in the sidebar without any extra wiring, sorted by `order:` from front matter.
 - Relative paths (`./configure`) link tightly coupled sibling pages — the form that survives area-folder renames.
 - Absolute paths (`/guides/configure`) link from a hub where the source page may move but the target's location is stable.
-- `uid:` plus `xref:` — the rename-safe form — turns the page identifier itself into the link target. Use it when the target file is likely to move or get renamed.
+- `uid:` plus `xref:` — the rename-safe form — turns the page identifier itself into the link target.
 - For the full link-form reference (anchors, assets, sub-path deployments), see <xref:how-to.navigation.linking>. For deeper `uid:` semantics, see <xref:how-to.navigation.cross-references>.

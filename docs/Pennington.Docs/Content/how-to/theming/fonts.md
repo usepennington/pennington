@@ -7,15 +7,14 @@ sectionLabel: "Theming"
 tags: [fonts, typography, preload, docsite]
 ---
 
-When a DocSite needs custom display and body typefaces instead of the defaults, and those faces should load without a flash of fallback text on first paint, the knobs below cover it. If no DocSite is running yet, start with [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) first.
+Swap a DocSite's default display and body typefaces for custom faces, and prime them with preload hints so they're ready for first paint.
 
-## Assumptions
-
+## Before you begin
 - A running DocSite built with `AddDocSite` / `UseDocSite`.
-- A chosen font delivery strategy — self-hosted `.woff2` files or an external provider — with the files or URLs ready.
+- A chosen font delivery strategy — self-hosted `.woff2` files or an external provider — with files or URLs ready.
 - The CSS `font-family` name each face registers under.
 
-For a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample).
+For a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample). The example does not ship font binaries — supply your own.
 
 ---
 
@@ -23,7 +22,7 @@ For a working setup, see [`examples/DocSiteKitchenSinkExample`](https://github.c
 
 ### Drop font files into `wwwroot/fonts/`
 
-Place each `.woff2` file under `wwwroot/fonts/`. `UsePennington` wires `UseStaticFiles`, so each file becomes available at `/fonts/<file>.woff2`. The kitchen-sink example references `/fonts/display.woff2` and `/fonts/body.woff2`; supply your own files at those paths (the example does not ship font binaries).
+Place each `.woff2` file under `wwwroot/fonts/`. `UsePennington` wires `UseStaticFiles`, so each file becomes available at `/fonts/<file>.woff2`. The example references `/fonts/display.woff2` and `/fonts/body.woff2`.
 
 ### Register `@font-face` rules via `ExtraStyles`
 
@@ -49,15 +48,15 @@ Set `DisplayFontFamily` on `DocSiteOptions` to the CSS stack led by the display 
 M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions
 ```
 
-### (Optional) Match MonorailCSS utilities to your stacks
+### Match MonorailCSS utilities to your stacks
 
-When prose uses MonorailCSS utility classes such as `font-sans` or `font-display`, update the theme or `ExtraStyles` so those utilities resolve to the same `font-family` stacks; otherwise utility-styled text disagrees with the layout chrome. See [Recolor the site](xref:how-to.theming.monorail-css) for how to pass `CustomCssFrameworkSettings`.
+When prose uses MonorailCSS utility classes such as `font-sans` or `font-display`, update the theme or `ExtraStyles` so those utilities resolve to the same `font-family` stacks; otherwise utility-styled text disagrees with the layout chrome. See <xref:how-to.theming.monorail-css> for how to pass `CustomCssFrameworkSettings`.
 
 ---
 
 ## Result
 
-Body copy renders in the new body face and headings render in the new display face. Because the preload hints prime the browser cache before the stylesheet is parsed, the first paint lands with the real faces in place — no fallback flash, and the perceptible delay drops by ~40 ms on a cold load.
+Body copy renders in the new body face and headings render in the new display face. The preload hints prime the browser cache before the stylesheet is parsed, so the first paint lands with the real faces in place — no fallback flash.
 
 ## Verify
 
@@ -67,6 +66,6 @@ Body copy renders in the new body face and headings render in the new display fa
 
 ## Related
 
-- Reference: [_`DocSiteOptions`_](xref:reference.api.doc-site-options) — the full property list including `DisplayFontFamily`, `BodyFontFamily`, `FontPreloads`, and `ExtraStyles`.
-- Reference: [_`FontPreload`_](xref:reference.api.font-preload) — the `Href` / `Type` record shape (defaults to `font/woff2`).
-- How-to: [_Recolor the site_](xref:how-to.theming.monorail-css) — for aligning utility-class font stacks with your new families.
+- Reference: [`DocSiteOptions`](xref:reference.api.doc-site-options) — the full property list including `DisplayFontFamily`, `BodyFontFamily`, `FontPreloads`, and `ExtraStyles`.
+- Reference: [`FontPreload`](xref:reference.api.font-preload) — the `Href` / `Type` record shape (defaults to `font/woff2`).
+- How-to: [Recolor the site](xref:how-to.theming.monorail-css) — for aligning utility-class font stacks with your new families.

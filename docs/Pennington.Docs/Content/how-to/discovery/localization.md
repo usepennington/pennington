@@ -7,13 +7,9 @@ sectionLabel: "Content Discovery"
 tags: [localization, locales, translations, routing]
 ---
 
-When the site needs to ship in more than one language, the knobs below cover wiring options, content layout on disk, routing middleware, and UI translations — everything needed to take a single-locale site multilingual.
+When the site needs to ship in more than one language, the knobs below cover wiring options, content layout on disk, routing middleware, and UI translations — everything needed to take a single-locale site multilingual. For a first locale, the tutorial [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale) walks through the same moving parts at a teaching pace.
 
-> [!TIP]
-> For a first locale, start with the tutorial [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale); it walks through the same moving parts at a teaching pace.
-
-## Assumptions
-
+## Before you begin
 - An existing Pennington site with at least one markdown page (see [Create your first Pennington site](xref:tutorials.getting-started.first-site) if not).
 - Either an `AddDocSite` host (which accepts a `ConfigureLocalization` callback) or a bare `AddPennington` host (which exposes `LocalizationOptions` directly on `PenningtonOptions.Localization`).
 - Default-locale content already directly under `ContentRootPath` (not in a locale subfolder). Pennington treats the default locale as URL-root and every other locale as URL-prefixed.

@@ -1,21 +1,20 @@
 ---
-title: "Wire the blog homepage hero"
+title: "Populate the blog homepage surfaces"
 description: "Populate the four BlogSite homepage surfaces — HeroContent, MyWork, Socials, and MainSiteLinks — on BlogSiteOptions in one pass."
 uid: how-to.feeds.blogsite-homepage
 order: 207040
-sectionLabel: "Feeds & Indexes"
+sectionLabel: "Theming"
 tags: [blogsite, homepage, socials, hero]
 ---
 
 When a BlogSite homepage needs its hero block, "My Work" card, social-icon row, and top-nav links populated in one pass, the four init-only properties on `BlogSiteOptions` cover it. For the hand-held walkthrough, see [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials).
 
-## Assumptions
-
+## Before you begin
 - A running BlogSite built with `AddBlogSite` / `UseBlogSite` (see [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold) if not).
 - At least one post under `BlogContentPath` so the recent-posts slot is not empty (see [Author your first post with BlogSiteFrontMatter](xref:tutorials.blogsite.first-post)).
 - A single `AddBlogSite(() => new BlogSiteOptions { ... })` call to edit — the four surfaces are init-only properties on that same record literal.
 
-For a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteHeroProjectsSocialsExample). This page is a recipe, not a tour, so it does not walk through the whole example.
+For a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteHeroProjectsSocialsExample).
 
 ---
 
@@ -83,6 +82,6 @@ The homepage at `/` renders the hero block above the post list, the "My Work" ca
 
 ## Related
 
-- Tutorial: [_Add a hero, projects, and social links_](xref:tutorials.blogsite.hero-projects-socials) — the hand-held walkthrough of the same four surfaces.
-- Reference: [_`BlogSiteOptions`_](xref:reference.api.blog-site-options) — the full property catalog (site metadata, content paths, feeds, fonts).
-- Background: [_When is DocSite the right starting point?_](xref:explanation.positioning.docsite-positioning) — for the DocSite-vs-BlogSite trade-off behind these templates.
+- Tutorial: [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials) — the hand-held walkthrough of the same four surfaces.
+- Reference: [`BlogSiteOptions`](xref:reference.api.blog-site-options) — the full property catalog (site metadata, content paths, feeds, fonts).
+- Background: [When is DocSite the right starting point?](xref:explanation.positioning.docsite-positioning) — for the DocSite-vs-BlogSite trade-off behind these templates.

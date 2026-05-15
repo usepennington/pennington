@@ -11,9 +11,7 @@ tags:
 uid: tutorials.docsite.sections-and-areas
 ---
 
-By the end of this tutorial the DocSite runs at `http://localhost:5000` with an area selector showing **Guides** and **Reference**. Each area renders its own grouped sidebar: *Getting Started* and *Advanced* under Guides, *Core API* and *Extensions* under Reference, with pages sorted by `order:` inside each group.
-
-The tutorial shows how a top-level folder under `Content/` becomes a `ContentArea`, how each subfolder under an area becomes a sidebar section node driven by the folder name rather than by `sectionLabel:`, and how staggering `order:` numbers across sibling sections controls which section header appears first.
+By the end of this tutorial the DocSite runs at `http://localhost:5000` with an area selector showing **Guides** and **Reference**. Each area renders its own grouped sidebar: *Getting Started* and *Advanced* under Guides, *Core API* and *Extensions* under Reference, with pages sorted by `order:` inside each group. For the algorithm behind the sidebar, see <xref:explanation.routing.navigation-tree>.
 
 ## Prerequisites
 
@@ -32,17 +30,13 @@ Let's begin with a single page parked directly under an area folder — no subfo
 <Steps>
 <Step StepNumber="1">
 
-**Confirm the two-area host from the scaffolding tutorial**
+**Keep the two-area host from the scaffolding tutorial**
 
-The `Program.cs` file wires up two `ContentArea` entries: `Guides` bound to the `guides` folder and `Reference` bound to the `reference` folder.
+`Program.cs` already wires two `ContentArea` entries from the previous tutorial — `Guides` bound to `guides/` and `Reference` bound to `reference/`. Leave it untouched; every change in this tutorial is a filesystem change under `Content/`.
 
 ```csharp:path
 examples/DocSiteSectionsExample/Program.cs
 ```
-
-This file stays untouched for the rest of the tutorial. Every change from here on is a filesystem change under `Content/`. The area selector at the top-left of the sidebar renders automatically through `MainLayout` whenever `DocSiteOptions.Areas` contains more than one entry — no extra code required.
-
-The two `ContentArea` constructors take a label shown in the area selector, followed by the folder name under `Content/`. `AddDocSite` discovers both folders through a single markdown pipeline.
 
 </Step>
 <Step StepNumber="2">
@@ -55,7 +49,7 @@ Create `Content/guides/install.md` with minimal front matter — a `title:` and 
 M:DocSiteSectionsExample.Stage1.Source
 ```
 
-Paste the YAML-plus-markdown content above into `Content/guides/install.md`. With no subfolder and no `order:`, the page sorts to the top of the Guides area as a flat entry. The `order` key defaults to `int.MaxValue` and there is no sibling subfolder for the navigation builder to fold the page under. The next unit fixes that.
+Paste the YAML-plus-markdown content above into `Content/guides/install.md`. With no subfolder and no `order:`, the page sorts to the top of the Guides area as a flat entry.
 
 </Step>
 </Steps>
@@ -81,9 +75,7 @@ Now let's move the same page under a `getting-started/` subfolder and add `secti
 
 **Move `install.md` under `Content/guides/getting-started/`**
 
-Delete `Content/guides/install.md` and create `Content/guides/getting-started/installation.md` in its place.
-
-The load-bearing rule: **the subfolder name is what creates the sidebar section**, not the `sectionLabel:` key. `NavigationBuilder` title-cases the folder name (`getting-started` becomes *Getting Started*) and renders it as a non-navigable header above the page links.
+Delete `Content/guides/install.md` and create `Content/guides/getting-started/installation.md` in its place. The subfolder name is what creates the sidebar section header — Pennington title-cases the folder (`getting-started` → *Getting Started*) and renders it as a non-navigable group label.
 
 </Step>
 <Step StepNumber="2">
@@ -94,9 +86,7 @@ The load-bearing rule: **the subfolder name is what creates the sidebar section*
 M:DocSiteSectionsExample.Stage2.Source
 ```
 
-The two keys serve different purposes. `order:` is an integer that sorts pages inside a section — smaller numbers appear first, with ties broken alphabetically on title. `sectionLabel:` is metadata carried on `NavigationInfo.SectionName` and shown in breadcrumbs and prev/next chrome. When a file lives outside a subfolder, `sectionLabel:` has no grouping effect — it is a label, not a grouper.
-
-One section, one subfolder. `sectionLabel:` names it in breadcrumbs.
+`order:` sorts pages within the section (smaller first). `sectionLabel:` surfaces in breadcrumbs and prev/next chrome.
 
 </Step>
 </Steps>
@@ -113,7 +103,7 @@ One section, one subfolder. `sectionLabel:` names it in breadcrumbs.
 
 ## 3. Fill in the rest of the Guides area
 
-Let's add the remaining pages to `getting-started/` and `advanced/` so Guides has two sibling sections with staggered `order:` values — the pattern that prevents the tie-break surprise.
+Let's add the remaining pages to `getting-started/` and `advanced/` so Guides has two sibling sections with staggered `order:` values.
 
 <Steps>
 <Step StepNumber="1">
@@ -134,7 +124,7 @@ examples/DocSiteSectionsExample/Content/guides/getting-started/first-project.md
 examples/DocSiteSectionsExample/Content/guides/getting-started/configuration.md
 ```
 
-The 10/20/30 sequence is deliberate — it leaves room to insert pages later without renumbering everything. The minimum `order:` value in this section is `10`, which matters in the next step.
+The 10/20/30 spacing leaves room to drop pages in later without renumbering. The minimum `order:` value in the section is `10` — that matters in the next step.
 
 </Step>
 <Step StepNumber="2">
@@ -151,7 +141,7 @@ examples/DocSiteSectionsExample/Content/guides/advanced/custom-layouts.md
 examples/DocSiteSectionsExample/Content/guides/advanced/response-pipeline.md
 ```
 
-Stagger `order:` values across sibling sections — 10/20/30 inside `getting-started/` and 40/50 inside `advanced/` — so the two section headers sort in the intended order. When both sections start at `10`, the navigation builder falls back to alphabetical ordering of the folder names, and `advanced/` appears above *Getting Started*.
+Section headers inherit the minimum `order:` of their pages. Staggering across sibling sections — `getting-started/` at 10/20/30, `advanced/` at 40/50 — keeps *Getting Started* above *Advanced* without relying on alphabetical tie-breaks.
 
 </Step>
 </Steps>

@@ -7,22 +7,22 @@ tags: [host, cli, build, arguments]
 uid: reference.host.cli
 ---
 
-The command-line surface `RunOrBuildAsync` dispatches on — one positional verb (`build`) followed by an optional base URL and output directory, or equivalent `--base-url` / `--output` named flags. Parsing lives in `OutputOptions.FromArgs`; any invocation whose first argument is not `build` falls through to `app.RunAsync()` with default `OutputOptions`.
+The command-line surface that `RunOrBuildAsync` dispatches on: one positional verb (`build`) followed by an optional base URL and output directory, or the equivalent `--base-url` / `--output` named flags. Parsing lives in `OutputOptions.FromArgs`; any invocation whose first argument is not `build` falls through to `app.RunAsync()` with default `OutputOptions`.
 
 ## Commands
 
 | Command | Arguments | Effect |
 |---|---|---|
-| _(none)_ | — | Dev-serve: `app.RunAsync()`. `OutputOptions.FromArgs` returns defaults (`BaseUrl = "/"`, `OutputDirectory = "output"`) but the crawler never runs. |
-| `build` | `[baseUrl] [outputDirectory]` positional, or `--base-url` / `--output` named flags | Static build: `app.StartAsync()`, resolve `OutputGenerationService`, HTTP-crawl the running host, write each response to `OutputOptions.OutputDirectory`, print `BuildReport`, set `Environment.ExitCode = 1` on errors, `app.StopAsync()`. |
-| _anything else_ | — | Dev-serve fallback. Non-`build` `args[0]` is treated as unknown; positional args are not interpreted as a base URL or output directory (guards against `dotnet test` / `dotnet watch` emitting stray positional args). |
+| _(none)_ | — | Dev-serve. |
+| `build` | `[baseUrl] [outputDirectory]` positional, or `--base-url` / `--output` named flags | Static build; writes to `OutputOptions.OutputDirectory`, prints `BuildReport`, sets `Environment.ExitCode = 1` when the report has errors. |
+| _anything else_ | — | Dev-serve. Non-`build` `args[0]` is treated as unknown; positional args are not interpreted as base URL or output directory. |
 
 ## Positional arguments
 
 | Position | Name | Default | Description |
 |---|---|---|---|
-| `args[1]` | `baseUrl` | `/` | The URL sub-path the site will be served from; materialized as `OutputOptions.BaseUrl` (a `UrlPath`). Promoted to `args[2]`'s slot if `--base-url` was already supplied. |
-| `args[2]` | `outputDirectory` | `output` | The filesystem directory to write the generated site into; materialized as `OutputOptions.OutputDirectory` (a `FilePath`). Promoted if `--output` was already supplied. |
+| `args[1]` | `baseUrl` | `/` | The URL sub-path the site will be served from; materialized as `OutputOptions.BaseUrl` (a `UrlPath`). When `--base-url` is supplied, the parser advances past it and reads this argument from `args[2]` instead. |
+| `args[2]` | `outputDirectory` | `output` | The filesystem directory to write the generated site into; materialized as `OutputOptions.OutputDirectory` (a `FilePath`). When `--output` is supplied, the parser advances past it. |
 
 ## Named flags
 
@@ -35,20 +35,13 @@ The command-line surface `RunOrBuildAsync` dispatches on — one positional verb
 
 | Variable | Consumer | Effect when set |
 |---|---|---|
-| `ASPNETCORE_URLS` | ASP.NET Core host | Standard ASP.NET binding. `RunOrBuildAsync` resolves `app.Urls.First()` after `StartAsync`, falling back to `http://localhost:5000` only when `app.Urls` is empty, so overriding this variable moves the crawler target. |
-| `ASPNETCORE_ENVIRONMENT` | ASP.NET Core host | Standard environment selection; Pennington's dev tooling (live reload, diagnostic overlay) gates on the `build` command-line argument, not on this variable. |
+| `ASPNETCORE_URLS` | ASP.NET Core host | Standard ASP.NET binding. `RunOrBuildAsync` resolves `app.Urls.First()` after `StartAsync`, falling back to `http://localhost:5000` only when `app.Urls` is empty. |
+
+`ASPNETCORE_ENVIRONMENT` has no Pennington-specific effect: dev tooling (live reload, diagnostic overlay) gates on the `build` command-line argument, not on this variable.
 
 ## Listening port
 
-Pennington uses the standard ASP.NET Core host, so the usual port-binding mechanisms apply.
-
-| Mechanism | Form | Notes |
-|---|---|---|
-| CLI flag | `dotnet run -- --urls http://localhost:5101` | Pass-through to the ASP.NET Core host argument parser. |
-| Environment variable | `ASPNETCORE_URLS=http://localhost:5101` | Same variable as the entry above. |
-| `launchSettings.json` | `profiles.<name>.applicationUrl` | Standard `Properties/launchSettings.json` profile entry. |
-
-Pennington does not override any of these — the library adds middleware and endpoints on top of whatever URL Kestrel is told to listen on.
+Pennington uses the standard ASP.NET Core host port-binding mechanisms — `--urls`, `ASPNETCORE_URLS`, or `launchSettings.json`. The library adds middleware and endpoints on top of whatever URL Kestrel is told to listen on.
 
 ## Exit codes
 

@@ -9,7 +9,7 @@ uid: tutorials.docsite.scaffold
 
 By the end of this tutorial the DocSite host runs with a "Scaffold Docs" title, GitHub icon, header/footer chrome, and two content areas — Guides and Reference — each serving an index page from its own top-level folder.
 
-This tutorial covers starting from an empty ASP.NET project, wiring the DocSite template, populating `DocSiteOptions`, and understanding how area slugs bind top-level folders to URL prefixes and sidebar tabs. For the shape the template hard-codes — and the seams it leaves open — read [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning) first.
+For the shape DocSite hard-codes and the seams it leaves open, read [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning) first.
 
 ## Prerequisites
 
@@ -70,92 +70,24 @@ Pennington uses C# 15 union types, which are still a preview language feature in
 </Step>
 </Steps>
 
-<Checkpoint>
-
-- `dotnet build` succeeds with no errors.
-- Hold off on `dotnet run` until the next section wires `AddDocSite`.
-
-</Checkpoint>
-
 ---
 
-## 2. Register `AddDocSite`
+## 2. Wire `AddDocSite`, `UseDocSite`, and `RunDocSiteAsync`
 
-`AddDocSite` is a single DI call that registers Pennington core, MonorailCSS, SPA navigation, the `ContentResolver`, and the `DocSiteArticleSlotRenderer` Razor island — all driven from one options object.
+`AddDocSite` is a single DI call that registers Pennington core, MonorailCSS, SPA navigation, the content resolver, and the article-slot renderer — all driven from one options object. `UseDocSite` is its middleware counterpart; `RunDocSiteAsync` dispatches the host between dev-serve and static-build modes (see <xref:reference.host.cli> for the args contract).
 
 <Steps>
 <Step StepNumber="1">
 
-**Add the registration call**
+**Replace `Program.cs` with the three DocSite calls**
 
-`AddDocSite` takes a `Func<DocSiteOptions>` rather than an `Action`, so the call constructs and returns a fresh options record. The template registers the markdown content reader internally — no separate `AddMarkdownContent` call is needed. See <xref:reference.host.extensions> for the full signature.
-
-</Step>
-<Step StepNumber="2">
-
-**Populate `DocSiteOptions`**
-
-This tutorial uses five fields: `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`. Each one surfaces in the rendered chrome as soon as it's set. `DocSiteOptions` carries many more fields; see <xref:reference.api.doc-site-options> for the full surface, and [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning) for what the template hard-codes.
-
-</Step>
-<Step StepNumber="3">
-
-**See the registration-only state**
-
-At this point `AddDocSite` is wired but `UseDocSite` hasn't been called yet. The host builds, but the middleware stack is still the ASP.NET default. The `await app.RunAsync()` call is a placeholder that the next section replaces.
-
-```csharp:xmldocid,bodyonly,usings
-M:DocSiteScaffoldExample.Stage2.Run(System.String[])
-```
-
-</Step>
-</Steps>
-
-<Checkpoint>
-
-- `dotnet build` succeeds
-- `dotnet run` starts the host, but `/` returns a default ASP.NET response — the DocSite middleware is registered in DI but not mounted in the pipeline
-
-</Checkpoint>
-
----
-
-## 3. Mount the DocSite middleware
-
-`UseDocSite` is the middleware counterpart to `AddDocSite` — one call mounts locale routing, antiforgery, static files, Razor component routing, MonorailCSS, SPA navigation, and core Pennington middleware in the correct order.
-
-<Steps>
-<Step StepNumber="1">
-
-**Call `UseDocSite` after `Build()`**
-
-This single call mounts the entire DocSite middleware stack. The Razor `Pages.razor` component owns the `/{*fileName:nonfile}` route and resolves pages through `ContentResolver`.
-
-```csharp
-app.UseDocSite();
-```
-
-</Step>
-<Step StepNumber="2">
-
-**Swap `RunAsync` for `RunDocSiteAsync`**
-
-`RunDocSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves pages live in development and generates static HTML when invoked as `dotnet run -- build <baseUrl> <outputDir>` — one code path for both modes.
-
-```csharp
-await app.RunDocSiteAsync(args);
-```
-
-</Step>
-<Step StepNumber="3">
-
-**See the fully-wired host**
-
-The canonical final shape has three calls that match `Program.cs` verbatim: `AddDocSite`, `UseDocSite`, `RunDocSiteAsync`.
+`AddDocSite` takes a `Func<DocSiteOptions>` rather than an `Action`, so the call constructs and returns a fresh options record. The template registers the markdown content reader internally — no separate `AddMarkdownContent` call is needed. `RunDocSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves pages live in development and generates static HTML when invoked as `dotnet run -- build <baseUrl> <outputDir>`.
 
 ```csharp:xmldocid,bodyonly,usings
 M:DocSiteScaffoldExample.Stage3.Run(System.String[])
 ```
+
+The five fields populated here — `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, `FooterContent` — each surface in the rendered chrome as soon as they're set. `DocSiteOptions` carries many more fields; see <xref:reference.api.doc-site-options> for the full surface, and [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning) for what the template hard-codes.
 
 </Step>
 </Steps>
@@ -169,19 +101,23 @@ M:DocSiteScaffoldExample.Stage3.Run(System.String[])
 
 ---
 
-## 4. Map content to areas
+## 3. Map content to areas
 
-`DocSiteOptions.Areas` is a list of `ContentArea(Label, Slug)` pairs. Each slug binds a top-level folder under `ContentRootPath` to a URL prefix and to its own sidebar tab.
+`DocSiteOptions.Areas` is a list of `ContentArea(Label, Slug)` pairs. Each slug binds a top-level folder under `ContentRootPath` to a URL prefix and to its own sidebar tab. `ContentArea` is a two-field record (`record ContentArea(string Label, string Slug)`); the order of entries in `Areas` drives the order of tabs in the sidebar.
 
 <Steps>
 <Step StepNumber="1">
 
-**Review the `ContentArea` contract**
+**Add two `ContentArea` entries to `DocSiteOptions`**
 
-`ContentArea` has two fields: a human-readable label that appears in the area selector, and a slug that matches the folder name and URL prefix. The order of entries in `Areas` drives the order of tabs in the sidebar.
+Update the `Areas` block in `Program.cs` to register `guides` and `reference`. The sidebar only shows the area selector when more than one area is configured, so two entries are the minimum to surface the tab switcher.
 
 ```csharp
-public record ContentArea(string Label, string Slug);
+Areas =
+[
+    new ContentArea("Guides", "guides"),
+    new ContentArea("Reference", "reference"),
+],
 ```
 
 </Step>
@@ -189,7 +125,7 @@ public record ContentArea(string Label, string Slug);
 
 **Create the area folders**
 
-Under `Content/`, create two folders — `guides/` and `reference/` — each with an `index.md`. The `guides` slug in `DocSiteOptions.Areas` binds `Content/guides/` to the `/guides/` URL prefix and to the Guides sidebar tab. The `reference` slug works the same way.
+Under `Content/`, create two folders — `guides/` and `reference/` — each with an `index.md`. The `guides` slug binds `Content/guides/` to the `/guides/` URL prefix and to the Guides sidebar tab; `reference` works the same way.
 
 ```text:path
 examples/DocSiteScaffoldExample/Content/guides/index.md
@@ -198,13 +134,6 @@ examples/DocSiteScaffoldExample/Content/guides/index.md
 ```text:path
 examples/DocSiteScaffoldExample/Content/reference/index.md
 ```
-
-</Step>
-<Step StepNumber="3">
-
-**Confirm the two-area `Areas` list**
-
-The `Areas` block in the fully-wired host has exactly two `ContentArea` entries. The sidebar only shows the area selector when more than one area is configured, so with both entries in place the tab switcher appears for the first time.
 
 </Step>
 </Steps>
@@ -218,7 +147,7 @@ The `Areas` block in the fully-wired host has exactly two `ContentArea` entries.
 
 ---
 
-## 5. Give the root `/` a landing page
+## 4. Give the root `/` a landing page
 
 With `Areas` configured, the URL `/` sits **outside** every area — it is not a default redirect into the first area, and the area selector shows no active tab there. To make `/` render something other than a 404, drop a markdown file at `Content/index.md` (next to the area folders, not inside them).
 
@@ -227,7 +156,7 @@ With `Areas` configured, the URL `/` sits **outside** every area — it is not a
 
 **Author `Content/index.md`**
 
-Use the same `DocSiteFrontMatter` shape as any other page. The page resolves through the same content pipeline as area pages — the only thing that makes it the root is its location at `Content/index.md`.
+Use the same [`DocSiteFrontMatter`](xref:reference.api.doc-site-front-matter) shape as any other page. The page resolves through the same content pipeline as area pages — the only thing that makes it the root is its location at `Content/index.md`.
 
 ```markdown
 ---
@@ -267,4 +196,4 @@ Visit `http://localhost:5000/` — the page renders inside the DocSite chrome, t
 - `DocSiteOptions` carries `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`, and each field appears in the rendered layout.
 - Two `ContentArea` entries bind top-level folders under `Content/` to URL prefixes and to sidebar tabs.
 - The root `/` is served by `Content/index.md`, which sits outside every area — without it, `/` returns a 404 even when areas are configured.
-- DocSite is a fast-path template — for the knobs it hard-codes, see [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning).
+- For the seams DocSite leaves open and what it hard-codes, see [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning).

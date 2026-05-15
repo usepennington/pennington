@@ -7,27 +7,16 @@ sectionLabel: "Rich Content"
 tags: [markdown, mermaid, diagrams, client-side]
 ---
 
-To drop a flowchart, sequence diagram, or other visual into a markdown article without authoring SVG by hand, fence the diagram with `mermaid` as the language. The DocSite ships a client script (`MermaidManager` in `Pennington.UI/wwwroot/scripts.js`) that scans the DOM for `code.language-mermaid` on page load, lazy-loads Mermaid from CDN, and swaps each `<code>` block for the rendered SVG. The same script re-renders every diagram when the theme toggle flips light or dark. For the fence info-string grammar, see <xref:reference.markdown.code-block-args>.
+To drop a flowchart, sequence diagram, or other visual into a markdown article without authoring SVG by hand, fence the diagram with `mermaid` as the language. The DocSite's client script (`MermaidManager`) scans the DOM on page load, lazy-loads Mermaid from `cdn.jsdelivr.net`, and swaps each `<code>` block for the rendered SVG. Authoring sites that build offline or behind a firewall will need to vendor Mermaid themselves; the default CDN load fails silently otherwise.
 
-## Assumptions
-
+## Before you begin
 - An existing Pennington site renders markdown (see <xref:tutorials.getting-started.first-site> if not).
-- The host uses `AddDocSite` or `AddBlogSite`, or otherwise serves the Pennington.UI script bundle that includes `MermaidManager` — see [Bare-host wiring](#bare-host-wiring) below.
-- Basic Mermaid syntax (flowchart, sequence, class, etc.) is familiar — this page does not teach Mermaid; see the [upstream Mermaid docs](https://mermaid.js.org/) for the grammar.
-
-### Bare-host wiring
-
-`AddDocSite` and `AddBlogSite` include `Pennington.UI` and reference its script bundle from the built-in layout. On a bare-`AddPennington` host the bundle still ships as a static web asset — add a package reference to `Pennington.UI` in the host csproj and emit this one `<script>` tag from your layout:
-
-```html
-<script type="module" src="/_content/Pennington.UI/scripts.js" defer></script>
-```
-
-`MermaidManager` auto-bootstraps on load, scans for `code.language-mermaid`, and takes over every fenced diagram in the rendered HTML. The same path serves the Pennington.UI stylesheet (`/_content/Pennington.UI/styles.css`) if the layout doesn't already pull it in through MonorailCSS.
+- The host uses `AddDocSite` or `AddBlogSite`, or — on a bare `AddPennington` host — references `Pennington.UI` and emits its script bundle from the layout (`<script type="module" src="/_content/Pennington.UI/scripts.js" defer></script>`).
+- Familiarity with Mermaid syntax — this page covers the fence wiring, not Mermaid itself. See the [upstream Mermaid docs](https://mermaid.js.org/) for the grammar.
 
 ## Diagram syntaxes
 
-Each H3 below shows the markdown source above the rendered diagram. Pennington does not preprocess the body, so anything valid in Mermaid works as is.
+Pennington does not preprocess the fence body — anything valid in Mermaid renders as-is. The two most common shapes are below.
 
 ### Flowchart
 
@@ -81,9 +70,9 @@ sequenceDiagram
 
 ## What the renderer emits
 
-CommonMark keeps each fence as `<pre><code class="language-mermaid">…</code></pre>` in the rendered HTML. The body is verbatim — Pennington does not transform it server-side. At page load, `MermaidManager` walks the DOM, dynamically imports Mermaid from `cdn.jsdelivr.net` the first time a diagram appears, and replaces every matching `<code>` element with an inline SVG. When the theme toggle changes, `MermaidManager.reinitializeForTheme()` reinitialises Mermaid with the matching built-in theme (`default` vs. `dark`) and re-renders every diagram in place. Diagrams render on both the live dev server and the static build output; the client-side script walks the DOM either way.
+Each fence renders as `<pre><code class="language-mermaid">…</code></pre>` with the body verbatim — Pennington does not transform it server-side. The client-side `MermaidManager` walks the DOM, dynamically imports Mermaid from `cdn.jsdelivr.net` the first time a diagram appears, and replaces every matching `<code>` element with an inline SVG. The theme toggle calls `MermaidManager.reinitializeForTheme()`, which reinitialises Mermaid with the matching built-in theme and re-renders every diagram in place. Diagrams render on both the live dev server and the static build output.
 
-For per-diagram theme overrides, use Mermaid's inline `%%{init: { 'theme': '…' } }%%` directive at the top of the fence body — that is Mermaid syntax, not Pennington syntax.
+For per-diagram theme overrides, use Mermaid's inline `%%{init: { 'theme': '…' } }%%` directive at the top of the fence body — Mermaid syntax, not Pennington syntax.
 
 ## Related
 

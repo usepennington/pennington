@@ -7,10 +7,9 @@ sectionLabel: "Code Samples"
 tags: [authoring, xmldocid, code-samples, roslyn]
 ---
 
-To limit a code fence to the one member a walkthrough discusses — rather than dumping the whole enclosing type with its xmldoc and every sibling property — use the xmldocid preprocessor's member-scoped forms. This page works through four techniques in order of reach: fence one member with `M:`, strip declaration noise with `,bodyonly`, refactor long methods into named helpers, and compare versions with `xmldocid-diff`. For the fence grammar itself, see <xref:reference.markdown.code-block-args>.
+To limit a code fence to the one member a walkthrough discusses — rather than dumping the whole enclosing type with its xmldoc and every sibling property — use the xmldocid preprocessor's member-scoped forms. The recipes below scope a fence to a member, strip declaration noise, copy-paste the surrounding `using` directives, and diff two implementations. Prefer `:xmldocid` over `:path` wherever the source has a C# symbol — `:xmldocid` survives renames and line shifts that silently break `:path` fences. For the fence grammar itself, see <xref:reference.markdown.code-block-args>.
 
-## Assumptions
-
+## Before you begin
 - An existing Pennington site (see <xref:tutorials.getting-started.first-site> if not), with `Pennington.Roslyn` wired through `AddPenningtonRoslyn` and `SolutionPath` pointing at the solution that owns the source to fence.
 - Comfort authoring markdown code fences — the techniques on this page are all info-string changes on a `csharp:xmldocid` fence.
 
@@ -84,11 +83,9 @@ The body uses `StringBuilder`, so `using System.Text;` lands above the snippet. 
 
 `,usings` and `,bodyonly` compose in any order, and the flag works on full-declaration fences too. For multi-symbol fences (one XmlDocId per line), the required usings are unioned and rendered in a single block at the top.
 
-## Break a long method into named helpers
+## Walk a multi-phase method through named helpers
 
-When the target method runs 25+ lines across distinct phases, no fence form will make it short and intelligible — the source itself is too large. Fix the source, not the fence: extract each phase into a named helper with its own xmldoc summary, then fence the helpers one at a time.
-
-`ModularWordCounter` is the same logic as `MonolithWordCounter` split into three helpers — `Tokenize`, `Tally`, and `Format` — orchestrated by a short `CountWords`. A `T:` fence on the whole class gives the reader the full picture in one place:
+When the target method runs 25+ lines across distinct phases, fence each phase as its own helper instead of fencing the monolith. `ModularWordCounter` is the same logic as `MonolithWordCounter` split into three helpers — `Tokenize`, `Tally`, and `Format` — orchestrated by a short `CountWords`. A `T:` fence on the whole class gives the reader the full picture in one place:
 
 ````markdown
 ```csharp:xmldocid
@@ -146,7 +143,7 @@ M:FocusedCodeSamplesExample.ModularWordCounter.Tally(System.Collections.Generic.
 M:FocusedCodeSamplesExample.ModularWordCounter.Format(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Int32}})
 ```
 
-Keep the helpers `public`. `internal` methods do not surface xmldoc and do not participate in the symbol table the preprocessor walks, so fences against them fail to resolve. For doc-facing fixtures, `public` is the right visibility even when idiomatic application code would keep them internal.
+Keep the helpers `public` — `internal` methods do not surface xmldoc and do not participate in the symbol table the preprocessor walks.
 
 ## Show a delta with `xmldocid-diff`
 
@@ -170,17 +167,15 @@ M:FocusedCodeSamplesExample.ModularWordCounter.FormatV2(System.Collections.Gener
 
 The fence body must hold exactly two xmldocids, one per line, in before → after order. `,bodyonly` applies to both sides, so the diff compares implementations without xmldoc boilerplate drowning out the change.
 
-## Reach for `:path` only when no xmldocid exists
+## Embed files without a C# symbol via `:path`
 
-Four shapes have no C# symbol for the preprocessor to target: top-level-statement `Program.cs` files, `.razor` components, markdown or YAML fixtures, and JSON / TOML / config files. For those, `<lang>:path` embeds the whole file by path relative to the solution directory:
+Top-level-statement `Program.cs` files, `.razor` components, markdown or YAML fixtures, and JSON / TOML / config files have no symbol for `:xmldocid` to target. `<lang>:path` embeds the whole file by path relative to the solution directory:
 
 ````markdown
 ```csharp:path
 examples/FocusedCodeSamplesExample/Program.cs
 ```
 ````
-
-For anything with a namespace and a type, prefer `:xmldocid`. The build fails noisily on an unresolved symbol, so it survives the renames and line shifts that silently break `:path` fences.
 
 ---
 

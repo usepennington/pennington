@@ -11,7 +11,7 @@ The content-oriented subset of the `Pennington.UI.Components` Razor component li
 
 ## Stylesheet
 
-The components ship in MonorailCSS utility classes — no separate stylesheet from the package. Sites that mount `UseMonorailCss` (the DocSite default) get the components styled automatically: the class-collector picks up utility tokens from the rendered HTML, and the single `<link rel="stylesheet" href="/styles.css">` tag is sufficient. There is no `_content/Pennington.UI/styles.css` to load.
+The components ship as MonorailCSS utility classes; the package contributes no separate stylesheet. There is no `_content/Pennington.UI/styles.css` to load.
 
 ## Overview
 
@@ -108,7 +108,7 @@ Responsive grid container for `Card` or `LinkCard` children; renders one column 
 
 ## `Checkpoint`
 
-Standalone "verify what you should see now" callout for tutorial pages; renders a primary-tinted box with a literal **Checkpoint** label and the body content beneath it. Authored as a Mdazor component rather than a heading so the right-side outline nav lists only real section headings.
+Standalone "verify what you should see now" callout for tutorial pages; renders a primary-tinted box with a literal **Checkpoint** label and the body content beneath it. Renders as a `<div>`, not a heading, so the right-side outline nav skips it.
 
 ### Parameters
 
@@ -203,7 +203,7 @@ Container for a vertical numbered-step list; emits a `<div>` wrapping an `<ol>` 
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `ChildContent` | `RenderFragment?` | `null` | One or more `<Step>` children. |
-| `Type` | `string` | `"primary"` | Declared parameter reserved for future theming; not currently applied to rendered markup. |
+| `Type` | `string` | `"primary"` | Reserved for future theming; currently has no effect on rendered markup. |
 
 ### Example
 
@@ -230,7 +230,7 @@ services.AddMdazorComponent<Badge>()
         .AddMdazorComponent<Steps>();
 ```
 
-For sites that do not use `AddDocSite` (for example, `AddBlogSite` or a hand-rolled `AddPennington` host), call `AddMdazorComponent<T>()` for each of the eight types to match the doc-site surface.
+Hosts without `AddDocSite` register the same surface through one `AddMdazorComponent<T>()` call per component. See <xref:how-to.rich-content.ui-components-in-markdown> for the host-by-host recipe.
 
 ## See also
 

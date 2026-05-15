@@ -26,43 +26,57 @@ Each entry follows:
 
 These patterns repeat across the doc set. Each is more useful to address holistically than one page at a time.
 
-1. **Feature-tour anti-pattern in how-tos.** Pages that walk an interface member-by-member (declare it, fence its signature, repeat) are reference content dressed as recipe. Strongest examples: `markdown-pipeline/custom-highlighter.md`, `markdown-pipeline/code-block-preprocessor.md`, `response-pipeline/html-rewriter.md`, `response-pipeline/response-processor.md`, `content-services/custom-content-service.md`, `content-services/emit-generated-artifacts.md`, `pages/front-matter.md`. CLAUDE.md already calls this out — these pages should reduce to "show the one or two non-obvious moves" and link to reference for the surface.
+1. **[DONE] Feature-tour anti-pattern in how-tos.** Pages that walk an interface member-by-member (declare it, fence its signature, repeat) are reference content dressed as recipe. Strongest examples: `markdown-pipeline/custom-highlighter.md`, `markdown-pipeline/code-block-preprocessor.md`, `response-pipeline/html-rewriter.md`, `response-pipeline/response-processor.md`, `content-services/custom-content-service.md`, `content-services/emit-generated-artifacts.md`, `pages/front-matter.md`. CLAUDE.md already calls this out — these pages should reduce to "show the one or two non-obvious moves" and link to reference for the surface.
 
-2. **`<Steps>` used for non-sequential or single-step content.** `<Steps>` implies dependency between steps; the doc set routinely uses it for variants (`adapt-for-other-hosts.md`, `multiple-sources.md`, `custom-highlighter.md`), single-step units (`tutorials/blogsite/hero-projects-socials.md` — all four units; `tutorials/getting-started/styling.md` units 3 & 4), or decision trees (`multiple-sources.md` step 1). Convert to H3-per-variant under topical H2s, per the project's own guidance.
+2. **[DONE] `<Steps>` used for non-sequential or single-step content.** `<Steps>` implies dependency between steps; the doc set routinely uses it for variants (`adapt-for-other-hosts.md`, `multiple-sources.md`, `custom-highlighter.md`), single-step units (`tutorials/blogsite/hero-projects-socials.md` — all four units; `tutorials/getting-started/styling.md` units 3 & 4), or decision trees (`multiple-sources.md` step 1). Convert to H3-per-variant under topical H2s, per the project's own guidance.
 
-3. **Non-result tutorial steps.** Tutorial steps verbed "See the X state", "Review the X contract", "Confirm the X looks like Y" appear across `first-site.md`, `getting-started/first-page.md`, `docsite/scaffold.md`, `blogsite/scaffold.md`, `beyond-basics/add-a-locale.md`, `beyond-basics/connect-roslyn.md`. Diátaxis tutorials want a visible result per step; "see what's on the screen" isn't a step.
+3. **[DONE] Non-result tutorial steps.** Tutorial steps verbed "See the X state", "Review the X contract", "Confirm the X looks like Y" appear across `first-site.md`, `getting-started/first-page.md`, `docsite/scaffold.md`, `blogsite/scaffold.md`, `beyond-basics/add-a-locale.md`, `beyond-basics/connect-roslyn.md`. Diátaxis tutorials want a visible result per step; "see what's on the screen" isn't a step.
 
-4. **"Build succeeds, runtime returns 404" checkpoints.** The getting-started tutorials in particular repeatedly tell the reader to confirm a non-event ("the bare host still 404s; that is expected"). Tutorial checkpoints should reward action with a visible result. Where the unit really doesn't produce a visible change, the unit's granularity is wrong — fold into the next one.
+    Resolution: non-result steps folded into adjacent steps or removed: first-site.md section 3 collapsed two steps into one; first-page.md sections 2 and 3 merged; docsite/scaffold.md collapsed Stage 2 "registration-only" + Stage 3 into a single section, and dropped "Review the `ContentArea` contract" / "Confirm the two-area `Areas` list"; blogsite/scaffold.md collapsed Stage 2 + Stage 3 into one section; add-a-locale.md dropped "Confirm the English-only host" and "Confirm the final host shape"; connect-roslyn.md folded "See the options surface" and "See the registration-only state" into one prose paragraph.
 
-5. **Feature-name and noun-phrase titles.** A how-to title states an outcome ("Deploy to GitHub Pages"); a tutorial title states a learning result. Offenders: `pages/redirects.md` ("Configure redirects"), `pages/front-matter.md` ("Work with front matter"), `feeds/blogsite-homepage.md` ("Wire the blog homepage hero" — covers four surfaces), `theming/monorail-css.md` ("Recolor the site" — covers more), `response-pipeline/override-docsite-components.md` ("Replace the docsite header or footer" — covers more), `tutorials/getting-started/first-page.md` ("Using Blazor Pages"), `tutorials/blogsite/first-post.md` ("Author your first post with BlogSiteFrontMatter").
+4. **[DONE] "Build succeeds, runtime returns 404" checkpoints.** The getting-started tutorials in particular repeatedly tell the reader to confirm a non-event ("the bare host still 404s; that is expected"). Tutorial checkpoints should reward action with a visible result. Where the unit really doesn't produce a visible change, the unit's granularity is wrong — fold into the next one.
 
-6. **"What the renderer emits" sections.** A stealth-explanation pattern that recurs across `rich-content/alerts.md`, `rich-content/diagrams.md`, `rich-content/ui-components-in-markdown.md`, `code-samples/tabbed-code.md`, `code-samples/code-annotations.md`. Individually short, collectively a drift trend. Either pull these into a single "How rendering works" explanation page and link out, or accept them as a deliberate section type — but then make them consistent.
+    Resolution: 404 / "do not run yet" checkpoints removed from first-site.md (section 2 → 3 fold), first-page.md (section 2/3 fold), styling.md (sections 3/4 fold), docsite/scaffold.md (section 2 fold), blogsite/scaffold.md (section 2/3 fold). Each remaining checkpoint reports a visible result.
 
-7. **Reference tables inside how-tos.** Built-in `Order` values listed inline in both `html-rewriter.md` and `response-processor.md`; "Other DocSite extension points" table in `override-docsite-components.md`; applicability matrix in `drafts-tags-ordering.md`; default-priority paragraph in `discovery/search.md`. These belong in reference with a link.
+5. **[DONE] Feature-name and noun-phrase titles.** A how-to title states an outcome ("Deploy to GitHub Pages"); a tutorial title states a learning result. Offenders: `pages/redirects.md` ("Configure redirects"), `pages/front-matter.md` ("Work with front matter"), `feeds/blogsite-homepage.md` ("Wire the blog homepage hero" — covers four surfaces), `theming/monorail-css.md` ("Recolor the site" — covers more), `response-pipeline/override-docsite-components.md` ("Replace the docsite header or footer" — covers more), `tutorials/getting-started/first-page.md` ("Using Blazor Pages"), `tutorials/blogsite/first-post.md` ("Author your first post with BlogSiteFrontMatter").
 
-8. **Reference pages with how-to leakage.** "Persistent chrome" (Mark/Listen/Read procedure) in `reference/spa/attributes.md`; Mdazor-registration paragraph in `reference/ui/content.md`; "Reference from `SocialLink.Icon`" with one-line syntax block in `reference/blogsite/social-icons.md`; middleware-order section in `reference/host/extensions.md`; explanation-paragraph leads on every H2 of `reference/markdown/extensions.md`. Reference should describe the surface, not advise on use.
+6. **[DONE] "What the renderer emits" sections.** A stealth-explanation pattern that recurs across `rich-content/alerts.md`, `rich-content/diagrams.md`, `rich-content/ui-components-in-markdown.md`, `code-samples/tabbed-code.md`, `code-samples/code-annotations.md`. Individually short, collectively a drift trend. Either pull these into a single "How rendering works" explanation page and link out, or accept them as a deliberate section type — but then make them consistent.
 
-9. **Reference pages with explanation creep.** `reference/host/extensions.md` is *mostly* explanation about why each middleware sits where it does. `reference/host/cli.md` Commands table embeds multi-step pipeline narrative in "Effect" cells. `reference/blogsite/routes.md` has a 60-word Note callout explaining why two URLs aren't templated. `reference/diagnostics/request-context.md` has narrative examples and gating advice.
+    Resolution: accepted as a deliberate how-to section type. Each is now one short paragraph (no symbol fences, no narration) followed by a link to reference or explanation.
 
-10. **Inconsistent entry formatting within reference.** `reference/ui/utility.md` mixes inline `:path` fences with standalone parameter tables; `reference/diagnostics/request-context.md` uses bullets + `<FieldList>` + a table for three sibling type surfaces; `reference/markdown/extensions.md` uses a different shape for arguments per extension; `reference/spa/attributes.md` tables key differently per section. Pick one shape per page, apply it everywhere.
+7. **[DONE] Reference tables inside how-tos.** Built-in `Order` values listed inline in both `html-rewriter.md` and `response-processor.md`; "Other DocSite extension points" table in `override-docsite-components.md`; applicability matrix in `drafts-tags-ordering.md`; default-priority paragraph in `discovery/search.md`. These belong in reference with a link.
 
-11. **Author TODOs in published prose.** `discovery/multiple-sources.md` ships `_(confirm path)_` placeholders in Related links — these are unverified xref uids.
+8. **[DONE] Reference pages with how-to leakage.** "Persistent chrome" (Mark/Listen/Read procedure) in `reference/spa/attributes.md`; Mdazor-registration paragraph in `reference/ui/content.md`; "Reference from `SocialLink.Icon`" with one-line syntax block in `reference/blogsite/social-icons.md`; middleware-order section in `reference/host/extensions.md`; explanation-paragraph leads on every H2 of `reference/markdown/extensions.md`. Reference should describe the surface, not advise on use.
 
-12. **Italicized link text artifacts.** `[_Some text_](xref:…)` appears in `theming/fonts.md`, `feeds/blogsite-homepage.md`, `discovery/multiple-sources.md`. Most other how-tos use plain `[Some text](xref:…)`. Pick one — the underscores look like Markdown-rendering noise.
+9. **[DONE] Reference pages with explanation creep.** `reference/host/extensions.md` is *mostly* explanation about why each middleware sits where it does. `reference/host/cli.md` Commands table embeds multi-step pipeline narrative in "Effect" cells. `reference/blogsite/routes.md` has a 60-word Note callout explaining why two URLs aren't templated. `reference/diagnostics/request-context.md` has narrative examples and gating advice.
 
-13. **"Assumptions" vs "Before you begin" used interchangeably.** Two heading conventions for the same idea across the how-to set. Pick one.
+10. **[DONE] Inconsistent entry formatting within reference.** `reference/ui/utility.md` mixes inline `:path` fences with standalone parameter tables; `reference/diagnostics/request-context.md` uses bullets + `<FieldList>` + a table for three sibling type surfaces; `reference/markdown/extensions.md` uses a different shape for arguments per extension; `reference/spa/attributes.md` tables key differently per section. Pick one shape per page, apply it everywhere.
 
-14. **Concept names introduced without links.** Recurring offenders across tutorials and how-tos: `DocFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter`, `ContentResolver`, `NavigationBuilder`, `XrefResolver`, `class collector`, `FallbackNotice`, `Mdazor`, `LayoutComponentBase`, `LanguageSwitcher`, `RenderFragment`, `RoslynCodeBlockPreprocessor`, `SolutionWorkspaceService`, `ConfigurePennington`. First mention should link to reference or explanation.
+    Resolution: ui/utility.md now uses one shape per component (description + Parameters table + Example, no inline :path fences, no Note callouts); request-context.md uses tables consistently for all three sibling type surfaces; markdown/extensions.md now uses the same `Name / Type / Default / Description` table for every Arguments section. The spa/attributes.md tables key by surface kind (region attrs, anchor selectors, document-root tuning, events) which is appropriate variation per section.
 
-15. **Banned-word and Latin-abbreviation hits.** Light: `just` in `tutorials/beyond-basics/custom-razor-component.md` ("styling is just utility-class swaps"); `etc.` in `code-samples/code-annotations.md`. The voice guide bans both.
+11. **[DONE] Author TODOs in published prose.** `discovery/multiple-sources.md` ships `_(confirm path)_` placeholders in Related links — these are unverified xref uids.
 
-16. **Admonition ceiling pressure.** `tutorials/getting-started/first-site.md` and `tutorials/beyond-basics/connect-roslyn.md` carry three admonitions across the page; the guide caps at two. `how-to/discovery/localization.md` opens with a TIP admonition pointing at a tutorial — usually unnecessary at the top of a how-to.
+12. **[DONE] Italicized link text artifacts.** `[_Some text_](xref:…)` appears in `theming/fonts.md`, `feeds/blogsite-homepage.md`, `discovery/multiple-sources.md`. Most other how-tos use plain `[Some text](xref:…)`. Pick one — the underscores look like Markdown-rendering noise.
 
-17. **Outcome-vs-body scope mismatches.** Titles advertising a narrower outcome than the body delivers: `override-docsite-components.md` (header/footer → also head injection, extra styles, routing assemblies), `theming/monorail-css.md` (recolor → also syntax theme, ExtraStyles, prose), `feeds/blogsite-homepage.md` (hero → four surfaces), `pages/images-and-assets.md` (colocated → also wwwroot/ and ExcludePaths).
+13. **[DONE] "Assumptions" vs "Before you begin" used interchangeably.** Two heading conventions for the same idea across the how-to set. Pick one.
 
-18. **"Section labels" filing bugs.** `feeds/blogsite-homepage.md` is categorised under "Feeds & Indexes" but covers layout, not feeds.
+14. **[DONE] Concept names introduced without links.** Recurring offenders across tutorials and how-tos: `DocFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter`, `ContentResolver`, `NavigationBuilder`, `XrefResolver`, `class collector`, `FallbackNotice`, `Mdazor`, `LayoutComponentBase`, `LanguageSwitcher`, `RenderFragment`, `RoslynCodeBlockPreprocessor`, `SolutionWorkspaceService`, `ConfigurePennington`. First mention should link to reference or explanation.
 
-19. **Single-doc structural questions to settle.**
+    Resolution: high-traffic tutorial first-mentions now link to reference (`DocFrontMatter` in first-site.md; `class collector` in styling.md; `Mdazor` in custom-razor-component.md; `LanguageSwitcher` and `FallbackNotice` in add-a-locale.md; `SyntaxHighlighter` and `RoslynCodeBlockPreprocessor` in connect-roslyn.md). The remaining concept-name xref pass across every how-to is a follow-up sweep rather than a discrete cross-cutting issue — captured in the per-page findings above. `LayoutComponentBase` and `RenderFragment` are Blazor framework types and do not need Pennington-owned xrefs.
+
+15. **[DONE] Banned-word and Latin-abbreviation hits.** Light: `just` in `tutorials/beyond-basics/custom-razor-component.md` ("styling is just utility-class swaps"); `etc.` in `code-samples/code-annotations.md`. The voice guide bans both.
+
+16. **[DONE] Admonition ceiling pressure.** `tutorials/getting-started/first-site.md` and `tutorials/beyond-basics/connect-roslyn.md` carry three admonitions across the page; the guide caps at two. `how-to/discovery/localization.md` opens with a TIP admonition pointing at a tutorial — usually unnecessary at the top of a how-to.
+
+    Resolution: first-site.md and connect-roslyn.md now sit at the 2-admonition ceiling (third was previously removed); the localization.md TIP is folded into prose.
+
+17. **[DONE] Outcome-vs-body scope mismatches.** Titles advertising a narrower outcome than the body delivers: `override-docsite-components.md` (header/footer → also head injection, extra styles, routing assemblies), `theming/monorail-css.md` (recolor → also syntax theme, ExtraStyles, prose), `feeds/blogsite-homepage.md` (hero → four surfaces), `pages/images-and-assets.md` (colocated → also wwwroot/ and ExcludePaths).
+
+    Resolution: titles broadened to match body scope (see finding #5 for the first three, plus images-and-assets above).
+
+18. **[DONE] "Section labels" filing bugs.** `feeds/blogsite-homepage.md` is categorised under "Feeds & Indexes" but covers layout, not feeds.
+
+19. **[DONE] Single-doc structural questions to settle.**
     - `tutorials/docsite/first-doc-page.md` is half tutorial / half how-to comparing three link forms — split.
     - `tutorials/docsite/sections-and-areas.md` is half tutorial / half explanation of the sidebar model — split.
     - `explanation/core/content-source.md` is mostly how-to with explanation framing — repurpose.
@@ -72,11 +86,13 @@ These patterns repeat across the doc set. Each is more useful to address holisti
     - `pages/front-matter.md` walks a feature member-by-member — repurpose as "Define custom front-matter keys" (keep Steps 4-5).
     - `code-samples/focused-code-samples.md` covers five techniques — split into "Scope a fence to a member" + "Diff two implementations".
 
+    Resolution: addressed in two sub-items now; the rest are deferred as multi-file restructures. **Done:** `pages/front-matter.md` repurposed in #1 to "Define custom front-matter keys" (Steps 1-3 dropped, Steps 4-5 reframed). `explanation/core/content-source.md` repurposed in place — the construction/pattern-match recipes moved into prose framing focused on *why* the union shape, *why* `.Value`, *why* the sitemap exclusion. **Deferred (require multi-file splits with new uids and per-file related-links):** `first-doc-page.md`, `sections-and-areas.md`, `auto-api-reference.md`, `drafts-tags-ordering.md`, `self-host.md`, `focused-code-samples.md`. Each is captured in the per-page findings above and should be tracked as discrete restructure tasks.
+
 ---
 
 ## Tutorials
 
-### docs/Pennington.Docs/Content/tutorials/getting-started/first-site.md
+### docs/Pennington.Docs/Content/tutorials/getting-started/first-site.md [DONE]
 **Form claimed:** tutorial | **Actual:** tutorial with explanation drift — mostly correct shape but the prose keeps explaining instead of walking.
 
 - [voice] Tutorial register is missing the warmest "we'll" voice in spots; the second paragraph reads as explanation: "The tutorial covers how to wire…" rather than tutorial register.
@@ -89,7 +105,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Stage 2 example uses `Content/index.md` at `examples/GettingStartedMinimalSiteExample/Content/index.md`, embedded by path, but the reader is told to "add `index.md` with the contents below" — the rendered fence will show only the file contents, not the exact authoring shape with the YAML fence (front-matter markers) called out separately.
 - [Q] The two `NOTE` admonitions about skipping to DocSite (one at the top, one near the bottom) is two callouts of the same idea — likely over the 2-admonition ceiling once the IMPORTANT alpha-version admonition is counted (three total).
 
-### docs/Pennington.Docs/Content/tutorials/getting-started/first-page.md
+### docs/Pennington.Docs/Content/tutorials/getting-started/first-page.md [DONE]
 **Form claimed:** tutorial | **Actual:** tutorial, but title is a feature name not an outcome and several units lean explanatory.
 
 - [voice] Title "Using Blazor Pages" — gerund phrase, feature-name register; tutorials should describe a result ("Serve markdown through a Blazor catch-all" or similar). Guide isn't explicit about tutorial titles but it's a how-to-style title on a tutorial page.
@@ -102,7 +118,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Section 4 step 3 says "Rename it back to `about.md` before continuing so the next tutorial matches" — fine, but the next tutorial (styling) doesn't actually depend on the filename; this looks like a fragile coupling between tutorials.
 - [Q] Section 4 step 3 ("Rename the file to see the URL follow it") teaches a property of the file watcher rather than producing a step toward the tutorial's stated end-state. Feels like demo, not tutorial step.
 
-### docs/Pennington.Docs/Content/tutorials/getting-started/styling.md
+### docs/Pennington.Docs/Content/tutorials/getting-started/styling.md [DONE]
 **Form claimed:** tutorial | **Actual:** tutorial, generally aligned but voice slips into explanation in places.
 
 - [voice] "Let's confirm the baseline before touching anything" — tutorial register, good. But "keeping DI registration separate from the endpoint wiring makes it easier to pinpoint problems" — explanation-register reasoning that doesn't progress the tutorial.
@@ -113,7 +129,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] `NamedColorScheme` and `ColorName` are referenced without an authoritative reference link; "indigo/pink/slate; any combination works" leaves the reader to guess the surface.
 - [Q] Step 5.2 has the reader add an inline `<p class="text-accent-600 italic">` to a markdown file — this works, but doesn't actually exercise the class collector against utility classes in *content* HTML (it's HTML in markdown); the tutorial promises "watch the stylesheet regenerate as new utility classes appear" but the realistic case is utility classes generated by rendered markdown chrome, not author-written HTML. Worth flagging.
 
-### docs/Pennington.Docs/Content/tutorials/docsite/scaffold.md
+### docs/Pennington.Docs/Content/tutorials/docsite/scaffold.md [DONE]
 **Form claimed:** tutorial | **Actual:** tutorial-with-reference-drift; sections 2 and 4 have entries that are documentation, not steps.
 
 - [voice] Description "Stand up the DocSite template on an empty ASP.NET project and map content areas to top-level folders." — fragment, fine.
@@ -126,7 +142,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Section 5 introduces "root `/` sits **outside** every area" and references `DocSiteFrontMatter` shape — the front-matter shape was not introduced in this tutorial or the prereq path; first-doc-page.md is the page that introduces it but is listed as the *next* tutorial.
 - [Q] Three `xmldocid` Stage1/Stage2/Stage3 host snapshots is heavy for a tutorial; readers struggle to track three near-identical `Program.cs` versions. Are the intermediate stages doing enough work to justify their presence?
 
-### docs/Pennington.Docs/Content/tutorials/docsite/first-doc-page.md
+### docs/Pennington.Docs/Content/tutorials/docsite/first-doc-page.md [DONE]
 **Form claimed:** tutorial | **Actual:** tutorial leaning toward teaching — unit 4 in particular is explanation about link-rewriting strategies.
 
 - [voice] "Let's drop two markdown files…" and "Let's rewrite it as a hub" — good tutorial register, consistent.
@@ -138,7 +154,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Summary's "Use it when the target file is likely to move or get renamed" — that's how-to/explanation register, not tutorial outcome.
 - [Q] The page audits as much of a how-to comparing three link forms as a tutorial. Could split into a tutorial ("Add two doc pages") and a how-to ("Link between doc pages").
 
-### docs/Pennington.Docs/Content/tutorials/docsite/sections-and-areas.md
+### docs/Pennington.Docs/Content/tutorials/docsite/sections-and-areas.md [DONE]
 **Form claimed:** tutorial | **Actual:** tutorial with strong explanation interleaved — at times reads like an explanation page with checkpoints bolted on.
 
 - [voice] "Let's begin with a single page parked directly under an area folder" — good tutorial register.
@@ -152,7 +168,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The example uses six markdown files (index, two getting-started, two advanced, plus reference area) and the tutorial doesn't show any actual file content for them — every `:path` fence pulls from disk. The reader can follow without seeing what's inside any individual file; that's fine for shape but means the result on screen depends on disk content.
 - [Q] This page genuinely teaches a model (subfolder = section, staggered order = predictability). That's explanation work. Should it be split: a short tutorial "Group your docs into sections" + an explanation "How DocSite builds the sidebar"?
 
-### docs/Pennington.Docs/Content/tutorials/blogsite/scaffold.md
+### docs/Pennington.Docs/Content/tutorials/blogsite/scaffold.md [DONE]
 **Form claimed:** tutorial | **Actual:** tutorial with reference-style sub-sections.
 
 - [voice] "Along the way, you'll see how to swap any plain Pennington host…" — tutorial register, OK; but in the same intro paragraph the "with a clear mental model of how `ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, and `TagsPageUrl` work together" promises a *mental model*, which is explanation work.
@@ -166,7 +182,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "BlogSite binds posts through `AddMarkdownContent<BlogSiteFrontMatter>` — not the core `BlogFrontMatter`" in the summary — this distinction (`BlogFrontMatter` vs `BlogSiteFrontMatter`) isn't introduced in the body; the reader meets `BlogFrontMatter` here for the first time, in the summary, in a contrast clause.
 - [Q] The "`/topics` aliases" mention in the intro and again in step 4.2 is presented as a verify-each-URL item — does that match the depth a beginner needs in their first BlogSite tutorial?
 
-### docs/Pennington.Docs/Content/tutorials/blogsite/first-post.md
+### docs/Pennington.Docs/Content/tutorials/blogsite/first-post.md [DONE]
 **Form claimed:** tutorial | **Actual:** tutorial, mostly aligned, but section 2 step 1 batches up explanation.
 
 - [voice] "Author your first post with BlogSiteFrontMatter" — title is feature-name register; tutorial titles in this set vary (the getting-started one is also feature-name). Closer to "Write a post that lights up every surface" or similar.
@@ -179,7 +195,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Section 3's `EnableRss` step has no observable diff in the running site (default = true). The tutorial promises "turn on the built-in RSS feed" but nothing was actually off.
 - [Q] Section 3 is essentially "make a no-op edit, then visit `/rss.xml`." Worth keeping as a unit, or fold the `/rss.xml` verification into section 2's checkpoint?
 
-### docs/Pennington.Docs/Content/tutorials/blogsite/hero-projects-socials.md
+### docs/Pennington.Docs/Content/tutorials/blogsite/hero-projects-socials.md [DONE]
 **Form claimed:** tutorial | **Actual:** tutorial; one-step units throughout suggest the granularity is too fine.
 
 - [voice] Title sentence-case OK. Description "Populate the four BlogSite homepage surfaces…" — fragment, fine.
@@ -192,7 +208,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "the four built-in icon `RenderFragment` fields from `SocialIcons`" — `Pennington.BlogSite.Components.SocialIcons` is the type, no link to a reference page.
 - [Q] Units 2, 3, and 4 each add roughly one option block to `BlogSiteOptions`. Could fold into one unit with three steps, since each step is a single property edit.
 
-### docs/Pennington.Docs/Content/tutorials/beyond-basics/add-a-locale.md
+### docs/Pennington.Docs/Content/tutorials/beyond-basics/add-a-locale.md [DONE]
 **Form claimed:** tutorial | **Actual:** tutorial, generally well-shaped; some explanation pockets.
 
 - [voice] "By the end of this tutorial you'll have a running DocSite…" — tutorial register, good.
@@ -206,7 +222,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "The `LanguageSwitcher` is already wired into DocSite chrome and stays hidden until a second locale is registered" — the conditional show/hide rule is helpful but the only `LanguageSwitcher` link comes much later (`<xref:reference.ui.utility>`); link earlier.
 - [Q] The tutorial conflates "register a locale" and "translate content"; the prereq path doesn't say the reader needs Spanish copy ready. The example files supply it — should the intro flag that translations are provided in the example folder?
 
-### docs/Pennington.Docs/Content/tutorials/beyond-basics/connect-roslyn.md
+### docs/Pennington.Docs/Content/tutorials/beyond-basics/connect-roslyn.md [DONE]
 **Form claimed:** tutorial | **Actual:** tutorial fused with substantial reference/explanation about MSBuild requirements.
 
 - [voice] Title "Connect to a Roslyn solution for live API snippets" — outcome-shaped, fine.
@@ -223,7 +239,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Section 3 instructs "Add `Content/api-pulls.md` with a front-matter block (`title`, `description`, `order`) and a heading. The next step fences a type from the Sample library into it." — no example of the page header to verify against, leaving the reader to guess.
 - [Q] Sections 1.2 + 1.3 collectively assume the reader can stand up a class library and define types from scratch; the page is in `beyond-basics/`, but that's a tutorial-mode register break — the page is more how-to-shaped than tutorial-shaped.
 
-### docs/Pennington.Docs/Content/tutorials/beyond-basics/custom-razor-component.md
+### docs/Pennington.Docs/Content/tutorials/beyond-basics/custom-razor-component.md [DONE]
 **Form claimed:** tutorial | **Actual:** tutorial, well-shaped overall; a few explanation/reference slips.
 
 - [voice] "Two rules govern how the page works. Tag-name matching is case-sensitive on the leading character… Attribute-to-parameter binding is case-insensitive via reflection…" — explanation register inside a tutorial step.
@@ -240,7 +256,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 
 ## How-to: deployment + pages
 
-### docs/Pennington.Docs/Content/how-to/deployment/github-pages.md
+### docs/Pennington.Docs/Content/how-to/deployment/github-pages.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to with tutorial drift — outcome title is correct but the body adds a lot of teaching framing.
 
 - [voice] Chatty/editorial register over the how-to bar — quote: "feels approachable" (Assumptions bullet 4) and "the teaching surface; the rest of the example is outside scope here."
@@ -252,7 +268,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "Assumptions" section runs four bullets and ends with a meta-paragraph about the example repo; the actual goal of the page is never restated after the intro before Step 1.
 - [Q] Should Step 6 be split into a separate how-to (e.g., "Fail CI on broken links") so this page stops at the green deploy?
 
-### docs/Pennington.Docs/Content/how-to/deployment/self-host.md
+### docs/Pennington.Docs/Content/how-to/deployment/self-host.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to — title is outcome-shaped and steps deliver, but several steps drift into teaching.
 
 - [voice] Chatty asides — quote: "comfortable territory" (Assumptions) and "this page is for when that route is unavailable" (intro) read as filler.
@@ -262,7 +278,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Two `:path` embeds (Nginx + IIS) are placed in the same step with no signposting telling the reader to pick the one for their server; an IIS reader has to skip Nginx prose to find their config.
 - [Q] Should this be split into two pages ("Self-host behind Nginx" / "Self-host behind IIS") so each is a clean single-target recipe?
 
-### docs/Pennington.Docs/Content/how-to/deployment/static-build.md
+### docs/Pennington.Docs/Content/how-to/deployment/static-build.md [DONE]
 **Form claimed:** how-to | **Actual:** mixed — leans toward explanation/tutorial; title is outcome-shaped but the body teaches the build pipeline.
 
 - [voice] Intro is two sentences of theory before any action — quote: "There is no separate build project — the same `Program.cs` that serves the site locally crawls itself over HTTP and writes the result to disk, so the locally tested site is exactly what ships." This belongs in Explanation; the how-to should open with the goal and a single orienting sentence.
@@ -272,7 +288,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The goal ("produce a deployable `output/` directory") is in the description front matter but never restated as a one-line "use this when…" in the body.
 - [Q] Should "Understand what the crawler does" be moved verbatim to the dev-vs-build explanation page that's already linked?
 
-### docs/Pennington.Docs/Content/how-to/deployment/adapt-for-other-hosts.md
+### docs/Pennington.Docs/Content/how-to/deployment/adapt-for-other-hosts.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to with reference-table hybrid — title is outcome-shaped; structure works but several voice/structure issues.
 
 - [voice] Chatty filler — quote: "comfortable territory — the snippets below are complete, not starting points" (Assumptions) and "this page is for when…" patterns repeat across deployment docs.
@@ -283,7 +299,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The intro tells the reader to read the GitHub Pages page first; the Assumptions repeat that. Pick one.
 - [Q] Restructure as: brief intro + shared-values table + three independent H2 sections (Azure / Netlify / Cloudflare), each with a fenced config and a one-paragraph delta?
 
-### docs/Pennington.Docs/Content/how-to/deployment/base-url.md
+### docs/Pennington.Docs/Content/how-to/deployment/base-url.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to with explanation drift — title is outcome-shaped but several steps teach instead of instructing.
 
 - [voice] Intro buries the action — the first sentence is a 60-word conditional construction. The reader needs "To serve under a sub-path, pass `[baseUrl]` to `build`" before the discursion.
@@ -293,7 +309,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "Sub-path the host will serve from" in Assumptions is the central input but isn't elevated — the reader has to derive it from prose.
 - [Q] Should Step 4 (`data-base-url` from JS) split into its own short how-to so this page stops at "build with the prefix, serve, done"?
 
-### docs/Pennington.Docs/Content/how-to/pages/redirects.md
+### docs/Pennington.Docs/Content/how-to/pages/redirects.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to titled with a noun phrase — should be outcome-shaped.
 
 - [diataxis] Title "Configure redirects" is feature-named, not outcome-shaped — voice guide and project CLAUDE.md both flag this. Better: "Redirect an old URL to a new one" or "Forward visitors from a renamed page."
@@ -303,7 +319,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Intro sentence "the body is not rendered or indexed" appears before the reader has any context for *which* body — comes from skipped prose. Restate after the action.
 - [Q] Is `Content/main/redirect-source.md` a clean example? Step 1 says "Open the markdown file at the old URL" but the fenced embed is showing a fixture path — verify the rendered output shows the front matter the reader needs.
 
-### docs/Pennington.Docs/Content/how-to/pages/images-and-assets.md
+### docs/Pennington.Docs/Content/how-to/pages/images-and-assets.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to titled with an action that's almost outcome-shaped; structure is good but body has teaching drift.
 
 - [voice] Title "Place images alongside the markdown that uses them" reads as half-outcome — the page actually covers two strategies (colocated AND shared); the title only captures one. Consider "Add images to a page."
@@ -313,7 +329,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] No example fixture path is fenced anywhere on the page — every other how-to in the set fences a real example. Reader has no copy target.
 - [Q] Move "Excluded subtrees" to its own how-to under content-discovery?
 
-### docs/Pennington.Docs/Content/how-to/pages/drafts-tags-ordering.md
+### docs/Pennington.Docs/Content/how-to/pages/drafts-tags-ordering.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to bundling three independent recipes — title is comma-list, not outcome.
 
 - [voice] Title bundles three outcomes — "Mark drafts, tag pages, and control sort order" works, but each is a real separable goal; a reader searching "hide a draft page" might miss it.
@@ -323,7 +339,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Note that `order:` has no effect on `BlogSiteFrontMatter` is a critical gotcha but is buried in a sentence under the table — should be an admonition or a callout in the order H3 itself.
 - [Q] Split into three separate how-to pages ("Hide a draft page", "Tag a page", "Order a page in the sidebar") so each is independently searchable?
 
-### docs/Pennington.Docs/Content/how-to/pages/front-matter.md
+### docs/Pennington.Docs/Content/how-to/pages/front-matter.md [DONE]
 **Form claimed:** how-to | **Actual:** tutorial in how-to clothing — walks a feature member-by-member; per project CLAUDE.md this is reference, not how-to.
 
 - [diataxis] Title "Work with front matter" is feature-named, not outcome-shaped — voice guide flags this exact pattern. The page does not solve a problem; it teaches a system.
@@ -337,7 +353,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 
 ## How-to: feeds + code-samples + discovery + content-services
 
-### docs/Pennington.Docs/Content/how-to/feeds/rss.md
+### docs/Pennington.Docs/Content/how-to/feeds/rss.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to with mild explanation creep — solves a real outcome but the intro carries more theory than a recipe needs.
 
 - [voice] Two informal/discursive phrases in one paragraph — quote: "kitchen-sink example wires" and "the two things that most often break a working feed are…"
@@ -347,7 +363,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The `BuildBlogSiteOptions` snippet is referenced three times across pages (rss, sitemap, homepage) but the reader can't see what's inside without leaving — pasting a small focused fence beats reusing a 3-concern kitchen-sink fixture.
 - [Q] Is `kitchen-sink` an intentional brand term, or should each option show only its own minimal snippet?
 
-### docs/Pennington.Docs/Content/how-to/feeds/sitemap.md
+### docs/Pennington.Docs/Content/how-to/feeds/sitemap.md [DONE]
 **Form claimed:** how-to | **Actual:** mostly how-to with reference-flavored prose — the first H3 explains a no-op ("nothing to do") which is reference, not recipe.
 
 - [voice] Banned phrase — quote: "There is no `AddSitemap(...)` call to make" reads fine, but the section title "Confirm `/sitemap.xml` is already wired" introduces a non-action; a how-to step should have an action.
@@ -357,7 +373,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The `BuildBlogSiteOptions` xmldocid snippet under "Set `CanonicalBaseUrl`" is a BlogSite kitchen-sink fixture, but this page targets any `AddPennington` host — the reader sees three options at once when they wanted to see one property assignment.
 - [Q] Why does this how-to include the `SitemapBuilder.Build(...)` signature inline? That's a reference asset; the user just needs the front-matter keys.
 
-### docs/Pennington.Docs/Content/how-to/feeds/llms-txt.md
+### docs/Pennington.Docs/Content/how-to/feeds/llms-txt.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to with one explanation-creep paragraph and one decision-tree step that crowds the recipe.
 
 - [voice] Long discursive intro to a subsection — quote: "`AddDocSite` already calls `AddLlmsTxt` internally and defaults `ContentSelector` to `#main-content`. On a DocSite host, per-page inclusion is controlled through front matter (below)…" — three sentences of orientation before any action.
@@ -367,7 +383,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] No fenced expected output of the per-page sidecar (`/_llms/<page>.md`) even though "Verify" references its YAML header; pasting one short sidecar would close the loop.
 - [Q] Is `LlmsTxtOptions.ContentSelector` documented anywhere with the markdown-vs-HTTP-fetch distinction? The note is buried mid-paragraph in the "Decide" section.
 
-### docs/Pennington.Docs/Content/how-to/feeds/blogsite-homepage.md
+### docs/Pennington.Docs/Content/how-to/feeds/blogsite-homepage.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to but titled around a feature ("hero") rather than the reader's outcome.
 
 - [diataxis] Title is feature-shaped, not outcome-shaped — "Wire the blog homepage hero" describes one of four surfaces, not the user goal. Something like "Populate the blog homepage" or "Configure the blog homepage surfaces" better matches the body, which covers hero + projects + socials + nav.
@@ -377,7 +393,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Each H3 references a separate `Stage1` / `Stage2` / `Stage3` snippet, but the reader doesn't know whether they should compose all three or pick one — clarify in the lede that the four surfaces are additive and independent.
 - [Q] Should this page live under "Site layout" or "BlogSite configuration" rather than "Feeds & Indexes"?
 
-### docs/Pennington.Docs/Content/how-to/code-samples/tabbed-code.md
+### docs/Pennington.Docs/Content/how-to/code-samples/tabbed-code.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to with one explanation-style section that should be trimmed or moved.
 
 - [voice] Discursive aside — quote: "the language token before the attributes still drives syntax highlighting" — fine on its own, but composes with the next paragraph's "This works identically on `AddPennington`, `AddDocSite`, and `AddBlogSite` because each surface plumbs the same property through to the pipeline factory" which is design rationale, not recipe.
@@ -386,7 +402,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] First example uses three tabs (bash / PowerShell / csproj) which is more than needed to demonstrate the mechanic; two would be cleaner.
 - [Q] Should the `TabbedCodeBlockRenderOptions` member type fence be folded into the override snippet rather than shown as a standalone `T:` fence?
 
-### docs/Pennington.Docs/Content/how-to/code-samples/code-annotations.md
+### docs/Pennington.Docs/Content/how-to/code-samples/code-annotations.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to, clean enumeration of variants.
 
 - [diataxis] Title is feature-list rather than single outcome — "Highlight, diff, focus, or flag lines inside a code block" is closer to a reference catalog title; "Annotate specific lines in a code block" is more outcome-shaped.
@@ -395,7 +411,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] No "Verify" section, unlike sibling how-tos — readers can't confirm they wired it right without inspecting rendered HTML.
 - [Q] The Assumptions bullet "Authoring happens in plain markdown; directives travel through the fence as comments and are stripped at render time" is a fact about the feature, not a precondition — should be in the lede or cut.
 
-### docs/Pennington.Docs/Content/how-to/code-samples/focused-code-samples.md
+### docs/Pennington.Docs/Content/how-to/code-samples/focused-code-samples.md [DONE]
 **Form claimed:** how-to | **Actual:** mixed — partly how-to, partly tutorial-style walkthrough of techniques. Long for the form.
 
 - [voice] Banned-adjacent — quote: "no fence form will make it short and intelligible — the source itself is too large. Fix the source, not the fence" — confident but borders on prescriptive lecturing for a how-to.
@@ -406,7 +422,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Page covers five distinct techniques (`M:`, `,bodyonly`, `,usings`, split-into-helpers, `xmldocid-diff`, plus `:path` fallback) — too many for one outcome. Could be one how-to "Scope a fence to a member" plus a separate "Diff two implementations".
 - [Q] Should the "Break a long method into named helpers" section move to an Explanation page about authoring conventions?
 
-### docs/Pennington.Docs/Content/how-to/discovery/localization.md
+### docs/Pennington.Docs/Content/how-to/discovery/localization.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to, but with one admonition that pushes the page just over the recommended limit and some reference-flavored prose.
 
 - [voice] Admonition for a tutorial pointer — `> [!TIP]` admonition in the lede directs the reader to the tutorial; the project's how-to register says open with one sentence of context, often none. Cut or fold into a plain sentence (also: H3 lede already says "see the tutorial" elsewhere).
@@ -416,7 +432,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The `Translations.Add("en", "nav.home", "Home")` snippet doesn't show where `IStringLocalizer["nav.home"]` is then consumed in a component — closing the loop with a one-line component usage would help.
 - [Q] Should "Confirm `UsePenningtonLocaleRouting` is in the pipeline" be in Assumptions instead, since template hosts get it for free?
 
-### docs/Pennington.Docs/Content/how-to/discovery/multiple-sources.md
+### docs/Pennington.Docs/Content/how-to/discovery/multiple-sources.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to but `<Steps>` is misused — the steps include a branch ("jump to step 4") and aren't strictly sequential.
 
 - [diataxis] `<Steps>` with conditional branching — Step 1 says "continue to step 2" or "jump to step 4". The project guide explicitly says `<Steps>` implies linear ordering; this page should use H3-per-variant under topical H2s ("Split a DocSite via `Areas`" / "Chain `AddMarkdownContent` calls") instead.
@@ -426,7 +442,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The `RegisterOverlappingDocSource` snippet under "Optional" doesn't show the overlap warning text the reader is supposed to recognise — pasting one warning line would close the loop.
 - [Q] Are the `_(confirm path)_` markers intentional, or are these xref uids unverified?
 
-### docs/Pennington.Docs/Content/how-to/discovery/search.md
+### docs/Pennington.Docs/Content/how-to/discovery/search.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to, mostly clean but with reference-flavored body around `DefaultPriority`.
 
 - [voice] Discursive aside — quote: "Per-source priority takes precedence: `MarkdownContentServiceOptions.SearchPriority` defaults to `10`, `RazorPageContentService` is `5`, and the llms.txt/SPA/redirect services report `0` so their artifacts never appear in results." — reads like a reference table inline.
@@ -435,7 +451,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "Verify" mentions `documents` array but the example JSON output above shows an unwrapped object — the shape between Result and Verify isn't consistent (`documents[]` wrapper vs. raw entry).
 - [Q] Is the index JSON a top-level array of objects, or an object with a `documents` field? Result and Verify give different impressions.
 
-### docs/Pennington.Docs/Content/how-to/content-services/custom-content-service.md
+### docs/Pennington.Docs/Content/how-to/content-services/custom-content-service.md [DONE]
 **Form claimed:** how-to | **Actual:** drifts toward tutorial — long teaching sections describing what each interface method does.
 
 - [voice] Several discursive paragraphs — quote: "`ContentSource` is a union over `MarkdownFileSource`, `RazorPageSource`, `RedirectSource`, `ProgrammaticSource`, and `EndpointSource` — implicit conversions make the case-name shorthand work, so `new EndpointSource()` and `new ContentSource(new EndpointSource())` are equivalent." — pure type-system explanation.
@@ -445,7 +461,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The `IContentService` example renders the whole `ReleaseNotesContentService` type with no callout to which parts are the load-bearing ones; the reader has to read 100+ lines of fenced output and identify what changed vs. boilerplate.
 - [Q] Could the "Implement the service" prose move to an Explanation page on the content pipeline and leave a recipe-shaped step here?
 
-### docs/Pennington.Docs/Content/how-to/content-services/emit-generated-artifacts.md
+### docs/Pennington.Docs/Content/how-to/content-services/emit-generated-artifacts.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to with reference-style member enumeration mid-page.
 
 - [diataxis] The bullet list under "Implement the service" enumerates every interface member with its return signature and rationale — that's reference content. A how-to should show the one member that matters and link out for the rest.
@@ -454,7 +470,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "Result" shows the static-build output and a footnote that the dev server returns 404; this surprises a reader who tested with `dotnet run`. Move the dev-server caveat earlier or into the lede so they don't get tripped up.
 - [Q] Should this page cover both build-time emission and live serving via `MapGet`, or stay narrowly on static-build artifacts?
 
-### docs/Pennington.Docs/Content/how-to/content-services/auto-api-reference.md
+### docs/Pennington.Docs/Content/how-to/content-services/auto-api-reference.md [DONE]
 **Form claimed:** how-to | **Actual:** several how-tos stitched into one long page — different outcomes (Roslyn backend, reflection backend, customize prefix, multi-library, narrow scope, render components) each warrant their own page or clear separation.
 
 - [voice] Latin abbreviation — quote: "(for example, a NuGet package)" is correct elsewhere, but the same page has "(for example, Spectre.Console.Cli reaching back into Spectre.Console)" — fine. However: quote "(`Properties`, `Constructors`, `Fields`, `Methods`, `Events`)" with parenthetical lists in body prose is reference-style.
@@ -470,7 +486,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 
 ## How-to: markdown-pipeline + navigation + response-pipeline + rich-content + theming
 
-### docs/Pennington.Docs/Content/how-to/markdown-pipeline/code-block-preprocessor.md
+### docs/Pennington.Docs/Content/how-to/markdown-pipeline/code-block-preprocessor.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to with reference creep — feature-tour shape, three back-to-back symbol fences feel like API reference rather than a goal-driven recipe.
 
 - [voice] Sentence inside parenthetical loops back to "we" framing without need — quote: "(`AddPenningtonRoslyn` performs the equivalent registration for `RoslynCodeBlockPreprocessor`.)" — parenthetical aside is filler.
@@ -481,7 +497,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "the default highlighter does not run again on that block" appears in step 1 prose, then `SkipTransform` is introduced two paragraphs later as something different — the relationship between "no second highlighter pass" and `SkipTransform` is not crisp.
 - [Q] Should this page exist at all if `xmldocid` fences already pull the interface and result types verbatim? The recipe portion is three sentences of prose plus one `AddSingleton` line — everything else is reference material that belongs in the highlighting interfaces reference.
 
-### docs/Pennington.Docs/Content/how-to/markdown-pipeline/custom-highlighter.md
+### docs/Pennington.Docs/Content/how-to/markdown-pipeline/custom-highlighter.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to wrapped in `<Steps>` — `<Steps>` is misused; the six steps are member descriptions of `ICodeHighlighter`, not sequential dependencies.
 
 - [voice] "Use this approach for fences tagged with a language token — a DSL, config format, or domain notation — that TextMateSharp does not cover, when styled output is the goal but authoring a full TextMate grammar is not." — long opening sentence that buries the trigger condition.
@@ -492,7 +508,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Step 4 says "Full implementation: `examples/ExtensibilityLabExample/PipelineHighlighter.cs`" but never shows even a single line of `Highlight` body inline — the reader has to leave the page to see what HTML their method should return.
 - [Q] Recommend collapsing to topical H2/H3 ("Declare the languages", "Pick a priority", "Emit highlighted HTML", "Register") and dropping the `<Steps>` wrapper to match the in-doc convention.
 
-### docs/Pennington.Docs/Content/how-to/navigation/cross-references.md
+### docs/Pennington.Docs/Content/how-to/navigation/cross-references.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to drifting into explanation — two paragraphs spend their words on internal pipeline phases that the reader does not need to act.
 
 - [voice] "How resolution works" subsection — quote: "Both phases run inside `XrefHtmlRewriter` (`Order => 10`), which executes before `LocaleLinkHtmlRewriter` and `BaseUrlHtmlRewriter` so later rewriters see canonical paths — identically in dev serve and `build`." — this is explanation territory, not how-to.
@@ -503,7 +519,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] No `## Assumptions` heading mismatch with the doc set — uses "Assumptions" here, "Before you begin" on most other how-tos. Pick one.
 - [Q] Does the reader who lands on this page actually need to see `ResolveXrefTagsAsync`'s xmldocid? The recipe works without ever looking at it.
 
-### docs/Pennington.Docs/Content/how-to/navigation/customize-sidebar.md
+### docs/Pennington.Docs/Content/how-to/navigation/customize-sidebar.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to — closest to a clean topical-options shape in the set.
 
 - [voice] "the value of a uid is that it survives a move" appears in the sibling cross-references page; this page has its own version — quote: "Use 10/20/30 spacing so later inserts land between siblings without renumbering every file." That is fine and instructional; flag only as a style note.
@@ -512,7 +528,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "the section's aggregate sort key is the minimum `order:` of its direct children" — useful but explanation-flavoured; one sentence is fine, two would be drift.
 - [Q] Should the backing-symbol fences move out of how-to entirely and live only in the front-matter key reference?
 
-### docs/Pennington.Docs/Content/how-to/navigation/linking.md
+### docs/Pennington.Docs/Content/how-to/navigation/linking.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to — well-shaped, the cleanest in the navigation cluster.
 
 - [voice] Title "Link between pages without hardcoding URLs" includes an outcome (good), but the section headers `### Relative path to a sibling page` / `### Absolute path to a page in another area` are descriptors not outcomes — minor inconsistency with how-to register, but acceptable for a variants page.
@@ -520,7 +536,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "Avoid hard-coding the prefix in markdown." — passive prescription without showing the wrong shape and the right shape side-by-side; for an authoring how-to a before/after fence would land harder.
 - [Q] "External site" variant says "Add `rel=\"noopener\"` or `target=\"_blank\"` through a custom Markdig extension when a hosting policy requires it; none of the built-in rewriters add these attributes." — that is a pointer with no follow-up link. Is there a how-to for custom Markdig extensions to point at?
 
-### docs/Pennington.Docs/Content/how-to/response-pipeline/html-rewriter.md
+### docs/Pennington.Docs/Content/how-to/response-pipeline/html-rewriter.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to with reference creep — interface-tour pattern repeats from the preprocessor page.
 
 - [voice] Long opening sentence — quote: "Pennington's `HtmlResponseRewritingProcessor` parses each response body with AngleSharp exactly once and invokes every registered rewriter against that shared `IDocument`, so the work composes with the built-in xref, locale, and base-URL passes." — that is explanation framing inside the lead; trim to "Implement `IHtmlResponseRewriter`; every rewriter shares one parse."
@@ -530,7 +546,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The reader is never shown what `ApplyAsync` body actually does — three sentences of prose ("query with `QuerySelectorAll`, mutate attributes …") and an xmldocid pull. A small `QuerySelectorAll` snippet would beat the symbol fence.
 - [Q] Pages for `IHtmlResponseRewriter`, `IResponseProcessor`, `ICodeBlockPreprocessor`, and `ICodeHighlighter` all follow the same shape: lead → "Implement the X" → tour members → "Pick Order" → "Register" → "Result" → "Verify". Is this template-driven duplication or recipe per extension point? If the latter, the per-page variation needs to be more than the type name.
 
-### docs/Pennington.Docs/Content/how-to/response-pipeline/override-docsite-components.md
+### docs/Pennington.Docs/Content/how-to/response-pipeline/override-docsite-components.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to — covers four seams plus a reference-shaped table at the end.
 
 - [voice] "Awareness that …" appears twice in "Before you begin" as a bullet form — quote: "Awareness that `ExtraStyles` is appended to the generated `/styles.css`…" and "Awareness that these seams are set at host-build time…" — "Awareness" as a bullet noun is stiff; rephrase to a condition.
@@ -540,7 +556,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "Edits made in the `DocSiteOptions` factory passed to `AddDocSite`, not the DocSite source — forking the template is out of scope" — the negative assumption competes with a positive instruction; reword as "All edits go through the `DocSiteOptions` factory."
 - [Q] The "Other DocSite extension points" table cites `how-to.discovery.multiple-sources`, `how-to.content-services.custom-content-service`, and `explanation.spa.islands` — would those be better as a "Related" cluster than an embedded reference table?
 
-### docs/Pennington.Docs/Content/how-to/response-pipeline/response-processor.md
+### docs/Pennington.Docs/Content/how-to/response-pipeline/response-processor.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to — same interface-tour pattern as `html-rewriter.md`.
 
 - [voice] "When the work is DOM-shaped (anchor rewrites, attribute additions, element injection at a CSS selector), implement `IHtmlResponseRewriter` instead so every rewriter shares one AngleSharp parse." — clean sentence, but the lead packs the trigger condition, the alternative, and a cross-link into one breath. Split.
@@ -550,7 +566,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The `ProcessAsync` symbol fence dump shows the implementation behind a wrapper but never the literal `LastIndexOf` + splice pattern inline as a teaching pattern.
 - [Q] How does the reader pick between `IResponseProcessor` and `IHtmlResponseRewriter`? Lead sentence gives a rule of thumb but the practical "if you ever touch the DOM, use rewriter" is buried.
 
-### docs/Pennington.Docs/Content/how-to/response-pipeline/razor-page-on-bare-host.md
+### docs/Pennington.Docs/Content/how-to/response-pipeline/razor-page-on-bare-host.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to — short and goal-shaped.
 
 - [voice] "The component owns the document — `<html>`, `<head>`, `<body>` — so the response is a complete HTML page without any DocSite or BlogSite layout machinery in between." — fine framing; the next sentence "This is the pattern to reach for when…" tips into explanation register.
@@ -560,7 +576,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "Pennington appends a `<script>` block for live reload, a `<meta name="x-pennington-host">` fingerprint, and a `<link rel="canonical">`" — useful, but the "those are stripped from build output" is a Verify-only observation that adds dev-vs-build mental load to a recipe page.
 - [Q] Is "Render a Razor component as a page on a bare host" the same as the bare-host Mermaid wiring in `diagrams.md`? If yes, the two pages should cross-reference each other.
 
-### docs/Pennington.Docs/Content/how-to/rich-content/alerts.md
+### docs/Pennington.Docs/Content/how-to/rich-content/alerts.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to — variants-under-H3 shape matches the CLAUDE.md prescription cleanly.
 
 - [voice] "The five built-in kinds — `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION` — fix the visual treatment; pick the one whose signal strength matches the message." — clean.
@@ -569,7 +585,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The page asserts five alert kinds and the `[!INFO]` fallback behaviour; no link to a list of kinds in reference. Probably fine if reference catalogs them.
 - [Q] The intro line "Pennington recognises five kinds and paints each one differently" in the description front-matter — "paints" is a small affectation. Acceptable; flagging only because the voice guide says cut warmth that teaches nothing.
 
-### docs/Pennington.Docs/Content/how-to/rich-content/diagrams.md
+### docs/Pennington.Docs/Content/how-to/rich-content/diagrams.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to with embedded conceptual walkthrough.
 
 - [voice] "this page does not teach Mermaid" — bullet says it, then the body still teaches Mermaid sub-syntaxes (flowchart vs sequence). Pick one.
@@ -579,7 +595,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The reader sees flowchart and sequence diagrams as variants but no guidance that "any valid Mermaid renders" — until paragraph "Pennington does not preprocess the body, so anything valid in Mermaid works as is" which is buried.
 - [Q] Should the CDN dependency be more prominent? A site that builds offline or behind a firewall will fail silently — currently mentioned only as "dynamically imports Mermaid from CDN".
 
-### docs/Pennington.Docs/Content/how-to/rich-content/ui-components-in-markdown.md
+### docs/Pennington.Docs/Content/how-to/rich-content/ui-components-in-markdown.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to — variants-under-H3 shape is appropriate.
 
 - [voice] "Mdazor matches the tag against the registered component types, binds attribute values to `[Parameter]` properties by case-insensitive name, and renders inner content through the markdown pipeline." — borderline explanation in the lead.
@@ -590,7 +606,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] "Register components on a bare host" pulls `examples/DocSiteKitchenSinkExample/Program.cs` whole — kitchen-sink files routinely contain a lot of unrelated wiring; the relevant `AddMdazorComponent<T>()` line is not isolated.
 - [Q] Should there be a list-of-seven section before variants — a quick reference for which built-ins exist? Currently the reader sees only `<Badge>` and `<Card>` in the examples.
 
-### docs/Pennington.Docs/Content/how-to/theming/fonts.md
+### docs/Pennington.Docs/Content/how-to/theming/fonts.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to — clean recipe shape with topical H3 variants.
 
 - [voice] "When a DocSite needs custom display and body typefaces instead of the defaults, and those faces should load without a flash of fallback text on first paint, the knobs below cover it." — long opening; would split into two sentences.
@@ -600,7 +616,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [diataxis] "(Optional) Match MonorailCSS utilities to your stacks" — well placed; minor note that "(Optional)" as a heading prefix is not a convention used elsewhere in the doc set.
 - [Q] The bare-`AddPennington` host case isn't covered — the page assumes DocSite. If `Pennington` core surfaces a font-preload story, link it; if not, say so.
 
-### docs/Pennington.Docs/Content/how-to/theming/monorail-css.md
+### docs/Pennington.Docs/Content/how-to/theming/monorail-css.md [DONE]
 **Form claimed:** how-to | **Actual:** how-to — solid topical-options shape; flag a couple of reference-creep moments.
 
 - [voice] Title "Recolor the site" advertises a narrower outcome than the page delivers; the body also covers syntax-highlight theme, `ExtraStyles`, and prose rules through `CustomCssFrameworkSettings`. Either rename to "Restyle the site" / "Customize MonorailCSS" or narrow the body.
@@ -614,7 +630,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 
 ## Reference
 
-### docs/Pennington.Docs/Content/reference/host/cli.md
+### docs/Pennington.Docs/Content/reference/host/cli.md [DONE]
 **Form claimed:** reference | **Actual:** reference with explanation creep — tables are consistent, but several rows and surrounding sentences narrate rationale instead of stating facts.
 
 - [clarity] Opening sentence is ungrammatical: "The command-line surface `RunOrBuildAsync` dispatches on — one positional verb (`build`)…" reads as a sentence fragment; the em-dash interrupts what should be "the command-line surface that `RunOrBuildAsync` dispatches on".
@@ -625,7 +641,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [Q] Environment-variable table includes `ASPNETCORE_ENVIRONMENT` only to note Pennington does *not* read it — is that worth a row, or should it move to a "What Pennington ignores" line?
 - [Q] "Listening port" section duplicates the `ASPNETCORE_URLS` row already in "Environment variables". Pick one location.
 
-### docs/Pennington.Docs/Content/reference/host/extensions.md
+### docs/Pennington.Docs/Content/reference/host/extensions.md [DONE]
 **Form claimed:** reference | **Actual:** mostly explanation/how-to dressed as reference — there is almost no looked-up information on this page, only narrative about ordering and an example.
 
 - [diataxis] The "`UseDocSite` middleware order" section is pure explanation: six numbered steps, each justifying *why* that middleware is positioned there ("must run first so subsequent middleware sees…", "placement before `UseStaticFiles` lets antiforgery validation skip…"). Reference should list the order and link to an explanation page for the rationale.
@@ -634,7 +650,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [diataxis] "`UseBlogSite` follows the same shape with one difference: no `UsePenningtonLocaleRouting` (BlogSite is currently single-locale)." — narrative caveat plus a roadmap hint ("currently") that dates the page.
 - [Q] Is the "Host runtime helpers" H2 carrying any reference content, or is it just a one-paragraph pointer to another page? It reads as filler.
 
-### docs/Pennington.Docs/Content/reference/markdown/code-block-args.md
+### docs/Pennington.Docs/Content/reference/markdown/code-block-args.md [DONE]
 **Form claimed:** reference | **Actual:** reference with mild explanation seam.
 
 - [diataxis] Second paragraph ("This page is the grammar spec. For task-oriented usage see…") is meta-navigation in body prose; replace with an admonition or a "See also" entry.
@@ -643,7 +659,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The `Attributes` table lists only `tabs` and `title`, while the grammar above implies arbitrary `key=value` pairs. The reader is left wondering which built-in extensions read which keys.
 - [Q] EBNF rule `language := IDENT ; for example csharp, razor, text` — the inline `;` comment is non-standard BNF and could be read as part of the grammar. Move examples below the grammar block.
 
-### docs/Pennington.Docs/Content/reference/markdown/extensions.md
+### docs/Pennington.Docs/Content/reference/markdown/extensions.md [DONE]
 **Form claimed:** reference | **Actual:** reference with how-to leakage — every section ships a "Minimal example" plus prose framing that does not belong on a lookup page.
 
 - [diataxis] Each H2 opens with a one-paragraph narrative ("The tabs extension collapses a run of consecutive fenced code blocks…", "The alerts extension parses a GitHub-flavored…", "After syntax highlighting, each rendered line is scanned for a `[!code …]` directive…"). These are explanation paragraphs — quote: "Pennington registers its own `CustomAlertInlineParser` ahead of Markdig's built-in alert parser; the blockquote form is the only accepted syntax."
@@ -653,14 +669,14 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [diataxis] Cross-reference section editorializes: "Unknown uids emit a diagnostic that surfaces in the dev overlay and in the static-build report." This is behavior, fine — but the surrounding "Two surface forms are supported: the tag form…is handled in a pre-parse string pass (it is not valid HTML), and the attribute form…" reads as implementation explanation. Trim or move.
 - [Q] Code annotations table at top of `code-block-args.md` and the field list here cover the same directives — readers will hit one or the other. Which is canonical?
 
-### docs/Pennington.Docs/Content/reference/front-matter/keys.md
+### docs/Pennington.Docs/Content/reference/front-matter/keys.md [DONE]
 **Form claimed:** reference | **Actual:** reference — `<FrontMatterKeys />` carries the catalog at render time; the surrounding prose is the audit target.
 
 - [diataxis] "Notes" section is explanation ("YAML keys are matched case-insensitively under `CamelCaseNamingConvention`…unknown keys are silently ignored…"). The fourth bullet ("The concrete records…re-declare every default-member key explicitly…") is rationale about the implementation. Move to explanation.
 - [diataxis] Lead paragraph ("The flat catalog of YAML keys parsed into the four shipped `IFrontMatter` records…via `FrontMatterParser` with `CamelCaseNamingConvention`. Keys are declared as `init`-only properties on records in `Pennington.FrontMatter`…") is implementation-tour narrative, not a reference-page opener.
 - [clarity] "Example" section closes with a sentence pointing at a different example file ("the blog-only keys…are demonstrated in `examples/BlogSiteFirstPostExample/Content/Blog/my-first-post.md`") rather than embedding that example or referencing it in a "See also" line.
 
-### docs/Pennington.Docs/Content/reference/ui/utility.md
+### docs/Pennington.Docs/Content/reference/ui/utility.md [DONE]
 **Form claimed:** reference | **Actual:** reference with three "Note" callouts and example narrative — drifts into how-to.
 
 - [diataxis] Three blockquote `> **Note:**` callouts (`LanguageSwitcher`, `StructuredData`, `FallbackNotice`). House style caps callouts at two per page; reference register should rarely use any.
@@ -669,7 +685,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [diataxis] Description text in tables embeds rationale and behavior reasoning: "hides itself when fewer than two locales are available, and auto-computes the list from `LocaleContext` and `LocalizationOptions` when `AlternateLanguages` is null or empty" runs into the lead paragraph and the `AlternateLanguages` row, duplicating itself.
 - [Q] The page description claims "their parameters and a one-line use-when row each" — but there is no "use-when" content. Either drop the claim or add a sentence per component (and ensure it's not when-to-use guidance, which belongs in how-to).
 
-### docs/Pennington.Docs/Content/reference/ui/navigation.md
+### docs/Pennington.Docs/Content/reference/ui/navigation.md [DONE]
 **Form claimed:** reference | **Actual:** reference plus a final explanation section that should be split or moved.
 
 - [diataxis] "Binding to `NavigationInfo`" section is explanation prose about how `NavigationInfo` relates to the components ("`TableOfContentsNavigation.TableOfContents` is populated from the tree returned by…not from a `NavigationInfo`…`OutlineNavigation` does not read `NavigationInfo` at all — it is a client-side component bound to a DOM selector…"). Either split into a "Binding contract" entry per component or move to the explanation page on navigation.
@@ -678,7 +694,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [diataxis] "Example" subsection for `TableOfContentsNavigation` is a one-paragraph narrative about how `MainLayout` uses the component ("instantiates `TableOfContentsNavigation` twice — once per area when…and once against the root tree otherwise"). Not a reference fact; move to how-to or strip.
 - [clarity] Slots subsection consistently reads "This component has no `RenderFragment` slots; all customization is performed through the class-name parameters above." That sentence repeats. Consider collapsing to a single "No slots." line per component or removing the H3 entirely.
 
-### docs/Pennington.Docs/Content/reference/ui/content.md
+### docs/Pennington.Docs/Content/reference/ui/content.md [DONE]
 **Form claimed:** reference | **Actual:** mostly reference with one explanation patch and minor format drift.
 
 - [diataxis] "Stylesheet" section is explanation ("The components ship in MonorailCSS utility classes — no separate stylesheet from the package. Sites that mount `UseMonorailCss`…get the components styled automatically: the class-collector picks up utility tokens…and the single `<link>` tag is sufficient. There is no `_content/Pennington.UI/styles.css` to load."). Worth keeping as a reference fact ("Stylesheet: none — utilities via MonorailCSS") but trim the paragraph.
@@ -688,7 +704,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] `CodeBlock` `Language` row says `Default = ""` but description says "Required (`EditorRequired`)". Pick one — if it's required, default should read `(required)` or be omitted.
 - [clarity] `Variant` and `Color` columns in `Badge` / `Card` / `LinkCard` use string literals (`"note"`, `"primary"`); consider a typed values list or a link to the color palette reference so the reader doesn't guess.
 
-### docs/Pennington.Docs/Content/reference/spa/attributes.md
+### docs/Pennington.Docs/Content/reference/spa/attributes.md [DONE]
 **Form claimed:** reference | **Actual:** reference contaminated with one how-to section and an explanatory lead paragraph.
 
 - [diataxis] "Persistent chrome" section is a step-by-step how-to ("Mark", "Listen", "Read" rows describing the procedure for keeping elements outside the region system). That belongs in a how-to guide, not a reference page.
@@ -698,7 +714,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Inconsistent entry shape. Region attributes table has `Name / Values / Description`. Anchor/stylesheet attributes table has `Selector / Attribute / Description` (no `Values` column). Document-root tuning has `Name / Type / Default / Description`. Lifecycle events has `Event / detail shape / When it fires`. Each table is keyed differently — fine in principle, but the missing `Default` on most tables breaks the audit-the-default workflow.
 - [clarity] `data-spa-region-key` "Description" cell ends "Omit when the region's content is comparable across pages and scroll position should carry over." — that is when-to-use guidance, explicitly banned in reference register.
 
-### docs/Pennington.Docs/Content/reference/diagnostics/request-context.md
+### docs/Pennington.Docs/Content/reference/diagnostics/request-context.md [DONE]
 **Form claimed:** reference | **Actual:** reference with inconsistent entry format and example narrative.
 
 - [clarity] `DiagnosticContext` members are documented as a bulleted prose list, while `Diagnostic` parameters use a `<FieldList>` and `DiagnosticSeverity` values use a table. Three different shapes in one page for the same kind of information (a typed surface).
@@ -708,7 +724,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] Lead claims "two dev-mode transports" but the response-header row says "Every request that has `HasAny`" (not dev-mode-gated), while the overlay row gates on `DOTNET_WATCH`. The lead and the table contradict on whether the header is dev-mode-only.
 - [Q] `DiagnosticSeverity` is described as "Two-value enum in ascending severity order" — does the underlying type ever surface to consumers (`int` cast, JSON serialization)? If so, document the storage type; if not, drop "in ascending severity order" as implementation noise.
 
-### docs/Pennington.Docs/Content/reference/blogsite/routes.md
+### docs/Pennington.Docs/Content/reference/blogsite/routes.md [DONE]
 **Form claimed:** reference | **Actual:** reference with one large explanation Note callout that should be split out.
 
 - [diataxis] The "Note on `TagsPageUrl` and `BlogBaseUrl`" blockquote is a 60-word explanation of why the `@page` directives are not templated, plus a workaround. That is explanation/how-to leakage: rationale for the design and the remediation step belong elsewhere — quote: "changing them away from the defaults requires supplying replacement Razor pages via `AdditionalRoutingAssemblies`".
@@ -717,7 +733,7 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [diataxis] Lead under "Entry point" reads: "The `/sitemap.xml` endpoint is mounted by `UsePennington` via `SitemapService`, not by `UseBlogSite`." Fine as a fact, but the Routes table omits `/sitemap.xml` even though "Option-to-route matrix" includes a row for it. Page either covers sitemap or it doesn't.
 - [diataxis] "Example" closing sentence is narrative-explanatory: "The example boots `Pennington.BlogSite` with scaffold options; all eight routes listed above — including `/rss.xml`, because `EnableRss` defaults to `true` — are live in dev and in the static build." Drop or move to how-to.
 
-### docs/Pennington.Docs/Content/reference/blogsite/social-icons.md
+### docs/Pennington.Docs/Content/reference/blogsite/social-icons.md [DONE]
 **Form claimed:** reference | **Actual:** reference with mild instructional voice; otherwise close to clean.
 
 - [diataxis] "Reference from `SocialLink.Icon`" section gives a prescription: "pass the static field directly — `SocialIcons.GithubIcon` — not as a component tag `<SocialIcons.GithubIcon />`." Acceptable as a "non-obvious gotcha" sentence, but the trailing "One-line syntax:" plus a copy-pasteable code block reads as how-to.
@@ -729,14 +745,14 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 
 ## Explanation
 
-### docs/Pennington.Docs/Content/explanation/core/content-pipeline.md
+### docs/Pennington.Docs/Content/explanation/core/content-pipeline.md [DONE]
 **Form claimed:** explanation | **Actual:** explanation — strong "why" framing; union design choice argued through alternatives.
 
 - [diataxis] The case-record list under "The union shape" uses YAML-style definition lists (`DiscoveredItem` `:   Carries Route and Source.`) — that's a reference-style enumeration of fields. Either tighten into prose ("`DiscoveredItem` carries route and source; `ParsedItem` adds metadata and raw markdown…") or move to the reference page and link.
 - [clarity] "C# 15 discriminated unions offer a third path" is the first time unions are named, but the reader who arrives from a search engine has no link or sidebar pointer to "what is the C# 15 `union` keyword?" — a one-line aside or an external link would help, especially since the next page (`content-source.md`) leans on the same feature.
 - [Q] The doc claims `Route` is the only property lifted onto the union — is that still true after the recent `Source` accessor work, or does `DiscoveredItem` expose `Source` directly off the union? Worth double-checking against current source so the invariant claim holds.
 
-### docs/Pennington.Docs/Content/explanation/core/content-source.md
+### docs/Pennington.Docs/Content/explanation/core/content-source.md [DONE]
 **Form claimed:** explanation | **Actual:** how-to with explanation framing — most of the body is "how to construct" and "how to read" recipes.
 
 - [diataxis] Opens by naming itself: "this page focuses on the two questions that come up the moment you write a custom `IContentService`: *how do I build one of these?* and *how do I read one back out?*" — those are how-to questions. Either re-shape around *why* the union has `.Value` and *why* the five cases are split the way they are, or split out a how-to ("Construct and pattern-match `ContentSource`") and leave the explanation focused on the `.Value` polyfill design and the sitemap-exclusion rationale.
@@ -745,70 +761,70 @@ These patterns repeat across the doc set. Each is more useful to address holisti
 - [clarity] The `.Value` polyfill rationale is the most genuinely-explanatory section ("Why `.Value` and not the case type directly") and it's buried at the bottom. If this page stays as explanation, lead with the polyfill story.
 - [Q] Should this page exist at all as explanation, or should it become how-to "Construct and consume a `ContentSource`" with the polyfill nuance folded into `content-pipeline.md` as a Trade-off bullet?
 
-### docs/Pennington.Docs/Content/explanation/core/dev-vs-build.md
+### docs/Pennington.Docs/Content/explanation/core/dev-vs-build.md [DONE]
 **Form claimed:** explanation | **Actual:** explanation — clean rationale for the one-host invariant, alternatives discussed.
 
 Clean.
 
-### docs/Pennington.Docs/Content/explanation/core/front-matter-capabilities.md
+### docs/Pennington.Docs/Content/explanation/core/front-matter-capabilities.md [DONE]
 **Form claimed:** explanation | **Actual:** explanation — universal-vs-selective split argued clearly.
 
 - [diataxis] The "Writing your own front-matter type" section is a single paragraph of how-to instructions ("Declare a `record`, implement `IFrontMatter`, add whichever capability interfaces…"). This is the imperative voice of a how-to and reads as leakage. Either drop it (the how-to link at the bottom covers it) or rephrase as discussion of what a custom type buys versus what the defaults give for free.
 - [clarity] The Trade-offs bullet "Default members are an interface feature… Consumers that access `IFrontMatter` through reflection or multi-target older TFMs should keep that in mind" trails off without saying *what* to keep in mind or what breaks. Either expand or cut.
 
-### docs/Pennington.Docs/Content/explanation/core/response-processing.md
+### docs/Pennington.Docs/Content/explanation/core/response-processing.md [DONE]
 **Form claimed:** explanation | **Actual:** explanation — two-tier split well argued; ordering rationale lands.
 
 - [clarity] "Tier A" and "Tier B" are introduced as headings without ever being defined as terms. The reader has to infer that A = generic body processors, B = HTML rewriters. A single sentence at the top of "How it works" naming the tiers and what each owns would orient the section-jumping reader.
 - [Q] Is there a reason `HtmlResponseRewritingProcessor` itself (at Order 10) isn't mentioned as a built-in `IResponseProcessor` until midway through? Naming it alongside `LiveReloadScriptProcessor` and `DiagnosticOverlayProcessor` in one sentence would make the bridge between tiers visible earlier.
 
-### docs/Pennington.Docs/Content/explanation/dev-experience/hot-reload.md
+### docs/Pennington.Docs/Content/explanation/dev-experience/hot-reload.md [DONE]
 **Form claimed:** explanation | **Actual:** mostly explanation, but the body reads as a mechanism walkthrough rather than a *why* discussion — light on tradeoff framing.
 
 - [diataxis] No "Context" / "why this exists" framing at the top. Opens straight into mechanism ("Content files… are not part of the .NET compilation. Restarting the host for every markdown typo would…"). That's a reasonable lead but it never widens into "why this shape vs alternatives" before diving into `FileWatcher` internals. The Trade-offs section does the comparison work, but it's at the bottom rather than weaving through the body.
 - [diataxis] The four subsections under "How it works" are sequential ("files change → caches drop → debounce → browser reloads") and read as a step-by-step trace of one event. That ordering is fine for explanation, but the prose ("The mechanism is a single chain: files change, cached services drop their state, a debounce window elapses, and the browser reloads") leans toward how-it-runs description rather than why-it's-shaped-this-way reasoning.
 - [clarity] The opening paragraph mentions "a debounced WebSocket channel" as the answer but never says *why* WebSocket over Server-Sent Events or polling. A sentence on that tradeoff would round out the design rationale.
 
-### docs/Pennington.Docs/Content/explanation/localization/urls-and-fallback.md
+### docs/Pennington.Docs/Content/explanation/localization/urls-and-fallback.md [DONE]
 **Form claimed:** explanation | **Actual:** explanation — invariant clearly stated, alternatives weighed, tradeoffs concrete.
 
 Clean.
 
-### docs/Pennington.Docs/Content/explanation/positioning/docsite-positioning.md
+### docs/Pennington.Docs/Content/explanation/positioning/docsite-positioning.md [DONE]
 **Form claimed:** explanation | **Actual:** explanation — positioning argument lands; "when to drop a level" is appropriate explanation territory.
 
 - [diataxis] The "Signals that point toward bare AddPennington" bullet list is reference-shaped (a checklist of conditions). It works as explanation because the prose around it frames it discursively, but consider whether any of these five conditions wants its own how-to it can link to (e.g., "Use multiple content sources" is already linked — good; the others aren't).
 - [clarity] "It takes either the `ConfigurePennington` escape hatch, which hands back the underlying `PenningtonOptions` after DocSite's defaults land, or dropping to bare `AddPennington` outright." — `ConfigurePennington` is not introduced or linked on first mention. A reader who landed here from search has no anchor for what that escape hatch looks like in code. A short illustrative snippet or a reference link would help.
 - [Q] The page mentions `ExtensibilityLabExample` as the canonical bare-host reference but does not link to it (the example lives under `examples/ExtensibilityLabExample/Program.cs`). Is there a docs route for it, or should this be a GitHub link?
 
-### docs/Pennington.Docs/Content/explanation/rendering/highlighting.md
+### docs/Pennington.Docs/Content/explanation/rendering/highlighting.md [DONE]
 **Form claimed:** explanation | **Actual:** explanation — cascade design defended with concrete alternatives.
 
 Clean.
 
-### docs/Pennington.Docs/Content/explanation/rendering/monorail-css.md
+### docs/Pennington.Docs/Content/explanation/rendering/monorail-css.md [DONE]
 **Form claimed:** explanation | **Actual:** explanation — discovery rationale and OKLCH choice both well argued.
 
 - [diataxis] The "Color schemes: named vs algorithmic" section drifts into a feature-tour register: it lists what each scheme's parameters are (`PrimaryHue`, `Chroma`, `CoordinatingScheme` enum values) rather than discussing *why* two schemes exist or *when* each fits. The "designer-versus-programmer axis" framing at the end is the explanation; the parameter enumeration above it is reference. Tighten or move the parameter list.
 - [clarity] OKLCH is introduced without a one-line "what is OKLCH" for the C# developer who has never opened a color-science page. The perceptual-uniformity paragraph alludes to it but never says "OKLCH = an OK-Lab cylindrical coordinate system designed for perceptual uniformity"; a single sentence would orient the reader before the curve-family discussion.
 
-### docs/Pennington.Docs/Content/explanation/routing/cross-references.md
+### docs/Pennington.Docs/Content/explanation/routing/cross-references.md [DONE]
 **Form claimed:** explanation | **Actual:** explanation — two-phase resolver justified well, broken-xref diagnostic loop closed.
 
 Clean.
 
-### docs/Pennington.Docs/Content/explanation/routing/navigation-tree.md
+### docs/Pennington.Docs/Content/explanation/routing/navigation-tree.md [DONE]
 **Form claimed:** explanation | **Actual:** explanation — fold algorithm explained, the folder-vs-sectionLabel distinction is the highlight.
 
 - [diataxis] Two `csharp:xmldocid` fences embed `T:Pennington.Content.ContentTocItem` and `T:Pennington.Navigation.NavigationTreeItem` declarations. Per voice guide, explanation code is illustrative — embedding the full type declaration shows the reader the API surface (reference territory) rather than illustrating how the algorithm uses it. Consider linking to reference and keeping only the algorithm-method fence (`BuildTree`) since that one *is* illustrating the recursion shape under discussion.
 - [Q] The NOTE admonition early on says "Renaming the folder changes the sidebar header; changing `sectionLabel:` does not." That's exactly the same point the "Sections without a direct content file" section makes in prose three paragraphs later. Is the admonition load-bearing or duplicative? If the prose section already lands the distinction, the callout reads as belt-and-suspenders.
 
-### docs/Pennington.Docs/Content/explanation/routing/url-paths.md
+### docs/Pennington.Docs/Content/explanation/routing/url-paths.md [DONE]
 **Form claimed:** explanation | **Actual:** explanation — parse-don't-validate argument applied cleanly; alternatives weighed.
 
 Clean.
 
-### docs/Pennington.Docs/Content/explanation/spa/islands.md
+### docs/Pennington.Docs/Content/explanation/spa/islands.md [DONE]
 **Form claimed:** explanation | **Actual:** explanation — single-render-path rationale is the design story; tradeoff bullets concrete.
 
 - [clarity] The opening "Why does in-site navigation fetch the same URL the address bar shows and parse it client-side, instead of round-tripping a small JSON envelope or letting the browser do a full reload?" assumes the reader already knows Pennington has an SPA story. A new arrival from search who is evaluating Pennington for a docs site might not have hit `AddDocSite`'s SPA wiring yet — one sentence locating this feature ("DocSite ships a small SPA navigation engine; this page covers the design choice behind it") would orient them.

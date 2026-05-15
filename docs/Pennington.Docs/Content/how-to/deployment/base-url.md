@@ -7,27 +7,19 @@ sectionLabel: "Publishing & Deployment"
 tags: [deployment, base-url, rewriter, sub-path]
 ---
 
-When a site works at root (`/`) locally but the target host — a GitHub Pages project site, a reverse-proxied sub-app, or an Azure Front Door path — serves it under a sub-path, one extra argument to `build` covers the difference. There is no per-link refactor and no separate build mode: the same `RunOrBuildAsync` call handles both cases, with `BaseUrlHtmlRewriter` prefixing every root-relative href, src, and action on the way out.
+To serve under a sub-path, pass it as the first argument to `build`. `BaseUrlHtmlRewriter` prefixes every root-relative `href`, `src`, and `action` on the way out; the same `RunOrBuildAsync` call handles root and sub-path identically.
 
-## Assumptions
-
+## Before you begin
 - A working Pennington site that builds locally with `dotnet run -- build` (see <xref:how-to.deployment.static-build> if not).
-- The sub-path the host will serve from — for example `/docs` for `https://example.com/docs/` or `/<repo>` for a GitHub Pages project site.
-- Internal links authored as root-relative (`/guides/first-page/`) — the rewriter keys off the leading `/`.
+- **The sub-path the host will serve from** — for example `/docs` for `https://example.com/docs/` or `/<repo>` for a GitHub Pages project site.
+- Internal links authored as root-relative (`/guides/first-page/`). The rewriter only matches the leading `/`; protocol-relative (`//cdn.example.com/x.js`), absolute (`https://…`), hash (`#section`), and page-relative (`./neighbor/`) links pass through untouched.
 - The host is already configured to serve `output/` at that sub-path (see <xref:how-to.deployment.github-pages> or <xref:how-to.deployment.self-host>).
 
-For a working setup, see [`examples/SubPathDeployableExample`](https://github.com/usepennington/pennington/tree/main/examples/SubPathDeployableExample). The nested `/guides/first-page/` route is deliberate: it makes sub-path rewriting observable on a deep link.
+For a working setup, see [`examples/SubPathDeployableExample`](https://github.com/usepennington/pennington/tree/main/examples/SubPathDeployableExample).
 
----
+## Build with the prefix
 
-## Steps
-
-<Steps>
-<Step StepNumber="1">
-
-**Pass the base URL to `build`**
-
-`OutputOptions.FromArgs` accepts the sub-path as either a positional token or a named flag; the named flag form survives reordering in CI scripts more reliably. Include the leading slash and omit the trailing slash — the rewriter normalizes either way.
+`OutputOptions.FromArgs` accepts the sub-path as a positional token or a named flag; named flags survive CI script reorderings more reliably. Include the leading slash and omit the trailing slash — the rewriter normalizes either way.
 
 ```text
 # positional — base URL first, output directory second
@@ -37,40 +29,16 @@ dotnet run -- build /docs
 dotnet run -- build --base-url=/docs --output=dist
 ```
 
-See <xref:reference.host.cli> for the full argument grammar parsed by `OutputOptions.FromArgs`.
+See <xref:reference.host.cli> for the argument grammar.
 
-</Step>
-<Step StepNumber="2">
+## Reproduce the prefix from client-side code
 
-**Know what the rewriter prefixes**
-
-`BaseUrlHtmlRewriter` runs at `Order => 30` in the `IHtmlResponseRewriter` chain — after xref resolution (10) and locale prefixing (20) — so every upstream transform hands it root-relative paths. It prefixes any `href`, `src`, or `action` attribute whose value starts with `/` (but not `//`, which is protocol-relative) and stamps `data-base-url` on `<body>` for client-side code that needs to reproduce the prefix on dynamically built URLs. See <xref:reference.api.i-response-processor> for the full rewriter surface.
-
-</Step>
-<Step StepNumber="3">
-
-**Use root-relative links in your content**
-
-Because the rewriter only matches the leading `/`, protocol-relative URLs (`//cdn.example.com/x.js`) and absolute URLs (`https://…`) pass through untouched, while hash (`#section`) and page-relative links (`./neighbor/`) are ignored. The nested `/guides/first-page/` link in the example's landing page is the smallest case that makes the prefix visible — copy its shape for internal cross-links.
-
-```markdown:path
-examples/SubPathDeployableExample/Content/index.md
-```
-
-</Step>
-<Step StepNumber="4">
-
-**Read `data-base-url` from client-side code**
-
-When an island, Blazor component, or hand-rolled script builds URLs at runtime, read the prefix from `document.body.dataset.baseUrl` rather than hard-coding `/docs`. This keeps a single build portable across hosts — the same `output/` works under `/docs` in staging and `/` in preview with no code change, only a different `--base-url`.
+When an island, Blazor component, or hand-rolled script builds URLs at runtime, read the prefix from `document.body.dataset.baseUrl` (stamped by the rewriter) instead of hard-coding `/docs`. The same `output/` then runs under `/docs` in staging and `/` in preview with only a different `--base-url`.
 
 ```javascript
 const base = document.body.dataset.baseUrl ?? "";
 const href = `${base}/guides/first-page/`;
 ```
-
-</Step>
-</Steps>
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: "Replace the docsite header or footer"
+title: "Customize the DocSite chrome through DocSiteOptions"
 description: "Use DocSiteOptions to inject head content, append CSS, replace the header/footer HTML, and route extra @page components without forking the template."
 uid: how-to.response-pipeline.override-docsite-components
 order: 210030
@@ -81,19 +81,10 @@ The chrome on every page is replaced by the configured fragments. The header rea
 - Navigate to a route defined by a Razor component in your app assembly (for example `/extra`) and confirm it renders. A 404 here means `AdditionalRoutingAssemblies` is not including the right assembly.
 - Run `dotnet run -- build output` and search `output/index.html` for your head fragment and `output/styles.css` for your `ExtraStyles` rules to confirm the overrides survive publish.
 
-## Other DocSite extension points
-
-The four chrome seams above are the most common overrides. DocSite exposes three more on `DocSiteOptions` plus two through direct DI registration, and together they cover every extension that does not require forking the template.
-
-| Seam | What it does |
-|---|---|
-| `DocSiteOptions.ConfigurePennington` | Callback against the underlying `PenningtonOptions`. Register extra markdown sources, highlighters, or response processors without leaving the template — see <xref:how-to.discovery.multiple-sources>. |
-| `DocSiteOptions.AdditionalRoutingAssemblies` | Widens the router to pick up `@page` components in your host assembly. Covered in the section above. |
-| `DocSiteOptions.CustomCssFrameworkSettings` | Mutates the MonorailCSS `CssFrameworkSettings` after DocSite applies its theme. Use for custom palettes, variants, or plugins beyond what the defaults ship. |
-| `services.AddSingleton<IContentService, T>()` | A concrete `IContentService` registered directly on the DI container is picked up by the pipeline alongside DocSite's own markdown service — see <xref:how-to.content-services.custom-content-service>. |
-| `data-spa-region="name"` markup | Mark regions in your custom layout components for SPA navigation to update them. The DocSite layout already marks `content` and `outline`; the header and sidebar persist across navigations (the search button keeps its handlers; sidebar state is patched on `spa:commit`). See <xref:explanation.spa.islands>. |
-
 ## Related
 
-- Reference: <xref:reference.api.doc-site-options>
-- Background: <xref:explanation.positioning.docsite-positioning>
+- Reference: <xref:reference.api.doc-site-options> — the full property surface, including `ConfigurePennington`, `CustomCssFrameworkSettings`, and every other override seam beyond the four covered here.
+- How-to: <xref:how-to.discovery.multiple-sources> — register extra markdown sources through `DocSiteOptions.ConfigurePennington`.
+- How-to: <xref:how-to.content-services.custom-content-service> — register a custom `IContentService` alongside DocSite's own.
+- Background: <xref:explanation.positioning.docsite-positioning> — when forking DocSite or dropping to bare `AddPennington` becomes the right move.
+- Background: <xref:explanation.spa.islands> — `data-spa-region` semantics for SPA-aware layout components.

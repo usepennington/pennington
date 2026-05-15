@@ -17,13 +17,13 @@ A single chain of string-to-string processors forces the structure-aware concern
 
 ## How it works
 
+Pennington splits the work along that fault line into two tiers. **Tier A** is the generic body pipeline (`IResponseProcessor`); every body-touching concern, HTML or not, registers here. **Tier B** is one specific `IResponseProcessor` — `HtmlResponseRewritingProcessor` — that hosts a shared AngleSharp pass for HTML-DOM concerns (`IHtmlResponseRewriter`). The three built-in Tier-A processors are `HtmlResponseRewritingProcessor` (Order 10, the Tier-B host), `LiveReloadScriptProcessor` (Order 20, dev only), and `DiagnosticOverlayProcessor` (Order 30, dev only).
+
 ### Tier A: `IResponseProcessor` (generic body capture)
 
 `ResponseProcessingMiddleware` wraps the response body stream, captures it into memory, runs every registered `IResponseProcessor` whose `ShouldProcess` returns `true` in ascending `Order`, then flushes the final string back to the socket. The contract is intentionally narrow — an ordering integer, a predicate over `HttpContext`, and an async body transform — so anything that wants to touch the response body can participate without taking an AngleSharp dependency.
 
-The built-in processors illustrate why the tier exists. `HtmlResponseRewritingProcessor` at `Order 10` hosts the entire Tier B pass. `LiveReloadScriptProcessor` at `Order 20` injects the reconnect script immediately before `</body>` during development. `DiagnosticOverlayProcessor` at `Order 30` renders the collected `DiagnosticContext` into a corner panel, also in dev mode.
-
-Two of those three are pure string operations — a targeted string insert and a before-`</body>` append. Routing them through AngleSharp would parse and serialize the document for no benefit. The tier boundary exists because "touches the body" is a broader category than "cares about HTML structure."
+`LiveReloadScriptProcessor` and `DiagnosticOverlayProcessor` illustrate why the tier exists. Both are pure string operations — a targeted insert and a before-`</body>` append. Routing them through AngleSharp would parse and serialize the document for no benefit. The tier boundary exists because "touches the body" is a broader category than "cares about HTML structure."
 
 ### Tier B: `IHtmlResponseRewriter` (shared AngleSharp pass)
 

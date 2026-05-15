@@ -13,7 +13,7 @@ uid: tutorials.beyond-basics.custom-razor-component
 
 By the end of this tutorial you'll have a running DocSite at `http://localhost:5000/pricing` that renders two styled `<PricingCard />` cards — a standard "Basic" tier and a highlighted "Pro" tier — both driven by tag attributes inside a plain markdown file.
 
-Along the way, the tutorial covers authoring a Razor component with `[Parameter]`-decorated properties, wiring it into Mdazor's component registry with one `AddMdazorComponent<T>()` line, and consuming it from markdown with self-closing tag syntax whose attribute values bind case-insensitively to the component's parameters.
+Along the way, the tutorial covers authoring a Razor component with `[Parameter]`-decorated properties, wiring it into [Mdazor](xref:reference.ui.content)'s component registry with one `AddMdazorComponent<T>()` line, and consuming it from markdown with self-closing tag syntax whose attribute values bind case-insensitively to the component's parameters.
 
 ## Prerequisites
 
@@ -51,9 +51,7 @@ Create a `Components/` folder and add `PricingCard.razor` with four `[Parameter]
 examples/BeyondCustomRazorComponentExample/snippets/stage1/PricingCard.razor
 ```
 
-The file is a regular Blazor component — there is nothing Pennington-specific about it yet. Mdazor discovers it in the next unit.
-
-The snippet above is the minimal starting form. The example folder on disk ships a fully styled `Components/PricingCard.razor` (dark-mode utility classes, "Most Popular" badge polish, a richer feature-row layout) so the `/pricing/` page demo is presentable when you check out the repo. Treat the snippet as the starting point and the disk file as the production-ready endpoint — the tutorial never re-fences the styled version because once the wiring works (next unit), styling is just utility-class swaps.
+The file is a regular Blazor component — nothing Pennington-specific yet. The disk version of `Components/PricingCard.razor` in the example folder ships with dark-mode utilities and "Most Popular" badge polish; the snippet above is the minimal starting form, and the next unit hooks it up before polishing.
 
 </Step>
 </Steps>
@@ -84,20 +82,7 @@ M:BeyondCustomRazorComponentExample.Stage2.Run(System.String[])
 `AddMdazorComponent<T>()` returns `IServiceCollection`, so additional component registrations can chain off the same call. That becomes handy when registering several custom components at once.
 
 </Step>
-<Step StepNumber="2">
-
-**Confirm the host still boots**
-
-Run the DocSite host to verify the extra DI line did not break startup. No markdown change has been made yet, so the site renders exactly as it did before — the new wiring stays invisible until a page consumes the tag.
-
-</Step>
 </Steps>
-
-<Checkpoint>
-
-Run `dotnet run` from `examples/BeyondCustomRazorComponentExample` and visit `http://localhost:5000/`. The landing page renders without errors and the log shows the site serving on port 5000. `PricingCard` is now a registered Mdazor component; rendering is proved in the next unit.
-
-</Checkpoint>
 
 ---
 
@@ -116,7 +101,7 @@ Add a new markdown page under `Content/` with front matter (`title: Pricing`, `d
 examples/BeyondCustomRazorComponentExample/Content/pricing.md
 ```
 
-Two rules govern how the page works. Tag-name matching is case-sensitive on the leading character — `<PricingCard>` must start with a capital letter to be treated as a component candidate. Attribute-to-parameter binding is case-insensitive via reflection, so `Tier="Pro"` binds to `[Parameter] public string Tier` regardless of casing.
+Mdazor matches tag names case-sensitively on the leading character — `<PricingCard>` must start with a capital letter — and binds attribute values to parameters case-insensitively. See <xref:reference.ui.content> for the full binding rules.
 
 </Step>
 <Step StepNumber="2">

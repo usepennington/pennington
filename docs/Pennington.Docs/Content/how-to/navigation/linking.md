@@ -9,8 +9,7 @@ tags: [linking, routing, base-url, authoring]
 
 To link from one page to another without hardcoding a URL that may break on rename or sub-path deploy, pick the link form that matches the target's relationship to the source. For `uid:`-based cross-references that survive arbitrary page moves, see <xref:how-to.navigation.cross-references>.
 
-## Assumptions
-
+## Before you begin
 - An existing Pennington site with at least two markdown pages (see <xref:tutorials.getting-started.first-page> if not).
 - The URL of the target page or asset is known (the sidebar or the rendered page's address bar are the quickest sources).
 
@@ -34,11 +33,17 @@ Reference assets stored under `Content/` with a relative path (`./assets/diagram
 
 ### External site
 
-Write the full URL directly: `[Markdig](https://github.com/xoofx/markdig)`. Pennington leaves the `href` untouched — only relative, root-relative, and uid-shaped links participate in rewriting. Add `rel="noopener"` or `target="_blank"` through a custom Markdig extension when a hosting policy requires it; none of the built-in rewriters add these attributes.
+Write the full URL directly: `[Markdig](https://github.com/xoofx/markdig)`. Pennington leaves the `href` untouched. For sites that need `rel="noopener"` or `target="_blank"` injected uniformly, write an `IHtmlResponseRewriter` (see <xref:how-to.response-pipeline.html-rewriter>).
 
 ### Sub-path deployment
 
-Set `OutputOptions.BaseUrl` (for example `/docs/`) so every rendered response has its `href`, `src`, and `action` attributes prefixed at response time. Write root-relative links like `/api/` in markdown, and the rewriter turns them into `/docs/api/` on the way out. Avoid hard-coding the prefix in markdown. See <xref:reference.api.i-response-processor> for the rewriter chain.
+Build with `--base-url /docs` so every rendered response has its `href`, `src`, and `action` attributes prefixed at response time. Write root-relative links like `/api/` in markdown — the rewriter turns them into `/docs/api/` on the way out.
+
+```markdown
+[API index](/api/)
+```
+
+Hardcoding the prefix in markdown defeats the rewriter. See <xref:how-to.deployment.base-url> for the build invocation.
 
 ## Verify
 

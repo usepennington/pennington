@@ -7,10 +7,9 @@ sectionLabel: "Feeds & Indexes"
 tags: [configuration, rss, blogsite, feeds]
 ---
 
-When subscribers should be able to follow the blog from a reader, `/rss.xml` is wired by `UseBlogSite` out of the box (`BlogSiteOptions.EnableRss` defaults to `true`). The two things that most often break a working feed are missing `date:` front matter — the post is silently dropped from the channel — and an unset `CanonicalBaseUrl` — feed links emit relative URLs that aggregators cannot follow. On bare `AddPennington` without `AddBlogSite`, see <xref:tutorials.blogsite.scaffold> first; the feed endpoint ships with the BlogSite template, not with core Pennington.
+`/rss.xml` is wired by `UseBlogSite` out of the box — `BlogSiteOptions.EnableRss` defaults to `true`. Two things break a working feed: a post missing `date:` (silently dropped from the channel), and an unset `CanonicalBaseUrl` (feed links emit relative URLs that aggregators cannot follow). The feed endpoint ships with the BlogSite template; on bare `AddPennington`, see <xref:tutorials.blogsite.scaffold>.
 
-## Assumptions
-
+## Before you begin
 - A working BlogSite (see <xref:tutorials.blogsite.scaffold> if not)
 - Posts under `Content/Blog/` that parse as `BlogSiteFrontMatter`
 - A known production origin (such as `https://blog.example.com`). `CanonicalBaseUrl` needs the scheme and no trailing slash
@@ -19,14 +18,16 @@ When subscribers should be able to follow the blog from a reader, `/rss.xml` is 
 
 ## Options
 
-### Confirm `EnableRss` is on
+### Pin `EnableRss = true` explicitly
 
-`BlogSiteOptions.EnableRss` defaults to `true`. Setting it explicitly in the options builder makes the intent visible and guards against a future default change.
+`BlogSiteOptions.EnableRss` defaults to `true`. Setting it explicitly in the options builder makes the intent visible and guards against a future default change:
 
-The kitchen-sink example wires `EnableRss`, `CanonicalBaseUrl`, and `AuthorName` together in one place:
-
-```csharp:xmldocid,bodyonly
-M:BlogKitchenSinkExample.ServiceConfiguration.BuildBlogSiteOptions
+```csharp
+new BlogSiteOptions
+{
+    EnableRss = true,
+    // ...
+}
 ```
 
 ### Give every post a `date:`
@@ -45,11 +46,15 @@ tags: [pennington, getting-started]
 
 ### Set `CanonicalBaseUrl` to your production origin
 
-`RssFeedBuilder` prefixes every `<link>` and `<guid>` with the canonical base. Without it, aggregators receive relative URLs that do not resolve. Use the production scheme and host with no trailing slash, even when running locally.
+`RssFeedBuilder` prefixes every `<link>` and `<guid>` with the canonical base. Use the production scheme and host with no trailing slash:
 
-### Where the feed is served and discovered
-
-In dev mode the feed is served live by the `MapGet("/rss.xml", ...)` handler registered in `UseBlogSite`. In a static build it is written to `wwwroot/rss.xml` alongside the other generated routes. The `<link rel="alternate" type="application/rss+xml">` tag is injected into `<head>` automatically when `EnableRss` is on, so browser RSS extensions detect it without further configuration.
+```csharp
+new BlogSiteOptions
+{
+    CanonicalBaseUrl = "https://blog.example.com",
+    // ...
+}
+```
 
 ---
 

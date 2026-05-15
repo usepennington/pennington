@@ -7,10 +7,9 @@ sectionLabel: "Feeds & Indexes"
 tags: [sitemap, seo, canonical-base-url, front-matter]
 ---
 
-When crawlers need a canonical URL list to ingest the site, `/sitemap.xml` is registered and served automatically on any `AddPennington`-based host — a working site already emits one. The knobs below give crawlers absolute `<loc>` values, confirm that drafts and redirects are excluded, or turn off sitemap generation on a BlogSite host. For a first site, start with <xref:tutorials.getting-started.first-site>.
+`/sitemap.xml` is registered and served automatically on every `AddPennington`-based host; a working site already emits one. The knobs below tune what crawlers see — absolute `<loc>` values, draft/redirect exclusion, or turning the sitemap off on BlogSite. For a first site, start with <xref:tutorials.getting-started.first-site>.
 
-## Assumptions
-
+## Before you begin
 - A working Pennington site (see <xref:tutorials.getting-started.first-site> if not)
 - Pages using an `IFrontMatter` implementation — `DocFrontMatter`, `BlogFrontMatter`, or a custom one — so `IsDraft` and (optionally) `Date` flow through to the sitemap builder
 - A known publishing target: either a fully-qualified URL (set `CanonicalBaseUrl`) or a sub-path via `dotnet run -- build /sub/` (the sitemap falls back to `OutputOptions.BaseUrl`)
@@ -19,33 +18,25 @@ When crawlers need a canonical URL list to ingest the site, `/sitemap.xml` is re
 
 ## Options
 
-### Confirm `/sitemap.xml` is already wired
-
-`AddPennington` registers `SitemapService` and `UsePennington` maps `GET /sitemap.xml` to it. There is no `AddSitemap(...)` call to make and no toggle on `PenningtonOptions`. The service walks every registered `IContentService.DiscoverAsync` result, skipping non-HTML outputs and `RedirectSource` placeholders before the builder applies its own filters.
-
 ### Set `CanonicalBaseUrl` so `<loc>` values resolve
 
-When `CanonicalBaseUrl` is set on `PenningtonOptions`, `DocSiteOptions`, or `BlogSiteOptions`, the sitemap builder prefixes every URL with it — typically `https://your-domain.com/` — producing the absolute `<loc>` entries crawlers require. When it is not set and the static build targets a sub-path (`dotnet run -- build /sub/`), the builder falls back to `OutputOptions.BaseUrl`, producing entries like `/sub/page/`. Crawlers can resolve those relative to the sitemap URL, but fully-qualified values are preferred.
+When `CanonicalBaseUrl` is set on `PenningtonOptions`, `DocSiteOptions`, or `BlogSiteOptions`, the sitemap builder prefixes every URL with it — typically `https://your-domain.com/` — producing the absolute `<loc>` entries crawlers require. Without it, entries fall back to the build's `--base-url` value or to `/`.
 
-```csharp:xmldocid,bodyonly
-M:BlogKitchenSinkExample.ServiceConfiguration.BuildBlogSiteOptions
+```csharp
+new BlogSiteOptions
+{
+    CanonicalBaseUrl = "https://example.com",
+    // ...
+}
 ```
 
-See <xref:reference.api.blog-site-options> for the backing `CanonicalBaseUrl` property.
+### Exclude drafts and redirects with front matter
 
-### Use `IsDraft` and `redirectUrl:` to exclude pages
+`SitemapBuilder.Build` drops any candidate whose front matter has `isDraft: true` or implements `IRedirectable` with a non-empty `RedirectUrl`. `search: false` and `llms: false` are not honored — those are client-side UX preferences, not SEO directives, so opting a page out of search does not remove it from the sitemap.
 
-`SitemapBuilder.Build` drops any candidate whose front matter has `isDraft: true` and drops any candidate whose front matter implements `IRedirectable` with a non-empty `RedirectUrl`; redirect stubs are never listed as canonical URLs. `search: false` and `llms: false` are not honored here. Those are search-UX preferences, not SEO directives, so opting a page out of client-side search does not remove it from the sitemap.
+### (BlogSite only) Turn the sitemap off with `EnableSitemap = false`
 
-```csharp:xmldocid,bodyonly
-M:Pennington.Feeds.SitemapBuilder.Build(System.Collections.Generic.IReadOnlyList{Pennington.Feeds.SitemapCandidate})
-```
-
-The two front-matter members that drive the filter are `IFrontMatter.IsDraft` and `IRedirectable.RedirectUrl`; see <xref:reference.api.i-front-matter>.
-
-### (BlogSite only) Set `EnableSitemap = false` to turn it off
-
-On an `AddBlogSite` host, `BlogSiteOptions.EnableSitemap` (default `true`) is the one knob that unregisters the `/sitemap.xml` endpoint. Set it to `false` when the host environment owns its own sitemap. On a bare `AddPennington` or `AddDocSite` host the endpoint is always mapped; there is no equivalent toggle because the sitemap has no per-request cost when nothing fetches it.
+On an `AddBlogSite` host, set `BlogSiteOptions.EnableSitemap = false` to unregister the `/sitemap.xml` endpoint — useful when the host environment owns its own sitemap. On bare `AddPennington` or `AddDocSite`, the endpoint is always mapped.
 
 ---
 

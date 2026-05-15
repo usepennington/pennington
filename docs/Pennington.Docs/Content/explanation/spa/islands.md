@@ -7,7 +7,7 @@ tags: [spa, navigation, regions, hydration]
 uid: explanation.spa.islands
 ---
 
-Why does in-site navigation fetch the same URL the address bar shows and parse it client-side, instead of round-tripping a small JSON envelope or letting the browser do a full reload?
+DocSite ships a small SPA navigation engine — in-site clicks fetch the canonical URL, parse the response, swap marked regions, and merge head metadata. The design question this page answers: why fetch the same URL the address bar shows and parse it client-side, instead of round-tripping a small JSON envelope or letting the browser do a full reload?
 
 ## Context
 

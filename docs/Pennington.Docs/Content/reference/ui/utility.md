@@ -11,7 +11,7 @@ tags: [ui, components, localization, structured-data]
 
 ## `LanguageSwitcher`
 
-Renders a `<details>`-backed dropdown of alternate-language links pre-wired for SPA reload via the `data-spa-reload` attribute; hides itself when fewer than two locales are available, and auto-computes the list from `LocaleContext` and `LocalizationOptions` when `AlternateLanguages` is null or empty.
+Renders a `<details>`-backed dropdown of alternate-language links pre-wired for SPA reload via `data-spa-reload`. Hides itself when fewer than two locales are available. Auto-computes the list from `LocaleContext` and `LocalizationOptions` when `AlternateLanguages` is null or empty.
 
 ### Parameters
 
@@ -32,8 +32,6 @@ Nested record type that callers supply when constructing an explicit `AlternateL
 
 ### Example
 
-The DocSite `MainLayout` (`src/Pennington.DocSite/Components/Layout/MainLayout.razor`) shows the production wiring: guard on `LocalizationOptions.IsMultiLocale`, then pass the pre-computed `_langSwitcherItems` list.
-
 ```razor
 @if (LocalizationOptions.IsMultiLocale)
 {
@@ -41,15 +39,9 @@ The DocSite `MainLayout` (`src/Pennington.DocSite/Components/Layout/MainLayout.r
 }
 ```
 
-> **Note:** In a DocSite host `LanguageSwitcher` is rendered automatically; the above is the reference wiring for replaced layouts or bare `AddPennington` hosts.
-
 ## `StructuredData`
 
-```razor:path
-src/Pennington.UI/Components/StructuredData.razor
-```
-
-Emits up to three `<script type="application/ld+json">` tags into the document `<head>` via `<HeadContent>`, one each for `JsonLdArticle`, `JsonLdBreadcrumbList`, and `JsonLdWebSite`; each payload is serialized with `JsonLdSerializer` and rendered only when the corresponding parameter is non-null.
+Emits up to three `<script type="application/ld+json">` tags into the document `<head>` via `<HeadContent>`, one each for `JsonLdArticle`, `JsonLdBreadcrumbList`, and `JsonLdWebSite`. Each payload is serialized with `JsonLdSerializer` and rendered only when the corresponding parameter is non-null.
 
 ### Parameters
 
@@ -61,8 +53,6 @@ Emits up to three `<script type="application/ld+json">` tags into the document `
 
 ### Example
 
-The DocSite `Pages` component (`src/Pennington.DocSite/Components/Layout/Pages.razor`) emits `StructuredData` gated on `CanonicalBaseUrl` being set — article and breadcrumb on content pages, website on the home page:
-
 ```razor
 @if (!string.IsNullOrEmpty(Options.CanonicalBaseUrl))
 {
@@ -70,15 +60,9 @@ The DocSite `Pages` component (`src/Pennington.DocSite/Components/Layout/Pages.r
 }
 ```
 
-> **Note:** The JSON-LD payload record types are documented at <xref:reference.api.json-ld-article>.
-
 ## `FallbackNotice`
 
-```razor:path
-src/Pennington.UI/Components/FallbackNotice.razor
-```
-
-Renders an inline amber notice banner above the article region when the requested locale has no translation and the page is being served from the default locale; renders nothing when `RequestedLocale` is null or empty.
+Renders an inline amber notice banner above the article region when the requested locale has no translation and the page is being served from the default locale. Renders nothing when `RequestedLocale` is null or empty.
 
 ### Parameters
 
@@ -89,14 +73,10 @@ Renders an inline amber notice banner above the article region when the requeste
 
 ### Example
 
-`DocSiteArticle` (`src/Pennington.DocSite/Slots/Components/DocSiteArticle.razor`) places `FallbackNotice` above the article header whenever a non-empty `FallbackRequestedLocale` is supplied by the content resolver:
-
 ```razor
 <FallbackNotice RequestedLocale="@Article.FallbackRequestedLocale"
                 DefaultLocale="@LocalizationOptions.DefaultLocale" />
 ```
-
-> **Note:** Fallback detection is owned by `ContentResolver`; `FallbackNotice` is a pure presentation surface.
 
 ## See also
 
