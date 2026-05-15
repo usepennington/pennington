@@ -1,0 +1,32 @@
+@* TopicIndex — index of every topic the talks cover, populated from the
+   AddTaxonomy<TalkFrontMatter, string>(opts.SelectKey = fm => fm.Topic) registration. *@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Topics</title>
+    <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="bg-base-50 text-base-900 dark:bg-base-950 dark:text-base-50">
+    <main class="mx-auto max-w-2xl px-6 py-12">
+        <p class="text-sm"><a class="text-primary-600 underline" href="/">Home</a></p>
+        <h1 class="mt-2 font-display text-3xl font-bold">Browse by topic</h1>
+
+        <ul class="mt-8 space-y-3">
+            @foreach (var term in Terms)
+            {
+                <li class="flex items-baseline justify-between border-b border-base-100 pb-3 dark:border-base-900">
+                    <a href="@term.Url" class="font-medium text-primary-600 underline">@term.Label</a>
+                    <span class="text-sm text-base-500">@term.Items.Count talks</span>
+                </li>
+            }
+        </ul>
+    </main>
+</body>
+</html>
+
+@code {
+    [Parameter] public ImmutableList<TaxonomyTerm<TalkFrontMatter, string>> Terms { get; set; }
+        = ImmutableList<TaxonomyTerm<TalkFrontMatter, string>>.Empty;
+}

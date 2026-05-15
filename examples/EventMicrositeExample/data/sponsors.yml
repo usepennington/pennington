@@ -1,0 +1,9 @@
+- name: Acme Corporation
+  tier: gold
+  url: https://acme.example
+- name: Globex Industries
+  tier: silver
+  url: https://globex.example
+- name: Initech
+  tier: bronze
+  url: https://initech.example

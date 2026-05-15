@@ -1,0 +1,65 @@
+@* Home — landing page that demonstrates AddDataFile by reading both
+   sponsors.yml and schedule.yml from IDataFiles. The component owns the whole
+   document; Program.cs renders it through HtmlRenderer.RenderComponentAsync. *@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@Schedule.Title</title>
+    <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="bg-base-50 text-base-900 dark:bg-base-950 dark:text-base-50">
+    <main class="mx-auto max-w-4xl px-6 py-12 space-y-12">
+        <header>
+            <p class="text-xs font-semibold uppercase tracking-wide text-accent-500">@Schedule.Date</p>
+            <h1 class="mt-1 font-display text-4xl font-bold">@Schedule.Title</h1>
+            <p class="mt-2 text-base-700 dark:text-base-300">@Schedule.Venue</p>
+        </header>
+
+        <section>
+            <h2 class="font-display text-2xl font-semibold">Schedule preview</h2>
+            <ul class="mt-4 divide-y divide-base-200 dark:divide-base-800">
+                @foreach (var slot in Schedule.Slots)
+                {
+                    <li class="grid grid-cols-[5rem_1fr] gap-4 py-3">
+                        <span class="font-mono text-sm text-base-500">@slot.Time</span>
+                        <span>
+                            <span class="font-medium">@slot.Title</span>
+                            @if (!string.IsNullOrEmpty(slot.Speaker))
+                            {
+                                <span class="text-base-500"> &mdash; @slot.Speaker</span>
+                            }
+                        </span>
+                    </li>
+                }
+            </ul>
+            <p class="mt-4 text-sm">
+                <a class="text-primary-600 underline" href="/schedule/">Full schedule</a>
+                &middot;
+                <a class="text-primary-600 underline" href="/topic/">Browse by topic</a>
+                &middot;
+                <a class="text-primary-600 underline" href="/tag/">Browse by tag</a>
+            </p>
+        </section>
+
+        <section>
+            <h2 class="font-display text-2xl font-semibold">Sponsors</h2>
+            <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                @foreach (var sponsor in Sponsors)
+                {
+                    <li class="rounded-lg border border-base-200 p-4 dark:border-base-800">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-accent-500">@sponsor.Tier</p>
+                        <a href="@sponsor.Url" class="mt-1 block font-medium">@sponsor.Name</a>
+                    </li>
+                }
+            </ul>
+        </section>
+    </main>
+</body>
+</html>
+
+@code {
+    [Parameter] public List<Sponsor> Sponsors { get; set; } = [];
+    [Parameter] public Schedule Schedule { get; set; } = new();
+}

@@ -1,0 +1,41 @@
+@* SchedulePage — full schedule grid driven entirely by data/schedule.yml. *@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Schedule &mdash; @Schedule.Title</title>
+    <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="bg-base-50 text-base-900 dark:bg-base-950 dark:text-base-50">
+    <main class="mx-auto max-w-3xl px-6 py-12">
+        <p class="text-sm"><a class="text-primary-600 underline" href="/">Home</a></p>
+        <h1 class="mt-2 font-display text-3xl font-bold">@Schedule.Title schedule</h1>
+        <p class="mt-1 text-base-700 dark:text-base-300">@Schedule.Date &middot; @Schedule.Venue</p>
+
+        <table class="mt-8 w-full text-left">
+            <thead>
+                <tr class="border-b border-base-200 dark:border-base-800">
+                    <th class="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-base-500">Time</th>
+                    <th class="py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-base-500">Title</th>
+                    <th class="py-2 text-xs font-semibold uppercase tracking-wide text-base-500">Speaker</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var slot in Schedule.Slots)
+                {
+                    <tr class="border-b border-base-100 dark:border-base-900">
+                        <td class="py-3 pr-4 align-top font-mono text-sm">@slot.Time</td>
+                        <td class="py-3 pr-4 align-top">@slot.Title</td>
+                        <td class="py-3 align-top text-base-700 dark:text-base-300">@slot.Speaker</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>
+
+@code {
+    [Parameter] public Schedule Schedule { get; set; } = new();
+}

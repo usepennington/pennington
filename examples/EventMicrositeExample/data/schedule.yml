@@ -1,0 +1,22 @@
+title: Devcon 2026
+date: 2026-06-12
+venue: Hyperion Convention Center, Portland, OR
+slots:
+  - time: "09:00"
+    title: Registration & coffee
+    speaker: ""
+  - time: "10:00"
+    title: Keynote — what changed in the last decade
+    speaker: Ada Lovelace
+  - time: "11:00"
+    title: Building durable internal tools
+    speaker: Lin Chen
+  - time: "13:00"
+    title: Static sites that don't suck
+    speaker: Priya Patel
+  - time: "14:30"
+    title: Panel — production observability in 2026
+    speaker: Dev panel
+  - time: "16:00"
+    title: Closing remarks
+    speaker: Conference team
