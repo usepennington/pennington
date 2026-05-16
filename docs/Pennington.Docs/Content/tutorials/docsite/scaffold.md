@@ -11,6 +11,12 @@ By the end of this tutorial the DocSite host runs with a "Scaffold Docs" title, 
 
 For the shape DocSite hard-codes and the seams it leaves open, read [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning) first.
 
+> [!NOTE]
+> DocSite and BlogSite can't run in the same app — pick one. If you want a blog
+> alongside your documentation, stay on DocSite: it has a native blog you switch
+> on by adding a `Content/blog/` folder, no `Program.cs` change required. See
+> [Add a blog to your documentation site](xref:tutorials.docsite.add-a-blog).
+
 ## Prerequisites
 
 - .NET 11 SDK installed

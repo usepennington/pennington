@@ -13,6 +13,11 @@ By the end of this tutorial, a running BlogSite host titled "Scaffold Blog" serv
 
 BlogSite is a separate template — no DocSite experience needed.
 
+> [!NOTE]
+> DocSite and BlogSite can't run in the same app — pick one. BlogSite is the
+> right choice when the blog *is* the site. If you mainly want documentation with
+> a blog attached, use DocSite's native blog instead.
+
 - .NET 11 SDK installed
 - Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site)
 - Completed [Serve markdown through a Blazor catch-all](xref:tutorials.getting-started.first-page) (so `Content/` already has at least one markdown file)
