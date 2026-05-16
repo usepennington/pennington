@@ -140,8 +140,21 @@ public sealed class LlmsTxtService
         var subtrees = await CollectSubtreesAsync(contentServices, programmaticSubtrees);
         var header = await ReadUserHeaderAsync(fileSystem, hostingEnvironment, pennOptions);
 
+        // SearchOnly entries (blog posts, for example) are filtered out of the
+        // navigation tree, so the walk below never reaches them. Collect the ones
+        // that fall under a declared subtree into their own tree so they still get
+        // a {prefix}llms.txt — clearing SearchOnly so BuildTree keeps them.
+        var subtreeOnlyItems = allTocItems
+            .Where(t => t.SearchOnly && MatchSubtree(t.Route.CanonicalPath.Value, subtrees) is not null)
+            .Select(t => t with { SearchOnly = false })
+            .ToList();
+        var subtreeOnlyTree = subtreeOnlyItems.Count > 0
+            ? navigationBuilder.BuildTree(subtreeOnlyItems)
+            : ImmutableList<NavigationTreeItem>.Empty;
+
         var linkablePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         CollectLeafPaths(tree, linkablePaths);
+        CollectLeafPaths(subtreeOnlyTree, linkablePaths);
 
         var ctx = new BuildContext(
             Renderer: renderer,
@@ -159,11 +172,12 @@ public sealed class LlmsTxtService
             FullContent: llmsTxtOptions.GenerateFullFile ? new StringBuilder() : null);
 
         await CollectAsync(tree, depth: 0, ctx);
+        await CollectAsync(subtreeOnlyTree, depth: 0, ctx);
 
         // Front-door index
         var mainSb = new StringBuilder();
         AppendFrontDoorPreamble(mainSb, header, pennOptions, canonicalBase);
-        AppendMapBlock(mainSb, subtrees, ctx.Nodes);
+        AppendMapBlock(mainSb, subtrees, ctx.Nodes, canonicalBase);
         RenderBucket(ctx.Nodes, mainSb, leaf => MatchSubtree(leaf.CanonicalPath, subtrees) is null);
 
         // Per-subtree index files
@@ -298,12 +312,12 @@ public sealed class LlmsTxtService
         var canonicalSelf = canonicalBase.Combine(new UrlPath("/llms.txt")).Value;
         sb.AppendLine($"site: {canonicalBase.Value.Value}");
         sb.AppendLine($"canonical: {canonicalSelf}");
-        sb.AppendLine($"generated: {DateTime.UtcNow:O}");
+        sb.AppendLine($"generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC");
         sb.AppendLine($"penningtonVersion: {PackageVersion}");
         sb.AppendLine();
     }
 
-    private static void AppendMapBlock(StringBuilder sb, ImmutableList<LlmsSubtree> subtrees, List<RenderedNode> renderedNodes)
+    private static void AppendMapBlock(StringBuilder sb, ImmutableList<LlmsSubtree> subtrees, List<RenderedNode> renderedNodes, CanonicalBaseUrl canonicalBase)
     {
         if (subtrees.Count == 0) return;
 
@@ -313,7 +327,7 @@ public sealed class LlmsTxtService
         // prefer top-level prefixes first.
         foreach (var s in subtrees.OrderBy(x => x.RoutePrefix, StringComparer.Ordinal))
         {
-            var url = $"{s.RoutePrefix}llms.txt";
+            var url = canonicalBase.Combine(new UrlPath($"{s.RoutePrefix}llms.txt")).Value;
             var (entryCount, totalTokens) = SummarizeSubtree(renderedNodes, s, subtrees);
             var tokenLabel = FormatTokenEstimate(totalTokens);
             var entryLabel = entryCount == 1 ? "1 entry" : $"{entryCount} entries";

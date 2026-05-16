@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using Content;
 using FrontMatter;
 using Infrastructure;
+using LlmsTxt;
 using Pipeline;
 using Routing;
 
@@ -22,7 +23,7 @@ using Routing;
 /// when content files change. Blog post pages themselves are discovered by the markdown
 /// content source registered for <see cref="BlogPostFrontMatter"/>.
 /// </remarks>
-public sealed class BlogContentService : IContentService
+public sealed class BlogContentService : IContentService, ILlmsSubtreeProvider
 {
     private readonly DocSiteOptions _options;
     private readonly FrontMatterParser _parser;
@@ -81,6 +82,22 @@ public sealed class BlogContentService : IContentService
     /// <inheritdoc />
     public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
         => Task.FromResult(ImmutableList<CrossReference>.Empty);
+
+    /// <summary>
+    /// Declares <c>/blog/</c> as an llms.txt subtree so posts split out of the front-door
+    /// <c>llms.txt</c> into a dedicated <c>/blog/llms.txt</c>. Returns nothing when the blog
+    /// has no published posts.
+    /// </summary>
+    public async Task<ImmutableList<LlmsSubtree>> GetLlmsSubtreesAsync()
+    {
+        var posts = await _posts.Value;
+        if (posts.Count == 0) return ImmutableList<LlmsSubtree>.Empty;
+
+        return ImmutableList.Create(new LlmsSubtree(
+            routePrefix: "/blog/",
+            title: "Blog",
+            description: "Posts and announcements from the site blog."));
+    }
 
     /// <summary>Builds the RSS 2.0 XML document returned by the <c>/rss.xml</c> endpoint.</summary>
     public async Task<string> GetRssXmlAsync()

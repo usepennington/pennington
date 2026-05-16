@@ -201,8 +201,12 @@ public class LlmsTxtAndSearchEndpointTests
         // Map block replaces See-also: same purpose (point at subtree splits) but with
         // entry counts and token estimates so a budget-aware client can plan its fetches.
         content.ShouldContain("## Map");
-        // The docs site declares /reference/ as a subtree via _llms.yaml, so the Map must point at it.
-        content.ShouldContain("](/reference/llms.txt)");
+        // The docs site declares /reference/ as a subtree via _llms.yaml; the Map points
+        // at it with the full canonical URL, not a root-relative path.
+        content.ShouldContain("](https://usepennington.github.io/pennington/reference/llms.txt)");
+        // The blog is surfaced as a subtree by BlogContentService even though its posts
+        // are SearchOnly and absent from the navigation tree.
+        content.ShouldContain("](https://usepennington.github.io/pennington/blog/llms.txt)");
         // Entries-and-tokens parenthetical attached to each subtree entry.
         content.ShouldContain("entries,");
         content.ShouldContain("tokens)");
