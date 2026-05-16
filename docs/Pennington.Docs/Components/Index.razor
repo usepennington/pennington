@@ -7,12 +7,12 @@
 <section class="pt-8 pb-10 lg:pt-14 lg:pb-14">
     <p class="text-xs font-display font-semibold tracking-widest uppercase text-primary-600 dark:text-primary-400 mb-5">A static content engine for .NET</p>
     <h1 class="font-display text-4xl lg:text-6xl font-bold tracking-tight text-base-900 dark:text-base-50 leading-[1.05] mb-6 text-balance">
-        A doc site your .NET project deserves.<br />
+        A static site your .NET project deserves.<br />
         <span class="text-accent-four-600 dark:text-accent-four-400">Without leaving the SDK.</span>
     </h1>
     <p class="text-base lg:text-lg text-base-600 dark:text-base-400 max-w-2xl mb-8 leading-relaxed">
         Markdown in, static site out. No Node, no npm, no YAML toolchain &mdash; just <code class="font-mono text-sm bg-base-100 dark:bg-base-800 px-1.5 py-0.5 rounded">dotnet run</code>.
-        Pennington ships docs at the speed of your build.
+        Pennington ships content at the speed of your build.
     </p>
     <div class="flex flex-wrap items-center gap-3">
         <a href="/tutorials/getting-started/first-site/"
@@ -67,7 +67,7 @@
         </div>
     </div>
     <p class="mt-5 text-sm font-display text-base-500 dark:text-base-400 text-center">
-        Zero to site in about 90 seconds. This is the whole video.
+        The <code class="font-mono text-xs">pennington-docs</code> template is the shortcut &mdash; a finished docs site in three commands. Building your own host with <code class="font-mono text-xs">AddPennington</code> is the usual path: that&rsquo;s the <a href="/tutorials/getting-started/first-site/" class="underline decoration-dotted underline-offset-2 hover:text-primary-600 dark:hover:text-primary-400">getting-started tutorial</a>.
     </p>
 </section>
 
@@ -79,10 +79,10 @@
                     <span aria-hidden="true" class="mr-1">&mdash;</span> Quickstart
                 </p>
                 <h2 class="font-display text-3xl font-bold tracking-tight text-base-900 dark:text-base-50 leading-tight mb-4 text-balance">
-                    A site you can write to in 90 seconds.
+                    Add Pennington to an ASP.NET project.
                 </h2>
                 <p class="text-sm lg:text-base text-base-600 dark:text-base-400 leading-relaxed mb-6">
-                    .NET 11. Three commands. Markdown.
+                    Start from <code class="font-mono text-sm bg-base-100 dark:bg-base-800 px-1.5 py-0.5 rounded">dotnet new web</code>, add the package, and wire <code class="font-mono text-sm bg-base-100 dark:bg-base-800 px-1.5 py-0.5 rounded">AddPennington</code>. The tutorial walks every line.
                 </p>
                 <a href="/tutorials/getting-started/first-site/"
                    class="group inline-flex items-center gap-2 font-display font-semibold text-sm text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 rounded-xl px-5 py-2.5 ring-1 ring-base-300 dark:ring-base-700 hover:ring-primary-500 dark:hover:ring-primary-400 transition-colors">
@@ -475,13 +475,13 @@ M:Pennington.BlogSite.
 
     private static readonly QuickstartStep[] _quickstartSteps =
     [
-        new("1", "Install the project templates",
-            "dotnet new install Pennington.Templates",
-            """ dotnet new install <span class="text-primary-500">Pennington.Templates</span>"""),
-        new("2", "Scaffold a new docs site",
-            "dotnet new pennington-docs -o my-site",
-            """ dotnet new <span class="text-primary-500">pennington-docs</span> -o my-site"""),
-        new("3", "Run it, write Markdown, watch it update",
+        new("1", "Create an ASP.NET host",
+            "dotnet new web -n my-site",
+            """ dotnet new web -n <span class="text-primary-500">my-site</span>"""),
+        new("2", "Add the Pennington package",
+            "dotnet add package Pennington",
+            """ dotnet add package <span class="text-primary-500">Pennington</span>"""),
+        new("3", "Wire AddPennington, then run",
             "cd my-site && dotnet run",
             """ cd my-site &amp;&amp; <span class="text-primary-500">dotnet run</span>"""),
     ];

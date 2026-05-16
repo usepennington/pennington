@@ -9,7 +9,7 @@ uid: tutorials.docsite.scaffold
 
 By the end of this tutorial the DocSite host runs with a "Scaffold Docs" title, GitHub icon, header/footer chrome, and two content areas — Guides and Reference — each serving an index page from its own top-level folder.
 
-For the shape DocSite hard-codes and the seams it leaves open, read [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning) first.
+`AddDocSite` is a shortcut. It pre-wires what the [getting-started tutorials](xref:tutorials.getting-started.first-site) assemble by hand — host, layout, navigation, styling — into one call, tuned for a single shape: a Divio-style documentation site. Reach for it when that shape fits; build on `AddPennington` directly for anything else. For what the template wires and where the wiring stops, read [what the templates wire for you](xref:explanation.positioning.docsite-positioning) first.
 
 > [!NOTE]
 > DocSite and BlogSite can't run in the same app — pick one. If you want a blog
@@ -93,7 +93,7 @@ Pennington uses C# 15 union types, which are still a preview language feature in
 M:DocSiteScaffoldExample.Stage3.Run(System.String[])
 ```
 
-The five fields populated here — `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, `FooterContent` — each surface in the rendered chrome as soon as they're set. `DocSiteOptions` carries many more fields; see <xref:reference.api.doc-site-options> for the full surface, and [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning) for what the template hard-codes.
+The five fields populated here — `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, `FooterContent` — each surface in the rendered chrome as soon as they're set. `DocSiteOptions` carries many more fields; see <xref:reference.api.doc-site-options> for the full surface, and [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning) for what the template hard-codes.
 
 </Step>
 </Steps>
@@ -202,4 +202,4 @@ Visit `http://localhost:5000/` — the page renders inside the DocSite chrome, t
 - `DocSiteOptions` carries `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`, and each field appears in the rendered layout.
 - Two `ContentArea` entries bind top-level folders under `Content/` to URL prefixes and to sidebar tabs.
 - The root `/` is served by `Content/index.md`, which sits outside every area — without it, `/` returns a 404 even when areas are configured.
-- For the seams DocSite leaves open and what it hard-codes, see [Positioning DocSite as a fast path](xref:explanation.positioning.docsite-positioning).
+- For the seams DocSite leaves open and what it hard-codes, see [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning).

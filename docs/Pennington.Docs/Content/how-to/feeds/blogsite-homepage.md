@@ -84,4 +84,4 @@ The homepage at `/` renders the hero block above the post list, the "My Work" ca
 
 - Tutorial: [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials) — the hand-held walkthrough of the same four surfaces.
 - Reference: [`BlogSiteOptions`](xref:reference.api.blog-site-options) — the full property catalog (site metadata, content paths, feeds, fonts).
-- Background: [When is DocSite the right starting point?](xref:explanation.positioning.docsite-positioning) — for the DocSite-vs-BlogSite trade-off behind these templates.
+- Background: [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning) — what each template assembles and where the wiring stops.

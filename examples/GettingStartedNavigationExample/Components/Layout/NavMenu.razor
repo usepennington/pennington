@@ -1,0 +1,56 @@
+@* NavMenu.razor — the site's navigation, built from the content pipeline.
+   Every IContentService exposes its pages as flat table-of-contents entries.
+   NavigationBuilder sorts those entries by their `order:` front matter and
+   nests them by folder into a tree of NavigationTreeItem. This component
+   renders that tree and marks the entry matching the current URL. *@
+
+@inject IEnumerable<IContentService> ContentServices
+@inject NavigationBuilder Navigation
+@inject NavigationManager NavManager
+
+<nav class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+    @foreach (var item in _tree)
+    {
+        if (item.Children.Count == 0)
+        {
+            <a class="@LinkClass(item)" href="@item.Route.CanonicalPath.Value">@item.Title</a>
+        }
+        else
+        {
+            @* A folder with no index page becomes a section: a label, then its pages. *@
+            <span class="font-semibold text-base-400">@item.Title</span>
+            foreach (var child in item.Children)
+            {
+                <a class="@LinkClass(child)" href="@child.Route.CanonicalPath.Value">@child.Title</a>
+            }
+        }
+    }
+</nav>
+
+@code {
+    private IReadOnlyList<NavigationTreeItem> _tree = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Collect the table-of-contents entries from every content source.
+        var entries = new List<ContentTocItem>();
+        foreach (var service in ContentServices)
+            entries.AddRange(await service.GetContentTocEntriesAsync());
+
+        // Passing the current route lets NavigationBuilder return the matching
+        // node with IsSelected already set.
+        var currentRoute = new ContentRoute
+        {
+            CanonicalPath = new UrlPath(NavManager.ToBaseRelativePath(NavManager.Uri))
+                .EnsureLeadingSlash(),
+            OutputFile = new FilePath(""),
+        };
+
+        _tree = Navigation.BuildTree(entries, currentRoute);
+    }
+
+    // The current page renders bold; the rest are muted links.
+    private static string LinkClass(NavigationTreeItem item) => item.IsSelected
+        ? "font-semibold text-primary-700"
+        : "text-base-600 hover:text-primary-700";
+}

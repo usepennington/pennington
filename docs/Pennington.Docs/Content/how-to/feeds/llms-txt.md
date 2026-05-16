@@ -31,7 +31,7 @@ examples/DocSiteKitchenSinkExample/Content/main/llms-hidden.md
 P:Pennington.DocSite.DocSiteFrontMatter.Llms
 ```
 
-For a custom `ContentSelector` (different article wrapper or a non-DocSite layout), set `DocSiteOptions.LlmsTxtContentSelector`. It defaults to `#main-content` and is overridable without leaving DocSite. See [When is DocSite the right starting point?](xref:explanation.positioning.docsite-positioning) for cases that do require bare `AddPennington`.
+For a custom `ContentSelector` (different article wrapper or a non-DocSite layout), set `DocSiteOptions.LlmsTxtContentSelector`. It defaults to `#main-content` and is overridable without leaving DocSite. See [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning) for cases that do require bare `AddPennington`.
 
 ### Split content per-fragment with `humans-only` / `robots-only`
 
@@ -95,4 +95,4 @@ A typical excerpt:
 
 - Reference: [`LlmsTxtOptions`](xref:reference.api.llms-txt-options)
 - How-to: [Tune what the search box returns](xref:how-to.discovery.search)
-- Background: [When is DocSite the right starting point?](xref:explanation.positioning.docsite-positioning)
+- Background: [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning)

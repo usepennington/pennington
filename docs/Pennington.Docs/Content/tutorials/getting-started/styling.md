@@ -14,7 +14,7 @@ By the end of this tutorial the Blazor-pages site from [Serve markdown through a
 - .NET 11 SDK installed
 - Completed [Serve markdown through a Blazor catch-all](xref:tutorials.getting-started.first-page) (or a Pennington project with `MapRazorComponents<App>()` wired and a catch-all `MarkdownPage.razor`)
 
-The finished code for this tutorial lives in [`examples/GettingStartedStylingExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedStylingExample). The bundled DocSite template ships this same MonorailCSS-plus-`MainLayout` stack with a sidebar, search, and theme toggle on top — skip ahead to <xref:tutorials.docsite.scaffold> when a turnkey docs site is the goal.
+The finished code for this tutorial lives in [`examples/GettingStartedStylingExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedStylingExample). For a documentation site, the DocSite template ships this MonorailCSS-plus-`MainLayout` stack with a sidebar, search, and theme toggle already assembled — <xref:tutorials.docsite.scaffold> covers it.
 
 ---
 
@@ -120,3 +120,5 @@ Reload `/about` in the browser. The paragraph renders in pink italic because the
 - `AddMonorailCss(...)` registers the service container; `UseMonorailCss()` mounts the `/styles.css` endpoint.
 - A `NamedColorScheme` of three `ColorName` constants drives every `primary-*`, `accent-*`, and `base-*` utility prefix.
 - Under `dotnet watch`, adding a new utility class to a markdown file regenerates the stylesheet on the next request without a restart.
+
+The site is styled, but every page is an island with no way to reach the next. The [final getting-started tutorial](xref:tutorials.getting-started.navigation) adds a navigation menu that links them.

@@ -67,4 +67,4 @@ Each `/releases/{version}/` URL renders through the sibling `MapGet` endpoint, t
 - Reference: [Routing types](xref:reference.api.content-route)
 - How-to: [Use a YAML or JSON data file in pages](xref:how-to.content-services.data-files)
 - Background: [The content pipeline and union types](xref:explanation.core.content-pipeline)
-- Background: [When is DocSite the right starting point?](xref:explanation.positioning.docsite-positioning)
+- Background: [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning)

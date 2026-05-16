@@ -67,5 +67,5 @@ M:MultipleSourcesExample.ServiceConfiguration.RegisterOverlappingDocSource(Penni
 
 - Reference: [`PenningtonOptions.AddMarkdownContent<T>`](xref:reference.api.pennington-options)
 - Reference: [`DocSiteOptions.Areas` and `ContentArea`](xref:reference.api.doc-site-options)
-- Background: [When is DocSite the right starting point?](xref:explanation.positioning.docsite-positioning)
+- Background: [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning)
 - Extensibility: [Source content from outside the file system](xref:how-to.content-services.custom-content-service)

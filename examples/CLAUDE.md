@@ -40,6 +40,7 @@ Every example folder has a `README.md` describing its purpose, the concepts it t
 | `FusionCacheDocSiteExample` | Real-target DocSite — API reference generated from `ZiggyCreatures.FusionCache` via `AddApiMetadataFromCompiledAssembly` + `AddApiReference`. | _(reference for `Pennington.ApiMetadata.Reflection`)_ |
 | `GettingStartedBlazorPagesExample` | Replace the bare `MapGet` host with a Blazor Server `@page` catch-all (`MarkdownPage.razor`) that renders markdown through the same content pipeline. | `tutorials/getting-started/first-page.md` |
 | `GettingStartedMinimalSiteExample` | Smallest viable Pennington host — `AddPennington` + `AddMarkdownContent` + a catch-all `MapGet`. | `tutorials/getting-started/first-site.md` |
+| `GettingStartedNavigationExample` | Add a navigation menu to the styled bare host — a `NavMenu.razor` component renders the tree `NavigationBuilder` builds from each `IContentService`'s TOC entries. | `tutorials/getting-started/navigation.md` |
 | `GettingStartedStylingExample` | Layer MonorailCSS onto the BlazorPages site via a styled `MainLayout.razor` and `NamedColorScheme`. | `tutorials/getting-started/styling.md` |
 | `MultipleSourcesExample` | Bare host with two `AddMarkdownContent<T>` calls — separate front-matter types, separate content roots, overlap variant toggled by env var. | `how-to/discovery/multiple-sources.md` |
 | `SpaPlaygroundExample` | Minimal site for observing `spa-engine.js` — two `data-spa-region` blocks, one persistent `<nav>`, on-page event log for the three lifecycle events. | _(SPA-engine sandbox)_ |

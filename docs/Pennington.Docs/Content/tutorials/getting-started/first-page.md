@@ -18,7 +18,7 @@ By the end of this tutorial a runnable ASP.NET project — `MyBlazorPenningtonSi
 - .NET 11 SDK installed
 - (Optional) Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site) — this tutorial repeats its `dotnet new web` + Pennington package + `<LangVersion>preview</LangVersion>` bootstrap
 
-The finished code for this tutorial lives in [`examples/GettingStartedBlazorPagesExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedBlazorPagesExample). If a custom Blazor host is not what you need, the bundled DocSite template wires this same shape out of the box — skip ahead to <xref:tutorials.docsite.scaffold>.
+The finished code for this tutorial lives in [`examples/GettingStartedBlazorPagesExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedBlazorPagesExample). The DocSite template pre-wires this same Blazor shape for documentation sites — see <xref:tutorials.docsite.scaffold> if that is exactly what you are building.
 
 ---
 

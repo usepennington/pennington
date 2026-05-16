@@ -97,5 +97,5 @@ Pages with `search: false` are absent from the array; per-source `SearchPriority
 
 - Reference: [Front matter key reference](xref:reference.front-matter.keys)
 - Reference: [`SearchIndexOptions`](xref:reference.api.search-index-options) — the knobs this how-to touches; see also [`HighlightingOptions`](xref:reference.api.highlighting-options), [`LlmsTxtOptions`](xref:reference.api.llms-txt-options), and [`OutputOptions`](xref:reference.api.output-options)
-- Background: [When is DocSite the right starting point?](xref:explanation.positioning.docsite-positioning)
+- Background: [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning)
 - How-to: [Make the site discoverable to LLM crawlers](xref:how-to.feeds.llms-txt)

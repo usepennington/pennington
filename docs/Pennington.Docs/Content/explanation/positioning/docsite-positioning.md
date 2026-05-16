@@ -1,19 +1,23 @@
 ---
-title: "When is DocSite the right starting point?"
-description: "Why AddDocSite is a template-style fast path with a fixed skeleton — and the narrow set of shapes that push you down to bare AddPennington instead."
+title: "What the DocSite and BlogSite templates wire for you"
+description: "DocSite and BlogSite are pre-assembled shortcuts on top of the AddPennington engine — what each template wires, and where the wiring stops and the engine takes over."
 uid: explanation.positioning.docsite-positioning
 order: 307010
 sectionLabel: "Positioning"
-tags: [docsite, templates, architecture]
+tags: [docsite, blogsite, templates, architecture]
 ---
 
-When does `AddDocSite` earn its keep, and when is the ceremony of `AddPennington` plus a hand-wired layout the faster path?
+`AddDocSite` and `AddBlogSite` are shortcuts. Each one pre-assembles a host that `AddPennington` would otherwise have you wire by hand. This page is about what they assemble — and where that assembly stops.
 
 ## Context
 
-Pennington ships two entry points that sit at different levels of the stack. `AddPennington` is the engine: content discovery, the rendering pipeline, response processing, and diagnostics. It assumes the host brings its own layout, routing, and CSS wiring. `AddDocSite` is a template built on top of that engine — it composes `AddPennington`, `AddMonorailCss`, and a Razor `App` component into a single call with a small `DocSiteOptions` surface.
+`AddPennington` is the engine, and building on it is how Pennington sites are made: content discovery, the rendering pipeline, response processing, and diagnostics. It expects the host to bring its own layout, routing, and CSS wiring — which the [getting-started tutorials](xref:tutorials.getting-started.first-site) walk through end to end.
 
-The distinction matters because `DocSiteOptions` is not a mirror of `PenningtonOptions`. It is a curated subset plus a handful of DocSite-specific knobs, and the things it deliberately does not expose are the signal for whether to stay on the template or drop a level.
+`AddDocSite` and `AddBlogSite` are templates layered on that engine. Each composes `AddPennington`, `AddMonorailCss`, and a Razor `App` component into a single call with a small options surface — `DocSiteOptions` or `BlogSiteOptions`. They exist to skip the wiring for two shapes that come up often: a Divio-style documentation site, and a site where the blog *is* the site. When a site is exactly one of those, the template is a real head start. When it is not, the host is built on `AddPennington` directly — the ordinary case, not a fallback.
+
+The rest of this page examines DocSite in detail. BlogSite is the same kind of shortcut with a narrower options surface, and the same reasoning carries over.
+
+The distinction that matters is that `DocSiteOptions` is not a mirror of `PenningtonOptions`. It is a curated subset plus a handful of DocSite-specific knobs, and the things it deliberately does not expose mark the edge of the template's shape.
 
 ## How it works
 
@@ -41,9 +45,9 @@ The [`ExtensibilityLabExample`](https://github.com/usepennington/pennington/tree
 
 The example host is intentionally minimal — no Razor layout, no slot renderer, hand-written HTML strings. It demonstrates the engine surface, not a production layout pattern. The DocSite extension method is the right place to look for the layout recipe.
 
-### Signals that point toward bare AddPennington
+### The shape the template assumes
 
-A few shapes genuinely do not fit the template. Recognizing them early saves the cost of learning both surfaces in sequence:
+A template fits a shape. DocSite's shape is an article-centric documentation site rendered through a fixed Razor layout. A handful of site shapes fall outside it — and there the host is built on the engine, not the template:
 
 - Multiple markdown front-matter types served from the same host with different themes or different layouts. `ConfigurePennington` can register a second source, but it cannot give that source a separate layout shell.
 - Replacing the `App` component or the `DocSiteArticle` shell with a layout that is not article-shaped — a dashboard, a directory, a storefront.
@@ -51,7 +55,7 @@ A few shapes genuinely do not fit the template. Recognizing them early saves the
 - Embedding Pennington inside an existing ASP.NET app that already owns its routing, authentication, or layout conventions. Adding `AddDocSite` on top tends to fight those choices rather than cooperate with them.
 - Shipping the engine as a library into another product where only the pipeline is needed, not the layout.
 
-When none of those shapes describes the work, `AddDocSite` is almost certainly the right starting point. The caps are narrow because the template is opinionated, and those opinions cover the large majority of documentation-site shapes.
+None of these is exotic. They are the everyday reason a host is built on `AddPennington` directly. The caps are narrow because the template is opinionated, and those opinions are about documentation-site shapes specifically.
 
 ## Trade-offs
 
@@ -63,6 +67,7 @@ The consequence of that decision is that `DocSiteOptions` is a curated subset of
 
 ## Further reading
 
+- Tutorial: [Create your first Pennington site](xref:tutorials.getting-started.first-site) — building a host on `AddPennington` directly, the path the templates are a shortcut for.
 - Reference: [`DocSiteOptions` reference](xref:reference.api.doc-site-options) — the full list of tweak points with defaults and forwarding semantics.
 - How-to: [Use multiple content sources](xref:how-to.discovery.multiple-sources) — the canonical guide for the "two front-matter types" case, covering both the `ConfigurePennington` path and the drop to bare `AddPennington`.
 - How-to: [Override DocSite components](xref:how-to.response-pipeline.override-docsite-components) — the template-compatible extension path for layout tweaks before dropping a level.

@@ -197,7 +197,7 @@ Without any terminal input, the browser tab updates to show the new title in bot
 ---
 
 > [!NOTE]
-> If a custom host isn't what you need, the bundled DocSite template ships this same wiring with a sidebar, search, and a Razor catch-all already in place. Skip ahead to <xref:tutorials.docsite.scaffold> when "I just want a docs site" is the goal.
+> Wiring the host yourself is the normal path, and the next tutorials build straight on it. If your site is a plain documentation site, the DocSite template pre-wires this same shape — sidebar, search, Razor catch-all — in one `AddDocSite` call; <xref:tutorials.docsite.scaffold> picks up there.
 
 ## Summary
 
