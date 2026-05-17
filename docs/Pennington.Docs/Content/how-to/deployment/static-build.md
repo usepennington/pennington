@@ -25,7 +25,7 @@ To turn a working Pennington site into a folder of static HTML for a static host
 
 Pass `build` as the first argument to `dotnet run`. The argument is parsed into `OutputOptions` via `FromArgs`; without it, the app starts as a dev server instead. Three argument shapes are supported:
 
-```text
+```bash
 # defaults: BaseUrl = "/", OutputDirectory = "output"
 dotnet run -- build
 

@@ -33,7 +33,7 @@ Start from an empty ASP.NET web project and add the Pennington package. No Penni
 
 Run these two commands in a working folder. The `web` template produces a minimal top-level-statement `Program.cs` that returns `Hello from ASP.NET.` — the starting shape we'll replace in the next section.
 
-```text
+```bash
 dotnet new web -n MyBlazorPenningtonSite
 cd MyBlazorPenningtonSite
 ```
@@ -45,7 +45,7 @@ cd MyBlazorPenningtonSite
 
 Add the Pennington package so the `AddPennington` extension method resolves, then edit the csproj to set `<LangVersion>preview</LangVersion>` (Pennington uses C# 15 union types, still a preview language feature in the .NET 11 SDK).
 
-```text
+```bash
 dotnet add package Pennington
 ```
 

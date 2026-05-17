@@ -41,7 +41,7 @@ M:BeyondRoslynExample.Stage1.Run(System.String[])
 
 From the host folder, scaffold the class library and add `GenerateDocumentationFile=true` so XmlDocId lookups resolve:
 
-```text
+```bash
 dotnet new classlib -n BeyondRoslynExample.Sample -o Sample
 ```
 
@@ -75,7 +75,7 @@ T:BeyondRoslynExample.Sample.Greeter
 
 Create an inner `.slnx` that registers only the Sample library. `SolutionPath` points at this file rather than the outer repo-level solution, so the MSBuild workspace loads exactly the source to fence into docs.
 
-```text:path
+```xml:path
 examples/BeyondRoslynExample/BeyondRoslynExample.slnx
 ```
 

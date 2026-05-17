@@ -33,7 +33,7 @@ The host from the previous tutorial has one area, `guides`. The root `/` sits **
 
 **Run the host and visit the root**
 
-```text
+```bash
 dotnet run
 ```
 

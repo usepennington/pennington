@@ -35,7 +35,7 @@ Start from an empty ASP.NET web project. DocSite ships everything from routing t
 
 **Create the web project**
 
-```text
+```bash
 dotnet new web -n DocSiteScaffold
 cd DocSiteScaffold
 ```
@@ -45,7 +45,7 @@ cd DocSiteScaffold
 
 **Add the Pennington DocSite package**
 
-```text
+```bash
 dotnet add package Pennington.DocSite
 ```
 
@@ -133,11 +133,11 @@ Areas =
 
 Under `Content/`, create two folders — `guides/` and `reference/` — each with an `index.md`. The `guides` slug binds `Content/guides/` to the `/guides/` URL prefix and to the Guides sidebar tab; `reference` works the same way.
 
-```text:path
+```markdown:path
 examples/DocSiteScaffoldExample/Content/guides/index.md
 ```
 
-```text:path
+```markdown:path
 examples/DocSiteScaffoldExample/Content/reference/index.md
 ```
 

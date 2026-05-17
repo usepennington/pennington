@@ -28,7 +28,7 @@ A small conference microsite that exercises both `AddDataFile<T>` and
 
 ## Try it
 
-```sh
+```bash
 dotnet run --project examples/EventMicrositeExample
 ```
 

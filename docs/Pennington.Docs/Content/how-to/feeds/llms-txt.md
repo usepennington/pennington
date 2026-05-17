@@ -70,7 +70,7 @@ Set `GenerateFullFile = true` to also emit `/llms-full.txt` — every sidecar co
 
 A typical excerpt:
 
-```text
+```markdown
 # Pennington Docs
 
 > Content engine library for .NET.

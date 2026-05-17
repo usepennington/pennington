@@ -12,7 +12,7 @@ Install Pennington into an ASP.NET project with one NuGet package and three line
 
 ## 1. Add the package
 
-```text
+```bash
 dotnet add package Pennington.DocSite
 ```
 

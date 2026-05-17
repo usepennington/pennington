@@ -21,7 +21,7 @@ For a working setup, see [`examples/SubPathDeployableExample`](https://github.co
 
 `OutputOptions.FromArgs` accepts the sub-path as a positional token or a named flag; named flags survive CI script reorderings more reliably. Include the leading slash and omit the trailing slash — the rewriter normalizes either way.
 
-```text
+```bash
 # positional — base URL first, output directory second
 dotnet run -- build /docs
 

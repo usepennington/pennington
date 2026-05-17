@@ -31,7 +31,7 @@ First, let's create the project shell Pennington will plug into — no Penningto
 
 Run these two commands in a working folder. The `web` template produces a minimal top-level-statement `Program.cs` — no MVC, no Razor Pages — which is the starting shape we'll edit in the steps ahead.
 
-```text
+```bash
 dotnet new web -n MyFirstPenningtonSite
 cd MyFirstPenningtonSite
 ```
@@ -43,7 +43,7 @@ cd MyFirstPenningtonSite
 
 Add the Pennington package so the `AddPennington` extension method resolves. The backing example in this repo uses a `ProjectReference`, but for a new project this one command is enough.
 
-```text
+```bash
 dotnet add package Pennington
 ```
 
@@ -78,7 +78,7 @@ Pennington uses C# 15 union types, which are still a preview language feature in
 
 The `dotnet new web` template produces a `Program.cs` with a single `MapGet` returning `"Hello from ASP.NET."`. Run it now to confirm the shell works before Pennington takes over.
 
-```text
+```bash
 dotnet run
 ```
 
@@ -170,7 +170,7 @@ Let's confirm that `UsePennington`'s file-watcher and live-reload WebSocket are 
 
 Stop the previous `dotnet run` with `Ctrl+C`, then start the watcher. Live reload is gated on the `DOTNET_WATCH` environment variable, which `dotnet watch` sets automatically — no manual setup required. Leave `http://localhost:5000/` open in the browser.
 
-```text
+```bash
 dotnet watch
 ```
 

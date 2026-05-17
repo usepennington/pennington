@@ -54,7 +54,7 @@ examples/DocSiteBlogExample/snippets/stage1.md
 
 **Run the host**
 
-```text
+```bash
 dotnet run
 ```
 
