@@ -5,8 +5,8 @@ author: Phil Scott
 date: 2026-05-04
 isDraft: false
 tags:
-  - announcements
   - llms-txt
+  - ai-agents
 ---
 
 When an AI agent reads your documentation, it parses rendered HTML — nav chrome,

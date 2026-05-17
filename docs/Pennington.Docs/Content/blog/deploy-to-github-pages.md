@@ -5,8 +5,9 @@ author: Phil Scott
 date: 2026-04-17
 isDraft: false
 tags:
-  - announcements
   - deployment
+  - github-pages
+  - static-build
 ---
 
 Pennington's own docs site needed somewhere to live, and building locally and

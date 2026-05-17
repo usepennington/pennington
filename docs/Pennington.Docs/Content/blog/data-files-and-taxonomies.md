@@ -5,8 +5,8 @@ author: Phil Scott
 date: 2026-05-14
 isDraft: false
 tags:
-  - announcements
-  - content
+  - data-files
+  - taxonomies
 ---
 
 Most of a content site is pages — a markdown file becomes a URL. But every site

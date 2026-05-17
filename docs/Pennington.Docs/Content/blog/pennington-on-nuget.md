@@ -5,8 +5,9 @@ author: Phil Scott
 date: 2026-04-09
 isDraft: false
 tags:
-  - announcements
-  - release
+  - nuget
+  - packaging
+  - ci
 ---
 
 Pennington is on NuGet. Until now, using it meant cloning the repo; now it's a

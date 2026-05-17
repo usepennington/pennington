@@ -5,7 +5,7 @@ author: Phil Scott
 date: 2026-05-07
 isDraft: false
 tags:
-  - announcements
+  - front-matter
   - diagnostics
 ---
 

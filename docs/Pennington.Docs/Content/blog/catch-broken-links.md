@@ -5,8 +5,9 @@ author: Phil Scott
 date: 2026-05-01
 isDraft: false
 tags:
-  - announcements
   - diagnostics
+  - link-checking
+  - build-report
 ---
 
 A broken link works in every check you run while writing, then fails for a

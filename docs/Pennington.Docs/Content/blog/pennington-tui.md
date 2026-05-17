@@ -5,8 +5,9 @@ author: Phil Scott
 date: 2026-04-17
 isDraft: false
 tags:
-  - announcements
+  - tui
   - dev-experience
+  - diagnostics
 ---
 
 Run a content site locally and the feedback you get is a console log — a single

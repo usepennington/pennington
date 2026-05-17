@@ -5,8 +5,8 @@ author: Phil Scott
 date: 2026-05-13
 isDraft: false
 tags:
-  - announcements
   - spa
+  - navigation
 ---
 
 Clicking around a documentation site shouldn't feel heavy. Pennington's SPA

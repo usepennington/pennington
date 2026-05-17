@@ -5,7 +5,7 @@ author: Phil Scott
 date: 2026-04-15
 isDraft: false
 tags:
-  - announcements
+  - hot-reload
   - dev-experience
 ---
 

@@ -5,8 +5,8 @@ author: Phil Scott
 date: 2026-04-04
 isDraft: false
 tags:
-  - announcements
-  - release
+  - code-samples
+  - project-templates
 ---
 
 Pennington is a content engine for .NET 11 and C# 15. Point it at a folder of

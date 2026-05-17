@@ -5,8 +5,9 @@ author: Phil Scott
 date: 2026-04-07
 isDraft: false
 tags:
-  - announcements
   - seo
+  - accessibility
+  - structured-data
 ---
 
 Three things a content site should do for its readers are now handled by the

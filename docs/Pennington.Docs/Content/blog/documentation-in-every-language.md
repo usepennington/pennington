@@ -5,8 +5,8 @@ author: Phil Scott
 date: 2026-04-08
 isDraft: false
 tags:
-  - announcements
   - localization
+  - locale-fallback
 ---
 
 Adding a second language to a .NET docs site used to be a slog: an `@page`

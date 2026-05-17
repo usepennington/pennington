@@ -5,8 +5,8 @@ author: Phil Scott
 date: 2026-05-15
 isDraft: false
 tags:
-  - announcements
-  - blog
+  - blogsite
+  - rss
 ---
 
 You're reading this on the feature it announces. This blog isn't a separate app

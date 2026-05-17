@@ -5,7 +5,7 @@ author: Phil Scott
 date: 2026-04-18
 isDraft: false
 tags:
-  - announcements
+  - project-templates
   - tooling
 ---
 

@@ -5,8 +5,9 @@ author: Phil Scott
 date: 2026-04-06
 isDraft: false
 tags:
-  - announcements
   - diagnostics
+  - build-report
+  - dev-overlay
 ---
 
 Pennington used to scatter its findings — a broken link, an `xref:` that points

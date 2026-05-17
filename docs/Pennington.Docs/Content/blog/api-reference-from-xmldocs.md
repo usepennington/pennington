@@ -5,8 +5,8 @@ author: Phil Scott
 date: 2026-04-28
 isDraft: false
 tags:
-  - announcements
   - api-reference
+  - roslyn
 ---
 
 API reference is the documentation that drifts fastest. Rename a parameter, add
