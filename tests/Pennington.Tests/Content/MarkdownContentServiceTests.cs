@@ -26,7 +26,7 @@ public class MarkdownContentServiceTests
             SectionLabel = section
         };
 
-        return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs), localization ?? DefaultLocalization);
+        return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs,localization ?? DefaultLocalization);
     }
 
     private static MockFileSystem CreateFs(params (string Path, string Content)[] files)
@@ -217,7 +217,7 @@ public class MarkdownContentServiceTests
         };
 
         return new MarkdownContentService<RedirectableFrontMatter>(
-                    options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
+                    options, new FrontMatterParser(), fs,DefaultLocalization);
     }
 
     [Fact]
@@ -347,7 +347,7 @@ public class MarkdownContentServiceTests
             BasePageUrl = new UrlPath("/docs"),
             SectionLabel = "Test"
         };
-        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
+        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs,DefaultLocalization);
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
@@ -456,7 +456,7 @@ public class MarkdownContentServiceTests
             SectionLabel = section
         };
 
-        return new MarkdownContentService<BlogFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
+        return new MarkdownContentService<BlogFrontMatter>(options, new FrontMatterParser(), fs,DefaultLocalization);
     }
 
     [Fact]
@@ -551,7 +551,7 @@ public class MarkdownContentServiceTests
             BasePageUrl = new UrlPath("/docs"),
             SearchPriority = 10
         };
-        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
+        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs,DefaultLocalization);
 
         service.SearchPriority.ShouldBe(10);
     }
@@ -717,7 +717,7 @@ public class MarkdownContentServiceTests
             ExcludePaths = [.. excludePaths],
         };
         return new MarkdownContentService<DocFrontMatter>(
-            options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
+            options, new FrontMatterParser(), fs,DefaultLocalization);
     }
 
     [Fact]
@@ -829,7 +829,7 @@ public class MarkdownContentServiceTests
             ExcludePaths = ["changelog"],
         };
         var service = new MarkdownContentService<DocFrontMatter>(
-            options, new FrontMatterParser(), fs, new FileWatcher(fs), CreateMultiLocale());
+            options, new FrontMatterParser(), fs,CreateMultiLocale());
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())

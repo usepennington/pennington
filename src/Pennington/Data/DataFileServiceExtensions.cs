@@ -24,16 +24,11 @@ public static class DataFileServiceExtensions
     public static IServiceCollection AddDataFile<T>(this IServiceCollection services, string name, string path)
     {
         // Register straight into IDataFile so multiple AddDataFile<T> calls with the same
-        // T but different names each get their own singleton — registering DataFileEntry<T>
-        // as a typed singleton would let the second call shadow the first.
+        // T but different names each get their own singleton.
         services.AddSingleton<IDataFile>(sp => new DataFileEntry<T>(
-            name,
-            path,
-            sp.GetRequiredService<IFileSystem>(),
-            sp.GetRequiredService<IFileWatcher>()));
+            name, path, sp.GetRequiredService<IFileSystem>()));
 
-        services.TryAddSingleton<IDataFiles, DataFiles>();
-
+        AddDataFilesCore(services);
         return services;
     }
 
@@ -51,13 +46,19 @@ public static class DataFileServiceExtensions
     public static IServiceCollection AddDataDirectory<TItem>(this IServiceCollection services, string name, string path)
     {
         services.AddSingleton<IDataFile>(sp => new DataDirectoryEntry<TItem>(
-            name,
-            path,
-            sp.GetRequiredService<IFileSystem>(),
-            sp.GetRequiredService<IFileWatcher>()));
+            name, path, sp.GetRequiredService<IFileSystem>()));
 
-        services.TryAddSingleton<IDataFiles, DataFiles>();
-
+        AddDataFilesCore(services);
         return services;
+    }
+
+    // Registers the shared DataFiles aggregator once — exposed as IDataFiles and as the single
+    // IFileWatchAware for the data-file subsystem. Idempotent across repeated AddDataFile calls.
+    private static void AddDataFilesCore(IServiceCollection services)
+    {
+        services.TryAddSingleton<DataFiles>();
+        services.TryAddSingleton<IDataFiles>(sp => sp.GetRequiredService<DataFiles>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IFileWatchAware, DataFiles>(
+            sp => sp.GetRequiredService<DataFiles>()));
     }
 }

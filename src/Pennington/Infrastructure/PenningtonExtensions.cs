@@ -115,6 +115,7 @@ public static class PenningtonExtensions
 
         // File watching
         services.AddSingleton<IFileWatcher, FileWatcher>();
+        services.AddSingleton<FileWatchDispatcher>();
 
         // Highlighting: register TextMate and Shell highlighters, then the service
         services.AddSingleton<TextMateLanguageRegistry>();
@@ -167,29 +168,42 @@ public static class PenningtonExtensions
             var frontMatterType = capturedSource.FrontMatterType ?? typeof(DocFrontMatter);
             var serviceType = typeof(MarkdownContentService<>).MakeGenericType(frontMatterType);
 
-            services.AddSingleton(typeof(IContentService), sp =>
+            // One instance per source, shared between the IContentService and IFileWatchAware
+            // registrations so FileWatchDispatcher refreshes the very service that serves content.
+            object? instance = null;
+            var gate = new object();
+            object Resolve(IServiceProvider sp)
             {
-                var env = sp.GetService<IWebHostEnvironment>();
-                var resolvedContentPath = Path.IsPathRooted(capturedSource.ContentPath)
-                    ? capturedSource.ContentPath
-                    : env != null
-                        ? Path.Combine(env.ContentRootPath, capturedSource.ContentPath)
-                        : capturedSource.ContentPath;
-
-                var sourceOptions = new MarkdownContentServiceOptions
+                if (instance is not null) return instance;
+                lock (gate)
                 {
-                    ContentPath = new FilePath(resolvedContentPath),
-                    BasePageUrl = new UrlPath(capturedSource.BasePageUrl),
-                    SectionLabel = capturedSource.SectionLabel,
-                    ExcludePaths = capturedSource.ExcludePaths,
-                };
+                    if (instance is not null) return instance;
 
-                var parser = sp.GetRequiredService<FrontMatterParser>();
-                var fileSystem = sp.GetRequiredService<IFileSystem>();
-                var fileWatcher = sp.GetRequiredService<IFileWatcher>();
-                var localization = sp.GetRequiredService<LocalizationOptions>();
-                return Activator.CreateInstance(serviceType, sourceOptions, parser, fileSystem, fileWatcher, localization)!;
-            });
+                    var env = sp.GetService<IWebHostEnvironment>();
+                    var resolvedContentPath = Path.IsPathRooted(capturedSource.ContentPath)
+                        ? capturedSource.ContentPath
+                        : env != null
+                            ? Path.Combine(env.ContentRootPath, capturedSource.ContentPath)
+                            : capturedSource.ContentPath;
+
+                    var sourceOptions = new MarkdownContentServiceOptions
+                    {
+                        ContentPath = new FilePath(resolvedContentPath),
+                        BasePageUrl = new UrlPath(capturedSource.BasePageUrl),
+                        SectionLabel = capturedSource.SectionLabel,
+                        ExcludePaths = capturedSource.ExcludePaths,
+                    };
+
+                    var parser = sp.GetRequiredService<FrontMatterParser>();
+                    var fileSystem = sp.GetRequiredService<IFileSystem>();
+                    var localization = sp.GetRequiredService<LocalizationOptions>();
+                    instance = Activator.CreateInstance(serviceType, sourceOptions, parser, fileSystem, localization)!;
+                }
+                return instance;
+            }
+
+            services.AddSingleton(typeof(IContentService), Resolve);
+            services.AddSingleton(typeof(IFileWatchAware), Resolve);
 
             // Register parser for the front matter type
             var parserType = typeof(MarkdownContentParser<>).MakeGenericType(frontMatterType);
@@ -471,6 +485,10 @@ public static class PenningtonExtensions
         // For Blazor @page routing this must run before MapRazorComponents;
         // callers that need that should call UsePenningtonLocaleRouting() explicitly.
         app.UsePenningtonLocaleRouting();
+
+        // File-watch dispatcher: eagerly resolve so its constructor wires every
+        // IFileWatchAware service's scopes and subscription to the file watcher.
+        _ = app.Services.GetRequiredService<FileWatchDispatcher>();
 
         // Live reload: eagerly resolve so it subscribes to file watcher, then map WebSocket endpoint
         _ = app.Services.GetRequiredService<LiveReloadServer>();

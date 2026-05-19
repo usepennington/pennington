@@ -34,7 +34,7 @@ public class MarkdownLinkResolverTests
             BasePageUrl = new UrlPath(basePageUrl),
         };
         return new MarkdownContentService<DocFrontMatter>(
-            options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
+            options, new FrontMatterParser(), fs,DefaultLocalization);
     }
 
     [Fact]

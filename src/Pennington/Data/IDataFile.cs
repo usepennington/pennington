@@ -1,11 +1,13 @@
 namespace Pennington.Data;
 
+using Infrastructure;
+
 /// <summary>
 /// Non-generic facade over a single registered data file. Used by <see cref="DataFiles"/>
 /// to enumerate every <see cref="DataFileEntry{T}"/> the container has registered without
-/// reflecting over the closed generic types.
+/// reflecting over the closed generic types. Reloads through <see cref="IFileWatchAware"/>.
 /// </summary>
-public interface IDataFile
+public interface IDataFile : IFileWatchAware
 {
     /// <summary>Logical name supplied at registration; lookup key for <see cref="IDataFiles.Get{T}"/>.</summary>
     string Name { get; }

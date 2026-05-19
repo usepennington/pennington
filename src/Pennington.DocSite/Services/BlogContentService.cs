@@ -23,8 +23,11 @@ using Routing;
 /// when content files change. Blog post pages themselves are discovered by the markdown
 /// content source registered for <see cref="BlogPostFrontMatter"/>.
 /// </remarks>
-public sealed class BlogContentService : IContentService, ILlmsSubtreeProvider
+public sealed class BlogContentService : IContentService, ILlmsSubtreeProvider, IFileWatchAware
 {
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
+
     private readonly DocSiteOptions _options;
     private readonly FrontMatterParser _parser;
     private readonly AsyncLazy<ImmutableList<BlogPostDescriptor>> _posts;

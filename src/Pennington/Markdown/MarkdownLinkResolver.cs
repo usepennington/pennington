@@ -25,9 +25,12 @@ using Routing;
 /// instances. When managed by <see cref="FileWatchDependencyFactory{T}"/>, the
 /// instance is recreated on file changes so the index stays fresh.
 /// </summary>
-public sealed class MarkdownLinkResolver
+public sealed class MarkdownLinkResolver : IFileWatchAware
 {
     private static readonly string[] MarkdownExtensions = [".md", ".markdown", ".mdx"];
+
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
 
     private readonly AsyncLazy<IndexData> _indexLazy;
 

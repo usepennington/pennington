@@ -18,9 +18,12 @@ using Microsoft.Extensions.Logging;
 /// index reflects what users actually see rather than pre-render markdown.
 /// </para>
 /// </summary>
-public sealed class SearchIndexService
+public sealed class SearchIndexService : IFileWatchAware
 {
     private readonly AsyncLazy<IReadOnlyDictionary<string, string>> _indexLazy;
+
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
     private readonly LocalizationOptions _localization;
 
     /// <summary>Creates the service; the per-locale index is computed lazily on first request.</summary>

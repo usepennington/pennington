@@ -21,7 +21,7 @@ public class SubtreeDiscoveryTests
             SectionLabel = "Documentation",
         };
         return new MarkdownContentService<DocFrontMatter>(
-            options, new FrontMatterParser(), fs, new FileWatcher(fs), DefaultLocalization);
+            options, new FrontMatterParser(), fs,DefaultLocalization);
     }
 
     private static MockFileSystem CreateFs(params (string Path, string Content)[] files)

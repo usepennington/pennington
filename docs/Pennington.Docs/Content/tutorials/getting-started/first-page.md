@@ -1,5 +1,5 @@
 ---
-title: "Serve markdown through a Blazor catch-all"
+title: "Serve markdown through Blazor Pages"
 description: "Stand up a Pennington site whose markdown is served through a Blazor Server `@page` catch-all — the natural shape for a real app."
 sectionLabel: "Getting Started with Pennington"
 order: 101020

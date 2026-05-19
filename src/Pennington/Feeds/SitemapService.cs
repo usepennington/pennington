@@ -45,9 +45,12 @@ using Pipeline;
 /// in the sitemap.
 /// </para>
 /// </summary>
-public sealed class SitemapService
+public sealed class SitemapService : IFileWatchAware
 {
     private readonly AsyncLazy<string> _sitemapLazy;
+
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
 
     /// <summary>
     /// Initializes the service and prepares lazy sitemap generation driven by the provided builder.

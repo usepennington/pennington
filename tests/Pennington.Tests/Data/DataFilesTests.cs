@@ -1,4 +1,5 @@
 using Pennington.Data;
+using Pennington.Infrastructure;
 
 namespace Pennington.Tests.Data;
 
@@ -9,6 +10,7 @@ public class DataFilesTests
         public string Name { get; } = name;
         public Type ValueType { get; } = type;
         public object GetValue() => value;
+        public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Ignore;
     }
 
     [Fact]

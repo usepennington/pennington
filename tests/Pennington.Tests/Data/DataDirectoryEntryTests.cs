@@ -12,6 +12,9 @@ public class DataDirectoryEntryTests
         public string GitHubUserName { get; init; } = "";
     }
 
+    private static DataDirectoryEntry<Maintainer> Entry(MockFileSystem fs) =>
+        new("maintainers", "/data/maintainers", fs);
+
     [Fact]
     public void GetValue_AggregatesFiles_OrderedByName()
     {
@@ -20,7 +23,7 @@ public class DataDirectoryEntryTests
         fs.File.WriteAllText("/data/maintainers/devlead.yml", "name: Mattias\ngitHubUserName: devlead\n");
         fs.File.WriteAllText("/data/maintainers/agc93.yml", "name: Alistair\ngitHubUserName: agc93\n");
 
-        var entry = new DataDirectoryEntry<Maintainer>("maintainers", "/data/maintainers", fs, new FileWatcher(fs));
+        var entry = Entry(fs);
 
         entry.Name.ShouldBe("maintainers");
         entry.ValueType.ShouldBe(typeof(IReadOnlyList<Maintainer>));
@@ -39,9 +42,7 @@ public class DataDirectoryEntryTests
         fs.File.WriteAllText("/data/maintainers/team.yml",
             "- name: One\n  gitHubUserName: one\n- name: Two\n  gitHubUserName: two\n");
 
-        var entry = new DataDirectoryEntry<Maintainer>("maintainers", "/data/maintainers", fs, new FileWatcher(fs));
-
-        var maintainers = (IReadOnlyList<Maintainer>)entry.GetValue();
+        var maintainers = (IReadOnlyList<Maintainer>)Entry(fs).GetValue();
         maintainers.Select(m => m.GitHubUserName).ShouldBe(["solo", "one", "two"]);
     }
 
@@ -53,9 +54,7 @@ public class DataDirectoryEntryTests
         fs.File.WriteAllText("/data/maintainers/a.yml", "name: FromYaml\ngitHubUserName: a\n");
         fs.File.WriteAllText("/data/maintainers/b.json", """{ "name": "FromJson", "gitHubUserName": "b" }""");
 
-        var entry = new DataDirectoryEntry<Maintainer>("maintainers", "/data/maintainers", fs, new FileWatcher(fs));
-
-        var maintainers = (IReadOnlyList<Maintainer>)entry.GetValue();
+        var maintainers = (IReadOnlyList<Maintainer>)Entry(fs).GetValue();
         maintainers.Count.ShouldBe(2);
         maintainers[0].Name.ShouldBe("FromYaml");
         maintainers[1].Name.ShouldBe("FromJson");
@@ -69,9 +68,7 @@ public class DataDirectoryEntryTests
         fs.File.WriteAllText("/data/maintainers/agc93.yml", "name: Alistair\ngitHubUserName: agc93\n");
         fs.File.WriteAllText("/data/maintainers/README.md", "# Maintainers");
 
-        var entry = new DataDirectoryEntry<Maintainer>("maintainers", "/data/maintainers", fs, new FileWatcher(fs));
-
-        var maintainers = (IReadOnlyList<Maintainer>)entry.GetValue();
+        var maintainers = (IReadOnlyList<Maintainer>)Entry(fs).GetValue();
         maintainers.Single().GitHubUserName.ShouldBe("agc93");
     }
 
@@ -81,9 +78,8 @@ public class DataDirectoryEntryTests
         var fs = new MockFileSystem();
         fs.Directory.CreateDirectory("/data/maintainers");
 
-        // Directory does not exist yet at construction; constructing must not throw.
-        var entry = new DataDirectoryEntry<Maintainer>("maintainers", "/data/maintainers", fs, new FileWatcher(fs));
-
+        // Constructed before any file exists; construction must not read the directory.
+        var entry = Entry(fs);
         fs.File.WriteAllText("/data/maintainers/agc93.yml", "name: Alistair\ngitHubUserName: agc93\n");
 
         var maintainers = (IReadOnlyList<Maintainer>)entry.GetValue();
@@ -95,33 +91,38 @@ public class DataDirectoryEntryTests
     {
         var fs = new MockFileSystem();
 
-        var entry = new DataDirectoryEntry<Maintainer>("maintainers", "/data/maintainers", fs, new FileWatcher(fs));
-
-        Should.Throw<DirectoryNotFoundException>(() => entry.GetValue());
+        Should.Throw<DirectoryNotFoundException>(() => Entry(fs).GetValue());
     }
 
     [Fact]
-    public async Task GetValue_ReloadsAfterFileAdded()
+    public void OnFileChanged_ReloadsAfterFileAdded()
     {
         var fs = new MockFileSystem();
         fs.Directory.CreateDirectory("/data/maintainers");
         fs.File.WriteAllText("/data/maintainers/agc93.yml", "name: Alistair\ngitHubUserName: agc93\n");
 
-        var watcher = new FileWatcher(fs);
-        var entry = new DataDirectoryEntry<Maintainer>("maintainers", "/data/maintainers", fs, watcher);
-
+        var entry = Entry(fs);
         ((IReadOnlyList<Maintainer>)entry.GetValue()).Count.ShouldBe(1);
 
         fs.File.WriteAllText("/data/maintainers/devlead.yml", "name: Mattias\ngitHubUserName: devlead\n");
+        var response = entry.OnFileChanged(new FileChangeNotification(
+            fs.Path.GetFullPath("/data/maintainers/devlead.yml"), WatcherChangeTypes.Created));
 
-        var deadline = DateTime.UtcNow.AddSeconds(2);
-        IReadOnlyList<Maintainer> reloaded;
-        do
-        {
-            await Task.Delay(50, TestContext.Current.CancellationToken);
-            reloaded = (IReadOnlyList<Maintainer>)entry.GetValue();
-        } while (reloaded.Count == 1 && DateTime.UtcNow < deadline);
+        response.ShouldBe(FileWatchResponse.Refreshed);
+        ((IReadOnlyList<Maintainer>)entry.GetValue())
+            .Select(m => m.GitHubUserName).ShouldBe(["agc93", "devlead"]);
+    }
 
-        reloaded.Select(m => m.GitHubUserName).ShouldBe(["agc93", "devlead"]);
+    [Fact]
+    public void OnFileChanged_IgnoresChangesOutsideTheDirectory()
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/data/maintainers");
+        fs.File.WriteAllText("/data/maintainers/agc93.yml", "name: Alistair\ngitHubUserName: agc93\n");
+
+        var response = Entry(fs).OnFileChanged(new FileChangeNotification(
+            fs.Path.GetFullPath("/data/other/x.yml"), WatcherChangeTypes.Changed));
+
+        response.ShouldBe(FileWatchResponse.Ignore);
     }
 }

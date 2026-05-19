@@ -1,11 +1,13 @@
 namespace Pennington.Data;
 
+using Infrastructure;
+
 /// <summary>
 /// Default <see cref="IDataFiles"/> implementation that aggregates every registered
-/// <see cref="IDataFile"/> by name. Constructed once per DI scope; the underlying
-/// entries handle their own hot-reload, so this aggregator does not need to refresh.
+/// <see cref="IDataFile"/> by name. Also the single <see cref="IFileWatchAware"/> for the
+/// data-file subsystem: it fans changes out to its entries.
 /// </summary>
-public sealed class DataFiles : IDataFiles
+public sealed class DataFiles : IDataFiles, IFileWatchAware
 {
     private readonly Dictionary<string, IDataFile> _byName;
 
@@ -26,6 +28,22 @@ public sealed class DataFiles : IDataFiles
 
     /// <inheritdoc/>
     public IEnumerable<string> Names => _byName.Keys;
+
+    /// <inheritdoc/>
+    public IReadOnlyList<FileWatchScope> WatchScopes =>
+        _byName.Values.SelectMany(entry => entry.WatchScopes).ToList();
+
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change)
+    {
+        var result = FileWatchResponse.Ignore;
+        foreach (var entry in _byName.Values)
+        {
+            if (entry.OnFileChanged(change) == FileWatchResponse.Refreshed)
+                result = FileWatchResponse.Refreshed;
+        }
+        return result;
+    }
 
     /// <inheritdoc/>
     public T Get<T>(string name)

@@ -10,9 +10,12 @@ using Pipeline;
 /// When managed by <see cref="FileWatchDependencyFactory{T}"/>, the instance is
 /// recreated on file changes, ensuring fresh data from content services.
 /// </summary>
-public sealed class XrefResolver
+public sealed class XrefResolver : IFileWatchAware
 {
     private readonly AsyncLazy<ImmutableDictionary<string, CrossReference>> _lookupLazy;
+
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
 
     /// <summary>Initializes the resolver and prepares lazy aggregation of UID entries across content services.</summary>
     public XrefResolver(IEnumerable<IContentService> contentServices)

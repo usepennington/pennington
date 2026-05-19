@@ -3,6 +3,7 @@ namespace Pennington.Navigation;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using Content;
+using Infrastructure;
 using Routing;
 
 /// <summary>Builds hierarchical navigation trees and related navigation metadata from flat TOC entries.</summary>
@@ -12,8 +13,11 @@ using Routing;
 /// so the cache is dropped when content files change; trees rebuilt on next access reflect the
 /// fresh TOC.
 /// </remarks>
-public sealed class NavigationBuilder
+public sealed class NavigationBuilder : IFileWatchAware
 {
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
+
     private static readonly ContentRoute EmptySectionRoute = new()
     {
         CanonicalPath = new UrlPath(""),

@@ -12,14 +12,20 @@ public class DataFileEntryTests
         public string Tier { get; init; } = "";
     }
 
-    [Fact]
-    public void GetValue_LoadsLazily()
+    private static MockFileSystem WithSponsors(string content)
     {
         var fs = new MockFileSystem();
         fs.Directory.CreateDirectory("/data");
-        fs.File.WriteAllText("/data/sponsors.yml", "- name: Acme\n  tier: gold\n");
+        fs.File.WriteAllText("/data/sponsors.yml", content);
+        return fs;
+    }
 
-        var entry = new DataFileEntry<List<Sponsor>>("sponsors", "/data/sponsors.yml", fs, new FileWatcher(fs));
+    [Fact]
+    public void GetValue_LoadsLazily()
+    {
+        var fs = WithSponsors("- name: Acme\n  tier: gold\n");
+
+        var entry = new DataFileEntry<List<Sponsor>>("sponsors", "/data/sponsors.yml", fs);
 
         entry.Name.ShouldBe("sponsors");
         entry.ValueType.ShouldBe(typeof(List<Sponsor>));
@@ -31,43 +37,48 @@ public class DataFileEntryTests
     [Fact]
     public void GetValue_CachesAcrossCalls()
     {
-        var fs = new MockFileSystem();
-        fs.Directory.CreateDirectory("/data");
-        fs.File.WriteAllText("/data/sponsors.yml", "- name: Acme\n  tier: gold\n");
+        var fs = WithSponsors("- name: Acme\n  tier: gold\n");
 
-        var entry = new DataFileEntry<List<Sponsor>>("sponsors", "/data/sponsors.yml", fs, new FileWatcher(fs));
+        var entry = new DataFileEntry<List<Sponsor>>("sponsors", "/data/sponsors.yml", fs);
 
-        var first = entry.GetValue();
-        var second = entry.GetValue();
-
-        ReferenceEquals(first, second).ShouldBeTrue();
+        ReferenceEquals(entry.GetValue(), entry.GetValue()).ShouldBeTrue();
     }
 
     [Fact]
-    public async Task GetValue_ReloadsAfterFileChange()
+    public void OnFileChanged_ReloadsValue()
     {
-        var fs = new MockFileSystem();
-        fs.Directory.CreateDirectory("/data");
-        fs.File.WriteAllText("/data/sponsors.yml", "- name: Acme\n  tier: gold\n");
+        var fs = WithSponsors("- name: Acme\n  tier: gold\n");
+        var entry = new DataFileEntry<List<Sponsor>>("sponsors", "/data/sponsors.yml", fs);
 
-        var watcher = new FileWatcher(fs);
-        var entry = new DataFileEntry<List<Sponsor>>("sponsors", "/data/sponsors.yml", fs, watcher);
+        ((List<Sponsor>)entry.GetValue()).Single().Name.ShouldBe("Acme");
 
-        var initial = (List<Sponsor>)entry.GetValue();
-        initial.Single().Name.ShouldBe("Acme");
-
-        // Rewrite the file and wait briefly for the watcher to invalidate.
         fs.File.WriteAllText("/data/sponsors.yml", "- name: Globex\n  tier: silver\n");
+        var response = entry.OnFileChanged(
+            new FileChangeNotification(fs.Path.GetFullPath("/data/sponsors.yml"), WatcherChangeTypes.Changed));
 
-        var deadline = DateTime.UtcNow.AddSeconds(2);
-        List<Sponsor> reloaded;
-        do
-        {
-            await Task.Delay(50, TestContext.Current.CancellationToken);
-            reloaded = (List<Sponsor>)entry.GetValue();
-        } while (reloaded.Single().Name == "Acme" && DateTime.UtcNow < deadline);
+        response.ShouldBe(FileWatchResponse.Refreshed);
+        ((List<Sponsor>)entry.GetValue()).Single().Name.ShouldBe("Globex");
+    }
 
-        reloaded.Single().Name.ShouldBe("Globex");
-        reloaded.Single().Tier.ShouldBe("silver");
+    [Fact]
+    public void OnFileChanged_IgnoresADifferentFile()
+    {
+        var fs = WithSponsors("- name: Acme\n  tier: gold\n");
+        var entry = new DataFileEntry<List<Sponsor>>("sponsors", "/data/sponsors.yml", fs);
+
+        var response = entry.OnFileChanged(
+            new FileChangeNotification(fs.Path.GetFullPath("/data/nav.yml"), WatcherChangeTypes.Changed));
+
+        response.ShouldBe(FileWatchResponse.Ignore);
+    }
+
+    [Fact]
+    public void WatchScopes_CoversTheDataFile()
+    {
+        var fs = WithSponsors("- name: Acme\n  tier: gold\n");
+        var entry = new DataFileEntry<List<Sponsor>>("sponsors", "/data/sponsors.yml", fs);
+
+        var scope = entry.WatchScopes.ShouldHaveSingleItem();
+        scope.Pattern.ShouldBe("sponsors.yml");
     }
 }

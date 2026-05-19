@@ -26,8 +26,11 @@ using Routing;
 /// SSR (Mdazor) without an HTTP self-fetch.
 /// </para>
 /// </summary>
-public sealed class LlmsTxtService
+public sealed class LlmsTxtService : IFileWatchAware
 {
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
+
     private static readonly string PackageVersion = ResolvePackageVersion();
 
     private static readonly IBrowsingContext BrowsingContext =

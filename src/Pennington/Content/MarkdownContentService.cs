@@ -16,14 +16,14 @@ using YamlDotNet.Serialization.NamingConventions;
 /// content from locale subdirectories (e.g., Content/fr/, Content/de/).
 /// </summary>
 /// <remarks>
-/// File-reading service registered as plain singleton (the open-generic shape over
+/// File-reading service registered as a plain singleton (the open-generic shape over
 /// <typeparamref name="TFrontMatter"/> and per-source <c>ContentPath</c> rule out
-/// <c>AddFileWatched&lt;T&gt;()</c>). The cached metadata <see cref="AsyncLazy{T}"/> is reset
-/// via an internal <see cref="IFileWatcher.AddPathWatch"/> scoped to this source's
-/// content directory — functionally equivalent to instance replacement, with the bonus
-/// that watcher events outside this content path don't perturb the cache.
+/// <c>AddFileWatched&lt;T&gt;()</c>). It implements <see cref="IFileWatchAware"/>: it declares
+/// its content directory as a <see cref="FileWatchScope"/> and resets the cached metadata
+/// <see cref="AsyncLazy{T}"/> when <see cref="FileWatchDispatcher"/> reports a change there.
 /// </remarks>
-public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMarkdownContentSource, ILlmsSubtreeProvider
+public sealed class MarkdownContentService<TFrontMatter>
+    : IContentService, IMarkdownContentSource, ILlmsSubtreeProvider, IFileWatchAware
     where TFrontMatter : IFrontMatter, new()
 {
     /// <summary>Sidecar filename that, when dropped at any folder under the content root, declares that folder as an llms.txt subtree.</summary>
@@ -38,17 +38,18 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
     private readonly LocalizationOptions _localization;
     private readonly string _absoluteContentPath;
     private readonly ImmutableArray<string> _normalizedExcludePaths;
+    private readonly FileWatchScope _watchScope;
     private AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>> _metadataLazy;
     private AsyncLazy<ImmutableList<LlmsSubtree>> _subtreesLazy;
 
     /// <summary>
-    /// Initializes the service, registers the content directory with the watcher, and prepares lazy metadata loading.
+    /// Initializes the service and prepares lazy metadata loading. <see cref="FileWatchDispatcher"/>
+    /// watches the content directory and drives cache invalidation through <see cref="OnFileChanged"/>.
     /// </summary>
     public MarkdownContentService(
         MarkdownContentServiceOptions options,
         FrontMatterParser parser,
         IFileSystem fileSystem,
-        IFileWatcher fileWatcher,
         LocalizationOptions localization)
     {
         _options = options;
@@ -57,17 +58,26 @@ public sealed class MarkdownContentService<TFrontMatter> : IContentService, IMar
         _localization = localization;
         _absoluteContentPath = _fileSystem.Path.GetFullPath(options.ContentPath.Value);
         _normalizedExcludePaths = NormalizeExcludePaths(options.ExcludePaths);
+        _watchScope = new FileWatchScope(_absoluteContentPath, "*.*", IncludeSubdirectories: true);
         _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>>(LoadMetadataAsync);
         _subtreesLazy = new AsyncLazy<ImmutableList<LlmsSubtree>>(LoadSubtreesAsync);
+    }
 
-        // Reset the metadata cache on any change to the watched tree. Without
-        // this, TOC / discovery results are fixed to whatever was on disk at
-        // app startup — new/renamed/deleted files never flow into the nav.
-        fileWatcher.AddPathWatch(_absoluteContentPath, "*.*", (_, _) =>
-        {
-            _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>>(LoadMetadataAsync);
-            _subtreesLazy = new AsyncLazy<ImmutableList<LlmsSubtree>>(LoadSubtreesAsync);
-        });
+    /// <inheritdoc/>
+    public IReadOnlyList<FileWatchScope> WatchScopes => [_watchScope];
+
+    /// <summary>
+    /// Resets the discovery caches when a file under this source's content directory changes, so
+    /// TOC and discovery results pick up new, renamed, and deleted files. Changes elsewhere are
+    /// ignored.
+    /// </summary>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change)
+    {
+        if (!_watchScope.Matches(change)) return FileWatchResponse.Ignore;
+
+        _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>>(LoadMetadataAsync);
+        _subtreesLazy = new AsyncLazy<ImmutableList<LlmsSubtree>>(LoadSubtreesAsync);
+        return FileWatchResponse.Refreshed;
     }
 
     /// <inheritdoc/>

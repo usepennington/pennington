@@ -6,23 +6,19 @@ using Infrastructure;
 /// <summary>
 /// Singleton holder for a single registered data file. The first call to <see cref="GetValue"/>
 /// loads and deserializes the file via <see cref="DataFileLoader"/>; subsequent calls return the
-/// cached value until <see cref="IFileWatcher"/> reports the file has changed, at which point
-/// the next access reloads it.
+/// cached value until <see cref="FileWatchDispatcher"/> reports the file has changed, at which
+/// point the next access reloads it.
 /// </summary>
 /// <typeparam name="T">The deserialization target type.</typeparam>
 public sealed class DataFileEntry<T> : IDataFile
 {
     private readonly FileWatchedValue<T> _value;
 
-    /// <summary>
-    /// Creates and registers the file watcher; the file itself is not read until <see cref="GetValue"/>
-    /// is called.
-    /// </summary>
+    /// <summary>Creates the entry; the file itself is not read until <see cref="GetValue"/> is called.</summary>
     /// <param name="name">Logical name; the lookup key for <see cref="IDataFiles.Get{T}"/>.</param>
     /// <param name="path">Path to the data file. Resolved against the current working directory if relative.</param>
     /// <param name="fileSystem">Abstraction used to read the file.</param>
-    /// <param name="fileWatcher">Watcher used to invalidate the cache when the file changes.</param>
-    public DataFileEntry(string name, string path, IFileSystem fileSystem, IFileWatcher fileWatcher)
+    public DataFileEntry(string name, string path, IFileSystem fileSystem)
     {
         Name = name;
         var absolutePath = fileSystem.Path.GetFullPath(path);
@@ -32,7 +28,7 @@ public sealed class DataFileEntry<T> : IDataFile
         var pattern = fileSystem.Path.GetFileName(absolutePath);
 
         _value = new FileWatchedValue<T>(
-            fileWatcher, directory, pattern,
+            new FileWatchScope(directory, pattern),
             () => DataFileLoader.Load<T>(absolutePath, fileSystem));
     }
 
@@ -44,4 +40,10 @@ public sealed class DataFileEntry<T> : IDataFile
 
     /// <inheritdoc/>
     public object GetValue() => _value.Value!;
+
+    /// <inheritdoc/>
+    public IReadOnlyList<FileWatchScope> WatchScopes => _value.WatchScopes;
+
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change) => _value.OnFileChanged(change);
 }

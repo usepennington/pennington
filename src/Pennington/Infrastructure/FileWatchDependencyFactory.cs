@@ -127,19 +127,18 @@ using Microsoft.Extensions.Logging;
 /// <summary>
 /// Manages a cached service instance that auto-invalidates when watched files change.
 /// </summary>
-public sealed class FileWatchDependencyFactory<T> : IDisposable where T : class
+public sealed class FileWatchDependencyFactory<T> : IFileWatchAware, IDisposable where T : class, IFileWatchAware
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger _logger;
     private T? _instance;
     private readonly Lock _lock = new();
 
-    /// <summary>Initializes the factory and subscribes to file-change notifications.</summary>
-    public FileWatchDependencyFactory(IFileWatcher fileWatcher, IServiceProvider serviceProvider, ILogger<FileWatchDependencyFactory<T>> logger)
+    /// <summary>Initializes the factory. <see cref="FileWatchDispatcher"/> drives invalidation.</summary>
+    public FileWatchDependencyFactory(IServiceProvider serviceProvider, ILogger<FileWatchDependencyFactory<T>> logger)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
-        fileWatcher.SubscribeToChanges(InvalidateInstance);
     }
 
     /// <summary>Returns the cached instance, constructing one via DI on first access.</summary>
@@ -154,18 +153,34 @@ public sealed class FileWatchDependencyFactory<T> : IDisposable where T : class
         }
     }
 
-    /// <summary>Disposes the current instance (if any) so the next call to <see cref="GetInstance"/> builds a fresh one.</summary>
-    public void InvalidateInstance()
+    /// <summary>
+    /// Consults the current instance (if one has been built) and drops it when the instance
+    /// asks to be recreated. Called by <see cref="FileWatchDispatcher"/>.
+    /// </summary>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change)
     {
         lock (_lock)
         {
-            if (_instance is IDisposable disposable)
+            if (_instance is null) return FileWatchResponse.Ignore;
+
+            var response = _instance.OnFileChanged(change);
+            if (response == FileWatchResponse.Recreate)
             {
-                disposable.Dispose();
+                InvalidateInstance();
             }
-            _instance = null;
-            _logger.LogDebug("Invalidated instance of {Type}", typeof(T).Name);
+            return response;
         }
+    }
+
+    /// <summary>Disposes the current instance so the next <see cref="GetInstance"/> builds a fresh one. Caller holds <see cref="_lock"/>.</summary>
+    private void InvalidateInstance()
+    {
+        if (_instance is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+        _instance = null;
+        _logger.LogDebug("Invalidated instance of {Type}", typeof(T).Name);
     }
 
     /// <inheritdoc/>

@@ -14,8 +14,11 @@ using Routing;
 /// When managed by <see cref="FileWatchDependencyFactory{T}"/>, the instance is
 /// recreated on file changes — trusts IContentService for fresh data.
 /// </summary>
-public sealed class BlogContentResolver
+public sealed class BlogContentResolver : IFileWatchAware
 {
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
+
     private readonly IEnumerable<IContentService> _services;
     private readonly FrontMatterParser _parser;
     private readonly IContentRenderer _renderer;

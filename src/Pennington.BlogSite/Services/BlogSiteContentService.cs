@@ -22,8 +22,11 @@ using Routing;
 /// resolution sees the current factory-managed instance. The internal <see cref="AsyncLazy{T}"/>
 /// post cache is dropped when the factory rebuilds on file-change events.
 /// </remarks>
-public sealed class BlogSiteContentService : IContentService
+public sealed class BlogSiteContentService : IContentService, IFileWatchAware
 {
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
+
     private readonly BlogSiteOptions _options;
     private readonly FrontMatterParser _parser;
     private readonly AsyncLazy<ImmutableList<BlogPostDescriptor>> _posts;

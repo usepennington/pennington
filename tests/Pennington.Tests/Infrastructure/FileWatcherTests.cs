@@ -97,55 +97,64 @@ public class FileWatcherTests : IDisposable
         // No exception means success — the duplicate was silently ignored
     }
 
+    private static FileWatchDependencyFactory<T> CreateFactory<T>() where T : class, IFileWatchAware
+    {
+        var services = new ServiceCollection();
+        services.AddLogging(b => b.AddProvider(NullLoggerProvider.Instance));
+        var provider = services.BuildServiceProvider();
+        return new FileWatchDependencyFactory<T>(
+            provider,
+            provider.GetRequiredService<ILogger<FileWatchDependencyFactory<T>>>());
+    }
+
     [Fact]
     public void FileWatchDependencyFactory_CachesInstance()
     {
-        var services = new ServiceCollection();
-        var fs = new RealFileSystem();
-        services.AddSingleton<IFileWatcher>(new FileWatcher(fs));
-        services.AddLogging(b => b.AddProvider(NullLoggerProvider.Instance));
-        using var provider = services.BuildServiceProvider();
+        using var factory = CreateFactory<RecreatingService>();
 
-        var factory = new FileWatchDependencyFactory<TestService>(
-            provider.GetRequiredService<IFileWatcher>(),
-            provider,
-            provider.GetRequiredService<ILogger<FileWatchDependencyFactory<TestService>>>());
-
-        var first = factory.GetInstance();
-        var second = factory.GetInstance();
-
-        first.ShouldBeSameAs(second);
-        first.Id.ShouldBe(second.Id);
-
-        factory.Dispose();
+        factory.GetInstance().ShouldBeSameAs(factory.GetInstance());
     }
 
     [Fact]
-    public void FileWatchDependencyFactory_InvalidatesOnChange()
+    public void FileWatchDependencyFactory_DropsInstance_WhenInstanceAsksToRecreate()
     {
-        var services = new ServiceCollection();
-        var fs = new RealFileSystem();
-        services.AddSingleton<IFileWatcher>(new FileWatcher(fs));
-        services.AddLogging(b => b.AddProvider(NullLoggerProvider.Instance));
-        using var provider = services.BuildServiceProvider();
-
-        var factory = new FileWatchDependencyFactory<TestService>(
-            provider.GetRequiredService<IFileWatcher>(),
-            provider,
-            provider.GetRequiredService<ILogger<FileWatchDependencyFactory<TestService>>>());
+        using var factory = CreateFactory<RecreatingService>();
 
         var first = factory.GetInstance();
-        factory.InvalidateInstance();
-        var second = factory.GetInstance();
+        factory.OnFileChanged(new FileChangeNotification("/x", WatcherChangeTypes.Changed))
+            .ShouldBe(FileWatchResponse.Recreate);
 
-        first.ShouldNotBeSameAs(second);
-        first.Id.ShouldNotBe(second.Id);
-
-        factory.Dispose();
+        factory.GetInstance().ShouldNotBeSameAs(first);
     }
 
-    private class TestService
+    [Fact]
+    public void FileWatchDependencyFactory_KeepsInstance_WhenInstanceRefreshes()
     {
-        public Guid Id { get; } = Guid.NewGuid();
+        using var factory = CreateFactory<RefreshingService>();
+
+        var first = factory.GetInstance();
+        factory.OnFileChanged(new FileChangeNotification("/x", WatcherChangeTypes.Changed))
+            .ShouldBe(FileWatchResponse.Refreshed);
+
+        factory.GetInstance().ShouldBeSameAs(first);
+    }
+
+    [Fact]
+    public void FileWatchDependencyFactory_OnFileChanged_BeforeFirstResolve_ReturnsIgnore()
+    {
+        using var factory = CreateFactory<RecreatingService>();
+
+        factory.OnFileChanged(new FileChangeNotification("/x", WatcherChangeTypes.Changed))
+            .ShouldBe(FileWatchResponse.Ignore);
+    }
+
+    private sealed class RecreatingService : IFileWatchAware
+    {
+        public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
+    }
+
+    private sealed class RefreshingService : IFileWatchAware
+    {
+        public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Refreshed;
     }
 }
