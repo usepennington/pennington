@@ -12,10 +12,7 @@ using Infrastructure;
 /// <typeparam name="T">The deserialization target type.</typeparam>
 public sealed class DataFileEntry<T> : IDataFile
 {
-    private readonly string _absolutePath;
-    private readonly IFileSystem _fileSystem;
-    private readonly Lock _lock = new();
-    private Lazy<T> _value;
+    private readonly FileWatchedValue<T> _value;
 
     /// <summary>
     /// Creates and registers the file watcher; the file itself is not read until <see cref="GetValue"/>
@@ -28,15 +25,15 @@ public sealed class DataFileEntry<T> : IDataFile
     public DataFileEntry(string name, string path, IFileSystem fileSystem, IFileWatcher fileWatcher)
     {
         Name = name;
-        _absolutePath = fileSystem.Path.GetFullPath(path);
-        _fileSystem = fileSystem;
-        _value = new Lazy<T>(Load);
+        var absolutePath = fileSystem.Path.GetFullPath(path);
 
-        var directory = fileSystem.Path.GetDirectoryName(_absolutePath)
+        var directory = fileSystem.Path.GetDirectoryName(absolutePath)
             ?? throw new ArgumentException($"Data file path has no directory component: {path}", nameof(path));
-        var pattern = fileSystem.Path.GetFileName(_absolutePath);
+        var pattern = fileSystem.Path.GetFileName(absolutePath);
 
-        fileWatcher.AddPathWatch(directory, pattern, OnChange, includeSubdirectories: false);
+        _value = new FileWatchedValue<T>(
+            fileWatcher, directory, pattern,
+            () => DataFileLoader.Load<T>(absolutePath, fileSystem));
     }
 
     /// <inheritdoc/>
@@ -47,15 +44,4 @@ public sealed class DataFileEntry<T> : IDataFile
 
     /// <inheritdoc/>
     public object GetValue() => _value.Value!;
-
-    private T Load() => DataFileLoader.Load<T>(_absolutePath, _fileSystem);
-
-    private void OnChange(string changedPath, WatcherChangeTypes changeType)
-    {
-        // The watcher's pattern is filename-scoped, so any callback here means our file changed.
-        lock (_lock)
-        {
-            _value = new Lazy<T>(Load);
-        }
-    }
 }

@@ -114,4 +114,80 @@ public class DataFileLoaderTests
             DataFileLoader.Load<Schedule>("/data/broken.json", fs));
         ex.Message.ShouldContain("/data/broken.json");
     }
+
+    [Fact]
+    public void LoadMany_WrapsSingleYamlRecord_InOneElementList()
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/data");
+        fs.File.WriteAllText("/data/sponsor.yml", "name: Acme Corp\ntier: gold\n");
+
+        var sponsors = DataFileLoader.LoadMany<Sponsor>("/data/sponsor.yml", fs);
+
+        sponsors.Count.ShouldBe(1);
+        sponsors[0].Name.ShouldBe("Acme Corp");
+    }
+
+    [Fact]
+    public void LoadMany_FlattensYamlArray()
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/data");
+        fs.File.WriteAllText("/data/sponsors.yml",
+            """
+            - name: Acme Corp
+              tier: gold
+            - name: Globex
+              tier: silver
+            """);
+
+        var sponsors = DataFileLoader.LoadMany<Sponsor>("/data/sponsors.yml", fs);
+
+        sponsors.Select(s => s.Name).ShouldBe(["Acme Corp", "Globex"]);
+    }
+
+    [Fact]
+    public void LoadMany_FlattensJsonArray()
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/data");
+        fs.File.WriteAllText("/data/sponsors.json",
+            """[{"name":"Acme Corp","tier":"gold"},{"name":"Globex","tier":"silver"}]""");
+
+        var sponsors = DataFileLoader.LoadMany<Sponsor>("/data/sponsors.json", fs);
+
+        sponsors.Select(s => s.Name).ShouldBe(["Acme Corp", "Globex"]);
+    }
+
+    [Fact]
+    public void LoadMany_WrapsSingleJsonRecord_InOneElementList()
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/data");
+        fs.File.WriteAllText("/data/sponsor.json", """{"name":"Acme Corp","tier":"gold"}""");
+
+        var sponsors = DataFileLoader.LoadMany<Sponsor>("/data/sponsor.json", fs);
+
+        sponsors.Single().Name.ShouldBe("Acme Corp");
+    }
+
+    [Fact]
+    public void LoadMany_ThrowsFileNotFound_WhenMissing()
+    {
+        var fs = new MockFileSystem();
+
+        Should.Throw<FileNotFoundException>(() =>
+            DataFileLoader.LoadMany<Sponsor>("/data/missing.yml", fs));
+    }
+
+    [Fact]
+    public void LoadMany_ThrowsNotSupported_ForUnknownExtension()
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/data");
+        fs.File.WriteAllText("/data/sponsors.toml", "name = 'Acme'");
+
+        Should.Throw<NotSupportedException>(() =>
+            DataFileLoader.LoadMany<Sponsor>("/data/sponsors.toml", fs));
+    }
 }

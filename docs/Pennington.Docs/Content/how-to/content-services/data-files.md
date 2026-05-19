@@ -59,6 +59,31 @@ if (Data.TryGet<FooterConfig>("footer", out var footer))
 }
 ```
 
+## Load a directory of records
+
+When each record is its own file — `data/maintainers/agc93.yml`, `data/maintainers/devlead.yml` — register the directory instead of every file by hand. `AddDataDirectory<TItem>(name, path)` deserializes every `.yml`, `.yaml`, and `.json` file in `path` and aggregates them into one list:
+
+```csharp
+builder.Services.AddDataDirectory<Maintainer>("maintainers", "data/maintainers");
+```
+
+Each file contributes one `TItem`. A file whose root is an array contributes every element, so a directory can mix single-record and multi-record files. Files are ordered by name; anything that is not `.yml`, `.yaml`, or `.json` is ignored, and subdirectories are not scanned.
+
+Read it back as an `IReadOnlyList<TItem>` — that is the type the directory is registered under:
+
+```razor
+@inject IDataFiles Data
+
+<ul>
+    @foreach (var m in Data.Get<IReadOnlyList<Maintainer>>("maintainers").OrderBy(m => m.Name))
+    {
+        <li>@m.Name</li>
+    }
+</ul>
+```
+
+Adding, editing, or removing a file in the directory invalidates the cached list, the same way editing a single data file does.
+
 ## Hot reload
 
 Each `AddDataFile<T>` call registers the file with `IFileWatcher`. When the file changes on disk, the cached value is invalidated and the next `Get<T>` call reloads and re-deserializes it. Pages that read the data through `IDataFiles` see the fresh value on the next request — no app restart needed.
@@ -69,7 +94,7 @@ This is the same lifetime model that `MarkdownContentService<T>` uses for conten
 
 `AddDataFile` itself never reads the file; the read happens on the first `Get<T>`. The exceptions surface there:
 
-- **`FileNotFoundException`** — the path does not exist.
+- **`FileNotFoundException`** — the path does not exist. For `AddDataDirectory`, a missing directory raises **`DirectoryNotFoundException`**.
 - **`NotSupportedException`** — the extension is not `.yml`, `.yaml`, or `.json`.
 - **`InvalidDataException`** — the file content failed to deserialize. The message includes the absolute path and the underlying serializer error.
 - **`KeyNotFoundException`** — `Get<T>` was called with a name that was never registered. The message lists every registered name.

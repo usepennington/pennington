@@ -36,4 +36,28 @@ public static class DataFileServiceExtensions
 
         return services;
     }
+
+    /// <summary>
+    /// Registers every <c>.yml</c>, <c>.yaml</c>, and <c>.json</c> file in <paramref name="path"/>
+    /// as a single aggregated <see cref="IReadOnlyList{T}"/> accessible through <see cref="IDataFiles"/>
+    /// under the lookup key <paramref name="name"/>. Each file contributes one record, or several
+    /// when its root is an array; files are ordered by name. Edits, additions, and removals in the
+    /// directory invalidate the cached value so the next read returns the fresh content.
+    /// </summary>
+    /// <typeparam name="TItem">The element type each file deserializes into.</typeparam>
+    /// <param name="services">The service collection.</param>
+    /// <param name="name">Logical lookup key. Case-insensitive; must be unique across all registered data files.</param>
+    /// <param name="path">Path to the directory. Resolved against the current working directory if relative.</param>
+    public static IServiceCollection AddDataDirectory<TItem>(this IServiceCollection services, string name, string path)
+    {
+        services.AddSingleton<IDataFile>(sp => new DataDirectoryEntry<TItem>(
+            name,
+            path,
+            sp.GetRequiredService<IFileSystem>(),
+            sp.GetRequiredService<IFileWatcher>()));
+
+        services.TryAddSingleton<IDataFiles, DataFiles>();
+
+        return services;
+    }
 }

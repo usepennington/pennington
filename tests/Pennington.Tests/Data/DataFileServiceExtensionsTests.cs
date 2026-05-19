@@ -84,4 +84,42 @@ public class DataFileServiceExtensionsTests
 
         ReferenceEquals(first, second).ShouldBeTrue();
     }
+
+    [Fact]
+    public void AddDataDirectory_ResolvesIDataFiles_AsReadOnlyList()
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/data/sponsors");
+        fs.File.WriteAllText("/data/sponsors/acme.yml", "name: Acme\ntier: gold\n");
+        fs.File.WriteAllText("/data/sponsors/globex.yml", "name: Globex\ntier: silver\n");
+
+        using var provider = BuildProvider(fs, services =>
+            services.AddDataDirectory<Sponsor>("sponsors", "/data/sponsors"));
+
+        var data = provider.GetRequiredService<IDataFiles>();
+        data.Get<IReadOnlyList<Sponsor>>("sponsors").Select(s => s.Name)
+            .ShouldBe(["Acme", "Globex"]);
+    }
+
+    [Fact]
+    public void AddDataDirectory_CoexistsWithAddDataFile()
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/data");
+        fs.Directory.CreateDirectory("/data/sponsors");
+        fs.File.WriteAllText("/data/nav.json",
+            """[{"label":"Home","href":"/"}]""");
+        fs.File.WriteAllText("/data/sponsors/acme.yml", "name: Acme\ntier: gold\n");
+
+        using var provider = BuildProvider(fs, services =>
+        {
+            services.AddDataFile<List<NavLink>>("nav", "/data/nav.json");
+            services.AddDataDirectory<Sponsor>("sponsors", "/data/sponsors");
+        });
+
+        var data = provider.GetRequiredService<IDataFiles>();
+        data.Names.ShouldBe(["nav", "sponsors"], ignoreOrder: true);
+        data.Get<List<NavLink>>("nav").Single().Label.ShouldBe("Home");
+        data.Get<IReadOnlyList<Sponsor>>("sponsors").Single().Name.ShouldBe("Acme");
+    }
 }
