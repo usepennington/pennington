@@ -13,7 +13,7 @@ public class AuditRunnerTests
         var services = new ServiceCollection();
         services.AddSingleton<AuditCache>();
         services.AddSingleton<IAuditCache>(sp => sp.GetRequiredService<AuditCache>());
-        services.AddSingleton<LocalizationOptions>(new LocalizationOptions());
+        services.AddSingleton(new LocalizationOptions());
         services.AddSingleton<IFileWatcher, StubFileWatcher>();
         services.AddSingleton<IInProcessHttpDispatcher, StubDispatcher>();
         services.AddTransient<IRenderedAuditor, FakeRenderedAuditor>();

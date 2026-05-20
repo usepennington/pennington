@@ -43,7 +43,7 @@ public class RedirectMiddlewareTests : IAsyncLifetime
         {
             SiteTitle = "Redirect Test",
             Description = "Redirect middleware integration test",
-            ContentRootPath = new Pennington.Routing.FilePath(Path.Combine(_tempRoot, "Content")),
+            ContentRootPath = new Routing.FilePath(Path.Combine(_tempRoot, "Content")),
         });
 
         _app = builder.Build();

@@ -49,7 +49,7 @@ public class MdazorIntegrationTests
         services.AddMdazor();
         services.AddSingleton(new HighlightingService([]));
         services.AddSingleton(sp => new CodeBlockRenderingService(sp.GetRequiredService<HighlightingService>()));
-        services.AddSingleton<Markdig.MarkdownPipeline>(sp =>
+        services.AddSingleton(sp =>
             MarkdownPipelineFactory.CreateWithExtensions(sp, sp.GetRequiredService<CodeBlockRenderingService>()));
         services.AddMdazorComponent<MdazorTestGreeting>();
 

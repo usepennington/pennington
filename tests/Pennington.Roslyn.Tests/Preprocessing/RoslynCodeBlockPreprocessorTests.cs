@@ -357,21 +357,21 @@ public sealed class RoslynCodeBlockPreprocessorTests
     }
 
     /// <summary>Stub that returns empty for any extraction call.</summary>
-    private sealed class StubSymbolExtractionService : Pennington.Roslyn.Symbols.ISymbolExtractionService
+    private sealed class StubSymbolExtractionService : Roslyn.Symbols.ISymbolExtractionService
     {
-        public Task<IReadOnlyDictionary<string, Pennington.Roslyn.Symbols.SymbolInfo>> ExtractSymbolsAsync(
+        public Task<IReadOnlyDictionary<string, Roslyn.Symbols.SymbolInfo>> ExtractSymbolsAsync(
             Microsoft.CodeAnalysis.Solution solution)
-            => Task.FromResult<IReadOnlyDictionary<string, Pennington.Roslyn.Symbols.SymbolInfo>>(
-                new Dictionary<string, Pennington.Roslyn.Symbols.SymbolInfo>());
+            => Task.FromResult<IReadOnlyDictionary<string, Roslyn.Symbols.SymbolInfo>>(
+                new Dictionary<string, Roslyn.Symbols.SymbolInfo>());
 
-        public Task<Pennington.Roslyn.Symbols.SymbolInfo?> FindSymbolAsync(string xmlDocId)
-            => Task.FromResult<Pennington.Roslyn.Symbols.SymbolInfo?>(null);
+        public Task<Roslyn.Symbols.SymbolInfo?> FindSymbolAsync(string xmlDocId)
+            => Task.FromResult<Roslyn.Symbols.SymbolInfo?>(null);
 
         public Task<string> ExtractCodeFragmentAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true)
             => Task.FromResult(string.Empty);
 
-        public Task<Pennington.Roslyn.Symbols.CodeFragmentResult> ExtractCodeFragmentWithUsingsAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true)
-            => Task.FromResult(new Pennington.Roslyn.Symbols.CodeFragmentResult(string.Empty, System.Collections.Immutable.ImmutableList<string>.Empty));
+        public Task<Roslyn.Symbols.CodeFragmentResult> ExtractCodeFragmentWithUsingsAsync(string xmlDocId, bool bodyOnly = false, bool includeLeadingTrivia = true)
+            => Task.FromResult(new Roslyn.Symbols.CodeFragmentResult(string.Empty, System.Collections.Immutable.ImmutableList<string>.Empty));
 
         public Task<string> ExtractDeclarationSignatureAsync(string xmlDocId)
             => Task.FromResult(string.Empty);

@@ -4,8 +4,8 @@ using Pennington.BlogSite;
 
 /// <summary>
 /// Stage 1 — the reader starts from the tutorial-8 host and populates just
-/// <see cref="Pennington.BlogSite.BlogSiteOptions.HeroContent"/>. The
-/// <see cref="Pennington.BlogSite.HeroContent"/> record is two strings
+/// <see cref="BlogSiteOptions.HeroContent"/>. The
+/// <see cref="HeroContent"/> record is two strings
 /// (<c>Title</c> and <c>Description</c>) rendered into a prose block at the
 /// top of the home page. Tutorial prose extracts the body of
 /// <see cref="Run"/> via <c>csharp:xmldocid,bodyonly</c>. This class is

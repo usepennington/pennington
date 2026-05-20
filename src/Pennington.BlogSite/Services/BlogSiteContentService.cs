@@ -10,7 +10,7 @@ using Pipeline;
 using Routing;
 
 /// <summary>
-/// Yields content the stock <see cref="Pennington.Content.RazorPageContentService"/> cannot:
+/// Yields content the stock <see cref="RazorPageContentService"/> cannot:
 /// per-tag index routes (Tag.razor's <c>@page "/tags/{TagEncodedName}"</c>
 /// template is parameterized and skipped at discovery) plus the
 /// <c>/rss.xml</c> feed file. Without these the static build is missing

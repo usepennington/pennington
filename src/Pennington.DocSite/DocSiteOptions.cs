@@ -9,7 +9,7 @@ using Routing;
 /// Options record passed to <see cref="DocSiteServiceExtensions.AddDocSite"/> that configures
 /// the DocSite template: site chrome, typography, color scheme, content areas, and escape-hatch
 /// callbacks for the underlying <see cref="PenningtonOptions"/> and
-/// <see cref="Pennington.MonorailCss.MonorailCssOptions"/>.
+/// <see cref="MonorailCssOptions"/>.
 /// </summary>
 public record DocSiteOptions
 {
@@ -24,7 +24,7 @@ public record DocSiteOptions
 
     /// <summary>
     /// Syntax-highlight color palette used by <c>.hljs-*</c> token classes.
-    /// Defaults to <see cref="Pennington.MonorailCss.SyntaxTheme.Default"/> when null.
+    /// Defaults to <see cref="SyntaxTheme.Default"/> when null.
     /// Values may reference custom palette names registered via <see cref="ColorScheme"/>.
     /// </summary>
     public SyntaxTheme? SyntaxTheme { get; init; }
@@ -86,7 +86,7 @@ public record DocSiteOptions
     /// underlying <see cref="PenningtonOptions"/> after DocSite's own defaults
     /// are applied. Use to register extra <see cref="PenningtonOptions.AddMarkdownContent{T}"/>
     /// sources, add highlighters, register islands, etc., without dropping to
-    /// bare <see cref="Infrastructure.PenningtonExtensions.AddPennington"/>.
+    /// bare <see cref="PenningtonExtensions.AddPennington"/>.
     /// </summary>
     public Action<PenningtonOptions>? ConfigurePennington { get; init; }
 
@@ -111,13 +111,13 @@ public record DocSiteOptions
     /// <summary>
     /// Callback to further customize the MonorailCSS framework settings after
     /// the DocSite theme has been applied. Mirrors
-    /// <see cref="Pennington.MonorailCss.MonorailCssOptions.CustomCssFrameworkSettings"/>.
+    /// <see cref="MonorailCssOptions.CustomCssFrameworkSettings"/>.
     /// </summary>
     public Func<global::MonorailCss.CssFrameworkSettings, global::MonorailCss.CssFrameworkSettings>? CustomCssFrameworkSettings { get; init; }
 
     /// <summary>
     /// Wraps the baseline <see cref="global::MonorailCss.Theme.ProseCustomization"/>. Forwarded to
-    /// <see cref="Pennington.MonorailCss.MonorailCssOptions.ExtendProseCustomization"/>.
+    /// <see cref="MonorailCssOptions.ExtendProseCustomization"/>.
     /// </summary>
     public Func<global::MonorailCss.Theme.ProseCustomization, global::MonorailCss.Theme.ProseCustomization>? ExtendProseCustomization { get; init; }
 }

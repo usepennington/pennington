@@ -5,7 +5,7 @@ using Routing;
 
 /// <summary>
 /// Non-generic capability interface exposing the root directory and base URL of
-/// a markdown content source. Used by <see cref="Pennington.Markdown.MarkdownLinkResolver"/>
+/// a markdown content source. Used by <see cref="Markdown.MarkdownLinkResolver"/>
 /// to compute URL paths for relative asset references without having to deal with
 /// the generic <see cref="MarkdownContentService{TFrontMatter}"/> type, and by the
 /// overlap detector to diagnose misconfigurations where two markdown sources claim

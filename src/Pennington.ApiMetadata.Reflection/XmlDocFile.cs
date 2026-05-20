@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 /// <summary>
 /// Indexes a Roslyn-emitted <c>.xml</c> xmldoc file by xmldocid, so reflection-side
-/// consumers can pull parsed doc trees by the id they compute from <see cref="System.Type"/>
+/// consumers can pull parsed doc trees by the id they compute from <see cref="Type"/>
 /// or <see cref="System.Reflection.MemberInfo"/>.
 /// </summary>
 internal sealed class XmlDocFile
@@ -45,7 +45,7 @@ internal sealed class XmlDocFile
             return Empty;
         }
 
-        var map = new Dictionary<string, ParsedXmlDoc>(System.StringComparer.Ordinal);
+        var map = new Dictionary<string, ParsedXmlDoc>(StringComparer.Ordinal);
         foreach (var m in members)
         {
             var name = m.Attribute("name")?.Value;

@@ -32,10 +32,10 @@ public static class RoslynApiMetadataExtensions
         services.AddKeyedSingleton(name, options);
         if (name == "default")
         {
-            services.TryAddSingleton<ApiReferenceOptions>(sp =>
+            services.TryAddSingleton(sp =>
                 sp.GetRequiredKeyedService<ApiReferenceOptions>("default"));
         }
-        services.AddKeyedSingleton<RoslynApiMetadataProvider>(name, (sp, key) =>
+        services.AddKeyedSingleton(name, (sp, key) =>
             ActivatorUtilities.CreateInstance<RoslynApiMetadataProvider>(sp,
                 sp.GetRequiredKeyedService<ApiReferenceOptions>(key)));
         services.AddKeyedSingleton<IApiMetadataProvider>(name, (sp, key) =>

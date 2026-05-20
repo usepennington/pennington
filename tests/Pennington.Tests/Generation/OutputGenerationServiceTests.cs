@@ -108,7 +108,7 @@ public class OutputGenerationServiceTests
 
         // The duplicate must surface as a warning, not a crash.
         report.Diagnostics.Any(d =>
-            d.Severity == Pennington.Diagnostics.DiagnosticSeverity.Warning &&
+            d.Severity == DiagnosticSeverity.Warning &&
             d.Message.Contains("Duplicate route") &&
             d.Message.Contains("shared/index.html")).ShouldBeTrue();
     }
@@ -129,7 +129,7 @@ public class OutputGenerationServiceTests
 
         var providerA = new StubFileProvider("_content/Pennington.UI/scripts.js", "sourceA/_content/Pennington.UI/scripts.js");
         var providerB = new StubFileProvider("_content/Pennington.UI/scripts.js", "sourceB/_content/Pennington.UI/scripts.js");
-        var composite = new Microsoft.Extensions.FileProviders.CompositeFileProvider(providerA, providerB);
+        var composite = new CompositeFileProvider(providerA, providerB);
 
         var options = new OutputOptions
         {

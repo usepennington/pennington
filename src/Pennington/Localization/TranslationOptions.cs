@@ -2,7 +2,7 @@ namespace Pennington.Localization;
 
 /// <summary>
 /// In-memory store for UI string translations, keyed by locale and string key.
-/// Configured in <see cref="Pennington.Infrastructure.PenningtonOptions.Translations"/>
+/// Configured in <see cref="Infrastructure.PenningtonOptions.Translations"/>
 /// and consumed by <see cref="PenningtonStringLocalizer"/>.
 /// </summary>
 public sealed class TranslationOptions

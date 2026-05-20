@@ -55,7 +55,7 @@ public sealed class PenningtonOptions
 
     /// <summary>Register a markdown content source with a specific front matter type.</summary>
     public MarkdownContentOptions AddMarkdownContent<TFrontMatter>(Action<MarkdownContentOptions> configure)
-        where TFrontMatter : FrontMatter.IFrontMatter
+        where TFrontMatter : IFrontMatter
     {
         var options = new MarkdownContentOptions { FrontMatterType = typeof(TFrontMatter) };
         configure(options);

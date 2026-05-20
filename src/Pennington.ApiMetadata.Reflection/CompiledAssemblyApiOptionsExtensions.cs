@@ -3,7 +3,7 @@ namespace Pennington.ApiMetadata.Reflection;
 using System.IO;
 using System.Reflection;
 
-/// <summary>Sugar for <see cref="CompiledAssemblyApiOptions"/> that resolves documented assemblies via <see cref="System.Reflection.Assembly"/> instead of filesystem paths.</summary>
+/// <summary>Sugar for <see cref="CompiledAssemblyApiOptions"/> that resolves documented assemblies via <see cref="Assembly"/> instead of filesystem paths.</summary>
 public static class CompiledAssemblyApiOptionsExtensions
 {
     /// <summary>

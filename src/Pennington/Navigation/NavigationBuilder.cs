@@ -134,7 +134,7 @@ public sealed class NavigationBuilder : IFileWatchAware
         // Group deeper items by their segment at this depth so recursion only
         // touches the items belonging to that subtree instead of rescanning the
         // full list.
-        ILookup<string, ContentTocItem>? deeperByKey = deeper?.ToLookup(i => i.HierarchyParts[depth], StringComparer.OrdinalIgnoreCase);
+        var deeperByKey = deeper?.ToLookup(i => i.HierarchyParts[depth], StringComparer.OrdinalIgnoreCase);
 
         var directNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in atLevelSorted)

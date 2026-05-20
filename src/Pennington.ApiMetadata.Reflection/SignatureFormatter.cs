@@ -3,7 +3,7 @@ namespace Pennington.ApiMetadata.Reflection;
 using System.Reflection;
 using System.Text;
 
-/// <summary>Builds human-readable C# signatures (return types, parameter types, declarations) for reflection types. Output is fed to <see cref="Pennington.Highlighting.ICodeHighlighter"/> and displayed in the API reference UI.</summary>
+/// <summary>Builds human-readable C# signatures (return types, parameter types, declarations) for reflection types. Output is fed to <see cref="Highlighting.ICodeHighlighter"/> and displayed in the API reference UI.</summary>
 internal static class SignatureFormatter
 {
     public static string Display(Type t)

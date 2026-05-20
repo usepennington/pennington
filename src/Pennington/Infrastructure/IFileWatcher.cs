@@ -17,5 +17,5 @@ public interface IFileWatcher : IDisposable
 
 /// <summary>A single file-change notification carrying the full path and the type of change.</summary>
 /// <param name="FullPath">Absolute path to the file that changed.</param>
-/// <param name="ChangeType">Kind of change reported by <see cref="System.IO.FileSystemWatcher"/>.</param>
+/// <param name="ChangeType">Kind of change reported by <see cref="FileSystemWatcher"/>.</param>
 public readonly record struct FileChangeNotification(string FullPath, WatcherChangeTypes ChangeType);

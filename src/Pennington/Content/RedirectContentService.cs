@@ -30,7 +30,7 @@ using YamlDotNet.Serialization.NamingConventions;
 /// File-reading service registered as plain singleton (aliased as both <see cref="RedirectContentService"/>
 /// and <see cref="IContentService"/>). Cannot use <c>AddFileWatched&lt;T&gt;()</c> because the
 /// alias registration would yield two different instances; instead, the cached redirect map
-/// is reset via an internal <see cref="IFileWatcher.SubscribeToChanges(System.Action)"/> hook.
+/// is reset via an internal <see cref="IFileWatcher.SubscribeToChanges(Action)"/> hook.
 /// </remarks>
 public sealed class RedirectContentService : IContentService
 {

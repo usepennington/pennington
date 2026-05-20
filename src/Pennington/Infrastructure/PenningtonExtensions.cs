@@ -127,23 +127,23 @@ public static class PenningtonExtensions
         services.AddSingleton<ICodeHighlighter, ShellHighlighter>();
         foreach (var highlighter in options.Highlighting.Highlighters)
         {
-            services.AddSingleton<ICodeHighlighter>(highlighter);
+            services.AddSingleton(highlighter);
         }
-        services.AddSingleton<HighlightingService>(sp =>
+        services.AddSingleton(sp =>
             new HighlightingService(
                 sp.GetServices<ICodeHighlighter>(),
                 sp.GetService<IHttpContextAccessor>()));
 
         // Shared pipeline for fenced code blocks — used by Markdig's CodeHighlightRenderer
         // and by the <CodeBlock> Razor component so both emit identical HTML.
-        services.AddTransient<CodeBlockRenderingService>(sp =>
+        services.AddTransient(sp =>
             new CodeBlockRenderingService(
                 sp.GetRequiredService<HighlightingService>(),
                 sp.GetServices<ICodeBlockPreprocessor>()));
 
         // Markdown pipeline — includes highlighting, tabs, custom alerts, Mdazor,
         // and any consumer-supplied extensions via options.ConfigureMarkdownPipeline.
-        services.AddSingleton<MarkdownPipeline>(sp =>
+        services.AddSingleton(sp =>
             MarkdownPipelineFactory.CreateWithExtensions(
                 sp,
                 sp.GetRequiredService<CodeBlockRenderingService>(),
@@ -298,7 +298,7 @@ public static class PenningtonExtensions
         {
             var effectiveBase = !string.IsNullOrEmpty(explicitCanonicalBase)
                 ? new UrlPath(explicitCanonicalBase)
-                : sp.GetRequiredService<Generation.OutputOptions>().BaseUrl;
+                : sp.GetRequiredService<OutputOptions>().BaseUrl;
             return new CanonicalBaseUrl(effectiveBase);
         });
         services.AddSingleton(sp => new SitemapBuilder(sp.GetRequiredService<CanonicalBaseUrl>().Value));
@@ -538,7 +538,7 @@ public static class PenningtonExtensions
         // {slug} segment.
         if (app.Services.GetService<LlmsTxtOptions>() is not null)
         {
-            app.UseMiddleware<LlmsTxt.LlmsTxtMiddleware>();
+            app.UseMiddleware<LlmsTxtMiddleware>();
         }
 
         // Search index and sitemap endpoints (auto-discovered by static build).

@@ -3,7 +3,7 @@ namespace Pennington.ApiMetadata;
 using System.Collections.Immutable;
 using System.Xml.Linq;
 
-/// <summary>Default <see cref="IXmlDocParser"/> implementation that parses xmldoc XML via <see cref="System.Xml.Linq.XDocument"/>.</summary>
+/// <summary>Default <see cref="IXmlDocParser"/> implementation that parses xmldoc XML via <see cref="XDocument"/>.</summary>
 public sealed class XmlDocParser : IXmlDocParser
 {
     /// <inheritdoc />

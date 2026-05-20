@@ -1,4 +1,4 @@
-﻿using MonorailCss;
+using MonorailCss;
 using MonorailCss.Theme;
 
 namespace Pennington.MonorailCss;
@@ -130,7 +130,7 @@ public class MonorailCssOptions
     /// customization from scratch. The callback receives the framework's prose
     /// customization and returns the one used.
     /// </summary>
-    public Func<global::MonorailCss.Theme.ProseCustomization, global::MonorailCss.Theme.ProseCustomization> ExtendProseCustomization { get; init; } =
+    public Func<ProseCustomization, ProseCustomization> ExtendProseCustomization { get; init; } =
         prose => prose;
 
     /// <summary>

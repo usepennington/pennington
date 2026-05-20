@@ -3,8 +3,8 @@ namespace BlogSiteHeroProjectsSocialsExample;
 using Pennington.BlogSite;
 
 /// <summary>
-/// Stage 2 — adds <see cref="Pennington.BlogSite.BlogSiteOptions.MyWork"/>,
-/// a <see cref="Pennington.BlogSite.Project"/><c>[]</c>. Each project is a
+/// Stage 2 — adds <see cref="BlogSiteOptions.MyWork"/>,
+/// a <see cref="Project"/><c>[]</c>. Each project is a
 /// three-field record: <c>Title</c>, <c>Description</c>, <c>Url</c>. The
 /// BlogSite home page renders the array as a "My Work" card in the right
 /// rail, each entry linking to its <c>Url</c>. Tutorial prose extracts the

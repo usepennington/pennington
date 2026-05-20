@@ -1054,7 +1054,7 @@ public class MarkdownContentServiceTests
         }
         else
         {
-            throw new Shouldly.ShouldAssertException("Source was not LlmsOnlySource");
+            throw new ShouldAssertException("Source was not LlmsOnlySource");
         }
         // Route's SourceFile should also point at the real file on disk so diagnostics can locate it.
         llmsOnly.Route.SourceFile?.Value.ShouldEndWith("agent-context.llms.md");

@@ -62,7 +62,7 @@ public interface IContentService : IContentEmitter
 
     /// <summary>
     /// Redirect sources this service emits (each item's <see cref="DiscoveredItem.Source"/>
-    /// is a <see cref="Pipeline.RedirectSource"/>). Consumed by
+    /// is a <see cref="RedirectSource"/>). Consumed by
     /// <see cref="RedirectContentService"/> to build the unified redirect map without
     /// iterating every service's <see cref="DiscoverAsync"/> — which would force
     /// services that have no redirects to pay the full cost of discovery just to

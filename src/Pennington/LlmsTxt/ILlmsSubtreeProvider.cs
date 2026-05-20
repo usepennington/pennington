@@ -3,7 +3,7 @@ namespace Pennington.LlmsTxt;
 using System.Collections.Immutable;
 
 /// <summary>
-/// Optional capability for a <see cref="Pennington.Content.IContentService"/> to surface
+/// Optional capability for a <see cref="Content.IContentService"/> to surface
 /// subtree declarations discovered during its own scan (for example, <c>_llms.yaml</c>
 /// sidecars under a markdown content tree).
 /// </summary>

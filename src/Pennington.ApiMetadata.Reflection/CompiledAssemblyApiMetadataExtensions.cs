@@ -35,7 +35,7 @@ public static class CompiledAssemblyApiMetadataExtensions
         services.TryAddSingleton<IXmlDocParser, XmlDocParser>();
         services.TryAddSingleton<IXmlDocHtmlRenderer, XmlDocHtmlRenderer>();
         services.AddKeyedSingleton(name, options);
-        services.AddKeyedSingleton<CompiledAssemblyApiMetadataProvider>(name, (sp, key) =>
+        services.AddKeyedSingleton(name, (sp, key) =>
             ActivatorUtilities.CreateInstance<CompiledAssemblyApiMetadataProvider>(sp,
                 sp.GetRequiredKeyedService<CompiledAssemblyApiOptions>(key)));
         services.AddKeyedSingleton<IApiMetadataProvider>(name, (sp, key) =>

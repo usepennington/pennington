@@ -6,7 +6,7 @@ using XenoAtom.Terminal.UI.Controls;
 using static Pennington.Tui.Views.TuiMarkup;
 
 /// <summary>
-/// Content tab: every page grouped by the <see cref="Pennington.Content.IContentService"/>
+/// Content tab: every page grouped by the <see cref="Content.IContentService"/>
 /// that returned it. Rendered as a <see cref="TreeView"/> so users can collapse a
 /// noisy service (e.g. a redirect service with many aliases) and focus on another.
 /// One row per item — kept concise (title + URL).
@@ -76,7 +76,7 @@ internal static class ContentTab
         return node;
     }
 
-    private static TreeNode BuildItemNode(Pennington.Content.ContentTocItem item, string baseUrl)
+    private static TreeNode BuildItemNode(Content.ContentTocItem item, string baseUrl)
     {
         var url = item.Route.CanonicalPath.Value;
         var full = baseUrl + url;

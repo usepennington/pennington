@@ -73,7 +73,7 @@ public class DiagnosticTest
     public async Task RazorPageContentService_DiscoversHomepage()
     {
         // The Pennington.Docs assembly contains Index.razor with @page "/"
-        var docsAssembly = typeof(Pennington.Docs.Components.Index).Assembly;
+        var docsAssembly = typeof(Docs.Components.Index).Assembly;
         var service = new RazorPageContentService(
             [docsAssembly],
             new RealFileSystem(),

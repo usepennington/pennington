@@ -19,7 +19,7 @@ public static class ApiReferenceServiceExtensions
     /// <see cref="ApiReferenceRegistrationOptions.RoutePrefix"/>.
     /// </summary>
     /// <remarks>
-    /// Call after <see cref="Pennington.DocSite.DocSiteServiceExtensions.AddDocSite"/>.
+    /// Call after <see cref="DocSiteServiceExtensions.AddDocSite"/>.
     /// Shared services (Mdazor components, routing-assembly hook, registry singleton)
     /// are installed once regardless of how many times this extension is called.
     /// </remarks>
@@ -38,7 +38,7 @@ public static class ApiReferenceServiceExtensions
 
         services.AddSingleton(registration);
 
-        services.AddKeyedSingleton<ApiReferenceIndex>(name, (sp, key) =>
+        services.AddKeyedSingleton(name, (sp, key) =>
             ActivatorUtilities.CreateInstance<ApiReferenceIndex>(sp,
                 sp.GetRequiredKeyedService<IApiMetadataProvider>(key),
                 (string)key!));

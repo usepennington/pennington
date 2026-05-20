@@ -13,7 +13,7 @@ public sealed class TranslationAuditOptions
 
     /// <summary>
     /// Locale codes to include. When null, every non-default locale configured in
-    /// <see cref="Pennington.Infrastructure.LocalizationOptions"/> is reported.
+    /// <see cref="Infrastructure.LocalizationOptions"/> is reported.
     /// </summary>
     public HashSet<string>? IncludedLocales { get; set; }
 

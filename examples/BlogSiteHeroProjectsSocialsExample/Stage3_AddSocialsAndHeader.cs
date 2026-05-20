@@ -5,14 +5,14 @@ using Pennington.BlogSite.Components; // [!code ++]
 
 /// <summary>
 /// Stage 3 — the final state, matching the top-level <c>Program.cs</c>. Adds
-/// <see cref="Pennington.BlogSite.BlogSiteOptions.Socials"/> (a
-/// <see cref="Pennington.BlogSite.SocialLink"/><c>[]</c>, each carrying a
+/// <see cref="BlogSiteOptions.Socials"/> (a
+/// <see cref="SocialLink"/><c>[]</c>, each carrying a
 /// <c>RenderFragment</c> icon and a <c>Url</c>) and
-/// <see cref="Pennington.BlogSite.BlogSiteOptions.MainSiteLinks"/> (a
-/// <see cref="Pennington.BlogSite.HeaderLink"/><c>[]</c>, each a
+/// <see cref="BlogSiteOptions.MainSiteLinks"/> (a
+/// <see cref="HeaderLink"/><c>[]</c>, each a
 /// <c>Title</c>/<c>Url</c> pair for the top-nav). The four built-in icon
 /// <c>RenderFragment</c>s live as <c>static readonly</c> fields on the
-/// <see cref="Pennington.BlogSite.Components.SocialIcons"/> component:
+/// <see cref="SocialIcons"/> component:
 /// <c>GithubIcon</c>, <c>BlueskyIcon</c>, <c>LinkedInIcon</c>,
 /// <c>MastodonIcon</c>. Tutorial prose extracts the body of
 /// <see cref="Run"/> via <c>csharp:xmldocid,bodyonly</c>. This class is

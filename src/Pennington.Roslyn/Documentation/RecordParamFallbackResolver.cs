@@ -55,7 +55,7 @@ internal static class RecordParamFallbackResolver
 
         var paramElement = typeDoc.Root?
             .Elements("param")
-            .FirstOrDefault(p => string.Equals(p.Attribute("name")?.Value, property.Name, System.StringComparison.Ordinal));
+            .FirstOrDefault(p => string.Equals(p.Attribute("name")?.Value, property.Name, StringComparison.Ordinal));
 
         if (paramElement is null || !paramElement.Nodes().Any())
         {

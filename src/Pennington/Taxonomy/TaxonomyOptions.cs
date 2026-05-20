@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Components;
 /// <see cref="Pipeline.MarkdownFileSource"/> are ignored.
 /// </typeparam>
 /// <typeparam name="TKey">
-/// The taxonomy key type. Most sites use <see cref="string"/>; <see cref="System.Enum"/> or
+/// The taxonomy key type. Most sites use <see cref="string"/>; <see cref="Enum"/> or
 /// numeric keys also work as long as they support equality.
 /// </typeparam>
 public sealed class TaxonomyOptions<TFrontMatter, TKey>

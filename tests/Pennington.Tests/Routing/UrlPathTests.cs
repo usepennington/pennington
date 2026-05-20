@@ -70,7 +70,7 @@ public class UrlPathTests
     [Fact]
     public void DivisionOperator_MultipleSegments()
     {
-        UrlPath result = new UrlPath("/a") / new UrlPath("b") / new UrlPath("c");
+        var result = new UrlPath("/a") / new UrlPath("b") / new UrlPath("c");
         result.Value.ShouldBe("/a/b/c");
     }
 

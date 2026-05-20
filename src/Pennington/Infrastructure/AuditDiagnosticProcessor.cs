@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// Dev-mode response processor that pulls per-route entries out of <see cref="IAuditCache"/>
 /// and pushes them into the request-scoped <see cref="DiagnosticContext"/> so the existing
 /// overlay (<see cref="DiagnosticOverlayProcessor"/>) renders them. Disabled during static
-/// build because audit results land directly in <see cref="Generation.BuildReport"/> there.
+/// build because audit results land directly in <see cref="BuildReport"/> there.
 /// </summary>
 public sealed class AuditDiagnosticProcessor : IResponseProcessor
 {

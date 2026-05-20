@@ -453,7 +453,7 @@ public sealed class RoslynApiMetadataProviderTests
         public Task<Solution> LoadSolutionAsync(string solutionPath) => Task.FromResult(solution);
 
         public Task<IEnumerable<Project>> GetProjectsAsync(Func<Project, bool>? filter = null)
-            => Task.FromResult<IEnumerable<Project>>(filter is null ? solution.Projects : solution.Projects.Where(filter));
+            => Task.FromResult(filter is null ? solution.Projects : solution.Projects.Where(filter));
 
         public Task<Compilation?> GetCompilationAsync(Project project) => project.GetCompilationAsync();
 
