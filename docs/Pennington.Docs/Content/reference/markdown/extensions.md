@@ -13,6 +13,7 @@ The catalog of non-CommonMark Markdown features wired into Pennington's Markdig 
 |---|---|---|---|
 | Tabbed code | Adjacent fences with `tabs=true` | `UseTabbedCodeBlocks` | [Tabbed code](xref:how-to.code-samples.tabbed-code) |
 | Content tabs | `# [Label](#tab/id)` headings ended by `---` | `UseContentTabs` | [Content tabs](xref:how-to.rich-content.content-tabs) |
+| Includes | `[!INCLUDE [title](path)]` | Markdown parser (always on) | [Reuse shared content](xref:how-to.pages.include-shared-content) |
 | Alerts | `> [!KIND]` inside blockquote | `UseCustomAlerts` | [Alerts](xref:how-to.rich-content.alerts) |
 | Code annotations | Trailing-comment `[!code …]` directive | `UseSyntaxHighlighting` | [Code annotations](xref:how-to.code-samples.code-annotations) |
 | Cross-reference tags | `<xref:uid>` or `href="xref:uid"` | `XrefHtmlRewriter` (response stage) | [Cross-references](xref:how-to.navigation.cross-references) |
@@ -117,6 +118,37 @@ A third path segment — `#tab/<id>/<condition>` — gates the tab on another gr
 | Panel | `ctab-panel` | `data-tab`, `data-condition`, `data-active`, `role="tabpanel"` | One per tab heading; not `not-prose`, so content keeps prose styling. |
 
 The first panel is active in the server-rendered HTML; the client script recomputes selection on load, syncs equal ids page-wide, and persists each choice in `localStorage`.
+
+## Includes
+
+Splices a referenced Markdown file into the host page during parsing. The directive works as a standalone block or inline within a sentence; the referenced file is expanded recursively.
+
+### Syntax
+
+````markdown
+[!INCLUDE [block partial](../_includes/partial.md)]
+
+Text before [!INCLUDE [inline partial](../_includes/snippet.md)] and after.
+````
+
+### Arguments
+
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `title` | string | — | Bracketed label. Parsed but not emitted; present for DocFX compatibility. |
+| `path` | path | — | File path resolved relative to the referencing file. Absolute URLs are not fetched. |
+
+### Behavior
+
+| Case | Result |
+|---|---|
+| Target file found | Content is spliced in; a leading YAML front-matter block is stripped first. |
+| Directive in a fenced code block | Left verbatim, so the syntax can be documented. |
+| Target missing | Replaced with `<!-- Pennington: include not found: <path> -->`. |
+| Include cycle, or depth past 16 | Replaced with `<!-- Pennington: include cycle broken: <path> -->`. |
+| Absolute URL path | Replaced with `<!-- Pennington: include skipped (not a local file): <path> -->`. |
+
+Relative links and images inside an included file are not rebased — they resolve as if written in the host page.
 
 ## Alerts
 
@@ -242,6 +274,7 @@ Configure MonorailCSS through [the options record](xref:reference.api.monorail-c
 
 - How-to: [Tabbed code](xref:how-to.code-samples.tabbed-code)
 - How-to: [Content tabs](xref:how-to.rich-content.content-tabs)
+- How-to: [Reuse shared content](xref:how-to.pages.include-shared-content)
 - How-to: [Alerts](xref:how-to.rich-content.alerts)
 - How-to: [Code annotations](xref:how-to.code-samples.code-annotations)
 - How-to: [Cross-references](xref:how-to.navigation.cross-references)

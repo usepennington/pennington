@@ -1,6 +1,7 @@
 namespace Pennington.Markdown;
 
 using System.Collections.Immutable;
+using System.IO.Abstractions;
 using AngleSharp;
 using Markdig;
 using Markdig.Renderers;
@@ -20,12 +21,20 @@ public sealed class MarkdownContentRenderer : IContentRenderer
 
     private readonly MarkdownPipeline _pipeline;
     private readonly MarkdownLinkResolver? _linkResolver;
+    private readonly IFileSystem? _fileSystem;
 
     /// <summary>Creates the renderer; the default Markdig pipeline is used when none is supplied.</summary>
-    public MarkdownContentRenderer(MarkdownPipeline? pipeline = null, MarkdownLinkResolver? linkResolver = null)
+    /// <param name="pipeline">Markdig pipeline; defaults to <see cref="MarkdownPipelineFactory.CreateDefault"/>.</param>
+    /// <param name="linkResolver">Resolves author-written relative links to canonical URLs.</param>
+    /// <param name="fileSystem">Backs <c>[!INCLUDE]</c> expansion; includes are skipped when null.</param>
+    public MarkdownContentRenderer(
+        MarkdownPipeline? pipeline = null,
+        MarkdownLinkResolver? linkResolver = null,
+        IFileSystem? fileSystem = null)
     {
         _pipeline = pipeline ?? MarkdownPipelineFactory.CreateDefault();
         _linkResolver = linkResolver;
+        _fileSystem = fileSystem;
     }
 
     /// <inheritdoc/>
@@ -33,7 +42,15 @@ public sealed class MarkdownContentRenderer : IContentRenderer
     {
         try
         {
-            var document = Markdown.Parse(item.RawMarkdown, _pipeline);
+            // Splice in [!INCLUDE [..](..)] partials before parsing. This is the single
+            // render chokepoint, so every ParsedItem-producing path picks includes up here.
+            var markdown = item.RawMarkdown;
+            if (_fileSystem is not null && item.Route.SourceFile is { } includeBase)
+            {
+                markdown = IncludeExpander.Expand(markdown, includeBase, _fileSystem);
+            }
+
+            var document = Markdown.Parse(markdown, _pipeline);
 
             using var writer = new StringWriter();
             var htmlRenderer = new HtmlRenderer(writer);

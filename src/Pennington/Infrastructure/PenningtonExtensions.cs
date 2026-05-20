@@ -155,7 +155,8 @@ public static class PenningtonExtensions
         services.AddTransient<IContentRenderer>(sp =>
             new MarkdownContentRenderer(
                 sp.GetRequiredService<MarkdownPipeline>(),
-                sp.GetService<MarkdownLinkResolver>()));
+                sp.GetService<MarkdownLinkResolver>(),
+                sp.GetService<IFileSystem>()));
 
         // Register markdown content services for each configured source
         foreach (var source in options.MarkdownSources)

@@ -35,6 +35,28 @@ public class MarkdownContentRendererTests
     }
 
     [Fact]
+    public async Task RenderAsync_IncludeDirective_ExpandsPartialFromSourceFile()
+    {
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/content");
+        fs.File.WriteAllText("/content/partial.md", "Included **body**.");
+        var renderer = new MarkdownContentRenderer(fileSystem: fs);
+
+        var route = new ContentRoute
+        {
+            CanonicalPath = new UrlPath("/page/"),
+            OutputFile = new FilePath("page/index.html"),
+            SourceFile = new FilePath("/content/page.md"),
+        };
+        var parsed = new ParsedItem(route, MakeMetadata(), "[!INCLUDE [p](partial.md)]");
+
+        var result = await renderer.RenderAsync(parsed);
+
+        var rendered = result.ShouldBeCase<RenderedItem>();
+        rendered.Content.Html.ShouldContain("Included <strong>body</strong>.");
+    }
+
+    [Fact]
     public async Task RenderAsync_HeadingsExtractedToOutline()
     {
         var markdown = "## Getting Started\n\nIntro text.\n\n### Installation\n\nInstall steps.";
