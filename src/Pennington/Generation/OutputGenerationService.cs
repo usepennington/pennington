@@ -97,7 +97,10 @@ public sealed class OutputGenerationService
             // doesn't try to fetch a route that has no rendered output and
             // so the output file isn't claimed (the same canonical slug may
             // legitimately host an HTML page from another service).
-            if (item.Source is LlmsOnlySource) continue;
+            if (item.Source is LlmsOnlySource)
+            {
+                continue;
+            }
 
             var outputFile = item.Route.OutputFile.Value;
             if (!claimedOutputFiles.Add(outputFile))
@@ -145,7 +148,10 @@ public sealed class OutputGenerationService
         if (writeToDisk)
         {
             if (_outputOptions.CleanOutput && _fileSystem.Directory.Exists(outputDir))
+            {
                 _fileSystem.Directory.Delete(outputDir, true);
+            }
+
             _fileSystem.Directory.CreateDirectory(outputDir);
         }
 
@@ -226,15 +232,34 @@ public sealed class OutputGenerationService
     private static bool TryParseBrokenLink(BuildDiagnostic diagnostic, out BrokenLink brokenLink)
     {
         brokenLink = default!;
-        if (diagnostic.Route is not { } route) return false;
-        if (diagnostic.SourceFile is not { } source) return false;
+        if (diagnostic.Route is not { } route)
+        {
+            return false;
+        }
+
+        if (diagnostic.SourceFile is not { } source)
+        {
+            return false;
+        }
+
         const string prefix = "content.links/";
-        if (!source.StartsWith(prefix, StringComparison.Ordinal)) return false;
+        if (!source.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return false;
+        }
 
         var rest = source[prefix.Length..];
         var slash = rest.IndexOf('/');
-        if (slash <= 0) return false;
-        if (!Enum.TryParse<LinkType>(rest[..slash], out var type)) return false;
+        if (slash <= 0)
+        {
+            return false;
+        }
+
+        if (!Enum.TryParse<LinkType>(rest[..slash], out var type))
+        {
+            return false;
+        }
+
         var url = rest[(slash + 1)..];
         var reason = ExtractReason(diagnostic.Message);
         brokenLink = new BrokenLink(route, url, type, reason);
@@ -245,7 +270,11 @@ public sealed class OutputGenerationService
     {
         var open = message.LastIndexOf('(');
         var close = message.LastIndexOf(')');
-        if (open < 0 || close <= open) return message;
+        if (open < 0 || close <= open)
+        {
+            return message;
+        }
+
         return message[(open + 1)..close];
     }
 
@@ -291,7 +320,9 @@ public sealed class OutputGenerationService
         foreach (var item in await _contentServices.CollectContentToCopyAsync())
         {
             if (writeToDisk)
+            {
                 CopyFile(item.SourcePath.Value, _fileSystem.Path.Combine(outputDir, item.OutputPath.Value), reportBuilder);
+            }
         }
 
         // Copy wwwroot + RCL static web assets. WebRootFileProvider is a CompositeFileProvider
@@ -318,7 +349,10 @@ public sealed class OutputGenerationService
                 {
                     var targetPath = _fileSystem.Path.Combine(outputDir, item.OutputPath.Value);
                     var dir = _fileSystem.Path.GetDirectoryName(targetPath);
-                    if (dir != null) _fileSystem.Directory.CreateDirectory(dir);
+                    if (dir != null)
+                    {
+                        _fileSystem.Directory.CreateDirectory(dir);
+                    }
 
                     var bytes = await item.ContentGenerator();
                     await _fileSystem.File.WriteAllBytesAsync(targetPath, bytes);
@@ -344,7 +378,10 @@ public sealed class OutputGenerationService
                 if (writeToDisk)
                 {
                     var dir = _fileSystem.Path.GetDirectoryName(outputPath);
-                    if (dir != null) _fileSystem.Directory.CreateDirectory(dir);
+                    if (dir != null)
+                    {
+                        _fileSystem.Directory.CreateDirectory(dir);
+                    }
                 }
 
                 // Extract per-request diagnostics from response headers
@@ -375,7 +412,10 @@ public sealed class OutputGenerationService
                     {
                         var content = await response.Content.ReadAsStringAsync(ct);
                         if (writeToDisk)
+                        {
                             await _fileSystem.File.WriteAllTextAsync(outputPath, content, ct);
+                        }
+
                         _logger.LogDebug("Generated: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
 
                         // Capture HTML content for link verification
@@ -414,7 +454,11 @@ public sealed class OutputGenerationService
         try
         {
             var dir = _fileSystem.Path.GetDirectoryName(target);
-            if (dir != null) _fileSystem.Directory.CreateDirectory(dir);
+            if (dir != null)
+            {
+                _fileSystem.Directory.CreateDirectory(dir);
+            }
+
             _fileSystem.File.Copy(source, target, true);
         }
         catch (Exception ex)
@@ -432,7 +476,9 @@ public sealed class OutputGenerationService
             var relativePath = string.IsNullOrEmpty(subpath) ? item.Name : $"{subpath}/{item.Name}";
 
             if (!visited.Add(relativePath))
+            {
                 continue;
+            }
 
             if (item.IsDirectory)
             {
@@ -449,7 +495,9 @@ public sealed class OutputGenerationService
     private static List<Diagnostic> ParseDiagnosticHeaders(HttpResponseMessage response)
     {
         if (!response.Headers.TryGetValues("X-Pennington-Diagnostic", out var values))
+        {
             return [];
+        }
 
         return ParseDiagnosticHeaderValues(values);
     }
@@ -460,8 +508,16 @@ public sealed class OutputGenerationService
         foreach (var value in values)
         {
             var parts = value.Split('|', 3);
-            if (parts.Length < 2) continue;
-            if (!Enum.TryParse<DiagnosticSeverity>(Uri.UnescapeDataString(parts[0]), out var severity)) continue;
+            if (parts.Length < 2)
+            {
+                continue;
+            }
+
+            if (!Enum.TryParse<DiagnosticSeverity>(Uri.UnescapeDataString(parts[0]), out var severity))
+            {
+                continue;
+            }
+
             var message = Uri.UnescapeDataString(parts[1]);
             var source = parts.Length > 2 ? Uri.UnescapeDataString(parts[2]) : null;
             diagnostics.Add(new Diagnostic(severity, message, source));

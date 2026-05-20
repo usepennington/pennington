@@ -43,10 +43,16 @@ public sealed class LibGit2GitHistoryReader : IGitHistoryReader, IDisposable
     /// <inheritdoc/>
     public CommitInfo? GetLatestCommit(string absoluteFilePath)
     {
-        if (_repo is null || _workingDirectory is null) return null;
+        if (_repo is null || _workingDirectory is null)
+        {
+            return null;
+        }
 
         var relative = Path.GetRelativePath(_workingDirectory, absoluteFilePath).Replace('\\', '/');
-        if (relative.StartsWith("..", StringComparison.Ordinal)) return null;
+        if (relative.StartsWith("..", StringComparison.Ordinal))
+        {
+            return null;
+        }
 
         lock (_lock)
         {

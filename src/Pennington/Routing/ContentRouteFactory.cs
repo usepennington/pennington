@@ -15,12 +15,16 @@ public static class ContentRouteFactory
         var fullRoot = Path.GetFullPath(contentRoot.Value);
 
         if (!fullRoot.EndsWith(Path.DirectorySeparatorChar))
+        {
             fullRoot += Path.DirectorySeparatorChar;
+        }
 
         if (!fullSource.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+        {
             throw new ArgumentException(
                 $"Source file '{sourceFile.Value}' resolves outside content root '{contentRoot.Value}'.",
                 nameof(sourceFile));
+        }
 
         // Get relative path from content root, remove extension
         var relative = GetRelativePath(contentRoot.Value, sourceFile.Value);
@@ -131,9 +135,14 @@ public static class ContentRouteFactory
         var normalizedFull = fullPath.Replace('\\', '/');
 
         if (normalizedFull.StartsWith(normalizedBase + "/", StringComparison.OrdinalIgnoreCase))
+        {
             return normalizedFull[(normalizedBase.Length + 1)..];
+        }
+
         if (normalizedFull.StartsWith(normalizedBase, StringComparison.OrdinalIgnoreCase))
+        {
             return normalizedFull[normalizedBase.Length..].TrimStart('/');
+        }
 
         return normalizedFull;
     }

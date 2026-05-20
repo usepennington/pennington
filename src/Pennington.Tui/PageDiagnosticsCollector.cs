@@ -32,7 +32,11 @@ public sealed class PageDiagnosticsCollector
         {
             var aSev = MaxSeverity(a);
             var bSev = MaxSeverity(b);
-            if (aSev != bSev) return bSev.CompareTo(aSev);
+            if (aSev != bSev)
+            {
+                return bSev.CompareTo(aSev);
+            }
+
             return b.CapturedAt.CompareTo(a.CapturedAt);
         });
         return items;
@@ -40,12 +44,19 @@ public sealed class PageDiagnosticsCollector
 
     private static int MaxSeverity(PageDiagnosticsEntry e)
     {
-        if (e.Diagnostics.IsDefaultOrEmpty) return -1;
+        if (e.Diagnostics.IsDefaultOrEmpty)
+        {
+            return -1;
+        }
+
         var max = -1;
         foreach (var d in e.Diagnostics)
         {
             var s = (int)d.Severity;
-            if (s > max) max = s;
+            if (s > max)
+            {
+                max = s;
+            }
         }
         return max;
     }

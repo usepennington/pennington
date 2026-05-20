@@ -32,8 +32,16 @@ public sealed class HtmlResponseRewritingProcessor : IResponseProcessor
     public bool ShouldProcess(HttpContext context)
     {
         var contentType = context.Response.ContentType ?? "";
-        if (!contentType.Contains("text/html")) return false;
-        if (context.Response.StatusCode is < 200 or >= 300) return false;
+        if (!contentType.Contains("text/html"))
+        {
+            return false;
+        }
+
+        if (context.Response.StatusCode is < 200 or >= 300)
+        {
+            return false;
+        }
+
         return _rewriters.Any(r => r.ShouldApply(context));
     }
 
@@ -41,7 +49,10 @@ public sealed class HtmlResponseRewritingProcessor : IResponseProcessor
     public async Task<string> ProcessAsync(string responseBody, HttpContext context)
     {
         var applicable = _rewriters.Where(r => r.ShouldApply(context)).ToList();
-        if (applicable.Count == 0) return responseBody;
+        if (applicable.Count == 0)
+        {
+            return responseBody;
+        }
 
         // Phase 1: regex / string pre-pass for constructs that are not
         // valid HTML (currently only raw <xref:uid> tags).

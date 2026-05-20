@@ -53,7 +53,10 @@ public sealed class ContentPipeline : IContentPipeline
                 // they don't participate in parse/render and must not reach the parser.
                 // EndpointSource items (e.g., /sitemap.xml, /llms.txt) are produced by
                 // a live HTTP endpoint — there's no file to parse, same skip applies.
-                if (discovered.Source.Value is RedirectSource or EndpointSource) continue;
+                if (discovered.Source.Value is RedirectSource or EndpointSource)
+                {
+                    continue;
+                }
 
                 ContentItem result;
                 try

@@ -28,7 +28,9 @@ public sealed class XrefResolver : IFileWatchAware
     public async Task<CrossReference?> ResolveAsync(string uid)
     {
         if (string.IsNullOrWhiteSpace(uid))
+        {
             return null;
+        }
 
         var lookup = await _lookupLazy.Value;
         return lookup.GetValueOrDefault(uid);
@@ -45,7 +47,9 @@ public sealed class XrefResolver : IFileWatchAware
             // fallback routes emitted by MarkdownContentService.DiscoverRoutesWithFallbacks,
             // so the canonical entry is preserved and later fallback insertions are ignored.
             if (!string.IsNullOrWhiteSpace(xref.Uid) && !builder.ContainsKey(xref.Uid))
+            {
                 builder.Add(xref.Uid, xref);
+            }
         }
 
         return builder.ToImmutable();

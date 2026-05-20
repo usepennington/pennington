@@ -69,7 +69,10 @@ public class RedirectMiddlewareTests : IAsyncLifetime
             await _app.StopAsync();
             await _app.DisposeAsync();
         }
-        if (Directory.Exists(_tempRoot)) Directory.Delete(_tempRoot, recursive: true);
+        if (Directory.Exists(_tempRoot))
+        {
+            Directory.Delete(_tempRoot, recursive: true);
+        }
     }
 
     [Fact]

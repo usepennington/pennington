@@ -73,7 +73,10 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// </summary>
     public FileWatchResponse OnFileChanged(FileChangeNotification change)
     {
-        if (!_watchScope.Matches(change)) return FileWatchResponse.Ignore;
+        if (!_watchScope.Matches(change))
+        {
+            return FileWatchResponse.Ignore;
+        }
 
         _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>>(LoadMetadataAsync);
         _subtreesLazy = new AsyncLazy<ImmutableList<LlmsSubtree>>(LoadSubtreesAsync);
@@ -108,13 +111,25 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// </summary>
     private static ImmutableArray<string> NormalizeExcludePaths(ImmutableArray<string> raw)
     {
-        if (raw.IsDefaultOrEmpty) return ImmutableArray<string>.Empty;
+        if (raw.IsDefaultOrEmpty)
+        {
+            return ImmutableArray<string>.Empty;
+        }
+
         var builder = ImmutableArray.CreateBuilder<string>(raw.Length);
         foreach (var entry in raw)
         {
-            if (string.IsNullOrWhiteSpace(entry)) continue;
+            if (string.IsNullOrWhiteSpace(entry))
+            {
+                continue;
+            }
+
             var normalized = entry.Replace('\\', '/').Trim('/').ToLowerInvariant();
-            if (normalized.Length == 0) continue;
+            if (normalized.Length == 0)
+            {
+                continue;
+            }
+
             builder.Add(normalized);
         }
         return builder.ToImmutable();
@@ -127,17 +142,26 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// </summary>
     private bool IsRelativePathExcluded(string relativePath)
     {
-        if (_normalizedExcludePaths.IsDefaultOrEmpty) return false;
+        if (_normalizedExcludePaths.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
         var normalized = relativePath.Replace('\\', '/').TrimStart('/').ToLowerInvariant();
         foreach (var excluded in _normalizedExcludePaths)
         {
             if (normalized.Length == excluded.Length
                 && normalized.Equals(excluded, StringComparison.Ordinal))
+            {
                 return true;
+            }
+
             if (normalized.Length > excluded.Length
                 && normalized.StartsWith(excluded, StringComparison.Ordinal)
                 && normalized[excluded.Length] == '/')
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -153,7 +177,10 @@ public sealed class MarkdownContentService<TFrontMatter>
                 var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
                 var parsed = _parser.Parse<TFrontMatter>(content, sourceFile.Value);
                 if (parsed.Metadata is { IsDraft: true })
+                {
                     continue;
+                }
+
                 frontMatter = parsed.Metadata;
             }
             catch
@@ -191,10 +218,17 @@ public sealed class MarkdownContentService<TFrontMatter>
             // Llms-only pages are surfaced through GetIndexableEntriesAsync so
             // LlmsTxtService can pick them up, but they must stay out of nav
             // and the search index — drop them from the TOC channel.
-            if (entry.IsLlmsOnly) continue;
+            if (entry.IsLlmsOnly)
+            {
+                continue;
+            }
 
             var toc = BuildTocItem(entry.Route, entry.FrontMatter, isLlmsOnly: false);
-            if (toc is null) continue;
+            if (toc is null)
+            {
+                continue;
+            }
+
             builder.Add(toc);
         }
 
@@ -210,7 +244,11 @@ public sealed class MarkdownContentService<TFrontMatter>
         foreach (var entry in metadata)
         {
             var toc = BuildTocItem(entry.Route, entry.FrontMatter, entry.IsLlmsOnly);
-            if (toc is null) continue;
+            if (toc is null)
+            {
+                continue;
+            }
+
             builder.Add(toc);
         }
 
@@ -226,18 +264,27 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// </summary>
     private ContentTocItem? BuildTocItem(ContentRoute route, TFrontMatter fm, bool isLlmsOnly)
     {
-        if (fm.IsDraft) return null;
+        if (fm.IsDraft)
+        {
+            return null;
+        }
         // Redirects are transport-only — they shouldn't appear in navigation,
         // search results, or llms.txt (all of which iterate this TOC). The
         // engine emits a meta-refresh page at the route, which has no
         // meaningful title or body to index.
-        if (fm is IRedirectable { RedirectUrl: { Length: > 0 } }) return null;
+        if (fm is IRedirectable { RedirectUrl: { Length: > 0 } })
+        {
+            return null;
+        }
         // Defensive: a parsed file with no title produces an empty search
         // entry (title="", body=""). This typically indicates a redirect
         // whose frontmatter type doesn't implement IRedirectable, or a
         // file with only frontmatter and no body. Either way, it's not
         // useful content — skip it.
-        if (string.IsNullOrWhiteSpace(fm.Title)) return null;
+        if (string.IsNullOrWhiteSpace(fm.Title))
+        {
+            return null;
+        }
 
         var order = fm is IOrderable orderable ? orderable.Order : int.MaxValue;
         var sectionLabel = fm is ISectionable sectionable ? sectionable.SectionLabel : _options.SectionLabel;
@@ -271,7 +318,11 @@ public sealed class MarkdownContentService<TFrontMatter>
 
         foreach (var (route, fm, _) in metadata)
         {
-            if (fm.IsDraft) continue;
+            if (fm.IsDraft)
+            {
+                continue;
+            }
+
             if (fm is IRedirectable { RedirectUrl: { Length: > 0 } target })
             {
                 builder.Add(new DiscoveredItem(route, new RedirectSource(new UrlPath(target))));
@@ -303,7 +354,9 @@ public sealed class MarkdownContentService<TFrontMatter>
     {
         var contentPath = _absoluteContentPath;
         if (!_fileSystem.Directory.Exists(contentPath))
+        {
             return Task.FromResult(ImmutableList<ContentToCopy>.Empty);
+        }
 
         var builder = ImmutableList.CreateBuilder<ContentToCopy>();
         var excludedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -318,16 +371,25 @@ public sealed class MarkdownContentService<TFrontMatter>
         foreach (var file in _fileSystem.Directory.EnumerateFiles(contentPath, "*.*", SearchOption.AllDirectories))
         {
             var ext = _fileSystem.Path.GetExtension(file);
-            if (excludedExtensions.Contains(ext)) continue;
+            if (excludedExtensions.Contains(ext))
+            {
+                continue;
+            }
 
             var relativePath = _fileSystem.Path.GetRelativePath(contentPath, file).Replace('\\', '/');
 
             // Skip locale subfolders from the default locale scan — they get their own entries below
-            if (IsInLocaleSubfolder(relativePath, localeSubfolders)) continue;
+            if (IsInLocaleSubfolder(relativePath, localeSubfolders))
+            {
+                continue;
+            }
 
             // Skip subtrees explicitly excluded via MarkdownContentServiceOptions.ExcludePaths
             // (typically because another content source owns that subtree).
-            if (IsRelativePathExcluded(relativePath)) continue;
+            if (IsRelativePathExcluded(relativePath))
+            {
+                continue;
+            }
 
             var outputPath = outputPrefix.Length == 0
                 ? relativePath
@@ -339,12 +401,18 @@ public sealed class MarkdownContentService<TFrontMatter>
         foreach (var locale in localeSubfolders)
         {
             var localePath = _fileSystem.Path.Combine(contentPath, locale);
-            if (!_fileSystem.Directory.Exists(localePath)) continue;
+            if (!_fileSystem.Directory.Exists(localePath))
+            {
+                continue;
+            }
 
             foreach (var file in _fileSystem.Directory.EnumerateFiles(localePath, "*.*", SearchOption.AllDirectories))
             {
                 var ext = _fileSystem.Path.GetExtension(file);
-                if (excludedExtensions.Contains(ext)) continue;
+                if (excludedExtensions.Contains(ext))
+                {
+                    continue;
+                }
 
                 var relativeToLocale = _fileSystem.Path.GetRelativePath(localePath, file).Replace('\\', '/');
                 // Output at /{locale}{basePageUrl}/relative/path so they serve at
@@ -371,7 +439,9 @@ public sealed class MarkdownContentService<TFrontMatter>
     {
         var contentPath = _absoluteContentPath;
         if (!_fileSystem.Directory.Exists(contentPath))
+        {
             return [];
+        }
 
         var localeSubfolders = GetNonDefaultLocaleSubfolders();
         var results = new List<(FilePath, string)>();
@@ -380,8 +450,15 @@ public sealed class MarkdownContentService<TFrontMatter>
         foreach (var file in _fileSystem.Directory.EnumerateFiles(contentPath, _options.FilePattern, SearchOption.AllDirectories))
         {
             var relativePath = _fileSystem.Path.GetRelativePath(contentPath, file).Replace('\\', '/');
-            if (IsInLocaleSubfolder(relativePath, localeSubfolders)) continue;
-            if (IsRelativePathExcluded(relativePath)) continue;
+            if (IsInLocaleSubfolder(relativePath, localeSubfolders))
+            {
+                continue;
+            }
+
+            if (IsRelativePathExcluded(relativePath))
+            {
+                continue;
+            }
 
             var locale = _localization.IsMultiLocale ? _localization.DefaultLocale : _options.Locale;
             results.Add((new FilePath(file), locale));
@@ -391,7 +468,10 @@ public sealed class MarkdownContentService<TFrontMatter>
         foreach (var locale in localeSubfolders)
         {
             var localePath = _fileSystem.Path.Combine(contentPath, locale);
-            if (!_fileSystem.Directory.Exists(localePath)) continue;
+            if (!_fileSystem.Directory.Exists(localePath))
+            {
+                continue;
+            }
 
             foreach (var file in _fileSystem.Directory.EnumerateFiles(localePath, _options.FilePattern, SearchOption.AllDirectories))
             {
@@ -399,7 +479,10 @@ public sealed class MarkdownContentService<TFrontMatter>
                 // path relative to the locale root — "changelog" in the default locale
                 // also means "fr/changelog" in fr (without forcing users to list both).
                 var localeRelative = _fileSystem.Path.GetRelativePath(localePath, file).Replace('\\', '/');
-                if (IsRelativePathExcluded(localeRelative)) continue;
+                if (IsRelativePathExcluded(localeRelative))
+                {
+                    continue;
+                }
 
                 results.Add((new FilePath(file), locale));
             }
@@ -440,7 +523,9 @@ public sealed class MarkdownContentService<TFrontMatter>
     private async Task<ImmutableList<LlmsSubtree>> LoadSubtreesAsync()
     {
         if (!_fileSystem.Directory.Exists(_absoluteContentPath))
+        {
             return ImmutableList<LlmsSubtree>.Empty;
+        }
 
         var basePrefix = NormalizeBasePageUrl(_options.BasePageUrl.Value);
         var deserializer = new DeserializerBuilder()
@@ -473,7 +558,10 @@ public sealed class MarkdownContentService<TFrontMatter>
                 continue;
             }
 
-            if (sidecar is null || string.IsNullOrWhiteSpace(sidecar.Title)) continue;
+            if (sidecar is null || string.IsNullOrWhiteSpace(sidecar.Title))
+            {
+                continue;
+            }
 
             var folder = _fileSystem.Path.GetDirectoryName(file) ?? _absoluteContentPath;
             var relativeFolder = _fileSystem.Path
@@ -482,7 +570,10 @@ public sealed class MarkdownContentService<TFrontMatter>
                 .Trim('/');
 
             // GetRelativePath returns "." when folder == base; treat that as the content root.
-            if (relativeFolder == ".") relativeFolder = "";
+            if (relativeFolder == ".")
+            {
+                relativeFolder = "";
+            }
 
             var prefix = relativeFolder.Length == 0
                 ? basePrefix
@@ -509,7 +600,11 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <summary>Returns locale codes for non-default locales when multi-locale is configured.</summary>
     private List<string> GetNonDefaultLocaleSubfolders()
     {
-        if (!_localization.IsMultiLocale) return [];
+        if (!_localization.IsMultiLocale)
+        {
+            return [];
+        }
+
         return _localization.Locales.Keys
             .Where(l => !string.Equals(l, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
             .ToList();
@@ -529,9 +624,15 @@ public sealed class MarkdownContentService<TFrontMatter>
         var route = ContentRouteFactory.FromMarkdownFile(
             RoutePathFor(file), contentRoot, _options.BasePageUrl, isDefaultLocale ? "" : locale);
         if (isDefaultLocale)
+        {
             route = route with { Locale = locale };
+        }
+
         if (IsLlmsOnlyFile(file))
+        {
             route = route with { SourceFile = file };
+        }
+
         return route;
     }
 
@@ -561,7 +662,10 @@ public sealed class MarkdownContentService<TFrontMatter>
             var route = CreateRouteForFile(file, locale);
             yield return (route, file);
 
-            if (!_localization.IsMultiLocale) continue;
+            if (!_localization.IsMultiLocale)
+            {
+                continue;
+            }
 
             var contentRoot = GetContentRootForLocale(locale);
             var relativePath = _fileSystem.Path.GetRelativePath(contentRoot, file.Value).Replace('\\', '/');
@@ -582,7 +686,10 @@ public sealed class MarkdownContentService<TFrontMatter>
             }
         }
 
-        if (!_localization.IsMultiLocale) yield break;
+        if (!_localization.IsMultiLocale)
+        {
+            yield break;
+        }
 
         foreach (var locale in GetNonDefaultLocaleSubfolders())
         {
@@ -591,13 +698,19 @@ public sealed class MarkdownContentService<TFrontMatter>
 
             foreach (var (file, relativePath) in defaultLocaleFiles)
             {
-                if (existing.Contains(relativePath)) continue;
+                if (existing.Contains(relativePath))
+                {
+                    continue;
+                }
 
                 var route = ContentRouteFactory.FromMarkdownFile(
                     RoutePathFor(file), new FilePath(_absoluteContentPath), _options.BasePageUrl, locale);
                 route = route with { IsFallback = true };
                 if (IsLlmsOnlyFile(file))
+                {
                     route = route with { SourceFile = file };
+                }
+
                 yield return (route, file);
             }
         }
@@ -608,14 +721,20 @@ public sealed class MarkdownContentService<TFrontMatter>
     {
         if (!_localization.IsMultiLocale
             || string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
+        {
             return _absoluteContentPath;
+        }
 
         return _fileSystem.Path.Combine(_absoluteContentPath, locale);
     }
 
     private static bool IsInLocaleSubfolder(string relativePath, List<string> localeSubfolders)
     {
-        if (localeSubfolders.Count == 0) return false;
+        if (localeSubfolders.Count == 0)
+        {
+            return false;
+        }
+
         var firstSegment = relativePath.Split('/')[0];
         return localeSubfolders.Any(l => string.Equals(firstSegment, l, StringComparison.OrdinalIgnoreCase));
     }

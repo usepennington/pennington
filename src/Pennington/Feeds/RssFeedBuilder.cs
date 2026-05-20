@@ -31,7 +31,9 @@ public sealed class RssFeedBuilder
         foreach (var item in items)
         {
             if (item.Metadata.IsDraft)
+            {
                 continue;
+            }
 
             if (item.Metadata.Date is { } date)
             {

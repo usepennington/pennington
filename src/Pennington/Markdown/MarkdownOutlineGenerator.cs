@@ -19,15 +19,21 @@ public static class MarkdownOutlineGenerator
         foreach (var node in document.Descendants())
         {
             if (node is not HeadingBlock heading || heading.Inline == null)
+            {
                 continue;
+            }
 
             var text = GetPlainText(heading.Inline);
             if (string.IsNullOrWhiteSpace(text))
+            {
                 continue;
+            }
 
             var id = heading.TryGetAttributes()?.Id;
             if (string.IsNullOrWhiteSpace(id))
+            {
                 continue;
+            }
 
             entries.Add(new OutlineEntry(id, text, heading.Level));
         }

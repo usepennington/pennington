@@ -49,10 +49,16 @@ public static class CompiledAssemblyApiOptionsExtensions
     {
         var packagesRoot = Environment.GetEnvironmentVariable("NUGET_PACKAGES")
             ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
-        if (!Directory.Exists(packagesRoot)) return null;
+        if (!Directory.Exists(packagesRoot))
+        {
+            return null;
+        }
 
         var packageDir = Path.Combine(packagesRoot, assemblySimpleName.ToLowerInvariant());
-        if (!Directory.Exists(packageDir)) return null;
+        if (!Directory.Exists(packageDir))
+        {
+            return null;
+        }
 
         var asmVersion = asm.GetName().Version;
         var versionDirs = Directory.EnumerateDirectories(packageDir)
@@ -63,13 +69,19 @@ public static class CompiledAssemblyApiOptionsExtensions
         foreach (var versionDir in versionDirs)
         {
             var libRoot = Path.Combine(versionDir, "lib");
-            if (!Directory.Exists(libRoot)) continue;
+            if (!Directory.Exists(libRoot))
+            {
+                continue;
+            }
 
             foreach (var tfmDir in Directory.EnumerateDirectories(libRoot).OrderByDescending(d => d, StringComparer.OrdinalIgnoreCase))
             {
                 var dll = Path.Combine(tfmDir, assemblySimpleName + ".dll");
                 var xml = Path.Combine(tfmDir, assemblySimpleName + ".xml");
-                if (File.Exists(dll) && File.Exists(xml)) return dll;
+                if (File.Exists(dll) && File.Exists(xml))
+                {
+                    return dll;
+                }
             }
         }
         return null;

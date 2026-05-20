@@ -128,7 +128,10 @@ public sealed class RedirectContentService : IContentService
         var services = scope.ServiceProvider.GetServices<IContentService>();
         foreach (var service in services)
         {
-            if (ReferenceEquals(service, this)) continue;
+            if (ReferenceEquals(service, this))
+            {
+                continue;
+            }
 
             foreach (var item in await service.GetRedirectSourcesAsync())
             {
@@ -175,7 +178,11 @@ public sealed class RedirectContentService : IContentService
             var builder = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var (source, target) in config.Redirects)
             {
-                if (string.IsNullOrWhiteSpace(source) || string.IsNullOrWhiteSpace(target)) continue;
+                if (string.IsNullOrWhiteSpace(source) || string.IsNullOrWhiteSpace(target))
+                {
+                    continue;
+                }
+
                 builder[NormalizeSource(source)] = target;
             }
             return builder.ToImmutable();

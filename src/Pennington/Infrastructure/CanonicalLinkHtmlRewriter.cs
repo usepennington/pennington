@@ -2,7 +2,6 @@ namespace Pennington.Infrastructure;
 
 using AngleSharp.Dom;
 using Microsoft.AspNetCore.Http;
-using Pennington.Routing;
 
 /// <summary>
 /// Auto-emits <c>&lt;link rel="canonical"&gt;</c> into <c>&lt;head&gt;</c> for
@@ -37,16 +36,25 @@ public sealed class CanonicalLinkHtmlRewriter : IHtmlResponseRewriter
     public Task ApplyAsync(IDocument document, HttpContext context)
     {
         var head = document.Head;
-        if (head is null) return Task.CompletedTask;
+        if (head is null)
+        {
+            return Task.CompletedTask;
+        }
 
         // Respect explicit canonical from the page — never overwrite.
-        if (head.QuerySelector("link[rel=\"canonical\"]") is not null) return Task.CompletedTask;
+        if (head.QuerySelector("link[rel=\"canonical\"]") is not null)
+        {
+            return Task.CompletedTask;
+        }
 
         // PathBase carries the stripped locale segment ("/es") for non-default
         // locale requests; concatenate it back so the canonical URL matches
         // what the user typed in the address bar.
         var path = (context.Request.PathBase + context.Request.Path).ToString();
-        if (string.IsNullOrEmpty(path)) path = "/";
+        if (string.IsNullOrEmpty(path))
+        {
+            path = "/";
+        }
 
         var canonical = Combine(_options.CanonicalBaseUrl!, path);
         var link = document.CreateElement("link");

@@ -33,7 +33,10 @@ public sealed class PenningtonRedirectMiddleware
         }
 
         var normalized = path.TrimEnd('/');
-        if (normalized.Length == 0) normalized = "/";
+        if (normalized.Length == 0)
+        {
+            normalized = "/";
+        }
 
         var map = await redirects.GetRedirectMappingsAsync();
         if (map.TryGetValue(normalized, out var target))

@@ -58,7 +58,10 @@ public sealed class FrontMatterParser
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
             .WithCaseInsensitivePropertyMatching();
         if (!strict)
+        {
             builder = builder.IgnoreUnmatchedProperties();
+        }
+
         return builder.Build();
     }
 
@@ -118,7 +121,9 @@ public sealed class FrontMatterParser
     private void ScanUnknownKeys<T>(string yaml, int lineOffset, string? sourcePath, DiagnosticContext? diagnostics)
     {
         if (diagnostics is null || string.IsNullOrWhiteSpace(yaml))
+        {
             return;
+        }
 
         YamlStream stream;
         try
@@ -135,7 +140,9 @@ public sealed class FrontMatterParser
         }
 
         if (stream.Documents.Count == 0 || stream.Documents[0].RootNode is not YamlMappingNode mapping)
+        {
             return;
+        }
 
         var known = _knownKeyCache.GetOrAdd(typeof(T), BuildKnownKeySet);
         var location = sourcePath ?? "<unknown>";
@@ -143,11 +150,15 @@ public sealed class FrontMatterParser
         foreach (var entry in mapping.Children)
         {
             if (entry.Key is not YamlScalarNode keyNode || keyNode.Value is null)
+            {
                 continue;
+            }
 
             var keyName = keyNode.Value;
             if (known.Contains(keyName))
+            {
                 continue;
+            }
 
             var line = keyNode.Start.Line + lineOffset;
             diagnostics.AddWarning(
@@ -190,13 +201,17 @@ public sealed class FrontMatterParser
         body = content;
 
         if (string.IsNullOrEmpty(content))
+        {
             return false;
+        }
 
         var lines = content.Split('\n');
 
         // First line must be ---
         if (lines.Length == 0 || lines[0].Trim() != "---")
+        {
             return false;
+        }
 
         // Find the closing ---
         for (var i = 1; i < lines.Length; i++)

@@ -27,16 +27,24 @@ internal static class SourceWatchProbe
 
         foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
         {
-            if (IsSystemAssembly(asm)) continue;
+            if (IsSystemAssembly(asm))
+            {
+                continue;
+            }
 
             var docs = TryReadDocumentPaths(asm);
-            if (docs is null) continue;
+            if (docs is null)
+            {
+                continue;
+            }
 
             foreach (var path in docs)
             {
                 var projectDir = FindProjectRoot(path);
                 if (projectDir is not null)
+                {
                     dirs.Add(projectDir);
+                }
             }
         }
 
@@ -46,7 +54,10 @@ internal static class SourceWatchProbe
     private static void ForceLoadTransitiveReferences()
     {
         var entry = Assembly.GetEntryAssembly();
-        if (entry is null) return;
+        if (entry is null)
+        {
+            return;
+        }
 
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var stack = new Stack<Assembly>();
@@ -56,7 +67,10 @@ internal static class SourceWatchProbe
         while (stack.Count > 0)
         {
             var asm = stack.Pop();
-            if (IsSystemAssembly(asm)) continue;
+            if (IsSystemAssembly(asm))
+            {
+                continue;
+            }
 
             AssemblyName[] refs;
             try { refs = asm.GetReferencedAssemblies(); }
@@ -65,8 +79,15 @@ internal static class SourceWatchProbe
             foreach (var refName in refs)
             {
                 var name = refName.Name;
-                if (string.IsNullOrEmpty(name) || !visited.Add(name)) continue;
-                if (IsSystemName(name)) continue;
+                if (string.IsNullOrEmpty(name) || !visited.Add(name))
+                {
+                    continue;
+                }
+
+                if (IsSystemName(name))
+                {
+                    continue;
+                }
 
                 try
                 {
@@ -88,7 +109,9 @@ internal static class SourceWatchProbe
         catch { return null; }
 
         if (string.IsNullOrEmpty(location) || !File.Exists(location))
+        {
             return null;
+        }
 
         try
         {
@@ -101,7 +124,11 @@ internal static class SourceWatchProbe
             {
                 foreach (var entry in peReader.ReadDebugDirectory())
                 {
-                    if (entry.Type != DebugDirectoryEntryType.EmbeddedPortablePdb) continue;
+                    if (entry.Type != DebugDirectoryEntryType.EmbeddedPortablePdb)
+                    {
+                        continue;
+                    }
+
                     provider = peReader.ReadEmbeddedPortablePdbDebugDirectoryData(entry);
                     break;
                 }
@@ -118,13 +145,20 @@ internal static class SourceWatchProbe
                     }
                 }
 
-                if (provider is null) return null;
+                if (provider is null)
+                {
+                    return null;
+                }
 
                 var reader = provider.GetMetadataReader();
                 var paths = new List<string>(reader.Documents.Count);
                 foreach (var docHandle in reader.Documents)
                 {
-                    if (docHandle.IsNil) continue;
+                    if (docHandle.IsNil)
+                    {
+                        continue;
+                    }
+
                     var doc = reader.GetDocument(docHandle);
                     paths.Add(reader.GetString(doc.Name));
                 }
@@ -166,13 +200,21 @@ internal static class SourceWatchProbe
 
     private static bool IsSystemAssembly(Assembly assembly)
     {
-        if (assembly.IsDynamic) return true;
+        if (assembly.IsDynamic)
+        {
+            return true;
+        }
+
         return IsSystemName(assembly.GetName().Name);
     }
 
     private static bool IsSystemName(string? name)
     {
-        if (string.IsNullOrEmpty(name)) return true;
+        if (string.IsNullOrEmpty(name))
+        {
+            return true;
+        }
+
         return name.StartsWith("System.", StringComparison.Ordinal)
             || name.StartsWith("Microsoft.", StringComparison.Ordinal)
             || name == "mscorlib"

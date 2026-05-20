@@ -14,7 +14,7 @@ internal sealed class GrapeColorScheme : IColorScheme
 {
     private static readonly ImmutableDictionary<string, string> Grape = new Dictionary<string, string>
     {
-        ["50"]  = "oklch(97% 0.010 301.039)",
+        ["50"] = "oklch(97% 0.010 301.039)",
         ["100"] = "oklch(94% 0.022 301.039)",
         ["200"] = "oklch(89% 0.041 301.039)",
         ["300"] = "oklch(82% 0.075 301.039)",
@@ -29,7 +29,7 @@ internal sealed class GrapeColorScheme : IColorScheme
 
     private static readonly ImmutableDictionary<string, string> English = new Dictionary<string, string>
     {
-        ["50"]  = "oklch(98.5% 0.004 301.039)",
+        ["50"] = "oklch(98.5% 0.004 301.039)",
         ["100"] = "oklch(97% 0.005 301.039)",
         ["200"] = "oklch(92.5% 0.009 301.039)",
         ["300"] = "oklch(87% 0.018 301.039)",
@@ -44,7 +44,7 @@ internal sealed class GrapeColorScheme : IColorScheme
 
     private static readonly ImmutableDictionary<string, string> Windmill = new Dictionary<string, string>
     {
-        ["50"]  = "oklch(97% 0.010 271.039)",
+        ["50"] = "oklch(97% 0.010 271.039)",
         ["100"] = "oklch(94% 0.022 271.039)",
         ["200"] = "oklch(89% 0.041 271.039)",
         ["300"] = "oklch(82% 0.075 271.039)",
@@ -59,7 +59,7 @@ internal sealed class GrapeColorScheme : IColorScheme
 
     private static readonly ImmutableDictionary<string, string> Dogs = new Dictionary<string, string>
     {
-        ["50"]  = "oklch(97% 0.010 331.039)",
+        ["50"] = "oklch(97% 0.010 331.039)",
         ["100"] = "oklch(94% 0.022 331.039)",
         ["200"] = "oklch(89% 0.041 331.039)",
         ["300"] = "oklch(82% 0.075 331.039)",
@@ -74,7 +74,7 @@ internal sealed class GrapeColorScheme : IColorScheme
 
     private static readonly ImmutableDictionary<string, string> AccentOne = new Dictionary<string, string>
     {
-        ["50"]  = "oklch(97% 0.010 11.054)",
+        ["50"] = "oklch(97% 0.010 11.054)",
         ["100"] = "oklch(94% 0.023 11.054)",
         ["200"] = "oklch(89% 0.043 11.054)",
         ["300"] = "oklch(82% 0.078 11.054)",
@@ -89,7 +89,7 @@ internal sealed class GrapeColorScheme : IColorScheme
 
     private static readonly ImmutableDictionary<string, string> AccentTwo = new Dictionary<string, string>
     {
-        ["50"]  = "oklch(97% 0.010 101.054)",
+        ["50"] = "oklch(97% 0.010 101.054)",
         ["100"] = "oklch(94% 0.023 101.054)",
         ["200"] = "oklch(89% 0.043 101.054)",
         ["300"] = "oklch(82% 0.078 101.054)",
@@ -104,7 +104,7 @@ internal sealed class GrapeColorScheme : IColorScheme
 
     private static readonly ImmutableDictionary<string, string> AccentThree = new Dictionary<string, string>
     {
-        ["50"]  = "oklch(97% 0.010 191.054)",
+        ["50"] = "oklch(97% 0.010 191.054)",
         ["100"] = "oklch(94% 0.023 191.054)",
         ["200"] = "oklch(89% 0.043 191.054)",
         ["300"] = "oklch(82% 0.078 191.054)",
@@ -119,7 +119,7 @@ internal sealed class GrapeColorScheme : IColorScheme
 
     private static readonly ImmutableDictionary<string, string> AccentFour = new Dictionary<string, string>
     {
-        ["50"]  = "oklch(97% 0.010 251.054)",
+        ["50"] = "oklch(97% 0.010 251.054)",
         ["100"] = "oklch(94% 0.023 251.054)",
         ["200"] = "oklch(89% 0.043 251.054)",
         ["300"] = "oklch(82% 0.078 251.054)",

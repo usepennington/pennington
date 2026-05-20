@@ -28,17 +28,23 @@ public static class JsonLdSerializer
         };
 
         if (article.Description is not null)
+        {
             dict["description"] = article.Description;
+        }
 
         if (article.DatePublished is { } date)
+        {
             dict["datePublished"] = date.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        }
 
         if (article.AuthorName is not null)
+        {
             dict["author"] = new Dictionary<string, object>
             {
                 ["@type"] = "Person",
                 ["name"] = article.AuthorName,
             };
+        }
 
         return EscapeForScriptTag(JsonSerializer.Serialize(dict, Options));
     }
@@ -47,7 +53,9 @@ public static class JsonLdSerializer
     public static string? SerializeBreadcrumbList(JsonLdBreadcrumbList breadcrumbs)
     {
         if (breadcrumbs.Items.Count == 0)
+        {
             return null;
+        }
 
         var elements = new List<Dictionary<string, object?>>();
         foreach (var item in breadcrumbs.Items)
@@ -60,7 +68,9 @@ public static class JsonLdSerializer
             };
 
             if (item.Url is not null)
+            {
                 element["item"] = item.Url;
+            }
 
             elements.Add(element);
         }
@@ -87,7 +97,9 @@ public static class JsonLdSerializer
         };
 
         if (webSite.Description is not null)
+        {
             dict["description"] = webSite.Description;
+        }
 
         return EscapeForScriptTag(JsonSerializer.Serialize(dict, Options));
     }

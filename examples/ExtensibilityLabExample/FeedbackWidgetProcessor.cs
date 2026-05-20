@@ -38,7 +38,11 @@ public sealed class FeedbackWidgetProcessor : IResponseProcessor
 
     public bool ShouldProcess(HttpContext context)
     {
-        if (context.Response.StatusCode is < 200 or >= 300) return false;
+        if (context.Response.StatusCode is < 200 or >= 300)
+        {
+            return false;
+        }
+
         var contentType = context.Response.ContentType;
         return contentType is not null
                && contentType.StartsWith("text/html", StringComparison.OrdinalIgnoreCase);
@@ -47,7 +51,9 @@ public sealed class FeedbackWidgetProcessor : IResponseProcessor
     public Task<string> ProcessAsync(string responseBody, HttpContext context)
     {
         if (string.IsNullOrEmpty(responseBody))
+        {
             return Task.FromResult(responseBody);
+        }
 
         var closeBodyIndex = responseBody.LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase);
         if (closeBodyIndex < 0)

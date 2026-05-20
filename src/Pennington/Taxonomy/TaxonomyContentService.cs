@@ -148,7 +148,10 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
     /// <inheritdoc/>
     public async Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
     {
-        if (!_options.EmitCrossReferences) return ImmutableList<CrossReference>.Empty;
+        if (!_options.EmitCrossReferences)
+        {
+            return ImmutableList<CrossReference>.Empty;
+        }
 
         var terms = await _termsLazy.Value;
         var prefix = _options.BaseUrl.Trim('/');
@@ -193,7 +196,10 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
         {
             await foreach (var discovered in service.DiscoverAsync())
             {
-                if (discovered.Source.Value is not MarkdownFileSource markdown) continue;
+                if (discovered.Source.Value is not MarkdownFileSource markdown)
+                {
+                    continue;
+                }
 
                 TFrontMatter? metadata;
                 try
@@ -210,8 +216,15 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
                     continue;
                 }
 
-                if (metadata is null) continue;
-                if (metadata is { IsDraft: true }) continue;
+                if (metadata is null)
+                {
+                    continue;
+                }
+
+                if (metadata is { IsDraft: true })
+                {
+                    continue;
+                }
 
                 var item = new TaxonomyItem<TFrontMatter>(metadata, discovered.Route.CanonicalPath);
 
@@ -246,7 +259,11 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
         if (_options.SelectKey is { } single)
         {
             var key = single(metadata);
-            if (!IsEmptyKey(key)) yield return key!;
+            if (!IsEmptyKey(key))
+            {
+                yield return key!;
+            }
+
             yield break;
         }
 
@@ -254,7 +271,11 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
         {
             foreach (var key in multi(metadata))
             {
-                if (IsEmptyKey(key)) continue;
+                if (IsEmptyKey(key))
+                {
+                    continue;
+                }
+
                 yield return key;
             }
         }
@@ -262,8 +283,16 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
 
     private static bool IsEmptyKey(TKey? key)
     {
-        if (key is null) return true;
-        if (key is string s) return string.IsNullOrWhiteSpace(s);
+        if (key is null)
+        {
+            return true;
+        }
+
+        if (key is string s)
+        {
+            return string.IsNullOrWhiteSpace(s);
+        }
+
         return EqualityComparer<TKey>.Default.Equals(key, default!);
     }
 }

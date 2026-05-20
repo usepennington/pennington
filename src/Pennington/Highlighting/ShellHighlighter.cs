@@ -20,7 +20,9 @@ public sealed partial class ShellHighlighter : ICodeHighlighter
     public string Highlight(string code, string language)
     {
         if (string.IsNullOrWhiteSpace(code))
+        {
             return string.Empty;
+        }
 
         var sb = new StringBuilder();
         sb.Append("<pre><code>");

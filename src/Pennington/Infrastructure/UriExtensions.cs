@@ -26,7 +26,9 @@ internal static class UriExtensions
         public static bool TryCreate(string? uriString, in UriParseOptions options, out Uri? result)
         {
             if (!Uri.TryCreate(uriString, options.UriKind, out result))
+            {
                 return false;
+            }
 
             if (!options.AllowImplicitFilePaths
                 && result is { IsAbsoluteUri: true, Scheme: "file" }

@@ -109,12 +109,21 @@ public sealed class LlmsTxtService : IFileWatchAware
             // Both MarkdownFileSource and LlmsOnlySource wrap a markdown
             // file on disk that we want to parse and render through the
             // same channel — only HTML emission differs downstream.
-            if (discovered.Source is not (MarkdownFileSource or LlmsOnlySource)) continue;
+            if (discovered.Source is not (MarkdownFileSource or LlmsOnlySource))
+            {
+                continue;
+            }
 
             var parseResult = await parser.ParseAsync(discovered);
-            if (parseResult is not ParsedItem parsed) continue;
+            if (parseResult is not ParsedItem parsed)
+            {
+                continue;
+            }
 
-            if (parsed.Metadata is IRedirectable { RedirectUrl: not null }) continue;
+            if (parsed.Metadata is IRedirectable { RedirectUrl: not null })
+            {
+                continue;
+            }
 
             var key = NormalizePath(parsed.Route.CanonicalPath.Value);
             parsedByPath[key] = parsed;
@@ -129,7 +138,11 @@ public sealed class LlmsTxtService : IFileWatchAware
             var key = NormalizePath(toc.Route.CanonicalPath.Value);
             // Don't let an endpoint metadata entry overwrite a real content
             // service TOC entry at the same canonical path.
-            if (tocByPath.ContainsKey(key)) continue;
+            if (tocByPath.ContainsKey(key))
+            {
+                continue;
+            }
+
             allTocItems.Add(toc);
             tocByPath[key] = toc;
             mapGetDirectByPath[key] = url;
@@ -224,12 +237,22 @@ public sealed class LlmsTxtService : IFileWatchAware
     {
         foreach (var endpoint in endpointDataSource.Endpoints)
         {
-            if (endpoint is not RouteEndpoint route) continue;
+            if (endpoint is not RouteEndpoint route)
+            {
+                continue;
+            }
+
             var meta = route.Metadata.GetMetadata<LlmsTxtEntryMetadata>();
-            if (meta is null) continue;
+            if (meta is null)
+            {
+                continue;
+            }
 
             var rawText = route.RoutePattern.RawText;
-            if (string.IsNullOrWhiteSpace(rawText) || rawText.Contains('{')) continue;
+            if (string.IsNullOrWhiteSpace(rawText) || rawText.Contains('{'))
+            {
+                continue;
+            }
 
             var url = rawText.StartsWith('/') ? rawText : "/" + rawText;
             var canonicalPath = new UrlPath(url);
@@ -263,14 +286,22 @@ public sealed class LlmsTxtService : IFileWatchAware
 
         foreach (var service in contentServices)
         {
-            if (service is not ILlmsSubtreeProvider provider) continue;
+            if (service is not ILlmsSubtreeProvider provider)
+            {
+                continue;
+            }
+
             var discovered = await provider.GetLlmsSubtreesAsync();
             foreach (var s in discovered)
+            {
                 byPrefix[s.RoutePrefix] = s;
+            }
         }
 
         foreach (var s in programmaticSubtrees)
+        {
             byPrefix[s.RoutePrefix] = s;
+        }
 
         // Order by descending prefix length so longest-prefix match is first when iterating.
         return byPrefix.Values
@@ -285,7 +316,9 @@ public sealed class LlmsTxtService : IFileWatchAware
         foreach (var s in subtrees)
         {
             if (canonicalPath.StartsWith(s.RoutePrefix, StringComparison.OrdinalIgnoreCase))
+            {
                 return s;
+            }
         }
         return null;
     }
@@ -318,7 +351,10 @@ public sealed class LlmsTxtService : IFileWatchAware
 
     private static void AppendMapBlock(StringBuilder sb, ImmutableList<LlmsSubtree> subtrees, List<RenderedNode> renderedNodes, CanonicalBaseUrl canonicalBase)
     {
-        if (subtrees.Count == 0) return;
+        if (subtrees.Count == 0)
+        {
+            return;
+        }
 
         sb.AppendLine("## Map");
         sb.AppendLine();
@@ -398,7 +434,10 @@ public sealed class LlmsTxtService : IFileWatchAware
             if (ctx.ParsedByPath.TryGetValue(key, out var parsed))
             {
                 // Markdown source: render via the rendition channel.
-                if (!parsed.Metadata.Llms) continue;
+                if (!parsed.Metadata.Llms)
+                {
+                    continue;
+                }
 
                 var renderResult = await ctx.Renderer.RenderAsync(parsed);
                 if (renderResult.Value is not RenderedItem rendered)
@@ -412,7 +451,11 @@ public sealed class LlmsTxtService : IFileWatchAware
                 // that the link rewriter can map to sidecar URLs.
                 var resolvedHtml = await ctx.XrefResolver.ResolveAsync(rendered.Content.Html);
                 markdown = await ConvertHtmlToMarkdownAsync(resolvedHtml, ctx.RewriteHref);
-                if (string.IsNullOrWhiteSpace(markdown)) continue;
+                if (string.IsNullOrWhiteSpace(markdown))
+                {
+                    continue;
+                }
+
                 metadata = parsed.Metadata;
             }
             else
@@ -429,7 +472,11 @@ public sealed class LlmsTxtService : IFileWatchAware
                 }
 
                 markdown = HtmlToMarkdownConverter.Convert(element, ctx.RewriteHref).Trim();
-                if (string.IsNullOrWhiteSpace(markdown)) continue;
+                if (string.IsNullOrWhiteSpace(markdown))
+                {
+                    continue;
+                }
+
                 metadata = null;
             }
 
@@ -468,7 +515,11 @@ public sealed class LlmsTxtService : IFileWatchAware
     /// <summary>Parses an HTML body string and runs it through the markdown converter with link rewriting.</summary>
     private static async Task<string> ConvertHtmlToMarkdownAsync(string html, Func<string, string> rewriteHref)
     {
-        if (string.IsNullOrWhiteSpace(html)) return "";
+        if (string.IsNullOrWhiteSpace(html))
+        {
+            return "";
+        }
+
         var document = await BrowsingContext.OpenAsync(req => req.Content(html));
         var root = document.Body ?? document.DocumentElement;
         return root is null ? "" : HtmlToMarkdownConverter.Convert(root, rewriteHref).Trim();
@@ -494,7 +545,10 @@ public sealed class LlmsTxtService : IFileWatchAware
                 case SectionNode section:
                     // Pop pending sections at depth >= this one — they're now closed without contributing.
                     while (pendingSections.Count > 0 && pendingSections[^1].Depth >= section.Depth)
+                    {
                         pendingSections.RemoveAt(pendingSections.Count - 1);
+                    }
+
                     pendingSections.Add(section);
                     if (anyLeafEmittedSinceFlush)
                     {
@@ -521,7 +575,9 @@ public sealed class LlmsTxtService : IFileWatchAware
         }
 
         if (anyLeafEmittedSinceFlush)
+        {
             sb.AppendLine();
+        }
     }
 
     private static string BuildSidecarHeader(
@@ -536,7 +592,9 @@ public sealed class LlmsTxtService : IFileWatchAware
         sb.AppendLine("---");
         sb.AppendLine($"title: {YamlScalar(metadata?.Title ?? item.Title)}");
         if (!string.IsNullOrEmpty(description))
+        {
             sb.AppendLine($"description: {YamlScalar(description)}");
+        }
         // URLs and hashes contain `:` but never `: ` (colon-space) or whitespace, so they
         // parse correctly as bare YAML scalars. Bare emission keeps them readable.
         sb.AppendLine($"canonical_url: {canonicalBase.Combine(new UrlPath(item.Route.CanonicalPath.Value)).Value}");
@@ -544,9 +602,15 @@ public sealed class LlmsTxtService : IFileWatchAware
         sb.AppendLine($"content_hash: {rendition.ContentHash}");
         sb.AppendLine($"tokens: {rendition.TokenEstimate}");
         if (metadata?.Uid is { Length: > 0 } uid)
+        {
             sb.AppendLine($"uid: {YamlScalar(uid)}");
+        }
+
         if (metadata?.Date is { } date)
+        {
             sb.AppendLine($"last_modified: {date:yyyy-MM-dd}");
+        }
+
         sb.AppendLine("---");
         sb.AppendLine();
         return sb.ToString();
@@ -555,7 +619,10 @@ public sealed class LlmsTxtService : IFileWatchAware
     /// <summary>Quotes a YAML scalar when it contains characters that would change parsing semantics; otherwise returns it bare.</summary>
     private static string YamlScalar(string s)
     {
-        if (string.IsNullOrEmpty(s)) return "\"\"";
+        if (string.IsNullOrEmpty(s))
+        {
+            return "\"\"";
+        }
         // Conservative: quote anything that isn't plain printable text to avoid YAML edge cases.
         var needsQuote = false;
         foreach (var c in s)
@@ -566,8 +633,16 @@ public sealed class LlmsTxtService : IFileWatchAware
                 break;
             }
         }
-        if (!needsQuote && (s.StartsWith(' ') || s.EndsWith(' '))) needsQuote = true;
-        if (!needsQuote) return s;
+        if (!needsQuote && (s.StartsWith(' ') || s.EndsWith(' ')))
+        {
+            needsQuote = true;
+        }
+
+        if (!needsQuote)
+        {
+            return s;
+        }
+
         return "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
     }
 
@@ -585,9 +660,13 @@ public sealed class LlmsTxtService : IFileWatchAware
         foreach (var item in items)
         {
             if (item.Children.Count > 0)
+            {
                 CollectLeafPaths(item.Children, acc);
+            }
             else
+            {
                 acc.Add(NormalizePath(item.Route.CanonicalPath.Value));
+            }
         }
     }
 
@@ -617,7 +696,9 @@ public sealed class LlmsTxtService : IFileWatchAware
 
             var key = NormalizePath(pathPart);
             if (string.IsNullOrEmpty(key) || !linkablePaths.Contains(key))
+            {
                 return href;
+            }
 
             return BuildStrippedMarkdownUrl(canonicalBase, outputDirectory, key) + query + fragment;
         };
@@ -644,7 +725,10 @@ public sealed class LlmsTxtService : IFileWatchAware
             : Path.Combine(hostingEnvironment.ContentRootPath, pennOptions.ContentRootPath);
 
         var llmsTxtPath = fileSystem.Path.Combine(contentRoot, "llms.txt");
-        if (!fileSystem.File.Exists(llmsTxtPath)) return null;
+        if (!fileSystem.File.Exists(llmsTxtPath))
+        {
+            return null;
+        }
 
         return await fileSystem.File.ReadAllTextAsync(llmsTxtPath);
     }

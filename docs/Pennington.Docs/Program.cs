@@ -8,7 +8,6 @@ using Pennington.Infrastructure;
 using Pennington.MonorailCss;
 using Pennington.Roslyn;
 using Pennington.Roslyn.ApiMetadata;
-using Pennington.Tui;
 using WordbreakMiddleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,11 +20,11 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     ColorScheme = new GrapeColorScheme(),
     SyntaxTheme = new SyntaxTheme
     {
-        Keyword  = "accent-four",
-        String   = "accent-two",
+        Keyword = "accent-four",
+        String = "accent-two",
         Variable = "accent-one",
         Function = "accent-three",
-        Comment  = "base",
+        Comment = "base",
     },
     GitHubUrl = "https://github.com/usepennington/pennington",
     CanonicalBaseUrl = "https://usepennington.github.io/pennington/",
@@ -101,10 +100,18 @@ builder.Services.AddApiMetadataFromRoslyn(configure: opts =>
 {
     opts.ProjectFilter = project =>
     {
-        if (!defaultApiFilter(project)) return false;
+        if (!defaultApiFilter(project))
+        {
+            return false;
+        }
+
         var name = project.Name;
         var paren = name.IndexOf('(');
-        if (paren > 0) name = name[..paren];
+        if (paren > 0)
+        {
+            name = name[..paren];
+        }
+
         return name == "Pennington" || name.StartsWith("Pennington.", StringComparison.Ordinal);
     };
 });

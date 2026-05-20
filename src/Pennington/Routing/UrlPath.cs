@@ -12,8 +12,16 @@ public readonly record struct UrlPath(string Value)
     {
         var l = left.Value.TrimEnd('/');
         var r = right.Value.TrimStart('/');
-        if (string.IsNullOrEmpty(l)) return new UrlPath("/" + r);
-        if (string.IsNullOrEmpty(r)) return new UrlPath(l.StartsWith('/') ? l : "/" + l);
+        if (string.IsNullOrEmpty(l))
+        {
+            return new UrlPath("/" + r);
+        }
+
+        if (string.IsNullOrEmpty(r))
+        {
+            return new UrlPath(l.StartsWith('/') ? l : "/" + l);
+        }
+
         return new UrlPath(l + "/" + r);
     }
 
@@ -45,10 +53,19 @@ public readonly record struct UrlPath(string Value)
     {
         var s = path.TrimEnd('/');
         if (s.EndsWith("/index.html", StringComparison.OrdinalIgnoreCase))
+        {
             s = s[..^"/index.html".Length];
+        }
         else if (s.EndsWith("/index.htm", StringComparison.OrdinalIgnoreCase))
+        {
             s = s[..^"/index.htm".Length];
-        if (string.IsNullOrEmpty(s)) s = "/";
+        }
+
+        if (string.IsNullOrEmpty(s))
+        {
+            s = "/";
+        }
+
         return s.ToLowerInvariant();
     }
 

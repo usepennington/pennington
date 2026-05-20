@@ -153,7 +153,10 @@ public sealed class LocalizationOptions
     /// </summary>
     public string GetLocaleFromUrl(string url)
     {
-        if (!IsMultiLocale) return DefaultLocale;
+        if (!IsMultiLocale)
+        {
+            return DefaultLocale;
+        }
 
         var trimmed = url.TrimStart('/');
         var firstSlash = trimmed.IndexOf('/');
@@ -176,17 +179,23 @@ public sealed class LocalizationOptions
     public string StripLocalePrefix(string url, string locale)
     {
         if (string.Equals(locale, DefaultLocale, StringComparison.OrdinalIgnoreCase))
+        {
             return url;
+        }
 
         var trimmed = url.TrimStart('/');
         var prefix = locale + "/";
 
         if (trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
             return "/" + trimmed[prefix.Length..];
+        }
 
         // URL is just the locale with no trailing path
         if (string.Equals(trimmed, locale, StringComparison.OrdinalIgnoreCase))
+        {
             return "/";
+        }
 
         return url;
     }
@@ -199,7 +208,9 @@ public sealed class LocalizationOptions
         var path = contentPath.Trim('/');
 
         if (string.Equals(locale, DefaultLocale, StringComparison.OrdinalIgnoreCase))
+        {
             return string.IsNullOrEmpty(path) ? "/" : $"/{path}/";
+        }
 
         return string.IsNullOrEmpty(path) ? $"/{locale}/" : $"/{locale}/{path}/";
     }
@@ -210,7 +221,10 @@ public sealed class LocalizationOptions
     /// </summary>
     public IReadOnlyList<AlternateLanguage> GetAlternateLanguages(string url)
     {
-        if (!IsMultiLocale) return [];
+        if (!IsMultiLocale)
+        {
+            return [];
+        }
 
         // The 404-generation sentinel is not a real content page. Treat it as
         // the locale root so language switcher links resolve to each locale's
@@ -223,7 +237,9 @@ public sealed class LocalizationOptions
 
         url = "/" + url.Trim('/');
         if (url.Equals("/index", StringComparison.OrdinalIgnoreCase))
+        {
             url = "/";
+        }
 
         var locale = GetLocaleFromUrl(url);
         var contentPath = StripLocalePrefix(url, locale);

@@ -46,7 +46,10 @@ public sealed class AnchorLowercaseRewriter : IHtmlResponseRewriter
     public Task<string> PreParseAsync(string html, HttpContext context)
     {
         if (!html.Contains("<!--LOWERCASE-SENTINEL-->", StringComparison.Ordinal))
+        {
             return Task.FromResult(html);
+        }
+
         return Task.FromResult(html.Replace("<!--LOWERCASE-SENTINEL-->", string.Empty, StringComparison.Ordinal));
     }
 
@@ -58,8 +61,16 @@ public sealed class AnchorLowercaseRewriter : IHtmlResponseRewriter
     {
         foreach (var element in document.QuerySelectorAll("a[data-lowercase]"))
         {
-            if (element is not IHtmlAnchorElement anchor) continue;
-            if (string.IsNullOrEmpty(anchor.TextContent)) continue;
+            if (element is not IHtmlAnchorElement anchor)
+            {
+                continue;
+            }
+
+            if (string.IsNullOrEmpty(anchor.TextContent))
+            {
+                continue;
+            }
+
             anchor.TextContent = anchor.TextContent.ToLowerInvariant();
         }
 

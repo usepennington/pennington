@@ -61,7 +61,11 @@ public sealed class AuditRunner : IHostedService
         // overlapping audit passes that race on the cache.
         lock (_runLock)
         {
-            if (_activeRun is { IsCompleted: false }) return;
+            if (_activeRun is { IsCompleted: false })
+            {
+                return;
+            }
+
             _activeRun = RunAsync(CancellationToken.None);
         }
     }
@@ -123,7 +127,9 @@ public sealed class AuditRunner : IHostedService
                 if (client is null)
                 {
                     if (renderedAuditors.Count > 0)
+                    {
                         _logger.LogDebug("Rendered auditors registered but no HTTP client available; skipping this pass.");
+                    }
                 }
                 else
                 {
@@ -154,7 +160,9 @@ public sealed class AuditRunner : IHostedService
             _cache.Set(snapshot);
 
             if (!_isBuildMode)
+            {
                 LogSummary(snapshot);
+            }
         }
         catch (Exception ex)
         {
@@ -167,7 +175,11 @@ public sealed class AuditRunner : IHostedService
         try
         {
             var response = await client.GetAsync(route.CanonicalPath.Value, cancellationToken);
-            if (!response.IsSuccessStatusCode) return null;
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
             return await response.Content.ReadAsStringAsync(cancellationToken);
         }
         catch (HttpRequestException)
@@ -178,14 +190,28 @@ public sealed class AuditRunner : IHostedService
 
     private void LogSummary(ImmutableList<BuildDiagnostic> snapshot)
     {
-        if (snapshot.Count == 0) return;
+        if (snapshot.Count == 0)
+        {
+            return;
+        }
 
         var errors = snapshot.Count(d => d.Severity == Diagnostics.DiagnosticSeverity.Error);
         var warnings = snapshot.Count(d => d.Severity == Diagnostics.DiagnosticSeverity.Warning);
         var parts = new List<string>();
-        if (errors > 0) parts.Add($"{errors} error{(errors == 1 ? "" : "s")}");
-        if (warnings > 0) parts.Add($"{warnings} warning{(warnings == 1 ? "" : "s")}");
-        if (parts.Count == 0) return;
+        if (errors > 0)
+        {
+            parts.Add($"{errors} error{(errors == 1 ? "" : "s")}");
+        }
+
+        if (warnings > 0)
+        {
+            parts.Add($"{warnings} warning{(warnings == 1 ? "" : "s")}");
+        }
+
+        if (parts.Count == 0)
+        {
+            return;
+        }
 
         _logger.LogInformation("Audit: {Summary}", string.Join(", ", parts));
     }

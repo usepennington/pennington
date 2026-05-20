@@ -65,13 +65,20 @@ public sealed class BuildReport
         writer.WriteLine($"Build Complete — {TotalPages} pages in {Duration.TotalSeconds:F1}s");
         writer.WriteLine($"  {GeneratedPages.Count} pages generated");
         if (SkippedPages.Count > 0)
+        {
             writer.WriteLine($"  {SkippedPages.Count} pages skipped (draft)");
+        }
+
         if (FailedPages.Count > 0)
+        {
             writer.WriteLine($"  {FailedPages.Count} pages failed");
+        }
 
         var warnings = Diagnostics.Count(d => d.Severity is DiagnosticSeverity.Warning);
         if (warnings > 0)
+        {
             writer.WriteLine($"  {warnings} warnings");
+        }
 
         writer.WriteLine();
 
@@ -98,9 +105,13 @@ public sealed class BuildReport
             foreach (var diag in warningDiags)
             {
                 if (diag.Route is { } route)
+                {
                     writer.WriteLine($"  {route.CanonicalPath}: {diag.Message}");
+                }
                 else
+                {
                     writer.WriteLine($"  {diag.Message}");
+                }
             }
             if (brokenLinks.Count > 0)
             {
@@ -121,9 +132,13 @@ public sealed class BuildReport
             writer.WriteLine($"  {route.CanonicalPath}");
             writer.WriteLine($"    {diag.Message}");
             if (route.SourceFile is { } routeSource)
+            {
                 writer.WriteLine($"    Source: {routeSource}");
+            }
             else if (diag.SourceFile is { } diagSource)
+            {
                 writer.WriteLine($"    File: {diagSource}");
+            }
         }
         else if (diag.SourceFile is { } sourceFile)
         {
@@ -136,7 +151,9 @@ public sealed class BuildReport
         }
 
         if (diag.Exception is { } ex)
+        {
             writer.WriteLine($"    Exception: {ex.GetType().Name}: {ex.Message}");
+        }
     }
 
     /// <summary>Returns the human-readable summary as a single formatted string.</summary>

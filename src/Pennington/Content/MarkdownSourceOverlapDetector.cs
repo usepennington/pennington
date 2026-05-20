@@ -25,7 +25,10 @@ public static class MarkdownSourceOverlapDetector
         IEnumerable<IMarkdownContentSource> sources)
     {
         var list = sources.ToList();
-        if (list.Count < 2) return ImmutableArray<string>.Empty;
+        if (list.Count < 2)
+        {
+            return ImmutableArray<string>.Empty;
+        }
 
         var warnings = ImmutableArray.CreateBuilder<string>();
 
@@ -33,22 +36,46 @@ public static class MarkdownSourceOverlapDetector
         {
             var outer = list[i];
             var outerRoot = NormalizeDirectory(outer.AbsoluteContentRoot);
-            if (outerRoot.Length == 0) continue;
+            if (outerRoot.Length == 0)
+            {
+                continue;
+            }
 
             for (var j = 0; j < list.Count; j++)
             {
-                if (i == j) continue;
+                if (i == j)
+                {
+                    continue;
+                }
+
                 var inner = list[j];
                 var innerRoot = NormalizeDirectory(inner.AbsoluteContentRoot);
-                if (innerRoot.Length == 0) continue;
+                if (innerRoot.Length == 0)
+                {
+                    continue;
+                }
 
                 // inner must be a *strict* descendant of outer
-                if (innerRoot.Length <= outerRoot.Length) continue;
-                if (!innerRoot.StartsWith(outerRoot, StringComparison.OrdinalIgnoreCase)) continue;
-                if (innerRoot[outerRoot.Length] != '/') continue;
+                if (innerRoot.Length <= outerRoot.Length)
+                {
+                    continue;
+                }
+
+                if (!innerRoot.StartsWith(outerRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (innerRoot[outerRoot.Length] != '/')
+                {
+                    continue;
+                }
 
                 var relative = innerRoot[(outerRoot.Length + 1)..];
-                if (IsExcluded(outer.ExcludePaths, relative)) continue;
+                if (IsExcluded(outer.ExcludePaths, relative))
+                {
+                    continue;
+                }
 
                 warnings.Add(
                     $"Markdown content source rooted at '{outer.AbsoluteContentRoot}' " +
@@ -69,7 +96,11 @@ public static class MarkdownSourceOverlapDetector
     /// </summary>
     private static string NormalizeDirectory(string? path)
     {
-        if (string.IsNullOrWhiteSpace(path)) return "";
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return "";
+        }
+
         var normalized = path.Replace('\\', '/').TrimEnd('/').ToLowerInvariant();
         return normalized;
     }
@@ -81,17 +112,26 @@ public static class MarkdownSourceOverlapDetector
     /// </summary>
     private static bool IsExcluded(ImmutableArray<string> excludePaths, string relative)
     {
-        if (excludePaths.IsDefaultOrEmpty) return false;
+        if (excludePaths.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
         var normalized = relative.Replace('\\', '/').TrimStart('/').ToLowerInvariant();
         foreach (var excluded in excludePaths)
         {
             if (normalized.Length == excluded.Length
                 && normalized.Equals(excluded, StringComparison.Ordinal))
+            {
                 return true;
+            }
+
             if (normalized.Length > excluded.Length
                 && normalized.StartsWith(excluded, StringComparison.Ordinal)
                 && normalized[excluded.Length] == '/')
+            {
                 return true;
+            }
         }
         return false;
     }

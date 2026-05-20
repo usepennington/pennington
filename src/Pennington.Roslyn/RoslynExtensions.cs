@@ -1,6 +1,5 @@
 namespace Pennington.Roslyn;
 
-using Documentation;
 using Highlighting;
 using Markdown.Extensions;
 using Microsoft.Extensions.DependencyInjection;

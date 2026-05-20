@@ -17,19 +17,34 @@ internal static class DiagnosticsTab
     {
         _ = state.RenderTick.Value;
         var snapshot = collector.Snapshot();
-        if (snapshot.Count == 0) return "Diagnostics";
+        if (snapshot.Count == 0)
+        {
+            return "Diagnostics";
+        }
+
         int err = 0, warn = 0;
         foreach (var entry in snapshot)
         {
             foreach (var d in entry.Diagnostics)
             {
-                if (d.Severity == DiagnosticSeverity.Error) err++;
-                else if (d.Severity == DiagnosticSeverity.Warning) warn++;
+                if (d.Severity == DiagnosticSeverity.Error)
+                {
+                    err++;
+                }
+                else if (d.Severity == DiagnosticSeverity.Warning)
+                {
+                    warn++;
+                }
             }
         }
-        if (err + warn == 0) return $"Diagnostics ({snapshot.Count} pages, clean)";
+        if (err + warn == 0)
+        {
+            return $"Diagnostics ({snapshot.Count} pages, clean)";
+        }
+
         return $"Diagnostics ({err} err, {warn} warn, {snapshot.Count} pages)";
-    }) { Wrap = false };
+    })
+    { Wrap = false };
 
     internal static Visual BuildContent(LogControl diagnostics) =>
         new Group()
@@ -51,7 +66,11 @@ internal static class DiagnosticsTab
         {
             var snapshot = collector.Snapshot();
             var signature = ComputeSignature(snapshot);
-            if (signature == lastSignature) return;
+            if (signature == lastSignature)
+            {
+                return;
+            }
+
             lastSignature = signature;
 
             diagnostics.Clear();
@@ -96,18 +115,29 @@ internal static class DiagnosticsTab
 
     private static DiagnosticSeverity? MaxSeverity(PageDiagnosticsEntry entry)
     {
-        if (entry.Diagnostics.IsDefaultOrEmpty) return null;
+        if (entry.Diagnostics.IsDefaultOrEmpty)
+        {
+            return null;
+        }
+
         DiagnosticSeverity? max = null;
         foreach (var d in entry.Diagnostics)
         {
-            if (max is null || d.Severity > max) max = d.Severity;
+            if (max is null || d.Severity > max)
+            {
+                max = d.Severity;
+            }
         }
         return max;
     }
 
     private static long ComputeSignature(IReadOnlyList<PageDiagnosticsEntry> snapshot)
     {
-        if (snapshot.Count == 0) return 0;
+        if (snapshot.Count == 0)
+        {
+            return 0;
+        }
+
         long acc = snapshot.Count;
         foreach (var entry in snapshot)
         {

@@ -93,7 +93,10 @@ public sealed class ApiReferenceIndex
 
     internal static string ToSlug(string name)
     {
-        if (string.IsNullOrEmpty(name)) return name;
+        if (string.IsNullOrEmpty(name))
+        {
+            return name;
+        }
 
         var sb = new StringBuilder(name.Length + 8);
         for (var i = 0; i < name.Length; i++)
@@ -101,7 +104,11 @@ public sealed class ApiReferenceIndex
             var c = name[i];
             // Drop generic-arity markers and separators that would leak into URLs
             // or filesystem paths (Windows rejects `<`, `>`, `,` in filenames).
-            if (c is '<' or '>' or ',' or ' ') continue;
+            if (c is '<' or '>' or ',' or ' ')
+            {
+                continue;
+            }
+
             if (char.IsUpper(c) && i > 0 && (char.IsLower(name[i - 1]) || (i + 1 < name.Length && char.IsLower(name[i + 1]))))
             {
                 sb.Append('-');
@@ -114,7 +121,11 @@ public sealed class ApiReferenceIndex
 
     private static string LastNamespaceSegment(string ns)
     {
-        if (string.IsNullOrEmpty(ns)) return string.Empty;
+        if (string.IsNullOrEmpty(ns))
+        {
+            return string.Empty;
+        }
+
         var idx = ns.LastIndexOf('.');
         return idx < 0 ? ns : ns[(idx + 1)..];
     }

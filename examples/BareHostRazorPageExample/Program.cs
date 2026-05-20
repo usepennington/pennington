@@ -62,7 +62,10 @@ static async Task<IResult> RenderRazorPageAsync<TComponent>(
     IDictionary<string, object?>? parameters)
     where TComponent : IComponent
 {
-    if (parameters is null) return Results.NotFound();
+    if (parameters is null)
+    {
+        return Results.NotFound();
+    }
 
     var html = await renderer.Dispatcher.InvokeAsync(async () =>
     {

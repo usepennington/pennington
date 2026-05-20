@@ -31,7 +31,9 @@ public sealed class LineCountPreprocessor : ICodeBlockPreprocessor
     public CodeBlockPreprocessResult? TryProcess(string code, string languageId)
     {
         if (!string.Equals(languageId, "linecount", StringComparison.OrdinalIgnoreCase))
+        {
             return null;
+        }
 
         var lineCount = CountLines(code);
         var encoded = WebUtility.HtmlEncode(code);
@@ -51,11 +53,25 @@ public sealed class LineCountPreprocessor : ICodeBlockPreprocessor
 
     private static int CountLines(string code)
     {
-        if (string.IsNullOrEmpty(code)) return 0;
+        if (string.IsNullOrEmpty(code))
+        {
+            return 0;
+        }
+
         var count = 1;
-        foreach (var ch in code) if (ch == '\n') count++;
+        foreach (var ch in code)
+        {
+            if (ch == '\n')
+            {
+                count++;
+            }
+        }
         // Trim trailing newline so "one\ntwo\n" counts as 2.
-        if (code.EndsWith('\n')) count--;
+        if (code.EndsWith('\n'))
+        {
+            count--;
+        }
+
         return count;
     }
 }

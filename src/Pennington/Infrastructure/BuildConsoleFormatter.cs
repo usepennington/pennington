@@ -21,7 +21,9 @@ internal sealed class BuildConsoleFormatter : ConsoleFormatter
     {
         var message = logEntry.Formatter?.Invoke(logEntry.State, logEntry.Exception);
         if (string.IsNullOrEmpty(message) && logEntry.Exception is null)
+        {
             return;
+        }
 
         var prefix = logEntry.LogLevel switch
         {

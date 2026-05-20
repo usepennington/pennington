@@ -1,8 +1,5 @@
-using System.Collections.Immutable;
-using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Pennington.Diagnostics;
 using Pennington.Generation;
 using Pennington.Infrastructure;
 
@@ -34,7 +31,9 @@ public class AuditRunnerTests
 
         // RunAsync started in StartAsync; give the cache a moment to be populated.
         for (var i = 0; i < 50 && cache.Diagnostics.IsEmpty; i++)
+        {
             await Task.Delay(10, TestContext.Current.CancellationToken);
+        }
 
         cache.Diagnostics.Count.ShouldBe(1);
         cache.Diagnostics[0].Message.ShouldBe("rendered audit ran");

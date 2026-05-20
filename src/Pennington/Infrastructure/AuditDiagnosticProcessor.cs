@@ -21,7 +21,11 @@ public sealed class AuditDiagnosticProcessor : IResponseProcessor
     /// <inheritdoc/>
     public bool ShouldProcess(HttpContext context)
     {
-        if (!_isDevMode) return false;
+        if (!_isDevMode)
+        {
+            return false;
+        }
+
         var contentType = context.Response.ContentType ?? "";
         return context.Response.StatusCode is >= 200 and < 300
             && contentType.Contains("text/html");
@@ -33,12 +37,18 @@ public sealed class AuditDiagnosticProcessor : IResponseProcessor
         var cache = context.RequestServices.GetService<IAuditCache>();
         var diagnosticContext = context.RequestServices.GetService<DiagnosticContext>();
         if (cache is null || diagnosticContext is null || cache.Diagnostics.Count == 0)
+        {
             return Task.FromResult(responseBody);
+        }
 
         var requestPath = context.Request.Path.Value ?? "/";
         foreach (var diag in cache.Diagnostics)
         {
-            if (!RouteMatches(diag, requestPath)) continue;
+            if (!RouteMatches(diag, requestPath))
+            {
+                continue;
+            }
+
             diagnosticContext.Add(new Diagnostic(diag.Severity, diag.Message, diag.SourceFile));
         }
 
@@ -50,7 +60,11 @@ public sealed class AuditDiagnosticProcessor : IResponseProcessor
         // Audit diagnostics without a Route are site-wide and would flood every page.
         // The dev surface is per-page, so untouched-by-route diagnostics stay in the
         // cache for the build report only.
-        if (diag.Route is null) return false;
+        if (diag.Route is null)
+        {
+            return false;
+        }
+
         var canonical = diag.Route.CanonicalPath.Value;
         return string.Equals(canonical.TrimEnd('/'), requestPath.TrimEnd('/'), StringComparison.OrdinalIgnoreCase);
     }

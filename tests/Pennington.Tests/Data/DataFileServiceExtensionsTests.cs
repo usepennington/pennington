@@ -1,6 +1,5 @@
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Pennington.Data;
 using Pennington.Infrastructure;
 using Testably.Abstractions.Testing;

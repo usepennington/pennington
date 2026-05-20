@@ -22,7 +22,11 @@ public class RedirectContentServiceTests
         params IContentService[] extraServices)
     {
         var services = new ServiceCollection();
-        foreach (var svc in extraServices) services.AddSingleton(svc);
+        foreach (var svc in extraServices)
+        {
+            services.AddSingleton(svc);
+        }
+
         var options = new PenningtonOptions { ContentRootPath = contentRoot };
         var provider = services.BuildServiceProvider();
         return new RedirectContentService(provider, options, fs, new FileWatcher(fs));
@@ -113,7 +117,10 @@ public class RedirectContentServiceTests
         var service = CreateService(fs, "/content");
 
         var items = new List<DiscoveredItem>();
-        await foreach (var item in service.DiscoverAsync()) items.Add(item);
+        await foreach (var item in service.DiscoverAsync())
+        {
+            items.Add(item);
+        }
 
         items.Count.ShouldBe(2);
         foreach (var item in items)

@@ -20,7 +20,11 @@ public class MarkdownContentParserTests
         foreach (var (path, content) in files)
         {
             var dir = fs.Path.GetDirectoryName(path);
-            if (dir != null) fs.Directory.CreateDirectory(dir);
+            if (dir != null)
+            {
+                fs.Directory.CreateDirectory(dir);
+            }
+
             fs.File.WriteAllText(path, content);
         }
         return fs;

@@ -26,7 +26,7 @@ public class MarkdownContentServiceTests
             SectionLabel = section
         };
 
-        return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs,localization ?? DefaultLocalization);
+        return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, localization ?? DefaultLocalization);
     }
 
     private static MockFileSystem CreateFs(params (string Path, string Content)[] files)
@@ -37,7 +37,11 @@ public class MarkdownContentServiceTests
         {
             var fullPath = $"/content/{path}";
             var dir = fs.Path.GetDirectoryName(fullPath);
-            if (dir != null) fs.Directory.CreateDirectory(dir);
+            if (dir != null)
+            {
+                fs.Directory.CreateDirectory(dir);
+            }
+
             fs.File.WriteAllText(fullPath, content);
         }
         return fs;
@@ -53,11 +57,15 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.Count.ShouldBe(2);
         foreach (var item in items)
+        {
             (item.Source is MarkdownFileSource).ShouldBeTrue();
+        }
     }
 
     [Fact]
@@ -69,7 +77,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.Count.ShouldBe(1);
         items[0].Route.CanonicalPath.Value.ShouldBe("/docs/getting-started/");
@@ -84,7 +94,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.Count.ShouldBe(1);
         (items[0].Source is MarkdownFileSource).ShouldBeTrue();
@@ -109,7 +121,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.Count.ShouldBe(1);
         items[0].Metadata.ShouldNotBeNull();
@@ -126,7 +140,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.Count.ShouldBe(1);
         items[0].Route.CanonicalPath.Value.ShouldBe("/docs/published/");
@@ -217,7 +233,7 @@ public class MarkdownContentServiceTests
         };
 
         return new MarkdownContentService<RedirectableFrontMatter>(
-                    options, new FrontMatterParser(), fs,DefaultLocalization);
+                    options, new FrontMatterParser(), fs, DefaultLocalization);
     }
 
     [Fact]
@@ -323,7 +339,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.ShouldBeEmpty();
 
@@ -347,11 +365,13 @@ public class MarkdownContentServiceTests
             BasePageUrl = new UrlPath("/docs"),
             SectionLabel = "Test"
         };
-        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs,DefaultLocalization);
+        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, DefaultLocalization);
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.ShouldBeEmpty();
 
@@ -384,7 +404,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.Count.ShouldBe(2);
 
@@ -402,7 +424,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.Count.ShouldBe(1);
         items[0].Route.CanonicalPath.Value.ShouldBe("/docs/");
@@ -456,7 +480,7 @@ public class MarkdownContentServiceTests
             SectionLabel = section
         };
 
-        return new MarkdownContentService<BlogFrontMatter>(options, new FrontMatterParser(), fs,DefaultLocalization);
+        return new MarkdownContentService<BlogFrontMatter>(options, new FrontMatterParser(), fs, DefaultLocalization);
     }
 
     [Fact]
@@ -468,7 +492,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.Count.ShouldBe(1);
         items[0].Route.CanonicalPath.Value.ShouldBe("/blog/hello-world/");
@@ -528,7 +554,9 @@ public class MarkdownContentServiceTests
         // Verify all APIs work together
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         var toc = await service.GetContentTocEntriesAsync();
         var xrefs = await service.GetCrossReferencesAsync();
@@ -551,7 +579,7 @@ public class MarkdownContentServiceTests
             BasePageUrl = new UrlPath("/docs"),
             SearchPriority = 10
         };
-        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs,DefaultLocalization);
+        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, DefaultLocalization);
 
         service.SearchPriority.ShouldBe(10);
     }
@@ -575,7 +603,11 @@ public class MarkdownContentServiceTests
         {
             var fullPath = $"/content/{path}";
             var dir = fs.Path.GetDirectoryName(fullPath);
-            if (dir != null) fs.Directory.CreateDirectory(dir);
+            if (dir != null)
+            {
+                fs.Directory.CreateDirectory(dir);
+            }
+
             fs.File.WriteAllText(fullPath, content);
         }
         return fs;
@@ -591,7 +623,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.Count.ShouldBe(2);
         items.ShouldContain(i => i.Route.Locale == "en");
@@ -608,7 +642,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         // Default locale item should NOT have fr/ prefix in path
         var enItem = items.First(i => i.Route.Locale == "en");
@@ -625,7 +661,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         var frItem = items.First(i => i.Route.Locale == "fr");
         frItem.Route.CanonicalPath.Value.ShouldStartWith("/fr/");
@@ -717,7 +755,7 @@ public class MarkdownContentServiceTests
             ExcludePaths = [.. excludePaths],
         };
         return new MarkdownContentService<DocFrontMatter>(
-            options, new FrontMatterParser(), fs,DefaultLocalization);
+            options, new FrontMatterParser(), fs, DefaultLocalization);
     }
 
     [Fact]
@@ -732,7 +770,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         var routes = items.Select(i => i.Route.CanonicalPath.Value).ToList();
         routes.ShouldContain("/docs/intro/");
@@ -751,7 +791,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         var routes = items.Select(i => i.Route.CanonicalPath.Value).ToList();
         routes.ShouldContain("/docs/changelog/v1/");
@@ -769,7 +811,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         var routes = items.Select(i => i.Route.CanonicalPath.Value).ToList();
         routes.ShouldContain("/docs/guides/setup/");
@@ -786,7 +830,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.Count.ShouldBe(1);
         items[0].Route.CanonicalPath.Value.ShouldBe("/docs/intro/");
@@ -829,11 +875,13 @@ public class MarkdownContentServiceTests
             ExcludePaths = ["changelog"],
         };
         var service = new MarkdownContentService<DocFrontMatter>(
-            options, new FrontMatterParser(), fs,CreateMultiLocale());
+            options, new FrontMatterParser(), fs, CreateMultiLocale());
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         var routes = items.Select(i => i.Route.CanonicalPath.Value).ToList();
         routes.ShouldNotContain(r => r.Contains("changelog", StringComparison.Ordinal));
@@ -864,7 +912,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.Count.ShouldBe(1);
         // With single locale, original behavior: locale comes from options.Locale (empty by default)
@@ -973,7 +1023,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         items.Count.ShouldBe(2);
         var regular = items.Single(i => i.Source is MarkdownFileSource);
@@ -991,7 +1043,9 @@ public class MarkdownContentServiceTests
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item);
+        }
 
         var llmsOnly = items.Single();
         if (llmsOnly.Source is LlmsOnlySource llms)

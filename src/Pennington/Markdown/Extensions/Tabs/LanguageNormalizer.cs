@@ -8,7 +8,9 @@ internal static class LanguageNormalizer
     public static string GetLanguageName(string? input)
     {
         if (string.IsNullOrWhiteSpace(input))
+        {
             return "Text";
+        }
 
         var colonLocation = input.IndexOf(':');
         if (colonLocation > -1)

@@ -49,7 +49,10 @@ public sealed class BlogContentResolver : IFileWatchAware
         var posts = new List<BlogPostPage>();
         await foreach (var item in _services.DiscoverAllAsync())
         {
-            if (item.Source is not MarkdownFileSource source) continue;
+            if (item.Source is not MarkdownFileSource source)
+            {
+                continue;
+            }
 
             try
             {
@@ -57,7 +60,10 @@ public sealed class BlogContentResolver : IFileWatchAware
                 var parsed = _parser.Parse<BlogSiteFrontMatter>(content, source.Path.Value);
                 var fm = parsed.Metadata ?? new BlogSiteFrontMatter();
 
-                if (fm.IsDraft) continue;
+                if (fm.IsDraft)
+                {
+                    continue;
+                }
 
                 var tags = fm.Tags
                     .Select(t => new BlogTag(t, $"{_options.TagsPageUrl}/{HttpUtility.UrlEncode(t)}"))
@@ -84,8 +90,15 @@ public sealed class BlogContentResolver : IFileWatchAware
 
         await foreach (var item in _services.DiscoverAllAsync())
         {
-            if (!item.Route.CanonicalPath.Matches(target)) continue;
-            if (item.Source is not MarkdownFileSource source) continue;
+            if (!item.Route.CanonicalPath.Matches(target))
+            {
+                continue;
+            }
+
+            if (item.Source is not MarkdownFileSource source)
+            {
+                continue;
+            }
 
             var content = await File.ReadAllTextAsync(source.Path.Value);
             var parsed = _parser.Parse<BlogSiteFrontMatter>(content, source.Path.Value);
@@ -133,7 +146,10 @@ public sealed class BlogContentResolver : IFileWatchAware
             .Where(p => p.Tags.Any(t => string.Equals(t.Name, tagName, StringComparison.OrdinalIgnoreCase)))
             .ToImmutableList();
 
-        if (matching.IsEmpty) return null;
+        if (matching.IsEmpty)
+        {
+            return null;
+        }
 
         var tag = matching.First().Tags.First(t =>
             string.Equals(t.Name, tagName, StringComparison.OrdinalIgnoreCase));

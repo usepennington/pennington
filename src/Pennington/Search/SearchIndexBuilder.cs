@@ -44,7 +44,9 @@ public sealed partial class SearchIndexBuilder
     internal static string StripHtml(string html)
     {
         if (string.IsNullOrEmpty(html))
+        {
             return "";
+        }
 
         // Remove HTML tags
         var text = HtmlTagRegex().Replace(html, " ");

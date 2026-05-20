@@ -29,7 +29,11 @@ public sealed class FileWatcher : IFileWatcher
         var fullPath = _fileSystem.Path.GetFullPath(path);
         var key = $"{fullPath}|{filePattern}";
 
-        if (_watchers.ContainsKey(key)) return;
+        if (_watchers.ContainsKey(key))
+        {
+            return;
+        }
+
         if (!_fileSystem.Directory.Exists(fullPath))
         {
             _logger?.LogWarning("Watch path does not exist: {Path}", fullPath);
@@ -68,7 +72,11 @@ public sealed class FileWatcher : IFileWatcher
             try { subscriber(); }
             catch (Exception ex) { _logger?.LogError(ex, "Error notifying file watch subscriber"); }
         }
-        if (_pathAwareSubscribers.Count == 0) return;
+        if (_pathAwareSubscribers.Count == 0)
+        {
+            return;
+        }
+
         var notification = new FileChangeNotification(fullPath, changeType);
         foreach (var subscriber in _pathAwareSubscribers)
         {
@@ -80,7 +88,11 @@ public sealed class FileWatcher : IFileWatcher
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
+
         _disposed = true;
         foreach (var watcher in _watchers.Values)
         {

@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using Pennington.Content;
-using Pennington.Diagnostics;
 using Pennington.Generation;
 using Pennington.Infrastructure;
 using Pennington.Pipeline;

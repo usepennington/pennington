@@ -116,12 +116,18 @@ public class LlmsTxtAndSearchEndpointTests
         foreach (var entry in doc.RootElement.EnumerateArray())
         {
             var url = entry.GetProperty("url").GetString();
-            if (string.IsNullOrEmpty(url)) continue;
+            if (string.IsNullOrEmpty(url))
+            {
+                continue;
+            }
 
             var html = await _client.GetStringAsync(url, TestContext.Current.CancellationToken);
             var page = await context.OpenAsync(req => req.Content(html), TestContext.Current.CancellationToken);
             var pre = page.QuerySelector("#main-content pre") ?? page.QuerySelector("pre");
-            if (pre is null) continue;
+            if (pre is null)
+            {
+                continue;
+            }
 
             // Find a token that appears inside <pre> but NOT anywhere else on the page.
             var preText = pre.TextContent;
@@ -131,7 +137,10 @@ public class LlmsTxtAndSearchEndpointTests
             var candidate = preText
                 .Split([' ', '\n', '\r', '\t', '(', ')', '{', '}', '[', ']', ';', ','], StringSplitOptions.RemoveEmptyEntries)
                 .FirstOrDefault(t => t.Length >= 6 && !pageTextWithoutPre.Contains(t, StringComparison.Ordinal));
-            if (candidate is null) continue;
+            if (candidate is null)
+            {
+                continue;
+            }
 
             codeOnlyToken = candidate;
             matchedBody = entry.GetProperty("body").GetString();

@@ -50,7 +50,10 @@ public class LlmsTxtSmokeTest
         {
             _output.WriteLine("No writing-markdown file found. Available files:");
             foreach (var f in files.Take(20))
+            {
                 _output.WriteLine($"  {f.OutputPath.Value}");
+            }
+
             return;
         }
 

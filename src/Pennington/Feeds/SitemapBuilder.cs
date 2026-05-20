@@ -43,10 +43,14 @@ public sealed class SitemapBuilder
         foreach (var candidate in candidates)
         {
             if (candidate.Metadata is { IsDraft: true })
+            {
                 continue;
+            }
             // Redirects have no sitemap meaning — they aren't canonical URLs.
             if (candidate.Metadata is IRedirectable { RedirectUrl: { Length: > 0 } })
+            {
                 continue;
+            }
 
             var absoluteUrl = candidate.Route.AbsoluteUrl(_canonicalBase);
             var lastModified = candidate.Metadata?.Date;

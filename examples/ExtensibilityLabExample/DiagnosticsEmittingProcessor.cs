@@ -20,7 +20,11 @@ public sealed class DiagnosticsEmittingProcessor(DiagnosticContext diagnostics) 
 
     public bool ShouldProcess(HttpContext context)
     {
-        if (context.Response.StatusCode is < 200 or >= 300) return false;
+        if (context.Response.StatusCode is < 200 or >= 300)
+        {
+            return false;
+        }
+
         var contentType = context.Response.ContentType;
         return contentType is not null
                && contentType.StartsWith("text/html", StringComparison.OrdinalIgnoreCase);

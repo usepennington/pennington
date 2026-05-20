@@ -40,7 +40,9 @@ public sealed class DataFiles : IDataFiles, IFileWatchAware
         foreach (var entry in _byName.Values)
         {
             if (entry.OnFileChanged(change) == FileWatchResponse.Refreshed)
+            {
                 result = FileWatchResponse.Refreshed;
+            }
         }
         return result;
     }

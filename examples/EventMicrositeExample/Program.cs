@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Pennington.Content;
 using Pennington.Data;
-using Pennington.FrontMatter;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
 using Pennington.Pipeline;
@@ -49,17 +48,17 @@ builder.Services.AddDataFile<Schedule>("schedule", "data/schedule.yml");
 //  /tag   — multi-valued projection from the standard `tags:` array
 builder.Services.AddTaxonomy<TalkFrontMatter, string>(opts =>
 {
-    opts.BaseUrl    = "/topic";
-    opts.SelectKey  = fm => fm.Topic;
-    opts.IndexPage  = typeof(TopicIndex);
-    opts.TermPage   = typeof(TopicTerm);
+    opts.BaseUrl = "/topic";
+    opts.SelectKey = fm => fm.Topic;
+    opts.IndexPage = typeof(TopicIndex);
+    opts.TermPage = typeof(TopicTerm);
 });
 builder.Services.AddTaxonomy<TalkFrontMatter, string>(opts =>
 {
-    opts.BaseUrl    = "/tag";
+    opts.BaseUrl = "/tag";
     opts.SelectKeys = fm => fm.Tags;
-    opts.IndexPage  = typeof(TagIndex);
-    opts.TermPage   = typeof(TagTerm);
+    opts.IndexPage = typeof(TagIndex);
+    opts.TermPage = typeof(TagTerm);
 });
 
 var app = builder.Build();
@@ -107,14 +106,27 @@ app.MapGet("/{*path}", async (
     {
         await foreach (var discovered in service.DiscoverAsync())
         {
-            if (!discovered.Route.CanonicalPath.Matches(requested)) continue;
-            if (discovered.Source is not MarkdownFileSource) continue;
+            if (!discovered.Route.CanonicalPath.Matches(requested))
+            {
+                continue;
+            }
+
+            if (discovered.Source is not MarkdownFileSource)
+            {
+                continue;
+            }
 
             var parsed = await parser.ParseAsync(discovered);
-            if (parsed.Value is not ParsedItem parsedItem) continue;
+            if (parsed.Value is not ParsedItem parsedItem)
+            {
+                continue;
+            }
 
             var rendered = await renderer.RenderAsync(parsedItem);
-            if (rendered.Value is not RenderedItem r) continue;
+            if (rendered.Value is not RenderedItem r)
+            {
+                continue;
+            }
 
             var html = $$"""
                 <!DOCTYPE html>

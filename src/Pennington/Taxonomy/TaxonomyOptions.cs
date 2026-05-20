@@ -77,10 +77,14 @@ public sealed class TaxonomyOptions<TFrontMatter, TKey>
     internal void Validate()
     {
         if (string.IsNullOrWhiteSpace(BaseUrl))
+        {
             throw new InvalidOperationException($"{nameof(TaxonomyOptions<TFrontMatter, TKey>)}.{nameof(BaseUrl)} is required.");
+        }
 
         if (!BaseUrl.StartsWith('/'))
+        {
             throw new InvalidOperationException($"{nameof(BaseUrl)} '{BaseUrl}' must start with '/'.");
+        }
 
         if (SelectKey is null == SelectKeys is null)
         {
@@ -89,25 +93,41 @@ public sealed class TaxonomyOptions<TFrontMatter, TKey>
         }
 
         if (IndexPage is null)
+        {
             throw new InvalidOperationException($"{nameof(IndexPage)} is required (the Razor component for the {BaseUrl} index).");
+        }
 
         if (TermPage is null)
+        {
             throw new InvalidOperationException($"{nameof(TermPage)} is required (the Razor component for {BaseUrl}/{{slug}} pages).");
+        }
 
         if (!typeof(IComponent).IsAssignableFrom(IndexPage))
+        {
             throw new InvalidOperationException($"{nameof(IndexPage)} ({IndexPage.FullName}) must implement {nameof(IComponent)}.");
+        }
 
         if (!typeof(IComponent).IsAssignableFrom(TermPage))
+        {
             throw new InvalidOperationException($"{nameof(TermPage)} ({TermPage.FullName}) must implement {nameof(IComponent)}.");
+        }
     }
 
     internal string ResolvedSectionLabel
     {
         get
         {
-            if (!string.IsNullOrWhiteSpace(SectionLabel)) return SectionLabel!;
+            if (!string.IsNullOrWhiteSpace(SectionLabel))
+            {
+                return SectionLabel!;
+            }
+
             var segment = BaseUrl.TrimEnd('/').Split('/').Last();
-            if (string.IsNullOrEmpty(segment)) return "Taxonomy";
+            if (string.IsNullOrEmpty(segment))
+            {
+                return "Taxonomy";
+            }
+
             return char.ToUpperInvariant(segment[0]) + segment[1..];
         }
     }

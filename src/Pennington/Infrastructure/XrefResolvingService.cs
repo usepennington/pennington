@@ -52,7 +52,9 @@ public sealed partial class XrefResolvingService
     public async Task<string> ResolveAsync(string html, DiagnosticContext? diagnostics = null)
     {
         if (!html.Contains("xref:", StringComparison.OrdinalIgnoreCase))
+        {
             return html;
+        }
 
         html = await ResolveXrefTagsAsync(html, diagnostics);
 
@@ -74,18 +76,27 @@ public sealed partial class XrefResolvingService
     /// </summary>
     public async Task<string> ResolveXrefTagsAsync(string html, DiagnosticContext? diagnostics)
     {
-        if (!html.Contains("<xref:", StringComparison.Ordinal)) return html;
+        if (!html.Contains("<xref:", StringComparison.Ordinal))
+        {
+            return html;
+        }
 
         // Build a mask of byte ranges to skip (inside <code> or <pre> elements).
         var skipRanges = BuildSkipRanges(html);
 
         var matches = XrefTagRegex().Matches(html);
-        if (matches.Count == 0) return html;
+        if (matches.Count == 0)
+        {
+            return html;
+        }
 
         for (var i = matches.Count - 1; i >= 0; i--)
         {
             var match = matches[i];
-            if (IsInsideSkipRange(match.Index, skipRanges)) continue;
+            if (IsInsideSkipRange(match.Index, skipRanges))
+            {
+                continue;
+            }
 
             var uid = match.Groups[1].Value;
             var xref = await _resolver.ResolveAsync(uid);
@@ -111,14 +122,23 @@ public sealed partial class XrefResolvingService
     {
         var ranges = new List<(int, int)>();
         foreach (var match in CodeOrPreRegex().EnumerateMatches(html))
+        {
             ranges.Add((match.Index, match.Index + match.Length));
+        }
+
         return ranges;
     }
 
     private static bool IsInsideSkipRange(int index, List<(int Start, int End)> ranges)
     {
         foreach (var (start, end) in ranges)
-            if (index >= start && index < end) return true;
+        {
+            if (index >= start && index < end)
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -135,13 +155,17 @@ public sealed partial class XrefResolvingService
             .ToList();
 
         if (xrefLinks.Count == 0)
+        {
             return false;
+        }
 
         foreach (var link in xrefLinks)
         {
             var href = link.GetAttribute("href");
             if (href is null || !href.StartsWith("xref:", StringComparison.OrdinalIgnoreCase))
+            {
                 continue;
+            }
 
             var uid = href[5..];
             var xref = await _resolver.ResolveAsync(uid);
@@ -150,7 +174,9 @@ public sealed partial class XrefResolvingService
             {
                 link.SetAttribute("href", xref.Route.CanonicalPath.Value);
                 if (link.TextContent.StartsWith("xref:", StringComparison.OrdinalIgnoreCase))
+                {
                     link.TextContent = xref.Title;
+                }
             }
             else
             {

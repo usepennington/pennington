@@ -249,7 +249,7 @@ public class SitemapBuilderTests
         // When users set CanonicalBaseUrl to a fully-qualified URL (the correct
         // form per the sitemap protocol), it must not be overridden by the
         // OutputOptions.BaseUrl fallback.
-        string? canonicalBaseUrl = "https://example.com/my-sub-path";
+        var canonicalBaseUrl = "https://example.com/my-sub-path";
 
         var services = new ServiceCollection();
         services.AddSingleton(new OutputOptions

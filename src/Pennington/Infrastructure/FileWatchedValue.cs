@@ -34,7 +34,10 @@ public sealed class FileWatchedValue<T> : IFileWatchAware
     /// <inheritdoc/>
     public FileWatchResponse OnFileChanged(FileChangeNotification change)
     {
-        if (!Scope.Matches(change)) return FileWatchResponse.Ignore;
+        if (!Scope.Matches(change))
+        {
+            return FileWatchResponse.Ignore;
+        }
 
         lock (_lock)
         {

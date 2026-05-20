@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Pennington.Diagnostics;
 using Pennington.Highlighting;
 
 namespace Pennington.Tests.Highlighting;

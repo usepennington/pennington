@@ -8,7 +8,11 @@ public static class UidDisplay
     {
         var cleaned = uid.Length >= 2 && uid[1] == ':' ? uid[2..] : uid;
         var paren = cleaned.IndexOf('(');
-        if (paren >= 0) cleaned = cleaned[..paren];
+        if (paren >= 0)
+        {
+            cleaned = cleaned[..paren];
+        }
+
         var lastDot = cleaned.LastIndexOf('.');
         var name = lastDot >= 0 ? cleaned[(lastDot + 1)..] : cleaned;
         var backtick = name.IndexOf('`');

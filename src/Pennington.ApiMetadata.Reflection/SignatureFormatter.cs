@@ -8,15 +8,27 @@ internal static class SignatureFormatter
 {
     public static string Display(Type t)
     {
-        if (t.IsByRef) return "ref " + Display(t.GetElementType()!);
-        if (t.IsPointer) return Display(t.GetElementType()!) + "*";
+        if (t.IsByRef)
+        {
+            return "ref " + Display(t.GetElementType()!);
+        }
+
+        if (t.IsPointer)
+        {
+            return Display(t.GetElementType()!) + "*";
+        }
+
         if (t.IsArray)
         {
             var elem = Display(t.GetElementType()!);
             var rank = t.GetArrayRank();
             return rank == 1 ? elem + "[]" : elem + "[" + new string(',', rank - 1) + "]";
         }
-        if (t.IsGenericParameter) return t.Name;
+        if (t.IsGenericParameter)
+        {
+            return t.Name;
+        }
+
         if (t.IsConstructedGenericType)
         {
             var def = t.GetGenericTypeDefinition();
@@ -29,7 +41,11 @@ internal static class SignatureFormatter
             var args = t.GetGenericArguments();
             for (var i = 0; i < args.Length; i++)
             {
-                if (i > 0) sb.Append(", ");
+                if (i > 0)
+                {
+                    sb.Append(", ");
+                }
+
                 sb.Append(Display(args[i]));
             }
             sb.Append('>');
@@ -72,7 +88,11 @@ internal static class SignatureFormatter
     {
         var sb = new StringBuilder();
         sb.Append("public ");
-        if (m.IsStatic) sb.Append("static ");
+        if (m.IsStatic)
+        {
+            sb.Append("static ");
+        }
+
         sb.Append(Display(m.ReturnType)).Append(' ').Append(m.Name);
         if (m.IsGenericMethod)
         {
@@ -93,10 +113,22 @@ internal static class SignatureFormatter
     {
         var sb = new StringBuilder("public ");
         var getMethod = p.GetMethod;
-        if (getMethod is not null && getMethod.IsStatic) sb.Append("static ");
+        if (getMethod is not null && getMethod.IsStatic)
+        {
+            sb.Append("static ");
+        }
+
         sb.Append(Display(p.PropertyType)).Append(' ').Append(p.Name).Append(" { ");
-        if (p.CanRead) sb.Append("get; ");
-        if (p.CanWrite) sb.Append("set; ");
+        if (p.CanRead)
+        {
+            sb.Append("get; ");
+        }
+
+        if (p.CanWrite)
+        {
+            sb.Append("set; ");
+        }
+
         sb.Append('}');
         return sb.ToString();
     }
@@ -104,9 +136,21 @@ internal static class SignatureFormatter
     private static string FieldDeclaration(FieldInfo f)
     {
         var sb = new StringBuilder("public ");
-        if (f.IsStatic) sb.Append("static ");
-        if (f.IsInitOnly) sb.Append("readonly ");
-        if (f.IsLiteral) sb.Append("const ");
+        if (f.IsStatic)
+        {
+            sb.Append("static ");
+        }
+
+        if (f.IsInitOnly)
+        {
+            sb.Append("readonly ");
+        }
+
+        if (f.IsLiteral)
+        {
+            sb.Append("const ");
+        }
+
         sb.Append(Display(f.FieldType)).Append(' ').Append(f.Name);
         return sb.ToString();
     }
@@ -119,7 +163,11 @@ internal static class SignatureFormatter
         sb.Append('(');
         for (var i = 0; i < parameters.Length; i++)
         {
-            if (i > 0) sb.Append(", ");
+            if (i > 0)
+            {
+                sb.Append(", ");
+            }
+
             var p = parameters[i];
             if (p.ParameterType.IsByRef)
             {

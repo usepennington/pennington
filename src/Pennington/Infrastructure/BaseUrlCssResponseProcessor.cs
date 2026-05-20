@@ -27,8 +27,16 @@ public sealed partial class BaseUrlCssResponseProcessor : IResponseProcessor
     /// <inheritdoc/>
     public bool ShouldProcess(HttpContext context)
     {
-        if (string.IsNullOrEmpty(_baseUrl) || _baseUrl == "/") return false;
-        if (context.Response.StatusCode is < 200 or >= 300) return false;
+        if (string.IsNullOrEmpty(_baseUrl) || _baseUrl == "/")
+        {
+            return false;
+        }
+
+        if (context.Response.StatusCode is < 200 or >= 300)
+        {
+            return false;
+        }
+
         var contentType = context.Response.ContentType ?? "";
         return contentType.Contains("text/css");
     }

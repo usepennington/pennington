@@ -11,9 +11,14 @@ public sealed record LlmsSubtree
     public LlmsSubtree(string routePrefix, string title, string description)
     {
         if (string.IsNullOrWhiteSpace(routePrefix))
+        {
             throw new ArgumentException("RoutePrefix must be non-empty.", nameof(routePrefix));
+        }
+
         if (string.IsNullOrWhiteSpace(title))
+        {
             throw new ArgumentException("Title must be non-empty.", nameof(title));
+        }
 
         var trimmed = routePrefix.Trim('/');
         RoutePrefix = trimmed.Length == 0 ? "/" : "/" + trimmed + "/";

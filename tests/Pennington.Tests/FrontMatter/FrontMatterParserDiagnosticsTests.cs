@@ -1,4 +1,3 @@
-using Pennington.Diagnostics;
 using Pennington.FrontMatter;
 using YamlDotNet.Core;
 

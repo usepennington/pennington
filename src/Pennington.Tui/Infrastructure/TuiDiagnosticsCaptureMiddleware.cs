@@ -1,6 +1,5 @@
 namespace Pennington.Tui.Infrastructure;
 
-using System.Collections.Immutable;
 using Microsoft.AspNetCore.Http;
 using Pennington.Diagnostics;
 

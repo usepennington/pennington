@@ -67,7 +67,11 @@ public sealed class RenderedHtmlFetcher
         if (!string.IsNullOrEmpty(selector))
         {
             var match = document.QuerySelector(selector);
-            if (match is not null) return match;
+            if (match is not null)
+            {
+                return match;
+            }
+
             _logger.LogWarning(
                 "RenderedHtmlFetcher: selector '{Selector}' did not match any element in {Path}; falling back to <body>",
                 selector, path);

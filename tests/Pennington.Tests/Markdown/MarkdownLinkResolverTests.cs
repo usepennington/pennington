@@ -19,7 +19,11 @@ public class MarkdownLinkResolverTests
         {
             var fullPath = $"{rootPath}/{path}";
             var dir = fs.Path.GetDirectoryName(fullPath);
-            if (dir != null) fs.Directory.CreateDirectory(dir);
+            if (dir != null)
+            {
+                fs.Directory.CreateDirectory(dir);
+            }
+
             fs.File.WriteAllText(fullPath, content);
         }
         return fs;
@@ -34,7 +38,7 @@ public class MarkdownLinkResolverTests
             BasePageUrl = new UrlPath(basePageUrl),
         };
         return new MarkdownContentService<DocFrontMatter>(
-            options, new FrontMatterParser(), fs,DefaultLocalization);
+            options, new FrontMatterParser(), fs, DefaultLocalization);
     }
 
     [Fact]

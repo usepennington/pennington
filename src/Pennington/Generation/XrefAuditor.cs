@@ -76,7 +76,10 @@ public sealed partial class XrefAuditor : IBuildAuditor
 
     private async Task<ImmutableList<string>> ScanFileAsync(string path, CancellationToken cancellationToken)
     {
-        if (!_fileSystem.File.Exists(path)) return ImmutableList<string>.Empty;
+        if (!_fileSystem.File.Exists(path))
+        {
+            return ImmutableList<string>.Empty;
+        }
 
         string body;
         try
@@ -95,11 +98,21 @@ public sealed partial class XrefAuditor : IBuildAuditor
         foreach (Match match in XrefMatcher().Matches(scannable))
         {
             var uid = match.Groups[1].Value.TrimEnd('.', ',', ';', ':');
-            if (string.IsNullOrEmpty(uid)) continue;
-            if (!seen.Add(uid)) continue;
+            if (string.IsNullOrEmpty(uid))
+            {
+                continue;
+            }
+
+            if (!seen.Add(uid))
+            {
+                continue;
+            }
 
             var resolved = await _resolver.ResolveAsync(uid);
-            if (resolved is null) broken.Add(uid);
+            if (resolved is null)
+            {
+                broken.Add(uid);
+            }
         }
 
         return broken.ToImmutable();
@@ -118,7 +131,11 @@ public sealed partial class XrefAuditor : IBuildAuditor
             var trimmed = line.TrimStart();
             if (fence is not null)
             {
-                if (trimmed.StartsWith(fence, StringComparison.Ordinal)) fence = null;
+                if (trimmed.StartsWith(fence, StringComparison.Ordinal))
+                {
+                    fence = null;
+                }
+
                 sb.Append('\n');
                 continue;
             }

@@ -46,7 +46,9 @@ public static class DocSiteServiceExtensions
                 // Carve the blog subtree out of the doc source so blog posts aren't
                 // double-discovered as documentation pages.
                 if (hasBlog)
+                {
                     md.ExcludePaths = ["blog"];
+                }
             });
 
             // Blog posts: a separate markdown source parsed as BlogPostFrontMatter.
@@ -120,8 +122,6 @@ public static class DocSiteServiceExtensions
             var bodyFont = options.BodyFontFamily ?? defaultFontStack;
             var monoFont = options.MonoFontFamily ?? defaultMonoStack;
             var userCustomization = options.CustomCssFrameworkSettings ?? (settings => settings);
-
-
 
             var monoOptions = new MonorailCssOptions
             {
@@ -205,12 +205,16 @@ public static class DocSiteServiceExtensions
         var result = new List<Assembly>(options.AdditionalRoutingAssemblies.Length + 1);
 
         if (entry is not null && seen.Add(entry))
+        {
             result.Add(entry);
+        }
 
         foreach (var asm in options.AdditionalRoutingAssemblies)
         {
             if (seen.Add(asm))
+            {
                 result.Add(asm);
+            }
         }
 
         return result.ToArray();

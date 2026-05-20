@@ -71,7 +71,10 @@ internal sealed class ApiReferenceContentService : IContentService, ILlmsSubtree
 
     public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {
-        if (_registration.TocTitle is null) return Task.FromResult(ImmutableList<ContentTocItem>.Empty);
+        if (_registration.TocTitle is null)
+        {
+            return Task.FromResult(ImmutableList<ContentTocItem>.Empty);
+        }
 
         var route = ContentRouteFactory.FromUrl(new UrlPath(_registration.RoutePrefix));
         var hierarchyParts = route.CanonicalPath.Value

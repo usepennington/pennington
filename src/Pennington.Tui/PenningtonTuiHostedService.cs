@@ -141,7 +141,11 @@ internal sealed class PenningtonTuiHostedService(
     // "MarkdownContentService<DocFrontMatter>" in the Content tab's tree headers.
     private static string FormatServiceLabel(Type type)
     {
-        if (!type.IsGenericType) return type.Name;
+        if (!type.IsGenericType)
+        {
+            return type.Name;
+        }
+
         var baseName = type.Name.Split('`')[0];
         var args = string.Join(", ", type.GetGenericArguments().Select(a => a.Name));
         return $"{baseName}<{args}>";

@@ -44,11 +44,16 @@ public static class BlogSiteServiceExtensions
             var appAssembly = Assembly.GetEntryAssembly();
             var assemblies = new List<Assembly> { blogSiteAssembly };
             if (appAssembly != null && appAssembly != blogSiteAssembly)
+            {
                 assemblies.Add(appAssembly);
+            }
+
             foreach (var extra in options.AdditionalRoutingAssemblies)
             {
                 if (!assemblies.Contains(extra))
+                {
                     assemblies.Add(extra);
+                }
             }
             penn.AdditionalRoutingAssemblies = assemblies.ToArray();
         });

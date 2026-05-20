@@ -109,7 +109,11 @@ internal static class TuiApp
             {
                 _ = state.RenderTick.Value;
                 var total = 0;
-                foreach (var g in state.ContentGroups) total += g.Items.Count;
+                foreach (var g in state.ContentGroups)
+                {
+                    total += g.Items.Count;
+                }
+
                 return $"pages: {total}";
             }),
         };
@@ -141,7 +145,9 @@ internal static class TuiApp
         Terminal.Run(root, _ =>
         {
             if (cancellationToken.IsCancellationRequested)
+            {
                 return TerminalLoopResult.StopAndKeepVisual;
+            }
 
             pumpMain();
             pumpContent();

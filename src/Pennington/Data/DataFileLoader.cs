@@ -37,7 +37,9 @@ public static class DataFileLoader
     public static T Load<T>(string absolutePath, IFileSystem fileSystem)
     {
         if (!fileSystem.File.Exists(absolutePath))
+        {
             throw new FileNotFoundException($"Data file not found: {absolutePath}", absolutePath);
+        }
 
         var content = fileSystem.File.ReadAllText(absolutePath);
         var ext = Path.GetExtension(absolutePath).ToLowerInvariant();
@@ -61,7 +63,9 @@ public static class DataFileLoader
     public static IReadOnlyList<TItem> LoadMany<TItem>(string absolutePath, IFileSystem fileSystem)
     {
         if (!fileSystem.File.Exists(absolutePath))
+        {
             throw new FileNotFoundException($"Data file not found: {absolutePath}", absolutePath);
+        }
 
         var content = fileSystem.File.ReadAllText(absolutePath);
         var ext = Path.GetExtension(absolutePath).ToLowerInvariant();
@@ -78,7 +82,9 @@ public static class DataFileLoader
     private static IReadOnlyList<TItem> LoadManyYaml<TItem>(string content, string path)
     {
         if (RootIsYamlSequence(content, path))
+        {
             return DeserializeYaml<List<TItem>>(content, path);
+        }
 
         return [DeserializeYaml<TItem>(content, path)];
     }

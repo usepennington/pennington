@@ -82,7 +82,10 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
         string typeUid, MemberKind kind, AccessFilter access, MemberOrder order)
     {
         var info = await _symbolService.FindSymbolAsync(typeUid);
-        if (info?.Symbol is not INamedTypeSymbol type) return [];
+        if (info?.Symbol is not INamedTypeSymbol type)
+        {
+            return [];
+        }
 
         var matched = EnumerateMemberSymbols(type, access)
             .Where(m => MatchesKind(m.Symbol, kind))
@@ -92,7 +95,10 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
         foreach (var (symbol, declaringType) in matched)
         {
             var apiMember = await BuildMemberAsync(symbol, declaringType);
-            if (apiMember is not null) builder.Add(apiMember);
+            if (apiMember is not null)
+            {
+                builder.Add(apiMember);
+            }
         }
 
         if (kind is MemberKind.UnionCases or MemberKind.All && IsUnion(type))
@@ -123,12 +129,22 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
 
         foreach (var member in type.GetMembers())
         {
-            if (!IncludeSymbol(member, access)) continue;
+            if (!IncludeSymbol(member, access))
+            {
+                continue;
+            }
+
             var key = member.GetDocumentationCommentId() ?? $"{member.Kind}:{member.Name}";
-            if (seen.Add(key)) yield return (member, null);
+            if (seen.Add(key))
+            {
+                yield return (member, null);
+            }
         }
 
-        if (type.TypeKind != TypeKind.Interface) yield break;
+        if (type.TypeKind != TypeKind.Interface)
+        {
+            yield break;
+        }
 
         foreach (var baseInterface in type.AllInterfaces)
         {
@@ -136,20 +152,33 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
             // example, `IDisposable` from System.Runtime when the queried interface inherits
             // it transitively. Their members don't have source we can extract a signature
             // from, and they aren't part of the user's API surface that this page documents.
-            if (baseInterface.Locations.All(l => l.IsInMetadata)) continue;
+            if (baseInterface.Locations.All(l => l.IsInMetadata))
+            {
+                continue;
+            }
 
             foreach (var member in baseInterface.GetMembers())
             {
-                if (!IncludeSymbol(member, access)) continue;
+                if (!IncludeSymbol(member, access))
+                {
+                    continue;
+                }
+
                 var key = member.GetDocumentationCommentId() ?? $"{member.Kind}:{member.Name}";
-                if (seen.Add(key)) yield return (member, baseInterface);
+                if (seen.Add(key))
+                {
+                    yield return (member, baseInterface);
+                }
             }
         }
     }
 
     private static bool IsUnion(INamedTypeSymbol type)
     {
-        if (type.TypeKind != TypeKind.Struct) return false;
+        if (type.TypeKind != TypeKind.Struct)
+        {
+            return false;
+        }
 
         // Both the C# 15 `union` keyword (net11.0+) and the polyfill shim (net10.0)
         // emit/declare `[Union]` on the struct and implement `IUnion`. Either signal
@@ -157,7 +186,10 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
         var hasUnionAttr = type.GetAttributes()
             .Any(a => a.AttributeClass?.Name == "UnionAttribute"
                 && a.AttributeClass.ContainingNamespace?.ToDisplayString() == "System.Runtime.CompilerServices");
-        if (hasUnionAttr) return true;
+        if (hasUnionAttr)
+        {
+            return true;
+        }
 
         return type.AllInterfaces.Any(i => i.Name == "IUnion"
             && i.ContainingNamespace?.ToDisplayString() == "System.Runtime.CompilerServices");
@@ -180,7 +212,10 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
         foreach (var caseType in cases)
         {
             var docId = caseType.GetDocumentationCommentId();
-            if (string.IsNullOrEmpty(docId)) continue;
+            if (string.IsNullOrEmpty(docId))
+            {
+                continue;
+            }
 
             var rawXml = caseType.GetDocumentationCommentXml();
             var hasInheritDoc = !string.IsNullOrWhiteSpace(rawXml)
@@ -231,7 +266,11 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
     public async Task<ParsedXmlDoc> GetXmldocAsync(string uid)
     {
         var info = await _symbolService.FindSymbolAsync(uid);
-        if (info is null) return ParsedXmlDoc.Empty;
+        if (info is null)
+        {
+            return ParsedXmlDoc.Empty;
+        }
+
         var raw = info.Symbol.GetDocumentationCommentXml();
         var resolved = InheritDocResolver.Resolve(raw, info.Symbol);
         resolved = RecordParamFallbackResolver.Resolve(resolved, info.Symbol);
@@ -242,7 +281,11 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
     public async Task<ApiMember?> GetMemberAsync(string uid)
     {
         var info = await _symbolService.FindSymbolAsync(uid);
-        if (info?.Symbol is not { } symbol || symbol is INamedTypeSymbol) return null;
+        if (info?.Symbol is not { } symbol || symbol is INamedTypeSymbol)
+        {
+            return null;
+        }
+
         return await BuildMemberAsync(symbol, inheritedFrom: null);
     }
 
@@ -300,7 +343,10 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
     private async Task<ApiMember?> BuildMemberAsync(ISymbol symbol, INamedTypeSymbol? inheritedFrom = null)
     {
         var kind = ClassifyMemberKind(symbol);
-        if (kind is null) return null;
+        if (kind is null)
+        {
+            return null;
+        }
 
         var docId = symbol.GetDocumentationCommentId() ?? string.Empty;
         var rawXml = symbol.GetDocumentationCommentXml();
@@ -403,19 +449,39 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
         foreach (var project in projects)
         {
             var compilation = await _workspace.GetCompilationAsync(project);
-            if (compilation is null) continue;
+            if (compilation is null)
+            {
+                continue;
+            }
 
             foreach (var type in EnumerateTypes(compilation.Assembly.GlobalNamespace, includeNested: true))
             {
-                if (!ShouldInclude(type)) continue;
-                if (_options.TypeFilter is { } extra && !extra(type)) continue;
+                if (!ShouldInclude(type))
+                {
+                    continue;
+                }
+
+                if (_options.TypeFilter is { } extra && !extra(type))
+                {
+                    continue;
+                }
 
                 var xmldoc = type.GetDocumentationCommentXml();
-                if (string.IsNullOrWhiteSpace(xmldoc)) continue;
+                if (string.IsNullOrWhiteSpace(xmldoc))
+                {
+                    continue;
+                }
 
                 var docId = type.GetDocumentationCommentId();
-                if (string.IsNullOrEmpty(docId)) continue;
-                if (!seen.Add(docId)) continue;
+                if (string.IsNullOrEmpty(docId))
+                {
+                    continue;
+                }
+
+                if (!seen.Add(docId))
+                {
+                    continue;
+                }
 
                 builder.Add(new ApiTypeSummary(
                     Uid: docId,
@@ -440,7 +506,10 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
         foreach (var project in projects)
         {
             var compilation = await _workspace.GetCompilationAsync(project);
-            if (compilation is null) continue;
+            if (compilation is null)
+            {
+                continue;
+            }
 
             foreach (var type in EnumerateTypes(compilation.Assembly.GlobalNamespace, includeNested: false)
                 .Where(t => t.IsStatic
@@ -449,15 +518,32 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
             {
                 foreach (var member in type.GetMembers())
                 {
-                    if (member is not IMethodSymbol { IsExtensionMethod: true } method) continue;
-                    if (method.DeclaredAccessibility != Accessibility.Public) continue;
-                    if (method.Parameters.Length == 0) continue;
+                    if (member is not IMethodSymbol { IsExtensionMethod: true } method)
+                    {
+                        continue;
+                    }
+
+                    if (method.DeclaredAccessibility != Accessibility.Public)
+                    {
+                        continue;
+                    }
+
+                    if (method.Parameters.Length == 0)
+                    {
+                        continue;
+                    }
 
                     var receiverName = method.Parameters[0].Type.Name;
-                    if (string.IsNullOrEmpty(receiverName)) continue;
+                    if (string.IsNullOrEmpty(receiverName))
+                    {
+                        continue;
+                    }
 
                     var docId = method.GetDocumentationCommentId();
-                    if (string.IsNullOrEmpty(docId)) continue;
+                    if (string.IsNullOrEmpty(docId))
+                    {
+                        continue;
+                    }
 
                     collected.Add(new ExtensionMethodEntry(
                         Name: FormatMethodName(method),
@@ -508,12 +594,36 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
 
     private static bool ShouldInclude(INamedTypeSymbol type)
     {
-        if (type.DeclaredAccessibility != Accessibility.Public) return false;
-        if (type.IsImplicitlyDeclared) return false;
-        if (type.TypeKind is TypeKind.Delegate or TypeKind.Error or TypeKind.Module) return false;
-        if (IsTopLevelStatementsProgram(type)) return false;
-        if (InheritsFrom(type, "System.Attribute")) return false;
-        if (InheritsFrom(type, "Microsoft.AspNetCore.Components.ComponentBase")) return false;
+        if (type.DeclaredAccessibility != Accessibility.Public)
+        {
+            return false;
+        }
+
+        if (type.IsImplicitlyDeclared)
+        {
+            return false;
+        }
+
+        if (type.TypeKind is TypeKind.Delegate or TypeKind.Error or TypeKind.Module)
+        {
+            return false;
+        }
+
+        if (IsTopLevelStatementsProgram(type))
+        {
+            return false;
+        }
+
+        if (InheritsFrom(type, "System.Attribute"))
+        {
+            return false;
+        }
+
+        if (InheritsFrom(type, "Microsoft.AspNetCore.Components.ComponentBase"))
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -524,14 +634,21 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
     {
         for (var current = type.BaseType; current is not null; current = current.BaseType)
         {
-            if (current.ToDisplayString() == fullyQualifiedBase) return true;
+            if (current.ToDisplayString() == fullyQualifiedBase)
+            {
+                return true;
+            }
         }
         return false;
     }
 
     private static ApiTypeKind ClassifyKind(INamedTypeSymbol type)
     {
-        if (type.IsRecord) return ApiTypeKind.Record;
+        if (type.IsRecord)
+        {
+            return ApiTypeKind.Record;
+        }
+
         return type.TypeKind switch
         {
             TypeKind.Interface => ApiTypeKind.Interface,
@@ -603,12 +720,19 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
 
     private static string? ExtractSummarySentence(string? xmlDoc)
     {
-        if (string.IsNullOrWhiteSpace(xmlDoc)) return null;
+        if (string.IsNullOrWhiteSpace(xmlDoc))
+        {
+            return null;
+        }
+
         try
         {
             var doc = System.Xml.Linq.XDocument.Parse(xmlDoc);
             var summary = doc.Root?.Element("summary")?.Value;
-            if (string.IsNullOrWhiteSpace(summary)) return null;
+            if (string.IsNullOrWhiteSpace(summary))
+            {
+                return null;
+            }
 
             var collapsed = System.Text.RegularExpressions.Regex.Replace(summary, @"\s+", " ").Trim();
             var period = collapsed.IndexOf('.');
@@ -622,7 +746,10 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
 
     private static bool IncludeSymbol(ISymbol symbol, AccessFilter access)
     {
-        if (symbol.IsImplicitlyDeclared) return false;
+        if (symbol.IsImplicitlyDeclared)
+        {
+            return false;
+        }
 
         if (symbol is IMethodSymbol method)
         {
@@ -742,8 +869,15 @@ public sealed class RoslynApiMetadataProvider : IApiMetadataProvider
 
     private static string? FallbackClrDefault(IPropertySymbol property)
     {
-        if (property.IsRequired) return null;
-        if (property.NullableAnnotation == NullableAnnotation.Annotated) return "null";
+        if (property.IsRequired)
+        {
+            return null;
+        }
+
+        if (property.NullableAnnotation == NullableAnnotation.Annotated)
+        {
+            return "null";
+        }
 
         return property.Type.SpecialType switch
         {

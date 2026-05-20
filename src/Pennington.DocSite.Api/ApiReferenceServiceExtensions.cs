@@ -95,7 +95,10 @@ public static class ApiReferenceServiceExtensions
         {
             if (services[i] is { ServiceType: { } t, ImplementationInstance: DocSiteOptions existing } && t == typeof(DocSiteOptions))
             {
-                if (Array.IndexOf(existing.AdditionalRoutingAssemblies, asm) >= 0) return;
+                if (Array.IndexOf(existing.AdditionalRoutingAssemblies, asm) >= 0)
+                {
+                    return;
+                }
 
                 var updated = existing with
                 {

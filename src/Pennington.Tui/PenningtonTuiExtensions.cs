@@ -2,7 +2,6 @@ namespace Pennington.Tui;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Pennington.Tui.Infrastructure;
 using Pennington.Tui.Logging;
@@ -30,7 +29,9 @@ public static class PenningtonTuiExtensions
         // TUI's ANSI frames into something a human or grep can read. Bail out so
         // the host's default ILogger Console output stays as line-mode log entries.
         if (PenningtonTuiHostedService.IsConsoleRedirected())
+        {
             return services;
+        }
 
         var options = new PenningtonTuiOptions();
         configure?.Invoke(options);

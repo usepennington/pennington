@@ -50,7 +50,9 @@ public sealed class DataDirectoryEntry<TItem> : IDataFile
     private static IReadOnlyList<TItem> Load(string absolutePath, IFileSystem fileSystem)
     {
         if (!fileSystem.Directory.Exists(absolutePath))
+        {
             throw new DirectoryNotFoundException($"Data directory not found: {absolutePath}");
+        }
 
         var files = fileSystem.Directory.EnumerateFiles(absolutePath)
             .Where(f => SupportedExtensions.Contains(fileSystem.Path.GetExtension(f).ToLowerInvariant()))
@@ -58,7 +60,9 @@ public sealed class DataDirectoryEntry<TItem> : IDataFile
 
         var items = new List<TItem>();
         foreach (var file in files)
+        {
             items.AddRange(DataFileLoader.LoadMany<TItem>(file, fileSystem));
+        }
 
         return items;
     }

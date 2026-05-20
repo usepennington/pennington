@@ -162,7 +162,10 @@ public sealed class TextMateHighlighter : ICodeHighlighter
                 try
                 {
                     grammar = _registry.LoadGrammar(potentialScope);
-                    if (grammar != null) break;
+                    if (grammar != null)
+                    {
+                        break;
+                    }
                 }
                 catch
                 {
@@ -231,7 +234,9 @@ public sealed class TextMateHighlighter : ICodeHighlighter
     private static string? GetHljsClassForScopes(List<string> scopes)
     {
         if (scopes.Count == 0)
+        {
             return null;
+        }
 
         for (var i = scopes.Count - 1; i >= 0; i--)
         {
@@ -239,7 +244,9 @@ public sealed class TextMateHighlighter : ICodeHighlighter
             foreach (var (scope, cssClass) in ScopeMappings)
             {
                 if (currentScope.StartsWith(scope))
+                {
                     return cssClass;
+                }
             }
         }
 

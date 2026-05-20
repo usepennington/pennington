@@ -16,9 +16,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
@@ -105,7 +105,10 @@ public static class PenningtonExtensions
         // The user wins if they already flipped it on; flip-down for build is rare and
         // can still be done by registering a replacement options instance after AddPennington.
         if (PenningtonBuildMode.IsBuildMode() && !options.FrontMatter.StrictUnknownKeys)
+        {
             options.FrontMatter.StrictUnknownKeys = true;
+        }
+
         services.AddSingleton(options.FrontMatter);
         services.AddSingleton<FrontMatterParser>();
         services.AddFileWatched<NavigationBuilder>();
@@ -175,10 +178,17 @@ public static class PenningtonExtensions
             var gate = new object();
             object Resolve(IServiceProvider sp)
             {
-                if (instance is not null) return instance;
+                if (instance is not null)
+                {
+                    return instance;
+                }
+
                 lock (gate)
                 {
-                    if (instance is not null) return instance;
+                    if (instance is not null)
+                    {
+                        return instance;
+                    }
 
                     var env = sp.GetService<IWebHostEnvironment>();
                     var resolvedContentPath = Path.IsPathRooted(capturedSource.ContentPath)
@@ -363,11 +373,18 @@ public static class PenningtonExtensions
     {
         var options = app.Services.GetRequiredService<PenningtonOptions>();
 
-        if (!options.Localization.IsMultiLocale) return app;
+        if (!options.Localization.IsMultiLocale)
+        {
+            return app;
+        }
 
         // Guard against double-registration
         var appBuilder = (IApplicationBuilder)app;
-        if (appBuilder.Properties.ContainsKey(LocaleRoutingKey)) return app;
+        if (appBuilder.Properties.ContainsKey(LocaleRoutingKey))
+        {
+            return app;
+        }
+
         appBuilder.Properties[LocaleRoutingKey] = true;
 
         var cultureProvider = new PenningtonUrlRequestCultureProvider(options.Localization);
@@ -443,10 +460,17 @@ public static class PenningtonExtensions
             var contentPath = Path.IsPathRooted(source.ContentPath)
                 ? source.ContentPath
                 : Path.Combine(hostContentRoot, source.ContentPath);
-            if (!Directory.Exists(contentPath)) continue;
+            if (!Directory.Exists(contentPath))
+            {
+                continue;
+            }
 
             var requestPath = new UrlPath(source.BasePageUrl).EnsureLeadingSlash().RemoveTrailingSlash().Value;
-            if (requestPath == "/") requestPath = "";
+            if (requestPath == "/")
+            {
+                requestPath = "";
+            }
+
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(contentPath),
@@ -467,10 +491,15 @@ public static class PenningtonExtensions
                 foreach (var locale in options.Localization.Locales.Keys)
                 {
                     if (string.Equals(locale, options.Localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
+                    {
                         continue;
+                    }
 
                     var localeContentPath = Path.Combine(contentPath, locale);
-                    if (!Directory.Exists(localeContentPath)) continue;
+                    if (!Directory.Exists(localeContentPath))
+                    {
+                        continue;
+                    }
 
                     app.UseStaticFiles(new StaticFileOptions
                     {
@@ -518,7 +547,7 @@ public static class PenningtonExtensions
         // OutputGenerationService.DiscoverMapGetRoutes bakes each file.
         var localization = app.Services.GetRequiredService<LocalizationOptions>();
         var searchIndexLocales = localization.Locales.Count > 0
-            ? (IEnumerable<string>)localization.Locales.Keys
+            ? localization.Locales.Keys
             : [localization.DefaultLocale];
         foreach (var code in searchIndexLocales)
         {

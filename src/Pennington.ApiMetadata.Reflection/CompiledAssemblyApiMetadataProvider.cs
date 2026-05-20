@@ -47,7 +47,10 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
         string typeUid, MemberKind kind, AccessFilter access, MemberOrder order)
     {
         var cat = await _catalog.Value;
-        if (!cat.MembersByType.TryGetValue(typeUid, out var all)) return [];
+        if (!cat.MembersByType.TryGetValue(typeUid, out var all))
+        {
+            return [];
+        }
 
         var filtered = kind == MemberKind.All ? all : all.Where(m => m.Kind == kind);
         return order switch
@@ -88,14 +91,24 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
         var assemblyPaths = new List<string>();
         foreach (var dir in _options.AssemblyDirectories)
         {
-            if (!Directory.Exists(dir)) continue;
+            if (!Directory.Exists(dir))
+            {
+                continue;
+            }
+
             assemblyPaths.AddRange(Directory.EnumerateFiles(dir, "*.dll", SearchOption.TopDirectoryOnly));
         }
         foreach (var path in _options.AssemblyFiles)
         {
-            if (File.Exists(path)) assemblyPaths.Add(path);
+            if (File.Exists(path))
+            {
+                assemblyPaths.Add(path);
+            }
         }
-        if (assemblyPaths.Count == 0) return Catalog.Empty;
+        if (assemblyPaths.Count == 0)
+        {
+            return Catalog.Empty;
+        }
 
         var resolverPaths = BuildResolverPaths(assemblyPaths);
         var resolver = new PathAssemblyResolver(resolverPaths);
@@ -150,7 +163,10 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
         Dictionary<string, ApiMember> membersByUid,
         Dictionary<string, ParsedXmlDoc> xmldocs)
     {
-        if (ShouldSkipType(type)) return;
+        if (ShouldSkipType(type))
+        {
+            return;
+        }
 
         var uid = XmlDocIdFormatter.ForType(type);
         var parsed = xmldoc.Get(uid);
@@ -180,7 +196,10 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
             ApiMember? apiMember;
             try { apiMember = TryReflectMember(m, xmldoc); }
             catch { continue; }
-            if (apiMember is null) continue;
+            if (apiMember is null)
+            {
+                continue;
+            }
 
             list.Add(apiMember);
             membersByUid[apiMember.Uid] = apiMember;
@@ -200,19 +219,32 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
 
     private ApiMember? TryReflectMember(MemberInfo m, XmlDocFile xmldoc)
     {
-        if (IsCompilerGenerated(m)) return null;
-        if (m is MethodInfo method && ShouldSkipMethod(method)) return null;
+        if (IsCompilerGenerated(m))
+        {
+            return null;
+        }
+
+        if (m is MethodInfo method && ShouldSkipMethod(method))
+        {
+            return null;
+        }
 
         var uid = XmlDocIdFormatter.ForMember(m);
-        if (string.IsNullOrEmpty(uid)) return null;
+        if (string.IsNullOrEmpty(uid))
+        {
+            return null;
+        }
 
         var parsed = xmldoc.Get(uid);
         var kind = ClassifyMember(m);
-        if (kind is null) return null;
+        if (kind is null)
+        {
+            return null;
+        }
 
         var parameters = ImmutableArray<ApiParameter>.Empty;
         string? returnTypeDisplay = null;
-        string typeDisplay = string.Empty;
+        var typeDisplay = string.Empty;
         var isRequired = false;
 
         switch (m)
@@ -257,7 +289,11 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
 
     private static ImmutableArray<ApiParameter> BuildParameters(ParameterInfo[] parameters, ParsedXmlDoc parsed)
     {
-        if (parameters.Length == 0) return [];
+        if (parameters.Length == 0)
+        {
+            return [];
+        }
+
         var builder = ImmutableArray.CreateBuilder<ApiParameter>(parameters.Length);
         foreach (var p in parameters)
         {
@@ -272,7 +308,10 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
 
     private static bool ShouldSkipType(Type t)
     {
-        if (!(t.IsPublic || t.IsNestedPublic)) return false;  // GetExportedTypes already handles this; belt-and-suspenders
+        if (!(t.IsPublic || t.IsNestedPublic))
+        {
+            return false;  // GetExportedTypes already handles this; belt-and-suspenders
+        }
         // Filter out compiler-generated helper types.
         if (t.GetCustomAttributesData().Any(a => a.AttributeType.FullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
         {
@@ -280,7 +319,11 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
         }
         // Skip nested types here — the outer type enumerates them explicitly so we visit
         // them with the right reflection context. Treating them as top-level doubles them up.
-        if (t.IsNested) return true;
+        if (t.IsNested)
+        {
+            return true;
+        }
+
         return false;
     }
 
@@ -289,10 +332,26 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
         // Skip property/event accessors and operator backing methods — they'll be surfaced
         // via the property/event itself.
         var name = m.Name;
-        if (name.StartsWith("get_", StringComparison.Ordinal)) return true;
-        if (name.StartsWith("set_", StringComparison.Ordinal)) return true;
-        if (name.StartsWith("add_", StringComparison.Ordinal)) return true;
-        if (name.StartsWith("remove_", StringComparison.Ordinal)) return true;
+        if (name.StartsWith("get_", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (name.StartsWith("set_", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (name.StartsWith("add_", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (name.StartsWith("remove_", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
         return false;
     }
 
@@ -314,12 +373,36 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
 
     private static ApiTypeKind ClassifyType(Type t)
     {
-        if (t.IsEnum) return ApiTypeKind.Enum;
-        if (t.IsInterface) return ApiTypeKind.Interface;
-        if (t.IsValueType) return ApiTypeKind.Struct;
-        if (t.GetCustomAttributesData().Any(a => a.AttributeType.FullName == "System.Runtime.CompilerServices.IsReadOnlyAttribute" && t.IsValueType)) return ApiTypeKind.Struct;
-        if (IsRecord(t)) return ApiTypeKind.Record;
-        if (typeof(MulticastDelegate).IsAssignableFrom(t.BaseType)) return ApiTypeKind.Delegate;
+        if (t.IsEnum)
+        {
+            return ApiTypeKind.Enum;
+        }
+
+        if (t.IsInterface)
+        {
+            return ApiTypeKind.Interface;
+        }
+
+        if (t.IsValueType)
+        {
+            return ApiTypeKind.Struct;
+        }
+
+        if (t.GetCustomAttributesData().Any(a => a.AttributeType.FullName == "System.Runtime.CompilerServices.IsReadOnlyAttribute" && t.IsValueType))
+        {
+            return ApiTypeKind.Struct;
+        }
+
+        if (IsRecord(t))
+        {
+            return ApiTypeKind.Record;
+        }
+
+        if (typeof(MulticastDelegate).IsAssignableFrom(t.BaseType))
+        {
+            return ApiTypeKind.Delegate;
+        }
+
         return ApiTypeKind.Class;
     }
 
@@ -328,10 +411,18 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
 
     private static string DisplayTypeName(Type t)
     {
-        if (!t.IsGenericType) return t.Name;
+        if (!t.IsGenericType)
+        {
+            return t.Name;
+        }
+
         var name = t.Name;
         var tick = name.IndexOf('`');
-        if (tick < 0) return name;
+        if (tick < 0)
+        {
+            return name;
+        }
+
         var baseName = name[..tick];
         var args = t.GetGenericArguments();
         return baseName + "<" + string.Join(", ", args.Select(a => a.Name)) + ">";
@@ -339,7 +430,11 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
 
     private static string MemberDisplayName(MemberInfo m)
     {
-        if (m is ConstructorInfo c) return c.DeclaringType?.Name.Split('`')[0] ?? ".ctor";
+        if (m is ConstructorInfo c)
+        {
+            return c.DeclaringType?.Name.Split('`')[0] ?? ".ctor";
+        }
+
         if (m is MethodInfo mi && mi.IsGenericMethod)
         {
             return mi.Name + "<" + string.Join(", ", mi.GetGenericArguments().Select(a => a.Name)) + ">";
@@ -374,13 +469,21 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
     private static ImmutableArray<string> ImplementedInterfaces(Type t)
     {
         var ifaces = t.GetInterfaces();
-        if (ifaces.Length == 0) return [];
+        if (ifaces.Length == 0)
+        {
+            return [];
+        }
+
         return ifaces.Select(XmlDocIdFormatter.ForType).ToImmutableArray();
     }
 
     private static string? FirstSentence(ParsedXmlDoc doc)
     {
-        if (!doc.HasSummary) return null;
+        if (!doc.HasSummary)
+        {
+            return null;
+        }
+
         var sb = new System.Text.StringBuilder();
         foreach (var node in doc.Summary)
         {
@@ -391,13 +494,20 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
                 case ParaNode p:
                     foreach (var child in p.Children)
                     {
-                        if (child.Value is TextNode pt) sb.Append(pt.Text);
+                        if (child.Value is TextNode pt)
+                        {
+                            sb.Append(pt.Text);
+                        }
                     }
                     break;
             }
         }
         var collapsed = System.Text.RegularExpressions.Regex.Replace(sb.ToString(), @"\s+", " ").Trim();
-        if (collapsed.Length == 0) return null;
+        if (collapsed.Length == 0)
+        {
+            return null;
+        }
+
         var period = collapsed.IndexOf('.');
         return period > 0 ? collapsed[..(period + 1)] : collapsed;
     }
@@ -460,7 +570,10 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
         // Only yield the highest-version subdirectory of each to avoid duplicates.
         var ncaDir = new DirectoryInfo(runtimeDir);
         var sharedRoot = ncaDir.Parent?.Parent;
-        if (sharedRoot is null || !sharedRoot.Exists) yield break;
+        if (sharedRoot is null || !sharedRoot.Exists)
+        {
+            yield break;
+        }
 
         foreach (var frameworkRoot in sharedRoot.EnumerateDirectories())
         {
@@ -472,7 +585,10 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
             var latest = frameworkRoot.EnumerateDirectories()
                 .OrderByDescending(d => d.Name, StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault();
-            if (latest is not null) yield return latest.FullName;
+            if (latest is not null)
+            {
+                yield return latest.FullName;
+            }
         }
     }
 

@@ -39,15 +39,26 @@ public sealed class BlogPostResolver
         var posts = new List<BlogPostSummary>();
         await foreach (var item in _services.DiscoverAllAsync())
         {
-            if (item.Source is not MarkdownFileSource source) continue;
-            if (!IsBlogPostRoute(item.Route)) continue;
+            if (item.Source is not MarkdownFileSource source)
+            {
+                continue;
+            }
+
+            if (!IsBlogPostRoute(item.Route))
+            {
+                continue;
+            }
 
             try
             {
                 var content = await File.ReadAllTextAsync(source.Path.Value);
                 var parsed = _parser.Parse<BlogPostFrontMatter>(content, source.Path.Value);
                 var fm = parsed.Metadata ?? new BlogPostFrontMatter();
-                if (fm.IsDraft) continue;
+                if (fm.IsDraft)
+                {
+                    continue;
+                }
+
                 posts.Add(new BlogPostSummary(fm, item.Route.CanonicalPath.Value));
             }
             catch
@@ -69,9 +80,20 @@ public sealed class BlogPostResolver
 
         await foreach (var item in _services.DiscoverAllAsync())
         {
-            if (item.Source is not MarkdownFileSource source) continue;
-            if (!IsBlogPostRoute(item.Route)) continue;
-            if (!item.Route.CanonicalPath.Matches(target)) continue;
+            if (item.Source is not MarkdownFileSource source)
+            {
+                continue;
+            }
+
+            if (!IsBlogPostRoute(item.Route))
+            {
+                continue;
+            }
+
+            if (!item.Route.CanonicalPath.Matches(target))
+            {
+                continue;
+            }
 
             var content = await File.ReadAllTextAsync(source.Path.Value);
             var parsed = _parser.Parse<BlogPostFrontMatter>(content, source.Path.Value);
@@ -112,7 +134,10 @@ public sealed class BlogPostResolver
                 string.Equals(t, tagName, StringComparison.OrdinalIgnoreCase)))
             .ToImmutableList();
 
-        if (matching.IsEmpty) return null;
+        if (matching.IsEmpty)
+        {
+            return null;
+        }
 
         return (MakeTag(tagName), matching);
     }

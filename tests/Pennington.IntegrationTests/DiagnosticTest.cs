@@ -25,11 +25,13 @@ public class DiagnosticTest
             BasePageUrl = new UrlPath("/"),
         };
 
-        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), new RealFileSystem(),new LocalizationOptions());
+        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), new RealFileSystem(), new LocalizationOptions());
 
         var items = new List<string>();
         await foreach (var item in service.DiscoverAsync())
+        {
             items.Add(item.Route.CanonicalPath.Value);
+        }
 
         items.Count.ShouldBeGreaterThan(0);
         items.ShouldContain(i => i.Contains("creating-first-site"));
@@ -46,7 +48,7 @@ public class DiagnosticTest
         };
 
         // Use DocSiteFrontMatter — same as the real site
-        var service = new MarkdownContentService<DocSiteFrontMatter>(options, new FrontMatterParser(), new RealFileSystem(),new LocalizationOptions());
+        var service = new MarkdownContentService<DocSiteFrontMatter>(options, new FrontMatterParser(), new RealFileSystem(), new LocalizationOptions());
         var tocItems = await service.GetContentTocEntriesAsync();
         tocItems.Count.ShouldBeGreaterThan(0, "TOC entries should not be empty with DocSiteFrontMatter");
     }
@@ -62,7 +64,7 @@ public class DiagnosticTest
         };
 
         // Use Pennington's DocFrontMatter
-        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), new RealFileSystem(),new LocalizationOptions());
+        var service = new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), new RealFileSystem(), new LocalizationOptions());
         var tocItems = await service.GetContentTocEntriesAsync();
         tocItems.Count.ShouldBeGreaterThan(0, "TOC entries should not be empty with DocFrontMatter");
     }

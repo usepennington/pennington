@@ -62,7 +62,9 @@ public sealed class PenningtonStringLocalizer : IStringLocalizer
             foreach (var (key, value) in defaultEntries)
             {
                 if (!entries.ContainsKey(key))
+                {
                     yield return new LocalizedString(key, value, resourceNotFound: false);
+                }
             }
         }
     }
@@ -73,7 +75,10 @@ public sealed class PenningtonStringLocalizer : IStringLocalizer
 
         // Try current locale first
         var value = _translations.Get(locale, key);
-        if (value is not null) return value;
+        if (value is not null)
+        {
+            return value;
+        }
 
         // Fall back to default locale
         if (!string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
@@ -95,7 +100,9 @@ public sealed class PenningtonStringLocalizer : IStringLocalizer
 
         // Direct match: culture name is a registered Pennington locale
         if (_localization.Locales.ContainsKey(cultureName))
+        {
             return cultureName;
+        }
 
         // Check if any locale has this culture as its HtmlLang
         foreach (var (code, info) in _localization.Locales)
@@ -112,7 +119,9 @@ public sealed class PenningtonStringLocalizer : IStringLocalizer
         {
             var parentName = culture.Parent!.Name;
             if (_localization.Locales.ContainsKey(parentName))
+            {
                 return parentName;
+            }
         }
 
         return _localization.DefaultLocale;

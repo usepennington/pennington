@@ -96,7 +96,10 @@ public sealed class SitemapService : IFileWatchAware
             // appear as canonical URLs either. LlmsOnlySource items have no
             // HTML page at all — they only exist as llms.txt sidecars and
             // shouldn't be advertised to crawlers. Skip all three.
-            if (discovered.Source.Value is RedirectSource or EndpointSource or LlmsOnlySource) continue;
+            if (discovered.Source.Value is RedirectSource or EndpointSource or LlmsOnlySource)
+            {
+                continue;
+            }
 
             // Markdown sources carry the front matter their content service
             // parsed at discovery time (correct front-matter type, no re-parse);
@@ -129,13 +132,19 @@ public sealed class SitemapService : IFileWatchAware
                     new XElement(ns + "loc", entry.Url.Value));
 
                 if (entry.LastModified.HasValue)
+                {
                     url.Add(new XElement(ns + "lastmod", entry.LastModified.Value.ToString("yyyy-MM-dd")));
+                }
 
                 if (entry.ChangeFrequency != null)
+                {
                     url.Add(new XElement(ns + "changefreq", entry.ChangeFrequency));
+                }
 
                 if (entry.Priority.HasValue)
+                {
                     url.Add(new XElement(ns + "priority", entry.Priority.Value.ToString("F1")));
+                }
 
                 return url;
             }));
@@ -161,12 +170,16 @@ public sealed class SitemapService : IFileWatchAware
                     new XElement(ns + "loc", entry.Url.Value));
 
                 if (entry.LastModified.HasValue)
+                {
                     url.Add(new XElement(ns + "lastmod", entry.LastModified.Value.ToString("yyyy-MM-dd")));
+                }
 
                 // Find the content-relative URL for this entry to look up alternates
                 var entryPath = entry.Url.Value;
                 if (canonicalBase.Value != "/" && entryPath.StartsWith(canonicalBase.Value))
+                {
                     entryPath = entryPath[canonicalBase.Value.Length..];
+                }
 
                 var contentRelative = StripLocalePrefix(entryPath, localization);
 
@@ -222,7 +235,10 @@ public sealed class SitemapService : IFileWatchAware
     private static string StripLocalePrefix(string url, LocalizationOptions localization)
     {
         var trimmed = url.Trim('/');
-        if (string.IsNullOrEmpty(trimmed)) return "/";
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            return "/";
+        }
 
         var firstSlash = trimmed.IndexOf('/');
         var firstSegment = firstSlash >= 0 ? trimmed[..firstSlash] : trimmed;

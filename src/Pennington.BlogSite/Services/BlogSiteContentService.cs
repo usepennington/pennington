@@ -57,7 +57,10 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
         {
             foreach (var tag in post.Tags)
             {
-                if (!seen.Add(tag)) continue;
+                if (!seen.Add(tag))
+                {
+                    continue;
+                }
 
                 var encoded = HttpUtility.UrlEncode(tag);
                 var tagsPageSegment = _options.TagsPageUrl.Trim('/');
@@ -138,14 +141,20 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
                 new XElement("guid", new XAttribute("isPermaLink", "true"), url));
 
             if (!string.IsNullOrEmpty(post.FrontMatter.Description))
+            {
                 entry.Add(new XElement("description", post.FrontMatter.Description));
+            }
 
             if (post.FrontMatter.Date.HasValue)
+            {
                 entry.Add(new XElement("pubDate",
                     post.FrontMatter.Date.Value.ToUniversalTime().ToString("r")));
+            }
 
             if (!string.IsNullOrEmpty(post.FrontMatter.Author))
+            {
                 entry.Add(new XElement("author", post.FrontMatter.Author));
+            }
 
             channel.Add(entry);
         }
@@ -166,7 +175,9 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
         var contentRoot = Path.GetFullPath(
             Path.Combine(_options.ContentRootPath, _options.BlogContentPath));
         if (!Directory.Exists(contentRoot))
+        {
             return builder.ToImmutable();
+        }
 
         var contentRootPath = new FilePath(contentRoot);
         var baseUrl = new UrlPath(_options.BlogBaseUrl);
@@ -195,7 +206,10 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
                 continue;
             }
 
-            if (fm.IsDraft) continue;
+            if (fm.IsDraft)
+            {
+                continue;
+            }
 
             var route = ContentRouteFactory.FromMarkdownFile(
                 new FilePath(file), contentRootPath, baseUrl);

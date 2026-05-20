@@ -18,7 +18,7 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
 {
     private readonly ISolutionWorkspaceService _workspaceService;
     private readonly ILogger<SymbolExtractionService> _logger;
-    private AsyncLazy<IReadOnlyDictionary<string, SymbolInfo>> _symbolsLazy;
+    private readonly AsyncLazy<IReadOnlyDictionary<string, SymbolInfo>> _symbolsLazy;
 
     public SymbolExtractionService(
         ISolutionWorkspaceService workspaceService,
@@ -120,7 +120,11 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
             {
                 if (typeMember is INamedTypeSymbol nested)
                 {
-                    if (visited.Add(nested)) typeQueue.Enqueue(nested);
+                    if (visited.Add(nested))
+                    {
+                        typeQueue.Enqueue(nested);
+                    }
+
                     continue;
                 }
                 await TryAddSymbolFromCompilationAsync(typeMember, documentByPath, fallbackByProject, currentProject, symbols);
@@ -136,18 +140,23 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
         ConcurrentDictionary<string, SymbolInfo> symbols)
     {
         var docId = symbol.GetDocumentationCommentId();
-        if (string.IsNullOrEmpty(docId)) return;
+        if (string.IsNullOrEmpty(docId))
+        {
+            return;
+        }
 
         var normalizedId = XmlDocIdNormalizer.Normalize(docId);
-        if (symbols.ContainsKey(normalizedId)) return;
+        if (symbols.ContainsKey(normalizedId))
+        {
+            return;
+        }
 
         var syntaxRef = symbol.DeclaringSyntaxReferences.FirstOrDefault();
         var path = syntaxRef?.SyntaxTree.FilePath;
-        (Document Document, Project Project) entry;
         SyntaxNode node;
         TextSpan span;
 
-        if (syntaxRef is not null && !string.IsNullOrEmpty(path) && documentByPath.TryGetValue(path, out entry))
+        if (syntaxRef is not null && !string.IsNullOrEmpty(path) && documentByPath.TryGetValue(path, out var entry))
         {
             node = await syntaxRef.GetSyntaxAsync();
             span = node.Span;

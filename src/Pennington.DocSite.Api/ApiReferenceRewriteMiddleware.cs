@@ -36,7 +36,10 @@ public sealed class ApiReferenceRewriteMiddleware
         {
             foreach (var reg in _registry.Registrations)
             {
-                if (!path.StartsWith(reg.RoutePrefix, StringComparison.Ordinal)) continue;
+                if (!path.StartsWith(reg.RoutePrefix, StringComparison.Ordinal))
+                {
+                    continue;
+                }
 
                 // Preserve the public path so MainLayout can resolve the active
                 // area and stamp TOC selection against the URL the user sees,

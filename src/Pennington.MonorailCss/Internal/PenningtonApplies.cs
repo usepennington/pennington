@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using MonorailCss;
 using MonorailCss.Parser.Custom;
 
 namespace Pennington.MonorailCss.Internal;

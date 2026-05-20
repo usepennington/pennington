@@ -101,7 +101,11 @@ public sealed class MarkdownContentRenderer : IContentRenderer
         foreach (var element in document.QuerySelectorAll("a[href]"))
         {
             var href = element.GetAttribute("href");
-            if (href is null) continue;
+            if (href is null)
+            {
+                continue;
+            }
+
             var resolved = await resolver.ResolveAsync(sourceFile, href);
             if (resolved is not null && !string.Equals(resolved, href, StringComparison.Ordinal))
             {
@@ -113,7 +117,11 @@ public sealed class MarkdownContentRenderer : IContentRenderer
         foreach (var element in document.QuerySelectorAll("img[src]"))
         {
             var src = element.GetAttribute("src");
-            if (src is null) continue;
+            if (src is null)
+            {
+                continue;
+            }
+
             var resolved = await resolver.ResolveAsync(sourceFile, src);
             if (resolved is not null && !string.Equals(resolved, src, StringComparison.Ordinal))
             {
@@ -122,7 +130,10 @@ public sealed class MarkdownContentRenderer : IContentRenderer
             }
         }
 
-        if (!modified) return html;
+        if (!modified)
+        {
+            return html;
+        }
 
         // AngleSharp renders the fragment inside <html><head></head><body>…</body></html>.
         // The rest of the pipeline expects the bare fragment, so emit only body contents.

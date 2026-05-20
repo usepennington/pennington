@@ -47,12 +47,18 @@ public sealed class LinkAuditor : IRenderedAuditor
             // link from a regular page to that URL would 404, so leaving
             // them out of knownRoutes lets the link verifier flag the
             // broken reference instead of silently allowing it.
-            if (item.Source is Pipeline.LlmsOnlySource) continue;
+            if (item.Source is Pipeline.LlmsOnlySource)
+            {
+                continue;
+            }
+
             knownRoutes.Add(item.Route);
         }
 
         foreach (var copy in await _contentServices.CollectContentToCopyAsync())
+        {
             copiedAssetPaths.Add(copy.OutputPath.Value);
+        }
 
         // Mirror OutputGenerationService.CreateContentFilesAsync so files emitted via
         // GetContentToCreateAsync (e.g. per-subtree llms.txt files) are treated as
@@ -60,7 +66,9 @@ public sealed class LinkAuditor : IRenderedAuditor
         foreach (var emitter in _contentServices.WithStandaloneEmitters(_contentEmitters))
         {
             foreach (var item in await emitter.GetContentToCreateAsync())
+            {
                 copiedAssetPaths.Add(item.OutputPath.Value);
+            }
         }
 
         knownRoutes.AddRange(MapGetRouteDiscovery.Discover(_endpointDataSource));
@@ -75,14 +83,24 @@ public sealed class LinkAuditor : IRenderedAuditor
             // differs per locale (translated chrome around English body), so do not
             // dedupe on source file. Dedupe on canonical path instead — that's the
             // unit each rendered page renders at.
-            if (!visited.Add(page.Route.CanonicalPath.Value)) continue;
+            if (!visited.Add(page.Route.CanonicalPath.Value))
+            {
+                continue;
+            }
 
             var html = await context.GetRenderedHtmlAsync(page.Route, cancellationToken);
-            if (html is null) continue;
+            if (html is null)
+            {
+                continue;
+            }
 
             foreach (var result in verifier.VerifyLinks(page.Route, html))
             {
-                if (result.Value is not BrokenLinkResult broken) continue;
+                if (result.Value is not BrokenLinkResult broken)
+                {
+                    continue;
+                }
+
                 diagnostics.Add(new BuildDiagnostic(
                     Severity: DiagnosticSeverity.Warning,
                     Route: page.Route,

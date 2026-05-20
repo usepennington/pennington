@@ -78,7 +78,11 @@ public class TaxonomyContentServiceTests
         {
             var full = $"/content/{path}";
             var dir = fs.Path.GetDirectoryName(full);
-            if (!string.IsNullOrEmpty(dir)) fs.Directory.CreateDirectory(dir);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                fs.Directory.CreateDirectory(dir);
+            }
+
             fs.File.WriteAllText(full, body);
             fakeItems.Add((url, full));
         }
@@ -150,7 +154,10 @@ public class TaxonomyContentServiceTests
             ("/recipes/b/", "b.md", "---\ntitle: B\ncuisine: french\n---\n"));
 
         var items = new List<DiscoveredItem>();
-        await foreach (var item in taxonomy.DiscoverAsync()) items.Add(item);
+        await foreach (var item in taxonomy.DiscoverAsync())
+        {
+            items.Add(item);
+        }
 
         items.Count.ShouldBe(3); // index + italian + french
         items[0].Route.CanonicalPath.Value.TrimEnd('/').ShouldBe("/cuisine");

@@ -39,7 +39,10 @@ public sealed partial class PipelineHighlighter : ICodeHighlighter
     /// <summary>Produce the highlighted HTML for one fence's body.</summary>
     public string Highlight(string code, string language)
     {
-        if (string.IsNullOrEmpty(code)) return string.Empty;
+        if (string.IsNullOrEmpty(code))
+        {
+            return string.Empty;
+        }
 
         var sb = new StringBuilder();
         sb.Append("<pre><code data-extensibility-lab=\"pipeline-highlighter\">");

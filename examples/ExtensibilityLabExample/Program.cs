@@ -96,7 +96,9 @@ app.MapGet("/{*path}", async (
 
     // Release-notes index
     if (trimmed.Equals("releases", StringComparison.OrdinalIgnoreCase))
+    {
         return Results.Content(RenderReleaseIndex(releases), "text/html");
+    }
 
     // Release-notes detail pages
     if (trimmed.StartsWith("releases/", StringComparison.OrdinalIgnoreCase))
@@ -104,7 +106,9 @@ app.MapGet("/{*path}", async (
         var version = trimmed["releases/".Length..];
         var entry = releases.TryGet(version);
         if (entry is not null)
+        {
             return Results.Content(RenderReleaseEntry(entry), "text/html");
+        }
     }
 
     // Markdown pages
@@ -112,14 +116,27 @@ app.MapGet("/{*path}", async (
     {
         await foreach (var discovered in service.DiscoverAsync())
         {
-            if (!discovered.Route.CanonicalPath.Matches(requested)) continue;
-            if (discovered.Source is not MarkdownFileSource) continue;
+            if (!discovered.Route.CanonicalPath.Matches(requested))
+            {
+                continue;
+            }
+
+            if (discovered.Source is not MarkdownFileSource)
+            {
+                continue;
+            }
 
             var parsed = await parser.ParseAsync(discovered);
-            if (parsed is not ParsedItem parsedItem) continue;
+            if (parsed is not ParsedItem parsedItem)
+            {
+                continue;
+            }
 
             var rendered = await renderer.RenderAsync(parsedItem);
-            if (rendered is not RenderedItem renderedItem) continue;
+            if (rendered is not RenderedItem renderedItem)
+            {
+                continue;
+            }
 
             return Results.Content(RenderMarkdownPage(renderedItem), "text/html");
         }

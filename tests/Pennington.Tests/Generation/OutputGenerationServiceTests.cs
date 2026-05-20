@@ -228,11 +228,15 @@ public class OutputGenerationServiceTests
             var depth = string.IsNullOrEmpty(normalizedSubpath) ? 0 : normalizedSubpath.Split('/').Length;
 
             if (depth >= segments.Length)
+            {
                 return NotFoundDirectoryContents.Singleton;
+            }
 
             var expectedPrefix = string.Join('/', segments.Take(depth));
             if (!string.Equals(normalizedSubpath, expectedPrefix, StringComparison.Ordinal))
+            {
                 return NotFoundDirectoryContents.Singleton;
+            }
 
             var isLeaf = depth == segments.Length - 1;
             var entry = isLeaf

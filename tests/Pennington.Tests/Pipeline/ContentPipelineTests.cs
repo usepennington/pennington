@@ -55,7 +55,11 @@ public class ContentPipelineTests
 
         public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
         {
-            foreach (var item in _items) yield return item;
+            foreach (var item in _items)
+            {
+                yield return item;
+            }
+
             await Task.CompletedTask;
         }
 

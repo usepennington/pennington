@@ -146,7 +146,11 @@ public sealed class FileWatchDependencyFactory<T> : IFileWatchAware, IDisposable
     {
         lock (_lock)
         {
-            if (_instance is not null) return _instance;
+            if (_instance is not null)
+            {
+                return _instance;
+            }
+
             _logger.LogDebug("Creating new instance of {Type}", typeof(T).Name);
             _instance = ActivatorUtilities.CreateInstance<T>(_serviceProvider);
             return _instance;
@@ -161,7 +165,10 @@ public sealed class FileWatchDependencyFactory<T> : IFileWatchAware, IDisposable
     {
         lock (_lock)
         {
-            if (_instance is null) return FileWatchResponse.Ignore;
+            if (_instance is null)
+            {
+                return FileWatchResponse.Ignore;
+            }
 
             var response = _instance.OnFileChanged(change);
             if (response == FileWatchResponse.Recreate)

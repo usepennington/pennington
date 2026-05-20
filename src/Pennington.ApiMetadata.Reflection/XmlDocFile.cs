@@ -24,7 +24,10 @@ internal sealed class XmlDocFile
     /// <summary>Parses the xmldoc XML at <paramref name="path"/>. Returns <see cref="Empty"/> if the file is missing or malformed.</summary>
     public static XmlDocFile Load(string path, IXmlDocParser parser)
     {
-        if (!File.Exists(path)) return Empty;
+        if (!File.Exists(path))
+        {
+            return Empty;
+        }
 
         XDocument doc;
         try
@@ -37,13 +40,19 @@ internal sealed class XmlDocFile
         }
 
         var members = doc.Root?.Element("members")?.Elements("member");
-        if (members is null) return Empty;
+        if (members is null)
+        {
+            return Empty;
+        }
 
         var map = new Dictionary<string, ParsedXmlDoc>(System.StringComparer.Ordinal);
         foreach (var m in members)
         {
             var name = m.Attribute("name")?.Value;
-            if (string.IsNullOrEmpty(name)) continue;
+            if (string.IsNullOrEmpty(name))
+            {
+                continue;
+            }
 
             // Pass the <member> element as its own root — the parser reads summary/remarks/
             // param/etc. as direct children regardless of the root name. Re-wrapping via

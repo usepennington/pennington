@@ -34,7 +34,11 @@ internal static class ContentTab
         {
             var groups = state.ContentGroups;
             var appUrl = state.AppUrl;
-            if (ReferenceEquals(groups, lastRendered) && appUrl == lastAppUrl) return;
+            if (ReferenceEquals(groups, lastRendered) && appUrl == lastAppUrl)
+            {
+                return;
+            }
+
             lastRendered = groups;
             lastAppUrl = appUrl;
 

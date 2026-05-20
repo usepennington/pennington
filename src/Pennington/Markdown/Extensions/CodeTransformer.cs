@@ -24,19 +24,30 @@ internal static class CodeTransformer
     public static string Transform(string highlightedHtml)
     {
         if (string.IsNullOrEmpty(highlightedHtml))
+        {
             return highlightedHtml;
+        }
 
         var parser = new HtmlParser();
         var document = parser.ParseDocument(highlightedHtml);
 
         var preElement = document.QuerySelector("pre");
-        if (preElement == null) return highlightedHtml;
+        if (preElement == null)
+        {
+            return highlightedHtml;
+        }
 
         var codeElement = preElement.QuerySelector("code");
-        if (codeElement == null) return highlightedHtml;
+        if (codeElement == null)
+        {
+            return highlightedHtml;
+        }
 
         var lineElements = StructureCodeIntoLines(codeElement);
-        if (lineElements.Count == 0) return highlightedHtml;
+        if (lineElements.Count == 0)
+        {
+            return highlightedHtml;
+        }
 
         var snippetDirectives = new List<(int LineNumber, DirectiveMatch Directive)>();
         var transformations = new List<LineTransformation>();
@@ -103,8 +114,15 @@ internal static class CodeTransformer
 
         for (var i = 0; i < lines.Length; i++)
         {
-            if (i == lines.Length - 1 && string.IsNullOrEmpty(lines[i])) continue;
-            if (document == null) continue;
+            if (i == lines.Length - 1 && string.IsNullOrEmpty(lines[i]))
+            {
+                continue;
+            }
+
+            if (document == null)
+            {
+                continue;
+            }
 
             var lineSpan = document.CreateElement("span");
             lineSpan.ClassName = "line";
@@ -124,13 +142,17 @@ internal static class CodeTransformer
     private static WordHighlightInfo? ParseWordHighlight(string notation)
     {
         if (!notation.StartsWith("word:", StringComparison.OrdinalIgnoreCase))
+        {
             return null;
+        }
 
         var content = notation.Substring(5);
         var parts = content.Split('|', 2);
 
         if (parts.Length == 0 || string.IsNullOrWhiteSpace(parts[0]))
+        {
             return null;
+        }
 
         var word = parts[0].Trim();
         var message = parts.Length > 1 ? parts[1].Trim() : null;
@@ -141,7 +163,10 @@ internal static class CodeTransformer
     private static void ApplyWordHighlighting(IElement lineElement, WordHighlightInfo wordInfo)
     {
         var document = lineElement.Owner;
-        if (document == null) return;
+        if (document == null)
+        {
+            return;
+        }
 
         var textNodes = lineElement.Descendants().OfType<IText>().ToList();
 
@@ -150,7 +175,10 @@ internal static class CodeTransformer
             var text = textNode.Text;
             var wordIndex = text.IndexOf(wordInfo.Word, StringComparison.Ordinal);
 
-            if (wordIndex == -1) continue;
+            if (wordIndex == -1)
+            {
+                continue;
+            }
 
             var highlightSpan = document.CreateElement("span");
             highlightSpan.ClassName = wordInfo.Message != null ? "word-highlight-with-message" : "word-highlight";
@@ -189,7 +217,10 @@ internal static class CodeTransformer
     private static void AddMessageCallout(IElement lineElement, string message, IElement highlightSpan)
     {
         var document = lineElement.Owner;
-        if (document == null) return;
+        if (document == null)
+        {
+            return;
+        }
 
         var messageWrapper = document.CreateElement("span");
         messageWrapper.ClassName = "word-highlight-wrapper";
@@ -225,17 +256,29 @@ internal static class CodeTransformer
     {
         var span = text.AsSpan();
         var codeIndex = span.IndexOf("[!code", StringComparison.OrdinalIgnoreCase);
-        if (codeIndex == -1) return null;
+        if (codeIndex == -1)
+        {
+            return null;
+        }
 
         var closeIndex = span[codeIndex..].IndexOf(']');
-        if (closeIndex == -1) return null;
+        if (closeIndex == -1)
+        {
+            return null;
+        }
+
         closeIndex += codeIndex;
 
         var notationStart = codeIndex + 6; // "[!code".Length
         while (notationStart < closeIndex && char.IsWhiteSpace(span[notationStart]))
+        {
             notationStart++;
+        }
 
-        if (notationStart >= closeIndex) return null;
+        if (notationStart >= closeIndex)
+        {
+            return null;
+        }
 
         var notation = span.Slice(notationStart, closeIndex - notationStart).ToString().Trim();
 
@@ -246,7 +289,10 @@ internal static class CodeTransformer
         foreach (var marker in CommentMarkers)
         {
             var markerIndex = beforeDirective.LastIndexOf(marker, StringComparison.OrdinalIgnoreCase);
-            if (markerIndex == -1) continue;
+            if (markerIndex == -1)
+            {
+                continue;
+            }
 
             var between = beforeDirective[(markerIndex + marker.Length)..];
             if (IsOnlyWhitespace(between))
@@ -257,14 +303,19 @@ internal static class CodeTransformer
             }
         }
 
-        if (!commentMarkerFound) return null;
+        if (!commentMarkerFound)
+        {
+            return null;
+        }
 
         var directiveEnd = closeIndex + 1;
         var afterBracket = span[directiveEnd..];
 
         var leadingWhitespace = 0;
         while (leadingWhitespace < afterBracket.Length && char.IsWhiteSpace(afterBracket[leadingWhitespace]))
+        {
             leadingWhitespace++;
+        }
 
         foreach (var ending in BlockCommentEndings)
         {
@@ -283,7 +334,10 @@ internal static class CodeTransformer
     {
         foreach (var c in span)
         {
-            if (!char.IsWhiteSpace(c)) return false;
+            if (!char.IsWhiteSpace(c))
+            {
+                return false;
+            }
         }
         return true;
     }
@@ -305,7 +359,11 @@ internal static class CodeTransformer
 
     private static bool DetermineCommentPreservation(DirectiveMatch directive, string fullLineText)
     {
-        if (directive.EndIndex >= fullLineText.Length) return false;
+        if (directive.EndIndex >= fullLineText.Length)
+        {
+            return false;
+        }
+
         var afterDirective = fullLineText.AsSpan()[directive.EndIndex..];
         return !IsOnlyWhitespace(afterDirective);
     }
@@ -314,7 +372,10 @@ internal static class CodeTransformer
     {
         var directiveSpan = directive.FullMatch.AsSpan();
         var codeIndex = directiveSpan.IndexOf("[!code", StringComparison.OrdinalIgnoreCase);
-        if (codeIndex == -1) return "";
+        if (codeIndex == -1)
+        {
+            return "";
+        }
 
         var marker = directiveSpan[..codeIndex].ToString().TrimEnd();
         return string.IsNullOrEmpty(marker) ? "" : marker;
@@ -326,7 +387,10 @@ internal static class CodeTransformer
 
         foreach (var node in textNodes)
         {
-            if (!node.Text.Contains(directive)) continue;
+            if (!node.Text.Contains(directive))
+            {
+                continue;
+            }
 
             var replacement = "";
             if (!string.IsNullOrEmpty(commentMarker))
@@ -361,7 +425,9 @@ internal static class CodeTransformer
         var trimmed = text.Trim();
 
         if (EmptyCommentPatterns.Any(pattern => string.Equals(trimmed, pattern, StringComparison.OrdinalIgnoreCase)))
+        {
             return true;
+        }
 
         if (trimmed.StartsWith("/*", StringComparison.OrdinalIgnoreCase) &&
             trimmed.EndsWith("*/", StringComparison.OrdinalIgnoreCase))
@@ -457,7 +523,9 @@ internal static class CodeTransformer
     {
         var content = span.TextContent.Trim();
         if (!IsCommentMarkerOnly(content))
+        {
             return false;
+        }
 
         var sibling = span.NextSibling;
         while (sibling != null)
@@ -469,7 +537,11 @@ internal static class CodeTransformer
                 _ => false,
             };
 
-            if (hasContent) return false;
+            if (hasContent)
+            {
+                return false;
+            }
+
             sibling = sibling.NextSibling;
         }
 
@@ -482,7 +554,9 @@ internal static class CodeTransformer
     private static bool TryMergeSpans(IElement current, IElement next)
     {
         if (current.ClassName != next.ClassName || current.NextElementSibling != next)
+        {
             return false;
+        }
 
         var node = current.NextSibling;
         while (node != null && node != next)
@@ -518,7 +592,10 @@ internal static class CodeTransformer
 
     private static void ApplyTransformationsToDom(IElement preElement, List<IElement> lineElements, List<LineTransformation> transformations)
     {
-        if (transformations.Count == 0) return;
+        if (transformations.Count == 0)
+        {
+            return;
+        }
 
         var transformationsByType = transformations
             .GroupBy(t => t.Notation)
@@ -579,7 +656,10 @@ internal static class CodeTransformer
 
     private static void NormalizeLineIndents(List<IElement> lineElements)
     {
-        if (lineElements.Count == 0) return;
+        if (lineElements.Count == 0)
+        {
+            return;
+        }
 
         var minIndent = int.MaxValue;
         var hasNonEmptyLine = false;
@@ -587,24 +667,38 @@ internal static class CodeTransformer
         foreach (var lineElement in lineElements)
         {
             var textContent = lineElement.TextContent;
-            if (string.IsNullOrWhiteSpace(textContent)) continue;
+            if (string.IsNullOrWhiteSpace(textContent))
+            {
+                continue;
+            }
 
             var leadingSpaces = 0;
             while (leadingSpaces < textContent.Length && textContent[leadingSpaces] == ' ')
+            {
                 leadingSpaces++;
+            }
 
             if (leadingSpaces < minIndent)
+            {
                 minIndent = leadingSpaces;
+            }
 
             hasNonEmptyLine = true;
         }
 
-        if (!hasNonEmptyLine || minIndent == 0 || minIndent == int.MaxValue) return;
+        if (!hasNonEmptyLine || minIndent == 0 || minIndent == int.MaxValue)
+        {
+            return;
+        }
 
         foreach (var lineElement in lineElements)
         {
             var textContent = lineElement.TextContent;
-            if (string.IsNullOrWhiteSpace(textContent)) continue;
+            if (string.IsNullOrWhiteSpace(textContent))
+            {
+                continue;
+            }
+
             RemoveLeadingSpaces(lineElement, minIndent);
         }
     }
@@ -623,7 +717,10 @@ internal static class CodeTransformer
 
         foreach (var node in lineElement.ChildNodes)
         {
-            if (spacesRemaining == 0) break;
+            if (spacesRemaining == 0)
+            {
+                break;
+            }
 
             if (node is IText textNode)
             {
@@ -678,24 +775,38 @@ internal static class CodeTransformer
             {
                 case "include-start":
                     if (includeStack.Count > 0)
+                    {
                         return new SnippetValidationResult([], false);
+                    }
+
                     includeStack.Push(lineNumber);
                     break;
 
                 case "include-end":
-                    if (includeStack.Count == 0) continue;
+                    if (includeStack.Count == 0)
+                    {
+                        continue;
+                    }
+
                     var includeStart = includeStack.Pop();
                     regions.Add(new SnippetRegion(includeStart, lineNumber, SnippetRegionType.Include));
                     break;
 
                 case "exclude-start":
                     if (excludeStack.Count > 0)
+                    {
                         return new SnippetValidationResult([], false);
+                    }
+
                     excludeStack.Push(lineNumber);
                     break;
 
                 case "exclude-end":
-                    if (excludeStack.Count == 0) continue;
+                    if (excludeStack.Count == 0)
+                    {
+                        continue;
+                    }
+
                     var excludeStart = excludeStack.Pop();
                     regions.Add(new SnippetRegion(excludeStart, lineNumber, SnippetRegionType.Exclude));
                     break;
@@ -707,7 +818,10 @@ internal static class CodeTransformer
 
     private static HashSet<int> DetermineLinesToRemove(int totalLineCount, List<SnippetRegion> regions)
     {
-        if (regions.Count == 0) return [];
+        if (regions.Count == 0)
+        {
+            return [];
+        }
 
         var includeRegions = regions.Where(r => r.Type == SnippetRegionType.Include).ToList();
         var excludeRegions = regions.Where(r => r.Type == SnippetRegionType.Exclude).ToList();
@@ -716,19 +830,25 @@ internal static class CodeTransformer
         if (includeRegions.Count > 0)
         {
             for (var i = 0; i < totalLineCount; i++)
+            {
                 linesToRemove.Add(i);
+            }
 
             foreach (var region in includeRegions)
             {
                 for (var i = region.StartLine + 1; i < region.EndLine; i++)
+                {
                     linesToRemove.Remove(i);
+                }
             }
         }
 
         foreach (var region in excludeRegions)
         {
             for (var i = region.StartLine; i <= region.EndLine; i++)
+            {
                 linesToRemove.Add(i);
+            }
         }
 
         foreach (var region in includeRegions)
@@ -742,7 +862,10 @@ internal static class CodeTransformer
 
     private static void RemoveLinesFromDom(List<IElement> lineElements, HashSet<int> linesToRemove)
     {
-        if (linesToRemove.Count == 0) return;
+        if (linesToRemove.Count == 0)
+        {
+            return;
+        }
 
         for (var i = lineElements.Count - 1; i >= 0; i--)
         {
@@ -751,7 +874,9 @@ internal static class CodeTransformer
                 var lineElement = lineElements[i];
                 var nextSibling = lineElement.NextSibling;
                 if (nextSibling is IText textNode && textNode.Text == "\n")
+                {
                     textNode.Remove();
+                }
 
                 lineElement.Remove();
                 lineElements.RemoveAt(i);
@@ -762,14 +887,20 @@ internal static class CodeTransformer
     private static List<LineTransformation> AdjustTransformationsAfterLineRemoval(
         List<LineTransformation> transformations, HashSet<int> removedLines)
     {
-        if (removedLines.Count == 0) return transformations;
+        if (removedLines.Count == 0)
+        {
+            return transformations;
+        }
 
         var sortedRemovedLines = removedLines.OrderBy(x => x).ToList();
         var adjusted = new List<LineTransformation>();
 
         foreach (var transformation in transformations)
         {
-            if (removedLines.Contains(transformation.LineNumber)) continue;
+            if (removedLines.Contains(transformation.LineNumber))
+            {
+                continue;
+            }
 
             var linesBefore = sortedRemovedLines.Count(r => r < transformation.LineNumber);
             adjusted.Add(new LineTransformation

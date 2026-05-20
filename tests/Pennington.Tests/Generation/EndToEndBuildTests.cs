@@ -55,7 +55,11 @@ public class EndToEndBuildTests
 
         public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
         {
-            foreach (var item in items) yield return item;
+            foreach (var item in items)
+            {
+                yield return item;
+            }
+
             await Task.CompletedTask;
         }
 
@@ -128,9 +132,15 @@ public class EndToEndBuildTests
         var parser = new MarkdownParserStub(item =>
         {
             if (item.Route.CanonicalPath.Value.Contains("broken/"))
+            {
                 return new ContentItem(new FailedItem(item.Route, new ContentError("YAML parse error at line 3")));
+            }
+
             if (item.Route.CanonicalPath.Value.Contains("wip/"))
+            {
                 return new ContentItem(new ParsedItem(item.Route, new DraftFrontMatter(), "# WIP"));
+            }
+
             return new ContentItem(new ParsedItem(item.Route, new TestFrontMatter("Page"), "# Content"));
         });
         var renderer = new RenderWithHtmlStub(_ => "<p>Content</p>");
@@ -164,7 +174,10 @@ public class EndToEndBuildTests
         var parser = new MarkdownParserStub(item =>
         {
             if (item.Route.CanonicalPath.Value.Contains("draft"))
+            {
                 return new ContentItem(new ParsedItem(item.Route, new DraftFrontMatter(), "# Draft"));
+            }
+
             return new ContentItem(new ParsedItem(item.Route, new TestFrontMatter("Page"), "# Content"));
         });
         var renderer = new RenderWithHtmlStub(_ => "<p>Content</p>");
@@ -192,7 +205,10 @@ public class EndToEndBuildTests
         var renderer = new RenderWithHtmlStub(item =>
         {
             if (item.Route.CanonicalPath.Value == "/docs/intro/")
+            {
                 return """<p>See the <a href="/docs/api">API Reference</a> for details.</p>""";
+            }
+
             return """<p>Back to <a href="/docs/intro">Intro</a>.</p>""";
         });
 
@@ -225,7 +241,10 @@ public class EndToEndBuildTests
         var parser = new MarkdownParserStub(item =>
         {
             if (item.Route.CanonicalPath.Value.Contains("broken/"))
+            {
                 return new ContentItem(new FailedItem(item.Route, new ContentError("Front matter parse failed: invalid YAML")));
+            }
+
             return new ContentItem(new ParsedItem(item.Route, new TestFrontMatter("Intro"), "# Intro"));
         });
         var renderer = new RenderWithHtmlStub(_ => "<p>Content</p>");

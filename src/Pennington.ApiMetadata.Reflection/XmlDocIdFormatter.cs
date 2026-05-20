@@ -57,11 +57,19 @@ internal static class XmlDocIdFormatter
 
     private static string Parameters(ParameterInfo[] parameters)
     {
-        if (parameters.Length == 0) return string.Empty;
+        if (parameters.Length == 0)
+        {
+            return string.Empty;
+        }
+
         var sb = new StringBuilder("(");
         for (var i = 0; i < parameters.Length; i++)
         {
-            if (i > 0) sb.Append(',');
+            if (i > 0)
+            {
+                sb.Append(',');
+            }
+
             sb.Append(TypeRef(parameters[i].ParameterType));
         }
         sb.Append(')');
@@ -76,8 +84,16 @@ internal static class XmlDocIdFormatter
     /// </summary>
     private static string TypeRef(Type t)
     {
-        if (t.IsByRef) return TypeRef(t.GetElementType()!) + "@";
-        if (t.IsPointer) return TypeRef(t.GetElementType()!) + "*";
+        if (t.IsByRef)
+        {
+            return TypeRef(t.GetElementType()!) + "@";
+        }
+
+        if (t.IsPointer)
+        {
+            return TypeRef(t.GetElementType()!) + "*";
+        }
+
         if (t.IsArray)
         {
             var elem = TypeRef(t.GetElementType()!);
@@ -97,7 +113,11 @@ internal static class XmlDocIdFormatter
             var args = t.GetGenericArguments();
             for (var i = 0; i < args.Length; i++)
             {
-                if (i > 0) sb.Append(',');
+                if (i > 0)
+                {
+                    sb.Append(',');
+                }
+
                 sb.Append(TypeRef(args[i]));
             }
             sb.Append('}');
@@ -124,7 +144,11 @@ internal static class XmlDocIdFormatter
         {
             if (name[i] == '`')
             {
-                while (i + 1 < name.Length && char.IsDigit(name[i + 1])) i++;
+                while (i + 1 < name.Length && char.IsDigit(name[i + 1]))
+                {
+                    i++;
+                }
+
                 continue;
             }
             sb.Append(name[i]);

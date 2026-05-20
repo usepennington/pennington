@@ -56,20 +56,44 @@ internal sealed class FrontMatterKeyIndex
         foreach (var project in projects)
         {
             var compilation = await _workspace.GetCompilationAsync(project);
-            if (compilation is null) continue;
+            if (compilation is null)
+            {
+                continue;
+            }
 
             foreach (var type in EnumerateTypes(compilation.Assembly.GlobalNamespace))
             {
-                if (type.TypeKind is not (TypeKind.Class or TypeKind.Struct)) continue;
-                if (type.DeclaredAccessibility != Accessibility.Public) continue;
-                if (type.IsAbstract || type.IsStatic) continue;
-                if (!ImplementsFrontMatter(type)) continue;
+                if (type.TypeKind is not (TypeKind.Class or TypeKind.Struct))
+                {
+                    continue;
+                }
+
+                if (type.DeclaredAccessibility != Accessibility.Public)
+                {
+                    continue;
+                }
+
+                if (type.IsAbstract || type.IsStatic)
+                {
+                    continue;
+                }
+
+                if (!ImplementsFrontMatter(type))
+                {
+                    continue;
+                }
 
                 foreach (var member in type.GetMembers())
                 {
                     if (member is not IPropertySymbol { DeclaredAccessibility: Accessibility.Public } property)
+                    {
                         continue;
-                    if (property.IsIndexer || property.IsStatic) continue;
+                    }
+
+                    if (property.IsIndexer || property.IsStatic)
+                    {
+                        continue;
+                    }
 
                     var surface = ResolveDeclaringSurface(type, property.Name);
                     var defaultValue = ExtractDefault(property);
@@ -167,7 +191,11 @@ internal sealed class FrontMatterKeyIndex
     {
         foreach (var iface in record.AllInterfaces)
         {
-            if (!CapabilityInterfaces.Contains(iface.Name, StringComparer.Ordinal)) continue;
+            if (!CapabilityInterfaces.Contains(iface.Name, StringComparer.Ordinal))
+            {
+                continue;
+            }
+
             foreach (var member in iface.GetMembers().OfType<IPropertySymbol>())
             {
                 if (string.Equals(member.Name, propertyName, StringComparison.Ordinal))
@@ -191,7 +219,10 @@ internal sealed class FrontMatterKeyIndex
             }
         }
 
-        if (property.NullableAnnotation == NullableAnnotation.Annotated) return "null";
+        if (property.NullableAnnotation == NullableAnnotation.Annotated)
+        {
+            return "null";
+        }
 
         return property.Type.SpecialType switch
         {
@@ -208,8 +239,16 @@ internal sealed class FrontMatterKeyIndex
 
     private static string ToCamelCase(string name)
     {
-        if (string.IsNullOrEmpty(name)) return name;
-        if (char.IsLower(name[0])) return name;
+        if (string.IsNullOrEmpty(name))
+        {
+            return name;
+        }
+
+        if (char.IsLower(name[0]))
+        {
+            return name;
+        }
+
         return char.ToLowerInvariant(name[0]) + name[1..];
     }
 }

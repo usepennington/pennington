@@ -134,13 +134,13 @@ public sealed class NavigationBuilder : IFileWatchAware
         // Group deeper items by their segment at this depth so recursion only
         // touches the items belonging to that subtree instead of rescanning the
         // full list.
-        ILookup<string, ContentTocItem>? deeperByKey = deeper is null
-            ? null
-            : deeper.ToLookup(i => i.HierarchyParts[depth], StringComparer.OrdinalIgnoreCase);
+        ILookup<string, ContentTocItem>? deeperByKey = deeper?.ToLookup(i => i.HierarchyParts[depth], StringComparer.OrdinalIgnoreCase);
 
         var directNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in atLevelSorted)
+        {
             directNames.Add(item.HierarchyParts[depth]);
+        }
 
         var builder = ImmutableList.CreateBuilder<NavigationTreeItem>();
 
@@ -167,7 +167,10 @@ public sealed class NavigationBuilder : IFileWatchAware
         {
             foreach (var group in deeperByKey)
             {
-                if (directNames.Contains(group.Key)) continue;
+                if (directNames.Contains(group.Key))
+                {
+                    continue;
+                }
 
                 var children = BuildLevel(group.ToList(), depth + 1, isRoot: false);
                 var minOrder = children.Count > 0 ? children.Min(c => c.Order) : int.MaxValue;
@@ -224,7 +227,11 @@ public sealed class NavigationBuilder : IFileWatchAware
         foreach (var node in tree)
         {
             var stamped = StampNode(node, currentRoute);
-            if (!ReferenceEquals(node, stamped)) anyChanged = true;
+            if (!ReferenceEquals(node, stamped))
+            {
+                anyChanged = true;
+            }
+
             builder.Add(stamped);
         }
         return anyChanged ? builder.ToImmutable() : tree;
@@ -252,7 +259,10 @@ public sealed class NavigationBuilder : IFileWatchAware
                 if (childBuilder is null)
                 {
                     childBuilder = ImmutableList.CreateBuilder<NavigationTreeItem>();
-                    for (var j = 0; j < i; j++) childBuilder.Add(node.Children[j]);
+                    for (var j = 0; j < i; j++)
+                    {
+                        childBuilder.Add(node.Children[j]);
+                    }
                 }
                 childBuilder.Add(stamped);
             }
@@ -260,13 +270,18 @@ public sealed class NavigationBuilder : IFileWatchAware
             {
                 childBuilder?.Add(stamped);
             }
-            if (stamped.IsSelected || stamped.IsExpanded) anyChildExpanded = true;
+            if (stamped.IsSelected || stamped.IsExpanded)
+            {
+                anyChildExpanded = true;
+            }
         }
 
         var isExpanded = isSelected || anyChildExpanded;
 
         if (!isSelected && !isExpanded && childBuilder is null)
+        {
             return node;
+        }
 
         return node with
         {
@@ -283,7 +298,10 @@ public sealed class NavigationBuilder : IFileWatchAware
     private static IReadOnlyList<ContentTocItem> FilterByLocale(
         IReadOnlyList<ContentTocItem> items, string? locale)
     {
-        if (locale == null) return items;
+        if (locale == null)
+        {
+            return items;
+        }
 
         return items
             .Where(i => i.Locale == null
@@ -318,8 +336,16 @@ public sealed class NavigationBuilder : IFileWatchAware
         return string.Join(' ', folderName.Split('-')
             .Select(w =>
             {
-                if (w.Length == 0) return w;
-                if (UpperCaseAcronyms.Contains(w)) return w.ToUpperInvariant();
+                if (w.Length == 0)
+                {
+                    return w;
+                }
+
+                if (UpperCaseAcronyms.Contains(w))
+                {
+                    return w.ToUpperInvariant();
+                }
+
                 return char.ToUpper(w[0]) + w[1..];
             }));
     }
@@ -366,7 +392,10 @@ public sealed class NavigationBuilder : IFileWatchAware
             {
                 path.Add(new BreadcrumbItem(item.Title, item.Route));
                 if (FindPath(item.Children, target, path))
+                {
                     return true;
+                }
+
                 path.RemoveAt(path.Count - 1);
             }
         }
@@ -386,7 +415,9 @@ public sealed class NavigationBuilder : IFileWatchAware
             hash.Add(item.SearchOnly);
             hash.Add(item.HierarchyParts.Length);
             foreach (var part in item.HierarchyParts)
+            {
                 hash.Add(part, StringComparer.OrdinalIgnoreCase);
+            }
         }
         return new CacheKey(locale, items.Count, hash.ToHashCode());
     }

@@ -1,13 +1,11 @@
 namespace Pennington.Tests.LlmsTxt;
 
-using System.Collections.Immutable;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
-using Pennington.Content;
 using Pennington.Infrastructure;
 using Pennington.LlmsTxt;
 using Pennington.Navigation;

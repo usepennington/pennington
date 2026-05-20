@@ -19,9 +19,21 @@ public sealed record ApiReferenceOptions
         return project =>
         {
             var name = StripTargetFrameworkSuffix(project.Name);
-            if (name.EndsWith(".Tests", StringComparison.Ordinal)) return false;
-            if (name.EndsWith(".IntegrationTests", StringComparison.Ordinal)) return false;
-            if (!string.IsNullOrEmpty(entryName) && name == entryName) return false;
+            if (name.EndsWith(".Tests", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (name.EndsWith(".IntegrationTests", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(entryName) && name == entryName)
+            {
+                return false;
+            }
+
             return true;
         };
     }

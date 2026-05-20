@@ -73,7 +73,11 @@ public class LocaleAndBaseUrlPipelineTests
         var processor = new HtmlResponseRewritingProcessor(rewriters);
         var context = CreateContext(locale);
 
-        if (!processor.ShouldProcess(context)) return inputHtml;
+        if (!processor.ShouldProcess(context))
+        {
+            return inputHtml;
+        }
+
         return await processor.ProcessAsync(inputHtml, context);
     }
 

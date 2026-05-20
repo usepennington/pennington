@@ -135,10 +135,14 @@ public class BuildReportBuilderTests
         var builder = new BuildReportBuilder();
 
         for (var i = 0; i < 200; i++)
+        {
             builder.AddGeneratedPage(MakeRoute($"/page-{i}"));
+        }
 
         for (var i = 0; i < 10; i++)
+        {
             builder.AddSkippedPage(MakeRoute($"/draft-{i}"));
+        }
 
         builder.AddError(MakeRoute("/broken"), "parse error");
 

@@ -1,8 +1,6 @@
 namespace Pennington.TranslationAudit;
 
 using System.Collections.Immutable;
-using Pennington.Content;
-using Pennington.Diagnostics;
 using Pennington.Generation;
 
 /// <summary>
@@ -35,7 +33,9 @@ public sealed class TranslationAuditor : IBuildAuditor
             .ToList();
 
         if (nonDefaultLocales.Count == 0)
+        {
             return Task.FromResult<IReadOnlyList<BuildDiagnostic>>([]);
+        }
 
         // Bucket every TOC entry by locale-stripped canonical path. The default-locale entry
         // is the source of truth for that bucket; non-default-locale entries are translations.
@@ -46,8 +46,14 @@ public sealed class TranslationAuditor : IBuildAuditor
         {
             var route = item.Route;
             if (route.SourceFile is not { Value: var sourcePath } || !sourcePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+            {
                 continue;
-            if (route.IsFallback) continue;
+            }
+
+            if (route.IsFallback)
+            {
+                continue;
+            }
 
             var locale = item.Locale ?? (string.IsNullOrEmpty(route.Locale) ? localization.DefaultLocale : route.Locale);
             var key = localization.StripLocalePrefix(route.CanonicalPath.Value, locale);
@@ -75,11 +81,18 @@ public sealed class TranslationAuditor : IBuildAuditor
         {
             foreach (var page in byCanonicalPath.Values)
             {
-                if (page.SourceRoute is null || page.SourceFile is null) continue;
+                if (page.SourceRoute is null || page.SourceFile is null)
+                {
+                    continue;
+                }
 
                 if (!page.Translations.TryGetValue(locale, out var translation))
                 {
-                    if (!_options.ReportMissing) continue;
+                    if (!_options.ReportMissing)
+                    {
+                        continue;
+                    }
+
                     diagnostics.Add(new BuildDiagnostic(
                         Severity: _options.MissingSeverity,
                         Route: page.SourceRoute,
@@ -90,8 +103,15 @@ public sealed class TranslationAuditor : IBuildAuditor
 
                 var sourceCommit = _git.GetLatestCommit(page.SourceFile);
                 var translationCommit = _git.GetLatestCommit(translation.SourcePath);
-                if (sourceCommit is null || translationCommit is null) continue;
-                if (translationCommit.When >= sourceCommit.When) continue;
+                if (sourceCommit is null || translationCommit is null)
+                {
+                    continue;
+                }
+
+                if (translationCommit.When >= sourceCommit.When)
+                {
+                    continue;
+                }
 
                 diagnostics.Add(new BuildDiagnostic(
                     Severity: _options.OutdatedSeverity,

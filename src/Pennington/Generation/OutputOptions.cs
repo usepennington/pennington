@@ -72,8 +72,15 @@ public sealed class OutputOptions
         // with a positional output directory without the flag "consuming"
         // a positional slot.
         var slots = new Queue<string>(positional);
-        if (baseUrl is null && slots.Count > 0) baseUrl = slots.Dequeue();
-        if (outputDir is null && slots.Count > 0) outputDir = slots.Dequeue();
+        if (baseUrl is null && slots.Count > 0)
+        {
+            baseUrl = slots.Dequeue();
+        }
+
+        if (outputDir is null && slots.Count > 0)
+        {
+            outputDir = slots.Dequeue();
+        }
 
         return new OutputOptions
         {
@@ -91,7 +98,10 @@ public sealed class OutputOptions
     /// </summary>
     internal static string? NormalizeBaseUrl(string? raw)
     {
-        if (string.IsNullOrWhiteSpace(raw)) return null;
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
 
         // Windows-absolute path leaked into the base URL — almost certainly
         // Git Bash's MSYS path translation rewriting a leading-slash argument
@@ -107,7 +117,10 @@ public sealed class OutputOptions
             // completely broken even when the warning is ignored.
             var lastSep = raw.LastIndexOfAny(['/', '\\']);
             raw = lastSep >= 0 ? raw[(lastSep + 1)..] : raw;
-            if (string.IsNullOrWhiteSpace(raw)) return "/";
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return "/";
+            }
         }
 
         // POSIX-friendly form: `--base-url my-app` is accepted as `/my-app`.

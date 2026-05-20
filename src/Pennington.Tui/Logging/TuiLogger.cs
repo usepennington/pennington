@@ -15,9 +15,17 @@ internal sealed class TuiLogger(string category, BoundedSequenceLog<LogEntry> bu
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        if (!IsEnabled(logLevel)) return;
+        if (!IsEnabled(logLevel))
+        {
+            return;
+        }
+
         var message = formatter(state, exception);
-        if (string.IsNullOrEmpty(message) && exception is null) return;
+        if (string.IsNullOrEmpty(message) && exception is null)
+        {
+            return;
+        }
+
         var at = DateTimeOffset.Now;
         buffer.Append(seq => new LogEntry(seq, at, logLevel, category, message, exception));
     }

@@ -55,14 +55,19 @@ public sealed class ContentResolver
 
         // Normalize bare "/index" to "/" so it matches the homepage route
         if (url.Equals("/index", StringComparison.OrdinalIgnoreCase))
+        {
             url = "/";
+        }
 
         // Try exact URL first (finds locale-specific markdown, fallback entries, or exact matches)
         var found = await FindDiscoveredItem(url);
         var locale = _localization.GetLocaleFromUrl(url);
         var isFallback = found?.Route.IsFallback ?? false;
-        string? requestedLocale = isFallback ? locale : null;
-        if (isFallback) locale = _localization.DefaultLocale;
+        var requestedLocale = isFallback ? locale : null;
+        if (isFallback)
+        {
+            locale = _localization.DefaultLocale;
+        }
 
         // Runtime fallback: strip locale prefix and try the content-relative path
         if (found == null
@@ -78,11 +83,17 @@ public sealed class ContentResolver
             }
         }
 
-        if (found == null) return null;
+        if (found == null)
+        {
+            return null;
+        }
 
         // Parse
         var parseResult = await ParseItem(found);
-        if (parseResult == null) return null;
+        if (parseResult == null)
+        {
+            return null;
+        }
 
         // Render
         var renderResult = await _renderer.RenderAsync(parseResult);
@@ -91,7 +102,10 @@ public sealed class ContentResolver
             _diagnostics.AddError(failed.Error.Message, "ContentResolver");
             return null;
         }
-        if (renderResult.Value is not RenderedItem rendered) return null;
+        if (renderResult.Value is not RenderedItem rendered)
+        {
+            return null;
+        }
 
         return new ResolvedContent(
             Route: rendered.Route,
@@ -157,7 +171,9 @@ public sealed class ContentResolver
     public Task<ImmutableList<AlternateLanguagePage>> GetAlternateLanguagesAsync(string url)
     {
         if (!_localization.IsMultiLocale)
+        {
             return Task.FromResult(ImmutableList<AlternateLanguagePage>.Empty);
+        }
 
         var alternates = _localization.GetAlternateLanguages(url);
         var builder = ImmutableList.CreateBuilder<AlternateLanguagePage>();
@@ -185,18 +201,27 @@ public sealed class ContentResolver
     /// </summary>
     public ContentArea? ResolveCurrentArea(string url)
     {
-        if (_docSiteOptions.Areas.Count == 0) return null;
+        if (_docSiteOptions.Areas.Count == 0)
+        {
+            return null;
+        }
 
         var segments = url.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
         var firstSegment = segments.Length > 0 ? segments[0] : null;
-        if (firstSegment == null) return null;
+        if (firstSegment == null)
+        {
+            return null;
+        }
 
         // For multi-locale URLs, the first segment is the locale — check the second segment
         if (_localization.IsMultiLocale
             && _localization.Locales.ContainsKey(firstSegment))
         {
             firstSegment = segments.Length > 1 ? segments[1] : null;
-            if (firstSegment == null) return null;
+            if (firstSegment == null)
+            {
+                return null;
+            }
         }
 
         return _docSiteOptions.Areas.FirstOrDefault(a =>
@@ -212,7 +237,10 @@ public sealed class ContentResolver
         string? locale, ContentArea? area)
     {
         var items = await GetTocItemsAsync(locale);
-        if (area == null) return items;
+        if (area == null)
+        {
+            return items;
+        }
 
         return items
             .Where(i => i.HierarchyParts.Length > 0
@@ -248,14 +276,19 @@ public sealed class ContentResolver
         await foreach (var item in _services.DiscoverAllAsync())
         {
             if (item.Route.CanonicalPath.Matches(target))
+            {
                 return item;
+            }
         }
         return null;
     }
 
     private async Task<ParsedItem?> ParseItem(DiscoveredItem item)
     {
-        if (item.Source is not MarkdownFileSource source) return null;
+        if (item.Source is not MarkdownFileSource source)
+        {
+            return null;
+        }
 
         var content = await File.ReadAllTextAsync(source.Path.Value);
         var result = _parser.Parse<DocSiteFrontMatter>(content, source.Path.Value);

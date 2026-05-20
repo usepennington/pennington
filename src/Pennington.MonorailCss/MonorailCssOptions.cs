@@ -187,7 +187,9 @@ public class AlgorithmicColorScheme : IColorScheme
         theme = theme.ApplyAlgorithmicColorScheme(PrimaryHue, Chroma, Scheme);
 
         foreach (var (slot, color) in AdditionalMappings)
+        {
             theme = theme.MapColorPalette(color.Value, slot);
+        }
 
         return theme;
     }
@@ -227,7 +229,9 @@ public class NamedColorScheme : IColorScheme
              .MapColorPalette(BaseColorName.Value, "base");
 
         foreach (var (slot, color) in AdditionalMappings)
+        {
             theme = theme.MapColorPalette(color.Value, slot);
+        }
 
         return theme;
     }

@@ -30,7 +30,9 @@ public sealed class ResponseProcessingMiddleware(RequestDelegate next)
                 var body = await new StreamReader(memoryStream).ReadToEndAsync();
 
                 foreach (var processor in applicable)
+                {
                     body = await processor.ProcessAsync(body, context);
+                }
 
                 // Write diagnostic headers after processors (which may add diagnostics)
                 // but before the body is sent to the client
@@ -56,7 +58,10 @@ public sealed class ResponseProcessingMiddleware(RequestDelegate next)
     private static void WriteDiagnosticHeaders(HttpContext context)
     {
         var diagnosticContext = context.RequestServices?.GetService<DiagnosticContext>();
-        if (diagnosticContext is not { HasAny: true }) return;
+        if (diagnosticContext is not { HasAny: true })
+        {
+            return;
+        }
 
         foreach (var diag in diagnosticContext.Diagnostics)
         {

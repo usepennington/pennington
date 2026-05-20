@@ -30,7 +30,10 @@ public readonly record struct FileWatchScope(string Path, string Pattern, bool I
         // forward-slash test path both match.
         var fullPath = change.FullPath.Replace('\\', '/');
         var lastSlash = fullPath.LastIndexOf('/');
-        if (lastSlash < 0) return false;
+        if (lastSlash < 0)
+        {
+            return false;
+        }
 
         var changedDirectory = fullPath[..lastSlash];
         var scopeDirectory = Path.Replace('\\', '/').TrimEnd('/');
@@ -39,7 +42,10 @@ public readonly record struct FileWatchScope(string Path, string Pattern, bool I
             ? string.Equals(changedDirectory, scopeDirectory, StringComparison.OrdinalIgnoreCase)
                 || changedDirectory.StartsWith(scopeDirectory + "/", StringComparison.OrdinalIgnoreCase)
             : string.Equals(changedDirectory, scopeDirectory, StringComparison.OrdinalIgnoreCase);
-        if (!inScope) return false;
+        if (!inScope)
+        {
+            return false;
+        }
 
         var fileName = fullPath[(lastSlash + 1)..];
         return System.IO.Enumeration.FileSystemName.MatchesSimpleExpression(Pattern, fileName);

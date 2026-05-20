@@ -1,6 +1,5 @@
 namespace Pennington.Generation;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.StaticAssets;
 using Routing;
@@ -20,28 +19,52 @@ public static class MapGetRouteDiscovery
     {
         foreach (var endpoint in endpointDataSource.Endpoints)
         {
-            if (endpoint is not RouteEndpoint routeEndpoint) continue;
+            if (endpoint is not RouteEndpoint routeEndpoint)
+            {
+                continue;
+            }
 
             var httpMethods = routeEndpoint.Metadata.GetMetadata<HttpMethodMetadata>();
-            if (httpMethods?.HttpMethods.Contains("GET") != true) continue;
+            if (httpMethods?.HttpMethods.Contains("GET") != true)
+            {
+                continue;
+            }
 
-            if (routeEndpoint.Metadata.GetMetadata<StaticAssetDescriptor>() is not null) continue;
+            if (routeEndpoint.Metadata.GetMetadata<StaticAssetDescriptor>() is not null)
+            {
+                continue;
+            }
 
             var rawText = routeEndpoint.RoutePattern.RawText;
-            if (string.IsNullOrWhiteSpace(rawText)) continue;
+            if (string.IsNullOrWhiteSpace(rawText))
+            {
+                continue;
+            }
 
             if (rawText.Contains('{') ||
                 rawText.Contains("_framework") ||
                 rawText.Contains("_blazor") ||
                 endpoint.DisplayName?.Contains("static files") == true)
+            {
                 continue;
+            }
 
-            if (endpoint.Metadata.Any(m => m.GetType().Name == "FallbackMetadata")) continue;
-            if (endpoint.Metadata.Any(m => m.GetType().Name == "ComponentTypeMetadata")) continue;
+            if (endpoint.Metadata.Any(m => m.GetType().Name == "FallbackMetadata"))
+            {
+                continue;
+            }
+
+            if (endpoint.Metadata.Any(m => m.GetType().Name == "ComponentTypeMetadata"))
+            {
+                continue;
+            }
 
             var url = rawText.StartsWith('/') ? rawText : "/" + rawText;
             var outputPath = url.TrimStart('/');
-            if (string.IsNullOrEmpty(outputPath)) outputPath = "index.html";
+            if (string.IsNullOrEmpty(outputPath))
+            {
+                outputPath = "index.html";
+            }
 
             yield return new ContentRoute
             {

@@ -131,14 +131,20 @@ public sealed class ReleaseNotesContentService : IContentService
     private ImmutableList<ReleaseEntry> LoadEntries()
     {
         if (!Directory.Exists(_releasesDirectory))
+        {
             return [];
+        }
 
         var builder = ImmutableList.CreateBuilder<ReleaseEntry>();
         foreach (var file in Directory.EnumerateFiles(_releasesDirectory, "*.json"))
         {
             var json = File.ReadAllText(file);
             var dto = JsonSerializer.Deserialize<ReleaseJson>(json, JsonOptions);
-            if (dto is null) continue;
+            if (dto is null)
+            {
+                continue;
+            }
+
             builder.Add(new ReleaseEntry(
                 Version: dto.Version,
                 Title: dto.Title,

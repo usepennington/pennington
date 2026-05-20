@@ -1,7 +1,6 @@
 namespace Pennington.Content;
 
 using System.Collections.Immutable;
-using Pipeline;
 
 /// <summary>
 /// Emits dynamically generated files into the build output. Smaller surface

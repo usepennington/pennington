@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using Pennington.Content;
-using Pennington.Diagnostics;
 using Pennington.Generation;
 using Pennington.Infrastructure;
 using Pennington.Pipeline;
@@ -156,7 +155,9 @@ public class XrefAuditorTests
         {
             await Task.Yield();
             foreach (var (route, sourcePath) in items)
+            {
                 yield return new DiscoveredItem(route, new MarkdownFileSource(new FilePath(sourcePath)));
+            }
         }
 
         public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync() => Task.FromResult(ImmutableList<ContentToCopy>.Empty);

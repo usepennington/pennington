@@ -32,7 +32,11 @@ public class SitemapServiceTests
 
         public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
         {
-            foreach (var item in items) yield return item;
+            foreach (var item in items)
+            {
+                yield return item;
+            }
+
             await Task.CompletedTask;
         }
 

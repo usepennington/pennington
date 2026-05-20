@@ -12,8 +12,16 @@ public readonly record struct FilePath(string Value)
     {
         var l = left.Value.TrimEnd('/', '\\');
         var r = right.Value.TrimStart('/', '\\');
-        if (string.IsNullOrEmpty(l)) return new FilePath(r);
-        if (string.IsNullOrEmpty(r)) return new FilePath(l);
+        if (string.IsNullOrEmpty(l))
+        {
+            return new FilePath(r);
+        }
+
+        if (string.IsNullOrEmpty(r))
+        {
+            return new FilePath(l);
+        }
+
         return new FilePath(l + "/" + r);
     }
 

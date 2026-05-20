@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.Text;
 using Pennington.Infrastructure;
-using Utilities;
 
 /// <summary>
 /// Roslyn Classifier API wrapper that produces HTML with hljs-* and roslyn-* CSS classes.
@@ -239,7 +238,10 @@ public sealed class SyntaxHighlighter : IDisposable
 
     private void Dispose(bool disposing)
     {
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
 
         if (disposing)
         {

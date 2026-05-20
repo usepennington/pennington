@@ -3,10 +3,10 @@ namespace Pennington.Roslyn.Preprocessing;
 using System.Net;
 using Diagnostics;
 using Highlighting;
-using Pennington.Highlighting;
 using Markdown.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Pennington.Highlighting;
 using Pennington.Infrastructure;
 using Symbols;
 
@@ -245,7 +245,10 @@ public sealed class RoslynCodeBlockPreprocessor : ICodeBlockPreprocessor
             if (errors.Count > 0)
             {
                 foreach (var error in errors)
+                {
                     Diagnostics?.AddWarning($"Unresolved xmldocid-diff: {error}");
+                }
+
                 var errorHtml = string.Join("\n", errors.Select(e =>
                     $"""<span class="comment">// {WebUtility.HtmlEncode(e)}</span>"""));
                 return new CodeBlockPreprocessResult(

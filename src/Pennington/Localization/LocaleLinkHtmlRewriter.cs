@@ -38,7 +38,10 @@ public sealed class LocaleLinkHtmlRewriter : IHtmlResponseRewriter
     /// <inheritdoc/>
     public bool ShouldApply(HttpContext context)
     {
-        if (!_localization.IsMultiLocale) return false;
+        if (!_localization.IsMultiLocale)
+        {
+            return false;
+        }
 
         // Only rewrite when we're serving a non-default locale.
         var locale = context.Items["Pennington.Locale"] as string;
@@ -63,16 +66,24 @@ public sealed class LocaleLinkHtmlRewriter : IHtmlResponseRewriter
     private void RewriteAnchorHref(IElement anchor, string locale, string baseUri)
     {
         var href = anchor.GetAttribute("href");
-        if (string.IsNullOrEmpty(href)) return;
+        if (string.IsNullOrEmpty(href))
+        {
+            return;
+        }
 
         // Skip language-switcher links — they intentionally point at specific locales.
-        if (anchor.HasAttribute("data-locale")) return;
+        if (anchor.HasAttribute("data-locale"))
+        {
+            return;
+        }
 
         string? path;
-        string prefix = "";
+        var prefix = "";
 
         if (href.StartsWith("//") || href.StartsWith("mailto:") || href.StartsWith("tel:") || href.StartsWith("#"))
+        {
             return;
+        }
 
         if (href.StartsWith("http://") || href.StartsWith("https://"))
         {
@@ -81,7 +92,10 @@ public sealed class LocaleLinkHtmlRewriter : IHtmlResponseRewriter
             {
                 prefix = baseUri;
                 path = href[baseUri.Length..];
-                if (!path.StartsWith('/')) path = "/" + path;
+                if (!path.StartsWith('/'))
+                {
+                    path = "/" + path;
+                }
             }
             else
             {
@@ -99,7 +113,10 @@ public sealed class LocaleLinkHtmlRewriter : IHtmlResponseRewriter
             return;
         }
 
-        if (!ShouldRewritePath(path, locale)) return;
+        if (!ShouldRewritePath(path, locale))
+        {
+            return;
+        }
 
         var newPath = $"/{locale}{path}";
         anchor.SetAttribute("href", prefix + newPath);
@@ -110,7 +127,9 @@ public sealed class LocaleLinkHtmlRewriter : IHtmlResponseRewriter
         // Already has this locale prefix.
         if (path.StartsWith($"/{locale}/", StringComparison.OrdinalIgnoreCase)
             || path.Equals($"/{locale}", StringComparison.OrdinalIgnoreCase))
+        {
             return false;
+        }
 
         // Already has ANY locale prefix (e.g., a language-switcher link that
         // slipped through without data-locale).
@@ -118,19 +137,29 @@ public sealed class LocaleLinkHtmlRewriter : IHtmlResponseRewriter
         {
             if (path.StartsWith($"/{loc}/", StringComparison.OrdinalIgnoreCase)
                 || path.Equals($"/{loc}", StringComparison.OrdinalIgnoreCase))
+            {
                 return false;
+            }
         }
 
         // Framework / internal paths.
         if (path.StartsWith("/_", StringComparison.Ordinal))
+        {
             return false;
+        }
 
         // Has a file extension — likely a static asset.
         var lastSegment = path.AsSpan();
         var lastSlash = lastSegment.LastIndexOf('/');
-        if (lastSlash >= 0) lastSegment = lastSegment[(lastSlash + 1)..];
+        if (lastSlash >= 0)
+        {
+            lastSegment = lastSegment[(lastSlash + 1)..];
+        }
+
         if (lastSegment.Contains('.'))
+        {
             return false;
+        }
 
         return true;
     }

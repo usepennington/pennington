@@ -2,7 +2,6 @@ using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
 using Pennington.LlmsTxt;
-using Pennington.Localization;
 using Pennington.Routing;
 using Testably.Abstractions.Testing;
 
@@ -21,7 +20,7 @@ public class SubtreeDiscoveryTests
             SectionLabel = "Documentation",
         };
         return new MarkdownContentService<DocFrontMatter>(
-            options, new FrontMatterParser(), fs,DefaultLocalization);
+            options, new FrontMatterParser(), fs, DefaultLocalization);
     }
 
     private static MockFileSystem CreateFs(params (string Path, string Content)[] files)
@@ -32,7 +31,11 @@ public class SubtreeDiscoveryTests
         {
             var full = $"/content/{path}";
             var dir = fs.Path.GetDirectoryName(full);
-            if (dir != null) fs.Directory.CreateDirectory(dir);
+            if (dir != null)
+            {
+                fs.Directory.CreateDirectory(dir);
+            }
+
             fs.File.WriteAllText(full, content);
         }
         return fs;

@@ -18,7 +18,10 @@ public sealed class AsyncLazy<T>
             lock (_lock)
             {
                 if (_task is { IsFaulted: true } or null)
+                {
                     _task = Task.Run(_factory);
+                }
+
                 return _task;
             }
         }

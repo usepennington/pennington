@@ -24,7 +24,10 @@ public sealed class LiveReloadScriptProcessor : IResponseProcessor
     /// <inheritdoc/>
     public bool ShouldProcess(HttpContext context)
     {
-        if (!_isDevMode) return false;
+        if (!_isDevMode)
+        {
+            return false;
+        }
 
         var contentType = context.Response.ContentType ?? "";
         return context.Response.StatusCode is >= 200 and < 300

@@ -25,22 +25,31 @@ internal static class CodeBlockExtensions
         {
             // Skip leading whitespace
             while (currentPosition < input.Length && char.IsWhiteSpace(input[currentPosition]))
+            {
                 currentPosition++;
+            }
 
             if (currentPosition >= input.Length)
+            {
                 break;
+            }
 
             // Parse key
             var keyStart = currentPosition;
             while (currentPosition < input.Length && input[currentPosition] != '=')
             {
                 if (char.IsWhiteSpace(input[currentPosition]))
+                {
                     break;
+                }
+
                 currentPosition++;
             }
 
             if (currentPosition >= input.Length || input[currentPosition] != '=')
+            {
                 break;
+            }
 
             var key = input.Substring(keyStart, currentPosition - keyStart).Trim();
             currentPosition++; // Skip the equals sign
@@ -50,10 +59,14 @@ internal static class CodeBlockExtensions
 
             // Skip whitespace between equals sign and value
             while (currentPosition < input.Length && char.IsWhiteSpace(input[currentPosition]))
+            {
                 currentPosition++;
+            }
 
             if (currentPosition >= input.Length)
+            {
                 break;
+            }
 
             if (input[currentPosition] is '\'' or '"')
             {
@@ -63,7 +76,9 @@ internal static class CodeBlockExtensions
                 var valueStart = currentPosition;
 
                 while (currentPosition < input.Length && input[currentPosition] != quoteChar)
+                {
                     currentPosition++;
+                }
 
                 value = currentPosition >= input.Length
                     ? input.Substring(valueStart)
@@ -76,7 +91,9 @@ internal static class CodeBlockExtensions
                 // Unquoted value
                 var valueStart = currentPosition;
                 while (currentPosition < input.Length && !char.IsWhiteSpace(input[currentPosition]))
+                {
                     currentPosition++;
+                }
 
                 value = input.Substring(valueStart, currentPosition - valueStart);
             }

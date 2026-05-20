@@ -20,7 +20,10 @@ public class FileWatchDispatcherTests
 
         public void Fire(FileChangeNotification change)
         {
-            foreach (var subscriber in _subscribers) subscriber(change);
+            foreach (var subscriber in _subscribers)
+            {
+                subscriber(change);
+            }
         }
 
         public void Dispose() { }

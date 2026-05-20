@@ -25,7 +25,9 @@ public sealed class TranslationOptions
     public void Add(string locale, Dictionary<string, string> entries)
     {
         foreach (var (key, value) in entries)
+        {
             Add(locale, key, value);
+        }
     }
 
     /// <summary>Look up a translation by locale and key. Returns null if not found.</summary>

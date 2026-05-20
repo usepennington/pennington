@@ -146,7 +146,7 @@ public class MarkdownContentRendererTests
                 ContentPath = new FilePath("/content"),
                 BasePageUrl = new UrlPath("/console"),
             },
-            new FrontMatterParser(), fs,new LocalizationOptions());
+            new FrontMatterParser(), fs, new LocalizationOptions());
 
         var resolver = new MarkdownLinkResolver([service]);
         var renderer = new MarkdownContentRenderer(linkResolver: resolver);
@@ -181,7 +181,7 @@ public class MarkdownContentRendererTests
                 ContentPath = new FilePath("/content"),
                 BasePageUrl = new UrlPath("/"),
             },
-            new FrontMatterParser(), fs,new LocalizationOptions());
+            new FrontMatterParser(), fs, new LocalizationOptions());
 
         var resolver = new MarkdownLinkResolver([service]);
         var renderer = new MarkdownContentRenderer(linkResolver: resolver);

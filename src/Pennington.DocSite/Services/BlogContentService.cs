@@ -59,7 +59,10 @@ public sealed class BlogContentService : IContentService, ILlmsSubtreeProvider, 
         {
             foreach (var tag in post.FrontMatter.Tags)
             {
-                if (!seen.Add(tag)) continue;
+                if (!seen.Add(tag))
+                {
+                    continue;
+                }
 
                 var encoded = HttpUtility.UrlEncode(tag);
                 yield return RazorRoute(
@@ -94,7 +97,10 @@ public sealed class BlogContentService : IContentService, ILlmsSubtreeProvider, 
     public async Task<ImmutableList<LlmsSubtree>> GetLlmsSubtreesAsync()
     {
         var posts = await _posts.Value;
-        if (posts.Count == 0) return ImmutableList<LlmsSubtree>.Empty;
+        if (posts.Count == 0)
+        {
+            return ImmutableList<LlmsSubtree>.Empty;
+        }
 
         return ImmutableList.Create(new LlmsSubtree(
             routePrefix: "/blog/",
@@ -140,14 +146,20 @@ public sealed class BlogContentService : IContentService, ILlmsSubtreeProvider, 
                 new XElement("guid", new XAttribute("isPermaLink", "true"), url));
 
             if (!string.IsNullOrEmpty(post.FrontMatter.Description))
+            {
                 entry.Add(new XElement("description", post.FrontMatter.Description));
+            }
 
             if (post.FrontMatter.Date.HasValue)
+            {
                 entry.Add(new XElement("pubDate",
                     post.FrontMatter.Date.Value.ToUniversalTime().ToString("r")));
+            }
 
             if (!string.IsNullOrEmpty(post.FrontMatter.Author))
+            {
                 entry.Add(new XElement("author", post.FrontMatter.Author));
+            }
 
             channel.Add(entry);
         }
@@ -182,7 +194,9 @@ public sealed class BlogContentService : IContentService, ILlmsSubtreeProvider, 
         var contentRoot = Path.GetFullPath(
             Path.Combine(_options.ContentRootPath.Value, "blog"));
         if (!Directory.Exists(contentRoot))
+        {
             return builder.ToImmutable();
+        }
 
         var contentRootPath = new FilePath(contentRoot);
         var baseUrl = new UrlPath("/blog");
@@ -210,7 +224,10 @@ public sealed class BlogContentService : IContentService, ILlmsSubtreeProvider, 
                 continue;
             }
 
-            if (fm.IsDraft) continue;
+            if (fm.IsDraft)
+            {
+                continue;
+            }
 
             var route = ContentRouteFactory.FromMarkdownFile(
                 new FilePath(file), contentRootPath, baseUrl);

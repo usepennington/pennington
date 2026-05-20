@@ -58,7 +58,10 @@ internal static class HtmlToMarkdownConverter
         // strip it (and its subtree) from the extracted markdown. The paired
         // `.robots-only` class is hidden from browsers via CSS but stays in the
         // markup, so it naturally flows through without a special case here.
-        if (element.ClassList.Contains("humans-only")) return;
+        if (element.ClassList.Contains("humans-only"))
+        {
+            return;
+        }
 
         // Pennington-aware: syntax-highlighted code blocks. `<div class="code-highlight-wrapper">`
         // wraps a `<pre><code>…<span class="line">…</span>…</pre>` tree. Strip the highlight
@@ -123,7 +126,11 @@ internal static class HtmlToMarkdownConverter
                     orderedStack.Push((false, 0));
                     Walk(element, sb, listDepth + 1, orderedStack, rewriteHref);
                     orderedStack.Pop();
-                    if (listDepth == 0) sb.Append('\n');
+                    if (listDepth == 0)
+                    {
+                        sb.Append('\n');
+                    }
+
                     break;
                 }
 
@@ -133,7 +140,11 @@ internal static class HtmlToMarkdownConverter
                     orderedStack.Push((true, 0));
                     Walk(element, sb, listDepth + 1, orderedStack, rewriteHref);
                     orderedStack.Pop();
-                    if (listDepth == 0) sb.Append('\n');
+                    if (listDepth == 0)
+                    {
+                        sb.Append('\n');
+                    }
+
                     break;
                 }
 
@@ -272,9 +283,14 @@ internal static class HtmlToMarkdownConverter
         foreach (var cls in classAttr.Split(' ', StringSplitOptions.RemoveEmptyEntries))
         {
             if (cls.StartsWith("language-", StringComparison.OrdinalIgnoreCase))
+            {
                 return cls["language-".Length..];
+            }
+
             if (cls.StartsWith("lang-", StringComparison.OrdinalIgnoreCase))
+            {
                 return cls["lang-".Length..];
+            }
         }
         return "";
     }
@@ -323,7 +339,11 @@ internal static class HtmlToMarkdownConverter
         {
             // Skip the title paragraph — its content is the alert type, which is already
             // encoded in the `[!TYPE]` marker line.
-            if (child.ClassList.Contains("markdown-alert-title")) continue;
+            if (child.ClassList.Contains("markdown-alert-title"))
+            {
+                continue;
+            }
+
             RenderElement(child, inner, listDepth, orderedStack, rewriteHref);
         }
 
@@ -350,7 +370,11 @@ internal static class HtmlToMarkdownConverter
         foreach (var button in buttons)
         {
             var id = button.GetAttribute("id");
-            if (string.IsNullOrEmpty(id)) continue;
+            if (string.IsNullOrEmpty(id))
+            {
+                continue;
+            }
+
             titleById[id] = button.TextContent.Trim();
         }
 
@@ -373,7 +397,11 @@ internal static class HtmlToMarkdownConverter
 
     private static string CollapseWhitespace(string text)
     {
-        if (string.IsNullOrEmpty(text)) return "";
+        if (string.IsNullOrEmpty(text))
+        {
+            return "";
+        }
+
         var sb = new StringBuilder(text.Length);
         var prevSpace = false;
         foreach (var ch in text)
@@ -397,7 +425,10 @@ internal static class HtmlToMarkdownConverter
 
     private static void EnsureBlockStart(StringBuilder sb)
     {
-        if (sb.Length == 0) return;
+        if (sb.Length == 0)
+        {
+            return;
+        }
         // Ensure we're at the start of a new line (and ideally separated by blank line).
         if (sb[^1] != '\n')
         {
@@ -415,7 +446,10 @@ internal static class HtmlToMarkdownConverter
             if (ch == '\n')
             {
                 newlineRun++;
-                if (newlineRun <= 2) sb.Append(ch);
+                if (newlineRun <= 2)
+                {
+                    sb.Append(ch);
+                }
             }
             else
             {

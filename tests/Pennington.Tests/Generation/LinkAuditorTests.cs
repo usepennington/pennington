@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Pennington.Content;
-using Pennington.Diagnostics;
 using Pennington.Generation;
 using Pennington.Infrastructure;
 using Pennington.Pipeline;
@@ -169,7 +168,9 @@ public class LinkAuditorTests
         {
             await Task.Yield();
             foreach (var route in routes)
+            {
                 yield return new DiscoveredItem(route, new MarkdownFileSource(route.SourceFile ?? new FilePath("stub.md")));
+            }
         }
 
         public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync() => Task.FromResult(assets.ToImmutableList());

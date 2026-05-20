@@ -125,7 +125,10 @@ internal static class MarkdownPipelineBuilderExtensions
 
         public void Setup(MarkdownPipeline pipeline, IMarkdownRenderer renderer)
         {
-            if (renderer is not TextRendererBase<HtmlRenderer> htmlRenderer) return;
+            if (renderer is not TextRendererBase<HtmlRenderer> htmlRenderer)
+            {
+                return;
+            }
 
             var codeBlockRenderer = htmlRenderer.ObjectRenderers.FindExact<CodeBlockRenderer>();
             if (codeBlockRenderer is not null)
@@ -172,10 +175,16 @@ internal static class MarkdownPipelineBuilderExtensions
 
         public void Setup(MarkdownPipeline pipeline, IMarkdownRenderer renderer)
         {
-            if (renderer is not TextRendererBase<HtmlRenderer> htmlRenderer) return;
+            if (renderer is not TextRendererBase<HtmlRenderer> htmlRenderer)
+            {
+                return;
+            }
 
             var existing = htmlRenderer.ObjectRenderers.FindExact<HtmlTableRenderer>();
-            if (existing is null) return;
+            if (existing is null)
+            {
+                return;
+            }
 
             htmlRenderer.ObjectRenderers.Remove(existing);
             htmlRenderer.ObjectRenderers.AddIfNotAlready(new ScrollableTableRenderer());

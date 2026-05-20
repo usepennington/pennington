@@ -42,9 +42,17 @@ public sealed partial class LinkVerificationService
         {
             foreach (var asset in copiedAssetPaths)
             {
-                if (string.IsNullOrWhiteSpace(asset)) continue;
+                if (string.IsNullOrWhiteSpace(asset))
+                {
+                    continue;
+                }
+
                 var normalized = asset.Replace('\\', '/');
-                if (!normalized.StartsWith('/')) normalized = "/" + normalized;
+                if (!normalized.StartsWith('/'))
+                {
+                    normalized = "/" + normalized;
+                }
+
                 _knownPaths.Add(NormalizePath(normalized));
             }
         }
@@ -80,19 +88,27 @@ public sealed partial class LinkVerificationService
         foreach (var (url, _) in links)
         {
             if (IsExternalUrl(url) || url.StartsWith('#'))
+            {
                 continue;
+            }
 
             var pathOnly = url.Split('#')[0].Split('?')[0];
             if (string.IsNullOrEmpty(pathOnly) || pathOnly == "/")
+            {
                 continue;
+            }
 
             // Skip URLs that look like files (have an extension in the last segment)
             var lastSegment = pathOnly.Split('/')[^1];
             if (lastSegment.Contains('.'))
+            {
                 continue;
+            }
 
             if (!pathOnly.EndsWith('/'))
+            {
                 results.Add(url);
+            }
         }
 
         return results.ToImmutable();
@@ -102,11 +118,15 @@ public sealed partial class LinkVerificationService
     {
         // External links (http://, https://, //, mailto:, tel:)
         if (IsExternalUrl(url))
+        {
             return new ExternalLink(sourcePage, url);
+        }
 
         // Anchor-only links (#something)
         if (url.StartsWith('#'))
+        {
             return new ValidLink(sourcePage, url);
+        }
 
         // Strip query string and fragment
         var pathOnly = url.Split('#')[0].Split('?')[0];
@@ -119,20 +139,27 @@ public sealed partial class LinkVerificationService
         if (_basePrefix.Length > 0 && pathOnly.StartsWith(_basePrefix, StringComparison.OrdinalIgnoreCase))
         {
             pathOnly = pathOnly[_basePrefix.Length..];
-            if (pathOnly.Length == 0) pathOnly = "/";
+            if (pathOnly.Length == 0)
+            {
+                pathOnly = "/";
+            }
         }
 
         // Framework-managed static asset paths — not content routes, skip verification
         if (pathOnly.StartsWith("/_content/", StringComparison.OrdinalIgnoreCase) ||
             pathOnly.StartsWith("/_framework/", StringComparison.OrdinalIgnoreCase) ||
             pathOnly.StartsWith("/_blazor/", StringComparison.OrdinalIgnoreCase))
+        {
             return new ValidLink(sourcePage, url);
+        }
 
         // Internal links — check against known routes
         var normalizedUrl = NormalizePath(pathOnly);
 
         if (_knownPaths.Contains(normalizedUrl))
+        {
             return new ValidLink(sourcePage, url);
+        }
 
         return new BrokenLinkResult(sourcePage, url, linkType, "Page not found");
     }
@@ -153,14 +180,18 @@ public sealed partial class LinkVerificationService
         {
             var url = ExtractAttributeValue(stripped, match);
             if (!string.IsNullOrWhiteSpace(url))
+            {
                 results.Add((url, LinkType.Internal));
+            }
         }
 
         foreach (var match in SrcRegex().EnumerateMatches(stripped))
         {
             var url = ExtractAttributeValue(stripped, match);
             if (!string.IsNullOrWhiteSpace(url))
+            {
                 results.Add((url, LinkType.Image));
+            }
         }
 
         return results;
@@ -177,13 +208,29 @@ public sealed partial class LinkVerificationService
         var segment = html.AsSpan(match.Index, match.Length);
         // Find the value between quotes
         var eqPos = segment.IndexOf('=');
-        if (eqPos < 0) return "";
+        if (eqPos < 0)
+        {
+            return "";
+        }
+
         var rest = segment[(eqPos + 1)..].Trim();
-        if (rest.Length < 2) return "";
+        if (rest.Length < 2)
+        {
+            return "";
+        }
+
         var quote = rest[0];
-        if (quote is not '"' and not '\'') return "";
+        if (quote is not '"' and not '\'')
+        {
+            return "";
+        }
+
         var endQuote = rest[1..].IndexOf(quote);
-        if (endQuote < 0) return "";
+        if (endQuote < 0)
+        {
+            return "";
+        }
+
         return rest[1..(endQuote + 1)].ToString();
     }
 
@@ -198,8 +245,15 @@ public sealed partial class LinkVerificationService
     {
         var s = path.TrimEnd('/');
         if (s.EndsWith("/index.html", StringComparison.OrdinalIgnoreCase))
+        {
             s = s[..^"/index.html".Length];
-        if (string.IsNullOrEmpty(s)) s = "/";
+        }
+
+        if (string.IsNullOrEmpty(s))
+        {
+            s = "/";
+        }
+
         return s;
     }
 

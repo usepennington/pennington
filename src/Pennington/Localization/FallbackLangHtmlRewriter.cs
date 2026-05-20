@@ -38,18 +38,28 @@ public sealed class FallbackLangHtmlRewriter : IHtmlResponseRewriter
     /// <inheritdoc/>
     public bool ShouldApply(HttpContext context)
     {
-        if (!_localization.IsMultiLocale) return false;
+        if (!_localization.IsMultiLocale)
+        {
+            return false;
+        }
+
         return context.Items[FallbackContentLocaleKey] is string s && !string.IsNullOrEmpty(s);
     }
 
     /// <inheritdoc/>
     public Task ApplyAsync(IDocument document, HttpContext context)
     {
-        if (context.Items[FallbackContentLocaleKey] is not string contentLocale) return Task.CompletedTask;
+        if (context.Items[FallbackContentLocaleKey] is not string contentLocale)
+        {
+            return Task.CompletedTask;
+        }
 
         var info = _localization.Locales.TryGetValue(contentLocale, out var li) ? li : new LocaleInfo(contentLocale);
         var html = document.DocumentElement;
-        if (html is null) return Task.CompletedTask;
+        if (html is null)
+        {
+            return Task.CompletedTask;
+        }
 
         html.SetAttribute("lang", info.HtmlLang ?? contentLocale);
         html.SetAttribute("dir", info.Direction);

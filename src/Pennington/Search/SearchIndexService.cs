@@ -64,13 +64,20 @@ public sealed class SearchIndexService : IFileWatchAware
         // locales serve "[]" rather than 404. Fall back to DefaultLocale for
         // single-locale sites that haven't called AddLocale.
         var configuredLocales = localization.Locales.Count > 0
-            ? (IEnumerable<string>)localization.Locales.Keys
+            ? localization.Locales.Keys
             : [localization.DefaultLocale];
-        foreach (var code in configuredLocales) groups[code] = [];
+        foreach (var code in configuredLocales)
+        {
+            groups[code] = [];
+        }
 
         foreach (var toc in await contentServices.CollectIndexableEntriesAsync())
         {
-            if (toc.ExcludeFromSearch) continue;
+            if (toc.ExcludeFromSearch)
+            {
+                continue;
+            }
+
             var element = await fetcher.FetchContentAsync(toc.Route.CanonicalPath.Value, options.ContentSelector);
             if (element is null)
             {
@@ -81,7 +88,9 @@ public sealed class SearchIndexService : IFileWatchAware
             if (options.ExcludeCodeBlocks)
             {
                 foreach (var pre in element.QuerySelectorAll("pre").ToList())
+                {
                     pre.Remove();
+                }
             }
 
             // Extract heading text before tag-stripping collapses the DOM.
@@ -96,7 +105,10 @@ public sealed class SearchIndexService : IFileWatchAware
                 ? localization.DefaultLocale
                 : toc.Route.Locale;
             if (!groups.TryGetValue(locale, out var list))
+            {
                 groups[locale] = list = [];
+            }
+
             list.Add(builder.Build(toc, element.InnerHtml, headings));
         }
 

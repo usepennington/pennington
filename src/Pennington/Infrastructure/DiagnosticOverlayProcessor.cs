@@ -22,7 +22,11 @@ public sealed class DiagnosticOverlayProcessor : IResponseProcessor
     /// <inheritdoc/>
     public bool ShouldProcess(HttpContext context)
     {
-        if (!_isDevMode) return false;
+        if (!_isDevMode)
+        {
+            return false;
+        }
+
         var contentType = context.Response.ContentType ?? "";
         return context.Response.StatusCode is >= 200 and < 300
             && contentType.Contains("text/html");
@@ -144,7 +148,9 @@ public sealed class DiagnosticOverlayProcessor : IResponseProcessor
 
         var idx = responseBody.LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase);
         if (idx >= 0)
+        {
             responseBody = responseBody.Insert(idx, overlay);
+        }
 
         return Task.FromResult(responseBody);
     }

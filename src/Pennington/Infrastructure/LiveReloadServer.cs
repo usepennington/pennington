@@ -70,7 +70,9 @@ public sealed class LiveReloadServer : IAsyncDisposable
             {
                 var result = await socket.ReceiveAsync(buffer, linked.Token);
                 if (result.MessageType == WebSocketMessageType.Close)
+                {
                     break;
+                }
             }
         }
         catch (OperationCanceledException)
@@ -89,7 +91,11 @@ public sealed class LiveReloadServer : IAsyncDisposable
     /// <summary>Disposes the debounce timer and closes any open client sockets.</summary>
     public async ValueTask DisposeAsync()
     {
-        if (_disposed) return;
+        if (_disposed)
+        {
+            return;
+        }
+
         _disposed = true;
 
         if (_debounceTimer is { } timer)
@@ -105,7 +111,11 @@ public sealed class LiveReloadServer : IAsyncDisposable
         foreach (var (id, socket) in _clients)
         {
             _clients.TryRemove(id, out _);
-            if (socket.State != WebSocketState.Open) continue;
+            if (socket.State != WebSocketState.Open)
+            {
+                continue;
+            }
+
             try
             {
                 await socket.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, null, closeCts.Token);
@@ -130,7 +140,9 @@ public static class LiveReloadExtensions
     public static WebApplication UsePenningtonLiveReload(this WebApplication app)
     {
         if (PenningtonBuildMode.IsBuildMode())
+        {
             return app;
+        }
 
         app.UseWebSockets();
 

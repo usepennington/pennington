@@ -48,13 +48,22 @@ public static class Stage1
             {
                 await foreach (var discovered in service.DiscoverAsync())
                 {
-                    if (!discovered.Route.CanonicalPath.Matches(requested)) continue;
+                    if (!discovered.Route.CanonicalPath.Matches(requested))
+                    {
+                        continue;
+                    }
 
                     var parsed = await parser.ParseAsync(discovered);
-                    if (parsed is not ParsedItem parsedItem) continue;
+                    if (parsed is not ParsedItem parsedItem)
+                    {
+                        continue;
+                    }
 
                     var rendered = await renderer.RenderAsync(parsedItem);
-                    if (rendered is not RenderedItem renderedItem) continue;
+                    if (rendered is not RenderedItem renderedItem)
+                    {
+                        continue;
+                    }
 
                     return Results.Content(renderedItem.Content.Html, "text/html");
                 }

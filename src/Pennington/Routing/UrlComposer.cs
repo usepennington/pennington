@@ -31,8 +31,15 @@ public static class UrlComposer
             var trimmedBase = baseVal.TrimEnd('/');
             var path = relative.Value;
             if (string.IsNullOrEmpty(path) || path == "/")
+            {
                 return new UrlPath(trimmedBase + "/");
-            if (!path.StartsWith('/')) path = "/" + path;
+            }
+
+            if (!path.StartsWith('/'))
+            {
+                path = "/" + path;
+            }
+
             return new UrlPath(trimmedBase + path);
         }
         return canonicalBase / relative;

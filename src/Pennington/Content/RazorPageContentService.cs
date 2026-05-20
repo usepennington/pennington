@@ -70,7 +70,9 @@ public sealed partial class RazorPageContentService : IContentService
         foreach (var entry in _componentMetadataCache.Value)
         {
             if (entry.Metadata is { IsDraft: true })
+            {
                 continue;
+            }
 
             foreach (var route in entry.Routes)
             {
@@ -98,8 +100,15 @@ public sealed partial class RazorPageContentService : IContentService
 
         foreach (var entry in _componentMetadataCache.Value)
         {
-            if (entry.Metadata is null) continue;
-            if (entry.Metadata is { IsDraft: true }) continue;
+            if (entry.Metadata is null)
+            {
+                continue;
+            }
+
+            if (entry.Metadata is { IsDraft: true })
+            {
+                continue;
+            }
 
             var route = entry.Routes[0];
             var hierarchyParts = route.CanonicalPath.Value
@@ -134,7 +143,9 @@ public sealed partial class RazorPageContentService : IContentService
         foreach (var entry in _componentMetadataCache.Value)
         {
             if (entry.Metadata is { IsDraft: true })
+            {
                 continue;
+            }
 
             var route = entry.Routes[0];
             var hierarchyParts = route.CanonicalPath.Value
@@ -143,7 +154,9 @@ public sealed partial class RazorPageContentService : IContentService
 
             var title = entry.Metadata?.Title;
             if (string.IsNullOrWhiteSpace(title))
+            {
                 title = AutoTitle(entry.Component.Name);
+            }
 
             var order = entry.Metadata is IOrderable orderable ? orderable.Order : int.MaxValue;
             var sectionLabel = entry.Metadata is ISectionable sectionable ? sectionable.SectionLabel : null;
@@ -196,7 +209,9 @@ public sealed partial class RazorPageContentService : IContentService
                 foreach (var type in assembly.GetTypes())
                 {
                     if (!typeof(ComponentBase).IsAssignableFrom(type) || type.IsAbstract)
+                    {
                         continue;
+                    }
 
                     var routes = new List<ContentRoute>();
                     foreach (var attr in type.GetCustomAttributes<RouteAttribute>())
@@ -204,16 +219,22 @@ public sealed partial class RazorPageContentService : IContentService
                         var template = attr.Template;
 
                         if (template.Contains('{'))
+                        {
                             continue;
+                        }
 
                         if (template != "/" && !template.EndsWith('/'))
+                        {
                             _missingTrailingSlashPages.Add((template, type.FullName ?? type.Name));
+                        }
 
                         routes.Add(ContentRouteFactory.FromRazorPage(template));
                     }
 
                     if (routes.Count == 0)
+                    {
                         continue;
+                    }
 
                     var metadata = TryLoadMetadata(type);
                     components.Add(new ComponentWithMetadata(type, routes, metadata));
@@ -233,13 +254,17 @@ public sealed partial class RazorPageContentService : IContentService
     {
         var sidecarPath = GetSidecarFilePath(component);
         if (sidecarPath is null || !_fileSystem.File.Exists(sidecarPath))
+        {
             return null;
+        }
 
         try
         {
             var yamlContent = _fileSystem.File.ReadAllText(sidecarPath);
             if (string.IsNullOrWhiteSpace(yamlContent))
+            {
                 return null;
+            }
 
             var metadata = _frontMatterParser.DeserializeYaml<DocFrontMatter>(yamlContent, sidecarPath);
             _logger.LogDebug("Loaded metadata for component {ComponentName} from {SidecarPath}",
@@ -261,11 +286,15 @@ public sealed partial class RazorPageContentService : IContentService
         var componentPath = _razorFileCache.Value.GetValueOrDefault(componentName);
 
         if (componentPath is null)
+        {
             return null;
+        }
 
         var componentDirectory = _fileSystem.Path.GetDirectoryName(componentPath);
         if (string.IsNullOrEmpty(componentDirectory))
+        {
             return null;
+        }
 
         var metadataPath = _fileSystem.Path.Combine(componentDirectory, $"{razorFileName}.metadata.yml");
         return _fileSystem.File.Exists(metadataPath) ? metadataPath : null;
@@ -280,15 +309,21 @@ public sealed partial class RazorPageContentService : IContentService
         {
             var assemblyLocation = assembly.Location;
             if (string.IsNullOrEmpty(assemblyLocation))
+            {
                 continue;
+            }
 
             var assemblyDir = _fileSystem.Path.GetDirectoryName(assemblyLocation);
             if (string.IsNullOrEmpty(assemblyDir))
+            {
                 continue;
+            }
 
             var projectRoot = FindProjectRoot(assemblyDir);
             if (projectRoot is not null && _fileSystem.Directory.Exists(projectRoot))
+            {
                 projectRoots.Add(projectRoot);
+            }
         }
 
         foreach (var projectRoot in projectRoots)
@@ -301,7 +336,9 @@ public sealed partial class RazorPageContentService : IContentService
                 foreach (var filePath in razorFiles)
                 {
                     if (ShouldExcludeFile(filePath))
+                    {
                         continue;
+                    }
 
                     var componentName = _fileSystem.Path.GetFileNameWithoutExtension(filePath);
                     if (!cache.ContainsKey(componentName))
@@ -341,7 +378,10 @@ public sealed partial class RazorPageContentService : IContentService
 
                 var parentDir = _fileSystem.Directory.GetParent(currentDir)?.FullName;
                 if (parentDir == currentDir)
+                {
                     break;
+                }
+
                 currentDir = parentDir;
             }
             catch (DirectoryNotFoundException)

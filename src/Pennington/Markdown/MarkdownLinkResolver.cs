@@ -47,8 +47,15 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
     /// </summary>
     public async ValueTask<string?> ResolveAsync(FilePath sourceFile, string href)
     {
-        if (string.IsNullOrEmpty(href)) return null;
-        if (!IsRewritableHref(href)) return null;
+        if (string.IsNullOrEmpty(href))
+        {
+            return null;
+        }
+
+        if (!IsRewritableHref(href))
+        {
+            return null;
+        }
 
         var index = await _indexLazy.Value;
         return ResolveInternal(index, sourceFile, href);
@@ -57,8 +64,16 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
     /// <summary>Synchronous helper for tests: assumes the index is already warm.</summary>
     internal string? ResolveFromPrebuilt(IndexData index, FilePath sourceFile, string href)
     {
-        if (string.IsNullOrEmpty(href)) return null;
-        if (!IsRewritableHref(href)) return null;
+        if (string.IsNullOrEmpty(href))
+        {
+            return null;
+        }
+
+        if (!IsRewritableHref(href))
+        {
+            return null;
+        }
+
         return ResolveInternal(index, sourceFile, href);
     }
 
@@ -76,7 +91,10 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
         }
 
         var sourceDir = Path.GetDirectoryName(Path.GetFullPath(sourceFile.Value));
-        if (string.IsNullOrEmpty(sourceDir)) return null;
+        if (string.IsNullOrEmpty(sourceDir))
+        {
+            return null;
+        }
 
         // Resolve the relative path against the source directory.
         string resolved;
@@ -142,7 +160,11 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
         foreach (var root in index.ContentRoots)
         {
             var rootForward = root.AbsoluteRoot.Replace('\\', '/');
-            if (!rootForward.EndsWith('/')) rootForward += "/";
+            if (!rootForward.EndsWith('/'))
+            {
+                rootForward += "/";
+            }
+
             if (resolvedForward.StartsWith(rootForward, StringComparison.OrdinalIgnoreCase)
                 && rootForward.Length > bestLen)
             {
@@ -159,8 +181,16 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
 
         var relative = resolvedForward[bestLen..];
         var basePart = best.BasePageUrl.Value.TrimEnd('/');
-        if (!basePart.StartsWith('/')) basePart = "/" + basePart;
-        if (basePart == "/") basePart = string.Empty;
+        if (!basePart.StartsWith('/'))
+        {
+            basePart = "/" + basePart;
+        }
+
+        if (basePart == "/")
+        {
+            basePart = string.Empty;
+        }
+
         url = $"{basePart}/{relative}";
         return true;
     }
@@ -168,15 +198,29 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
     private static bool IsRewritableHref(string href)
     {
         // Absolute URLs / external schemes / fragments.
-        if (href.StartsWith('/')) return false;
-        if (href.StartsWith('#')) return false;
-        if (href.StartsWith("//", StringComparison.Ordinal)) return false;
+        if (href.StartsWith('/'))
+        {
+            return false;
+        }
+
+        if (href.StartsWith('#'))
+        {
+            return false;
+        }
+
+        if (href.StartsWith("//", StringComparison.Ordinal))
+        {
+            return false;
+        }
 
         var colon = href.IndexOf(':');
         if (colon > 0)
         {
             var scheme = href[..colon];
-            if (HasSchemeLikeShape(scheme)) return false;
+            if (HasSchemeLikeShape(scheme))
+            {
+                return false;
+            }
         }
 
         return true;
@@ -184,11 +228,22 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
 
     private static bool HasSchemeLikeShape(ReadOnlySpan<char> scheme)
     {
-        if (scheme.Length == 0) return false;
-        if (!char.IsLetter(scheme[0])) return false;
+        if (scheme.Length == 0)
+        {
+            return false;
+        }
+
+        if (!char.IsLetter(scheme[0]))
+        {
+            return false;
+        }
+
         foreach (var c in scheme)
         {
-            if (!char.IsLetterOrDigit(c) && c != '+' && c != '-' && c != '.') return false;
+            if (!char.IsLetterOrDigit(c) && c != '+' && c != '-' && c != '.')
+            {
+                return false;
+            }
         }
         return true;
     }
@@ -197,7 +252,10 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
     {
         foreach (var known in MarkdownExtensions)
         {
-            if (string.Equals(ext, known, StringComparison.OrdinalIgnoreCase)) return true;
+            if (string.Equals(ext, known, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
         }
         return false;
     }
@@ -207,7 +265,10 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
         for (var i = 0; i < s.Length; i++)
         {
             var c = s[i];
-            if (c == a || c == b) return i;
+            if (c == a || c == b)
+            {
+                return i;
+            }
         }
         return -1;
     }
@@ -229,7 +290,11 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
 
         await foreach (var item in services.DiscoverAllAsync())
         {
-            if (item.Source is not MarkdownFileSource markdown) continue;
+            if (item.Source is not MarkdownFileSource markdown)
+            {
+                continue;
+            }
+
             var sourcePath = Path.GetFullPath(markdown.Path.Value);
             var canonical = item.Route.CanonicalPath.Value;
 

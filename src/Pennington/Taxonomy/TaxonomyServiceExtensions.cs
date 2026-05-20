@@ -90,7 +90,10 @@ public static class TaxonomyServiceExtensions
         return async (string slug, HtmlRenderer renderer) =>
         {
             var term = await taxonomy.TryGetTermAsync(slug);
-            if (term is null) return Results.NotFound();
+            if (term is null)
+            {
+                return Results.NotFound();
+            }
 
             return await RenderComponentAsync(
                 renderer,

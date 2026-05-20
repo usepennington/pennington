@@ -47,24 +47,34 @@ internal static class MainTab
     {
         long lastRequestSeq = 0;
         long lastLogSeq = 0;
-        int lastFileChangeSignature = -1;
+        var lastFileChangeSignature = -1;
 
         return () =>
         {
             foreach (var e in requests.Snapshot())
             {
-                if (e.Sequence <= lastRequestSeq) continue;
+                if (e.Sequence <= lastRequestSeq)
+                {
+                    continue;
+                }
+
                 lastRequestSeq = e.Sequence;
                 requestsLog.AppendMarkupLine(FormatRequest(e));
             }
 
             foreach (var e in logs.Snapshot())
             {
-                if (e.Sequence <= lastLogSeq) continue;
+                if (e.Sequence <= lastLogSeq)
+                {
+                    continue;
+                }
+
                 lastLogSeq = e.Sequence;
                 logsLog.AppendMarkupLine(FormatLog(e));
                 if (e.Exception is { } ex)
+                {
                     logsLog.AppendMarkupLine($"     [red]{Escape(ex.GetType().Name)}: {Escape(ex.Message)}[/]");
+                }
             }
 
             // File changes dedup by path, so we can't stream — when the table changes
@@ -79,7 +89,9 @@ internal static class MainTab
                 lastFileChangeSignature = signature;
                 fileChangesLog.Clear();
                 foreach (var e in fcSnapshot.Take(200))
+                {
                     fileChangesLog.AppendMarkupLine(FormatFileChange(e));
+                }
             }
         };
     }
