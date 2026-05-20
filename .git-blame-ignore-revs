@@ -9,3 +9,6 @@
 
 # style: apply dotnet format across the solution
 5d6bafb
+
+# style: apply dotnet format for IDE0001/IDE0002/IDE0049
+9155909
