@@ -11,6 +11,7 @@ using Localization;
 using Markdig;
 using Markdown;
 using Markdown.Extensions;
+using Markdown.Shortcodes;
 using Mdazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -141,6 +142,15 @@ public static class PenningtonExtensions
                 sp.GetRequiredService<HighlightingService>(),
                 sp.GetServices<ICodeBlockPreprocessor>()));
 
+        // Pre-render shortcode expander. Handlers register as IShortcode via DI; the
+        // expander is transient so each render picks up the live set. AssemblyVersionShortcode
+        // ships built-in so authors can stamp the host app's version with <?# Version /?>.
+        services.AddTransient(sp =>
+            new ShortcodeExpander(
+                sp.GetServices<IShortcode>(),
+                sp.GetService<IHttpContextAccessor>()));
+        services.AddSingleton<IShortcode, AssemblyVersionShortcode>();
+
         // Markdown pipeline — includes highlighting, tabs, custom alerts, Mdazor,
         // and any consumer-supplied extensions via options.ConfigureMarkdownPipeline.
         services.AddSingleton(sp =>
@@ -159,7 +169,8 @@ public static class PenningtonExtensions
             new MarkdownContentRenderer(
                 sp.GetRequiredService<MarkdownPipeline>(),
                 sp.GetService<MarkdownLinkResolver>(),
-                sp.GetService<IFileSystem>()));
+                sp.GetService<IFileSystem>(),
+                sp.GetService<ShortcodeExpander>()));
 
         // Register markdown content services for each configured source
         foreach (var source in options.MarkdownSources)

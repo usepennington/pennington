@@ -38,12 +38,12 @@ public static partial class IncludeExpander
         string markdown, string sourceFilePath, IFileSystem fileSystem,
         HashSet<string> visiting, int depth)
     {
-        var fencedRegions = GetFencedRegions(markdown);
+        var fencedRegions = FencedRegions.Compute(markdown);
 
         return IncludePattern().Replace(markdown, match =>
         {
             // A directive inside a fenced code block is documentation, not a call site.
-            if (fencedRegions.Any(r => match.Index >= r.Start && match.Index < r.End))
+            if (FencedRegions.Contains(fencedRegions, match.Index))
             {
                 return match.Value;
             }
@@ -79,71 +79,6 @@ public static partial class IncludeExpander
 
             return expanded;
         });
-    }
-
-    /// <summary>
-    /// Returns the <c>[start, end)</c> character ranges of every fenced code block (<c>```</c> or
-    /// <c>~~~</c>) so include directives inside them can be skipped.
-    /// </summary>
-    private static List<(int Start, int End)> GetFencedRegions(string text)
-    {
-        var regions = new List<(int, int)>();
-        var inFence = false;
-        var fenceChar = ' ';
-        var fenceLength = 0;
-        var fenceStart = 0;
-        var position = 0;
-
-        while (position < text.Length)
-        {
-            var newline = text.IndexOf('\n', position);
-            var lineEnd = newline < 0 ? text.Length : newline;
-            var lineEndExclusive = newline < 0 ? text.Length : newline + 1;
-            var line = text[position..lineEnd];
-
-            var indent = 0;
-            while (indent < line.Length && line[indent] == ' ')
-            {
-                indent++;
-            }
-
-            if (indent <= 3 && indent < line.Length && (line[indent] == '`' || line[indent] == '~'))
-            {
-                var marker = line[indent];
-                var runLength = 0;
-                while (indent + runLength < line.Length && line[indent + runLength] == marker)
-                {
-                    runLength++;
-                }
-
-                if (runLength >= 3)
-                {
-                    if (!inFence)
-                    {
-                        inFence = true;
-                        fenceChar = marker;
-                        fenceLength = runLength;
-                        fenceStart = position;
-                    }
-                    else if (marker == fenceChar
-                             && runLength >= fenceLength
-                             && line[(indent + runLength)..].Trim().Length == 0)
-                    {
-                        inFence = false;
-                        regions.Add((fenceStart, lineEndExclusive));
-                    }
-                }
-            }
-
-            position = lineEndExclusive;
-        }
-
-        if (inFence)
-        {
-            regions.Add((fenceStart, text.Length));
-        }
-
-        return regions;
     }
 
     /// <summary>

@@ -3,6 +3,7 @@ using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
 using Pennington.Markdown.Extensions;
+using Pennington.Markdown.Shortcodes;
 using Pennington.MonorailCss;
 using Pennington.Pipeline;
 using Pennington.Routing;
@@ -55,6 +56,11 @@ builder.Services.AddTransient<IContentService, RobotsTxtContentService>();
 
 // 2.3.20 Code-block preprocessor — handles "linecount" fences.
 builder.Services.AddSingleton<ICodeBlockPreprocessor, LineCountPreprocessor>();
+
+// 2.3.25 Custom shortcode — turns <?# GitHubRepo "owner/repo" /?> into a link.
+// The framework ships AssemblyVersionShortcode (<?# Version /?>) by default;
+// any IShortcode registered after AddPennington joins the same dispatch table.
+builder.Services.AddSingleton<IShortcode, GitHubRepoShortcode>();
 
 // 2.3.40 Response processor — injects the feedback widget.
 builder.Services.AddSingleton<IResponseProcessor, FeedbackWidgetProcessor>();

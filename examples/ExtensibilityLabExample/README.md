@@ -6,6 +6,7 @@ Bare `AddPennington` host that exercises every Pennington extension seam from on
 
 - **Custom highlighter** — `PipelineHighlighter` claims `pipeline` fences (`how-to/markdown-pipeline/custom-highlighter.md`)
 - **Code-block preprocessor** — `LineCountPreprocessor` claims `linecount` fences (`how-to/markdown-pipeline/code-block-preprocessor.md`)
+- **Custom shortcode** — `GitHubRepoShortcode` expands `<?# GitHubRepo "owner/repo" /?>` to a link (`how-to/markdown-pipeline/shortcodes.md`)
 - **Tabbed-code class override** — `TabbedCodeBlockStyling` swaps the default `tab-*` classes (`how-to/code-samples/tabbed-code.md`)
 - **Custom `IContentService`** — `ReleaseNotesContentService` (JSON-backed). Generates one page per release file under `Content/releases/v*.json`, routed at `/releases/<semver>/` (e.g. `/releases/1.0.0/`, `/releases/1.1.0/`). The slug is the raw SemVer string without a `v` prefix — `/releases/v1.0/` would 404. (`how-to/content-services/custom-content-service.md`)
 - **Emit-only `IContentService`** — `RobotsTxtContentService`. **Build-mode only** — at `dotnet run -- build` the service emits `output/robots.txt`. Under `dotnet run` the file has no runtime route, so `/robots.txt` is a 404 in dev. This is the central design difference between a discoverable `IContentService` and an emit-only one. (`how-to/content-services/emit-generated-artifacts.md`)

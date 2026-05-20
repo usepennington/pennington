@@ -2,6 +2,7 @@ using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
 using Pennington.Markdown;
+using Pennington.Markdown.Shortcodes;
 using Pennington.Pipeline;
 using Pennington.Routing;
 using Testably.Abstractions.Testing;
@@ -199,6 +200,41 @@ public class MarkdownContentRendererTests
 
         var rendered = result.ShouldBeCase<RenderedItem>();
         rendered.Content.Html.ShouldContain("src=\"/getting-started/beacon-arch.png\"");
+    }
+
+    [Fact]
+    public async Task RenderAsync_ShortcodeExpander_ExpandsBeforeMarkdig()
+    {
+        var shortcode = new InlineShortcode("Stamp", _ => "STAMPED");
+        var expander = new ShortcodeExpander([shortcode]);
+        var renderer = new MarkdownContentRenderer(shortcodeExpander: expander);
+
+        var parsed = new ParsedItem(MakeRoute("/stamp"), MakeMetadata(),
+            "Page says <?# Stamp /?> done.");
+
+        var result = await renderer.RenderAsync(parsed);
+
+        var rendered = result.ShouldBeCase<RenderedItem>();
+        rendered.Content.Html.ShouldContain("Page says STAMPED done.");
+    }
+
+    private sealed class InlineShortcode : IShortcode
+    {
+        private readonly Func<ShortcodeInvocation, string> _render;
+
+        public InlineShortcode(string name, Func<ShortcodeInvocation, string> render)
+        {
+            Name = name;
+            _render = render;
+        }
+
+        public string Name { get; }
+
+        public Task<string> ExecuteAsync(
+            ShortcodeInvocation invocation,
+            ShortcodeContext context,
+            CancellationToken cancellationToken)
+            => Task.FromResult(_render(invocation));
     }
 
     [Fact]

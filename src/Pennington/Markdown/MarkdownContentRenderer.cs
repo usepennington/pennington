@@ -7,6 +7,7 @@ using Markdig;
 using Markdig.Renderers;
 using Pipeline;
 using Routing;
+using Shortcodes;
 
 /// <summary>
 /// Renders parsed markdown items to HTML using Markdig.
@@ -22,19 +23,23 @@ public sealed class MarkdownContentRenderer : IContentRenderer
     private readonly MarkdownPipeline _pipeline;
     private readonly MarkdownLinkResolver? _linkResolver;
     private readonly IFileSystem? _fileSystem;
+    private readonly ShortcodeExpander? _shortcodeExpander;
 
     /// <summary>Creates the renderer; the default Markdig pipeline is used when none is supplied.</summary>
     /// <param name="pipeline">Markdig pipeline; defaults to <see cref="MarkdownPipelineFactory.CreateDefault"/>.</param>
     /// <param name="linkResolver">Resolves author-written relative links to canonical URLs.</param>
     /// <param name="fileSystem">Backs <c>[!INCLUDE]</c> expansion; includes are skipped when null.</param>
+    /// <param name="shortcodeExpander">Expands <c>&lt;?# Name ... ?&gt;</c> shortcodes before Markdig parses; shortcodes are skipped when null.</param>
     public MarkdownContentRenderer(
         MarkdownPipeline? pipeline = null,
         MarkdownLinkResolver? linkResolver = null,
-        IFileSystem? fileSystem = null)
+        IFileSystem? fileSystem = null,
+        ShortcodeExpander? shortcodeExpander = null)
     {
         _pipeline = pipeline ?? MarkdownPipelineFactory.CreateDefault();
         _linkResolver = linkResolver;
         _fileSystem = fileSystem;
+        _shortcodeExpander = shortcodeExpander;
     }
 
     /// <inheritdoc/>
@@ -48,6 +53,15 @@ public sealed class MarkdownContentRenderer : IContentRenderer
             if (_fileSystem is not null && item.Route.SourceFile is { } includeBase)
             {
                 markdown = IncludeExpander.Expand(markdown, includeBase, _fileSystem);
+            }
+
+            // Expand <?# Name ... ?> shortcodes after includes so directives authored inside
+            // included partials still resolve, but before Markdig so handler output flows
+            // through the rest of the pipeline.
+            if (_shortcodeExpander is not null)
+            {
+                var shortcodeContext = new ShortcodeContext(item.Route, item.Metadata);
+                markdown = await _shortcodeExpander.ExpandAsync(markdown, shortcodeContext, CancellationToken.None);
             }
 
             var document = Markdown.Parse(markdown, _pipeline);
