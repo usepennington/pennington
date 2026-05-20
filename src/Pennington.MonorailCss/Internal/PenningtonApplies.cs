@@ -19,6 +19,7 @@ internal static class PenningtonApplies
         ImmutableDictionary<string, string>.Empty
             .AddRange(CodeBlockApplies)
             .AddRange(TabApplies)
+            .AddRange(ContentTabApplies)
             .AddRange(MarkdownAlertApplies)
             .AddRange(StepApplies)
             .AddRange(CardApplies)
@@ -218,6 +219,35 @@ internal static class PenningtonApplies
             {
                 ".tab-panel .code-highlight-wrapper",
                 "my-0 rounded-none border-0 bg-transparent dark:bg-transparent"
+            },
+        });
+
+    // Content tabs — a prose-level tabset wrapping mixed Markdown (paragraphs, code,
+    // lists, callouts). The strip carries `not-prose`; the panels deliberately do not,
+    // so panel content renders with the page's prose typography. The underlined active
+    // state mirrors the H2 accent-bar treatment so the two read as one family.
+    private static readonly ImmutableDictionary<string, string> ContentTabApplies =
+        ImmutableDictionary.CreateRange(new Dictionary<string, string>
+        {
+            { ".ctabs", "my-7" },
+            {
+                ".ctabs-bar",
+                "flex flex-row flex-nowrap items-end gap-1 overflow-x-auto " +
+                "border-b border-base-200 dark:border-base-800 " +
+                "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            },
+            {
+                ".ctab-btn",
+                "whitespace-nowrap -mb-px border-b-2 border-transparent px-4 py-3 " +
+                "font-display text-sm font-medium text-base-600 dark:text-base-400 " +
+                "transition-colors hover:text-base-900 dark:hover:text-base-50 " +
+                "data-[active=true]:text-primary-700 data-[active=true]:border-primary-600 " +
+                "dark:data-[active=true]:text-primary-300 dark:data-[active=true]:border-primary-300"
+            },
+            {
+                ".ctab-panel",
+                "hidden data-[active=true]:block pt-5 " +
+                "[&>:first-child]:mt-0 [&>:last-child]:mb-0"
             },
         });
 

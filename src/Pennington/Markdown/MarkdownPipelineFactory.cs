@@ -41,6 +41,7 @@ public static class MarkdownPipelineFactory
             .UseYamlFrontMatter()
             .UseSyntaxHighlighting(renderingService, codeOptions)
             .UseTabbedCodeBlocks(tabOptions)
+            .UseContentTabs()
             .UseCustomAlerts()
             .UseScrollableTables()
             // Mdazor resolves IComponentRegistry lazily at render time, so the pipeline
@@ -81,6 +82,15 @@ internal static class MarkdownPipelineBuilderExtensions
         Func<TabbedCodeBlockRenderOptions>? options = null)
     {
         builder.Extensions.AddIfNotAlready(new TabbedCodeBlocksExtension(options));
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds support for DocFX-style content tabs built from <c>#&#160;[Label](#tab/id)</c> headings.
+    /// </summary>
+    public static MarkdownPipelineBuilder UseContentTabs(this MarkdownPipelineBuilder builder)
+    {
+        builder.Extensions.AddIfNotAlready(new ContentTabsExtension());
         return builder;
     }
 

@@ -19,6 +19,7 @@ class PageManager {
         this.themeManager = new ThemeManager();
         this.outlineManager = new OutlineManager();
         this.tabManager = new TabManager();
+        this.contentTabManager = new ContentTabManager();
         this.syntaxHighlighter = new SyntaxHighlighter();
         this.mermaidManager = new MermaidManager();
         this.mobileNavManager = new MobileNavManager();
@@ -32,6 +33,7 @@ class PageManager {
         // Initialize all components
         this.outlineManager.init();
         this.tabManager.init();
+        this.contentTabManager.init();
         this.syntaxHighlighter.init();
         this.mermaidManager.init();
         this.mobileNavManager.init();
@@ -60,6 +62,7 @@ class PageManager {
         // Re-run content-derived JS for the freshly-swapped regions.
         this.syntaxHighlighter?.init();
         this.tabManager?.init();
+        this.contentTabManager?.init();
         this.mermaidManager?.init();
         this.outlineManager?.init();
     }
@@ -484,6 +487,123 @@ class TabManager {
                 panel.setAttribute('hidden', '');
             });
         }
+    }
+}
+
+/**
+ * Content Tab Manager - Handles DocFX-style content tabs (.ctabs).
+ *
+ * Tab ids that appear as buttons in the same group are union-found into one
+ * "set"; selecting an id syncs every group that shares the set, so picking
+ * "Windows" once selects it page-wide. A panel with a data-condition is a
+ * dependent tab: it shows only when its condition id is also the selected id
+ * of the condition's set. Selection persists per set in localStorage.
+ */
+class ContentTabManager {
+    constructor() {
+        this.groups = [];
+        this.parent = new Map();   // union-find: tab id -> parent
+        this.selected = new Map(); // set root -> selected tab id
+    }
+
+    init() {
+        this.groups = Array.from(document.querySelectorAll('[data-content-tabs]'));
+        if (this.groups.length === 0) return;
+
+        this.parent = new Map();
+        this.selected = new Map();
+
+        // Union every group's button ids into one set.
+        for (const group of this.groups) {
+            const ids = this.buttonIds(group);
+            for (let i = 1; i < ids.length; i++) this.union(ids[0], ids[i]);
+        }
+
+        // Seed each set's selection from localStorage, else its first id.
+        for (const group of this.groups) {
+            for (const id of this.buttonIds(group)) {
+                const root = this.find(id);
+                if (!this.selected.has(root)) {
+                    const stored = this.readStored(root);
+                    this.selected.set(root, stored && this.find(stored) === root ? stored : id);
+                }
+            }
+        }
+
+        for (const group of this.groups) {
+            for (const btn of this.buttons(group)) {
+                btn.addEventListener('click', () => this.select(btn.dataset.tab));
+            }
+        }
+
+        this.render();
+    }
+
+    buttons(group) {
+        return Array.from(group.querySelectorAll(':scope > [role="tablist"] > .ctab-btn[data-tab]'));
+    }
+
+    buttonIds(group) {
+        return this.buttons(group).map(b => b.dataset.tab);
+    }
+
+    find(id) {
+        if (!this.parent.has(id)) { this.parent.set(id, id); return id; }
+        let root = id;
+        while (this.parent.get(root) !== root) root = this.parent.get(root);
+        let cur = id;
+        while (this.parent.get(cur) !== root) {
+            const next = this.parent.get(cur);
+            this.parent.set(cur, root);
+            cur = next;
+        }
+        return root;
+    }
+
+    union(a, b) {
+        const ra = this.find(a), rb = this.find(b);
+        if (ra !== rb) this.parent.set(rb, ra);
+    }
+
+    select(tabId) {
+        const root = this.find(tabId);
+        this.selected.set(root, tabId);
+        this.writeStored(root, tabId);
+        this.render();
+    }
+
+    render() {
+        for (const group of this.groups) {
+            const ids = this.buttonIds(group);
+            if (ids.length === 0) continue;
+
+            const setRoot = this.find(ids[0]);
+            const selectedId = this.selected.get(setRoot);
+            const active = ids.includes(selectedId) ? selectedId : ids[0];
+
+            for (const btn of this.buttons(group)) {
+                const on = btn.dataset.tab === active;
+                btn.dataset.active = String(on);
+                btn.setAttribute('aria-selected', String(on));
+            }
+
+            for (const panel of group.querySelectorAll(':scope > .ctab-panel[data-tab]')) {
+                let visible = panel.dataset.tab === active;
+                const condition = panel.dataset.condition || '';
+                if (visible && condition) {
+                    visible = this.selected.get(this.find(condition)) === condition;
+                }
+                panel.dataset.active = String(visible);
+            }
+        }
+    }
+
+    readStored(root) {
+        try { return localStorage.getItem('pn-ctab:' + root); } catch (e) { return null; }
+    }
+
+    writeStored(root, tabId) {
+        try { localStorage.setItem('pn-ctab:' + root, tabId); } catch (e) { }
     }
 }
 

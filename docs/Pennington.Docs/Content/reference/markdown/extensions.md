@@ -11,7 +11,8 @@ The catalog of non-CommonMark Markdown features wired into Pennington's Markdig 
 
 | Extension | Syntax | Controlled by | Doc page |
 |---|---|---|---|
-| Tabs | Adjacent fences with `tabs=true` | `UseTabbedCodeBlocks` | [Tabbed code](xref:how-to.code-samples.tabbed-code) |
+| Tabbed code | Adjacent fences with `tabs=true` | `UseTabbedCodeBlocks` | [Tabbed code](xref:how-to.code-samples.tabbed-code) |
+| Content tabs | `# [Label](#tab/id)` headings ended by `---` | `UseContentTabs` | [Content tabs](xref:how-to.rich-content.content-tabs) |
 | Alerts | `> [!KIND]` inside blockquote | `UseCustomAlerts` | [Alerts](xref:how-to.rich-content.alerts) |
 | Code annotations | Trailing-comment `[!code …]` directive | `UseSyntaxHighlighting` | [Code annotations](xref:how-to.code-samples.code-annotations) |
 | Cross-reference tags | `<xref:uid>` or `href="xref:uid"` | `XrefHtmlRewriter` (response stage) | [Cross-references](xref:how-to.navigation.cross-references) |
@@ -62,6 +63,60 @@ Markdown source showing a two-fence tabbed group:
 ```markdown:path
 examples/DocSitePagesAndLinksExample/snippets/markdown-tabs-example.md
 ```
+
+## Content tabs
+
+Groups a run of DocFX-style tab headings into a single tabset whose panels hold arbitrary Markdown — prose, lists, code, callouts. Distinct from [tabbed code](#tabs): the tab strip sits in the reading flow rather than inside code chrome.
+
+### Syntax
+
+A tab opens with a level-1 heading whose only inline is a link to `#tab/<id>`; the link text is the button label. Consecutive tab headings form one group, ended by a thematic break (`---`).
+
+````markdown
+# [Bash](#tab/bash)
+
+Use the bash variant.
+
+# [PowerShell](#tab/pwsh)
+
+Use the PowerShell variant.
+
+---
+````
+
+### Dependent tabs
+
+A third path segment — `#tab/<id>/<condition>` — gates the tab on another group's selection. `<condition>` is a tab id that has its own plain group elsewhere on the page; the dependent panel shows only when its `<id>` is the active button and its `<condition>` is that other group's selected id.
+
+````markdown
+# [.NET](#tab/lang/linux)
+
+.NET on Linux.
+
+# [.NET](#tab/lang/windows)
+
+.NET on Windows.
+
+---
+````
+
+### Arguments
+
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `id` | identifier | — | First segment after `#tab/`. Identifies the tab; ids are page-wide, so equal ids select together. |
+| `condition` | identifier | (absent) | Optional second segment. Gates the tab on the selected id of the condition's own group. |
+
+### Emitted CSS classes
+
+| Element | Class | Attributes | Role |
+|---|---|---|---|
+| Container | `ctabs` | `data-content-tabs` | Tabset wrapper; not `not-prose`. |
+| Tab strip | `ctabs-bar not-prose` | `role="tablist"` | Button row; `not-prose` isolates the buttons from page typography. |
+| Button | `ctab-btn` | `data-tab`, `data-active`, `role="tab"`, `aria-selected` | One per distinct id. |
+| Panel | `ctab-panel` | `data-tab`, `data-condition`, `data-active`, `role="tabpanel"` | One per tab heading; not `not-prose`, so content keeps prose styling. |
+
+The first panel is active in the server-rendered HTML; the client script recomputes selection on load, syncs equal ids page-wide, and persists each choice in `localStorage`.
 
 ## Alerts
 
@@ -186,6 +241,7 @@ Configure MonorailCSS through [the options record](xref:reference.api.monorail-c
 ## See also
 
 - How-to: [Tabbed code](xref:how-to.code-samples.tabbed-code)
+- How-to: [Content tabs](xref:how-to.rich-content.content-tabs)
 - How-to: [Alerts](xref:how-to.rich-content.alerts)
 - How-to: [Code annotations](xref:how-to.code-samples.code-annotations)
 - How-to: [Cross-references](xref:how-to.navigation.cross-references)
