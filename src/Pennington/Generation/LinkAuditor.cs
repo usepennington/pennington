@@ -41,30 +41,23 @@ public sealed class LinkAuditor : IRenderedAuditor
         var knownRoutes = new List<Routing.ContentRoute>();
         var copiedAssetPaths = new List<string>();
 
-        foreach (var service in _contentServices)
+        await foreach (var item in _contentServices.DiscoverAllAsync(cancellationToken))
         {
-            await foreach (var item in service.DiscoverAsync().WithCancellation(cancellationToken))
-            {
-                // Llms-only items have no HTML page at the canonical URL — a
-                // link from a regular page to that URL would 404, so leaving
-                // them out of knownRoutes lets the link verifier flag the
-                // broken reference instead of silently allowing it.
-                if (item.Source is Pipeline.LlmsOnlySource) continue;
-                knownRoutes.Add(item.Route);
-            }
-
-            foreach (var copy in await service.GetContentToCopyAsync())
-            {
-                copiedAssetPaths.Add(copy.OutputPath.Value);
-            }
+            // Llms-only items have no HTML page at the canonical URL — a
+            // link from a regular page to that URL would 404, so leaving
+            // them out of knownRoutes lets the link verifier flag the
+            // broken reference instead of silently allowing it.
+            if (item.Source is Pipeline.LlmsOnlySource) continue;
+            knownRoutes.Add(item.Route);
         }
 
-        // IContentService extends IContentEmitter, but DI does not widen — services
-        // registered as IContentService are not in the IContentEmitter set. Mirror
-        // OutputGenerationService.CreateContentFilesAsync so files emitted via
+        foreach (var copy in await _contentServices.CollectContentToCopyAsync())
+            copiedAssetPaths.Add(copy.OutputPath.Value);
+
+        // Mirror OutputGenerationService.CreateContentFilesAsync so files emitted via
         // GetContentToCreateAsync (e.g. per-subtree llms.txt files) are treated as
         // known assets rather than broken links.
-        foreach (var emitter in _contentServices.Cast<IContentEmitter>().Concat(_contentEmitters))
+        foreach (var emitter in _contentServices.WithStandaloneEmitters(_contentEmitters))
         {
             foreach (var item in await emitter.GetContentToCreateAsync())
                 copiedAssetPaths.Add(item.OutputPath.Value);

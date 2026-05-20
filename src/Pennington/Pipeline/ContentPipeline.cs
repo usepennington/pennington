@@ -28,12 +28,9 @@ public sealed class ContentPipeline : IContentPipeline
     /// <inheritdoc/>
     public async IAsyncEnumerable<ContentItem> DiscoverAsync()
     {
-        foreach (var service in _services)
+        await foreach (var discovered in _services.DiscoverAllAsync())
         {
-            await foreach (var discovered in service.DiscoverAsync())
-            {
-                yield return discovered;
-            }
+            yield return discovered;
         }
     }
 

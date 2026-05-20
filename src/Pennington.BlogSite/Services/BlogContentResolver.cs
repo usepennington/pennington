@@ -47,30 +47,27 @@ public sealed class BlogContentResolver : IFileWatchAware
     private async Task<List<BlogPostPage>> LoadAllPostsAsync()
     {
         var posts = new List<BlogPostPage>();
-        foreach (var service in _services)
+        await foreach (var item in _services.DiscoverAllAsync())
         {
-            await foreach (var item in service.DiscoverAsync())
+            if (item.Source is not MarkdownFileSource source) continue;
+
+            try
             {
-                if (item.Source is not MarkdownFileSource source) continue;
+                var content = await File.ReadAllTextAsync(source.Path.Value);
+                var parsed = _parser.Parse<BlogSiteFrontMatter>(content, source.Path.Value);
+                var fm = parsed.Metadata ?? new BlogSiteFrontMatter();
 
-                try
-                {
-                    var content = await File.ReadAllTextAsync(source.Path.Value);
-                    var parsed = _parser.Parse<BlogSiteFrontMatter>(content, source.Path.Value);
-                    var fm = parsed.Metadata ?? new BlogSiteFrontMatter();
+                if (fm.IsDraft) continue;
 
-                    if (fm.IsDraft) continue;
+                var tags = fm.Tags
+                    .Select(t => new BlogTag(t, $"{_options.TagsPageUrl}/{HttpUtility.UrlEncode(t)}"))
+                    .ToArray();
 
-                    var tags = fm.Tags
-                        .Select(t => new BlogTag(t, $"{_options.TagsPageUrl}/{HttpUtility.UrlEncode(t)}"))
-                        .ToArray();
-
-                    posts.Add(new BlogPostPage(fm, item.Route.CanonicalPath.Value, tags));
-                }
-                catch
-                {
-                    // Skip unparseable files
-                }
+                posts.Add(new BlogPostPage(fm, item.Route.CanonicalPath.Value, tags));
+            }
+            catch
+            {
+                // Skip unparseable files
             }
         }
 
@@ -83,29 +80,27 @@ public sealed class BlogContentResolver : IFileWatchAware
     public async Task<RenderedBlogPost?> GetPostByUrlAsync(string url)
     {
         url = "/" + url.Trim('/');
+        var target = new UrlPath(url);
 
-        foreach (var service in _services)
+        await foreach (var item in _services.DiscoverAllAsync())
         {
-            await foreach (var item in service.DiscoverAsync())
+            if (!item.Route.CanonicalPath.Matches(target)) continue;
+            if (item.Source is not MarkdownFileSource source) continue;
+
+            var content = await File.ReadAllTextAsync(source.Path.Value);
+            var parsed = _parser.Parse<BlogSiteFrontMatter>(content, source.Path.Value);
+            var fm = parsed.Metadata ?? new BlogSiteFrontMatter();
+
+            var tags = fm.Tags
+                .Select(t => new BlogTag(t, $"{_options.TagsPageUrl}/{HttpUtility.UrlEncode(t)}"))
+                .ToArray();
+
+            var parsedItem = new ParsedItem(item.Route, fm, parsed.Body);
+            var rendered = await _renderer.RenderAsync(parsedItem);
+            if (rendered.Value is RenderedItem renderedItem)
             {
-                if (!item.Route.CanonicalPath.Matches(new UrlPath(url))) continue;
-                if (item.Source is not MarkdownFileSource source) continue;
-
-                var content = await File.ReadAllTextAsync(source.Path.Value);
-                var parsed = _parser.Parse<BlogSiteFrontMatter>(content, source.Path.Value);
-                var fm = parsed.Metadata ?? new BlogSiteFrontMatter();
-
-                var tags = fm.Tags
-                    .Select(t => new BlogTag(t, $"{_options.TagsPageUrl}/{HttpUtility.UrlEncode(t)}"))
-                    .ToArray();
-
-                var parsedItem = new ParsedItem(item.Route, fm, parsed.Body);
-                var rendered = await _renderer.RenderAsync(parsedItem);
-                if (rendered.Value is RenderedItem renderedItem)
-                {
-                    var post = new BlogPostPage(fm, item.Route.CanonicalPath.Value, tags);
-                    return new RenderedBlogPost(post, renderedItem.Content.Html);
-                }
+                var post = new BlogPostPage(fm, item.Route.CanonicalPath.Value, tags);
+                return new RenderedBlogPost(post, renderedItem.Content.Html);
             }
         }
 

@@ -220,31 +220,28 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
         var markdownBuilder = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
         var roots = new List<ContentRootInfo>();
 
-        foreach (var service in services)
+        foreach (var service in services.OfType<IMarkdownContentSource>())
         {
-            if (service is IMarkdownContentSource mcs)
+            roots.Add(new ContentRootInfo(
+                AbsoluteRoot: Path.GetFullPath(service.AbsoluteContentRoot),
+                BasePageUrl: service.BasePageUrl));
+        }
+
+        await foreach (var item in services.DiscoverAllAsync())
+        {
+            if (item.Source is not MarkdownFileSource markdown) continue;
+            var sourcePath = Path.GetFullPath(markdown.Path.Value);
+            var canonical = item.Route.CanonicalPath.Value;
+
+            // Store three keys so lookups can match regardless of whether the
+            // author wrote the extension explicitly or relied on bare-name lookup.
+            markdownBuilder[NormalizePath(sourcePath)] = canonical;
+
+            var ext = Path.GetExtension(sourcePath);
+            if (ext.Length > 0)
             {
-                roots.Add(new ContentRootInfo(
-                    AbsoluteRoot: Path.GetFullPath(mcs.AbsoluteContentRoot),
-                    BasePageUrl: mcs.BasePageUrl));
-            }
-
-            await foreach (var item in service.DiscoverAsync())
-            {
-                if (item.Source is not MarkdownFileSource markdown) continue;
-                var sourcePath = Path.GetFullPath(markdown.Path.Value);
-                var canonical = item.Route.CanonicalPath.Value;
-
-                // Store three keys so lookups can match regardless of whether the
-                // author wrote the extension explicitly or relied on bare-name lookup.
-                markdownBuilder[NormalizePath(sourcePath)] = canonical;
-
-                var ext = Path.GetExtension(sourcePath);
-                if (ext.Length > 0)
-                {
-                    var withoutExt = sourcePath[..^ext.Length];
-                    markdownBuilder[NormalizePath(withoutExt)] = canonical;
-                }
+                var withoutExt = sourcePath[..^ext.Length];
+                markdownBuilder[NormalizePath(withoutExt)] = canonical;
             }
         }
 

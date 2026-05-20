@@ -68,40 +68,36 @@ public sealed class SearchIndexService : IFileWatchAware
             : [localization.DefaultLocale];
         foreach (var code in configuredLocales) groups[code] = [];
 
-        foreach (var service in contentServices)
+        foreach (var toc in await contentServices.CollectIndexableEntriesAsync())
         {
-            var tocItems = await service.GetIndexableEntriesAsync();
-            foreach (var toc in tocItems)
+            if (toc.ExcludeFromSearch) continue;
+            var element = await fetcher.FetchContentAsync(toc.Route.CanonicalPath.Value, options.ContentSelector);
+            if (element is null)
             {
-                if (toc.ExcludeFromSearch) continue;
-                var element = await fetcher.FetchContentAsync(toc.Route.CanonicalPath.Value, options.ContentSelector);
-                if (element is null)
-                {
-                    logger.LogWarning("SearchIndexService: failed to fetch {Path}, skipping", toc.Route.CanonicalPath.Value);
-                    continue;
-                }
-
-                if (options.ExcludeCodeBlocks)
-                {
-                    foreach (var pre in element.QuerySelectorAll("pre").ToList())
-                        pre.Remove();
-                }
-
-                // Extract heading text before tag-stripping collapses the DOM.
-                // All six levels are joined with spaces; client-side boost applies
-                // uniformly — finer-grained per-level weights didn't pull their weight.
-                var headings = string.Join(' ',
-                    element.QuerySelectorAll("h1, h2, h3, h4, h5, h6")
-                        .Select(h => h.TextContent.Trim())
-                        .Where(t => t.Length > 0));
-
-                var locale = string.IsNullOrEmpty(toc.Route.Locale)
-                    ? localization.DefaultLocale
-                    : toc.Route.Locale;
-                if (!groups.TryGetValue(locale, out var list))
-                    groups[locale] = list = [];
-                list.Add(builder.Build(toc, element.InnerHtml, headings));
+                logger.LogWarning("SearchIndexService: failed to fetch {Path}, skipping", toc.Route.CanonicalPath.Value);
+                continue;
             }
+
+            if (options.ExcludeCodeBlocks)
+            {
+                foreach (var pre in element.QuerySelectorAll("pre").ToList())
+                    pre.Remove();
+            }
+
+            // Extract heading text before tag-stripping collapses the DOM.
+            // All six levels are joined with spaces; client-side boost applies
+            // uniformly — finer-grained per-level weights didn't pull their weight.
+            var headings = string.Join(' ',
+                element.QuerySelectorAll("h1, h2, h3, h4, h5, h6")
+                    .Select(h => h.TextContent.Trim())
+                    .Where(t => t.Length > 0));
+
+            var locale = string.IsNullOrEmpty(toc.Route.Locale)
+                ? localization.DefaultLocale
+                : toc.Route.Locale;
+            if (!groups.TryGetValue(locale, out var list))
+                groups[locale] = list = [];
+            list.Add(builder.Build(toc, element.InnerHtml, headings));
         }
 
         return groups.ToDictionary(

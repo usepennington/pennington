@@ -90,30 +90,27 @@ public sealed class OutputGenerationService
         // discovery wins and the duplicate is reported as a warning.
         var contentPages = new List<PageToGenerate>();
         var claimedOutputFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var service in _contentServices)
+        await foreach (var item in _contentServices.DiscoverAllAsync())
         {
-            await foreach (var item in service.DiscoverAsync())
+            // Llms-only items contribute to the llms.txt sidecar and front
+            // door but never produce an HTML page. Skip them so the crawler
+            // doesn't try to fetch a route that has no rendered output and
+            // so the output file isn't claimed (the same canonical slug may
+            // legitimately host an HTML page from another service).
+            if (item.Source is LlmsOnlySource) continue;
+
+            var outputFile = item.Route.OutputFile.Value;
+            if (!claimedOutputFiles.Add(outputFile))
             {
-                // Llms-only items contribute to the llms.txt sidecar and front
-                // door but never produce an HTML page. Skip them so the crawler
-                // doesn't try to fetch a route that has no rendered output and
-                // so the output file isn't claimed (the same canonical slug may
-                // legitimately host an HTML page from another service).
-                if (item.Source is LlmsOnlySource) continue;
-
-                var outputFile = item.Route.OutputFile.Value;
-                if (!claimedOutputFiles.Add(outputFile))
-                {
-                    reportBuilder.AddWarning(
-                        $"Duplicate route: output file '{outputFile}' is emitted by more than one " +
-                        $"content service (URL: {item.Route.CanonicalPath.Value}). Keeping the first " +
-                        $"discovery; the duplicate would otherwise race on the output file during parallel fetch.",
-                        sourceFile: outputFile);
-                    continue;
-                }
-
-                contentPages.Add(new PageToGenerate(item.Route));
+                reportBuilder.AddWarning(
+                    $"Duplicate route: output file '{outputFile}' is emitted by more than one " +
+                    $"content service (URL: {item.Route.CanonicalPath.Value}). Keeping the first " +
+                    $"discovery; the duplicate would otherwise race on the output file during parallel fetch.",
+                    sourceFile: outputFile);
+                continue;
             }
+
+            contentPages.Add(new PageToGenerate(item.Route));
         }
 
         // Phase 2: Discover MapGet routes (includes /styles.css). A MapGet handler
@@ -291,14 +288,10 @@ public sealed class OutputGenerationService
     private async Task CopyStaticAssetsAsync(string outputDir, BuildReportBuilder reportBuilder, bool writeToDisk)
     {
         // Copy content directory assets (non-markdown files)
-        foreach (var service in _contentServices)
+        foreach (var item in await _contentServices.CollectContentToCopyAsync())
         {
-            var toCopy = await service.GetContentToCopyAsync();
-            foreach (var item in toCopy)
-            {
-                if (writeToDisk)
-                    CopyFile(item.SourcePath.Value, _fileSystem.Path.Combine(outputDir, item.OutputPath.Value), reportBuilder);
-            }
+            if (writeToDisk)
+                CopyFile(item.SourcePath.Value, _fileSystem.Path.Combine(outputDir, item.OutputPath.Value), reportBuilder);
         }
 
         // Copy wwwroot + RCL static web assets. WebRootFileProvider is a CompositeFileProvider
@@ -316,12 +309,7 @@ public sealed class OutputGenerationService
 
     private async Task CreateContentFilesAsync(string outputDir, BuildReportBuilder reportBuilder)
     {
-        // IContentService extends IContentEmitter, but DI does not widen — services
-        // registered as IContentService are not in the IContentEmitter set. So we
-        // iterate both: services for their IContentService responsibilities
-        // (incl. GetContentToCreateAsync), then standalone emitters (e.g. the
-        // llms.txt adapter) registered directly as IContentEmitter.
-        foreach (var emitter in _contentServices.Cast<IContentEmitter>().Concat(_contentEmitters))
+        foreach (var emitter in _contentServices.WithStandaloneEmitters(_contentEmitters))
         {
             var toCreate = await emitter.GetContentToCreateAsync();
             foreach (var item in toCreate)

@@ -42,35 +42,32 @@ public sealed partial class XrefAuditor : IBuildAuditor
         var brokenByFile = new Dictionary<string, ImmutableList<string>>(StringComparer.OrdinalIgnoreCase);
         var diagnostics = ImmutableList.CreateBuilder<BuildDiagnostic>();
 
-        foreach (var service in _contentServices)
+        await foreach (var item in _contentServices.DiscoverAllAsync(cancellationToken))
         {
-            await foreach (var item in service.DiscoverAsync().WithCancellation(cancellationToken))
+            // Both source kinds back a markdown file on disk; xref scanning is
+            // identical and llms-only pages can still contain `<xref:uid>` links
+            // that need verification.
+            string path;
+            switch (item.Source.Value)
             {
-                // Both source kinds back a markdown file on disk; xref scanning is
-                // identical and llms-only pages can still contain `<xref:uid>` links
-                // that need verification.
-                string path;
-                switch (item.Source.Value)
-                {
-                    case MarkdownFileSource mfs: path = mfs.Path.Value; break;
-                    case LlmsOnlySource llms: path = llms.Path.Value; break;
-                    default: continue;
-                }
+                case MarkdownFileSource mfs: path = mfs.Path.Value; break;
+                case LlmsOnlySource llms: path = llms.Path.Value; break;
+                default: continue;
+            }
 
-                if (!brokenByFile.TryGetValue(path, out var brokenUids))
-                {
-                    brokenUids = await ScanFileAsync(path, cancellationToken);
-                    brokenByFile[path] = brokenUids;
-                }
+            if (!brokenByFile.TryGetValue(path, out var brokenUids))
+            {
+                brokenUids = await ScanFileAsync(path, cancellationToken);
+                brokenByFile[path] = brokenUids;
+            }
 
-                foreach (var uid in brokenUids)
-                {
-                    diagnostics.Add(new BuildDiagnostic(
-                        Severity: DiagnosticSeverity.Warning,
-                        Route: item.Route,
-                        Message: $"Cannot resolve <xref:{uid}> in {item.Route.CanonicalPath.Value}: no content with this UID is registered.",
-                        SourceFile: $"{Code}/{uid}"));
-                }
+            foreach (var uid in brokenUids)
+            {
+                diagnostics.Add(new BuildDiagnostic(
+                    Severity: DiagnosticSeverity.Warning,
+                    Route: item.Route,
+                    Message: $"Cannot resolve <xref:{uid}> in {item.Route.CanonicalPath.Value}: no content with this UID is registered.",
+                    SourceFile: $"{Code}/{uid}"));
             }
         }
 

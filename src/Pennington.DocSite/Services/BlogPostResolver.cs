@@ -37,25 +37,22 @@ public sealed class BlogPostResolver
     public async Task<IReadOnlyList<BlogPostSummary>> GetAllPostsAsync()
     {
         var posts = new List<BlogPostSummary>();
-        foreach (var service in _services)
+        await foreach (var item in _services.DiscoverAllAsync())
         {
-            await foreach (var item in service.DiscoverAsync())
-            {
-                if (item.Source is not MarkdownFileSource source) continue;
-                if (!IsBlogPostRoute(item.Route)) continue;
+            if (item.Source is not MarkdownFileSource source) continue;
+            if (!IsBlogPostRoute(item.Route)) continue;
 
-                try
-                {
-                    var content = await File.ReadAllTextAsync(source.Path.Value);
-                    var parsed = _parser.Parse<BlogPostFrontMatter>(content, source.Path.Value);
-                    var fm = parsed.Metadata ?? new BlogPostFrontMatter();
-                    if (fm.IsDraft) continue;
-                    posts.Add(new BlogPostSummary(fm, item.Route.CanonicalPath.Value));
-                }
-                catch
-                {
-                    // Skip unparseable files.
-                }
+            try
+            {
+                var content = await File.ReadAllTextAsync(source.Path.Value);
+                var parsed = _parser.Parse<BlogPostFrontMatter>(content, source.Path.Value);
+                var fm = parsed.Metadata ?? new BlogPostFrontMatter();
+                if (fm.IsDraft) continue;
+                posts.Add(new BlogPostSummary(fm, item.Route.CanonicalPath.Value));
+            }
+            catch
+            {
+                // Skip unparseable files.
             }
         }
 
@@ -68,25 +65,23 @@ public sealed class BlogPostResolver
     public async Task<RenderedBlogPost?> GetPostByUrlAsync(string url)
     {
         url = "/" + url.Trim('/');
+        var target = new UrlPath(url);
 
-        foreach (var service in _services)
+        await foreach (var item in _services.DiscoverAllAsync())
         {
-            await foreach (var item in service.DiscoverAsync())
+            if (item.Source is not MarkdownFileSource source) continue;
+            if (!IsBlogPostRoute(item.Route)) continue;
+            if (!item.Route.CanonicalPath.Matches(target)) continue;
+
+            var content = await File.ReadAllTextAsync(source.Path.Value);
+            var parsed = _parser.Parse<BlogPostFrontMatter>(content, source.Path.Value);
+            var fm = parsed.Metadata ?? new BlogPostFrontMatter();
+
+            var rendered = await _renderer.RenderAsync(new ParsedItem(item.Route, fm, parsed.Body));
+            if (rendered.Value is RenderedItem renderedItem)
             {
-                if (item.Source is not MarkdownFileSource source) continue;
-                if (!IsBlogPostRoute(item.Route)) continue;
-                if (!item.Route.CanonicalPath.Matches(new UrlPath(url))) continue;
-
-                var content = await File.ReadAllTextAsync(source.Path.Value);
-                var parsed = _parser.Parse<BlogPostFrontMatter>(content, source.Path.Value);
-                var fm = parsed.Metadata ?? new BlogPostFrontMatter();
-
-                var rendered = await _renderer.RenderAsync(new ParsedItem(item.Route, fm, parsed.Body));
-                if (rendered.Value is RenderedItem renderedItem)
-                {
-                    var summary = new BlogPostSummary(fm, item.Route.CanonicalPath.Value);
-                    return new RenderedBlogPost(summary, renderedItem.Content.Html);
-                }
+                var summary = new BlogPostSummary(fm, item.Route.CanonicalPath.Value);
+                return new RenderedBlogPost(summary, renderedItem.Content.Html);
             }
         }
 

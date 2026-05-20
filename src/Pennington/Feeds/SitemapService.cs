@@ -76,39 +76,36 @@ public sealed class SitemapService : IFileWatchAware
     {
         var candidates = new List<SitemapCandidate>();
 
-        foreach (var service in contentServices)
+        await foreach (var discovered in contentServices.DiscoverAllAsync())
         {
-            await foreach (var discovered in service.DiscoverAsync())
+            // Skip non-HTML outputs (custom JSON feeds, static assets, etc.).
+            // Programmatic content services can surface non-HTML routes through
+            // DiscoverAsync — those are transport, not canonical URLs.
+            var outputFile = discovered.Route.OutputFile.Value;
+            var ext = Path.GetExtension(outputFile);
+            if (!string.IsNullOrEmpty(ext)
+                && !ext.Equals(".html", StringComparison.OrdinalIgnoreCase)
+                && !ext.Equals(".htm", StringComparison.OrdinalIgnoreCase))
             {
-                // Skip non-HTML outputs (custom JSON feeds, static assets, etc.).
-                // Programmatic content services can surface non-HTML routes through
-                // DiscoverAsync — those are transport, not canonical URLs.
-                var outputFile = discovered.Route.OutputFile.Value;
-                var ext = Path.GetExtension(outputFile);
-                if (!string.IsNullOrEmpty(ext)
-                    && !ext.Equals(".html", StringComparison.OrdinalIgnoreCase)
-                    && !ext.Equals(".htm", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                // RedirectSource items are explicit redirects — no canonical value.
-                // EndpointSource items are framework-internal routes served by a
-                // live HTTP endpoint (e.g., /sitemap.xml, /llms.txt) and must not
-                // appear as canonical URLs either. LlmsOnlySource items have no
-                // HTML page at all — they only exist as llms.txt sidecars and
-                // shouldn't be advertised to crawlers. Skip all three.
-                if (discovered.Source.Value is RedirectSource or EndpointSource or LlmsOnlySource) continue;
-
-                // Markdown sources carry the front matter their content service
-                // parsed at discovery time (correct front-matter type, no re-parse);
-                // programmatic / Razor sources carry none. SitemapBuilder tolerates
-                // null metadata and re-filters drafts/redirects defensively. A
-                // markdown page whose front matter failed to parse arrives with
-                // null metadata — it still renders and is served, so it's emitted
-                // with no <lastmod> rather than dropped.
-                candidates.Add(new SitemapCandidate(discovered.Route, discovered.Metadata));
+                continue;
             }
+
+            // RedirectSource items are explicit redirects — no canonical value.
+            // EndpointSource items are framework-internal routes served by a
+            // live HTTP endpoint (e.g., /sitemap.xml, /llms.txt) and must not
+            // appear as canonical URLs either. LlmsOnlySource items have no
+            // HTML page at all — they only exist as llms.txt sidecars and
+            // shouldn't be advertised to crawlers. Skip all three.
+            if (discovered.Source.Value is RedirectSource or EndpointSource or LlmsOnlySource) continue;
+
+            // Markdown sources carry the front matter their content service
+            // parsed at discovery time (correct front-matter type, no re-parse);
+            // programmatic / Razor sources carry none. SitemapBuilder tolerates
+            // null metadata and re-filters drafts/redirects defensively. A
+            // markdown page whose front matter failed to parse arrives with
+            // null metadata — it still renders and is served, so it's emitted
+            // with no <lastmod> rather than dropped.
+            candidates.Add(new SitemapCandidate(discovered.Route, discovered.Metadata));
         }
 
         var entries = builder.Build(candidates);

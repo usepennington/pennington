@@ -126,14 +126,8 @@ public sealed class ContentResolver
             OutputFile = new FilePath($"{url.TrimStart('/')}/index.html"),
         };
 
-        var tocItems = new List<ContentTocItem>();
-        foreach (var service in _services)
-        {
-            var items = await service.GetContentTocEntriesAsync();
-            tocItems.AddRange(items);
-        }
-
-        return _navBuilder.BuildNavigationInfo(tocItems, route, locale);
+        var tocItems = await _services.CollectTocEntriesAsync();
+        return _navBuilder.BuildNavigationInfo(tocItems.ToList(), route, locale);
     }
 
     /// <summary>
@@ -141,15 +135,11 @@ public sealed class ContentResolver
     /// </summary>
     public async Task<IReadOnlyList<ContentTocItem>> GetTocItemsAsync(string? locale = null)
     {
-        var items = new List<ContentTocItem>();
-        foreach (var service in _services)
-        {
-            items.AddRange(await service.GetContentTocEntriesAsync());
-        }
+        var items = await _services.CollectTocEntriesAsync();
 
         if (locale != null)
         {
-            items = items
+            return items
                 .Where(i => i.Locale == null
                     || string.Equals(i.Locale, locale, StringComparison.OrdinalIgnoreCase))
                 .ToList();
@@ -254,13 +244,11 @@ public sealed class ContentResolver
 
     private async Task<DiscoveredItem?> FindDiscoveredItem(string url)
     {
-        foreach (var service in _services)
+        var target = new UrlPath(url);
+        await foreach (var item in _services.DiscoverAllAsync())
         {
-            await foreach (var item in service.DiscoverAsync())
-            {
-                if (item.Route.CanonicalPath.Matches(new UrlPath(url)))
-                    return item;
-            }
+            if (item.Route.CanonicalPath.Matches(target))
+                return item;
         }
         return null;
     }

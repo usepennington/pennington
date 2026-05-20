@@ -97,31 +97,27 @@ public sealed class LlmsTxtService : IFileWatchAware
         var tocByPath = new Dictionary<string, ContentTocItem>(StringComparer.OrdinalIgnoreCase);
         var mapGetDirectByPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var service in contentServices)
+        foreach (var toc in (await contentServices.CollectIndexableEntriesAsync()).Where(t => !t.ExcludeFromLlms))
         {
-            var tocItems = await service.GetIndexableEntriesAsync();
-            foreach (var toc in tocItems.Where(t => !t.ExcludeFromLlms))
-            {
-                allTocItems.Add(toc);
-                var tocKey = NormalizePath(toc.Route.CanonicalPath.Value);
-                tocByPath[tocKey] = toc;
-            }
+            allTocItems.Add(toc);
+            var tocKey = NormalizePath(toc.Route.CanonicalPath.Value);
+            tocByPath[tocKey] = toc;
+        }
 
-            await foreach (var discovered in service.DiscoverAsync())
-            {
-                // Both MarkdownFileSource and LlmsOnlySource wrap a markdown
-                // file on disk that we want to parse and render through the
-                // same channel — only HTML emission differs downstream.
-                if (discovered.Source is not (MarkdownFileSource or LlmsOnlySource)) continue;
+        await foreach (var discovered in contentServices.DiscoverAllAsync())
+        {
+            // Both MarkdownFileSource and LlmsOnlySource wrap a markdown
+            // file on disk that we want to parse and render through the
+            // same channel — only HTML emission differs downstream.
+            if (discovered.Source is not (MarkdownFileSource or LlmsOnlySource)) continue;
 
-                var parseResult = await parser.ParseAsync(discovered);
-                if (parseResult is not ParsedItem parsed) continue;
+            var parseResult = await parser.ParseAsync(discovered);
+            if (parseResult is not ParsedItem parsed) continue;
 
-                if (parsed.Metadata is IRedirectable { RedirectUrl: not null }) continue;
+            if (parsed.Metadata is IRedirectable { RedirectUrl: not null }) continue;
 
-                var key = NormalizePath(parsed.Route.CanonicalPath.Value);
-                parsedByPath[key] = parsed;
-            }
+            var key = NormalizePath(parsed.Route.CanonicalPath.Value);
+            parsedByPath[key] = parsed;
         }
 
         // Endpoints opted into llms.txt via WithLlmsTxtEntry surface as
