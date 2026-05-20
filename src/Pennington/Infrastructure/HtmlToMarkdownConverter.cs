@@ -179,15 +179,13 @@ internal static class HtmlToMarkdownConverter
                     EnsureBlockStart(sb);
                     var codeEl = element.QuerySelector(":scope > code") ?? element;
                     var lang = ExtractLanguage(codeEl);
-                    sb.Append("```").Append(lang).Append('\n');
-                    sb.Append(codeEl.TextContent.TrimEnd('\n'));
-                    sb.Append("\n```\n\n");
+                    EmitFencedCode(sb, lang, codeEl.TextContent);
                     break;
                 }
 
             case "CODE":
                 // Inline code (PRE > CODE handled above, so parents already consumed children)
-                sb.Append('`').Append(element.TextContent).Append('`');
+                EmitInlineCode(sb, element.TextContent);
                 break;
 
             case "STRONG" or "B":
@@ -307,11 +305,68 @@ internal static class HtmlToMarkdownConverter
 
         var languageId = wrapper.GetAttribute("data-language") ?? "";
         var preElement = wrapper.QuerySelector("pre");
-        var codeText = preElement?.TextContent.TrimEnd('\n') ?? "";
+        var codeText = preElement?.TextContent ?? "";
 
-        sb.Append("```").Append(languageId).Append('\n');
-        sb.Append(codeText);
-        sb.Append("\n```\n\n");
+        EmitFencedCode(sb, languageId, codeText);
+    }
+
+    /// <summary>
+    /// Emits a fenced code block, scaling the fence length to one more than the
+    /// longest backtick run found in the content. Without this, content containing
+    /// <c>```</c> would close the fence prematurely and produce malformed markdown.
+    /// </summary>
+    private static void EmitFencedCode(StringBuilder sb, string language, string content)
+    {
+        var fenceLen = Math.Max(3, MaxConsecutiveChars(content, '`') + 1);
+        sb.Append('`', fenceLen).Append(language).Append('\n');
+        sb.Append(content.TrimEnd('\n'));
+        sb.Append('\n').Append('`', fenceLen).Append("\n\n");
+    }
+
+    /// <summary>
+    /// Emits inline code. The wrapping backtick count is one more than the longest
+    /// backtick run inside the content; if the content starts or ends with a backtick,
+    /// a single space pad is added on both sides so the parser doesn't merge the
+    /// inner backtick with the delimiter.
+    /// </summary>
+    private static void EmitInlineCode(StringBuilder sb, string content)
+    {
+        if (content.Length == 0)
+        {
+            return;
+        }
+
+        var tickLen = MaxConsecutiveChars(content, '`') + 1;
+        var needsPad = content[0] == '`' || content[^1] == '`';
+
+        sb.Append('`', tickLen);
+        if (needsPad)
+        {
+            sb.Append(' ');
+        }
+
+        sb.Append(content);
+        if (needsPad)
+        {
+            sb.Append(' ');
+        }
+
+        sb.Append('`', tickLen);
+    }
+
+    private static int MaxConsecutiveChars(string s, char c)
+    {
+        var max = 0;
+        var run = 0;
+        foreach (var ch in s)
+        {
+            run = ch == c ? run + 1 : 0;
+            if (run > max)
+            {
+                max = run;
+            }
+        }
+        return max;
     }
 
     /// <summary>

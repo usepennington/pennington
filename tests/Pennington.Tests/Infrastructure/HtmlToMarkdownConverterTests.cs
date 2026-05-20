@@ -358,4 +358,48 @@ public class HtmlToMarkdownConverterTests
         // Verify ordering: C# section appears before F# section.
         md.IndexOf("### C#").ShouldBeLessThan(md.IndexOf("### F#"));
     }
+
+    [Fact]
+    public void FencedCodeBlock_ContentWithTripleBackticks_EscalatesFenceLength()
+    {
+        // Content that already contains ``` would close a 3-backtick fence early.
+        // The emitter must use a longer fence (one more than the longest backtick run).
+        var md = ConvertFragment(
+            "<pre><code class=\"language-md\">Here is a fence:\n```\ncode\n```</code></pre>");
+
+        md.ShouldContain("````md\n");
+        md.ShouldContain("\n````\n");
+        md.ShouldContain("```\ncode\n```");
+    }
+
+    [Fact]
+    public void CodeHighlightWrapper_ContentWithTripleBackticks_EscalatesFenceLength()
+    {
+        var md = ConvertFragment(
+            "<div class=\"code-highlight-wrapper\" data-language=\"md\">" +
+                "<pre><code>Example:\n```\nnested\n```</code></pre>" +
+            "</div>");
+
+        md.ShouldContain("````md\n");
+        md.ShouldContain("\n````\n");
+        md.ShouldContain("```\nnested\n```");
+    }
+
+    [Fact]
+    public void InlineCode_ContentWithBacktick_UsesDoubleBackticksWithPadding()
+    {
+        var md = ConvertFragment("<p>The token <code>`raw`</code> stays.</p>");
+
+        // Content contains backticks at both ends, so emitter must escalate to ``
+        // and pad with spaces inside the delimiters.
+        md.ShouldContain("`` `raw` ``");
+    }
+
+    [Fact]
+    public void InlineCode_ContentStartingWithBacktick_PadsWithSpace()
+    {
+        var md = ConvertFragment("<p>See <code>`leading</code>.</p>");
+
+        md.ShouldContain("`` `leading ``");
+    }
 }
