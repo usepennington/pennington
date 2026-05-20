@@ -180,6 +180,15 @@ dotnet_style_allow_multiple_blank_lines_experimental = false:warning
 # Warn on unused usings
 dotnet_diagnostic.IDE0005.severity = warning
 
+# IDE0001: Simplify names (remove redundant namespace qualifiers)
+dotnet_diagnostic.IDE0001.severity = warning
+
+# IDE0002: Simplify member access
+dotnet_diagnostic.IDE0002.severity = warning
+
+# IDE0049: Use language keywords instead of framework type names
+dotnet_diagnostic.IDE0049.severity = warning
+
 # IDE0055: Fix formatting
 dotnet_diagnostic.IDE0055.severity = warning
 
