@@ -48,7 +48,7 @@ The three moving parts are the DI registration, the `UsePennington` call, and th
 
 ## 2. Wire `AddBlogSite`, `UseBlogSite`, and `RunBlogSiteAsync`
 
-`AddBlogSite` is the BlogSite template's single registration call; it stands in for `AddPennington` plus the `AddMarkdownContent<DocFrontMatter>` line, wiring Pennington core, MonorailCSS, the Razor chrome, `BlogContentResolver`, and `BlogSiteContentService` in one call. `UseBlogSite` mounts the middleware stack and Razor component routes; `RunBlogSiteAsync` dispatches between dev-serve and static-build.
+`AddBlogSite` is the BlogSite template's single registration call; it stands in for `AddPennington` plus the `AddMarkdownContent<DocFrontMatter>` line, wiring Pennington core, MonorailCSS, the Razor chrome, and the blog content services in one call. `UseBlogSite` mounts the middleware stack and Razor component routes; `RunBlogSiteAsync` dispatches between dev-serve and static-build.
 
 <Steps>
 <Step StepNumber="1">

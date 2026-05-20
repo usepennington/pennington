@@ -135,7 +135,7 @@ opts.LabelFor = key => culture.TextInfo.ToTitleCase(key); // pretty-print on the
 
 ## Hot reload
 
-The taxonomy service caches the computed term list in an `AsyncLazy`. When any file the host watches changes — including the source markdown files the taxonomy reads — the cache is invalidated and the next request rebuilds it. Same lifetime model as `BlogContentResolver` and `NavigationBuilder`; same `IFileWatcher` subscription.
+When a markdown file the taxonomy reads changes, the cached term list is invalidated and the next request rebuilds it.
 
 Edits during `dotnet run` propagate immediately.
 

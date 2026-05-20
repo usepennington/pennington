@@ -86,7 +86,7 @@ Adding, editing, or removing a file in the directory invalidates the cached list
 
 ## Hot reload
 
-Each `AddDataFile<T>` call registers the file with `IFileWatcher`. When the file changes on disk, the cached value is invalidated and the next `Get<T>` call reloads and re-deserializes it. Pages that read the data through `IDataFiles` see the fresh value on the next request — no app restart needed.
+When a data file changes on disk, the cached value is invalidated and the next `Get<T>` call reloads and re-deserializes it. Pages that read the data through `IDataFiles` see the fresh value on the next request — no app restart needed.
 
 This is the same lifetime model that `MarkdownContentService<T>` uses for content files. Edits during `dotnet run` propagate immediately.
 

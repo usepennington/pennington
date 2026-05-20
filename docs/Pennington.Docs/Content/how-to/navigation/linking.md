@@ -17,7 +17,7 @@ To link from one page to another without hardcoding a URL that may break on rena
 
 ### Relative path to a sibling page
 
-Write a standard markdown link with a relative target such as `[Customize the sidebar](./customize-sidebar)`. `MarkdownLinkResolver` walks the content tree and resolves the target against the current page's URL. Relative links survive section moves as long as both files stay in the same folder, which makes them the right choice for tightly coupled pages.
+Write a standard markdown link with a relative target such as `[Customize the sidebar](./customize-sidebar)`. The target resolves against the current page's URL. Relative links survive section moves as long as both files stay in the same folder, which makes them the right choice for tightly coupled pages.
 
 ### Absolute path to a page in another area
 

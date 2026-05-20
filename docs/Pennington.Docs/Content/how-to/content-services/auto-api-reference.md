@@ -49,7 +49,7 @@ builder.Services.AddApiMetadataFromCompiledAssembly(opts =>
     opts.AssemblyFiles.Add(Path.Combine(builder.Environment.ContentRootPath, "lib", "net9.0", "Foo.dll")));
 ```
 
-The reflection backend uses `MetadataLoadContext` to inspect metadata without running the assembly's code — no MSBuild workspace, no source needed. `<ExtensionMethods>` and the `:xmldocid` source fence require a live symbol graph and are unavailable under this backend.
+The reflection backend inspects metadata without running the assembly's code — no MSBuild workspace, no source needed. `<ExtensionMethods>` and the `:xmldocid` source fence require a live symbol graph and are unavailable under this backend.
 
 ## Customize the route prefix
 

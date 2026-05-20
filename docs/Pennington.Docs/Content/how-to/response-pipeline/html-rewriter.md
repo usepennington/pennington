@@ -34,7 +34,7 @@ The three shipped rewriters run at 10 (`XrefHtmlRewriter`), 20 (`LocaleLinkHtmlR
 
 ## Register the rewriter
 
-`HtmlResponseRewritingProcessor` resolves every registered `IHtmlResponseRewriter` from the container and sorts by `Order`, so a single `AddSingleton` next to the host wiring is sufficient.
+Every registered `IHtmlResponseRewriter` is picked up and ordered by its `Order` value, so a single `AddSingleton` next to the host wiring is sufficient.
 
 ```csharp
 builder.Services.AddSingleton<IHtmlResponseRewriter, AnchorLowercaseRewriter>();

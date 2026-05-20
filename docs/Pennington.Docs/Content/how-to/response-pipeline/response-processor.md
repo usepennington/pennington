@@ -14,7 +14,7 @@ The recipe references `examples/ExtensibilityLabExample/FeedbackWidgetProcessor.
 ## Before you begin
 
 - An existing Pennington site (see <xref:tutorials.getting-started.first-site> if not).
-- `ResponseProcessingMiddleware` buffers the full response body before the processor runs. This is fine for HTML pages but unsuitable for large binary streams — gate those out in `ShouldProcess`.
+- The response pipeline buffers the full response body before the processor runs. This is fine for HTML pages but unsuitable for large binary streams — gate those out in `ShouldProcess`.
 
 ## Write the processor
 
@@ -33,7 +33,7 @@ Slot into the `Order` sequence so the processor sees the body shape it expects. 
 
 ## Register the processor
 
-`ResponseProcessingMiddleware` resolves every registered `IResponseProcessor` from the container and sorts by `Order` on each request, so a single `AddSingleton` is the entire wiring step.
+Every registered `IResponseProcessor` is picked up and ordered by its `Order` value, so a single `AddSingleton` is the entire wiring step.
 
 ```csharp
 builder.Services.AddSingleton<IResponseProcessor, FeedbackWidgetProcessor>();

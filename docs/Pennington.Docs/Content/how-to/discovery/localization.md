@@ -32,7 +32,7 @@ See <xref:reference.api.localization-options> for the `LocalizationOptions` memb
 
 ### Mirror your content tree under `Content/<locale>/` for every non-default locale
 
-Default-locale files stay directly under `ContentRootPath` with no prefix. For each additional locale, create a sibling folder named after the locale code and place translated files there, mirroring the default-locale filenames so `ContentResolver` can pair them. Pages without a translation fall back to the default locale automatically, so shipping does not require a full translation pass.
+Default-locale files stay directly under `ContentRootPath` with no prefix. For each additional locale, create a sibling folder named after the locale code and place translated files there, mirroring the default-locale filenames so the two are paired. Pages without a translation fall back to the default locale automatically, so shipping does not require a full translation pass.
 
 ```markdown:path
 examples/BeyondLocaleExample/Content/es/about.md
