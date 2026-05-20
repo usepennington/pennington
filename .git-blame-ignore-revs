@@ -6,3 +6,6 @@
 
 # style: run dotnet format across repo and enforce LF via .gitattributes
 8e1c817a4b5794a0cc9ddc07e73a59cf438d3248
+
+# style: apply dotnet format across the solution
+5d6bafb
