@@ -24,7 +24,7 @@ Prioritized backlog from 10 parallel agent evaluations against varied static-sit
 Each of these turned at least one scenario red or yellow on a feature that is table stakes for the category.
 
 - ~~**Pagination** for archive / taxonomy / author pages. No documented support; untenable at 5k pages. [S10, S9]~~ — **Done.** `BlogSiteOptions.PostsPerPage` (default 10) paginates `/archive` and per-tag listings at `/page/N/`. Manual pattern for custom `MarkdownContentService` documented at `how-to/discovery/pagination.md`.
-- **Versioning** for docs (e.g., `/v1/`, `/v2/`). No primitive, no how-to. Blocks API docs and OSS sites that promise multiple supported majors. [S3, S8]
+- ~~**Versioning** for docs (e.g., `/v1/`, `/v2/`). No primitive, no how-to. Blocks API docs and OSS sites that promise multiple supported majors. [S3, S8]~~ — **Done.** `DocSiteOptions.Areas` slugs become URL prefixes for per-version content folders; keyed `AddApiMetadataFromCompiledAssembly` + `AddApiReference` with nested `RoutePrefix` covers per-version API reference. Two versions of the *same* assembly require `<PackageDownload>` for the off-version (NuGet's one-version-per-assembly rule). Documented in `how-to/versioning/docsite.md` with paired `VersionedDocSiteExample` (Humanizer.Core 2.8.26 + 2.14.1).
 - ~~**Scheduled / future-dated publish.** Only binary `isDraft` exists. Editorial sites depend on embargoed releases. [S10]~~ — **Done.** A page whose `date:` front matter is later than the build clock is treated the same as `isDraft: true` (renders in dev, excluded from build output, feeds, search). `TimeProvider` is injectable so CI overrides and tests use `FakeTimeProvider`. Documented in `how-to/pages/drafts-tags-ordering.md`.
 - **Per-taxonomy RSS / Atom feeds** (e.g., `/feeds/news.xml`). Only one site-wide `/rss.xml`. [S10, S8]
 - **Incremental / cached builds.** Build-by-HTTP-crawl with no incremental story at 5k pages × daily CI is a hard sell. [S10, S9]
@@ -104,7 +104,7 @@ These are documentation problems, not framework problems — many would convert 
 - **Reading time** recipe via shortcode / response rewriter. [S2]
 - **Roslyn in CI** — does `MSBuildWorkspace` need a full restore? CI-specific guidance. [S8]
 - **Math (KaTeX/MathJax)** how-to — even if it's "BYO preprocessor, here's 20 lines." [S9]
-- **Versioning** how-to (or an explicit "not yet supported" note). [S8]
+- ~~**Versioning** how-to (or an explicit "not yet supported" note). [S8]~~ — **Done.** See `how-to/versioning/docsite.md`.
 - **Edit-on-GitHub** how-to. [S8]
 - **`,xmldocid-diff`** modifier — mentioned but unexplained. [S3]
 

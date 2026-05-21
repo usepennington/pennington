@@ -46,6 +46,7 @@ Every example folder has a `README.md` describing its purpose, the concepts it t
 | `SpaPlaygroundExample` | Minimal site for observing `spa-engine.js` — two `data-spa-region` blocks, one persistent `<nav>`, on-page event log for the three lifecycle events. | _(SPA-engine sandbox)_ |
 | `SpectreConsoleDocSiteExample` | Real-target DocSite — two named metadata providers + two `AddApiReference` registrations document `Spectre.Console` and `Spectre.Console.Cli` as separate trees. | _(multi-source reference for `Pennington.ApiMetadata.Reflection`)_ |
 | `SubPathDeployableExample` | Tiny DocSite host whose teaching surface is the sibling deploy fixtures: `.github/workflows/deploy.yml`, `staticwebapp.config.json`, `netlify.toml`, `nginx.conf`, `web.config`. | `how-to/deployment/{static-build,self-host,adapt-for-other-hosts,base-url,github-pages}.md` |
+| `VersionedDocSiteExample` | Two-area DocSite documenting two versions of `Humanizer.Core` (2.8.26 + 2.14.1) as parallel `/v1/` and `/v2/` trees, each with its own content area and its own API reference. The off-version is staged via `<PackageDownload>` to work around NuGet's one-version-per-assembly rule. | `how-to/versioning/docsite.md` |
 
 ## Staged tutorial files
 Examples used by step-by-step tutorials split the teaching into per-stage artifacts:
