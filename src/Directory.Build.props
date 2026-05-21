@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
     <Authors>Phil Scott</Authors>
     <Copyright>Copyright (c) 2026 Phil Scott</Copyright>
@@ -16,6 +17,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <MinVerMinimumMajorMinor>0.1</MinVerMinimumMajorMinor>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
   </PropertyGroup>
   <!--
     MinVer rewrites the assembly version from git tags, which breaks dotnet watch's
@@ -24,8 +26,8 @@
     dependencies to Release builds and rely on no one publishing with dotnet watch.
   -->
   <ItemGroup Condition="'$(Configuration)'=='Release'">
-    <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <PackageReference Include="MinVer" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)../logo.png" Pack="true" PackagePath="" />

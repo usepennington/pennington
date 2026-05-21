@@ -15,14 +15,14 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.8" />
-    <PackageReference Include="Testably.Abstractions" Version="10.2.0" />
-    <PackageReference Include="YamlDotNet" Version="16.3.0" />
-    <PackageReference Include="Markdig" Version="1.2.0" />
-    <PackageReference Include="AngleSharp" Version="1.4.0" />
-    <PackageReference Include="Mdazor" Version="0.0.0-alpha.0.14" />
-    <PackageReference Include="TextMateSharp" Version="2.0.3" />
-    <PackageReference Include="TextMateSharp.Grammars" Version="2.0.3" />
-    <PackageReference Include="System.ServiceModel.Syndication" Version="10.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
+    <PackageReference Include="Testably.Abstractions" />
+    <PackageReference Include="YamlDotNet" />
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="AngleSharp" />
+    <PackageReference Include="Mdazor" />
+    <PackageReference Include="TextMateSharp" />
+    <PackageReference Include="TextMateSharp.Grammars" />
+    <PackageReference Include="System.ServiceModel.Syndication" />
   </ItemGroup>
 </Project>

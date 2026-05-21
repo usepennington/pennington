@@ -10,8 +10,21 @@ namespace Pennington.IntegrationTests;
 
 public class DiagnosticTest
 {
-    private static string GetContentPath() => Path.GetFullPath(Path.Combine(
-        AppContext.BaseDirectory, "..", "..", "..", "..", "..", "docs", "Pennington.Docs", "Content"));
+    private static string GetContentPath()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "Pennington.slnx")))
+        {
+            dir = dir.Parent;
+        }
+
+        if (dir is null)
+        {
+            throw new DirectoryNotFoundException("Could not locate repository root (Pennington.slnx) from " + AppContext.BaseDirectory);
+        }
+
+        return Path.Combine(dir.FullName, "docs", "Pennington.Docs", "Content");
+    }
 
     [Fact(Skip = "Docs content restructuring in progress")]
     public async Task DiscoverAsync_FindsContent()

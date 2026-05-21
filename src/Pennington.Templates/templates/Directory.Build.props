@@ -1,0 +1,12 @@
+<Project>
+  <!--
+    Template csproj files under this directory are shipped as content (packed via
+    Pennington.Templates.csproj), not built by our solution. Opt them out of the
+    repo's CPM + artifacts-output conventions so that if anyone restores or builds
+    them in-place, they behave like a standalone consumer project would.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <UseArtifactsOutput>false</UseArtifactsOutput>
+  </PropertyGroup>
+</Project>

@@ -14,7 +14,7 @@
     <!-- The reflection backend reads FusionCache's shipped .dll + .xml pair
          directly out of the NuGet package via Assembly.Load, so no staging
          step or committed lib/ folder is needed — just the reference. -->
-    <PackageReference Include="ZiggyCreatures.FusionCache" Version="*" />
+    <PackageReference Include="ZiggyCreatures.FusionCache" />
   </ItemGroup>
   <ItemGroup>
     <Watch Include="Content\**\*.*" />
