@@ -36,6 +36,7 @@ public sealed class MarkdownContentService<TFrontMatter>
     private readonly FrontMatterParser _parser;
     private readonly IFileSystem _fileSystem;
     private readonly LocalizationOptions _localization;
+    private readonly TimeProvider _clock;
     private readonly string _absoluteContentPath;
     private readonly ImmutableArray<string> _normalizedExcludePaths;
     private readonly FileWatchScope _watchScope;
@@ -50,12 +51,14 @@ public sealed class MarkdownContentService<TFrontMatter>
         MarkdownContentServiceOptions options,
         FrontMatterParser parser,
         IFileSystem fileSystem,
-        LocalizationOptions localization)
+        LocalizationOptions localization,
+        TimeProvider? clock = null)
     {
         _options = options;
         _parser = parser;
         _fileSystem = fileSystem;
         _localization = localization;
+        _clock = clock ?? TimeProvider.System;
         _absoluteContentPath = _fileSystem.Path.GetFullPath(options.ContentPath.Value);
         _normalizedExcludePaths = NormalizeExcludePaths(options.ExcludePaths);
         _watchScope = new FileWatchScope(_absoluteContentPath, "*.*", IncludeSubdirectories: true);
@@ -176,7 +179,7 @@ public sealed class MarkdownContentService<TFrontMatter>
             {
                 var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
                 var parsed = _parser.Parse<TFrontMatter>(content, sourceFile.Value);
-                if (parsed.Metadata is { IsDraft: true })
+                if (parsed.Metadata is { } metadata && metadata.IsHiddenFromBuild(_clock))
                 {
                     continue;
                 }
@@ -264,7 +267,7 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// </summary>
     private ContentTocItem? BuildTocItem(ContentRoute route, TFrontMatter fm, bool isLlmsOnly)
     {
-        if (fm.IsDraft)
+        if (fm.IsHiddenFromBuild(_clock))
         {
             return null;
         }
@@ -318,7 +321,7 @@ public sealed class MarkdownContentService<TFrontMatter>
 
         foreach (var (route, fm, _) in metadata)
         {
-            if (fm.IsDraft)
+            if (fm.IsHiddenFromBuild(_clock))
             {
                 continue;
             }

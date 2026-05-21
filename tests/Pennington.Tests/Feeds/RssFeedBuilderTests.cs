@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Microsoft.Extensions.Time.Testing;
 using Pennington.Feeds;
 using Pennington.FrontMatter;
 using Pennington.Pipeline;
@@ -8,6 +9,18 @@ namespace Pennington.Tests.Feeds;
 
 public class RssFeedBuilderTests
 {
+    // Pin to a date past every dated test fixture so existing assertions stay stable
+    // when the wall clock advances. Scheduled-publish behavior is exercised separately.
+    private static readonly FakeTimeProvider FixedClock = ClockAt(new DateTime(2099, 1, 1));
+
+    private static FakeTimeProvider ClockAt(DateTime localNow)
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(localNow, TimeSpan.Zero));
+        clock.SetLocalTimeZone(TimeZoneInfo.Utc);
+        return clock;
+    }
+
+
     private static ContentRoute MakeRoute(string path, string locale = "") => new()
     {
         CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
@@ -33,7 +46,7 @@ public class RssFeedBuilderTests
         public string? Description { get; init; }
     }
 
-    private readonly RssFeedBuilder _builder = new(new UrlPath("https://example.com"));
+    private readonly RssFeedBuilder _builder = new(new UrlPath("https://example.com"), FixedClock);
 
     [Fact]
     public void Build_CreatesFeedItemsFromDatedItems()
@@ -272,5 +285,53 @@ public class RssFeedBuilderTests
     {
         public string Title { get; init; } = "Test";
         public DateTime? Date { get; init; }
+    }
+
+    [Fact]
+    public void Build_ExcludesFutureDatedPosts()
+    {
+        var clock = ClockAt(new DateTime(2030, 6, 15, 12, 0, 0));
+        var builder = new RssFeedBuilder(new UrlPath("https://example.com"), clock);
+
+        var items = new List<RenderedItem>
+        {
+            new(
+                Route: MakeRoute("/blog/published"),
+                Metadata: new TestFrontMatter { Title = "Published", Date = new DateTime(2030, 6, 14) },
+                Content: MakeContent()
+            ),
+            new(
+                Route: MakeRoute("/blog/scheduled"),
+                Metadata: new TestFrontMatter { Title = "Scheduled", Date = new DateTime(2030, 6, 16) },
+                Content: MakeContent()
+            ),
+        };
+
+        var feed = builder.Build(items);
+
+        feed.Count.ShouldBe(1);
+        feed[0].Title.ShouldBe("Published");
+    }
+
+    [Fact]
+    public void Build_IncludesPostExactlyAtNow()
+    {
+        var now = new DateTime(2030, 6, 15, 12, 0, 0);
+        var clock = ClockAt(now);
+        var builder = new RssFeedBuilder(new UrlPath("https://example.com"), clock);
+
+        var items = new List<RenderedItem>
+        {
+            new(
+                Route: MakeRoute("/blog/now"),
+                Metadata: new TestFrontMatter { Title = "Now", Date = now },
+                Content: MakeContent()
+            ),
+        };
+
+        var feed = builder.Build(items);
+
+        feed.Count.ShouldBe(1);
+        feed[0].Title.ShouldBe("Now");
     }
 }

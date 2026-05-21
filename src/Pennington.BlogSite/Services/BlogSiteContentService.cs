@@ -29,15 +29,18 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
 
     private readonly BlogSiteOptions _options;
     private readonly FrontMatterParser _parser;
+    private readonly TimeProvider _clock;
     private readonly AsyncLazy<ImmutableList<BlogPostDescriptor>> _posts;
 
-    /// <summary>Creates a new service bound to the supplied options and front-matter parser.</summary>
+    /// <summary>Creates a new service bound to the supplied options, front-matter parser, and wall clock.</summary>
     public BlogSiteContentService(
         BlogSiteOptions options,
-        FrontMatterParser parser)
+        FrontMatterParser parser,
+        TimeProvider? clock = null)
     {
         _options = options;
         _parser = parser;
+        _clock = clock ?? TimeProvider.System;
         _posts = new AsyncLazy<ImmutableList<BlogPostDescriptor>>(LoadPostsAsync);
     }
 
@@ -244,7 +247,7 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
                 continue;
             }
 
-            if (fm.IsDraft)
+            if (fm.IsHiddenFromBuild(_clock))
             {
                 continue;
             }

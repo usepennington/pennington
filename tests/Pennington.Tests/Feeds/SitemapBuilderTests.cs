@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 using Pennington.Feeds;
 using Pennington.FrontMatter;
 using Pennington.Generation;
@@ -269,5 +270,24 @@ public class SitemapBuilderTests
         var builder = sp.GetRequiredService<SitemapBuilder>();
 
         builder.CanonicalBase.Value.ShouldBe("https://example.com/my-sub-path");
+    }
+
+    [Fact]
+    public void Build_ExcludesScheduledFutureDatedEntries()
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(2030, 6, 15, 12, 0, 0, TimeSpan.Zero));
+        clock.SetLocalTimeZone(TimeZoneInfo.Utc);
+        var builder = new SitemapBuilder(new UrlPath("https://example.com"), clock);
+
+        var candidates = new List<SitemapCandidate>
+        {
+            new(MakeRoute("/posts/published"), new TestFrontMatter { Title = "Published", Date = new DateTime(2030, 6, 14) }),
+            new(MakeRoute("/posts/scheduled"), new TestFrontMatter { Title = "Scheduled", Date = new DateTime(2030, 6, 16) }),
+        };
+
+        var entries = builder.Build(candidates);
+
+        entries.Count.ShouldBe(1);
+        entries[0].Url.Value.ShouldBe("https://example.com/posts/published/");
     }
 }

@@ -32,6 +32,10 @@ public interface IFrontMatter
     /// <summary>Short summary used in meta descriptions, OpenGraph tags, and listings.</summary>
     string? Description => null;
 
-    /// <summary>Publication or last-modified date surfaced in feeds and sitemaps.</summary>
+    /// <summary>
+    /// Publication date surfaced in feeds and sitemaps. Also drives scheduled publishing:
+    /// when this is set to a moment after the build clock, the page is excluded from build
+    /// output (same dev-vs-build behavior as <see cref="IsDraft"/>) until the clock catches up.
+    /// </summary>
     DateTime? Date => null;
 }

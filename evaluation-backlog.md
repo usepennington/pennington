@@ -25,7 +25,7 @@ Each of these turned at least one scenario red or yellow on a feature that is ta
 
 - ~~**Pagination** for archive / taxonomy / author pages. No documented support; untenable at 5k pages. [S10, S9]~~ — **Done.** `BlogSiteOptions.PostsPerPage` (default 10) paginates `/archive` and per-tag listings at `/page/N/`. Manual pattern for custom `MarkdownContentService` documented at `how-to/discovery/pagination.md`.
 - **Versioning** for docs (e.g., `/v1/`, `/v2/`). No primitive, no how-to. Blocks API docs and OSS sites that promise multiple supported majors. [S3, S8]
-- **Scheduled / future-dated publish.** Only binary `isDraft` exists. Editorial sites depend on embargoed releases. [S10]
+- ~~**Scheduled / future-dated publish.** Only binary `isDraft` exists. Editorial sites depend on embargoed releases. [S10]~~ — **Done.** A page whose `date:` front matter is later than the build clock is treated the same as `isDraft: true` (renders in dev, excluded from build output, feeds, search). `TimeProvider` is injectable so CI overrides and tests use `FakeTimeProvider`. Documented in `how-to/pages/drafts-tags-ordering.md`.
 - **Per-taxonomy RSS / Atom feeds** (e.g., `/feeds/news.xml`). Only one site-wide `/rss.xml`. [S10, S8]
 - **Incremental / cached builds.** Build-by-HTTP-crawl with no incremental story at 5k pages × daily CI is a hard sell. [S10, S9]
 - **Extending shipped template front-matter types** without dropping to bare `AddPennington` (which loses BlogSite/DocSite routes). Affects almost every non-trivial scenario. [S1, S2, S5, S6, S7, S10]

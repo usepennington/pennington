@@ -21,20 +21,23 @@ public sealed record SitemapCandidate(ContentRoute Route, IFrontMatter? Metadata
 public sealed class SitemapBuilder
 {
     private readonly UrlPath _canonicalBase;
+    private readonly TimeProvider _clock;
 
     /// <summary>Canonical site base URL used when resolving absolute entry URLs.</summary>
     public UrlPath CanonicalBase => _canonicalBase;
 
     /// <summary>
-    /// Initializes the builder with the canonical site base URL used to produce absolute entry URLs.
+    /// Initializes the builder with the canonical site base URL used to produce absolute entry URLs
+    /// and the wall clock used to filter out future-dated (scheduled) entries.
     /// </summary>
-    public SitemapBuilder(UrlPath canonicalBase)
+    public SitemapBuilder(UrlPath canonicalBase, TimeProvider? clock = null)
     {
         _canonicalBase = canonicalBase;
+        _clock = clock ?? TimeProvider.System;
     }
 
     /// <summary>
-    /// Build sitemap entries from candidate rows. Excludes drafts.
+    /// Build sitemap entries from candidate rows. Excludes drafts and future-dated (scheduled) entries.
     /// </summary>
     public ImmutableList<SitemapEntry> Build(IReadOnlyList<SitemapCandidate> candidates)
     {
@@ -42,7 +45,7 @@ public sealed class SitemapBuilder
 
         foreach (var candidate in candidates)
         {
-            if (candidate.Metadata is { IsDraft: true })
+            if (candidate.Metadata is { } metadata && metadata.IsHiddenFromBuild(_clock))
             {
                 continue;
             }

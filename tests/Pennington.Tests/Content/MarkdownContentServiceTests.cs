@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Microsoft.Extensions.Time.Testing;
 using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
@@ -17,7 +18,8 @@ public class MarkdownContentServiceTests
         MockFileSystem fs,
         string? section = "Documentation",
         UrlPath? basePageUrl = null,
-        LocalizationOptions? localization = null)
+        LocalizationOptions? localization = null,
+        System.TimeProvider? clock = null)
     {
         var options = new MarkdownContentServiceOptions
         {
@@ -26,7 +28,7 @@ public class MarkdownContentServiceTests
             SectionLabel = section
         };
 
-        return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, localization ?? DefaultLocalization);
+        return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, localization ?? DefaultLocalization, clock);
     }
 
     private static MockFileSystem CreateFs(params (string Path, string Content)[] files)
@@ -181,6 +183,82 @@ public class MarkdownContentServiceTests
 
         entries.Count.ShouldBe(1);
         entries[0].Title.ShouldBe("Published");
+    }
+
+    private static FakeTimeProvider ClockAt(DateTime localNow)
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(localNow, TimeSpan.Zero));
+        clock.SetLocalTimeZone(TimeZoneInfo.Utc);
+        return clock;
+    }
+
+    private static MarkdownContentService<BlogFrontMatter> CreateBlogService(MockFileSystem fs, FakeTimeProvider clock)
+    {
+        var options = new MarkdownContentServiceOptions
+        {
+            ContentPath = new FilePath("/content"),
+            BasePageUrl = new UrlPath("/blog"),
+        };
+        return new MarkdownContentService<BlogFrontMatter>(options, new FrontMatterParser(), fs, DefaultLocalization, clock);
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_SkipsFutureDatedPages()
+    {
+        var clock = ClockAt(new DateTime(2030, 6, 15, 12, 0, 0));
+        var fs = CreateFs(
+            ("live.md", "---\ntitle: Live\ndate: 2030-06-14\n---\n# Live"),
+            ("scheduled.md", "---\ntitle: Scheduled\ndate: 2030-06-16\n---\n# Scheduled"));
+        var service = CreateBlogService(fs, clock);
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+        {
+            items.Add(item);
+        }
+
+        items.Count.ShouldBe(1);
+        items[0].Route.CanonicalPath.Value.ShouldBe("/blog/live/");
+    }
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_SkipsFutureDatedPages()
+    {
+        var clock = ClockAt(new DateTime(2030, 6, 15, 12, 0, 0));
+        var fs = CreateFs(
+            ("live.md", "---\ntitle: Live\ndate: 2030-06-14\n---\n# Live"),
+            ("scheduled.md", "---\ntitle: Scheduled\ndate: 2030-06-16\n---\n# Scheduled"));
+        var service = CreateBlogService(fs, clock);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(1);
+        entries[0].Title.ShouldBe("Live");
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_IncludesScheduledPageAfterClockAdvancesPastIt()
+    {
+        var clock = ClockAt(new DateTime(2030, 6, 15, 12, 0, 0));
+        var fs = CreateFs(
+            ("scheduled.md", "---\ntitle: Scheduled\ndate: 2030-06-16\n---\n# Scheduled"));
+        var service = CreateBlogService(fs, clock);
+
+        var beforeRelease = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+        {
+            beforeRelease.Add(item);
+        }
+        beforeRelease.ShouldBeEmpty();
+
+        clock.Advance(TimeSpan.FromDays(2));
+
+        var afterRelease = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+        {
+            afterRelease.Add(item);
+        }
+        afterRelease.Count.ShouldBe(1);
     }
 
     // Captures: a page with empty title (e.g. YAML typo in frontmatter type

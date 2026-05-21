@@ -1,6 +1,7 @@
 namespace Pennington.Pipeline;
 
 using Content;
+using FrontMatter;
 using Generation;
 using Infrastructure;
 using Routing;
@@ -13,16 +14,19 @@ public sealed class ContentPipeline : IContentPipeline
     private readonly IReadOnlyList<IContentService> _services;
     private readonly IContentParser _parser;
     private readonly IContentRenderer _renderer;
+    private readonly TimeProvider _clock;
 
     /// <summary>Creates the pipeline from the registered content services, parser, and renderer.</summary>
     public ContentPipeline(
         IEnumerable<IContentService> services,
         IContentParser parser,
-        IContentRenderer renderer)
+        IContentRenderer renderer,
+        TimeProvider? clock = null)
     {
         _services = services.ToList();
         _parser = parser;
         _renderer = renderer;
+        _clock = clock ?? TimeProvider.System;
     }
 
     /// <inheritdoc/>
@@ -123,8 +127,8 @@ public sealed class ContentPipeline : IContentPipeline
             switch (item.Value)
             {
                 case RenderedItem rendered:
-                    // Check for drafts
-                    if (rendered.Metadata.IsDraft)
+                    // Drafts and future-dated (scheduled) pages don't ship.
+                    if (rendered.Metadata.IsHiddenFromBuild(_clock))
                     {
                         reportBuilder.AddSkippedPage(rendered.Route);
                     }

@@ -21,16 +21,19 @@ public sealed class BlogPostResolver
     private readonly IEnumerable<IContentService> _services;
     private readonly FrontMatterParser _parser;
     private readonly IContentRenderer _renderer;
+    private readonly TimeProvider _clock;
 
-    /// <summary>Creates a new resolver with the supplied content services, parser, and renderer.</summary>
+    /// <summary>Creates a new resolver with the supplied content services, parser, renderer, and wall clock.</summary>
     public BlogPostResolver(
         IEnumerable<IContentService> services,
         FrontMatterParser parser,
-        IContentRenderer renderer)
+        IContentRenderer renderer,
+        TimeProvider? clock = null)
     {
         _services = services;
         _parser = parser;
         _renderer = renderer;
+        _clock = clock ?? TimeProvider.System;
     }
 
     /// <summary>Gets all blog posts ordered by date descending (posts without a date sort last).</summary>
@@ -54,7 +57,7 @@ public sealed class BlogPostResolver
                 var content = await File.ReadAllTextAsync(source.Path.Value);
                 var parsed = _parser.Parse<BlogPostFrontMatter>(content, source.Path.Value);
                 var fm = parsed.Metadata ?? new BlogPostFrontMatter();
-                if (fm.IsDraft)
+                if (fm.IsHiddenFromBuild(_clock))
                 {
                     continue;
                 }

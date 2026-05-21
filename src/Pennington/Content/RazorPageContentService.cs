@@ -29,6 +29,7 @@ public sealed partial class RazorPageContentService : IContentService
     private readonly IFileSystem _fileSystem;
     private readonly FrontMatterParser _frontMatterParser;
     private readonly ILogger<RazorPageContentService> _logger;
+    private readonly TimeProvider _clock;
     private readonly List<(string Template, string TypeName)> _missingTrailingSlashPages = [];
     private readonly Lazy<Dictionary<string, string>> _razorFileCache;
     private readonly Lazy<List<ComponentWithMetadata>> _componentMetadataCache;
@@ -42,12 +43,14 @@ public sealed partial class RazorPageContentService : IContentService
         Assembly[] assemblies,
         IFileSystem fileSystem,
         FrontMatterParser frontMatterParser,
-        ILogger<RazorPageContentService> logger)
+        ILogger<RazorPageContentService> logger,
+        TimeProvider? clock = null)
     {
         _assemblies = assemblies;
         _fileSystem = fileSystem;
         _frontMatterParser = frontMatterParser;
         _logger = logger;
+        _clock = clock ?? TimeProvider.System;
         _razorFileCache = new Lazy<Dictionary<string, string>>(BuildRazorFileCache);
         _componentMetadataCache = new Lazy<List<ComponentWithMetadata>>(BuildComponentMetadataCache);
     }
@@ -69,7 +72,7 @@ public sealed partial class RazorPageContentService : IContentService
     {
         foreach (var entry in _componentMetadataCache.Value)
         {
-            if (entry.Metadata is { IsDraft: true })
+            if (entry.Metadata is { } discoverMetadata && discoverMetadata.IsHiddenFromBuild(_clock))
             {
                 continue;
             }
@@ -105,7 +108,7 @@ public sealed partial class RazorPageContentService : IContentService
                 continue;
             }
 
-            if (entry.Metadata is { IsDraft: true })
+            if (entry.Metadata.IsHiddenFromBuild(_clock))
             {
                 continue;
             }
@@ -142,7 +145,7 @@ public sealed partial class RazorPageContentService : IContentService
 
         foreach (var entry in _componentMetadataCache.Value)
         {
-            if (entry.Metadata is { IsDraft: true })
+            if (entry.Metadata is { } indexableMetadata && indexableMetadata.IsHiddenFromBuild(_clock))
             {
                 continue;
             }

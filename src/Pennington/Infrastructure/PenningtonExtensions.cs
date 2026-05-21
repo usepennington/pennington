@@ -117,6 +117,10 @@ public static class PenningtonExtensions
         // File system abstraction
         services.TryAddSingleton<IFileSystem>(new RealFileSystem());
 
+        // Wall clock — scheduled-publish (front matter Date in the future) compares
+        // against this. Tests inject FakeTimeProvider to make boundaries deterministic.
+        services.TryAddSingleton(TimeProvider.System);
+
         // File watching
         services.AddSingleton<IFileWatcher, FileWatcher>();
         services.AddSingleton<FileWatchDispatcher>();
@@ -219,7 +223,8 @@ public static class PenningtonExtensions
                     var parser = sp.GetRequiredService<FrontMatterParser>();
                     var fileSystem = sp.GetRequiredService<IFileSystem>();
                     var localization = sp.GetRequiredService<LocalizationOptions>();
-                    instance = Activator.CreateInstance(serviceType, sourceOptions, parser, fileSystem, localization)!;
+                    var clock = sp.GetRequiredService<TimeProvider>();
+                    instance = Activator.CreateInstance(serviceType, sourceOptions, parser, fileSystem, localization, clock)!;
                 }
                 return instance;
             }
@@ -246,7 +251,8 @@ public static class PenningtonExtensions
                     assemblies,
                     sp.GetRequiredService<IFileSystem>(),
                     sp.GetRequiredService<FrontMatterParser>(),
-                    sp.GetRequiredService<ILogger<RazorPageContentService>>()));
+                    sp.GetRequiredService<ILogger<RazorPageContentService>>(),
+                    sp.GetRequiredService<TimeProvider>()));
         }
 
         // Pipeline
@@ -312,8 +318,12 @@ public static class PenningtonExtensions
                 : sp.GetRequiredService<OutputOptions>().BaseUrl;
             return new CanonicalBaseUrl(effectiveBase);
         });
-        services.AddSingleton(sp => new SitemapBuilder(sp.GetRequiredService<CanonicalBaseUrl>().Value));
-        services.AddSingleton(sp => new RssFeedBuilder(sp.GetRequiredService<CanonicalBaseUrl>().Value));
+        services.AddSingleton(sp => new SitemapBuilder(
+            sp.GetRequiredService<CanonicalBaseUrl>().Value,
+            sp.GetRequiredService<TimeProvider>()));
+        services.AddSingleton(sp => new RssFeedBuilder(
+            sp.GetRequiredService<CanonicalBaseUrl>().Value,
+            sp.GetRequiredService<TimeProvider>()));
 
         // In-memory dispatcher: routes self-fetches through TestServer (build mode +
         // integration tests) or Kestrel's listening socket (dev mode). Replaces the

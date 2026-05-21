@@ -40,7 +40,8 @@ public static class TaxonomyServiceExtensions
             sp,
             sp.GetRequiredService<FrontMatterParser>(),
             sp.GetRequiredService<IFileSystem>(),
-            sp.GetRequiredService<IFileWatcher>()));
+            sp.GetRequiredService<IFileWatcher>(),
+            sp.GetRequiredService<TimeProvider>()));
 
         return services;
     }

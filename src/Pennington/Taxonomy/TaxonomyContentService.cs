@@ -36,6 +36,7 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
     private readonly IServiceProvider _serviceProvider;
     private readonly FrontMatterParser _parser;
     private readonly System.IO.Abstractions.IFileSystem _fileSystem;
+    private readonly TimeProvider _clock;
     private readonly Lock _lock = new();
     private AsyncLazy<ImmutableList<TaxonomyTerm<TFrontMatter, TKey>>> _termsLazy;
 
@@ -45,12 +46,14 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
         IServiceProvider serviceProvider,
         FrontMatterParser parser,
         System.IO.Abstractions.IFileSystem fileSystem,
-        IFileWatcher fileWatcher)
+        IFileWatcher fileWatcher,
+        TimeProvider? clock = null)
     {
         _options = options;
         _serviceProvider = serviceProvider;
         _parser = parser;
         _fileSystem = fileSystem;
+        _clock = clock ?? TimeProvider.System;
         _termsLazy = new AsyncLazy<ImmutableList<TaxonomyTerm<TFrontMatter, TKey>>>(LoadTermsAsync);
 
         fileWatcher.SubscribeToChanges(InvalidateCache);
@@ -221,7 +224,7 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
                     continue;
                 }
 
-                if (metadata is { IsDraft: true })
+                if (metadata.IsHiddenFromBuild(_clock))
                 {
                     continue;
                 }

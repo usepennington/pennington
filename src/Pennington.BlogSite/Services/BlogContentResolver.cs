@@ -23,19 +23,22 @@ public sealed class BlogContentResolver : IFileWatchAware
     private readonly FrontMatterParser _parser;
     private readonly IContentRenderer _renderer;
     private readonly BlogSiteOptions _options;
+    private readonly TimeProvider _clock;
     private readonly AsyncLazy<List<BlogPostPage>> _postsLazy;
 
-    /// <summary>Creates a new resolver with the supplied content services, parser, renderer, and options.</summary>
+    /// <summary>Creates a new resolver with the supplied content services, parser, renderer, options, and wall clock.</summary>
     public BlogContentResolver(
         IEnumerable<IContentService> services,
         FrontMatterParser parser,
         IContentRenderer renderer,
-        BlogSiteOptions options)
+        BlogSiteOptions options,
+        TimeProvider? clock = null)
     {
         _services = services;
         _parser = parser;
         _renderer = renderer;
         _options = options;
+        _clock = clock ?? TimeProvider.System;
         _postsLazy = new AsyncLazy<List<BlogPostPage>>(LoadAllPostsAsync);
     }
 
@@ -60,7 +63,7 @@ public sealed class BlogContentResolver : IFileWatchAware
                 var parsed = _parser.Parse<BlogSiteFrontMatter>(content, source.Path.Value);
                 var fm = parsed.Metadata ?? new BlogSiteFrontMatter();
 
-                if (fm.IsDraft)
+                if (fm.IsHiddenFromBuild(_clock))
                 {
                     continue;
                 }
