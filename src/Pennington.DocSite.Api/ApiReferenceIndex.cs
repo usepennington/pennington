@@ -67,14 +67,46 @@ public sealed class ApiReferenceIndex
                 Summary: t.Summary));
         }
 
-        var slugCounts = collected
-            .GroupBy(e => e.Slug, StringComparer.Ordinal)
-            .ToDictionary(g => g.Key, g => g.Count(), StringComparer.Ordinal);
+        // Each entry starts at depth 0 (just ToSlug(Name)). On a collision, every entry sharing
+        // the current slug pulls in one more namespace segment from the tail. Two types sharing
+        // both name *and* namespace would loop forever, so we cap each entry at its segment count.
+        var depths = collected.ToDictionary(e => e.Uid, _ => 0, StringComparer.Ordinal);
+
+        while (true)
+        {
+            var collisions = collected
+                .GroupBy(e => BuildSlug(e, depths[e.Uid]), StringComparer.Ordinal)
+                .Where(g => g.Count() > 1)
+                .ToList();
+
+            if (collisions.Count == 0)
+            {
+                break;
+            }
+
+            var advanced = false;
+            foreach (var group in collisions)
+            {
+                foreach (var entry in group)
+                {
+                    if (depths[entry.Uid] < SegmentCount(entry.Namespace))
+                    {
+                        depths[entry.Uid]++;
+                        advanced = true;
+                    }
+                }
+            }
+
+            if (!advanced)
+            {
+                break;
+            }
+        }
 
         var builder = ImmutableDictionary.CreateBuilder<string, ApiReferenceEntry>(StringComparer.Ordinal);
         foreach (var entry in collected)
         {
-            var slug = slugCounts[entry.Slug] == 1 ? entry.Slug : Disambiguate(entry);
+            var slug = BuildSlug(entry, depths[entry.Uid]);
             builder.Add(slug, entry with { Slug = slug });
         }
 
@@ -85,11 +117,27 @@ public sealed class ApiReferenceIndex
         return builder.ToImmutable();
     }
 
-    private static string Disambiguate(ApiReferenceEntry entry)
+    private static string BuildSlug(ApiReferenceEntry entry, int depth)
     {
-        var nsTail = LastNamespaceSegment(entry.Namespace);
-        return string.IsNullOrEmpty(nsTail) ? entry.Slug : $"{ToSlug(nsTail)}-{entry.Slug}";
+        if (depth <= 0 || string.IsNullOrEmpty(entry.Namespace))
+        {
+            return entry.Slug;
+        }
+
+        var parts = entry.Namespace.Split('.');
+        var start = Math.Max(0, parts.Length - depth);
+        var sb = new StringBuilder();
+        for (var i = start; i < parts.Length; i++)
+        {
+            sb.Append(ToSlug(parts[i]));
+            sb.Append('-');
+        }
+        sb.Append(entry.Slug);
+        return sb.ToString();
     }
+
+    private static int SegmentCount(string ns) =>
+        string.IsNullOrEmpty(ns) ? 0 : ns.AsSpan().Count('.') + 1;
 
     internal static string ToSlug(string name)
     {
@@ -117,16 +165,5 @@ public sealed class ApiReferenceIndex
         }
 
         return sb.ToString().Trim('-');
-    }
-
-    private static string LastNamespaceSegment(string ns)
-    {
-        if (string.IsNullOrEmpty(ns))
-        {
-            return string.Empty;
-        }
-
-        var idx = ns.LastIndexOf('.');
-        return idx < 0 ? ns : ns[(idx + 1)..];
     }
 }

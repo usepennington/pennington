@@ -18,8 +18,9 @@ and font preloading to reduce the flash of unstyled text.
 ## Structured data, so search engines understand your pages
 
 Search engines read HTML, but they reward pages that tell them what they're
-looking at. Pennington now emits schema.org JSON-LD — `Article`,
-`BreadcrumbList`, and `WebSite` — as a `<script>` tag in every page's head:
+looking at. Pennington emits schema.org JSON-LD as a `<script>` tag in every
+page's head. The shipped DocSite and BlogSite templates wire `Article`,
+`BreadcrumbList`, and `WebSite` automatically:
 
 ```html
 <script type="application/ld+json">
@@ -38,6 +39,14 @@ search listings. It needs one thing: an absolute base URL. Set `CanonicalBaseUrl
 and the JSON-LD appears; leave it unset and Pennington skips it rather than emit
 broken relative links. See [hosting under a base
 URL](xref:how-to.deployment.base-url).
+
+The framework ships only one type — `JsonLdEntity`. Templates own the concrete
+records they emit, and you can add your own for any schema.org type the
+templates don't cover. Subclass `JsonLdEntity`, attribute your fields with
+`[JsonPropertyName]`, and pass the entity to `<StructuredData Entities="...">`.
+Pennington serializes it through the same path as the built-in types. See
+[Add a custom schema.org JSON-LD type](xref:how-to.rich-content.structured-data-custom-types)
+for a worked `JsonLdRecipe` example.
 
 ## Accessibility landmarks
 

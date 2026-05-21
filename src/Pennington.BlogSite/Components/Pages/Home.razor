@@ -1,4 +1,5 @@
 @page "/"
+@using Pennington.BlogSite.StructuredData
 @using Pennington.StructuredData
 @inject BlogContentResolver ContentResolver
 @inject PenningtonOptions PenningtonOptions
@@ -12,7 +13,7 @@
 <PageTitle>@PenningtonOptions.SiteTitle - Recent Posts</PageTitle>
 @if (!string.IsNullOrEmpty(PenningtonOptions.CanonicalBaseUrl))
 {
-    <StructuredData WebSite="BuildWebSiteLd()" />
+    <StructuredData Entities="BuildEntities()" />
 }
 
 <div class="md:px-4 border-box">
@@ -90,14 +91,19 @@
     private List<BlogPostPage>? _posts;
     private List<BlogPostPage>? _recentPosts;
 
-    private JsonLdWebSite? BuildWebSiteLd()
+    private IEnumerable<JsonLdEntity> BuildEntities()
     {
-        if (string.IsNullOrEmpty(PenningtonOptions.CanonicalBaseUrl)) return null;
-        return new JsonLdWebSite(
-            Name: PenningtonOptions.SiteTitle,
-            Url: PenningtonOptions.CanonicalBaseUrl.TrimEnd('/') + "/",
-            Description: BlogOptions.Description
-        );
+        if (string.IsNullOrEmpty(PenningtonOptions.CanonicalBaseUrl))
+        {
+            yield break;
+        }
+
+        yield return new JsonLdWebSite
+        {
+            Name = PenningtonOptions.SiteTitle,
+            Url = PenningtonOptions.CanonicalBaseUrl.TrimEnd('/') + "/",
+            Description = BlogOptions.Description,
+        };
     }
 
     protected override async Task OnInitializedAsync()

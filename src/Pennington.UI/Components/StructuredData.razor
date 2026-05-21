@@ -1,31 +1,19 @@
 <HeadContent>
-    @if (_articleJson != null)
+    @foreach (var json in _entityJson)
     {
-        <script type="application/ld+json">@((MarkupString)_articleJson)</script>
-    }
-    @if (_breadcrumbJson != null)
-    {
-        <script type="application/ld+json">@((MarkupString)_breadcrumbJson)</script>
-    }
-    @if (_webSiteJson != null)
-    {
-        <script type="application/ld+json">@((MarkupString)_webSiteJson)</script>
+        <script type="application/ld+json">@((MarkupString)json)</script>
     }
 </HeadContent>
 
 @code {
-    [Parameter] public JsonLdArticle? Article { get; set; }
-    [Parameter] public JsonLdBreadcrumbList? Breadcrumbs { get; set; }
-    [Parameter] public JsonLdWebSite? WebSite { get; set; }
+    [Parameter] public IEnumerable<JsonLdEntity>? Entities { get; set; }
 
-    private string? _articleJson;
-    private string? _breadcrumbJson;
-    private string? _webSiteJson;
+    private List<string> _entityJson = [];
 
     protected override void OnParametersSet()
     {
-        _articleJson = Article is not null ? JsonLdSerializer.SerializeArticle(Article) : null;
-        _breadcrumbJson = Breadcrumbs is not null ? JsonLdSerializer.SerializeBreadcrumbList(Breadcrumbs) : null;
-        _webSiteJson = WebSite is not null ? JsonLdSerializer.SerializeWebSite(WebSite) : null;
+        _entityJson = Entities is null
+            ? []
+            : Entities.Where(e => e is not null).Select(JsonLdSerializer.Serialize).ToList();
     }
 }

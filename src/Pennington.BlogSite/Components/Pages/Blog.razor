@@ -38,7 +38,7 @@
 
 @if (!string.IsNullOrEmpty(PenningtonOptions.CanonicalBaseUrl))
 {
-    <StructuredData Article="BuildArticleLd()" />
+    <StructuredData Entities="BuildEntities()" />
 }
 
 <BlogPost Post="_rendered.Page" HtmlContent="@_rendered.Html" Series="_series"/>
@@ -71,20 +71,28 @@
         }
     }
 
-    private JsonLdArticle? BuildArticleLd()
+    private IEnumerable<JsonLdEntity> BuildEntities()
     {
-        if (_rendered == null || string.IsNullOrEmpty(PenningtonOptions.CanonicalBaseUrl)) return null;
-        var fm = _rendered.Page.FrontMatter;
-        var author = !string.IsNullOrEmpty(fm.Author) ? fm.Author
-            : !string.IsNullOrEmpty(BlogOptions.AuthorName) ? BlogOptions.AuthorName
-            : null;
-        return new JsonLdArticle(
-            Headline: fm.Title,
-            Description: fm.Description,
-            Url: $"{PenningtonOptions.CanonicalBaseUrl.TrimEnd('/')}{_rendered.Page.Url}",
-            DatePublished: fm.Date,
-            AuthorName: author
-        );
+        if (_rendered == null || string.IsNullOrEmpty(PenningtonOptions.CanonicalBaseUrl))
+        {
+            yield break;
+        }
+
+        if (_rendered.Page.FrontMatter is not IHasStructuredData hasData)
+        {
+            yield break;
+        }
+
+        var ctx = new StructuredDataContext
+        {
+            CanonicalUrl = $"{PenningtonOptions.CanonicalBaseUrl.TrimEnd('/')}{_rendered.Page.Url}",
+            FallbackAuthorName = BlogOptions.AuthorName,
+        };
+
+        foreach (var entity in hasData.GetStructuredData(ctx))
+        {
+            yield return entity;
+        }
     }
 
     private string GetSocialImageUrl()

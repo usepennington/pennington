@@ -1,16 +1,19 @@
 namespace Pennington.BlogSite;
 
 using FrontMatter;
+using Pennington.BlogSite.StructuredData;
+using Pennington.StructuredData;
 
 /// <summary>
 /// Front matter bound by <see cref="BlogSiteServiceExtensions.AddBlogSite"/>. Consolidates all
 /// post-authoring fields (<see cref="Author"/>, <see cref="Repository"/>, <see cref="Series"/>,
 /// <see cref="Date"/>, <see cref="RedirectUrl"/>) in one contract. Implements
-/// <see cref="IFrontMatter"/>, <see cref="ITaggable"/>, <see cref="ISectionable"/>, and
-/// <see cref="IRedirectable"/>.
+/// <see cref="IFrontMatter"/>, <see cref="ITaggable"/>, <see cref="ISectionable"/>,
+/// <see cref="IRedirectable"/>, and <see cref="IHasStructuredData"/> (emits a
+/// schema.org <c>Article</c>).
 /// </summary>
 public record BlogSiteFrontMatter : IFrontMatter, ITaggable,
-    ISectionable, IRedirectable
+    ISectionable, IRedirectable, IHasStructuredData
 {
     /// <summary>Post title.</summary>
     public string Title { get; init; } = "Empty title";
@@ -53,4 +56,21 @@ public record BlogSiteFrontMatter : IFrontMatter, ITaggable,
 
     /// <summary>When true, the post is indexed for search/llms but hidden from the rendered navigation tree.</summary>
     public bool SearchOnly { get; init; }
+
+    /// <inheritdoc />
+    public IEnumerable<JsonLdEntity> GetStructuredData(StructuredDataContext context)
+    {
+        var authorName = !string.IsNullOrEmpty(Author) ? Author
+            : !string.IsNullOrEmpty(context.FallbackAuthorName) ? context.FallbackAuthorName
+            : null;
+
+        yield return new JsonLdArticle
+        {
+            Headline = Title,
+            Description = Description,
+            Url = context.CanonicalUrl,
+            DatePublished = Date,
+            Author = authorName is null ? null : new JsonLdPerson { Name = authorName },
+        };
+    }
 }

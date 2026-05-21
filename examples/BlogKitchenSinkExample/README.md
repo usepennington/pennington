@@ -5,7 +5,7 @@ Kitchen-sink BlogSite — the BlogSite analogue of `DocSiteKitchenSinkExample`. 
 ## Concepts
 
 - Full `BlogSiteOptions` surface in one host
-- `StructuredDataBuilder` — JSON-LD article markup
+- `StructuredDataBuilder` — user-defined `JsonLdRecipe : JsonLdEntity` showing how to extend Pennington's JSON-LD surface without framework changes
 - RSS channel at `/rss.xml`, sitemap at `/sitemap.xml` — discoverable on every page; the index also ships a `<link rel="alternate" type="application/rss+xml" href="/rss.xml">` so feed readers pick it up automatically
 - Three dated posts so archive / tags / RSS are populated
 

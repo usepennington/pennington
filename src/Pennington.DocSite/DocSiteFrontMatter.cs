@@ -1,15 +1,18 @@
 namespace Pennington.DocSite;
 
 using FrontMatter;
+using Pennington.DocSite.StructuredData;
+using Pennington.StructuredData;
 
 /// <summary>
 /// Front matter bound by <see cref="DocSiteServiceExtensions.AddDocSite"/>. Extends the
 /// <see cref="DocFrontMatter"/> shape with <see cref="RedirectUrl"/> via
 /// <see cref="IRedirectable"/>. Implements <see cref="IFrontMatter"/>, <see cref="ITaggable"/>,
-/// <see cref="ISectionable"/>, <see cref="IOrderable"/>, and <see cref="IRedirectable"/>.
+/// <see cref="ISectionable"/>, <see cref="IOrderable"/>, <see cref="IRedirectable"/>,
+/// and <see cref="IHasStructuredData"/> (emits a schema.org <c>Article</c>).
 /// </summary>
 public record DocSiteFrontMatter : IFrontMatter, ITaggable,
-    ISectionable, IOrderable, IRedirectable
+    ISectionable, IOrderable, IRedirectable, IHasStructuredData
 {
     /// <summary>Page title rendered in the browser tab and page heading.</summary>
     public string Title { get; init; } = "";
@@ -43,4 +46,15 @@ public record DocSiteFrontMatter : IFrontMatter, ITaggable,
 
     /// <summary>When true, the page is indexed for search/llms but hidden from the rendered navigation tree.</summary>
     public bool SearchOnly { get; init; }
+
+    /// <inheritdoc />
+    public IEnumerable<JsonLdEntity> GetStructuredData(StructuredDataContext context)
+    {
+        yield return new JsonLdArticle
+        {
+            Headline = Title,
+            Description = Description,
+            Url = context.CanonicalUrl,
+        };
+    }
 }

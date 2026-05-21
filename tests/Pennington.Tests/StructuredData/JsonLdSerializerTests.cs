@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Pennington.BlogSite.StructuredData;
 using Pennington.StructuredData;
 
 namespace Pennington.Tests.StructuredData;
@@ -6,17 +8,18 @@ namespace Pennington.Tests.StructuredData;
 public class JsonLdSerializerTests
 {
     [Fact]
-    public void SerializeArticle_FullFields_ProducesValidJsonLd()
+    public void Serialize_FullArticle_ProducesValidJsonLd()
     {
-        var article = new JsonLdArticle(
-            Headline: "Test Post",
-            Description: "A test description",
-            Url: "https://example.com/blog/test/",
-            DatePublished: new DateTime(2026, 3, 15, 0, 0, 0, DateTimeKind.Utc),
-            AuthorName: "Jane Doe"
-        );
+        var article = new JsonLdArticle
+        {
+            Headline = "Test Post",
+            Description = "A test description",
+            Url = "https://example.com/blog/test/",
+            DatePublished = new DateTime(2026, 3, 15, 0, 0, 0, DateTimeKind.Utc),
+            Author = new JsonLdPerson { Name = "Jane Doe" },
+        };
 
-        var json = JsonLdSerializer.SerializeArticle(article);
+        var json = JsonLdSerializer.Serialize(article);
 
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
@@ -31,44 +34,44 @@ public class JsonLdSerializerTests
     }
 
     [Fact]
-    public void SerializeArticle_NullDescription_OmitsDescription()
+    public void Serialize_NullDescription_OmitsDescription()
     {
-        var article = new JsonLdArticle("Title", null, "https://example.com/", null, null);
+        var article = new JsonLdArticle { Headline = "Title", Url = "https://example.com/" };
 
-        var json = JsonLdSerializer.SerializeArticle(article);
+        var json = JsonLdSerializer.Serialize(article);
 
         using var doc = JsonDocument.Parse(json);
         doc.RootElement.TryGetProperty("description", out _).ShouldBeFalse();
     }
 
     [Fact]
-    public void SerializeArticle_NullDate_OmitsDatePublished()
+    public void Serialize_NullDate_OmitsDatePublished()
     {
-        var article = new JsonLdArticle("Title", "Desc", "https://example.com/", null, null);
+        var article = new JsonLdArticle { Headline = "Title", Url = "https://example.com/" };
 
-        var json = JsonLdSerializer.SerializeArticle(article);
+        var json = JsonLdSerializer.Serialize(article);
 
         using var doc = JsonDocument.Parse(json);
         doc.RootElement.TryGetProperty("datePublished", out _).ShouldBeFalse();
     }
 
     [Fact]
-    public void SerializeArticle_NullAuthor_OmitsAuthor()
+    public void Serialize_NullAuthor_OmitsAuthor()
     {
-        var article = new JsonLdArticle("Title", null, "https://example.com/", null, null);
+        var article = new JsonLdArticle { Headline = "Title", Url = "https://example.com/" };
 
-        var json = JsonLdSerializer.SerializeArticle(article);
+        var json = JsonLdSerializer.Serialize(article);
 
         using var doc = JsonDocument.Parse(json);
         doc.RootElement.TryGetProperty("author", out _).ShouldBeFalse();
     }
 
     [Fact]
-    public void SerializeArticle_AllOptionalNull_OnlyRequiredFields()
+    public void Serialize_AllOptionalNull_OnlyRequiredFields()
     {
-        var article = new JsonLdArticle("Title", null, "https://example.com/", null, null);
+        var article = new JsonLdArticle { Headline = "Title", Url = "https://example.com/" };
 
-        var json = JsonLdSerializer.SerializeArticle(article);
+        var json = JsonLdSerializer.Serialize(article);
 
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
@@ -80,52 +83,16 @@ public class JsonLdSerializerTests
     }
 
     [Fact]
-    public void SerializeBreadcrumbList_MultipleItems_ProducesCorrectPositions()
+    public void Serialize_WebSite_FullFields()
     {
-        var breadcrumbs = new JsonLdBreadcrumbList([
-            new JsonLdBreadcrumbItem(1, "Home", "https://example.com/"),
-            new JsonLdBreadcrumbItem(2, "Docs", "https://example.com/docs/"),
-            new JsonLdBreadcrumbItem(3, "API", null),
-        ]);
+        var webSite = new JsonLdWebSite
+        {
+            Name = "My Site",
+            Url = "https://example.com/",
+            Description = "A great site",
+        };
 
-        var json = JsonLdSerializer.SerializeBreadcrumbList(breadcrumbs);
-
-        json.ShouldNotBeNull();
-        using var doc = JsonDocument.Parse(json);
-        var root = doc.RootElement;
-        root.GetProperty("@context").GetString().ShouldBe("https://schema.org");
-        root.GetProperty("@type").GetString().ShouldBe("BreadcrumbList");
-
-        var items = root.GetProperty("itemListElement");
-        items.GetArrayLength().ShouldBe(3);
-
-        items[0].GetProperty("@type").GetString().ShouldBe("ListItem");
-        items[0].GetProperty("position").GetInt32().ShouldBe(1);
-        items[0].GetProperty("name").GetString().ShouldBe("Home");
-        items[0].GetProperty("item").GetString().ShouldBe("https://example.com/");
-
-        items[1].GetProperty("position").GetInt32().ShouldBe(2);
-        items[1].GetProperty("name").GetString().ShouldBe("Docs");
-
-        items[2].GetProperty("position").GetInt32().ShouldBe(3);
-        items[2].GetProperty("name").GetString().ShouldBe("API");
-        items[2].TryGetProperty("item", out _).ShouldBeFalse();
-    }
-
-    [Fact]
-    public void SerializeBreadcrumbList_EmptyList_ReturnsNull()
-    {
-        var breadcrumbs = new JsonLdBreadcrumbList([]);
-
-        JsonLdSerializer.SerializeBreadcrumbList(breadcrumbs).ShouldBeNull();
-    }
-
-    [Fact]
-    public void SerializeWebSite_FullFields_ProducesValidJsonLd()
-    {
-        var webSite = new JsonLdWebSite("My Site", "https://example.com/", "A great site");
-
-        var json = JsonLdSerializer.SerializeWebSite(webSite);
+        var json = JsonLdSerializer.Serialize(webSite);
 
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
@@ -137,36 +104,88 @@ public class JsonLdSerializerTests
     }
 
     [Fact]
-    public void SerializeWebSite_NullDescription_OmitsDescription()
+    public void Serialize_WebSite_NullDescriptionOmitted()
     {
-        var webSite = new JsonLdWebSite("My Site", "https://example.com/", null);
+        var webSite = new JsonLdWebSite { Name = "My Site", Url = "https://example.com/" };
 
-        var json = JsonLdSerializer.SerializeWebSite(webSite);
+        var json = JsonLdSerializer.Serialize(webSite);
 
         using var doc = JsonDocument.Parse(json);
         doc.RootElement.TryGetProperty("description", out _).ShouldBeFalse();
     }
 
     [Fact]
-    public void SerializeArticle_ContentWithScriptTag_EscapesClosingTag()
+    public void Serialize_ContentWithScriptTag_EscapesClosingTag()
     {
-        var article = new JsonLdArticle(
-            Headline: "Using </script> in content",
-            Description: null,
-            Url: "https://example.com/",
-            DatePublished: null,
-            AuthorName: null
-        );
+        var article = new JsonLdArticle
+        {
+            Headline = "Using </script> in content",
+            Url = "https://example.com/",
+        };
 
-        var json = JsonLdSerializer.SerializeArticle(article);
+        var json = JsonLdSerializer.Serialize(article);
 
         json.ShouldNotContain("</script>");
         json.ShouldContain("<\\/script>");
 
-        // Should still parse as valid JSON after un-escaping
         var unescaped = json.Replace("<\\/", "</");
         using var doc = JsonDocument.Parse(unescaped);
         doc.RootElement.GetProperty("headline").GetString().ShouldBe("Using </script> in content");
     }
 
+    [Fact]
+    public void Serialize_UserDefinedSubclass_IncludesAllProperties()
+    {
+        // A user defines their own JsonLdEntity subclass — the framework
+        // serializer must walk the concrete runtime type, not the abstract
+        // base, so the new fields appear in the JSON output.
+        var custom = new TestSoftwareApplication
+        {
+            Name = "Penny",
+            ApplicationCategory = "DeveloperApplication",
+            OperatingSystem = "Cross-platform",
+        };
+
+        var json = JsonLdSerializer.Serialize(custom);
+
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        root.GetProperty("@context").GetString().ShouldBe("https://schema.org");
+        root.GetProperty("@type").GetString().ShouldBe("SoftwareApplication");
+        root.GetProperty("name").GetString().ShouldBe("Penny");
+        root.GetProperty("applicationCategory").GetString().ShouldBe("DeveloperApplication");
+        root.GetProperty("operatingSystem").GetString().ShouldBe("Cross-platform");
+    }
+
+    [Fact]
+    public void Serialize_CustomContextOverride_RespectsInitializer()
+    {
+        var custom = new TestSoftwareApplication
+        {
+            Context = "https://example.com/custom",
+            Name = "Penny",
+            ApplicationCategory = null,
+            OperatingSystem = null,
+        };
+
+        var json = JsonLdSerializer.Serialize(custom);
+
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("@context").GetString().ShouldBe("https://example.com/custom");
+    }
+
+    private sealed record TestSoftwareApplication : JsonLdEntity
+    {
+        [JsonPropertyName("@type")]
+        public override string Type => "SoftwareApplication";
+
+        [JsonPropertyName("name")]
+        public required string Name { get; init; }
+
+        [JsonPropertyName("applicationCategory")]
+        public string? ApplicationCategory { get; init; }
+
+        [JsonPropertyName("operatingSystem")]
+        public string? OperatingSystem { get; init; }
+    }
 }

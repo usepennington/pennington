@@ -41,24 +41,31 @@ Nested record type that callers supply when constructing an explicit `AlternateL
 
 ## `StructuredData`
 
-Emits up to three `<script type="application/ld+json">` tags into the document `<head>` via `<HeadContent>`, one each for `JsonLdArticle`, `JsonLdBreadcrumbList`, and `JsonLdWebSite`. Each payload is serialized with `JsonLdSerializer` and rendered only when the corresponding parameter is non-null.
+Emits one `<script type="application/ld+json">` per supplied entity into the document `<head>` via `<HeadContent>`. Accepts any sequence of `JsonLdEntity` — including user-defined subclasses — and serializes each with `JsonLdSerializer`. Null entries in the sequence are skipped.
 
 ### Parameters
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `Article` | `JsonLdArticle?` | `null` | Schema.org `Article` payload emitted when non-null, serialized by `JsonLdSerializer.SerializeArticle`. |
-| `Breadcrumbs` | `JsonLdBreadcrumbList?` | `null` | Schema.org `BreadcrumbList` payload emitted when non-null, serialized by `JsonLdSerializer.SerializeBreadcrumbList`. |
-| `WebSite` | `JsonLdWebSite?` | `null` | Schema.org `WebSite` payload emitted when non-null, serialized by `JsonLdSerializer.SerializeWebSite`; typically rendered once on the home page. |
+| `Entities` | `IEnumerable<JsonLdEntity>?` | `null` | Sequence of schema.org entities to emit. Each is serialized by `JsonLdSerializer.Serialize` and rendered as its own `<script type="application/ld+json">` block. |
 
 ### Example
 
 ```razor
 @if (!string.IsNullOrEmpty(Options.CanonicalBaseUrl))
 {
-    <StructuredData Article="@article" Breadcrumbs="@breadcrumbs" WebSite="@webSite" />
+    <StructuredData Entities="@entities" />
+}
+
+@code {
+    private IEnumerable<JsonLdEntity> entities = [
+        new JsonLdArticle { Headline = "...", Url = "..." },
+        new JsonLdBreadcrumbList { Items = [...] },
+    ];
 }
 ```
+
+To define a schema.org type Pennington doesn't ship, see [Add a custom schema.org JSON-LD type](xref:how-to.rich-content.structured-data-custom-types).
 
 ## `FallbackNotice`
 
@@ -82,5 +89,5 @@ Renders an inline amber notice banner above the article region when the requeste
 
 - Related reference: [Navigation components](xref:reference.ui.navigation) — sibling `Pennington.UI` reference page for `TableOfContentsNavigation` and `OutlineNavigation`.
 - Related reference: [Content components](xref:reference.ui.content) — sibling `Pennington.UI` reference page for `Card`, `Badge`, `CodeBlock`, and the rest of the content-authoring surface.
-- Related reference: [JSON-LD schema types](xref:reference.api.json-ld-article) — the record types (`JsonLdArticle`, `JsonLdBreadcrumbList`, `JsonLdWebSite`) that `StructuredData` serializes.
+- How-to: [Add a custom schema.org JSON-LD type](xref:how-to.rich-content.structured-data-custom-types) — define a new `JsonLdEntity` subclass and emit it through `StructuredData`.
 - How-to: [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale) — tutorial that wires `LanguageSwitcher` and `FallbackNotice` end-to-end via `AddDocSite`.
