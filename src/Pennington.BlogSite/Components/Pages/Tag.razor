@@ -1,37 +1,62 @@
 @layout ContentWithProseLayout
 @page "/tags/{TagEncodedName}"
+@page "/tags/{TagEncodedName}/page/{Page:int}"
 @page "/topics/{TagEncodedName}"
+@page "/topics/{TagEncodedName}/page/{Page:int}"
 @inject BlogContentResolver ContentResolver
 @inject PenningtonOptions PenningtonOptions
+@inject BlogSiteOptions BlogOptions
 
-@if (_tag == null)
+@if (_tag == null || _page == null)
 {
     <div>Unknown tag</div>
     return;
 }
 
-<PageTitle>@PenningtonOptions.SiteTitle - @(_tag.Name)</PageTitle>
+<PageTitle>@PenningtonOptions.SiteTitle - @(_tag.Name)@(_page.Page > 1 ? $" (page {_page.Page})" : "")</PageTitle>
 
 <header>
     <h1>@(_tag.Name)</h1>
     <p>Blog posts tagged by <span class="text-primary-800 dark:text-primary-300">@(_tag.Name)</span></p>
 </header>
 <div class="not-prose">
-    <BlogPostsList Posts="_posts"/>
+    <BlogPostsList Posts="@_page.Items.ToList()" />
+    <Pagination CurrentPage="@_page.Page" TotalPages="@_page.TotalPages" UrlFor="@PageUrl" />
 </div>
 
 @code {
+    /// <summary>URL-encoded tag name from the route.</summary>
     [Parameter] public required string TagEncodedName { get; set; }
 
+    /// <summary>1-based page index from the route. Null on the canonical tag URL (treated as page 1).</summary>
+    [Parameter] public int? Page { get; set; }
+
     private BlogTag? _tag;
-    private ImmutableList<BlogPostPage>? _posts;
+    private PagedList<BlogPostPage>? _page;
 
     protected override async Task OnInitializedAsync()
     {
         if (string.IsNullOrWhiteSpace(TagEncodedName)) return;
-        var result = await ContentResolver.GetPostsByTagAsync(TagEncodedName);
+        var requested = Page ?? 1;
+        var pageSize = BlogOptions.PostsPerPage > 0 ? BlogOptions.PostsPerPage : int.MaxValue;
+        var result = await ContentResolver.GetPagedPostsByTagAsync(TagEncodedName, requested, pageSize);
         if (result == null) return;
 
-        (_tag, _posts) = result.Value;
+        (_tag, _page) = result.Value;
+    }
+
+    private string PageUrl(int page)
+    {
+        var prefix = GetTagPrefix();
+        return page <= 1
+            ? $"/{prefix}/{TagEncodedName}/"
+            : $"/{prefix}/{TagEncodedName}/page/{page}/";
+    }
+
+    private string GetTagPrefix()
+    {
+        // Honor the BlogSiteOptions.TagsPageUrl prefix; default is "tags".
+        var configured = BlogOptions.TagsPageUrl.Trim('/');
+        return string.IsNullOrEmpty(configured) ? "tags" : configured;
     }
 }

@@ -1,31 +1,41 @@
 @layout ContentWithProseLayout
 @page "/archive"
+@page "/archive/page/{Page:int}"
 @inject BlogContentResolver ContentResolver
 @inject PenningtonOptions PenningtonOptions
+@inject BlogSiteOptions BlogOptions
 
-@if (_posts == null)
+@if (_page == null)
 {
     <div>Posts not found</div>
     return;
 }
 
-<PageTitle>Archive - @PenningtonOptions.SiteTitle</PageTitle>
+<PageTitle>Archive - @PenningtonOptions.SiteTitle@(_page.Page > 1 ? $" (page {_page.Page})" : "")</PageTitle>
 
 <header>
     <h1>All Posts</h1>
-    <p>A complete archive of all @_posts.Count blog posts, organized by most recent.</p>
+    <p>A complete archive of all @_page.TotalItems blog posts, organized by most recent.</p>
 </header>
 <div class="mt-16 sm:mt-20 not-prose">
     <div>
-        <BlogSummary Posts="_posts" />
+        <BlogSummary Posts="@_page.Items" />
     </div>
+    <Pagination CurrentPage="@_page.Page" TotalPages="@_page.TotalPages" UrlFor="@PageUrl" />
 </div>
 
 @code {
-    private List<BlogPostPage>? _posts;
+    /// <summary>1-based page index from the route. Null on the canonical <c>/archive</c> URL (treated as page 1).</summary>
+    [Parameter] public int? Page { get; set; }
+
+    private PagedList<BlogPostPage>? _page;
 
     protected override async Task OnInitializedAsync()
     {
-        _posts = await ContentResolver.GetAllPostsAsync();
+        var requested = Page ?? 1;
+        var pageSize = BlogOptions.PostsPerPage > 0 ? BlogOptions.PostsPerPage : int.MaxValue;
+        _page = await ContentResolver.GetPagedPostsAsync(requested, pageSize);
     }
+
+    private static string PageUrl(int page) => page <= 1 ? "/archive" : $"/archive/page/{page}/";
 }

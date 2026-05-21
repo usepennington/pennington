@@ -52,32 +52,70 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
     {
         var posts = await _posts.Value;
 
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var pageSize = _options.PostsPerPage > 0 ? _options.PostsPerPage : int.MaxValue;
+        var tagComponentType = typeof(Components.Pages.Tag);
+        var archiveComponentType = typeof(Components.Pages.Archive);
+
+        // Tag canonical + paginated routes. Group posts by tag once so paginated
+        // pages reflect the same descending-date ordering BlogContentResolver uses.
+        var tagCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var post in posts)
         {
             foreach (var tag in post.Tags)
             {
-                if (!seen.Add(tag))
-                {
-                    continue;
-                }
+                tagCounts.TryGetValue(tag, out var existing);
+                tagCounts[tag] = existing + 1;
+            }
+        }
 
-                var encoded = HttpUtility.UrlEncode(tag);
-                var tagsPageSegment = _options.TagsPageUrl.Trim('/');
-                var canonicalPath = new UrlPath($"/{tagsPageSegment}/{encoded}/");
-                var outputFile = new FilePath($"{tagsPageSegment}/{encoded}/index.html");
-                var route = new ContentRoute
-                {
-                    CanonicalPath = canonicalPath,
-                    OutputFile = outputFile,
-                };
-                // Source value is informational — the static crawler issues
-                // an HTTP GET which the Blazor router dispatches to Tag.razor
-                // via its parameterized @page template.
-                var componentType = typeof(Components.Pages.Tag);
-                ContentSource source = new RazorPageSource(
-                    componentType.AssemblyQualifiedName ?? componentType.FullName ?? componentType.Name);
-                yield return new DiscoveredItem(route, source);
+        var tagsPageSegment = _options.TagsPageUrl.Trim('/');
+        foreach (var (tag, count) in tagCounts.OrderBy(kv => kv.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            var encoded = HttpUtility.UrlEncode(tag);
+            var canonicalPath = new UrlPath($"/{tagsPageSegment}/{encoded}/");
+            var outputFile = new FilePath($"{tagsPageSegment}/{encoded}/index.html");
+            var canonicalRoute = new ContentRoute
+            {
+                CanonicalPath = canonicalPath,
+                OutputFile = outputFile,
+            };
+            // Source value is informational — the static crawler issues
+            // an HTTP GET which the Blazor router dispatches to Tag.razor
+            // via its parameterized @page template.
+            ContentSource tagSource = new RazorPageSource(
+                tagComponentType.AssemblyQualifiedName ?? tagComponentType.FullName ?? tagComponentType.Name);
+            yield return new DiscoveredItem(canonicalRoute, tagSource);
+
+            var totalPages = (int)Math.Ceiling(count / (double)pageSize);
+            for (var page = 2; page <= totalPages; page++)
+            {
+                var pagedPath = new UrlPath($"/{tagsPageSegment}/{encoded}/page/{page}/");
+                var pagedOutput = new FilePath($"{tagsPageSegment}/{encoded}/page/{page}/index.html");
+                yield return new DiscoveredItem(
+                    new ContentRoute { CanonicalPath = pagedPath, OutputFile = pagedOutput },
+                    tagSource);
+            }
+        }
+
+        // Archive paginated routes. The canonical /archive route is emitted by
+        // RazorPageContentService (its @page template has no parameters). Only
+        // page 2..N need to come from here because /archive/page/{Page:int} is
+        // parameterized and therefore skipped at automatic discovery time.
+        if (posts.Count > pageSize)
+        {
+            var archiveTotalPages = (int)Math.Ceiling(posts.Count / (double)pageSize);
+            ContentSource archiveSource = new RazorPageSource(
+                archiveComponentType.AssemblyQualifiedName
+                    ?? archiveComponentType.FullName
+                    ?? archiveComponentType.Name);
+
+            for (var page = 2; page <= archiveTotalPages; page++)
+            {
+                var pagedPath = new UrlPath($"/archive/page/{page}/");
+                var pagedOutput = new FilePath($"archive/page/{page}/index.html");
+                yield return new DiscoveredItem(
+                    new ContentRoute { CanonicalPath = pagedPath, OutputFile = pagedOutput },
+                    archiveSource);
             }
         }
     }

@@ -36,6 +36,9 @@ public record BlogSiteOptions
     /// <summary>URL for the tag index page.</summary>
     public string TagsPageUrl { get; init; } = "/tags";
 
+    /// <summary>Number of posts per page on the archive and per-tag listings. Set to a non-positive value to disable pagination.</summary>
+    public int PostsPerPage { get; init; } = 10;
+
     /// <summary>Additional CSS appended to the generated stylesheet.</summary>
     public string? ExtraStyles { get; init; }
 

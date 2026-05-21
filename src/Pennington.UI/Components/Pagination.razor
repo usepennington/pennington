@@ -1,0 +1,113 @@
+@* Prev / numbered / next pagination controls. Caller supplies the page-N URL via UrlFor —
+   the component is URL-shape agnostic so it works for /archive/page/N/, /tags/{tag}/page/N/,
+   /docs/page-N/, or anything else. Renders nothing when TotalPages <= 1. *@
+
+@if (TotalPages > 1)
+{
+    <nav class="mt-12 flex items-center justify-between gap-4 border-t border-base-200 dark:border-base-800 pt-6" aria-label="Pagination">
+        <div class="flex-1">
+            @if (CurrentPage > 1)
+            {
+                <a href="@UrlFor(CurrentPage - 1)" rel="prev" class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-base-700 dark:text-base-200 hover:bg-base-100 dark:hover:bg-base-800 transition-colors">
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="h-4 w-4">
+                        <path d="M9.25 5.75 6.75 8l2.5 2.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                    Previous
+                </a>
+            }
+        </div>
+
+        <ol class="hidden sm:flex items-center gap-1">
+            @foreach (var slot in BuildSlots())
+            {
+                @if (slot.IsGap)
+                {
+                    <li aria-hidden="true" class="px-2 text-sm text-base-400 dark:text-base-500">...</li>
+                }
+                else if (slot.Page == CurrentPage)
+                {
+                    <li>
+                        <span aria-current="page" class="inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-sm font-semibold bg-primary-600 text-white dark:bg-primary-500">@slot.Page</span>
+                    </li>
+                }
+                else
+                {
+                    <li>
+                        <a href="@UrlFor(slot.Page)" class="inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-sm font-medium text-base-700 dark:text-base-200 hover:bg-base-100 dark:hover:bg-base-800 transition-colors">@slot.Page</a>
+                    </li>
+                }
+            }
+        </ol>
+
+        <p class="sm:hidden text-sm text-base-500 dark:text-base-400" aria-live="polite">Page @CurrentPage of @TotalPages</p>
+
+        <div class="flex-1 flex justify-end">
+            @if (CurrentPage < TotalPages)
+            {
+                <a href="@UrlFor(CurrentPage + 1)" rel="next" class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-base-700 dark:text-base-200 hover:bg-base-100 dark:hover:bg-base-800 transition-colors">
+                    Next
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="h-4 w-4">
+                        <path d="M6.75 5.75 9.25 8l-2.5 2.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </a>
+            }
+        </div>
+    </nav>
+}
+
+@code {
+    /// <summary>1-based page index for the current view. Highlighted in the numbered list.</summary>
+    [Parameter] public int CurrentPage { get; set; } = 1;
+
+    /// <summary>Total number of pages. The component renders nothing when this is 1 or less.</summary>
+    [Parameter] public int TotalPages { get; set; } = 1;
+
+    /// <summary>
+    /// Returns the URL for a given 1-based page index. The component never calls this with
+    /// the current page, but callers should be prepared to map page <c>1</c> to the canonical
+    /// (non-paginated) URL of the listing.
+    /// </summary>
+    [Parameter] public Func<int, string> UrlFor { get; set; } = page => $"?page={page}";
+
+    /// <summary>
+    /// Number of numeric page links flanking the current page in the truncated list. The
+    /// first and last pages are always rendered; gaps between them and the window collapse
+    /// to "...". Default of 1 yields windows like <c>1 ... 4 5 6 ... 12</c>.
+    /// </summary>
+    [Parameter] public int SiblingCount { get; set; } = 1;
+
+    private IEnumerable<Slot> BuildSlots()
+    {
+        if (TotalPages <= 1)
+        {
+            yield break;
+        }
+
+        var lo = Math.Max(2, CurrentPage - SiblingCount);
+        var hi = Math.Min(TotalPages - 1, CurrentPage + SiblingCount);
+
+        yield return new Slot(1, false);
+
+        if (lo > 2)
+        {
+            yield return new Slot(0, true);
+        }
+
+        for (var p = lo; p <= hi; p++)
+        {
+            yield return new Slot(p, false);
+        }
+
+        if (hi < TotalPages - 1)
+        {
+            yield return new Slot(0, true);
+        }
+
+        if (TotalPages > 1)
+        {
+            yield return new Slot(TotalPages, false);
+        }
+    }
+
+    private readonly record struct Slot(int Page, bool IsGap);
+}

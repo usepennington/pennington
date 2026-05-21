@@ -81,6 +81,72 @@ public sealed class BlogContentResolver : IFileWatchAware
     }
 
     /// <summary>
+    /// Returns a single page of posts ordered by date descending. Returns null when
+    /// <paramref name="page"/> is non-positive or beyond the last page.
+    /// </summary>
+    public async Task<PagedList<BlogPostPage>?> GetPagedPostsAsync(int page, int pageSize)
+    {
+        if (page < 1 || pageSize < 1)
+        {
+            return null;
+        }
+
+        var posts = await GetAllPostsAsync();
+        if (posts.Count == 0)
+        {
+            return page == 1
+                ? new PagedList<BlogPostPage>([], 1, pageSize, 0)
+                : null;
+        }
+
+        var totalPages = (int)Math.Ceiling(posts.Count / (double)pageSize);
+        if (page > totalPages)
+        {
+            return null;
+        }
+
+        var slice = posts
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return new PagedList<BlogPostPage>(slice, page, pageSize, posts.Count);
+    }
+
+    /// <summary>
+    /// Returns a single page of posts filtered by an encoded tag name. Returns null when the
+    /// tag is unknown, <paramref name="page"/> is non-positive, or the page is beyond the last.
+    /// </summary>
+    public async Task<(BlogTag Tag, PagedList<BlogPostPage> Page)?> GetPagedPostsByTagAsync(
+        string encodedTagName, int page, int pageSize)
+    {
+        if (page < 1 || pageSize < 1)
+        {
+            return null;
+        }
+
+        var result = await GetPostsByTagAsync(encodedTagName);
+        if (result is null)
+        {
+            return null;
+        }
+
+        var (tag, all) = result.Value;
+        var totalPages = (int)Math.Ceiling(all.Count / (double)pageSize);
+        if (page > totalPages)
+        {
+            return null;
+        }
+
+        var slice = all
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return (tag, new PagedList<BlogPostPage>(slice, page, pageSize, all.Count));
+    }
+
+    /// <summary>
     /// Get a rendered blog post by URL.
     /// </summary>
     public async Task<RenderedBlogPost?> GetPostByUrlAsync(string url)
