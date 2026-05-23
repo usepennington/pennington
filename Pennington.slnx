@@ -30,6 +30,7 @@
     <Project Path="examples/DocSitePagesAndLinksExample/DocSitePagesAndLinksExample.csproj" />
     <Project Path="examples/DocSiteSectionsExample/DocSiteSectionsExample.csproj" />
     <Project Path="examples/DocSiteBlogExample/DocSiteBlogExample.csproj" />
+    <Project Path="examples/DocSiteSharedCorpusExample/DocSiteSharedCorpusExample.csproj" />
     <Project Path="examples/BlogSiteScaffoldExample/BlogSiteScaffoldExample.csproj" />
     <Project Path="examples/BlogSiteFirstPostExample/BlogSiteFirstPostExample.csproj" />
     <Project Path="examples/BlogSiteHeroProjectsSocialsExample/BlogSiteHeroProjectsSocialsExample.csproj" />

@@ -12,6 +12,14 @@ All example projects suffix `Example`. Categories:
 - Some examples add `Components/` for Mdazor-referenced Razor components.
 - Template/library refs are relative: `..\..\src\Pennington\...`.
 
+## Shared content (`_shared/`)
+`examples/_shared/` holds fixture content that is not itself a project. `_shared/Bramble`
+is a fixed ~100-document fictional corpus (docs + blog). Examples that need volume
+rather than bespoke pages mount it via a relative `ContentRootPath` /
+`ContentPath` (`../_shared/Bramble/Content[/subfolder]`) instead of bundling their
+own markdown — see `DocSiteSharedCorpusExample` and `_shared/Bramble/README.md`.
+Such an example legitimately has no local `Content/`.
+
 ## Per-example README
 Every example folder has a `README.md` describing its purpose, the concepts it teaches, and where it is referenced from the docs site. Keep that README current when an example's teaching surface changes — it is the per-folder analogue of the table below. New examples must ship with one.
 
@@ -35,6 +43,7 @@ Every example folder has a `README.md` describing its purpose, the concepts it t
 | `DocSiteKitchenSinkExample` | Wide DocSite configuration (areas, locales, theming, fonts, custom front matter, custom Mdazor component) split across helpers for xmldocid fencing. | `how-to/navigation/{customize-sidebar,cross-references}.md`, `how-to/theming/{monorail-css,fonts}.md`, `how-to/pages/{front-matter,redirects}.md`, `how-to/discovery/{search,multiple-sources}.md`, `how-to/feeds/llms-txt.md`, `how-to/rich-content/ui-components-in-markdown.md`, `reference/front-matter/keys.md` |
 | `DocSiteScaffoldExample` | Smallest DocSite — `AddDocSite` / `UseDocSite` / `RunDocSiteAsync` with two areas. | `tutorials/docsite/scaffold.md`, `reference/host/extensions.md` |
 | `DocSiteSectionsExample` | Structure `Content/` into areas and subfolder-backed sections; `order:` / `section:` drive sidebar grouping. | `tutorials/docsite/sections-and-areas.md` |
+| `DocSiteSharedCorpusExample` | DocSite with no `Content/` of its own — mounts the shared `_shared/Bramble` corpus via a relative `ContentRootPath`, four Diátaxis areas + auto-activated blog. A site-at-scale fixture host. | _(fixture/scale host)_ |
 | `ExtensibilityLabExample` | Bare-host lab exercising every Pennington extension seam in one project: custom highlighter, code-block preprocessor, custom/emit-only `IContentService`, response processor, diagnostics processor, HTML rewriter, MonorailCSS customization, llms.txt opt-in, tabbed-code class override. | `how-to/markdown-pipeline/{custom-highlighter,code-block-preprocessor}.md`, `how-to/content-services/{custom-content-service,emit-generated-artifacts}.md`, `how-to/response-pipeline/{response-processor,html-rewriter}.md`, `how-to/theming/monorail-css.md`, `how-to/feeds/llms-txt.md`, `how-to/code-samples/tabbed-code.md`, `explanation/positioning/docsite-positioning.md`, `reference/diagnostics/request-context.md` |
 | `FocusedCodeSamplesExample` | Console app — two implementations of a word-counter (`Monolith`/`Modular`) for narrating a refactor via xmldocid fences. | `how-to/code-samples/focused-code-samples.md` |
 | `FusionCacheDocSiteExample` | Real-target DocSite — API reference generated from `ZiggyCreatures.FusionCache` via `AddApiMetadataFromCompiledAssembly` + `AddApiReference`. | _(reference for `Pennington.ApiMetadata.Reflection`)_ |
