@@ -71,6 +71,20 @@ public static class DocSiteServiceExtensions
             penn.AddLlmsTxt(opts => opts.ContentSelector ??= llmsSelector);
             penn.SearchIndex.ContentSelector ??= options.SearchIndexContentSelector ?? "#main-content";
 
+            // Boost search results by content area. Each area's boost defaults to its position in the
+            // list (earlier areas weigh more, so task-oriented docs lead over reference when matches
+            // are comparable) and can be overridden per area via ContentArea.SearchBoost.
+            if (penn.SearchIndex.AreaPriorities.Count == 0 && options.Areas.Count > 0)
+            {
+                var areaCount = options.Areas.Count;
+                for (var i = 0; i < areaCount; i++)
+                {
+                    var area = options.Areas[i];
+                    var boost = area.SearchBoost ?? (areaCount - i) * 2;
+                    penn.SearchIndex.AreaPriorities[area.Slug] = penn.SearchIndex.DefaultPriority + boost;
+                }
+            }
+
             // Localization
             options.ConfigureLocalization?.Invoke(penn.Localization);
 

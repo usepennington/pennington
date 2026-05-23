@@ -8,7 +8,7 @@ using LlmsTxt;
 using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Regression tests for the bug where llms.txt and search-index.json were
+/// Regression tests for the bug where llms.txt and the search index were
 /// generated from pre-render markdown instead of the post-pipeline HTML.
 /// Runs against TestServer via <see cref="DocsWebApplicationFactory"/> — the
 /// in-process dispatcher routes self-fetches through the same pipeline that
@@ -63,65 +63,97 @@ public class LlmsTxtAndSearchEndpointTests
     }
 
     [Fact]
-    public async Task SearchIndex_ReturnsJsonArrayOfDocuments()
+    public async Task SearchIndex_EntrypointHasDocumentTable()
     {
-        var response = await _client.GetAsync("/search-index-en.json", TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync("/search/en/index.json", TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         using var doc = JsonDocument.Parse(json);
 
-        doc.RootElement.ValueKind.ShouldBe(JsonValueKind.Array);
-        doc.RootElement.GetArrayLength().ShouldBeGreaterThan(0);
+        doc.RootElement.ValueKind.ShouldBe(JsonValueKind.Object);
+        var docs = doc.RootElement.GetProperty("docs");
+        docs.ValueKind.ShouldBe(JsonValueKind.Array);
+        docs.GetArrayLength().ShouldBeGreaterThan(0);
 
-        // Every document should have the required fields populated.
-        foreach (var element in doc.RootElement.EnumerateArray())
+        // BM25 stats and at least one shard must be present for the client to query.
+        doc.RootElement.GetProperty("n").GetInt32().ShouldBeGreaterThan(0);
+        doc.RootElement.GetProperty("shards").GetArrayLength().ShouldBeGreaterThan(0);
+
+        // Every document-table row should have the required fields populated.
+        foreach (var element in docs.EnumerateArray())
         {
-            element.GetProperty("title").GetString().ShouldNotBeNullOrEmpty();
-            element.GetProperty("url").GetString().ShouldNotBeNullOrEmpty();
-            element.TryGetProperty("body", out _).ShouldBeTrue();
+            element.GetProperty("t").GetString().ShouldNotBeNullOrEmpty();
+            element.GetProperty("u").GetString().ShouldNotBeNullOrEmpty();
+            // Records are heading-level: every row carries a (possibly empty) breadcrumb trail.
+            element.TryGetProperty("c", out var crumbs).ShouldBeTrue();
+            crumbs.ValueKind.ShouldBe(JsonValueKind.Array);
         }
+
+        // At least one row deep-links to a heading anchor, proving heading-level indexing.
+        docs.EnumerateArray()
+            .Any(d => (d.GetProperty("u").GetString() ?? "").Contains('#'))
+            .ShouldBeTrue("expected at least one heading-level record with a #anchor URL");
     }
 
     [Fact]
-    public async Task SearchIndex_DocumentsHaveNonEmptyBodyText()
+    public async Task SearchFragments_HaveNonEmptyBodyText()
     {
-        // Verifies the selector resolved and StripHtml produced meaningful text.
-        // Before this fix, bodies came from StripHtml(IContentRenderer.Render(...)),
-        // which produced empty bodies for Razor pages and missed code-block text
-        // that only materializes after the full pipeline runs.
-        var response = await _client.GetAsync("/search-index-en.json", TestContext.Current.CancellationToken);
-        var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        // Bodies live in per-page fragments (f-{docId}.json), fetched lazily by the
+        // client. Verifies the selector resolved and StripHtml produced meaningful
+        // text after the full pipeline ran (Razor pages included).
+        var json = await _client.GetStringAsync("/search/en/index.json", TestContext.Current.CancellationToken);
         using var doc = JsonDocument.Parse(json);
+        var count = doc.RootElement.GetProperty("docs").GetArrayLength();
 
-        var nonEmpty = doc.RootElement.EnumerateArray()
-            .Count(el => !string.IsNullOrWhiteSpace(el.GetProperty("body").GetString()));
+        var nonEmpty = 0;
+        for (var i = 0; i < count; i++)
+        {
+            var frag = await _client.GetStringAsync($"/search/en/f-{i}.json", TestContext.Current.CancellationToken);
+            using var fd = JsonDocument.Parse(frag);
+            if (!string.IsNullOrWhiteSpace(fd.RootElement.GetProperty("body").GetString()))
+            {
+                nonEmpty++;
+            }
+        }
 
         nonEmpty.ShouldBeGreaterThan(0);
     }
 
     [Fact]
-    public async Task SearchIndex_ExcludesCodeBlockText_ByDefault()
+    public async Task SearchFragments_ExcludeCodeBlockText_ByDefault()
     {
         // Pick any indexed doc whose rendered page has a <pre> block, then verify
-        // a distinctive token from inside that <pre> does not appear in the search
-        // body for the same URL. Content-agnostic — walks pages until one qualifies.
-        var json = await _client.GetStringAsync("/search-index-en.json", TestContext.Current.CancellationToken);
+        // a distinctive token from inside that <pre> does not appear in the fragment
+        // body for the same doc. The document-table order is the fragment id.
+        var json = await _client.GetStringAsync("/search/en/index.json", TestContext.Current.CancellationToken);
         using var doc = JsonDocument.Parse(json);
+        var docs = doc.RootElement.GetProperty("docs");
 
-        var context = BrowsingContext.New(Configuration.Default);
-        string? codeOnlyToken = null;
-        string? matchedBody = null;
-
-        foreach (var entry in doc.RootElement.EnumerateArray())
+        // Records are heading-level, so a page maps to several fragments (its sections). Group
+        // doc ids by page URL (strip the #anchor) so we can check every section of a page.
+        var sectionIdsByPage = new Dictionary<string, List<int>>(StringComparer.Ordinal);
+        var id = -1;
+        foreach (var entry in docs.EnumerateArray())
         {
-            var url = entry.GetProperty("url").GetString();
-            if (string.IsNullOrEmpty(url))
+            id++;
+            var u = entry.GetProperty("u").GetString();
+            if (string.IsNullOrEmpty(u))
             {
                 continue;
             }
 
-            var html = await _client.GetStringAsync(url, TestContext.Current.CancellationToken);
+            var pageUrl = u.Split('#', 2)[0];
+            (sectionIdsByPage.TryGetValue(pageUrl, out var ids) ? ids : sectionIdsByPage[pageUrl] = []).Add(id);
+        }
+
+        var context = BrowsingContext.New(Configuration.Default);
+        string? codeOnlyToken = null;
+        var pageSectionBodies = new List<string>();
+
+        foreach (var (pageUrl, ids) in sectionIdsByPage)
+        {
+            var html = await _client.GetStringAsync(pageUrl, TestContext.Current.CancellationToken);
             var page = await context.OpenAsync(req => req.Content(html), TestContext.Current.CancellationToken);
             var pre = page.QuerySelector("#main-content pre") ?? page.QuerySelector("pre");
             if (pre is null)
@@ -142,15 +174,21 @@ public class LlmsTxtAndSearchEndpointTests
                 continue;
             }
 
+            // Collect the body of every section fragment belonging to this page.
+            foreach (var sectionId in ids)
+            {
+                var frag = await _client.GetStringAsync($"/search/en/f-{sectionId}.json", TestContext.Current.CancellationToken);
+                using var fd = JsonDocument.Parse(frag);
+                pageSectionBodies.Add(fd.RootElement.GetProperty("body").GetString() ?? "");
+            }
+
             codeOnlyToken = candidate;
-            matchedBody = entry.GetProperty("body").GetString();
             break;
         }
 
         codeOnlyToken.ShouldNotBeNull("expected at least one docs page with a <pre> block containing a code-only token");
-        matchedBody.ShouldNotBeNull();
-        matchedBody!.Contains(codeOnlyToken!, StringComparison.Ordinal).ShouldBeFalse(
-            $"token '{codeOnlyToken}' appears only in <pre> on the source page, so it must not leak into the search body");
+        pageSectionBodies.ShouldNotBeEmpty();
+        pageSectionBodies.ShouldAllBe(body => !body.Contains(codeOnlyToken!, StringComparison.Ordinal));
     }
 
     [Fact]

@@ -331,18 +331,36 @@ public static class PenningtonExtensions
         services.AddSingleton<IInProcessHttpDispatcher, HttpDispatcher>();
 
         // Shared helper for fetching post-pipeline rendered HTML from the running app.
-        // Used by LlmsTxtService and SearchIndexService so their outputs reflect
+        // Used by LlmsTxtService and SearchArtifactService so their outputs reflect
         // Markdig extensions, Razor SSR, xref resolution, etc.
         services.AddSingleton<RenderedHtmlFetcher>();
 
-        // Search index
+        // Sharded search index, built by the external DeweySearch engine. SearchIndexBuilder is the
+        // Pennington-side corpus adapter (TOC + HTML -> DeweySearch.SearchDocument); DeweySearch.IndexBuilder
+        // is the engine, configured from the host's search options.
         services.AddSingleton(options.SearchIndex);
         services.AddSingleton(sp => new SearchIndexBuilder(
-            sp.GetRequiredService<SearchIndexOptions>().DefaultPriority));
+            sp.GetRequiredService<SearchIndexOptions>(),
+            sp.GetRequiredService<LocalizationOptions>()));
+        services.AddSingleton<HeadingSectionExtractor>();
+        services.AddSingleton(sp =>
+        {
+            var searchOptions = sp.GetRequiredService<SearchIndexOptions>();
+            return new DeweySearch.IndexBuilder(new DeweySearch.IndexOptions
+            {
+                ShardPrefixLength = searchOptions.ShardPrefixLength,
+                MaxEditDistance = searchOptions.MaxEditDistance,
+                Synonyms = searchOptions.Synonyms,
+            });
+        });
 
-        // Search index and sitemap services — factory-managed, trust IContentService for fresh data
-        services.AddFileWatched<SearchIndexService>();
+        // Search artifact and sitemap services — factory-managed, trust IContentService for fresh data
+        services.AddFileWatched<SearchArtifactService>();
         services.AddFileWatched<SitemapService>();
+
+        // Emit the sharded search artifacts into the static build (mirrors llms.txt);
+        // transient so each resolution captures the current file-watched service.
+        services.AddTransient<IContentEmitter, SearchArtifactEmitter>();
 
         // llms.txt generation
         if (options.LlmsTxt is { } llmsTxtOptions)
@@ -562,20 +580,14 @@ public static class PenningtonExtensions
             app.UseMiddleware<LlmsTxtMiddleware>();
         }
 
-        // Search index and sitemap endpoints (auto-discovered by static build).
-        // One search-index file per configured locale so clients only fetch their
-        // locale's documents. Use concrete URLs (not a {locale} route param) so
-        // OutputGenerationService.DiscoverMapGetRoutes bakes each file.
-        var localization = app.Services.GetRequiredService<LocalizationOptions>();
-        var searchIndexLocales = localization.Locales.Count > 0
-            ? localization.Locales.Keys
-            : [localization.DefaultLocale];
-        foreach (var code in searchIndexLocales)
-        {
-            var capture = code;
-            app.MapGet($"/search-index-{capture}.json", async (SearchIndexService service) =>
-                Results.Content(await service.GetSearchIndexJsonAsync(capture), "application/json"));
-        }
+        // Sharded search artifacts under /search/... served from the same in-memory
+        // service the build emitter writes from. Middleware (not an endpoint) so the
+        // {locale}/{prefix} files aren't claimed by content routes and don't depend
+        // on the crawler, which can't bake parameterized routes.
+        app.UseMiddleware<SearchArtifactMiddleware>();
+
+        // Sitemap endpoint (auto-discovered and baked by the static build). The
+        // sharded search index is emitted by SearchArtifactEmitter instead.
         app.MapGet("/sitemap.xml", async (SitemapService service) =>
             Results.Content(await service.GetSitemapXmlAsync(), "application/xml"));
 

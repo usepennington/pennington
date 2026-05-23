@@ -7,7 +7,7 @@ namespace Pennington.Infrastructure;
 /// over the wire (via Kestrel's listening address) depending on which
 /// <see cref="Microsoft.AspNetCore.Hosting.Server.IServer"/> is registered.
 /// <para>
-/// Internal services (<c>LlmsTxtService</c>, <c>SearchIndexService</c>, build
+/// Internal services (<c>LlmsTxtService</c>, <c>SearchArtifactService</c>, build
 /// crawler) take this instead of <see cref="IHttpClientFactory"/> so they don't
 /// need to know whether the host is using TestServer (build / tests) or Kestrel
 /// (dev). The middleware pipeline runs identically either way — the only

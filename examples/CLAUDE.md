@@ -28,6 +28,7 @@ Every example folder has a `README.md` describing its purpose, the concepts it t
 | Example | Purpose | Docs pages |
 |---|---|---|
 | `BareHostRazorPageExample` | Render a Razor component as a full response on a bare `AddPennington` host via `HtmlRenderer` + `MapGet`. | `how-to/response-pipeline/razor-page-on-bare-host.md` |
+| `BareHostSearchExample` | Light up the Pennington.UI search modal on a bare (non-DocSite) host — reference `Pennington.UI`, load `dewey-search.js` + `scripts.js`, add an `id="search-input"` trigger; styled by the `PenningtonApplies` safelist. Mounts the `_shared/Bramble` corpus (blog excluded). | `how-to/discovery/search-on-a-bare-host.md` |
 | `BeyondCustomRazorComponentExample` | Author a Razor component (`PricingCard`) and register it with Mdazor via `AddMdazorComponent<T>()`. | `tutorials/beyond-basics/custom-razor-component.md` |
 | `BeyondLocaleExample` | Add a second URL-prefixed locale to a DocSite via `ConfigureLocalization` + `Content/<locale>/`. | `tutorials/beyond-basics/add-a-locale.md`, `how-to/discovery/localization.md` |
 | `BeyondRoslynExample` | `AddPenningtonRoslyn` against a sibling slnx — markdown fences resolve `:xmldocid` / `:xmldocid,bodyonly` / `:xmldocid-diff` / `:path`. | `tutorials/beyond-basics/connect-roslyn.md` |

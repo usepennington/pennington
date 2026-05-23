@@ -436,46 +436,135 @@ internal static class PenningtonApplies
     private static readonly ImmutableDictionary<string, string> SearchModalApplies =
         ImmutableDictionary.CreateRange(new Dictionary<string, string>
         {
-            // Modal backdrop and container
-            { ".search-modal-backdrop", "fixed inset-0 bg-base-950/50 backdrop-blur z-50 p-4 md:p-16" },
+            // Heading-level search modal (DocSearch-style). These class names live only in
+            // scripts.js strings, which the discovery IL/source scan never sees, so they MUST be
+            // declared here as @apply blocks to be emitted at all. Dark mode = `.dark` on <html>.
+
+            // Scrim + frame
             {
-                ".search-modal-content",
-                " top-16 mx-auto w-full mt-8 max-w-2xl bg-base-100 dark:bg-base-900 rounded-lg shadow-xl border border-base-200 dark:border-base-700"
+                ".search-modal-backdrop",
+                "fixed inset-0 z-50 flex justify-center items-start pt-[4.5rem] px-4 pb-4 bg-base-700/30 backdrop-blur-sm dark:bg-base-950/70"
+            },
+            {
+                ".search-modal",
+                "flex flex-col w-full max-w-[720px] max-h-[calc(100vh-6rem)] overflow-hidden rounded-2xl border border-base-200 bg-base-50 text-base-900 shadow-2xl dark:scheme-dark dark:border-base-800 dark:bg-base-900 dark:text-base-50"
             },
 
-            // Modal header and input
-            { ".search-modal-header", "p-4 border-b border-base-200 dark:border-base-700" },
-            { ".search-modal-input-container", "relative" },
+            // Input row
+            { ".search-input-row", "flex items-center gap-3.5 px-5 py-4 border-b border-base-200 dark:border-base-800" },
+            { ".search-input-icon", "w-[1.15rem] h-[1.15rem] shrink-0 text-base-500" },
             {
-                ".search-modal-input",
-                "w-full px-4 py-2 pl-10 bg-base-50 dark:bg-base-800 border border-base-300 dark:border-base-600 rounded-md text-base-900 dark:text-base-100 placeholder-base-500 dark:placeholder-base-400 focus:outline-none focus:ring-1 focus:ring-primary-500/50 focus:border-primary-500"
+                ".search-input",
+                "flex-1 min-w-0 bg-transparent border-0 outline-none font-display text-[17px] font-medium text-base-900 placeholder-base-500 dark:text-base-50"
             },
-            { ".search-modal-icon", "absolute left-3 top-2.5 h-4 w-4 text-base-400 dark:text-base-500" },
-
-            // Results container
-            { ".search-modal-results", "max-h-96 overflow-y-auto px-4 dark:scheme-dark" },
-
-            // Status messages
-            { ".search-modal-placeholder", "text-center text-base-600 dark:text-base-400 py-4" },
-            { ".search-modal-loading", "text-center text-base-600 dark:text-base-400 py-4" },
-            { ".search-modal-no-results", "text-center text-base-600 dark:text-base-400 py-4" },
-            { ".search-modal-error", "text-center text-red-600 dark:text-red-400 py-4" },
-
-            // Search result items
-            { ".search-result-item", "border-b border-base-200 dark:border-base-800 py-4 last:border-b-0" },
             {
-                ".search-result-link",
-                "block hover:bg-base-50 dark:hover:bg-base-800 rounded-md p-2 -m-2 transition-colors"
+                ".search-clear-btn",
+                "inline-flex items-center justify-center w-6 h-6 rounded-full text-base-500 bg-base-100 border border-base-300 hover:text-base-800 dark:bg-base-800 dark:border-base-700 dark:hover:text-base-200"
             },
-            { ".search-result-header", "flex items-start justify-between mb-1" },
-            { ".search-result-title", "text-sm font-medium text-primary-700 dark:text-primary-400 flex-1" },
-            { ".search-result-score", "text-xs text-base-500 dark:text-base-500 ml-2" },
-            { ".search-result-description", "text-sm text-base-600 dark:text-base-400 mb-2" },
-            { ".search-result-snippet", "text-xs text-base-700 dark:text-base-500" },
-            { ".search-result-url", "text-xs text-base-500 dark:text-base-500 mt-2" },
+            {
+                ".search-esc-kbd",
+                "font-mono text-[11px] px-2 py-0.5 rounded-md text-base-500 bg-base-100 border border-base-300 border-b-2 dark:text-base-400 dark:bg-base-800 dark:border-base-700"
+            },
 
-            // Search highlighting
-            { ".search-result-title .search-highlight", "text-primary-500 dark:text-primary-100 bg-inherit" },
-            { ".search-highlight", "text-base-500 dark:text-base-50 bg-inherit" },
+            // Dots (shared area color set; size via the pill class)
+            { ".search-dot", "rounded-full shrink-0 bg-base-500" },
+            { ".search-dot[data-area=tutorials]", "bg-sky-400" },
+            { ".search-dot[data-area=how-to]", "bg-emerald-400" },
+            { ".search-dot[data-area=reference]", "bg-primary-400" },
+            { ".search-dot[data-area=explanation]", "bg-amber-400" },
+            { ".search-dot[data-area=blog]", "bg-pink-400" },
+            { ".search-pill-dot", "w-[5px] h-[5px]" },
+
+            // Scroll body + page groups
+            { ".search-results-body", "flex-1 min-h-0 overflow-y-auto py-2" },
+            { ".search-page-group", "border-b border-base-200/60 last:border-b-0 py-1.5 dark:border-base-800/60" },
+            { ".search-page-group-head", "flex items-center justify-between gap-4 px-5 py-3" },
+            { ".search-page-group-title", "min-w-0 font-display font-semibold text-[15px] leading-snug text-base-900 truncate dark:text-base-50" },
+            // Namespaced reference/API entries read as code: monospaced, lighter weight.
+            { ".search-page-group-title.is-mono", "font-mono font-medium text-[13.5px] tracking-tight" },
+            { ".search-result[data-selected=true] .search-page-group-title", "text-base-950 dark:text-white" },
+
+            // Area pill
+            {
+                ".search-area-pill",
+                "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-display text-[10.5px] font-semibold uppercase tracking-wide bg-base-500/15 text-base-700 dark:text-base-300"
+            },
+            { ".search-area-pill[data-area=reference]", "bg-primary-500/15 text-primary-700 dark:text-primary-200" },
+            { ".search-area-pill[data-area=tutorials]", "bg-sky-500/15 text-sky-700 dark:text-sky-200" },
+            { ".search-area-pill[data-area=how-to]", "bg-emerald-500/15 text-emerald-700 dark:text-emerald-200" },
+            { ".search-area-pill[data-area=explanation]", "bg-amber-500/15 text-amber-800 dark:text-amber-200" },
+            { ".search-area-pill[data-area=blog]", "bg-pink-500/15 text-pink-700 dark:text-pink-200" },
+
+            // Result rows (block: page-group head, then indented heading sub-rows)
+            { ".search-result", "relative block cursor-pointer transition-colors hover:bg-base-100/70 dark:hover:bg-base-800/50" },
+            {
+                ".search-result[data-selected=true]",
+                "bg-primary-500/10 shadow-[inset_2px_0_0_var(--color-primary-500)] dark:shadow-[inset_2px_0_0_var(--color-primary-300)]"
+            },
+            { ".search-result-sub", "px-5 py-1.5" },
+            {
+                ".search-result-breadcrumb",
+                "flex items-center gap-1 flex-wrap font-display text-[11px] text-base-400 mb-0.5 dark:text-base-500"
+            },
+            { ".search-result-breadcrumb .sep", "text-base-300 dark:text-base-600" },
+            // Sub-rows stay quiet — the matched term (the <mark>) carries the weight, not the heading.
+            {
+                ".search-result-heading",
+                "font-display font-normal text-[13.5px] leading-snug text-base-600 dark:text-base-400"
+            },
+            { ".search-result[data-selected=true] .search-result-heading", "text-base-900 dark:text-base-100" },
+            { ".search-result-snippet", "text-[12.5px] leading-relaxed text-base-500 mt-0.5 dark:text-base-500" },
+            { ".search-highlight", "bg-primary-500/20 text-primary-800 rounded-[3px] px-0.5 font-semibold dark:text-primary-100" },
+            {
+                ".search-more-in-page",
+                "flex items-center gap-1.5 pl-10 pr-4 pt-1 pb-3.5 font-display text-[12px] font-medium text-primary-600 cursor-pointer hover:underline dark:text-primary-300"
+            },
+
+            // Footer (slim branding only)
+            {
+                ".search-foot",
+                "flex items-center justify-end px-4 py-2 border-t border-base-200 bg-base-100/60 font-display text-[11px] text-base-500 shrink-0 dark:border-base-800 dark:bg-base-900/50"
+            },
+            { ".search-powered", "inline-flex items-center gap-1.5" },
+
+            // Empty state (recent searches)
+            { ".search-empty-section", "px-4 pt-4 pb-1" },
+            {
+                ".search-empty-head",
+                "flex items-center justify-between font-display text-[11px] font-semibold uppercase tracking-wide text-base-500 mb-2"
+            },
+            { ".search-empty-clear", "normal-case tracking-normal text-[11.5px] font-medium text-base-500 cursor-pointer hover:text-base-800 dark:hover:text-base-200" },
+            {
+                ".search-recent-row",
+                "flex items-center gap-3 py-2 cursor-pointer border-b border-dashed border-base-300/50 last:border-b-0 dark:border-base-700/40"
+            },
+            { ".search-recent-icon", "w-4 h-4 shrink-0 text-base-500" },
+            { ".search-recent-title", "font-display text-[13.5px] font-medium text-base-800 dark:text-base-100" },
+            { ".search-recent-row:hover .search-recent-title", "text-primary-600 dark:text-primary-300" },
+            { ".search-recent-sub", "text-[11.5px] text-base-500 mt-0.5" },
+            { ".search-recent-chevron", "w-4 h-4 ml-auto shrink-0 text-base-400 dark:text-base-600" },
+
+            // No-results / error
+            { ".search-state", "px-6 pt-10 pb-9 text-center" },
+            {
+                ".search-state-icon",
+                "w-12 h-12 mx-auto mb-4 rounded-2xl flex items-center justify-center bg-primary-500/10 border border-primary-400/20 text-primary-600 dark:text-primary-300"
+            },
+            {
+                ".search-state-icon-warn",
+                "bg-amber-500/15 border-amber-400/30 text-amber-600 dark:text-amber-300"
+            },
+            { ".search-state-title", "font-display text-[16px] font-semibold text-base-900 mb-1.5 dark:text-base-50" },
+            { ".search-state-sub", "text-[13.5px] leading-relaxed text-base-600 max-w-[30rem] mx-auto mb-5 dark:text-base-400" },
+            { ".search-state-actions", "flex justify-center gap-2 flex-wrap" },
+            {
+                ".search-nr-btn",
+                "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg font-display text-[12.5px] font-medium bg-base-100 border border-base-300 text-base-700 transition-transform hover:-translate-y-px dark:bg-base-800 dark:border-base-700 dark:text-base-200"
+            },
+            { ".search-nr-btn-primary", "bg-primary-500/15 border-primary-400/35 text-primary-700 dark:text-primary-200" },
+
+            // Loading skeleton
+            { ".search-skel-row", "grid grid-cols-[1.1rem_1fr] gap-x-3 px-4 py-3.5 pl-10 border-b border-base-100 dark:border-base-800/70" },
+            { ".search-skel", "animate-pulse bg-base-300/60 rounded dark:bg-base-700/50" },
         });
 }

@@ -32,7 +32,7 @@ using Microsoft.Extensions.Logging;
 //                                    [aliased as both concrete + IContentService]
 //   MarkdownLinkResolver             AddFileWatched<>
 //   XrefResolver                     AddFileWatched<>
-//   SearchIndexService               AddFileWatched<>
+//   SearchArtifactService            AddFileWatched<>
 //   SitemapService                   AddFileWatched<>
 //   LlmsTxtService                   AddFileWatched<>
 //   NavigationBuilder                AddFileWatched<>

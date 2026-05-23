@@ -86,7 +86,6 @@ public sealed class MarkdownContentRenderer : IContentRenderer
                 Outline: outline,
                 Tags: ImmutableList<Tag>.Empty,
                 CrossReferences: ImmutableList<CrossReference>.Empty,
-                SearchDocument: null,
                 Social: null
             );
 

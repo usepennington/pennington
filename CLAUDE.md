@@ -31,7 +31,7 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - `Pennington.Generation` — BuildReport, OutputGenerationService, OutputOptions
 - `Pennington.Navigation` — NavigationBuilder, NavigationTreeItem, NavigationInfo
 - `Pennington.Localization` — LocaleContext, LocaleDetectionMiddleware, LocaleLinkHtmlRewriter, PenningtonStringLocalizer, TranslationOptions
-- `Pennington.Search` — SearchIndexBuilder, SearchIndexService, SearchIndexOptions (per-locale index from post-pipeline HTML)
+- `Pennington.Search` — host adapter over the external **DeweySearch** engine: SearchArtifactService/Emitter/Middleware + HeadingSectionExtractor (splits post-pipeline HTML into one section per heading) + SearchIndexBuilder (maps each section onto a `DeweySearch.SearchDocument` — anchor URL, page→heading breadcrumb, open facets), SearchIndexOptions/SearchFacetField (host config). Records are **heading-level** (DocSearch-style): results deep-link to `/page/#heading` and carry crumbs for grouping. The engine (tokenizer/stemmer/inverted index) is the `DeweySearch` NuGet package; the JS client ships from `DeweySearch.Web` at `_content/DeweySearch.Web/dewey-search.js`. Per-locale sharded index under `/search/{locale}/`.
 - `Pennington.Feeds` — RssFeedBuilder, SitemapBuilder, SitemapService
 - `Pennington.LlmsTxt` — LlmsTxtService, LlmsTxtContentService (llms.txt index + stripped markdown)
 - `Pennington.StructuredData` — JsonLdSerializer, JsonLdTypes (schema.org)

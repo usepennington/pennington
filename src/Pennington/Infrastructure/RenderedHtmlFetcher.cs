@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 /// Fetches fully rendered page HTML from the running app and exposes a section
 /// of it (via CSS selector) as an AngleSharp <see cref="IElement"/>.
 /// <para>
-/// Both <c>LlmsTxtService</c> and <c>SearchIndexService</c> use this to get
+/// Both <c>LlmsTxtService</c> and <c>SearchArtifactService</c> use this to get
 /// post-pipeline HTML — i.e., after Markdig extensions, Razor SSR, xref
 /// resolution, locale rewriting, and any other middleware have run. The
 /// pre-pipeline <c>IContentRenderer</c> path misses Razor pages entirely and

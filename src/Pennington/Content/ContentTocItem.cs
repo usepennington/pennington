@@ -23,6 +23,9 @@ public record ContentTocItem(
     /// <summary>Front-matter description, surfaced as a boosted field in the search index.</summary>
     public string? Description { get; init; }
 
+    /// <summary>Front-matter tags, surfaced as a search facet. Empty when the front matter is not <see cref="FrontMatter.ITaggable"/>.</summary>
+    public string[] Tags { get; init; } = [];
+
     /// <summary>When true, excluded from the search index.</summary>
     public bool ExcludeFromSearch { get; init; }
 

@@ -7,10 +7,10 @@ sectionLabel: "Content Discovery"
 tags: [search, front-matter, localization, configuration]
 ---
 
-When `/search-index-{locale}.json` is already live but results contain nav or footer noise, a page appears that should be hidden, or relative document weight needs adjusting, the options below tune the index without touching the search client.
+When the search index is already live but results contain nav or footer noise, a page appears that should be hidden, or relative document weight needs adjusting, the options below tune the index without touching the search client. The build emits a sharded index under `/search/{locale}/` — an `index.json` entrypoint plus term shards and per-section fragments — and the bundled client (`dewey-search.js`, from the `DeweySearch.Web` package) fetches only the parts a query needs. Records are heading-level: each page is split into one record per heading, so results deep-link to the matching heading (`/page/#heading`) and carry a page→heading breadcrumb the UI can group by.
 
 ## Before you begin
-- A working Pennington site where `/search-index-en.json` (or the default locale code) already returns a JSON array
+- A working Pennington site that serves `/search/en/index.json` (or the default locale code) — the search index entrypoint
 - Pages using `DocSiteFrontMatter` or another `IFrontMatter` implementation (which carries the `Search` default member)
 - The default locale code (from `LocalizationOptions`) — it is the suffix in the index filename
 
@@ -69,32 +69,60 @@ services.AddDocSite(opts =>
 });
 ```
 
+### Add query synonyms
+
+To make a term also match alternates, set `SearchIndexOptions.Synonyms`. Keys and values are stemmed at build time and shipped in the entrypoint, so authors write natural words; the client expands query terms as it searches.
+
+```csharp
+services.AddDocSite(opts =>
+{
+    opts.ConfigurePennington = penn =>
+        penn.SearchIndex.Synonyms = new Dictionary<string, string[]>
+        {
+            ["config"] = ["configuration", "settings"],
+        };
+});
+```
+
+### Choose which facets the client can filter by
+
+`SearchIndexOptions.Facets` selects the dimensions surfaced as filter chips: content area (the first URL segment after any locale prefix), section, and tags. Only area is on by default — it stays a short, stable list that reads well as chips. Section and tag vocabularies grow large enough to bury the filter bar, so opt into them when the extra filtering is worth the chips.
+
+```csharp
+services.AddDocSite(opts =>
+{
+    opts.ConfigurePennington = penn =>
+        penn.SearchIndex.Facets = SearchFacetField.Area | SearchFacetField.Section | SearchFacetField.Tags;
+});
+```
+
 ---
 
 ## Result
 
-`/search-index-{locale}.json` returns one JSON object per indexed page. A typical entry, after the knobs above are applied:
+The build emits the index under `/search/{locale}/`: an `index.json` entrypoint with the document table, facet labels, and ranking stats, plus `t-*.json` term shards and `f-*.json` per-page fragments. A document-table row in the entrypoint, after the knobs above are applied:
 
 ```json
 {
-  "url": "/how-to/configuration/search/",
-  "title": "Tune what the search box returns",
-  "section": "Configuration",
-  "body": "When /search-index-{locale}.json is already live but results contain nav or footer noise...",
-  "priority": 10
+  "u": "/how-to/configuration/search/",
+  "t": "Tune what the search box returns",
+  "l": 142,
+  "p": 10,
+  "f": { "section": [0], "tag": [2, 5], "area": [1] }
 }
 ```
 
-Pages with `search: false` are absent from the array; per-source `SearchPriority` values populate the `priority` field.
+The page body lives in its fragment (`f-{docId}.json`), fetched only when the page appears in results. Pages with `search: false` are absent from the table; per-source `SearchPriority` values populate `p`.
 
 ## Verify
 
-- Run `dotnet run` and fetch `/search-index-{locale}.json`. The excluded page's `title` and `url` are absent from the `documents` array
-- Add a second locale and observe one JSON file per locale (`/search-index-en.json`, `/search-index-fr.json`). Registered-but-empty locales return `[]` instead of 404
-- Inspect one `documents[]` entry and confirm the `body` field contains only the scoped element's text (no header / sidebar / footer noise)
+- Run `dotnet run` and fetch `/search/{locale}/index.json`. The excluded page is absent from the `docs` table
+- Add a second locale and observe one index tree per locale (`/search/en/index.json`, `/search/fr/index.json`). Registered-but-empty locales return a valid entrypoint with an empty `docs` array
+- Fetch the matching `/search/{locale}/f-{docId}.json` and confirm its `body` contains only the scoped element's text (no header / sidebar / footer noise)
 
 ## Related
 
+- How-to: [Add the search modal to a non-DocSite site](xref:how-to.discovery.search-on-a-bare-host) — surface this index in a search UI on a bare host
 - Reference: [Front matter key reference](xref:reference.front-matter.keys)
 - Reference: [`SearchIndexOptions`](xref:reference.api.search-index-options) — the knobs this how-to touches; see also [`HighlightingOptions`](xref:reference.api.highlighting-options), [`LlmsTxtOptions`](xref:reference.api.llms-txt-options), and [`OutputOptions`](xref:reference.api.output-options)
 - Background: [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning)

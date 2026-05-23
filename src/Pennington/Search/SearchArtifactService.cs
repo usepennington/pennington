@@ -1,0 +1,120 @@
+namespace Pennington.Search;
+
+using Content;
+using DeweySearch;
+using Infrastructure;
+using Microsoft.Extensions.Logging;
+
+/// <summary>
+/// Builds the sharded search artifacts for every configured locale and exposes them as a
+/// single <c>path -&gt; bytes</c> map — the one source of truth shared by the build-time
+/// emitter (<see cref="SearchArtifactEmitter"/>) and the dev-time middleware
+/// (<see cref="SearchArtifactMiddleware"/>).
+/// <para>
+/// Iterates indexable TOC entries (markdown and Razor <c>@page</c> content) and fetches
+/// post-pipeline HTML via <see cref="RenderedHtmlFetcher"/>, so the index reflects what
+/// users actually see. The corpus is grouped by locale and handed to the external DeweySearch
+/// <see cref="IndexBuilder"/>; the resulting per-locale artifacts are laid out under
+/// <c>search/{locale}/</c>. Computed lazily and recreated on file changes when managed by
+/// <see cref="FileWatchDependencyFactory{T}"/>.
+/// </para>
+/// </summary>
+public sealed class SearchArtifactService : IFileWatchAware
+{
+    private readonly AsyncLazy<IReadOnlyDictionary<string, byte[]>> _filesLazy;
+
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
+
+    /// <summary>Creates the service; artifacts are computed lazily on first request.</summary>
+    public SearchArtifactService(
+        IEnumerable<IContentService> contentServices,
+        SearchIndexBuilder corpusBuilder,
+        HeadingSectionExtractor extractor,
+        IndexBuilder indexBuilder,
+        SearchIndexOptions options,
+        RenderedHtmlFetcher fetcher,
+        LocalizationOptions localization,
+        ILogger<SearchArtifactService> logger)
+    {
+        _filesLazy = new AsyncLazy<IReadOnlyDictionary<string, byte[]>>(
+            () => BuildAllAsync(contentServices, corpusBuilder, extractor, indexBuilder, options, fetcher, localization, logger));
+    }
+
+    /// <summary>Returns every artifact keyed by its relative output path (e.g. <c>search/en/index.json</c>).</summary>
+    public async Task<IReadOnlyDictionary<string, byte[]>> GetArtifactFilesAsync() => await _filesLazy.Value;
+
+    /// <summary>Returns the bytes for a single artifact path, or null when no artifact matches.</summary>
+    public async Task<byte[]?> GetArtifactAsync(string relativePath)
+    {
+        var files = await _filesLazy.Value;
+        return files.TryGetValue(relativePath, out var bytes) ? bytes : null;
+    }
+
+    private static async Task<IReadOnlyDictionary<string, byte[]>> BuildAllAsync(
+        IEnumerable<IContentService> contentServices,
+        SearchIndexBuilder corpusBuilder,
+        HeadingSectionExtractor extractor,
+        IndexBuilder indexBuilder,
+        SearchIndexOptions options,
+        RenderedHtmlFetcher fetcher,
+        LocalizationOptions localization,
+        ILogger logger)
+    {
+        var groups = new Dictionary<string, List<SearchDocument>>(StringComparer.OrdinalIgnoreCase);
+
+        // Seed an empty bucket for every configured locale so registered-but-empty locales
+        // still serve a valid (empty) manifest rather than 404.
+        var configuredLocales = localization.Locales.Count > 0
+            ? localization.Locales.Keys
+            : [localization.DefaultLocale];
+        foreach (var code in configuredLocales)
+        {
+            groups[code] = [];
+        }
+
+        foreach (var toc in await contentServices.CollectIndexableEntriesAsync())
+        {
+            if (toc.ExcludeFromSearch)
+            {
+                continue;
+            }
+
+            var element = await fetcher.FetchContentAsync(toc.Route.CanonicalPath.Value, options.ContentSelector);
+            if (element is null)
+            {
+                logger.LogWarning("SearchArtifactService: failed to fetch {Path}, skipping", toc.Route.CanonicalPath.Value);
+                continue;
+            }
+
+            var locale = string.IsNullOrEmpty(toc.Route.Locale)
+                ? localization.DefaultLocale
+                : toc.Route.Locale;
+            if (!groups.TryGetValue(locale, out var list))
+            {
+                groups[locale] = list = [];
+            }
+
+            // One record per heading section (plus a page-lead record) so results are
+            // heading-level and deep-link to anchors. Code blocks are dropped inside the extractor.
+            foreach (var section in extractor.Extract(element, options.ExcludeCodeBlocks))
+            {
+                list.Add(corpusBuilder.BuildSection(toc, section));
+            }
+        }
+
+        // Hand each locale's corpus to DeweySearch and lay its artifacts out under search/{locale}/.
+        var files = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (locale, docs) in groups)
+        {
+            var index = indexBuilder.Build(docs);
+            var dir = $"search/{locale}";
+            foreach (var (name, bytes) in index.ToFiles())
+            {
+                files[$"{dir}/{name}"] = bytes;
+            }
+        }
+
+        return files;
+    }
+}

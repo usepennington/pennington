@@ -1301,15 +1301,21 @@ class LanguageSwitcherManager {
  */
 class SearchManager {
     constructor() {
-        this.searchInput = null;
-        this.searchModal = null;
-        this.searchResults = null;
-        this.flexSearchLoaded = false;
-        this.searchIndex = null;
-        this.searchData = null;
-        this.FlexSearch = null;
-        this.searchIndexFailed = false; // Track if search index loading failed
-        this.loadedLocale = null; // Locale the currently-loaded index was built for
+        this.searchInput = null;        // the header search trigger (#search-input)
+        this.backdrop = null;
+        this.modal = null;
+        this.modalInput = null;
+        this.resultsBody = null;
+        this.clearBtn = null;
+        this.engine = null;             // DeweySearchEngine for the loaded locale
+        this.engineFailed = false;
+        this.loadedLocale = null;
+        this.lastRanked = [];           // ranked results from the last query
+        this.lastQuery = '';
+        this.queryId = 0;               // monotonic id guarding against stale async renders
+        this.selected = 0;              // keyboard-selected visible row index
+        this.MAX_RESULTS = 30;          // record budget grouped before rendering stops
+        this.MAX_PER_PAGE = 3;          // heading rows shown per page; deeper hits, the user narrows
     }
 
     async init() {
@@ -1318,271 +1324,390 @@ class SearchManager {
 
         this.createSearchModal();
         this.setupEventListeners();
-        
-        // Don't load search index until user actually wants to search
+
+        // Don't load the search index until the user actually wants to search.
+    }
+
+    // Inline icon set (stroke-style, 24x24). Markup is built in JS, so SVGs live here.
+    svg(name, cls = '') {
+        const p = {
+            search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+            x: '<path d="M18 6 6 18M6 6l12 12"/>',
+            bolt: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+            chevron: '<path d="m9 18 6-6-6-6"/>',
+            hash: '<path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/>',
+            file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+            clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+            nores: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><line x1="8" y1="11" x2="14" y2="11"/>',
+            warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+        }[name] || '';
+        return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
     }
 
     createSearchModal() {
-        // Create modal backdrop
-        const modalBackdrop = document.createElement('div');
-        modalBackdrop.id = 'search-modal-backdrop';
-        modalBackdrop.className = 'search-modal-backdrop hidden';
-        
-        // Create modal content
-        const modalContent = document.createElement('div');
-        modalContent.className = 'search-modal-content';
-        
-        modalContent.innerHTML = `
-            <div class="search-modal-header">
-                <div class="search-modal-input-container">
-                    <input
-                        id="search-modal-input"
-                        type="text"
-                        placeholder="Search documentation..."
-                        autocomplete="off"
-                        class="search-modal-input"
-                    />
-                    <svg class="search-modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="M21 21l-4.35-4.35"></path>
-                    </svg>
+        const backdrop = document.createElement('div');
+        backdrop.id = 'search-modal-backdrop';
+        backdrop.className = 'search-modal-backdrop hidden';
+        backdrop.innerHTML = `
+            <div class="search-modal" role="dialog" aria-label="Search" aria-modal="true">
+                <div class="search-input-row">
+                    ${this.svg('search', 'search-input-icon')}
+                    <input id="search-modal-input" class="search-input" type="text" placeholder="Search docs…" autocomplete="off" spellcheck="false" />
+                    <button id="search-clear-btn" class="search-clear-btn hidden" aria-label="Clear search">${this.svg('x', 'w-3 h-3')}</button>
+                    <span class="search-esc-kbd">Esc</span>
                 </div>
-            </div>
-            <div id="search-results" class="search-modal-results">
-                <div class="search-modal-placeholder">
-                    Start typing to search...
+                <div id="search-results" class="search-results-body"></div>
+                <div class="search-foot">
+                    <div class="search-powered">${this.svg('bolt', 'w-3 h-3')} Pennington search</div>
                 </div>
-            </div>
-        `;
-        
-        modalBackdrop.appendChild(modalContent);
-        document.body.appendChild(modalBackdrop);
-        
-        this.searchModal = modalBackdrop;
-        this.searchResults = document.getElementById('search-results');
-        this.modalInput = document.getElementById('search-modal-input');
+            </div>`;
+        document.body.appendChild(backdrop);
+
+        this.backdrop = backdrop;
+        this.modal = backdrop.querySelector('.search-modal');
+        this.modalInput = backdrop.querySelector('#search-modal-input');
+        this.clearBtn = backdrop.querySelector('#search-clear-btn');
+        this.resultsBody = backdrop.querySelector('#search-results');
     }
 
     setupEventListeners() {
-        // Open modal when clicking search input
         this.searchInput.addEventListener('click', (e) => {
             e.preventDefault();
             this.openModal();
         });
 
-        // Close modal when clicking backdrop
-        this.searchModal.addEventListener('click', (e) => {
-            if (e.target === this.searchModal) {
-                this.closeModal();
-            }
+        // Click on the scrim (outside the modal box) closes.
+        this.backdrop.addEventListener('click', (e) => {
+            if (e.target === this.backdrop) this.closeModal();
         });
 
-        // Close modal on escape key and open modal on Cmd+K
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !this.searchModal.classList.contains('hidden')) {
-                this.closeModal();
-            }
-            
-            // Open search modal with Cmd+K (Mac) or Ctrl+K (Windows/Linux)
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-                e.preventDefault();
-                this.openModal();
-            }
+        this.clearBtn.addEventListener('click', () => {
+            this.modalInput.value = '';
+            this.clearBtn.classList.add('hidden');
+            this.modalInput.focus();
+            this.showEmpty();
         });
 
-        // Search as user types
         let searchTimeout;
         this.modalInput.addEventListener('input', (e) => {
+            this.clearBtn.classList.toggle('hidden', !e.target.value);
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                this.performSearch(e.target.value);
-            }, 300);
+            searchTimeout = setTimeout(() => this.performSearch(e.target.value), 250);
+        });
+
+        // Global shortcuts + keyboard navigation.
+        document.addEventListener('keydown', (e) => {
+            const open = !this.backdrop.classList.contains('hidden');
+            if (!open) {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); this.openModal(); }
+                return;
+            }
+            if (e.key === 'Escape') { this.closeModal(); return; }
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); return; }
+
+            const rows = this.resultsBody.querySelectorAll('.search-result');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (rows.length) { this.selected = (this.selected + 1) % rows.length; this.applySelection(); }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (rows.length) { this.selected = (this.selected - 1 + rows.length) % rows.length; this.applySelection(); }
+            } else if (e.key === 'Enter') {
+                const row = rows[this.selected];
+                if (row) this.openResult(row, e.metaKey || e.ctrlKey);
+            }
+        });
+
+        // Result rows, recents, and state-panel actions.
+        this.resultsBody.addEventListener('click', (e) => {
+            const recent = e.target.closest('[data-recent]');
+            if (recent) { this.modalInput.value = recent.dataset.recent; this.clearBtn.classList.remove('hidden'); this.performSearch(recent.dataset.recent); return; }
+            if (e.target.closest('[data-clear-recents]')) { localStorage.removeItem('pnx-search-recents'); this.showEmpty(); return; }
+            if (e.target.closest('[data-retry]')) { this.engineFailed = false; this.engine = null; this.openModal(); return; }
+            const row = e.target.closest('.search-result');
+            if (row) this.openResult(row, e.metaKey || e.ctrlKey);
         });
     }
 
     async openModal() {
-        this.searchModal.classList.remove('hidden');
-        this.modalInput.focus();
+        this.backdrop.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        this.modalInput.focus();
+        this.modalInput.select();
 
-        // Check if search index loading previously failed
-        if (this.searchIndexFailed) {
-            this.searchResults.innerHTML = '<div class="search-modal-error">Search is currently unavailable</div>';
-            return;
-        }
+        if (this.engineFailed) { this.showError(); return; }
 
-        // If the active locale changed since the index was loaded (SPA nav across
-        // locales), discard the cached index so we re-fetch the correct one.
+        // If the active locale changed since the engine loaded (SPA nav across
+        // locales), discard it so we re-fetch the correct locale's index.
         const activeLocale = this.getIndexLocale();
-        if (this.searchData && this.loadedLocale && this.loadedLocale !== activeLocale) {
-            this.searchData = null;
-            this.searchIndex = null;
+        if (this.engine && this.loadedLocale && this.loadedLocale !== activeLocale) {
+            this.engine = null;
             this.loadedLocale = null;
+            this.lastRanked = [];
         }
 
-        // Load search index on first open
-        if (!this.searchData) {
-            this.searchResults.innerHTML = '<div class="search-modal-loading">Loading search index...</div>';
+        if (!this.engine) {
+            this.showLoading();
             try {
-                await this.loadSearchIndex();
-                this.searchResults.innerHTML = '<div class="search-modal-placeholder">Start typing to search...</div>';
+                const engine = new DeweySearchEngine(`${this.baseUrl()}/search/${activeLocale}`);
+                await engine.loadManifest();
+                this.engine = engine;
+                this.loadedLocale = activeLocale;
             } catch (error) {
                 console.error('Failed to load search index:', error);
-                this.searchIndexFailed = true; // Mark as failed to prevent retries
-                this.searchResults.innerHTML = '<div class="search-modal-error">Search is currently unavailable</div>';
+                this.engineFailed = true;
+                this.showError();
+                return;
             }
         }
+
+        if (this.modalInput.value.trim()) this.performSearch(this.modalInput.value);
+        else this.showEmpty();
     }
 
     closeModal() {
-        this.searchModal.classList.add('hidden');
-        this.modalInput.value = '';
+        this.backdrop.classList.add('hidden');
         document.body.style.overflow = '';
-        this.searchResults.innerHTML = '<div class="search-modal-placeholder">Start typing to search...</div>';
     }
 
-    async loadSearchIndex() {
-        if (this.searchData) return;
-
-        try {
-            // Load FlexSearch using ES modules
-            if (!this.flexSearchLoaded) {
-                const flexSearchModule = await import('https://cdnjs.cloudflare.com/ajax/libs/FlexSearch/0.8.2/flexsearch.bundle.module.min.js');
-                this.FlexSearch = flexSearchModule.default;
-                this.flexSearchLoaded = true;
-            }
-
-            // Fetch search index using base URL from body data attribute
-            let baseUrl = document.body.getAttribute('data-base-url') || '';
-            if (baseUrl.endsWith('/')) {
-                baseUrl = baseUrl.slice(0, -1);
-            }
-            const locale = this.getIndexLocale();
-            const searchIndexUrl = baseUrl ? `${baseUrl}/search-index-${locale}.json` : `/search-index-${locale}.json`;
-
-            const response = await fetch(searchIndexUrl);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch search index: ${response.status}`);
-            }
-
-            const indexData = await response.json();
-            this.searchData = indexData;
-            this.loadedLocale = locale;
-
-            // Create FlexSearch Document index
-            this.searchIndex = new this.FlexSearch.Document({
-                tokenize: "forward",
-                encoder: this.FlexSearch.Charset.LatinAdvanced,
-                cache: 100,
-                document: {
-                    id: 'id',
-                    store: ["title", "description", "body", "url", "section", "locale"],
-                    index: ["title", "description", "headings", "body"]
-                }
-            });
-
-            // Index all documents
-            this.searchData.forEach((doc, index) => {
-                const url = baseUrl ? `${baseUrl}/${doc.url}` : doc.url;
-
-                const docToIndex = {
-                    id: index.toString(), // FlexSearch Document API needs string IDs
-                    title: doc.title || '',
-                    description: doc.description || '',
-                    headings: doc.headings || '',
-                    body: doc.body || '',
-                    url: url,
-                    section: doc.section || '',
-                    locale: doc.locale || ''
-                };
-
-                this.searchIndex.add(docToIndex);
-            });
-            
-        } catch (error) {
-            console.error('Failed to load search index:', error);
-            this.searchIndexFailed = true; // Mark as failed to prevent retries
-            this.searchResults.innerHTML = '<div class="search-modal-error">Search is currently unavailable</div>';
-        }
+    baseUrl() {
+        let b = document.body.getAttribute('data-base-url') || '';
+        if (b.endsWith('/')) b = b.slice(0, -1);
+        return b;
     }
 
-    performSearch(query) {
-        if (!query.trim()) {
-            this.searchResults.innerHTML = '<div class="search-modal-placeholder">Start typing to search...</div>';
-            return;
-        }
+    async performSearch(query) {
+        const trimmed = query.trim();
+        this.lastQuery = trimmed;
+        const qid = ++this.queryId;
 
-        if (!this.searchIndex) {
-            // Check if search index loading previously failed
-            if (this.searchIndexFailed) {
-                this.searchResults.innerHTML = '<div class="search-modal-error">Search is currently unavailable</div>';
-                return;
-            }
-            
-            // If search index is not loaded yet, try to load it (only once)
-            if (!this.searchData) {
-                this.searchResults.innerHTML = '<div class="search-modal-loading">Loading search index...</div>';
-                this.loadSearchIndex().then(() => {
-                    // Retry search after loading only if not failed
-                    if (this.modalInput.value === query && !this.searchIndexFailed) {
-                        this.performSearch(query);
-                    }
-                }).catch(() => {
-                    // Error handling is done in loadSearchIndex method
-                });
-            } else {
-                this.searchResults.innerHTML = '<div class="search-modal-loading">Search index loading...</div>';
-            }
-            return;
-        }
+        if (!trimmed) { this.lastRanked = []; this.showEmpty(); return; }
+        if (this.engineFailed) { this.showError(); return; }
+        if (!this.engine) { this.showLoading(); return; }
 
         try {
-            const results = this.searchIndex.search(query, { 
-                limit: 10,
-                suggest: true,
-            });
-            this.displayResults(results, query);
+            const ranked = await this.engine.search(trimmed);
+            if (qid !== this.queryId) return; // a newer query started
+            this.lastRanked = ranked;
+            await this.renderResults(qid);
         } catch (error) {
             console.error('Search error:', error);
-            this.searchResults.innerHTML = '<div class="search-modal-error">Search error occurred</div>';
+            if (qid === this.queryId) this.showError();
         }
     }
 
-    combineFieldResults(results) {
-        const scoreMap = new Map();
-        
-        // Field weights — title dominates, description/headings mid-tier, body baseline.
-        const fieldWeights = {
-            'title': 4,
-            'description': 2,
-            'headings': 2,
-            'body': 1
-        };
+    // ----- area helpers -----
+    areaOf(docId) {
+        const doc = this.engine.docEntry(docId);
+        const facets = this.engine.availableFacets();
+        const ids = doc && doc.f && doc.f.area;
+        if (!ids || !ids.length || !facets.area) return '';
+        return facets.area[ids[0]] || '';
+    }
 
-        results.forEach(fieldResult => {
-            const field = fieldResult.field;
-            const weight = fieldWeights[field] || 1;
-            const docIds = fieldResult.result;
+    areaLabel(area) {
+        return area ? area.charAt(0).toUpperCase() + area.slice(1) : '';
+    }
 
-            docIds.forEach((docId, index) => {
-                // Get the document to access its search priority
-                const doc = this.searchData[parseInt(docId)];
-                const searchPriority = doc?.priority || 1;
-                
-                // Give higher score to documents that appear earlier in results
-                const positionScore = 1 / (index + 1);
-                
-                // Apply search priority multiplier
-                const totalScore = weight * positionScore * searchPriority;
-                
-                scoreMap.set(docId, (scoreMap.get(docId) || 0) + totalScore);
-            });
+    areaPill(area) {
+        if (!area) return '';
+        return `<span class="search-area-pill" data-area="${area}"><span class="search-dot search-pill-dot" data-area="${area}"></span>${this.areaLabel(area)}</span>`;
+    }
+
+    // ----- results -----
+    async renderResults(qid) {
+        const ranked = this.lastRanked;
+        if (ranked.length === 0) { this.showNoResults(); return; }
+
+        // Map docId -> the field flags the query matched in (the engine surfaces these), so a row
+        // whose heading/title already matched can skip the redundant body snippet (DocSearch style).
+        this._fieldsById = new Map(ranked.map(r => [r.docId, r.fields | 0]));
+
+        // Group by page (DocSearch-style): a page-title header carrying the area pill, with that
+        // page's matching headings listed beneath. The page name then reads once per group rather
+        // than on every row. Capped to a record budget so a broad query can't render hundreds.
+        const groups = this.groupByPage(ranked.slice(0, this.MAX_RESULTS));
+
+        // Show only the top few heading hits per page — beyond that the user is better off
+        // narrowing the query than scrolling one page's sections.
+        for (const g of groups) g.items = g.items.slice(0, this.MAX_PER_PAGE);
+
+        // Fetch fragments only for rows that will show a snippet (body-only matches); heading/title
+        // matches need none, and the page-lead head never shows one.
+        const ids = groups.flatMap(g => g.items.filter(id => this.showsSnippet(id)));
+        const frags = await this.fetchFragments(ids);
+        if (qid !== this.queryId) return;
+
+        this.resultsBody.innerHTML = groups.map(g => this.groupHtml(g, frags)).join('');
+        this.selected = 0;
+        this.applySelection();
+    }
+
+    // Bucket ranked results by their page (the URL before any #anchor), keeping pages in
+    // first-seen (rank) order. Each group tracks the page title, area, page URL, the page-lead
+    // record (if it matched), and the matching heading records.
+    groupByPage(ranked) {
+        const order = [];
+        const byPage = new Map();
+        for (const r of ranked) {
+            const doc = this.engine.docEntry(r.docId) || {};
+            const url = doc.u || '';
+            const pageUrl = url.split('#')[0];
+            let g = byPage.get(pageUrl);
+            if (!g) {
+                g = { pageUrl, title: '', area: this.areaOf(r.docId), leadId: null, items: [] };
+                byPage.set(pageUrl, g);
+                order.push(pageUrl);
+            }
+            if (url.includes('#')) {
+                g.items.push(r.docId);
+                if (!g.title) g.title = (doc.c && doc.c[0]) || doc.t || '';
+            } else {
+                g.leadId = r.docId;
+                g.title = doc.t || g.title;
+            }
+        }
+        return order.map(p => byPage.get(p));
+    }
+
+    async fetchFragments(ids) {
+        const uniq = [...new Set(ids)];
+        const frs = await Promise.all(uniq.map(id => this.engine.loadFragment(id)));
+        const map = {};
+        uniq.forEach((id, i) => { map[id] = frs[i]; });
+        return map;
+    }
+
+    // One page group: a clickable header (page title + area pill, → page top) followed by the
+    // page's matching heading rows. A lead-only match renders as just the header.
+    groupHtml(group, frags) {
+        // Namespaced reference/API entries render as code (monospaced) so types read at a glance.
+        const titleCls = group.area === 'reference' ? 'search-page-group-title is-mono' : 'search-page-group-title';
+        const head = `<div class="search-result search-page-group-head" data-url="${this.escapeAttr(this.baseUrl() + group.pageUrl)}">
+            <span class="${titleCls}">${this.highlightEsc(group.title)}</span>
+            ${this.areaPill(group.area)}
+        </div>`;
+        const rows = group.items.map(id => this.subRowHtml(id, frags[id])).join('');
+        return `<div class="search-page-group">${head}${rows}</div>`;
+    }
+
+    // One heading row under a page header: an optional within-page trail (ancestor headings only —
+    // the page title is already the header), the heading, and a snippet. No leading icon.
+    subRowHtml(docId, frag) {
+        const doc = this.engine.docEntry(docId) || {};
+        const within = (doc.c || []).slice(1);
+        const breadcrumb = within.length
+            ? `<div class="search-result-breadcrumb">${within.map(c => `<span>${this.highlightEsc(c)}</span>`).join('<span class="sep">›</span>')}</div>`
+            : '';
+        // Heading/title matches are self-explanatory — no snippet. Body-only matches show an excerpt.
+        const snippet = this.showsSnippet(docId) ? this.getContentSnippet((frag && frag.body) || '', this.lastQuery) : '';
+        const snippetHtml = snippet ? `<div class="search-result-snippet">${snippet}</div>` : '';
+        return `<div class="search-result search-result-sub" data-url="${this.escapeAttr(this.baseUrl() + (doc.u || ''))}">
+            ${breadcrumb}
+            <div class="search-result-heading">${this.highlightEsc(doc.t || '')}</div>
+            ${snippetHtml}
+        </div>`;
+    }
+
+    // A sub-row shows a body snippet only when the match did NOT land in the heading/title — a
+    // heading hit is self-explanatory (tailwind/DocSearch heading-vs-content behavior). The engine
+    // reports matched fields per result; fall back to title/heading bits if an older client lacks them.
+    showsSnippet(docId) {
+        const FF = (typeof DeweySearchEngine !== 'undefined' && DeweySearchEngine.FieldFlags) || { Title: 1, Heading: 2 };
+        const fields = (this._fieldsById && this._fieldsById.get(docId)) || 0;
+        return (fields & (FF.Title | FF.Heading)) === 0;
+    }
+
+    applySelection() {
+        const rows = this.resultsBody.querySelectorAll('.search-result');
+        rows.forEach((r, i) => {
+            if (i === this.selected) r.setAttribute('data-selected', 'true');
+            else r.removeAttribute('data-selected');
         });
-        
-        // Convert to array and sort by score
-        return Array.from(scoreMap.entries())
-            .sort((a, b) => b[1] - a[1])
-            .map(([docId, score]) => ({ docId, score }));
+        rows[this.selected]?.scrollIntoView({ block: 'nearest' });
+    }
+
+    openResult(row, newTab) {
+        const url = row.getAttribute('data-url');
+        if (!url) return;
+        this.saveRecent();
+        if (newTab) { window.open(url, '_blank', 'noopener'); return; }
+        this.closeModal();
+        window.location.href = url;
+    }
+
+    // ----- states -----
+    showLoading() {
+        const row = `<div class="search-skel-row"><div class="search-skel" style="height:14px"></div><div><div class="search-skel" style="height:10px;width:55%;margin-bottom:8px"></div><div class="search-skel" style="height:14px;width:70%;margin-bottom:8px"></div><div class="search-skel" style="height:10px;width:92%"></div></div></div>`;
+        this.resultsBody.innerHTML = row.repeat(4);
+    }
+
+    showError() {
+        this.resultsBody.innerHTML = `<div class="search-state">
+            <div class="search-state-icon search-state-icon-warn">${this.svg('warn', 'w-6 h-6')}</div>
+            <div class="search-state-title">Search is temporarily unavailable</div>
+            <div class="search-state-sub">The search index didn't load. This usually clears up on its own — try again in a moment.</div>
+            <div class="search-state-actions"><button class="search-nr-btn search-nr-btn-primary" data-retry>Retry</button></div></div>`;
+    }
+
+    showNoResults() {
+        const q = this.escapeHtml('"' + this.lastQuery + '"');
+        this.resultsBody.innerHTML = `<div class="search-state">
+            <div class="search-state-icon">${this.svg('nores', 'w-6 h-6')}</div>
+            <div class="search-state-title">No matches for <span class="font-mono">${q}</span></div>
+            <div class="search-state-sub">We couldn't find any heading or page mentioning that. Try a broader term.</div></div>`;
+    }
+
+    showEmpty() {
+        const recents = this.getRecents();
+        if (!recents.length) {
+            this.resultsBody.innerHTML = `<div class="search-state"><div class="search-state-sub">Start typing to search the docs.</div></div>`;
+            return;
+        }
+        const rows = recents.map(x => `<div class="search-recent-row" data-recent="${this.escapeAttr(x.q)}">
+            ${this.svg('clock', 'search-recent-icon')}
+            <div><div class="search-recent-title">${this.escapeHtml(x.q)}</div><div class="search-recent-sub">${this.ago(x.ts)} · ${x.count} ${x.count === 1 ? 'result' : 'results'}</div></div>
+            ${this.svg('chevron', 'search-recent-chevron')}</div>`).join('');
+        this.resultsBody.innerHTML = `<section class="search-empty-section">
+            <div class="search-empty-head"><span>Recent searches</span><span class="search-empty-clear" data-clear-recents>Clear all</span></div>
+            ${rows}</section>`;
+    }
+
+    // ----- recent searches (localStorage) -----
+    getRecents() {
+        try { return JSON.parse(localStorage.getItem('pnx-search-recents') || '[]'); }
+        catch { return []; }
+    }
+
+    saveRecent() {
+        const q = this.lastQuery.trim();
+        if (!q) return;
+        let r = this.getRecents().filter(x => x.q !== q);
+        r.unshift({ q, ts: Date.now(), count: this.lastRanked.length });
+        localStorage.setItem('pnx-search-recents', JSON.stringify(r.slice(0, 5)));
+    }
+
+    ago(ts) {
+        const d = Math.floor((Date.now() - ts) / 86400000);
+        if (d <= 0) return 'today';
+        if (d === 1) return 'yesterday';
+        if (d < 7) return `${d} days ago`;
+        const w = Math.floor(d / 7);
+        return w === 1 ? 'last week' : `${w} weeks ago`;
+    }
+
+    escapeAttr(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+
+    highlightEsc(text) {
+        return this.highlightText(this.escapeHtml(text), this.lastQuery);
+    }
+
+    escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
     }
 
     /**
@@ -1606,85 +1731,28 @@ class SearchManager {
         return defaultLocale;
     }
 
-    displayResults(results, query) {
-        if (results.length === 0) {
-            this.searchResults.innerHTML = '<div class="search-modal-no-results">No results found</div>';
-            return;
-        }
-
-        // FlexSearch Document API returns array of field results
-        // Combine and score the results from different fields.
-        // No client-side locale filtering needed — the index we loaded is already
-        // scoped to the active locale.
-        const scoredResults = this.combineFieldResults(results);
-
-        if (scoredResults.length === 0) {
-            this.searchResults.innerHTML = '<div class="search-modal-no-results">No results found</div>';
-            return;
-        }
-
-        const resultElements = scoredResults.slice(0, 10).map(({ docId, score }) => {
-            const doc = this.searchData[parseInt(docId)];
-            if (!doc) return '';
-
-            // Use simple highlighting for now
-            const highlightedTitle = this.highlightText(doc.title, query);
-
-            // Get content snippet with simple highlighting
-            const snippet = this.getContentSnippet(doc.body, query);
-
-            let baseUrl = document.body.getAttribute('data-base-url') || '';
-            if (baseUrl.endsWith('/')) {
-                baseUrl = baseUrl.slice(0, -1);
-            }
-            
-            const url = baseUrl ? `${baseUrl}${doc.url}` : doc.url;
-            
-            return `
-                <div class="search-result-item">
-                    <a href="${url}" class="search-result-link">
-                        <div class="search-result-header">
-                            <h3 class="search-result-title">${highlightedTitle}</h3>
-                        </div>
-                        ${snippet ? `<p class="search-result-snippet">${snippet}</p>` : ''}
-                    </a>
-                </div>
-            `;
-        }).join('');
-
-        this.searchResults.innerHTML = resultElements;
-        
-        // Add click handlers to close modal when navigating
-        this.searchResults.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                this.closeModal();
-            });
-        });
-    }
-
     highlightText(text, query) {
         if (!text || !query) return text;
-        
+
         const words = query.toLowerCase().split(/\s+/);
         let highlightedText = text;
-        
+
         words.forEach(word => {
             if (word.length > 2) {
-                const regex = new RegExp(`(${word})`, 'gi');
+                const regex = new RegExp(`(${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
                 highlightedText = highlightedText.replace(regex, '<mark class="search-highlight">$1</mark>');
             }
         });
-        
+
         return highlightedText;
     }
 
-
     getContentSnippet(content, query) {
         if (!content || !query) return '';
-        
+
         const words = query.toLowerCase().split(/\s+/);
         const contentLower = content.toLowerCase();
-        
+
         // Find first occurrence of any search term
         let firstIndex = -1;
         for (const word of words) {
@@ -1695,20 +1763,21 @@ class SearchManager {
                 }
             }
         }
-        
+
         if (firstIndex === -1) {
-            return content.substring(0, 150) + (content.length > 150 ? '...' : '');
+            return this.escapeHtml(content.substring(0, 150)) + (content.length > 150 ? '…' : '');
         }
-        
+
         // Get snippet around the found term
         const start = Math.max(0, firstIndex - 75);
         const end = Math.min(content.length, firstIndex + 75);
         let snippet = content.substring(start, end);
-        
-        if (start > 0) snippet = '...' + snippet;
-        if (end < content.length) snippet = snippet + '...';
-        
-        return this.highlightText(snippet, query);
+
+        if (start > 0) snippet = '…' + snippet;
+        if (end < content.length) snippet = snippet + '…';
+
+        // Escape before highlighting so plain-text body can't inject markup.
+        return this.highlightText(this.escapeHtml(snippet), query);
     }
 }
 

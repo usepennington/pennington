@@ -1,4 +1,5 @@
 using Pennington.Content;
+using Pennington.Infrastructure;
 using Pennington.Routing;
 using Pennington.Search;
 
@@ -31,120 +32,96 @@ public class SearchIndexBuilderTests
             Description = description,
         };
 
-    private readonly SearchIndexBuilder _builder = new();
+    private static HeadingSection Lead(string text = "intro text") => new(null, "", 1, [], text, IsLead: true);
+
+    private static HeadingSection Heading(string anchor, string title, string text, int level = 2, string[]? crumbs = null) =>
+        new(anchor, title, level, crumbs ?? [], text, IsLead: false);
+
+    // Default facet set is area-only; localization is single-locale so the area is the first URL segment.
+    private readonly SearchIndexBuilder _builder = new(new SearchIndexOptions(), new LocalizationOptions());
 
     [Fact]
-    public void Build_ReturnsDocument_WithTitleBodyUrlAndLocale()
+    public void BuildSection_Lead_UsesPageUrlTitleAndDescription()
     {
-        var toc = MakeToc("Introduction", "/docs/intro", locale: "en");
+        var toc = MakeToc("Introduction", "/docs/intro", description: "Overview.");
 
-        var doc = _builder.Build(toc, "<p>Welcome to the docs</p>", "");
+        var doc = _builder.BuildSection(toc, Lead("Welcome to the docs"));
 
-        doc.Title.ShouldBe("Introduction");
+        doc.Url.ShouldBe("/docs/intro/");           // page URL, no anchor
+        doc.Title.ShouldBe("Introduction");          // page title
+        doc.Description.ShouldBe("Overview.");        // page description on the lead only
         doc.Body.ShouldBe("Welcome to the docs");
-        doc.Url.ShouldBe("/docs/intro/");
-        doc.Locale.ShouldBe("en");
+        doc.Crumbs.ShouldBeEmpty();
         doc.Priority.ShouldBe(5);
     }
 
     [Fact]
-    public void Build_StripsHtmlFromBody()
+    public void BuildSection_Heading_DeepLinksAndCarriesCrumbTrail()
     {
-        var doc = _builder.Build(MakeToc("Page", "/page"), "<p>Hello <strong>world</strong></p>", "");
+        var toc = MakeToc("Markdown Pipeline", "/reference/markdown");
 
-        doc.Body.ShouldBe("Hello world");
+        var doc = _builder.BuildSection(
+            toc,
+            Heading("extensions", "Extensions", "extension body", level: 3, crumbs: ["Configuration"]));
+
+        doc.Url.ShouldBe("/reference/markdown/#extensions");      // deep-link anchor
+        doc.Title.ShouldBe("Extensions");                          // heading text
+        doc.Description.ShouldBeNull();                            // description is lead-only
+        doc.Body.ShouldBe("extension body");
+        doc.Crumbs.ShouldBe(["Markdown Pipeline", "Configuration"]); // page title + ancestor heading
+        doc.Headings.ShouldBe("Markdown Pipeline Configuration");    // trail indexed at heading boost
     }
 
     [Fact]
-    public void Build_IncludesSectionFromToc()
+    public void BuildSection_DefaultOptions_EmitAreaFacetOnly()
     {
-        var doc = _builder.Build(MakeToc("Auth", "/api/auth", sectionLabel: "api"), "<p>body</p>", "");
+        var toc = MakeToc("Auth", "/reference/auth", sectionLabel: "Reference");
 
-        doc.SectionLabel.ShouldBe("api");
+        var doc = _builder.BuildSection(toc, Lead());
+
+        doc.Facets.ShouldNotBeNull();
+        doc.Facets!["area"].ShouldBe(["reference"]);
+        doc.Facets.ShouldNotContainKey("section");
+        doc.Facets.ShouldNotContainKey("tag");
     }
 
     [Fact]
-    public void Build_DecodesHtmlEntities()
+    public void BuildSection_IncludesSectionFacet_WhenEnabled()
     {
-        var doc = _builder.Build(
-            MakeToc("Entities", "/entities"),
-            "<p>Tom &amp; Jerry &lt;3 &gt; others &quot;said&quot; he&#39;s&nbsp;right</p>",
-            "");
+        var builder = new SearchIndexBuilder(
+            new SearchIndexOptions { Facets = SearchFacetField.Section },
+            new LocalizationOptions());
 
-        doc.Body.ShouldBe("Tom & Jerry <3 > others \"said\" he's right");
+        var doc = builder.BuildSection(MakeToc("Auth", "/api/auth", sectionLabel: "api"), Lead());
+
+        doc.Facets.ShouldNotBeNull();
+        doc.Facets!["section"].ShouldBe(["api"]);
     }
 
     [Fact]
-    public void Build_StripsNestedHtml()
+    public void BuildSection_FacetsArePageLevel_SharedByLeadAndHeadings()
     {
-        var doc = _builder.Build(
-            MakeToc("Nested", "/nested"),
-            "<div><p>Outer <strong>bold <em>italic</em></strong> text</p></div>",
-            "");
+        var toc = MakeToc("Page", "/guide/page");
 
-        doc.Body.ShouldBe("Outer bold italic text");
+        var lead = _builder.BuildSection(toc, Lead());
+        var heading = _builder.BuildSection(toc, Heading("h", "H", "body"));
+
+        lead.Facets!["area"].ShouldBe(["guide"]);
+        heading.Facets!["area"].ShouldBe(["guide"]);
     }
 
     [Fact]
-    public void Build_CollapsesWhitespace()
+    public void BuildSection_AppliesAreaPriority_WhenConfigured()
     {
-        var doc = _builder.Build(
-            MakeToc("Whitespace", "/whitespace"),
-            "<p>Line one</p>\n\n<p>Line   two</p>",
-            "");
+        var options = new SearchIndexOptions
+        {
+            AreaPriorities = new(StringComparer.OrdinalIgnoreCase) { ["how-to"] = 10, ["reference"] = 6 },
+        };
+        var builder = new SearchIndexBuilder(options, new LocalizationOptions());
 
-        doc.Body.ShouldNotContain("\n");
-        doc.Body.ShouldNotContain("  "); // no double spaces
-    }
-
-    [Fact]
-    public void Build_HtmlWithCodeBlocks_StripsCodeTags()
-    {
-        var doc = _builder.Build(
-            MakeToc("Code", "/code"),
-            "<p>Use this:</p><pre><code class=\"language-csharp\">var x = 42;</code></pre>",
-            "");
-
-        doc.Body.ShouldContain("Use this:");
-        doc.Body.ShouldContain("var x = 42;");
-        doc.Body.ShouldNotContain("<code");
-        doc.Body.ShouldNotContain("<pre>");
-    }
-
-    [Fact]
-    public void Build_CarriesDescriptionFromToc()
-    {
-        var doc = _builder.Build(
-            MakeToc("Intro", "/intro", description: "A short overview of the docs."),
-            "<p>body</p>",
-            "");
-
-        doc.Description.ShouldBe("A short overview of the docs.");
-    }
-
-    [Fact]
-    public void Build_StoresHeadingsArgumentVerbatim()
-    {
-        var doc = _builder.Build(
-            MakeToc("Page", "/page"),
-            "<p>body</p>",
-            "Install Getting started Advanced");
-
-        doc.Headings.ShouldBe("Install Getting started Advanced");
-    }
-
-    [Fact]
-    public void Build_SearchOnlyToc_ProducesIndexedDocument()
-    {
-        // SearchOnly entries are excluded from navigation but must still be
-        // emitted to the search index. The builder is the indexing seam — it
-        // must not silently drop SearchOnly inputs.
-        var toc = MakeToc("Hidden FAQ", "/faq/hidden") with { SearchOnly = true };
-
-        var doc = _builder.Build(toc, "<p>FAQ answer body</p>", "");
-
-        doc.Title.ShouldBe("Hidden FAQ");
-        doc.Url.ShouldBe("/faq/hidden/");
-        doc.Body.ShouldBe("FAQ answer body");
+        builder.BuildSection(MakeToc("Auth", "/how-to/auth"), Lead()).Priority.ShouldBe(10);
+        builder.BuildSection(MakeToc("Auth", "/reference/auth"), Lead()).Priority.ShouldBe(6);
+        // An area without a configured priority falls back to DefaultPriority.
+        builder.BuildSection(MakeToc("Post", "/blog/post"), Lead()).Priority.ShouldBe(5);
     }
 }

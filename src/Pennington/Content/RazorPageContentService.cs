@@ -176,6 +176,7 @@ public sealed partial class RazorPageContentService : IContentService
             )
             {
                 Description = entry.Metadata?.Description,
+                Tags = entry.Metadata is ITaggable taggable ? taggable.Tags : [],
                 ExcludeFromSearch = excludeFromSearch,
                 ExcludeFromLlms = excludeFromLlms,
                 SearchOnly = entry.Metadata?.SearchOnly ?? false,

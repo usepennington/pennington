@@ -25,7 +25,6 @@ public class ContentPipelineTests
         Outline: [],
         Tags: ImmutableList<Tag>.Empty,
         CrossReferences: ImmutableList<CrossReference>.Empty,
-        SearchDocument: null,
         Social: null
     );
 
@@ -517,7 +516,6 @@ public class ContentPipelineTests
                 Outline: [],
                 Tags: ImmutableList<Tag>.Empty,
                 CrossReferences: ImmutableList<CrossReference>.Empty,
-                SearchDocument: null,
                 Social: null);
             return Task.FromResult(new ContentItem(new RenderedItem(item.Route, item.Metadata, content)));
         }

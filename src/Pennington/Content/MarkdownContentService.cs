@@ -307,6 +307,7 @@ public sealed class MarkdownContentService<TFrontMatter>
         )
         {
             Description = fm.Description,
+            Tags = fm is ITaggable taggable ? taggable.Tags : [],
             ExcludeFromSearch = excludeFromSearch,
             ExcludeFromLlms = excludeFromLlms,
             SearchOnly = fm.SearchOnly,

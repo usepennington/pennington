@@ -32,7 +32,7 @@ Components in `src/Pennington.UI/Components/` are single `.razor` files with inl
 Three tiers:
 
 - **Transient** (`AddTransient<T>`) — default. Stateless services, and anything that captures a file-watched dep.
-- **File-scoped** (`AddFileWatched<T>` in `Pennington.Infrastructure`) — holds state derived from content files. Ejected and rebuilt when `IFileWatcher` fires. Examples: `NavigationBuilder`, `XrefResolver`, `SearchIndexService`, `BlogSiteContentService`.
+- **File-scoped** (`AddFileWatched<T>` in `Pennington.Infrastructure`) — holds state derived from content files. Ejected and rebuilt when `IFileWatcher` fires. Examples: `NavigationBuilder`, `XrefResolver`, `SearchArtifactService`, `BlogSiteContentService`.
 - **Singleton** (`AddSingleton<T>`) — rare. Process-lifetime state only: options records, `IFileWatcher`, connection pools.
 
 **Ctors take deps by type.** No `IServiceProvider`, `FileWatchDependencyFactory<T>`, or `Func<T>` in domain ctors — that's plumbing. If a direct capture would go stale, fix the consumer's lifetime, not the injection shape. A singleton capturing a file-watched dep is a smell; push the dep down to a transient collaborator.
