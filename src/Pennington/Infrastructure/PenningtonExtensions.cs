@@ -645,15 +645,26 @@ public static class PenningtonExtensions
 
         if (PenningtonBuildMode.IsBuildMode(args))
         {
-            await app.StartAsync();
-            var generator = app.Services.GetRequiredService<OutputGenerationService>();
-            var report = await generator.GenerateAsync();
-            await app.StopAsync();
-
-            report.WriteTo(Console.Out);
-            if (report.HasErrors)
+            // Dispose the host when the one-shot build finishes so container singletons
+            // are torn down — notably SolutionWorkspaceService, whose Dispose() disposes
+            // the MSBuildWorkspace (terminating its BuildHost child and releasing mapped
+            // assembly handles) and deletes its per-run temp build folder. Without this,
+            // every build leaks a %TEMP%\Pennington_Build_* folder and leaves the
+            // workspace untorn-down; the resulting litter and orphaned handles are what
+            // intermittently starve the next build's metadata-reference resolution
+            // (producing sparse API reference pages).
+            await using (app)
             {
-                Environment.ExitCode = 1;
+                await app.StartAsync();
+                var generator = app.Services.GetRequiredService<OutputGenerationService>();
+                var report = await generator.GenerateAsync();
+                await app.StopAsync();
+
+                report.WriteTo(Console.Out);
+                if (report.HasErrors)
+                {
+                    Environment.ExitCode = 1;
+                }
             }
         }
         else
