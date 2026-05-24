@@ -167,4 +167,22 @@ public class WordBreakHtmlRewriterTests
         content.ShouldNotContain("X<wbr>M<wbr>L");
         content.ShouldNotContain("I<wbr>O");
     }
+
+    [Fact]
+    public async Task ProcessesTextInSpan()
+    {
+        var content = await Rewrite("<html><body><span>System.Net.Http.HttpClient</span></body></html>");
+
+        content.ShouldContain("<span>System.<wbr>Net.<wbr>Http.<wbr>Http<wbr>Client</span>");
+    }
+
+    [Fact]
+    public async Task ProcessesNestedSpanButLeavesHeadingWrapperText()
+    {
+        var content = await Rewrite("<html><body><h2>Use <span>System.Net.Http.HttpClient</span> now</h2></body></html>");
+
+        // The heading itself has child markup, so its own text ("Use ", " now") is untouched;
+        // the nested <span> is matched on its own and its text is broken.
+        content.ShouldContain("<h2>Use <span>System.<wbr>Net.<wbr>Http.<wbr>Http<wbr>Client</span> now</h2>");
+    }
 }

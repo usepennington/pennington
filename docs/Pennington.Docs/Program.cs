@@ -139,11 +139,14 @@ builder.Services.AddMdazorComponent<FrontMatterKeys>();
 
 // Word-break typography, folded into the shared HTML rewriting pipeline so it
 // mutates the already-parsed DOM instead of re-parsing the response string.
-// The selector targets headings plus block text — including descendants so
-// nested text (e.g. an <a> inside an <h2>) is reached.
+// Flat type selectors (no descendant combinators): the rewriter splits the
+// text of headings, spans, and pure-text block elements. Descendant terms like
+// "h1 *" are deliberately avoided — they made AngleSharp's selector engine walk
+// every element on the page (the dominant build hotspot). Text nested in a
+// <span> is reached because <span> is matched directly.
 builder.Services.AddPenningtonWordBreak(options =>
 {
-    options.CssSelector = "h1, h1 *, h2, h2 *, h3, h3 *, h4, h4 *, h5, h5 *, h6, h6 *, p, p *, li, li *, dt, dt *, dd, dd *, th, th *, td, td *";
+    options.CssSelector = "h1, h2, h3, h4, h5, h6, p, li, dt, dd, th, td, span, .text-break";
 });
 
 // Dev-time full-screen dashboard. No-ops when the host is launched with
