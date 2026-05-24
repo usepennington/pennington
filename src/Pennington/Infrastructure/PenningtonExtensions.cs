@@ -1,6 +1,7 @@
 namespace Pennington.Infrastructure;
 
 using System.IO.Abstractions;
+using System.Reflection;
 using Content;
 using Feeds;
 using FrontMatter;
@@ -242,13 +243,19 @@ public static class PenningtonExtensions
             });
         }
 
-        // Register Razor page content service for @page component discovery
-        if (options.AdditionalRoutingAssemblies.Length > 0)
+        // Register Razor page content service for @page component discovery.
+        // The entry assembly is always scanned so a bare host's routable @page
+        // components (e.g. a lone @page "/" landing page) are crawled and emitted
+        // without the consumer having to populate AdditionalRoutingAssemblies.
+        // The DocSite/BlogSite templates already prepend the entry assembly, so
+        // the dedup in ResolveRoutingAssemblies makes this a no-op for them.
+        var routingAssemblies = ResolveRoutingAssemblies(
+            options.AdditionalRoutingAssemblies, Assembly.GetEntryAssembly());
+        if (routingAssemblies.Length > 0)
         {
-            var assemblies = options.AdditionalRoutingAssemblies;
             services.AddSingleton<IContentService>(sp =>
                 new RazorPageContentService(
-                    assemblies,
+                    routingAssemblies,
                     sp.GetRequiredService<IFileSystem>(),
                     sp.GetRequiredService<FrontMatterParser>(),
                     sp.GetRequiredService<ILogger<RazorPageContentService>>(),
@@ -396,6 +403,21 @@ public static class PenningtonExtensions
         services.AddTransient<OutputGenerationService>();
 
         return services;
+    }
+
+    /// <summary>
+    /// Builds the assembly set scanned for routable <c>@page</c> components,
+    /// always including the entry assembly (deduped) so a bare host's pages are
+    /// discovered without explicit <see cref="PenningtonOptions.AdditionalRoutingAssemblies"/>.
+    /// </summary>
+    internal static Assembly[] ResolveRoutingAssemblies(Assembly[] configured, Assembly? entryAssembly)
+    {
+        if (entryAssembly is null || Array.IndexOf(configured, entryAssembly) >= 0)
+        {
+            return configured;
+        }
+
+        return [.. configured, entryAssembly];
     }
 
     /// <summary>

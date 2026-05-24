@@ -37,25 +37,16 @@ public static class BlogSiteServiceExtensions
             });
 
             // The BlogSite ships Home/Archive/Tag/Tags/Blog Razor pages inside
-            // Pennington.BlogSite.dll. Without adding this assembly to the
-            // routing set, RazorPageContentService cannot discover them and the
-            // generated site is missing its root, archive, and tag listings.
+            // Pennington.BlogSite.dll. RazorPageContentService must scan that
+            // assembly to discover them, otherwise the generated site is missing
+            // its root, archive, and tag listings. The entry assembly and any
+            // explicit extras come from the shared routing set (BuildRoutingAssemblies)
+            // so build discovery and the runtime router agree on what is routable.
             var blogSiteAssembly = typeof(BlogSiteServiceExtensions).Assembly;
-            var appAssembly = Assembly.GetEntryAssembly();
-            var assemblies = new List<Assembly> { blogSiteAssembly };
-            if (appAssembly != null && appAssembly != blogSiteAssembly)
-            {
-                assemblies.Add(appAssembly);
-            }
-
-            foreach (var extra in options.AdditionalRoutingAssemblies)
-            {
-                if (!assemblies.Contains(extra))
-                {
-                    assemblies.Add(extra);
-                }
-            }
-            penn.AdditionalRoutingAssemblies = assemblies.ToArray();
+            var routingAssemblies = BuildRoutingAssemblies(options);
+            penn.AdditionalRoutingAssemblies = Array.IndexOf(routingAssemblies, blogSiteAssembly) >= 0
+                ? routingAssemblies
+                : [blogSiteAssembly, .. routingAssemblies];
         });
 
         // Make Pennington.UI components available inline in markdown via Mdazor.
@@ -112,8 +103,13 @@ public static class BlogSiteServiceExtensions
         // the Razor component endpoint so `redirectUrl:` pages short-circuit
         // with 301 instead of falling through to the catch-all page route.
         app.UsePennington();
+        // The runtime Blazor router needs the same augmented assembly list the
+        // static content service uses, otherwise a consumer's @page in the host
+        // project is invisible at runtime — the bundled pages win or the route
+        // 404s. The BlogSite library is already the App assembly, so it is
+        // excluded here (passing it to AddAdditionalAssemblies double-registers).
         app.MapRazorComponents<Components.App>()
-            .AddAdditionalAssemblies(options.AdditionalRoutingAssemblies);
+            .AddAdditionalAssemblies(BuildRoutingAssemblies(options));
 
         if (options.EnableRss)
         {
@@ -130,5 +126,32 @@ public static class BlogSiteServiceExtensions
     public static async Task RunBlogSiteAsync(this WebApplication app, string[] args)
     {
         await app.RunOrBuildAsync(args);
+    }
+
+    /// <summary>
+    /// Builds the routing set beyond the App assembly: the entry assembly plus any
+    /// configured extras (deduped). Shared by build-time discovery and the runtime
+    /// router so both agree on which <c>@page</c> components are routable.
+    /// </summary>
+    private static Assembly[] BuildRoutingAssemblies(BlogSiteOptions options)
+    {
+        var entry = Assembly.GetEntryAssembly();
+        var seen = new HashSet<Assembly>();
+        var result = new List<Assembly>(options.AdditionalRoutingAssemblies.Length + 1);
+
+        if (entry is not null && seen.Add(entry))
+        {
+            result.Add(entry);
+        }
+
+        foreach (var asm in options.AdditionalRoutingAssemblies)
+        {
+            if (seen.Add(asm))
+            {
+                result.Add(asm);
+            }
+        }
+
+        return result.ToArray();
     }
 }
