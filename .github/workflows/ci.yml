@@ -2,6 +2,8 @@ name: ci
 
 on:
   push:
+    branches: [main]
+    tags: ['**']
     paths-ignore:
       - '**.md'
       - 'LICENSE'
@@ -11,6 +13,10 @@ on:
       - '**.md'
       - 'LICENSE'
       - 'docs/Pennington.Docs/Content/**'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
