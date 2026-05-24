@@ -111,6 +111,48 @@ public class MarkdownContentServiceTests
     }
 
     [Fact]
+    public async Task ParseContentAsync_YieldsTypedMetadataAndBody()
+    {
+        // Parsed with the service's own DocFrontMatter type, so order/sectionLabel
+        // bind correctly — the whole point of routing llms.txt through this instead
+        // of a single foreign parser.
+        var fs = CreateFs(
+            ("guide.md", "---\ntitle: Guide\norder: 42\nsectionLabel: Docs\n---\n# Guide\n\nBody text."));
+        var service = CreateTestService(fs);
+
+        var items = new List<ParsedItem>();
+        await foreach (var item in service.ParseContentAsync())
+        {
+            items.Add(item);
+        }
+
+        items.Count.ShouldBe(1);
+        var parsed = items[0];
+        parsed.Metadata.Title.ShouldBe("Guide");
+        var fm = parsed.Metadata.ShouldBeOfType<DocFrontMatter>();
+        fm.Order.ShouldBe(42);
+        fm.SectionLabel.ShouldBe("Docs");
+        parsed.RawMarkdown.ShouldContain("Body text.");
+    }
+
+    [Fact]
+    public async Task ParseContentAsync_SkipsDrafts()
+    {
+        var fs = CreateFs(
+            ("published.md", "---\ntitle: Published\n---\n# Published"),
+            ("draft.md", "---\ntitle: Draft\nisDraft: true\n---\n# Draft"));
+        var service = CreateTestService(fs);
+
+        var titles = new List<string>();
+        await foreach (var item in service.ParseContentAsync())
+        {
+            titles.Add(item.Metadata.Title);
+        }
+
+        titles.ShouldBe(["Published"]);
+    }
+
+    [Fact]
     public async Task DiscoverAsync_AttachesParsedFrontMatter()
     {
         // DiscoverAsync parses each file with its own TFrontMatter type and

@@ -41,7 +41,7 @@ public sealed class LlmsTxtService : IFileWatchAware
     /// <summary>Creates the service; data is computed lazily on first request.</summary>
     public LlmsTxtService(
         IEnumerable<IContentService> contentServices,
-        IContentParser parser,
+        MetadataEnrichmentService enrichment,
         IContentRenderer renderer,
         XrefResolvingService xrefResolver,
         RenderedHtmlFetcher fetcher,
@@ -57,7 +57,7 @@ public sealed class LlmsTxtService : IFileWatchAware
     {
         _dataLazy = new AsyncLazy<LlmsTxtData>(
             () => BuildAsync(
-                contentServices, parser, renderer, xrefResolver, fetcher, subtrees,
+                contentServices, enrichment, renderer, xrefResolver, fetcher, subtrees,
                 fileSystem, hostingEnvironment,
                 pennOptions, llmsTxtOptions, canonicalBase, navigationBuilder,
                 endpointDataSource, logger));
@@ -77,7 +77,7 @@ public sealed class LlmsTxtService : IFileWatchAware
 
     private static async Task<LlmsTxtData> BuildAsync(
         IEnumerable<IContentService> contentServices,
-        IContentParser parser,
+        MetadataEnrichmentService enrichment,
         IContentRenderer renderer,
         XrefResolvingService xrefResolver,
         RenderedHtmlFetcher fetcher,
@@ -104,29 +104,15 @@ public sealed class LlmsTxtService : IFileWatchAware
             tocByPath[tocKey] = toc;
         }
 
-        await foreach (var discovered in contentServices.DiscoverAllAsync())
+        // Each service parses its own markdown with its own front-matter type, so
+        // valid keys from one content type are never mis-flagged against another's
+        // parser. ParseContentAsync already drops redirects, drafts, and scheduled
+        // pages. Derived metadata (reading time, …) is merged in here.
+        await foreach (var parsed in contentServices.ParseAllContentAsync())
         {
-            // Both MarkdownFileSource and LlmsOnlySource wrap a markdown
-            // file on disk that we want to parse and render through the
-            // same channel — only HTML emission differs downstream.
-            if (discovered.Source is not (MarkdownFileSource or LlmsOnlySource))
-            {
-                continue;
-            }
-
-            var parseResult = await parser.ParseAsync(discovered);
-            if (parseResult is not ParsedItem parsed)
-            {
-                continue;
-            }
-
-            if (parsed.Metadata is IRedirectable { RedirectUrl: not null })
-            {
-                continue;
-            }
-
-            var key = NormalizePath(parsed.Route.CanonicalPath.Value);
-            parsedByPath[key] = parsed;
+            var enriched = await enrichment.EnrichAsync(parsed);
+            var key = NormalizePath(enriched.Route.CanonicalPath.Value);
+            parsedByPath[key] = enriched;
         }
 
         // Endpoints opted into llms.txt via WithLlmsTxtEntry surface as
@@ -488,7 +474,7 @@ public sealed class LlmsTxtService : IFileWatchAware
             var mdPath = $"{ctx.Options.OutputDirectory}/{sidecarKey}.md";
             var linkUrl = BuildStrippedMarkdownUrl(ctx.CanonicalBase, ctx.Options.OutputDirectory, sidecarKey);
             var description = metadata?.Description ?? tocItem?.Description;
-            var sidecarHeader = BuildSidecarHeader(item, metadata, description, ctx.CanonicalBase, linkUrl, rendition);
+            var sidecarHeader = BuildSidecarHeader(item, metadata, description, ctx.CanonicalBase, linkUrl, rendition, parsed?.Derived);
             var sidecarContent = sidecarHeader + body;
 
             ctx.MarkdownFiles.Add(new MarkdownFile(new FilePath(mdPath), Encoding.UTF8.GetBytes(sidecarContent)));
@@ -586,7 +572,8 @@ public sealed class LlmsTxtService : IFileWatchAware
         string? description,
         CanonicalBaseUrl canonicalBase,
         string sidecarUrl,
-        LlmRendition rendition)
+        LlmRendition rendition,
+        IReadOnlyDictionary<string, object?>? derived)
     {
         var sb = new StringBuilder();
         sb.AppendLine("---");
@@ -609,6 +596,17 @@ public sealed class LlmsTxtService : IFileWatchAware
         if (metadata?.Date is { } date)
         {
             sb.AppendLine($"last_modified: {date:yyyy-MM-dd}");
+        }
+
+        // Derived metadata from IMetadataEnricher (reading time, …). Keys are
+        // enricher-defined snake_case; values are emitted as bare/quoted scalars so
+        // future enrichers surface here with no further change.
+        if (derived is not null)
+        {
+            foreach (var (key, value) in derived)
+            {
+                sb.AppendLine($"{key}: {YamlScalar(value?.ToString() ?? "")}");
+            }
         }
 
         sb.AppendLine("---");

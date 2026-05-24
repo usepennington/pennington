@@ -1,5 +1,6 @@
 namespace Pennington.Pipeline;
 
+using System.Collections.Immutable;
 using FrontMatter;
 using Routing;
 
@@ -18,7 +19,16 @@ public record DiscoveredItem(ContentRoute Route, ContentSource Source)
 /// <param name="Route">Canonical route for the item.</param>
 /// <param name="Metadata">Parsed front matter metadata.</param>
 /// <param name="RawMarkdown">Markdown body text, with front matter stripped.</param>
-public record ParsedItem(ContentRoute Route, IFrontMatter Metadata, string RawMarkdown);
+public record ParsedItem(ContentRoute Route, IFrontMatter Metadata, string RawMarkdown)
+{
+    /// <summary>
+    /// Derived, non-authored metadata contributed by <see cref="IMetadataEnricher"/>
+    /// implementations (reading time, git last-modified, permalinks, …), keyed by
+    /// enricher-defined names. Kept separate from the strongly-typed <see cref="Metadata"/>
+    /// so authored front matter stays the single source of truth.
+    /// </summary>
+    public IReadOnlyDictionary<string, object?> Derived { get; init; } = ImmutableDictionary<string, object?>.Empty;
+}
 
 /// <summary>A content item whose body has been rendered to HTML.</summary>
 /// <param name="Route">Canonical route for the item.</param>

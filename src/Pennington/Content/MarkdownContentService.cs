@@ -211,6 +211,47 @@ public sealed class MarkdownContentService<TFrontMatter>
     }
 
     /// <inheritdoc/>
+    public async IAsyncEnumerable<ParsedItem> ParseContentAsync()
+    {
+        foreach (var (route, sourceFile) in DiscoverRoutesWithFallbacks())
+        {
+            var item = await TryParseContentAsync(route, sourceFile);
+            if (item is not null)
+            {
+                yield return item;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Reads and parses one file with this service's <typeparamref name="TFrontMatter"/>.
+    /// Returns <c>null</c> for unparseable files and for items that never reach the
+    /// parsed-body channel — drafts/scheduled pages and redirects (surfaced as
+    /// <see cref="RedirectSource"/>, not bodies) — mirroring <see cref="DiscoverAsync"/>.
+    /// </summary>
+    private async Task<ParsedItem?> TryParseContentAsync(ContentRoute route, FilePath sourceFile)
+    {
+        try
+        {
+            var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
+            var result = _parser.Parse<TFrontMatter>(content, sourceFile.Value);
+            var metadata = result.Metadata ?? new TFrontMatter();
+
+            if (metadata.IsHiddenFromBuild(_clock)
+                || metadata is IRedirectable { RedirectUrl: { Length: > 0 } })
+            {
+                return null;
+            }
+
+            return new ParsedItem(route, metadata, result.Body);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {
         var metadata = await _metadataLazy.Value;

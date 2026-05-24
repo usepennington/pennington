@@ -66,7 +66,7 @@ public class MapGetEntryTests
         var dispatcher = new StubDispatcher();
         return new LlmsTxtService(
             contentServices: [],
-            parser: new StubParser(),
+            enrichment: new MetadataEnrichmentService([]),
             renderer: new StubRenderer(),
             xrefResolver: new XrefResolvingService(new XrefResolver([])),
             fetcher: new RenderedHtmlFetcher(dispatcher, NullLogger<RenderedHtmlFetcher>.Instance),
@@ -99,12 +99,6 @@ public class MapGetEntryTests
     {
         public override IReadOnlyList<Endpoint> Endpoints { get; } = endpoints;
         public override IChangeToken GetChangeToken() => new CancellationChangeToken(CancellationToken.None);
-    }
-
-    private sealed class StubParser : IContentParser
-    {
-        public Task<ContentItem> ParseAsync(DiscoveredItem item) =>
-            Task.FromResult(new ContentItem(new FailedItem(item.Route, new ContentError("not used"))));
     }
 
     private sealed class StubRenderer : IContentRenderer
