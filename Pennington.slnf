@@ -1,0 +1,20 @@
+{
+  "solution": {
+    "path": "Pennington.slnx",
+    "projects": [
+      "src\\Pennington\\Pennington.csproj",
+      "src\\Pennington.UI\\Pennington.UI.csproj",
+      "src\\Pennington.MonorailCss\\Pennington.MonorailCss.csproj",
+      "src\\Pennington.DocSite\\Pennington.DocSite.csproj",
+      "src\\Pennington.DocSite.Api\\Pennington.DocSite.Api.csproj",
+      "src\\Pennington.ApiMetadata\\Pennington.ApiMetadata.csproj",
+      "src\\Pennington.ApiMetadata.Reflection\\Pennington.ApiMetadata.Reflection.csproj",
+      "src\\Pennington.Roslyn\\Pennington.Roslyn.csproj",
+      "src\\Pennington.TreeSitter\\Pennington.TreeSitter.csproj",
+      "src\\Pennington.TranslationAudit\\Pennington.TranslationAudit.csproj",
+      "src\\Pennington.BlogSite\\Pennington.BlogSite.csproj",
+      "src\\Pennington.Tui\\Pennington.Tui.csproj",
+      "src\\Pennington.Templates\\Pennington.Templates.csproj"
+    ]
+  }
+}

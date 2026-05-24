@@ -45,7 +45,7 @@ Add a `blog` folder under `Content/`, alongside your area folders, and create `l
 
 Paste the markdown below. The four front-matter fields are the ones every post uses: `title` is the post heading and link label, `description` is the summary shown on the blog index, `author` is the byline, and `date` is the publication date.
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteBlogExample/snippets/stage1.md
 ```
 
@@ -84,7 +84,7 @@ The blog index orders posts by `date`, newest first. Add a second, more recent p
 
 Add a second file in the `blog` folder with the markdown below. Its `date` — `2026-05-15` — is a week after the first post.
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteBlogExample/snippets/stage2.md
 ```
 
@@ -118,7 +118,7 @@ A `tags` list on a post adds it to browse-by-tag pages. Tag both posts, then loo
 
 Add a `tags` block to `launching-the-docs.md`. The file now reads:
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteBlogExample/Content/blog/launching-the-docs.md
 ```
 
@@ -129,7 +129,7 @@ examples/DocSiteBlogExample/Content/blog/launching-the-docs.md
 
 Give `whats-next.md` its own `tags` block. One tag, `announcements`, is shared with the first post.
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteBlogExample/Content/blog/whats-next.md
 ```
 

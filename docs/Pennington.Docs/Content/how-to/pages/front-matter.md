@@ -20,7 +20,7 @@ The recipe references `examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs`, wh
 
 Implement <xref:reference.api.i-front-matter> as a `record` and add only the capability interfaces the new keys need — `ITaggable`, `IOrderable`, `ISectionable`, `IRedirectable`. Unimplemented capabilities pick up their default-member values, so a minimal record is short.
 
-```csharp:path
+```csharp:symbol
 examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs
 ```
 
@@ -30,8 +30,8 @@ Property names map to YAML keys under `CamelCaseNamingConvention` — `ApiVersio
 
 Pass the record type to `AddMarkdownContent<T>` so the pipeline deserializes the YAML into that type. The options delegate selects the content root the source reads from.
 
-```csharp:xmldocid,bodyonly
-M:Pennington.Infrastructure.PenningtonOptions.AddMarkdownContent``1(System.Action{Pennington.Infrastructure.MarkdownContentOptions})
+```csharp:symbol,bodyonly
+src/Pennington/Infrastructure/PenningtonOptions.cs > PenningtonOptions.AddMarkdownContent
 ```
 
 ## Result

@@ -33,7 +33,7 @@ Let's drop two markdown files into the Guides area and watch them slot into the 
 
 Add a new file at `Content/guides/install.md` with the markdown below. The four front-matter keys are the ones [`DocSiteFrontMatter`](xref:reference.api.doc-site-front-matter) reads for sidebar wiring: `title` is the link label, `description` becomes the meta tag, `sectionLabel` carries through to breadcrumbs and prev/next chrome, and `order` decides where the page sorts among siblings.
 
-```markdown:path
+```markdown:symbol
 examples/DocSitePagesAndLinksExample/snippets/install-step1.md
 ```
 
@@ -44,7 +44,7 @@ examples/DocSitePagesAndLinksExample/snippets/install-step1.md
 
 Add a second file next to the first with the markdown below. Note `order: 30` — a larger number than install's `order: 20`, so configure sorts after install in the sidebar.
 
-```markdown:path
+```markdown:symbol
 examples/DocSitePagesAndLinksExample/snippets/configure-step1.md
 ```
 
@@ -74,7 +74,7 @@ Both pages exist but neither knows about the other. Adding a relative-path link 
 
 Append a `## Next` heading and a relative-path link to the bottom of `install.md`. `./configure` resolves against the current page's URL (`/guides/install`), so it points at `/guides/configure` no matter where the area sits.
 
-```markdown:path
+```markdown:symbol
 examples/DocSitePagesAndLinksExample/snippets/install-with-next.md
 ```
 
@@ -85,7 +85,7 @@ examples/DocSitePagesAndLinksExample/snippets/install-with-next.md
 
 Mirror the same shape on `configure.md` with a `./install` link back to the first page. Both pages now link to their sibling with a path that survives any move of the `Content/guides/` folder.
 
-```markdown:path
+```markdown:symbol
 examples/DocSitePagesAndLinksExample/Content/guides/configure.md
 ```
 
@@ -113,7 +113,7 @@ The `Content/guides/index.md` page from the scaffold still says "Authoring walkt
 
 Absolute paths (`/guides/install`) survive folder moves of the source page. Use them when the target sits in a different folder than the source, or when the link is structural rather than narrative. For the full link-form rundown, see <xref:how-to.navigation.linking>.
 
-```markdown:path
+```markdown:symbol
 examples/DocSitePagesAndLinksExample/snippets/index-as-hub.md
 ```
 
@@ -141,7 +141,7 @@ Absolute paths break the moment the target file moves or gets renamed. A `uid:` 
 
 Open `install.md` and add one front-matter key — the page is now reachable by `xref:guides.install` no matter where the file lives.
 
-```markdown:path
+```markdown:symbol
 examples/DocSitePagesAndLinksExample/Content/guides/install.md
 ```
 
@@ -152,7 +152,7 @@ examples/DocSitePagesAndLinksExample/Content/guides/install.md
 
 Open `index.md` and replace `/guides/install` with `xref:guides.install`. The configure link stays as an absolute path — handy for seeing both forms side by side in the rendered output.
 
-```markdown:path
+```markdown:symbol
 examples/DocSitePagesAndLinksExample/Content/guides/index.md
 ```
 

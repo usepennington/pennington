@@ -72,8 +72,8 @@ The rendered HTML draws its CSS class names from `TabbedCodeBlockRenderOptions`.
 
 To override the class names, set `PenningtonOptions.TabbedCodeBlockOptions` to a `Func<TabbedCodeBlockRenderOptions>` returning a modified `with` expression.
 
-```csharp:xmldocid,bodyonly
-M:ExtensibilityLabExample.TabbedCodeBlockStyling.ConfigureTabbedCodeBlocksOverride(Pennington.Infrastructure.PenningtonOptions)
+```csharp:symbol,bodyonly
+examples/ExtensibilityLabExample/TabbedCodeBlockStyling.cs > TabbedCodeBlockStyling.ConfigureTabbedCodeBlocksOverride
 ```
 
 See <xref:reference.markdown.extensions> for the full `TabbedCodeBlockRenderOptions` surface.

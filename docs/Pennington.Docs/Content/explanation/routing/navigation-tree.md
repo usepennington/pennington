@@ -29,8 +29,8 @@ There is one special case at depth 0: a `ContentTocItem` whose `HierarchyParts.L
 
 Each field on `ContentTocItem` plays a distinct role in the algorithm: `HierarchyParts` shapes the tree, `Order` and `Title` sort siblings, `SectionLabel` surfaces only in prev/next and breadcrumbs, and `Locale` feeds the filter described below (see <xref:reference.api.content-toc-item> for the type).
 
-```csharp:xmldocid
-M:Pennington.Navigation.NavigationBuilder.BuildTree(System.Collections.Generic.IReadOnlyList{Pennington.Content.ContentTocItem},Pennington.Routing.ContentRoute,System.String)
+```csharp:symbol
+src/Pennington/Navigation/NavigationBuilder.cs > NavigationBuilder.BuildTree
 ```
 
 The `currentRoute` parameter passed to `BuildTree` marks items `IsSelected` and propagates `IsExpanded` up the ancestor chain. The same tree therefore powers both the "where am I" highlight and the collapsed or expanded state of every surrounding folder. The method returns an `ImmutableList<NavigationTreeItem>`, so the entire tree is a value rather than a mutable model the rendering layer binds to directly.

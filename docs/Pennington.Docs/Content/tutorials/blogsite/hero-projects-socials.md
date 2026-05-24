@@ -23,8 +23,8 @@ The finished code for this tutorial lives in [`examples/BlogSiteHeroProjectsSoci
 
 The BlogSite home page renders a headline block at the very top, driven entirely by `BlogSiteOptions.HeroContent`. Open the `AddBlogSite` call from the previous tutorial and add one property. `HeroContent` is a two-field positional record — `Title` and `Description` — so a single constructor call is all it takes.
 
-```csharp:xmldocid,bodyonly,usings
-M:BlogSiteHeroProjectsSocialsExample.Stage1.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BlogSiteHeroProjectsSocialsExample/Stage1_HeroOnly.cs > Stage1.Run
 ```
 
 The `HeroContent = new HeroContent(Title: …, Description: …)` assignment is the only addition — no new DI registrations, no new Razor files, no front matter changes. The rest of the options block carries forward unchanged from the scaffold tutorial.
@@ -42,8 +42,8 @@ The `HeroContent = new HeroContent(Title: …, Description: …)` assignment is 
 
 `BlogSiteOptions.MyWork` accepts a `Project[]` that the home page renders as a sidebar card titled "My Work". `Project` is a three-field positional record — `Title`, `Description`, `Url` — populated with a C# collection expression right below `HeroContent`. The `Url` becomes the `<a href>` around each rendered entry, so it can point at a GitHub repo, a product page, or any other URL.
 
-```csharp:xmldocid,bodyonly,usings
-M:BlogSiteHeroProjectsSocialsExample.Stage2.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BlogSiteHeroProjectsSocialsExample/Stage2_AddProjects.cs > Stage2.Run
 ```
 
 The `MyWork` property is typed as `IReadOnlyList<Project>` on `BlogSiteOptions`. Its default is an empty list, so the "My Work" card stays invisible in the UI until populated here.
@@ -63,8 +63,8 @@ Social links are `SocialLink(RenderFragment Icon, string Url)` records. The four
 
 Add a `using Pennington.BlogSite.Components;` directive at the top of `Program.cs` so `SocialIcons.GithubIcon` resolves, then a `Socials = [...]` block with four entries covering all four built-ins.
 
-```csharp:xmldocid,bodyonly,usings
-M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BlogSiteHeroProjectsSocialsExample/Stage3_AddSocialsAndHeader.cs > Stage3.Run
 ```
 
 <Checkpoint>

@@ -37,7 +37,10 @@ public static class RoslynExtensions
 
                 return symbolService;
             });
-            services.AddSingleton<ICodeBlockPreprocessor, RoslynCodeBlockPreprocessor>();
+            if (options.EnableCodeFragmentFences)
+            {
+                services.AddSingleton<ICodeBlockPreprocessor, RoslynCodeBlockPreprocessor>();
+            }
 
             services.AddSingleton<IXmlDocParser, XmlDocParser>();
             services.AddSingleton<IXmlDocHtmlRenderer, XmlDocHtmlRenderer>();

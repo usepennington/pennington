@@ -41,7 +41,7 @@ The scaffold tutorial left a placeholder post named `hello-world.md` in `Content
 
 Paste the markdown body below into the new file. These three fields are the smallest front matter that lets a BlogSite post render cleanly: `title` is the post's heading and link label; `description` is what the home card, archive card, and RSS `<description>` element all pull from; and `date` drives both the archive sort order and the RSS `<pubDate>` element.
 
-```markdown:path
+```markdown:symbol
 examples/BlogSiteFirstPostExample/snippets/stage1.md
 ```
 
@@ -78,7 +78,7 @@ Replace the existing YAML block with the fully-populated block below. Each new k
 - `repository:` — "Source Code" link card on the post page
 - `sectionLabel:` — groups the post under a named slice of the archive
 
-```markdown:path
+```markdown:symbol
 examples/BlogSiteFirstPostExample/snippets/stage2.md
 ```
 

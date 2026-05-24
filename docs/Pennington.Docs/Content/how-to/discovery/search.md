@@ -31,7 +31,7 @@ search: false
 ---
 ```
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteKitchenSinkExample/Content/main/hidden.md
 ```
 
@@ -44,8 +44,8 @@ title: Internal Tools
 search: false
 ```
 
-```csharp:xmldocid
-P:Pennington.FrontMatter.IFrontMatter.Search
+```csharp:symbol
+src/Pennington/FrontMatter/IFrontMatter.cs > IFrontMatter.Search
 ```
 
 ### Set the default document priority
@@ -58,8 +58,8 @@ Under `AddDocSite` this property is reachable via the `ConfigurePennington` esca
 
 The selector scopes which HTML element's text becomes the search body. `DocSiteOptions.SearchIndexContentSelector` defaults to `#main-content` to match the stock `MainLayout.razor`; set it after replacing the layout or to widen the indexed region to a different element. See <xref:explanation.positioning.docsite-positioning> for the cases that require dropping to bare `AddPennington`.
 
-```csharp:xmldocid
-P:Pennington.DocSite.DocSiteOptions.SearchIndexContentSelector
+```csharp:symbol
+src/Pennington.DocSite/DocSiteOptions.cs > DocSiteOptions.SearchIndexContentSelector
 ```
 
 ```csharp

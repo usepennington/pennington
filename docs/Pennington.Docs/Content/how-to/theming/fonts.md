@@ -28,24 +28,24 @@ Place each `.woff2` file under `wwwroot/fonts/`. `UsePennington` wires `UseStati
 
 Emit the `@font-face` declarations into the generated stylesheet by returning them from an `ExtraStyles` helper. MonorailCSS appends this content verbatim above its utility output, with each `src:` pointing at the `/fonts/...` path you exposed above.
 
-```csharp:xmldocid,bodyonly
-M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildExtraStyles
+```csharp:symbol,bodyonly
+examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.BuildExtraStyles
 ```
 
 ### Declare preload hints with `FontPreloads`
 
 Pass a `FontPreload[]` to `DocSiteOptions.FontPreloads`. DocSite then emits a `<link rel="preload" as="font" crossorigin>` tag for each entry in the document head, which prevents the flash of fallback text on first paint.
 
-```csharp:xmldocid,bodyonly
-M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildFontPreloads
+```csharp:symbol,bodyonly
+examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.BuildFontPreloads
 ```
 
 ### Point `DisplayFontFamily` and `BodyFontFamily` at the new faces
 
 Set `DisplayFontFamily` on `DocSiteOptions` to the CSS stack led by the display face, and set `BodyFontFamily` to the stack led by the body face. Include a `system-ui` or `sans-serif` fallback so pages still render gracefully if a file fails to load.
 
-```csharp:xmldocid,bodyonly
-M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions
+```csharp:symbol,bodyonly
+examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.BuildDocSiteOptions
 ```
 
 ### Match MonorailCSS utilities to your stacks

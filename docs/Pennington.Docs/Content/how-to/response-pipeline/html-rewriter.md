@@ -24,7 +24,7 @@ Implement <xref:reference.api.i-html-response-rewriter> as a sealed class. Three
 - `PreParseAsync` receives the raw HTML string and returns the string to parse. Use it only when the target construct is not valid HTML structure — raw `<xref:uid>` tags are the canonical shipped example. Return the input unchanged when there is nothing to do.
 - `ApplyAsync` receives the already-parsed `IDocument` shared by every rewriter — query with `QuerySelectorAll`, mutate attributes and text, and return. Do not re-serialize or reparse.
 
-```csharp:path
+```csharp:symbol
 examples/ExtensibilityLabExample/AnchorLowercaseRewriter.cs
 ```
 

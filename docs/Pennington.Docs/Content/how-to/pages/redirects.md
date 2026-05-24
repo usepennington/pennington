@@ -19,7 +19,7 @@ To copy a working setup, see [`examples/DocSiteKitchenSinkExample`](https://gith
 
 Open the markdown file at the old URL and set `redirectUrl:` to the new absolute path. Keep `title:` so diagnostics stay readable; the body does not render.
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteKitchenSinkExample/Content/main/redirect-source.md
 ```
 

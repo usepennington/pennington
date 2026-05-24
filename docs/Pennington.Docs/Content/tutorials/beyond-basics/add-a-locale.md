@@ -31,21 +31,21 @@ Start with a plain DocSite host serving three English pages from `Content/` — 
 
 Here's the starting host. There is no `ConfigureLocalization` action on `DocSiteOptions`, so `LocalizationOptions.IsMultiLocale` is false and the built-in `LanguageSwitcher` in `MainLayout.razor` renders nothing.
 
-```csharp:xmldocid,bodyonly,usings
-M:BeyondLocaleExample.Stage1.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BeyondLocaleExample/Stage1_EnglishOnly.cs > Stage1.Run
 ```
 
 Place `index.md`, `about.md`, and `getting-started.md` directly under `Content/`. These are the default-locale pages — they own the URL root. No locale subfolder belongs here yet.
 
-```markdown:path
+```markdown:symbol
 examples/BeyondLocaleExample/Content/index.md
 ```
 
-```markdown:path
+```markdown:symbol
 examples/BeyondLocaleExample/Content/about.md
 ```
 
-```markdown:path
+```markdown:symbol
 examples/BeyondLocaleExample/Content/getting-started.md
 ```
 
@@ -63,8 +63,8 @@ examples/BeyondLocaleExample/Content/getting-started.md
 
 Add a `ConfigureLocalization` action that names `"en"` as the default and registers `"es"` as a second locale. Once [`LocalizationOptions.IsMultiLocale`](xref:reference.api.localization-options) flips to `true`, the switcher, the locale detection middleware, and the per-locale search index all activate. `UseDocSite` already wires the locale-routing middleware internally — no extra `app.Use…` call.
 
-```csharp:xmldocid,bodyonly,usings
-M:BeyondLocaleExample.Stage2.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BeyondLocaleExample/Stage2_AddSecondLocale.cs > Stage2.Run
 ```
 
 The new action has three pieces:
@@ -96,7 +96,7 @@ Now let's give Spanish its content. Mirror the three English pages under a `Cont
 
 Create the `Content/es/` subfolder and add `index.md` with Spanish front-matter and Spanish body copy. The load-bearing rule: **the subfolder name matches the locale code passed to `AddLocale`** — `es` here, because that is the code registered in step 2.1. Files under `Content/es/` serve from `/es/*`; files directly under `Content/` serve from `/*`.
 
-```markdown:path
+```markdown:symbol
 examples/BeyondLocaleExample/Content/es/index.md
 ```
 
@@ -109,11 +109,11 @@ Repeat the move for the two remaining pages. Each Spanish file keeps the same fi
 
 Skipping a translation is fine. The content resolver falls back to the default-locale copy and renders a [`FallbackNotice`](xref:reference.ui.utility) banner naming the requested and default locales.
 
-```markdown:path
+```markdown:symbol
 examples/BeyondLocaleExample/Content/es/about.md
 ```
 
-```markdown:path
+```markdown:symbol
 examples/BeyondLocaleExample/Content/es/getting-started.md
 ```
 

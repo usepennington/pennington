@@ -27,7 +27,7 @@ The conventional escape routes both have a cost. A single `ContentItem` class wi
 
 A `DiscoveredItem` pairs a `ContentRoute` with a second union, `ContentSource`, which records where the item came from: a file on disk, a Razor `@page`, a redirect definition, or a programmatic generator. The reason this is a separate union rather than a field on `DiscoveredItem` is that discovery is itself a pluggable step — different sources need to carry different data (a file path, a Razor component type, a target URL) without forcing later stages to care. Once an item has been parsed, its source has already done its job; the parser and renderer work entirely against the resolved front matter and content text, and `ContentSource` disappears from the picture.
 
-```csharp:path
+```csharp:symbol
 src/Pennington/Pipeline/ContentSource.cs
 ```
 
@@ -39,8 +39,8 @@ Each stage in the pipeline works by replacing the incoming union case with the n
 
 The replacement invariant is what gives the pipeline its composability. A `RenderedItem` flowing into `ParseAsync` is already past that stage, so `ParseAsync` passes it through unchanged. A `ParsedItem` flowing into `RenderAsync` gets rendered; a `RenderedItem` in the same stream passes through. This means you can hand the pipeline a partially-processed stream — one that mixes discovered and already-parsed items — and it will do the right thing for each. There is no need to coordinate which stage ran last; the case type carries that information.
 
-```csharp:xmldocid,bodyonly
-M:Pennington.Pipeline.ContentPipeline.ParseAsync(System.Collections.Generic.IAsyncEnumerable{Pennington.Pipeline.ContentItem})
+```csharp:symbol,bodyonly
+src/Pennington/Pipeline/ContentPipeline.cs > ContentPipeline.ParseAsync
 ```
 
 The implementation has three explicit branches: a `FailedItem` passes through without touching the parser, a `DiscoveredItem` is handed to `IContentParser.ParseAsync` inside a try/catch that demotes any exception to a `FailedItem`, and a `ParsedItem` or `RenderedItem` passes through unchanged because the work for that stage is already done. There is also a guard for `RedirectSource`: items whose source is a redirect skip the parser entirely, because a redirect has no body to parse and is served by middleware at request time rather than written as an HTML file.
@@ -51,8 +51,8 @@ Exceptions thrown inside `IContentParser.ParseAsync` or `IContentRenderer.Render
 
 The payoff arrives in `GenerateAsync`. Because `FailedItem` is a peer case in the union, the exhaustive pattern match there routes it to `BuildReportBuilder.AddError` — every parse or render exception ends up as a named entry in the build report rather than an unhandled exception that aborts the crawl. One broken markdown file does not prevent the other four hundred from rendering. This is the concrete benefit of treating failure as data: the "sad path" and the "happy path" have identical shape in the stream, which means the final aggregation step sees them through the same lens.
 
-```csharp:xmldocid
-T:Pennington.Pipeline.FailedItem
+```csharp:symbol
+src/Pennington/Pipeline/ContentItem.cs > FailedItem
 ```
 
 Treating failure as a data case is what makes the exhaustive match in `GenerateAsync` meaningful rather than ceremonial. If `FailedItem` were an exception that escaped the pipeline, there would be no case to match — and no way for the compiler to confirm that every outcome was handled.

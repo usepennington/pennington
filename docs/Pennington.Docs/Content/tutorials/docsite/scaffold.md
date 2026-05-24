@@ -89,8 +89,8 @@ Pennington uses C# 15 union types, which are still a preview language feature in
 
 `AddDocSite` takes a `Func<DocSiteOptions>` rather than an `Action`, so the call constructs and returns a fresh options record. The template registers the markdown content reader internally — no separate `AddMarkdownContent` call is needed. `RunDocSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves pages live in development and generates static HTML when invoked as `dotnet run -- build <baseUrl> <outputDir>`.
 
-```csharp:xmldocid,bodyonly,usings
-M:DocSiteScaffoldExample.Stage3.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/DocSiteScaffoldExample/Stage3_UseDocSite.cs > Stage3.Run
 ```
 
 The five fields populated here — `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, `FooterContent` — each surface in the rendered chrome as soon as they're set. `DocSiteOptions` carries many more fields; see <xref:reference.api.doc-site-options> for the full surface, and [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning) for what the template hard-codes.
@@ -133,11 +133,11 @@ Areas =
 
 Under `Content/`, create two folders — `guides/` and `reference/` — each with an `index.md`. The `guides` slug binds `Content/guides/` to the `/guides/` URL prefix and to the Guides sidebar tab; `reference` works the same way.
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteScaffoldExample/Content/guides/index.md
 ```
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteScaffoldExample/Content/reference/index.md
 ```
 

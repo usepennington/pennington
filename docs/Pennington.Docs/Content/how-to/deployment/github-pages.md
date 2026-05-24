@@ -34,7 +34,7 @@ In the repo settings, switch **Pages → Build and deployment → Source** to **
 
 Commit the YAML below to `.github/workflows/deploy.yml` at the repo root. It pins `actions/setup-dotnet@v4` to .NET 11, derives the base URL from `${{ github.event.repository.name }}` so the same file works on forks and renames, runs `dotnet run -- build "$BASE_URL"`, writes `.nojekyll`, and hands `output/` to `actions/upload-pages-artifact@v3` and `actions/deploy-pages@v4`.
 
-```yaml:path
+```yaml:symbol
 examples/SubPathDeployableExample/.github/workflows/deploy.yml
 ```
 

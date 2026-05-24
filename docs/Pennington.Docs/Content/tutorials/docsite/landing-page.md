@@ -137,7 +137,7 @@ With routing and layout settled, the component is just Razor markup. Fill it wit
 
 **Replace `Index.razor` with the finished landing page**
 
-```razor:path
+```razor:symbol
 examples/DocSitePagesAndLinksExample/Components/Index.razor
 ```
 

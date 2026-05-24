@@ -61,7 +61,7 @@ Classes are configurable via `TabbedCodeBlockRenderOptions` passed to `UseTabbed
 
 Markdown source showing a two-fence tabbed group:
 
-```markdown:path
+```markdown:symbol
 examples/DocSitePagesAndLinksExample/snippets/markdown-tabs-example.md
 ```
 
@@ -185,7 +185,7 @@ Every alert receives two classes: `markdown-alert` (constant) and `markdown-aler
 
 Markdown excerpt showing a `[!NOTE]` block in context:
 
-```markdown:path
+```markdown:symbol
 examples/DocSitePagesAndLinksExample/snippets/markdown-alert-example.md
 ```
 

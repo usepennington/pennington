@@ -29,7 +29,7 @@ Before MonorailCSS can do anything, the layout needs to emit utility classes for
 
 Drop this file at `Components/Layout/MainLayout.razor`. Inheriting `LayoutComponentBase` makes it a Blazor layout — every routed page renders into the `@Body` placeholder. The `<link rel="stylesheet" href="/styles.css">` tag points at an endpoint section 2 will mount.
 
-```razor:path
+```razor:symbol
 examples/GettingStartedStylingExample/Components/Layout/MainLayout.razor
 ```
 
@@ -42,7 +42,7 @@ The classes — `bg-base-50`, `text-primary-700`, `border-base-200`, and so on �
 
 Update `Components/App.razor` so the `<Router>` uses `MainLayout` as its default layout. The `LayoutView` for the not-found case lets the same shell wrap the 404 message.
 
-```razor:path
+```razor:symbol
 examples/GettingStartedStylingExample/Components/App.razor
 ```
 
@@ -53,8 +53,8 @@ examples/GettingStartedStylingExample/Components/App.razor
 
 Wire MonorailCSS into the service container, pick a color scheme, and mount the JIT stylesheet endpoint. `AddMonorailCss` registers the services; each of `PrimaryColorName`, `AccentColorName`, and `BaseColorName` takes a `ColorName` constant (indigo/pink/slate here — any combination works). `app.UseMonorailCss()` turns `/styles.css` into a real endpoint backed by the class collector, matching the `<link>` tag in `MainLayout.razor`.
 
-```csharp:xmldocid,bodyonly,usings
-M:GettingStartedStylingExample.Stage3.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/GettingStartedStylingExample/Stage3_UseMonorailCss.cs > Stage3.Run
 ```
 
 <Checkpoint>

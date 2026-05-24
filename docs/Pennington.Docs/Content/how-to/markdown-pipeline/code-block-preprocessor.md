@@ -20,7 +20,7 @@ The recipe references `examples/ExtensibilityLabExample/LineCountPreprocessor.cs
 
 Implement <xref:reference.api.i-code-block-preprocessor> as a sealed class. `TryProcess(code, languageId)` receives the full fence info string unchanged. Compare it case-insensitively against the claimed language id or modifier, return `null` for anything else so the next preprocessor or the default highlighter can handle it, and otherwise build the wrapper HTML around the encoded source.
 
-```csharp:path
+```csharp:symbol
 examples/ExtensibilityLabExample/LineCountPreprocessor.cs
 ```
 

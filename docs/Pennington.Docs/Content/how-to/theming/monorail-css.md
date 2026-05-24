@@ -37,8 +37,8 @@ ColorScheme = new NamedColorScheme
 
 `AlgorithmicColorScheme` synthesises primary, base, and accent palettes from one `PrimaryHue` plus a `Chroma` and a `CoordinatingScheme` enum (Complementary, SplitComplementary, Triadic, Analogous). The whole site repigments by changing one number.
 
-```csharp:xmldocid,bodyonly
-M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildColorScheme
+```csharp:symbol,bodyonly
+examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.BuildColorScheme
 ```
 
 Assign whichever scheme to `DocSiteOptions.ColorScheme`.
@@ -51,16 +51,16 @@ Assign whichever scheme to `DocSiteOptions.ColorScheme`.
 
 `ExtraStyles` is a CSS string emitted verbatim above the generated utility stylesheet — `@font-face` declarations, utility overrides, or one-off selectors. Assign to `DocSiteOptions.ExtraStyles`.
 
-```csharp:xmldocid,bodyonly
-M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildExtraStyles
+```csharp:symbol,bodyonly
+examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.BuildExtraStyles
 ```
 
 ### Tweak prose rules with `CustomCssFrameworkSettings`
 
 `DocSiteOptions.CustomCssFrameworkSettings` post-processes the `CssFrameworkSettings` after the DocSite theme is applied — prose tweaks, color maps, or apply directives without leaving DocSite. For customisations outside DocSite's scope, see <xref:explanation.positioning.docsite-positioning>. On a bare `AddPennington` host, the same knob sits on `MonorailCssOptions` directly.
 
-```csharp:xmldocid,bodyonly
-M:ExtensibilityLabExample.MonorailCssCustomization.BuildOptions
+```csharp:symbol,bodyonly
+examples/ExtensibilityLabExample/MonorailCssCustomization.cs > MonorailCssCustomization.BuildOptions
 ```
 
 ---

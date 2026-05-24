@@ -59,8 +59,8 @@ tags: [advanced, performance, pipeline]
 
 Backing symbol on the DocSite front-matter record:
 
-```csharp:xmldocid
-P:Pennington.DocSite.DocSiteFrontMatter.Tags
+```csharp:symbol
+src/Pennington.DocSite/DocSiteFrontMatter.cs > DocSiteFrontMatter.Tags
 ```
 
 ### Order a page inside its section

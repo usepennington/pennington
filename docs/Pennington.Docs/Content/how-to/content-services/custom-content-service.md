@@ -21,7 +21,7 @@ The recipe references `examples/ExtensibilityLabExample/ReleaseNotesContentServi
 
 Implement <xref:reference.api.i-content-service> as a sealed class. Cache the parsed records in a `Lazy<ImmutableList<T>>` so discovery and the TOC share one pass over the source.
 
-```csharp:path
+```csharp:symbol
 examples/ExtensibilityLabExample/ReleaseNotesContentService.cs
 ```
 

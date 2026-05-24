@@ -68,53 +68,49 @@ The personality stays the same; the *register* shifts.
 
 ## Code-block embedding syntax
 
-Pennington preprocesses fenced code blocks whose info string ends in `:path`, `:xmldocid`, or `:xmldocid-diff`. The language before the colon (`csharp`, `razor`, `text`, etc.) drives highlighting. Do not use `raw-file="…"` — that form is not parsed.
+This site embeds source through tree-sitter `:symbol` fences (not Roslyn). Pennington preprocesses fenced code blocks whose info string ends in `:symbol` or `:symbol-diff`. The language before the colon (`csharp`, `razor`, `text`, etc.) drives highlighting. Body paths are relative to the repo root (the tree-sitter `ContentRoot`). Do not use `raw-file="…"` — that form is not parsed.
 
-### Embed a whole file — `<lang>:path`
-Body is one file path, relative to the solution directory (where `Pennington.slnx` lives).
+### Embed a whole file — `<lang>:symbol`
+Body is one file path with no member path. Works for any language (markdown, razor, json, css, …) — whole-file embedding needs no grammar.
 
 ````markdown
-```csharp:path
-examples/AlexBlogExample/Program.cs
+```csharp:symbol
+examples/GettingStartedMinimalSiteExample/Program.cs
 ```
 ````
 
-### Embed a symbol — `<lang>:xmldocid`
-Body is one XmlDocId per line (e.g. `T:Ns.Type`, `M:Ns.Type.Method`, `P:Ns.Type.Prop`). Multiple IDs are concatenated in the output.
+### Embed a member — `<lang>:symbol`
+Body is `<file path> > <dotted member path>` — `Type`, `Type.Method`, `Type.Property`, or a nested `Type.Inner.Member`. Drop the namespace; the path is matched syntactically within the file. One reference per line; multiple lines are concatenated.
 
 ````markdown
-```csharp:xmldocid
-M:Pennington.BlogSite.BlogSiteServiceExtensions.AddBlogSite(...)
+```csharp:symbol
+src/Pennington.BlogSite/BlogSiteServiceExtensions.cs > BlogSiteServiceExtensions.AddBlogSite
 ```
 ````
 
 Add `,bodyonly` to strip the declaration and render only the method/property body:
 
 ````markdown
-```csharp:xmldocid,bodyonly
-M:Ns.Type.Method
+```csharp:symbol,bodyonly
+src/Pennington/Pipeline/ContentPipeline.cs > ContentPipeline.ParseAsync
 ```
 ````
 
-Add `,usings` to prepend the file-local `using` directives the fragment references — only the ones referenced, not the file's whole using block. Composes with `,bodyonly` in any order. Skips global/implicit usings.
-
-````markdown
-```csharp:xmldocid,bodyonly,usings
-M:Ns.Type.Method
-```
-````
-
-### Diff two symbols — `<lang>:xmldocid-diff`
-Body must contain exactly 2 XmlDocIds (before/after). Supports the same `,bodyonly` suffix.
+### Diff two members — `<lang>:symbol-diff`
+Body must contain exactly 2 references (before/after), one per line. Supports the same `,bodyonly` suffix.
 
 ### When to use which
-- **`:xmldocid`** — **C# or VB only.** Default for C# examples; survives renames, refactors, and line shifts. Non-Roslyn languages (`markdown`, `razor`, `html`, `css`, etc.) are rejected — use `:path` instead.
-- **`:xmldocid,bodyonly`** — when the declaration is noise (showing what's inside a method). Same C#/VB-only restriction.
-- **`,usings`** — append to any `:xmldocid[,bodyonly]` fence when the snippet should be copy-pasteable. Emits only the file-local usings the body actually references; skipped when the body needs nothing or only relies on global/implicit usings.
-- **`:path`** — the right fence for anything that isn't C#/VB code: markdown snippets (including staged tutorial `.md` files), Razor components, HTML, CSS, config files, top-level-statements `Program.cs`.
-- **`:xmldocid-diff`** — before/after comparisons in explanation pages. C#/VB only.
+- **`:symbol`** — the default. A bare path embeds the whole file; `path > Type.Member` embeds one member. Language-agnostic.
+- **`:symbol,bodyonly`** — when the declaration is noise (showing what's inside a method, or a type's members without its header).
+- **`:symbol-diff`** — before/after comparisons in explanation pages.
 
-Requires `Pennington.Roslyn` wired (`AddPenningtonRoslyn`) and `SolutionPath` set on `RoslynOptions` / `DocSiteOptions`.
+### Caveats
+- **Overloads** resolve to the first declaration of that name in the file — name-path addressing can't distinguish signatures. Point at an unambiguous member, or hand-write the snippet.
+- **No `using` prepend.** Tree-sitter is syntactic; there is no `,usings` equivalent. Snippets render without import directives.
+
+Requires `Pennington.TreeSitter` wired (`AddPenningtonTreeSitter`) with `ContentRoot` set.
+
+> Some pages (`tutorials/beyond-basics/connect-roslyn.md`, `how-to/code-samples/focused-code-samples.md`) still document the Roslyn `:xmldocid`/`:path` fences as an optional library feature. That prose is historical — this site no longer executes those fences (`RoslynOptions.EnableCodeFragmentFences` is off).
 
 ## Writing conventions
 

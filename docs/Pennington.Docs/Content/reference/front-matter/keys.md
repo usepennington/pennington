@@ -25,7 +25,7 @@ Rows are alphabetical by YAML key. Each entry shows the records that expose the 
 
 A `DocSiteFrontMatter` page populating the most common keys:
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteKitchenSinkExample/Content/main/front-matter.md
 ```
 

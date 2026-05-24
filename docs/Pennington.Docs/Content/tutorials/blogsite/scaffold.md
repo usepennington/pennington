@@ -32,8 +32,8 @@ The finished code for this tutorial lives in [`examples/BlogSiteScaffoldExample`
 
 The host you built in the getting-started tutorials calls `AddPennington`, registers content with `AddMarkdownContent<DocFrontMatter>`, mounts `UsePennington`, and wires a hand-written `MapGet` fallback that walks `IContentService` to serve individual pages.
 
-```csharp:xmldocid,bodyonly,usings
-M:BlogSiteScaffoldExample.Stage1.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BlogSiteScaffoldExample/Stage1_BeforeAddBlogSite.cs > Stage1.Run
 ```
 
 The three moving parts are the DI registration, the `UsePennington` call, and the hand-rolled `MapGet`. Absent: the home listing, `/archive`, `/blog/<slug>` pages, `/tags` and `/topics` aliases, the `/rss.xml` feed, and the MonorailCSS chrome. The next section brings all of that in with a single `AddBlogSite` call.
@@ -55,8 +55,8 @@ The three moving parts are the DI registration, the `UsePennington` call, and th
 
 **Replace `Program.cs` with the BlogSite calls**
 
-```csharp:xmldocid,bodyonly,usings
-M:BlogSiteScaffoldExample.Stage3.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BlogSiteScaffoldExample/Stage3_UseBlogSite.cs > Stage3.Run
 ```
 
 The options populated here cover site identity (`SiteTitle`, `Description`, `CanonicalBaseUrl`), content paths shown at their defaults (`ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, `TagsPageUrl`), and author fallbacks (`AuthorName`, `AuthorBio`). The full surface lives in <xref:reference.api.blog-site-options>.
@@ -84,7 +84,7 @@ Posts live under `{ContentRootPath}/{BlogContentPath}` — with the defaults fro
 
 The placeholder post uses four front-matter keys: `title`, `description`, `date`, and `author`. These are the minimum the home listing and RSS feed need to render an entry. The next tutorial expands this to the full `BlogSiteFrontMatter` surface, adding `tags`, `series`, `repository`, `section`, and `redirectUrl`.
 
-```markdown:path
+```markdown:symbol
 examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md
 ```
 
