@@ -19,7 +19,6 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
     private readonly ILogger<SolutionWorkspaceService> _logger;
     private readonly RoslynOptions _options;
     private readonly Lock _lock = new();
-    private readonly string _tempBuildPath;
 
     private MSBuildWorkspace? _workspace;
     private Solution? _solution;
@@ -65,13 +64,6 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
             throw new ArgumentException("Solution path must be specified in options", nameof(options));
         }
 
-        // Create temp folder for build artifacts to avoid polluting real output
-        _tempBuildPath = Path.Combine(
-            Path.GetTempPath(),
-            $"Pennington_Build_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_tempBuildPath);
-        _logger.LogDebug("Created temp build folder: {Path}", _tempBuildPath);
-
         RegisterFileWatching(fileWatcher);
     }
 
@@ -90,50 +82,29 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
 
         _logger.LogDebug("Loading solution from {SolutionPath}", solutionPath);
 
-        // Redirect intermediates to a temp folder so MSBuildWorkspace's evaluation
-        // doesn't fight dotnet watch over real obj/ files. Leave OutputPath alone:
-        // ResolveProjectReferences needs each referenced project's compiled assembly
-        // at the natural bin path, and dotnet watch (or a prior dotnet build) puts it
-        // there. Redirecting BaseOutputPath to a temp folder breaks that lookup with
-        // "Found project reference without a matching metadata reference" warnings.
-        // OutputPath isn't overridden, so the SDK appends $(TargetFramework) per
-        // inner build and multi-target projects no longer collide.
-        var properties = new Dictionary<string, string>
-        {
-            ["BaseIntermediateOutputPath"] = Path.Combine(_tempBuildPath, "obj") + Path.DirectorySeparatorChar,
-        };
-
-        var workspace = MSBuildWorkspace.Create(properties);
+        // Use each project's real obj/ (no BaseIntermediateOutputPath redirect). A single
+        // redirected obj is shared by every project in the solution (the SDK derives
+        // IntermediateOutputPath from BaseIntermediateOutputPath + config + TFM, with no
+        // project-name component), so the parallel design-time builds collide there AND the
+        // fresh temp obj has no NuGet restore assets (project.assets.json / nuget.g.props).
+        // When a project loses that race it loads with ZERO metadata references — every
+        // framework/package type becomes an error type, producing silently degraded API
+        // reference output. The real per-project obj is isolated and already restored by the
+        // build that precedes the crawl, so references resolve deterministically.
+        var workspace = MSBuildWorkspace.Create();
         workspace.RegisterWorkspaceFailedHandler(args =>
         {
             var diagnostic = args.Diagnostic;
-            var message = diagnostic.Message;
 
             // [Warning] kind from MSBuildWorkspace is its own "informational" tier —
             // typically "found project reference without a matching metadata reference"
-            // emitted while parallel multi-target evaluation is in flight. Roslyn falls
-            // back to source compilation when a metadata reference is missing, so the
-            // resulting symbols are still correct. Real config mistakes (a project
+            // emitted while parallel multi-target evaluation is in flight; Roslyn falls
+            // back to source for that single reference. Real config mistakes (a project
             // reference pointing at a missing csproj, etc.) would have already failed
-            // `dotnet build` before we got here.
+            // `dotnet build` before the crawl.
             if (diagnostic.Kind == WorkspaceDiagnosticKind.Warning)
             {
                 _logger.LogDebug("Workspace warning (suppressed): {Diagnostic}", diagnostic);
-                return;
-            }
-
-            // [Failure] kind: MSBuildWorkspace evaluates project references in parallel;
-            // multi-targeted inner builds race on the same per-TFM cache files under
-            // our redirected _tempBuildPath ("AssemblyReference.cache",
-            // "GlobalUsings.g.cs", "AssemblyInfoInputs.cache", "AssemblyAttributes.cs").
-            // Roslyn builds compilations from in-memory state — these on-disk caches
-            // don't affect the symbols we extract — so demote the race to Debug rather
-            // than surface a confusing temp-path warning.
-            if (message.Contains(_tempBuildPath, StringComparison.OrdinalIgnoreCase) &&
-                (message.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
-                 message.Contains("being used by another process", StringComparison.OrdinalIgnoreCase)))
-            {
-                _logger.LogTrace("Workspace cache race in temp build dir (suppressed): {Diagnostic}", diagnostic);
                 return;
             }
 
@@ -592,7 +563,7 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
         lock (_lock)
         {
             // MSBuildWorkspace.Dispose() can throw on Windows when assembly handles
-            // are still mapped. Swallow so the temp-folder cleanup below still runs.
+            // are still mapped; swallow so disposal still completes.
             try
             {
                 _workspace?.Dispose();
@@ -603,43 +574,6 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
             }
             _compilationCache.Clear();
             _isDisposed = true;
-        }
-
-        DeleteTempBuildFolderWithRetry();
-    }
-
-    private void DeleteTempBuildFolderWithRetry()
-    {
-        if (!Directory.Exists(_tempBuildPath))
-        {
-            return;
-        }
-
-        // On Windows, MSBuild can hold transient file locks during shutdown.
-        // Brief retries cover that without making the happy path slower.
-        int[] delaysMs = [100, 200, 400];
-        for (var attempt = 0; attempt <= delaysMs.Length; attempt++)
-        {
-            try
-            {
-                Directory.Delete(_tempBuildPath, recursive: true);
-                _logger.LogDebug("Cleaned up temp build folder: {Path}", _tempBuildPath);
-                return;
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                if (attempt == delaysMs.Length)
-                {
-                    _logger.LogWarning(ex, "Failed to clean up temp build folder: {Path}", _tempBuildPath);
-                    return;
-                }
-                Thread.Sleep(delaysMs[attempt]);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to clean up temp build folder: {Path}", _tempBuildPath);
-                return;
-            }
         }
     }
 }
