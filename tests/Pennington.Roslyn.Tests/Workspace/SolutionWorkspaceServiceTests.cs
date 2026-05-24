@@ -134,7 +134,7 @@ public sealed class SolutionWorkspaceServiceTests
     {
         public int ClearCacheCallCount { get; private set; }
 
-        public Task<IReadOnlyDictionary<string, Roslyn.Symbols.SymbolInfo>> ExtractSymbolsAsync(Solution solution)
+        public Task<IReadOnlyDictionary<string, Roslyn.Symbols.SymbolInfo>> ExtractSymbolsAsync(IEnumerable<Project> projects)
             => Task.FromResult<IReadOnlyDictionary<string, Roslyn.Symbols.SymbolInfo>>(
                 new Dictionary<string, Roslyn.Symbols.SymbolInfo>());
 

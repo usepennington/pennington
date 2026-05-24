@@ -360,7 +360,7 @@ public sealed class RoslynCodeBlockPreprocessorTests
     private sealed class StubSymbolExtractionService : Roslyn.Symbols.ISymbolExtractionService
     {
         public Task<IReadOnlyDictionary<string, Roslyn.Symbols.SymbolInfo>> ExtractSymbolsAsync(
-            Microsoft.CodeAnalysis.Solution solution)
+            IEnumerable<Microsoft.CodeAnalysis.Project> projects)
             => Task.FromResult<IReadOnlyDictionary<string, Roslyn.Symbols.SymbolInfo>>(
                 new Dictionary<string, Roslyn.Symbols.SymbolInfo>());
 

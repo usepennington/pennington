@@ -5,8 +5,8 @@ using Microsoft.CodeAnalysis;
 /// <summary>Extracts symbol metadata and source fragments from the configured Roslyn <see cref="Solution"/>, keyed by xmldocid.</summary>
 public interface ISymbolExtractionService
 {
-    /// <summary>Walks the solution and returns a map of xmldocid to <see cref="SymbolInfo"/> for every documented symbol.</summary>
-    Task<IReadOnlyDictionary<string, SymbolInfo>> ExtractSymbolsAsync(Solution solution);
+    /// <summary>Walks the given projects and returns a map of xmldocid to <see cref="SymbolInfo"/> for every documented symbol. Callers pass the workspace's filtered project set (one per multi-targeted csproj) so symbols aren't extracted once per target framework.</summary>
+    Task<IReadOnlyDictionary<string, SymbolInfo>> ExtractSymbolsAsync(IEnumerable<Project> projects);
 
     /// <summary>Returns the <see cref="SymbolInfo"/> for the given xmldocid, or <see langword="null"/> if no symbol matches.</summary>
     Task<SymbolInfo?> FindSymbolAsync(string xmlDocId);

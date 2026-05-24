@@ -133,7 +133,7 @@ internal sealed class SolutionWorkspaceService : ISolutionWorkspaceService
                 (message.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
                  message.Contains("being used by another process", StringComparison.OrdinalIgnoreCase)))
             {
-                _logger.LogDebug("Workspace cache race in temp build dir (suppressed): {Diagnostic}", diagnostic);
+                _logger.LogTrace("Workspace cache race in temp build dir (suppressed): {Diagnostic}", diagnostic);
                 return;
             }
 
