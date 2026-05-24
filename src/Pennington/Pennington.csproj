@@ -18,7 +18,7 @@
     <PackageReference Include="DeweySearch" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" />
     <PackageReference Include="Testably.Abstractions" />
-    <PackageReference Include="YamlDotNet" />
+    <PackageReference Include="SharpYaml" />
     <PackageReference Include="Markdig" />
     <PackageReference Include="AngleSharp" />
     <PackageReference Include="Mdazor" />

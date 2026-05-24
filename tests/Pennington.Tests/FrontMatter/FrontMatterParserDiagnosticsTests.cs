@@ -1,5 +1,5 @@
 using Pennington.FrontMatter;
-using YamlDotNet.Core;
+using SharpYaml;
 
 namespace Pennington.Tests.FrontMatter;
 
@@ -135,7 +135,7 @@ public class FrontMatterParserDiagnosticsTests
     }
 
     private static FrontMatterParser CreateParser(bool strict)
-        => new(new FrontMatterParserOptions { StrictUnknownKeys = strict }, new NoopHttpContextAccessor());
+        => new(new FrontMatterParserOptions { StrictUnknownKeys = strict }, new NoopHttpContextAccessor(), PenningtonYamlContextProvider.Default);
 
     private sealed class NoopHttpContextAccessor : Microsoft.AspNetCore.Http.IHttpContextAccessor
     {

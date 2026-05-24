@@ -49,6 +49,9 @@ public static class BlogSiteServiceExtensions
                 : [blogSiteAssembly, .. routingAssemblies];
         });
 
+        // Source-generated YAML metadata for BlogSite's front-matter type (reflection fallback otherwise).
+        services.AddPenningtonYamlContext(BlogSiteYamlContext.Default);
+
         // Make Pennington.UI components available inline in markdown via Mdazor.
         // <CodeBlock> is intentionally excluded: markdown authors should use fenced
         // code blocks, not a component round-trip through Mdazor+Markdig.

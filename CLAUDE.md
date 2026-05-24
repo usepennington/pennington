@@ -9,7 +9,7 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - Run docs site: `dotnet run --project docs/Pennington.Docs`
 
 ## Project Structure
-- `src/Pennington/` — Core library (Markdig, YamlDotNet, AngleSharp, TextMateSharp)
+- `src/Pennington/` — Core library (Markdig, SharpYaml, AngleSharp, TextMateSharp)
 - `src/Pennington.UI/` — Razor component library (TableOfContentsNav, OutlineNav, Badge, Card, CodeBlock, etc.)
 - `src/Pennington.MonorailCss/` — MonorailCSS integration (utility-first CSS generation)
 - `src/Pennington.DocSite/` — Documentation site template (layout, pages, content resolver)

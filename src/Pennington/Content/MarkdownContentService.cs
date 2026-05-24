@@ -7,8 +7,7 @@ using Infrastructure;
 using LlmsTxt;
 using Pipeline;
 using Routing;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
+using SharpYaml;
 
 /// <summary>
 /// Discovers and provides markdown content from a directory.
@@ -573,11 +572,6 @@ public sealed class MarkdownContentService<TFrontMatter>
         }
 
         var basePrefix = NormalizeBasePageUrl(_options.BasePageUrl.Value);
-        var deserializer = new DeserializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .IgnoreUnmatchedProperties()
-            .Build();
-
         var builder = ImmutableList.CreateBuilder<LlmsSubtree>();
 
         foreach (var file in _fileSystem.Directory.EnumerateFiles(
@@ -596,7 +590,7 @@ public sealed class MarkdownContentService<TFrontMatter>
             LlmsSubtreeSidecar? sidecar;
             try
             {
-                sidecar = deserializer.Deserialize<LlmsSubtreeSidecar?>(content);
+                sidecar = YamlSerializer.Deserialize<LlmsSubtreeSidecar>(content, PenningtonYaml.ReflectionOptions);
             }
             catch
             {

@@ -186,7 +186,7 @@ public class FrontMatterParserTests
     {
         var content = "---\ntitle: &bomb payload\n---\nContent.";
 
-        Should.Throw<YamlDotNet.Core.YamlException>(
+        Should.Throw<SharpYaml.YamlException>(
             () => _parser.Parse<DocFrontMatter>(content));
     }
 
@@ -195,7 +195,7 @@ public class FrontMatterParserTests
     {
         var yaml = "title: &bomb payload";
 
-        Should.Throw<YamlDotNet.Core.YamlException>(
+        Should.Throw<SharpYaml.YamlException>(
             () => _parser.DeserializeYaml<DocFrontMatter>(yaml));
     }
 
@@ -204,7 +204,7 @@ public class FrontMatterParserTests
     {
         var content = "---\ntitle: !<tag:example.org:attack> malicious\n---\nContent.";
 
-        Should.Throw<YamlDotNet.Core.YamlException>(
+        Should.Throw<SharpYaml.YamlException>(
             () => _parser.Parse<DocFrontMatter>(content));
     }
 
@@ -213,7 +213,7 @@ public class FrontMatterParserTests
     {
         var content = "---\ntitle: !<!System.Diagnostics.Process> evil\n---\nContent.";
 
-        Should.Throw<YamlDotNet.Core.YamlException>(
+        Should.Throw<SharpYaml.YamlException>(
             () => _parser.Parse<DocFrontMatter>(content));
     }
 
