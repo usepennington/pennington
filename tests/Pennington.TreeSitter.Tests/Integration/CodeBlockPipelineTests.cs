@@ -22,7 +22,7 @@ public sealed class CodeBlockPipelineTests : IDisposable
         Directory.CreateDirectory(_root);
         File.WriteAllText(
             Path.Combine(_root, "calc.py"),
-            "class Calculator:\n    def add(self, a, b):\n        return a + b\n");
+            "class Calculator:\n    def add(self, a, b):\n        return a + b\n\n    def subtract(self, a, b):\n        return a - b\n");
 
         var options = new TreeSitterOptions { ContentRoot = _root };
         var fragmentService = new SourceFragmentService(options, new TreeSitterParserPool(), new NamePathResolver());
@@ -52,6 +52,43 @@ public sealed class CodeBlockPipelineTests : IDisposable
         var html = pipeline.Render("calc.py > Calculator.missing", "python:symbol");
 
         html.ShouldContain("// Error:");
+        html.ShouldContain("not found");
+    }
+
+    [Fact]
+    public void Symbol_diff_fence_renders_unified_diff()
+    {
+        var pipeline = CreatePipeline();
+
+        var html = pipeline.Render(
+            "calc.py > Calculator.add\ncalc.py > Calculator.subtract",
+            "python:symbol-diff,bodyonly");
+
+        html.ShouldContain("has-diff");
+        html.ShouldContain("diff-remove");
+        html.ShouldContain("diff-add");
+    }
+
+    [Fact]
+    public void Symbol_diff_fence_requires_exactly_two_references()
+    {
+        var pipeline = CreatePipeline();
+
+        var html = pipeline.Render("calc.py > Calculator.add", "python:symbol-diff");
+
+        html.ShouldContain("requires exactly 2 references");
+    }
+
+    [Fact]
+    public void Symbol_diff_fence_renders_error_for_unresolved_member()
+    {
+        var pipeline = CreatePipeline();
+
+        var html = pipeline.Render(
+            "calc.py > Calculator.add\ncalc.py > Calculator.missing",
+            "python:symbol-diff");
+
+        html.ShouldContain("// ");
         html.ShouldContain("not found");
     }
 

@@ -56,3 +56,14 @@ A bare reference with no `>` embeds the entire file:
 ```python:symbol
 calc.py
 ```
+
+## Diff two members with `:symbol-diff`
+
+Use `<lang>:symbol-diff` with exactly two references — before, then after — to
+emit a unified diff between them. The `,bodyonly` suffix applies, so this
+compares just the bodies:
+
+```python:symbol-diff,bodyonly
+calc.py > Calculator.add
+calc.py > Calculator.subtract
+```

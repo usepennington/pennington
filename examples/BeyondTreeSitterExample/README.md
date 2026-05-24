@@ -11,6 +11,8 @@ doc markdown via the `:symbol` fence modifier.
   XmlDocId, so non-C# languages work the same way C# does under `Pennington.Roslyn`.
 - The fence body format: `<file> > <Member.Path>` (one per line); a bare
   `<file>` embeds the whole file; `,bodyonly` returns just the body.
+- `<lang>:symbol-diff` over two references emits a before/after unified diff,
+  the multi-language counterpart to `Pennington.Roslyn`'s `:xmldocid-diff`.
 - Cross-language resolution quirks: Rust methods resolve through their
   `impl` block; Go/TypeScript/Python all work from the same generic resolver.
 
