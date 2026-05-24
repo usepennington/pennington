@@ -19,7 +19,4 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Pennington.IntegrationTests" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="WordbreakMiddleware" />
-  </ItemGroup>
 </Project>
