@@ -73,34 +73,55 @@ public sealed class SearchArtifactService : IFileWatchAware
             groups[code] = [];
         }
 
-        foreach (var toc in await contentServices.CollectIndexableEntriesAsync())
-        {
-            if (toc.ExcludeFromSearch)
-            {
-                continue;
-            }
+        var entries = (await contentServices.CollectIndexableEntriesAsync())
+            .Where(toc => !toc.ExcludeFromSearch)
+            .ToList();
 
-            var element = await fetcher.FetchContentAsync(toc.Route.CanonicalPath.Value, options.ContentSelector);
+        // Fetch + extract every page in parallel — this is the loop that drove build
+        // parallelism to 1.77×. Each result lands in an index-keyed slot so the corpus
+        // is folded in discovery order (deterministic artifact bytes). The fetch goes
+        // through BuildHtmlCache, so the disk-write pass replays these renders.
+        var perEntry = new (string Locale, List<SearchDocument> Docs)?[entries.Count];
+        await Parallel.ForEachAsync(Enumerable.Range(0, entries.Count), async (i, ct) =>
+        {
+            var toc = entries[i];
+            var element = await fetcher.FetchContentAsync(toc.Route.CanonicalPath.Value, options.ContentSelector, ct);
             if (element is null)
             {
                 logger.LogWarning("SearchArtifactService: failed to fetch {Path}, skipping", toc.Route.CanonicalPath.Value);
-                continue;
+                return;
             }
 
             var locale = string.IsNullOrEmpty(toc.Route.Locale)
                 ? localization.DefaultLocale
                 : toc.Route.Locale;
-            if (!groups.TryGetValue(locale, out var list))
-            {
-                groups[locale] = list = [];
-            }
 
             // One record per heading section (plus a page-lead record) so results are
             // heading-level and deep-link to anchors. Code blocks are dropped inside the extractor.
+            var docs = new List<SearchDocument>();
             foreach (var section in extractor.Extract(element, options.ExcludeCodeBlocks))
             {
-                list.Add(corpusBuilder.BuildSection(toc, section));
+                docs.Add(corpusBuilder.BuildSection(toc, section));
             }
+
+            perEntry[i] = (locale, docs);
+        });
+
+        // Fold per-page results into locale buckets sequentially — the dictionary mutation
+        // is not thread-safe, so it stays out of the parallel section.
+        foreach (var entry in perEntry)
+        {
+            if (entry is not { } result)
+            {
+                continue;
+            }
+
+            if (!groups.TryGetValue(result.Locale, out var list))
+            {
+                groups[result.Locale] = list = [];
+            }
+
+            list.AddRange(result.Docs);
         }
 
         // Hand each locale's corpus to DeweySearch and lay its artifacts out under search/{locale}/.
