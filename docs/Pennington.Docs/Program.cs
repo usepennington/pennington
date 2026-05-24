@@ -9,7 +9,6 @@ using Pennington.MonorailCss;
 using Pennington.Roslyn;
 using Pennington.Roslyn.ApiMetadata;
 using Pennington.TreeSitter;
-using WordbreakMiddleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -138,15 +137,20 @@ builder.Services.AddApiReference();
 builder.Services.AddSingleton<FrontMatterKeyIndex>();
 builder.Services.AddMdazorComponent<FrontMatterKeys>();
 
+// Word-break typography, folded into the shared HTML rewriting pipeline so it
+// mutates the already-parsed DOM instead of re-parsing the response string.
+// The selector targets headings plus block text — including descendants so
+// nested text (e.g. an <a> inside an <h2>) is reached.
+builder.Services.AddPenningtonWordBreak(options =>
+{
+    options.CssSelector = "h1, h1 *, h2, h2 *, h3, h3 *, h4, h4 *, h5, h5 *, h6, h6 *, p, p *, li, li *, dt, dt *, dd, dd *, th, th *, td, td *";
+});
+
 // Dev-time full-screen dashboard. No-ops when the host is launched with
 // `dotnet run -- build`, so the static build path is unchanged.
 // builder.Services.AddPenningtonTui();
 
 var app = builder.Build();
 app.UseDocSite();
-app.UseWordBreak(new WordbreakMiddlewareOptions()
-{
-    CssSelector = "h1, h1 *, h2, h2 *, h3, h3 *, h4, h4 *, h5, h5 *, h6, h6 *, p, p *, li, li *, dt, dt *, dd, dd *, th, th *, td, td *"
-});
 
 await app.RunDocSiteAsync(args);
