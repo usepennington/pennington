@@ -7,6 +7,8 @@
     <RootNamespace>MultipleSourcesExample</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Direct reference so the SharpYaml source generator runs here (BlogFrontMatterYamlContext). -->
+    <PackageReference Include="SharpYaml" />
     <ProjectReference Include="..\..\src\Pennington\Pennington.csproj" />
   </ItemGroup>
   <ItemGroup>
