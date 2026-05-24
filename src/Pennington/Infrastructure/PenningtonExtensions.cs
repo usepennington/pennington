@@ -32,6 +32,7 @@ using Navigation;
 using Pipeline;
 using Routing;
 using Search;
+using SharpYaml.Serialization;
 using Testably.Abstractions;
 
 /// <summary>
@@ -112,6 +113,13 @@ public static class PenningtonExtensions
         }
 
         services.AddSingleton(options.FrontMatter);
+
+        // YAML deserialization: register the built-in source-generated context and the provider
+        // that dispatches each type to its context (or reflection). Satellite packages and users
+        // add their own contexts via AddPenningtonYamlContext.
+        services.AddPenningtonYamlContext(PenningtonYamlContext.Default);
+        services.AddSingleton<PenningtonYamlContextProvider>();
+
         services.AddSingleton<FrontMatterParser>();
         services.AddFileWatched<NavigationBuilder>();
 
@@ -418,6 +426,18 @@ public static class PenningtonExtensions
         // Output generation
         services.AddTransient<OutputGenerationService>();
 
+        return services;
+    }
+
+    /// <summary>
+    /// Register a source-generated <see cref="YamlSerializerContext"/> so the types it covers
+    /// deserialize without reflection (NativeAOT/trim-friendly). Types not covered by any
+    /// registered context fall back to reflection. Satellite templates call this for their own
+    /// front-matter records; end users call it for theirs.
+    /// </summary>
+    public static IServiceCollection AddPenningtonYamlContext(this IServiceCollection services, YamlSerializerContext context)
+    {
+        services.AddSingleton<YamlSerializerContext>(context);
         return services;
     }
 

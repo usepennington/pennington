@@ -7,9 +7,7 @@ using Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Pipeline;
 using Routing;
-using YamlDotNet.Core;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
+using SharpYaml;
 
 /// <summary>
 /// Holds the unified redirect map used by <see cref="PenningtonRedirectMiddleware"/>
@@ -164,12 +162,7 @@ public sealed class RedirectContentService : IContentService
 
         try
         {
-            var deserializer = new DeserializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                .IgnoreUnmatchedProperties()
-                .Build();
-
-            var config = deserializer.Deserialize<RedirectsConfig>(yaml);
+            var config = YamlSerializer.Deserialize<RedirectsConfig>(yaml, PenningtonYaml.ReflectionOptions);
             if (config?.Redirects is null || config.Redirects.Count == 0)
             {
                 return ImmutableDictionary<string, string>.Empty;

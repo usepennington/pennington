@@ -100,6 +100,9 @@ public static class DocSiteServiceExtensions
             options.ConfigurePennington?.Invoke(penn);
         });
 
+        // Source-generated YAML metadata for DocSite's front-matter types (reflection fallback otherwise).
+        services.AddPenningtonYamlContext(DocSiteYamlContext.Default);
+
         // Make Pennington.UI components available inline in markdown via Mdazor.
         // <CodeBlock> is intentionally excluded: markdown authors should use fenced
         // code blocks, not a component round-trip through Mdazor+Markdig.

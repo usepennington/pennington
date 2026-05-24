@@ -11,7 +11,7 @@ When a piece of site content is structured data — sponsors, navigation, schedu
 
 ## Register the file
 
-`AddDataFile<T>(name, path)` deserializes `path` into `T` on first access and tracks the file for changes. Format is chosen from the extension: `.yml` and `.yaml` go through YamlDotNet, `.json` through `System.Text.Json`. Both deserializers use camelCase property naming with case-insensitive matching, mirroring how front matter is parsed.
+`AddDataFile<T>(name, path)` deserializes `path` into `T` on first access and tracks the file for changes. Format is chosen from the extension: `.yml` and `.yaml` go through SharpYaml, `.json` through `System.Text.Json`. Both deserializers use camelCase property naming with case-insensitive matching, mirroring how front matter is parsed.
 
 ```csharp
 builder.Services.AddDataFile<List<Sponsor>>("sponsors", "data/sponsors.yml");
@@ -21,7 +21,7 @@ builder.Services.AddDataFile<List<NavLink>>("nav",      "data/nav.json");
 
 The lookup key (`"sponsors"`) is case-insensitive and must be unique across registrations. Paths are resolved against the current working directory if relative.
 
-The target type needs a parameterless constructor — use a record with init-only properties so YamlDotNet can populate it:
+The target type needs a parameterless constructor — use a record with init-only properties so SharpYaml can populate it:
 
 ```csharp
 public record Sponsor

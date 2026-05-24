@@ -23,6 +23,7 @@
     <PackageVersion Include="MinVer" Version="7.0.0" />
     <PackageVersion Include="MonorailCss" Version="0.0.5-alpha.0.146" />
     <PackageVersion Include="MonorailCss.Discovery" Version="0.0.5-alpha.0.146" />
+    <PackageVersion Include="SharpYaml" Version="3.7.0" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Spectre.Console" Version="0.54.1-alpha.0.7" />
     <PackageVersion Include="Spectre.Console.Cli" Version="1.0.0-alpha.0.7" />
@@ -37,7 +38,6 @@
     <PackageVersion Include="XenoAtom.Terminal.UI" Version="3.4.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
-    <PackageVersion Include="YamlDotNet" Version="16.3.0" />
     <PackageVersion Include="ZiggyCreatures.FusionCache" Version="2.6.0" />
   </ItemGroup>
 </Project>

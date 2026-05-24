@@ -2,24 +2,19 @@ namespace Pennington.Data;
 
 using System.IO.Abstractions;
 using System.Text.Json;
-using YamlDotNet.RepresentationModel;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
+using FrontMatter;
+using SharpYaml;
+using SharpYaml.Events;
 
 /// <summary>
 /// Deserializes a data file's bytes into a typed value. Format is chosen from the
-/// extension (<c>.yml</c> / <c>.yaml</c> use YamlDotNet, <c>.json</c> uses System.Text.Json),
+/// extension (<c>.yml</c> / <c>.yaml</c> use SharpYaml, <c>.json</c> uses System.Text.Json),
 /// both configured with camelCase naming and case-insensitive property matching to mirror
-/// <see cref="FrontMatter.FrontMatterParser"/>'s behavior.
+/// <see cref="FrontMatter.FrontMatterParser"/>'s behavior. Arbitrary data types deserialize
+/// via reflection (no source-gen context covers them).
 /// </summary>
 public static class DataFileLoader
 {
-    private static readonly IDeserializer YamlDeserializer = new DeserializerBuilder()
-        .WithNamingConvention(CamelCaseNamingConvention.Instance)
-        .WithCaseInsensitivePropertyMatching()
-        .IgnoreUnmatchedProperties()
-        .Build();
-
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -93,9 +88,20 @@ public static class DataFileLoader
     {
         try
         {
-            var stream = new YamlStream();
-            stream.Load(new StringReader(content));
-            return stream.Documents.Count > 0 && stream.Documents[0].RootNode is YamlSequenceNode;
+            // The first node-start event after the stream/document preamble is the root node.
+            var parser = Parser.CreateParser(new StringReader(content));
+            while (parser.MoveNext())
+            {
+                switch (parser.Current)
+                {
+                    case SequenceStart:
+                        return true;
+                    case MappingStart or Scalar:
+                        return false;
+                }
+            }
+
+            return false;
         }
         catch (Exception ex)
         {
@@ -129,7 +135,7 @@ public static class DataFileLoader
     {
         try
         {
-            return YamlDeserializer.Deserialize<T>(content)
+            return YamlSerializer.Deserialize<T>(content, PenningtonYaml.ReflectionOptions)
                 ?? throw new InvalidDataException($"YAML in {path} deserialized to null");
         }
         catch (Exception ex) when (ex is not InvalidDataException)

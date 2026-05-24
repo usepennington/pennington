@@ -12,6 +12,8 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Direct reference so the SharpYaml source generator runs in this project (DocSiteYamlContext). -->
+    <PackageReference Include="SharpYaml" />
     <ProjectReference Include="..\Pennington\Pennington.csproj" />
     <ProjectReference Include="..\Pennington.UI\Pennington.UI.csproj" />
     <ProjectReference Include="..\Pennington.MonorailCss\Pennington.MonorailCss.csproj" />
