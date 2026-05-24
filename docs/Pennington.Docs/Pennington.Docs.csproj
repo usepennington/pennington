@@ -5,6 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <!-- The static build is a run-once process: dynamic-PGO instrumentation never pays
+         back its warm-up cost before the process exits, so disable it to cut JIT overhead. -->
+    <TieredPGO>false</TieredPGO>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pennington.DocSite\Pennington.DocSite.csproj" />
