@@ -82,7 +82,11 @@ public sealed class PenningtonOptions
     /// <summary>Configuration for the search index.</summary>
     public SearchIndexOptions SearchIndex { get; } = new();
 
-    /// <summary>Assemblies to scan for @page Razor components.</summary>
+    /// <summary>
+    /// Extra assemblies to scan for routable <c>@page</c> Razor components. The
+    /// entry assembly is always scanned, so a bare host need only set this to add
+    /// components defined in other assemblies.
+    /// </summary>
     public Assembly[] AdditionalRoutingAssemblies { get; set; } = [];
 }
 

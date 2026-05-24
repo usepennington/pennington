@@ -1,0 +1,77 @@
+namespace Pennington.TreeSitter.Tests.Integration;
+
+using Microsoft.AspNetCore.Http;
+using Pennington.Highlighting;
+using Pennington.Markdown.Extensions;
+using Pennington.TreeSitter;
+using Pennington.TreeSitter.Fragments;
+using Pennington.TreeSitter.Parsing;
+using Pennington.TreeSitter.Preprocessing;
+using Pennington.TreeSitter.Resolution;
+
+/// <summary>
+/// Drives the real <see cref="CodeBlockRenderingService"/> so the test exercises the same pipeline the markdown
+/// renderer uses: preprocessor selection by priority, fragment extraction, highlighting, and HTML wrapping.
+/// </summary>
+public sealed class CodeBlockPipelineTests : IDisposable
+{
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "pennington-ts-pipeline-" + Guid.NewGuid().ToString("N"));
+
+    private CodeBlockRenderingService CreatePipeline()
+    {
+        Directory.CreateDirectory(_root);
+        File.WriteAllText(
+            Path.Combine(_root, "calc.py"),
+            "class Calculator:\n    def add(self, a, b):\n        return a + b\n");
+
+        var options = new TreeSitterOptions { ContentRoot = _root };
+        var fragmentService = new SourceFragmentService(options, new TreeSitterParserPool(), new NamePathResolver());
+        var highlighting = new HighlightingService([]);
+        var preprocessor = new TreeSitterCodeBlockPreprocessor(fragmentService, highlighting, new HttpContextAccessor());
+
+        return new CodeBlockRenderingService(highlighting, [preprocessor]);
+    }
+
+    [Fact]
+    public void Symbol_fence_renders_extracted_source()
+    {
+        var pipeline = CreatePipeline();
+
+        var html = pipeline.Render("calc.py > Calculator.add", "python:symbol");
+
+        html.ShouldContain("def add(self, a, b):");
+        html.ShouldContain("return a + b");
+        html.ShouldContain("language-python");
+    }
+
+    [Fact]
+    public void Unresolved_member_renders_error_comment()
+    {
+        var pipeline = CreatePipeline();
+
+        var html = pipeline.Render("calc.py > Calculator.missing", "python:symbol");
+
+        html.ShouldContain("// Error:");
+        html.ShouldContain("not found");
+    }
+
+    [Fact]
+    public void Plain_fence_without_symbol_modifier_is_left_to_normal_highlighting()
+    {
+        var pipeline = CreatePipeline();
+
+        var html = pipeline.Render("print('hi')", "python");
+
+        // No file lookup happened — the literal code is rendered, not an extraction error.
+        html.ShouldContain("print(&#39;hi&#39;)");
+        html.ShouldNotContain("// Error:");
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_root))
+        {
+            Directory.Delete(_root, recursive: true);
+        }
+    }
+}

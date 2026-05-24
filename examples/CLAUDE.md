@@ -32,6 +32,7 @@ Every example folder has a `README.md` describing its purpose, the concepts it t
 | `BeyondCustomRazorComponentExample` | Author a Razor component (`PricingCard`) and register it with Mdazor via `AddMdazorComponent<T>()`. | `tutorials/beyond-basics/custom-razor-component.md` |
 | `BeyondLocaleExample` | Add a second URL-prefixed locale to a DocSite via `ConfigureLocalization` + `Content/<locale>/`. | `tutorials/beyond-basics/add-a-locale.md`, `how-to/discovery/localization.md` |
 | `BeyondRoslynExample` | `AddPenningtonRoslyn` against a sibling slnx — markdown fences resolve `:xmldocid` / `:xmldocid,bodyonly` / `:xmldocid-diff` / `:path`. | `tutorials/beyond-basics/connect-roslyn.md` |
+| `BeyondTreeSitterExample` | `AddPenningtonTreeSitter` against a `Samples/` folder — `<lang>:symbol` fences extract declarations by name path (`Type.Member`) across Python/Rust/Go/TypeScript, plus `,bodyonly` and whole-file forms. | _(reference for `Pennington.TreeSitter`)_ |
 | `BeyondTranslationAuditExample` | Wire `AddPenningtonTranslationAudit` so missing translations surface in the dev overlay and build report. | _(reference for `Pennington.TranslationAudit`)_ |
 | `BeyondTuiExample` | Opt the host into the dev-time TUI dashboard via `AddPenningtonTui`. Build mode no-ops. | _(reference for `Pennington.Tui`)_ |
 | `BlogKitchenSinkExample` | Wide BlogSite configuration (hero, projects, socials, RSS, sitemap, JSON-LD) split across helpers for xmldocid fencing. | `how-to/feeds/rss.md`, `how-to/feeds/sitemap.md` |
