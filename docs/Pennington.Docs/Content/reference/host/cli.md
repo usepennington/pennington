@@ -50,8 +50,8 @@ Pennington uses the standard ASP.NET Core host port-binding mechanisms — `--ur
 
 ## Example
 
-```csharp:xmldocid,bodyonly
-M:GettingStartedMinimalSiteExample.Stage3.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/GettingStartedMinimalSiteExample/Stage3_UsePennington.cs > Stage3.Run
 ```
 
 `dotnet run` against this host serves live; `dotnet run -- build` generates to `./output/` at base URL `/`; `dotnet run -- build /sub dist` or `dotnet run -- build --base-url=/sub --output=dist` generates to `./dist/` at base URL `/sub`.

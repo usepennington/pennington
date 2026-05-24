@@ -45,7 +45,7 @@ The `@page` directives on `Tags.razor`, `Tag.razor`, and `Blog.razor` are fixed 
 
 A BlogSite host that mounts every route above via a single `UseBlogSite` call.
 
-```csharp:path
+```csharp:symbol
 examples/BlogSiteScaffoldExample/Program.cs
 ```
 

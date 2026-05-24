@@ -31,11 +31,11 @@ The styling site has a single home page. A menu needs somewhere to point, so let
 
 Add `Content/guides/installation.md` and `Content/guides/deployment.md`. The `order:` front-matter key sets each page's position in its section — lower sorts first.
 
-```markdown:path
+```markdown:symbol
 examples/GettingStartedNavigationExample/Content/guides/installation.md
 ```
 
-```markdown:path
+```markdown:symbol
 examples/GettingStartedNavigationExample/Content/guides/deployment.md
 ```
 
@@ -46,7 +46,7 @@ examples/GettingStartedNavigationExample/Content/guides/deployment.md
 
 Add `Content/about.md` directly under the content root — not in a folder — so it becomes a top-level menu entry rather than part of a section.
 
-```markdown:path
+```markdown:symbol
 examples/GettingStartedNavigationExample/Content/about.md
 ```
 
@@ -84,7 +84,7 @@ examples/GettingStartedNavigationExample/Content/about.md
 
 This component does three things: it collects the table-of-contents entries every content service exposes, hands them to `NavigationBuilder` to sort and nest, and renders the resulting tree as links.
 
-```razor:path
+```razor:symbol
 examples/GettingStartedNavigationExample/Components/Layout/NavMenu.razor
 ```
 
@@ -97,7 +97,7 @@ examples/GettingStartedNavigationExample/Components/Layout/NavMenu.razor
 
 Drop `<NavMenu />` into the header of `MainLayout.razor`. Because the layout wraps every routed page, the menu then appears site-wide.
 
-```razor:path
+```razor:symbol
 examples/GettingStartedNavigationExample/Components/Layout/MainLayout.razor
 ```
 

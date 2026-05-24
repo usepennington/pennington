@@ -39,8 +39,8 @@ M:FocusedCodeSamplesExample.MonolithWordCounter.CountWords(System.String,System.
 
 Which renders as:
 
-```csharp:xmldocid
-M:FocusedCodeSamplesExample.MonolithWordCounter.CountWords(System.String,System.Int32)
+```csharp:symbol
+examples/FocusedCodeSamplesExample/MonolithWordCounter.cs > MonolithWordCounter.CountWords
 ```
 
 The xmldocid grammar for each member kind — `T:`, `M:`, `P:`, `F:`, `E:` — is listed in <xref:reference.markdown.code-block-args>.
@@ -57,8 +57,8 @@ M:FocusedCodeSamplesExample.MonolithWordCounter.CountWords(System.String,System.
 
 Which renders as:
 
-```csharp:xmldocid,bodyonly
-M:FocusedCodeSamplesExample.MonolithWordCounter.CountWords(System.String,System.Int32)
+```csharp:symbol,bodyonly
+examples/FocusedCodeSamplesExample/MonolithWordCounter.cs > MonolithWordCounter.CountWords
 ```
 
 `,bodyonly` also works on types (members between the braces, skipping the class header) and properties (the `get`/`set` accessors without the leading xmldoc).
@@ -75,8 +75,8 @@ M:FocusedCodeSamplesExample.MonolithWordCounter.CountWords(System.String,System.
 
 Which renders as:
 
-```csharp:xmldocid,bodyonly,usings
-M:FocusedCodeSamplesExample.MonolithWordCounter.CountWords(System.String,System.Int32)
+```csharp:symbol,bodyonly
+examples/FocusedCodeSamplesExample/MonolithWordCounter.cs > MonolithWordCounter.CountWords
 ```
 
 The body uses `StringBuilder`, so `using System.Text;` lands above the snippet. `List<>`, `Dictionary<>`, and the `OrderByDescending` chain resolve through implicit/global usings — those are skipped by design, on the assumption that a reader who has `<ImplicitUsings>enable</ImplicitUsings>` already has them.
@@ -95,8 +95,8 @@ T:FocusedCodeSamplesExample.ModularWordCounter
 
 Which renders as:
 
-```csharp:xmldocid
-T:FocusedCodeSamplesExample.ModularWordCounter
+```csharp:symbol
+examples/FocusedCodeSamplesExample/ModularWordCounter.cs > ModularWordCounter
 ```
 
 In a walkthrough, fence each helper separately so each section carries one idea:
@@ -121,26 +121,26 @@ M:FocusedCodeSamplesExample.ModularWordCounter.Format(System.Collections.Generic
 
 The orchestrator renders as a three-liner that reads top-to-bottom as the outline for the walkthrough:
 
-```csharp:xmldocid,bodyonly
-M:FocusedCodeSamplesExample.ModularWordCounter.CountWords(System.String,System.Int32)
+```csharp:symbol,bodyonly
+examples/FocusedCodeSamplesExample/ModularWordCounter.cs > ModularWordCounter.CountWords
 ```
 
 `Tokenize`:
 
-```csharp:xmldocid,bodyonly
-M:FocusedCodeSamplesExample.ModularWordCounter.Tokenize(System.String)
+```csharp:symbol,bodyonly
+examples/FocusedCodeSamplesExample/ModularWordCounter.cs > ModularWordCounter.Tokenize
 ```
 
 `Tally`:
 
-```csharp:xmldocid,bodyonly
-M:FocusedCodeSamplesExample.ModularWordCounter.Tally(System.Collections.Generic.List{System.String},System.Int32)
+```csharp:symbol,bodyonly
+examples/FocusedCodeSamplesExample/ModularWordCounter.cs > ModularWordCounter.Tally
 ```
 
 `Format`:
 
-```csharp:xmldocid,bodyonly
-M:FocusedCodeSamplesExample.ModularWordCounter.Format(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Int32}})
+```csharp:symbol,bodyonly
+examples/FocusedCodeSamplesExample/ModularWordCounter.cs > ModularWordCounter.Format
 ```
 
 Keep the helpers `public` — `internal` methods do not surface xmldoc and do not participate in the symbol table the preprocessor walks.
@@ -160,9 +160,9 @@ M:FocusedCodeSamplesExample.ModularWordCounter.FormatV2(System.Collections.Gener
 
 Which renders as:
 
-```csharp:xmldocid-diff,bodyonly
-M:FocusedCodeSamplesExample.ModularWordCounter.Format(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Int32}})
-M:FocusedCodeSamplesExample.ModularWordCounter.FormatV2(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.Int32}})
+```csharp:symbol-diff,bodyonly
+examples/FocusedCodeSamplesExample/ModularWordCounter.cs > ModularWordCounter.Format
+examples/FocusedCodeSamplesExample/ModularWordCounter.cs > ModularWordCounter.FormatV2
 ```
 
 The fence body must hold exactly two xmldocids, one per line, in before → after order. `,bodyonly` applies to both sides, so the diff compares implementations without xmldoc boilerplate drowning out the change.

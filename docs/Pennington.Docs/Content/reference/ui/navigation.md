@@ -13,7 +13,7 @@ tags: [ui, navigation, razor, components]
 
 ### Declaration
 
-```razor:path
+```razor:symbol
 src/Pennington.UI/Components/Navigation/TableOfContentsNavigation.razor
 ```
 
@@ -42,7 +42,7 @@ Renders an ordered `<nav><ul>` of `NavigationTreeItem` entries, recursing one le
 
 ### Declaration
 
-```razor:path
+```razor:symbol
 src/Pennington.UI/Components/Navigation/OutlineNavigation.razor
 ```
 

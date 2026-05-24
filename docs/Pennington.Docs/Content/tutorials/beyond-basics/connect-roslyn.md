@@ -30,8 +30,8 @@ Before `Pennington.Roslyn` can pull source, there needs to be a `.slnx` listing 
 
 This is the plain DocSite from the scaffold tutorial with no Roslyn wired yet. A `csharp:xmldocid` fence dropped into a markdown page right now renders as a literal code block, because no preprocessor is registered.
 
-```csharp:xmldocid,bodyonly,usings
-M:BeyondRoslynExample.Stage1.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BeyondRoslynExample/Stage1_NoRoslyn.cs > Stage1.Run
 ```
 
 </Step>
@@ -60,12 +60,12 @@ Then add this property to the host csproj — without it, the two projects compe
 
 Drop the two source files below into `Sample/`. They are the symbols the rest of the tutorial points at; the XML doc comments are what make them addressable by XmlDocId. (The fences below render from the in-repo example so the page can show what the disk file looks like — they are not yet wired into your local project.)
 
-```csharp:xmldocid
-T:BeyondRoslynExample.Sample.Calculator
+```csharp:symbol
+examples/BeyondRoslynExample/Sample/Calculator.cs > Calculator
 ```
 
-```csharp:xmldocid
-T:BeyondRoslynExample.Sample.Greeter
+```csharp:symbol
+examples/BeyondRoslynExample/Sample/Greeter.cs > Greeter
 ```
 
 </Step>
@@ -75,7 +75,7 @@ T:BeyondRoslynExample.Sample.Greeter
 
 Create an inner `.slnx` that registers only the Sample library. `SolutionPath` points at this file rather than the outer repo-level solution, so the MSBuild workspace loads exactly the source to fence into docs.
 
-```xml:path
+```xml:symbol
 examples/BeyondRoslynExample/BeyondRoslynExample.slnx
 ```
 
@@ -135,8 +135,8 @@ For the full `RoslynOptions` surface — including `ProjectFilter`, which narrow
 
 The complete stage 2 host adds one `AddPenningtonRoslyn` call to the stage 1 setup; nothing else changes.
 
-```csharp:xmldocid,bodyonly,usings
-M:BeyondRoslynExample.Stage2.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BeyondRoslynExample/Stage2_AddRoslyn.cs > Stage2.Run
 ```
 
 </Step>
@@ -180,8 +180,8 @@ order: 30
 
 The fence language is `csharp:xmldocid`. The body is a single XmlDocId — `T:` for a type, `M:` for a method, `P:` for a property, `F:` for a field.
 
-```csharp:xmldocid
-T:BeyondRoslynExample.Sample.Calculator
+```csharp:symbol
+examples/BeyondRoslynExample/Sample/Calculator.cs > Calculator
 ```
 
 </Step>
@@ -191,8 +191,8 @@ T:BeyondRoslynExample.Sample.Calculator
 
 Method XmlDocIds include full parameter types. The Sample library's `Add` method takes two `int` parameters, so the XmlDocId reads `M:...Add(System.Int32,System.Int32)`.
 
-```csharp:xmldocid
-M:BeyondRoslynExample.Sample.Calculator.Add(System.Int32,System.Int32)
+```csharp:symbol
+examples/BeyondRoslynExample/Sample/Calculator.cs > Calculator.Add
 ```
 
 </Step>
@@ -250,8 +250,8 @@ Two fence options let you control what renders: append `,bodyonly` to strip the 
 
 Appending `,bodyonly` to the fence language returns only the block contents, or the expression-body expression for arrow members. Use it when the declaration is noise and the snippet should show what happens inside.
 
-```csharp:xmldocid,bodyonly
-M:BeyondRoslynExample.Sample.Calculator.Multiply(System.Int32,System.Int32)
+```csharp:symbol,bodyonly
+examples/BeyondRoslynExample/Sample/Calculator.cs > Calculator.Multiply
 ```
 
 </Step>
@@ -261,9 +261,9 @@ M:BeyondRoslynExample.Sample.Calculator.Multiply(System.Int32,System.Int32)
 
 Place multiple XmlDocIds in one fence, one per line. The preprocessor renders them all in the order listed — useful for pairing two related members in the same code block.
 
-```csharp:xmldocid
-M:BeyondRoslynExample.Sample.Greeter.Greet(System.String)
-M:BeyondRoslynExample.Sample.Calculator.Mean(System.Collections.Generic.IReadOnlyList{System.Int32})
+```csharp:symbol
+examples/BeyondRoslynExample/Sample/Greeter.cs > Greeter.Greet
+examples/BeyondRoslynExample/Sample/Calculator.cs > Calculator.Mean
 ```
 
 </Step>

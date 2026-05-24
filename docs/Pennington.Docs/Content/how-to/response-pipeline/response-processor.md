@@ -23,7 +23,7 @@ Implement <xref:reference.api.i-response-processor> as a sealed class. Two rules
 - `ShouldProcess` runs before the body is buffered. Returning `false` skips body capture entirely, so this is where filtering by status code, content type, or request path belongs. The example accepts only 2xx HTML responses, letting static assets, JSON endpoints, and redirects pass through untouched.
 - `ProcessAsync` receives the full captured body as a string and returns the replacement. The example locates the last `</body>` with `LastIndexOf` and splices the widget HTML in, falling back to append-at-end when the tag is absent so content still reaches the browser.
 
-```csharp:path
+```csharp:symbol
 examples/ExtensibilityLabExample/FeedbackWidgetProcessor.cs
 ```
 

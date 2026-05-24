@@ -21,8 +21,8 @@ The reference implementation is `BlogSiteContentService.GetRssXmlAsync` plus the
 
 Add a `Task<string>` method to your content service that orders the cached records and emits XML with `System.Xml.Linq`. `BlogSiteContentService.GetRssXmlAsync` is the reference body:
 
-```csharp:xmldocid
-M:Pennington.BlogSite.Services.BlogSiteContentService.GetRssXmlAsync
+```csharp:symbol
+src/Pennington.BlogSite/Services/BlogSiteContentService.cs > BlogSiteContentService.GetRssXmlAsync
 ```
 
 The pieces to adapt for your records:

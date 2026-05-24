@@ -73,7 +73,7 @@ dotnet add package Pennington
 
 Create a `Content/` folder beside `Program.cs` and add `index.md`. The catch-all you wire up in the next section serves anything under `Content/` — this is the file `/` will resolve to.
 
-```markdown:path
+```markdown:symbol
 examples/GettingStartedBlazorPagesExample/Content/index.md
 ```
 
@@ -102,7 +102,7 @@ Replace the `Program.cs` body with the host below, then add three Razor files: a
 
 **Replace `Program.cs`**
 
-```csharp:path
+```csharp:symbol
 examples/GettingStartedBlazorPagesExample/Program.cs
 ```
 
@@ -113,7 +113,7 @@ examples/GettingStartedBlazorPagesExample/Program.cs
 
 `_Imports.razor` provides the `@using` set every `.razor` file in the project sees.
 
-```razor:path
+```razor:symbol
 examples/GettingStartedBlazorPagesExample/_Imports.razor
 ```
 
@@ -124,7 +124,7 @@ examples/GettingStartedBlazorPagesExample/_Imports.razor
 
 `App.razor` is the root component `MapRazorComponents<App>()` mounts. It owns the entire HTML document — `<!DOCTYPE>`, `<html>`, `<head>` (with `<HeadOutlet>` so each routed page's `<PageTitle>` flows in), and `<body>`. The `<Router>` inside `<body>` scans the assembly for `@page` components and routes each request to the matching one.
 
-```razor:path
+```razor:symbol
 examples/GettingStartedBlazorPagesExample/Components/App.razor
 ```
 
@@ -135,7 +135,7 @@ examples/GettingStartedBlazorPagesExample/Components/App.razor
 
 `MarkdownPage.razor` is the `@page "/{*Path}"` catch-all. Blazor binds the request path to the `Path` parameter; the component walks the content pipeline and injects the rendered HTML via `(MarkupString)`.
 
-```razor:path
+```razor:symbol
 examples/GettingStartedBlazorPagesExample/Components/Pages/MarkdownPage.razor
 ```
 
@@ -162,7 +162,7 @@ The file-path-to-URL convention is unchanged by routing through Blazor. Penningt
 
 Leave `dotnet run` going from the previous section and drop this file in.
 
-```markdown:path
+```markdown:symbol
 examples/GettingStartedBlazorPagesExample/Content/about.md
 ```
 

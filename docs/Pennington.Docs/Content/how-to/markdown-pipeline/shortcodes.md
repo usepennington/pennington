@@ -67,8 +67,8 @@ Implement `IShortcode` as a sealed class. `ExecuteAsync` receives the parsed inv
 
 The lab below claims `GitHubRepo` and turns a positional repo slug into an anchor:
 
-```csharp:xmldocid
-T:ExtensibilityLabExample.GitHubRepoShortcode
+```csharp:symbol
+examples/ExtensibilityLabExample/GitHubRepoShortcode.cs > GitHubRepoShortcode
 ```
 
 A few patterns worth copying:
@@ -91,7 +91,7 @@ The expander reads `IEnumerable<IShortcode>` at construction; when two handlers 
 
 A markdown page that mixes both shortcodes:
 
-```markdown:path
+```markdown:symbol
 examples/ExtensibilityLabExample/Content/shortcodes-demo.md
 ```
 

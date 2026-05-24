@@ -29,7 +29,7 @@ Entry points that dispatch between dev-serve and static-build based on `args[0]`
 
 A complete DocSite host wiring all three layers — `AddDocSite`, `UseDocSite`, `RunDocSiteAsync` — in call order.
 
-```csharp:path
+```csharp:symbol
 examples/DocSiteScaffoldExample/Program.cs
 ```
 

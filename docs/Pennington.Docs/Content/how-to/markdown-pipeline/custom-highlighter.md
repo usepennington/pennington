@@ -20,7 +20,7 @@ The recipe below references `examples/ExtensibilityLabExample/PipelineHighlighte
 
 Implement <xref:reference.api.i-code-highlighter> as a sealed class. `Highlight(code, language)` returns the full HTML for the block, including the outer `<pre><code>` wrapper — the implementation owns escaping. Use `WebUtility.HtmlEncode` on every literal not wrapped in a span; anything missed becomes an injection vector.
 
-```csharp:path
+```csharp:symbol
 examples/ExtensibilityLabExample/PipelineHighlighter.cs
 ```
 
@@ -33,8 +33,8 @@ Two values shape how the highlighter slots into the chain:
 
 `PenningtonOptions.Highlighting.AddHighlighter` inserts the instance into the priority-sorted chain resolved by `HighlightingService`. Call it inside the `AddPennington` delegate so the highlighter is active for both `dotnet run` and `dotnet run -- build output`.
 
-```csharp:xmldocid,bodyonly
-M:Pennington.Infrastructure.HighlightingOptions.AddHighlighter(Pennington.Highlighting.ICodeHighlighter)
+```csharp
+_highlighters.Add(highlighter);
 ```
 
 A markdown fence tagged with one of the strings from `SupportedLanguages` now routes to the custom highlighter instead of the fallback chain.

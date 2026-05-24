@@ -10,6 +10,7 @@
     <ProjectReference Include="..\..\src\Pennington.DocSite\Pennington.DocSite.csproj" />
     <ProjectReference Include="..\..\src\Pennington.DocSite.Api\Pennington.DocSite.Api.csproj" />
     <ProjectReference Include="..\..\src\Pennington.Roslyn\Pennington.Roslyn.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.TreeSitter\Pennington.TreeSitter.csproj" />
     <ProjectReference Include="..\..\src\Pennington.Tui\Pennington.Tui.csproj" />
   </ItemGroup>
   <ItemGroup>

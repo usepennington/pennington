@@ -36,7 +36,7 @@ Drop the snippet for your server into its config location and reload. Both snipp
 
 Drop into `/etc/nginx/sites-enabled/` (or `conf.d/`), then `nginx -s reload`.
 
-```nginx:path
+```nginx:symbol
 examples/SubPathDeployableExample/nginx.conf
 ```
 
@@ -44,7 +44,7 @@ examples/SubPathDeployableExample/nginx.conf
 
 Drop `web.config` into the site root alongside `index.html`, then run `iisreset` or recycle the app pool.
 
-```xml:path
+```xml:symbol
 examples/SubPathDeployableExample/web.config
 ```
 

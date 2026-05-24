@@ -36,7 +36,7 @@ The target library needs `<GenerateDocumentationFile>true</GenerateDocumentation
 
 Add a project reference to `Pennington.ApiMetadata.Reflection`, add a `<PackageReference>` to the library you want to document, and have Pennington resolve the assembly by simple name. A complete single-package DocSite host:
 
-```csharp:path
+```csharp:symbol
 examples/FusionCacheDocSiteExample/Program.cs
 ```
 

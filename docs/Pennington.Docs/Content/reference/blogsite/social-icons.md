@@ -11,7 +11,7 @@ uid: reference.blogsite.social-icons
 
 ## Declaration
 
-```razor:path
+```razor:symbol
 src/Pennington.BlogSite/Components/SocialIcons.razor
 ```
 
@@ -30,8 +30,8 @@ All four fragments share `viewBox="0 0 24 24"`, `stroke="currentColor"`, and `fi
 
 ## `SocialLink.Icon` shape
 
-```csharp:xmldocid
-T:Pennington.BlogSite.SocialLink
+```csharp:symbol
+src/Pennington.BlogSite/BlogSiteOptions.cs > SocialLink
 ```
 
 `SocialLink` is a `record SocialLink(RenderFragment Icon, string Url)`. The `Icon` field accepts the static `RenderFragment` directly (`SocialIcons.GithubIcon`), not the Razor component tag form. For consumer wiring see <xref:how-to.feeds.blogsite-homepage>.

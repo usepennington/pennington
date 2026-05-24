@@ -34,7 +34,7 @@ Let's begin with a single page parked directly under an area folder — no subfo
 
 `Program.cs` already wires two `ContentArea` entries from the previous tutorial — `Guides` bound to `guides/` and `Reference` bound to `reference/`. Leave it untouched; every change in this tutorial is a filesystem change under `Content/`.
 
-```csharp:path
+```csharp:symbol
 examples/DocSiteSectionsExample/Program.cs
 ```
 
@@ -45,8 +45,8 @@ examples/DocSiteSectionsExample/Program.cs
 
 Create `Content/guides/install.md` with minimal front matter — a `title:` and a `description:`, nothing else.
 
-```csharp:xmldocid,bodyonly
-M:DocSiteSectionsExample.Stage1.Source
+```csharp:symbol,bodyonly
+examples/DocSiteSectionsExample/Stage1_FlatArea.cs > Stage1.Source
 ```
 
 Paste the YAML-plus-markdown content above into `Content/guides/install.md`. With no subfolder and no `order:`, the page sorts to the top of the Guides area as a flat entry.
@@ -82,8 +82,8 @@ Delete `Content/guides/install.md` and create `Content/guides/getting-started/in
 
 **Add `sectionLabel: Getting Started` and `order: 10` to the front matter**
 
-```csharp:xmldocid,bodyonly
-M:DocSiteSectionsExample.Stage2.Source
+```csharp:symbol,bodyonly
+examples/DocSiteSectionsExample/Stage2_SectionAndOrder.cs > Stage2.Source
 ```
 
 `order:` sorts pages within the section (smaller first). `sectionLabel:` surfaces in breadcrumbs and prev/next chrome.
@@ -112,15 +112,15 @@ Let's add the remaining pages to `getting-started/` and `advanced/` so Guides ha
 
 Add the Guides landing page and two more pages to the `getting-started/` subfolder. Give `first-project.md` an `order:` of `20` and `configuration.md` an `order:` of `30`. Each page also carries `sectionLabel: Getting Started`.
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteSectionsExample/Content/guides/index.md
 ```
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteSectionsExample/Content/guides/getting-started/first-project.md
 ```
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteSectionsExample/Content/guides/getting-started/configuration.md
 ```
 
@@ -133,11 +133,11 @@ The 10/20/30 spacing leaves room to drop pages in later without renumbering. The
 
 Create `Content/guides/advanced/` and add two pages with `sectionLabel: Advanced` and `order:` values of `40` and `50`.
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteSectionsExample/Content/guides/advanced/custom-layouts.md
 ```
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteSectionsExample/Content/guides/advanced/response-pipeline.md
 ```
 
@@ -167,15 +167,15 @@ The same subfolder-plus-staggered-order pattern applies to the `Reference` area.
 
 Create the `core-api/` subfolder under `Content/reference/` and add two pages, each with `sectionLabel: Core API` and `order:` values of `10` and `20`. The folder creates the section, the key labels it, and the staggered numbers keep sibling sections predictable.
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteSectionsExample/Content/reference/index.md
 ```
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteSectionsExample/Content/reference/core-api/pennington-options.md
 ```
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteSectionsExample/Content/reference/core-api/content-pipeline.md
 ```
 
@@ -186,11 +186,11 @@ examples/DocSiteSectionsExample/Content/reference/core-api/content-pipeline.md
 
 Create `extensions/` and drop two pages in it with `sectionLabel: Extensions` and `order:` values of `30` and `40`. Using `30`/`40` rather than restarting at `10` applies the same staggering rule from unit 3 — the *Core API* minimum is `10` and the *Extensions* minimum is `30`, so the sections sort *Core API → Extensions* without relying on the alphabetical tie-break.
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteSectionsExample/Content/reference/extensions/markdown-extensions.md
 ```
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteSectionsExample/Content/reference/extensions/content-services.md
 ```
 

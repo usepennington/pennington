@@ -20,7 +20,7 @@ The recipe references `examples/VersionedDocSiteExample/`, which documents `Huma
 
 Use one `ContentArea` per version. The `Slug` is both the URL prefix and the folder name under `Content/`, so files at `Content/v1/foo.md` route to `/v1/foo` and the sidebar renders an area selector that doubles as a version switcher.
 
-```csharp:path
+```csharp:symbol
 examples/VersionedDocSiteExample/Program.cs
 ```
 
@@ -30,7 +30,7 @@ The `Areas` declaration is the only place the version names appear in the host w
 
 NuGet allows only one `<PackageReference>` per assembly per project. To document a second version, add a `<PackageDownload>` element pinned with square-bracket exact-version syntax. `<PackageDownload>` fetches the package into the NuGet cache without adding it to the compile graph, leaving the `<PackageReference>` version as the one resolved through the default load context.
 
-```xml:path
+```xml:symbol
 examples/VersionedDocSiteExample/VersionedDocSiteExample.csproj
 ```
 

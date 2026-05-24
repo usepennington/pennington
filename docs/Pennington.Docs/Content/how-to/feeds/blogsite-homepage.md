@@ -24,35 +24,35 @@ For a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](https:/
 
 `HeroContent` is a two-field positional record (`Title`, `Description`) rendered at the top of `/`. `Description` is emitted as a `MarkupString` in `Home.razor`, so light HTML is permitted; plain prose works for most sites.
 
-```csharp:xmldocid
-T:Pennington.BlogSite.HeroContent
+```csharp:symbol
+src/Pennington.BlogSite/BlogSiteOptions.cs > HeroContent
 ```
 
-```csharp:xmldocid,bodyonly,usings
-M:BlogSiteHeroProjectsSocialsExample.Stage1.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BlogSiteHeroProjectsSocialsExample/Stage1_HeroOnly.cs > Stage1.Run
 ```
 
 ### Fill `MyWork` with `Project` entries
 
 `MyWork` takes a `Project[]`, where each `Project(Title, Description, Url)` renders as a linked entry in the "My Work" sidebar card. The array is rendered verbatim, so ordering entries in the initializer controls their display order.
 
-```csharp:xmldocid
-T:Pennington.BlogSite.Project
+```csharp:symbol
+src/Pennington.BlogSite/BlogSiteOptions.cs > Project
 ```
 
-```csharp:xmldocid,bodyonly,usings
-M:BlogSiteHeroProjectsSocialsExample.Stage2.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BlogSiteHeroProjectsSocialsExample/Stage2_AddProjects.cs > Stage2.Run
 ```
 
 ### Wire `Socials` with the built-in icon fragments
 
 `Socials` takes a `SocialLink[]`, where `SocialLink(Icon, Url)` pairs a `RenderFragment` with an `<a href>` target. The four built-in fragments — `GithubIcon`, `BlueskyIcon`, `LinkedInIcon`, `MastodonIcon` — are `static readonly` fields on `Pennington.BlogSite.Components.SocialIcons` and are passed directly without any wrapper type or component registration.
 
-```csharp:xmldocid
-T:Pennington.BlogSite.SocialLink
+```csharp:symbol
+src/Pennington.BlogSite/BlogSiteOptions.cs > SocialLink
 ```
 
-```razor:path
+```razor:symbol
 src/Pennington.BlogSite/Components/SocialIcons.razor
 ```
 
@@ -60,12 +60,12 @@ src/Pennington.BlogSite/Components/SocialIcons.razor
 
 `MainSiteLinks` takes a `HeaderLink[]`, where each `HeaderLink(Title, Url)` appears in both the site header and footer via `MainLayout.razor`. Use relative URLs (`/`, `/archive`, `/tags`) so `BaseUrlHtmlRewriter` can prefix them correctly on sub-path deployments.
 
-```csharp:xmldocid
-T:Pennington.BlogSite.HeaderLink
+```csharp:symbol
+src/Pennington.BlogSite/BlogSiteOptions.cs > HeaderLink
 ```
 
-```csharp:xmldocid,bodyonly,usings
-M:BlogSiteHeroProjectsSocialsExample.Stage3.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BlogSiteHeroProjectsSocialsExample/Stage3_AddSocialsAndHeader.cs > Stage3.Run
 ```
 
 ---

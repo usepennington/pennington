@@ -21,7 +21,7 @@ A working reference: `examples/BareHostRazorPageExample` — one Razor component
 
 Write a Razor component whose `[Parameter]` surface is everything the page needs — there is no ambient `HttpContext`, layout, or cascading state from a parent. The component renders the entire document so it includes `<!DOCTYPE html>` and the `<link rel="stylesheet" href="/styles.css">` tag for MonorailCSS output.
 
-```razor:path
+```razor:symbol
 examples/BareHostRazorPageExample/Components/StatusPage.razor
 ```
 
@@ -29,7 +29,7 @@ examples/BareHostRazorPageExample/Components/StatusPage.razor
 
 `HtmlRenderer` needs Blazor's component services and an `IHttpContextAccessor` so cascading values can resolve. Register both alongside the Pennington and MonorailCSS hosts.
 
-```csharp:path
+```csharp:symbol
 examples/BareHostRazorPageExample/Program.cs
 ```
 

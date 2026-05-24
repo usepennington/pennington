@@ -23,12 +23,12 @@ For a working DocSite setup with one opted-out page, see `Content/main/llms-hidd
 
 Every non-draft page is included in the index by default (`Llms = true`). Setting `llms: false` in a page's front matter causes `LlmsTxtService` to skip it when assembling `/llms.txt` and its sidecar markdown. The page still renders, appears in the sidebar, and participates in search unless `search: false` is also set.
 
-```markdown:path
+```markdown:symbol
 examples/DocSiteKitchenSinkExample/Content/main/llms-hidden.md
 ```
 
-```csharp:xmldocid
-P:Pennington.DocSite.DocSiteFrontMatter.Llms
+```csharp:symbol
+src/Pennington.DocSite/DocSiteFrontMatter.cs > DocSiteFrontMatter.Llms
 ```
 
 For a custom `ContentSelector` (different article wrapper or a non-DocSite layout), set `DocSiteOptions.LlmsTxtContentSelector`. It defaults to `#main-content` and is overridable without leaving DocSite. See [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning) for cases that do require bare `AddPennington`.
@@ -56,8 +56,8 @@ The classes work anywhere in the rendered page — markdown bodies, Razor compon
 
 On a bare host, call `penn.AddLlmsTxt(...)` once. The options surface (`OutputDirectory`, `GenerateFullFile`, `ContentSelector`) is documented at <xref:reference.api.llms-txt-options).
 
-```csharp:xmldocid,bodyonly
-M:ExtensibilityLabExample.LlmsTxtConfiguration.Configure(Pennington.LlmsTxt.LlmsTxtOptions)
+```csharp:symbol,bodyonly
+examples/ExtensibilityLabExample/LlmsTxtConfiguration.cs > LlmsTxtConfiguration.Configure
 ```
 
 Set `GenerateFullFile = true` to also emit `/llms-full.txt` — every sidecar concatenated into one file, useful for one-shot ingest by agents that cannot follow per-page links. Off by default because the file can be large.

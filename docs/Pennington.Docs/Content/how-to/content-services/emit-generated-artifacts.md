@@ -22,7 +22,7 @@ The recipe references `examples/ExtensibilityLabExample/RobotsTxtContentService.
 
 Implement <xref:reference.api.i-content-service> as a sealed class. Every member returns empty except `GetContentToCreateAsync`, which yields one `ContentToCreate` per artifact.
 
-```csharp:path
+```csharp:symbol
 examples/ExtensibilityLabExample/RobotsTxtContentService.cs
 ```
 

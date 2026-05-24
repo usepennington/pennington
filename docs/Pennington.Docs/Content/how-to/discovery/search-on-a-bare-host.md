@@ -26,7 +26,7 @@ The `BareHostSearchExample` mounts the shared Bramble corpus and lights up the m
 
 `Pennington.UI` serves `scripts.js` (the modal) and, transitively, the `DeweySearch.Web` browser client as static web assets under `/_content/`. `Pennington.MonorailCss` carries the modal's styles.
 
-```xml:path
+```xml:symbol
 examples/BareHostSearchExample/BareHostSearchExample.csproj
 ```
 
@@ -37,7 +37,7 @@ examples/BareHostSearchExample/BareHostSearchExample.csproj
 
 `UsePennington` mounts your content folders, not the RCL assets. Call `app.MapStaticAssets()` so `/_content/Pennington.UI/scripts.js` and `/_content/DeweySearch.Web/dewey-search.js` are served.
 
-```csharp:path
+```csharp:symbol
 examples/BareHostSearchExample/Program.cs
 ```
 
@@ -48,7 +48,7 @@ examples/BareHostSearchExample/Program.cs
 
 In your layout, load `dewey-search.js` before `scripts.js` (both `defer`), set `data-default-locale` on `<body>`, and add a trigger element with `id="search-input"`. `scripts.js` self-initializes on load: it binds the click and the Ctrl/Cmd-K shortcut to that element and reads the locale attribute to locate the index. For a multi-locale or subpath-deployed site, also set `data-locales` and `data-base-url`.
 
-```razor:path
+```razor:symbol
 examples/BareHostSearchExample/Components/Layout/MainLayout.razor
 ```
 

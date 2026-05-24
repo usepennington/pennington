@@ -8,6 +8,7 @@ using Pennington.Infrastructure;
 using Pennington.MonorailCss;
 using Pennington.Roslyn;
 using Pennington.Roslyn.ApiMetadata;
+using Pennington.TreeSitter;
 using WordbreakMiddleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -86,10 +87,21 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     ExtendProseCustomization = BrandStyling.Extend,
 });
 
-// Roslyn integration for :xmldocid and :path code extraction
+// Code-fragment fences (:symbol) run through tree-sitter, reading source files directly —
+// no MSBuild workspace, no compilation. ContentRoot is the repo root so fence bodies resolve
+// against src/ and examples/ paths.
+builder.Services.AddPenningtonTreeSitter(treeSitter =>
+{
+    treeSitter.ContentRoot = "../..";
+});
+
+// Roslyn stays for the reflection-backed API reference only, scoped to a .slnf that lists just
+// the Pennington.* projects — so the workspace loads ~13 projects instead of the whole solution.
+// EnableCodeFragmentFences is off because tree-sitter now owns :symbol extraction.
 builder.Services.AddPenningtonRoslyn(roslyn =>
 {
-    roslyn.SolutionPath = "../../Pennington.slnx";
+    roslyn.SolutionPath = "../../Pennington.slnf";
+    roslyn.EnableCodeFragmentFences = false;
 });
 
 // Roslyn-backed API metadata: enumerate public types from the live Pennington

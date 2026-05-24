@@ -18,7 +18,7 @@ There are two ways to wire it in: implement `IHasStructuredData` on your front m
 
 Subclass `JsonLdEntity`, override `Type` with the schema.org type literal, and attribute every field with `[JsonPropertyName]`. Repeat the `[JsonPropertyName("@type")]` attribute on the override — `System.Text.Json` doesn't inherit attributes through `override`.
 
-```csharp:path
+```csharp:symbol
 examples/BlogKitchenSinkExample/StructuredDataBuilder.cs
 ```
 

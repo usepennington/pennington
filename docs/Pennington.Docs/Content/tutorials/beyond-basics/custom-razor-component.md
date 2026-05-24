@@ -36,7 +36,7 @@ Before Mdazor can render a custom tag from markdown, a real Razor component has 
 
 Drop an `_Imports.razor` file at the project root so every `.razor` file in the project gets the Blazor component namespaces. This is the same file a Blazor template ships with — the two `@using` lines are what make `[Parameter]` resolve inside the component file in the next step.
 
-```razor:path
+```razor:symbol
 examples/BeyondCustomRazorComponentExample/_Imports.razor
 ```
 
@@ -47,7 +47,7 @@ examples/BeyondCustomRazorComponentExample/_Imports.razor
 
 Create a `Components/` folder and add `PricingCard.razor` with four `[Parameter]` properties — `Tier`, `Price`, `Features`, and `Highlighted` — and markup that renders a pricing card with a "Most Popular" badge when highlighted. The `Features` parameter is a pipe-delimited string because Mdazor binds only primitive parameter types from markdown attributes; lists arrive as strings and are split inside the component.
 
-```razor:path
+```razor:symbol
 examples/BeyondCustomRazorComponentExample/snippets/stage1/PricingCard.razor
 ```
 
@@ -75,8 +75,8 @@ DocSite already calls `AddMdazor()` and registers the built-in Pennington.UI com
 
 Open `Program.cs` and add a single `builder.Services.AddMdazorComponent<PricingCard>()` line after the `AddDocSite` block. The extension lives in the `Mdazor` namespace and ships from the `Mdazor` NuGet package, already transitively referenced through `Pennington.DocSite` — no package add required.
 
-```csharp:xmldocid,bodyonly,usings
-M:BeyondCustomRazorComponentExample.Stage2.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BeyondCustomRazorComponentExample/Stage2_RegisterMdazorComponent.cs > Stage2.Run
 ```
 
 `AddMdazorComponent<T>()` returns `IServiceCollection`, so additional component registrations can chain off the same call. That becomes handy when registering several custom components at once.
@@ -97,7 +97,7 @@ Now let's add a markdown page that uses `<PricingCard />` twice with different a
 
 Add a new markdown page under `Content/` with front matter (`title: Pricing`, `description:`, `order: 20`) and two `<PricingCard ... />` tags between headings. The first card uses `Tier="Basic" Price="9"`; the second adds `Highlighted="true"` and richer feature text.
 
-```markdown:path
+```markdown:symbol
 examples/BeyondCustomRazorComponentExample/Content/pricing.md
 ```
 

@@ -105,7 +105,7 @@ Now let's swap the pass-through string endpoint for the Pennington content pipel
 
 Create a `Content/` folder beside `Program.cs`, then add `index.md` with the contents below. Two things are required: a YAML front-matter block with a `title:` key, and a markdown body.
 
-```markdown:path
+```markdown:symbol
 examples/GettingStartedMinimalSiteExample/Content/index.md
 ```
 
@@ -116,8 +116,8 @@ examples/GettingStartedMinimalSiteExample/Content/index.md
 
 Replace the body of `Program.cs` with the service-registration block below, which walks through `WebApplication.CreateBuilder` → `AddPennington` → `AddMarkdownContent<DocFrontMatter>` → `app.Build()`.
 
-```csharp:xmldocid,bodyonly,usings
-M:GettingStartedMinimalSiteExample.Stage2.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/GettingStartedMinimalSiteExample/Stage2_AddPennington.cs > Stage2.Run
 ```
 
 `ContentRootPath` sets the host's base for static files; the `ContentPath` passed to `AddMarkdownContent` is where this particular markdown source reads from — both point at `"Content"` here.
@@ -136,7 +136,7 @@ Now we mount the middleware chain with `app.UsePennington()`, add a `MapGet` tha
 
 Update `Program.cs` to match the complete file below. `UsePennington` installs static files, the response-processing middleware, live reload, and auto-registered endpoints like `/sitemap.xml`; `RunOrBuildAsync` serves live when called with no args and generates static HTML when passed `-- build`; the `MapGet` walks the `IContentService` set, finds the matching markdown, and returns rendered HTML.
 
-```csharp:path
+```csharp:symbol
 examples/GettingStartedMinimalSiteExample/Program.cs
 ```
 

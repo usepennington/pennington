@@ -24,8 +24,8 @@ For a complete reference setup, the `BeyondLocaleExample` project has English un
 
 On a DocSite host, set `DefaultLocale` and call `AddLocale` once per additional language inside `ConfigureLocalization`. On a bare `AddPennington` host, configure `PenningtonOptions.Localization` the same way. The default locale owns the URL root; each additional locale gets a URL prefix matching its code, so choose codes that read well in URLs.
 
-```csharp:xmldocid,bodyonly,usings
-M:BeyondLocaleExample.Stage3.Run(System.String[])
+```csharp:symbol,bodyonly
+examples/BeyondLocaleExample/Stage3_SwitcherAppears.cs > Stage3.Run
 ```
 
 See <xref:reference.api.localization-options> for the `LocalizationOptions` members (`DefaultLocale`, `Locales`, `AddLocale`, `LocaleInfo`).
@@ -34,7 +34,7 @@ See <xref:reference.api.localization-options> for the `LocalizationOptions` memb
 
 Default-locale files stay directly under `ContentRootPath` with no prefix. For each additional locale, create a sibling folder named after the locale code and place translated files there, mirroring the default-locale filenames so the two are paired. Pages without a translation fall back to the default locale automatically, so shipping does not require a full translation pass.
 
-```markdown:path
+```markdown:symbol
 examples/BeyondLocaleExample/Content/es/about.md
 ```
 

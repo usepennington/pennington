@@ -23,14 +23,14 @@ For a working DocSite multi-area setup, see [`examples/DocSiteKitchenSinkExample
 
 ### Declare the areas
 
-```csharp:xmldocid,bodyonly
-M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildAreas
+```csharp:symbol,bodyonly
+examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.BuildAreas
 ```
 
 ### Wire the areas onto `DocSiteOptions`
 
-```csharp:xmldocid,bodyonly
-M:DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions
+```csharp:symbol,bodyonly
+examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.BuildDocSiteOptions
 ```
 
 ## Chain `AddMarkdownContent` on a bare host
@@ -39,22 +39,22 @@ On bare `AddPennington`, call `AddMarkdownContent<TFrontMatter>` once per source
 
 ### Register the first source
 
-```csharp:xmldocid,bodyonly
-M:MultipleSourcesExample.ServiceConfiguration.RegisterDocSource(Pennington.Infrastructure.MarkdownContentOptions)
+```csharp:symbol,bodyonly
+examples/MultipleSourcesExample/ServiceConfiguration.cs > ServiceConfiguration.RegisterDocSource
 ```
 
 ### Register a second source with a different front-matter type
 
-```csharp:xmldocid,bodyonly
-M:MultipleSourcesExample.ServiceConfiguration.RegisterBlogSource(Pennington.Infrastructure.MarkdownContentOptions)
+```csharp:symbol,bodyonly
+examples/MultipleSourcesExample/ServiceConfiguration.cs > ServiceConfiguration.RegisterBlogSource
 ```
 
 ### Carve out an overlapping subtree with `ExcludePaths`
 
 When one source's `ContentPath` is a parent of another's, Pennington emits an overlap warning at startup because both pipelines would discover the inner tree and produce conflicting outputs. Adding `ExcludePaths` on the broader source gives the specialised source exclusive ownership of that subtree.
 
-```csharp:xmldocid,bodyonly
-M:MultipleSourcesExample.ServiceConfiguration.RegisterOverlappingDocSource(Pennington.Infrastructure.MarkdownContentOptions)
+```csharp:symbol,bodyonly
+examples/MultipleSourcesExample/ServiceConfiguration.cs > ServiceConfiguration.RegisterOverlappingDocSource
 ```
 
 ## Verify

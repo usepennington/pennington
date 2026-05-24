@@ -58,8 +58,8 @@ Two transports surface the accumulated diagnostics, both wired inside `UsePennin
 
 ## Example
 
-```csharp:xmldocid,bodyonly
-T:ExtensibilityLabExample.DiagnosticsEmittingProcessor
+```csharp:symbol,bodyonly
+examples/ExtensibilityLabExample/DiagnosticsEmittingProcessor.cs > DiagnosticsEmittingProcessor
 ```
 
 ## See also
