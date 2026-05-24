@@ -61,6 +61,16 @@ public interface IContentService : IContentEmitter
     Task<ImmutableList<CrossReference>> GetCrossReferencesAsync();
 
     /// <summary>
+    /// Discovers and parses this service's content with the service's own front-matter
+    /// type, yielding <see cref="ParsedItem"/>s (typed metadata + body). Consumers like
+    /// <c>LlmsTxtService</c> use this instead of re-parsing with a foreign parser, which
+    /// would mis-flag valid keys from other content types. Default: empty — services whose
+    /// content is sourced elsewhere (Razor/API pages fetched as rendered HTML) opt out.
+    /// </summary>
+    IAsyncEnumerable<ParsedItem> ParseContentAsync()
+        => System.Linq.AsyncEnumerable.Empty<ParsedItem>();
+
+    /// <summary>
     /// Redirect sources this service emits (each item's <see cref="DiscoveredItem.Source"/>
     /// is a <see cref="RedirectSource"/>). Consumed by
     /// <see cref="RedirectContentService"/> to build the unified redirect map without

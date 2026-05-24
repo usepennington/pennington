@@ -369,6 +369,12 @@ public static class PenningtonExtensions
         // transient so each resolution captures the current file-watched service.
         services.AddTransient<IContentEmitter, SearchArtifactEmitter>();
 
+        // Derived-metadata enrichment: enrichers contribute non-authored fields
+        // (reading time, …) merged into ParsedItem.Derived. Consumed by LlmsTxtService;
+        // the seam is general, so it is wired regardless of llms.txt config.
+        services.AddTransient<MetadataEnrichmentService>();
+        services.AddTransient<IMetadataEnricher, ReadingTimeEnricher>();
+
         // llms.txt generation
         if (options.LlmsTxt is { } llmsTxtOptions)
         {

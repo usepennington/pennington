@@ -25,6 +25,18 @@ public static class ContentServiceExtensions
             }
         }
 
+        /// <summary>Yields every <see cref="ParsedItem"/> from every service (each parsed with its own front-matter type) in registration order.</summary>
+        public async IAsyncEnumerable<ParsedItem> ParseAllContentAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            foreach (var service in services)
+            {
+                await foreach (var item in service.ParseContentAsync().WithCancellation(cancellationToken))
+                {
+                    yield return item;
+                }
+            }
+        }
+
         /// <summary>Concatenates every service's TOC entries into one immutable list.</summary>
         public async Task<ImmutableList<ContentTocItem>> CollectTocEntriesAsync()
         {

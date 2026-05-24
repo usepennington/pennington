@@ -154,5 +154,5 @@ builder.Services.AddTransient<IContentService, ArticleListingContentService>();
 ## Related
 
 - Reference: [`BlogSiteOptions.PostsPerPage`](xref:reference.api.blog-site-options)
-- Background: [Content pipeline overview](xref:explanation.architecture.content-pipeline)
+- Background: [Content pipeline overview](xref:explanation.core.content-pipeline)
 - Extensibility: [Source content from outside the file system](xref:how-to.content-services.custom-content-service)
