@@ -332,9 +332,19 @@ public static class PenningtonExtensions
             sp.GetRequiredService<CanonicalBaseUrl>().Value,
             sp.GetRequiredService<TimeProvider>()));
 
+        // Render-once cache for the in-process crawl: the disk-write pass and the
+        // search/llms.txt sidecars all self-fetch the same pages, so this collapses
+        // 2–3 full-pipeline renders per URL down to one. Registered twice on purpose —
+        // the same singleton is the long-lived store AND the IFileWatchAware that
+        // FileWatchDispatcher clears on every content change (dev mode; one-shot builds
+        // never evict).
+        services.AddSingleton<BuildHtmlCache>();
+        services.AddSingleton<IFileWatchAware>(sp => sp.GetRequiredService<BuildHtmlCache>());
+
         // In-memory dispatcher: routes self-fetches through TestServer (build mode +
         // integration tests) or Kestrel's listening socket (dev mode). Replaces the
-        // old named-HttpClient + IServerAddressesFeature lookup.
+        // old named-HttpClient + IServerAddressesFeature lookup. Wraps the client with
+        // CachingHttpHandler so every consumer shares BuildHtmlCache.
         services.AddSingleton<IInProcessHttpDispatcher, HttpDispatcher>();
 
         // Shared helper for fetching post-pipeline rendered HTML from the running app.

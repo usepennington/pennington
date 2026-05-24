@@ -1,0 +1,105 @@
+namespace Pennington.Infrastructure;
+
+using System.Collections.Concurrent;
+using System.Net;
+
+/// <summary>
+/// Process-lifetime cache of fully rendered in-process HTTP responses, keyed by request path.
+/// <para>
+/// The static build crawls itself: the disk-write pass, the search index, and the llms.txt
+/// sidecar each self-fetch the same pages, so without sharing every page renders 2–3× through
+/// the full middleware pipeline. Installed behind <see cref="HttpDispatcher"/> via
+/// <see cref="CachingHttpHandler"/>, this collapses that to one render per URL — every consumer
+/// replays the first render.
+/// </para>
+/// <para>
+/// Eviction rides the existing <see cref="FileWatchDispatcher"/>: as an <see cref="IFileWatchAware"/>
+/// with no scopes of its own, it is notified of every change another watcher already observes and
+/// clears wholesale. Build mode is one-shot so this never fires; dev mode clears on every content
+/// edit, keeping the file-watched sidecar services from indexing stale HTML.
+/// </para>
+/// </summary>
+public sealed class BuildHtmlCache : IFileWatchAware
+{
+    private readonly ConcurrentDictionary<string, Lazy<Task<CachedResponse>>> _entries = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Returns the cached response for <paramref name="key"/>, invoking <paramref name="factory"/>
+    /// exactly once on the first request for that key. Concurrent first-requests coalesce onto the
+    /// same render; a faulted render is evicted so a later request can retry.
+    /// </summary>
+    public async Task<CachedResponse> GetOrAddAsync(string key, Func<Task<CachedResponse>> factory)
+    {
+        var lazy = _entries.GetOrAdd(key, _ => new Lazy<Task<CachedResponse>>(factory));
+        try
+        {
+            return await lazy.Value;
+        }
+        catch
+        {
+            // Don't poison the cache with a transient failure — let the next caller re-render.
+            _entries.TryRemove(new KeyValuePair<string, Lazy<Task<CachedResponse>>>(key, lazy));
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public FileWatchResponse OnFileChanged(FileChangeNotification change)
+    {
+        _entries.Clear();
+        return FileWatchResponse.Refreshed;
+    }
+}
+
+/// <summary>
+/// A captured HTTP response — status, body, and headers — replayable as a fresh
+/// <see cref="HttpResponseMessage"/> any number of times. Headers are preserved verbatim so
+/// per-request signals the build relies on (the <c>X-Pennington-Diagnostic</c> headers,
+/// <c>Location</c> on redirects, <c>Content-Type</c>) survive replay.
+/// </summary>
+/// <param name="Status">The response status code.</param>
+/// <param name="Body">The response body bytes.</param>
+/// <param name="ResponseHeaders">Captured response-level headers.</param>
+/// <param name="ContentHeaders">Captured content-level headers.</param>
+public sealed record CachedResponse(
+    HttpStatusCode Status,
+    byte[] Body,
+    IReadOnlyList<KeyValuePair<string, string[]>> ResponseHeaders,
+    IReadOnlyList<KeyValuePair<string, string[]>> ContentHeaders)
+{
+    /// <summary>Reads <paramref name="response"/> fully into a replayable <see cref="CachedResponse"/>.</summary>
+    public static async Task<CachedResponse> CaptureAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        var body = await response.Content.ReadAsByteArrayAsync(ct);
+        var responseHeaders = response.Headers
+            .Select(h => new KeyValuePair<string, string[]>(h.Key, h.Value.ToArray()))
+            .ToArray();
+        var contentHeaders = response.Content.Headers
+            .Select(h => new KeyValuePair<string, string[]>(h.Key, h.Value.ToArray()))
+            .ToArray();
+        return new CachedResponse(response.StatusCode, body, responseHeaders, contentHeaders);
+    }
+
+    /// <summary>Rebuilds a fresh <see cref="HttpResponseMessage"/> from the captured state.</summary>
+    public HttpResponseMessage ToHttpResponseMessage()
+    {
+        var message = new HttpResponseMessage(Status)
+        {
+            Content = new ByteArrayContent(Body),
+        };
+
+        // Content headers must be set before adding response headers so Content-Type/Length land
+        // on the right collection; TryAddWithoutValidation skips re-parsing already-valid values.
+        foreach (var (name, values) in ContentHeaders)
+        {
+            message.Content.Headers.TryAddWithoutValidation(name, values);
+        }
+
+        foreach (var (name, values) in ResponseHeaders)
+        {
+            message.Headers.TryAddWithoutValidation(name, values);
+        }
+
+        return message;
+    }
+}

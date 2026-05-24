@@ -25,7 +25,6 @@ public sealed class RenderedHtmlFetcher
 {
     private readonly IInProcessHttpDispatcher _dispatcher;
     private readonly ILogger<RenderedHtmlFetcher> _logger;
-    private readonly IBrowsingContext _browsingContext = BrowsingContext.New(Configuration.Default);
 
     /// <summary>Initializes the fetcher with the in-process dispatcher and a logger.</summary>
     public RenderedHtmlFetcher(IInProcessHttpDispatcher dispatcher, ILogger<RenderedHtmlFetcher> logger)
@@ -62,7 +61,11 @@ public sealed class RenderedHtmlFetcher
         }
 
         var html = await response.Content.ReadAsStringAsync(ct);
-        var document = await _browsingContext.OpenAsync(req => req.Content(html), ct);
+
+        // A browsing context per call: AngleSharp's IBrowsingContext is not safe for
+        // concurrent OpenAsync, and SearchArtifactService now fetches in parallel.
+        var browsingContext = BrowsingContext.New(Configuration.Default);
+        var document = await browsingContext.OpenAsync(req => req.Content(html), ct);
 
         if (!string.IsNullOrEmpty(selector))
         {

@@ -13,11 +13,13 @@ using Microsoft.AspNetCore.TestHost;
 public sealed class HttpDispatcher : IInProcessHttpDispatcher
 {
     private readonly IServer _server;
+    private readonly BuildHtmlCache _cache;
 
-    /// <summary>Initializes the dispatcher with the host's registered <see cref="IServer"/>.</summary>
-    public HttpDispatcher(IServer server)
+    /// <summary>Initializes the dispatcher with the host's registered <see cref="IServer"/> and the shared render cache.</summary>
+    public HttpDispatcher(IServer server, BuildHtmlCache cache)
     {
         _server = server;
+        _cache = cache;
     }
 
     /// <inheritdoc/>
@@ -27,8 +29,10 @@ public sealed class HttpDispatcher : IInProcessHttpDispatcher
         {
             // TestServer.CreateClient() returns BaseAddress = http://localhost/.
             // Path-relative URLs ("/foo/bar") resolve against that and are dispatched
-            // to the same RequestDelegate Kestrel would have invoked.
-            return testServer.CreateClient();
+            // to the same RequestDelegate Kestrel would have invoked. Wrap its handler
+            // with the cache so repeat self-fetches replay one render.
+            var testHandler = new CachingHttpHandler(_cache) { InnerHandler = testServer.CreateHandler() };
+            return new HttpClient(testHandler) { BaseAddress = new Uri("http://localhost/") };
         }
 
         var addresses = _server.Features.Get<IServerAddressesFeature>()?.Addresses;
@@ -43,7 +47,11 @@ public sealed class HttpDispatcher : IInProcessHttpDispatcher
         var baseAddress = addresses.FirstOrDefault(a => a.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
             ?? addresses.First();
 
-        var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
+        var handler = new CachingHttpHandler(_cache)
+        {
+            InnerHandler = new HttpClientHandler { AllowAutoRedirect = false },
+        };
+        var client = new HttpClient(handler)
         {
             BaseAddress = new Uri(baseAddress),
         };
