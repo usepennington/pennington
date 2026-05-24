@@ -32,13 +32,13 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
         _symbolsLazy = new AsyncLazy<IReadOnlyDictionary<string, SymbolInfo>>(LoadAllSymbolsAsync);
     }
 
-    public async Task<IReadOnlyDictionary<string, SymbolInfo>> ExtractSymbolsAsync(Solution solution)
+    public async Task<IReadOnlyDictionary<string, SymbolInfo>> ExtractSymbolsAsync(IEnumerable<Project> projects)
     {
         var symbols = new ConcurrentDictionary<string, SymbolInfo>(StringComparer.Ordinal);
         var documentByPath = new ConcurrentDictionary<string, (Document Document, Project Project)>(StringComparer.Ordinal);
         var fallbackByProject = new ConcurrentDictionary<ProjectId, (Document Document, Project Project)>();
 
-        await Parallel.ForEachAsync(solution.Projects, async (project, ct) =>
+        await Parallel.ForEachAsync(projects, async (project, ct) =>
         {
             var compilation = await project.GetCompilationAsync(ct);
             if (compilation is null)
@@ -324,16 +324,15 @@ internal sealed class SymbolExtractionService : ISymbolExtractionService
     {
         _logger.LogDebug("Loading all symbols from workspace");
 
-        var projects = await _workspaceService.GetProjectsAsync();
-        var solution = projects.FirstOrDefault()?.Solution;
+        var projects = (await _workspaceService.GetProjectsAsync()).ToList();
 
-        if (solution is null)
+        if (projects.Count == 0)
         {
-            _logger.LogWarning("No solution available from workspace service");
+            _logger.LogWarning("No projects available from workspace service");
             return new Dictionary<string, SymbolInfo>();
         }
 
-        return await ExtractSymbolsAsync(solution);
+        return await ExtractSymbolsAsync(projects);
     }
 
     private async Task ExtractDocumentSymbolsAsync(
