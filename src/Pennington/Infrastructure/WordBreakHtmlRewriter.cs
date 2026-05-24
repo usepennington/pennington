@@ -39,10 +39,11 @@ public sealed class WordBreakHtmlRewriter : IHtmlResponseRewriter
         // ToArray snapshots the match set before we start mutating innerHTML.
         foreach (var element in document.QuerySelectorAll(_options.CssSelector).ToArray())
         {
-            // Only rewrite text-only elements. The selector's descendant terms
-            // (such as "h1 *") reach text nested inside containers, so an
-            // element that still has child markup is left for its leaf children.
-            if (element.InnerHtml.Trim() != element.TextContent.Trim())
+            // Only rewrite pure-text elements. An element that still holds child
+            // markup is left alone; any inline wrapper named by the selector
+            // (such as a nested <span>) is matched and rewritten on its own.
+            // ChildElementCount avoids serializing InnerHtml just to test this.
+            if (element.ChildElementCount > 0)
             {
                 continue;
             }
