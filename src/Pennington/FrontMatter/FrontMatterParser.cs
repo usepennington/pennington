@@ -7,6 +7,7 @@ using Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using YamlDotNet.Core;
+using YamlDotNet.Core.Events;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -84,9 +85,7 @@ public sealed class FrontMatterParser
         }
 
         diagnostics ??= ResolveAmbientDiagnostics();
-        ScanUnknownKeys<T>(yaml, lineOffset: 1, sourcePath, diagnostics);
-
-        var metadata = SafeDeserialize<T>(yaml) ?? new T();
+        var metadata = DeserializeWithScan<T>(yaml, lineOffset: 1, sourcePath, diagnostics) ?? new T();
         return new FrontMatterResult<T>(metadata, body);
     }
 
@@ -104,8 +103,7 @@ public sealed class FrontMatterParser
         where T : IFrontMatter, new()
     {
         diagnostics ??= ResolveAmbientDiagnostics();
-        ScanUnknownKeys<T>(yaml, lineOffset: 0, sourcePath, diagnostics);
-        return SafeDeserialize<T>(yaml) ?? new T();
+        return DeserializeWithScan<T>(yaml, lineOffset: 0, sourcePath, diagnostics) ?? new T();
     }
 
     private T? SafeDeserialize<T>(string yaml)
@@ -115,27 +113,64 @@ public sealed class FrontMatterParser
         return deserializer.Deserialize<T>(parser);
     }
 
-    private DiagnosticContext? ResolveAmbientDiagnostics()
-        => _httpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
-
-    private void ScanUnknownKeys<T>(string yaml, int lineOffset, string? sourcePath, DiagnosticContext? diagnostics)
+    // When diagnostics are inactive there is nothing to scan, so deserialize directly
+    // (one character scan). When they are active, tokenize once into a buffer and replay
+    // it for both the unknown-key scan and the deserialize, instead of scanning twice.
+    private T? DeserializeWithScan<T>(string yaml, int lineOffset, string? sourcePath, DiagnosticContext? diagnostics)
+        where T : IFrontMatter, new()
     {
         if (diagnostics is null || string.IsNullOrWhiteSpace(yaml))
         {
-            return;
+            return SafeDeserialize<T>(yaml);
         }
 
+        List<ParsingEvent> events;
+        try
+        {
+            events = BufferEvents(yaml);
+        }
+        catch (YamlException)
+        {
+            // Malformed or security-rejected YAML — fall back to a direct deserialize so
+            // it surfaces the canonical error (matching the prior scan-then-deserialize flow).
+            return SafeDeserialize<T>(yaml);
+        }
+
+        ScanUnknownKeys<T>(events, lineOffset, sourcePath, diagnostics);
+
+        var deserializer = _options.StrictUnknownKeys ? _strictDeserializer : _lenientDeserializer;
+        return deserializer.Deserialize<T>(new BufferedYamlParser(events));
+    }
+
+    // Drains a single SafeYamlParser pass into a replayable event buffer. The security
+    // checks (anchors/aliases/tags) run here, once, and a YamlException propagates to the caller.
+    private static List<ParsingEvent> BufferEvents(string yaml)
+    {
+        var events = new List<ParsingEvent>();
+        var source = new SafeYamlParser(new Parser(new StringReader(yaml)));
+        while (source.MoveNext())
+        {
+            events.Add(source.Current!);
+        }
+
+        return events;
+    }
+
+    private DiagnosticContext? ResolveAmbientDiagnostics()
+        => _httpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
+
+    private void ScanUnknownKeys<T>(IReadOnlyList<ParsingEvent> events, int lineOffset, string? sourcePath, DiagnosticContext diagnostics)
+    {
         YamlStream stream;
         try
         {
             stream = new YamlStream();
-            var parser = new SafeYamlParser(new Parser(new StringReader(yaml)));
-            stream.Load(parser);
+            stream.Load(new BufferedYamlParser(events));
         }
         catch (YamlException)
         {
-            // Malformed or security-rejected YAML — let the deserialize step surface
-            // the canonical error rather than emitting a partial unknown-key list here.
+            // Malformed YAML — let the deserialize step surface the canonical error
+            // rather than emitting a partial unknown-key list here.
             return;
         }
 
