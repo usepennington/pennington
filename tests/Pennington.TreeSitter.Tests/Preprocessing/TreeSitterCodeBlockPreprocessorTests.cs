@@ -35,6 +35,26 @@ public sealed class TreeSitterCodeBlockPreprocessorTests
     }
 
     [Fact]
+    public void ParseLanguageId_extracts_symbol_diff_modifier()
+    {
+        var (baseLanguage, modifier, bodyOnly) = TreeSitterCodeBlockPreprocessor.ParseLanguageId("python:symbol-diff");
+
+        baseLanguage.ShouldBe("python");
+        modifier.ShouldBe("symbol-diff");
+        bodyOnly.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ParseLanguageId_extracts_symbol_diff_bodyonly()
+    {
+        var (baseLanguage, modifier, bodyOnly) = TreeSitterCodeBlockPreprocessor.ParseLanguageId("rust:symbol-diff,bodyonly");
+
+        baseLanguage.ShouldBe("rust");
+        modifier.ShouldBe("symbol-diff");
+        bodyOnly.ShouldBeTrue();
+    }
+
+    [Fact]
     public void ParseReference_splits_path_and_name_path()
     {
         var (filePath, namePath) = TreeSitterCodeBlockPreprocessor.ParseReference("src/calc.py > Calculator.add");
