@@ -13,13 +13,12 @@
     /// <summary>
     /// The language id passed to <see cref="CodeBlockRenderingService"/>. A bare language
     /// (e.g. <c>csharp</c>, <c>python</c>) goes straight to the highlighter; appending a
-    /// modifier — <c>csharp:xmldocid</c>, <c>csharp:xmldocid,bodyonly</c>, <c>csharp:path</c>,
-    /// or <c>csharp:xmldocid-diff</c> — routes through the registered
-    /// <see cref="ICodeBlockPreprocessor"/> chain (e.g.
-    /// <c>Pennington.Roslyn.Preprocessing.RoslynCodeBlockPreprocessor</c> when
-    /// <c>AddPenningtonRoslyn</c> is wired). The <c>Code</c> parameter or
-    /// <c>ChildContent</c> supplies the body the preprocessor operates on
-    /// (XmlDocId for <c>:xmldocid</c>, file path for <c>:path</c>).
+    /// modifier — <c>csharp:symbol</c>, <c>csharp:symbol,bodyonly</c>,
+    /// or <c>csharp:symbol-diff</c> — routes through the registered
+    /// <see cref="ICodeBlockPreprocessor"/> chain (e.g. the tree-sitter
+    /// preprocessor when <c>AddPenningtonTreeSitter</c> is wired). The <c>Code</c>
+    /// parameter or <c>ChildContent</c> supplies the body the preprocessor operates
+    /// on (a <c>file &gt; Type.Member</c> reference for <c>:symbol</c>).
     /// </summary>
     [Parameter, EditorRequired]
     public string Language { get; set; } = string.Empty;

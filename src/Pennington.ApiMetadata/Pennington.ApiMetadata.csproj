@@ -4,7 +4,7 @@
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Description>Pluggable API metadata abstractions shared by Roslyn and DocFx-YAML backends for Pennington</Description>
+    <Description>Pluggable API metadata abstractions shared by Pennington's API reference backends</Description>
     <PackageTags>dotnet api-docs xmldoc managed-reference</PackageTags>
   </PropertyGroup>
   <ItemGroup>

@@ -16,8 +16,7 @@ up the authoring syntax the tutorials lean on.
   `IMPORTANT`, `WARNING`, `CAUTION`).
 - **Tabbed code groups** — two or more adjacent fenced blocks with
   `tabs=true title="…"`.
-- **Syntax highlighting** — TextMate grammars, ANSI shell output, and
-  optional Roslyn-backed highlighting.
+- **Syntax highlighting** — TextMate grammars and ANSI shell output.
 - **Code annotations** — `// [!code highlight]` inline markers.
 
 Registering your own extension is covered in the *Hook into the response

@@ -85,7 +85,7 @@
     // gate keeps fast/cached navigations silent. The trickle is fake — the
     // engine has no body-progress signal, just an atomic fetch — but a
     // diminishing-return curve plus a 100% snap on commit reads honestly at
-    // varying durations (e.g. 100ms vs a 5–10s Roslyn cold-start).
+    // varying durations (e.g. 100ms vs a multi-second cold start).
     const progressBar = {
         _outer: null,
         _bar: null,

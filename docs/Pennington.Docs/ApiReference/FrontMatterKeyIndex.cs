@@ -1,10 +1,10 @@
 namespace Pennington.Docs.ApiReference;
 
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis;
+using System.IO;
+using System.Reflection;
+using Pennington.FrontMatter;
 using Pennington.Infrastructure;
-using Pennington.Roslyn.ApiMetadata;
-using Pennington.Roslyn.Workspace;
 
 /// <summary>
 /// One YAML front-matter key observed on one or more concrete <c>IFrontMatter</c> implementations.
@@ -19,8 +19,9 @@ internal sealed record FrontMatterKeyEntry(
     string XmlDocId);
 
 /// <summary>
-/// Singleton that walks every public type implementing <c>Pennington.FrontMatter.IFrontMatter</c> in the solution
-/// and projects their declared properties into a per-YAML-key catalog for the front-matter reference page.
+/// Singleton that reflects over every public type implementing <see cref="IFrontMatter"/> in the
+/// referenced Pennington assemblies and projects their declared properties into a per-YAML-key
+/// catalog for the front-matter reference page. Pure reflection — no compilation.
 /// </summary>
 internal sealed class FrontMatterKeyIndex
 {
@@ -33,82 +34,37 @@ internal sealed class FrontMatterKeyIndex
         "IRedirectable",
     ];
 
-    private readonly ISolutionWorkspaceService _workspace;
-    private readonly ApiReferenceOptions _options;
     private readonly AsyncLazy<ImmutableArray<FrontMatterKeyEntry>> _entries;
 
-    public FrontMatterKeyIndex(ISolutionWorkspaceService workspace, ApiReferenceOptions options)
+    public FrontMatterKeyIndex()
     {
-        _workspace = workspace;
-        _options = options;
-        _entries = new AsyncLazy<ImmutableArray<FrontMatterKeyEntry>>(BuildAsync);
+        _entries = new AsyncLazy<ImmutableArray<FrontMatterKeyEntry>>(() => Task.FromResult(Build()));
     }
 
     public Task<ImmutableArray<FrontMatterKeyEntry>> GetEntriesAsync() => _entries.Value;
 
-    private async Task<ImmutableArray<FrontMatterKeyEntry>> BuildAsync()
+    private static ImmutableArray<FrontMatterKeyEntry> Build()
     {
-        var filter = _options.ProjectFilter ?? ApiReferenceOptions.DefaultProjectFilter();
-        var projects = await _workspace.GetProjectsAsync(p => filter(p));
-
         var observations = new List<(string YamlKey, string Clr, string TypeDisplay, string? DefaultValue, string Record, string Surface, string XmlDocId)>();
+        var nullability = new NullabilityInfoContext();
 
-        foreach (var project in projects)
+        foreach (var type in FrontMatterTypes())
         {
-            var compilation = await _workspace.GetCompilationAsync(project);
-            if (compilation is null)
+            foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
             {
-                continue;
-            }
-
-            foreach (var type in EnumerateTypes(compilation.Assembly.GlobalNamespace))
-            {
-                if (type.TypeKind is not (TypeKind.Class or TypeKind.Struct))
+                if (property.GetIndexParameters().Length > 0)
                 {
                     continue;
                 }
 
-                if (type.DeclaredAccessibility != Accessibility.Public)
-                {
-                    continue;
-                }
-
-                if (type.IsAbstract || type.IsStatic)
-                {
-                    continue;
-                }
-
-                if (!ImplementsFrontMatter(type))
-                {
-                    continue;
-                }
-
-                foreach (var member in type.GetMembers())
-                {
-                    if (member is not IPropertySymbol { DeclaredAccessibility: Accessibility.Public } property)
-                    {
-                        continue;
-                    }
-
-                    if (property.IsIndexer || property.IsStatic)
-                    {
-                        continue;
-                    }
-
-                    var surface = ResolveDeclaringSurface(type, property.Name);
-                    var defaultValue = ExtractDefault(property);
-                    var typeDisplay = property.Type.ToDisplayString(TypeFormat);
-                    var docId = property.GetDocumentationCommentId() ?? string.Empty;
-
-                    observations.Add((
-                        YamlKey: ToCamelCase(property.Name),
-                        Clr: property.Name,
-                        TypeDisplay: typeDisplay,
-                        DefaultValue: defaultValue,
-                        Record: type.Name,
-                        Surface: surface,
-                        XmlDocId: docId));
-                }
+                observations.Add((
+                    YamlKey: ToCamelCase(property.Name),
+                    Clr: property.Name,
+                    TypeDisplay: TypeDisplay(property, nullability),
+                    DefaultValue: ExtractDefault(property, nullability),
+                    Record: type.Name,
+                    Surface: ResolveDeclaringSurface(type, property.Name),
+                    XmlDocId: "P:" + FullName(type) + "." + property.Name));
             }
         }
 
@@ -127,7 +83,6 @@ internal sealed class FrontMatterKeyIndex
                     .Select(o => o.TypeDisplay)
                     .Distinct(StringComparer.Ordinal)
                     .ToList();
-
                 var typeDisplay = types.Count == 1 ? types[0] : string.Join(" / ", types);
 
                 var defaults = group
@@ -135,7 +90,6 @@ internal sealed class FrontMatterKeyIndex
                     .Where(d => d is not null)
                     .Distinct(StringComparer.Ordinal)
                     .ToList();
-
                 var defaultValue = defaults.Count switch
                 {
                     0 => null,
@@ -160,91 +114,137 @@ internal sealed class FrontMatterKeyIndex
             .ToImmutableArray();
     }
 
-    private static IEnumerable<INamedTypeSymbol> EnumerateTypes(INamespaceSymbol root)
+    private static IEnumerable<Type> FrontMatterTypes()
     {
-        var queue = new Queue<INamespaceOrTypeSymbol>();
-        queue.Enqueue(root);
-
-        while (queue.Count > 0)
+        var entry = Assembly.GetEntryAssembly()?.GetName().Name;
+        foreach (var path in Directory.EnumerateFiles(AppContext.BaseDirectory, "Pennington*.dll"))
         {
-            foreach (var member in queue.Dequeue().GetMembers())
+            var name = Path.GetFileNameWithoutExtension(path);
+            if (string.Equals(name, entry, StringComparison.Ordinal))
             {
-                if (member is INamespaceSymbol ns)
+                continue;
+            }
+
+            Assembly asm;
+            try { asm = Assembly.Load(new AssemblyName(name)); }
+            catch { continue; }
+
+            Type[] types;
+            try { types = asm.GetTypes(); }
+            catch (ReflectionTypeLoadException ex) { types = ex.Types.Where(t => t is not null).ToArray()!; }
+            catch { continue; }
+
+            foreach (var t in types)
+            {
+                if (t is { IsPublic: true, IsAbstract: false }
+                    && (t.IsClass || t.IsValueType)
+                    && typeof(IFrontMatter).IsAssignableFrom(t))
                 {
-                    queue.Enqueue(ns);
-                }
-                else if (member is INamedTypeSymbol type)
-                {
-                    yield return type;
+                    yield return t;
                 }
             }
         }
     }
 
-    private static readonly SymbolDisplayFormat TypeFormat = new(
-        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
-        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes
-            | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier,
-        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypes);
-
-    private static string ResolveDeclaringSurface(INamedTypeSymbol record, string propertyName)
+    private static string ResolveDeclaringSurface(Type record, string propertyName)
     {
-        foreach (var iface in record.AllInterfaces)
+        foreach (var iface in record.GetInterfaces())
         {
             if (!CapabilityInterfaces.Contains(iface.Name, StringComparer.Ordinal))
             {
                 continue;
             }
 
-            foreach (var member in iface.GetMembers().OfType<IPropertySymbol>())
+            if (iface.GetProperties().Any(p => string.Equals(p.Name, propertyName, StringComparison.Ordinal)))
             {
-                if (string.Equals(member.Name, propertyName, StringComparison.Ordinal))
-                {
-                    return iface.Name;
-                }
+                return iface.Name;
             }
         }
+
         return "record-local";
     }
 
-    private static string? ExtractDefault(IPropertySymbol property)
+    private static string? ExtractDefault(PropertyInfo property, NullabilityInfoContext nullability)
     {
-        foreach (var reference in property.DeclaringSyntaxReferences)
-        {
-            var syntax = reference.GetSyntax();
-            if (syntax is Microsoft.CodeAnalysis.CSharp.Syntax.PropertyDeclarationSyntax decl
-                && decl.Initializer?.Value is { } value)
-            {
-                return value.ToString();
-            }
-        }
-
-        if (property.NullableAnnotation == NullableAnnotation.Annotated)
+        // Property initializers (= 0, = "x") compile into the constructor and are not visible to
+        // reflection, so fall back to type heuristics when no initializer was present.
+        var type = property.PropertyType;
+        if (Nullable.GetUnderlyingType(type) is not null
+            || (!type.IsValueType && nullability.Create(property).ReadState == NullabilityState.Nullable))
         {
             return "null";
         }
 
-        return property.Type.SpecialType switch
+        if (type == typeof(bool))
         {
-            SpecialType.System_Boolean => "false",
-            SpecialType.System_String => "\"\"",
-            _ => null,
+            return "false";
+        }
+
+        if (type == typeof(string))
+        {
+            return "\"\"";
+        }
+
+        return null;
+    }
+
+    private static string TypeDisplay(PropertyInfo property, NullabilityInfoContext nullability)
+    {
+        var display = TypeName(property.PropertyType);
+        if (!property.PropertyType.IsValueType
+            && nullability.Create(property).ReadState == NullabilityState.Nullable)
+        {
+            display += "?";
+        }
+
+        return display;
+    }
+
+    private static string TypeName(Type t)
+    {
+        if (Nullable.GetUnderlyingType(t) is { } underlying)
+        {
+            return TypeName(underlying) + "?";
+        }
+
+        if (t.IsArray)
+        {
+            return TypeName(t.GetElementType()!) + "[]";
+        }
+
+        if (t.IsGenericType)
+        {
+            var name = t.Name;
+            var tick = name.IndexOf('`');
+            var baseName = tick < 0 ? name : name[..tick];
+            return baseName + "<" + string.Join(", ", t.GetGenericArguments().Select(TypeName)) + ">";
+        }
+
+        return t.FullName switch
+        {
+            "System.String" => "string",
+            "System.Boolean" => "bool",
+            "System.Int32" => "int",
+            "System.Int64" => "long",
+            "System.Double" => "double",
+            "System.Object" => "object",
+            _ => t.Name,
         };
     }
 
-    private static bool ImplementsFrontMatter(INamedTypeSymbol type) =>
-        type.AllInterfaces.Any(i =>
-            i.Name == "IFrontMatter"
-            && i.ContainingNamespace.ToDisplayString() == "Pennington.FrontMatter");
+    private static string FullName(Type t)
+    {
+        if (t.IsNested)
+        {
+            return FullName(t.DeclaringType!) + "." + t.Name;
+        }
+
+        return string.IsNullOrEmpty(t.Namespace) ? t.Name : t.Namespace + "." + t.Name;
+    }
 
     private static string ToCamelCase(string name)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            return name;
-        }
-
-        if (char.IsLower(name[0]))
+        if (string.IsNullOrEmpty(name) || char.IsLower(name[0]))
         {
             return name;
         }

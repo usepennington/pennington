@@ -5,28 +5,24 @@ using System.IO;
 using System.Xml.Linq;
 
 /// <summary>
-/// Indexes a Roslyn-emitted <c>.xml</c> xmldoc file by xmldocid, so reflection-side
-/// consumers can pull parsed doc trees by the id they compute from <see cref="Type"/>
-/// or <see cref="System.Reflection.MemberInfo"/>.
+/// Loads a compiler-emitted <c>.xml</c> xmldoc file into a uid → raw <c>&lt;member&gt;</c> map.
+/// The text is kept unparsed because <c>&lt;inheritdoc/&gt;</c> resolution
+/// (<see cref="ReflectionInheritDocResolver"/>) and the record-parameter fallback
+/// (<see cref="ReflectionRecordParamFallback"/>) operate on the raw XML and span assemblies —
+/// a single global map keyed by uid lets a member's doc resolve against a base declared in
+/// another assembly before anything is parsed.
 /// </summary>
-internal sealed class XmlDocFile
+internal static class XmlDocFile
 {
-    private readonly Dictionary<string, ParsedXmlDoc> _byId;
-
-    private XmlDocFile(Dictionary<string, ParsedXmlDoc> byId)
-    {
-        _byId = byId;
-    }
-
-    /// <summary>An empty index — used when an assembly has no companion xmldoc file.</summary>
-    public static XmlDocFile Empty { get; } = new(new Dictionary<string, ParsedXmlDoc>());
-
-    /// <summary>Parses the xmldoc XML at <paramref name="path"/>. Returns <see cref="Empty"/> if the file is missing or malformed.</summary>
-    public static XmlDocFile Load(string path, IXmlDocParser parser)
+    /// <summary>
+    /// Adds every <c>&lt;member name="..."&gt;</c> entry from the xmldoc at <paramref name="path"/>
+    /// into <paramref name="target"/>, keyed by uid. A missing or malformed file contributes nothing.
+    /// </summary>
+    public static void LoadInto(string path, IDictionary<string, string> target)
     {
         if (!File.Exists(path))
         {
-            return Empty;
+            return;
         }
 
         XDocument doc;
@@ -36,16 +32,15 @@ internal sealed class XmlDocFile
         }
         catch
         {
-            return Empty;
+            return;
         }
 
         var members = doc.Root?.Element("members")?.Elements("member");
         if (members is null)
         {
-            return Empty;
+            return;
         }
 
-        var map = new Dictionary<string, ParsedXmlDoc>(StringComparer.Ordinal);
         foreach (var m in members)
         {
             var name = m.Attribute("name")?.Value;
@@ -54,16 +49,7 @@ internal sealed class XmlDocFile
                 continue;
             }
 
-            // Pass the <member> element as its own root — the parser reads summary/remarks/
-            // param/etc. as direct children regardless of the root name. Re-wrapping via
-            // `new XElement("doc", m.Nodes())` used to detach nodes from `m` mid-iteration,
-            // which left subsequent members with no child content.
-            map[name] = parser.Parse(m.ToString());
+            target[name] = m.ToString();
         }
-        return new XmlDocFile(map);
     }
-
-    /// <summary>Returns the parsed xmldoc for <paramref name="uid"/>, or <see cref="ParsedXmlDoc.Empty"/> when absent.</summary>
-    public ParsedXmlDoc Get(string uid)
-        => _byId.TryGetValue(uid, out var d) ? d : ParsedXmlDoc.Empty;
 }

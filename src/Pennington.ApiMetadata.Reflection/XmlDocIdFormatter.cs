@@ -6,7 +6,7 @@ using System.Text;
 /// <summary>
 /// Produces C# xmldocid strings (e.g. <c>T:Foo.Bar</c>, <c>M:Foo.Bar.Baz(System.Int32)</c>)
 /// for types and members obtained through reflection. Mirrors the format emitted by the
-/// Roslyn compiler into <c>.xml</c> doc files so the string can index directly into the
+/// C# compiler into <c>.xml</c> doc files so the string can index directly into the
 /// companion xmldoc.
 /// </summary>
 internal static class XmlDocIdFormatter

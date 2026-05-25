@@ -68,7 +68,7 @@ The personality stays the same; the *register* shifts.
 
 ## Code-block embedding syntax
 
-This site embeds source through tree-sitter `:symbol` fences (not Roslyn). Pennington preprocesses fenced code blocks whose info string ends in `:symbol` or `:symbol-diff`. The language before the colon (`csharp`, `razor`, `text`, etc.) drives highlighting. Body paths are relative to the repo root (the tree-sitter `ContentRoot`). Do not use `raw-file="…"` — that form is not parsed.
+This site embeds source through tree-sitter `:symbol` fences. Pennington preprocesses fenced code blocks whose info string ends in `:symbol` or `:symbol-diff`. The language before the colon (`csharp`, `razor`, `text`, etc.) drives highlighting. Body paths are relative to the repo root (the tree-sitter `ContentRoot`). Do not use `raw-file="…"` — that form is not parsed.
 
 ### Embed a whole file — `<lang>:symbol`
 Body is one file path with no member path. Works for any language (markdown, razor, json, css, …) — whole-file embedding needs no grammar.
@@ -109,8 +109,6 @@ Body must contain exactly 2 references (before/after), one per line. Supports th
 - **No `using` prepend.** Tree-sitter is syntactic; there is no `,usings` equivalent. Snippets render without import directives.
 
 Requires `Pennington.TreeSitter` wired (`AddPenningtonTreeSitter`) with `ContentRoot` set.
-
-> Some pages (`tutorials/beyond-basics/connect-roslyn.md`, `how-to/code-samples/focused-code-samples.md`) still document the Roslyn `:xmldocid`/`:path` fences as an optional library feature. That prose is historical — this site no longer executes those fences (`RoslynOptions.EnableCodeFragmentFences` is off).
 
 ## Writing conventions
 

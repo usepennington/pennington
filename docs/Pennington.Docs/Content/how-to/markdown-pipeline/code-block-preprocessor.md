@@ -14,7 +14,7 @@ The recipe references `examples/ExtensibilityLabExample/LineCountPreprocessor.cs
 ## Before you begin
 
 - An existing Pennington site with markdown rendering wired (see <xref:tutorials.getting-started.first-site> if not).
-- A chosen fence identifier — either a full `languageId` (`linecount`) or a `:modifier` suffix (`csharp:xmldocid`).
+- A chosen fence identifier — either a full `languageId` (`linecount`) or a `:modifier` suffix (`csharp:symbol`).
 
 ## Write the preprocessor
 
@@ -28,11 +28,11 @@ The returned `CodeBlockPreprocessResult` carries the pre-rendered HTML, the `Bas
 
 ## Pick a Priority value
 
-`CodeHighlightRenderer` sorts preprocessors by `Priority` descending and returns the first non-null result. The shipped `RoslynCodeBlockPreprocessor` uses `100`; `LineCountPreprocessor` uses `500` so its `linecount` fence is never intercepted by a lower-priority modifier preprocessor. Pick above `100` to win against the Roslyn preprocessor on a contested `:modifier`; pick below `100` to fall through to Roslyn first.
+`CodeHighlightRenderer` sorts preprocessors by `Priority` descending and returns the first non-null result. `LineCountPreprocessor` uses `500` so its `linecount` fence is never intercepted by a lower-priority modifier preprocessor. Pick a value above any preprocessor you need to beat on a contested `:modifier`, or below it to fall through first.
 
 ## Register the implementation
 
-Pennington collects every `ICodeBlockPreprocessor` from DI. Register anywhere after `AddPennington` — there is no `PenningtonOptions` knob. `AddPenningtonRoslyn` performs the equivalent registration for `RoslynCodeBlockPreprocessor`.
+Pennington collects every `ICodeBlockPreprocessor` from DI. Register anywhere after `AddPennington` — there is no `PenningtonOptions` knob. `AddPenningtonTreeSitter` performs the equivalent registration for its `:symbol` preprocessor.
 
 ```csharp
 builder.Services.AddSingleton<ICodeBlockPreprocessor, LineCountPreprocessor>();

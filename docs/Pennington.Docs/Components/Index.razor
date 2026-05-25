@@ -279,8 +279,8 @@ for the current shape.</pre>
     <div class="rounded-2xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-6 lg:p-8">
         <div class="flex items-start justify-between gap-4 mb-5">
             <div>
-                <h3 class="font-display text-xl lg:text-2xl font-bold text-base-900 dark:text-base-50 mb-1.5">Syntax highlighting from the actual compiler.</h3>
-                <p class="text-sm text-base-600 dark:text-base-400">Reference a symbol by <code class="font-mono text-xs bg-base-100 dark:bg-base-800 px-1 rounded">xmldocid</code>. Pennington.Roslyn pulls the source and hands it to the real semantic highlighter. Renames don&rsquo;t break your docs.</p>
+                <h3 class="font-display text-xl lg:text-2xl font-bold text-base-900 dark:text-base-50 mb-1.5">Pull real source into your docs.</h3>
+                <p class="text-sm text-base-600 dark:text-base-400">Reference a member by name path with <code class="font-mono text-xs bg-base-100 dark:bg-base-800 px-1 rounded">:symbol</code>. Pennington.TreeSitter extracts the declaration straight from source — no copy to drift out of sync.</p>
             </div>
             <a href="/explanation/rendering/highlighting/" class="hidden sm:inline-flex shrink-0 items-center gap-1 font-display text-sm font-semibold text-accent-four-700 dark:text-accent-four-400 hover:underline whitespace-nowrap">
                 How it works
@@ -290,10 +290,10 @@ for the current shape.</pre>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div class="rounded-xl bg-base-950 p-5 font-mono text-sm overflow-x-auto">
                 <div class="text-xs font-display uppercase tracking-widest text-base-500 mb-3">writing.md</div>
-<pre class="text-base-200 leading-relaxed"><span class="text-base-500">```csharp:xmldocid,bodyonly</span>
-M:Pennington.BlogSite.
-  BlogSiteServiceExtensions.
-  AddBlogSite(IServiceCollection)
+<pre class="text-base-200 leading-relaxed"><span class="text-base-500">```csharp:symbol,bodyonly</span>
+src/Pennington.BlogSite/
+  BlogSiteServiceExtensions.cs &gt;
+  BlogSiteServiceExtensions.AddBlogSite
 <span class="text-base-500">```</span></pre>
             </div>
             <div class="rounded-xl bg-white dark:bg-base-900 border border-base-200 dark:border-base-800 p-0 overflow-hidden">
@@ -357,8 +357,8 @@ M:Pennington.BlogSite.
                     </a>
                 </li>
                 <li>
-                    <a href="/tutorials/beyond-basics/connect-roslyn/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
-                        Connect Roslyn
+                    <a href="/tutorials/beyond-basics/add-a-locale/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                        Add a second locale
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
                 </li>

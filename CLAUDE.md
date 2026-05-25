@@ -14,13 +14,11 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - `src/Pennington.MonorailCss/` — MonorailCSS integration (utility-first CSS generation)
 - `src/Pennington.DocSite/` — Documentation site template (layout, pages, content resolver)
 - `src/Pennington.BlogSite/` — Blog site template (home/archive/tag pages, blog front matter, content service)
-- `src/Pennington.Roslyn/` — Optional Roslyn-based highlighting, symbol extraction, xmldocid code fragment preprocessor
 - `src/Pennington.TreeSitter/` — Optional tree-sitter-based multi-language code-fragment extraction (`:symbol` fence, name-path addressing) via the `TreeSitter.DotNet` package
 - `docs/Pennington.Docs/` — The Pennington docs site (Divio-style: tutorials, how-to, reference, explanation)
 - `examples/` — Variety of example sites used for reference and verification across scenarios
 - `tests/Pennington.Tests/` — Unit tests (xunit.v3, Shouldly)
 - `tests/Pennington.IntegrationTests/` — Integration tests (WebApplicationFactory)
-- `tests/Pennington.Roslyn.Tests/` — Tests for the Roslyn package
 - `tests/Pennington.TreeSitter.Tests/` — Tests for the TreeSitter package (resolver/grammar configs, fragment service, render pipeline)
 
 ## Key Namespaces (Pennington core)
@@ -44,7 +42,6 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - `services.AddPennington(...)` / `app.UsePennington()` / `app.RunOrBuildAsync(args)` — core
 - `services.AddDocSite(...)` / `app.UseDocSite()` / `app.RunDocSiteAsync(args)` — doc site template
 - `services.AddBlogSite(...)` — blog site template
-- `services.AddPenningtonRoslyn(...)` — optional Roslyn highlighting + symbol services (C#/VB `:xmldocid` fence)
 - `services.AddPenningtonTreeSitter(...)` — optional tree-sitter multi-language `:symbol` fragment extraction (registers only when `ContentRoot` is set)
 
 ## Cross-Platform (WSL)

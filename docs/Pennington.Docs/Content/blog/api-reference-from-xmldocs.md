@@ -1,12 +1,11 @@
 ---
 title: API reference, generated from your XML docs
-description: Pennington now builds API reference pages straight from Roslyn xmldocs — one page per type, Stripe-style definition lists, inherited members and union cases included.
+description: Pennington now builds API reference pages straight from your assemblies' XML docs — one page per type, Stripe-style definition lists, inherited members and union cases included.
 author: Phil Scott
 date: 2026-04-28
 isDraft: false
 tags:
   - api-reference
-  - roslyn
 ---
 
 API reference is the documentation that drifts fastest. Rename a parameter, add
@@ -15,8 +14,9 @@ mentioned it is quietly wrong. Pennington can now generate those pages instead.
 
 ## Reference pages, generated from the source
 
-Pennington builds API reference straight from the Roslyn workspace. Every public
-type that carries an xmldoc gets its own page at `/reference/api/{type}/`, with
+Pennington builds API reference straight from your compiled assemblies and their
+XML docs. Every public type that carries an xmldoc gets its own page at
+`/reference/api/{type}/`, with
 descriptions pulled from the `///` comments you already wrote. An index page
 lists every discovered type, grouped by namespace.
 
@@ -44,5 +44,5 @@ source.
 The pages also serve two readers at once: paired `.humans-only` and
 `.robots-only` content gives the browser the visual layout and the
 [llms.txt sidecar](xref:how-to.feeds.llms-txt) a plain HTML version. To wire your
-solution in, start with [connecting a Roslyn
-solution](xref:tutorials.beyond-basics.connect-roslyn).
+own library in, see [auto-generate an API reference
+tree](xref:how-to.content-services.auto-api-reference).

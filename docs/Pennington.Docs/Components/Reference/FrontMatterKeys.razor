@@ -1,12 +1,11 @@
 @* Renders the full catalog of YAML front-matter keys observed across every
-   IFrontMatter implementation in the solution. One row per YAML key; the body
-   prefixes "Applies to:" and "Declared on:" lines pulled from Roslyn. *@
+   IFrontMatter implementation in the referenced Pennington assemblies. One row
+   per YAML key; the body prefixes "Applies to:" and "Declared on:" lines. *@
 
 @using Pennington.Docs.ApiReference
 @inject FrontMatterKeyIndex Index
-@inject IXmlDocParser Parser
+@inject IServiceProvider Services
 @inject IXmlDocHtmlRenderer Renderer
-@inject Pennington.Roslyn.Symbols.ISymbolExtractionService SymbolService
 
 @if (_rows.Count == 0)
 {
@@ -22,16 +21,16 @@ else
 
     protected override void OnParametersSet()
     {
+        var provider = Services.GetRequiredKeyedService<IApiMetadataProvider>("default");
         var entries = AsyncHelpers.RunSync(() => Index.GetEntriesAsync());
         var rows = new List<ApiDefinitionRow>(entries.Length);
 
         foreach (var entry in entries)
         {
-            var info = string.IsNullOrEmpty(entry.XmlDocId)
-                ? null
-                : AsyncHelpers.RunSync(() => SymbolService.FindSymbolAsync(entry.XmlDocId));
-            var parsed = info is null ? null : Parser.Parse(info.Symbol.GetDocumentationCommentXml());
-            var summaryHtml = parsed?.HasSummary == true
+            var parsed = string.IsNullOrEmpty(entry.XmlDocId)
+                ? ParsedXmlDoc.Empty
+                : AsyncHelpers.RunSync(() => provider.GetXmldocAsync(entry.XmlDocId));
+            var summaryHtml = parsed.HasSummary
                 ? Renderer.RenderInlineHtml(parsed.Summary)
                 : string.Empty;
 

@@ -3,7 +3,7 @@ namespace Pennington.ApiMetadata;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 
-/// <summary>Backend-neutral source of API documentation metadata. Implementations adapt Roslyn workspaces, DocFx <c>ManagedReference</c> YAML, or other sources to a single contract consumed by the API reference UI.</summary>
+/// <summary>Backend-neutral source of API documentation metadata. Implementations adapt compiled assemblies, or other metadata sources, to a single contract consumed by the API reference UI.</summary>
 public interface IApiMetadataProvider
 {
     /// <summary>Returns every documented type the provider knows about, sorted by <see cref="ApiTypeSummary.FullTypeName"/>.</summary>

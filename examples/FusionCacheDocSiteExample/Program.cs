@@ -15,7 +15,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
 });
 
 // Reflection-backed API metadata sourced from the ZiggyCreatures.FusionCache
-// NuGet package reference in the .csproj — no live Roslyn workspace, no staged
+// NuGet package reference in the .csproj — no live compilation, no staged
 // dll/xml, no vendored source.
 builder.Services.AddApiMetadataFromCompiledAssembly(opts =>
     opts.FromPackageReference("ZiggyCreatures.FusionCache"));

@@ -22,7 +22,7 @@ using Pennington.Markdown.Extensions;
 public sealed class LineCountPreprocessor : ICodeBlockPreprocessor
 {
     /// <summary>
-    /// 500 — higher than the shipped Roslyn preprocessor (250) so
+    /// 500 — higher than the shipped code-fragment preprocessors so
     /// <c>linecount</c> wins over any language-modifier preprocessor
     /// that might claim the same fence info string.
     /// </summary>

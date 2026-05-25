@@ -1,4 +1,5 @@
 using Mdazor;
+using Pennington.ApiMetadata.Reflection;
 using Pennington.Docs;
 using Pennington.Docs.ApiReference;
 using Pennington.Docs.Components.Reference;
@@ -6,8 +7,6 @@ using Pennington.DocSite;
 using Pennington.DocSite.Api;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
-using Pennington.Roslyn;
-using Pennington.Roslyn.ApiMetadata;
 using Pennington.TreeSitter;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -94,37 +93,20 @@ builder.Services.AddPenningtonTreeSitter(treeSitter =>
     treeSitter.ContentRoot = "../..";
 });
 
-// Roslyn stays for the reflection-backed API reference only, scoped to a .slnf that lists just
-// the Pennington.* projects — so the workspace loads ~13 projects instead of the whole solution.
-// EnableCodeFragmentFences is off because tree-sitter now owns :symbol extraction.
-builder.Services.AddPenningtonRoslyn(roslyn =>
+// Reflection-backed API metadata: read the built Pennington.* assemblies and their companion
+// xmldoc files straight from this app's output folder — no MSBuild workspace, no compilation.
+// Every referenced Pennington library lands in bin/, so glob them (excluding this entry app)
+// to document the full set of referenced Pennington libraries.
+var entryAssembly = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name;
+builder.Services.AddApiMetadataFromCompiledAssembly(opts =>
 {
-    roslyn.SolutionPath = "../../Pennington.slnf";
-    roslyn.EnableCodeFragmentFences = false;
-});
-
-// Roslyn-backed API metadata: enumerate public types from the live Pennington
-// workspace. Scope to Pennington.* projects so example apps in Pennington.slnx
-// don't leak into /reference/api/.
-var defaultApiFilter = ApiReferenceOptions.DefaultProjectFilter();
-builder.Services.AddApiMetadataFromRoslyn(configure: opts =>
-{
-    opts.ProjectFilter = project =>
+    foreach (var dll in Directory.EnumerateFiles(AppContext.BaseDirectory, "Pennington*.dll"))
     {
-        if (!defaultApiFilter(project))
+        if (!string.Equals(Path.GetFileNameWithoutExtension(dll), entryAssembly, StringComparison.Ordinal))
         {
-            return false;
+            opts.AssemblyFiles.Add(dll);
         }
-
-        var name = project.Name;
-        var paren = name.IndexOf('(');
-        if (paren > 0)
-        {
-            name = name[..paren];
-        }
-
-        return name == "Pennington" || name.StartsWith("Pennington.", StringComparison.Ordinal);
-    };
+    }
 });
 
 // Auto-publishes /reference/api/{slug}/ pages and registers the reference

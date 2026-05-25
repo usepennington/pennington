@@ -1,6 +1,6 @@
 ---
 title: Introducing Pennington
-description: A content engine for .NET — markdown, Roslyn-powered code samples, and ready-made documentation and blog templates.
+description: A content engine for .NET — markdown, live code samples pulled from source, and ready-made documentation and blog templates.
 author: Phil Scott
 date: 2026-04-04
 isDraft: false
@@ -46,13 +46,13 @@ the project for you.
 ## Code samples that stay in sync
 
 Code samples in docs are usually copy-pasted snippets: correct the day they're
-written, slowly wrong after that. Pennington can pull samples from a Roslyn
-workspace instead. You reference a real symbol, and the current source renders
-at build time:
+written, slowly wrong after that. Pennington can pull samples from your source
+files instead. You reference a member by name path, and the current source
+renders at build time:
 
 ````markdown
-```csharp:xmldocid
-T:Pennington.Pipeline.ContentPipeline
+```csharp:symbol
+src/Pennington/Pipeline/ContentPipeline.cs > ContentPipeline
 ```
 ````
 

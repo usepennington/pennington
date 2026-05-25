@@ -1,6 +1,6 @@
 # FusionCacheDocSiteExample
 
-A real-world DocSite whose API reference is generated from a single NuGet package (`ZiggyCreatures.FusionCache`) via the reflection-based metadata backend — no live Roslyn workspace, no staged DLL/XML, no vendored source.
+A real-world DocSite whose API reference is generated from a single NuGet package (`ZiggyCreatures.FusionCache`) via the reflection-based metadata backend — no live compilation, no staged DLL/XML, no vendored source.
 
 ## Concepts
 

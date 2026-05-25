@@ -6,8 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Same DocSite host shape as the other tutorials. The extra line is
 // `AddPenningtonTreeSitter` below, which lights up the `:symbol` code-fence
 // modifier for *any* tree-sitter-supported language (Python, Rust, Go,
-// TypeScript, …). Where `Pennington.Roslyn` resolves C#/VB by XmlDocId,
-// tree-sitter resolves a member by name path across many languages.
+// TypeScript, …). Tree-sitter resolves a member by name path across many
+// languages.
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Beyond Tree-sitter",

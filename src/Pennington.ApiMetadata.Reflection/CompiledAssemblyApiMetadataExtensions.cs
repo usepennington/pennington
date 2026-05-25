@@ -13,7 +13,7 @@ public static class CompiledAssemblyApiMetadataExtensions
     /// library you want to document — each call builds its own
     /// <see cref="System.Reflection.MetadataLoadContext"/> and xmldoc index scoped to
     /// the supplied <see cref="CompiledAssemblyApiOptions.AssemblyDirectories"/>. The
-    /// Roslyn-independent <c>IXmlDocParser</c> / <c>IXmlDocHtmlRenderer</c> shared
+    /// shared <c>IXmlDocParser</c> / <c>IXmlDocHtmlRenderer</c>
     /// services are registered once (idempotent).
     /// </summary>
     /// <param name="services">Service collection.</param>

@@ -14,10 +14,8 @@ The fence info-string grammar: the opening-fence text after the three backticks,
 ```text
 info-string   := language [ ":" suffix ] ( WS attribute )*
 language      := IDENT
-suffix        := "path"
-              |  "xmldocid" xmldocid-flags
-              |  "xmldocid-diff" [ ",bodyonly" ]
-xmldocid-flags := ( "," ( "bodyonly" | "usings" ) )*
+suffix        := "symbol" [ ",bodyonly" ]
+              |  "symbol-diff" [ ",bodyonly" ]
 attribute     := key "=" value
 key           := IDENT
 value         := bare-value | "'" quoted-value "'" | '"' quoted-value '"'
@@ -25,7 +23,7 @@ bare-value    := any run of non-whitespace chars
 quoted-value  := any chars up to the matching quote
 ```
 
-`language` is typically `csharp`, `razor`, `text`, etc. `xmldocid-flags` may appear in any order. Quoting is required only when a value contains whitespace. Markdig exposes the language and colon-suffix on `FencedCodeBlock.Info` and the attribute tail on `FencedCodeBlock.Arguments`; attribute keys are matched case-insensitively.
+`language` is typically `csharp`, `razor`, `text`, etc. Quoting is required only when a value contains whitespace. Markdig exposes the language and colon-suffix on `FencedCodeBlock.Info` and the attribute tail on `FencedCodeBlock.Arguments`; attribute keys are matched case-insensitively.
 
 ## Attributes
 
@@ -38,13 +36,11 @@ quoted-value  := any chars up to the matching quote
 
 | Form | Body shape | Description |
 |---|---|---|
-| `<lang>:path` | one file path relative to the solution directory | Embeds the entire file contents. Accepts any file type. |
-| `<lang>:xmldocid` | one XmlDocId per line (`T:`, `M:`, `P:`, `F:`, `E:`) | Embeds each symbol's declaration and body, concatenated in order. |
-| `<lang>:xmldocid,bodyonly` | one XmlDocId per line | Embeds only the member body, stripping the declaration line and enclosing braces. |
-| `<lang>:xmldocid,usings` | one XmlDocId per line | Prepends the file-local `using` directives the fragment references, unioned across all listed XmlDocIds. Composes with `,bodyonly` in any order. Skips `global using` directives and implicit usings. |
-| `<lang>:xmldocid-diff` | exactly two XmlDocIds, before then after | Emits a unified diff between the two symbols' source text. Accepts the `,bodyonly` suffix. |
+| `<lang>:symbol` | one `<file>` path, optionally followed by `> Member.Path`, per line | Embeds the whole file, or the named member's declaration and body. Concatenated in order. |
+| `<lang>:symbol,bodyonly` | same as `:symbol` | Embeds only the member body, stripping the declaration line and enclosing braces. |
+| `<lang>:symbol-diff` | exactly two references, before then after | Emits a unified diff between the two members' source text. Accepts the `,bodyonly` suffix. |
 
-Suffix forms are resolved by an `ICodeBlockPreprocessor`; `Pennington.Roslyn` ships the implementations for `xmldocid` and `xmldocid-diff`.
+Suffix forms are resolved by an `ICodeBlockPreprocessor`; `Pennington.TreeSitter` ships the implementations for `symbol` and `symbol-diff`.
 
 ## `[!code …]` directives
 

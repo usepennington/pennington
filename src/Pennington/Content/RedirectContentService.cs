@@ -121,7 +121,7 @@ public sealed class RedirectContentService : IContentService
         // IContentService.GetRedirectSourcesAsync returns empty without doing any
         // work, so services that have no redirects don't pay discovery costs here
         // (the old shape iterated each service's DiscoverAsync which, for example,
-        // forced the Roslyn workspace to load for the auto-generated API reference).
+        // forced the API-reference backend to build its full type index).
         using var scope = _serviceProvider.CreateScope();
         var services = scope.ServiceProvider.GetServices<IContentService>();
         foreach (var service in services)

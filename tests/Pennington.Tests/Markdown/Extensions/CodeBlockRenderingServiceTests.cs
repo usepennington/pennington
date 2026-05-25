@@ -15,8 +15,8 @@ public class CodeBlockRenderingServiceTests
     [Fact]
     public void Render_MatchingPreprocessor_ReturnsPreprocessedHtml()
     {
-        // Simulates <CodeBlock Language="csharp:xmldocid,bodyonly">M:Foo.Bar</CodeBlock>
-        // hitting RoslynCodeBlockPreprocessor (which would resolve the body).
+        // Simulates a <CodeBlock> whose info string matches a registered code-fragment
+        // preprocessor (which would resolve the fenced body).
         var preprocessor = new StubPreprocessor(
             matchLanguageId: "csharp:xmldocid,bodyonly",
             result: new CodeBlockPreprocessResult(
@@ -59,7 +59,7 @@ public class CodeBlockRenderingServiceTests
     [Fact]
     public void Render_PreprocessorReturnsNull_FallsBackToHighlighter()
     {
-        // Preprocessor returns null (e.g. RoslynCodeBlockPreprocessor on a non-Roslyn languageId).
+        // Preprocessor returns null (e.g. a code-fragment preprocessor on a languageId it doesn't handle).
         var preprocessor = new StubPreprocessor(matchLanguageId: "csharp:xmldocid", result: null);
 
         var service = new CodeBlockRenderingService(

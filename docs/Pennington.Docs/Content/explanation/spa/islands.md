@@ -50,7 +50,7 @@ The `<head>` of the parsed response is the source of truth for everything page-s
 
 The round trip is small but not instant, and the earliest version of this engine wrapped each swap in `document.startViewTransition` with a 150ms cross-fade and offered a per-region skeleton placeholder for slower fetches. Both layers turned out to introduce more visible motion than they masked. The cross-fade is a flash for the eye to notice; the skeleton replaces real content with shimmer the moment the network takes longer than a tick. The engine now waits — old content stays on screen while the fetch runs — and the swap, scroll reset, and head update all execute in one synchronous block so the browser paints the new page as a single frame. Hover-prefetch hides the wait for the cases where it would otherwise be felt.
 
-A top-of-viewport progress bar handles the unusual case where the response takes longer than the engine's silent threshold — a Roslyn cold start, a slow CDN edge. It only shows after the threshold elapses, so fast navigations never see it.
+A top-of-viewport progress bar handles the unusual case where the response takes longer than the engine's silent threshold — a cold cache, a slow CDN edge. It only shows after the threshold elapses, so fast navigations never see it.
 
 ### Why one render path
 
