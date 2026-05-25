@@ -1,6 +1,6 @@
 ---
 title: A dev loop that keeps up
-description: Edit a markdown file and the browser refreshes itself — WebSocket live reload, debounced file watching, and .cs hot reload that reaches into the Roslyn symbol cache.
+description: Edit a markdown file and the browser refreshes itself — WebSocket live reload, debounced file watching, and .cs hot reload for embedded code samples.
 author: Phil Scott
 date: 2026-04-15
 isDraft: false
@@ -24,13 +24,10 @@ after a server restart.
 
 ## .cs edits, too
 
-Code samples come from a live Roslyn workspace, so editing the C# they reference
-should update the docs. At first it didn't: a `.cs` edit left `xmldocid` fences
-rendering the pre-edit code.
-
-Now editing a `.cs` file clears the Roslyn symbol cache, so the next render
-re-queries the patched solution and the embedded sample reflects what you just
-typed. The watcher filters out `obj/`, `bin/`, and generated files, so a rebuild
-burst doesn't thrash the cache. The [hot reload
+Code samples come from source files via `:symbol` fences, so a sample reflects the
+current source every time the docs render. Edit the referenced `.cs` and the next
+render re-reads it, so the embedded sample reflects what you just typed — no copy
+to keep in sync. The watcher filters out `obj/`, `bin/`, and generated files, so a
+rebuild burst doesn't thrash anything. The [hot reload
 explanation](xref:explanation.dev-experience.hot-reload) covers how the watcher
 and the WebSocket fit together.

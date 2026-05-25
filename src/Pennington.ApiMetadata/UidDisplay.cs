@@ -1,6 +1,6 @@
 namespace Pennington.ApiMetadata;
 
-/// <summary>Formatting helpers for xmldocid strings (the <c>T:</c>, <c>M:</c>, <c>P:</c>… prefixed uids Roslyn emits).</summary>
+/// <summary>Formatting helpers for xmldocid strings (the <c>T:</c>, <c>M:</c>, <c>P:</c>… prefixed uids the C# compiler emits).</summary>
 public static class UidDisplay
 {
     /// <summary>Returns the short, unqualified display name for a uid (e.g. <c>T:System.Collections.Generic.List`1</c> → <c>List</c>), stripping the kind prefix, any parameter list, the namespace, and generic-arity markers.</summary>

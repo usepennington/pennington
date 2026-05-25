@@ -7,7 +7,6 @@
     <Project Path="src/Pennington.DocSite.Api/Pennington.DocSite.Api.csproj" />
     <Project Path="src/Pennington.ApiMetadata/Pennington.ApiMetadata.csproj" />
     <Project Path="src/Pennington.ApiMetadata.Reflection/Pennington.ApiMetadata.Reflection.csproj" />
-    <Project Path="src/Pennington.Roslyn/Pennington.Roslyn.csproj" />
     <Project Path="src/Pennington.TreeSitter/Pennington.TreeSitter.csproj" />
     <Project Path="src/Pennington.TranslationAudit/Pennington.TranslationAudit.csproj" />
     <Project Path="src/Pennington.BlogSite/Pennington.BlogSite.csproj" />
@@ -17,7 +16,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/Pennington.Tests/Pennington.Tests.csproj" />
     <Project Path="tests/Pennington.IntegrationTests/Pennington.IntegrationTests.csproj" />
-    <Project Path="tests/Pennington.Roslyn.Tests/Pennington.Roslyn.Tests.csproj" />
     <Project Path="tests/Pennington.TreeSitter.Tests/Pennington.TreeSitter.Tests.csproj" />
   </Folder>
   <Folder Name="/docs/">
@@ -38,8 +36,6 @@
     <Project Path="examples/BlogSiteHeroProjectsSocialsExample/BlogSiteHeroProjectsSocialsExample.csproj" />
     <Project Path="examples/BeyondLocaleExample/BeyondLocaleExample.csproj" />
     <Project Path="examples/BeyondTranslationAuditExample/BeyondTranslationAuditExample.csproj" />
-    <Project Path="examples/BeyondRoslynExample/BeyondRoslynExample.csproj" />
-    <Project Path="examples/BeyondRoslynExample/Sample/BeyondRoslynExample.Sample.csproj" />
     <Project Path="examples/BeyondTreeSitterExample/BeyondTreeSitterExample.csproj" />
     <Project Path="examples/BeyondCustomRazorComponentExample/BeyondCustomRazorComponentExample.csproj" />
     <Project Path="examples/BareHostRazorPageExample/BareHostRazorPageExample.csproj" />

@@ -4,9 +4,9 @@ title: Beyond Tree-sitter
 
 # Multi-language snippets with `:symbol`
 
-`Pennington.Roslyn` can pull C#/VB declarations into docs by their XmlDocId.
-`Pennington.TreeSitter` does the same idea for **any** tree-sitter-supported
-language, addressing a declaration by its **name path** (`Type.Member`).
+`Pennington.TreeSitter` pulls declarations into docs for **any**
+tree-sitter-supported language, addressing a declaration by its **name path**
+(`Type.Member`).
 
 Each fenced block uses the `<lang>:symbol` info-string. The body is one
 `<file> > <Member.Path>` reference per line, resolved under the configured

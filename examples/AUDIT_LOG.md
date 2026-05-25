@@ -538,32 +538,6 @@ All 25 examples build and run. Highlights worth triaging:
 
 **Fixes applied.**
 
-## 4. BeyondRoslynExample
-
-**README claim:** `AddPenningtonRoslyn` against the sibling `Sample/` library. Markdown fences resolve `:xmldocid`, `:xmldocid,bodyonly`, `:xmldocid-diff`, and `:path` against the inner `BeyondRoslynExample.slnx`.
-
-**Verified in browser (`dotnet run`, port 5000):**
-- Symbol warmup logs `Symbol extraction warmup completed in 1809ms`. ✓
-- `/api-pulls/` renders 5 distinct code blocks:
-  1. `T:Calculator` — full class with xmldoc comments. ✓
-  2. `M:Calculator.Add(...)` — method with xmldoc. ✓
-  3. `M:Calculator.Multiply(...)` + `,bodyonly` — single line `return a * b;`. ✓ (correctly strips declaration)
-  4. `T:Greeter` — full class with xmldoc. ✓
-  5. Two M-ids in one fence — both members concatenated. ✓
-- Console: clean. ✓
-
-**Findings:**
-- **[DOC+APP] (minor)** README explicitly advertises `:xmldocid-diff` as part of the teaching surface but no markdown in this example uses it. Tutorial body (line 88) also lists `:xmldocid-diff` in the fence-modifier menu, then never demonstrates it. Either add a section in `api-pulls.md` showing a before/after with two `M:` IDs and the diff fence, or drop `:xmldocid-diff` from both the README and the tutorial fence-modifier list and surface it in an explanation-quadrant page instead.
-- **[DOC] (minor)** README "Tutorial stages" section is a placeholder: it says only "The inner `BeyondRoslynExample.slnx` + `Sample/` library is part of the teaching surface." but the example has actual staged C# files (`Stage1_NoRoslyn.cs`, `Stage2_AddRoslyn.cs`). The standard pattern from `examples/CLAUDE.md` is `Stage1 → Stage2 → …` — call them out by name in the README so consumers know to look for them.
-- **[DOC] (minor)** README's "Concepts" list mentions `<DefaultItemExcludes>` keeping `Sample/` out of the host's compile — this is true but the tutorial buries it as a one-liner in step 1.2 ("set `DefaultItemExcludes` … otherwise the two projects compete over the same `.cs` files"). Promote it: a reader copying the csproj fragment from the tutorial today won't see the `<DefaultItemExcludes>` line, only a generic instruction to add it.
-
-**Resolved 2026-05-13:**
-- DOC+APP `:xmldocid-diff` demo — added a "Diff two symbols" section in `examples/BeyondRoslynExample/Content/api-pulls.md` that fences `:xmldocid-diff,bodyonly` against `Calculator.Add` vs `Calculator.Multiply`. Verified the rendered page shows `<span class="line diff-remove">return a + b;</span>` / `<span class="line diff-add">return a * b;</span>` with full syntax highlighting.
-- DOC Tutorial stages placeholder — README now reads `Stage1_NoRoslyn.cs → Stage2_AddRoslyn.cs.` per the `examples/CLAUDE.md` convention, plus a one-line note on what the inner slnx and `Sample/` library teach.
-- DOC `<DefaultItemExcludes>` promotion — Step 1.2 of the tutorial now ships a real `<xml>` snippet showing the exact `<DefaultItemExcludes>$(DefaultItemExcludes);Sample\**</DefaultItemExcludes>` line, with one sentence explaining why `$(DefaultItemExcludes)` is preserved.
-
-**Fixes applied.**
-
 ## 3. BeyondLocaleExample
 
 **README claim:** DocSite + `ConfigureLocalization` adds a second URL-prefixed locale (`es`); content lives under `Content/<locale>/`; `LanguageSwitcher` appears once `Locales.Count > 1`; translations registered via `ConfigurePennington` escape hatch.

@@ -9,7 +9,6 @@
       "src\\Pennington.DocSite.Api\\Pennington.DocSite.Api.csproj",
       "src\\Pennington.ApiMetadata\\Pennington.ApiMetadata.csproj",
       "src\\Pennington.ApiMetadata.Reflection\\Pennington.ApiMetadata.Reflection.csproj",
-      "src\\Pennington.Roslyn\\Pennington.Roslyn.csproj",
       "src\\Pennington.TreeSitter\\Pennington.TreeSitter.csproj",
       "src\\Pennington.TranslationAudit\\Pennington.TranslationAudit.csproj",
       "src\\Pennington.BlogSite\\Pennington.BlogSite.csproj",

@@ -24,7 +24,6 @@ dotnet add package Pennington.UI            # Razor components
 dotnet add package Pennington.MonorailCss   # Utility-first CSS
 dotnet add package Pennington.DocSite       # Documentation site template
 dotnet add package Pennington.BlogSite      # Blog site template
-dotnet add package Pennington.Roslyn        # Roslyn-based code extraction
 ```
 
 ## Quick Start

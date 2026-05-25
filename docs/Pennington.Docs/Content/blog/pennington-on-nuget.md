@@ -24,9 +24,9 @@ dotnet add package Pennington.DocSite
 ```
 
 `Pennington` is the core engine. `Pennington.DocSite` and `Pennington.BlogSite`
-are the site templates, `Pennington.UI` carries the Razor components,
-`Pennington.MonorailCss` handles styling, and `Pennington.Roslyn` adds the
-Roslyn-backed code samples. Reference the ones you need and skip the rest.
+are the site templates, `Pennington.UI` carries the Razor components, and
+`Pennington.MonorailCss` handles styling. Reference the ones you need and skip
+the rest.
 
 ## SourceLink and symbol packages
 

@@ -12,7 +12,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pennington.DocSite\Pennington.DocSite.csproj" />
     <ProjectReference Include="..\..\src\Pennington.DocSite.Api\Pennington.DocSite.Api.csproj" />
-    <ProjectReference Include="..\..\src\Pennington.Roslyn\Pennington.Roslyn.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.ApiMetadata.Reflection\Pennington.ApiMetadata.Reflection.csproj" />
+    <!-- BlogSite is referenced (not used at runtime) so the reflection API provider documents
+         its public surface and BlogSiteFrontMatter keys, keeping /reference/api/ and the
+         front-matter reference complete. -->
+    <ProjectReference Include="..\..\src\Pennington.BlogSite\Pennington.BlogSite.csproj" />
     <ProjectReference Include="..\..\src\Pennington.TreeSitter\Pennington.TreeSitter.csproj" />
     <ProjectReference Include="..\..\src\Pennington.Tui\Pennington.Tui.csproj" />
   </ItemGroup>

@@ -1,36 +1,20 @@
 ---
 title: "Auto-generate an API reference tree for a class library"
-description: "Wire a metadata backend (Roslyn workspace or a compiled .dll + .xml pair), call AddApiReference, and get one /reference/api/{type}/ page per public type plus inline Mdazor components for member tables, summaries, and extension-method catalogs."
+description: "Wire the reflection metadata backend (a compiled .dll + .xml pair), call AddApiReference, and get one /reference/api/{type}/ page per public type plus inline Mdazor components for member tables, summaries, and extension-method catalogs."
 uid: how-to.content-services.auto-api-reference
 order: 208020
 sectionLabel: "Content Services"
-tags: [extensibility, roslyn, reflection, xmldoc, api-reference, content-service]
+tags: [extensibility, reflection, xmldoc, api-reference, content-service]
 ---
 
 To ship a DocSite whose reference section stays in sync with a class library's public surface, register a metadata backend and call `AddApiReference()`. One Razor template renders every public type, and a handful of Mdazor components (`<ApiMemberTable>`, `<ApiSummary>`, `<ExtensionMethods>`, `<ApiParameterTable>`) are available inline in markdown for hand-authored reference pages. Every downstream page, search entry, and xref keys off a single pass over the configured backend.
 
-Two backends are available:
-
-- `Pennington.Roslyn.ApiMetadata.AddApiMetadataFromRoslyn()` — walks a live Roslyn workspace. Use when you build the documented library from source alongside the docs host.
-- `Pennington.ApiMetadata.Reflection.AddApiMetadataFromCompiledAssembly()` — reflects over a compiled `.dll` and parses the companion xmldoc `.xml` file. Use when you document a third-party assembly (for example, a NuGet package) without vendoring its source.
+`Pennington.ApiMetadata.Reflection.AddApiMetadataFromCompiledAssembly()` is the metadata backend: it reflects over a compiled `.dll` and parses the companion xmldoc `.xml` file. It documents any assembly — one you build alongside the docs host, or a third-party NuGet package — without needing its source.
 
 ## Before you begin
 
 - `AddDocSite` is already wired: `AddApiReference` appends its own assembly to `DocSiteOptions.AdditionalRoutingAssemblies` at registration time, so it must run after `AddDocSite`.
 - One metadata backend is registered before `AddApiReference`. Without one, the content service has nothing to publish.
-
-## Wire the Roslyn backend
-
-Add project references to `Pennington.Roslyn` and `Pennington.DocSite.Api`, then call `AddApiMetadataFromRoslyn` followed by `AddApiReference` after `AddDocSite`. With no options, the default `ProjectFilter` excludes `*.Tests` / `*.IntegrationTests` projects and the entry assembly itself.
-
-```csharp
-builder.Services.AddDocSite(() => new DocSiteOptions { /* ... */ });
-builder.Services.AddPenningtonRoslyn(r => r.SolutionPath = "../MyLibrary.slnx");
-builder.Services.AddApiMetadataFromRoslyn();
-builder.Services.AddApiReference();
-```
-
-The target library needs `<GenerateDocumentationFile>true</GenerateDocumentationFile>` — without that, `ISymbol.GetDocumentationCommentXml()` returns empty strings and the generated pages have no prose.
 
 ## Wire the reflection backend
 
@@ -49,7 +33,7 @@ builder.Services.AddApiMetadataFromCompiledAssembly(opts =>
     opts.AssemblyFiles.Add(Path.Combine(builder.Environment.ContentRootPath, "lib", "net9.0", "Foo.dll")));
 ```
 
-The reflection backend inspects metadata without running the assembly's code — no MSBuild workspace, no source needed. `<ExtensionMethods>` and the `:xmldocid` source fence require a live symbol graph and are unavailable under this backend.
+The reflection backend inspects metadata without running the assembly's code — no MSBuild workspace, no source needed. It resolves `<inheritdoc/>`, union cases, and `<ExtensionMethods>` from metadata. Only the `:xmldocid` source fence is unavailable under this backend, since it extracts source text rather than metadata.
 
 ## Customize the route prefix
 
@@ -90,31 +74,19 @@ Each `FromPackageReference` call resolves one DLL from its matching `<PackageRef
 
 ## Narrow what gets published
 
-### Limit the projects walked with `ProjectFilter`
+The reflection backend documents the assemblies you point it at, so narrowing is a matter of which assemblies you add. The built-in rules already exclude types that are not public, are delegates or attributes, derive from `ComponentBase`, or carry no xmldoc `<summary>`.
 
-Pass a predicate when a single solution mixes libraries you want to document with ones you do not — integration fixtures, sample apps, unrelated utility projects. The predicate receives the Roslyn `Project` directly, so filters on `Name`, `AssemblyName`, or language work equally well.
+Use `AssemblyFiles` to document an explicit list of `.dll` paths when a folder holds more assemblies than you want documented — for example, dependencies copied alongside the target only so `MetadataLoadContext` can resolve them:
 
 ```csharp
-builder.Services.AddApiMetadataFromRoslyn(opts =>
+builder.Services.AddApiMetadataFromCompiledAssembly(opts =>
 {
-    opts.ProjectFilter = project =>
-        project.Name.StartsWith("MyLibrary", StringComparison.Ordinal)
-        && !project.Name.EndsWith(".Tests", StringComparison.Ordinal);
+    opts.AssemblyFiles.Add(Path.Combine(libDir, "MyLibrary.dll"));
+    opts.AssemblyFiles.Add(Path.Combine(libDir, "MyLibrary.Extensions.dll"));
 });
 ```
 
-### Hide individual types with `TypeFilter`
-
-`TypeFilter` runs on top of the built-in rules (public, non-delegate, non-attribute, non-`ComponentBase`, has xmldoc). Use it to drop a namespace that is public only by build necessity, or to skip types tagged with a marker attribute.
-
-```csharp
-builder.Services.AddApiMetadataFromRoslyn(opts =>
-{
-    opts.TypeFilter = type =>
-        type.ContainingNamespace.ToDisplayString() != "MyLibrary.Internal"
-        && !type.GetAttributes().Any(a => a.AttributeClass?.Name == "InternalApiAttribute");
-});
-```
+Use `AssemblyDirectories` instead to document every `.dll`/`.xml` pair in a folder — the typical NuGet `lib/<tfm>/` layout.
 
 ## Render reference fragments inline
 
@@ -150,7 +122,7 @@ Pass a method xmldocid (`M:...`). The table pulls parameter names and types from
 
 ### Catalog extension methods by receiver with `<ExtensionMethods>`
 
-Groups every public extension method in the workspace by the unqualified short name of its first (receiver) parameter. `Receiver="IServiceCollection"` gathers every `services.AddX()` helper the library ships. Roslyn-only; the DocFx backend returns an empty list.
+Groups every public extension method in the assembly by the unqualified short name of its first (receiver) parameter. `Receiver="IServiceCollection"` gathers every `services.AddX()` helper the library ships.
 
 ````markdown
 <ExtensionMethods Receiver="IServiceCollection" />
@@ -176,6 +148,5 @@ Xref links like `<xref:reference.api.api-type-summary>` resolve, the pages flow 
 
 ## Related
 
-- Tutorial: <xref:tutorials.beyond-basics.connect-roslyn> — the `AddPenningtonRoslyn` / `SolutionPath` wire-up the Roslyn backend builds on.
 - How-to: <xref:how-to.content-services.custom-content-service> — hand-write an `IContentService` when `AddApiReference`'s discovery rules are not the right shape.
 - Reference: <xref:reference.api.api-type-summary>, <xref:reference.api.api-member>.

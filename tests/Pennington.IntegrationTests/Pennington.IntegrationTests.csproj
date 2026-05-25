@@ -18,6 +18,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\docs\Pennington.Docs\Pennington.Docs.csproj" />
     <ProjectReference Include="..\..\src\Pennington.BlogSite\Pennington.BlogSite.csproj" />
-    <ProjectReference Include="..\..\src\Pennington.Roslyn\Pennington.Roslyn.csproj" />
   </ItemGroup>
 </Project>

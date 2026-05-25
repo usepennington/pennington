@@ -2,4 +2,4 @@
 
 > A content engine for .NET that transforms markdown into static documentation sites and blogs.
 
-Pennington is a library for building content-driven .NET websites. It provides a pipeline that discovers markdown files, parses YAML front matter, renders HTML with syntax highlighting, and generates static sites. Key features include hot reload during development, SPA-style navigation, pluggable code highlighting (including Roslyn-powered semantic highlighting), and utility-first CSS via MonorailCSS.
+Pennington is a library for building content-driven .NET websites. It provides a pipeline that discovers markdown files, parses YAML front matter, renders HTML with syntax highlighting, and generates static sites. Key features include hot reload during development, SPA-style navigation, pluggable code highlighting, and utility-first CSS via MonorailCSS.
