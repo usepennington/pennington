@@ -1,5 +1,6 @@
 namespace Pennington.TreeSitter.Tests.Resolution;
 
+using Pennington.TreeSitter.Fragments;
 using static TreeSitterTestHelper;
 
 /// <summary>
@@ -43,7 +44,7 @@ public sealed class NamePathResolverTests
             }
             """;
 
-        var fragment = Extract("csharp", source, "Calculator.Add", bodyOnly: true);
+        var fragment = Extract("csharp", source, "Calculator.Add", new FragmentOptions { BodyOnly = true });
 
         fragment.ShouldNotBeNull();
         fragment.ShouldBe("return a + b;");

@@ -12,7 +12,7 @@ internal static class TreeSitterTestHelper
         LanguageDeclarationConfigDefaults.CreateDefaults()[languageKey];
 
     /// <summary>Resolves and extracts a member from inline source, returning null when the path does not resolve.</summary>
-    public static string? Extract(string languageKey, string source, string namePath, bool bodyOnly = false)
+    public static string? Extract(string languageKey, string source, string namePath, FragmentOptions? options = null)
     {
         var config = Config(languageKey);
         using var language = new TsLanguage(config.TreeSitterLanguageName);
@@ -21,7 +21,7 @@ internal static class TreeSitterTestHelper
 
         var segments = namePath.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var node = new NamePathResolver().Resolve(tree.RootNode, segments, config);
-        return node is null ? null : FragmentExtractor.Extract(node, config, bodyOnly);
+        return node is null ? null : FragmentExtractor.Extract(node, config, options ?? FragmentOptions.Default);
     }
 
     /// <summary>Returns the tree-sitter s-expression for inline source — useful for inspecting real node types.</summary>

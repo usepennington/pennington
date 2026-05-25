@@ -5,10 +5,10 @@ public interface ISourceFragmentService
 {
     /// <summary>
     /// Returns the source text of <paramref name="namePath"/> within <paramref name="relativeFilePath"/>, or a
-    /// failure. An empty <paramref name="namePath"/> returns the whole file. When <paramref name="bodyOnly"/> is
-    /// set, only the matched declaration's body is returned.
+    /// failure. An empty <paramref name="namePath"/> returns the whole file. <paramref name="options"/> select
+    /// body-only extraction, an elided-body outline, and whether the file's imports are prepended.
     /// </summary>
-    FragmentResult GetFragment(string languageId, string relativeFilePath, string namePath, bool bodyOnly);
+    FragmentResult GetFragment(string languageId, string relativeFilePath, string namePath, FragmentOptions options);
 }
 
 /// <summary>Outcome of a fragment lookup: either the extracted <see cref="Text"/> or an <see cref="Error"/> message.</summary>

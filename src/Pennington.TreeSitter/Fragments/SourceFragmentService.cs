@@ -17,7 +17,7 @@ internal sealed class SourceFragmentService : ISourceFragmentService
         _resolver = resolver;
     }
 
-    public FragmentResult GetFragment(string languageId, string relativeFilePath, string namePath, bool bodyOnly)
+    public FragmentResult GetFragment(string languageId, string relativeFilePath, string namePath, FragmentOptions options)
     {
         if (string.IsNullOrEmpty(_options.ContentRoot))
         {
@@ -63,6 +63,16 @@ internal sealed class SourceFragmentService : ISourceFragmentService
             return FragmentResult.Fail($"Member '{namePath}' not found in {relativeFilePath}.");
         }
 
-        return FragmentResult.Ok(FragmentExtractor.Extract(node, config, bodyOnly));
+        var fragment = FragmentExtractor.Extract(node, config, options);
+        if (options.IncludeImports)
+        {
+            var imports = ImportCollector.Collect(tree.RootNode, config);
+            if (imports.Length > 0)
+            {
+                fragment = imports + "\n\n" + fragment;
+            }
+        }
+
+        return FragmentResult.Ok(fragment);
     }
 }

@@ -46,6 +46,7 @@ public static class LanguageDeclarationConfigDefaults
         {
             "declaration_list", "namespace_declaration", "file_scoped_namespace_declaration",
         },
+        ImportNodeTypes = new HashSet<string> { "using_directive" },
     };
 
     private static LanguageDeclarationConfig Python() => new()
@@ -53,6 +54,10 @@ public static class LanguageDeclarationConfigDefaults
         TreeSitterLanguageName = "Python",
         DeclarationNodeTypes = new HashSet<string> { "class_definition", "function_definition" },
         TransparentNodeTypes = new HashSet<string> { "block", "decorated_definition" },
+        ImportNodeTypes = new HashSet<string>
+        {
+            "import_statement", "import_from_statement", "future_import_statement",
+        },
     };
 
     private static LanguageDeclarationConfig TypeScript() => new()
@@ -64,6 +69,7 @@ public static class LanguageDeclarationConfigDefaults
             "method_definition", "interface_declaration", "enum_declaration",
         },
         TransparentNodeTypes = new HashSet<string> { "class_body", "export_statement" },
+        ImportNodeTypes = new HashSet<string> { "import_statement" },
     };
 
     private static LanguageDeclarationConfig JavaScript() => new()
@@ -74,6 +80,7 @@ public static class LanguageDeclarationConfigDefaults
             "class_declaration", "function_declaration", "generator_function_declaration", "method_definition",
         },
         TransparentNodeTypes = new HashSet<string> { "class_body", "export_statement", "statement_block" },
+        ImportNodeTypes = new HashSet<string> { "import_statement" },
     };
 
     private static LanguageDeclarationConfig Java() => new()
@@ -85,6 +92,7 @@ public static class LanguageDeclarationConfigDefaults
             "annotation_type_declaration", "method_declaration", "constructor_declaration",
         },
         TransparentNodeTypes = new HashSet<string> { "class_body", "interface_body", "enum_body", "annotation_type_body" },
+        ImportNodeTypes = new HashSet<string> { "import_declaration" },
     };
 
     private static LanguageDeclarationConfig Ruby() => new()
@@ -103,6 +111,7 @@ public static class LanguageDeclarationConfigDefaults
             "method_declaration", "function_definition",
         },
         TransparentNodeTypes = new HashSet<string> { "declaration_list" },
+        ImportNodeTypes = new HashSet<string> { "namespace_use_declaration" },
     };
 
     private static LanguageDeclarationConfig Rust() => new()
@@ -117,6 +126,7 @@ public static class LanguageDeclarationConfigDefaults
         // descends into the impl as well as the struct (both match the `Calculator` segment).
         NameFieldOverrides = new Dictionary<string, string> { ["impl_item"] = "type" },
         TransparentNodeTypes = new HashSet<string> { "declaration_list" },
+        ImportNodeTypes = new HashSet<string> { "use_declaration" },
     };
 
     private static LanguageDeclarationConfig Go() => new()
@@ -124,5 +134,6 @@ public static class LanguageDeclarationConfigDefaults
         TreeSitterLanguageName = "Go",
         DeclarationNodeTypes = new HashSet<string> { "function_declaration", "method_declaration", "type_spec" },
         TransparentNodeTypes = new HashSet<string> { "type_declaration" },
+        ImportNodeTypes = new HashSet<string> { "import_declaration" },
     };
 }

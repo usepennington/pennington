@@ -28,6 +28,12 @@ public sealed record LanguageDeclarationConfig
     /// <summary>Field name holding a declaration's body, used for body-only extraction. Defaults to <c>body</c>.</summary>
     public string BodyFieldName { get; init; } = "body";
 
+    /// <summary>
+    /// File-level node types that count as import/using/require statements, used to prepend a snippet's
+    /// import context. Empty when the language has no syntactic import form the walker can collect.
+    /// </summary>
+    public IReadOnlySet<string> ImportNodeTypes { get; init; } = new HashSet<string>();
+
     /// <summary>Returns the field name to read for the given declaration node type's name.</summary>
     public string NameFieldFor(string nodeType) =>
         NameFieldOverrides.TryGetValue(nodeType, out var field) ? field : DefaultNameField;

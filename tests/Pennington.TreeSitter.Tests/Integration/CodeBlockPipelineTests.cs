@@ -93,6 +93,34 @@ public sealed class CodeBlockPipelineTests : IDisposable
     }
 
     [Fact]
+    public void Symbol_fence_with_imports_prepends_file_imports()
+    {
+        var pipeline = CreatePipeline();
+        File.WriteAllText(
+            Path.Combine(_root, "mathy.py"),
+            "import math\n\nclass Mathy:\n    def root(self, x):\n        return math.sqrt(x)\n");
+
+        var html = pipeline.Render("mathy.py > Mathy.root", "python:symbol,imports");
+
+        html.ShouldContain("import math");
+        html.ShouldContain("def root(self, x):");
+    }
+
+    [Fact]
+    public void Symbol_fence_with_signatures_elides_member_bodies()
+    {
+        var pipeline = CreatePipeline();
+        File.WriteAllText(
+            Path.Combine(_root, "Calc.cs"),
+            "public class Calc\n{\n    public int Add(int a, int b)\n    {\n        return a + b;\n    }\n}\n");
+
+        var html = pipeline.Render("Calc.cs > Calc", "csharp:symbol,signatures");
+
+        html.ShouldContain("public int Add(int a, int b)");
+        html.ShouldNotContain("return a + b");
+    }
+
+    [Fact]
     public void Plain_fence_without_symbol_modifier_is_left_to_normal_highlighting()
     {
         var pipeline = CreatePipeline();

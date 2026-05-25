@@ -99,14 +99,21 @@ src/Pennington/Pipeline/ContentPipeline.cs > ContentPipeline.ParseAsync
 ### Diff two members — `<lang>:symbol-diff`
 Body must contain exactly 2 references (before/after), one per line. Supports the same `,bodyonly` suffix.
 
+Two more `:symbol` flags, comma-combinable with `,bodyonly`:
+
+- **`,imports`** — prepends the file's top-of-file `using` / `import` / `require` statements above the snippet. Prepends *all* of them, not only the ones the member uses; no-op for whole-file embeds and import-less languages (Ruby).
+- **`,signatures`** — elides member bodies to `{ … }` (or `…` for non-brace bodies) for an outline of a type's shape. Inverse of `,bodyonly`, so the two don't combine.
+
 ### When to use which
 - **`:symbol`** — the default. A bare path embeds the whole file; `path > Type.Member` embeds one member. Language-agnostic.
 - **`:symbol,bodyonly`** — when the declaration is noise (showing what's inside a method, or a type's members without its header).
+- **`:symbol,imports`** — when a member snippet needs its import context to make sense on its own.
+- **`:symbol,signatures`** — when the point is a type's surface (its members) rather than how each one works.
 - **`:symbol-diff`** — before/after comparisons in explanation pages.
 
 ### Caveats
 - **Overloads** resolve to the first declaration of that name in the file — name-path addressing can't distinguish signatures. Point at an unambiguous member, or hand-write the snippet.
-- **No `using` prepend.** Tree-sitter is syntactic; there is no `,usings` equivalent. Snippets render without import directives.
+- **`,imports` is unfiltered.** It prepends every top-of-file import, not just the ones the snippet references — trim by hand when a member needs only a few.
 
 Requires `Pennington.TreeSitter` wired (`AddPenningtonTreeSitter`) with `ContentRoot` set.
 

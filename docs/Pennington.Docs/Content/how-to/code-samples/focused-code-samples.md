@@ -63,6 +63,24 @@ examples/FocusedCodeSamplesExample/MonolithWordCounter.cs > MonolithWordCounter.
 
 `,bodyonly` also works on types (members between the braces, skipping the type header) and properties (the `get`/`set` accessors).
 
+## Carry the imports with `,imports`
+
+A member-scoped fence drops the file's `using` / `import` / `require` lines, so a reader can't see where the types resolve from. Append `,imports` to prepend the file's top-of-file imports above the snippet, separated by a blank line.
+
+````markdown
+```csharp:symbol,imports
+examples/FocusedCodeSamplesExample/MonolithWordCounter.cs > MonolithWordCounter.CountWords
+```
+````
+
+Which renders as:
+
+```csharp:symbol,imports
+examples/FocusedCodeSamplesExample/MonolithWordCounter.cs > MonolithWordCounter.CountWords
+```
+
+`,imports` prepends every import at the top of the file, not only the ones the member references. It composes with `,bodyonly` — the imports lead, the body follows — and is a no-op for whole-file embeds and for languages with no syntactic import statement (Ruby's `require` is a method call, not a declaration).
+
 ## Walk a multi-phase method through named helpers
 
 When the target method runs 25+ lines across distinct phases, fence each phase as its own helper instead of fencing the monolith. `ModularWordCounter` is the same logic as `MonolithWordCounter` split into three helpers — `Tokenize`, `Tally`, and `Format` — orchestrated by a short `CountWords`. A whole-type fence gives the reader the full picture in one place:
@@ -124,6 +142,24 @@ examples/FocusedCodeSamplesExample/ModularWordCounter.cs > ModularWordCounter.Fo
 ```
 
 `:symbol` resolves a member by name path within the file, so give each helper a distinct name — overloads resolve to the first declaration and can't be told apart.
+
+## Show a type's shape with `,signatures`
+
+When the point is a type's surface — what it exposes, not how each member works — append `,signatures`. Every member body collapses to `{ … }`, leaving the declarations, signatures, doc comments, and member order intact for an at-a-glance outline.
+
+````markdown
+```csharp:symbol,signatures
+examples/FocusedCodeSamplesExample/ModularWordCounter.cs > ModularWordCounter
+```
+````
+
+Which renders as:
+
+```csharp:symbol,signatures
+examples/FocusedCodeSamplesExample/ModularWordCounter.cs > ModularWordCounter
+```
+
+`,signatures` works on a single member too, rendering just its signature over an elided body. It targets brace-delimited languages (C#, Java, TypeScript, Go, Rust); Python and Ruby suites collapse to a best-effort `…`. As the inverse of `,bodyonly`, the two don't combine — `,signatures` wins when both are set.
 
 ## Show a delta with `symbol-diff`
 

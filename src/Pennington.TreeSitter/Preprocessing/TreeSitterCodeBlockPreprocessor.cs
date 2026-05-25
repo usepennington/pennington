@@ -39,16 +39,17 @@ public sealed class TreeSitterCodeBlockPreprocessor : ICodeBlockPreprocessor
     /// <inheritdoc />
     public CodeBlockPreprocessResult? TryProcess(string code, string languageId)
     {
-        var (baseLanguage, modifier, bodyOnly) = ParseLanguageId(languageId);
+        var (baseLanguage, modifier, options) = ParseLanguageId(languageId);
         return modifier switch
         {
-            "symbol" => ProcessSymbol(baseLanguage, code, bodyOnly),
-            "symbol-diff" => ProcessSymbolDiff(baseLanguage, code, bodyOnly),
+            "symbol" => ProcessSymbol(baseLanguage, code, options),
+            // Imports and outline elision make no sense across a diff; honor only the body-only flag.
+            "symbol-diff" => ProcessSymbolDiff(baseLanguage, code, new FragmentOptions { BodyOnly = options.BodyOnly }),
             _ => null,
         };
     }
 
-    private CodeBlockPreprocessResult ProcessSymbol(string baseLanguage, string code, bool bodyOnly)
+    private CodeBlockPreprocessResult ProcessSymbol(string baseLanguage, string code, FragmentOptions options)
     {
         try
         {
@@ -56,7 +57,7 @@ public sealed class TreeSitterCodeBlockPreprocessor : ICodeBlockPreprocessor
             foreach (var line in code.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
                 var (filePath, namePath) = ParseReference(line);
-                var result = _fragmentService.GetFragment(baseLanguage, filePath, namePath, bodyOnly);
+                var result = _fragmentService.GetFragment(baseLanguage, filePath, namePath, options);
                 if (!result.Succeeded)
                 {
                     Diagnostics?.AddWarning($"tree-sitter :symbol — {result.Error}");
@@ -80,7 +81,7 @@ public sealed class TreeSitterCodeBlockPreprocessor : ICodeBlockPreprocessor
         }
     }
 
-    private CodeBlockPreprocessResult ProcessSymbolDiff(string baseLanguage, string code, bool bodyOnly)
+    private CodeBlockPreprocessResult ProcessSymbolDiff(string baseLanguage, string code, FragmentOptions options)
     {
         try
         {
@@ -92,8 +93,8 @@ public sealed class TreeSitterCodeBlockPreprocessor : ICodeBlockPreprocessor
                 return new CodeBlockPreprocessResult(errorHtml, baseLanguage, SkipTransform: true);
             }
 
-            var fragment1 = ResolveFragment(baseLanguage, references[0], bodyOnly);
-            var fragment2 = ResolveFragment(baseLanguage, references[1], bodyOnly);
+            var fragment1 = ResolveFragment(baseLanguage, references[0], options);
+            var fragment2 = ResolveFragment(baseLanguage, references[1], options);
 
             if (!fragment1.Succeeded || !fragment2.Succeeded)
             {
@@ -136,18 +137,18 @@ public sealed class TreeSitterCodeBlockPreprocessor : ICodeBlockPreprocessor
         }
     }
 
-    private FragmentResult ResolveFragment(string baseLanguage, string reference, bool bodyOnly)
+    private FragmentResult ResolveFragment(string baseLanguage, string reference, FragmentOptions options)
     {
         var (filePath, namePath) = ParseReference(reference);
-        return _fragmentService.GetFragment(baseLanguage, filePath, namePath, bodyOnly);
+        return _fragmentService.GetFragment(baseLanguage, filePath, namePath, options);
     }
 
     /// <summary>
     /// Splits an info-string such as <c>python:symbol,bodyonly</c> or <c>python:symbol-diff</c> into its base
-    /// language, the modifier (<c>symbol</c>, <c>symbol-diff</c>, or null when absent), and whether the
-    /// <c>bodyonly</c> flag is present.
+    /// language, the modifier (<c>symbol</c>, <c>symbol-diff</c>, or null when absent), and the
+    /// <see cref="FragmentOptions"/> parsed from the comma-separated flag tail.
     /// </summary>
-    internal static (string baseLanguage, string? modifier, bool bodyOnly) ParseLanguageId(string languageId)
+    internal static (string baseLanguage, string? modifier, FragmentOptions options) ParseLanguageId(string languageId)
     {
         var trimmed = languageId.Trim();
         const string diffMarker = ":symbol-diff";
@@ -157,22 +158,29 @@ public sealed class TreeSitterCodeBlockPreprocessor : ICodeBlockPreprocessor
         var diffIndex = trimmed.IndexOf(diffMarker, StringComparison.OrdinalIgnoreCase);
         if (diffIndex >= 0)
         {
-            return (trimmed[..diffIndex], "symbol-diff", HasBodyOnly(trimmed[(diffIndex + diffMarker.Length)..]));
+            return (trimmed[..diffIndex], "symbol-diff", ParseFlags(trimmed[(diffIndex + diffMarker.Length)..]));
         }
 
         var index = trimmed.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
         if (index < 0)
         {
-            return (trimmed, null, false);
+            return (trimmed, null, FragmentOptions.Default);
         }
 
-        return (trimmed[..index], "symbol", HasBodyOnly(trimmed[(index + marker.Length)..]));
+        return (trimmed[..index], "symbol", ParseFlags(trimmed[(index + marker.Length)..]));
     }
 
-    private static bool HasBodyOnly(string afterMarker) =>
-        afterMarker
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Any(flag => flag.Equals("bodyonly", StringComparison.OrdinalIgnoreCase));
+    /// <summary>Reads the comma-separated flag tail after a <c>:symbol</c> marker into a <see cref="FragmentOptions"/>; unknown flags are ignored.</summary>
+    private static FragmentOptions ParseFlags(string afterMarker)
+    {
+        var flags = afterMarker.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return new FragmentOptions
+        {
+            BodyOnly = flags.Any(flag => flag.Equals("bodyonly", StringComparison.OrdinalIgnoreCase)),
+            IncludeImports = flags.Any(flag => flag.Equals("imports", StringComparison.OrdinalIgnoreCase)),
+            SignaturesOnly = flags.Any(flag => flag.Equals("signatures", StringComparison.OrdinalIgnoreCase)),
+        };
+    }
 
     /// <summary>Splits a body line into a file path and member name path on the <c>" &gt; "</c> separator; a bare path yields an empty name path.</summary>
     internal static (string filePath, string namePath) ParseReference(string line)
