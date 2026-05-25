@@ -25,7 +25,7 @@ public sealed class NamePathResolver
             var next = new List<TsNode>();
             foreach (var node in frontier)
             {
-                foreach (var child in DeclarationChildren(node, config))
+                foreach (var child in TreeWalker.ChildrenMatching(node, config.TransparentNodeTypes, config.DeclarationNodeTypes))
                 {
                     if (EffectiveName(child, config) == segment)
                     {
@@ -47,22 +47,4 @@ public sealed class NamePathResolver
 
     private static string? EffectiveName(TsNode node, LanguageDeclarationConfig config) =>
         node.GetChildForField(config.NameFieldFor(node.Type))?.Text;
-
-    private static IEnumerable<TsNode> DeclarationChildren(TsNode parent, LanguageDeclarationConfig config)
-    {
-        foreach (var child in parent.NamedChildren)
-        {
-            if (config.TransparentNodeTypes.Contains(child.Type))
-            {
-                foreach (var descendant in DeclarationChildren(child, config))
-                {
-                    yield return descendant;
-                }
-            }
-            else if (config.DeclarationNodeTypes.Contains(child.Type))
-            {
-                yield return child;
-            }
-        }
-    }
 }

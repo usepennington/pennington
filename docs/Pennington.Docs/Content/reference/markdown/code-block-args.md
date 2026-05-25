@@ -14,8 +14,9 @@ The fence info-string grammar: the opening-fence text after the three backticks,
 ```text
 info-string   := language [ ":" suffix ] ( WS attribute )*
 language      := IDENT
-suffix        := "symbol" [ ",bodyonly" ]
+suffix        := "symbol" symbol-flag*
               |  "symbol-diff" [ ",bodyonly" ]
+symbol-flag   := ",bodyonly" | ",imports" | ",signatures"
 attribute     := key "=" value
 key           := IDENT
 value         := bare-value | "'" quoted-value "'" | '"' quoted-value '"'
@@ -38,9 +39,11 @@ quoted-value  := any chars up to the matching quote
 |---|---|---|
 | `<lang>:symbol` | one `<file>` path, optionally followed by `> Member.Path`, per line | Embeds the whole file, or the named member's declaration and body. Concatenated in order. |
 | `<lang>:symbol,bodyonly` | same as `:symbol` | Embeds only the member body, stripping the declaration line and enclosing braces. |
+| `<lang>:symbol,imports` | same as `:symbol` | Prepends the file's top-of-file import/using/require statements above the snippet. Composes with `,bodyonly`; a no-op for whole-file embeds and import-less languages. |
+| `<lang>:symbol,signatures` | same as `:symbol` | Replaces member bodies with an elision marker (`{ … }`, or `…` for non-brace bodies) for an outline view. Mutually exclusive with `,bodyonly`. |
 | `<lang>:symbol-diff` | exactly two references, before then after | Emits a unified diff between the two members' source text. Accepts the `,bodyonly` suffix. |
 
-Suffix forms are resolved by an `ICodeBlockPreprocessor`; `Pennington.TreeSitter` ships the implementations for `symbol` and `symbol-diff`.
+The `symbol` flags (`,bodyonly`, `,imports`, `,signatures`) are comma-separated and order-independent. Suffix forms are resolved by an `ICodeBlockPreprocessor`; `Pennington.TreeSitter` ships the implementations for `symbol` and `symbol-diff`.
 
 ## `[!code …]` directives
 

@@ -7,12 +7,18 @@ using TsNode = global::TreeSitter.Node;
 internal static class FragmentExtractor
 {
     /// <summary>
-    /// Returns the declaration's full source text, or its body when <paramref name="bodyOnly"/> is set, dedented
-    /// so the fragment renders at column zero.
+    /// Returns the declaration's source text, dedented so the fragment renders at column zero. Honors
+    /// <paramref name="options"/>: <see cref="FragmentOptions.SignaturesOnly"/> elides member bodies (outline
+    /// view), otherwise <see cref="FragmentOptions.BodyOnly"/> returns just the body.
     /// </summary>
-    public static string Extract(TsNode node, LanguageDeclarationConfig config, bool bodyOnly)
+    public static string Extract(TsNode node, LanguageDeclarationConfig config, FragmentOptions options)
     {
-        if (!bodyOnly)
+        if (options.SignaturesOnly)
+        {
+            return ExtractSignatures(node, config);
+        }
+
+        if (!options.BodyOnly)
         {
             return DedentByColumn(node.Text, node.StartPosition.Column);
         }
@@ -33,6 +39,39 @@ internal static class FragmentExtractor
 
         // Indentation-delimited body (Python suite): already starts at the statement, just normalize.
         return DedentByMin(text);
+    }
+
+    /// <summary>
+    /// Renders the node as an outline: each member's body (or, for a single member, its own body) is replaced
+    /// with an elision marker — <c>{ … }</c> for brace-delimited bodies, <c>…</c> otherwise — leaving signatures,
+    /// member order, and the enclosing declaration intact.
+    /// </summary>
+    private static string ExtractSignatures(TsNode node, LanguageDeclarationConfig config)
+    {
+        var members = TreeWalker
+            .ChildrenMatching(node, config.TransparentNodeTypes, config.DeclarationNodeTypes)
+            .ToList();
+
+        // A type elides its members' bodies; a lone member (no nested declarations) elides its own body.
+        var targets = members.Count > 0 ? members : [node];
+
+        var bodies = targets
+            .Select(target => target.GetChildForField(config.BodyFieldName))
+            .Where(body => body is not null)
+            .Select(body => body!.Text.Replace("\r\n", "\n"))
+            .Where(text => text.Length > 0)
+            .Distinct()
+            .OrderByDescending(text => text.Length)
+            .ToList();
+
+        var outline = node.Text.Replace("\r\n", "\n");
+        foreach (var body in bodies)
+        {
+            var marker = body.TrimStart().StartsWith('{') ? "{ … }" : "…";
+            outline = outline.Replace(body, marker);
+        }
+
+        return DedentByColumn(outline, node.StartPosition.Column);
     }
 
     /// <summary>
