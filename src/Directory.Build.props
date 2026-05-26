@@ -27,7 +27,6 @@
   -->
   <ItemGroup Condition="'$(Configuration)'=='Release'">
     <PackageReference Include="MinVer" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)../logo.png" Pack="true" PackagePath="" />
