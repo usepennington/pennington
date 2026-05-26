@@ -2,7 +2,7 @@
 title: "CLI and build arguments"
 description: "The argument and environment-variable surface for RunOrBuildAsync — positional args, named flags, and the variables consulted when the host boots."
 sectionLabel: "Host Integration"
-order: 406020
+order: 2
 tags: [host, cli, build, arguments]
 uid: reference.host.cli
 ---

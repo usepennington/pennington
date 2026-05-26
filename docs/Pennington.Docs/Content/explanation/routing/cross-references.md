@@ -2,7 +2,7 @@
 title: "Cross-reference resolution"
 description: "Why Pennington links pages by symbolic uid rather than filesystem path, and how the two-phase resolver turns those uids into canonical URLs without the authoring cost of hand-coded links."
 uid: explanation.routing.cross-references
-order: 303030
+order: 3
 sectionLabel: "Routing and Navigation"
 tags: [cross-references, xref, routing, rewriters]
 ---

@@ -2,7 +2,7 @@
 title: "Add doc pages and link between them"
 description: "Build out a Guides area with two content pages, wire sibling navigation, hub-style absolute links, and rename-safe uid cross-references."
 sectionLabel: "Getting Started with DocSite"
-order: 102020
+order: 2
 tags:
   - docsite
   - authoring

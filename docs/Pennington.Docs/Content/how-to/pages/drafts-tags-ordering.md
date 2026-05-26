@@ -2,7 +2,7 @@
 title: "Mark drafts, schedule posts, tag pages, and control sort order"
 description: "Hide unfinished pages, embargo posts until a release date, attach grouping keywords, and choose where a page lands in its sidebar section using front-matter keys."
 uid: how-to.pages.drafts-tags-ordering
-order: 201020
+order: 2
 sectionLabel: "Pages"
 tags: [front-matter, drafts, tags, ordering, scheduling]
 ---

@@ -2,7 +2,7 @@
 title: "Embed focused code samples"
 description: "Scope :symbol fences to one member, strip declaration noise with bodyonly, and refactor long methods into named helpers so each section of a walkthrough shows one idea."
 uid: how-to.code-samples.focused-code-samples
-order: 202030
+order: 3
 sectionLabel: "Code Samples"
 tags: [authoring, symbol, code-samples, tree-sitter]
 ---

@@ -22,11 +22,11 @@ using SharpYaml;
 /// <see cref="AsyncLazy{T}"/> when <see cref="FileWatchDispatcher"/> reports a change there.
 /// </remarks>
 public sealed class MarkdownContentService<TFrontMatter>
-    : IContentService, IMarkdownContentSource, ILlmsSubtreeProvider, IFileWatchAware
+    : IContentService, IMarkdownContentSource, ILlmsSubtreeProvider, IFolderMetadataProvider, IFileWatchAware
     where TFrontMatter : IFrontMatter, new()
 {
-    /// <summary>Sidecar filename that, when dropped at any folder under the content root, declares that folder as an llms.txt subtree.</summary>
-    public const string LlmsSubtreeSidecarFileName = "_llms.yaml";
+    /// <summary>Sidecar filename that, when dropped at any folder under the content root, declares folder metadata (display title, sort order, llms-subtree opt-in).</summary>
+    public const string FolderMetadataSidecarFileName = "_meta.yml";
 
     /// <summary>File-name suffix that marks a markdown file as llms-only — emitted to the llms.txt sidecar but never as an HTML page.</summary>
     public const string LlmsOnlyFileSuffix = ".llms.md";
@@ -40,7 +40,7 @@ public sealed class MarkdownContentService<TFrontMatter>
     private readonly ImmutableArray<string> _normalizedExcludePaths;
     private readonly FileWatchScope _watchScope;
     private AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>> _metadataLazy;
-    private AsyncLazy<ImmutableList<LlmsSubtree>> _subtreesLazy;
+    private AsyncLazy<ImmutableList<FolderMetadata>> _folderMetadataLazy;
 
     /// <summary>
     /// Initializes the service and prepares lazy metadata loading. <see cref="FileWatchDispatcher"/>
@@ -62,7 +62,7 @@ public sealed class MarkdownContentService<TFrontMatter>
         _normalizedExcludePaths = NormalizeExcludePaths(options.ExcludePaths);
         _watchScope = new FileWatchScope(_absoluteContentPath, "*.*", IncludeSubdirectories: true);
         _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>>(LoadMetadataAsync);
-        _subtreesLazy = new AsyncLazy<ImmutableList<LlmsSubtree>>(LoadSubtreesAsync);
+        _folderMetadataLazy = new AsyncLazy<ImmutableList<FolderMetadata>>(LoadFolderMetadataAsync);
     }
 
     /// <inheritdoc/>
@@ -81,7 +81,7 @@ public sealed class MarkdownContentService<TFrontMatter>
         }
 
         _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>>(LoadMetadataAsync);
-        _subtreesLazy = new AsyncLazy<ImmutableList<LlmsSubtree>>(LoadSubtreesAsync);
+        _folderMetadataLazy = new AsyncLazy<ImmutableList<FolderMetadata>>(LoadFolderMetadataAsync);
         return FileWatchResponse.Refreshed;
     }
 
@@ -562,20 +562,38 @@ public sealed class MarkdownContentService<TFrontMatter>
         file.Value.EndsWith(LlmsOnlyFileSuffix, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
-    public Task<ImmutableList<LlmsSubtree>> GetLlmsSubtreesAsync() => _subtreesLazy.Value;
+    public async Task<ImmutableList<LlmsSubtree>> GetLlmsSubtreesAsync()
+    {
+        var folderMetadata = await _folderMetadataLazy.Value;
+        var builder = ImmutableList.CreateBuilder<LlmsSubtree>();
+        foreach (var md in folderMetadata)
+        {
+            if (md.LlmsDescription is null || string.IsNullOrWhiteSpace(md.Title))
+            {
+                continue;
+            }
 
-    private async Task<ImmutableList<LlmsSubtree>> LoadSubtreesAsync()
+            builder.Add(new LlmsSubtree(md.FolderUrlPrefix, md.Title, md.LlmsDescription));
+        }
+
+        return builder.ToImmutable();
+    }
+
+    /// <inheritdoc/>
+    public Task<ImmutableList<FolderMetadata>> GetFolderMetadataAsync() => _folderMetadataLazy.Value;
+
+    private async Task<ImmutableList<FolderMetadata>> LoadFolderMetadataAsync()
     {
         if (!_fileSystem.Directory.Exists(_absoluteContentPath))
         {
-            return ImmutableList<LlmsSubtree>.Empty;
+            return ImmutableList<FolderMetadata>.Empty;
         }
 
         var basePrefix = NormalizeBasePageUrl(_options.BasePageUrl.Value);
-        var builder = ImmutableList.CreateBuilder<LlmsSubtree>();
+        var builder = ImmutableList.CreateBuilder<FolderMetadata>();
 
         foreach (var file in _fileSystem.Directory.EnumerateFiles(
-            _absoluteContentPath, LlmsSubtreeSidecarFileName, SearchOption.AllDirectories))
+            _absoluteContentPath, FolderMetadataSidecarFileName, SearchOption.AllDirectories))
         {
             string content;
             try
@@ -587,17 +605,17 @@ public sealed class MarkdownContentService<TFrontMatter>
                 continue;
             }
 
-            LlmsSubtreeSidecar? sidecar;
+            FolderMetadataSidecar? sidecar;
             try
             {
-                sidecar = YamlSerializer.Deserialize<LlmsSubtreeSidecar>(content, PenningtonYaml.ReflectionOptions);
+                sidecar = YamlSerializer.Deserialize<FolderMetadataSidecar>(content, PenningtonYaml.ReflectionOptions);
             }
             catch
             {
                 continue;
             }
 
-            if (sidecar is null || string.IsNullOrWhiteSpace(sidecar.Title))
+            if (sidecar is null)
             {
                 continue;
             }
@@ -618,7 +636,12 @@ public sealed class MarkdownContentService<TFrontMatter>
                 ? basePrefix
                 : basePrefix + relativeFolder + "/";
 
-            builder.Add(new LlmsSubtree(prefix, sidecar.Title, sidecar.Description ?? ""));
+            var llmsDescription = sidecar.Llms?.Description;
+            builder.Add(new FolderMetadata(
+                FolderUrlPrefix: prefix,
+                Title: string.IsNullOrWhiteSpace(sidecar.Title) ? null : sidecar.Title,
+                Order: sidecar.Order,
+                LlmsDescription: llmsDescription));
         }
 
         return builder.ToImmutable();
@@ -630,10 +653,16 @@ public sealed class MarkdownContentService<TFrontMatter>
         return trimmed.Length == 0 ? "/" : "/" + trimmed + "/";
     }
 
-    private sealed class LlmsSubtreeSidecar
+    private sealed class FolderMetadataSidecar
     {
         public string? Title { get; set; }
-        public string? Description { get; set; }
+        public int? Order { get; set; }
+        public LlmsBlock? Llms { get; set; }
+
+        public sealed class LlmsBlock
+        {
+            public string? Description { get; set; }
+        }
     }
 
     /// <summary>Returns locale codes for non-default locales when multi-locale is configured.</summary>

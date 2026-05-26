@@ -2,7 +2,7 @@
 title: "Populate the blog homepage surfaces"
 description: "Populate the four BlogSite homepage surfaces — HeroContent, MyWork, Socials, and MainSiteLinks — on BlogSiteOptions in one pass."
 uid: how-to.feeds.blogsite-homepage
-order: 207040
+order: 5
 sectionLabel: "Theming"
 tags: [blogsite, homepage, socials, hero]
 ---

@@ -2,7 +2,7 @@
 title: "Reuse one snippet across many pages"
 description: "Pull a shared Markdown partial into a page with the DocFX-style [!INCLUDE] directive — block or inline — instead of copy-pasting."
 uid: how-to.pages.include-shared-content
-order: 201050
+order: 5
 sectionLabel: "Pages"
 tags: [authoring, markdown, includes, reuse]
 ---

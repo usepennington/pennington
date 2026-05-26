@@ -2,7 +2,7 @@
 title: "The content pipeline and union types"
 description: "Why Pennington models content as a four-case union that flows Discovered to Parsed to Rendered — with Failed as a peer case rather than an exception."
 uid: explanation.core.content-pipeline
-order: 301010
+order: 1
 sectionLabel: "Core Architecture"
 tags: [pipeline, unions, architecture]
 ---

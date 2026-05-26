@@ -2,7 +2,7 @@
 title: "Tab platform or language variants together"
 description: "Wrap whole sections of prose, code, and lists in DocFX-style content tabs — synced page-wide, with dependent tabs for a second axis."
 uid: how-to.rich-content.content-tabs
-order: 203040
+order: 5
 sectionLabel: "Rich Content"
 tags: [authoring, markdown, tabs, content-tabs]
 ---

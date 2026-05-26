@@ -2,7 +2,7 @@
 title: "Publish your first post and light up the RSS feed"
 description: "Replace the scaffold's placeholder post with a fully-populated BlogSiteFrontMatter block and watch it flow into the blog index, per-tag pages, and the built-in RSS feed."
 sectionLabel: "Getting Started with BlogSite"
-order: 103020
+order: 2
 tags:
   - blogsite
   - front-matter

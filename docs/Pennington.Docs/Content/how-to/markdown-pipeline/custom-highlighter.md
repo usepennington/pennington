@@ -2,7 +2,7 @@
 title: "Add a custom syntax highlighter"
 description: "Implement ICodeHighlighter for a fence language TextMateSharp doesn't cover and register it with HighlightingOptions.AddHighlighter."
 uid: how-to.markdown-pipeline.custom-highlighter
-order: 209020
+order: 2
 sectionLabel: "Markdown Pipeline"
 tags: [highlighting, extensibility, textmate, code-blocks]
 ---

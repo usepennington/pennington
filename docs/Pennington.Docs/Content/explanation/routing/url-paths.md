@@ -2,7 +2,7 @@
 title: "URL paths and content routes"
 description: "Why Pennington models URLs and filesystem paths as value-type records and why ContentRoute separates canonical identity from output location."
 uid: explanation.routing.url-paths
-order: 303010
+order: 1
 sectionLabel: "Routing and Navigation"
 tags: [routing, value-types, urls, canonical]
 ---

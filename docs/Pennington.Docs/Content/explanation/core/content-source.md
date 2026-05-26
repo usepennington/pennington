@@ -2,7 +2,7 @@
 title: "Why ContentSource is a union"
 description: "Why the case-discriminated union — MarkdownFileSource, RazorPageSource, RedirectSource, ProgrammaticSource, EndpointSource — beats the polymorphic alternatives, and why every consumer goes through `.Value`."
 uid: explanation.core.content-source
-order: 301015
+order: 2
 sectionLabel: "Core Architecture"
 tags: [pipeline, unions, content-source]
 ---

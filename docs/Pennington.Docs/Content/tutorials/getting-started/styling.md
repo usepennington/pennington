@@ -2,7 +2,7 @@
 title: "Style the site with MonorailCSS"
 description: "Layer MonorailCSS onto the Blazor-pages site through a routed `MainLayout.razor` and watch the stylesheet regenerate as new utility classes appear."
 sectionLabel: "Getting Started with Pennington"
-order: 101030
+order: 3
 tags: [monorailcss, styling, color-scheme, blazor, layout]
 uid: tutorials.getting-started.styling
 ---

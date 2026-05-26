@@ -2,7 +2,7 @@
 title: "Add images and shared assets to a page"
 description: "Colocate page-specific images next to their markdown, and put shared images in wwwroot for one canonical URL."
 uid: how-to.pages.images-and-assets
-order: 201030
+order: 3
 sectionLabel: "Pages"
 tags: [images, assets, wwwroot, authoring]
 ---

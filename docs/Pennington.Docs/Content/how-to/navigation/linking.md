@@ -2,7 +2,7 @@
 title: "Link between pages without hardcoding URLs"
 description: "Pick the right link form for sibling pages, cross-area targets, anchors, assets, and external sites — and let Pennington rewrite for sub-path deployments."
 uid: how-to.navigation.linking
-order: 204030
+order: 3
 sectionLabel: "Navigation & Links"
 tags: [linking, routing, base-url, authoring]
 ---

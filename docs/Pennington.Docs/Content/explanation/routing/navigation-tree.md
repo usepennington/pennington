@@ -1,8 +1,8 @@
 ---
 title: "Navigation-tree construction"
-description: "How Pennington folds a flat list of ContentTocItems into the sidebar tree using HierarchyParts, folder-derived sections, and min-of-children ordering."
+description: "How Pennington folds a flat list of ContentTocItems into the sidebar tree using HierarchyParts, folder-derived sections, _meta.yml sidecars, and front-matter ordering."
 uid: explanation.routing.navigation-tree
-order: 303020
+order: 2
 sectionLabel: "Routing and Navigation"
 tags: [navigation, routing, hierarchy]
 ---
@@ -45,11 +45,31 @@ The important distinction is between folder-derived grouping and the per-page `s
 
 The synthesized section node and a real leaf page share the same `NavigationTreeItem` record shape (see <xref:reference.api.navigation-tree-item>). The rendering component distinguishes them by checking `Children.Count > 0 && Route.CanonicalPath.Value == ""` rather than consulting a discriminator field.
 
-### Ordering: min-of-children with alphabetic tie-break
+### Ordering: front matter for leaves, `_meta.yml` for folders
 
-Leaf pages at any given level sort first by their authored `Order` value, then by title using a case-insensitive ordinal comparison as a stable fallback. Synthesized section nodes have no authored order of their own, so `BuildLevel` assigns them `Order = children.Min(c => c.Order)` — the section sorts as if it were whichever of its children would sort first. This means authors control section ordering the same way they control leaf ordering: by setting `order:` on the pages inside the folder, not on any separate section definition.
+Leaf pages at any given level sort first by their authored `Order` value, then by title using a case-insensitive ordinal comparison as a stable fallback. Folders can override their own title and position by dropping a `_meta.yml` sidecar in the folder:
 
-The practical consequence is that sibling sections interleave by the smallest `order:` value found anywhere inside each. If "Getting Started" contains a page with `order: 10` and "Deployment" contains a page with `order: 20`, the sidebar places Getting Started above Deployment. If someone later adds a page with `order: 5` to Deployment — perhaps because they want it first within that section — the whole Deployment group jumps above Getting Started. The tradeoff here is real: the design avoids a separate configuration file at the cost of making section position an emergent property of leaf ordering. The practical defense is to stagger `order:` values across sibling folders rather than within each independently — 10, 20, 30 for section A's pages; 40, 50, 60 for section B's — so that "first in my folder" and "first in the sidebar" are decoupled.
+```yaml
+title: "Getting Started"
+order: 1
+```
+
+When a folder has a sidecar, its `order` overrides everything else — including the emergent min-of-children rule below and any `order:` set on a sibling `index.md`. The `title` field overrides both `FormatSectionTitle`'s kebab-to-title-case fallback and the `index.md` front-matter title. Either field can be omitted; the other still applies.
+
+When a folder has **no** sidecar, `BuildLevel` falls back to the original emergent rule: synthesized section nodes get `Order = children.Min(c => c.Order)`, so the section sorts as if it were whichever of its children would sort first. Folders with an `index.md` but no sidecar take their order and title from that page's front matter.
+
+The sidecar exists because the emergent rule has a sharp edge: sibling sections interleave by the smallest `order:` value found anywhere inside each. If "Getting Started" contains a page with `order: 10` and "Deployment" contains a page with `order: 20`, the sidebar places Getting Started above Deployment. If someone later adds a page with `order: 5` to Deployment — perhaps because they want it first within that section — the whole Deployment group jumps above Getting Started. Sites that grow past a handful of sections end up choosing globally-unique numeric prefixes (`301010, 301020, 302010, …`) to keep folder ordering stable while still allowing in-folder inserts. A `_meta.yml` declaring `order: 1` for the folder breaks that coupling: each folder's children can restart at `1` without affecting where the folder lands in its parent.
+
+The same sidecar can opt the folder into `llms.txt` subtree generation by including an `llms:` block:
+
+```yaml
+title: "Reference"
+order: 5
+llms:
+  description: "API surface, host extensions, front-matter keys, ..."
+```
+
+When `llms:` is present and a folder title is set, the subtree splits out into a dedicated `{prefix}llms.txt`, exactly as the older standalone `_llms.yaml` did.
 
 ### Locale prefix stripping
 
@@ -65,7 +85,7 @@ Non-default locales are stored on disk under a locale folder (`Content/fr/...`),
 
 **Merge-by-`sectionLabel:` was also considered and rejected.** Grouping the sidebar by a shared front-matter label would let two unrelated folders appear to merge under one header. Beyond the confusing UX, it would contradict `ContentRoute`'s canonical-path invariant: the URL structure and the navigation tree would diverge, and that divergence is the failure mode the design most wanted to avoid.
 
-**Section ordering is emergent, not explicit.** Because a section's position is determined by the minimum `order:` among its children, authors who want to control section ordering must think in terms of the lowest-ordered page in each group, not the group itself. That mental model shift is the real ergonomic cost, and it is why the tutorials recommend staggering `order:` values across sibling folders rather than treating each folder's range independently.
+**Section ordering is emergent by default, explicit when needed.** A folder without a `_meta.yml` sidecar takes its position from the minimum `order:` among its children — the original mental model. A folder with a sidecar overrides that with an explicit number, and its children can use local 1, 2, 3 ordering. The two modes coexist: sidecar-positioned folders sort by their declared order, non-sidecar folders by their emergent value, and both share the alphabetical tiebreaker.
 
 ## Further reading
 

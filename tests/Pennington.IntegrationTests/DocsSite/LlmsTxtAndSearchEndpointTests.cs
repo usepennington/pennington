@@ -194,7 +194,7 @@ public class LlmsTxtAndSearchEndpointTests
     [Fact]
     public async Task LlmsTxt_FrontDoor_StaysCompact()
     {
-        // The /reference/ subtree (declared via _llms.yaml) and the /reference/api/
+        // The /reference/ subtree (declared via _meta.yml) and the /reference/api/
         // subtree (declared programmatically by AddApiReference) split the densest
         // area out of the front door. The threshold accounts for the docs site's
         // absolute CanonicalBaseUrl, which adds ~50 bytes per entry vs. root-relative.
@@ -248,7 +248,7 @@ public class LlmsTxtAndSearchEndpointTests
         // Map block replaces See-also: same purpose (point at subtree splits) but with
         // entry counts and token estimates so a budget-aware client can plan its fetches.
         content.ShouldContain("## Map");
-        // The docs site declares /reference/ as a subtree via _llms.yaml; the Map points
+        // The docs site declares /reference/ as a subtree via _meta.yml; the Map points
         // at it with the full canonical URL, not a root-relative path.
         content.ShouldContain("](https://usepennington.github.io/pennington/reference/llms.txt)");
         // The blog is surfaced as a subtree by BlogContentService even though its posts

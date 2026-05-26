@@ -2,7 +2,7 @@
 title: "Add a hero, projects, and social links"
 description: "Populate the four BlogSite homepage surfaces — hero block, My Work card, social-icon row, and top-nav links — on BlogSiteOptions."
 sectionLabel: Getting Started with BlogSite
-order: 103030
+order: 3
 tags: [blogsite, hero, socials, homepage]
 uid: tutorials.blogsite.hero-projects-socials
 ---

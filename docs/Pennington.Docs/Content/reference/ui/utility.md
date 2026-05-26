@@ -2,7 +2,7 @@
 title: "Utility components"
 description: "The three Pennington.UI utility components — LanguageSwitcher, StructuredData, and FallbackNotice — their parameters and a one-line use-when row each."
 uid: reference.ui.utility
-order: 404030
+order: 3
 sectionLabel: UI Components
 tags: [ui, components, localization, structured-data]
 ---

@@ -2,7 +2,7 @@
 title: "Add a Razor landing page at the site root"
 description: "Route a Razor component at / so a DocSite opens on a hand-built landing page, and swap the doc-page chrome for the sidebar-free FullWidthLayout."
 sectionLabel: "Getting Started with DocSite"
-order: 102040
+order: 4
 tags:
   - docsite
   - razor

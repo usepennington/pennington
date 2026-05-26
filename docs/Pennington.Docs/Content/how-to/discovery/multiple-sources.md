@@ -2,7 +2,7 @@
 title: "Use multiple content sources"
 description: "Register more than one markdown root — either as DocSite areas or as chained AddMarkdownContent calls on a bare Pennington host — and keep them from overlapping."
 uid: how-to.discovery.multiple-sources
-order: 206010
+order: 1
 sectionLabel: "Content Discovery"
 tags: [configuration, content-sources, areas, overlap-detection]
 ---

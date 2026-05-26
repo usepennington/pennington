@@ -2,7 +2,7 @@
 title: "Annotate specific lines in a code block"
 description: "Apply highlight, diff, focus, and error/warning line classes to fenced code with trailing `[!code ...]` comment directives."
 uid: how-to.code-samples.code-annotations
-order: 202010
+order: 1
 sectionLabel: "Code Samples"
 tags: [authoring, code, highlighting, annotations]
 ---

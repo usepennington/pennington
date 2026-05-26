@@ -2,7 +2,7 @@
 title: "Forward visitors from a renamed page"
 description: "Set redirectUrl in front matter to emit a meta-refresh stub that sends visitors from the old path to the new one."
 uid: how-to.pages.redirects
-order: 201040
+order: 4
 sectionLabel: "Pages"
 tags: [redirects, front-matter, routing]
 ---

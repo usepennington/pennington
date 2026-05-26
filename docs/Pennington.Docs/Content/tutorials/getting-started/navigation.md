@@ -2,7 +2,7 @@
 title: "Add navigation across your pages"
 description: "Give the styled bare host a header menu that builds itself from the content pipeline and highlights the current page."
 uid: tutorials.getting-started.navigation
-order: 101040
+order: 4
 sectionLabel: "Getting Started with Pennington"
 tags: [navigation, blazor, components, getting-started]
 ---

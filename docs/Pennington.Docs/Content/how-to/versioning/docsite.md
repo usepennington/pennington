@@ -2,7 +2,7 @@
 title: "Version a DocSite"
 description: "Ship /v1/ and /v2/ URL trees from one DocSite host, each with its own content area and its own reflection-based API reference."
 uid: how-to.versioning.docsite
-order: 205010
+order: 1
 sectionLabel: "Versioning"
 tags: [versioning, api-reference, docsite]
 ---

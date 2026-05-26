@@ -1,13 +1,13 @@
 ---
 title: "Reorder, rename, or hide entries in the sidebar"
-description: "Use front-matter keys and folder layout to control the auto-built sidebar — reorder siblings, promote a section landing, override the section header, and hide drafts."
+description: "Use front-matter keys, a folder _meta.yml sidecar, and folder layout to control the auto-built sidebar — reorder pages and sections, promote a section landing, override the section header, and hide drafts."
 uid: how-to.navigation.customize-sidebar
-order: 204010
+order: 1
 sectionLabel: "Navigation & Links"
 tags: [navigation, sidebar, sections, ordering]
 ---
 
-The sidebar is generated from folder layout and front matter. Each adjustment below is independent — pick the one that matches the change you need. To replace the sidebar component itself, see <xref:how-to.response-pipeline.override-docsite-components>.
+The sidebar is generated from folder layout, a per-folder `_meta.yml` sidecar, and per-page front matter. Each adjustment below is independent — pick the one that matches the change you need. To replace the sidebar component itself, see <xref:how-to.response-pipeline.override-docsite-components>.
 
 ## Before you begin
 - A Pennington DocSite has markdown under `Content/<area>/` with at least one subfolder (the subfolder is what creates a sidebar group — see [Work with front matter](xref:how-to.pages.front-matter) if not)
@@ -20,38 +20,56 @@ For a working reference, see `examples/DocSiteKitchenSinkExample` — `Content/m
 
 ## Options
 
-### Reorder pages within a section
+### Reorder pages within a folder
 
-Lower `order:` values sort earlier inside a section; ties break alphabetically on `Title`. Use 10/20/30 spacing so later inserts land between siblings without renumbering every file.
+Lower `order:` values sort earlier inside a folder; ties break alphabetically on `Title`. Numbers are local to the folder — start at `1` and count up. Leave gaps (`10, 20, 30`) only if you anticipate frequent inserts between siblings.
 
 ```yaml
 ---
 title: Install
-order: 204010
+order: 2
 ---
 ```
 
+### Reorder sections (folders) within the sidebar
+
+Drop a `_meta.yml` sidecar into the folder you want to reposition. Its `order:` sets where the folder lands among its siblings — independent of any `order:` on the pages inside.
+
+```yaml
+# Content/main/widgets/_meta.yml
+order: 3
+```
+
+Without a sidecar, the folder's position falls back to the lowest `order:` of any descendant (the historical min-of-children rule). Mixing modes is fine — folders with a sidecar sort by the explicit value, folders without sort by the emergent value. See <xref:reference.front-matter.folder-sidecar> for the full sidecar schema.
+
 ### Promote a page to be the section landing
 
-Name the file `index.md` inside the section subfolder (for example `Content/main/widgets/index.md`). Pennington routes it at the subfolder URL and surfaces it as the section's lead entry rather than a separate child. A low `order:` (typically `10`) sorts the whole section earlier — see <xref:explanation.routing.navigation-tree> for how section sort keys are derived.
+Name the file `index.md` inside the section subfolder (for example `Content/main/widgets/index.md`). Pennington routes it at the subfolder URL and surfaces it as the section's lead entry rather than a separate child.
 
 ```yaml
 ---
 title: Widgets
-order: 204010
+order: 1
 ---
 ```
+
+When the folder also has a `_meta.yml`, the sidecar's `order:` overrides the index.md's `order:` for the **section's** position in its parent. The index.md's own `order:` then has no effect — set it to `1` for clarity or omit it.
 
 ### Override the displayed section title
 
-The sidebar section header comes from the folder name (kebab-case converts to title case: `getting-started` → "Getting Started"). Rename the folder to change the printed header. The front-matter `sectionLabel:` key is separate — it sets the page-context label surfaced for breadcrumbs and current-page context, not the sidebar group header.
+There are two ways to change the printed section header. The folder name converts from kebab-case to title case by default (`getting-started` → "Getting Started").
+
+**Option A — rename the folder.** The header follows the new name.
+
+**Option B — set `title:` in `_meta.yml`.** Wins over both the auto-formatted folder name and any `title:` on a sibling `index.md`.
 
 ```yaml
----
-title: Install
-sectionLabel: "Navigation & Links"
----
+# Content/main/widgets/_meta.yml
+title: "Widget Catalog"
+order: 3
 ```
+
+The front-matter `sectionLabel:` key is separate from both — it sets the page-context label surfaced for breadcrumbs and prev/next navigation, not the sidebar group header.
 
 ### Hide a page from the sidebar
 
@@ -68,12 +86,14 @@ isDraft: true
 
 ## Verify
 
-- Run `dotnet run`; reordered pages appear in ascending `order:` inside their section, and the section itself moves when its minimum-child order changes
+- Run `dotnet run`; reordered pages appear in ascending `order:` inside their folder
+- A folder with a `_meta.yml` lands at the position its `order:` specifies, even when its descendants' values would have placed it elsewhere
 - The section subfolder's `index.md` lands at `/<area>/<section>/` and renders as the section's lead entry in the sidebar
 - The drafted page's URL returns 404 and the entry is absent from the sidebar on reload
 
 ## Related
 
+- Reference: [Folder sidecar (`_meta.yml`)](xref:reference.front-matter.folder-sidecar)
 - Reference: [Front matter key reference](xref:reference.front-matter.keys)
 - Reference: [Navigation UI components](xref:reference.ui.navigation)
 - Background: [How the sidebar is built](xref:explanation.routing.navigation-tree)

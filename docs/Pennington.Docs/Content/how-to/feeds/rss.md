@@ -2,7 +2,7 @@
 title: "Publish an RSS feed"
 description: "Confirm /rss.xml is on, give every post a date so it appears in the channel, and point CanonicalBaseUrl at your production origin so links resolve."
 uid: how-to.feeds.rss
-order: 207020
+order: 2
 sectionLabel: "Feeds & Indexes"
 tags: [configuration, rss, blogsite, feeds]
 ---

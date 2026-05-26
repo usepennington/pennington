@@ -2,7 +2,7 @@
 title: "Markdown extensions catalog"
 description: "Every non-CommonMark Markdown feature Pennington adds — tabs, alerts, code annotations, and cross-reference tags — with syntax, arguments, and emitted classes."
 sectionLabel: "Markdown Extensions"
-order: 403010
+order: 1
 tags: [markdown, extensions, alerts, tabs]
 uid: reference.markdown.extensions
 ---

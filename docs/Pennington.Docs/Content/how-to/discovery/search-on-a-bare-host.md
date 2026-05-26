@@ -2,7 +2,7 @@
 title: "Add the search modal to a non-DocSite site"
 description: "Light up the Pennington.UI search modal on a bare AddPennington host: reference the UI library, serve its scripts, and add a trigger element."
 uid: how-to.discovery.search-on-a-bare-host
-order: 206025
+order: 3
 sectionLabel: "Content Discovery"
 tags: [search, bare-host, pennington-ui, monorailcss]
 ---

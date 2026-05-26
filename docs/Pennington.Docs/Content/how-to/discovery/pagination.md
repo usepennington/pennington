@@ -2,7 +2,7 @@
 title: "Paginate archive and tag listings"
 description: "Split long blog archives and tag pages into numbered pages, and apply the same pattern to a custom MarkdownContentService."
 uid: how-to.discovery.pagination
-order: 206040
+order: 5
 sectionLabel: "Content Discovery"
 tags: [blog-site, pagination, content-services]
 ---

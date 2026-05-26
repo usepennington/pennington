@@ -2,7 +2,7 @@
 title: "Group adjacent code fences into a tabbed sample"
 description: "Collapse adjacent fenced code blocks into one tabbed widget and customise the rendered CSS class names."
 uid: how-to.code-samples.tabbed-code
-order: 202020
+order: 2
 sectionLabel: "Code Samples"
 tags: [markdown, tabs, code-blocks, extensions]
 ---

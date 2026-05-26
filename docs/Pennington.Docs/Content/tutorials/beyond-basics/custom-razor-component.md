@@ -2,7 +2,7 @@
 title: "Author a custom Razor component for markdown"
 description: "Author a PricingCard Razor component inside a DocSite, register it with AddMdazorComponent<T>(), and render it from a markdown page with two parameter sets."
 sectionLabel: "Beyond the Basics"
-order: 104030
+order: 2
 tags:
   - razor
   - mdazor

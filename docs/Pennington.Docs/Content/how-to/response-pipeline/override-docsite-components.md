@@ -2,7 +2,7 @@
 title: "Customize the DocSite chrome through DocSiteOptions"
 description: "Use DocSiteOptions to inject head content, append CSS, replace the header/footer HTML, and route extra @page components without forking the template."
 uid: how-to.response-pipeline.override-docsite-components
-order: 210030
+order: 3
 sectionLabel: "Response Pipeline"
 tags: [docsite, theming, slots, routing]
 ---

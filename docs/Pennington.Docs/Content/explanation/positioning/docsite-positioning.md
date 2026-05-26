@@ -2,7 +2,7 @@
 title: "What the DocSite and BlogSite templates wire for you"
 description: "DocSite and BlogSite are pre-assembled shortcuts on top of the AddPennington engine — what each template wires, and where the wiring stops and the engine takes over."
 uid: explanation.positioning.docsite-positioning
-order: 307010
+order: 1
 sectionLabel: "Positioning"
 tags: [docsite, blogsite, templates, architecture]
 ---

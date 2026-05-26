@@ -2,6 +2,7 @@ namespace Pennington.Navigation;
 
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Text;
 using Content;
 using Infrastructure;
 using Routing;
@@ -28,6 +29,22 @@ public sealed class NavigationBuilder : IFileWatchAware
     // Populated lazily per unique (items, locale) combination; cleared when the enclosing
     // FileWatchDependencyFactory drops this instance on a file-change signal.
     private readonly ConcurrentDictionary<CacheKey, ImmutableList<NavigationTreeItem>> _structuralCache = new();
+
+    private readonly FolderMetadataRegistry? _folderMetadata;
+
+    /// <summary>Creates a navigation builder with no folder-metadata overrides.</summary>
+    public NavigationBuilder()
+    {
+    }
+
+    /// <summary>
+    /// Creates a navigation builder that consults <paramref name="folderMetadata"/> for
+    /// folder-level title and order overrides discovered from <c>_meta.yml</c> sidecars.
+    /// </summary>
+    public NavigationBuilder(FolderMetadataRegistry folderMetadata)
+    {
+        _folderMetadata = folderMetadata;
+    }
 
     /// <summary>
     /// Build a navigation tree from flat TOC items.
@@ -89,7 +106,7 @@ public sealed class NavigationBuilder : IFileWatchAware
         });
     }
 
-    private static ImmutableList<NavigationTreeItem> BuildLevel(
+    private ImmutableList<NavigationTreeItem> BuildLevel(
         IReadOnlyList<ContentTocItem> items, int depth, bool isRoot)
     {
         // Partition the incoming slice in a single pass:
@@ -175,10 +192,15 @@ public sealed class NavigationBuilder : IFileWatchAware
                 var children = BuildLevel(group.ToList(), depth + 1, isRoot: false);
                 var minOrder = children.Count > 0 ? children.Min(c => c.Order) : int.MaxValue;
 
+                // _meta.yml sidecar overrides: a sidecar at /foo/_meta.yml can name
+                // and reorder this auto-section. When absent, fall back to the
+                // emergent min(children) behaviour and kebab-case → title-case.
+                var metadata = LookupFolderMetadata(group.First(), depth);
+
                 builder.Add(new NavigationTreeItem(
-                    Title: FormatSectionTitle(group.Key),
+                    Title: metadata?.Title ?? FormatSectionTitle(group.Key),
                     Route: EmptySectionRoute,
-                    Order: minOrder,
+                    Order: metadata?.Order ?? minOrder,
                     SectionLabel: null,
                     IsSelected: false,
                     IsExpanded: false,
@@ -196,10 +218,17 @@ public sealed class NavigationBuilder : IFileWatchAware
                 : Array.Empty<ContentTocItem>();
             var children = BuildLevel(childItems, depth + 1, isRoot: false);
 
+            // When this item is the index.md of a folder (has children), a sibling
+            // _meta.yml can override its display title and sort order. Front-matter
+            // values still win when the sidecar doesn't set the field.
+            var metadata = children.Count > 0
+                ? LookupFolderMetadata(item, depth)
+                : null;
+
             builder.Add(new NavigationTreeItem(
-                Title: item.Title,
+                Title: metadata?.Title ?? item.Title,
                 Route: item.Route,
-                Order: item.Order,
+                Order: metadata?.Order ?? item.Order,
                 SectionLabel: item.SectionLabel,
                 IsSelected: false,
                 IsExpanded: false,
@@ -211,6 +240,37 @@ public sealed class NavigationBuilder : IFileWatchAware
             .OrderBy(i => i.Order)
             .ThenBy(i => i.Title, StringComparer.OrdinalIgnoreCase)
             .ToImmutableList();
+    }
+
+    private FolderMetadata? LookupFolderMetadata(ContentTocItem item, int depth)
+    {
+        if (_folderMetadata is null)
+        {
+            return null;
+        }
+
+        // HierarchyParts may have been stripped (e.g. a DocSite area prefix removed
+        // by GetTocItemsForAreaAsync), so the navigation-relative depth doesn't map
+        // 1:1 onto canonical-URL depth. Derive the prefix from Route.CanonicalPath
+        // instead — it's the authoritative full URL — and trim the leaf segments
+        // that lie below the folder at this navigation depth.
+        var levelsBelowFolder = item.HierarchyParts.Length - depth - 1;
+        var segments = item.Route.CanonicalPath.Value
+            .Trim('/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var keepCount = segments.Length - levelsBelowFolder;
+        if (keepCount <= 0)
+        {
+            return null;
+        }
+
+        var sb = new StringBuilder("/");
+        for (var i = 0; i < keepCount; i++)
+        {
+            sb.Append(segments[i]);
+            sb.Append('/');
+        }
+        return _folderMetadata.TryGet(sb.ToString());
     }
 
     /// <summary>

@@ -2,7 +2,7 @@
 title: "Source content from outside the file system"
 description: "Implement IContentService to surface JSON files, a database table, or a remote API as routed pages, navigation entries, search documents, and xref targets."
 uid: how-to.content-services.custom-content-service
-order: 208010
+order: 1
 sectionLabel: "Content Services"
 tags: [extensibility, content-service, pipeline, cross-references]
 ---

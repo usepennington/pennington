@@ -2,7 +2,7 @@
 title: "Add a blog to your documentation site"
 description: "Drop a Content/blog folder into a DocSite and watch the blog index, post pages, browse-by-tag pages, and RSS feed light up — no Program.cs changes."
 sectionLabel: "Getting Started with DocSite"
-order: 102050
+order: 5
 tags:
   - docsite
   - blog

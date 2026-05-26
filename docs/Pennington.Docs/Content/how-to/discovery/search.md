@@ -2,7 +2,7 @@
 title: "Tune what the search box returns"
 description: "Exclude pages from the index, weight document priority, and scope the indexed HTML region without replacing the search backend."
 uid: how-to.discovery.search
-order: 206020
+order: 2
 sectionLabel: "Content Discovery"
 tags: [search, front-matter, localization, configuration]
 ---

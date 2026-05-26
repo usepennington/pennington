@@ -2,7 +2,7 @@
 title: "Publish a sitemap"
 description: "Expose an auto-built /sitemap.xml that enumerates every canonical URL, skips drafts and redirects, and uses front-matter dates for lastmod."
 uid: how-to.feeds.sitemap
-order: 207030
+order: 4
 sectionLabel: "Feeds & Indexes"
 tags: [sitemap, seo, canonical-base-url, front-matter]
 ---

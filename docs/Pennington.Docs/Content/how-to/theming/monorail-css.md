@@ -2,7 +2,7 @@
 title: "Customize MonorailCSS colors, syntax theme, and prose styles"
 description: "Swap palettes, override syntax-highlight colors, append site-wide rules, and tweak prose through MonorailCSS without leaving DocSite or BlogSite."
 uid: how-to.theming.monorail-css
-order: 205010
+order: 1
 sectionLabel: "Theming"
 tags: [monorailcss, color-scheme, styling, theming]
 ---

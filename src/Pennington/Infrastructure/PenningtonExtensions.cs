@@ -121,6 +121,7 @@ public static class PenningtonExtensions
         services.AddSingleton<PenningtonYamlContextProvider>();
 
         services.AddSingleton<FrontMatterParser>();
+        services.AddFileWatched<FolderMetadataRegistry>();
         services.AddFileWatched<NavigationBuilder>();
 
         // File system abstraction

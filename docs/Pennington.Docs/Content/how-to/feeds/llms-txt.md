@@ -2,7 +2,7 @@
 title: "Make the site discoverable to LLM crawlers"
 description: "Expose a stripped-markdown /llms.txt index plus per-page sidecars so LLM crawlers and agents can ingest your site without scraping HTML."
 uid: how-to.feeds.llms-txt
-order: 207010
+order: 1
 sectionLabel: "Feeds & Indexes"
 tags: [configuration, llms-txt, discovery, front-matter]
 ---

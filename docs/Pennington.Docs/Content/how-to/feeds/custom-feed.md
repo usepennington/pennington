@@ -2,7 +2,7 @@
 title: "Publish a custom feed from a content service"
 description: "Build the same RSS pattern BlogSite uses for /rss.xml — a content service that caches records, an XML builder method, and a MapGet endpoint — for podcast episodes, conference sessions, changelogs, or any non-blog content type."
 uid: how-to.feeds.custom-feed
-order: 207025
+order: 3
 sectionLabel: "Feeds & Indexes"
 tags: [feeds, rss, atom, podcast, content-service]
 ---

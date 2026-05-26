@@ -2,7 +2,7 @@
 title: "Code-block argument reference"
 description: "The fence info-string grammar Pennington parses — language token, key/value attributes, quoted values — and the trailing-comment [!code …] directive grammar used for line annotations."
 sectionLabel: "Markdown Extensions"
-order: 403020
+order: 2
 tags: [markdown, code-blocks, directives]
 uid: reference.markdown.code-block-args
 ---

@@ -2,7 +2,7 @@
 title: "Organize content with sections and areas"
 description: "Split a DocSite's Content/ folder into two top-level areas with subfolder-driven sections, and use staggered order: values so the sidebar groups in the order you expect."
 sectionLabel: "Getting Started with DocSite"
-order: 102030
+order: 3
 tags:
   - docsite
   - navigation

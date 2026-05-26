@@ -2,7 +2,7 @@
 title: "Scaffold a blog with BlogSite"
 description: "Swap the bare Pennington host for the BlogSite template and configure the core options that drive the home, archive, post, tag, and RSS routes."
 sectionLabel: Getting Started with BlogSite
-order: 103010
+order: 1
 tags: [blogsite, template, scaffold, options]
 uid: tutorials.blogsite.scaffold
 ---

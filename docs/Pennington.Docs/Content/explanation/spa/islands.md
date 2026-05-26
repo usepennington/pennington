@@ -2,7 +2,7 @@
 title: "SPA navigation through region swaps"
 description: "Why Pennington's SPA fetches the canonical HTML page and swaps marked regions — one render path, one set of rewriters, no parallel JSON envelope."
 sectionLabel: "SPA"
-order: 304010
+order: 1
 tags: [spa, navigation, regions, hydration]
 uid: explanation.spa.islands
 ---

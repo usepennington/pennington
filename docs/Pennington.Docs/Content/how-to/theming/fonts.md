@@ -2,7 +2,7 @@
 title: "Switch the body and heading typeface"
 description: "Drop self-hosted woff2 files into wwwroot, register @font-face rules, declare preload hints, and point DisplayFontFamily and BodyFontFamily at the new faces."
 uid: how-to.theming.fonts
-order: 205020
+order: 2
 sectionLabel: "Theming"
 tags: [fonts, typography, preload, docsite]
 ---

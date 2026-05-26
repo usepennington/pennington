@@ -2,7 +2,7 @@
 title: "Add a custom fence syntax"
 description: "Implement ICodeBlockPreprocessor to claim a fence language or :modifier suffix and return pre-rendered HTML before the default highlighter chain runs."
 uid: how-to.markdown-pipeline.code-block-preprocessor
-order: 209010
+order: 1
 sectionLabel: "Markdown Pipeline"
 tags: [extensibility, markdown, highlighting, preprocessor]
 ---

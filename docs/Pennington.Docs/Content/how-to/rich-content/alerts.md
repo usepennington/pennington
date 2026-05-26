@@ -2,7 +2,7 @@
 title: "Add a coloured callout for a note, tip, warning, or caution"
 description: "GitHub-style alerts: open a blockquote whose first line is `[!KIND]` in uppercase. Pennington recognises five kinds and paints each one differently."
 uid: how-to.rich-content.alerts
-order: 203010
+order: 1
 sectionLabel: "Rich Content"
 tags: [authoring, alerts, markdown, callouts]
 ---

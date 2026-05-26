@@ -2,7 +2,7 @@
 title: "Create your first Pennington site"
 description: "Stand up a minimal ASP.NET host that serves a single markdown page through the Pennington content pipeline."
 uid: tutorials.getting-started.first-site
-order: 101010
+order: 1
 sectionLabel: "Getting Started with Pennington"
 tags: [getting-started, hosting, markdown, pipeline]
 ---

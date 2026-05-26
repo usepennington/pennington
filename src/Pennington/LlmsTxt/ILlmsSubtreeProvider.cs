@@ -4,8 +4,8 @@ using System.Collections.Immutable;
 
 /// <summary>
 /// Optional capability for a <see cref="Content.IContentService"/> to surface
-/// subtree declarations discovered during its own scan (for example, <c>_llms.yaml</c>
-/// sidecars under a markdown content tree).
+/// subtree declarations discovered during its own scan (for example, <c>_meta.yml</c>
+/// sidecars with an <c>llms</c> block under a markdown content tree).
 /// </summary>
 public interface ILlmsSubtreeProvider
 {

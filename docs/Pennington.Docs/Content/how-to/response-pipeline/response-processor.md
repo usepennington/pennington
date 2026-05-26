@@ -2,7 +2,7 @@
 title: "Inject HTML before </body> on every page"
 description: "Implement IResponseProcessor to splice a feedback widget, banner, or analytics tag before </body> on every rendered HTML page."
 uid: how-to.response-pipeline.response-processor
-order: 210020
+order: 2
 sectionLabel: "Response Pipeline"
 tags: [response-pipeline, extensibility, middleware, html-injection]
 ---

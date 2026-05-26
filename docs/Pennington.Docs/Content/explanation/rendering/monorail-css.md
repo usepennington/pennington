@@ -2,7 +2,7 @@
 title: "MonorailCSS integration"
 description: "Why Pennington discovers CSS classes by scanning compiled assemblies and watched source files instead of pre-building a static stylesheet."
 uid: explanation.rendering.monorail-css
-order: 302010
+order: 1
 sectionLabel: "Rendering and Theming"
 tags: [monorail, css, theming, oklch]
 ---

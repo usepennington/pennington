@@ -2,7 +2,7 @@
 title: "Request-scoped diagnostics"
 description: "The per-request diagnostic accumulator (DiagnosticContext), the Diagnostic record, the DiagnosticSeverity enum, and the dev-mode overlay plus X-Pennington-Diagnostic header that surface them."
 sectionLabel: "Diagnostics"
-order: 407020
+order: 1
 tags: [diagnostics, request-context, dev-overlay, response-headers]
 uid: reference.diagnostics.request-context
 ---

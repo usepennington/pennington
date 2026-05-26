@@ -2,7 +2,7 @@
 title: "Define custom front-matter keys"
 description: "Declare a record implementing IFrontMatter with extra YAML keys and register it through AddMarkdownContent so a markdown source deserializes into the custom type."
 uid: how-to.pages.front-matter
-order: 201010
+order: 1
 sectionLabel: "Pages"
 tags: [front-matter, authoring, yaml]
 ---

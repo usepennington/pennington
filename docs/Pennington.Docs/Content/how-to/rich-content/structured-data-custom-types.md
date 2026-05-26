@@ -2,7 +2,7 @@
 title: "Add a custom schema.org JSON-LD type"
 description: "Define a record that subclasses JsonLdEntity, attribute its properties for System.Text.Json, and either let the front matter own it via IHasStructuredData or render it inline from a Razor page."
 uid: how-to.rich-content.structured-data-custom-types
-order: 203040
+order: 4
 sectionLabel: "Rich Content"
 tags: [seo, structured-data, json-ld, schema-org]
 ---

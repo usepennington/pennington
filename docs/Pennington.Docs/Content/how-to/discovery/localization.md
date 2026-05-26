@@ -2,7 +2,7 @@
 title: "Serve the site in multiple languages"
 description: "Populate LocalizationOptions, lay out translated content in locale subdirectories, register UI translations, and wire the locale-routing middleware."
 uid: how-to.discovery.localization
-order: 206030
+order: 4
 sectionLabel: "Content Discovery"
 tags: [localization, locales, translations, routing]
 ---

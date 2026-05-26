@@ -2,7 +2,7 @@
 title: "Rewrite HTML attributes after parsing"
 description: "Implement IHtmlResponseRewriter to mutate already-parsed HTML — lowercase anchors, normalise hrefs, stamp rel=noopener — sharing the document parse with every other rewriter."
 uid: how-to.response-pipeline.html-rewriter
-order: 210010
+order: 1
 sectionLabel: "Response Pipeline"
 tags: [html-rewriting, extensibility, anglesharp, response-pipeline]
 ---

@@ -2,7 +2,7 @@
 title: "Locale-aware URLs and content fallback"
 description: "Why Pennington treats the URL path prefix as the authoritative locale signal, how ContentResolver strips it and falls back to the default locale, and why the search index is split per locale."
 uid: explanation.localization.urls-and-fallback
-order: 305010
+order: 1
 sectionLabel: "Localization"
 tags: [localization, routing, fallback, search]
 ---

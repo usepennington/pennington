@@ -2,7 +2,7 @@
 title: "The front-matter capability system"
 description: "How IFrontMatter distinguishes universal capabilities (as default members) from selective ones (as separate interfaces) — and why presence of a capability interface is a meaningful signal."
 uid: explanation.core.front-matter-capabilities
-order: 301030
+order: 4
 sectionLabel: "Core Architecture"
 tags: [front-matter, capabilities, design, interfaces]
 ---

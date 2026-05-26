@@ -2,7 +2,7 @@
 title: "Scaffold a documentation site with DocSite"
 description: "Stand up the DocSite template on an empty ASP.NET project and map content areas to top-level folders."
 sectionLabel: Getting Started with DocSite
-order: 102010
+order: 1
 tags: [docsite, template, areas, scaffold]
 uid: tutorials.docsite.scaffold
 ---

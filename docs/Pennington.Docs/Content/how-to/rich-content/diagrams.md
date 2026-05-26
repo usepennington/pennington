@@ -2,7 +2,7 @@
 title: "Embed a Mermaid diagram in a markdown page"
 description: "Author Mermaid diagrams in markdown with a fenced `mermaid` block and let the DocSite render them client-side with theme awareness."
 uid: how-to.rich-content.diagrams
-order: 203020
+order: 2
 sectionLabel: "Rich Content"
 tags: [markdown, mermaid, diagrams, client-side]
 ---

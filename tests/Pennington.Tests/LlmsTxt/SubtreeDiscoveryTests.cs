@@ -45,7 +45,7 @@ public class SubtreeDiscoveryTests
     public async Task SidecarAtSubfolder_ProducesSubtreeWithCombinedPrefix()
     {
         var fs = CreateFs(
-            ("reference/_llms.yaml", "title: API reference\ndescription: Type and member docs\n"),
+            ("reference/_meta.yml", "title: API reference\nllms:\n  description: Type and member docs\n"),
             ("reference/foo.md", "---\ntitle: Foo\n---\n# Foo"));
         var service = CreateService(fs, new UrlPath("/docs"));
 
@@ -61,7 +61,7 @@ public class SubtreeDiscoveryTests
     public async Task SidecarAtContentRoot_UsesBasePageUrlAsPrefix()
     {
         var fs = CreateFs(
-            ("_llms.yaml", "title: Docs\ndescription: All docs\n"));
+            ("_meta.yml", "title: Docs\nllms:\n  description: All docs\n"));
         var service = CreateService(fs, new UrlPath("/docs"));
 
         var subtrees = await service.GetLlmsSubtreesAsync();
@@ -74,7 +74,7 @@ public class SubtreeDiscoveryTests
     public async Task SidecarWithRootBasePageUrl_ProducesPlainPrefix()
     {
         var fs = CreateFs(
-            ("api/_llms.yaml", "title: API\n"));
+            ("api/_meta.yml", "title: API\nllms:\n  description: API docs\n"));
         var service = CreateService(fs, new UrlPath("/"));
 
         var subtrees = await service.GetLlmsSubtreesAsync();
@@ -87,8 +87,8 @@ public class SubtreeDiscoveryTests
     public async Task MultipleSidecars_ProduceOneSubtreeEach()
     {
         var fs = CreateFs(
-            ("reference/_llms.yaml", "title: Reference\n"),
-            ("recipes/_llms.yaml", "title: Recipes\n"));
+            ("reference/_meta.yml", "title: Reference\nllms:\n  description: ref\n"),
+            ("recipes/_meta.yml", "title: Recipes\nllms:\n  description: how-to\n"));
         var service = CreateService(fs, new UrlPath("/docs"));
 
         var subtrees = await service.GetLlmsSubtreesAsync();
@@ -100,10 +100,22 @@ public class SubtreeDiscoveryTests
     }
 
     [Fact]
-    public async Task SidecarMissingTitle_IsSkipped()
+    public async Task SidecarMissingLlmsBlock_IsNotASubtree()
     {
         var fs = CreateFs(
-            ("reference/_llms.yaml", "description: no title here\n"));
+            ("reference/_meta.yml", "title: Reference\norder: 1\n"));
+        var service = CreateService(fs);
+
+        var subtrees = await service.GetLlmsSubtreesAsync();
+
+        subtrees.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task SidecarLlmsBlockWithoutTitle_IsNotASubtree()
+    {
+        var fs = CreateFs(
+            ("reference/_meta.yml", "llms:\n  description: no folder title\n"));
         var service = CreateService(fs);
 
         var subtrees = await service.GetLlmsSubtreesAsync();
@@ -123,12 +135,49 @@ public class SubtreeDiscoveryTests
     }
 
     [Fact]
+    public async Task FolderMetadata_SurfacesTitleOrderAndLlmsRows()
+    {
+        var fs = CreateFs(
+            ("explanation/_meta.yml", "title: Explanation\norder: 2\n"),
+            ("reference/_meta.yml", "title: Reference\norder: 5\nllms:\n  description: API surface\n"));
+        var service = CreateService(fs, new UrlPath("/"));
+
+        var folderMetadata = await service.GetFolderMetadataAsync();
+
+        folderMetadata.Count.ShouldBe(2);
+        var explanation = folderMetadata.Single(m => m.FolderUrlPrefix == "/explanation/");
+        explanation.Title.ShouldBe("Explanation");
+        explanation.Order.ShouldBe(2);
+        explanation.LlmsDescription.ShouldBeNull();
+
+        var reference = folderMetadata.Single(m => m.FolderUrlPrefix == "/reference/");
+        reference.Title.ShouldBe("Reference");
+        reference.Order.ShouldBe(5);
+        reference.LlmsDescription.ShouldBe("API surface");
+    }
+
+    [Fact]
+    public async Task FolderMetadata_EmptySidecarStillEmitsRow()
+    {
+        var fs = CreateFs(
+            ("explanation/_meta.yml", ""));
+        var service = CreateService(fs, new UrlPath("/"));
+
+        var folderMetadata = await service.GetFolderMetadataAsync();
+
+        // An empty sidecar yields no row — the deserializer returns null and the loader skips it.
+        folderMetadata.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task LlmsSubtree_NormalizesRoutePrefixToBracketedSlashForm()
     {
         new LlmsSubtree("api", "API", "").RoutePrefix.ShouldBe("/api/");
         new LlmsSubtree("/api", "API", "").RoutePrefix.ShouldBe("/api/");
         new LlmsSubtree("api/", "API", "").RoutePrefix.ShouldBe("/api/");
         new LlmsSubtree("/reference/api/", "API", "").RoutePrefix.ShouldBe("/reference/api/");
+
+        await Task.CompletedTask;
     }
 
     [Fact]

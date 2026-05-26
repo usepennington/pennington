@@ -527,4 +527,197 @@ public class NavigationBuilderTests
         first.Count.ShouldBe(1);
         second.ShouldBeEmpty();
     }
+
+    // ----------------------------------------------------------------------
+    // _meta.yml folder-metadata overrides
+    // ----------------------------------------------------------------------
+
+    [Fact]
+    public void BuildTree_FolderSidecarOrder_PositionsAutoSectionAheadOfSiblings()
+    {
+        // The "explanation" folder has no index.md and so today would inherit
+        // min(children) — both folders' children carry the same low orders, so
+        // the tiebreaker falls to alphabetical. A sidecar order: 1 should override
+        // that and pin explanation ahead of zebra-area regardless of children.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Foo", "/explanation/foo", 10, "explanation", "foo"),
+            MakeTocItem("Bar", "/zebra-area/bar", 5, "zebra-area", "bar"),
+        };
+        var registry = new FolderMetadataRegistry(new[]
+        {
+            new FolderMetadata("/explanation/", Title: null, Order: 1, LlmsDescription: null),
+        });
+        var builder = new NavigationBuilder(registry);
+
+        var tree = builder.BuildTree(items);
+
+        tree.Count.ShouldBe(2);
+        tree[0].Title.ShouldBe("Explanation");
+        tree[1].Title.ShouldBe("Zebra Area");
+    }
+
+    [Fact]
+    public void BuildTree_FolderSidecarTitle_OverridesFormatSectionTitle()
+    {
+        // "core-api" would normally render as "Core API" via FormatSectionTitle.
+        // The sidecar title wins.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Page", "/core-api/page", 10, "core-api", "page"),
+        };
+        var registry = new FolderMetadataRegistry(new[]
+        {
+            new FolderMetadata("/core-api/", Title: "Foundations", Order: null, LlmsDescription: null),
+        });
+        var builder = new NavigationBuilder(registry);
+
+        var tree = builder.BuildTree(items);
+
+        tree[0].Title.ShouldBe("Foundations");
+    }
+
+    [Fact]
+    public void BuildTree_FolderSidecarOverridesIndexMdTitleAndOrder()
+    {
+        // The folder has an index.md whose front matter says order=99, title="Stale".
+        // A _meta.yml sidecar at the same folder declares order=1, title="Fresh"; both wins.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Stale", "/explanation/", 99, "explanation"),
+            MakeTocItem("Page", "/explanation/page", 10, "explanation", "page"),
+            MakeTocItem("Other", "/other/", 1, "other"),
+        };
+        var registry = new FolderMetadataRegistry(new[]
+        {
+            new FolderMetadata("/explanation/", Title: "Fresh", Order: 1, LlmsDescription: null),
+        });
+        var builder = new NavigationBuilder(registry);
+
+        var tree = builder.BuildTree(items);
+
+        // Fresh sorts ahead of Other (order 1 vs 1, then alphabetical Fresh < Other).
+        tree[0].Title.ShouldBe("Fresh");
+        tree[0].Route.CanonicalPath.Value.ShouldBe("/explanation/");
+        tree[1].Title.ShouldBe("Other");
+    }
+
+    [Fact]
+    public void BuildTree_FolderSidecarPartialFields_FallsBackPerField()
+    {
+        // Sidecar sets title but leaves order null → order falls through to the index.md's value.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Original", "/explanation/", 5, "explanation"),
+            MakeTocItem("Page", "/explanation/page", 10, "explanation", "page"),
+            MakeTocItem("Other", "/other/", 3, "other"),
+        };
+        var registry = new FolderMetadataRegistry(new[]
+        {
+            new FolderMetadata("/explanation/", Title: "Renamed", Order: null, LlmsDescription: null),
+        });
+        var builder = new NavigationBuilder(registry);
+
+        var tree = builder.BuildTree(items);
+
+        // Other (order 3) comes before Renamed (order 5, from index.md).
+        tree[0].Title.ShouldBe("Other");
+        tree[1].Title.ShouldBe("Renamed");
+    }
+
+    [Fact]
+    public void BuildTree_NoSidecar_EmergentMinChildrenOrderPreserved()
+    {
+        // Backwards-compat: with no sidecar entries, the existing min(children)
+        // emergent rule still drives folder ordering.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Late", "/late-folder/page", 100, "late-folder", "page"),
+            MakeTocItem("Early", "/early-folder/page", 1, "early-folder", "page"),
+        };
+        var registry = new FolderMetadataRegistry(Array.Empty<FolderMetadata>());
+        var builder = new NavigationBuilder(registry);
+
+        var tree = builder.BuildTree(items);
+
+        tree[0].Title.ShouldBe("Early Folder");
+        tree[1].Title.ShouldBe("Late Folder");
+    }
+
+    [Fact]
+    public void BuildTree_SidecarTieOnOrder_BreaksAlphabetically()
+    {
+        // Two sidecar folders with the same explicit order should still tie-break by title.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Page1", "/zebra/page", 10, "zebra", "page"),
+            MakeTocItem("Page2", "/alpha/page", 10, "alpha", "page"),
+        };
+        var registry = new FolderMetadataRegistry(new[]
+        {
+            new FolderMetadata("/zebra/", Title: null, Order: 1, LlmsDescription: null),
+            new FolderMetadata("/alpha/", Title: null, Order: 1, LlmsDescription: null),
+        });
+        var builder = new NavigationBuilder(registry);
+
+        var tree = builder.BuildTree(items);
+
+        tree[0].Title.ShouldBe("Alpha");
+        tree[1].Title.ShouldBe("Zebra");
+    }
+
+    [Fact]
+    public void BuildTree_AreaStrippedHierarchy_LooksUpFullCanonicalPrefix()
+    {
+        // Simulates DocSite GetTocItemsForAreaAsync: the area slug "explanation"
+        // has been stripped from HierarchyParts, but Route.CanonicalPath keeps
+        // the full URL. The folder-metadata registry stores prefixes in canonical
+        // form, so the lookup must derive the prefix from the canonical path.
+        var areaStrippedItems = new List<ContentTocItem>
+        {
+            new(
+                Title: "Pipeline",
+                Route: MakeRoute("/explanation/core/pipeline"),
+                Order: 10,
+                HierarchyParts: ["core", "pipeline"],
+                SectionLabel: null,
+                Locale: null),
+        };
+        var registry = new FolderMetadataRegistry(new[]
+        {
+            new FolderMetadata("/explanation/core/", Title: "Core Architecture", Order: 1, LlmsDescription: null),
+        });
+        var builder = new NavigationBuilder(registry);
+
+        var tree = builder.BuildTree(areaStrippedItems);
+
+        tree.Count.ShouldBe(1);
+        tree[0].Title.ShouldBe("Core Architecture");
+        tree[0].Order.ShouldBe(1);
+    }
+
+    [Fact]
+    public void BuildTree_NestedFolderSidecar_AppliesAtMatchingDepth()
+    {
+        // A sidecar at /docs/core/ applies to that subfolder, not to /docs/.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Docs index", "/docs/", 1, "docs"),
+            MakeTocItem("Core leaf", "/docs/core/leaf", 10, "docs", "core", "leaf"),
+            MakeTocItem("Misc leaf", "/docs/misc/leaf", 10, "docs", "misc", "leaf"),
+        };
+        var registry = new FolderMetadataRegistry(new[]
+        {
+            new FolderMetadata("/docs/core/", Title: "Renamed Core", Order: 1, LlmsDescription: null),
+        });
+        var builder = new NavigationBuilder(registry);
+
+        var tree = builder.BuildTree(items);
+
+        tree[0].Title.ShouldBe("Docs index");
+        var docsChildren = tree[0].Children;
+        docsChildren.Count.ShouldBe(2);
+        docsChildren[0].Title.ShouldBe("Renamed Core");
+        docsChildren[1].Title.ShouldBe("Misc");
+    }
 }

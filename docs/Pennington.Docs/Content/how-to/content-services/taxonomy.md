@@ -2,7 +2,7 @@
 title: "Build browse-by-{field} pages with AddTaxonomy"
 description: "Group your content by any front-matter field (cuisine, tag, audience, series) and render the resulting term pages from a Razor component. Hot-reloads when source files change."
 uid: how-to.content-services.taxonomy
-order: 208050
+order: 5
 sectionLabel: "Content Services"
 tags: [taxonomy, navigation, content-service, hot-reload]
 ---

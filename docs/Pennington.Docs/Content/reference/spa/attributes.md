@@ -2,7 +2,7 @@
 title: "SPA engine attributes and events"
 description: "The data-spa-* attribute contract the spa-engine.js script in Pennington.UI reads — region markers, scroll keys, stylesheet handling, root tuning, and lifecycle events."
 sectionLabel: "SPA"
-order: 405010
+order: 1
 tags: [spa, attributes, navigation, regions]
 uid: reference.spa.attributes
 ---

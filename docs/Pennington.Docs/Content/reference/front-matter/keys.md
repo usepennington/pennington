@@ -2,7 +2,7 @@
 title: "Front matter key reference"
 description: "Every built-in YAML front-matter key recognized by the shipped IFrontMatter implementations, with type, default, source interface, and applicable front-matter record."
 sectionLabel: "Front Matter"
-order: 402010
+order: 1
 tags: [front-matter, yaml, keys, reference]
 uid: reference.front-matter.keys
 ---

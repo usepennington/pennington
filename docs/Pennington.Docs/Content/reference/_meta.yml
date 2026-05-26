@@ -1,0 +1,3 @@
+title: Reference
+llms:
+  description: API surface, host extensions, front-matter keys, Markdig extensions, UI components, diagnostics codes.

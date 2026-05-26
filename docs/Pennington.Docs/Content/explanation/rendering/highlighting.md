@@ -2,7 +2,7 @@
 title: "The syntax-highlighting cascade"
 description: "Why Pennington dispatches code fences through a priority-ordered chain of highlighters with a guaranteed plain-text fallback instead of a single parser."
 uid: explanation.rendering.highlighting
-order: 302020
+order: 2
 sectionLabel: "Rendering and Theming"
 tags: [highlighting, textmate, cascade]
 ---
