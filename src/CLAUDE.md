@@ -24,6 +24,15 @@ Every public type and member needs an xmldoc (CS1591 is on). Keep summaries conc
 
 Compose these on a front matter record to declare what it parses. `DocFrontMatter` and `BlogSiteFrontMatter` are the canonical examples.
 
+## Folder metadata (`_meta.yml`)
+Per-folder YAML sidecar that lives in the content tree alongside markdown. Carries the folder's display title, its sort position in the parent nav level, and an optional `llms:` block opting the subtree into `llms.txt` generation (the consolidation point for what was once `_llms.yaml`).
+
+- `MarkdownContentService` discovers `_meta.yml` files and surfaces them via `IFolderMetadataProvider`.
+- `FolderMetadataRegistry` (file-watched) aggregates the rows from every registered `IContentService`; `NavigationBuilder` consults it during `BuildLevel` to override the title/order of folder nodes — both auto-section nodes and `index.md`-backed sections.
+- Sidecar fields win per-field; absent fields fall back to the original emergent behaviour (`FormatSectionTitle` for the title, `min(children.Order)` for the order). Adoption is folder-by-folder.
+
+Authors use small folder-local orders (`1, 2, 3`) inside each folder rather than globally-coordinated wide values. The docs site is fully migrated to this convention — see `scripts/migrate_docs_ordering.py` for the migration walker / verifier.
+
 ## Razor components
 Components in `src/Pennington.UI/Components/` are single `.razor` files with inline `@code` — no separate code-behind, no separate CSS. Variants are parameter-driven via `switch` expressions on enums/strings. Match this shape for new components instead of introducing a partial-class or CSS-file pattern.
 
@@ -32,7 +41,7 @@ Components in `src/Pennington.UI/Components/` are single `.razor` files with inl
 Three tiers:
 
 - **Transient** (`AddTransient<T>`) — default. Stateless services, and anything that captures a file-watched dep.
-- **File-scoped** (`AddFileWatched<T>` in `Pennington.Infrastructure`) — holds state derived from content files. Ejected and rebuilt when `IFileWatcher` fires. Examples: `NavigationBuilder`, `XrefResolver`, `SearchArtifactService`, `BlogSiteContentService`.
+- **File-scoped** (`AddFileWatched<T>` in `Pennington.Infrastructure`) — holds state derived from content files. Ejected and rebuilt when `IFileWatcher` fires. Examples: `NavigationBuilder`, `FolderMetadataRegistry`, `XrefResolver`, `SearchArtifactService`, `BlogSiteContentService`.
 - **Singleton** (`AddSingleton<T>`) — rare. Process-lifetime state only: options records, `IFileWatcher`, connection pools.
 
 **Ctors take deps by type.** No `IServiceProvider`, `FileWatchDependencyFactory<T>`, or `Func<T>` in domain ctors — that's plumbing. If a direct capture would go stale, fix the consumer's lifetime, not the injection shape. A singleton capturing a file-watched dep is a smell; push the dep down to a transient collaborator.

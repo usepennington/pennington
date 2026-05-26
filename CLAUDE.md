@@ -25,7 +25,7 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - `Pennington.Routing` — UrlPath, FilePath, ContentRoute, ContentRouteFactory
 - `Pennington.FrontMatter` — IFrontMatter, capability interfaces, FrontMatterParser
 - `Pennington.Pipeline` — ContentItem/ContentSource unions, ContentPipeline, IContentParser/IContentRenderer
-- `Pennington.Content` — IContentService, MarkdownContentService, RazorPageContentService
+- `Pennington.Content` — IContentService, MarkdownContentService, RazorPageContentService, FolderMetadata/FolderMetadataRegistry/IFolderMetadataProvider (folder-level `_meta.yml` sidecars: per-folder title + order + optional llms.txt subtree opt-in)
 - `Pennington.Markdown` — MarkdownContentParser/Renderer, MarkdownPipelineFactory, extensions (highlighting, tabs, alerts)
 - `Pennington.Highlighting` — ICodeHighlighter, TextMateHighlighter, ShellHighlighter, HighlightingService
 - `Pennington.Generation` — BuildReport, OutputGenerationService, OutputOptions
