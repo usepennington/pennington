@@ -1,6 +1,6 @@
 namespace Pennington.Infrastructure;
 
-using System.Text;
+using System.Buffers;
 
 /// <summary>
 /// Inserts word-break characters into long identifiers — at dots and at
@@ -22,125 +22,147 @@ internal sealed class WordBreakProcessor
     /// </summary>
     public string ProcessText(string text)
     {
-        if (string.IsNullOrWhiteSpace(text))
-            return text;
+        if (string.IsNullOrWhiteSpace(text)) return text;
+        if (text.Length < _options.MinimumCharacters) return text;
 
-        // if we don't even have the minimum characters, no need to go forward
-        if (text.Length < _options.MinimumCharacters)
-            return text;
+        // Two-pass: collect break positions in the original text first. If none,
+        // return the input unchanged so the rewriter's `processed != TextContent`
+        // check skips the InnerHtml assignment (and AngleSharp's re-parse). The
+        // splice phase then writes exactly once into a pooled buffer — no
+        // StringBuilder, no resize churn.
+        Span<int> inline = stackalloc int[64];
+        var positions = new PositionList(inline);
+        try
+        {
+            var src = text.AsSpan();
+            CollectBreakPositions(src, ref positions);
+            if (positions.Count == 0) return text;
+            return Splice(src, positions.AsSpan(), _options.WordBreakCharacters.AsSpan());
+        }
+        finally
+        {
+            positions.Dispose();
+        }
+    }
 
-        var span = text.AsSpan();
-        var result = new StringBuilder(text.Length + 100); // Pre-allocate with some extra space
+    private void CollectBreakPositions(ReadOnlySpan<char> text, ref PositionList positions)
+    {
+        var min = _options.MinimumCharacters;
         var wordStart = 0;
 
-        for (var i = 0; i < span.Length; i++)
+        for (var i = 0; i <= text.Length; i++)
         {
-            if (span[i] != ' ') continue;
-            // Process the word from wordStart to i
-            if (i > wordStart)
+            var atEnd = i == text.Length;
+            if (!atEnd && text[i] != ' ') continue;
+
+            var wordLen = i - wordStart;
+            if (wordLen >= min)
             {
-                var wordSpan = span.Slice(wordStart, i - wordStart);
-                ProcessWord(wordSpan, result);
+                CollectWord(text, wordStart, i, min, ref positions);
             }
-            result.Append(' ');
             wordStart = i + 1;
         }
-
-        // Process the last word if any
-        if (wordStart >= span.Length) return result.ToString();
-        {
-            var wordSpan = span[wordStart..];
-            ProcessWord(wordSpan, result);
-        }
-
-        return result.ToString();
     }
 
-    private void ProcessWord(ReadOnlySpan<char> word, StringBuilder result)
+    private static void CollectWord(ReadOnlySpan<char> text, int start, int end, int min, ref PositionList positions)
     {
-        if (word.Length < _options.MinimumCharacters)
+        var segStart = start;
+
+        for (var i = start; i < end; i++)
         {
-            result.Append(word);
-            return;
+            if (text[i] != '.') continue;
+
+            CollectSegment(text, segStart, i, min, ref positions);
+            if (i + 1 < end)
+            {
+                positions.Add(i + 1);
+            }
+            segStart = i + 1;
         }
 
-        // Check if word contains dots
-        var dotIndex = word.IndexOf('.');
-        if (dotIndex == -1)
+        if (segStart < end)
         {
-            // No dots, but still process uppercase breaks if word meets minimum length
-            ProcessSegment(word, result);
-            return;
-        }
-
-        var start = 0;
-
-        while (dotIndex != -1)
-        {
-            // Process the segment before the dot
-            var segment = word.Slice(start, dotIndex - start);
-            ProcessSegment(segment, result);
-
-            // Append the dot
-            result.Append('.');
-
-            // Add word break after the dot if there's more content
-            if (dotIndex + 1 < word.Length)
-            {
-                result.Append(_options.WordBreakCharacters);
-            }
-
-            start = dotIndex + 1;
-            if (start < word.Length)
-            {
-                dotIndex = word[start..].IndexOf('.');
-                if (dotIndex != -1)
-                {
-                    dotIndex += start;
-                }
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        // Process remaining part after last dot
-        if (start < word.Length)
-        {
-            var segment = word[start..];
-            ProcessSegment(segment, result);
+            CollectSegment(text, segStart, end, min, ref positions);
         }
     }
 
-    private void ProcessSegment(ReadOnlySpan<char> segment, StringBuilder result)
+    private static void CollectSegment(ReadOnlySpan<char> text, int start, int end, int min, ref PositionList positions)
     {
-        // If segment is shorter than minimum characters, don't process uppercase breaks
-        if (segment.Length < _options.MinimumCharacters)
-        {
-            result.Append(segment);
-            return;
-        }
+        if (end - start < min) return;
 
-        // Process uppercase letter breaks within the segment
-        var segmentStart = 0;
-
-        for (var i = 1; i < segment.Length; i++)
+        for (var i = start + 1; i < end; i++)
         {
-            // Check if current character is uppercase and previous is lowercase or digit
-            if (char.IsUpper(segment[i]) && i > 0 && (char.IsLower(segment[i - 1]) || char.IsDigit(segment[i - 1])))
+            if (char.IsUpper(text[i]) && (char.IsLower(text[i - 1]) || char.IsDigit(text[i - 1])))
             {
-                // Append text up to the uppercase letter
-                result.Append(segment.Slice(segmentStart, i - segmentStart));
-                result.Append(_options.WordBreakCharacters);
-                segmentStart = i;
+                positions.Add(i);
             }
         }
+    }
 
-        // Append remaining part of segment
-        if (segmentStart < segment.Length)
+    private static string Splice(ReadOnlySpan<char> text, ReadOnlySpan<int> positions, ReadOnlySpan<char> breakChars)
+    {
+        var totalLen = text.Length + positions.Length * breakChars.Length;
+        var buffer = ArrayPool<char>.Shared.Rent(totalLen);
+        try
         {
-            result.Append(segment[segmentStart..]);
+            var dest = buffer.AsSpan(0, totalLen);
+            var srcIdx = 0;
+            var dstIdx = 0;
+
+            foreach (var pos in positions)
+            {
+                var run = pos - srcIdx;
+                text.Slice(srcIdx, run).CopyTo(dest[dstIdx..]);
+                dstIdx += run;
+                breakChars.CopyTo(dest[dstIdx..]);
+                dstIdx += breakChars.Length;
+                srcIdx = pos;
+            }
+            text[srcIdx..].CopyTo(dest[dstIdx..]);
+
+            return new string(dest);
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(buffer);
+        }
+    }
+
+    private ref struct PositionList
+    {
+        private Span<int> _span;
+        private int[]? _rented;
+        private int _count;
+
+        public PositionList(Span<int> initial)
+        {
+            _span = initial;
+            _rented = null;
+            _count = 0;
+        }
+
+        public int Count => _count;
+
+        public ReadOnlySpan<int> AsSpan() => _span[.._count];
+
+        public void Add(int value)
+        {
+            if (_count == _span.Length) Grow();
+            _span[_count++] = value;
+        }
+
+        private void Grow()
+        {
+            var next = ArrayPool<int>.Shared.Rent(_span.Length * 2);
+            _span[.._count].CopyTo(next);
+            if (_rented is not null) ArrayPool<int>.Shared.Return(_rented);
+            _rented = next;
+            _span = next;
+        }
+
+        public void Dispose()
+        {
+            if (_rented is not null) ArrayPool<int>.Shared.Return(_rented);
         }
     }
 }
