@@ -31,7 +31,7 @@ examples/DocSiteKitchenSinkExample/Content/main/llms-hidden.md
 src/Pennington.DocSite/DocSiteFrontMatter.cs > DocSiteFrontMatter.Llms
 ```
 
-For a custom `ContentSelector` (different article wrapper or a non-DocSite layout), set `DocSiteOptions.LlmsTxtContentSelector`. It defaults to `#main-content` and is overridable without leaving DocSite. See [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning) for cases that do require bare `AddPennington`.
+For a custom `ContentSelector` (different article wrapper or a non-DocSite layout), set `DocSiteOptions.ContentSelector`. It defaults to `#main-content` and is overridable without leaving DocSite — the same selector drives the search index, llms.txt sidecars, and the build-time link audit, so chrome is stripped once. See [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning) for cases that do require bare `AddPennington`.
 
 ### Split content per-fragment with `humans-only` / `robots-only`
 
@@ -54,7 +54,7 @@ The classes work anywhere in the rendered page — markdown bodies, Razor compon
 
 ### (Bare Pennington) Enable `LlmsTxtOptions` with `AddLlmsTxt`
 
-On a bare host, call `penn.AddLlmsTxt(...)` once. The options surface (`OutputDirectory`, `GenerateFullFile`, `ContentSelector`) is documented at <xref:reference.api.llms-txt-options).
+On a bare host, call `penn.AddLlmsTxt(...)` once. The options surface (`OutputDirectory`, `GenerateFullFile`) is documented at <xref:reference.api.llms-txt-options). The chrome-stripping selector lives one layer up at `penn.SiteProjection.ContentSelector` — it is shared with the search index so both channels see the same body element.
 
 ```csharp:symbol,bodyonly
 examples/ExtensibilityLabExample/LlmsTxtConfiguration.cs > LlmsTxtConfiguration.Configure

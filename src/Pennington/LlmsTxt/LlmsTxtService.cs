@@ -5,12 +5,11 @@ using System.IO.Abstractions;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using AngleSharp;
+using AngleSharp.Dom;
 using Content;
 using FrontMatter;
 using Infrastructure;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Navigation;
 using Pipeline;
@@ -21,9 +20,10 @@ using Routing;
 /// When managed by <see cref="FileWatchDependencyFactory{T}"/>, the instance is
 /// recreated on file changes — no manual watcher subscription needed.
 /// <para>
-/// Markdown bodies come from the same <see cref="IContentRenderer"/> the build
-/// pipeline uses, so the output reflects Markdig extensions and Razor-component
-/// SSR (Mdazor) without an HTTP self-fetch.
+/// Folds over <see cref="ISiteProjection"/>: every renderable page's post-pipeline
+/// HTML is already captured by the shared projection, so this service is a pure
+/// adapter from <see cref="RenderedPage"/> + <see cref="HtmlToMarkdownConverter"/>
+/// to the front-door index, per-subtree index files, and per-page sidecar markdown.
 /// </para>
 /// </summary>
 public sealed class LlmsTxtService : IFileWatchAware
@@ -33,18 +33,12 @@ public sealed class LlmsTxtService : IFileWatchAware
 
     private static readonly string PackageVersion = ResolvePackageVersion();
 
-    private static readonly IBrowsingContext BrowsingContext =
-        AngleSharp.BrowsingContext.New(Configuration.Default);
-
     private readonly AsyncLazy<LlmsTxtData> _dataLazy;
 
     /// <summary>Creates the service; data is computed lazily on first request.</summary>
     public LlmsTxtService(
+        ISiteProjection projection,
         IEnumerable<IContentService> contentServices,
-        MetadataEnrichmentService enrichment,
-        IContentRenderer renderer,
-        XrefResolvingService xrefResolver,
-        RenderedHtmlFetcher fetcher,
         IEnumerable<LlmsSubtree> subtrees,
         IFileSystem fileSystem,
         IWebHostEnvironment hostingEnvironment,
@@ -52,15 +46,14 @@ public sealed class LlmsTxtService : IFileWatchAware
         LlmsTxtOptions llmsTxtOptions,
         CanonicalBaseUrl canonicalBase,
         NavigationBuilder navigationBuilder,
-        EndpointDataSource endpointDataSource,
         ILogger<LlmsTxtService> logger)
     {
         _dataLazy = new AsyncLazy<LlmsTxtData>(
             () => BuildAsync(
-                contentServices, enrichment, renderer, xrefResolver, fetcher, subtrees,
+                projection, contentServices, subtrees,
                 fileSystem, hostingEnvironment,
                 pennOptions, llmsTxtOptions, canonicalBase, navigationBuilder,
-                endpointDataSource, logger));
+                logger));
     }
 
     /// <summary>Returns the generated llms.txt index content.</summary>
@@ -76,11 +69,8 @@ public sealed class LlmsTxtService : IFileWatchAware
     public async Task<string?> GetLlmsFullTxtAsync() => (await _dataLazy.Value).FullContent;
 
     private static async Task<LlmsTxtData> BuildAsync(
+        ISiteProjection projection,
         IEnumerable<IContentService> contentServices,
-        MetadataEnrichmentService enrichment,
-        IContentRenderer renderer,
-        XrefResolvingService xrefResolver,
-        RenderedHtmlFetcher fetcher,
         IEnumerable<LlmsSubtree> programmaticSubtrees,
         IFileSystem fileSystem,
         IWebHostEnvironment hostingEnvironment,
@@ -88,50 +78,22 @@ public sealed class LlmsTxtService : IFileWatchAware
         LlmsTxtOptions llmsTxtOptions,
         CanonicalBaseUrl canonicalBase,
         NavigationBuilder navigationBuilder,
-        EndpointDataSource endpointDataSource,
         ILogger<LlmsTxtService> logger)
     {
-
+        // Fold the shared projection into a path-keyed map. The projection already
+        // walks the corpus, fetches each route, and parses the DOM once — every
+        // sidecar entry below just consumes the cached RenderedPage.
+        var pageByPath = new Dictionary<string, RenderedPage>(StringComparer.OrdinalIgnoreCase);
         var allTocItems = new List<ContentTocItem>();
-        var parsedByPath = new Dictionary<string, ParsedItem>(StringComparer.OrdinalIgnoreCase);
-        var tocByPath = new Dictionary<string, ContentTocItem>(StringComparer.OrdinalIgnoreCase);
-        var mapGetDirectByPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var toc in (await contentServices.CollectIndexableEntriesAsync()).Where(t => !t.ExcludeFromLlms))
+        await foreach (var page in projection.GetPagesAsync())
         {
-            allTocItems.Add(toc);
-            var tocKey = NormalizePath(toc.Route.CanonicalPath.Value);
-            tocByPath[tocKey] = toc;
-        }
-
-        // Each service parses its own markdown with its own front-matter type, so
-        // valid keys from one content type are never mis-flagged against another's
-        // parser. ParseContentAsync already drops redirects, drafts, and scheduled
-        // pages. Derived metadata (reading time, …) is merged in here.
-        await foreach (var parsed in contentServices.ParseAllContentAsync())
-        {
-            var enriched = await enrichment.EnrichAsync(parsed);
-            var key = NormalizePath(enriched.Route.CanonicalPath.Value);
-            parsedByPath[key] = enriched;
-        }
-
-        // Endpoints opted into llms.txt via WithLlmsTxtEntry surface as
-        // synthetic TOC entries. The endpoint URL is the link target in the
-        // generated index — no sidecar is manufactured, since the user-defined
-        // MapGet response is the content llms.txt consumers fetch directly.
-        foreach (var (toc, url) in CollectEndpointEntries(endpointDataSource))
-        {
-            var key = NormalizePath(toc.Route.CanonicalPath.Value);
-            // Don't let an endpoint metadata entry overwrite a real content
-            // service TOC entry at the same canonical path.
-            if (tocByPath.ContainsKey(key))
+            if (page.Toc.ExcludeFromLlms)
             {
                 continue;
             }
 
-            allTocItems.Add(toc);
-            tocByPath[key] = toc;
-            mapGetDirectByPath[key] = url;
+            allTocItems.Add(page.Toc);
+            pageByPath[NormalizePath(page.Route.CanonicalPath.Value)] = page;
         }
 
         var tree = navigationBuilder.BuildTree(allTocItems);
@@ -155,15 +117,10 @@ public sealed class LlmsTxtService : IFileWatchAware
         CollectLeafPaths(subtreeOnlyTree, linkablePaths);
 
         var ctx = new BuildContext(
-            Renderer: renderer,
-            XrefResolver: xrefResolver,
-            Fetcher: fetcher,
             Options: llmsTxtOptions,
             CanonicalBase: canonicalBase,
             Logger: logger,
-            ParsedByPath: parsedByPath,
-            TocByPath: tocByPath,
-            MapGetDirectByPath: mapGetDirectByPath,
+            PageByPath: pageByPath,
             RewriteHref: BuildLinkRewriter(linkablePaths, llmsTxtOptions.OutputDirectory, canonicalBase),
             Nodes: new List<RenderedNode>(),
             MarkdownFiles: ImmutableList.CreateBuilder<MarkdownFile>(),
@@ -210,57 +167,6 @@ public sealed class LlmsTxtService : IFileWatchAware
             ctx.MarkdownFiles.ToImmutable(),
             subtreeFiles.ToImmutable(),
             ctx.FullContent?.ToString().TrimEnd());
-    }
-
-    /// <summary>
-    /// Walks the registered endpoints looking for routes opted into llms.txt
-    /// via <see cref="LlmsTxtEndpointExtensions.WithLlmsTxtEntry{TBuilder}"/>
-    /// and yields synthetic TOC items keyed off the endpoint URL. Skips
-    /// endpoints whose URL contains a route parameter — the index needs a
-    /// concrete URL, not a pattern.
-    /// </summary>
-    private static IEnumerable<(ContentTocItem Toc, string Url)> CollectEndpointEntries(EndpointDataSource endpointDataSource)
-    {
-        foreach (var endpoint in endpointDataSource.Endpoints)
-        {
-            if (endpoint is not RouteEndpoint route)
-            {
-                continue;
-            }
-
-            var meta = route.Metadata.GetMetadata<LlmsTxtEntryMetadata>();
-            if (meta is null)
-            {
-                continue;
-            }
-
-            var rawText = route.RoutePattern.RawText;
-            if (string.IsNullOrWhiteSpace(rawText) || rawText.Contains('{'))
-            {
-                continue;
-            }
-
-            var url = rawText.StartsWith('/') ? rawText : "/" + rawText;
-            var canonicalPath = new UrlPath(url);
-            var contentRoute = new ContentRoute
-            {
-                CanonicalPath = canonicalPath,
-                OutputFile = new FilePath(url.TrimStart('/')),
-            };
-            var hierarchyParts = url.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
-            yield return (
-                new ContentTocItem(
-                    Title: meta.Title,
-                    Route: contentRoute,
-                    Order: int.MaxValue,
-                    HierarchyParts: hierarchyParts,
-                    SectionLabel: null,
-                    Locale: null)
-                {
-                    Description = meta.Description,
-                },
-                url);
-        }
     }
 
     private static async Task<ImmutableList<LlmsSubtree>> CollectSubtreesAsync(
@@ -397,73 +303,42 @@ public sealed class LlmsTxtService : IFileWatchAware
             }
 
             var key = NormalizePath(item.Route.CanonicalPath.Value);
-            ctx.TocByPath.TryGetValue(key, out var tocItem);
+            if (!ctx.PageByPath.TryGetValue(key, out var page))
+            {
+                continue;
+            }
 
-            // MapGet endpoints opted in via WithLlmsTxtEntry: the user-defined
-            // response URL is the link target. We don't manufacture a sidecar
-            // or fetch the body — clients pull markdown directly from the URL
-            // the user registered.
-            if (ctx.MapGetDirectByPath.TryGetValue(key, out var directUrl))
+            // Endpoint entries: the user-defined response URL is the link target.
+            // No sidecar is manufactured — clients pull markdown directly from the URL
+            // the user registered via WithLlmsTxtEntry.
+            if (page.Origin.Value is EndpointOrigin endpoint)
             {
                 ctx.Nodes.Add(new LeafNode(
                     Title: item.Title,
                     CanonicalPath: item.Route.CanonicalPath.Value,
-                    SidecarUrl: ctx.CanonicalBase.Combine(new UrlPath(directUrl)).Value,
-                    Description: tocItem?.Description,
+                    SidecarUrl: ctx.CanonicalBase.Combine(new UrlPath(endpoint.DirectUrl)).Value,
+                    Description: page.Toc.Description,
                     Tokens: 0));
                 continue;
             }
 
-            string markdown;
-            IFrontMatter? metadata;
-
-            if (ctx.ParsedByPath.TryGetValue(key, out var parsed))
+            if (page.Content is null)
             {
-                // Markdown source: render via the rendition channel.
-                if (!parsed.Metadata.Llms)
-                {
-                    continue;
-                }
-
-                var renderResult = await ctx.Renderer.RenderAsync(parsed);
-                if (renderResult.Value is not RenderedItem rendered)
-                {
-                    ctx.Logger.LogWarning("LlmsTxtService: failed to render {Path}, skipping", item.Route.CanonicalPath.Value);
-                    continue;
-                }
-
-                // Resolve xref links the same way the response pipeline does, so
-                // `[text](xref:uid)` and `<xref:uid>` end up as canonical paths
-                // that the link rewriter can map to sidecar URLs.
-                var resolvedHtml = await ctx.XrefResolver.ResolveAsync(rendered.Content.Html);
-                markdown = await ConvertHtmlToMarkdownAsync(resolvedHtml, ctx.RewriteHref);
-                if (string.IsNullOrWhiteSpace(markdown))
-                {
-                    continue;
-                }
-
-                metadata = parsed.Metadata;
+                continue;
             }
-            else
+
+            // Markdown pages whose front matter opts out (`llms: false`) shouldn't
+            // produce a sidecar even though they remain in the navigation tree.
+            var frontMatter = page.Origin.Value is MarkdownOrigin md ? md.Parsed.Metadata : null;
+            if (frontMatter is not null && !frontMatter.Llms)
             {
-                // Non-markdown source (Razor / API symbol page): self-fetch the rendered
-                // page and run the converter on it. Fetcher hits the live host so the
-                // HTML reflects every response-stage transform (xref resolution, locale
-                // links, etc.) — same fidelity the human reader gets.
-                var element = await ctx.Fetcher.FetchContentAsync(item.Route.CanonicalPath.Value, ctx.Options.ContentSelector);
-                if (element is null)
-                {
-                    ctx.Logger.LogWarning("LlmsTxtService: failed to fetch {Path}, skipping", item.Route.CanonicalPath.Value);
-                    continue;
-                }
+                continue;
+            }
 
-                markdown = HtmlToMarkdownConverter.Convert(element, ctx.RewriteHref).Trim();
-                if (string.IsNullOrWhiteSpace(markdown))
-                {
-                    continue;
-                }
-
-                metadata = null;
+            var markdown = HtmlToMarkdownConverter.Convert(page.Content, ctx.RewriteHref).Trim();
+            if (string.IsNullOrWhiteSpace(markdown))
+            {
+                continue;
             }
 
             var rendition = BuildRendition(markdown);
@@ -473,8 +348,9 @@ public sealed class LlmsTxtService : IFileWatchAware
             var sidecarKey = string.IsNullOrEmpty(key) ? "index" : key;
             var mdPath = $"{ctx.Options.OutputDirectory}/{sidecarKey}.md";
             var linkUrl = BuildStrippedMarkdownUrl(ctx.CanonicalBase, ctx.Options.OutputDirectory, sidecarKey);
-            var description = metadata?.Description ?? tocItem?.Description;
-            var sidecarHeader = BuildSidecarHeader(item, metadata, description, ctx.CanonicalBase, linkUrl, rendition, parsed?.Derived);
+            var description = frontMatter?.Description ?? page.Toc.Description;
+            var derived = page.Origin.Value is MarkdownOrigin md2 ? md2.Parsed.Derived : null;
+            var sidecarHeader = BuildSidecarHeader(item, frontMatter, description, ctx.CanonicalBase, linkUrl, rendition, derived);
             var sidecarContent = sidecarHeader + body;
 
             ctx.MarkdownFiles.Add(new MarkdownFile(new FilePath(mdPath), Encoding.UTF8.GetBytes(sidecarContent)));
@@ -496,19 +372,6 @@ public sealed class LlmsTxtService : IFileWatchAware
                 ctx.FullContent.AppendLine();
             }
         }
-    }
-
-    /// <summary>Parses an HTML body string and runs it through the markdown converter with link rewriting.</summary>
-    private static async Task<string> ConvertHtmlToMarkdownAsync(string html, Func<string, string> rewriteHref)
-    {
-        if (string.IsNullOrWhiteSpace(html))
-        {
-            return "";
-        }
-
-        var document = await BrowsingContext.OpenAsync(req => req.Content(html));
-        var root = document.Body ?? document.DocumentElement;
-        return root is null ? "" : HtmlToMarkdownConverter.Convert(root, rewriteHref).Trim();
     }
 
     private static LlmRendition BuildRendition(string markdown)
@@ -757,15 +620,10 @@ public sealed class LlmsTxtService : IFileWatchAware
     private sealed record LlmRendition(string MarkdownBody, string ContentHash, int TokenEstimate);
 
     private sealed record BuildContext(
-        IContentRenderer Renderer,
-        XrefResolvingService XrefResolver,
-        RenderedHtmlFetcher Fetcher,
         LlmsTxtOptions Options,
         CanonicalBaseUrl CanonicalBase,
         ILogger Logger,
-        Dictionary<string, ParsedItem> ParsedByPath,
-        Dictionary<string, ContentTocItem> TocByPath,
-        Dictionary<string, string> MapGetDirectByPath,
+        Dictionary<string, RenderedPage> PageByPath,
         Func<string, string> RewriteHref,
         List<RenderedNode> Nodes,
         ImmutableList<MarkdownFile>.Builder MarkdownFiles,

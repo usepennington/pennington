@@ -11,6 +11,7 @@ using Pennington.LlmsTxt;
 using Pennington.Navigation;
 using Pennington.Pipeline;
 using Pennington.Routing;
+using Pennington.Search;
 using Testably.Abstractions.Testing;
 
 public class MapGetEntryTests
@@ -64,12 +65,20 @@ public class MapGetEntryTests
         var fs = new MockFileSystem();
         var canonicalBase = new CanonicalBaseUrl(new UrlPath("https://example.test"));
         var dispatcher = new StubDispatcher();
-        return new LlmsTxtService(
+        var projection = new SiteProjection(
             contentServices: [],
             enrichment: new MetadataEnrichmentService([]),
             renderer: new StubRenderer(),
             xrefResolver: new XrefResolvingService(new XrefResolver([])),
             fetcher: new RenderedHtmlFetcher(dispatcher, NullLogger<RenderedHtmlFetcher>.Instance),
+            extractor: new HeadingSectionExtractor(),
+            options: new SiteProjectionOptions(),
+            endpointDataSource: endpointDataSource,
+            logger: NullLogger<SiteProjection>.Instance);
+
+        return new LlmsTxtService(
+            projection: projection,
+            contentServices: [],
             subtrees: [],
             fileSystem: fs,
             hostingEnvironment: new StubHostEnvironment(),
@@ -77,7 +86,6 @@ public class MapGetEntryTests
             llmsTxtOptions: new LlmsTxtOptions(),
             canonicalBase: canonicalBase,
             navigationBuilder: new NavigationBuilder(),
-            endpointDataSource: endpointDataSource,
             logger: NullLogger<LlmsTxtService>.Instance);
     }
 

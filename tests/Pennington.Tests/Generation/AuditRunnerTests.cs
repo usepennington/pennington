@@ -1,7 +1,10 @@
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Pennington.Generation;
 using Pennington.Infrastructure;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
 namespace Pennington.Tests.Generation;
 
@@ -15,7 +18,7 @@ public class AuditRunnerTests
         services.AddSingleton<IAuditCache>(sp => sp.GetRequiredService<AuditCache>());
         services.AddSingleton(new LocalizationOptions());
         services.AddSingleton<IFileWatcher, StubFileWatcher>();
-        services.AddSingleton<IInProcessHttpDispatcher, StubDispatcher>();
+        services.AddSingleton<ISiteProjection, StubProjection>();
         services.AddTransient<IRenderedAuditor, FakeRenderedAuditor>();
 
         using var sp = services.BuildServiceProvider();
@@ -49,7 +52,7 @@ public class AuditRunnerTests
         services.AddSingleton<IAuditCache>(sp => sp.GetRequiredService<AuditCache>());
         services.AddSingleton(new LocalizationOptions());
         services.AddSingleton<IFileWatcher, StubFileWatcher>();
-        services.AddSingleton<IInProcessHttpDispatcher, StubDispatcher>();
+        services.AddSingleton<ISiteProjection, StubProjection>();
         var renderedAuditor = new FakeRenderedAuditor();
         services.AddSingleton<IRenderedAuditor>(renderedAuditor);
 
@@ -87,15 +90,17 @@ public class AuditRunnerTests
         }
     }
 
-    private sealed class StubDispatcher : IInProcessHttpDispatcher
+    private sealed class StubProjection : ISiteProjection
     {
-        public HttpClient CreateClient() => new(new StubHandler()) { BaseAddress = new Uri("http://localhost/") };
-
-        private sealed class StubHandler : HttpMessageHandler
+#pragma warning disable CS1998 // Async method lacks 'await' operators
+        public async IAsyncEnumerable<RenderedPage> GetPagesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-                => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+            yield break;
         }
+#pragma warning restore CS1998
+
+        public Task<RenderedPage?> GetPageAsync(UrlPath canonicalPath, CancellationToken cancellationToken = default)
+            => Task.FromResult<RenderedPage?>(null);
     }
 
     private sealed class StubFileWatcher : IFileWatcher

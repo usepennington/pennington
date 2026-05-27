@@ -58,12 +58,14 @@ public sealed class PageLinkVerifier : IFileWatchAware
             copiedAssetPaths.Add(copy.OutputPath.Value);
         }
 
-        // Deliberately NOT iterating IContentEmitter.GetContentToCreateAsync here:
-        // SearchArtifactEmitter and LlmsTxtContentService both kick off corpus-wide
-        // HTTP self-fetches inside that call, and we run inside the response pipeline
-        // — those self-fetches would re-enter this very processor and deadlock on the
-        // verifier-build task that's waiting on them. Build-mode LinkAuditor still
-        // includes emitter outputs in the full report.
+        // Deliberately NOT iterating IContentEmitter.GetContentToCreateAsync or
+        // ISiteProjection here: both materialize via the shared site projection, which
+        // kicks off corpus-wide HTTP self-fetches inside that call. Since this verifier
+        // runs inside the response pipeline (via PageLinkAuditProcessor), those
+        // self-fetches would re-enter this very processor and deadlock on the
+        // verifier-build task that's waiting on them. The contract on ISiteProjection
+        // documents the same constraint. Build-mode LinkAuditor still includes emitter
+        // outputs (consumed via the projection out-of-band) in the full report.
 
         knownRoutes.AddRange(MapGetRouteDiscovery.Discover(endpointDataSource));
 

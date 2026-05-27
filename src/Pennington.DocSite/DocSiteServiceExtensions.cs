@@ -63,13 +63,11 @@ public static class DocSiteServiceExtensions
                 });
             }
 
-            // llms.txt generation: markdown content uses the rendition channel; non-markdown
-            // (Razor pages, API symbol pages) falls back to HTTP-fetching the rendered page
-            // and scoping via ContentSelector to strip layout chrome. Both selectors default
-            // to #main-content and are overridable through DocSiteOptions.
-            var llmsSelector = options.LlmsTxtContentSelector ?? "#main-content";
-            penn.AddLlmsTxt(opts => opts.ContentSelector ??= llmsSelector);
-            penn.SearchIndex.ContentSelector ??= options.SearchIndexContentSelector ?? "#main-content";
+            // Shared corpus projection: search, llms.txt sidecars, and build-time link audit
+            // all consume the same RenderedPage stream, so the chrome-stripping selector lives
+            // in one place. Default to #main-content — the DocSite layout's article wrapper.
+            penn.SiteProjection.ContentSelector ??= options.ContentSelector ?? "#main-content";
+            penn.AddLlmsTxt();
 
             // Boost search results by content area. Each area's boost defaults to its position in the
             // list (earlier areas weigh more, so task-oriented docs lead over reference when matches

@@ -384,6 +384,12 @@ public static class PenningtonExtensions
             });
         });
 
+        // Shared corpus projection — one walk, one fetch per route, one DOM parse, shared
+        // across every site-wide aggregator (search, llms.txt, build-time link audit).
+        // File-watched so a content edit recreates the cached array.
+        services.AddSingleton(options.SiteProjection);
+        services.AddFileWatched<Pipeline.ISiteProjection, Pipeline.SiteProjection>();
+
         // Search artifact and sitemap services — factory-managed, trust IContentService for fresh data
         services.AddFileWatched<SearchArtifactService>();
         services.AddFileWatched<SitemapService>();

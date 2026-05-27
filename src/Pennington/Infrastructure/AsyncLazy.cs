@@ -1,6 +1,19 @@
 namespace Pennington.Infrastructure;
 
-/// <summary>Thread-safe async lazy initialization with retry on failure.</summary>
+using System.Runtime.CompilerServices;
+
+/// <summary>
+/// Thread-safe asynchronous lazy initialization. The factory is queued onto the
+/// thread pool on first access; subsequent accesses return the same task. A faulted
+/// task is evicted so the next access retries.
+/// <para>
+/// Use <see cref="GetAwaiter"/> (i.e. <c>await asyncLazy</c>) from async contexts;
+/// fall back to <c>asyncLazy.Task.GetAwaiter().GetResult()</c> at the sync boundary
+/// only when the calling API cannot be made async. Because the factory always runs
+/// on a thread-pool thread, sync-waiting does not re-enter the caller's thread and
+/// avoids the classic sync-over-async deadlock pattern.
+/// </para>
+/// </summary>
 public sealed class AsyncLazy<T>
 {
     private readonly Func<Task<T>> _factory;
@@ -10,8 +23,12 @@ public sealed class AsyncLazy<T>
     /// <summary>Initializes the instance with a factory invoked on first access.</summary>
     public AsyncLazy(Func<Task<T>> factory) => _factory = factory;
 
-    /// <summary>Task that resolves to the lazily produced value; retries automatically if the previous attempt faulted.</summary>
-    public Task<T> Value
+    /// <summary>
+    /// Returns the underlying task. Starts the factory on a thread-pool thread the
+    /// first time it is accessed; subsequent accesses replay the same task. A
+    /// previously-faulted task is evicted so the next access retries.
+    /// </summary>
+    public Task<T> Task
     {
         get
         {
@@ -19,7 +36,7 @@ public sealed class AsyncLazy<T>
             {
                 if (_task is { IsFaulted: true } or null)
                 {
-                    _task = Task.Run(_factory);
+                    _task = System.Threading.Tasks.Task.Run(_factory);
                 }
 
                 return _task;
@@ -27,9 +44,19 @@ public sealed class AsyncLazy<T>
         }
     }
 
-    /// <summary>Discards any cached value so the next access runs the factory again.</summary>
-    public void Reset()
+    /// <summary>Back-compat alias for <see cref="Task"/>. Prefer <c>await</c>-ing the lazy or reading <see cref="Task"/>.</summary>
+    public Task<T> Value => Task;
+
+    /// <summary>Lets the lazy be <c>await</c>ed directly: <c>var value = await asyncLazy;</c>.</summary>
+    public TaskAwaiter<T> GetAwaiter() => Task.GetAwaiter();
+
+    /// <summary>Configured awaitable on the underlying task, matching the <see cref="System.Threading.Tasks.Task"/> shape.</summary>
+    public ConfiguredTaskAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+        => Task.ConfigureAwait(continueOnCapturedContext);
+
+    /// <summary>Kicks off the factory on the thread pool without awaiting the result. Safe to call repeatedly.</summary>
+    public void Start()
     {
-        lock (_lock) { _task = null; }
+        _ = Task;
     }
 }

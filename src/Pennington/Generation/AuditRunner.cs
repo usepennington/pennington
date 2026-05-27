@@ -129,47 +129,44 @@ public sealed class AuditRunner : IHostedService
 
             if (renderedAuditors.Count > 0)
             {
-                HttpClient? client = null;
+                Pipeline.ISiteProjection? projection = null;
                 try
                 {
-                    var dispatcher = scope.ServiceProvider.GetService<IInProcessHttpDispatcher>();
-                    client = dispatcher?.CreateClient();
+                    projection = scope.ServiceProvider.GetService<Pipeline.ISiteProjection>();
                 }
                 catch (Exception ex)
                 {
                     // In dev mode, the listener may not have bound yet when this hosted
                     // service's first run lands. Skip rendered auditors this pass; the
-                    // next file-change tick will retry against a ready host.
-                    _logger.LogDebug(ex, "Rendered auditors skipped — HTTP dispatcher not ready.");
+                    // next file-change tick will retry once the projection can materialize.
+                    _logger.LogDebug(ex, "Rendered auditors skipped — site projection not ready.");
                 }
 
-                if (client is null)
+                if (projection is null)
                 {
-                    if (renderedAuditors.Count > 0)
-                    {
-                        _logger.LogDebug("Rendered auditors registered but no HTTP client available; skipping this pass.");
-                    }
+                    _logger.LogDebug("Rendered auditors registered but no site projection available; skipping this pass.");
                 }
                 else
                 {
-                    using (client)
-                    {
-                        var renderedContext = new RenderedAuditContext(
-                            pagesSnapshot,
-                            _localization,
-                            async (route, ct) => await FetchRenderedHtmlAsync(client, route, ct));
-
-                        foreach (var auditor in renderedAuditors)
+                    var renderedContext = new RenderedAuditContext(
+                        pagesSnapshot,
+                        _localization,
+                        async (route, ct) =>
                         {
-                            try
-                            {
-                                var produced = await auditor.AuditAsync(renderedContext, cancellationToken);
-                                allDiagnostics.AddRange(produced);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogWarning(ex, "Rendered auditor '{Code}' threw; skipping its diagnostics.", auditor.Code);
-                            }
+                            var page = await projection.GetPageAsync(route.CanonicalPath, ct);
+                            return page?.Html;
+                        });
+
+                    foreach (var auditor in renderedAuditors)
+                    {
+                        try
+                        {
+                            var produced = await auditor.AuditAsync(renderedContext, cancellationToken);
+                            allDiagnostics.AddRange(produced);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Rendered auditor '{Code}' threw; skipping its diagnostics.", auditor.Code);
                         }
                     }
                 }
@@ -186,24 +183,6 @@ public sealed class AuditRunner : IHostedService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Audit pass failed; cache left unchanged.");
-        }
-    }
-
-    private static async Task<string?> FetchRenderedHtmlAsync(HttpClient client, Routing.ContentRoute route, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var response = await client.GetAsync(route.CanonicalPath.Value, cancellationToken);
-            if (!response.IsSuccessStatusCode)
-            {
-                return null;
-            }
-
-            return await response.Content.ReadAsStringAsync(cancellationToken);
-        }
-        catch (HttpRequestException)
-        {
-            return null;
         }
     }
 

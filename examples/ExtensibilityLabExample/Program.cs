@@ -38,6 +38,11 @@ builder.Services.AddPennington(penn =>
     // classes for the lab-tabs-* variants styled via MonorailCssCustomization.
     TabbedCodeBlockStyling.ConfigureTabbedCodeBlocksOverride(penn);
 
+    // 2.2.55 Site projection selector — the Lab's minimal HTML template wraps
+    // content in <article>, so strip the surrounding chrome before indexing /
+    // sidecar extraction. Shared by search and llms.txt.
+    penn.SiteProjection.ContentSelector = "article";
+
     // 2.2.60 llms.txt on bare host — DocSite auto-wires this; bare
     // AddPennington consumers must opt in explicitly.
     penn.AddLlmsTxt(LlmsTxtConfiguration.Configure);

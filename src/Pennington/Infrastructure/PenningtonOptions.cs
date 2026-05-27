@@ -8,6 +8,7 @@ using LlmsTxt;
 using Localization;
 using Markdig;
 using Markdown.Extensions.Tabs;
+using Pipeline;
 using Search;
 
 /// <summary>Main configuration options for the Pennington content engine.</summary>
@@ -81,6 +82,15 @@ public sealed class PenningtonOptions
 
     /// <summary>Configuration for the search index.</summary>
     public SearchIndexOptions SearchIndex { get; } = new();
+
+    /// <summary>
+    /// Configuration for the shared <see cref="ISiteProjection"/> consumed by
+    /// every corpus aggregator (search index, llms.txt, build-time link audit).
+    /// Set <see cref="SiteProjectionOptions.ContentSelector"/> here when the
+    /// layout wraps content in chrome that should be stripped before indexing
+    /// or extracting markdown.
+    /// </summary>
+    public SiteProjectionOptions SiteProjection { get; } = new();
 
     /// <summary>
     /// Extra assemblies to scan for routable <c>@page</c> Razor components. The

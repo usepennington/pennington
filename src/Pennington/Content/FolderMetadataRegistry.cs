@@ -9,16 +9,26 @@ using Infrastructure;
 /// registered as an <see cref="IContentService"/> and exposes a sync lookup keyed by
 /// canonical folder URL prefix. Registered via <c>AddFileWatched&lt;FolderMetadataRegistry&gt;()</c>
 /// so the aggregated table is dropped when any provider's underlying file source changes.
+/// <para>
+/// The aggregation is async (each provider exposes <c>GetFolderMetadataAsync</c>) but the
+/// consumers (<see cref="Navigation.NavigationBuilder"/>) are sync — so the registry kicks
+/// off the load on a thread-pool thread at construction via <see cref="AsyncLazy{T}"/> and
+/// the sync API waits on that task. Running on the pool avoids the inline sync-over-async
+/// re-entrance that deadlocks under xUnit's task scheduler.
+/// </para>
 /// </summary>
 public sealed class FolderMetadataRegistry : IFileWatchAware
 {
-    private readonly Lazy<FrozenDictionary<string, FolderMetadata>> _byPrefix;
+    private readonly AsyncLazy<FrozenDictionary<string, FolderMetadata>> _byPrefix;
 
     /// <summary>Creates a registry that lazily aggregates folder metadata across all registered content services.</summary>
     public FolderMetadataRegistry(IEnumerable<IContentService> contentServices)
     {
         var services = contentServices.ToList();
-        _byPrefix = new Lazy<FrozenDictionary<string, FolderMetadata>>(() => Load(services));
+        _byPrefix = new AsyncLazy<FrozenDictionary<string, FolderMetadata>>(() => LoadAsync(services));
+        // Kick off the load on the pool eagerly so the first sync TryGet has the result
+        // ready (or close to it) instead of paying the cold-start cost on the calling thread.
+        _byPrefix.Start();
     }
 
     /// <summary>Creates a registry pre-populated with the supplied rows. Test-only.</summary>
@@ -27,7 +37,8 @@ public sealed class FolderMetadataRegistry : IFileWatchAware
         var frozen = rows
             .ToDictionary(r => r.FolderUrlPrefix, r => r, StringComparer.OrdinalIgnoreCase)
             .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
-        _byPrefix = new Lazy<FrozenDictionary<string, FolderMetadata>>(() => frozen);
+        _byPrefix = new AsyncLazy<FrozenDictionary<string, FolderMetadata>>(() => Task.FromResult(frozen));
+        _byPrefix.Start();
     }
 
     /// <inheritdoc/>
@@ -38,15 +49,15 @@ public sealed class FolderMetadataRegistry : IFileWatchAware
     /// or <c>null</c> when no sidecar declares anything for that folder.
     /// </summary>
     public FolderMetadata? TryGet(string folderUrlPrefix)
-        => _byPrefix.Value.TryGetValue(folderUrlPrefix, out var md) ? md : null;
+        => _byPrefix.Task.GetAwaiter().GetResult().TryGetValue(folderUrlPrefix, out var md) ? md : null;
 
     /// <summary>All registered folder-metadata rows, ordered by descending prefix length for longest-match scans.</summary>
-    public ImmutableList<FolderMetadata> All => _byPrefix.Value.Values
+    public ImmutableList<FolderMetadata> All => _byPrefix.Task.GetAwaiter().GetResult().Values
         .OrderByDescending(m => m.FolderUrlPrefix.Length)
         .ThenBy(m => m.FolderUrlPrefix, StringComparer.Ordinal)
         .ToImmutableList();
 
-    private static FrozenDictionary<string, FolderMetadata> Load(IReadOnlyList<IContentService> services)
+    private static async Task<FrozenDictionary<string, FolderMetadata>> LoadAsync(IReadOnlyList<IContentService> services)
     {
         var acc = new Dictionary<string, FolderMetadata>(StringComparer.OrdinalIgnoreCase);
         foreach (var service in services)
@@ -56,10 +67,7 @@ public sealed class FolderMetadataRegistry : IFileWatchAware
                 continue;
             }
 
-            // Sync-block on the async API. Each provider's underlying implementation
-            // does plain file I/O behind an AsyncLazy — there's no real async work to
-            // wait on, just initialization. Registry construction is rare (file-watched).
-            var rows = provider.GetFolderMetadataAsync().GetAwaiter().GetResult();
+            var rows = await provider.GetFolderMetadataAsync().ConfigureAwait(false);
             foreach (var row in rows)
             {
                 acc[row.FolderUrlPrefix] = row;

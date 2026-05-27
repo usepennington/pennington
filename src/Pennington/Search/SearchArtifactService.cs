@@ -1,9 +1,8 @@
 namespace Pennington.Search;
 
-using Content;
 using DeweySearch;
 using Infrastructure;
-using Microsoft.Extensions.Logging;
+using Pipeline;
 
 /// <summary>
 /// Builds the sharded search artifacts for every configured locale and exposes them as a
@@ -11,12 +10,13 @@ using Microsoft.Extensions.Logging;
 /// emitter (<see cref="SearchArtifactEmitter"/>) and the dev-time middleware
 /// (<see cref="SearchArtifactMiddleware"/>).
 /// <para>
-/// Iterates indexable TOC entries (markdown and Razor <c>@page</c> content) and fetches
-/// post-pipeline HTML via <see cref="RenderedHtmlFetcher"/>, so the index reflects what
-/// users actually see. The corpus is grouped by locale and handed to the external DeweySearch
-/// <see cref="IndexBuilder"/>; the resulting per-locale artifacts are laid out under
-/// <c>search/{locale}/</c>. Computed lazily and recreated on file changes when managed by
-/// <see cref="FileWatchDependencyFactory{T}"/>.
+/// Folds over <see cref="ISiteProjection"/> — every page's post-pipeline HTML and
+/// heading-split sections have already been produced once by the shared projection, so
+/// this service is a pure mapping from <see cref="RenderedPage"/> + <see cref="HeadingSection"/>
+/// to <see cref="SearchDocument"/>. The corpus is grouped by locale and handed to the
+/// external DeweySearch <see cref="IndexBuilder"/>; the resulting per-locale artifacts are
+/// laid out under <c>search/{locale}/</c>. Computed lazily and recreated on file changes
+/// when managed by <see cref="FileWatchDependencyFactory{T}"/>.
 /// </para>
 /// </summary>
 public sealed class SearchArtifactService : IFileWatchAware
@@ -28,17 +28,13 @@ public sealed class SearchArtifactService : IFileWatchAware
 
     /// <summary>Creates the service; artifacts are computed lazily on first request.</summary>
     public SearchArtifactService(
-        IEnumerable<IContentService> contentServices,
+        ISiteProjection projection,
         SearchIndexBuilder corpusBuilder,
-        HeadingSectionExtractor extractor,
         IndexBuilder indexBuilder,
-        SearchIndexOptions options,
-        RenderedHtmlFetcher fetcher,
-        LocalizationOptions localization,
-        ILogger<SearchArtifactService> logger)
+        LocalizationOptions localization)
     {
         _filesLazy = new AsyncLazy<IReadOnlyDictionary<string, byte[]>>(
-            () => BuildAllAsync(contentServices, corpusBuilder, extractor, indexBuilder, options, fetcher, localization, logger));
+            () => BuildAllAsync(projection, corpusBuilder, indexBuilder, localization));
     }
 
     /// <summary>Returns every artifact keyed by its relative output path (e.g. <c>search/en/index.json</c>).</summary>
@@ -52,14 +48,10 @@ public sealed class SearchArtifactService : IFileWatchAware
     }
 
     private static async Task<IReadOnlyDictionary<string, byte[]>> BuildAllAsync(
-        IEnumerable<IContentService> contentServices,
+        ISiteProjection projection,
         SearchIndexBuilder corpusBuilder,
-        HeadingSectionExtractor extractor,
         IndexBuilder indexBuilder,
-        SearchIndexOptions options,
-        RenderedHtmlFetcher fetcher,
-        LocalizationOptions localization,
-        ILogger logger)
+        LocalizationOptions localization)
     {
         var groups = new Dictionary<string, List<SearchDocument>>(StringComparer.OrdinalIgnoreCase);
 
@@ -73,55 +65,30 @@ public sealed class SearchArtifactService : IFileWatchAware
             groups[code] = [];
         }
 
-        var entries = (await contentServices.CollectIndexableEntriesAsync())
-            .Where(toc => !toc.ExcludeFromSearch)
-            .ToList();
-
-        // Fetch + extract every page in parallel — this is the loop that drove build
-        // parallelism to 1.77×. Each result lands in an index-keyed slot so the corpus
-        // is folded in discovery order (deterministic artifact bytes). The fetch goes
-        // through BuildHtmlCache, so the disk-write pass replays these renders.
-        var perEntry = new (string Locale, List<SearchDocument> Docs)?[entries.Count];
-        await Parallel.ForEachAsync(Enumerable.Range(0, entries.Count), async (i, ct) =>
+        await foreach (var page in projection.GetPagesAsync())
         {
-            var toc = entries[i];
-            var element = await fetcher.FetchContentAsync(toc.Route.CanonicalPath.Value, options.ContentSelector, ct);
-            if (element is null)
-            {
-                logger.LogWarning("SearchArtifactService: failed to fetch {Path}, skipping", toc.Route.CanonicalPath.Value);
-                return;
-            }
-
-            var locale = string.IsNullOrEmpty(toc.Route.Locale)
-                ? localization.DefaultLocale
-                : toc.Route.Locale;
-
-            // One record per heading section (plus a page-lead record) so results are
-            // heading-level and deep-link to anchors. Code blocks are dropped inside the extractor.
-            var docs = new List<SearchDocument>();
-            foreach (var section in extractor.Extract(element, options.ExcludeCodeBlocks))
-            {
-                docs.Add(corpusBuilder.BuildSection(toc, section));
-            }
-
-            perEntry[i] = (locale, docs);
-        });
-
-        // Fold per-page results into locale buckets sequentially — the dictionary mutation
-        // is not thread-safe, so it stays out of the parallel section.
-        foreach (var entry in perEntry)
-        {
-            if (entry is not { } result)
+            // Endpoint entries and llms-only pages have no HTML body to index. The projection
+            // already produced empty content for them; skip rather than emitting blank records.
+            if (page.Toc.ExcludeFromSearch || page.Content is null)
             {
                 continue;
             }
 
-            if (!groups.TryGetValue(result.Locale, out var list))
+            var locale = string.IsNullOrEmpty(page.Route.Locale)
+                ? localization.DefaultLocale
+                : page.Route.Locale;
+
+            if (!groups.TryGetValue(locale, out var list))
             {
-                groups[result.Locale] = list = [];
+                groups[locale] = list = [];
             }
 
-            list.AddRange(result.Docs);
+            // One record per heading section (plus a page-lead record) so results are
+            // heading-level and deep-link to anchors.
+            foreach (var section in page.Sections.Value)
+            {
+                list.Add(corpusBuilder.BuildSection(page.Toc, section));
+            }
         }
 
         // Hand each locale's corpus to DeweySearch and lay its artifacts out under search/{locale}/.

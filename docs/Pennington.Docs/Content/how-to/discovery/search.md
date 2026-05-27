@@ -56,16 +56,16 @@ Under `AddDocSite` this property is reachable via the `ConfigurePennington` esca
 
 ### Override the content selector on DocSite
 
-The selector scopes which HTML element's text becomes the search body. `DocSiteOptions.SearchIndexContentSelector` defaults to `#main-content` to match the stock `MainLayout.razor`; set it after replacing the layout or to widen the indexed region to a different element. See <xref:explanation.positioning.docsite-positioning> for the cases that require dropping to bare `AddPennington`.
+The selector scopes which HTML element's text becomes the search body — and the same element drives llms.txt sidecars and the build-time link audit, so chrome is stripped once. `DocSiteOptions.ContentSelector` defaults to `#main-content` to match the stock `MainLayout.razor`; set it after replacing the layout or to widen the indexed region. See <xref:explanation.positioning.docsite-positioning> for the cases that require dropping to bare `AddPennington`.
 
 ```csharp:symbol
-src/Pennington.DocSite/DocSiteOptions.cs > DocSiteOptions.SearchIndexContentSelector
+src/Pennington.DocSite/DocSiteOptions.cs > DocSiteOptions.ContentSelector
 ```
 
 ```csharp
 services.AddDocSite(opts =>
 {
-    opts.SearchIndexContentSelector = "article.prose";
+    opts.ContentSelector = "article.prose";
 });
 ```
 
