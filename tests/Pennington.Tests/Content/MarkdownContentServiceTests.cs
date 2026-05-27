@@ -1342,7 +1342,7 @@ public class MarkdownContentServiceTests
         fs.File.WriteAllText(pageAbsolute, "::: not yaml :::");
         var response = service.OnFileChanged(new FileChangeNotification(logoAbsolute, WatcherChangeTypes.Changed));
 
-        response.ShouldBe(FileWatchResponse.Refreshed);
+        response.ShouldBe(FileWatchResponse.Ignore);
 
         var after = await service.GetContentTocEntriesAsync();
         after.Count.ShouldBe(1);
@@ -1433,9 +1433,9 @@ public class MarkdownContentServiceTests
 
         var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Changed));
 
-        var routes = impact.Value.ShouldBeOfType<ContentChangeImpactCases.Routes>();
-        routes.Affected.Length.ShouldBe(1);
-        routes.Affected[0].CanonicalPath.Value.ShouldBe("/docs/getting-started/");
+        var routes = impact.AffectedRoutes.ShouldNotBeNull();
+        routes.Length.ShouldBe(1);
+        routes[0].CanonicalPath.Value.ShouldBe("/docs/getting-started/");
     }
 
     [Fact]
@@ -1447,9 +1447,9 @@ public class MarkdownContentServiceTests
 
         var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Created));
 
-        var routes = impact.Value.ShouldBeOfType<ContentChangeImpactCases.Routes>();
-        routes.Affected.Length.ShouldBe(1);
-        routes.Affected[0].CanonicalPath.Value.ShouldBe("/docs/new-page/");
+        var routes = impact.AffectedRoutes.ShouldNotBeNull();
+        routes.Length.ShouldBe(1);
+        routes[0].CanonicalPath.Value.ShouldBe("/docs/new-page/");
     }
 
     [Fact]
@@ -1461,8 +1461,8 @@ public class MarkdownContentServiceTests
 
         var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Deleted));
 
-        var routes = impact.Value.ShouldBeOfType<ContentChangeImpactCases.Routes>();
-        routes.Affected[0].CanonicalPath.Value.ShouldBe("/docs/gone/");
+        var routes = impact.AffectedRoutes.ShouldNotBeNull();
+        routes[0].CanonicalPath.Value.ShouldBe("/docs/gone/");
     }
 
     [Fact]
@@ -1474,7 +1474,7 @@ public class MarkdownContentServiceTests
 
         var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Renamed));
 
-        impact.Value.ShouldBeOfType<ContentChangeImpactCases.Wildcard>();
+        impact.AffectedRoutes.ShouldBeNull();
     }
 
     [Fact]
@@ -1486,7 +1486,7 @@ public class MarkdownContentServiceTests
 
         var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Changed));
 
-        impact.Value.ShouldBeOfType<ContentChangeImpactCases.Wildcard>();
+        impact.AffectedRoutes.ShouldBeNull();
     }
 
     [Fact]
@@ -1498,7 +1498,7 @@ public class MarkdownContentServiceTests
         // Path that isn't under the watch scope at all.
         var impact = service.GetAffectedRoutes(new FileChangeNotification("/elsewhere/some.md", WatcherChangeTypes.Changed));
 
-        impact.Value.ShouldBeOfType<ContentChangeImpactCases.None>();
+        impact.AffectedRoutes.ShouldNotBeNull().IsEmpty.ShouldBeTrue();
     }
 
     [Fact]
@@ -1510,7 +1510,7 @@ public class MarkdownContentServiceTests
 
         var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Changed));
 
-        impact.Value.ShouldBeOfType<ContentChangeImpactCases.None>();
+        impact.AffectedRoutes.ShouldNotBeNull().IsEmpty.ShouldBeTrue();
     }
 
     [Fact]
@@ -1522,11 +1522,11 @@ public class MarkdownContentServiceTests
 
         var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Changed));
 
-        var routes = impact.Value.ShouldBeOfType<ContentChangeImpactCases.Routes>();
+        var routes = impact.AffectedRoutes.ShouldNotBeNull();
         // Own route + fr fallback route (multi-locale config has en + fr).
-        routes.Affected.Length.ShouldBeGreaterThanOrEqualTo(2);
-        routes.Affected.ShouldContain(r => r.CanonicalPath.Value == "/about/");
-        routes.Affected.ShouldContain(r => r.CanonicalPath.Value == "/fr/about/");
+        routes.Length.ShouldBeGreaterThanOrEqualTo(2);
+        routes.ShouldContain(r => r.CanonicalPath.Value == "/about/");
+        routes.ShouldContain(r => r.CanonicalPath.Value == "/fr/about/");
     }
 
     [Fact]
@@ -1538,7 +1538,7 @@ public class MarkdownContentServiceTests
 
         var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Changed));
 
-        var routes = impact.Value.ShouldBeOfType<ContentChangeImpactCases.Routes>();
-        routes.Affected.ShouldContain(r => r.CanonicalPath.Value == "/fr/about/");
+        var routes = impact.AffectedRoutes.ShouldNotBeNull();
+        routes.ShouldContain(r => r.CanonicalPath.Value == "/fr/about/");
     }
 }

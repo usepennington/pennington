@@ -44,19 +44,6 @@ public sealed class AsyncLazy<T>
         }
     }
 
-    /// <summary>Back-compat alias for <see cref="Task"/>. Prefer <c>await</c>-ing the lazy or reading <see cref="Task"/>.</summary>
-    public Task<T> Value => Task;
-
     /// <summary>Lets the lazy be <c>await</c>ed directly: <c>var value = await asyncLazy;</c>.</summary>
     public TaskAwaiter<T> GetAwaiter() => Task.GetAwaiter();
-
-    /// <summary>Configured awaitable on the underlying task, matching the <see cref="System.Threading.Tasks.Task"/> shape.</summary>
-    public ConfiguredTaskAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
-        => Task.ConfigureAwait(continueOnCapturedContext);
-
-    /// <summary>Kicks off the factory on the thread pool without awaiting the result. Safe to call repeatedly.</summary>
-    public void Start()
-    {
-        _ = Task;
-    }
 }

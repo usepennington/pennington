@@ -45,7 +45,7 @@ public sealed class BlogContentResolver : IFileWatchAware
     /// <summary>
     /// Get all blog posts ordered by date descending.
     /// </summary>
-    public Task<List<BlogPostPage>> GetAllPostsAsync() => _postsLazy.Value;
+    public Task<List<BlogPostPage>> GetAllPostsAsync() => _postsLazy.Task;
 
     private async Task<List<BlogPostPage>> LoadAllPostsAsync()
     {

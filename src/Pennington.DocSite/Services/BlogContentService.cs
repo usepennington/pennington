@@ -51,7 +51,7 @@ public sealed class BlogContentService : IContentService, ILlmsSubtreeProvider, 
     /// <inheritdoc />
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
-        var posts = await _posts.Value;
+        var posts = await _posts;
 
         yield return RazorRoute("/blog", "blog/index.html", typeof(Components.Pages.Blog));
         yield return RazorRoute("/blog/tags", "blog/tags/index.html", typeof(Components.Pages.BlogTags));
@@ -98,7 +98,7 @@ public sealed class BlogContentService : IContentService, ILlmsSubtreeProvider, 
     /// </summary>
     public async Task<ImmutableList<LlmsSubtree>> GetLlmsSubtreesAsync()
     {
-        var posts = await _posts.Value;
+        var posts = await _posts;
         if (posts.Count == 0)
         {
             return ImmutableList<LlmsSubtree>.Empty;
@@ -113,7 +113,7 @@ public sealed class BlogContentService : IContentService, ILlmsSubtreeProvider, 
     /// <summary>Builds the RSS 2.0 XML document returned by the <c>/rss.xml</c> endpoint.</summary>
     public async Task<string> GetRssXmlAsync()
     {
-        var posts = await _posts.Value;
+        var posts = await _posts;
         var ordered = posts
             .Where(p => p.FrontMatter.Date.HasValue)
             .OrderByDescending(p => p.FrontMatter.Date!.Value)

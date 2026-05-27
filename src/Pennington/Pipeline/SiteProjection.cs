@@ -26,7 +26,7 @@ using Search;
 /// <see cref="FileWatchResponse.Refreshed"/> — file-watch invalidation marks just the
 /// affected routes stale (via <see cref="IContentService.GetAffectedRoutes"/>) so the
 /// next access re-fetches only those, reusing the cached HTML for everything else. A
-/// <see cref="ContentChangeImpactCases.Wildcard"/> report (rename, folder-metadata edit)
+/// <see cref="ContentChangeImpact.Wildcard"/> report (rename, folder-metadata edit)
 /// falls back to a full rebuild.
 /// </para>
 /// </summary>
@@ -88,20 +88,16 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
 
         foreach (var service in _contentServices)
         {
-            var impact = service.GetAffectedRoutes(change);
-            switch (impact.Value)
+            var routes = service.GetAffectedRoutes(change).AffectedRoutes;
+            if (routes is null)
             {
-                case ContentChangeImpactCases.Wildcard:
-                    wildcard = true;
-                    break;
-                case ContentChangeImpactCases.Routes routes:
-                    foreach (var route in routes.Affected)
-                    {
-                        (affected ??= []).Add(Normalize(route.CanonicalPath.Value));
-                    }
-                    break;
+                wildcard = true;
+                break;
             }
-            if (wildcard) break;
+            foreach (var route in routes.Value)
+            {
+                (affected ??= []).Add(Normalize(route.CanonicalPath.Value));
+            }
         }
 
         if (!wildcard && (affected is null || affected.Count == 0))
@@ -130,7 +126,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
     /// <inheritdoc/>
     public async IAsyncEnumerable<RenderedPage> GetPagesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await _seededLazy.Value;
+        await _seededLazy;
         await RefreshIfStaleAsync(cancellationToken);
 
         ImmutableArray<RenderedPage> snapshot;
@@ -148,7 +144,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
     /// <inheritdoc/>
     public async Task<RenderedPage?> GetPageAsync(UrlPath canonicalPath, CancellationToken cancellationToken = default)
     {
-        await _seededLazy.Value;
+        await _seededLazy;
         await RefreshIfStaleAsync(cancellationToken);
 
         var key = Normalize(canonicalPath.Value);
@@ -358,7 +354,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                     Origin: new MarkdownOrigin(llmsParsed),
                     Html: html,
                     Content: element,
-                    Sections: BuildSectionsLazy(_extractor, element, _options.ExcludeCodeBlocks));
+                    Sections: BuildSectionsLazy(_extractor, element));
             }
 
             var fetched = await _fetcher.FetchContentAsync(toc.Route.CanonicalPath.Value, _options.ContentSelector, ct);
@@ -367,9 +363,11 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 return null;
             }
 
-            var origin = parsedByPath.TryGetValue(key, out var parsed)
-                ? (PageOrigin)new MarkdownOrigin(parsed)
-                : new RazorOrigin();
+            PageOrigin? origin = null;
+            if (parsedByPath.TryGetValue(key, out var parsed))
+            {
+                origin = new MarkdownOrigin(parsed);
+            }
 
             return new RenderedPage(
                 Route: toc.Route,
@@ -377,7 +375,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 Origin: origin,
                 Html: fetched.OuterHtml,
                 Content: fetched,
-                Sections: BuildSectionsLazy(_extractor, fetched, _options.ExcludeCodeBlocks));
+                Sections: BuildSectionsLazy(_extractor, fetched));
         }
         catch (Exception ex)
         {
@@ -387,8 +385,8 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
     }
 
     private static Lazy<IReadOnlyList<HeadingSection>> BuildSectionsLazy(
-        HeadingSectionExtractor extractor, IElement element, bool excludeCodeBlocks)
-        => new(() => extractor.Extract(element, excludeCodeBlocks));
+        HeadingSectionExtractor extractor, IElement element)
+        => new(() => extractor.Extract(element, excludeCodeBlocks: true));
 
     private static async Task<(string Html, IElement Element)?> RenderInProcessAsync(
         IContentRenderer renderer, XrefResolvingService xrefResolver, ParsedItem parsed)

@@ -129,18 +129,7 @@ public sealed class AuditRunner : IHostedService
 
             if (renderedAuditors.Count > 0)
             {
-                Pipeline.ISiteProjection? projection = null;
-                try
-                {
-                    projection = scope.ServiceProvider.GetService<Pipeline.ISiteProjection>();
-                }
-                catch (Exception ex)
-                {
-                    // In dev mode, the listener may not have bound yet when this hosted
-                    // service's first run lands. Skip rendered auditors this pass; the
-                    // next file-change tick will retry once the projection can materialize.
-                    _logger.LogDebug(ex, "Rendered auditors skipped — site projection not ready.");
-                }
+                var projection = scope.ServiceProvider.GetService<Pipeline.ISiteProjection>();
 
                 if (projection is null)
                 {

@@ -56,7 +56,7 @@ public class SiteProjectionTests
 
         // Endpoint entries route to the user-defined URL — no fetch happens, so the
         // origin carries the DirectUrl the projection's downstream consumers point at.
-        only.Origin.Value.ShouldBeOfType<EndpointOrigin>().DirectUrl.ShouldBe("/_llms/agent-context.md");
+        only.Origin.ShouldNotBeNull().Value.ShouldBeOfType<EndpointOrigin>().DirectUrl.ShouldBe("/_llms/agent-context.md");
 
         // Lazy sections for endpoint entries materialize to an empty list rather than
         // throwing on null content.

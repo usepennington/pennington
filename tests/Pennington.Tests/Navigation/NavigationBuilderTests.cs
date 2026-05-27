@@ -21,7 +21,7 @@ public class NavigationBuilderTests
         Locale: null
     );
 
-    private readonly NavigationBuilder _builder = new();
+    private readonly NavigationBuilder _builder = new(new FolderMetadataRegistry(Array.Empty<FolderMetadata>()));
 
     [Fact]
     public async Task BuildTree_AreaIndexWithEmptyHierarchy_AppearsFirstAsOverview()

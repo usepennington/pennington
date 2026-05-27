@@ -72,7 +72,7 @@ public sealed class RedirectContentService : IContentService
     /// First call is eager — it enumerates every registered content service's
     /// <c>DiscoverAsync()</c> to pick up <see cref="RedirectSource"/> items.
     /// </summary>
-    public Task<ImmutableDictionary<string, string>> GetRedirectMappingsAsync() => _mappingsLazy.Value;
+    public Task<ImmutableDictionary<string, string>> GetRedirectMappingsAsync() => _mappingsLazy.Task;
 
     /// <summary>
     /// Yields one <see cref="DiscoveredItem"/> per <c>_redirects.yml</c> entry so the

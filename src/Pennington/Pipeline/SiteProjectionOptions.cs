@@ -14,12 +14,4 @@ public sealed class SiteProjectionOptions
     /// leak into the search index or llms.txt sidecars.
     /// </summary>
     public string? ContentSelector { get; set; }
-
-    /// <summary>
-    /// When true (default), <c>&lt;pre&gt;</c> blocks are dropped from the
-    /// indexed body. Keeps per-locale search shards small and reduces noisy
-    /// matches on syntax-highlighted code that emits hundreds of tokens per
-    /// snippet. Inline <c>&lt;code&gt;</c> spans are always kept.
-    /// </summary>
-    public bool ExcludeCodeBlocks { get; set; } = true;
 }

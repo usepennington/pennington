@@ -33,12 +33,7 @@ public sealed class NavigationBuilder : IFileWatchAware
     // FileWatchDependencyFactory drops this instance on a file-change signal.
     private readonly ConcurrentDictionary<CacheKey, ImmutableList<NavigationTreeItem>> _structuralCache = new();
 
-    private readonly FolderMetadataRegistry? _folderMetadata;
-
-    /// <summary>Creates a navigation builder with no folder-metadata overrides.</summary>
-    public NavigationBuilder()
-    {
-    }
+    private readonly FolderMetadataRegistry _folderMetadata;
 
     /// <summary>
     /// Creates a navigation builder that consults <paramref name="folderMetadata"/> for
@@ -61,7 +56,7 @@ public sealed class NavigationBuilder : IFileWatchAware
         ContentRoute? currentRoute = null,
         string? locale = null)
     {
-        var snapshot = _folderMetadata is null ? null : await _folderMetadata.GetSnapshotAsync().ConfigureAwait(false);
+        var snapshot = await _folderMetadata.GetSnapshotAsync().ConfigureAwait(false);
         var structural = GetOrBuildStructural(items, locale, snapshot);
         return currentRoute is null
             ? structural

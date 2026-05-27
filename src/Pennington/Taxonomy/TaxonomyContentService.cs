@@ -84,12 +84,12 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
     /// Returns the cached term list, computing it on first access. Used both by the discovery
     /// pipeline and by the live HTTP endpoints.
     /// </summary>
-    public Task<ImmutableList<TaxonomyTerm<TFrontMatter, TKey>>> GetTermsAsync() => _termsLazy.Value;
+    public Task<ImmutableList<TaxonomyTerm<TFrontMatter, TKey>>> GetTermsAsync() => _termsLazy.Task;
 
     /// <summary>Looks up a single term by its slug. Returns <c>null</c> when not found.</summary>
     public async Task<TaxonomyTerm<TFrontMatter, TKey>?> TryGetTermAsync(string slug)
     {
-        var terms = await _termsLazy.Value;
+        var terms = await _termsLazy;
         return terms.FirstOrDefault(t => t.Slug == slug);
     }
 
@@ -100,7 +100,7 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
             ContentRouteFactory.FromUrl(new UrlPath(_options.IndexUrl)),
             new EndpointSource());
 
-        var terms = await _termsLazy.Value;
+        var terms = await _termsLazy;
         foreach (var term in terms)
         {
             yield return new DiscoveredItem(
@@ -120,7 +120,7 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
     /// <inheritdoc/>
     public async Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {
-        var terms = await _termsLazy.Value;
+        var terms = await _termsLazy;
         var builder = ImmutableList.CreateBuilder<ContentTocItem>();
         var section = _options.ResolvedSectionLabel;
 
@@ -156,7 +156,7 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
             return ImmutableList<CrossReference>.Empty;
         }
 
-        var terms = await _termsLazy.Value;
+        var terms = await _termsLazy;
         var prefix = _options.BaseUrl.Trim('/');
         var builder = ImmutableList.CreateBuilder<CrossReference>();
         foreach (var term in terms)
@@ -181,7 +181,7 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
     {
         // Resolve siblings on demand. Two filters apply:
         //  1. Exclude self — recursing into our own DiscoverAsync would re-enter
-        //     this exact LoadTermsAsync via _termsLazy.Value and deadlock.
+        //     this exact LoadTermsAsync via _termsLazy and deadlock.
         //  2. Exclude every other ITaxonomyContentService — other taxonomies on the
         //     same content set yield EndpointSource items (not MarkdownFileSource),
         //     so they contribute nothing to projection. More importantly, iterating

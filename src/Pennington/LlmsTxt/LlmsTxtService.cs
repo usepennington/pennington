@@ -57,16 +57,16 @@ public sealed class LlmsTxtService : IFileWatchAware
     }
 
     /// <summary>Returns the generated llms.txt index content.</summary>
-    public async Task<string> GetLlmsTxtAsync() => (await _dataLazy.Value).IndexContent;
+    public async Task<string> GetLlmsTxtAsync() => (await _dataLazy).IndexContent;
 
     /// <summary>Returns the per-page stripped markdown files emitted alongside llms.txt.</summary>
-    public async Task<ImmutableList<MarkdownFile>> GetMarkdownFilesAsync() => (await _dataLazy.Value).MarkdownFiles;
+    public async Task<ImmutableList<MarkdownFile>> GetMarkdownFilesAsync() => (await _dataLazy).MarkdownFiles;
 
     /// <summary>Returns per-subtree <c>{prefix}llms.txt</c> index files split out of the front door.</summary>
-    public async Task<ImmutableList<MarkdownFile>> GetSubtreeFilesAsync() => (await _dataLazy.Value).SubtreeFiles;
+    public async Task<ImmutableList<MarkdownFile>> GetSubtreeFilesAsync() => (await _dataLazy).SubtreeFiles;
 
     /// <summary>Returns the optional concatenated llms-full.txt content, or null when disabled.</summary>
-    public async Task<string?> GetLlmsFullTxtAsync() => (await _dataLazy.Value).FullContent;
+    public async Task<string?> GetLlmsFullTxtAsync() => (await _dataLazy).FullContent;
 
     private static async Task<LlmsTxtData> BuildAsync(
         ISiteProjection projection,
@@ -311,7 +311,7 @@ public sealed class LlmsTxtService : IFileWatchAware
             // Endpoint entries: the user-defined response URL is the link target.
             // No sidecar is manufactured — clients pull markdown directly from the URL
             // the user registered via WithLlmsTxtEntry.
-            if (page.Origin.Value is EndpointOrigin endpoint)
+            if (page.Origin?.Value is EndpointOrigin endpoint)
             {
                 ctx.Nodes.Add(new LeafNode(
                     Title: item.Title,
@@ -329,7 +329,7 @@ public sealed class LlmsTxtService : IFileWatchAware
 
             // Markdown pages whose front matter opts out (`llms: false`) shouldn't
             // produce a sidecar even though they remain in the navigation tree.
-            var frontMatter = page.Origin.Value is MarkdownOrigin md ? md.Parsed.Metadata : null;
+            var frontMatter = page.Origin?.Value is MarkdownOrigin md ? md.Parsed.Metadata : null;
             if (frontMatter is not null && !frontMatter.Llms)
             {
                 continue;
@@ -349,7 +349,7 @@ public sealed class LlmsTxtService : IFileWatchAware
             var mdPath = $"{ctx.Options.OutputDirectory}/{sidecarKey}.md";
             var linkUrl = BuildStrippedMarkdownUrl(ctx.CanonicalBase, ctx.Options.OutputDirectory, sidecarKey);
             var description = frontMatter?.Description ?? page.Toc.Description;
-            var derived = page.Origin.Value is MarkdownOrigin md2 ? md2.Parsed.Derived : null;
+            var derived = page.Origin?.Value is MarkdownOrigin md2 ? md2.Parsed.Derived : null;
             var sidecarHeader = BuildSidecarHeader(item, frontMatter, description, ctx.CanonicalBase, linkUrl, rendition, derived);
             var sidecarContent = sidecarHeader + body;
 

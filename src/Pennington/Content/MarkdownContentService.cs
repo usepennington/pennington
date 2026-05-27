@@ -87,7 +87,7 @@ public sealed class MarkdownContentService<TFrontMatter>
     {
         if (!_watchScope.Matches(change))
         {
-            return new ContentChangeImpactCases.None();
+            return ContentChangeImpact.None;
         }
 
         var fileName = _fileSystem.Path.GetFileName(change.FullPath) ?? "";
@@ -96,19 +96,19 @@ public sealed class MarkdownContentService<TFrontMatter>
         // rather than walking _entries (which mutates concurrently with this call).
         if (string.Equals(fileName, FolderMetadataSidecarFileName, StringComparison.OrdinalIgnoreCase))
         {
-            return new ContentChangeImpactCases.Wildcard();
+            return ContentChangeImpact.Wildcard;
         }
 
         if (!fileName.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
         {
             // Assets (images, css) — neither cache holds these.
-            return new ContentChangeImpactCases.None();
+            return ContentChangeImpact.None;
         }
 
         // Renames only carry the new path; we can't know the old route, so over-invalidate.
         if (change.ChangeType == WatcherChangeTypes.Renamed)
         {
-            return new ContentChangeImpactCases.Wildcard();
+            return ContentChangeImpact.Wildcard;
         }
 
         return ComputeMarkdownRouteImpact(_fileSystem.Path.GetFullPath(change.FullPath));
@@ -146,7 +146,7 @@ public sealed class MarkdownContentService<TFrontMatter>
             }
         }
 
-        return new ContentChangeImpactCases.Routes(builder.ToImmutable());
+        return ContentChangeImpact.Routes(builder.ToImmutable());
     }
 
     /// <summary>
@@ -175,8 +175,7 @@ public sealed class MarkdownContentService<TFrontMatter>
         }
 
         // Asset under the content tree (image, css, etc.) — neither cache holds these.
-        // The previous wholesale-reset would have evicted both caches anyway.
-        return FileWatchResponse.Refreshed;
+        return FileWatchResponse.Ignore;
     }
 
     private FileWatchResponse ApplyMarkdownChange(FileChangeNotification change)
@@ -197,7 +196,7 @@ public sealed class MarkdownContentService<TFrontMatter>
 
         // Pre-seed mutations: the initial scan hasn't run yet, so it will see current
         // disk state when it does. Nothing to do.
-        if (!_seededLazy.Value.IsCompletedSuccessfully)
+        if (!_seededLazy.Task.IsCompletedSuccessfully)
         {
             return FileWatchResponse.Refreshed;
         }
@@ -264,7 +263,7 @@ public sealed class MarkdownContentService<TFrontMatter>
             return FileWatchResponse.Refreshed;
         }
 
-        if (!_folderSeededLazy.Value.IsCompletedSuccessfully)
+        if (!_folderSeededLazy.Task.IsCompletedSuccessfully)
         {
             return FileWatchResponse.Refreshed;
         }
@@ -966,7 +965,7 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <summary>Awaits seeding, takes the cache lock briefly, and flattens <see cref="_entries"/> into the legacy (Route, FrontMatter, IsLlmsOnly) tuple list.</summary>
     private async Task<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>> SnapshotMetadataAsync()
     {
-        await _seededLazy.Value;
+        await _seededLazy;
         lock (_cacheLock)
         {
             var builder = ImmutableList.CreateBuilder<(ContentRoute, TFrontMatter, bool)>();
@@ -984,7 +983,7 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <summary>Awaits seeding, takes the cache lock briefly, and snapshots the folder-metadata dictionary.</summary>
     private async Task<ImmutableList<FolderMetadata>> SnapshotFolderMetadataAsync()
     {
-        await _folderSeededLazy.Value;
+        await _folderSeededLazy;
         lock (_cacheLock)
         {
             return _folderMetadataByFile.Values.ToImmutableList();

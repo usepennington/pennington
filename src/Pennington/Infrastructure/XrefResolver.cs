@@ -32,7 +32,7 @@ public sealed class XrefResolver : IFileWatchAware
             return null;
         }
 
-        var lookup = await _lookupLazy.Value;
+        var lookup = await _lookupLazy;
         return lookup.GetValueOrDefault(uid);
     }
 

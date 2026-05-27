@@ -18,7 +18,7 @@ using Content;
 /// with no scopes of its own, it is notified of every change another watcher already observes.
 /// On notification, it consults <see cref="IContentService.GetAffectedRoutes"/> on every
 /// registered content service and evicts only the affected keys — wholesale only on a
-/// <see cref="ContentChangeImpactCases.Wildcard"/> report.
+/// <see cref="ContentChangeImpact.Wildcard"/> report.
 /// </para>
 /// </summary>
 public sealed class BuildHtmlCache : IFileWatchAware
@@ -60,20 +60,16 @@ public sealed class BuildHtmlCache : IFileWatchAware
 
         foreach (var service in _contentServices)
         {
-            var impact = service.GetAffectedRoutes(change);
-            switch (impact.Value)
+            var routes = service.GetAffectedRoutes(change).AffectedRoutes;
+            if (routes is null)
             {
-                case ContentChangeImpactCases.Wildcard:
-                    wildcard = true;
-                    break;
-                case ContentChangeImpactCases.Routes routes:
-                    foreach (var route in routes.Affected)
-                    {
-                        (affectedPaths ??= []).Add(route.CanonicalPath.Value);
-                    }
-                    break;
+                wildcard = true;
+                break;
             }
-            if (wildcard) break;
+            foreach (var route in routes.Value)
+            {
+                (affectedPaths ??= []).Add(route.CanonicalPath.Value);
+            }
         }
 
         if (wildcard)

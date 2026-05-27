@@ -57,7 +57,7 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
             return null;
         }
 
-        var index = await _indexLazy.Value;
+        var index = await _indexLazy;
         return ResolveInternal(index, sourceFile, href);
     }
 

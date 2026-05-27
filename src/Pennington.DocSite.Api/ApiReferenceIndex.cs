@@ -50,7 +50,7 @@ public sealed class ApiReferenceIndex
     }
 
     /// <summary>Gets the slug → entry map, building it on first access.</summary>
-    public Task<ImmutableDictionary<string, ApiReferenceEntry>> GetEntriesAsync() => _entries.Value;
+    public Task<ImmutableDictionary<string, ApiReferenceEntry>> GetEntriesAsync() => _entries.Task;
 
     private async Task<ImmutableDictionary<string, ApiReferenceEntry>> BuildAsync()
     {

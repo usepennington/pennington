@@ -41,7 +41,7 @@ internal sealed class FrontMatterKeyIndex
         _entries = new AsyncLazy<ImmutableArray<FrontMatterKeyEntry>>(() => Task.FromResult(Build()));
     }
 
-    public Task<ImmutableArray<FrontMatterKeyEntry>> GetEntriesAsync() => _entries.Value;
+    public Task<ImmutableArray<FrontMatterKeyEntry>> GetEntriesAsync() => _entries.Task;
 
     private static ImmutableArray<FrontMatterKeyEntry> Build()
     {

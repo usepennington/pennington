@@ -38,12 +38,12 @@ public sealed class SearchArtifactService : IFileWatchAware
     }
 
     /// <summary>Returns every artifact keyed by its relative output path (e.g. <c>search/en/index.json</c>).</summary>
-    public async Task<IReadOnlyDictionary<string, byte[]>> GetArtifactFilesAsync() => await _filesLazy.Value;
+    public async Task<IReadOnlyDictionary<string, byte[]>> GetArtifactFilesAsync() => await _filesLazy;
 
     /// <summary>Returns the bytes for a single artifact path, or null when no artifact matches.</summary>
     public async Task<byte[]?> GetArtifactAsync(string relativePath)
     {
-        var files = await _filesLazy.Value;
+        var files = await _filesLazy;
         return files.TryGetValue(relativePath, out var bytes) ? bytes : null;
     }
 

@@ -23,7 +23,7 @@ public class BuildHtmlCacheTests
     private sealed class StubContentService(string watchedPath, ContentChangeImpact impact) : IContentService
     {
         public ContentChangeImpact GetAffectedRoutes(FileChangeNotification change) =>
-            string.Equals(change.FullPath, watchedPath, StringComparison.OrdinalIgnoreCase) ? impact : new ContentChangeImpactCases.None();
+            string.Equals(change.FullPath, watchedPath, StringComparison.OrdinalIgnoreCase) ? impact : ContentChangeImpact.None;
         public IAsyncEnumerable<DiscoveredItem> DiscoverAsync() => AsyncEnumerable.Empty<DiscoveredItem>();
         public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync() => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
         public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync() => Task.FromResult(ImmutableList<ContentTocItem>.Empty);
@@ -63,7 +63,7 @@ public class BuildHtmlCacheTests
     {
         var service = new StubContentService(
             "/content/a.md",
-            new ContentChangeImpactCases.Routes([Route("/a/")]));
+            ContentChangeImpact.Routes([Route("/a/")]));
         var cache = new BuildHtmlCache([service]);
         var aCalls = 0;
         var bCalls = 0;
@@ -88,7 +88,7 @@ public class BuildHtmlCacheTests
     {
         var service = new StubContentService(
             "/content/_meta.yml",
-            new ContentChangeImpactCases.Wildcard());
+            ContentChangeImpact.Wildcard);
         var cache = new BuildHtmlCache([service]);
         var calls = 0;
 
@@ -108,7 +108,7 @@ public class BuildHtmlCacheTests
     {
         var service = new StubContentService(
             "/content/a.md",
-            new ContentChangeImpactCases.Routes([Route("/a/")]));
+            ContentChangeImpact.Routes([Route("/a/")]));
         var cache = new BuildHtmlCache([service]);
         var calls = 0;
 

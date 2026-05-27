@@ -15,10 +15,10 @@ public interface IContentService : IContentEmitter
     /// that file, without mutating any cached state. Consulted by file-watched caches
     /// (<see cref="Pennington.Pipeline.SiteProjection"/>,
     /// <see cref="Pennington.Infrastructure.BuildHtmlCache"/>) to invalidate only the
-    /// affected entries instead of clearing wholesale. Default: <see cref="ContentChangeImpactCases.None"/>.
+    /// affected entries instead of clearing wholesale. Default: <see cref="ContentChangeImpact.None"/>.
     /// </summary>
     ContentChangeImpact GetAffectedRoutes(FileChangeNotification change)
-        => new ContentChangeImpactCases.None();
+        => ContentChangeImpact.None;
 
     /// <summary>
     /// Discover all content items this service is responsible for.

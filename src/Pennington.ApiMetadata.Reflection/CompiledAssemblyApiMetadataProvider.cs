@@ -36,12 +36,12 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
     }
 
     /// <inheritdoc />
-    public async Task<ImmutableArray<ApiTypeSummary>> GetTypesAsync() => (await _catalog.Value).Types;
+    public async Task<ImmutableArray<ApiTypeSummary>> GetTypesAsync() => (await _catalog).Types;
 
     /// <inheritdoc />
     public async Task<ApiTypeDetail?> GetTypeAsync(string uid)
     {
-        var cat = await _catalog.Value;
+        var cat = await _catalog;
         return cat.TypeDetails.TryGetValue(uid, out var d) ? d : null;
     }
 
@@ -49,7 +49,7 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
     public async Task<ImmutableArray<ApiMember>> GetMembersAsync(
         string typeUid, MemberKind kind, AccessFilter access, MemberOrder order)
     {
-        var cat = await _catalog.Value;
+        var cat = await _catalog;
         if (!cat.MembersByType.TryGetValue(typeUid, out var all))
         {
             return [];
@@ -68,21 +68,21 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
     /// <inheritdoc />
     public async Task<ImmutableArray<ExtensionMethodEntry>> GetExtensionMethodsForAsync(string receiverTypeName)
     {
-        var cat = await _catalog.Value;
+        var cat = await _catalog;
         return cat.Extensions.TryGetValue(receiverTypeName, out var entries) ? entries : [];
     }
 
     /// <inheritdoc />
     public async Task<ParsedXmlDoc> GetXmldocAsync(string uid)
     {
-        var cat = await _catalog.Value;
+        var cat = await _catalog;
         return cat.Xmldocs.TryGetValue(uid, out var d) ? d : ParsedXmlDoc.Empty;
     }
 
     /// <inheritdoc />
     public async Task<ApiMember?> GetMemberAsync(string uid)
     {
-        var cat = await _catalog.Value;
+        var cat = await _catalog;
         return cat.MembersByUid.TryGetValue(uid, out var m) ? m : null;
     }
 

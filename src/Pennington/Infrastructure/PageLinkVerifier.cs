@@ -30,7 +30,7 @@ public sealed class PageLinkVerifier : IFileWatchAware
     }
 
     /// <summary>Returns the current verifier; rebuilds on first access after a file change.</summary>
-    public Task<LinkVerificationService> GetVerifierAsync() => _verifierLazy.Value;
+    public Task<LinkVerificationService> GetVerifierAsync() => _verifierLazy.Task;
 
     private static async Task<LinkVerificationService> BuildAsync(
         IEnumerable<IContentService> contentServices,

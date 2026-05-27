@@ -67,7 +67,7 @@ public sealed class SitemapService : IFileWatchAware
     /// <summary>
     /// Returns the serialized sitemap XML, generating it on first access and caching the result.
     /// </summary>
-    public Task<string> GetSitemapXmlAsync() => _sitemapLazy.Value;
+    public Task<string> GetSitemapXmlAsync() => _sitemapLazy.Task;
 
     private static async Task<string> BuildSitemapAsync(
         IEnumerable<IContentService> contentServices,

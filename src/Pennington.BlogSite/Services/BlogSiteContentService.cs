@@ -53,7 +53,7 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
     /// <inheritdoc />
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
-        var posts = await _posts.Value;
+        var posts = await _posts;
 
         var pageSize = _options.PostsPerPage > 0 ? _options.PostsPerPage : int.MaxValue;
         var tagComponentType = typeof(Components.Pages.Tag);
@@ -147,7 +147,7 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
     /// </summary>
     public async Task<string> GetRssXmlAsync()
     {
-        var posts = await _posts.Value;
+        var posts = await _posts;
         var ordered = posts
             .Where(p => p.FrontMatter.Date.HasValue)
             .OrderByDescending(p => p.FrontMatter.Date!.Value)

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
+using Pennington.Content;
 using Pennington.Infrastructure;
 using Pennington.LlmsTxt;
 using Pennington.Navigation;
@@ -85,7 +86,7 @@ public class MapGetEntryTests
             pennOptions: new PenningtonOptions { SiteTitle = "Test Site" },
             llmsTxtOptions: new LlmsTxtOptions(),
             canonicalBase: canonicalBase,
-            navigationBuilder: new NavigationBuilder(),
+            navigationBuilder: new NavigationBuilder(new FolderMetadataRegistry(Array.Empty<FolderMetadata>())),
             logger: NullLogger<LlmsTxtService>.Instance);
     }
 
