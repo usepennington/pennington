@@ -1,20 +1,19 @@
 namespace Pennington.Content;
 
 using System.Collections.Frozen;
-using System.Collections.Immutable;
 using Infrastructure;
 
 /// <summary>
 /// Aggregates <see cref="FolderMetadata"/> rows from every <see cref="IFolderMetadataProvider"/>
-/// registered as an <see cref="IContentService"/> and exposes a sync lookup keyed by
-/// canonical folder URL prefix. Registered via <c>AddFileWatched&lt;FolderMetadataRegistry&gt;()</c>
-/// so the aggregated table is dropped when any provider's underlying file source changes.
+/// registered as an <see cref="IContentService"/> and exposes them as an async-loaded
+/// snapshot keyed by canonical folder URL prefix. Registered via
+/// <c>AddFileWatched&lt;FolderMetadataRegistry&gt;()</c> so the aggregated table is dropped
+/// when any provider's underlying file source changes.
 /// <para>
-/// The aggregation is async (each provider exposes <c>GetFolderMetadataAsync</c>) but the
-/// consumers (<see cref="Navigation.NavigationBuilder"/>) are sync — so the registry kicks
-/// off the load on a thread-pool thread at construction via <see cref="AsyncLazy{T}"/> and
-/// the sync API waits on that task. Running on the pool avoids the inline sync-over-async
-/// re-entrance that deadlocks under xUnit's task scheduler.
+/// Callers <c>await registry.GetSnapshotAsync()</c> once at the top of their build path
+/// (e.g. <see cref="Navigation.NavigationBuilder.BuildTreeAsync"/>) and pass the snapshot
+/// down through sync recursion. The async load runs on a thread-pool thread; no caller
+/// blocks on sync-over-async.
 /// </para>
 /// </summary>
 public sealed class FolderMetadataRegistry : IFileWatchAware
@@ -26,9 +25,6 @@ public sealed class FolderMetadataRegistry : IFileWatchAware
     {
         var services = contentServices.ToList();
         _byPrefix = new AsyncLazy<FrozenDictionary<string, FolderMetadata>>(() => LoadAsync(services));
-        // Kick off the load on the pool eagerly so the first sync TryGet has the result
-        // ready (or close to it) instead of paying the cold-start cost on the calling thread.
-        _byPrefix.Start();
     }
 
     /// <summary>Creates a registry pre-populated with the supplied rows. Test-only.</summary>
@@ -38,24 +34,18 @@ public sealed class FolderMetadataRegistry : IFileWatchAware
             .ToDictionary(r => r.FolderUrlPrefix, r => r, StringComparer.OrdinalIgnoreCase)
             .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
         _byPrefix = new AsyncLazy<FrozenDictionary<string, FolderMetadata>>(() => Task.FromResult(frozen));
-        _byPrefix.Start();
     }
 
     /// <inheritdoc/>
     public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
 
     /// <summary>
-    /// Returns the folder metadata for <paramref name="folderUrlPrefix"/> (canonical <c>/foo/bar/</c> form),
-    /// or <c>null</c> when no sidecar declares anything for that folder.
+    /// Returns the aggregated folder-metadata snapshot, keyed by canonical folder
+    /// URL prefix (<c>/foo/bar/</c> form). Materializes on first call; subsequent
+    /// calls return the same task. The instance is dropped on file-watch
+    /// invalidation, so the next access rebuilds.
     /// </summary>
-    public FolderMetadata? TryGet(string folderUrlPrefix)
-        => _byPrefix.Task.GetAwaiter().GetResult().TryGetValue(folderUrlPrefix, out var md) ? md : null;
-
-    /// <summary>All registered folder-metadata rows, ordered by descending prefix length for longest-match scans.</summary>
-    public ImmutableList<FolderMetadata> All => _byPrefix.Task.GetAwaiter().GetResult().Values
-        .OrderByDescending(m => m.FolderUrlPrefix.Length)
-        .ThenBy(m => m.FolderUrlPrefix, StringComparer.Ordinal)
-        .ToImmutableList();
+    public Task<FrozenDictionary<string, FolderMetadata>> GetSnapshotAsync() => _byPrefix.Task;
 
     private static async Task<FrozenDictionary<string, FolderMetadata>> LoadAsync(IReadOnlyList<IContentService> services)
     {

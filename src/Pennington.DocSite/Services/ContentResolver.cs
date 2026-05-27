@@ -141,7 +141,7 @@ public sealed class ContentResolver
         };
 
         var tocItems = await _services.CollectTocEntriesAsync();
-        return _navBuilder.BuildNavigationInfo(tocItems.ToList(), route, locale);
+        return await _navBuilder.BuildNavigationInfoAsync(tocItems.ToList(), route, locale);
     }
 
     /// <summary>
@@ -267,7 +267,7 @@ public sealed class ContentResolver
         };
 
         var tocItems = await GetTocItemsForAreaAsync(locale, area);
-        return _navBuilder.BuildNavigationInfo(tocItems.ToList(), route, locale);
+        return await _navBuilder.BuildNavigationInfoAsync(tocItems.ToList(), route, locale);
     }
 
     private async Task<DiscoveredItem?> FindDiscoveredItem(string url)

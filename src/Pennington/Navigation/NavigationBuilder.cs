@@ -1,6 +1,7 @@
 namespace Pennington.Navigation;
 
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Text;
 using Content;
@@ -12,7 +13,9 @@ using Routing;
 /// Composing service with a per-instance memo cache (<see cref="ConcurrentDictionary{TKey,TValue}"/>
 /// keyed by locale + items fingerprint). Registered via <c>AddFileWatched&lt;NavigationBuilder&gt;()</c>
 /// so the cache is dropped when content files change; trees rebuilt on next access reflect the
-/// fresh TOC.
+/// fresh TOC. <see cref="BuildTreeAsync"/> resolves the folder-metadata snapshot once via
+/// <see cref="FolderMetadataRegistry.GetSnapshotAsync"/> and passes it through sync recursion —
+/// no sync-over-async at any layer.
 /// </remarks>
 public sealed class NavigationBuilder : IFileWatchAware
 {
@@ -47,30 +50,34 @@ public sealed class NavigationBuilder : IFileWatchAware
     }
 
     /// <summary>
-    /// Build a navigation tree from flat TOC items.
-    /// When <paramref name="locale"/> is specified, filters to that locale and
-    /// strips the locale prefix from hierarchy parts.
+    /// Build a navigation tree from flat TOC items. Resolves the folder-metadata
+    /// snapshot once via <see cref="FolderMetadataRegistry.GetSnapshotAsync"/> when
+    /// configured; recursion stays sync once the snapshot is in hand. When
+    /// <paramref name="locale"/> is specified, filters to that locale and strips
+    /// the locale prefix from hierarchy parts.
     /// </summary>
-    public ImmutableList<NavigationTreeItem> BuildTree(
+    public async Task<ImmutableList<NavigationTreeItem>> BuildTreeAsync(
         IReadOnlyList<ContentTocItem> items,
         ContentRoute? currentRoute = null,
         string? locale = null)
     {
-        var structural = GetOrBuildStructural(items, locale);
+        var snapshot = _folderMetadata is null ? null : await _folderMetadata.GetSnapshotAsync().ConfigureAwait(false);
+        var structural = GetOrBuildStructural(items, locale, snapshot);
         return currentRoute is null
             ? structural
             : StampSelection(structural, currentRoute);
     }
 
     /// <summary>
-    /// Build NavigationInfo for a specific route within the tree.
+    /// Build <see cref="NavigationInfo"/> for a specific route within the tree. See
+    /// <see cref="BuildTreeAsync"/> for snapshot-resolution semantics.
     /// </summary>
-    public NavigationInfo BuildNavigationInfo(
+    public async Task<NavigationInfo> BuildNavigationInfoAsync(
         IReadOnlyList<ContentTocItem> items,
         ContentRoute currentRoute,
         string? locale = null)
     {
-        var tree = BuildTree(items, currentRoute, locale);
+        var tree = await BuildTreeAsync(items, currentRoute, locale).ConfigureAwait(false);
         var flatList = Flatten(tree);
 
         var currentIndex = flatList.FindIndex(n => n.Route.CanonicalPath.Matches(currentRoute.CanonicalPath));
@@ -92,7 +99,9 @@ public sealed class NavigationBuilder : IFileWatchAware
     }
 
     private ImmutableList<NavigationTreeItem> GetOrBuildStructural(
-        IReadOnlyList<ContentTocItem> items, string? locale)
+        IReadOnlyList<ContentTocItem> items,
+        string? locale,
+        FrozenDictionary<string, FolderMetadata>? folderMetadata)
     {
         var key = ComputeCacheKey(items, locale);
         return _structuralCache.GetOrAdd(key, _ =>
@@ -102,12 +111,15 @@ public sealed class NavigationBuilder : IFileWatchAware
             // only the items that will appear in the sidebar.
             var localised = FilterByLocale(items, locale);
             var filtered = localised.Where(i => !i.SearchOnly).ToList();
-            return BuildLevel(filtered, depth: 0, isRoot: true);
+            return BuildLevel(filtered, depth: 0, isRoot: true, folderMetadata);
         });
     }
 
-    private ImmutableList<NavigationTreeItem> BuildLevel(
-        IReadOnlyList<ContentTocItem> items, int depth, bool isRoot)
+    private static ImmutableList<NavigationTreeItem> BuildLevel(
+        IReadOnlyList<ContentTocItem> items,
+        int depth,
+        bool isRoot,
+        FrozenDictionary<string, FolderMetadata>? folderMetadata)
     {
         // Partition the incoming slice in a single pass:
         //  - overview: only at the root, items with no hierarchy parts (area index)
@@ -189,13 +201,13 @@ public sealed class NavigationBuilder : IFileWatchAware
                     continue;
                 }
 
-                var children = BuildLevel(group.ToList(), depth + 1, isRoot: false);
+                var children = BuildLevel(group.ToList(), depth + 1, isRoot: false, folderMetadata);
                 var minOrder = children.Count > 0 ? children.Min(c => c.Order) : int.MaxValue;
 
                 // _meta.yml sidecar overrides: a sidecar at /foo/_meta.yml can name
                 // and reorder this auto-section. When absent, fall back to the
                 // emergent min(children) behaviour and kebab-case → title-case.
-                var metadata = LookupFolderMetadata(group.First(), depth);
+                var metadata = LookupFolderMetadata(folderMetadata, group.First(), depth);
 
                 builder.Add(new NavigationTreeItem(
                     Title: metadata?.Title ?? FormatSectionTitle(group.Key),
@@ -216,13 +228,13 @@ public sealed class NavigationBuilder : IFileWatchAware
                 && deeperByKey.Contains(item.HierarchyParts[depth])
                 ? deeperByKey[item.HierarchyParts[depth]].ToList()
                 : Array.Empty<ContentTocItem>();
-            var children = BuildLevel(childItems, depth + 1, isRoot: false);
+            var children = BuildLevel(childItems, depth + 1, isRoot: false, folderMetadata);
 
             // When this item is the index.md of a folder (has children), a sibling
             // _meta.yml can override its display title and sort order. Front-matter
             // values still win when the sidecar doesn't set the field.
             var metadata = children.Count > 0
-                ? LookupFolderMetadata(item, depth)
+                ? LookupFolderMetadata(folderMetadata, item, depth)
                 : null;
 
             builder.Add(new NavigationTreeItem(
@@ -242,9 +254,12 @@ public sealed class NavigationBuilder : IFileWatchAware
             .ToImmutableList();
     }
 
-    private FolderMetadata? LookupFolderMetadata(ContentTocItem item, int depth)
+    private static FolderMetadata? LookupFolderMetadata(
+        FrozenDictionary<string, FolderMetadata>? folderMetadata,
+        ContentTocItem item,
+        int depth)
     {
-        if (_folderMetadata is null)
+        if (folderMetadata is null || folderMetadata.Count == 0)
         {
             return null;
         }
@@ -270,7 +285,7 @@ public sealed class NavigationBuilder : IFileWatchAware
             sb.Append(segments[i]);
             sb.Append('/');
         }
-        return _folderMetadata.TryGet(sb.ToString());
+        return folderMetadata.TryGetValue(sb.ToString(), out var md) ? md : null;
     }
 
     /// <summary>

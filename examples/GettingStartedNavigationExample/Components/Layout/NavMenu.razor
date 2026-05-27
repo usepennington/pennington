@@ -46,7 +46,7 @@
             OutputFile = new FilePath(""),
         };
 
-        _tree = Navigation.BuildTree(entries, currentRoute);
+        _tree = await Navigation.BuildTreeAsync(entries, currentRoute);
     }
 
     // The current page renders bold; the rest are muted links.

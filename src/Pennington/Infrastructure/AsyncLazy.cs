@@ -7,11 +7,11 @@ using System.Runtime.CompilerServices;
 /// thread pool on first access; subsequent accesses return the same task. A faulted
 /// task is evicted so the next access retries.
 /// <para>
-/// Use <see cref="GetAwaiter"/> (i.e. <c>await asyncLazy</c>) from async contexts;
-/// fall back to <c>asyncLazy.Task.GetAwaiter().GetResult()</c> at the sync boundary
-/// only when the calling API cannot be made async. Because the factory always runs
-/// on a thread-pool thread, sync-waiting does not re-enter the caller's thread and
-/// avoids the classic sync-over-async deadlock pattern.
+/// Use <see cref="GetAwaiter"/> (i.e. <c>await asyncLazy</c>) from async contexts.
+/// Pennington has no sync-over-async on this type in production code; if a new
+/// consumer reaches for <c>asyncLazy.Task.GetAwaiter().GetResult()</c>, make its
+/// caller async instead — that's the pattern that exhausts thread-pool budget and
+/// occasionally deadlocks under hostile schedulers.
 /// </para>
 /// </summary>
 public sealed class AsyncLazy<T>

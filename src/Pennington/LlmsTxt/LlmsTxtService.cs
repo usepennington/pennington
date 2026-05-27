@@ -96,7 +96,7 @@ public sealed class LlmsTxtService : IFileWatchAware
             pageByPath[NormalizePath(page.Route.CanonicalPath.Value)] = page;
         }
 
-        var tree = navigationBuilder.BuildTree(allTocItems);
+        var tree = await navigationBuilder.BuildTreeAsync(allTocItems);
         var subtrees = await CollectSubtreesAsync(contentServices, programmaticSubtrees);
         var header = await ReadUserHeaderAsync(fileSystem, hostingEnvironment, pennOptions);
 
@@ -109,7 +109,7 @@ public sealed class LlmsTxtService : IFileWatchAware
             .Select(t => t with { SearchOnly = false })
             .ToList();
         var subtreeOnlyTree = subtreeOnlyItems.Count > 0
-            ? navigationBuilder.BuildTree(subtreeOnlyItems)
+            ? await navigationBuilder.BuildTreeAsync(subtreeOnlyItems)
             : ImmutableList<NavigationTreeItem>.Empty;
 
         var linkablePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

@@ -24,7 +24,7 @@ public class NavigationBuilderTests
     private readonly NavigationBuilder _builder = new();
 
     [Fact]
-    public void BuildTree_AreaIndexWithEmptyHierarchy_AppearsFirstAsOverview()
+    public async Task BuildTree_AreaIndexWithEmptyHierarchy_AppearsFirstAsOverview()
     {
         // Simulates GetTocItemsForAreaAsync for area="guides":
         // guides/index.md has HierarchyParts stripped to [], while peers retain
@@ -37,7 +37,7 @@ public class NavigationBuilderTests
             MakeTocItem("First Project", "/guides/first-project", 20, "first-project"),
         };
 
-        var tree = _builder.BuildTree(items);
+        var tree = await _builder.BuildTreeAsync(items);
 
         tree.Count.ShouldBe(3);
         tree[0].Title.ShouldBe("Guides Overview");
@@ -47,7 +47,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_AreaIndexSelected_MarksOverviewAsCurrent()
+    public async Task BuildTree_AreaIndexSelected_MarksOverviewAsCurrent()
     {
         var items = new List<ContentTocItem>
         {
@@ -55,28 +55,28 @@ public class NavigationBuilderTests
             MakeTocItem("Installation", "/guides/installation", 10, "installation"),
         };
 
-        var tree = _builder.BuildTree(items, MakeRoute("/guides/"));
+        var tree = await _builder.BuildTreeAsync(items, MakeRoute("/guides/"));
 
         tree[0].IsSelected.ShouldBeTrue();
         tree[1].IsSelected.ShouldBeFalse();
     }
 
     [Fact]
-    public void BuildTree_NoAreaIndex_OmitsOverview()
+    public async Task BuildTree_NoAreaIndex_OmitsOverview()
     {
         var items = new List<ContentTocItem>
         {
             MakeTocItem("Installation", "/guides/installation", 10, "installation"),
         };
 
-        var tree = _builder.BuildTree(items);
+        var tree = await _builder.BuildTreeAsync(items);
 
         tree.Count.ShouldBe(1);
         tree[0].Title.ShouldBe("Installation");
     }
 
     [Fact]
-    public void BuildTree_SimpleFlatList_ReturnsNoNesting()
+    public async Task BuildTree_SimpleFlatList_ReturnsNoNesting()
     {
         var items = new List<ContentTocItem>
         {
@@ -85,7 +85,7 @@ public class NavigationBuilderTests
             MakeTocItem("Gamma", "/gamma", 3, "Gamma"),
         };
 
-        var tree = _builder.BuildTree(items);
+        var tree = await _builder.BuildTreeAsync(items);
 
         tree.Count.ShouldBe(3);
         tree[0].Title.ShouldBe("Alpha");
@@ -95,7 +95,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_NestedHierarchy_CreatesParentChildRelationships()
+    public async Task BuildTree_NestedHierarchy_CreatesParentChildRelationships()
     {
         var items = new List<ContentTocItem>
         {
@@ -104,7 +104,7 @@ public class NavigationBuilderTests
             MakeTocItem("Auth", "/docs/api/auth", 1, "Docs", "API", "Auth"),
         };
 
-        var tree = _builder.BuildTree(items);
+        var tree = await _builder.BuildTreeAsync(items);
 
         tree.Count.ShouldBe(1);
         tree[0].Title.ShouldBe("Docs");
@@ -116,7 +116,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_Ordering_SortsByOrderThenTitle()
+    public async Task BuildTree_Ordering_SortsByOrderThenTitle()
     {
         var items = new List<ContentTocItem>
         {
@@ -126,7 +126,7 @@ public class NavigationBuilderTests
             MakeTocItem("Middle", "/middle", 1, "Middle"),
         };
 
-        var tree = _builder.BuildTree(items);
+        var tree = await _builder.BuildTreeAsync(items);
 
         tree.Count.ShouldBe(4);
         tree[0].Title.ShouldBe("First");
@@ -136,7 +136,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_SelectionState_CorrectItemIsSelectedAndAncestorsExpanded()
+    public async Task BuildTree_SelectionState_CorrectItemIsSelectedAndAncestorsExpanded()
     {
         var items = new List<ContentTocItem>
         {
@@ -147,7 +147,7 @@ public class NavigationBuilderTests
         };
 
         var currentRoute = MakeRoute("/docs/api/auth");
-        var tree = _builder.BuildTree(items, currentRoute);
+        var tree = await _builder.BuildTreeAsync(items, currentRoute);
 
         // Auth should be selected
         var auth = tree[0].Children[0].Children[0];
@@ -165,7 +165,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_PrevNextNavigation_ReturnsCorrectNeighbors()
+    public async Task BuildTree_PrevNextNavigation_ReturnsCorrectNeighbors()
     {
         // Tree: A, B -> [B1, B2], C
         var items = new List<ContentTocItem>
@@ -178,7 +178,7 @@ public class NavigationBuilderTests
         };
 
         var currentRoute = MakeRoute("/b/b1");
-        var info = _builder.BuildNavigationInfo(items, currentRoute);
+        var info = await _builder.BuildNavigationInfoAsync(items, currentRoute);
 
         // B1 is current, prev=B, next=B2
         info.PageTitle.ShouldBe("B1");
@@ -189,7 +189,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_Breadcrumbs_ShowsPathFromRootToSelected()
+    public async Task BuildTree_Breadcrumbs_ShowsPathFromRootToSelected()
     {
         var items = new List<ContentTocItem>
         {
@@ -199,7 +199,7 @@ public class NavigationBuilderTests
         };
 
         var currentRoute = MakeRoute("/docs/api/auth");
-        var info = _builder.BuildNavigationInfo(items, currentRoute);
+        var info = await _builder.BuildNavigationInfoAsync(items, currentRoute);
 
         info.Breadcrumbs.Count.ShouldBe(3);
         info.Breadcrumbs[0].Title.ShouldBe("Docs");
@@ -208,7 +208,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_NoCurrentRoute_NothingSelectedOrExpanded()
+    public async Task BuildTree_NoCurrentRoute_NothingSelectedOrExpanded()
     {
         var items = new List<ContentTocItem>
         {
@@ -216,7 +216,7 @@ public class NavigationBuilderTests
             MakeTocItem("API", "/docs/api", 1, "Docs", "API"),
         };
 
-        var tree = _builder.BuildTree(items);
+        var tree = await _builder.BuildTreeAsync(items);
 
         tree[0].IsSelected.ShouldBeFalse();
         tree[0].IsExpanded.ShouldBeFalse();
@@ -225,7 +225,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildNavigationInfo_ReturnsCorrectPageTitlePrevNextAndBreadcrumbs()
+    public async Task BuildNavigationInfo_ReturnsCorrectPageTitlePrevNextAndBreadcrumbs()
     {
         var items = new List<ContentTocItem>
         {
@@ -235,7 +235,7 @@ public class NavigationBuilderTests
         };
 
         var currentRoute = MakeRoute("/about");
-        var info = _builder.BuildNavigationInfo(items, currentRoute);
+        var info = await _builder.BuildNavigationInfoAsync(items, currentRoute);
 
         info.PageTitle.ShouldBe("About");
         info.PreviousPage.ShouldNotBeNull();
@@ -247,7 +247,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildNavigationInfo_FirstItem_HasNoPrevious()
+    public async Task BuildNavigationInfo_FirstItem_HasNoPrevious()
     {
         var items = new List<ContentTocItem>
         {
@@ -255,7 +255,7 @@ public class NavigationBuilderTests
             MakeTocItem("Second", "/second", 2, "Second"),
         };
 
-        var info = _builder.BuildNavigationInfo(items, MakeRoute("/first"));
+        var info = await _builder.BuildNavigationInfoAsync(items, MakeRoute("/first"));
 
         info.PreviousPage.ShouldBeNull();
         info.NextPage.ShouldNotBeNull();
@@ -263,7 +263,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildNavigationInfo_LastItem_HasNoNext()
+    public async Task BuildNavigationInfo_LastItem_HasNoNext()
     {
         var items = new List<ContentTocItem>
         {
@@ -271,7 +271,7 @@ public class NavigationBuilderTests
             MakeTocItem("Second", "/second", 2, "Second"),
         };
 
-        var info = _builder.BuildNavigationInfo(items, MakeRoute("/second"));
+        var info = await _builder.BuildNavigationInfoAsync(items, MakeRoute("/second"));
 
         info.PreviousPage.ShouldNotBeNull();
         info.PreviousPage!.Title.ShouldBe("First");
@@ -279,7 +279,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_ChildrenOrderedWithinParent()
+    public async Task BuildTree_ChildrenOrderedWithinParent()
     {
         var items = new List<ContentTocItem>
         {
@@ -289,7 +289,7 @@ public class NavigationBuilderTests
             MakeTocItem("Bravo", "/parent/bravo", 1, "Parent", "Bravo"),
         };
 
-        var tree = _builder.BuildTree(items);
+        var tree = await _builder.BuildTreeAsync(items);
 
         tree[0].Children.Count.ShouldBe(3);
         tree[0].Children[0].Title.ShouldBe("Alpha");
@@ -314,7 +314,7 @@ public class NavigationBuilderTests
     );
 
     [Fact]
-    public void BuildTree_WithLocale_FiltersToMatchingLocale()
+    public async Task BuildTree_WithLocale_FiltersToMatchingLocale()
     {
         var items = new List<ContentTocItem>
         {
@@ -322,27 +322,27 @@ public class NavigationBuilderTests
             MakeLocaleTocItem("Guide FR", "/fr/guide", 1, "fr", "fr", "guide"),
         };
 
-        var tree = _builder.BuildTree(items, locale: "en");
+        var tree = await _builder.BuildTreeAsync(items, locale: "en");
         tree.Count.ShouldBe(1);
         tree[0].Title.ShouldBe("Guide EN");
     }
 
     [Fact]
-    public void BuildTree_WithLocale_StripsLocalePrefixFromHierarchy()
+    public async Task BuildTree_WithLocale_StripsLocalePrefixFromHierarchy()
     {
         var items = new List<ContentTocItem>
         {
             MakeLocaleTocItem("Guide FR", "/fr/guide", 1, "fr", "fr", "guide"),
         };
 
-        var tree = _builder.BuildTree(items, locale: "fr");
+        var tree = await _builder.BuildTreeAsync(items, locale: "fr");
         tree.Count.ShouldBe(1);
         tree[0].Title.ShouldBe("Guide FR");
         // Hierarchy was ["fr", "guide"], after stripping it's ["guide"] — renders as top-level
     }
 
     [Fact]
-    public void BuildTree_WithLocale_NullLocaleItemsPassFilter()
+    public async Task BuildTree_WithLocale_NullLocaleItemsPassFilter()
     {
         var items = new List<ContentTocItem>
         {
@@ -350,12 +350,12 @@ public class NavigationBuilderTests
             MakeTocItem("About (agnostic)", "/about", 2, "about"), // locale = null
         };
 
-        var tree = _builder.BuildTree(items, locale: "en");
+        var tree = await _builder.BuildTreeAsync(items, locale: "en");
         tree.Count.ShouldBe(2);
     }
 
     [Fact]
-    public void BuildTree_NullLocale_IncludesAll()
+    public async Task BuildTree_NullLocale_IncludesAll()
     {
         var items = new List<ContentTocItem>
         {
@@ -363,12 +363,12 @@ public class NavigationBuilderTests
             MakeLocaleTocItem("Guide FR", "/fr/guide", 1, "fr", "fr", "guide"),
         };
 
-        var tree = _builder.BuildTree(items, locale: null);
+        var tree = await _builder.BuildTreeAsync(items, locale: null);
         tree.Count.ShouldBe(2);
     }
 
     [Fact]
-    public void BuildTree_DuplicateCanonicalPaths_DedupedDefensively()
+    public async Task BuildTree_DuplicateCanonicalPaths_DedupedDefensively()
     {
         // Shape of the NorthwindHandbookExample misconfiguration: two content
         // sources both register a TOC entry for /changelog/v2-0-0/. The engine
@@ -381,7 +381,7 @@ public class NavigationBuilderTests
             MakeTocItem("Changelog v2.0.1", "/changelog/v2-0-1", 2, "changelog", "v2-0-1"),
         };
 
-        var tree = _builder.BuildTree(items);
+        var tree = await _builder.BuildTreeAsync(items);
 
         // One auto-created "Changelog" section with two children (v2-0-0, v2-0-1),
         // not three.
@@ -393,7 +393,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_RepeatedCalls_ReuseStructuralSubtrees()
+    public async Task BuildTree_RepeatedCalls_ReuseStructuralSubtrees()
     {
         // Structural tree is cached per (locale, input fingerprint). Branches
         // off the selection path must be returned by reference — otherwise
@@ -408,24 +408,24 @@ public class NavigationBuilderTests
 
         // Two renders against the same current route — Guide subtree has no
         // selection under it, so it reuses the cached structural node.
-        var a = _builder.BuildTree(items, MakeRoute("/docs/api"));
-        var b = _builder.BuildTree(items, MakeRoute("/docs/api"));
+        var a = await _builder.BuildTreeAsync(items, MakeRoute("/docs/api"));
+        var b = await _builder.BuildTreeAsync(items, MakeRoute("/docs/api"));
         ReferenceEquals(a[1], b[1]).ShouldBeTrue();
         ReferenceEquals(a[1].Children[0], b[1].Children[0]).ShouldBeTrue();
 
         // Two renders against different current routes — the Docs branch is
         // still structurally shared in the "no selection here" case.
-        var onGuide = _builder.BuildTree(items, MakeRoute("/guide/setup"));
-        var onApi = _builder.BuildTree(items, MakeRoute("/docs/api"));
+        var onGuide = await _builder.BuildTreeAsync(items, MakeRoute("/guide/setup"));
+        var onApi = await _builder.BuildTreeAsync(items, MakeRoute("/docs/api"));
         ReferenceEquals(onGuide[0], onApi[0]).ShouldBeFalse(); // Docs differs — API is selected under it in onApi
         // But the unselected leaf under Guide in onApi is the same structural
         // reference as in the no-route render.
-        var bare = _builder.BuildTree(items);
+        var bare = await _builder.BuildTreeAsync(items);
         ReferenceEquals(onApi[1].Children[0], bare[1].Children[0]).ShouldBeTrue();
     }
 
     [Fact]
-    public void BuildTree_SelectionChanges_TrackedAcrossCalls()
+    public async Task BuildTree_SelectionChanges_TrackedAcrossCalls()
     {
         // Confirms the cached structural tree correctly re-stamps selection
         // when currentRoute changes between calls.
@@ -437,23 +437,23 @@ public class NavigationBuilderTests
             MakeTocItem("Guide", "/guide", 2, "Guide"),
         };
 
-        var onAuth = _builder.BuildTree(items, MakeRoute("/docs/api/auth"));
+        var onAuth = await _builder.BuildTreeAsync(items, MakeRoute("/docs/api/auth"));
         onAuth[0].Children[0].Children[0].IsSelected.ShouldBeTrue();
         onAuth[1].IsSelected.ShouldBeFalse();
 
-        var onGuide = _builder.BuildTree(items, MakeRoute("/guide"));
+        var onGuide = await _builder.BuildTreeAsync(items, MakeRoute("/guide"));
         onGuide[0].Children[0].Children[0].IsSelected.ShouldBeFalse();
         onGuide[0].IsExpanded.ShouldBeFalse();
         onGuide[1].IsSelected.ShouldBeTrue();
 
         // Back to no selection → whole tree collapses.
-        var bare = _builder.BuildTree(items);
+        var bare = await _builder.BuildTreeAsync(items);
         bare[0].IsExpanded.ShouldBeFalse();
         bare[0].Children[0].Children[0].IsSelected.ShouldBeFalse();
     }
 
     [Fact]
-    public void BuildTree_DuplicateCanonicalPaths_CaseInsensitive_Deduped()
+    public async Task BuildTree_DuplicateCanonicalPaths_CaseInsensitive_Deduped()
     {
         // Canonical paths are compared case-insensitively — the second entry
         // (capitalized `/Alpha`) should still dedup against the first.
@@ -463,13 +463,13 @@ public class NavigationBuilderTests
             MakeTocItem("alpha upper", "/Alpha", 2, "Alpha"),
         };
 
-        var tree = _builder.BuildTree(items);
+        var tree = await _builder.BuildTreeAsync(items);
 
         tree.Count.ShouldBe(1);
     }
 
     [Fact]
-    public void BuildTree_SearchOnlyItem_FilteredFromTree()
+    public async Task BuildTree_SearchOnlyItem_FilteredFromTree()
     {
         var items = new List<ContentTocItem>
         {
@@ -477,14 +477,14 @@ public class NavigationBuilderTests
             MakeTocItem("Hidden", "/guides/hidden", 20, "hidden") with { SearchOnly = true },
         };
 
-        var tree = _builder.BuildTree(items);
+        var tree = await _builder.BuildTreeAsync(items);
 
         tree.Count.ShouldBe(1);
         tree[0].Title.ShouldBe("Visible");
     }
 
     [Fact]
-    public void BuildTree_SearchOnlyItem_DoesNotCreateAutoSection()
+    public async Task BuildTree_SearchOnlyItem_DoesNotCreateAutoSection()
     {
         // A SearchOnly item with hierarchy "guides/faq/q1" should not cause a synthetic
         // "faq" auto-section node to appear when no other guides/faq/* items exist.
@@ -494,14 +494,14 @@ public class NavigationBuilderTests
             MakeTocItem("Hidden FAQ", "/guides/faq/q1", 20, "faq", "q1") with { SearchOnly = true },
         };
 
-        var tree = _builder.BuildTree(items);
+        var tree = await _builder.BuildTreeAsync(items);
 
         tree.Count.ShouldBe(1);
         tree[0].Title.ShouldBe("Installation");
     }
 
     [Fact]
-    public void BuildTree_AllSearchOnly_ProducesEmptyTree()
+    public async Task BuildTree_AllSearchOnly_ProducesEmptyTree()
     {
         var items = new List<ContentTocItem>
         {
@@ -509,20 +509,20 @@ public class NavigationBuilderTests
             MakeTocItem("B", "/b", 20, "b") with { SearchOnly = true },
         };
 
-        var tree = _builder.BuildTree(items);
+        var tree = await _builder.BuildTreeAsync(items);
 
         tree.ShouldBeEmpty();
     }
 
     [Fact]
-    public void BuildTree_SearchOnlyChangeBetweenCalls_DoesNotReturnStaleCache()
+    public async Task BuildTree_SearchOnlyChangeBetweenCalls_DoesNotReturnStaleCache()
     {
         // Cache key includes SearchOnly, so toggling the flag invalidates the cached tree.
         var visible = MakeTocItem("Topic", "/topic", 10, "topic");
         var hidden = visible with { SearchOnly = true };
 
-        var first = _builder.BuildTree([visible]);
-        var second = _builder.BuildTree([hidden]);
+        var first = await _builder.BuildTreeAsync([visible]);
+        var second = await _builder.BuildTreeAsync([hidden]);
 
         first.Count.ShouldBe(1);
         second.ShouldBeEmpty();
@@ -533,7 +533,7 @@ public class NavigationBuilderTests
     // ----------------------------------------------------------------------
 
     [Fact]
-    public void BuildTree_FolderSidecarOrder_PositionsAutoSectionAheadOfSiblings()
+    public async Task BuildTree_FolderSidecarOrder_PositionsAutoSectionAheadOfSiblings()
     {
         // The "explanation" folder has no index.md and so today would inherit
         // min(children) — both folders' children carry the same low orders, so
@@ -550,7 +550,7 @@ public class NavigationBuilderTests
         });
         var builder = new NavigationBuilder(registry);
 
-        var tree = builder.BuildTree(items);
+        var tree = await builder.BuildTreeAsync(items);
 
         tree.Count.ShouldBe(2);
         tree[0].Title.ShouldBe("Explanation");
@@ -558,7 +558,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_FolderSidecarTitle_OverridesFormatSectionTitle()
+    public async Task BuildTree_FolderSidecarTitle_OverridesFormatSectionTitle()
     {
         // "core-api" would normally render as "Core API" via FormatSectionTitle.
         // The sidecar title wins.
@@ -572,13 +572,13 @@ public class NavigationBuilderTests
         });
         var builder = new NavigationBuilder(registry);
 
-        var tree = builder.BuildTree(items);
+        var tree = await builder.BuildTreeAsync(items);
 
         tree[0].Title.ShouldBe("Foundations");
     }
 
     [Fact]
-    public void BuildTree_FolderSidecarOverridesIndexMdTitleAndOrder()
+    public async Task BuildTree_FolderSidecarOverridesIndexMdTitleAndOrder()
     {
         // The folder has an index.md whose front matter says order=99, title="Stale".
         // A _meta.yml sidecar at the same folder declares order=1, title="Fresh"; both wins.
@@ -594,7 +594,7 @@ public class NavigationBuilderTests
         });
         var builder = new NavigationBuilder(registry);
 
-        var tree = builder.BuildTree(items);
+        var tree = await builder.BuildTreeAsync(items);
 
         // Fresh sorts ahead of Other (order 1 vs 1, then alphabetical Fresh < Other).
         tree[0].Title.ShouldBe("Fresh");
@@ -603,7 +603,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_FolderSidecarPartialFields_FallsBackPerField()
+    public async Task BuildTree_FolderSidecarPartialFields_FallsBackPerField()
     {
         // Sidecar sets title but leaves order null → order falls through to the index.md's value.
         var items = new List<ContentTocItem>
@@ -618,7 +618,7 @@ public class NavigationBuilderTests
         });
         var builder = new NavigationBuilder(registry);
 
-        var tree = builder.BuildTree(items);
+        var tree = await builder.BuildTreeAsync(items);
 
         // Other (order 3) comes before Renamed (order 5, from index.md).
         tree[0].Title.ShouldBe("Other");
@@ -626,7 +626,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_NoSidecar_EmergentMinChildrenOrderPreserved()
+    public async Task BuildTree_NoSidecar_EmergentMinChildrenOrderPreserved()
     {
         // Backwards-compat: with no sidecar entries, the existing min(children)
         // emergent rule still drives folder ordering.
@@ -638,14 +638,14 @@ public class NavigationBuilderTests
         var registry = new FolderMetadataRegistry(Array.Empty<FolderMetadata>());
         var builder = new NavigationBuilder(registry);
 
-        var tree = builder.BuildTree(items);
+        var tree = await builder.BuildTreeAsync(items);
 
         tree[0].Title.ShouldBe("Early Folder");
         tree[1].Title.ShouldBe("Late Folder");
     }
 
     [Fact]
-    public void BuildTree_SidecarTieOnOrder_BreaksAlphabetically()
+    public async Task BuildTree_SidecarTieOnOrder_BreaksAlphabetically()
     {
         // Two sidecar folders with the same explicit order should still tie-break by title.
         var items = new List<ContentTocItem>
@@ -660,14 +660,14 @@ public class NavigationBuilderTests
         });
         var builder = new NavigationBuilder(registry);
 
-        var tree = builder.BuildTree(items);
+        var tree = await builder.BuildTreeAsync(items);
 
         tree[0].Title.ShouldBe("Alpha");
         tree[1].Title.ShouldBe("Zebra");
     }
 
     [Fact]
-    public void BuildTree_AreaStrippedHierarchy_LooksUpFullCanonicalPrefix()
+    public async Task BuildTree_AreaStrippedHierarchy_LooksUpFullCanonicalPrefix()
     {
         // Simulates DocSite GetTocItemsForAreaAsync: the area slug "explanation"
         // has been stripped from HierarchyParts, but Route.CanonicalPath keeps
@@ -689,7 +689,7 @@ public class NavigationBuilderTests
         });
         var builder = new NavigationBuilder(registry);
 
-        var tree = builder.BuildTree(areaStrippedItems);
+        var tree = await builder.BuildTreeAsync(areaStrippedItems);
 
         tree.Count.ShouldBe(1);
         tree[0].Title.ShouldBe("Core Architecture");
@@ -697,7 +697,7 @@ public class NavigationBuilderTests
     }
 
     [Fact]
-    public void BuildTree_NestedFolderSidecar_AppliesAtMatchingDepth()
+    public async Task BuildTree_NestedFolderSidecar_AppliesAtMatchingDepth()
     {
         // A sidecar at /docs/core/ applies to that subfolder, not to /docs/.
         var items = new List<ContentTocItem>
@@ -712,7 +712,7 @@ public class NavigationBuilderTests
         });
         var builder = new NavigationBuilder(registry);
 
-        var tree = builder.BuildTree(items);
+        var tree = await builder.BuildTreeAsync(items);
 
         tree[0].Title.ShouldBe("Docs index");
         var docsChildren = tree[0].Children;
