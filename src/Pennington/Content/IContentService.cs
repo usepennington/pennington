@@ -1,13 +1,25 @@
 namespace Pennington.Content;
 
 using System.Collections.Immutable;
+using Infrastructure;
 using Pipeline;
+using Routing;
 
 /// <summary>
 /// Discovers and provides content for the pipeline.
 /// </summary>
 public interface IContentService : IContentEmitter
 {
+    /// <summary>
+    /// Maps a file-change notification to the set of routes this service projects from
+    /// that file, without mutating any cached state. Consulted by file-watched caches
+    /// (<see cref="Pennington.Pipeline.SiteProjection"/>,
+    /// <see cref="Pennington.Infrastructure.BuildHtmlCache"/>) to invalidate only the
+    /// affected entries instead of clearing wholesale. Default: <see cref="ContentChangeImpactCases.None"/>.
+    /// </summary>
+    ContentChangeImpact GetAffectedRoutes(FileChangeNotification change)
+        => new ContentChangeImpactCases.None();
+
     /// <summary>
     /// Discover all content items this service is responsible for.
     /// </summary>

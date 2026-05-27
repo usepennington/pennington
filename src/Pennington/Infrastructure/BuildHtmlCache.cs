@@ -2,6 +2,7 @@ namespace Pennington.Infrastructure;
 
 using System.Collections.Concurrent;
 using System.Net;
+using Content;
 
 /// <summary>
 /// Process-lifetime cache of fully rendered in-process HTTP responses, keyed by request path.
@@ -14,14 +15,22 @@ using System.Net;
 /// </para>
 /// <para>
 /// Eviction rides the existing <see cref="FileWatchDispatcher"/>: as an <see cref="IFileWatchAware"/>
-/// with no scopes of its own, it is notified of every change another watcher already observes and
-/// clears wholesale. Build mode is one-shot so this never fires; dev mode clears on every content
-/// edit, keeping the file-watched sidecar services from indexing stale HTML.
+/// with no scopes of its own, it is notified of every change another watcher already observes.
+/// On notification, it consults <see cref="IContentService.GetAffectedRoutes"/> on every
+/// registered content service and evicts only the affected keys — wholesale only on a
+/// <see cref="ContentChangeImpactCases.Wildcard"/> report.
 /// </para>
 /// </summary>
 public sealed class BuildHtmlCache : IFileWatchAware
 {
     private readonly ConcurrentDictionary<string, Lazy<Task<CachedResponse>>> _entries = new(StringComparer.Ordinal);
+    private readonly IEnumerable<IContentService> _contentServices;
+
+    /// <summary>Initializes the cache with the content services it consults for affected routes on file change.</summary>
+    public BuildHtmlCache(IEnumerable<IContentService> contentServices)
+    {
+        _contentServices = contentServices;
+    }
 
     /// <summary>
     /// Returns the cached response for <paramref name="key"/>, invoking <paramref name="factory"/>
@@ -46,8 +55,60 @@ public sealed class BuildHtmlCache : IFileWatchAware
     /// <inheritdoc/>
     public FileWatchResponse OnFileChanged(FileChangeNotification change)
     {
-        _entries.Clear();
+        var wildcard = false;
+        List<string>? affectedPaths = null;
+
+        foreach (var service in _contentServices)
+        {
+            var impact = service.GetAffectedRoutes(change);
+            switch (impact.Value)
+            {
+                case ContentChangeImpactCases.Wildcard:
+                    wildcard = true;
+                    break;
+                case ContentChangeImpactCases.Routes routes:
+                    foreach (var route in routes.Affected)
+                    {
+                        (affectedPaths ??= []).Add(route.CanonicalPath.Value);
+                    }
+                    break;
+            }
+            if (wildcard) break;
+        }
+
+        if (wildcard)
+        {
+            _entries.Clear();
+            return FileWatchResponse.Refreshed;
+        }
+
+        if (affectedPaths is null || affectedPaths.Count == 0)
+        {
+            return FileWatchResponse.Refreshed;
+        }
+
+        // Cache keys are full PathAndQuery (e.g. "/foo/" or "/foo/?x=1"). Evict any key whose
+        // path portion matches an affected route's canonical path — covers query-string variants.
+        foreach (var key in _entries.Keys)
+        {
+            var pathPart = ExtractPath(key);
+            foreach (var affected in affectedPaths)
+            {
+                if (string.Equals(pathPart, affected, StringComparison.OrdinalIgnoreCase))
+                {
+                    _entries.TryRemove(key, out _);
+                    break;
+                }
+            }
+        }
+
         return FileWatchResponse.Refreshed;
+    }
+
+    private static string ExtractPath(string pathAndQuery)
+    {
+        var queryIndex = pathAndQuery.IndexOf('?');
+        return queryIndex < 0 ? pathAndQuery : pathAndQuery[..queryIndex];
     }
 }
 

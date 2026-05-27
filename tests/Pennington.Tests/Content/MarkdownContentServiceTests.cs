@@ -1423,4 +1423,122 @@ public class MarkdownContentServiceTests
         // fr falls back to the en source, so its title is the en title.
         after.Single(e => e.Locale == "fr").Title.ShouldBe("About");
     }
+
+    [Fact]
+    public void GetAffectedRoutes_MarkdownChanged_ReturnsOwnRoute()
+    {
+        var fs = CreateFs(("getting-started.md", "---\ntitle: GS\n---"));
+        var service = CreateTestService(fs);
+        var absolute = AbsoluteContentPath(service, fs, "getting-started.md");
+
+        var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Changed));
+
+        var routes = impact.Value.ShouldBeOfType<ContentChangeImpactCases.Routes>();
+        routes.Affected.Length.ShouldBe(1);
+        routes.Affected[0].CanonicalPath.Value.ShouldBe("/docs/getting-started/");
+    }
+
+    [Fact]
+    public void GetAffectedRoutes_MarkdownCreated_ReturnsOwnRoute()
+    {
+        var fs = CreateFs();
+        var service = CreateTestService(fs);
+        var absolute = AbsoluteContentPath(service, fs, "new-page.md");
+
+        var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Created));
+
+        var routes = impact.Value.ShouldBeOfType<ContentChangeImpactCases.Routes>();
+        routes.Affected.Length.ShouldBe(1);
+        routes.Affected[0].CanonicalPath.Value.ShouldBe("/docs/new-page/");
+    }
+
+    [Fact]
+    public void GetAffectedRoutes_MarkdownDeleted_StillReturnsRouteFromPath()
+    {
+        var fs = CreateFs();
+        var service = CreateTestService(fs);
+        var absolute = AbsoluteContentPath(service, fs, "gone.md");
+
+        var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Deleted));
+
+        var routes = impact.Value.ShouldBeOfType<ContentChangeImpactCases.Routes>();
+        routes.Affected[0].CanonicalPath.Value.ShouldBe("/docs/gone/");
+    }
+
+    [Fact]
+    public void GetAffectedRoutes_MarkdownRenamed_ReturnsWildcard()
+    {
+        var fs = CreateFs();
+        var service = CreateTestService(fs);
+        var absolute = AbsoluteContentPath(service, fs, "x.md");
+
+        var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Renamed));
+
+        impact.Value.ShouldBeOfType<ContentChangeImpactCases.Wildcard>();
+    }
+
+    [Fact]
+    public void GetAffectedRoutes_FolderMetaChanged_ReturnsWildcard()
+    {
+        var fs = CreateFs();
+        var service = CreateTestService(fs);
+        var absolute = AbsoluteContentPath(service, fs, "subdir/_meta.yml");
+
+        var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Changed));
+
+        impact.Value.ShouldBeOfType<ContentChangeImpactCases.Wildcard>();
+    }
+
+    [Fact]
+    public void GetAffectedRoutes_OutOfScopeFile_ReturnsNone()
+    {
+        var fs = CreateFs();
+        var service = CreateTestService(fs);
+
+        // Path that isn't under the watch scope at all.
+        var impact = service.GetAffectedRoutes(new FileChangeNotification("/elsewhere/some.md", WatcherChangeTypes.Changed));
+
+        impact.Value.ShouldBeOfType<ContentChangeImpactCases.None>();
+    }
+
+    [Fact]
+    public void GetAffectedRoutes_AssetUnderContentTree_ReturnsNone()
+    {
+        var fs = CreateFs();
+        var service = CreateTestService(fs);
+        var absolute = AbsoluteContentPath(service, fs, "image.png");
+
+        var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Changed));
+
+        impact.Value.ShouldBeOfType<ContentChangeImpactCases.None>();
+    }
+
+    [Fact]
+    public void GetAffectedRoutes_MultiLocaleDefaultLocale_IncludesFallbackRoutes()
+    {
+        var fs = CreateMultiLocaleFs(("about.md", "---\ntitle: About\n---"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/"), localization: CreateMultiLocale());
+        var absolute = AbsoluteContentPath(service, fs, "about.md");
+
+        var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Changed));
+
+        var routes = impact.Value.ShouldBeOfType<ContentChangeImpactCases.Routes>();
+        // Own route + fr fallback route (multi-locale config has en + fr).
+        routes.Affected.Length.ShouldBeGreaterThanOrEqualTo(2);
+        routes.Affected.ShouldContain(r => r.CanonicalPath.Value == "/about/");
+        routes.Affected.ShouldContain(r => r.CanonicalPath.Value == "/fr/about/");
+    }
+
+    [Fact]
+    public void GetAffectedRoutes_MultiLocaleNonDefaultLocale_ReturnsOwnRouteOnly()
+    {
+        var fs = CreateMultiLocaleFs(("fr/about.md", "---\ntitle: À propos\n---"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/"), localization: CreateMultiLocale());
+        var absolute = AbsoluteContentPath(service, fs, "fr/about.md");
+
+        var impact = service.GetAffectedRoutes(new FileChangeNotification(absolute, WatcherChangeTypes.Changed));
+
+        var routes = impact.Value.ShouldBeOfType<ContentChangeImpactCases.Routes>();
+        routes.Affected.ShouldContain(r => r.CanonicalPath.Value == "/fr/about/");
+    }
 }

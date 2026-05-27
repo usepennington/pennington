@@ -1,6 +1,10 @@
+using System.Collections.Immutable;
 using System.Net;
 using System.Text;
+using Pennington.Content;
 using Pennington.Infrastructure;
+using Pennington.Pipeline;
+using Pennington.Routing;
 
 namespace Pennington.Tests.Infrastructure;
 
@@ -9,10 +13,30 @@ public class BuildHtmlCacheTests
     private static CachedResponse Ok(string body) =>
         new(HttpStatusCode.OK, Encoding.UTF8.GetBytes(body), [], []);
 
+    private static ContentRoute Route(string canonical) => new()
+    {
+        CanonicalPath = new UrlPath(canonical),
+        OutputFile = new FilePath(canonical.Trim('/')),
+    };
+
+    /// <summary>Stub IContentService that maps a single file path to a fixed impact.</summary>
+    private sealed class StubContentService(string watchedPath, ContentChangeImpact impact) : IContentService
+    {
+        public ContentChangeImpact GetAffectedRoutes(FileChangeNotification change) =>
+            string.Equals(change.FullPath, watchedPath, StringComparison.OrdinalIgnoreCase) ? impact : new ContentChangeImpactCases.None();
+        public IAsyncEnumerable<DiscoveredItem> DiscoverAsync() => AsyncEnumerable.Empty<DiscoveredItem>();
+        public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync() => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
+        public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync() => Task.FromResult(ImmutableList<ContentTocItem>.Empty);
+        public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync() => Task.FromResult(ImmutableList<CrossReference>.Empty);
+        public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync() => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
+        public string DefaultSectionLabel => "";
+        public int SearchPriority => 0;
+    }
+
     [Fact]
     public async Task GetOrAddAsync_InvokesFactoryOncePerKey()
     {
-        var cache = new BuildHtmlCache();
+        var cache = new BuildHtmlCache([]);
         var calls = 0;
 
         await cache.GetOrAddAsync("/a", () => { calls++; return Task.FromResult(Ok("one")); });
@@ -25,7 +49,7 @@ public class BuildHtmlCacheTests
     [Fact]
     public async Task GetOrAddAsync_DistinctKeys_EachInvokeFactory()
     {
-        var cache = new BuildHtmlCache();
+        var cache = new BuildHtmlCache([]);
         var calls = 0;
 
         await cache.GetOrAddAsync("/a", () => { calls++; return Task.FromResult(Ok("a")); });
@@ -35,26 +59,73 @@ public class BuildHtmlCacheTests
     }
 
     [Fact]
-    public async Task OnFileChanged_ClearsCache_NextCallReRenders()
+    public async Task OnFileChanged_RoutesImpact_EvictsOnlyAffectedKey()
     {
-        var cache = new BuildHtmlCache();
-        var calls = 0;
+        var service = new StubContentService(
+            "/content/a.md",
+            new ContentChangeImpactCases.Routes([Route("/a/")]));
+        var cache = new BuildHtmlCache([service]);
+        var aCalls = 0;
+        var bCalls = 0;
 
-        await cache.GetOrAddAsync("/a", () => { calls++; return Task.FromResult(Ok("one")); });
+        await cache.GetOrAddAsync("/a/", () => { aCalls++; return Task.FromResult(Ok("a-one")); });
+        await cache.GetOrAddAsync("/b/", () => { bCalls++; return Task.FromResult(Ok("b-one")); });
 
         var response = cache.OnFileChanged(new FileChangeNotification("/content/a.md", WatcherChangeTypes.Changed));
         response.ShouldBe(FileWatchResponse.Refreshed);
 
-        var fresh = await cache.GetOrAddAsync("/a", () => { calls++; return Task.FromResult(Ok("two")); });
+        var freshA = await cache.GetOrAddAsync("/a/", () => { aCalls++; return Task.FromResult(Ok("a-two")); });
+        var freshB = await cache.GetOrAddAsync("/b/", () => { bCalls++; return Task.FromResult(Ok("b-two")); });
 
-        calls.ShouldBe(2);
-        Encoding.UTF8.GetString(fresh.Body).ShouldBe("two");
+        aCalls.ShouldBe(2);
+        Encoding.UTF8.GetString(freshA.Body).ShouldBe("a-two");
+        bCalls.ShouldBe(1);
+        Encoding.UTF8.GetString(freshB.Body).ShouldBe("b-one");
+    }
+
+    [Fact]
+    public async Task OnFileChanged_WildcardImpact_ClearsEverything()
+    {
+        var service = new StubContentService(
+            "/content/_meta.yml",
+            new ContentChangeImpactCases.Wildcard());
+        var cache = new BuildHtmlCache([service]);
+        var calls = 0;
+
+        await cache.GetOrAddAsync("/a/", () => { calls++; return Task.FromResult(Ok("a")); });
+        await cache.GetOrAddAsync("/b/", () => { calls++; return Task.FromResult(Ok("b")); });
+
+        cache.OnFileChanged(new FileChangeNotification("/content/_meta.yml", WatcherChangeTypes.Changed));
+
+        await cache.GetOrAddAsync("/a/", () => { calls++; return Task.FromResult(Ok("a2")); });
+        await cache.GetOrAddAsync("/b/", () => { calls++; return Task.FromResult(Ok("b2")); });
+
+        calls.ShouldBe(4);
+    }
+
+    [Fact]
+    public async Task OnFileChanged_NoneImpact_KeepsCache()
+    {
+        var service = new StubContentService(
+            "/content/a.md",
+            new ContentChangeImpactCases.Routes([Route("/a/")]));
+        var cache = new BuildHtmlCache([service]);
+        var calls = 0;
+
+        await cache.GetOrAddAsync("/a/", () => { calls++; return Task.FromResult(Ok("a")); });
+
+        // Change reported as outside the service's scope (different file).
+        cache.OnFileChanged(new FileChangeNotification("/content/unrelated.txt", WatcherChangeTypes.Changed));
+
+        await cache.GetOrAddAsync("/a/", () => { calls++; return Task.FromResult(Ok("a2")); });
+
+        calls.ShouldBe(1);
     }
 
     [Fact]
     public async Task GetOrAddAsync_FaultedFactory_IsEvictedAndRetried()
     {
-        var cache = new BuildHtmlCache();
+        var cache = new BuildHtmlCache([]);
         var calls = 0;
 
         await Should.ThrowAsync<InvalidOperationException>(() =>
@@ -73,7 +144,7 @@ public class BuildHtmlCacheTests
     [Fact]
     public async Task GetOrAddAsync_ConcurrentFirstHits_CoalesceToOneRender()
     {
-        var cache = new BuildHtmlCache();
+        var cache = new BuildHtmlCache([]);
         var calls = 0;
         var gate = new TaskCompletionSource();
 

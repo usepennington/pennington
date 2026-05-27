@@ -82,6 +82,73 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <inheritdoc/>
     public IReadOnlyList<FileWatchScope> WatchScopes => [_watchScope];
 
+    /// <inheritdoc/>
+    public ContentChangeImpact GetAffectedRoutes(FileChangeNotification change)
+    {
+        if (!_watchScope.Matches(change))
+        {
+            return new ContentChangeImpactCases.None();
+        }
+
+        var fileName = _fileSystem.Path.GetFileName(change.FullPath) ?? "";
+
+        // _meta.yml affects every page under the folder prefix; conservative wildcard
+        // rather than walking _entries (which mutates concurrently with this call).
+        if (string.Equals(fileName, FolderMetadataSidecarFileName, StringComparison.OrdinalIgnoreCase))
+        {
+            return new ContentChangeImpactCases.Wildcard();
+        }
+
+        if (!fileName.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+        {
+            // Assets (images, css) — neither cache holds these.
+            return new ContentChangeImpactCases.None();
+        }
+
+        // Renames only carry the new path; we can't know the old route, so over-invalidate.
+        if (change.ChangeType == WatcherChangeTypes.Renamed)
+        {
+            return new ContentChangeImpactCases.Wildcard();
+        }
+
+        return ComputeMarkdownRouteImpact(_fileSystem.Path.GetFullPath(change.FullPath));
+    }
+
+    /// <summary>
+    /// Computes the routes a single markdown file generates (own route plus any
+    /// fallback locale routes) from the file path alone. Pure function — does not
+    /// consult <see cref="_entries"/>, so it stays correct regardless of dispatch order
+    /// with <see cref="OnFileChanged"/>. Over-includes fallback routes (every non-default
+    /// locale that *could* fall back) rather than checking which locales actually have
+    /// their own copy; over-invalidating one or two routes per locale is cheaper than
+    /// scanning the filesystem on every change.
+    /// </summary>
+    private ContentChangeImpact ComputeMarkdownRouteImpact(string absolutePath)
+    {
+        var locale = LocaleForPath(absolutePath);
+        var file = new FilePath(absolutePath);
+        var builder = ImmutableArray.CreateBuilder<ContentRoute>();
+        builder.Add(CreateRouteForFile(file, locale));
+
+        if (_localization.IsMultiLocale
+            && string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
+        {
+            foreach (var otherLocale in GetNonDefaultLocaleSubfolders())
+            {
+                var fallbackRoute = ContentRouteFactory.FromMarkdownFile(
+                    RoutePathFor(file), new FilePath(_absoluteContentPath), _options.BasePageUrl, otherLocale);
+                fallbackRoute = fallbackRoute with { IsFallback = true };
+                if (IsLlmsOnlyFile(file))
+                {
+                    fallbackRoute = fallbackRoute with { SourceFile = file };
+                }
+                builder.Add(fallbackRoute);
+            }
+        }
+
+        return new ContentChangeImpactCases.Routes(builder.ToImmutable());
+    }
+
     /// <summary>
     /// Surgically updates the discovery caches when a file under this source's content
     /// directory changes. A markdown edit re-parses just that file's front matter; a
