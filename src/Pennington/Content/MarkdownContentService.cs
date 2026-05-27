@@ -54,10 +54,11 @@ public sealed class MarkdownContentService<TFrontMatter>
     private AsyncLazy<bool> _seededLazy;
     private AsyncLazy<bool> _folderSeededLazy;
 
-    /// <summary>Routes a single source file produces (its own route + fallback locale routes), with the parsed front matter shared across them.</summary>
+    /// <summary>Routes a single source file produces (its own route + fallback locale routes), with the parsed front matter and raw markdown body shared across them — body is cached so <see cref="ParseContentAsync"/> serves from memory without re-reading or re-parsing.</summary>
     private sealed record FileEntry(
         ImmutableList<(ContentRoute Route, bool IsLlmsOnly)> Routes,
-        TFrontMatter FrontMatter);
+        TFrontMatter FrontMatter,
+        string Body);
 
     /// <summary>
     /// Initializes the service and prepares lazy metadata loading. <see cref="FileWatchDispatcher"/>
@@ -197,25 +198,26 @@ public sealed class MarkdownContentService<TFrontMatter>
             case WatcherChangeTypes.Changed:
             default:
                 // Parse outside the lock; assign under it.
-                var parsed = TryParseFrontMatter(absolutePath);
+                var parsed = TryParseMarkdown(absolutePath);
                 if (parsed is null)
                 {
                     return FileWatchResponse.Refreshed;
                 }
+                var (frontMatter, body) = parsed.Value;
 
                 lock (_cacheLock)
                 {
                     if (_entries.TryGetValue(absolutePath, out var existing)
                         && change.ChangeType == WatcherChangeTypes.Changed)
                     {
-                        // Content edit: routes unchanged, just refresh front matter.
-                        _entries[absolutePath] = existing with { FrontMatter = parsed };
+                        // Content edit: routes unchanged, just refresh front matter + body.
+                        _entries[absolutePath] = existing with { FrontMatter = frontMatter, Body = body };
                     }
                     else
                     {
                         // Created (or Changed on a file we don't know yet): build a fresh entry.
                         _entries[absolutePath] = BuildEntry(
-                            new FilePath(absolutePath), locale, parsed, HasLocalizedVersionFromCache);
+                            new FilePath(absolutePath), locale, frontMatter, body, HasLocalizedVersionFromCache);
 
                         // A new non-default-locale file supersedes the default-locale fallback.
                         RebuildCorrespondingDefaultLocaleEntry(absolutePath, locale);
@@ -301,7 +303,7 @@ public sealed class MarkdownContentService<TFrontMatter>
         }
 
         _entries[defaultPath] = BuildEntry(
-            new FilePath(defaultPath), _localization.DefaultLocale, existing.FrontMatter, HasLocalizedVersionFromCache);
+            new FilePath(defaultPath), _localization.DefaultLocale, existing.FrontMatter, existing.Body, HasLocalizedVersionFromCache);
     }
 
     /// <inheritdoc/>
@@ -425,47 +427,42 @@ public sealed class MarkdownContentService<TFrontMatter>
     public async IAsyncEnumerable<ParsedItem> ParseContentAsync()
     {
         var start = Stopwatch.GetTimestamp();
-        var yielded = 0;
-        foreach (var (route, sourceFile) in DiscoverRoutesWithFallbacks())
+
+        // Yield from the in-memory cache populated by SeedMetadataAsync / ApplyMarkdownChange.
+        // Snapshot under the lock so a concurrent OnFileChanged doesn't mutate _entries mid-iteration.
+        await _seededLazy;
+        var snapshot = ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly, string Body)>.Empty;
+        lock (_cacheLock)
         {
-            var item = await TryParseContentAsync(route, sourceFile);
-            if (item is not null)
+            var builder = ImmutableList.CreateBuilder<(ContentRoute, TFrontMatter, bool, string)>();
+            foreach (var entry in _entries.Values)
             {
-                yielded++;
-                yield return item;
+                foreach (var (route, isLlmsOnly) in entry.Routes)
+                {
+                    builder.Add((route, entry.FrontMatter, isLlmsOnly, entry.Body));
+                }
             }
+            snapshot = builder.ToImmutable();
         }
+
+        var yielded = 0;
+        foreach (var (route, frontMatter, _, body) in snapshot)
+        {
+            // Drafts/scheduled pages and redirects don't reach the parsed-body channel —
+            // they're surfaced through DiscoverAsync as RedirectSource or filtered upstream.
+            if (frontMatter.IsHiddenFromBuild(_clock)
+                || frontMatter is IRedirectable { RedirectUrl: { Length: > 0 } })
+            {
+                continue;
+            }
+
+            yielded++;
+            yield return new ParsedItem(route, frontMatter, body);
+        }
+
         _logger?.LogDebug(
             "MarkdownContentService.ParseContentAsync: yielded {Count} items in {ElapsedMs:F1}ms ({ContentPath})",
             yielded, Stopwatch.GetElapsedTime(start).TotalMilliseconds, _absoluteContentPath);
-    }
-
-    /// <summary>
-    /// Reads and parses one file with this service's <typeparamref name="TFrontMatter"/>.
-    /// Returns <c>null</c> for unparseable files and for items that never reach the
-    /// parsed-body channel — drafts/scheduled pages and redirects (surfaced as
-    /// <see cref="RedirectSource"/>, not bodies) — mirroring <see cref="DiscoverAsync"/>.
-    /// </summary>
-    private async Task<ParsedItem?> TryParseContentAsync(ContentRoute route, FilePath sourceFile)
-    {
-        try
-        {
-            var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
-            var result = _parser.Parse<TFrontMatter>(content, sourceFile.Value);
-            var metadata = result.Metadata ?? new TFrontMatter();
-
-            if (metadata.IsHiddenFromBuild(_clock)
-                || metadata is IRedirectable { RedirectUrl: { Length: > 0 } })
-            {
-                return null;
-            }
-
-            return new ParsedItem(route, metadata, result.Body);
-        }
-        catch
-        {
-            return null;
-        }
     }
 
     /// <inheritdoc/>
@@ -774,13 +771,13 @@ public sealed class MarkdownContentService<TFrontMatter>
 
         foreach (var (file, locale) in files)
         {
-            var parsed = await TryParseFrontMatterAsync(file.Value);
+            var parsed = await TryParseMarkdownAsync(file.Value);
             if (parsed is null)
             {
                 continue;
             }
 
-            var entry = BuildEntry(file, locale, parsed, HasLocalizedVersion);
+            var entry = BuildEntry(file, locale, parsed.Value.FrontMatter, parsed.Value.Body, HasLocalizedVersion);
             lock (_cacheLock)
             {
                 _entries[_fileSystem.Path.GetFullPath(file.Value)] = entry;
@@ -975,32 +972,32 @@ public sealed class MarkdownContentService<TFrontMatter>
     }
 
     /// <summary>Parses front matter from a single file. Returns <c>null</c> when the file can't be read or parsed.</summary>
-    private async Task<TFrontMatter?> TryParseFrontMatterAsync(string file)
+    private async Task<(TFrontMatter FrontMatter, string Body)?> TryParseMarkdownAsync(string file)
     {
         try
         {
             var content = await _fileSystem.File.ReadAllTextAsync(file);
             var parsed = _parser.Parse<TFrontMatter>(content, file);
-            return parsed.Metadata ?? new TFrontMatter();
+            return (parsed.Metadata ?? new TFrontMatter(), parsed.Body);
         }
         catch
         {
-            return default;
+            return null;
         }
     }
 
-    /// <summary>Synchronous variant of <see cref="TryParseFrontMatterAsync"/> for use inside <see cref="OnFileChanged"/>.</summary>
-    private TFrontMatter? TryParseFrontMatter(string file)
+    /// <summary>Synchronous variant of <see cref="TryParseMarkdownAsync"/> for use inside <see cref="OnFileChanged"/>.</summary>
+    private (TFrontMatter FrontMatter, string Body)? TryParseMarkdown(string file)
     {
         try
         {
             var content = _fileSystem.File.ReadAllText(file);
             var parsed = _parser.Parse<TFrontMatter>(content, file);
-            return parsed.Metadata ?? new TFrontMatter();
+            return (parsed.Metadata ?? new TFrontMatter(), parsed.Body);
         }
         catch
         {
-            return default;
+            return null;
         }
     }
 
@@ -1013,6 +1010,7 @@ public sealed class MarkdownContentService<TFrontMatter>
         FilePath file,
         string locale,
         TFrontMatter frontMatter,
+        string body,
         Func<string, string, bool> hasLocalizedVersion)
     {
         var isLlmsOnly = IsLlmsOnlyFile(file);
@@ -1021,7 +1019,7 @@ public sealed class MarkdownContentService<TFrontMatter>
         {
             routes.Add((route, isLlmsOnly));
         }
-        return new FileEntry(routes.ToImmutable(), frontMatter);
+        return new FileEntry(routes.ToImmutable(), frontMatter, body);
     }
 
     /// <summary>
@@ -1174,28 +1172,6 @@ public sealed class MarkdownContentService<TFrontMatter>
         IsLlmsOnlyFile(file)
             ? new FilePath(file.Value[..^LlmsOnlyFileSuffix.Length] + ".md")
             : file;
-
-    /// <summary>
-    /// Produces routes for all discovered files plus fallback entries for missing locale
-    /// content. Used by <see cref="ParseContentAsync"/>; the metadata cache (built by
-    /// <see cref="SeedMetadataAsync"/>) goes through the same <see cref="RoutesForFile"/>
-    /// helper to keep the two channels consistent.
-    /// </summary>
-    private IEnumerable<(ContentRoute Route, FilePath SourceFile)> DiscoverRoutesWithFallbacks()
-    {
-        var files = DiscoverFiles();
-        var localizedPaths = BuildLocalizedPathLookup(files);
-        bool HasLocalizedVersion(string locale, string relativePath) =>
-            localizedPaths.TryGetValue(locale, out var set) && set.Contains(relativePath);
-
-        foreach (var (file, locale) in files)
-        {
-            foreach (var route in RoutesForFile(file, locale, HasLocalizedVersion))
-            {
-                yield return (route, file);
-            }
-        }
-    }
 
     /// <summary>Returns the content root path for a given locale.</summary>
     private string GetContentRootForLocale(string locale)

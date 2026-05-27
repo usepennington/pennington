@@ -53,6 +53,12 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
     private ImmutableArray<RenderedPage> _pages = ImmutableArray<RenderedPage>.Empty;
     private FrozenDictionary<string, int> _routeIndex = FrozenDictionary<string, int>.Empty;
 
+    // Persisted across refreshes — on a partial refresh we only re-enrich the stale
+    // entries, leaving everything else untouched. Mutated only inside BuildOrRefreshAsync,
+    // which is serialized by _refreshGate, so no additional locking is required here.
+    private readonly Dictionary<string, ParsedItem> _parsedByPath = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ContentSource> _sourceByPath = new(StringComparer.OrdinalIgnoreCase);
+
     // Pending stale set accumulated since last refresh. Protected by _lock.
     private readonly HashSet<string> _staleRoutes = new(StringComparer.OrdinalIgnoreCase);
     private bool _staleAll;
@@ -232,23 +238,75 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
     {
         // 1) Build the ParsedItem map so MarkdownOrigin pages carry enriched front-matter
         //    and derived metadata, and so Llms-only items can be rendered in-process.
-        var parsedByPath = new Dictionary<string, ParsedItem>(StringComparer.OrdinalIgnoreCase);
+        //    On a wildcard refresh we replace the map; on a stale-set refresh we only
+        //    re-enrich the changed routes and drop any that have disappeared.
         var parseStart = Stopwatch.GetTimestamp();
-        await foreach (var parsed in _contentServices.ParseAllContentAsync(cancellationToken))
+        if (staleAll)
         {
-            var enriched = await _enrichment.EnrichAsync(parsed);
-            parsedByPath[Normalize(enriched.Route.CanonicalPath.Value)] = enriched;
+            _parsedByPath.Clear();
+            await foreach (var parsed in _contentServices.ParseAllContentAsync(cancellationToken))
+            {
+                var enriched = await _enrichment.EnrichAsync(parsed);
+                _parsedByPath[Normalize(enriched.Route.CanonicalPath.Value)] = enriched;
+            }
+        }
+        else if (staleRoutes.Count > 0)
+        {
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            await foreach (var parsed in _contentServices.ParseAllContentAsync(cancellationToken))
+            {
+                var key = Normalize(parsed.Route.CanonicalPath.Value);
+                if (!staleRoutes.Contains(key))
+                {
+                    continue;
+                }
+                _parsedByPath[key] = await _enrichment.EnrichAsync(parsed);
+                seen.Add(key);
+            }
+            foreach (var key in staleRoutes)
+            {
+                if (!seen.Contains(key))
+                {
+                    _parsedByPath.Remove(key);
+                }
+            }
         }
         var parseElapsed = Stopwatch.GetElapsedTime(parseStart);
+        var parsedByPath = _parsedByPath;
 
         // 2) Source-type map to distinguish LlmsOnlySource (in-process render) from regular markdown.
-        var sourceByPath = new Dictionary<string, ContentSource>(StringComparer.OrdinalIgnoreCase);
         var discoverStart = Stopwatch.GetTimestamp();
-        await foreach (var discovered in _contentServices.DiscoverAllAsync(cancellationToken))
+        if (staleAll)
         {
-            sourceByPath[Normalize(discovered.Route.CanonicalPath.Value)] = discovered.Source;
+            _sourceByPath.Clear();
+            await foreach (var discovered in _contentServices.DiscoverAllAsync(cancellationToken))
+            {
+                _sourceByPath[Normalize(discovered.Route.CanonicalPath.Value)] = discovered.Source;
+            }
+        }
+        else if (staleRoutes.Count > 0)
+        {
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            await foreach (var discovered in _contentServices.DiscoverAllAsync(cancellationToken))
+            {
+                var key = Normalize(discovered.Route.CanonicalPath.Value);
+                if (!staleRoutes.Contains(key))
+                {
+                    continue;
+                }
+                _sourceByPath[key] = discovered.Source;
+                seen.Add(key);
+            }
+            foreach (var key in staleRoutes)
+            {
+                if (!seen.Contains(key))
+                {
+                    _sourceByPath.Remove(key);
+                }
+            }
         }
         var discoverElapsed = Stopwatch.GetElapsedTime(discoverStart);
+        var sourceByPath = _sourceByPath;
 
         // 3) Renderable TOC entries.
         var tocStart = Stopwatch.GetTimestamp();

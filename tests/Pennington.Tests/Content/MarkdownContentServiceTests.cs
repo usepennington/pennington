@@ -1424,6 +1424,93 @@ public class MarkdownContentServiceTests
         after.Single(e => e.Locale == "fr").Title.ShouldBe("About");
     }
 
+    // --- Body caching on FileEntry ---
+    // ParseContentAsync yields from the in-memory cache populated during seeding,
+    // so a second enumeration does not re-read the source files. OnFileChanged
+    // re-populates the cached body alongside the front matter.
+
+    [Fact]
+    public async Task ParseContentAsync_SecondEnumeration_DoesNotReadFiles()
+    {
+        var fs = CreateFs(
+            ("page-a.md", "---\ntitle: A\n---\n# A\n\nBody A."),
+            ("page-b.md", "---\ntitle: B\n---\n# B\n\nBody B."));
+        var service = CreateTestService(fs);
+
+        // First enumeration seeds the cache.
+        await foreach (var _ in service.ParseContentAsync())
+        {
+        }
+
+        // Delete the files on disk. A cache-backed ParseContentAsync still yields
+        // the cached bodies; a disk-backed one would skip the missing files.
+        var pageAAbsolute = AbsoluteContentPath(service, fs, "page-a.md");
+        var pageBAbsolute = AbsoluteContentPath(service, fs, "page-b.md");
+        fs.File.Delete(pageAAbsolute);
+        fs.File.Delete(pageBAbsolute);
+
+        var items = new List<ParsedItem>();
+        await foreach (var item in service.ParseContentAsync())
+        {
+            items.Add(item);
+        }
+
+        items.Count.ShouldBe(2);
+        items.Single(i => i.Metadata.Title == "A").RawMarkdown.ShouldContain("Body A.");
+        items.Single(i => i.Metadata.Title == "B").RawMarkdown.ShouldContain("Body B.");
+    }
+
+    [Fact]
+    public async Task OnFileChanged_Changed_UpdatesCachedBody()
+    {
+        var fs = CreateFs(
+            ("page.md", "---\ntitle: Page\n---\n# v1\n\nOriginal body."));
+        var service = CreateTestService(fs);
+        var absolute = AbsoluteContentPath(service, fs, "page.md");
+
+        // Seed.
+        var initial = await ToListAsync(service.ParseContentAsync());
+        initial.Single().RawMarkdown.ShouldContain("Original body.");
+
+        // Edit and notify.
+        fs.File.WriteAllText(absolute, "---\ntitle: Page\n---\n# v2\n\nUpdated body.");
+        service.OnFileChanged(new FileChangeNotification(absolute, WatcherChangeTypes.Changed));
+
+        var after = await ToListAsync(service.ParseContentAsync());
+        after.Single().RawMarkdown.ShouldContain("Updated body.");
+        after.Single().RawMarkdown.ShouldNotContain("Original body.");
+    }
+
+    [Fact]
+    public async Task OnFileChanged_Deleted_DropsRouteFromParseContentAsync()
+    {
+        var fs = CreateFs(
+            ("keep.md", "---\ntitle: Keep\n---\n# Keep\n\nKeep body."),
+            ("remove.md", "---\ntitle: Remove\n---\n# Remove\n\nRemove body."));
+        var service = CreateTestService(fs);
+        var removeAbsolute = AbsoluteContentPath(service, fs, "remove.md");
+
+        var initial = await ToListAsync(service.ParseContentAsync());
+        initial.Count.ShouldBe(2);
+
+        fs.File.Delete(removeAbsolute);
+        service.OnFileChanged(new FileChangeNotification(removeAbsolute, WatcherChangeTypes.Deleted));
+
+        var after = await ToListAsync(service.ParseContentAsync());
+        after.Count.ShouldBe(1);
+        after.Single().Metadata.Title.ShouldBe("Keep");
+    }
+
+    private static async Task<List<T>> ToListAsync<T>(IAsyncEnumerable<T> source)
+    {
+        var list = new List<T>();
+        await foreach (var item in source)
+        {
+            list.Add(item);
+        }
+        return list;
+    }
+
     [Fact]
     public void GetAffectedRoutes_MarkdownChanged_ReturnsOwnRoute()
     {
