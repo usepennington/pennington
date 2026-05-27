@@ -53,5 +53,6 @@
     <Project Path="examples/SpaPlaygroundExample/SpaPlaygroundExample.csproj" />
     <Project Path="examples/EventMicrositeExample/EventMicrositeExample.csproj" />
     <Project Path="examples/BareHostSearchExample/BareHostSearchExample.csproj" />
+    <Project Path="examples/ScaleStressExample/ScaleStressExample.csproj" />
   </Folder>
 </Solution>
