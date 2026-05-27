@@ -1,10 +1,12 @@
 namespace Pennington.Content;
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO.Abstractions;
 using FrontMatter;
 using Infrastructure;
 using LlmsTxt;
+using Microsoft.Extensions.Logging;
 using Pipeline;
 using Routing;
 using SharpYaml;
@@ -36,6 +38,7 @@ public sealed class MarkdownContentService<TFrontMatter>
     private readonly IFileSystem _fileSystem;
     private readonly LocalizationOptions _localization;
     private readonly TimeProvider _clock;
+    private readonly ILogger<MarkdownContentService<TFrontMatter>>? _logger;
     private readonly string _absoluteContentPath;
     private readonly ImmutableArray<string> _normalizedExcludePaths;
     private readonly FileWatchScope _watchScope;
@@ -65,13 +68,15 @@ public sealed class MarkdownContentService<TFrontMatter>
         FrontMatterParser parser,
         IFileSystem fileSystem,
         LocalizationOptions localization,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        ILogger<MarkdownContentService<TFrontMatter>>? logger = null)
     {
         _options = options;
         _parser = parser;
         _fileSystem = fileSystem;
         _localization = localization;
         _clock = clock ?? TimeProvider.System;
+        _logger = logger;
         _absoluteContentPath = _fileSystem.Path.GetFullPath(options.ContentPath.Value);
         _normalizedExcludePaths = NormalizeExcludePaths(options.ExcludePaths);
         _watchScope = new FileWatchScope(_absoluteContentPath, "*.*", IncludeSubdirectories: true);
@@ -419,14 +424,20 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <inheritdoc/>
     public async IAsyncEnumerable<ParsedItem> ParseContentAsync()
     {
+        var start = Stopwatch.GetTimestamp();
+        var yielded = 0;
         foreach (var (route, sourceFile) in DiscoverRoutesWithFallbacks())
         {
             var item = await TryParseContentAsync(route, sourceFile);
             if (item is not null)
             {
+                yielded++;
                 yield return item;
             }
         }
+        _logger?.LogDebug(
+            "MarkdownContentService.ParseContentAsync: yielded {Count} items in {ElapsedMs:F1}ms ({ContentPath})",
+            yielded, Stopwatch.GetElapsedTime(start).TotalMilliseconds, _absoluteContentPath);
     }
 
     /// <summary>

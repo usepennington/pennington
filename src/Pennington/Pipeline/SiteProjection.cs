@@ -2,6 +2,7 @@ namespace Pennington.Pipeline;
 
 using System.Collections.Frozen;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using AngleSharp;
 using AngleSharp.Dom;
@@ -232,21 +233,27 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
         // 1) Build the ParsedItem map so MarkdownOrigin pages carry enriched front-matter
         //    and derived metadata, and so Llms-only items can be rendered in-process.
         var parsedByPath = new Dictionary<string, ParsedItem>(StringComparer.OrdinalIgnoreCase);
+        var parseStart = Stopwatch.GetTimestamp();
         await foreach (var parsed in _contentServices.ParseAllContentAsync(cancellationToken))
         {
             var enriched = await _enrichment.EnrichAsync(parsed);
             parsedByPath[Normalize(enriched.Route.CanonicalPath.Value)] = enriched;
         }
+        var parseElapsed = Stopwatch.GetElapsedTime(parseStart);
 
         // 2) Source-type map to distinguish LlmsOnlySource (in-process render) from regular markdown.
         var sourceByPath = new Dictionary<string, ContentSource>(StringComparer.OrdinalIgnoreCase);
+        var discoverStart = Stopwatch.GetTimestamp();
         await foreach (var discovered in _contentServices.DiscoverAllAsync(cancellationToken))
         {
             sourceByPath[Normalize(discovered.Route.CanonicalPath.Value)] = discovered.Source;
         }
+        var discoverElapsed = Stopwatch.GetElapsedTime(discoverStart);
 
         // 3) Renderable TOC entries.
+        var tocStart = Stopwatch.GetTimestamp();
         var tocItems = await _contentServices.CollectIndexableEntriesAsync();
+        var tocElapsed = Stopwatch.GetElapsedTime(tocStart);
 
         // 4) Endpoint entries opted in via WithLlmsTxtEntry.
         var endpointEntries = CollectEndpointEntries(_endpointDataSource).ToList();
@@ -257,6 +264,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
         var refreshed = 0;
         var reused = 0;
 
+        var renderStart = Stopwatch.GetTimestamp();
         await Parallel.ForEachAsync(
             Enumerable.Range(0, tocItems.Count),
             new ParallelOptions { CancellationToken = cancellationToken },
@@ -301,11 +309,18 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 Sections: new Lazy<IReadOnlyList<HeadingSection>>(() => []));
         }
 
+        var renderElapsed = Stopwatch.GetElapsedTime(renderStart);
+
         if (staleAll || staleRoutes.Count > 0 || reusable.Count != tocItems.Count + endpointEntries.Count)
         {
             _logger.LogDebug(
-                "SiteProjection refresh: {Refreshed} refreshed, {Reused} reused (staleAll={StaleAll}, stale={StaleCount}, prevSize={Prev}, newSize={New})",
-                refreshed, reused, staleAll, staleRoutes.Count, reusable.Count, total);
+                "SiteProjection refresh: {Refreshed} refreshed, {Reused} reused "
+                + "(parse {ParseMs:F1}ms, discover {DiscoverMs:F1}ms, toc {TocMs:F1}ms, render {RenderMs:F1}ms, "
+                + "staleAll={StaleAll}, stale={StaleCount}, prevSize={Prev}, newSize={New})",
+                refreshed, reused,
+                parseElapsed.TotalMilliseconds, discoverElapsed.TotalMilliseconds,
+                tocElapsed.TotalMilliseconds, renderElapsed.TotalMilliseconds,
+                staleAll, staleRoutes.Count, reusable.Count, total);
         }
 
         var pagesBuilder = ImmutableArray.CreateBuilder<RenderedPage>(total);

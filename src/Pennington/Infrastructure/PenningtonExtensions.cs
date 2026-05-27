@@ -230,11 +230,7 @@ public static class PenningtonExtensions
                         ExcludePaths = capturedSource.ExcludePaths,
                     };
 
-                    var parser = sp.GetRequiredService<FrontMatterParser>();
-                    var fileSystem = sp.GetRequiredService<IFileSystem>();
-                    var localization = sp.GetRequiredService<LocalizationOptions>();
-                    var clock = sp.GetRequiredService<TimeProvider>();
-                    instance = Activator.CreateInstance(serviceType, sourceOptions, parser, fileSystem, localization, clock)!;
+                    instance = ActivatorUtilities.CreateInstance(sp, serviceType, sourceOptions);
                 }
                 return instance;
             }
