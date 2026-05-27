@@ -20,7 +20,7 @@ public sealed class AuditRunner : IHostedService
     private readonly IFileWatcher _fileWatcher;
     private readonly LocalizationOptions _localization;
     private readonly ILogger<AuditRunner> _logger;
-    private readonly bool _isBuildMode = PenningtonBuildMode.IsBuildMode();
+    private readonly bool _isBuildMode;
     private readonly Lock _runLock = new();
     private Task? _activeRun;
 
@@ -31,12 +31,25 @@ public sealed class AuditRunner : IHostedService
         IFileWatcher fileWatcher,
         LocalizationOptions localization,
         ILogger<AuditRunner> logger)
+        : this(services, cache, fileWatcher, localization, logger, PenningtonBuildMode.IsBuildMode())
+    {
+    }
+
+    // Test seam: lets unit tests drive the build-mode branch without depending on process args.
+    internal AuditRunner(
+        IServiceProvider services,
+        AuditCache cache,
+        IFileWatcher fileWatcher,
+        LocalizationOptions localization,
+        ILogger<AuditRunner> logger,
+        bool isBuildMode)
     {
         _services = services;
         _cache = cache;
         _fileWatcher = fileWatcher;
         _localization = localization;
         _logger = logger;
+        _isBuildMode = isBuildMode;
     }
 
     /// <inheritdoc/>
@@ -78,7 +91,13 @@ public sealed class AuditRunner : IHostedService
             // keeps anything they capture (e.g. file-watched content services) fresh.
             using var scope = _services.CreateScope();
             var auditors = scope.ServiceProvider.GetServices<IBuildAuditor>().ToList();
-            var renderedAuditors = scope.ServiceProvider.GetServices<IRenderedAuditor>().ToList();
+            // Rendered auditors issue one HTTP self-fetch per TOC page. On a large corpus
+            // (e.g. ScaleStressExample's 5000 pages) that floods the dev log at startup and
+            // again after every file edit. The broken-link findings only need to gate the
+            // build report, so resolve rendered auditors only in build mode.
+            var renderedAuditors = _isBuildMode
+                ? scope.ServiceProvider.GetServices<IRenderedAuditor>().ToList()
+                : new List<IRenderedAuditor>();
             if (auditors.Count == 0 && renderedAuditors.Count == 0)
             {
                 _cache.Set(ImmutableList<BuildDiagnostic>.Empty);

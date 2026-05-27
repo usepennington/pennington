@@ -303,6 +303,10 @@ public static class PenningtonExtensions
         services.AddSingleton<IResponseProcessor, DiagnosticOverlayProcessor>();
         services.AddSingleton<IResponseProcessor, NotFoundStatusProcessor>();
         services.AddSingleton<IResponseProcessor, AuditDiagnosticProcessor>();
+        // Per-page link verification in dev mode. Replaces the corpus-wide LinkAuditor
+        // self-fetch flood with a one-shot check of the response HTML for the current page.
+        services.AddFileWatched<PageLinkVerifier>();
+        services.AddSingleton<IResponseProcessor, PageLinkAuditProcessor>();
 
         // Audit pipeline: AuditCache holds the latest snapshot from every IBuildAuditor;
         // AuditRunner refreshes it at startup and on file change. AuditDiagnosticProcessor

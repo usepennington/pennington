@@ -8,7 +8,7 @@ namespace Pennington.Tests.Generation;
 public class AuditRunnerTests
 {
     [Fact]
-    public async Task StartAsync_RunsRenderedAuditor_AndCachesItsDiagnostics()
+    public async Task StartAsync_InBuildMode_RunsRenderedAuditor_AndCachesItsDiagnostics()
     {
         var services = new ServiceCollection();
         services.AddSingleton<AuditCache>();
@@ -25,7 +25,8 @@ public class AuditRunnerTests
             cache,
             sp.GetRequiredService<IFileWatcher>(),
             sp.GetRequiredService<LocalizationOptions>(),
-            NullLogger<AuditRunner>.Instance);
+            NullLogger<AuditRunner>.Instance,
+            isBuildMode: true);
 
         await runner.StartAsync(TestContext.Current.CancellationToken);
 
@@ -40,11 +41,44 @@ public class AuditRunnerTests
         cache.Diagnostics[0].SourceFile.ShouldBe("test.rendered");
     }
 
+    [Fact]
+    public async Task StartAsync_InDevMode_SkipsRenderedAuditors()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<AuditCache>();
+        services.AddSingleton<IAuditCache>(sp => sp.GetRequiredService<AuditCache>());
+        services.AddSingleton(new LocalizationOptions());
+        services.AddSingleton<IFileWatcher, StubFileWatcher>();
+        services.AddSingleton<IInProcessHttpDispatcher, StubDispatcher>();
+        var renderedAuditor = new FakeRenderedAuditor();
+        services.AddSingleton<IRenderedAuditor>(renderedAuditor);
+
+        using var sp = services.BuildServiceProvider();
+        var cache = sp.GetRequiredService<AuditCache>();
+        var runner = new AuditRunner(
+            sp,
+            cache,
+            sp.GetRequiredService<IFileWatcher>(),
+            sp.GetRequiredService<LocalizationOptions>(),
+            NullLogger<AuditRunner>.Instance,
+            isBuildMode: false);
+
+        await runner.StartAsync(TestContext.Current.CancellationToken);
+
+        // Wait long enough for any background run to settle.
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        renderedAuditor.AuditCalls.ShouldBe(0);
+        cache.Diagnostics.ShouldBeEmpty();
+    }
+
     private sealed class FakeRenderedAuditor : IRenderedAuditor
     {
         public string Code => "test.rendered";
+        public int AuditCalls { get; private set; }
         public Task<IReadOnlyList<BuildDiagnostic>> AuditAsync(RenderedAuditContext context, CancellationToken cancellationToken)
         {
+            AuditCalls++;
             IReadOnlyList<BuildDiagnostic> diagnostics =
             [
                 new BuildDiagnostic(DiagnosticSeverity.Warning, Route: null, Message: "rendered audit ran", SourceFile: Code),
