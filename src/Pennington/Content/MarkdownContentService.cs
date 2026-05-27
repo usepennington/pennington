@@ -171,23 +171,16 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <inheritdoc/>
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
-        foreach (var (route, sourceFile) in DiscoverRoutesWithFallbacks())
+        // Walk the cached metadata rather than re-reading + re-parsing front matter per call —
+        // every other channel on this service already does this (GetIndexableEntriesAsync,
+        // GetContentTocEntriesAsync, etc.), and per-request callers (catch-all page handlers)
+        // would otherwise pay an O(files) YAML re-parse on every hit.
+        var metadata = await _metadataLazy.Value;
+        foreach (var (route, frontMatter, isLlmsOnly) in metadata)
         {
-            TFrontMatter? frontMatter = default;
-            try
+            if (frontMatter.IsHiddenFromBuild(_clock))
             {
-                var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
-                var parsed = _parser.Parse<TFrontMatter>(content, sourceFile.Value);
-                if (parsed.Metadata is { } metadata && metadata.IsHiddenFromBuild(_clock))
-                {
-                    continue;
-                }
-
-                frontMatter = parsed.Metadata;
-            }
-            catch
-            {
-                // If front matter can't be parsed, include the file as a markdown source.
+                continue;
             }
 
             // Pages with RedirectUrl front matter are surfaced as RedirectSource so the
@@ -199,13 +192,13 @@ public sealed class MarkdownContentService<TFrontMatter>
                 continue;
             }
 
-            if (IsLlmsOnlyFile(sourceFile))
+            if (isLlmsOnly)
             {
-                yield return new DiscoveredItem(route, new LlmsOnlySource(sourceFile)) { Metadata = frontMatter };
+                yield return new DiscoveredItem(route, new LlmsOnlySource(route.SourceFile!.Value)) { Metadata = frontMatter };
                 continue;
             }
 
-            yield return new DiscoveredItem(route, new MarkdownFileSource(sourceFile)) { Metadata = frontMatter };
+            yield return new DiscoveredItem(route, new MarkdownFileSource(route.SourceFile!.Value)) { Metadata = frontMatter };
         }
     }
 
