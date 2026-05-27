@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.IO;
 using Microsoft.Extensions.Time.Testing;
 using Pennington.Content;
 using Pennington.FrontMatter;
@@ -1242,5 +1243,184 @@ public class MarkdownContentServiceTests
         entries[0].SearchOnly.ShouldBeTrue();
         entries[0].ExcludeFromSearch.ShouldBeFalse();
         entries[0].ExcludeFromLlms.ShouldBeFalse();
+    }
+
+    // --- Incremental OnFileChanged refresh ---
+    // OnFileChanged matches the watcher scope by directory-prefix comparison, so paths
+    // must match the absolute form the service resolved at construction. The MockFileSystem
+    // root depends on host platform — read AbsoluteContentRoot via IMarkdownContentSource
+    // and build change paths off it.
+    private static string AbsoluteContentPath(MarkdownContentService<DocFrontMatter> service, MockFileSystem fs, string relativeUnderContent)
+    {
+        IMarkdownContentSource source = service;
+        return fs.Path.Combine(source.AbsoluteContentRoot, relativeUnderContent);
+    }
+
+    [Fact]
+    public async Task OnFileChanged_Changed_RefreshesOnlyTouchedFile()
+    {
+        var fs = CreateFs(
+            ("page-a.md", "---\ntitle: A v1\n---\n# A"),
+            ("page-b.md", "---\ntitle: B v1\n---\n# B"));
+        var service = CreateTestService(fs);
+        var changedAbsolute = AbsoluteContentPath(service, fs, "page-a.md");
+
+        // Seed the cache.
+        var initial = await service.GetContentTocEntriesAsync();
+        initial.Count.ShouldBe(2);
+
+        // Edit one file on disk.
+        fs.File.WriteAllText(changedAbsolute, "---\ntitle: A v2\n---\n# A");
+        var response = service.OnFileChanged(new FileChangeNotification(changedAbsolute, WatcherChangeTypes.Changed));
+
+        response.ShouldBe(FileWatchResponse.Refreshed);
+
+        var after = await service.GetContentTocEntriesAsync();
+        after.Count.ShouldBe(2);
+        after.Single(e => e.Route.CanonicalPath.Value == "/docs/page-a/").Title.ShouldBe("A v2");
+        after.Single(e => e.Route.CanonicalPath.Value == "/docs/page-b/").Title.ShouldBe("B v1");
+    }
+
+    [Fact]
+    public async Task OnFileChanged_Created_AddsNewFileToToc()
+    {
+        var fs = CreateFs(
+            ("existing.md", "---\ntitle: Existing\n---\n# Existing"));
+        var service = CreateTestService(fs);
+        var newAbsolute = AbsoluteContentPath(service, fs, "new.md");
+
+        var initial = await service.GetContentTocEntriesAsync();
+        initial.Count.ShouldBe(1);
+
+        fs.File.WriteAllText(newAbsolute, "---\ntitle: New Page\n---\n# New");
+        service.OnFileChanged(new FileChangeNotification(newAbsolute, WatcherChangeTypes.Created));
+
+        var after = await service.GetContentTocEntriesAsync();
+        after.Count.ShouldBe(2);
+        after.ShouldContain(e => e.Title == "New Page");
+    }
+
+    [Fact]
+    public async Task OnFileChanged_Deleted_RemovesFileFromToc()
+    {
+        var fs = CreateFs(
+            ("keep.md", "---\ntitle: Keep\n---\n# Keep"),
+            ("remove.md", "---\ntitle: Remove\n---\n# Remove"));
+        var service = CreateTestService(fs);
+        var removeAbsolute = AbsoluteContentPath(service, fs, "remove.md");
+
+        var initial = await service.GetContentTocEntriesAsync();
+        initial.Count.ShouldBe(2);
+
+        fs.File.Delete(removeAbsolute);
+        service.OnFileChanged(new FileChangeNotification(removeAbsolute, WatcherChangeTypes.Deleted));
+
+        var after = await service.GetContentTocEntriesAsync();
+        after.Count.ShouldBe(1);
+        after[0].Title.ShouldBe("Keep");
+    }
+
+    [Fact]
+    public async Task OnFileChanged_AssetFile_LeavesContentMetadataIntact()
+    {
+        // An image change under the content tree shouldn't evict the markdown
+        // metadata cache. The previous behaviour wholesale-reset both caches
+        // on any change inside the scope.
+        var fs = CreateFs(
+            ("page.md", "---\ntitle: Page\n---\n# Page"),
+            ("logo.png", "fake-png"));
+        var service = CreateTestService(fs);
+        var pageAbsolute = AbsoluteContentPath(service, fs, "page.md");
+        var logoAbsolute = AbsoluteContentPath(service, fs, "logo.png");
+
+        var initial = await service.GetContentTocEntriesAsync();
+        initial.Count.ShouldBe(1);
+
+        // Flip the file on disk in a way that would break the next re-parse, then fire
+        // an asset change — if the cache *were* evicted, the next read would pick up
+        // garbage. With the asset-filter in OnFileChanged it stays valid.
+        fs.File.WriteAllText(pageAbsolute, "::: not yaml :::");
+        var response = service.OnFileChanged(new FileChangeNotification(logoAbsolute, WatcherChangeTypes.Changed));
+
+        response.ShouldBe(FileWatchResponse.Refreshed);
+
+        var after = await service.GetContentTocEntriesAsync();
+        after.Count.ShouldBe(1);
+        after[0].Title.ShouldBe("Page");
+    }
+
+    [Fact]
+    public async Task OnFileChanged_MetaYml_UpdatesFolderMetadataNotContentToc()
+    {
+        var fs = CreateFs(
+            ("guides/setup.md", "---\ntitle: Setup\n---\n# Setup"),
+            ("guides/_meta.yml", "title: Guides v1\norder: 1\n"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/"));
+        var metaAbsolute = AbsoluteContentPath(service, fs, "guides/_meta.yml");
+        var setupAbsolute = AbsoluteContentPath(service, fs, "guides/setup.md");
+
+        // Seed both caches so subsequent reads come from the cache, not the filesystem.
+        var initialToc = await service.GetContentTocEntriesAsync();
+        initialToc.Single().Title.ShouldBe("Setup");
+        var initialFolders = await service.GetFolderMetadataAsync();
+        initialFolders.Single().Title.ShouldBe("Guides v1");
+
+        // Corrupt the markdown on disk; if the _meta.yml change incorrectly evicted the
+        // markdown cache, the next read would pick up garbage. Update the sidecar and notify.
+        fs.File.WriteAllText(setupAbsolute, "::: not yaml :::");
+        fs.File.WriteAllText(metaAbsolute, "title: Guides v2\norder: 1\n");
+        service.OnFileChanged(new FileChangeNotification(metaAbsolute, WatcherChangeTypes.Changed));
+
+        (await service.GetFolderMetadataAsync()).Single().Title.ShouldBe("Guides v2");
+        // Content TOC stays as it was — _meta.yml change must not touch the markdown cache.
+        var toc = await service.GetContentTocEntriesAsync();
+        toc.Single().Title.ShouldBe("Setup");
+    }
+
+    [Fact]
+    public async Task OnFileChanged_MultiLocale_LocalizedCreated_DropsDefaultLocaleFallback()
+    {
+        // Default-locale-only setup: en has "about.md", fr does not.
+        // The cache should currently surface a fallback en-source route for fr.
+        var fs = CreateMultiLocaleFs(
+            ("about.md", "---\ntitle: About\n---\n# About"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/"), localization: CreateMultiLocale());
+        var frAboutAbsolute = AbsoluteContentPath(service, fs, "fr/about.md");
+
+        var initial = await service.GetContentTocEntriesAsync();
+        initial.Count.ShouldBe(2);
+        initial.ShouldContain(e => e.Locale == "fr"); // fallback for fr
+
+        // Now add a real fr/about.md and fire Created. The fr fallback must drop;
+        // fr's entry should reflect the localized file's title.
+        fs.File.WriteAllText(frAboutAbsolute, "---\ntitle: À propos\n---\n# À propos");
+        service.OnFileChanged(new FileChangeNotification(frAboutAbsolute, WatcherChangeTypes.Created));
+
+        var after = await service.GetContentTocEntriesAsync();
+        after.Count.ShouldBe(2);
+        var frEntry = after.Single(e => e.Locale == "fr");
+        frEntry.Title.ShouldBe("À propos");
+    }
+
+    [Fact]
+    public async Task OnFileChanged_MultiLocale_LocalizedDeleted_RestoresDefaultLocaleFallback()
+    {
+        var fs = CreateMultiLocaleFs(
+            ("about.md", "---\ntitle: About\n---\n# About"),
+            ("fr/about.md", "---\ntitle: À propos\n---\n# À propos"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/"), localization: CreateMultiLocale());
+        var frAboutAbsolute = AbsoluteContentPath(service, fs, "fr/about.md");
+
+        var initial = await service.GetContentTocEntriesAsync();
+        initial.Count.ShouldBe(2);
+        initial.Single(e => e.Locale == "fr").Title.ShouldBe("À propos");
+
+        fs.File.Delete(frAboutAbsolute);
+        service.OnFileChanged(new FileChangeNotification(frAboutAbsolute, WatcherChangeTypes.Deleted));
+
+        var after = await service.GetContentTocEntriesAsync();
+        after.Count.ShouldBe(2);
+        // fr falls back to the en source, so its title is the en title.
+        after.Single(e => e.Locale == "fr").Title.ShouldBe("About");
     }
 }

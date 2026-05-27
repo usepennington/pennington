@@ -39,8 +39,22 @@ public sealed class MarkdownContentService<TFrontMatter>
     private readonly string _absoluteContentPath;
     private readonly ImmutableArray<string> _normalizedExcludePaths;
     private readonly FileWatchScope _watchScope;
-    private AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>> _metadataLazy;
-    private AsyncLazy<ImmutableList<FolderMetadata>> _folderMetadataLazy;
+
+    // Metadata cache. _entries is keyed by absolute source-file path; each FileEntry holds
+    // the routes the file generates (its own route + any fallback routes for non-default
+    // locales that don't have their own copy) together with the parsed front matter.
+    // _seededLazy ensures the initial scan + parse runs exactly once; mutations on
+    // OnFileChanged update individual entries under _cacheLock.
+    private readonly Lock _cacheLock = new();
+    private readonly Dictionary<string, FileEntry> _entries = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, FolderMetadata> _folderMetadataByFile = new(StringComparer.OrdinalIgnoreCase);
+    private AsyncLazy<bool> _seededLazy;
+    private AsyncLazy<bool> _folderSeededLazy;
+
+    /// <summary>Routes a single source file produces (its own route + fallback locale routes), with the parsed front matter shared across them.</summary>
+    private sealed record FileEntry(
+        ImmutableList<(ContentRoute Route, bool IsLlmsOnly)> Routes,
+        TFrontMatter FrontMatter);
 
     /// <summary>
     /// Initializes the service and prepares lazy metadata loading. <see cref="FileWatchDispatcher"/>
@@ -61,17 +75,19 @@ public sealed class MarkdownContentService<TFrontMatter>
         _absoluteContentPath = _fileSystem.Path.GetFullPath(options.ContentPath.Value);
         _normalizedExcludePaths = NormalizeExcludePaths(options.ExcludePaths);
         _watchScope = new FileWatchScope(_absoluteContentPath, "*.*", IncludeSubdirectories: true);
-        _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>>(LoadMetadataAsync);
-        _folderMetadataLazy = new AsyncLazy<ImmutableList<FolderMetadata>>(LoadFolderMetadataAsync);
+        _seededLazy = new AsyncLazy<bool>(SeedMetadataAsync);
+        _folderSeededLazy = new AsyncLazy<bool>(SeedFolderMetadataAsync);
     }
 
     /// <inheritdoc/>
     public IReadOnlyList<FileWatchScope> WatchScopes => [_watchScope];
 
     /// <summary>
-    /// Resets the discovery caches when a file under this source's content directory changes, so
-    /// TOC and discovery results pick up new, renamed, and deleted files. Changes elsewhere are
-    /// ignored.
+    /// Surgically updates the discovery caches when a file under this source's content
+    /// directory changes. A markdown edit re-parses just that file's front matter; a
+    /// <c>_meta.yml</c> change re-reads just that sidecar; an asset change is a no-op.
+    /// Renames (where the watcher only carries the new path) fall back to a full re-seed.
+    /// Changes outside the scope are ignored.
     /// </summary>
     public FileWatchResponse OnFileChanged(FileChangeNotification change)
     {
@@ -80,9 +96,168 @@ public sealed class MarkdownContentService<TFrontMatter>
             return FileWatchResponse.Ignore;
         }
 
-        _metadataLazy = new AsyncLazy<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>>(LoadMetadataAsync);
-        _folderMetadataLazy = new AsyncLazy<ImmutableList<FolderMetadata>>(LoadFolderMetadataAsync);
+        var fileName = _fileSystem.Path.GetFileName(change.FullPath) ?? "";
+        if (string.Equals(fileName, FolderMetadataSidecarFileName, StringComparison.OrdinalIgnoreCase))
+        {
+            return ApplyFolderMetadataChange(change);
+        }
+
+        if (fileName.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+        {
+            return ApplyMarkdownChange(change);
+        }
+
+        // Asset under the content tree (image, css, etc.) — neither cache holds these.
+        // The previous wholesale-reset would have evicted both caches anyway.
         return FileWatchResponse.Refreshed;
+    }
+
+    private FileWatchResponse ApplyMarkdownChange(FileChangeNotification change)
+    {
+        var absolutePath = _fileSystem.Path.GetFullPath(change.FullPath);
+
+        // Renamed events only carry the new path. Force a re-seed so a renamed-away
+        // entry doesn't linger and a renamed-in entry gets picked up cleanly.
+        if (change.ChangeType == WatcherChangeTypes.Renamed)
+        {
+            lock (_cacheLock)
+            {
+                _entries.Clear();
+            }
+            _seededLazy = new AsyncLazy<bool>(SeedMetadataAsync);
+            return FileWatchResponse.Refreshed;
+        }
+
+        // Pre-seed mutations: the initial scan hasn't run yet, so it will see current
+        // disk state when it does. Nothing to do.
+        if (!_seededLazy.Value.IsCompletedSuccessfully)
+        {
+            return FileWatchResponse.Refreshed;
+        }
+
+        var locale = LocaleForPath(absolutePath);
+
+        switch (change.ChangeType)
+        {
+            case WatcherChangeTypes.Deleted:
+                lock (_cacheLock)
+                {
+                    _entries.Remove(absolutePath);
+                    // Removing a non-default-locale file might restore a fallback the
+                    // default-locale entry had previously dropped. Recompute it.
+                    RebuildCorrespondingDefaultLocaleEntry(absolutePath, locale);
+                }
+                break;
+
+            case WatcherChangeTypes.Created:
+            case WatcherChangeTypes.Changed:
+            default:
+                // Parse outside the lock; assign under it.
+                var parsed = TryParseFrontMatter(absolutePath);
+                if (parsed is null)
+                {
+                    return FileWatchResponse.Refreshed;
+                }
+
+                lock (_cacheLock)
+                {
+                    if (_entries.TryGetValue(absolutePath, out var existing)
+                        && change.ChangeType == WatcherChangeTypes.Changed)
+                    {
+                        // Content edit: routes unchanged, just refresh front matter.
+                        _entries[absolutePath] = existing with { FrontMatter = parsed };
+                    }
+                    else
+                    {
+                        // Created (or Changed on a file we don't know yet): build a fresh entry.
+                        _entries[absolutePath] = BuildEntry(
+                            new FilePath(absolutePath), locale, parsed, HasLocalizedVersionFromCache);
+
+                        // A new non-default-locale file supersedes the default-locale fallback.
+                        RebuildCorrespondingDefaultLocaleEntry(absolutePath, locale);
+                    }
+                }
+                break;
+        }
+
+        return FileWatchResponse.Refreshed;
+    }
+
+    private FileWatchResponse ApplyFolderMetadataChange(FileChangeNotification change)
+    {
+        var absolutePath = _fileSystem.Path.GetFullPath(change.FullPath);
+
+        if (change.ChangeType == WatcherChangeTypes.Renamed)
+        {
+            lock (_cacheLock)
+            {
+                _folderMetadataByFile.Clear();
+            }
+            _folderSeededLazy = new AsyncLazy<bool>(SeedFolderMetadataAsync);
+            return FileWatchResponse.Refreshed;
+        }
+
+        if (!_folderSeededLazy.Value.IsCompletedSuccessfully)
+        {
+            return FileWatchResponse.Refreshed;
+        }
+
+        if (change.ChangeType == WatcherChangeTypes.Deleted)
+        {
+            lock (_cacheLock)
+            {
+                _folderMetadataByFile.Remove(absolutePath);
+            }
+            return FileWatchResponse.Refreshed;
+        }
+
+        var metadata = TryReadFolderMetadata(absolutePath);
+        lock (_cacheLock)
+        {
+            if (metadata is null)
+            {
+                _folderMetadataByFile.Remove(absolutePath);
+            }
+            else
+            {
+                _folderMetadataByFile[absolutePath] = metadata;
+            }
+        }
+        return FileWatchResponse.Refreshed;
+    }
+
+    /// <summary>
+    /// When a non-default-locale file is added or removed, the corresponding default-locale
+    /// entry's fallback-route set may need to flip. Re-parse and rebuild just that entry's
+    /// FileEntry; cheap (one front-matter parse) and keeps fallbacks correct without a full
+    /// re-seed. Must be called under <see cref="_cacheLock"/>.
+    /// </summary>
+    private void RebuildCorrespondingDefaultLocaleEntry(string changedAbsolutePath, string changedLocale)
+    {
+        if (!_localization.IsMultiLocale
+            || string.Equals(changedLocale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrEmpty(changedLocale))
+        {
+            return;
+        }
+
+        var localeRoot = _fileSystem.Path.Combine(_absoluteContentPath, changedLocale);
+        var relative = _fileSystem.Path.GetRelativePath(localeRoot, changedAbsolutePath).Replace('\\', '/');
+        if (relative.StartsWith("..", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var defaultPath = _fileSystem.Path.GetFullPath(
+            _fileSystem.Path.Combine(_absoluteContentPath, relative));
+
+        if (!_entries.TryGetValue(defaultPath, out var existing))
+        {
+            return;
+        }
+
+        _entries[defaultPath] = BuildEntry(
+            new FilePath(defaultPath), _localization.DefaultLocale, existing.FrontMatter, HasLocalizedVersionFromCache);
     }
 
     /// <inheritdoc/>
@@ -175,7 +350,7 @@ public sealed class MarkdownContentService<TFrontMatter>
         // every other channel on this service already does this (GetIndexableEntriesAsync,
         // GetContentTocEntriesAsync, etc.), and per-request callers (catch-all page handlers)
         // would otherwise pay an O(files) YAML re-parse on every hit.
-        var metadata = await _metadataLazy.Value;
+        var metadata = await SnapshotMetadataAsync();
         foreach (var (route, frontMatter, isLlmsOnly) in metadata)
         {
             if (frontMatter.IsHiddenFromBuild(_clock))
@@ -246,7 +421,7 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <inheritdoc/>
     public async Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {
-        var metadata = await _metadataLazy.Value;
+        var metadata = await SnapshotMetadataAsync();
         var builder = ImmutableList.CreateBuilder<ContentTocItem>();
 
         foreach (var entry in metadata)
@@ -274,7 +449,7 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <inheritdoc/>
     public async Task<ImmutableList<ContentTocItem>> GetIndexableEntriesAsync()
     {
-        var metadata = await _metadataLazy.Value;
+        var metadata = await SnapshotMetadataAsync();
         var builder = ImmutableList.CreateBuilder<ContentTocItem>();
 
         foreach (var entry in metadata)
@@ -350,7 +525,7 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <inheritdoc/>
     public async Task<ImmutableList<DiscoveredItem>> GetRedirectSourcesAsync()
     {
-        var metadata = await _metadataLazy.Value;
+        var metadata = await SnapshotMetadataAsync();
         var builder = ImmutableList.CreateBuilder<DiscoveredItem>();
 
         foreach (var (route, fm, _) in metadata)
@@ -372,7 +547,7 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <inheritdoc/>
     public async Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
     {
-        var metadata = await _metadataLazy.Value;
+        var metadata = await SnapshotMetadataAsync();
         var builder = ImmutableList.CreateBuilder<CrossReference>();
 
         foreach (var (route, fm, _) in metadata)
@@ -528,26 +703,67 @@ public sealed class MarkdownContentService<TFrontMatter>
         return results;
     }
 
-    private async Task<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>> LoadMetadataAsync()
+    /// <summary>
+    /// Initial scan: discovers every markdown file, parses each one exactly once,
+    /// and builds one <see cref="FileEntry"/> per source file (covering its own route plus
+    /// any fallback locale routes the file generates). Runs at most once per service
+    /// lifetime via <see cref="_seededLazy"/>; incremental edits go through <see cref="OnFileChanged"/>.
+    /// </summary>
+    private async Task<bool> SeedMetadataAsync()
     {
-        var builder = ImmutableList.CreateBuilder<(ContentRoute, TFrontMatter, bool)>();
+        var files = DiscoverFiles();
 
-        foreach (var (route, sourceFile) in DiscoverRoutesWithFallbacks())
+        // Precompute "which non-default-locale folders carry this relative path" so we
+        // know whether a default-locale file needs a fallback route per locale. Building
+        // this once up front is cheaper than consulting the dictionary mid-build (and
+        // sidesteps the ordering issue where the default-locale file might be processed
+        // before its non-default-locale siblings).
+        var localizedPaths = BuildLocalizedPathLookup(files);
+        bool HasLocalizedVersion(string locale, string relativePath) =>
+            localizedPaths.TryGetValue(locale, out var set) && set.Contains(relativePath);
+
+        foreach (var (file, locale) in files)
         {
-            try
+            var parsed = await TryParseFrontMatterAsync(file.Value);
+            if (parsed is null)
             {
-                var content = await _fileSystem.File.ReadAllTextAsync(sourceFile.Value);
-                var parsed = _parser.Parse<TFrontMatter>(content, sourceFile.Value);
-                var fm = parsed.Metadata ?? new TFrontMatter();
-                builder.Add((route, fm, IsLlmsOnlyFile(sourceFile)));
+                continue;
             }
-            catch
+
+            var entry = BuildEntry(file, locale, parsed, HasLocalizedVersion);
+            lock (_cacheLock)
             {
-                // Skip files that can't be parsed for metadata
+                _entries[_fileSystem.Path.GetFullPath(file.Value)] = entry;
             }
         }
 
-        return builder.ToImmutable();
+        return true;
+    }
+
+    private Dictionary<string, HashSet<string>> BuildLocalizedPathLookup(List<(FilePath File, string Locale)> files)
+    {
+        var lookup = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        if (!_localization.IsMultiLocale)
+        {
+            return lookup;
+        }
+
+        foreach (var (file, locale) in files)
+        {
+            if (string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var contentRoot = GetContentRootForLocale(locale);
+            var relativePath = _fileSystem.Path.GetRelativePath(contentRoot, file.Value).Replace('\\', '/');
+            if (!lookup.TryGetValue(locale, out var set))
+            {
+                lookup[locale] = set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            }
+            set.Add(relativePath);
+        }
+        return lookup;
     }
 
     /// <summary>True when the file's path ends with the <c>.llms.md</c> suffix.</summary>
@@ -557,7 +773,7 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <inheritdoc/>
     public async Task<ImmutableList<LlmsSubtree>> GetLlmsSubtreesAsync()
     {
-        var folderMetadata = await _folderMetadataLazy.Value;
+        var folderMetadata = await SnapshotFolderMetadataAsync();
         var builder = ImmutableList.CreateBuilder<LlmsSubtree>();
         foreach (var md in folderMetadata)
         {
@@ -573,71 +789,272 @@ public sealed class MarkdownContentService<TFrontMatter>
     }
 
     /// <inheritdoc/>
-    public Task<ImmutableList<FolderMetadata>> GetFolderMetadataAsync() => _folderMetadataLazy.Value;
+    public Task<ImmutableList<FolderMetadata>> GetFolderMetadataAsync() => SnapshotFolderMetadataAsync();
 
-    private async Task<ImmutableList<FolderMetadata>> LoadFolderMetadataAsync()
+    /// <summary>
+    /// Initial scan: walks every <c>_meta.yml</c> under the content root and populates
+    /// <see cref="_folderMetadataByFile"/>. Incremental edits go through <see cref="OnFileChanged"/>.
+    /// </summary>
+    private async Task<bool> SeedFolderMetadataAsync()
     {
         if (!_fileSystem.Directory.Exists(_absoluteContentPath))
         {
-            return ImmutableList<FolderMetadata>.Empty;
+            return true;
         }
-
-        var basePrefix = NormalizeBasePageUrl(_options.BasePageUrl.Value);
-        var builder = ImmutableList.CreateBuilder<FolderMetadata>();
 
         foreach (var file in _fileSystem.Directory.EnumerateFiles(
             _absoluteContentPath, FolderMetadataSidecarFileName, SearchOption.AllDirectories))
         {
-            string content;
-            try
-            {
-                content = await _fileSystem.File.ReadAllTextAsync(file);
-            }
-            catch
+            var metadata = await TryReadFolderMetadataAsync(file);
+            if (metadata is null)
             {
                 continue;
             }
 
-            FolderMetadataSidecar? sidecar;
-            try
+            lock (_cacheLock)
             {
-                sidecar = YamlSerializer.Deserialize<FolderMetadataSidecar>(content, PenningtonYaml.ReflectionOptions);
+                _folderMetadataByFile[_fileSystem.Path.GetFullPath(file)] = metadata;
             }
-            catch
-            {
-                continue;
-            }
-
-            if (sidecar is null)
-            {
-                continue;
-            }
-
-            var folder = _fileSystem.Path.GetDirectoryName(file) ?? _absoluteContentPath;
-            var relativeFolder = _fileSystem.Path
-                .GetRelativePath(_absoluteContentPath, folder)
-                .Replace('\\', '/')
-                .Trim('/');
-
-            // GetRelativePath returns "." when folder == base; treat that as the content root.
-            if (relativeFolder == ".")
-            {
-                relativeFolder = "";
-            }
-
-            var prefix = relativeFolder.Length == 0
-                ? basePrefix
-                : basePrefix + relativeFolder + "/";
-
-            var llmsDescription = sidecar.Llms?.Description;
-            builder.Add(new FolderMetadata(
-                FolderUrlPrefix: prefix,
-                Title: string.IsNullOrWhiteSpace(sidecar.Title) ? null : sidecar.Title,
-                Order: sidecar.Order,
-                LlmsDescription: llmsDescription));
         }
 
-        return builder.ToImmutable();
+        return true;
+    }
+
+    /// <summary>
+    /// Reads and parses one <c>_meta.yml</c> sidecar into a <see cref="FolderMetadata"/>.
+    /// Returns <c>null</c> when the file can't be read or parsed.
+    /// </summary>
+    private async Task<FolderMetadata?> TryReadFolderMetadataAsync(string file)
+    {
+        string content;
+        try
+        {
+            content = await _fileSystem.File.ReadAllTextAsync(file);
+        }
+        catch
+        {
+            return null;
+        }
+
+        return BuildFolderMetadata(file, content);
+    }
+
+    /// <summary>Synchronous variant of <see cref="TryReadFolderMetadataAsync"/> for use inside <see cref="OnFileChanged"/>.</summary>
+    private FolderMetadata? TryReadFolderMetadata(string file)
+    {
+        string content;
+        try
+        {
+            content = _fileSystem.File.ReadAllText(file);
+        }
+        catch
+        {
+            return null;
+        }
+
+        return BuildFolderMetadata(file, content);
+    }
+
+    private FolderMetadata? BuildFolderMetadata(string file, string yamlContent)
+    {
+        FolderMetadataSidecar? sidecar;
+        try
+        {
+            sidecar = YamlSerializer.Deserialize<FolderMetadataSidecar>(yamlContent, PenningtonYaml.ReflectionOptions);
+        }
+        catch
+        {
+            return null;
+        }
+
+        if (sidecar is null)
+        {
+            return null;
+        }
+
+        var basePrefix = NormalizeBasePageUrl(_options.BasePageUrl.Value);
+        var folder = _fileSystem.Path.GetDirectoryName(file) ?? _absoluteContentPath;
+        var relativeFolder = _fileSystem.Path
+            .GetRelativePath(_absoluteContentPath, folder)
+            .Replace('\\', '/')
+            .Trim('/');
+
+        // GetRelativePath returns "." when folder == base; treat that as the content root.
+        if (relativeFolder == ".")
+        {
+            relativeFolder = "";
+        }
+
+        var prefix = relativeFolder.Length == 0
+            ? basePrefix
+            : basePrefix + relativeFolder + "/";
+
+        return new FolderMetadata(
+            FolderUrlPrefix: prefix,
+            Title: string.IsNullOrWhiteSpace(sidecar.Title) ? null : sidecar.Title,
+            Order: sidecar.Order,
+            LlmsDescription: sidecar.Llms?.Description);
+    }
+
+    /// <summary>Awaits seeding, takes the cache lock briefly, and flattens <see cref="_entries"/> into the legacy (Route, FrontMatter, IsLlmsOnly) tuple list.</summary>
+    private async Task<ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly)>> SnapshotMetadataAsync()
+    {
+        await _seededLazy.Value;
+        lock (_cacheLock)
+        {
+            var builder = ImmutableList.CreateBuilder<(ContentRoute, TFrontMatter, bool)>();
+            foreach (var entry in _entries.Values)
+            {
+                foreach (var (route, isLlmsOnly) in entry.Routes)
+                {
+                    builder.Add((route, entry.FrontMatter, isLlmsOnly));
+                }
+            }
+            return builder.ToImmutable();
+        }
+    }
+
+    /// <summary>Awaits seeding, takes the cache lock briefly, and snapshots the folder-metadata dictionary.</summary>
+    private async Task<ImmutableList<FolderMetadata>> SnapshotFolderMetadataAsync()
+    {
+        await _folderSeededLazy.Value;
+        lock (_cacheLock)
+        {
+            return _folderMetadataByFile.Values.ToImmutableList();
+        }
+    }
+
+    /// <summary>Parses front matter from a single file. Returns <c>null</c> when the file can't be read or parsed.</summary>
+    private async Task<TFrontMatter?> TryParseFrontMatterAsync(string file)
+    {
+        try
+        {
+            var content = await _fileSystem.File.ReadAllTextAsync(file);
+            var parsed = _parser.Parse<TFrontMatter>(content, file);
+            return parsed.Metadata ?? new TFrontMatter();
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    /// <summary>Synchronous variant of <see cref="TryParseFrontMatterAsync"/> for use inside <see cref="OnFileChanged"/>.</summary>
+    private TFrontMatter? TryParseFrontMatter(string file)
+    {
+        try
+        {
+            var content = _fileSystem.File.ReadAllText(file);
+            var parsed = _parser.Parse<TFrontMatter>(content, file);
+            return parsed.Metadata ?? new TFrontMatter();
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Builds a <see cref="FileEntry"/> from a parsed front matter — own route plus any
+    /// fallback routes the file generates in non-default locales that don't have their own
+    /// version (per the supplied predicate).
+    /// </summary>
+    private FileEntry BuildEntry(
+        FilePath file,
+        string locale,
+        TFrontMatter frontMatter,
+        Func<string, string, bool> hasLocalizedVersion)
+    {
+        var isLlmsOnly = IsLlmsOnlyFile(file);
+        var routes = ImmutableList.CreateBuilder<(ContentRoute, bool)>();
+        foreach (var route in RoutesForFile(file, locale, hasLocalizedVersion))
+        {
+            routes.Add((route, isLlmsOnly));
+        }
+        return new FileEntry(routes.ToImmutable(), frontMatter);
+    }
+
+    /// <summary>
+    /// Yields the routes one source file generates: its own route, plus — for default-locale
+    /// files in multi-locale mode — a fallback route per non-default locale that doesn't
+    /// have its own copy of the file (as judged by <paramref name="hasLocalizedVersion"/>).
+    /// </summary>
+    private IEnumerable<ContentRoute> RoutesForFile(
+        FilePath file,
+        string locale,
+        Func<string, string, bool> hasLocalizedVersion)
+    {
+        yield return CreateRouteForFile(file, locale);
+
+        if (!_localization.IsMultiLocale)
+        {
+            yield break;
+        }
+
+        var isDefaultLocale = string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase);
+        if (!isDefaultLocale)
+        {
+            yield break;
+        }
+
+        var contentRoot = GetContentRootForLocale(locale);
+        var relativePath = _fileSystem.Path.GetRelativePath(contentRoot, file.Value).Replace('\\', '/');
+
+        foreach (var otherLocale in GetNonDefaultLocaleSubfolders())
+        {
+            if (hasLocalizedVersion(otherLocale, relativePath))
+            {
+                continue;
+            }
+
+            var fallbackRoute = ContentRouteFactory.FromMarkdownFile(
+                RoutePathFor(file), new FilePath(_absoluteContentPath), _options.BasePageUrl, otherLocale);
+            fallbackRoute = fallbackRoute with { IsFallback = true };
+            if (IsLlmsOnlyFile(file))
+            {
+                fallbackRoute = fallbackRoute with { SourceFile = file };
+            }
+
+            yield return fallbackRoute;
+        }
+    }
+
+    /// <summary>
+    /// "Does the non-default locale <paramref name="otherLocale"/> have its own copy of
+    /// the relative-path <paramref name="relativePath"/>?" predicate that consults the
+    /// live <see cref="_entries"/> dictionary. Caller must already hold <see cref="_cacheLock"/>.
+    /// </summary>
+    private bool HasLocalizedVersionFromCache(string otherLocale, string relativePath)
+    {
+        var localizedPath = _fileSystem.Path.GetFullPath(
+            _fileSystem.Path.Combine(_absoluteContentPath, otherLocale, relativePath));
+        return _entries.ContainsKey(localizedPath);
+    }
+
+    /// <summary>
+    /// Determines the locale of a file by checking whether the first relative-path segment
+    /// matches a configured locale subfolder. Returns the default locale otherwise.
+    /// </summary>
+    private string LocaleForPath(string absolutePath)
+    {
+        if (!_localization.IsMultiLocale)
+        {
+            return _options.Locale;
+        }
+
+        var relativePath = _fileSystem.Path
+            .GetRelativePath(_absoluteContentPath, absolutePath)
+            .Replace('\\', '/');
+        var firstSegment = relativePath.Split('/')[0];
+
+        foreach (var locale in _localization.Locales.Keys)
+        {
+            if (string.Equals(firstSegment, locale, StringComparison.OrdinalIgnoreCase))
+            {
+                return locale;
+            }
+        }
+        return _localization.DefaultLocale;
     }
 
     private static string NormalizeBasePageUrl(string raw)
@@ -709,69 +1126,22 @@ public sealed class MarkdownContentService<TFrontMatter>
             : file;
 
     /// <summary>
-    /// Produces routes for all discovered files plus fallback entries for missing locale content.
-    /// Fallback entries point to default-locale source files and have <see cref="ContentRoute.IsFallback"/> set.
+    /// Produces routes for all discovered files plus fallback entries for missing locale
+    /// content. Used by <see cref="ParseContentAsync"/>; the metadata cache (built by
+    /// <see cref="SeedMetadataAsync"/>) goes through the same <see cref="RoutesForFile"/>
+    /// helper to keep the two channels consistent.
     /// </summary>
     private IEnumerable<(ContentRoute Route, FilePath SourceFile)> DiscoverRoutesWithFallbacks()
     {
         var files = DiscoverFiles();
-        var defaultLocaleFiles = new List<(FilePath File, string RelativePath)>();
-        var nonDefaultLocaleRelPaths = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        var localizedPaths = BuildLocalizedPathLookup(files);
+        bool HasLocalizedVersion(string locale, string relativePath) =>
+            localizedPaths.TryGetValue(locale, out var set) && set.Contains(relativePath);
 
         foreach (var (file, locale) in files)
         {
-            var route = CreateRouteForFile(file, locale);
-            yield return (route, file);
-
-            if (!_localization.IsMultiLocale)
+            foreach (var route in RoutesForFile(file, locale, HasLocalizedVersion))
             {
-                continue;
-            }
-
-            var contentRoot = GetContentRootForLocale(locale);
-            var relativePath = _fileSystem.Path.GetRelativePath(contentRoot, file.Value).Replace('\\', '/');
-            var isDefaultLocale = string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase);
-
-            if (isDefaultLocale)
-            {
-                defaultLocaleFiles.Add((file, relativePath));
-            }
-            else
-            {
-                if (!nonDefaultLocaleRelPaths.TryGetValue(locale, out var paths))
-                {
-                    paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    nonDefaultLocaleRelPaths[locale] = paths;
-                }
-                paths.Add(relativePath);
-            }
-        }
-
-        if (!_localization.IsMultiLocale)
-        {
-            yield break;
-        }
-
-        foreach (var locale in GetNonDefaultLocaleSubfolders())
-        {
-            var existing = nonDefaultLocaleRelPaths.GetValueOrDefault(locale)
-                ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var (file, relativePath) in defaultLocaleFiles)
-            {
-                if (existing.Contains(relativePath))
-                {
-                    continue;
-                }
-
-                var route = ContentRouteFactory.FromMarkdownFile(
-                    RoutePathFor(file), new FilePath(_absoluteContentPath), _options.BasePageUrl, locale);
-                route = route with { IsFallback = true };
-                if (IsLlmsOnlyFile(file))
-                {
-                    route = route with { SourceFile = file };
-                }
-
                 yield return (route, file);
             }
         }
