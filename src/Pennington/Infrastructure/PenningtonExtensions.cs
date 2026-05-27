@@ -296,7 +296,7 @@ public static class PenningtonExtensions
         services.AddSingleton<IHtmlResponseRewriter, CanonicalLinkHtmlRewriter>();
         services.AddSingleton<IHtmlResponseRewriter>(sp =>
             new BaseUrlHtmlRewriter(sp.GetRequiredService<OutputOptions>()));
-        services.AddTransient<IResponseProcessor, HtmlResponseRewritingProcessor>();
+        services.AddSingleton<IResponseProcessor, HtmlResponseRewritingProcessor>();
         services.AddSingleton<IResponseProcessor>(sp =>
             new BaseUrlCssResponseProcessor(sp.GetRequiredService<OutputOptions>()));
         services.AddSingleton<IResponseProcessor, LiveReloadScriptProcessor>();
