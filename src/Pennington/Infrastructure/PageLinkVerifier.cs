@@ -22,12 +22,11 @@ public sealed class PageLinkVerifier : IFileWatchAware
     /// <summary>Creates the verifier; the underlying <see cref="LinkVerificationService"/> is built lazily on first request.</summary>
     public PageLinkVerifier(
         IEnumerable<IContentService> contentServices,
-        IEnumerable<IContentEmitter> contentEmitters,
         EndpointDataSource endpointDataSource,
         OutputOptions outputOptions)
     {
         _verifierLazy = new AsyncLazy<LinkVerificationService>(
-            () => BuildAsync(contentServices, contentEmitters, endpointDataSource, outputOptions));
+            () => BuildAsync(contentServices, endpointDataSource, outputOptions));
     }
 
     /// <summary>Returns the current verifier; rebuilds on first access after a file change.</summary>
@@ -35,7 +34,6 @@ public sealed class PageLinkVerifier : IFileWatchAware
 
     private static async Task<LinkVerificationService> BuildAsync(
         IEnumerable<IContentService> contentServices,
-        IEnumerable<IContentEmitter> contentEmitters,
         EndpointDataSource endpointDataSource,
         OutputOptions outputOptions)
     {
@@ -60,16 +58,12 @@ public sealed class PageLinkVerifier : IFileWatchAware
             copiedAssetPaths.Add(copy.OutputPath.Value);
         }
 
-        // Mirror OutputGenerationService.CreateContentFilesAsync so files emitted via
-        // GetContentToCreateAsync (per-subtree llms.txt, sitemap, …) are treated as
-        // known assets rather than broken links.
-        foreach (var emitter in contentServices.WithStandaloneEmitters(contentEmitters))
-        {
-            foreach (var item in await emitter.GetContentToCreateAsync())
-            {
-                copiedAssetPaths.Add(item.OutputPath.Value);
-            }
-        }
+        // Deliberately NOT iterating IContentEmitter.GetContentToCreateAsync here:
+        // SearchArtifactEmitter and LlmsTxtContentService both kick off corpus-wide
+        // HTTP self-fetches inside that call, and we run inside the response pipeline
+        // — those self-fetches would re-enter this very processor and deadlock on the
+        // verifier-build task that's waiting on them. Build-mode LinkAuditor still
+        // includes emitter outputs in the full report.
 
         knownRoutes.AddRange(MapGetRouteDiscovery.Discover(endpointDataSource));
 

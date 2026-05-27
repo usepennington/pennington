@@ -85,7 +85,6 @@ public class PageLinkAuditProcessorTests
     private static PageLinkVerifier BuildVerifier(IReadOnlyList<ContentRoute> knownRoutes) =>
         new(
             [new FakeService(knownRoutes)],
-            [],
             new EmptyEndpointDataSource(),
             new OutputOptions { OutputDirectory = new FilePath("output") });
 
