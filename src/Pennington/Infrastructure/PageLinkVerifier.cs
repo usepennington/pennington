@@ -4,7 +4,6 @@ using Content;
 using Generation;
 using Microsoft.AspNetCore.Routing;
 using Pipeline;
-using Routing;
 
 /// <summary>
 /// Holds a <see cref="LinkVerificationService"/> built from the current corpus of known
@@ -25,50 +24,22 @@ public sealed class PageLinkVerifier : IFileWatchAware
         EndpointDataSource endpointDataSource,
         OutputOptions outputOptions)
     {
+        // includeEmitterOutputs: false — this verifier runs inside the response pipeline,
+        // and emitter discovery walks the shared site projection, which kicks off corpus-wide
+        // HTTP self-fetches. Those self-fetches would re-enter the per-request audit
+        // processor and deadlock on the verifier-build task that's waiting on them. The
+        // ISiteProjection xmldoc codifies the same constraint. Build-mode LinkAuditor
+        // still includes emitter outputs (consumed via the projection out-of-band) in
+        // the full report.
         _verifierLazy = new AsyncLazy<LinkVerificationService>(
-            () => BuildAsync(contentServices, endpointDataSource, outputOptions));
+            () => LinkVerificationServiceBuilder.BuildAsync(
+                contentServices,
+                contentEmitters: [],
+                endpointDataSource,
+                outputOptions,
+                includeEmitterOutputs: false));
     }
 
     /// <summary>Returns the current verifier; rebuilds on first access after a file change.</summary>
     public Task<LinkVerificationService> GetVerifierAsync() => _verifierLazy.Task;
-
-    private static async Task<LinkVerificationService> BuildAsync(
-        IEnumerable<IContentService> contentServices,
-        EndpointDataSource endpointDataSource,
-        OutputOptions outputOptions)
-    {
-        var knownRoutes = new List<ContentRoute>();
-        var copiedAssetPaths = new List<string>();
-
-        await foreach (var item in contentServices.DiscoverAllAsync())
-        {
-            // Llms-only items have no HTML page at the canonical URL — a link from a
-            // regular page to that URL would 404, so leaving them out of knownRoutes
-            // lets the verifier flag the broken reference.
-            if (item.Source is LlmsOnlySource)
-            {
-                continue;
-            }
-
-            knownRoutes.Add(item.Route);
-        }
-
-        foreach (var copy in await contentServices.CollectContentToCopyAsync())
-        {
-            copiedAssetPaths.Add(copy.OutputPath.Value);
-        }
-
-        // Deliberately NOT iterating IContentEmitter.GetContentToCreateAsync or
-        // ISiteProjection here: both materialize via the shared site projection, which
-        // kicks off corpus-wide HTTP self-fetches inside that call. Since this verifier
-        // runs inside the response pipeline (via PageLinkAuditProcessor), those
-        // self-fetches would re-enter this very processor and deadlock on the
-        // verifier-build task that's waiting on them. The contract on ISiteProjection
-        // documents the same constraint. Build-mode LinkAuditor still includes emitter
-        // outputs (consumed via the projection out-of-band) in the full report.
-
-        knownRoutes.AddRange(MapGetRouteDiscovery.Discover(endpointDataSource));
-
-        return new LinkVerificationService(knownRoutes, copiedAssetPaths, outputOptions.BaseUrl.Value);
-    }
 }

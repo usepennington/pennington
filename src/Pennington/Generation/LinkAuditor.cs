@@ -38,42 +38,13 @@ public sealed class LinkAuditor : IRenderedAuditor
     /// <inheritdoc/>
     public async Task<IReadOnlyList<BuildDiagnostic>> AuditAsync(RenderedAuditContext context, CancellationToken cancellationToken)
     {
-        var knownRoutes = new List<Routing.ContentRoute>();
-        var copiedAssetPaths = new List<string>();
-
-        await foreach (var item in _contentServices.DiscoverAllAsync(cancellationToken))
-        {
-            // Llms-only items have no HTML page at the canonical URL — a
-            // link from a regular page to that URL would 404, so leaving
-            // them out of knownRoutes lets the link verifier flag the
-            // broken reference instead of silently allowing it.
-            if (item.Source is Pipeline.LlmsOnlySource)
-            {
-                continue;
-            }
-
-            knownRoutes.Add(item.Route);
-        }
-
-        foreach (var copy in await _contentServices.CollectContentToCopyAsync())
-        {
-            copiedAssetPaths.Add(copy.OutputPath.Value);
-        }
-
-        // Mirror OutputGenerationService.CreateContentFilesAsync so files emitted via
-        // GetContentToCreateAsync (e.g. per-subtree llms.txt files) are treated as
-        // known assets rather than broken links.
-        foreach (var emitter in _contentServices.WithStandaloneEmitters(_contentEmitters))
-        {
-            foreach (var item in await emitter.GetContentToCreateAsync())
-            {
-                copiedAssetPaths.Add(item.OutputPath.Value);
-            }
-        }
-
-        knownRoutes.AddRange(MapGetRouteDiscovery.Discover(_endpointDataSource));
-
-        var verifier = new LinkVerificationService(knownRoutes, copiedAssetPaths, _outputOptions.BaseUrl.Value);
+        var verifier = await LinkVerificationServiceBuilder.BuildAsync(
+            _contentServices,
+            _contentEmitters,
+            _endpointDataSource,
+            _outputOptions,
+            includeEmitterOutputs: true,
+            cancellationToken);
         var diagnostics = ImmutableList.CreateBuilder<BuildDiagnostic>();
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 

@@ -111,42 +111,15 @@ public sealed class MarkdownContentService<TFrontMatter>
             return ContentChangeImpact.Wildcard;
         }
 
-        return ComputeMarkdownRouteImpact(_fileSystem.Path.GetFullPath(change.FullPath));
-    }
-
-    /// <summary>
-    /// Computes the routes a single markdown file generates (own route plus any
-    /// fallback locale routes) from the file path alone. Pure function — does not
-    /// consult <see cref="_entries"/>, so it stays correct regardless of dispatch order
-    /// with <see cref="OnFileChanged"/>. Over-includes fallback routes (every non-default
-    /// locale that *could* fall back) rather than checking which locales actually have
-    /// their own copy; over-invalidating one or two routes per locale is cheaper than
-    /// scanning the filesystem on every change.
-    /// </summary>
-    private ContentChangeImpact ComputeMarkdownRouteImpact(string absolutePath)
-    {
+        // Pass a predicate that always reports "no localized version exists" so every
+        // candidate fallback route is included. Over-invalidating one or two routes per
+        // locale is cheaper than scanning _entries mid-watcher-callback to learn which
+        // locales actually have their own copy.
+        var absolutePath = _fileSystem.Path.GetFullPath(change.FullPath);
         var locale = LocaleForPath(absolutePath);
         var file = new FilePath(absolutePath);
-        var builder = ImmutableArray.CreateBuilder<ContentRoute>();
-        builder.Add(CreateRouteForFile(file, locale));
-
-        if (_localization.IsMultiLocale
-            && string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
-        {
-            foreach (var otherLocale in GetNonDefaultLocaleSubfolders())
-            {
-                var fallbackRoute = ContentRouteFactory.FromMarkdownFile(
-                    RoutePathFor(file), new FilePath(_absoluteContentPath), _options.BasePageUrl, otherLocale);
-                fallbackRoute = fallbackRoute with { IsFallback = true };
-                if (IsLlmsOnlyFile(file))
-                {
-                    fallbackRoute = fallbackRoute with { SourceFile = file };
-                }
-                builder.Add(fallbackRoute);
-            }
-        }
-
-        return ContentChangeImpact.Routes(builder.ToImmutable());
+        return ContentChangeImpact.Routes(
+            [.. RoutesForFile(file, locale, static (_, _) => false)]);
     }
 
     /// <summary>
