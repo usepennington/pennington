@@ -1,5 +1,6 @@
 namespace Pennington.Pipeline;
 
+using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using AngleSharp;
@@ -49,8 +50,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
     // Cache state. Reads of _pages take the lock (or accept a possibly-stale snapshot)
     // since the immutable array reference is replaced atomically. Writes always under _lock.
     private ImmutableArray<RenderedPage> _pages = ImmutableArray<RenderedPage>.Empty;
-    private ImmutableDictionary<string, int> _routeIndex = ImmutableDictionary<string, int>.Empty
-        .WithComparers(StringComparer.OrdinalIgnoreCase);
+    private FrozenDictionary<string, int> _routeIndex = FrozenDictionary<string, int>.Empty;
 
     // Pending stale set accumulated since last refresh. Protected by _lock.
     private readonly HashSet<string> _staleRoutes = new(StringComparer.OrdinalIgnoreCase);
@@ -149,7 +149,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
 
         var key = Normalize(canonicalPath.Value);
         ImmutableArray<RenderedPage> snapshot;
-        ImmutableDictionary<string, int> index;
+        FrozenDictionary<string, int> index;
         lock (_lock)
         {
             snapshot = _pages;
@@ -223,7 +223,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
         }
     }
 
-    private async Task<(ImmutableArray<RenderedPage> Pages, ImmutableDictionary<string, int> Index)> BuildOrRefreshAsync(
+    private async Task<(ImmutableArray<RenderedPage> Pages, FrozenDictionary<string, int> Index)> BuildOrRefreshAsync(
         ImmutableDictionary<string, RenderedPage> reusable,
         IReadOnlySet<string> staleRoutes,
         bool staleAll,
@@ -309,7 +309,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
         }
 
         var pagesBuilder = ImmutableArray.CreateBuilder<RenderedPage>(total);
-        var indexBuilder = ImmutableDictionary.CreateBuilder<string, int>(StringComparer.OrdinalIgnoreCase);
+        var indexBuilder = new Dictionary<string, int>(total, StringComparer.OrdinalIgnoreCase);
         for (var i = 0; i < total; i++)
         {
             if (results[i] is { } page)
@@ -325,7 +325,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
             }
         }
 
-        return (pagesBuilder.ToImmutable(), indexBuilder.ToImmutable());
+        return (pagesBuilder.ToImmutable(), indexBuilder.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase));
     }
 
     private async Task<RenderedPage?> RenderOneAsync(

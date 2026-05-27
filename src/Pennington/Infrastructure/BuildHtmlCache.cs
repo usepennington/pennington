@@ -56,7 +56,7 @@ public sealed class BuildHtmlCache : IFileWatchAware
     public FileWatchResponse OnFileChanged(FileChangeNotification change)
     {
         var wildcard = false;
-        List<string>? affectedPaths = null;
+        HashSet<string>? affectedPaths = null;
 
         foreach (var service in _contentServices)
         {
@@ -68,7 +68,7 @@ public sealed class BuildHtmlCache : IFileWatchAware
             }
             foreach (var route in routes.Value)
             {
-                (affectedPaths ??= []).Add(route.CanonicalPath.Value);
+                (affectedPaths ??= new(StringComparer.OrdinalIgnoreCase)).Add(route.CanonicalPath.Value);
             }
         }
 
@@ -85,26 +85,18 @@ public sealed class BuildHtmlCache : IFileWatchAware
 
         // Cache keys are full PathAndQuery (e.g. "/foo/" or "/foo/?x=1"). Evict any key whose
         // path portion matches an affected route's canonical path — covers query-string variants.
+        // Most keys have no query string, so we skip the substring allocation in the common case.
         foreach (var key in _entries.Keys)
         {
-            var pathPart = ExtractPath(key);
-            foreach (var affected in affectedPaths)
+            var queryIndex = key.IndexOf('?');
+            var pathPart = queryIndex < 0 ? key : key[..queryIndex];
+            if (affectedPaths.Contains(pathPart))
             {
-                if (string.Equals(pathPart, affected, StringComparison.OrdinalIgnoreCase))
-                {
-                    _entries.TryRemove(key, out _);
-                    break;
-                }
+                _entries.TryRemove(key, out _);
             }
         }
 
         return FileWatchResponse.Refreshed;
-    }
-
-    private static string ExtractPath(string pathAndQuery)
-    {
-        var queryIndex = pathAndQuery.IndexOf('?');
-        return queryIndex < 0 ? pathAndQuery : pathAndQuery[..queryIndex];
     }
 }
 
