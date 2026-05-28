@@ -157,4 +157,36 @@ public class FileWatcherTests : IDisposable
     {
         public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Refreshed;
     }
+
+    // --- Editor-backup / temp-file filter ---
+    // FileWatcher drops common editor-transient filenames before publishing so
+    // a single save no longer fans out as 6+ dispatches (the .md~ noise from
+    // VS Code's atomic save, plus Windows FileSystemWatcher duplicate events).
+
+    [Theory]
+    [InlineData("doc.md~")]            // vim / nano / VS Code backup
+    [InlineData("foo.swp")]            // vim swap
+    [InlineData("foo.swo")]
+    [InlineData("foo.SWX")]            // case-insensitive
+    [InlineData("4913")]               // vim pre-write probe
+    [InlineData(".#doc.md")]           // emacs lock
+    [InlineData("~$report.docx")]      // Office lock
+    [InlineData("scratch.tmp")]
+    [InlineData("scratch.BAK")]
+    public void IsEditorTempFile_RejectsKnownBackupPatterns(string fileName)
+    {
+        FileWatcher.IsEditorTempFile(fileName).ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData("doc.md")]
+    [InlineData("_meta.yml")]
+    [InlineData(".gitignore")]         // legitimate dotfile
+    [InlineData("index.html")]
+    [InlineData("scratch.razor")]
+    [InlineData("")]
+    public void IsEditorTempFile_AllowsLegitimateFiles(string fileName)
+    {
+        FileWatcher.IsEditorTempFile(fileName).ShouldBeFalse();
+    }
 }
