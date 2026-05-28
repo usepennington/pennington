@@ -172,7 +172,7 @@ for path in Path(sys.argv[1]).rglob("*.md"):
     path.write_text(f"---\n" + "\n".join(lines) + "\n---\n" + text[m.end():], encoding="utf-8")
 ```
 
-This is a sketch. `scripts/migrate_docs_ordering.py` (in the Pennington repo) is the more careful reference — verifies before/after navigation flatten matches leaf-for-leaf, handles nested YAML, preserves line endings.
+This is a sketch.
 
 ## Ordering: folder-local with `_meta.yml`
 
