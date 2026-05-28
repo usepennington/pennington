@@ -70,7 +70,7 @@ Each kind below shows the source markdown above the rendered output. Every line 
 
 ## What the renderer emits
 
-Each alert wraps in two CSS classes: `markdown-alert` (always present) and `markdown-alert-{kind}` where `{kind}` is the lower-cased token. Stylesheets target those two classes for the colour treatment. An unrecognised token falls back to a plain `<blockquote>` with no alert styling, so the marker stays visible instead of turning into a misleading callout.
+Each alert wraps in three CSS classes: `markdown-alert` (always present), `markdown-alert-{kind}` where `{kind}` is the lower-cased token, and `not-prose` (which isolates the alert from the surrounding page-prose typography rules). Stylesheets target the first two classes for the colour treatment. An unrecognised token falls back to a plain `<blockquote>` with no alert styling, so the marker stays visible instead of turning into a misleading callout.
 
 ````markdown
 > [!INFO]

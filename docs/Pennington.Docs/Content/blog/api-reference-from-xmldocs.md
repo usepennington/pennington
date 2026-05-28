@@ -20,11 +20,11 @@ XML docs. Every public type that carries an xmldoc gets its own page at
 descriptions pulled from the `///` comments you already wrote. An index page
 lists every discovered type, grouped by namespace.
 
-Pennington's own reference replaced 20 hand-maintained markdown wrappers with a
-single parameterised Razor page. The `<summary>` text, the parameter list, and
-the return type all read from the compiler, so they can't disagree with the
-code. Pointing the generator at your own class library takes one how-to:
-[auto-generate an API reference
+Pennington's own reference dropped a row of hand-maintained markdown wrappers in
+favor of a single parameterised Razor page. The `<summary>` text, the parameter
+list, and the return type all read from the compiler, so they can't disagree
+with the code. Pointing the generator at your own class library takes one
+how-to: [auto-generate an API reference
 tree](xref:how-to.content-services.auto-api-reference).
 
 ## A layout built to scan

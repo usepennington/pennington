@@ -1,6 +1,6 @@
 ---
 title: "Dev mode and build mode share one code path"
-description: "Why the static build is an HTTP crawler against the running app, not a second renderer — keeping dev fidelity and publish output in lockstep."
+description: "Why the static build is a crawler against the same ASP.NET pipeline as dev, not a second renderer — keeping dev fidelity and publish output in lockstep."
 sectionLabel: "Core Architecture"
 order: 3
 tags: [build, architecture, static-site, invariants]
@@ -13,7 +13,7 @@ Why doesn't Pennington have a separate offline build step — one that reads mar
 
 Most static site generators are built as compilers: read content files, transform them, write HTML. That shape is intuitive, and it was on the table for Pennington too. The problem with a separate publish renderer surfaces not at the first feature but at the second. Locale middleware runs in dev, so it needs a second implementation in the offline path; response processors run in dev, so they need it too; Blazor SSR for islands, the xref rewriter, the CSS discovery pipeline — each one accrues a corresponding "also do this in build" edit. The two implementations then diverge over time, invisibly, until a feature that works in development produces different output in publish.
 
-Pennington keeps one host. Dev mode is that host serving requests; build mode is a crawler pointed at the same host. The invariant the rest of this page unfolds: there is exactly one HTTP pipeline, and the static build is a consumer of it.
+Pennington keeps one host. Dev mode is that host serving requests over Kestrel; build mode is a crawler that drives the same host's request pipeline in process. The invariant the rest of this page unfolds: there is exactly one ASP.NET pipeline, and the static build is a consumer of it.
 
 ## How it works
 
@@ -23,30 +23,30 @@ Running `dotnet run` causes `RunOrBuildAsync` to detect the absence of a `build`
 
 Nothing in this path is marked "dev-only." The diagnostic overlay and live-reload script injection are response processors ordered behind environment gates — not separate code paths. The renderer behind `localhost:5000` is the renderer, full stop.
 
-### Build mode: a crawler pointed at the same host
+### Build mode: a crawler driving the same pipeline
 
-When `args[0] == "build"`, `RunOrBuildAsync` calls `app.StartAsync()` instead — the same Kestrel host, bound to a real port. It then resolves `OutputGenerationService` and hands it the first bound address. From that point, the service is an HTTP client: it opens an `HttpClient` against that URL and issues GETs.
+When the first argument is `build`, Pennington replaces Kestrel with `Microsoft.AspNetCore.TestHost.TestServer` at service-registration time, then `RunOrBuildAsync` calls `app.StartAsync()` against that test host. No socket bind, no dev-cert prompt, no port. From there, `OutputGenerationService` resolves `IInProcessHttpDispatcher` (backed by `HttpDispatcher`), which hands out an `HttpClient` whose handler is `TestServer.CreateHandler()` — requests flow directly into the same `RequestDelegate` Kestrel would have invoked in dev.
 
-URL discovery comes from two sources. Every registered `IContentService` exposes `DiscoverAsync`, which returns the set of content routes it knows about. The live `EndpointDataSource` covers `MapGet` handlers — `/styles.css`, `/sitemap.xml`, the per-locale `/search-index-{code}.json` endpoints, and anything else the host has wired up explicitly. Each response is written to `OutputOptions.OutputDirectory` using the route's `OutputFile` mapping.
+URL discovery comes from two sources. Every registered `IContentService` exposes `DiscoverAsync`, which returns the set of content routes it knows about. The live `EndpointDataSource` covers `MapGet` handlers — `/styles.css`, `/sitemap.xml`, the per-locale `/search/{locale}/...` artifacts, and anything else the host has wired up explicitly. Each response is written to `OutputOptions.OutputDirectory` using the route's `OutputFile` mapping.
 
-The 404 page is a small special case: the service fetches a sentinel URL (`"/__pennington-404-generator"`) that no route matches, so the catch-all fallback fires and its output is written as `404.html`. The mechanism remains an HTTP GET against the same pipeline.
+The 404 page is a small special case: the service fetches a sentinel URL (`"/__pennington-404-generator"`) that no route matches, so the catch-all fallback fires and its output is written as `404.html`. The mechanism remains a GET against the same pipeline.
 
 ### The shared pipeline
 
-Because the build is HTTP-driven, every cross-cutting system runs identically in both modes. `ResponseProcessingMiddleware` captures and rewrites bodies. `IHtmlResponseRewriter` resolves xref links and applies locale prefixes and the base URL. The MonorailCSS discovery pipeline scans loaded assemblies and watched source files at startup, so the class registry is already populated before the crawler starts; content-page GETs run first and `MapGet` GETs last as a separate ordering rule, ensuring `/styles.css` and other generated endpoints see a fully-warm system. That phase ordering lives in `OutputGenerationService.GenerateAsync` and nowhere else.
+Because the build drives requests through the same pipeline, every cross-cutting system runs identically in both modes. `ResponseProcessingMiddleware` captures and rewrites bodies. `IHtmlResponseRewriter` resolves xref links and applies locale prefixes and the base URL. The MonorailCSS discovery pipeline scans loaded assemblies and watched source files at startup, so the class registry is already populated before the crawler starts; content-page GETs run first and `MapGet` GETs last as a separate ordering rule, ensuring `/styles.css` and other generated endpoints see a fully-warm system. That phase ordering lives in `OutputGenerationService.GenerateAsync` and nowhere else.
 
 The consequence is that output drift has no place to hide. The pipeline that produced `localhost:5000/foo` is the pipeline that produced `output/foo/index.html`. A feature that works in dev works in build; one that breaks in build would have broken in dev first.
 
 ### Why not a separate renderer?
 
-The alternative — a pure in-process renderer that drives Markdig directly, writes files, skips the HTTP round-trip — is faster for small sites and architecturally tidier when the feature set is frozen. The tradeoff is that every capability built on top of ASP.NET stops being free. Locale middleware, response processors, Blazor SSR for islands, the per-locale search endpoints, the diagnostic-header transport — each would require a second implementation in the offline path. Each new feature becomes two edits and two chances for the implementations to diverge.
+The alternative — a pure in-process renderer that drives Markdig directly, writes files, skips the request pipeline entirely — is faster for small sites and architecturally tidier when the feature set is frozen. The tradeoff is that every capability built on top of ASP.NET stops being free. Locale middleware, response processors, Blazor SSR for islands, the per-locale search artifacts, the diagnostic-header transport — each would require a second implementation in the offline path. Each new feature becomes two edits and two chances for the implementations to diverge.
 
-The HTTP overhead of build mode is measurable on very small sites and mostly irrelevant on anything larger. The architectural cost of a second renderer compounds with every feature added. Pennington takes the HTTP overhead.
+The per-page request-pipeline cost of build mode is measurable on very small sites and mostly irrelevant on anything larger; the in-memory `BuildHtmlCache` further collapses the disk-write, search-index, and llms.txt passes to one render per URL. The architectural cost of a second renderer, by contrast, compounds with every feature added. Pennington pays the request-pipeline cost.
 
 ## Trade-offs
 
-- **Cost — the build boots the full host.** Generation is not a pure function of the content directory; it starts Kestrel, binds a port, and loads every service `AddPennington` registers. For tiny sites this is measurable overhead. In exchange, nothing that works in dev fails in publish.
-- **Alternative considered — an offline renderer.** A second code path reading markdown and driving Markdig directly would skip the HTTP round-trip. It was rejected because the engine's value lives in the response-processor chain (xref, locale, base URL, diagnostics) and the MonorailCSS discovery pipeline; a renderer that bypasses those silently drops half the feature surface.
+- **Cost — the build boots the full host.** Generation is not a pure function of the content directory; it starts the ASP.NET host (with `TestServer` in place of Kestrel) and loads every service `AddPennington` registers. For tiny sites this is measurable overhead. In exchange, nothing that works in dev fails in publish.
+- **Alternative considered — an offline renderer.** A second code path reading markdown and driving Markdig directly would skip the request pipeline entirely. It was rejected because the engine's value lives in the response-processor chain (xref, locale, base URL, diagnostics) and the MonorailCSS discovery pipeline; a renderer that bypasses those silently drops half the feature surface.
 - **Consequence — every feature pays one integration tax, not two.** A new response processor, rewriter, or endpoint works in build the moment it works in dev, with no "also wire this into the static generator" step. That is the invariant, and designs that split dev-serve and build-publish into separate implementations work against it.
 - **Consequence — the `/styles.css` (and other MapGet) endpoints are fetched after content pages.** The crawler issues content-page GETs first and `MapGet` GETs last so the class registry is fully resolved by the time the stylesheet is materialized. An endpoint whose correctness depends on fetch order is fighting this invariant.
 

@@ -35,7 +35,7 @@ ColorScheme = new NamedColorScheme
 
 ### Pick `AlgorithmicColorScheme` for hue-driven palettes
 
-`AlgorithmicColorScheme` synthesises primary, base, and accent palettes from one `PrimaryHue` plus a `Chroma` and a `CoordinatingScheme` enum (Complementary, SplitComplementary, Triadic, Analogous). The whole site repigments by changing one number.
+`AlgorithmicColorScheme` synthesises primary, base, and accent palettes from one `PrimaryHue` plus a `Chroma` and a `Scheme` (of type `CoordinatingScheme`: Complementary, SplitComplementary, Triadic, Analogous). The whole site repigments by changing one number.
 
 ```csharp:symbol,bodyonly
 examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.BuildColorScheme

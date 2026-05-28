@@ -68,7 +68,7 @@ examples/GettingStartedStylingExample/Stage3_UseMonorailCss.cs > Stage3.Run
 
 ## 3. Watch the stylesheet regenerate
 
-The class collector watches the `Content/` directory in development. Adding a new utility class to a markdown file and reloading the browser produces a new CSS rule without a server restart — provided the host is running under `dotnet watch`.
+The class collector watches the `Content/` directory (and other source folders MonorailCSS discovers) in development. Adding a new utility class to a markdown file and reloading the browser produces a new CSS rule without a server restart — provided the host is running under `dotnet watch`.
 
 <Steps>
 <Step StepNumber="1">

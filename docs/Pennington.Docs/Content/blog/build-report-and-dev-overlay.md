@@ -17,19 +17,19 @@ report, and the dev server shows the same findings while you write.
 
 ## A report at the end of every build
 
-Run `dotnet run -- build` and the last thing you see is a structured summary:
+Run `dotnet run -- build` and the last thing you see is a structured summary
+along these lines:
 
 ```text
-Build report
-  Pages generated      142
-  Broken links           2
-    /guide/setup  ->  /guide/instalation  (no such route)
-    /api/index    ->  /api/legacy         (no such route)
-  Unresolved xrefs       1
-    xref:reference.api.old-name  (guide/migration.md)
-  Diagnostics            0
+Build Complete — 142 pages in 1.2s
+  142 pages generated
+  3 warnings
 
-Build failed - 3 errors
+WARNINGS
+  /guide/migration: Unresolved xref: reference.api.old-name
+  2 broken links found:
+    /guide/setup links to /guide/instalation (no such route)
+    /api/index links to /api/legacy (no such route)
 ```
 
 When the report finds errors, the process exits with code 1, so a broken link

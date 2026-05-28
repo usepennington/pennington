@@ -40,7 +40,7 @@ Drop a `_meta.yml` sidecar into the folder you want to reposition. Its `order:` 
 order: 3
 ```
 
-Without a sidecar, the folder's position falls back to the lowest `order:` of any descendant (the historical min-of-children rule). Mixing modes is fine — folders with a sidecar sort by the explicit value, folders without sort by the emergent value. See <xref:reference.front-matter.folder-sidecar> for the full sidecar schema.
+Without a sidecar, the folder's position falls back to the lowest `order:` of any descendant (the min-of-children rule). Mixing modes is fine — folders with a sidecar sort by the explicit value, folders without sort by the emergent value. See <xref:reference.front-matter.folder-sidecar> for the full sidecar schema.
 
 ### Promote a page to be the section landing
 
@@ -89,7 +89,7 @@ isDraft: true
 - Run `dotnet run`; reordered pages appear in ascending `order:` inside their folder
 - A folder with a `_meta.yml` lands at the position its `order:` specifies, even when its descendants' values would have placed it elsewhere
 - The section subfolder's `index.md` lands at `/<area>/<section>/` and renders as the section's lead entry in the sidebar
-- The drafted page's URL returns 404 and the entry is absent from the sidebar on reload
+- The drafted page's URL still serves the page in `dotnet run`; the entry is absent from the sidebar on reload. Under `dotnet run -- build` the page is excluded from the static output.
 
 ## Related
 

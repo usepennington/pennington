@@ -14,7 +14,7 @@ The recipe references `examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs`, wh
 ## Before you begin
 
 - An existing Pennington site with markdown content under a `Content/` folder (see <xref:tutorials.getting-started.first-site> if not).
-- A bare `AddPennington` host or an existing `AddDocSite`/`AddBlogSite` host with room for a second markdown source. `AddDocSite` and `AddBlogSite` each register one source against their own front-matter type; chaining a second record requires bare `AddPennington` (see <xref:how-to.discovery.multiple-sources>).
+- A bare `AddPennington` host, or an existing `AddDocSite`/`AddBlogSite` host with room for an additional markdown source. `AddBlogSite` registers one source against `BlogSiteFrontMatter`; `AddDocSite` registers two sources (`DocSiteFrontMatter` and `BlogPostFrontMatter`). Adding a third custom-record source on top of the template is done by chaining another `AddMarkdownContent<T>()` call after `AddDocSite`/`AddBlogSite`, or by falling back to bare `AddPennington` (see <xref:how-to.discovery.multiple-sources>).
 
 ## Declare the record
 
@@ -51,7 +51,7 @@ Consumers read the typed properties on the resolved `IFrontMatter` via the conte
 ## Verify
 
 - Run `dotnet run` and visit a page whose YAML uses the custom keys. The build report contains no `FrontMatterParseError` diagnostics for pages under the new source.
-- Consume the typed property in a Razor component (`@inject IFrontMatter Fm` then cast to the custom record) and confirm the value round-trips from the YAML.
+- Consume the typed property on the resolved `IFrontMatter` returned by the content service (cast to the custom record) and confirm the value round-trips from the YAML.
 
 ## Related
 

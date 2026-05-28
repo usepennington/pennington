@@ -46,11 +46,13 @@ fallback](xref:explanation.localization.urls-and-fallback).
 
 `LocaleContext` is a scoped, per-request value you can inject anywhere to get the
 current locale. Middleware strips the locale prefix from the URL so a single
-`@page` route matches every language, and rendered `<a href>` links are rewritten
-to carry the current locale, so a link clicked on a German page lands on the
-German target.
+`@page` route matches every language, and rendered internal `<a href>` links are
+rewritten to carry the current locale, so a link clicked on a German page lands
+on the German target.
 
 It also bridges to ASP.NET's `UseRequestLocalization`, so cookie persistence and
-`Accept-Language` detection behave the way you'd expect. In the example sites,
-the YogaStudioExample dropped 11 duplicate `@page` directives and removed its
-custom `LanguageSwitcher`.
+`Accept-Language` detection behave the way you'd expect. The
+[`BeyondLocaleExample`](https://github.com/usepennington/pennington/tree/main/examples/BeyondLocaleExample)
+walks through the staged migration — English-only, then adding a second locale,
+then the switcher appearing automatically — without any duplicated `@page`
+directives or a hand-rolled `LanguageSwitcher`.

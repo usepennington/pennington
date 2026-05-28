@@ -19,7 +19,7 @@ Pennington models this split directly on the type system. The universal question
 
 ### `IFrontMatter`: universal capabilities with defaults
 
-`IFrontMatter` has one abstract member (`Title`) and six default-implemented ones. Every front-matter record inherits `IsDraft => false`, `Search => true`, `Llms => true`, `Uid => null`, `Description => null`, and `Date => null` without declaring them.
+`IFrontMatter` has one abstract member (`Title`) and seven default-implemented ones. Every front-matter record inherits `IsDraft => false`, `Search => true`, `Llms => true`, `SearchOnly => false`, `Uid => null`, `Description => null`, and `Date => null` without declaring them.
 
 ```csharp:symbol
 src/Pennington/FrontMatter/IFrontMatter.cs > IFrontMatter

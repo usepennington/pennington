@@ -11,7 +11,7 @@ When relative `../foo/bar.md` links break every time a file moves or a section i
 
 ## Before you begin
 - A working Pennington site with markdown under `Content/` (see <xref:how-to.pages.front-matter> if not).
-- Pages use `DocSiteFrontMatter` (or another type whose base `IFrontMatter` default member for `Uid` is preserved).
+- Pages use a front-matter type that exposes `IFrontMatter.Uid` (every shipped type — `DocFrontMatter`, `DocSiteFrontMatter`, `BlogFrontMatter`, `BlogSiteFrontMatter`, `BlogPostFrontMatter` — already does; the interface default returns `null`, so a custom record must set it for the page to be cross-referenceable).
 - The standard response-processing pipeline is active — `UsePennington` / `UseDocSite` wires the xref rewriter on every HTML response.
 
 ## Declare a `uid:` on the target page

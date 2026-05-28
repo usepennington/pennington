@@ -14,7 +14,7 @@ The recipe below references `examples/ExtensibilityLabExample/PipelineHighlighte
 ## Before you begin
 
 - An existing Pennington site rendering markdown fences (see <xref:tutorials.getting-started.first-site> if not).
-- A target language not already served by `TextMateHighlighter` (priority 50) or `ShellHighlighter` (priority 75) — render a fence and inspect the emitted HTML for built-in token spans to confirm.
+- A target language not already served by `TextMateHighlighter` (priority 50) or `ShellHighlighter` (priority 75) — render a fence and inspect the emitted HTML for built-in token spans to confirm. `PlainTextHighlighter` is the hardcoded final fallback inside `HighlightingService`, reached only when no registered highlighter matches; it is not on the priority chain.
 
 ## Write the highlighter
 
@@ -27,14 +27,17 @@ examples/ExtensibilityLabExample/PipelineHighlighter.cs
 Two values shape how the highlighter slots into the chain:
 
 - `SupportedLanguages` — every token returned here maps to a fence language (` ```pipeline `) that routes to this implementation. Use `StringComparer.OrdinalIgnoreCase` so `Pipeline` and `PIPELINE` match too.
-- `Priority` — higher wins when multiple highlighters claim the same language. The shipped chain runs `PlainTextHighlighter` at 0, `TextMateHighlighter` at 50, `ShellHighlighter` at 75. Pick above 75 to beat every shipped highlighter; pick between 0 and 50 for a fallback that only runs when no TextMate grammar matches.
+- `Priority` — higher wins when multiple highlighters claim the same language. The shipped chain has `TextMateHighlighter` at 50 and `ShellHighlighter` at 75. Pick above 75 to beat every shipped highlighter; pick below 50 to register a highlighter that only runs when no shipped chain entry matches the language (after which `HighlightingService` reaches for its hardcoded `PlainTextHighlighter` fallback).
 
 ## Register the highlighter
 
 `PenningtonOptions.Highlighting.AddHighlighter` inserts the instance into the priority-sorted chain resolved by `HighlightingService`. Call it inside the `AddPennington` delegate so the highlighter is active for both `dotnet run` and `dotnet run -- build output`.
 
 ```csharp
-_highlighters.Add(highlighter);
+builder.Services.AddPennington(penn =>
+{
+    penn.Highlighting.AddHighlighter(new PipelineHighlighter());
+});
 ```
 
 A markdown fence tagged with one of the strings from `SupportedLanguages` now routes to the custom highlighter instead of the fallback chain.
@@ -47,7 +50,7 @@ source "orders" -> filter where=paid | transform total=sum | sink "warehouse"
 
 ## Verify
 
-- Run `dotnet run --project examples/ExtensibilityLabExample` and visit `/pipeline-demo/`. Each keyword, arrow, and string literal inside the `pipeline` fence carries a `pipeline-*` CSS class; the neighbouring `text` fence renders without spans through the fallback `PlainTextHighlighter`.
+- Run `dotnet run --project examples/ExtensibilityLabExample` and visit `/pipeline-demo/`. Each keyword, arrow, and string literal inside the `pipeline` fence carries a `pipeline-*` CSS class; the neighbouring `text` fence renders without spans through the hardcoded `PlainTextHighlighter` fallback.
 - Static build: `dotnet run --project examples/ExtensibilityLabExample -- build output` — grep the emitted HTML for `class="pipeline-keyword"` to confirm the highlighter runs during publish.
 
 ## Related

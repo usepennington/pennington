@@ -65,9 +65,9 @@ public int OldWay(int a, int b) // [!code --]
 }
 ```
 
-### Focus one line and dim the rest
+### Focus one line and blur the rest
 
-Add `[!code focus]` to the line (or lines) worth zeroing in on. Every other line receives a `dimmed` class so the focused line stands out.
+Add `[!code focus]` to the line (or lines) worth zeroing in on. The focused lines receive a `focused` class, every other line receives a `blurred` class, and the enclosing `<pre>` receives `has-focused` so the stylesheet can scope the effect.
 
 ````markdown
 ```csharp
@@ -102,11 +102,11 @@ var length = path.Length; // [!code warning]
 ## Verify
 
 - Run `dotnet run` and load the page with the annotated fence. The `[!code …]` comments are gone from the rendered HTML.
-- View source: each annotated `.line` span carries the matching class (`highlight`, `diff-add`, `diff-remove`, `focused` / `dimmed`, `error`, `warning`).
+- View source: each annotated `.line` span carries the matching class (`highlight`, `diff-add`, `diff-remove`, `focused` / `blurred`, `error`, `warning`); a fence with any focused line also carries `has-focused` on its `<pre>`.
 
 ## What the renderer emits
 
-The `CodeTransformer` promotes each directive's class onto the enclosing `.line` span — one of `highlight`, `diff-add`, `diff-remove`, `focused`, `dimmed`, `error`, `warning` — and deletes the trailing comment so the directive text never appears in rendered HTML. Comment-marker variants (`#`, `--`, `<!-- -->`, and so on) are recognised the same way, so the same directive set works across languages.
+The `CodeTransformer` promotes each directive's class onto the enclosing `.line` span — one of `highlight`, `diff-add`, `diff-remove`, `focused`, `blurred`, `error`, `warning` — and deletes the trailing comment so the directive text never appears in rendered HTML. Fences with at least one `[!code focus]` also receive `has-focused` on the `<pre>` so the stylesheet can blur the non-focused lines. Comment-marker variants (`#`, `--`, `<!-- -->`, and so on) are recognised the same way, so the same directive set works across languages.
 
 See <xref:explanation.rendering.highlighting> for why the transformer runs after the highlighter.
 

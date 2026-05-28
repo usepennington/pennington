@@ -30,17 +30,11 @@ Two tabs go a bit further:
   link, an unresolved `xref:`, a code fence in an unknown language, each tied to
   the page that produced it.
 
-The diagnostics tab shows the same data as the build report and the browser
-overlay, in your terminal. The [request-scoped diagnostics
+The diagnostics tab collects warnings on demand from real requests as you
+navigate the dev site — the same data the browser overlay surfaces, in your
+terminal. The [request-scoped diagnostics
 reference](xref:reference.diagnostics.request-context) covers where it comes
 from.
-
-## A build that checks itself as you type
-
-The dashboard also runs a dry-run build validator. Each time you save a file,
-Pennington does a full build pass in memory — without writing to `output/` — to
-check whether the build would still succeed. You find out a page broke the build
-when you break it, not when the deploy fails.
 
 The dashboard is dev-only: under `dotnet run -- build` it does nothing, so CI
 logs stay plain.

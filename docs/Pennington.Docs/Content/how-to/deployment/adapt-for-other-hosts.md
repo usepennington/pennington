@@ -74,7 +74,7 @@ For custom cache headers on `/_content/*`, drop a `_headers` file into `wwwroot/
 ## Verify
 
 - Trigger a deploy on the target host. The build log shows `setup-dotnet` (or equivalent) picking up `11.0.x`, `dotnet run -- build` exiting zero, and the host uploading `output/` as the publish directory.
-- Open the deployed URL — the landing page loads, nested links resolve, and view-source shows the expected `<body data-base-url="...">` (empty or `/<path>/` depending on the host).
+- Open the deployed URL — the landing page loads, nested links resolve, and view-source shows the expected `<body data-base-url="...">` (either absent for root deployments, or `/<path>` with no trailing slash for sub-path hosts).
 - Visit a non-existent path like `/does-not-exist/` — the response body is the generated `output/404.html` rather than the host's default 404 shell.
 
 ## Related

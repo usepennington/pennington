@@ -30,11 +30,11 @@ examples/ExtensibilityLabExample/AnchorLowercaseRewriter.cs
 
 ## Pick an Order value
 
-The three shipped rewriters run at 10 (`XrefHtmlRewriter`), 20 (`LocaleLinkHtmlRewriter`), and 30 (`BaseUrlHtmlRewriter`). Pick above 30 to see already-resolved xref/locale/base hrefs, below 10 to preempt xref resolution, or between the built-ins only when slotting into that chain is deliberate. The example uses 500 so anchors are lowercased after every transport-layer transform has landed.
+The shipped rewriters run at 10 (`XrefHtmlRewriter`), 20 (`LocaleLinkHtmlRewriter`), 30 (`BaseUrlHtmlRewriter`), 40 (`FallbackLangHtmlRewriter`), 50 (`CanonicalLinkHtmlRewriter`), and 60 (`WordBreakHtmlRewriter`). The first three carry load-bearing ordering — xref resolution → locale prefixing → base-URL prefixing — and the others slot in after them. Pick above 60 to see every shipped transform's output, below 10 to preempt xref resolution, or between the built-ins only when slotting into that chain is deliberate. The example uses 500 so anchors are lowercased after every transport-layer transform has landed.
 
 ## Register the rewriter
 
-Every registered `IHtmlResponseRewriter` is picked up and ordered by its `Order` value, so a single `AddSingleton` next to the host wiring is sufficient.
+Every registered `IHtmlResponseRewriter` is picked up and ordered by its `Order` value, so a single registration next to the host wiring is sufficient. Use the lifetime that matches your dependencies — `AddSingleton` for stateless rewriters, `AddTransient` (or `AddFileWatched`) when the rewriter captures file-watched state.
 
 ```csharp
 builder.Services.AddSingleton<IHtmlResponseRewriter, AnchorLowercaseRewriter>();

@@ -108,5 +108,5 @@ With the file saved, reload the running site and verify each new field in turn. 
 ## Summary
 
 - A Pennington blog post backed by `BlogSiteFrontMatter` maps predictably onto each blog surface — title/description/date for listings, author for byline and RSS, tags for `/tags/<tag>/` indexes, series for the shared banner, repository for the source-code link card.
-- `AddBlogSite` binds `AddMarkdownContent<BlogSiteFrontMatter>`, which is the BlogSite-specific superset of the core `BlogFrontMatter` record.
+- `AddBlogSite` binds `AddMarkdownContent<BlogSiteFrontMatter>`, the BlogSite-specific front-matter record. It is parallel to the core `BlogFrontMatter` (not an inheritor) and implements the same capability interfaces with the extra fields BlogSite needs.
 - Dropping a new `Content/Blog/*.md` file brings it straight to the home page, the archive, every tag it claims, and `/rss.xml` — no `Program.cs` changes needed.

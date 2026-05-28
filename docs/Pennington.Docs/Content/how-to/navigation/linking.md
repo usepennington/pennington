@@ -48,7 +48,7 @@ Hardcoding the prefix in markdown defeats the rewriter. See <xref:how-to.deploym
 ## Verify
 
 - Run `dotnet run` and click each link shape on `/main/linking/` — relative, absolute, anchor, asset, and external links all navigate correctly.
-- View source on the rendered page with `BaseUrl="/docs/"` — every internal `href` starts with `/docs/` and the `<body>` carries a `data-base-url="/docs/"` attribute stamped by `BaseUrlHtmlRewriter`.
+- View source on the rendered page with `BaseUrl="/docs/"` — every internal `href` starts with `/docs/` and the `<body>` carries a `data-base-url="/docs"` attribute (no trailing slash) stamped by `BaseUrlHtmlRewriter`.
 - Run `dotnet run -- build` — the build report lists zero broken-link diagnostics from `LinkVerificationService`.
 
 ## Related

@@ -20,6 +20,7 @@ Per-request accumulator registered as `Scoped`. Not thread-safe; resolved via DI
 | `Add(Diagnostic diagnostic)` | Appends a pre-constructed `Diagnostic`. |
 | `AddError(string message, string? source = null)` | Appends a `Diagnostic` with `Severity = Error`. Flips `HasErrors` to `true`. |
 | `AddWarning(string message, string? source = null)` | Appends a `Diagnostic` with `Severity = Warning`. |
+| `AddInfo(string message, string? source = null)` | Appends a `Diagnostic` with `Severity = Info` — informational notices about degraded but non-broken behavior. |
 | `Diagnostics` | Read-only view of the diagnostics accumulated so far, in insertion order. |
 | `HasAny` | `true` when at least one diagnostic has been appended. |
 | `HasErrors` | `true` when at least one appended diagnostic has `Severity = Error`. |
@@ -38,14 +39,15 @@ Immutable record carrying one diagnostic event. Route-agnostic — `HttpContext`
 
 ## `DiagnosticSeverity`
 
-Two-value enum in ascending severity order.
+Three-value enum.
 
 ### Values
 
 | Name | Value | Description |
 |---|---|---|
 | `Warning` | `0` | Recoverable issue (for example, an unresolved xref); contributes to the overlay warning count and the amber badge color. |
-| `Error` | `1` | Fatal issue for the request's output; flips `HasErrors` and renders with the red badge color. |
+| `Error` | `1` | Failure that indicates broken content or misconfiguration; flips `HasErrors` and renders with the red badge color. |
+| `Info` | `2` | Informational notice about degraded but non-broken behavior; does not contribute to the error or warning counts. |
 
 ## Dev-mode overlay and `X-Pennington-Diagnostic` header
 

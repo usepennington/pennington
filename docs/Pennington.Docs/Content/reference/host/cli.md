@@ -35,13 +35,13 @@ The command-line surface that `RunOrBuildAsync` dispatches on: one positional ve
 
 | Variable | Consumer | Effect when set |
 |---|---|---|
-| `ASPNETCORE_URLS` | ASP.NET Core host | Standard ASP.NET binding. `RunOrBuildAsync` resolves `app.Urls.First()` after `StartAsync`, falling back to `http://localhost:5000` only when `app.Urls` is empty. |
+| `ASPNETCORE_URLS` | ASP.NET Core host | Standard ASP.NET binding for dev-serve. Build mode replaces Kestrel with `TestServer` at service-registration time, so this variable has no effect under `build`. |
 
 `ASPNETCORE_ENVIRONMENT` has no Pennington-specific effect: dev tooling (live reload, diagnostic overlay) gates on the `build` command-line argument, not on this variable.
 
 ## Listening port
 
-Pennington uses the standard ASP.NET Core host port-binding mechanisms — `--urls`, `ASPNETCORE_URLS`, or `launchSettings.json`. The library adds middleware and endpoints on top of whatever URL Kestrel is told to listen on.
+In dev mode, Pennington uses the standard ASP.NET Core host port-binding mechanisms — `--urls`, `ASPNETCORE_URLS`, or `launchSettings.json` — and the library adds middleware and endpoints on top of whatever URL Kestrel is told to listen on. Build mode does not bind a port: Kestrel is replaced with `TestServer` at service-registration time, and the crawler dispatches requests in-memory through the same middleware pipeline.
 
 ## Exit codes
 

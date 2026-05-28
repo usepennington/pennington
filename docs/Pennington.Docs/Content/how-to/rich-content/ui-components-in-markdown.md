@@ -11,12 +11,12 @@ To place a Razor component tag — `<Badge>`, `<Card>`, or one of your own — d
 
 ## Before you begin
 - A working Pennington site that renders markdown (see <xref:tutorials.getting-started.first-site> if not).
-- The host calls `AddDocSite`, `AddBlogSite`, or `AddPennington`. The first two register seven of the eight Pennington.UI components automatically (everything but `CodeBlock`, which is Razor-page-only); bare `AddPennington` requires the one-line registration shown under "Register components on a bare host" below.
+- The host calls `AddDocSite`, `AddBlogSite`, or `AddPennington`. The first two pre-register the Pennington.UI components meant for markdown use; bare `AddPennington` requires the registration shown under "Register components on a bare host" below.
 - Component tag names start with an uppercase letter and match the Razor component type name — case-sensitive on the leading character (`<Card>`, not `<card>`).
 
 ## Authoring shapes
 
-`AddDocSite` and `AddBlogSite` pre-register seven components — `<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<LinkCard>`, `<Step>`, and `<Steps>`. The H3s below cover the three most common authoring shapes; for the full parameter surface of each component, see <xref:reference.ui.content>.
+`AddBlogSite` pre-registers eight components — `<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<Checkpoint>`, `<LinkCard>`, `<Step>`, and `<Steps>`. `AddDocSite` adds one more, `<RenderedFixture>`, for embedding rendered example output into a page. The H3s below cover the three most common authoring shapes; for the full parameter surface of each component, see <xref:reference.ui.content>.
 
 ### Inline a built-in tag
 
@@ -60,7 +60,7 @@ For complex data, pack it into a delimited string and parse inside the component
 
 ## Register components on a bare host
 
-`AddPennington` wires the component registry via `AddMdazor()` but does not register any components. Chain one `AddMdazorComponent<T>()` call per component that should be available in markdown — see <xref:reference.ui.content> for the canonical eight-component registration block DocSite uses.
+`AddPennington` wires the component registry via `AddMdazor()` but does not register any components. Chain one `AddMdazorComponent<T>()` call per component that should be available in markdown — see <xref:reference.ui.content> for the registration block DocSite and BlogSite use.
 
 ```csharp
 builder.Services.AddMdazorComponent<Badge>()
@@ -77,6 +77,6 @@ See <xref:reference.ui.content> for the parameters of each built-in component.
 
 ## Related
 
-- Reference: [Content components](xref:reference.ui.content) — parameters and render behaviour for `Card`, `CardGrid`, `LinkCard`, `Badge`, `Step`, `Steps`, `CodeBlock`, and `BigTable`.
+- Reference: [Content components](xref:reference.ui.content) — parameters and render behaviour for `Badge`, `BigTable`, `Card`, `CardGrid`, `Checkpoint`, `LinkCard`, `RenderedFixture` (DocSite only), `Step`, and `Steps`.
 - Tutorial: [Author a custom Razor component for markdown](xref:tutorials.beyond-basics.custom-razor-component) — write your own `<PricingCard>`-style component and wire it through `AddMdazorComponent<T>()`.
 - How-to: [Customize DocSite layouts and components](xref:how-to.response-pipeline.override-docsite-components) — when you need to change the surrounding page, not only embed a tag inside markdown.

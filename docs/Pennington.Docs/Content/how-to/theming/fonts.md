@@ -26,7 +26,7 @@ Place each `.woff2` file under `wwwroot/fonts/`. `UsePennington` wires `UseStati
 
 ### Register `@font-face` rules via `ExtraStyles`
 
-Emit the `@font-face` declarations into the generated stylesheet by returning them from an `ExtraStyles` helper. MonorailCSS appends this content verbatim above its utility output, with each `src:` pointing at the `/fonts/...` path you exposed above.
+Emit the `@font-face` declarations into the generated stylesheet by returning them from an `ExtraStyles` helper. MonorailCSS prepends this content verbatim above its utility output, with each `src:` pointing at the `/fonts/...` path you exposed above.
 
 ```csharp:symbol,bodyonly
 examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.BuildExtraStyles
@@ -50,7 +50,7 @@ examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguratio
 
 ### Match MonorailCSS utilities to your stacks
 
-When prose uses MonorailCSS utility classes such as `font-sans` or `font-display`, update the theme or `ExtraStyles` so those utilities resolve to the same `font-family` stacks; otherwise utility-styled text disagrees with the layout chrome. See <xref:how-to.theming.monorail-css> for how to pass `CustomCssFrameworkSettings`.
+`DisplayFontFamily` and `BodyFontFamily` flow into the layout's `<body>` / heading styles directly. They do not feed the MonorailCSS theme, so utility classes like `font-sans` and `font-display` still resolve to whatever theme tokens MonorailCSS was configured with. When prose uses those utilities, also update the theme via `CustomCssFrameworkSettings` (or add overrides through `ExtraStyles`) so the utility-driven text agrees with the layout chrome. See <xref:how-to.theming.monorail-css> for how to pass `CustomCssFrameworkSettings`.
 
 ---
 

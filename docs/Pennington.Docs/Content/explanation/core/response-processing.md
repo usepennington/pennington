@@ -43,7 +43,7 @@ The body-capture middleware itself remains deliberately agnostic about HTML. The
 
 ### Why order is load-bearing
 
-The three built-in HTML rewriters run in a specific sequence because each one produces the link shape the next one expects to consume.
+The first three built-in HTML rewriters run in a specific sequence because each one produces the link shape the next one expects to consume. The remaining shipped rewriters (`FallbackLangHtmlRewriter`, `CanonicalLinkHtmlRewriter`, `WordBreakHtmlRewriter`) slot in after them without participating in this dependency chain.
 
 `XrefHtmlRewriter` at `Order 10` resolves `<xref:uid>` tag syntax (in `PreParseAsync`) and `href="xref:uid"` attributes (in `ApplyAsync`) into canonical root-relative paths. It runs first so everything downstream sees real URLs rather than symbolic cross-reference handles.
 

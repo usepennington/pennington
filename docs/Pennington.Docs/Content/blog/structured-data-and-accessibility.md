@@ -55,8 +55,9 @@ navigation straight to the content. The sidebar is a real `<nav>` element with
 an `aria-label`, the header and footer navs are labeled too, and the main
 content carries `id="main-content"` as the skip-link target.
 
-None of this is configurable — it's correct out of the box, so it isn't
-something you have to remember to add.
+None of this is configurable — these landmarks are wired up by default, so the
+skip link and labels are there from the first page render rather than something
+you have to remember to add.
 
 ## Font preloading
 

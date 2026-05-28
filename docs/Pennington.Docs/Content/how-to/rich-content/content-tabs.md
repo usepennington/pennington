@@ -63,7 +63,7 @@ The first tab is active by default. Each panel is ordinary Markdown — the bull
 
 ## Tabs sync across the page
 
-Tab `<id>`s are page-wide. Every group that shares an id selects together: pick **Linux** once and every `#tab/linux` on the page follows. The choice persists in `localStorage`, so it survives navigation. Switch a tab in the group above and watch this one match:
+Tab `<id>`s are page-wide. Every group that shares an id selects together: pick **Linux** once and every `#tab/linux` on the page follows. The client unions id sets across all co-occurring groups, and the choice persists in `localStorage` per set, so the selection carries across pages with the same tab groupings as well as within the current page. Switch a tab in the group above and watch this one match:
 
 # [macOS](#tab/macos)
 

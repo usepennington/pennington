@@ -24,7 +24,7 @@ Add a project reference to `Pennington.ApiMetadata.Reflection`, add a `<PackageR
 examples/FusionCacheDocSiteExample/Program.cs
 ```
 
-`FromPackageReference` calls `Assembly.Load` against the project's deps.json and grabs the resolved `.dll` path out of the NuGet cache. The companion `.xml` file ships alongside the dll for any package built with `<GenerateDocumentationFile>true</GenerateDocumentationFile>`; the provider picks it up automatically. No staging, no committed binary, and bumping the documented version is a `<PackageReference Version=…>` change.
+`FromPackageReference` calls `Assembly.Load` against the project's deps.json and reads the resolved `.dll` path from `Assembly.Location` (typically the project's bin folder). The companion `.xml` file ships alongside the dll for any package built with `<GenerateDocumentationFile>true</GenerateDocumentationFile>` — MSBuild does not always stage that xml into `bin/`, so when the xml is missing next to the resolved bin-path DLL the provider falls back to the matching NuGet cache copy (where the package originally ships both files together). No staging, no committed binary, and bumping the documented version is a `<PackageReference Version=…>` change.
 
 When the target isn't a normal NuGet reference — a locally-built assembly, a single-file bundle, or something else without a file location — fall back to the explicit form:
 
@@ -33,7 +33,7 @@ builder.Services.AddApiMetadataFromCompiledAssembly(opts =>
     opts.AssemblyFiles.Add(Path.Combine(builder.Environment.ContentRootPath, "lib", "net9.0", "Foo.dll")));
 ```
 
-The reflection backend inspects metadata without running the assembly's code — no MSBuild workspace, no source needed. It resolves `<inheritdoc/>`, union cases, and `<ExtensionMethods>` from metadata. Only the `:xmldocid` source fence is unavailable under this backend, since it extracts source text rather than metadata.
+The reflection backend inspects metadata without running the assembly's code — no MSBuild workspace, no source needed. It resolves `<inheritdoc/>` and union-case xmldoc from metadata. Only the `:xmldocid` source fence is unavailable under this backend, since it extracts source text rather than metadata.
 
 ## Customize the route prefix
 
@@ -138,7 +138,7 @@ Every public type with an xmldoc comment gets a route under `/reference/api/{slu
 /reference/api/api-member/             -> uid: reference.api.api-member
 ```
 
-Xref links like `<xref:reference.api.api-type-summary>` resolve, the pages flow through search and llms.txt, and the index page at `/reference/api/` lists every type grouped by namespace. Nothing appears in the sidebar TOC — the generated pages are reached via type-name search, xref links, and the index page.
+Xref links like `<xref:reference.api.api-type-summary>` resolve, the pages flow through search and llms.txt, and the index page at `/reference/api/` lists every type grouped by namespace. One TOC entry — the index page, titled "API reference" by default — appears in the sidebar; per-type pages stay out of the sidebar and are reached via type-name search, xref links, and the index. Override `TocTitle` and `TocSectionLabel` on `ApiReferenceRegistrationOptions` to customize, or set `TocTitle = null` to suppress the index entry entirely.
 
 ## Verify
 

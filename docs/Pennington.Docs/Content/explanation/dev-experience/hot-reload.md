@@ -7,7 +7,7 @@ tags: [live-reload, file-watching, dev-loop, websockets]
 uid: explanation.dev-experience.hot-reload
 ---
 
-Content files — `.md` sources, front matter, images, assets tracked under a source's `ContentPath` — are not part of the .NET compilation. Restarting the host for every markdown typo would tear down Kestrel and throw away the expensive in-memory caches that make the second request fast. Pennington's answer is narrower: an in-process `FileWatcher`, a `FileWatchDependencyFactory<T>` that structurally invalidates derived caches on change, and a debounced WebSocket channel through which the browser is told to reload. WebSocket beats Server-Sent Events for this shape because the dev script also wants to *detect server restarts* — when the socket closes and reconnects, the browser reloads — and a one-way SSE channel cannot signal that. Polling adds latency under load and noise under idle.
+Content files — `.md` sources, front matter, images, assets tracked under a source's `ContentPath` — are not part of the .NET compilation. Restarting the host for every markdown typo would tear down Kestrel and throw away the expensive in-memory caches that make the second request fast. Pennington's answer is narrower: an in-process `FileWatcher`, a `FileWatchDependencyFactory<T>` that structurally invalidates derived caches on change, and a debounced WebSocket channel through which the browser is told to reload. WebSocket's bidirectional handshake makes server-restart detection trivially observable client-side — the socket closes and reconnects, and the browser reloads — without the careful `onerror` plumbing SSE would require for the same signal. Polling, the third alternative, adds latency under load and noise under idle.
 
 ## How it works
 

@@ -13,7 +13,7 @@ Utility-first CSS normally needs a build step that scans source files and regene
 
 Utility-first CSS frameworks like Tailwind and MonorailCSS ship a vast class surface and rely on a scanner to collect only the classes in use, keeping the final stylesheet small. Traditional setups solve this with a pre-build step that globs source files. That model fights a dotnet-watch content engine in two ways: markdown is rendered at runtime through Markdig extensions, so classes do not exist on disk until a request renders them, and adding a Razor component or a new page would require rerunning a separate tool.
 
-Pennington's answer is to lean on the `MonorailCss.Discovery` package. Discovery force-loads every non-BCL referenced assembly at startup, walks the IL for string literals that parse as utility candidates, and watches source files in development for live updates. The discovered set is exposed through an `IClassRegistry` whose `Version` token changes whenever a new class is observed. The `/styles.css` endpoint reads the registry and regenerates CSS only when that version moves, so repeated GETs hit a cache.
+Pennington's answer is to lean on the `MonorailCss.Discovery` package. Discovery force-loads every non-BCL referenced assembly at startup, walks the IL for string literals that parse as utility candidates, and watches source files in development for live updates. The discovered set is exposed through an `IClassRegistry`. The `/styles.css` endpoint reads the current class set and runs it through a fresh `CssFramework` on every request — there is no Pennington-side cache, so an option change or a newly observed class shows up on the next fetch without a process restart.
 
 ## How it works
 
@@ -23,11 +23,11 @@ Pennington's answer is to lean on the `MonorailCss.Discovery` package. Discovery
 
 Because the scan reads compiled IL rather than source text, every `class="bg-primary-500"` literal in a Razor component, every string constant in a C# helper, and every utility token in `Pennington.UI`'s shipped components participates without any per-project glob configuration. In development, Discovery also watches the source files behind the loaded assemblies and re-scans on edits, so a new utility added to a `.razor` or `.cs` file shows up on the next `/styles.css` fetch. If a `wwwroot/app.css` is present, Discovery treats it as the source CSS prefix.
 
-### The stylesheet generates on demand and caches by version
+### The stylesheet generates on demand, every request
 
-`UseMonorailCss` maps a `GET /styles.css` endpoint that calls `MonorailCssService.GetStyleSheet()`. Each hit checks the `IClassRegistry.Version` token and returns the cached result when the registry hasn't moved; on a miss it pulls the current class set, calls `cssFramework.Process(classes)`, and prepends Pennington's content-visibility preamble plus any configured `ExtraStyles`. The cache is a process-local field guarded by a single lock, so the cost of a `/styles.css` fetch on a stable site is one comparison and one string return.
+`UseMonorailCss` maps a `GET /styles.css` endpoint that calls `MonorailCssService.GetStyleSheet()`. Each hit builds a fresh `CssFramework` from the current `MonorailCssOptions`, runs it over `IClassRegistry.GetClasses()`, and prepends Pennington's content-visibility preamble plus any configured `ExtraStyles`. The service deliberately skips `IClassRegistry.Css` — that upstream cache is keyed against the framework baked in at startup, and the per-call rebuild is what lets hot-reload edits to `CustomCssFrameworkSettings` or theme tokens flow into the next stylesheet without restarting the process.
 
-The version-keyed cache is what makes the dev-serve loop feel right. The first page load primes the registry with whatever classes that page emits; the browser then fetches `/styles.css` and gets a freshly-generated stylesheet. A subsequent navigation that introduces a new class moves the registry version, the next stylesheet fetch sees the bump, and only that fetch pays for regeneration.
+Pennington is a static content engine: the build is one-shot and the dev server is the only other consumer, so per-call regeneration is cheap enough to make caching unnecessary. The first page load primes the registry with whatever classes that page emits; the browser then fetches `/styles.css` and gets a freshly-generated stylesheet. A subsequent navigation that introduces a new class is reflected on the very next stylesheet fetch.
 
 ### Color schemes: named vs algorithmic
 

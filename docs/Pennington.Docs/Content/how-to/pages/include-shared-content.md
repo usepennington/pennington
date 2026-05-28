@@ -22,7 +22,7 @@ To drop a whole partial in as its own block — paragraphs, lists, callouts, cod
 [!INCLUDE [.NET prerequisite](../../../_includes/dotnet-preview-note.md)]
 ````
 
-The partial `_includes/dotnet-preview-note.md` holds a single `[!NOTE]` callout. It expands here, and the alert syntax inside it passes through the normal pipeline:
+The partial `_includes/dotnet-preview-note.md` holds a single `[!NOTE]` callout. It expands here, and the alert syntax inside it passes through the normal pipeline — note that the partial's leading YAML front matter, if any, is stripped on include:
 
 [!INCLUDE [.NET prerequisite](../../../_includes/dotnet-preview-note.md)]
 
@@ -55,7 +55,7 @@ A target that does not exist, or an include cycle, collapses to an HTML comment 
 <!-- Pennington: include not found: ../../../_includes/typo.md -->
 ```
 
-View source on a page during `dotnet run` to spot a mistyped path — the comment names the directive that could not be resolved.
+View source on a page during `dotnet run` to spot a mistyped path — the comment names the directive that could not be resolved. Only local relative paths are spliced: an `[!INCLUDE …](https://…)` directive is also skipped, emitting `<!-- Pennington: include skipped (not a local file): … -->`.
 
 ## Related
 

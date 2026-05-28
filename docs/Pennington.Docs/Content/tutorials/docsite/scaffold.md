@@ -109,7 +109,7 @@ The five fields populated here — `SiteTitle`, `Description`, `GitHubUrl`, `Hea
 
 ## 3. Map content to areas
 
-`DocSiteOptions.Areas` is a list of `ContentArea(Label, Slug)` pairs. Each slug binds a top-level folder under `ContentRootPath` to a URL prefix and to its own sidebar tab. `ContentArea` is a two-field record (`record ContentArea(string Label, string Slug)`); the order of entries in `Areas` drives the order of tabs in the sidebar.
+`DocSiteOptions.Areas` is a list of `ContentArea(Title, Slug)` pairs. Each slug binds a top-level folder under `ContentRootPath` to a URL prefix and to its own sidebar tab. `ContentArea` is a record with two required fields plus optional `Icon` and `SearchBoost` (`record ContentArea(string Title, string Slug, string? Icon = null, int? SearchBoost = null)`); the order of entries in `Areas` drives the order of tabs in the sidebar.
 
 <Steps>
 <Step StepNumber="1">

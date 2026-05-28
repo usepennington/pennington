@@ -13,7 +13,7 @@ To replace the bundled DocSite header or footer (or inject head tags, append CSS
 
 - An existing Pennington site wired through `AddDocSite(...)` (see <xref:tutorials.docsite.scaffold> if not).
 - Edits made in the `DocSiteOptions` factory passed to `AddDocSite`, not the DocSite source — forking the template is out of scope (see <xref:explanation.positioning.docsite-positioning>).
-- Awareness that `ExtraStyles` is appended to the generated `/styles.css`, so rules added there ship alongside the MonorailCSS utility output rather than as a separate stylesheet.
+- Awareness that `ExtraStyles` is prepended above the generated MonorailCSS utility output in `/styles.css`, so rules added there ship inside the same stylesheet rather than as a separate file.
 - Awareness that these seams are set at host-build time — changes require a restart, or `dotnet watch` for hot-reload.
 
 For a working setup, see `examples/DocSiteChromeOverridesExample`. `SiteChromeOverrides.cs` returns a populated `DocSiteOptions` exercising all four seams, `Components/ExtraHeadFragment.razor` backs the head-slot fragment, and `Components/ExtraPage.razor` is the routed `@page` component showing that `AdditionalRoutingAssemblies` widened the router. `Program.cs` runs the DocSite end-to-end against those overrides.
@@ -34,17 +34,17 @@ examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverri
 examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverrides.BuildHtmlHeadContent
 ```
 
-### Append rules to the generated stylesheet via `ExtraStyles`
+### Prepend rules to the generated stylesheet via `ExtraStyles`
 
-`ExtraStyles` is a CSS string concatenated onto the MonorailCSS-generated `/styles.css`, making it the right home for `@font-face` declarations, custom-property overrides, and any selector the utility-class scanner will not discover on its own. Keep this string small — anything expressible as MonorailCSS utilities in Razor markup gets picked up automatically by the `MonorailCss.Discovery` pipeline.
+`ExtraStyles` is a CSS string emitted above the MonorailCSS-generated rules inside `/styles.css`, making it the right home for `@font-face` declarations, custom-property overrides, and any selector the utility-class scanner will not discover on its own. Keep this string small — anything expressible as MonorailCSS utilities in Razor markup gets picked up automatically by the `MonorailCss.Discovery` pipeline.
 
 ```csharp:symbol,bodyonly
 examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverrides.BuildExtraStyles
 ```
 
-### Replace the header and footer with the string slots
+### Replace the site-title link and footer with the string slots
 
-`HeaderContent` and `FooterContent` are raw HTML strings the DocSite layout splices into the top bar and footer regions — they accept anything an HTML fragment can hold, from a branded logo wordmark to a compliance notice. Because they are strings, no `AdditionalRoutingAssemblies` entry is needed for them; for a component-authored fragment, render it to HTML at startup the same way as the head snippet above.
+`HeaderContent` substitutes for the default `<a href="/">SiteTitle</a>` link inside the header's title span; the rest of the header chrome (optional `HeaderIcon`, search button, theme toggle, repo link) keeps rendering around it. `FooterContent` is the raw HTML fragment the layout drops into the footer region. Both accept anything an HTML fragment can hold, from a branded logo wordmark to a compliance notice. Because they are strings, no `AdditionalRoutingAssemblies` entry is needed for them; for a component-authored fragment, render it to HTML at startup the same way as the head snippet above.
 
 ```csharp
 var options = new DocSiteOptions
@@ -73,7 +73,7 @@ examples/DocSiteChromeOverridesExample/Program.cs
 
 ## Result
 
-The chrome on every page is replaced by the configured fragments. The header reads "Chrome Overrides" on the left (rendered as `<span class="chrome-header" data-chrome-overrides="docsite-header">`), the footer carries the matching copyright span, every `<head>` gains the `<meta name="x-chrome-overrides-head">` tag and the `https://example.com` preconnect, and `/styles.css` ends with the appended `.chrome-header` / `.chrome-footer` rules. Any `@page "/route"` component in the host assembly (for example `/extra`) routes alongside the bundled DocSite pages.
+The chrome on every page is replaced by the configured fragments. The header title reads "Chrome Overrides" on the left (rendered as `<span class="chrome-header" data-chrome-overrides="docsite-header">` in place of the default `<a href="/">…</a>` link, with the rest of the header chrome intact), the footer carries the matching copyright span, every `<head>` gains the `<meta name="x-chrome-overrides-head">` tag and the `https://example.com` preconnect, and `/styles.css` begins with the prepended `.chrome-header` / `.chrome-footer` rules. Any `@page "/route"` component in the host assembly (for example `/extra`) routes alongside the bundled DocSite pages.
 
 ## Verify
 

@@ -54,7 +54,7 @@ The classes work anywhere in the rendered page — markdown bodies, Razor compon
 
 ### (Bare Pennington) Enable `LlmsTxtOptions` with `AddLlmsTxt`
 
-On a bare host, call `penn.AddLlmsTxt(...)` once. The options surface (`OutputDirectory`, `GenerateFullFile`) is documented at <xref:reference.api.llms-txt-options). The chrome-stripping selector lives one layer up at `penn.SiteProjection.ContentSelector` — it is shared with the search index so both channels see the same body element.
+On a bare host, call `penn.AddLlmsTxt(...)` once. The options surface (`OutputDirectory`, `GenerateFullFile`) is documented at <xref:reference.api.llms-txt-options>. The chrome-stripping selector lives one layer up at `penn.SiteProjection.ContentSelector` — it is shared with the search index so both channels see the same body element.
 
 ```csharp:symbol,bodyonly
 examples/ExtensibilityLabExample/LlmsTxtConfiguration.cs > LlmsTxtConfiguration.Configure

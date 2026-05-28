@@ -40,7 +40,7 @@ examples/BeyondLocaleExample/Content/es/about.md
 
 ### Confirm `UsePenningtonLocaleRouting` is in the pipeline
 
-`UseDocSite` and `UseBlogSite` already register `UsePenningtonLocaleRouting` as the first middleware — template hosts need no extra call. On a bare `AddPennington` host, insert it before `UseRouting` so `LocaleDetectionMiddleware` can strip the locale prefix into `PathBase` ahead of endpoint matching.
+`UseDocSite` and `UseBlogSite` already register `UsePenningtonLocaleRouting` as the first middleware — template hosts need no extra call. On a bare `AddPennington` host, call it before mapping endpoints; it handles locale detection and `UseRouting` together, so `LocaleDetectionMiddleware` can strip the locale prefix into `PathBase` ahead of endpoint matching without a separate `UseRouting` call.
 
 ```csharp
 app.UsePenningtonLocaleRouting();

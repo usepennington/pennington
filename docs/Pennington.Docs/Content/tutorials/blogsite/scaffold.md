@@ -82,7 +82,7 @@ Posts live under `{ContentRootPath}/{BlogContentPath}` — with the defaults fro
 
 **Create `Content/Blog/hello-world.md`**
 
-The placeholder post uses four front-matter keys: `title`, `description`, `date`, and `author`. These are the minimum the home listing and RSS feed need to render an entry. The next tutorial expands this to the full `BlogSiteFrontMatter` surface, adding `tags`, `series`, `repository`, `section`, and `redirectUrl`.
+The placeholder post uses four front-matter keys: `title`, `description`, `date`, and `author`. These are the minimum the home listing and RSS feed need to render an entry. The next tutorial expands this to the full `BlogSiteFrontMatter` surface, adding `tags`, `series`, `repository`, `sectionLabel`, and `redirectUrl`.
 
 ```markdown:symbol
 examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md

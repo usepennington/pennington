@@ -55,17 +55,55 @@ Emits a `data-role="page-outline"` container and an empty `<ul>` whose items are
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `ContentSelector` | `string` | `""` (required) | CSS selector the client-side outline script queries to discover heading elements; must be non-empty for the outline to populate. |
-| `Title` | `string` | `"On This Page"` | Textual label accepted for parity with other outline skins; not rendered by the default template. |
+| `Title` | `string` | `"On this page"` | Eyebrow rendered above the outline list as a `<div>`; pass an empty string to suppress. |
+| `TitleStructureClass` | `string` | `"font-display text-[13px] font-semibold mb-3"` | Layout and typography classes applied to the eyebrow above the outline list. |
+| `TitleColorClass` | `string` | `"text-base-600 dark:text-base-300"` | CSS classes applied to the eyebrow text. |
 | `ContainerStructureClass` | `string` | `"border-l border-base-200 dark:border-base-800"` | Layout and border classes applied to the outer `data-role="page-outline"` container. |
 | `ContainerColorClass` | `string` | `""` | CSS classes applied to the outer container for color treatment, composed after `ContainerStructureClass`. |
 | `ListStructureClass` | `string` | `"list-none pl-4"` | Layout classes applied to the outline `<ul>`. |
-| `ListColorClass` | `string` | `"text-neutral-500 dark:text-neutral-400"` | CSS classes applied to the `<ul>` that holds outline links, composed after `ListStructureClass`. |
+| `ListColorClass` | `string` | `"text-base-500 dark:text-base-400"` | CSS classes applied to the `<ul>` that holds outline links, composed after `ListStructureClass`. |
 | `OutlineLinkColorClass` | `string` | see source | CSS classes emitted on the container as `data-outline-link-color-class` and applied by the client-side script to each generated `<li><a>` for color and `data-selected=true` state. |
 | `OutlineLinkStructureClass` | `string` | see source | Layout classes emitted on the container as `data-outline-link-structure-class` and applied by the client-side script to each generated `<li><a>`. |
 
 ### Binding
 
 The component performs no server-side heading extraction. The outline list is populated at runtime by the companion client script in `Pennington.UI/wwwroot/`, which queries the element matched by `ContentSelector` and reads `data-content-selector`, `data-outline-link-structure-class`, and `data-outline-link-color-class` from the container. `NavigationInfo` is not consulted. No `RenderFragment` slots.
+
+## `Breadcrumb`
+
+### Declaration
+
+```razor:symbol
+src/Pennington.UI/Components/Breadcrumb.razor
+```
+
+Renders a visible breadcrumb trail inside an article header from the `ImmutableList<BreadcrumbItem>` `NavigationBuilder` exposes via `NavigationInfo`. Each item links to its route except the last (which renders as a current-page `<span aria-current="page">`); the trail renders nothing when the list is empty. `TrailingContent` supplies optional right-aligned chrome on the same row (an "Edit on GitHub" link, repository metadata).
+
+### Parameters
+
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `Items` | `ImmutableList<BreadcrumbItem>` | `[]` | The breadcrumb trail to render. Empty list renders nothing. |
+| `TrailingContent` | `RenderFragment?` | `null` | Optional content rendered on the trailing edge of the breadcrumb row; pushed right via `ml-auto`. |
+
+## `Pagination`
+
+### Declaration
+
+```razor:symbol
+src/Pennington.UI/Components/Pagination.razor
+```
+
+Prev / numbered / next pagination controls. URL-shape agnostic — the caller supplies a `Func<int, string>` that maps a 1-based page index to a URL, so the same component drives `/archive/page/N/`, `/tags/{tag}/page/N/`, or any other shape. Renders nothing when `TotalPages` is 1 or less.
+
+### Parameters
+
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `CurrentPage` | `int` | `1` | 1-based page index for the current view; highlighted in the numbered list. |
+| `TotalPages` | `int` | `1` | Total number of pages. The component renders nothing when this is 1 or less. |
+| `UrlFor` | `Func<int, string>` | `page => "?page={page}"` | Returns the URL for a given 1-based page index. Callers should map page 1 to the canonical (non-paginated) URL of the listing. |
+| `SiblingCount` | `int` | `1` | Number of numeric page links flanking the current page in the truncated list. The first and last pages are always rendered; gaps collapse to `...`. Default of 1 yields windows like `1 ... 4 5 6 ... 12`. |
 
 ## See also
 

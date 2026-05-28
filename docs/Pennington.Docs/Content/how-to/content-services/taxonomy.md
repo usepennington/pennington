@@ -142,6 +142,6 @@ Edits during `dotnet run` propagate immediately.
 ## Caveats
 
 - **Sitemap exclusion.** Taxonomy routes use `EndpointSource` (the canonical HTML lives behind `MapTaxonomy`'s endpoints). They appear in navigation, search, and cross-references, but not in `/sitemap.xml` — same tradeoff as <xref:how-to.content-services.custom-content-service>.
-- **Markdown sources only.** The walker pattern-matches `MarkdownFileSource`. Items emitted by other custom services (Razor pages, programmatic content, JSON-backed releases) are ignored. If you want one of those to participate, expose its records through a separate index page, not via taxonomy.
-- **Drafts are skipped.** Items whose `IsDraft` is `true` are excluded from every term — same convention as the rest of the pipeline.
+- **Markdown sources only.** The walker pattern-matches `MarkdownFileSource`. Items emitted by other custom services (Razor pages, programmatic content, JSON-backed releases) are ignored. If you want one of those to participate, expose its records through a separate index page, not via taxonomy. Sibling taxonomies are also skipped during the projection walk to avoid recursion when two axes share a front-matter type.
+- **Drafts and future-dated posts are skipped.** Items whose `IsHiddenFromBuild` is `true` — `IsDraft` set, or a `Date` in the future — are excluded from every term, same convention as the rest of the pipeline.
 - **One Razor component per axis.** Different cuisines can't render with different templates; switch on `Term.Key` inside `TermPage` if some terms need a custom layout.
