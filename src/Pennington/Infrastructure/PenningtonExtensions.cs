@@ -653,8 +653,14 @@ public static class PenningtonExtensions
 
         // Sitemap endpoint (auto-discovered and baked by the static build). The
         // sharded search index is emitted by SearchArtifactEmitter instead.
-        app.MapGet("/sitemap.xml", async (SitemapService service) =>
-            Results.Content(await service.GetSitemapXmlAsync(), "application/xml"));
+        // Gated so a host can opt out (e.g. BlogSiteOptions.EnableSitemap = false);
+        // when false the crawler also skips /sitemap.xml since MapGetRouteDiscovery
+        // walks the live EndpointDataSource.
+        if (app.Services.GetRequiredService<PenningtonOptions>().MapSitemap)
+        {
+            app.MapGet("/sitemap.xml", async (SitemapService service) =>
+                Results.Content(await service.GetSitemapXmlAsync(), "application/xml"));
+        }
 
         if (app.Services.GetService<LlmsTxtOptions>() is not null)
         {

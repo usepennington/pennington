@@ -11,7 +11,7 @@ uid: reference.blogsite.routes
 
 ## Entry point
 
-`UseBlogSite` calls `MapRazorComponents<App>`, which discovers every `@page`-annotated component in `Pennington.BlogSite.dll`; when `BlogSiteOptions.EnableRss` is `true` it additionally maps a `MapGet("/rss.xml", …)` endpoint that delegates to `BlogSiteContentService.GetRssXmlAsync`. The `/sitemap.xml` endpoint is mounted by `UsePennington` via `SitemapService`, not by `UseBlogSite`.
+`UseBlogSite` calls `MapRazorComponents<App>`, which discovers every `@page`-annotated component in `Pennington.BlogSite.dll`; when `BlogSiteOptions.EnableRss` is `true` it additionally maps a `MapGet("/rss.xml", …)` endpoint that delegates to `BlogSiteContentService.GetRssXmlAsync`. The `/sitemap.xml` endpoint is mounted by `UsePennington` via `SitemapService` (gated on `PenningtonOptions.MapSitemap`, which `AddBlogSite` mirrors from `BlogSiteOptions.EnableSitemap`).
 
 ## Routes
 
@@ -42,7 +42,7 @@ The `@page` directives on `Tags.razor`, `Tag.razor`, and `Blog.razor` are fixed 
 | `BlogBaseUrl` | `"/blog"` | `/blog/{*fileName:nonfile}` | Consumed by `BlogContentResolver.GetPostByUrlAsync` as the URL prefix; the `@page "/blog/{*fileName:nonfile}"` directive on `Blog.razor` is a fixed string, so this value must match the literal route for posts to resolve. |
 | `EnableRss` | `true` | `/rss.xml` | Gates the `MapGet("/rss.xml", …)` call in `UseBlogSite`; when `false` the endpoint is not registered and the static crawler does not emit `rss.xml`. |
 | `PostsPerPage` | `10` | `/archive/page/{Page:int}`, `/tags/{TagEncodedName}/page/{Page:int}`, `/topics/{TagEncodedName}/page/{Page:int}` | Page size for the archive and per-tag paginated routes. Set to `0` to disable pagination — all posts then render on the first page. |
-| `EnableSitemap` | `true` | `/sitemap.xml` (from `UsePennington`) | Currently a no-op. The `/sitemap.xml` endpoint is unconditionally mapped by `UsePennington`, and `SitemapService` does not consult this flag. Set explicitly only as a forward-looking signal. |
+| `EnableSitemap` | `true` | `/sitemap.xml` (from `UsePennington`) | Forwards into `PenningtonOptions.MapSitemap`; when `false`, `UsePennington` skips the `/sitemap.xml` `MapGet` and the static crawler omits it from the build output. |
 | `TagsPageUrl` | `"/tags"` | `/tags`, `/tags/{TagEncodedName}` | Consumed by `BlogContentResolver` when composing per-tag URLs. The `/topics` aliases are always present. |
 
 ## Example

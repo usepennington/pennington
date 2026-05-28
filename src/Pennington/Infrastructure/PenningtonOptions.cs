@@ -98,6 +98,15 @@ public sealed class PenningtonOptions
     /// components defined in other assemblies.
     /// </summary>
     public Assembly[] AdditionalRoutingAssemblies { get; set; } = [];
+
+    /// <summary>
+    /// When true (the default), <see cref="PenningtonExtensions.UsePennington"/>
+    /// maps the <c>/sitemap.xml</c> endpoint. Set to false to suppress the
+    /// endpoint when the host environment supplies its own sitemap. Template
+    /// extensions like <c>AddBlogSite</c> forward their own toggle into this
+    /// flag.
+    /// </summary>
+    public bool MapSitemap { get; set; } = true;
 }
 
 /// <summary>Options for a markdown content source.</summary>

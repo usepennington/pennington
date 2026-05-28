@@ -28,6 +28,7 @@ public static class BlogSiteServiceExtensions
             penn.SiteDescription = options.Description;
             penn.CanonicalBaseUrl = options.CanonicalBaseUrl;
             penn.ContentRootPath = options.ContentRootPath;
+            penn.MapSitemap = options.EnableSitemap;
 
             var blogContentPath = Path.Combine(options.ContentRootPath, options.BlogContentPath);
             penn.AddMarkdownContent<BlogSiteFrontMatter>(md =>
