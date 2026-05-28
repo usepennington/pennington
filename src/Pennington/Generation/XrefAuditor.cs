@@ -98,6 +98,15 @@ public sealed partial class XrefAuditor : IBuildAuditor
         foreach (Match match in XrefMatcher().Matches(scannable))
         {
             var uid = match.Groups[1].Value.TrimEnd('.', ',', ';', ':');
+
+            // A trailing #fragment deep-links a heading on the target page; resolve the
+            // uid without it (XrefResolvingService re-appends the fragment at render time).
+            var hash = uid.IndexOf('#');
+            if (hash >= 0)
+            {
+                uid = uid[..hash];
+            }
+
             if (string.IsNullOrEmpty(uid))
             {
                 continue;

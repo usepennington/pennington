@@ -98,13 +98,14 @@ public sealed partial class XrefResolvingService
                 continue;
             }
 
-            var uid = match.Groups[1].Value;
+            var (uid, fragment) = SplitFragment(match.Groups[1].Value);
             var xref = await _resolver.ResolveAsync(uid);
 
             string replacement;
             if (xref is not null)
             {
-                replacement = $"""<a href="{WebUtility.HtmlEncode(xref.Route.CanonicalPath.Value)}">{WebUtility.HtmlEncode(xref.Title)}</a>""";
+                var href = xref.Route.CanonicalPath.Value + fragment;
+                replacement = $"""<a href="{WebUtility.HtmlEncode(href)}">{WebUtility.HtmlEncode(xref.Title)}</a>""";
             }
             else
             {
@@ -167,12 +168,12 @@ public sealed partial class XrefResolvingService
                 continue;
             }
 
-            var uid = href[5..];
+            var (uid, fragment) = SplitFragment(href[5..]);
             var xref = await _resolver.ResolveAsync(uid);
 
             if (xref is not null)
             {
-                link.SetAttribute("href", xref.Route.CanonicalPath.Value);
+                link.SetAttribute("href", xref.Route.CanonicalPath.Value + fragment);
                 if (link.TextContent.StartsWith("xref:", StringComparison.OrdinalIgnoreCase))
                 {
                     link.TextContent = xref.Title;
@@ -187,6 +188,15 @@ public sealed partial class XrefResolvingService
         }
 
         return true;
+    }
+
+    // A uid may carry a trailing #fragment to deep-link a heading on the target page.
+    // uids are dotted identifiers and never contain '#', so split on the first one and
+    // re-append the fragment (including '#') to the resolved canonical path.
+    private static (string Uid, string Fragment) SplitFragment(string raw)
+    {
+        var hash = raw.IndexOf('#');
+        return hash < 0 ? (raw, "") : (raw[..hash], raw[hash..]);
     }
 
     [GeneratedRegex("""<xref:([^>]+)>""")]

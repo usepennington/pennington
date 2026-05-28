@@ -172,6 +172,35 @@ public class XrefResolvingServiceTests
         result.ShouldContain("&quot;");
     }
 
+    // --- Fragment deep-links: a trailing #fragment is preserved on the resolved href ---
+
+    [Fact]
+    public async Task ResolvedXrefTag_WithFragment_AppendsFragmentToCanonicalPath()
+    {
+        var service = CreateService(
+            new CrossReference("explanation.spa.islands", "Islands", MakeRoute("/explanation/spa/islands")));
+
+        var result = await service.ResolveAsync(
+            "<p>See <xref:explanation.spa.islands#persistent-chrome>.</p>");
+
+        result.ShouldContain("""<a href="/explanation/spa/islands/#persistent-chrome">Islands</a>""");
+        result.ShouldNotContain("xref:");
+    }
+
+    [Fact]
+    public async Task ResolvedXrefLink_HrefWithFragment_AppendsFragmentToCanonicalPath()
+    {
+        var service = CreateService(
+            new CrossReference("explanation.spa.islands", "Islands", MakeRoute("/explanation/spa/islands")));
+
+        var result = await service.ResolveAsync(
+            """<a href="xref:explanation.spa.islands#persistent-chrome">Persistent chrome</a>""");
+
+        result.ShouldContain("""href="/explanation/spa/islands/#persistent-chrome""");
+        result.ShouldContain("Persistent chrome");
+        result.ShouldNotContain("xref:");
+    }
+
     private sealed class StubContentService(ImmutableList<CrossReference> refs) : IContentService
     {
         public IAsyncEnumerable<DiscoveredItem> DiscoverAsync() =>
