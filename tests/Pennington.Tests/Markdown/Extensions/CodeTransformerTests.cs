@@ -66,6 +66,39 @@ public class CodeTransformerTests
         result.ShouldNotContain("--&gt;");
     }
 
+    [Fact]
+    public void Transform_PreservesTrailingPunctuationTokenWhenRemovingDirective()
+    {
+        // A trailing `;` is a real punctuation token, not an orphaned comment marker.
+        // Mirrors the highlighter's span structure for `return a + b; // [!code highlight]`.
+        var html = "<pre><code>    <span class=\"hljs-keyword\">return</span> " +
+                   "<span class=\"hljs-variable\">a</span> <span class=\"hljs-operator\">+</span> " +
+                   "<span class=\"hljs-variable\">b</span><span class=\"hljs-punctuation\">;</span> " +
+                   "<span class=\"hljs-comment\">// [!code highlight]</span></code></pre>";
+
+        var result = CodeTransformerAccessor.Transform(html);
+
+        result.ShouldContain("has-highlighted");
+        result.ShouldNotContain("[!code highlight]");
+        result.ShouldContain(";"); // the statement terminator must survive
+    }
+
+    [Fact]
+    public void Transform_PreservesWhitespaceBetweenSameClassTokensWhenRemovingDirective()
+    {
+        // `public` and `int` are both hljs-keyword separated by a space. Merging same-class
+        // spans must not drop the space (regression: `public int` collapsed to `publicint`).
+        var html = "<pre><code><span class=\"hljs-keyword\">public</span> " +
+                   "<span class=\"hljs-keyword\">int</span> <span class=\"hljs-title\">Multiply</span> " +
+                   "<span class=\"hljs-comment\">// [!code ++]</span></code></pre>";
+
+        var result = CodeTransformerAccessor.Transform(html);
+
+        result.ShouldContain("has-diff");
+        result.ShouldNotContain("[!code ++]");
+        result.ShouldNotContain("publicint");
+    }
+
 }
 
 /// <summary>

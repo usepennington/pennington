@@ -521,6 +521,14 @@ internal static class CodeTransformer
 
     private static bool IsOrphanedCommentMarker(IElement span)
     {
+        // Only a comment-classed span can be an orphaned comment marker. A real punctuation
+        // token whose text happens to match a marker — `;` in C#, `*` in a glob, `#` in a
+        // path — lives in a non-comment span and must not be stripped as leftover comment noise.
+        if (!span.ClassList.Contains("hljs-comment"))
+        {
+            return false;
+        }
+
         var content = span.TextContent.Trim();
         if (!IsCommentMarkerOnly(content))
         {
@@ -558,6 +566,7 @@ internal static class CodeTransformer
             return false;
         }
 
+        var interveningTextNodes = new List<IText>();
         var node = current.NextSibling;
         while (node != null && node != next)
         {
@@ -566,6 +575,10 @@ internal static class CodeTransformer
                 case IText text when !string.IsNullOrWhiteSpace(text.Text):
                 case IElement:
                     return false;
+                case IText whitespace:
+                    interveningTextNodes.Add(whitespace);
+                    node = node.NextSibling;
+                    break;
                 default:
                     node = node.NextSibling;
                     break;
@@ -579,11 +592,20 @@ internal static class CodeTransformer
             IsCommentMarkerOnly(currentContent) &&
             !string.IsNullOrEmpty(nextContent) && !nextContent.StartsWith(' '))
         {
+            // Re-attach a bare comment marker to its content with a single separating space.
             current.InnerHtml += " " + next.InnerHtml;
         }
         else
         {
-            current.InnerHtml += next.InnerHtml;
+            // Preserve the whitespace that separated the two tokens — dropping it glues
+            // adjacent tokens together (`public int` -> `publicint`, `= new` -> `=new`).
+            var gap = string.Concat(interveningTextNodes.Select(t => t.Text));
+            current.InnerHtml += gap + next.InnerHtml;
+        }
+
+        foreach (var interveningTextNode in interveningTextNodes)
+        {
+            interveningTextNode.Remove();
         }
 
         next.Remove();
