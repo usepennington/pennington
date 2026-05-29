@@ -31,15 +31,33 @@ public sealed class HttpDispatcher : IInProcessHttpDispatcher
             // Path-relative URLs ("/foo/bar") resolve against that and are dispatched
             // to the same RequestDelegate Kestrel would have invoked. Wrap its handler
             // with the cache so repeat self-fetches replay one render.
-            var testHandler = new CachingHttpHandler(_cache) { InnerHandler = testServer.CreateHandler() };
+            HttpMessageHandler innerHandler;
+            try
+            {
+                innerHandler = testServer.CreateHandler();
+            }
+            catch (InvalidOperationException ex)
+            {
+                // TestServer.Application is null until the host's IServer has started. A
+                // self-fetch issued before that — e.g. a startup hosted service racing the
+                // server start — is an infrastructure failure, not a per-page content error.
+                // Surface it as such so callers retry once the host is up instead of baking
+                // an empty corpus.
+                throw new SelfFetchUnavailableException(
+                    "The in-process TestServer has not started yet; a self-fetch was issued before " +
+                    "the host's server was ready.",
+                    ex);
+            }
+
+            var testHandler = new CachingHttpHandler(_cache) { InnerHandler = innerHandler };
             return new HttpClient(testHandler) { BaseAddress = new Uri("http://localhost/") };
         }
 
         var addresses = _server.Features.Get<IServerAddressesFeature>()?.Addresses;
         if (addresses is null || addresses.Count == 0)
         {
-            throw new InvalidOperationException(
-                "HttpDispatcher requires either a TestServer or a listening Kestrel host. " +
+            throw new SelfFetchUnavailableException(
+                "HttpDispatcher requires either a started TestServer or a listening Kestrel host. " +
                 "IServerAddressesFeature has no addresses — is the app started yet?");
         }
 

@@ -450,11 +450,16 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 Content: fetched,
                 Sections: BuildSectionsLazy(_extractor, fetched));
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not SelfFetchUnavailableException)
         {
             _logger.LogWarning(ex, "SiteProjection: failed to project {Path}, skipping", toc.Route.CanonicalPath.Value);
             return null;
         }
+        // SelfFetchUnavailableException is deliberately NOT caught: the in-process server
+        // wasn't ready, which is an all-or-nothing infrastructure failure, not a per-page
+        // content error. Letting it propagate faults SeedAsync so AsyncLazy evicts the task
+        // and the next access retries — otherwise the whole corpus would be cached empty and
+        // the search index / llms.txt would silently ship with zero pages.
     }
 
     private static Lazy<IReadOnlyList<HeadingSection>> BuildSectionsLazy(

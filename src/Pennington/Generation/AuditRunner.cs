@@ -19,6 +19,7 @@ public sealed class AuditRunner : IHostedService
     private readonly AuditCache _cache;
     private readonly IFileWatcher _fileWatcher;
     private readonly LocalizationOptions _localization;
+    private readonly IHostApplicationLifetime _lifetime;
     private readonly ILogger<AuditRunner> _logger;
     private readonly bool _isBuildMode;
     private readonly Lock _runLock = new();
@@ -30,8 +31,9 @@ public sealed class AuditRunner : IHostedService
         AuditCache cache,
         IFileWatcher fileWatcher,
         LocalizationOptions localization,
+        IHostApplicationLifetime lifetime,
         ILogger<AuditRunner> logger)
-        : this(services, cache, fileWatcher, localization, logger, PenningtonBuildMode.WritesOutput)
+        : this(services, cache, fileWatcher, localization, lifetime, logger, PenningtonBuildMode.WritesOutput)
     {
     }
 
@@ -41,6 +43,7 @@ public sealed class AuditRunner : IHostedService
         AuditCache cache,
         IFileWatcher fileWatcher,
         LocalizationOptions localization,
+        IHostApplicationLifetime lifetime,
         ILogger<AuditRunner> logger,
         bool isBuildMode)
     {
@@ -48,6 +51,7 @@ public sealed class AuditRunner : IHostedService
         _cache = cache;
         _fileWatcher = fileWatcher;
         _localization = localization;
+        _lifetime = lifetime;
         _logger = logger;
         _isBuildMode = isBuildMode;
     }
@@ -55,10 +59,13 @@ public sealed class AuditRunner : IHostedService
     /// <inheritdoc/>
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        // Prime the cache with an initial pass so the first request after startup
-        // already sees current diagnostics. Subsequent file changes invalidate via
-        // the IFileWatcher subscription below.
-        _activeRun = RunAsync(cancellationToken);
+        // Defer the initial pass until the application has fully started. A hosted service's
+        // StartAsync runs while sibling hosted services — including the web server that backs
+        // the in-process self-fetch — may not be up yet, so a build-mode pass that fetches
+        // rendered HTML through the projection would race the server start and fail (the empty
+        // result would then poison the projection's cache). ApplicationStarted fires only after
+        // every hosted service, the server included, has started.
+        _lifetime.ApplicationStarted.Register(RunInBackground);
         _fileWatcher.SubscribeToChanges(() => RunInBackground());
         return Task.CompletedTask;
     }
