@@ -1,9 +1,11 @@
 
-<span class="inline-flex align-middle rounded items-center px-@PaddingX py-@PaddingY text-@TextSize ring-1 ring-inset ring-@Color-300 dark:ring-@Color-400/30 bg-@Color-400/10 text-@Color-500 dark:text-@Color-400">
-    @Text
-</span>
+<span class="not-prose inline-flex align-middle rounded items-center px-@PaddingX py-@PaddingY text-@TextSize ring-1 ring-inset ring-@Color-300 dark:ring-@Color-400/30 bg-@Color-400/10 text-@Color-500 dark:text-@Color-400">@if (ChildContent is not null)
+    {@ChildContent}
+    else
+    {@Text}</span>
 
 @code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string Text { get; set; } = string.Empty;
     [Parameter] public string Variant { get; set; } = "note";
     [Parameter] public string Size { get; set; } = "medium";

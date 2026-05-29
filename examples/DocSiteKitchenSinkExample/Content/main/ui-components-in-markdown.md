@@ -41,4 +41,6 @@ Pennington.UI ships seven components pre-registered by `AddDocSite` —
 `<Step>`, and `<Steps>`. Use them directly without writing your
 own components.
 
-<Badge>Kitchen sink</Badge>
+<Badge>
+Kitchen sink
+</Badge>
