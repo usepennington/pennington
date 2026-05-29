@@ -6,15 +6,22 @@ using Xunit;
 
 public class PenningtonTuiHostedServiceTests
 {
-    // Mirrors the gate in PenningtonExtensions.RunOrBuildAsync so the TUI and
-    // the build entry point agree on what "build mode" looks like. If this test
-    // drifts from the real check, the TUI will fire up during `dotnet run -- build`
-    // and fight Kestrel for the console.
+    // Mirrors the headless-one-shot gate in PenningtonExtensions.RunOrBuildAsync so the TUI
+    // and the CLI entry point agree on which verbs (build/diag) should suppress the TUI. If
+    // this test drifts from the real check, the TUI will fire up during `dotnet run -- build`
+    // or `dotnet run -- diag ...` and fight Kestrel/the report for the console.
 
     [Fact]
     public void IsBuildMode_true_for_build_arg()
     {
         PenningtonTuiHostedService.IsBuildMode(["Host.exe", "build"]).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void IsBuildMode_true_for_diag_arg()
+    {
+        PenningtonTuiHostedService.IsBuildMode(["Host.exe", "diag"]).ShouldBeTrue();
+        PenningtonTuiHostedService.IsBuildMode(["Host.exe", "diag", "toc"]).ShouldBeTrue();
     }
 
     [Fact]

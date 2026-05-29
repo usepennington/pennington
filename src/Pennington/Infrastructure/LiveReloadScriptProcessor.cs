@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 /// </summary>
 public sealed class LiveReloadScriptProcessor : IResponseProcessor
 {
-    private readonly bool _isDevMode = !PenningtonBuildMode.IsBuildMode();
+    private readonly bool _isDevMode = !PenningtonBuildMode.IsHeadlessOneShot;
 
     // Per-process fingerprint. Lets the SPA engine in a still-open browser tab
     // from a previous dev session detect that it's now talking to a different

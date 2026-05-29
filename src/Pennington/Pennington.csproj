@@ -22,6 +22,7 @@
     <PackageReference Include="Markdig" />
     <PackageReference Include="AngleSharp" />
     <PackageReference Include="Mdazor" />
+    <PackageReference Include="System.CommandLine" />
     <PackageReference Include="TextMateSharp" />
     <PackageReference Include="TextMateSharp.Grammars" />
     <PackageReference Include="System.ServiceModel.Syndication" />

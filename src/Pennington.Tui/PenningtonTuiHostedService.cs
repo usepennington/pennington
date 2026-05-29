@@ -39,7 +39,7 @@ internal sealed class PenningtonTuiHostedService(
     {
         if (IsBuildMode(Environment.GetCommandLineArgs()))
         {
-            logger.LogDebug("Pennington.Tui: build mode detected, TUI disabled");
+            logger.LogDebug("Pennington.Tui: headless one-shot command (build/diag) detected, TUI disabled");
             return Task.CompletedTask;
         }
 
@@ -55,10 +55,12 @@ internal sealed class PenningtonTuiHostedService(
         return Task.CompletedTask;
     }
 
-    // args[0] is the executable; user args start at index 1. Mirrors the gate
-    // in PenningtonExtensions.RunOrBuildAsync and LiveReloadServer.
+    // args[0] is the executable; user args start at index 1. The TUI steps aside for any
+    // headless one-shot verb — build or diag — mirroring PenningtonCli's IsHeadlessOneShot.
     internal static bool IsBuildMode(string[] commandLineArgs) =>
-        commandLineArgs.Length > 1 && commandLineArgs[1].Equals("build", StringComparison.OrdinalIgnoreCase);
+        commandLineArgs.Length > 1
+        && (commandLineArgs[1].Equals("build", StringComparison.OrdinalIgnoreCase)
+            || commandLineArgs[1].Equals("diag", StringComparison.OrdinalIgnoreCase));
 
     // dotnet watch sets DOTNET_WATCH=1 in the child process. The TUI grabs the
     // terminal surface exclusively, which fights with dotnet watch's own output

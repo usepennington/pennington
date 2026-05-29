@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public sealed class AuditDiagnosticProcessor : IResponseProcessor
 {
-    private readonly bool _isDevMode = !PenningtonBuildMode.IsBuildMode();
+    private readonly bool _isDevMode = !PenningtonBuildMode.IsHeadlessOneShot;
 
     /// <summary>Order picked so this runs before <see cref="DiagnosticOverlayProcessor"/> (Order=30) reads the context.</summary>
     public int Order => 25;
