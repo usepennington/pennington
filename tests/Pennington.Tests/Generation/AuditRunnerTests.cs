@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Pennington.Generation;
 using Pennington.Infrastructure;
@@ -23,17 +24,24 @@ public class AuditRunnerTests
 
         using var sp = services.BuildServiceProvider();
         var cache = sp.GetRequiredService<AuditCache>();
+        var lifetime = new StubLifetime();
         var runner = new AuditRunner(
             sp,
             cache,
             sp.GetRequiredService<IFileWatcher>(),
             sp.GetRequiredService<LocalizationOptions>(),
+            lifetime,
             NullLogger<AuditRunner>.Instance,
             isBuildMode: true);
 
         await runner.StartAsync(TestContext.Current.CancellationToken);
 
-        // RunAsync started in StartAsync; give the cache a moment to be populated.
+        // The initial pass is gated on ApplicationStarted so the server is up before any
+        // self-fetch; nothing should have run yet.
+        cache.Diagnostics.ShouldBeEmpty();
+        lifetime.FireStarted();
+
+        // RunAsync started on ApplicationStarted; give the cache a moment to be populated.
         for (var i = 0; i < 50 && cache.Diagnostics.IsEmpty; i++)
         {
             await Task.Delay(10, TestContext.Current.CancellationToken);
@@ -58,15 +66,18 @@ public class AuditRunnerTests
 
         using var sp = services.BuildServiceProvider();
         var cache = sp.GetRequiredService<AuditCache>();
+        var lifetime = new StubLifetime();
         var runner = new AuditRunner(
             sp,
             cache,
             sp.GetRequiredService<IFileWatcher>(),
             sp.GetRequiredService<LocalizationOptions>(),
+            lifetime,
             NullLogger<AuditRunner>.Instance,
             isBuildMode: false);
 
         await runner.StartAsync(TestContext.Current.CancellationToken);
+        lifetime.FireStarted();
 
         // Wait long enough for any background run to settle.
         await Task.Delay(100, TestContext.Current.CancellationToken);
@@ -109,5 +120,18 @@ public class AuditRunnerTests
         public void SubscribeToChanges(Action onUpdate) { }
         public void SubscribeToChanges(Action<FileChangeNotification> onUpdate) { }
         public void Dispose() { }
+    }
+
+    private sealed class StubLifetime : IHostApplicationLifetime
+    {
+        private readonly CancellationTokenSource _started = new();
+        public CancellationToken ApplicationStarted => _started.Token;
+        public CancellationToken ApplicationStopping => CancellationToken.None;
+        public CancellationToken ApplicationStopped => CancellationToken.None;
+        public void StopApplication() { }
+
+        // Mirrors the host firing ApplicationStarted once every hosted service (the server
+        // included) has started — the gate AuditRunner now waits on before its initial pass.
+        public void FireStarted() => _started.Cancel();
     }
 }

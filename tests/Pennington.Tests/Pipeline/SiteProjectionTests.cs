@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
+using Pennington.Content;
 using Pennington.Infrastructure;
 using Pennington.LlmsTxt;
 using Pennington.Pipeline;
@@ -104,15 +105,53 @@ public class SiteProjectionTests
         page.ShouldBeNull();
     }
 
-    private static SiteProjection CreateProjection(EndpointDataSource? endpointDataSource = null)
+    [Fact]
+    public async Task SelfFetchUnavailable_DuringSeed_FaultsRatherThanCachingEmptyCorpus()
     {
-        var dispatcher = new StubDispatcher();
+        // Regression for the Windows build-ordering bug: when the in-process server isn't
+        // started yet, the self-fetch throws SelfFetchUnavailableException. That must NOT be
+        // swallowed as a per-page skip (which would cache an empty corpus and silently ship a
+        // zero-page search index / llms.txt). It must fault the seed so AsyncLazy evicts and
+        // the next access — once the server is up — rebuilds the real corpus.
+        var dispatcher = new FlakyDispatcher();
+        var projection = CreateProjection(
+            contentServices: [new SinglePageContentService()],
+            dispatcher: dispatcher);
+        var ct = TestContext.Current.CancellationToken;
+
+        // First access: server not ready -> infrastructure failure propagates.
+        await Should.ThrowAsync<SelfFetchUnavailableException>(async () =>
+        {
+            await foreach (var _ in projection.GetPagesAsync(ct))
+            {
+            }
+        });
+
+        // Second access after the server is up: the faulted seed was evicted, so the
+        // projection rebuilds and yields the real page instead of an empty corpus.
+        dispatcher.ServerReady = true;
+        var pages = new List<RenderedPage>();
+        await foreach (var page in projection.GetPagesAsync(ct))
+        {
+            pages.Add(page);
+        }
+
+        pages.Count.ShouldBe(1);
+        pages[0].Route.CanonicalPath.Value.ShouldBe("/page/");
+        dispatcher.CreateClientCalls.ShouldBeGreaterThanOrEqualTo(2);
+    }
+
+    private static SiteProjection CreateProjection(
+        EndpointDataSource? endpointDataSource = null,
+        IEnumerable<IContentService>? contentServices = null,
+        IInProcessHttpDispatcher? dispatcher = null)
+    {
         return new SiteProjection(
-            contentServices: [],
+            contentServices: contentServices ?? [],
             enrichment: new MetadataEnrichmentService([]),
             renderer: new StubRenderer(),
             xrefResolver: new XrefResolvingService(new XrefResolver([])),
-            fetcher: new RenderedHtmlFetcher(dispatcher, NullLogger<RenderedHtmlFetcher>.Instance),
+            fetcher: new RenderedHtmlFetcher(dispatcher ?? new StubDispatcher(), NullLogger<RenderedHtmlFetcher>.Instance),
             extractor: new HeadingSectionExtractor(),
             options: new SiteProjectionOptions(),
             endpointDataSource: endpointDataSource ?? new StubEndpointDataSource(),
@@ -154,5 +193,65 @@ public class SiteProjectionTests
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
                 => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
         }
+    }
+
+    // Throws the infrastructure failure until the "server" is marked ready, mirroring
+    // HttpDispatcher.CreateClient against a TestServer whose Application is not yet set.
+    private sealed class FlakyDispatcher : IInProcessHttpDispatcher
+    {
+        public bool ServerReady { get; set; }
+        public int CreateClientCalls { get; private set; }
+
+        public HttpClient CreateClient()
+        {
+            CreateClientCalls++;
+            if (!ServerReady)
+            {
+                throw new SelfFetchUnavailableException("server not started (test)");
+            }
+
+            return new HttpClient(new OkHandler()) { BaseAddress = new Uri("http://localhost/") };
+        }
+
+        private sealed class OkHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+                => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        "<html><body><main><h1>Page</h1><p>Body</p></main></body></html>",
+                        System.Text.Encoding.UTF8,
+                        "text/html"),
+                });
+        }
+    }
+
+    // Minimal content service yielding a single fetchable TOC entry (no LlmsOnlySource,
+    // so the projection takes the HTTP self-fetch path through the dispatcher).
+    private sealed class SinglePageContentService : IContentService
+    {
+        private static readonly ContentRoute Route = new()
+        {
+            CanonicalPath = new UrlPath("/page/"),
+            OutputFile = new FilePath("page/index.html"),
+        };
+
+        public IAsyncEnumerable<DiscoveredItem> DiscoverAsync() => AsyncEnumerable.Empty<DiscoveredItem>();
+
+        public Task<System.Collections.Immutable.ImmutableList<ContentToCopy>> GetContentToCopyAsync()
+            => Task.FromResult(System.Collections.Immutable.ImmutableList<ContentToCopy>.Empty);
+
+        public Task<System.Collections.Immutable.ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
+            => Task.FromResult(System.Collections.Immutable.ImmutableList.Create(
+                new ContentTocItem("Page", Route, 0, ["page"], null, null)));
+
+        public Task<System.Collections.Immutable.ImmutableList<CrossReference>> GetCrossReferencesAsync()
+            => Task.FromResult(System.Collections.Immutable.ImmutableList<CrossReference>.Empty);
+
+        public Task<System.Collections.Immutable.ImmutableList<ContentToCreate>> GetContentToCreateAsync()
+            => Task.FromResult(System.Collections.Immutable.ImmutableList<ContentToCreate>.Empty);
+
+        public string DefaultSectionLabel => "";
+        public int SearchPriority => 0;
     }
 }
