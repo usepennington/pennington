@@ -1,7 +1,10 @@
 namespace Pennington.Infrastructure;
 
+using System.CommandLine;
 using System.IO.Abstractions;
 using System.Reflection;
+using Cli;
+using Cli.Diag;
 using Content;
 using Feeds;
 using FrontMatter;
@@ -70,25 +73,35 @@ public static class PenningtonExtensions
         var outputOptions = OutputOptions.FromArgs(args.Length > 1 ? args[1..] : []);
         services.AddSingleton(outputOptions);
 
-        // Build mode: replace Kestrel with TestServer so the crawler dispatches
-        // in-memory through the same middleware pipeline. No socket bind, no
-        // dev-cert prompt, no random-port races in CI. Last-registered IServer
-        // wins, so this overrides the Kestrel registration that
-        // WebApplication.CreateBuilder() puts in place.
-        if (PenningtonBuildMode.IsBuildMode())
+        // Build and diag run in-process: swap Kestrel for TestServer so the crawler dispatches
+        // through the same middleware with no socket bind, dev-cert prompt, or random-port race.
+        // Last-registered IServer wins, overriding the Kestrel registration CreateBuilder() adds.
+        if (PenningtonBuildMode.IsHeadlessOneShot)
         {
             services.AddSingleton<IServer, TestServer>();
+        }
 
-            // Mute the host's "Application started / Hosting environment / Content root"
-            // chatter — the build is in-process and the user wants Pennington's own
-            // progress messages, not lifetime breadcrumbs. Pennington.* is bumped to
-            // Information so the phase logs surface even when the host's appsettings
-            // sets a Default of Warning. The custom formatter strips the
-            // "info: Category[0]" prefix so the build reads like a CLI tool.
+        // One-shot commands (build/diag) and help/version requests print to stdout and exit, so the
+        // host's lifetime chatter and dev-level Pennington logs are muted (the custom formatter also
+        // strips the "info: Category[0]" prefix so output reads like a CLI tool). Only a real build
+        // surfaces its own progress at Information; diag, --help, and --version keep stdout clean —
+        // the explicit Pennington filter overrides hosts whose appsettings elevate it (e.g. the docs
+        // site sets Pennington to Trace).
+        if (PenningtonBuildMode.IsHeadlessOneShot || PenningtonBuildMode.IsHelpOrVersion)
+        {
             services.AddLogging(b =>
             {
                 b.AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Warning);
-                b.AddFilter("Pennington", LogLevel.Information);
+                if (PenningtonBuildMode.WritesOutput && !PenningtonBuildMode.IsHelpOrVersion)
+                {
+                    b.AddFilter("Pennington", LogLevel.Information);
+                }
+                else
+                {
+                    b.SetMinimumLevel(LogLevel.Warning);
+                    b.AddFilter("Pennington", LogLevel.Warning);
+                }
+
                 b.AddConsole(o => o.FormatterName = BuildConsoleFormatter.FormatterName);
                 b.AddConsoleFormatter<BuildConsoleFormatter, ConsoleFormatterOptions>();
             });
@@ -107,7 +120,7 @@ public static class PenningtonExtensions
         // Build mode defaults StrictUnknownKeys to true so typo'd keys fail the build.
         // The user wins if they already flipped it on; flip-down for build is rare and
         // can still be done by registering a replacement options instance after AddPennington.
-        if (PenningtonBuildMode.IsBuildMode() && !options.FrontMatter.StrictUnknownKeys)
+        if (PenningtonBuildMode.WritesOutput && !options.FrontMatter.StrictUnknownKeys)
         {
             options.FrontMatter.StrictUnknownKeys = true;
         }
@@ -310,10 +323,23 @@ public static class PenningtonExtensions
         // copies the same snapshot in OutputGenerationService.
         services.AddSingleton<AuditCache>();
         services.AddSingleton<IAuditCache>(sp => sp.GetRequiredService<AuditCache>());
-        services.AddHostedService<AuditRunner>();
+        // Registered as a resolvable singleton (not just AddHostedService<T>) so the diag CLI
+        // can await its initial pass via WaitForInitialPassAsync() before reading the cache.
+        services.AddSingleton<AuditRunner>();
+        services.AddHostedService(sp => sp.GetRequiredService<AuditRunner>());
         services.AddTransient<IBuildAuditor, OverlapAuditor>();
         services.AddTransient<IBuildAuditor, XrefAuditor>();
         services.AddTransient<IRenderedAuditor, LinkAuditor>();
+
+        // Diagnostic CLI (`diag <sub>`): each command is discovered by PenningtonCli.BuildDiagGroup
+        // and run against the started host. Read-only inspection for humans and AI assistants.
+        services.AddSingleton<IDiagCommand, DiagInfoCommand>();
+        services.AddSingleton<IDiagCommand, DiagTocCommand>();
+        services.AddSingleton<IDiagCommand, DiagRoutesCommand>();
+        services.AddSingleton<IDiagCommand, DiagWarningsCommand>();
+        services.AddSingleton<IDiagCommand, DiagTranslationCommand>();
+        services.AddSingleton<IDiagCommand, DiagFrontMatterCommand>();
+        services.AddSingleton<IDiagCommand, DiagLlmsCommand>();
 
         // Live reload
         services.AddSingleton<LiveReloadServer>();
@@ -671,38 +697,58 @@ public static class PenningtonExtensions
         return app;
     }
 
-    /// <summary>Run in dev mode or build static site.</summary>
+    /// <summary>
+    /// Runs the host: serves live (no verb), builds the static site (<c>build</c>), or runs a
+    /// diagnostic command (<c>diag &lt;sub&gt;</c>). Everything flows through one System.CommandLine
+    /// pipeline, so <c>--help</c> / <c>--version</c> work at the root and every subcommand. Build and
+    /// diag run one-shot against a started in-memory host that is disposed afterward; serve hands off
+    /// to <see cref="WebApplication.RunAsync"/>.
+    /// </summary>
     public static async Task RunOrBuildAsync(this WebApplication app, string[] args)
     {
         StaticWebAssetsLoader.UseStaticWebAssets(app.Environment, app.Configuration);
 
-        if (PenningtonBuildMode.IsBuildMode(args))
+        var root = new RootCommand("Pennington site host. Run with no command to start the dev server.");
+        root.TreatUnmatchedTokensAsErrors = false;
+        root.SetAction(async (_, _) =>
         {
-            // Dispose the host when the one-shot build finishes so container singletons
-            // are torn down — notably SolutionWorkspaceService, whose Dispose() disposes
-            // the MSBuildWorkspace (terminating its BuildHost child and releasing mapped
-            // assembly handles) and deletes its per-run temp build folder. Without this,
-            // every build leaks a %TEMP%\Pennington_Build_* folder and leaves the
-            // workspace untorn-down; the resulting litter and orphaned handles are what
-            // intermittently starve the next build's metadata-reference resolution
-            // (producing sparse API reference pages).
+            await app.RunAsync();
+            return 0;
+        });
+
+        var build = PenningtonCli.CreateBuildCommand();
+        build.SetAction(async (_, _) =>
+        {
+            var report = await app.Services.GetRequiredService<OutputGenerationService>().GenerateAsync();
+            report.WriteTo(Console.Out);
+            return report.HasErrors ? 1 : 0;
+        });
+        root.Subcommands.Add(build);
+        root.Subcommands.Add(PenningtonCli.BuildDiagGroup(app.Services, Console.Out));
+
+        var parseResult = root.Parse(args);
+
+        // build/diag are one-shot commands that inspect a started, in-memory host; --help/--version
+        // just print, and serve starts the host itself via RunAsync — none of those need the wrapper.
+        if (!args.Any(PenningtonCli.IsHelpOrVersionToken)
+            && PenningtonCli.Current.Mode is PenningtonRunMode.Build or PenningtonRunMode.Diag)
+        {
+            // Dispose the host when the one-shot command finishes so container singletons are torn
+            // down — notably SolutionWorkspaceService, whose Dispose() terminates the MSBuildWorkspace
+            // (releasing its BuildHost child and mapped assembly handles) and deletes its per-run temp
+            // build folder. Without this, every build leaks a %TEMP%\Pennington_Build_* folder and
+            // leaves orphaned handles that intermittently starve the next build's metadata-reference
+            // resolution (producing sparse API reference pages).
             await using (app)
             {
                 await app.StartAsync();
-                var generator = app.Services.GetRequiredService<OutputGenerationService>();
-                var report = await generator.GenerateAsync();
+                Environment.ExitCode = await parseResult.InvokeAsync();
                 await app.StopAsync();
-
-                report.WriteTo(Console.Out);
-                if (report.HasErrors)
-                {
-                    Environment.ExitCode = 1;
-                }
             }
         }
         else
         {
-            await app.RunAsync();
+            Environment.ExitCode = await parseResult.InvokeAsync();
         }
     }
 }

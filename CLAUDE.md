@@ -7,6 +7,7 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - Test: `dotnet test Pennington.slnx`
 - Single test: `dotnet test Pennington.slnx --filter "FullyQualifiedName~TestName"`
 - Run docs site: `dotnet run --project docs/Pennington.Docs`
+- CLI verbs (any host): `dotnet run --project <site>` serves; `-- build [--base-url /x] [--output dir]` generates the static site; `-- diag <info|toc|routes|warnings|translation|frontmatter|llms>` runs read-only inspection (text output) for humans and AI assistants — `-- diag --help` lists them
 
 ## Project Structure
 - `src/Pennington/` — Core library (Markdig, SharpYaml, AngleSharp, TextMateSharp)
@@ -36,7 +37,8 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - `Pennington.LlmsTxt` — LlmsTxtService, LlmsTxtContentService (llms.txt index + stripped markdown)
 - `Pennington.StructuredData` — JsonLdSerializer, JsonLdTypes (schema.org)
 - `Pennington.Diagnostics` — Diagnostic, DiagnosticContext, DiagnosticSeverity (per-request diagnostics)
-- `Pennington.Infrastructure` — PenningtonExtensions (AddPennington/UsePennington/RunOrBuildAsync), ResponseProcessingMiddleware, IResponseProcessor, LiveReloadServer
+- `Pennington.Infrastructure` — PenningtonExtensions (AddPennington/UsePennington/RunOrBuildAsync), ResponseProcessingMiddleware, IResponseProcessor, LiveReloadServer, PenningtonBuildMode (legacy shim over PenningtonCli)
+- `Pennington.Cli` — System.CommandLine host CLI. `PenningtonCli` is the single source of run-mode detection (`PenningtonRunMode` serve/build/diag; `IsHeadlessOneShot`/`WritesOutput` gate TestServer swap, logging, dev overlays). `RunOrBuildAsync` dispatches on it. `IDiagCommand` (DI-discovered) + the `diag` subcommands under `Cli/Diag` (info/toc/routes/warnings/translation/frontmatter/llms), plus `AsciiTreeWriter`. Read-only, text-only output.
 
 ## DI Wiring
 - `services.AddPennington(...)` / `app.UsePennington()` / `app.RunOrBuildAsync(args)` — core

@@ -31,7 +31,7 @@ public sealed class AuditRunner : IHostedService
         IFileWatcher fileWatcher,
         LocalizationOptions localization,
         ILogger<AuditRunner> logger)
-        : this(services, cache, fileWatcher, localization, logger, PenningtonBuildMode.IsBuildMode())
+        : this(services, cache, fileWatcher, localization, logger, PenningtonBuildMode.WritesOutput)
     {
     }
 
@@ -65,6 +65,13 @@ public sealed class AuditRunner : IHostedService
 
     /// <inheritdoc/>
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <summary>
+    /// Awaits the initial audit pass kicked off by <see cref="StartAsync"/> so callers (e.g. the
+    /// <c>diag</c> CLI) read a fully-populated <see cref="AuditCache"/>. Completes immediately when
+    /// no pass has been started.
+    /// </summary>
+    internal Task WaitForInitialPassAsync() => _activeRun ?? Task.CompletedTask;
 
     private void RunInBackground()
     {

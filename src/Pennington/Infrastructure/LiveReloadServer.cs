@@ -139,7 +139,7 @@ public static class LiveReloadExtensions
     /// </summary>
     public static WebApplication UsePenningtonLiveReload(this WebApplication app)
     {
-        if (PenningtonBuildMode.IsBuildMode())
+        if (PenningtonBuildMode.IsHeadlessOneShot)
         {
             return app;
         }
