@@ -7,8 +7,11 @@ using Pennington.MonorailCss;
 
 /// <summary>
 /// Stage 3 — call <c>app.UseMonorailCss()</c> to mount the <c>/styles.css</c>
-/// endpoint. The class collector observes every utility class in the rendered
-/// HTML and emits matching CSS rules; the <c>&lt;link rel="stylesheet"&gt;</c>
+/// endpoint. The endpoint pulls the current class set from the Discovery
+/// pipeline's <c>IClassRegistry</c> (populated by IL scanning every non-BCL
+/// referenced assembly at startup, kept fresh by a source-file watcher over
+/// <c>.razor</c>/<c>.cs</c> edits in dev) and runs it through a fresh
+/// <c>CssFramework</c> on every request. The <c>&lt;link rel="stylesheet"&gt;</c>
 /// in <c>MainLayout.razor</c> now returns a populated stylesheet and the page
 /// renders styled. Tutorial prose extracts the body of <see cref="Run"/> via
 /// <c>xmldocid,bodyonly</c>. This class is never instantiated.

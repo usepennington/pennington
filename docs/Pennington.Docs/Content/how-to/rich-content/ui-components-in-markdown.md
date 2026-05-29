@@ -23,22 +23,22 @@ To place a Razor component tag — `<Badge>`, `<Card>`, or one of your own — d
 Place the tag anywhere CommonMark allows an HTML block. Attribute values bind to `[Parameter]` properties by case-insensitive name match.
 
 ```markdown
-<Badge>Preview</Badge>
+<Badge Text="Preview" />
 ```
 
-<Badge>Preview</Badge>
+<Badge Text="Preview" />
 
 ### Pass markdown as `ChildContent`
 
 Whatever appears between the open and close tags becomes the component's `ChildContent` render fragment and is parsed as markdown — `**bold**`, links, and nested components all work inside the body.
 
 ````markdown
-<Card Title="What's new">
+<Card Title="New in v2">
 The **v2 pipeline** ships with [unified dev and build](xref:explanation.core.dev-vs-build).
 </Card>
 ````
 
-<Card Title="What's new">
+<Card Title="New in v2">
 The **v2 pipeline** ships with [unified dev and build](xref:explanation.core.dev-vs-build).
 </Card>
 
@@ -47,12 +47,12 @@ The **v2 pipeline** ships with [unified dev and build](xref:explanation.core.dev
 Only primitive parameter types (strings, numbers, booleans) bind from markdown attributes — the value arrives as a raw string and Mdazor converts it via reflection.
 
 ````markdown
-<Card Title="Fast" Href="xref:explanation.core.dev-vs-build" Variant="primary">
+<Card Title="Fast" Color="accent">
 Pages render in a single SSR pass.
 </Card>
 ````
 
-<Card Title="Fast" Href="xref:explanation.core.dev-vs-build" Variant="primary">
+<Card Title="Fast" Color="accent">
 Pages render in a single SSR pass.
 </Card>
 

@@ -27,7 +27,7 @@ examples/DocSiteKitchenSinkExample/Content/main/redirect-source.md
 
 - Run `dotnet run` and visit the old URL: the page redirects immediately to the target set in `redirectUrl`.
 - View source on the old URL: the markup contains `<meta http-equiv="refresh" content="0;url=...">` and a `<link rel="canonical" href="...">` pointing at the redirect target.
-- Check `/sitemap.xml` and `/llms.txt`: the old URL does not appear (redirects are filtered by `SitemapBuilder` and `LlmsTxtService`).
+- Check `/sitemap.xml` and `/llms.txt`: the old URL does not appear (redirects are filtered by `SitemapBuilder`, and never reach `/llms.txt` because the page is surfaced as a `RedirectSource` rather than parsed content).
 
 ## Related
 

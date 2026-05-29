@@ -27,7 +27,9 @@ after a server restart.
 Code samples come from source files via `:symbol` fences, so a sample reflects the
 current source every time the docs render. Edit the referenced `.cs` and the next
 render re-reads it, so the embedded sample reflects what you just typed — no copy
-to keep in sync. The watcher filters out `obj/`, `bin/`, and generated files, so a
-rebuild burst doesn't thrash anything. The [hot reload
+to keep in sync. The watcher reacts only to source-file extensions (`*.cs`, `*.json`,
+and so on), so most build churn never registers, and the 300ms debounce coalesces
+whatever does into a single reload — a rebuild burst doesn't thrash anything. Point it
+at a focused content root so a stray `*.cs` under `bin/` or `obj/` never sneaks in. The [hot reload
 explanation](xref:explanation.dev-experience.hot-reload) covers how the watcher
 and the WebSocket fit together.

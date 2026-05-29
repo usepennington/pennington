@@ -26,7 +26,7 @@ Place each `.woff2` file under `wwwroot/fonts/`. `UsePennington` wires `UseStati
 
 ### Register `@font-face` rules via `ExtraStyles`
 
-Emit the `@font-face` declarations into the generated stylesheet by returning them from an `ExtraStyles` helper. MonorailCSS prepends this content verbatim above its utility output, with each `src:` pointing at the `/fonts/...` path you exposed above.
+Emit the `@font-face` declarations into the generated stylesheet by returning them from an `ExtraStyles` helper. [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) prepends this content verbatim above its utility output, with each `src:` pointing at the `/fonts/...` path you exposed above.
 
 ```csharp:symbol,bodyonly
 examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.BuildExtraStyles

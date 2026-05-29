@@ -13,6 +13,10 @@ public interface IApiMetadataProvider
     Task<ApiTypeDetail?> GetTypeAsync(string uid);
 
     /// <summary>Returns members of the type identified by <paramref name="typeUid"/> matching the filters.</summary>
+    /// <param name="typeUid">Uid of the type whose members are returned.</param>
+    /// <param name="kind">Member categories to include (properties, methods, and so on).</param>
+    /// <param name="access">Accessibility levels to include.</param>
+    /// <param name="order">Sort order applied to the returned members.</param>
     Task<ImmutableArray<ApiMember>> GetMembersAsync(
         string typeUid,
         MemberKind kind,

@@ -40,6 +40,6 @@ tags — so the packages read properly on nuget.org.
 ## Released by pipeline
 
 Publishing is a CI job. A two-stage pipeline builds, tests, and packs on every
-push and pull request, then publishes to NuGet on a tagged release. It uses OIDC
+push and pull request, then publishes to NuGet on pushes to main and on tagged releases. It uses OIDC
 trusted publishing, so NuGet authenticates the pipeline directly — there's no
 long-lived API key sitting in a secrets store.

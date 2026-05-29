@@ -78,7 +78,7 @@ For how sections inherit their own sort key from child `order:` values, see <xre
 
 ## Verify
 
-- Run `dotnet run` — the drafted page's URL still responds 200 but is absent from the sidebar and from `/search-index.json`
+- Run `dotnet run` — the drafted page's URL still responds 200 but is absent from the sidebar and from the per-locale search index under `/search/{locale}/` (for example `/search/en/index.json`)
 - A page with a future `date:` behaves the same way: URL responds in dev, absent from sidebar/search/RSS; `dotnet run -- build` lists it under "Skipped"
 - The tagged page's HTML carries the tag strings in its rendered output (inspect `RenderedContent.Tags` or the page body)
 - Sidebar entries within the section appear in ascending `order:` — swap two values and the order flips on next reload

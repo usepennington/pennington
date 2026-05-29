@@ -32,13 +32,15 @@ own. Because the static build emits plain HTML, GitHub Pages — which has no .N
 runtime — serves it without trouble.
 
 One thing to set up front: GitHub Pages serves project sites from a sub-path
-like `/my-repo/`. Set `CanonicalBaseUrl` so links and assets resolve correctly
-under that prefix. The [GitHub Pages how-to](xref:how-to.deployment.github-pages)
-has the complete workflow file and the base-URL setup.
+like `/my-repo/`. Pass that sub-path as the build argument so `BaseUrlHtmlRewriter`
+prefixes internal links and assets under that prefix — `CanonicalBaseUrl` stays
+reserved for absolute canonical and feed links. The [GitHub Pages
+how-to](xref:how-to.deployment.github-pages) has the complete workflow file and
+the base-URL setup.
 
 ## Smaller CSS, for free
 
 A later follow-up wired PurgeCSS into the same workflow. Pennington generates
 utility CSS on demand, and PurgeCSS trims the result against the built HTML, so
-the published site ships only the classes it actually uses. The deploy step does
+the published site ships only the classes it actually uses. The build job does
 the trimming — nothing in your project changes.

@@ -35,7 +35,7 @@ For a custom `ContentSelector` (different article wrapper or a non-DocSite layou
 
 ### Split content per-fragment with `humans-only` / `robots-only`
 
-For finer control than page-level opt-out, two paired classes mark a fragment as intended for one audience. Both ship in the MonorailCSS base styles — no registration needed.
+For finer control than page-level opt-out, two paired classes mark a fragment as intended for one audience. Both ship in the [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) base styles — no registration needed.
 
 - `humans-only` — visible in the browser, stripped from the llms.txt extraction.
 - `robots-only` — hidden in the browser via `display: none`, kept in the llms.txt extraction.

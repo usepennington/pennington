@@ -33,7 +33,7 @@ var app = builder.Build();
 
 // `UseBlogSite` mounts antiforgery, static files, Razor component routing
 // (Home/Archive/Blog/Tag/Tags live inside Pennington.BlogSite.dll), the
-// MonorailCSS response processor, and the core Pennington middleware —
+// MonorailCSS `/styles.css` endpoint, and the core Pennington middleware —
 // all in the right order. When `EnableRss` is true (the default) it also
 // maps `/rss.xml` so the static crawler picks the feed up.
 app.UseBlogSite();

@@ -58,4 +58,4 @@ examples/BlogSiteScaffoldExample/Program.cs
 - Reference: [`BlogSiteOptions`](xref:reference.api.blog-site-options)
 - Reference: [Built-in `SocialIcons` `RenderFragment`s](xref:reference.blogsite.social-icons)
 - How-to: [Customize DocSite layouts and components](xref:how-to.response-pipeline.override-docsite-components)
-- How-to: [Configure the BlogSite homepage](xref:how-to.feeds.blogsite-homepage)
+- How-to: [Configure the BlogSite homepage](xref:how-to.theming.blogsite-homepage)

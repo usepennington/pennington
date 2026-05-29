@@ -1,6 +1,7 @@
 @* Styled shell. Lives once and wraps every routed @page via App.razor's
-   DefaultLayout. The class strings (text-primary-700, bg-base-50, …) are what
-   the MonorailCSS class collector picks up to assemble /styles.css. *@
+   DefaultLayout. The class strings (text-primary-700, bg-base-50, …) become
+   literal IL strings after Razor compiles, and Discovery's startup IL scan
+   picks them up to populate the class registry behind /styles.css. *@
 
 @inherits LayoutComponentBase
 

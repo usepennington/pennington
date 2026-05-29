@@ -19,8 +19,8 @@ and font preloading to reduce the flash of unstyled text.
 
 Search engines read HTML, but they reward pages that tell them what they're
 looking at. Pennington emits schema.org JSON-LD as a `<script>` tag in every
-page's head. The shipped DocSite and BlogSite templates wire `Article`,
-`BreadcrumbList`, and `WebSite` automatically:
+page's head. The DocSite template wires `Article`, `BreadcrumbList`, and
+`WebSite` automatically; the BlogSite template wires `Article` and `WebSite`:
 
 ```html
 <script type="application/ld+json">

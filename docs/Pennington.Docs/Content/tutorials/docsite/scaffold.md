@@ -80,7 +80,7 @@ Pennington uses C# 15 union types, which are still a preview language feature in
 
 ## 2. Wire `AddDocSite`, `UseDocSite`, and `RunDocSiteAsync`
 
-`AddDocSite` is a single DI call that registers Pennington core, MonorailCSS, SPA navigation, the content resolver, and the article-slot renderer — all driven from one options object. `UseDocSite` is its middleware counterpart; `RunDocSiteAsync` dispatches the host between dev-serve and static-build modes (see <xref:reference.host.cli> for the args contract).
+`AddDocSite` is a single DI call that registers Pennington core, [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/), SPA navigation, the content resolver, and the article-slot renderer — all driven from one options object. `UseDocSite` is its middleware counterpart; `RunDocSiteAsync` dispatches the host between dev-serve and static-build modes (see <xref:reference.host.cli> for the args contract).
 
 <Steps>
 <Step StepNumber="1">

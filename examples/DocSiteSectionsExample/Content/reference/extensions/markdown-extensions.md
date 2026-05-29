@@ -17,7 +17,7 @@ up the authoring syntax the tutorials lean on.
 - **Tabbed code groups** — two or more adjacent fenced blocks with
   `tabs=true title="…"`.
 - **Syntax highlighting** — TextMate grammars and ANSI shell output.
-- **Code annotations** — `// [!code highlight]` inline markers.
+- **Code annotations** — trailing-comment `[!code highlight]` markers.
 
 Registering your own extension is covered in the *Hook into the response
 pipeline* guide's companion how-to.

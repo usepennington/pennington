@@ -45,9 +45,8 @@ tags:
 ## Convention over configuration
 
 The presence of the folder is the configuration. You don't tell the engine you
-want a blog — you write posts, and it picks them up. It's the same idea as locale
-folders turning on localization, or a data file becoming a typed dataset: the
-content says what you want, so there's no registration line to add.
+want a blog — you write posts, and it picks them up. The content says what you
+want, so there's no registration line to add.
 
 If you have a DocSite, adding a blog is a folder away. The [add-a-blog
 tutorial](xref:tutorials.docsite.add-a-blog) walks through it — first post, date

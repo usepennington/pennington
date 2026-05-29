@@ -130,7 +130,7 @@ Add one line under `@page` naming the layout by its full type name.
 
 ## 4. Build out the landing page
 
-With routing and layout settled, the component is just Razor markup. Fill it with a hero, a call to action, and two cards linking into the Guides area. Styling is MonorailCSS utility classes using the semantic palette — `primary`, `accent`, `base` — with a `dark:` variant on every color-bearing utility.
+With routing and layout settled, the component is plain Razor markup. Fill it with a hero, a call to action, and two cards linking into the Guides area. Styling is [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) utility classes using the semantic palette — `primary`, `accent`, `base` — with a `dark:` variant on every color-bearing utility.
 
 <Steps>
 <Step StepNumber="1">

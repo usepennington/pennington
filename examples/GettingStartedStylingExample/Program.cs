@@ -38,8 +38,10 @@ var app = builder.Build();
 
 app.UsePennington();
 
-// /styles.css. The class collector scans response HTML on every request and
-// keeps the stylesheet in sync with whatever utility classes show up.
+// /styles.css. The endpoint reads the current class set from Discovery's
+// IClassRegistry (populated by IL scanning every non-BCL referenced assembly
+// at startup, kept fresh by a .razor/.cs source-file watcher in dev) and
+// generates the stylesheet on every request.
 app.UseMonorailCss();
 
 app.UseAntiforgery();

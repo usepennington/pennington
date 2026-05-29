@@ -12,7 +12,7 @@ When one instruction has per-platform or per-language variants — install steps
 ## Before you begin
 - An existing Pennington site renders Markdown (see <xref:tutorials.getting-started.first-site> if not).
 - The pipeline was built through `AddPennington` / `AddDocSite` / `AddBlogSite`, so `UseContentTabs()` is already wired into the default `MarkdownPipelineFactory`.
-- The default MonorailCSS integration, or a stylesheet, targets the `ctabs` / `ctab-btn` / `ctab-panel` classes.
+- The default [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) integration, or a stylesheet, targets the `ctabs` / `ctab-btn` / `ctab-panel` classes.
 
 ## Author a tab group
 

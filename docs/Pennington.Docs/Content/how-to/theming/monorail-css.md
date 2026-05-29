@@ -7,7 +7,7 @@ sectionLabel: "Theming"
 tags: [monorailcss, color-scheme, styling, theming]
 ---
 
-When the site needs a different palette, a tweak to prose rules, or a chunk of site-wide CSS, the knobs below live on `MonorailCssOptions`. `DocSiteOptions` and `BlogSiteOptions` forward `ColorScheme`, `ExtraStyles`, and `CustomCssFrameworkSettings` directly, so most reskins do not need to leave the template.
+When the site needs a different palette, a tweak to prose rules, or a chunk of site-wide CSS, the knobs below live on `MonorailCssOptions`, the options record for Pennington's [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) integration. `DocSiteOptions` and `BlogSiteOptions` forward `ColorScheme`, `ExtraStyles`, and `CustomCssFrameworkSettings` directly, so most reskins do not need to leave the template.
 
 ## Before you begin
 - A running Pennington site (see <xref:tutorials.getting-started.first-site> if not).

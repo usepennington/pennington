@@ -55,7 +55,7 @@ For custom CI presentation (a GitHub Actions summary, a Slack message), use `Bui
 ## Verify
 
 - `dotnet run -- build` exits `0` and `output/index.html` exists — open it in a browser and every internal link resolves
-- The stdout report ends with `Build Complete — N pages in Xs`, with `0 failed` and `0 broken links found`
+- The stdout report opens with `Build Complete — N pages in Xs` followed by `N pages generated`, shows no `ERRORS` or `WARNINGS` section, and the process exits `0`
 - `output/404.html` exists (the crawler fetches the internal `/__pennington-404-generator` sentinel to materialize it)
 
 ## Related

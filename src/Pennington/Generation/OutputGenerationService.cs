@@ -15,7 +15,9 @@ using Routing;
 /// <summary>
 /// Generates a static site by HTTP-crawling the running app.
 /// Pages are fetched in priority order: HTML content first, then MapGet routes (like /styles.css) last.
-/// This ensures CSS class collectors have observed all HTML before the stylesheet is generated.
+/// MonorailCSS Discovery's IL scan populates the class registry at startup, so the stylesheet
+/// is correct regardless of fetch order; the MapGet-last rule keeps generated endpoints downstream
+/// of any other dependencies the same crawler might exercise.
 /// </summary>
 public sealed class OutputGenerationService
 {

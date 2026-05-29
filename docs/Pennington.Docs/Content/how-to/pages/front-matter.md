@@ -7,9 +7,9 @@ sectionLabel: "Pages"
 tags: [front-matter, authoring, yaml]
 ---
 
-To surface YAML keys the shipped front-matter records do not expose — an `apiVersion`, a `gitHubUrl`, a `productName` — declare a custom `record` implementing `IFrontMatter` and the capability interfaces relevant to the keys, then register it with `AddMarkdownContent<T>` on a bare `AddPennington` host. For the full catalog of built-in keys, see <xref:reference.front-matter.keys>; for the design rationale behind the capability interfaces, see <xref:explanation.core.front-matter-capabilities>.
+To surface YAML keys the shipped front-matter records do not expose — a `namespace`, a `stability` badge, a `productName` — declare a custom `record` implementing `IFrontMatter` and the capability interfaces relevant to the keys, then register it with `AddMarkdownContent<T>` on a bare `AddPennington` host. For the full catalog of built-in keys, see <xref:reference.front-matter.keys>; for the design rationale behind the capability interfaces, see <xref:explanation.core.front-matter-capabilities>.
 
-The recipe references `examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs`, which adds `apiVersion` and `gitHubUrl` keys on top of the built-in surface.
+The recipe references `examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs`, which adds `namespace` and `stability` keys on top of the built-in surface.
 
 ## Before you begin
 
@@ -24,7 +24,7 @@ Implement <xref:reference.api.i-front-matter> as a `record` and add only the cap
 examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs
 ```
 
-Property names map to YAML keys under `CamelCaseNamingConvention` — `ApiVersion` reads `apiVersion:`; `GitHubUrl` reads `gitHubUrl:`. Unknown keys in the YAML are silently ignored, so a typo on a custom key surfaces as a default value rather than a parse error.
+Property names map to YAML keys under `CamelCaseNamingConvention` — `Namespace` reads `namespace:`; `Stability` reads `stability:`. Unknown keys in the YAML are silently ignored, so a typo on a custom key surfaces as a default value rather than a parse error.
 
 ## Register the record
 
@@ -41,8 +41,8 @@ A page under the registered content source can now author the custom keys at the
 ```yaml
 ---
 title: "Pennington API surface"
-apiVersion: "1.0-alpha"
-gitHubUrl: "https://github.com/usepennington/pennington"
+namespace: "Pennington.Highlighting"
+stability: "preview"
 ---
 ```
 

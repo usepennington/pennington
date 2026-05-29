@@ -22,10 +22,10 @@ order: 20
 dotnet add package Pennington
 ```
 
-```powershell tabs=true title="PowerShell"
+```powershell title="PowerShell"
 Install-Package Pennington
 ```
 
-```xml tabs=true title="csproj"
+```xml title="csproj"
 <PackageReference Include="Pennington" Version="*" />
 ```

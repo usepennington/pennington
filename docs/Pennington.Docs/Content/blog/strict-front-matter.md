@@ -20,7 +20,7 @@ Every front-matter parse pre-scans for keys it doesn't recognize. A misspelled o
 stray key raises a diagnostic with the key, the file, and the line:
 
 ```text
-content/guide/setup.md:3  unknown front-matter key 'tite'
+Unknown front-matter key 'tite' in content/guide/setup.md:3
 ```
 
 Under `serve` that's a warning in the dev overlay. Under `build`, strict mode is

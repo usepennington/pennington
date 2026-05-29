@@ -5,7 +5,7 @@ A content engine for .NET that turns Markdown into static sites, documentation p
 ## Features
 
 - **Markdown processing** with front matter, syntax highlighting, tabbed content, and GitHub-style alerts
-- **Static site generation** with automatic navigation, sitemaps, and RSS feeds
+- **Static site generation** with automatic navigation and sitemaps (RSS feeds ship with the DocSite blog folder and the BlogSite template)
 - **Razor component library** for navigation trees, code blocks, badges, and cards
 - **Utility-first CSS** via MonorailCSS integration
 - **Documentation site template** with built-in layouts, search, and content areas

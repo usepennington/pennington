@@ -4,9 +4,9 @@ Layers MonorailCSS onto the Blazor-pages site from the previous tutorial. Adds a
 
 ## Concepts
 
-- `MainLayout.razor` (Blazor `LayoutComponentBase`) holds the utility-class scaffold the class collector reads from.
-- `AddMonorailCss(...)` chooses the named palettes behind the `primary`, `accent`, and `base` utility prefixes.
-- `UseMonorailCss()` mounts `/styles.css`. The class collector scans rendered HTML on every request, so a new utility class added to a markdown body shows up in the stylesheet on the next request — no restart.
+- `MainLayout.razor` (Blazor `LayoutComponentBase`) holds the utility-class scaffold; Discovery's startup IL scan reads those classes out of the compiled Razor.
+- `AddMonorailCss(...)` chooses the named palettes behind the `primary`, `accent`, and `base` utility prefixes and wires the Discovery pipeline (`AddMonorailClassDiscovery`) under the hood.
+- `UseMonorailCss()` mounts `/styles.css`, which serves the class set from `IClassRegistry` on every request. Under `dotnet watch`, Discovery's source-file watcher re-extracts class strings from `.razor`/`.cs` edits — a new utility added to those files shows up in the stylesheet on the next request, no restart. Markdown edits do not participate (Discovery scans source, not rendered HTML).
 
 ## Tutorial stages
 

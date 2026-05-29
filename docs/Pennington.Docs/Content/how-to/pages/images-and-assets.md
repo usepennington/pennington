@@ -28,7 +28,7 @@ The link resolves correctly whether the page is served at `/main/images-and-asse
 
 ### Shared in `wwwroot/`
 
-When the same image is referenced from multiple pages, drop it into `wwwroot/` so it has one canonical URL. `UsePennington` wires `UseStaticFiles` for `wwwroot/`, so `wwwroot/shared.png` is served at `/shared.png`. Reference it with a leading slash:
+When the same image is referenced from multiple pages, drop it into `wwwroot/` so it has one canonical URL. The ASP.NET host serves `wwwroot/` as static web root by default, so `wwwroot/shared.png` is served at `/shared.png`. Reference it with a leading slash:
 
 ```markdown
 ![Alt text](/shared.png)

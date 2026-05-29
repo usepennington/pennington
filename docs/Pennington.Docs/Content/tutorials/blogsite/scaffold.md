@@ -36,7 +36,7 @@ The host you built in the getting-started tutorials calls `AddPennington`, regis
 examples/BlogSiteScaffoldExample/Stage1_BeforeAddBlogSite.cs > Stage1.Run
 ```
 
-The three moving parts are the DI registration, the `UsePennington` call, and the hand-rolled `MapGet`. Absent: the home listing, `/archive`, `/blog/<slug>` pages, `/tags` and `/topics` aliases, the `/rss.xml` feed, and the MonorailCSS chrome. The next section brings all of that in with a single `AddBlogSite` call.
+The three moving parts are the DI registration, the `UsePennington` call, and the hand-rolled `MapGet`. Absent: the home listing, `/archive`, `/blog/<slug>` pages, `/tags` and `/topics` aliases, the `/rss.xml` feed, and the [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) chrome. The next section brings all of that in with a single `AddBlogSite` call.
 
 <Checkpoint>
 

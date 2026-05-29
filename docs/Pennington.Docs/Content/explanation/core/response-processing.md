@@ -11,13 +11,13 @@ Why are there two extension points for rewriting the response body — a general
 
 ## Context
 
-Two kinds of work want to touch the response body. Some concerns care about HTML structure — rewriting `href` attributes, inserting elements at specific selectors, normalizing document shape. Others treat the body as an opaque string — appending a script before `</body>`, scraping class names out of whatever HTML arrived, injecting a dev overlay into HTML responses only.
+Two kinds of work want to touch the response body. Some concerns care about HTML structure — rewriting `href` attributes, inserting elements at specific selectors, normalizing document shape. Others treat the body as an opaque string — appending a script before `</body>`, prepending a cache buster, injecting a dev overlay into HTML responses only.
 
 A single chain of string-to-string processors forces the structure-aware concerns to either reparse the body themselves or rewrite HTML with regex, neither of which composes. A single HTML-shaped rewriter forces the opaque-string concerns to take an AngleSharp dependency they do not need. Pennington splits the work along that fault line: a generic string-in/string-out contract for body-level concerns that have no need for a DOM, and one shared parse that all DOM-shaped concerns participate in together.
 
 ## How it works
 
-Pennington splits the work along that fault line into two tiers. **Tier A** is the generic body pipeline (`IResponseProcessor`); every body-touching concern, HTML or not, registers here. **Tier B** is one specific `IResponseProcessor` — `HtmlResponseRewritingProcessor` — that hosts a shared AngleSharp pass for HTML-DOM concerns (`IHtmlResponseRewriter`). The three built-in Tier-A processors are `HtmlResponseRewritingProcessor` (Order 10, the Tier-B host), `LiveReloadScriptProcessor` (Order 20, dev only), and `DiagnosticOverlayProcessor` (Order 30, dev only).
+Pennington splits the work along that fault line into two tiers. **Tier A** is the generic body pipeline (`IResponseProcessor`); every body-touching concern, HTML or not, registers here. **Tier B** is one specific `IResponseProcessor` — `HtmlResponseRewritingProcessor` — that hosts a shared AngleSharp pass for HTML-DOM concerns (`IHtmlResponseRewriter`). Several Tier-A processors ship built in. The always-on ones are `HtmlResponseRewritingProcessor` (the Tier-B host), `BaseUrlCssResponseProcessor` (rewrites root-relative URLs inside CSS responses), and `NotFoundStatusProcessor`; `LiveReloadScriptProcessor` and `DiagnosticOverlayProcessor` are body-level string operations that run in dev only, alongside dev-only audit processors. They are all body-level concerns that share the same generic contract.
 
 ### Tier A: `IResponseProcessor` (generic body capture)
 

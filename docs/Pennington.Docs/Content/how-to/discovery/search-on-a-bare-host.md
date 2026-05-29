@@ -10,7 +10,7 @@ tags: [search, bare-host, pennington-ui, monorailcss]
 `AddDocSite` ships a search modal wired up for you. On a bare `AddPennington` host you wire it yourself — but the index and the modal already exist, so the work is three pieces of markup, not a search UI. `AddPennington` emits the index at `/search/{locale}/index.json`; `Pennington.UI` carries the modal in `scripts.js`; and `Pennington.MonorailCss` already safelists the modal's styles. This guide connects them.
 
 ## Before you begin
-- A bare `AddPennington` host styled with MonorailCSS — see <xref:tutorials.getting-started.styling>
+- A bare `AddPennington` host styled with [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) — see <xref:tutorials.getting-started.styling>
 - The host already serves `/search/{locale}/index.json` (it does, on every `AddPennington` host). To shape what that index contains, see <xref:how-to.discovery.search>
 
 The `BareHostSearchExample` mounts the shared Bramble corpus and lights up the modal with the wiring below.

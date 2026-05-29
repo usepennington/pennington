@@ -11,7 +11,7 @@ The content-oriented subset of the `Pennington.UI.Components` Razor component li
 
 ## Stylesheet
 
-The components ship as MonorailCSS utility classes; the package contributes no separate stylesheet. There is no `_content/Pennington.UI/styles.css` to load.
+The components ship as [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) utility classes; the package contributes no separate stylesheet. There is no `_content/Pennington.UI/styles.css` to load.
 
 ## Overview
 
@@ -149,7 +149,7 @@ Razor-page entry to the shared code-block rendering pipeline — registered `ICo
 var x = 1;
 </CodeBlock>
 
-<CodeBlock Language="csharp:symbol,bodyonly">examples/Foo/Program.cs &gt; Program.Main</CodeBlock>
+<CodeBlock Language="csharp:symbol,bodyonly">examples/Foo/Program.cs > Program.Main</CodeBlock>
 ```
 
 ## `LinkCard`

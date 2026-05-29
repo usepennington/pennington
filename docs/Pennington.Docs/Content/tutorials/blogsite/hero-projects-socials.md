@@ -46,7 +46,7 @@ The `HeroContent = new HeroContent(Title: …, Description: …)` assignment is 
 examples/BlogSiteHeroProjectsSocialsExample/Stage2_AddProjects.cs > Stage2.Run
 ```
 
-The `MyWork` property is typed as `IReadOnlyList<Project>` on `BlogSiteOptions`. Its default is an empty list, so the "My Work" card stays invisible in the UI until populated here.
+The `MyWork` property is typed as `Project[]` on `BlogSiteOptions`. Its default is an empty list, so the "My Work" card stays invisible in the UI until populated here.
 
 <Checkpoint>
 

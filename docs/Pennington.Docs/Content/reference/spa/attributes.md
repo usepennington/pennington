@@ -26,7 +26,7 @@ Every attribute in this table is read on a region element — the element marked
 |---|---|---|
 | `<a>` | `data-spa-reload` | Forces a full-page navigation for that link; the engine treats it as a non-SPA anchor. Used by `LanguageSwitcher` so the locale change re-runs the request pipeline. |
 | `<a>` | `target="_blank"` or `download` | Excluded from SPA handling automatically; no opt-in attribute required. |
-| `<link rel="stylesheet">` | `data-spa-reload` | Re-fetches the stylesheet with a `_spa=<timestamp>` cache-buster query on every navigation. The opt-in workaround for JIT stylesheets like MonorailCSS in dev where the URL stays constant but contents diverge per page. |
+| `<link rel="stylesheet">` | `data-spa-reload` | Re-fetches the stylesheet with a `_spa=<timestamp>` cache-buster query on every navigation. The opt-in workaround for JIT stylesheets like [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) in dev where the URL stays constant but contents diverge per page. |
 
 In production builds the stylesheet URL changes per content set, so `data-spa-reload` on a `<link>` becomes redundant.
 
@@ -47,7 +47,7 @@ All three events fire on `document`. Listeners attached outside a swapped region
 | Event | `detail` shape | When it fires |
 |---|---|---|
 | `spa:before-navigate` | `{ url, slug }` | After a same-origin link click is intercepted, before the fetch is issued. |
-| `spa:commit` | `{ url, slug, doc }` | After head and region swaps complete, in the same synchronous block as the DOM replacement. `doc` is the parsed `Document` of the fetched response — the read-side contract for patching elements that live outside any region. See [Persistent chrome](#persistent-chrome). |
+| `spa:commit` | `{ url, slug, doc }` | After head and region swaps complete, in the same synchronous block as the DOM replacement. `doc` is the parsed `Document` of the fetched response — the read-side contract for patching elements that live outside any region. See [Persistent chrome](xref:explanation.spa.islands#persistent-chrome). |
 | `spa:diagnostics` | `Diagnostic[]` | After `spa:commit`, only when the response carries a `<script type="application/spa-diagnostics+json">` block. |
 
 `<script>` elements inside a swapped region are re-created so the parser executes them on commit; scripts of type `application/ld+json` and `application/spa-diagnostics+json` are skipped.

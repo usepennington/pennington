@@ -76,7 +76,7 @@ Pennington uses C# 15 union types, which are still a preview language feature in
 
 **Run the bare host**
 
-The `dotnet new web` template produces a `Program.cs` with a single `MapGet` returning `"Hello from ASP.NET."`. Run it now to confirm the shell works before Pennington takes over.
+The `dotnet new web` template produces a `Program.cs` with a single `MapGet` returning `"Hello World!"`. Change that string to `"Hello from ASP.NET."`, then run it now to confirm the shell works before Pennington takes over.
 
 ```bash
 dotnet run

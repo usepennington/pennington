@@ -159,7 +159,7 @@ Which renders as:
 examples/FocusedCodeSamplesExample/ModularWordCounter.cs > ModularWordCounter
 ```
 
-`,signatures` works on a single member too, rendering just its signature over an elided body. It targets brace-delimited languages (C#, Java, TypeScript, Go, Rust); Python and Ruby suites collapse to a best-effort `…`. As the inverse of `,bodyonly`, the two don't combine — `,signatures` wins when both are set.
+`,signatures` works on a single member too, rendering only its signature over an elided body. It targets brace-delimited languages (C#, Java, TypeScript, Go, Rust); Python and Ruby suites collapse to a best-effort `…`. As the inverse of `,bodyonly`, the two don't combine — `,signatures` wins when both are set.
 
 ## Show a delta with `symbol-diff`
 

@@ -24,7 +24,7 @@ The finished code for this tutorial lives in [`examples/GettingStartedBlazorPage
 
 ## 1. Set up the project shell
 
-Start from an empty ASP.NET web project and add the Pennington package. No Pennington code yet — just the shell `Program.cs` will go into in section 2.
+Start from an empty ASP.NET web project and add the Pennington package. No Pennington code yet — the shell `Program.cs` stays untouched until section 2.
 
 <Steps>
 <Step StepNumber="1">

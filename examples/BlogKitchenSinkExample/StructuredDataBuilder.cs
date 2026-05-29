@@ -23,6 +23,10 @@ public sealed record JsonLdRecipe : JsonLdEntity
     [JsonPropertyName("name")]
     public required string Name { get; init; }
 
+    /// <summary>Canonical URL of the recipe page.</summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; init; }
+
     /// <summary>Short description of the dish.</summary>
     [JsonPropertyName("description")]
     public string? Description { get; init; }

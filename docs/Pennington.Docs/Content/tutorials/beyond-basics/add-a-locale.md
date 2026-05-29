@@ -94,7 +94,7 @@ Now let's give Spanish its content. Mirror the three English pages under a `Cont
 
 **Create `Content/es/` and translate `index.md`**
 
-Create the `Content/es/` subfolder and add `index.md` with Spanish front-matter and Spanish body copy. The load-bearing rule: **the subfolder name matches the locale code passed to `AddLocale`** — `es` here, because that is the code registered in step 2.1. Files under `Content/es/` serve from `/es/*`; files directly under `Content/` serve from `/*`.
+Create the `Content/es/` subfolder and add `index.md` with Spanish front-matter and Spanish body copy. The load-bearing rule: **the subfolder name matches the locale code passed to `AddLocale`** — `es` here, because that is the code registered in section 2. Files under `Content/es/` serve from `/es/*`; files directly under `Content/` serve from `/*`.
 
 ```markdown:symbol
 examples/BeyondLocaleExample/Content/es/index.md
@@ -124,7 +124,7 @@ examples/BeyondLocaleExample/Content/es/getting-started.md
 
 - With the host still running, visit `http://localhost:5000/es/` — the page renders in Spanish with no fallback banner
 - Visit `http://localhost:5000/es/about` and `http://localhost:5000/es/getting-started` — both serve Spanish translations
-- Inspect the `<html>` element in dev tools on a Spanish page — `lang="es"` (from the `LocaleInfo.HtmlLang` set in step 2.1)
+- Inspect the `<html>` element in dev tools on a Spanish page — `lang="es"` (from the `LocaleInfo.HtmlLang` set in section 2)
 
 </Checkpoint>
 

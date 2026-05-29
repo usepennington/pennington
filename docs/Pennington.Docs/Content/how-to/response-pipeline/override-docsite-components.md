@@ -7,7 +7,7 @@ sectionLabel: "Response Pipeline"
 tags: [docsite, theming, slots, routing]
 ---
 
-To replace the bundled DocSite header or footer (or inject head tags, append CSS, route additional `@page` components) without forking the template, populate the four slot seams on `DocSiteOptions`. The bundled layout, content pipeline, SPA navigation, and MonorailCSS wiring keep working. To rearrange the layout shell fundamentally, read <xref:explanation.positioning.docsite-positioning> before deciding whether `AddDocSite` is still the right starting point.
+To replace the bundled DocSite header or footer (or inject head tags, append CSS, route additional `@page` components) without forking the template, populate the four slot seams on `DocSiteOptions`. The bundled layout, content pipeline, SPA navigation, and [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) wiring keep working. To rearrange the layout shell fundamentally, read <xref:explanation.positioning.docsite-positioning> before deciding whether `AddDocSite` is still the right starting point.
 
 ## Before you begin
 

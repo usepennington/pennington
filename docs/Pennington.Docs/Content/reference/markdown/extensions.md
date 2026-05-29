@@ -13,7 +13,7 @@ The catalog of non-CommonMark Markdown features wired into Pennington's Markdig 
 |---|---|---|---|
 | Tabbed code | Adjacent fences with `tabs=true` | `UseTabbedCodeBlocks` | [Tabbed code](xref:how-to.code-samples.tabbed-code) |
 | Content tabs | `# [Label](#tab/id)` headings ended by `---` | `UseContentTabs` | [Content tabs](xref:how-to.rich-content.content-tabs) |
-| Includes | `[!INCLUDE [title](path)]` | Markdown parser (always on) | [Reuse shared content](xref:how-to.pages.include-shared-content) |
+| Includes | `[!INCLUDE …]` (full form under [Includes](#includes)) | Markdown parser (always on) | [Reuse shared content](xref:how-to.pages.include-shared-content) |
 | Alerts | `> [!KIND]` inside blockquote | `UseCustomAlerts` | [Alerts](xref:how-to.rich-content.alerts) |
 | Code annotations | Trailing-comment `[!code …]` directive | `UseSyntaxHighlighting` | [Code annotations](xref:how-to.code-samples.code-annotations) |
 | Cross-reference tags | `<xref:uid>` or `href="xref:uid"` | `XrefHtmlRewriter` (response stage) | [Cross-references](xref:how-to.navigation.cross-references) |

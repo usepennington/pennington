@@ -11,8 +11,8 @@ tags:
 ---
 
 Pennington used to scatter its findings — a broken link, an `xref:` that points
-nowhere, a content diagnostic — across logger output, where they were easy to
-miss. Two changes make them easier to catch: the static build now ends with a
+nowhere, a content diagnostic — across logger output, where they slipped past
+unnoticed. Two changes make them easier to catch: the static build now ends with a
 report, and the dev server shows the same findings while you write.
 
 ## A report at the end of every build

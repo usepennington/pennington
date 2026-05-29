@@ -56,7 +56,7 @@ Two transports surface the accumulated diagnostics, both wired inside `UsePennin
 | Transport | Type | Availability | Shape |
 |---|---|---|---|
 | Response header | `X-Pennington-Diagnostic` | Every request where `HasAny` is `true` | One header value per diagnostic, pipe-delimited: `Severity|Message` (or `Severity|Message|Source` when `Source` is non-null). |
-| On-page overlay | `DiagnosticOverlayProcessor` (`Order = 30`, `IResponseProcessor`) | Requests where `DOTNET_WATCH` is set, status is `2xx`, and content type contains `text/html` | Floating badge injected before `</body>` summarizing error/warning counts; clicking expands a panel listing every diagnostic. Re-renders on the `spa:diagnostics` DOM event for SPA navigations. |
+| On-page overlay | `DiagnosticOverlayProcessor` (`Order = 30`, `IResponseProcessor`) | Dev-serve requests (the host was not launched with the build verb) where status is `2xx` and content type contains `text/html` | Floating badge injected before `</body>` summarizing error/warning counts; clicking expands a panel listing every diagnostic. Re-renders on the `spa:diagnostics` DOM event for SPA navigations. |
 
 ## Example
 

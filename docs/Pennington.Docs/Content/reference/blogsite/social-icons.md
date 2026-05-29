@@ -34,11 +34,11 @@ All four fragments share `viewBox="0 0 24 24"`, `stroke="currentColor"`, and `fi
 src/Pennington.BlogSite/BlogSiteOptions.cs > SocialLink
 ```
 
-`SocialLink` is a `record SocialLink(RenderFragment Icon, string Url)`. The `Icon` field accepts the static `RenderFragment` directly (`SocialIcons.GithubIcon`), not the Razor component tag form. For consumer wiring see <xref:how-to.feeds.blogsite-homepage>.
+`SocialLink` is a `record SocialLink(RenderFragment Icon, string Url)`. The `Icon` field accepts the static `RenderFragment` directly (`SocialIcons.GithubIcon`), not the Razor component tag form. For consumer wiring see <xref:how-to.theming.blogsite-homepage>.
 
 ## See also
 
 - Related reference: [`BlogSiteOptions`](xref:reference.api.blog-site-options) (see the `SocialLink` helper record and the `Socials` property)
 - Related reference: [Built-in BlogSite routes](xref:reference.blogsite.routes)
-- How-to: [Configure the BlogSite homepage](xref:how-to.feeds.blogsite-homepage)
+- How-to: [Configure the BlogSite homepage](xref:how-to.theming.blogsite-homepage)
 - How-to: [Customize DocSite layouts and components](xref:how-to.response-pipeline.override-docsite-components)

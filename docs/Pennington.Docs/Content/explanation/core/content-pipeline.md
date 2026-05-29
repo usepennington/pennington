@@ -43,7 +43,7 @@ The replacement invariant is what gives the pipeline its composability. A `Rende
 src/Pennington/Pipeline/ContentPipeline.cs > ContentPipeline.ParseAsync
 ```
 
-The implementation has three explicit branches: a `FailedItem` passes through without touching the parser, a `DiscoveredItem` is handed to `IContentParser.ParseAsync` inside a try/catch that demotes any exception to a `FailedItem`, and a `ParsedItem` or `RenderedItem` passes through unchanged because the work for that stage is already done. There is also a guard for `RedirectSource`: items whose source is a redirect skip the parser entirely, because a redirect has no body to parse and is served by middleware at request time rather than written as an HTML file.
+The implementation has three explicit branches: a `FailedItem` passes through without touching the parser, a `DiscoveredItem` is handed to `IContentParser.ParseAsync` inside a try/catch that demotes any exception to a `FailedItem`, and a `ParsedItem` or `RenderedItem` passes through unchanged because the work for that stage is already done. There is also a guard for `RedirectSource` and `EndpointSource`: items whose source is a redirect or an endpoint (`sitemap.xml`, `llms.txt`) skip the parser entirely, because neither has a body to parse — a redirect is served by middleware at request time rather than written as an HTML file, and an endpoint is produced by a live HTTP endpoint.
 
 ### `FailedItem` as a peer case, not an exception
 

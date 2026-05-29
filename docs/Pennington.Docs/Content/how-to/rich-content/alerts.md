@@ -12,7 +12,7 @@ To surface a note, tip, or warning inline without reaching for a Razor component
 ## Before you begin
 - An existing Pennington site renders markdown (see <xref:tutorials.getting-started.first-site> if not).
 - The pipeline was built through `AddPennington` / `AddDocSite` / `AddBlogSite`, so `UseCustomAlerts()` is already wired into the default `MarkdownPipelineFactory`.
-- The default MonorailCSS integration or a stylesheet targets the `markdown-alert` / `markdown-alert-{kind}` classes.
+- The default [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) integration or a stylesheet targets the `markdown-alert` / `markdown-alert-{kind}` classes.
 
 ## The five alert kinds
 

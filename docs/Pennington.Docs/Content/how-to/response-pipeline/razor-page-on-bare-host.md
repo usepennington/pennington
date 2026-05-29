@@ -19,7 +19,7 @@ A working reference: `examples/BareHostRazorPageExample` — one Razor component
 
 ## Author the page component
 
-Write a Razor component whose `[Parameter]` surface is everything the page needs — there is no ambient `HttpContext`, layout, or cascading state from a parent. The component renders the entire document so it includes `<!DOCTYPE html>` and the `<link rel="stylesheet" href="/styles.css">` tag for MonorailCSS output.
+Write a Razor component whose `[Parameter]` surface is everything the page needs — there is no ambient `HttpContext`, layout, or cascading state from a parent. The component renders the entire document so it includes `<!DOCTYPE html>` and the `<link rel="stylesheet" href="/styles.css">` tag for [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) output.
 
 ```razor:symbol
 examples/BareHostRazorPageExample/Components/StatusPage.razor

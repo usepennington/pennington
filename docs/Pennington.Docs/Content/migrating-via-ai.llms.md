@@ -19,21 +19,25 @@ Build the chrome yourself instead. The minimal shape:
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddPennington(options =>
 {
+    options.ContentRootPath = "Content";
     options.AddMarkdownContent<DocFrontMatter>(md => md.ContentPath = "Content");
-    options.ConfigureSearch(s => s.Enabled = true);
 });
+builder.Services.AddRazorComponents();
 
 var app = builder.Build();
-app.UsePennington();
-app.MapFallbackToPage("/_Host");
+app.UsePennington();             // content middleware, redirects, sitemap, search index
+app.UseAntiforgery();            // required by MapRazorComponents
+app.MapRazorComponents<App>();   // App.razor routes the @page "/{*Path}" catch-all
 await app.RunOrBuildAsync(args);
 ```
+
+Search ships with `AddPennington` (DeweySearch) — there is no opt-in call to add.
 
 Add four things alongside it:
 
 1. `Components/Layout/MainLayout.razor` — your shell (header, sidebar slot, footer).
 2. `Components/Layout/NavMenu.razor` — a `NavigationBuilder`-driven sidebar. See `examples/GettingStartedNavigationExample`.
-3. `Components/Pages/_Host.razor` — a `@page "/{*slug}"` catch-all that resolves the URL through `IContentService` and renders the result.
+3. `Components/App.razor` + `Components/Pages/MarkdownPage.razor` — `App.razor` hosts the router; `MarkdownPage.razor` is a `@page "/{*Path}"` catch-all that resolves the URL through `IContentService` and renders the result. `MapRazorComponents<App>()` wires it. See `examples/GettingStartedBlazorPagesExample`.
 4. `wwwroot/` — your CSS, fonts, images.
 
 Reach for `AddDocSite` later if its chrome happens to match. It rarely does on a migration.
@@ -47,14 +51,14 @@ These ship in `AddPennington`. Use them; don't replace them.
 | Markdown → HTML | `IContentRenderer` (Markdig + Mdazor + highlighting + shortcodes) | A second markdown parser |
 | Code highlighting | TextMate via `ICodeHighlighter` (TextMateSharp). ``` ```ts ``` works. | Shiki, Prism, highlight.js |
 | GitHub alerts | `> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`, `> [!IMPORTANT]`, `> [!CAUTION]` parse natively | A custom callout block |
-| Tabbed code | `:tabs` code-fence args — see <xref:reference.markdown.code-block-args> | A `<Tabs>` component runtime |
+| Tabbed code | `tabs=true` info-string attribute on adjacent fences — see <xref:reference.markdown.code-block-args> | A `<Tabs>` component runtime |
 | Inline Razor components | Mdazor parses `<Component>` directly in markdown — see <xref:how-to.rich-content.ui-components-in-markdown> | An MDX-style pre-pass |
 | Cross-references | `uid:` in front matter, `<xref:uid>` or `[text](xref:uid)` in body — survives renames | Path-based internal links |
-| Search | `AddSearch(...)` ships DeweySearch + `_content/DeweySearch.Web/dewey-search.js` — see <xref:how-to.discovery.search> | Algolia, lunr.js wiring |
-| Sitemap, RSS, llms.txt | One line each in `AddPennington`. See <xref:how-to.feeds.sitemap>, <xref:how-to.feeds.rss>, <xref:how-to.feeds.llms-txt> | Plugin code |
-| i18n | Locale subfolders under `Content/{locale}/` + `ConfigureLocalization` — see <xref:how-to.discovery.localization> | A custom translation provider |
+| Search | `AddPennington` ships DeweySearch automatically + `_content/DeweySearch.Web/dewey-search.js` — see <xref:how-to.discovery.search> | Algolia, lunr.js wiring |
+| Sitemap, RSS, llms.txt | Sitemap is automatic; RSS comes from the DocSite blog folder / `AddBlogSite`; llms.txt is one `AddLlmsTxt` call. See <xref:how-to.feeds.sitemap>, <xref:how-to.feeds.rss>, <xref:how-to.feeds.llms-txt> | Plugin code |
+| i18n | Locale subfolders under `Content/{locale}/` + `options.Localization.AddLocale(...)` on a bare host (`ConfigureLocalization` is the `AddDocSite`/`AddBlogSite` equivalent) — see <xref:how-to.discovery.localization> | A custom translation provider |
 | Front matter | Compose `IFrontMatter` + `ITaggable`/`IOrderable`/`ISectionable`/`IRedirectable` — see <xref:explanation.core.front-matter-capabilities> | A schema-validation library |
-| Build-time output | `dotnet run -- build` writes static HTML to `wwwroot-build/` | A build CLI |
+| Build-time output | `dotnet run -- build` writes static HTML to `output/` (override with a positional dir or `--output`) | A build CLI |
 
 ## Components: MDX → Mdazor
 
@@ -63,10 +67,10 @@ MDX lets you embed JSX in markdown. Mdazor lets you embed Razor in markdown. The
 | Source pattern | Pennington equivalent |
 |---|---|
 | `import { Foo } from '@/components'` at the top of `.mdx` | Drop the import. Register once in `Program.cs`: `services.AddMdazorComponent<Foo>()`. Then `<Foo>...</Foo>` works in any `.md`. |
-| `<Tabs><TabItem value="js" label="JS">...</TabItem></Tabs>` (Docusaurus, Starlight) | Built-in `:tabs` code-fence for code, or port `<Tabs>` as a Razor component. See <xref:how-to.rich-content.content-tabs>. |
+| `<Tabs><TabItem value="js" label="JS">...</TabItem></Tabs>` (Docusaurus, Starlight) | Built-in `tabs=true` code-fence attribute for code, or port `<Tabs>` as a Razor component. See <xref:how-to.rich-content.content-tabs>. |
 | `:::info`, `:::tip`, `:::warning`, `:::danger`, `:::caution` (Docusaurus, VitePress) | `> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`, `> [!CAUTION]`, `> [!IMPORTANT]`. See <xref:how-to.rich-content.alerts>. |
 | `<Aside type="tip">...</Aside>` (Starlight) | Same: `> [!TIP]`. |
-| `::: code-group` (VitePress code groups) | `:tabs` fence. |
+| `::: code-group` (VitePress code groups) | `tabs=true` on adjacent fences. |
 | `{frontmatter.title}` / `{props.x}` JSX expressions in body | Razor: `@Model.Title` from the rendered page context; `@ChildContent` inside a Mdazor component. |
 | `<Image src="..." />` (Astro/Next image optimizer) | Plain `<img>`. No optimizer ships. Flag to the human if the source relied on it heavily. |
 | `<LinkCard>`, `<CardGrid>` (Starlight) | Use `Pennington.UI` `Card`, `CardGrid` — see <xref:reference.ui.content> — or port the source components. |
@@ -120,7 +124,7 @@ For a single-hue brand, swap `NamedColorScheme` for `AlgorithmicColorScheme { Pr
 | Tailwind `@apply` directives in CSS | `MonorailCssOptions.ExtraStyles` (verbatim CSS), or `CustomCssFrameworkSettings.Applies` for utility-style apply rules |
 | Custom fonts via `@font-face` | Drop the block in `ExtraStyles`; copy the font files to `wwwroot/fonts/`. See <xref:how-to.theming.fonts>. |
 | Tailwind typography plugin (`prose`) | Already baked in — prose styles ship by default and can be tuned via `CustomCssFrameworkSettings` |
-| Other Tailwind plugins (forms, aspect-ratio, etc.) | Re-author the relevant rules in `ExtraStyles` |
+| Other Tailwind plugins (forms, aspect-ratio, and so on) | Re-author the relevant rules in `ExtraStyles` |
 | Syntax-highlight theme (Shiki / Prism CSS) | `MonorailCssOptions.SyntaxTheme` — five token roles (keyword, string, variable, function, comment) mapped to named palettes |
 | Plain CSS files referenced from HTML | Drop in `wwwroot/`, link from `MainLayout.razor` — no transform needed |
 
@@ -142,7 +146,7 @@ Common renames:
 | `hide_table_of_contents`, `toc: false` | drop — no per-page toggle today (flag to human) |
 | `pagination_next`, `pagination_prev` | drop — derived from sidebar order |
 | `keywords`, `categories` | merge into `tags` |
-| `image:`, `cover:`, `head.image` (VitePress) | `imageUrl:` |
+| `image:`, `cover:`, `head.image` (VitePress) | No built-in record parses an image key — flag to the human (a social/OpenGraph image is set programmatically via `SocialMetadata.ImageUrl`, not front matter) |
 | `layout: home` (VitePress hero), `template: splash` (Starlight) | route through a custom Razor `@page` instead of trying to express it in front matter |
 
 A sketch — adapt the rename map to your source:
@@ -224,9 +228,9 @@ Write the service. Don't try to model these as a markdown directory tree.
 
 - Don't write a custom Markdown renderer. Configure Markdig via `options.ConfigureMarkdownPipeline`. To add a new fenced-block handler, see <xref:how-to.markdown-pipeline.code-block-preprocessor>.
 - Don't write a `getStaticPaths` equivalent. File discovery is automatic via `MarkdownContentService`.
-- Don't wire Algolia or lunr.js. `AddSearch()` ships DeweySearch.
+- Don't wire Algolia or lunr.js. `AddPennington` ships DeweySearch automatically.
 - Don't preprocess MDX before the pipeline sees it. Mdazor parses `<Component>` inline; just register the component once.
-- Don't write a build CLI. `dotnet run -- build` writes `wwwroot-build/`.
+- Don't write a build CLI. `dotnet run -- build` writes `output/`.
 - Don't model versions as nested folders inside a single area.
 - Don't carry framework-specific front-matter keys (`hide_table_of_contents`, `pagination_label`, `displayed_sidebar`) — they're inert.
 - Don't add `// removed for Pennington` comments. Delete code and move on.

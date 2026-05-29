@@ -45,7 +45,7 @@ examples/BeyondCustomRazorComponentExample/_Imports.razor
 
 **Create `Components/PricingCard.razor`**
 
-Create a `Components/` folder and add `PricingCard.razor` with four `[Parameter]` properties — `Tier`, `Price`, `Features`, and `Highlighted` — and markup that renders a pricing card with a "Most Popular" badge when highlighted. The `Features` parameter is a pipe-delimited string because Mdazor binds only primitive parameter types from markdown attributes; lists arrive as strings and are split inside the component.
+Create a `Components/` folder and add `PricingCard.razor` with four `[Parameter]` properties — `Tier`, `Price`, `Features`, and `Highlighted` — and markup that renders a pricing card, switching to a thicker accent border when `Highlighted` is set. The `Features` parameter is a pipe-delimited string because Mdazor binds only primitive parameter types from markdown attributes; lists arrive as strings and are split inside the component.
 
 ```razor:symbol
 examples/BeyondCustomRazorComponentExample/snippets/stage1/PricingCard.razor

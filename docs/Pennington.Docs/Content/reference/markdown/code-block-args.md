@@ -24,7 +24,7 @@ bare-value    := any run of non-whitespace chars
 quoted-value  := any chars up to the matching quote
 ```
 
-`language` is typically `csharp`, `razor`, `text`, etc. Quoting is required only when a value contains whitespace. Markdig exposes the language and colon-suffix on `FencedCodeBlock.Info` and the attribute tail on `FencedCodeBlock.Arguments`; attribute keys are matched case-insensitively.
+`language` is typically `csharp`, `razor`, `text`, and so on. Quoting is required only when a value contains whitespace. Markdig exposes the language and colon-suffix on `FencedCodeBlock.Info` and the attribute tail on `FencedCodeBlock.Arguments`; attribute keys are matched case-insensitively.
 
 ## Attributes
 
@@ -58,7 +58,7 @@ A directive is the literal text `[!code <notation>]` wrapped in a line-trailing 
 | `error` | Adds class `error` to the line and `has-errors` to the `<pre>`. | `throw new(); // [!code error]` |
 | `warning` | Adds class `warning` to the line and `has-warnings` to the `<pre>`. | `// TODO // [!code warning]` |
 | `word:TEXT` | Wraps the first occurrence of `TEXT` on the line in `<span class="word-highlight">`. | `var token = Get(); // [!code word:token]` |
-| `word:TEXT\|MESSAGE` | As `word:`, but wraps the span in a callout carrying `MESSAGE`. | `// [!code word:token\|The auth token]` |
+| `word:TEXT&#124;MESSAGE` | As `word:`, but wraps the span in a callout carrying `MESSAGE`. | `// [!code word:token&#124;The auth token]` |
 | `include-start` / `include-end` | Marks a region to retain; all lines outside paired include regions are dropped. | `// [!code include-start]` ... `// [!code include-end]` |
 | `exclude-start` / `exclude-end` | Marks a region to drop; lines inside are removed from the rendered output. | `// [!code exclude-start]` ... `// [!code exclude-end]` |
 

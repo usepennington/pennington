@@ -46,7 +46,7 @@ tags: [pennington, getting-started]
 
 ### Set `CanonicalBaseUrl` to your production origin
 
-`RssFeedBuilder` prefixes every `<link>` and `<guid>` with the canonical base. Use the production scheme and host with no trailing slash:
+`BlogSiteContentService` prefixes every `<link>` and `<guid>` with the canonical base. Use the production scheme and host with no trailing slash:
 
 ```csharp
 new BlogSiteOptions

@@ -7,7 +7,7 @@ tags: [front-matter, yaml, keys, reference]
 uid: reference.front-matter.keys
 ---
 
-YAML keys parsed into the four shipped `IFrontMatter` records — `DocFrontMatter`, `BlogFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter`. See <xref:reference.api.i-front-matter> for the interface surface and <xref:explanation.core.front-matter-capabilities> for the design rationale.
+YAML keys parsed into the five shipped `IFrontMatter` records — `DocFrontMatter`, `BlogFrontMatter`, `BlogPostFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter`. See <xref:reference.api.i-front-matter> for the interface surface and <xref:explanation.core.front-matter-capabilities> for the design rationale.
 
 ## Keys
 
