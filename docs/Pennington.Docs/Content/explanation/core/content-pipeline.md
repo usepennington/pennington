@@ -57,13 +57,6 @@ src/Pennington/Pipeline/ContentItem.cs > FailedItem
 
 Treating failure as a data case is what makes the exhaustive match in `GenerateAsync` meaningful rather than ceremonial. If `FailedItem` were an exception that escaped the pipeline, there would be no case to match — and no way for the compiler to confirm that every outcome was handled.
 
-## Trade-offs
-
-- **Cost:** The union is a change-amplification point. Adding a fifth stage or a new terminal case means every `switch` on `ContentItem` across the codebase must be updated — the compiler will surface all the gaps, which is the feature, but it is still a broad change. The `union` keyword is also a C# 15 feature, and LSP tooling in some editors still flags false errors on the declaration; the compiler handles it correctly, but the red squiggles are real until tooling catches up.
-- **Alternative considered — discriminator property:** A `ContentItem` class with a `Stage` enum and nullable `Metadata`, `Html`, and `Error` fields was rejected because every consumer ends up writing the same null-check sequence, and the compiler has no way to prove which combination of fields is actually populated at any given call site. The safety that pattern matching provides would have to be replicated manually everywhere.
-- **Alternative considered — inheritance hierarchy:** An abstract `ContentItem` with `ParsedItem : ContentItem` and `RenderedItem : ParsedItem` was rejected because it creates a subtyping relationship that does not reflect how the cases are actually used, and because it forces `FailedItem` into either a parallel branch that breaks `is`-checks downstream or a nullable error field on every subclass — which leads straight back to the nullable-field problem.
-- **Consequence:** Downstream code that only needs the `ContentRoute` still pays a pattern match unless it goes through the `Route` property lifted onto the union. That one projection is why the design resists lifting anything else: each additional shared property needs a sensible value for all four cases, and "sensible for all four cases" is the definition of the nullable-field trap. Adding another lifted property is a deliberate design decision, not a convenience shortcut.
-
 ## Further reading
 
 - Reference: [Content pipeline interfaces](xref:reference.api.i-content-service) — the catalog of `IContentService`, `IContentParser`, `IContentRenderer`, and every case record with members.

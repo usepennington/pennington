@@ -41,13 +41,6 @@ The default locale is not a special kind of locale — it is the locale that own
 
 A page that exists only in the default locale appears once, in the default-locale index — fallback is a rendering-time courtesy, not an indexing decision. That asymmetry is deliberate. When a French reader searches for a term that only exists in English content, the right answer is "no results in French" rather than silently returning English hits the reader cannot read. The same per-locale split flows through sitemap construction and `hreflang` alternate-language tags, so every discovery channel agrees on what lives in which locale.
 
-## Trade-offs
-
-- **Cost — every translation is an extra file with an extra URL.** There is no in-band `locale:` front-matter flag that turns one file into many; each translation of `guides/intro.md` lives at `fr/guides/intro.md`, `es/guides/intro.md`, and so on. This is more boilerplate than a single-file scheme, but it makes coverage obvious (list the directory) and diffing trivial (a PR that touches `fr/` is a French-translation PR).
-- **Alternative considered — Accept-Language-driven locale routing.** A content-negotiation shape where `/guides/intro` transparently serves French to French browsers was rejected: it breaks bookmarking, CDN caching, search-engine indexing, and link sharing, all for the sake of saving a `/fr/` prefix in the URL. The prefix-first rule trades one cosmetic cost for five structural wins.
-- **Cost — fallback silence.** A reader hitting `/fr/only-english-page` sees English content under a French URL. The `FallbackNotice` banner softens this, but the URL itself reflects a different language than the body until a translation lands. The alternative — a 404 for untranslated pages — was rejected as too hostile to partial-coverage sites, which is almost every real-world multilingual site during rollout.
-- **Consequence — search stays honest per locale.** Because the index is split, a Japanese search UI that is missing half its content shows "no results" instead of pretending otherwise. Authors get an accurate signal about translation gaps from the search experience itself, which is exactly the feedback loop that a cross-locale index would hide.
-
 ## Further reading
 
 - Reference: [`LocalizationOptions`](xref:reference.api.localization-options) — `DefaultLocale`, `AddLocale`, and the URL helpers that back this mechanism.

@@ -43,14 +43,6 @@ An unresolved uid is never a hard failure. Both resolver phases emit a `Warning`
 
 During a static build, the unified dev-and-build code path carries this through. `OutputGenerationService` crawls the live host with an `HttpClient`, and `ResponseProcessingMiddleware` serializes the accumulated `DiagnosticContext` into `X-Pennington-Diagnostic` response headers. `OutputGenerationService` reads those headers off each response and folds the warnings into the `BuildReport` alongside the broken-link, missing-trailing-slash, and render-failure entries. The result is that every unresolved uid emitted during the crawl shows up in the printed build report and, if it reaches `Error` severity, sets the process exit code — without Pennington needing a separate "verify xrefs" build step.
 
-## Trade-offs
-
-- **Convention dependency.** The uid indirection only helps if authors consistently set `uid:` in front matter. A page with no uid can be linked to only by URL, which is exactly the fragility the feature was meant to avoid. The discipline has to live in the authoring convention, because the compiler cannot enforce "pick a uid" the way it enforces "pick a title."
-- **First-write-wins.** Two content services contributing the same uid silently resolve to whichever source was registered first. This is the right behavior for the locale-fallback case the rule was designed for, but a custom `IContentService` that shadows an existing uid will do so without a warning. Authors integrating bespoke content sources should pick a uid namespace prefix (such as `release-1.2.0`) rather than reusing short generic strings.
-- **Alternative considered: hard-coded URLs.** Relative or absolute URLs were rejected because the whole point of the feature is to decouple link identity from filesystem location. Relative links also compose poorly across locales, where the same logical target has a different URL per language.
-- **Alternative considered: single-phase DOM rewrite.** Parsing the response first and then resolving `<xref:...>` inside the AngleSharp tree was rejected because `<xref:uid>` is not valid HTML. An HTML parser's error-recovery behavior would consume the colon and the uid; rewriting as a string before parsing is the only robust option. Keeping a second DOM pass for the attribute form avoids re-parsing valid HTML unnecessarily.
-- **Consequence: runtime concern.** Because resolution happens at response time rather than at parse time, a renamed target page's URL updates everywhere on the next request without rebuilding anything. The tradeoff is that broken uids are a runtime concern — the build report is the feedback loop, and skipping the build step before deploy is how stale uids reach production.
-
 ## Further reading
 
 - Reference: [Response processing interfaces](xref:reference.api.i-response-processor) — the member catalog for `IHtmlResponseRewriter`, `XrefHtmlRewriter`, and execution order.

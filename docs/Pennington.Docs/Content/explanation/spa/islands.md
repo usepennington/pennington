@@ -58,14 +58,6 @@ A second rendering path — the JSON-envelope shape an earlier version of this e
 
 The single-path approach trades some payload size for the elimination of all of that. The full HTML response gzips to within a few KB of the JSON envelope it replaced, and the prefetch-on-hover path hides whatever cost remains.
 
-## Trade-offs
-
-- **Cost — payload is the full page including chrome the client throws away.** Mitigated by HTTP-level caching and prefetch-on-hover. If profiling shows it matters, a server-side response processor can detect a `Sec-Fetch-Dest`/`X-Spa-Fragment` header and pre-extract regions before send, opt-in.
-- **Cost — `innerHTML` swap blows away form state and focus inside swapped regions.** Acceptable for a docs site, and the persistent-chrome path above is the answer when the cost matters: leave the element unmarked and patch state on `spa:commit`. A morphing strategy (Idiomorph or similar) is the upgrade path if interactive controls eventually need to live inside a swapped region. The contract — mark regions, server renders them — does not change.
-- **Constraint — inline `<script>` tags parsed by `DOMParser` are inert until the engine re-creates them.** Scripts inside a swapped region are re-executed on commit: `commitRegions` calls `executeScripts`, which clones each `<script>` into a fresh element so the parser runs it, deliberately skipping `application/ld+json` and `application/spa-diagnostics+json` data blocks. Chrome scripts outside any region are never touched and stay inert, which is the desired behavior for one-time setup that should not re-run — hook the `spa:commit` event from outside the region and re-initialize from there when such a script needs to react to a navigation.
-- **Alternative considered — full client-side SPA (Blazor WebAssembly, React, and so on).** Would make every navigation instant at the cost of a multi-megabyte runtime on first load and a separate SEO story. Rejected for a content engine where most of each page is prose the client doesn't need to render.
-- **Alternative considered — JSON envelope of pre-rendered region fragments.** The previous shape, removed for the reasons enumerated above. The fact that the rewriter pipeline already produces correct HTML for the canonical URL is what makes the simpler approach work; the envelope was solving for a problem that did not exist once the rewriters were robust enough to trust.
-
 ## Further reading
 
 - Reference: <xref:reference.api.doc-site-options>

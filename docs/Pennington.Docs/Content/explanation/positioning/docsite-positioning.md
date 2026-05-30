@@ -57,14 +57,6 @@ A template fits a shape. DocSite's shape is an article-centric documentation sit
 
 None of these is exotic. They are the everyday reason a host is built on `AddPennington` directly. The caps are narrow because the template is opinionated, and those opinions are about documentation-site shapes specifically.
 
-## Trade-offs
-
-`AddDocSite` and `AddPennington` are two APIs with two learning surfaces. A host that starts on the template and later needs bare access has to learn both — the template's options, and then the underlying options the template was composing over. Pennington accepts this cost because the alternative — `AddPennington` with twenty configuration callbacks collapsed into one record — makes the common case noisier in exchange for making the advanced case fractionally more discoverable.
-
-A single `AddPennington` with a `UseDefaultDocSiteLayout` flag would force every bare-host consumer to carry the layout code — Razor components, MonorailCSS configuration — even when unused, and would conflate engine configuration with layout configuration in one record that has to explain which knobs apply in which mode.
-
-The consequence of that decision is that `DocSiteOptions` is a curated subset of `PenningtonOptions` on purpose, and the design intent is for it to stay that way. New DocSite-specific knobs land when the template needs them; new engine knobs land on `PenningtonOptions`; and `ConfigurePennington` is the bridge when an engine knob is needed from inside a template-shaped host. The tradeoff is a clean separation that takes knowing which layer a given option belongs to, rather than one surface that tries to hold everything.
-
 ## Further reading
 
 - Tutorial: [Create your first Pennington site](xref:tutorials.getting-started.first-site) — building a host on `AddPennington` directly, the path the templates are a shortcut for.

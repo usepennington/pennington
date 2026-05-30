@@ -53,14 +53,6 @@ The first three built-in HTML rewriters run in a specific sequence because each 
 
 Reversing any two of these breaks one of the others' invariants. Keeping the ordering explicit in the `Order` property — rather than implicit in DI registration sequence — is what makes the dependency between rewriters visible at the call site.
 
-## Trade-offs
-
-- **Cost:** A rewriter cannot assume it is operating on unmodified HTML — earlier rewriters may have already transformed the links it cares about. Authors need to reason about where in the ordering sequence their rewriter belongs, which is more cognitive load than a last-in-wins chain.
-- **Cost:** The shared `IDocument` is mutable and traversed by every rewriter in sequence. A rewriter that over-selects — querying all anchors when it only cares about external links, for instance — can silently interfere with a neighbor that queries the same elements. Narrow selectors are what keep the pipeline composable.
-- **Alternative considered:** A chain of pure string-to-string processors, each reparsing as needed. This was the original shape, and it either duplicates parsing work or pushes every HTML-shaped concern into ad-hoc regex. Regex is fragile against real-world HTML that AngleSharp's tolerance for malformed input handles gracefully.
-- **Alternative considered:** A single monolithic `HtmlRewriter` with hardcoded stages. This resolves the parse cost but closes the extensibility surface — every new concern would have to land in core rather than in a library consumer's assembly. The `IHtmlResponseRewriter` boundary is what keeps that story open.
-- **Consequence:** `ShouldApply` is the cheapest gate in the pipeline. When every rewriter returns `false`, the orchestrator skips the parse entirely. This is the fast path for non-HTML responses, search-index files, the SPA envelope endpoint, and any other endpoint where rewriting is a no-op.
-
 ## Further reading
 
 - Reference: [Response processing interfaces](xref:reference.api.i-response-processor) — the member-by-member catalog of `IResponseProcessor`, `IHtmlResponseRewriter`, and the three built-in rewriters.
