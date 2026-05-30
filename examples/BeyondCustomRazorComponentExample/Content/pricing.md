@@ -4,8 +4,6 @@ description: Two PricingCard components rendered from markdown with distinct par
 order: 20
 ---
 
-# Pricing
-
 Pick a plan that fits your team. Both tiers below are rendered from a single
 Razor component, `PricingCard`, authored in this example's `Components/`
 folder and registered via `AddMdazorComponent<PricingCard>()` in

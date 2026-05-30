@@ -7,8 +7,6 @@ order: 40
 uid: kitchen-sink.main.customize-sidebar
 ---
 
-# Customize the sidebar
-
 The DocSite sidebar is built from the folder tree under each area plus
 the `order:` and `section:` front-matter keys on each page.
 

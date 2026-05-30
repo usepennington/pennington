@@ -7,8 +7,6 @@ order: 100
 uid: kitchen-sink.main.ui-components-in-markdown
 ---
 
-# UI components in markdown
-
 Any Razor component registered via `AddMdazorComponent<T>()` is usable
 as a tag inside markdown. Attributes bind to `[Parameter]` properties
 by case-insensitive name match, and markdown between the open and

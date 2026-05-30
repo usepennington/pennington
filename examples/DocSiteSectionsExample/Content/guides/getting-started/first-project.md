@@ -5,8 +5,6 @@ sectionLabel: Getting Started
 order: 20
 ---
 
-# Create your first project
-
 With the package installed, the smallest useful site is two lines of
 registration and one markdown file on disk.
 

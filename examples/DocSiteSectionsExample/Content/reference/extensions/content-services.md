@@ -5,8 +5,6 @@ sectionLabel: Extensions
 order: 40
 ---
 
-# Custom content services
-
 `IContentService` is the extension point for loading content from anything
 that isn't plain markdown — a JSON feed, a database, a remote API, an
 embedded resource. Register an implementation and the pipeline treats its

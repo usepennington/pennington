@@ -4,8 +4,6 @@ description: The deployment demo landing page — verify that internal anchors, 
 order: 10
 ---
 
-# Welcome
-
 This is the landing page for **SubPathDeployableExample**, the demo app that
 backs every how-to under `/how-to/deployment/*`.
 

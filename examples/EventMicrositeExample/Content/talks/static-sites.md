@@ -7,7 +7,5 @@ topic: rendering
 tags: [static-site, performance, content]
 ---
 
-# Static sites that don't suck
-
 The case for static, the case against, and a small set of patterns that hold up
 across blogs, docs, and marketing pages.

@@ -7,7 +7,5 @@ topic: keynote
 tags: [keynote, retrospective, platforms]
 ---
 
-# What changed in the last decade
-
 A walking tour through the platform shifts that mattered, the trends that
 fizzled, and what the next ten years look like from where we sit.

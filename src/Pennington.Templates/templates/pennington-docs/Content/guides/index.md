@@ -5,7 +5,9 @@ sectionLabel: Guides
 order: 10
 ---
 
-# Guides
+> [!TIP]
+> The page title comes from the `title:` in this file's front matter — Pennington
+> renders it as the heading, so you don't repeat it with a `#` heading.
 
 Welcome to the **Guides** area. Every Markdown file under `Content/guides/`
 becomes a page in this area — the `guides` slug in `DocSiteOptions.Areas` binds

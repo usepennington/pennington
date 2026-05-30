@@ -5,8 +5,6 @@ sectionLabel: Reference
 order: 20
 ---
 
-# Configuration reference
-
 A sample Reference page. Use this area for authoritative look-up material:
 option tables, return types, defaults.
 

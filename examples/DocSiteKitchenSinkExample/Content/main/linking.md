@@ -7,8 +7,6 @@ order: 130
 uid: kitchen-sink.main.linking
 ---
 
-# Linking
-
 ## Relative links to sibling pages
 
 A relative link resolves against the current page's URL. From this file

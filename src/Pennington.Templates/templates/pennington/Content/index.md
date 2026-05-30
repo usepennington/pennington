@@ -3,7 +3,9 @@ title: Welcome to your Pennington site
 description: The smallest Pennington host that renders Markdown with front matter.
 ---
 
-# Hello from Pennington
+> [!TIP]
+> The page title comes from the `title:` in this file's front matter — Pennington
+> renders it as the heading, so you don't repeat it with a `#` heading.
 
 This page lives at `Content/index.md`. The `title` in the front matter above is
 what the host renders in the page `<title>` and `<h1>`.

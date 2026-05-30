@@ -7,8 +7,6 @@ order: 70
 uid: kitchen-sink.main.code-annotations
 ---
 
-# Code annotations
-
 Pennington post-processes highlighted code blocks, pulling `[!code …]`
 directives out of trailing comments and applying them as classes on
 each `.line` span.

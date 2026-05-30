@@ -4,8 +4,6 @@ description: Landing page for the custom Razor component example.
 order: 10
 ---
 
-# Beyond Custom Razor Component
-
 This example demonstrates how to author a custom Razor component inside an
 example app and register it with Mdazor so it can be consumed directly from
 markdown.

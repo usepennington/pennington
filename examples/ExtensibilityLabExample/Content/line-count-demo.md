@@ -3,8 +3,6 @@ title: Line-count preprocessor demo
 description: Fenced code block intercepted by LineCountPreprocessor before highlighting.
 ---
 
-# Line-count preprocessor demo
-
 The preprocessor runs before the highlighter picks a language. When the
 fence info string is `linecount`, `LineCountPreprocessor.TryProcess`
 returns a `CodeBlockPreprocessResult` that wraps the code in a

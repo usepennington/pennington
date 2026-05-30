@@ -4,8 +4,6 @@ description: Primeros pasos con el ejemplo de DocSite localizado.
 order: 30
 ---
 
-# Primeros Pasos
-
 Para añadir un nuevo idioma a tu propio sitio Pennington:
 
 1. Abre `Program.cs` y llama a `loc.AddLocale(code, new LocaleInfo(displayName))`

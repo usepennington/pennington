@@ -3,8 +3,6 @@ title: Lowercase rewriter demo
 description: Anchor text with data-lowercase is normalized by AnchorLowercaseRewriter.
 ---
 
-# Lowercase rewriter demo
-
 `AnchorLowercaseRewriter` demonstrates both halves of the
 `IHtmlResponseRewriter` contract. The `PreParseAsync` pass strips a
 synthetic sentinel (`<!--LOWERCASE-SENTINEL-->`) from the raw HTML

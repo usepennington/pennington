@@ -7,7 +7,5 @@ topic: operations
 tags: [observability, metrics, tracing]
 ---
 
-# Production observability in 2026
-
 Four engineers from very different stacks compare what they ship to production,
 what they removed, and what they still rely on a vendor for.

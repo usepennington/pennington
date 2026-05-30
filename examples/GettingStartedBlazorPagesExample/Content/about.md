@@ -3,8 +3,6 @@ title: About
 description: Proves that adding a markdown file is enough to expose a new URL.
 ---
 
-# About this site
-
 This file is `Content/about.md` and the catch-all serves it at `/about`. The
 Blazor router didn't gain a new entry — `MarkdownPage.razor` matches every URL
 through `@page "/{*Path}"` and asks the content pipeline whether anything on

@@ -5,8 +5,6 @@ sectionLabel: Reference
 order: 0
 ---
 
-# Reference
-
 The **Reference** area mirrors the package structure: *Core API* covers the
 types in `Pennington` itself, *Extensions* covers the optional surface
 (Markdig extensions, content services). Page order inside each section

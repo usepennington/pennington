@@ -3,8 +3,6 @@ title: Shortcodes demo
 description: Pre-render shortcodes expanded before Markdig parses the page.
 ---
 
-# Shortcodes demo
-
 Shortcodes are textual directives the renderer expands **before** Markdig
 parses the page, so handler output flows through the rest of the pipeline
 as regular markdown. The framework ships one (`Version`); this lab adds

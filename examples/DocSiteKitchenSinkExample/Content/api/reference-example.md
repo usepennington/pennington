@@ -7,8 +7,6 @@ order: 20
 uid: kitchen-sink.api.reference-example
 ---
 
-# Reference example
-
 This page lives in the **API** area. DocSite picks it up from
 `Content/api/reference-example.md` and renders it at `/api/reference-example/`.
 

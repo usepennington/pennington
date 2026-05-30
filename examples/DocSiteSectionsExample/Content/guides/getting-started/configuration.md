@@ -5,8 +5,6 @@ sectionLabel: Getting Started
 order: 30
 ---
 
-# Configure your site
-
 `AddPennington` accepts a configuration callback that lets you tune the
 content root, URL style, and a handful of feature toggles without leaving
 `Program.cs`.

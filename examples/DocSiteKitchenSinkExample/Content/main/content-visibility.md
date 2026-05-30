@@ -6,8 +6,6 @@ order: 235
 uid: kitchen-sink.main.content-visibility
 ---
 
-# Content visibility markers
-
 Two paired classes split what humans see from what the llms.txt extractor records. Browsers hide `.robots-only`; the llms pipeline strips `.humans-only`. Unmarked content flows to both.
 
 ## Shared content

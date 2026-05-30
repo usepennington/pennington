@@ -5,8 +5,6 @@ sectionLabel: Getting Started
 order: 10
 ---
 
-# Install Pennington
-
 The first thing every new Pennington site needs is the package itself. This
 page walks through creating an empty web project and adding the Pennington
 NuGet reference so the next pages can wire up content discovery and

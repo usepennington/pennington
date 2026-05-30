@@ -5,8 +5,6 @@ sectionLabel: Extensions
 order: 30
 ---
 
-# Markdown extensions
-
 Pennington configures Markdig with a curated set of extensions that light
 up the authoring syntax the tutorials lean on.
 

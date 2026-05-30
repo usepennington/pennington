@@ -6,8 +6,6 @@ sectionLabel: Guides
 order: 20
 ---
 
-# Install Pennington
-
 Install Pennington into an ASP.NET project with one NuGet package and three lines of DI wiring.
 
 ## 1. Add the package

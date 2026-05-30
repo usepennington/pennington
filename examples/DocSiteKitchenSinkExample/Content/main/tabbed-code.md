@@ -7,8 +7,6 @@ order: 60
 uid: kitchen-sink.main.tabbed-code
 ---
 
-# Tabbed code groups
-
 Mark two or more adjacent fenced code blocks with `tabs=true title="…"`
 in the fence's info string and Pennington collapses them into a single
 tablist. The first tab is active by default.

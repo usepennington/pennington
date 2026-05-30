@@ -5,8 +5,6 @@ sectionLabel: Advanced
 order: 50
 ---
 
-# Hook into the response pipeline
-
 Every rendered page flows through a response pipeline before hitting the
 wire. Register an `IResponseProcessor` to mutate the HTML — add a feedback
 widget, rewrite anchor IDs, or inject analytics — without touching the

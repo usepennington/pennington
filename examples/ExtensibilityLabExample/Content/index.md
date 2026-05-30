@@ -3,8 +3,6 @@ title: Extensibility Lab
 description: Kitchen-sink host wiring the seven Pennington extension points.
 ---
 
-# Extensibility Lab
-
 This site demonstrates the seven extension points covered by the Pennington
 how-to §2.3 Extensibility recipes. Each page below exercises one extension
 so the effect is observable in the rendered HTML.

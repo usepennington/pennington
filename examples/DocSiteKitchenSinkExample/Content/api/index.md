@@ -5,8 +5,6 @@ order: 10
 uid: kitchen-sink.api.index
 ---
 
-# API
-
 This is the landing page for the **API** area. It sits at `/api/` and
 shares the same markdown pipeline as the **Main** area — the two areas
 are separated by their top-level folder under `Content/` and by their

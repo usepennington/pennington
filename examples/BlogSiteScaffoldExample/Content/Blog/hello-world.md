@@ -7,8 +7,6 @@ tags:
   - scaffold
 ---
 
-# Hello world
-
 This post exists so the bare BlogSite scaffold has at least one entry on the
 home page and in the RSS feed. The next tutorial, **Author your first post
 with `BlogSiteFrontMatter`**, walks through the full set of post front-matter

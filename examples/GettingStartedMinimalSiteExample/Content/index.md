@@ -3,8 +3,6 @@ title: Welcome to your first Pennington site
 description: The smallest Pennington host that renders a markdown page with front matter.
 ---
 
-# Hello from Pennington
-
 This page is a single markdown file in `Content/index.md`. Its `title` in the
 front matter above is what the host reads out when it renders the page.
 

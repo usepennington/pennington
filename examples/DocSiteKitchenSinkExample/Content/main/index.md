@@ -5,8 +5,6 @@ order: 10
 uid: kitchen-sink.main.index
 ---
 
-# Kitchen Sink Docs
-
 Welcome to the **DocSite Kitchen Sink** example. This site deliberately wires
 every configurable DocSite surface referenced by the Pennington how-to index
 so each recipe can point at a concrete file or `xmldocid` symbol.

@@ -5,8 +5,6 @@ sectionLabel: Core API
 order: 20
 ---
 
-# ContentPipeline
-
 `ContentPipeline` is the assembly line `IContentService` implementations
 feed into. Each source yields `DiscoveredItem`s, the pipeline parses them
 into `ParsedItem`s via `IContentParser`, and finally renders them into

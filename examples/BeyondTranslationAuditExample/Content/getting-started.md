@@ -4,8 +4,6 @@ description: Wire Pennington.TranslationAudit into your DocSite host.
 order: 30
 ---
 
-# Getting Started
-
 There is no Spanish version of this page on disk. When the audit runs, it
 records a `Missing` diagnostic for the `es` locale of `/getting-started/`. The
 dev overlay shows it when you visit this page; the build report lists it after
