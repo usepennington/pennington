@@ -3,9 +3,7 @@
    the search modal is available on every page. *@
 
 @page "/{*Path}"
-@inject IEnumerable<IContentService> ContentServices
-@inject IContentParser Parser
-@inject IContentRenderer Renderer
+@inject IPageResolver Resolver
 
 @if (_html is not null)
 {
@@ -29,22 +27,10 @@ else
     {
         var requested = new UrlPath(Path ?? string.Empty).EnsureLeadingSlash();
 
-        foreach (var service in ContentServices)
+        if (await Resolver.ResolveAsync(requested) is { } page)
         {
-            await foreach (var discovered in service.DiscoverAsync())
-            {
-                if (!discovered.Route.CanonicalPath.Matches(requested)) continue;
-
-                var parsed = await Parser.ParseAsync(discovered);
-                if (parsed is not ParsedItem parsedItem) continue;
-
-                var rendered = await Renderer.RenderAsync(parsedItem);
-                if (rendered is not RenderedItem renderedItem) continue;
-
-                _title = renderedItem.Metadata.Title;
-                _html = renderedItem.Content.Html;
-                return;
-            }
+            _title = page.Metadata.Title;
+            _html = page.Content.Html;
         }
     }
 }

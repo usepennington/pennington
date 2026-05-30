@@ -6,7 +6,6 @@ using Pennington.Content;
 using Pennington.Data;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
-using Pennington.Pipeline;
 using Pennington.Routing;
 using Pennington.Taxonomy;
 
@@ -92,61 +91,34 @@ app.MapGet("/schedule/", async (HtmlRenderer renderer, IDataFiles data) =>
 app.MapTaxonomy<TalkFrontMatter, string>();
 
 // Catch-all that serves the AddMarkdownContent<TalkFrontMatter> sources at /talks/*.
-// The bare-host pattern (see how-to/response-pipeline/razor-page-on-bare-host) walks
-// IEnumerable<IContentService> and renders the first match — this version only
-// handles MarkdownFileSource items (the taxonomy + data routes are mounted above).
-app.MapGet("/{*path}", async (
-    string? path,
-    IEnumerable<IContentService> services,
-    IContentParser parser,
-    IContentRenderer renderer) =>
+// IPageResolver finds the first content route matching the request and renders it
+// (the taxonomy + data routes are mounted above). Non-markdown sources never
+// resolve to a rendered page, so they fall through to the 404.
+app.MapGet("/{*path}", async (string? path, IPageResolver resolver) =>
 {
     var requested = new UrlPath(path ?? string.Empty).EnsureLeadingSlash();
-    foreach (var service in services)
+
+    if (await resolver.ResolveAsync(requested) is not { } page)
     {
-        await foreach (var discovered in service.DiscoverAsync())
-        {
-            if (!discovered.Route.CanonicalPath.Matches(requested))
-            {
-                continue;
-            }
-
-            if (discovered.Source is not MarkdownFileSource)
-            {
-                continue;
-            }
-
-            var parsed = await parser.ParseAsync(discovered);
-            if (parsed.Value is not ParsedItem parsedItem)
-            {
-                continue;
-            }
-
-            var rendered = await renderer.RenderAsync(parsedItem);
-            if (rendered.Value is not RenderedItem r)
-            {
-                continue;
-            }
-
-            var html = $$"""
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                  <meta charset="utf-8" />
-                  <title>{{r.Metadata.Title}}</title>
-                  <link rel="stylesheet" href="/styles.css" />
-                </head>
-                <body class="bg-base-50 text-base-900 dark:bg-base-950 dark:text-base-50">
-                  <main class="mx-auto max-w-2xl px-6 py-12 prose dark:prose-invert">
-                    {{r.Content.Html}}
-                  </main>
-                </body>
-                </html>
-                """;
-            return Results.Content(html, "text/html");
-        }
+        return Results.NotFound();
     }
-    return Results.NotFound();
+
+    var html = $$"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>{{page.Metadata.Title}}</title>
+          <link rel="stylesheet" href="/styles.css" />
+        </head>
+        <body class="bg-base-50 text-base-900 dark:bg-base-950 dark:text-base-50">
+          <main class="mx-auto max-w-2xl px-6 py-12 prose dark:prose-invert">
+            {{page.Content.Html}}
+          </main>
+        </body>
+        </html>
+        """;
+    return Results.Content(html, "text/html");
 });
 
 await app.RunOrBuildAsync(args);

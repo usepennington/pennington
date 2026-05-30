@@ -8,7 +8,7 @@ A bare Pennington host that serves a generated corpus of **5000 markdown files**
 - Generation is seeded (`Seed = 1138`), so output is the same on every machine until you bump the constant or change the corpus.
 - The host wires one source: `AddMarkdownContent<DocFrontMatter>` rooted at `Content/`, mapped to `/`.
 - `GET /` lists every discovered document via `IContentService.GetIndexableEntriesAsync()` (cheap — the service caches metadata).
-- `GET /{*path}` walks `DiscoverAsync()` on the way through and renders the matching file. Deliberately the same naive shape as `GettingStartedMinimalSiteExample` — at 5000 files the per-request iteration is observable, which is the point.
+- `GET /{*path}` resolves the matching file through `IPageResolver`, which walks discovery on the way through. Deliberately the same naive shape as `GettingStartedMinimalSiteExample` — at 5000 files the per-request iteration is observable, which is the point.
 
 ## Generated file shape
 
@@ -32,4 +32,4 @@ To regenerate the corpus, delete `Content/` and re-launch.
 
 - Single `MarkdownContentService<DocFrontMatter>` over a flat 5000-file directory.
 - Pre-startup file generation guarded by a count check.
-- No styling, no DocSite — minimal HTML wrapper around `IContentRenderer` output.
+- No styling, no DocSite — minimal HTML wrapper around `IPageResolver` output.

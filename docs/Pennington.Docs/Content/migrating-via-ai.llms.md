@@ -37,7 +37,7 @@ Add four things alongside it:
 
 1. `Components/Layout/MainLayout.razor` — your shell (header, sidebar slot, footer).
 2. `Components/Layout/NavMenu.razor` — a `NavigationBuilder`-driven sidebar. See `examples/GettingStartedNavigationExample`.
-3. `Components/App.razor` + `Components/Pages/MarkdownPage.razor` — `App.razor` hosts the router; `MarkdownPage.razor` is a `@page "/{*Path}"` catch-all that resolves the URL through `IContentService` and renders the result. `MapRazorComponents<App>()` wires it. See `examples/GettingStartedBlazorPagesExample`.
+3. `Components/App.razor` + `Components/Pages/MarkdownPage.razor` — `App.razor` hosts the router; `MarkdownPage.razor` is a `@page "/{*Path}"` catch-all that resolves the URL through `IPageResolver` and renders the result. `MapRazorComponents<App>()` wires it. See `examples/GettingStartedBlazorPagesExample`.
 4. `wwwroot/` — your CSS, fonts, images.
 
 Reach for `AddDocSite` later if its chrome happens to match. It rarely does on a migration.
