@@ -58,7 +58,7 @@ dotnet add package Pennington
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup> <!-- [!code ++] -->
-    <PackageReference Include="Pennington" Version="0.1.0-alpha.0.20" /> <!-- [!code ++] -->
+    <PackageReference Include="Pennington" Version="<?# PackageVersion /?>" /> <!-- [!code ++] -->
   </ItemGroup> <!-- [!code ++] -->
 </Project>
 ```

@@ -170,13 +170,15 @@ public static class PenningtonExtensions
                 sp.GetServices<ICodeBlockPreprocessor>()));
 
         // Pre-render shortcode expander. Handlers register as IShortcode via DI; the
-        // expander is transient so each render picks up the live set. AssemblyVersionShortcode
-        // ships built-in so authors can stamp the host app's version with <?# Version /?>.
+        // expander is transient so each render picks up the live set. Two ship built-in:
+        // AssemblyVersionShortcode stamps the host app's version with <?# Version /?>, and
+        // PackageVersionShortcode stamps Pennington's own NuGet version with <?# PackageVersion /?>.
         services.AddTransient(sp =>
             new ShortcodeExpander(
                 sp.GetServices<IShortcode>(),
                 sp.GetService<IHttpContextAccessor>()));
         services.AddSingleton<IShortcode, AssemblyVersionShortcode>();
+        services.AddSingleton<IShortcode, PackageVersionShortcode>();
 
         // Markdown pipeline — includes highlighting, tabs, custom alerts, Mdazor,
         // and any consumer-supplied extensions via options.ConfigureMarkdownPipeline.
