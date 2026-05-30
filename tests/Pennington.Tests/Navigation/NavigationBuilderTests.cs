@@ -189,6 +189,26 @@ public class NavigationBuilderTests
     }
 
     [Fact]
+    public async Task BuildNavigationInfo_LastItemInSection_NextSkipsHeaderToNextSectionsFirstPage()
+    {
+        // Two folders without index.md become auto-created section headers (empty
+        // route). The last article in the first section must point "next" at the
+        // first article of the second section, not the non-navigable header.
+        var items = new List<ContentTocItem>
+        {
+            MakeTocItem("Scaffold", "/tutorials/docsite/scaffold", 1, "docsite", "scaffold"),
+            MakeTocItem("Add a Blog", "/tutorials/docsite/add-a-blog", 2, "docsite", "add-a-blog"),
+            MakeTocItem("Scaffold", "/tutorials/blogsite/scaffold", 3, "blogsite", "scaffold"),
+            MakeTocItem("First Post", "/tutorials/blogsite/first-post", 4, "blogsite", "first-post"),
+        };
+
+        var info = await _builder.BuildNavigationInfoAsync(items, MakeRoute("/tutorials/docsite/add-a-blog"));
+
+        info.NextPage.ShouldNotBeNull();
+        info.NextPage!.Route.CanonicalPath.Value.ShouldBe("/tutorials/blogsite/scaffold/");
+    }
+
+    [Fact]
     public async Task BuildTree_Breadcrumbs_ShowsPathFromRootToSelected()
     {
         var items = new List<ContentTocItem>

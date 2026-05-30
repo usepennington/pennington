@@ -73,7 +73,13 @@ public sealed class NavigationBuilder : IFileWatchAware
         string? locale = null)
     {
         var tree = await BuildTreeAsync(items, currentRoute, locale).ConfigureAwait(false);
-        var flatList = Flatten(tree);
+
+        // Auto-created section headers carry an empty route and aren't navigable
+        // pages; excluding them lets prev/next skip a section boundary straight to
+        // the first article of the adjacent section.
+        var flatList = Flatten(tree)
+            .Where(n => !string.IsNullOrEmpty(n.Route.CanonicalPath.Value))
+            .ToList();
 
         var currentIndex = flatList.FindIndex(n => n.Route.CanonicalPath.Matches(currentRoute.CanonicalPath));
 
