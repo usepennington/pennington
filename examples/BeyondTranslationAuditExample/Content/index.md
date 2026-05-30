@@ -4,8 +4,6 @@ description: Translation audit example homepage.
 order: 10
 ---
 
-# Welcome
-
 This site has two locales — English (default) and Spanish (`/es/`). Translation
 status is reported through the standard Pennington diagnostic channels:
 

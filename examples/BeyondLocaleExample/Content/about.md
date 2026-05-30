@@ -4,8 +4,6 @@ description: About this localized DocSite example.
 order: 20
 ---
 
-# About
-
 This is a minimal DocSite that demonstrates **locale-aware URLs**. Every
 markdown file under `Content/` is the English (default) version. Every
 matching file under `Content/es/` is the Spanish translation.

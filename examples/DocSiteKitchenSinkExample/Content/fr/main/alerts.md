@@ -7,8 +7,6 @@ order: 80
 uid: kitchen-sink.main.alerts.fr
 ---
 
-# Alertes et encadrés
-
 Pennington reconnaît la syntaxe d'alerte inspirée de GitHub : un
 blockquote dont la première ligne est `[!KIND]` devient une alerte
 stylisée.

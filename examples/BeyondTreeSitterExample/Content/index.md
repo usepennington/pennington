@@ -2,8 +2,6 @@
 title: Beyond Tree-sitter
 ---
 
-# Multi-language snippets with `:symbol`
-
 `Pennington.TreeSitter` pulls declarations into docs for **any**
 tree-sitter-supported language, addressing a declaration by its **name path**
 (`Type.Member`).

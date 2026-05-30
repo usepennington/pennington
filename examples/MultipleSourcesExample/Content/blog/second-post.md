@@ -5,6 +5,4 @@ publishedOn: 2026-04-15
 author: Pennington Team
 ---
 
-# Second post
-
 Both markdown sources coexist under one `AddPennington` host.

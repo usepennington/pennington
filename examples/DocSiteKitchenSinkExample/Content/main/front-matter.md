@@ -7,8 +7,6 @@ order: 20
 uid: kitchen-sink.main.front-matter
 ---
 
-# Working with front matter
-
 Every page in this site opens with a YAML block between `---` markers.
 Those keys drive the sidebar title, description, tags, ordering, draft
 state, and cross-reference `uid`. Each built-in front-matter record maps

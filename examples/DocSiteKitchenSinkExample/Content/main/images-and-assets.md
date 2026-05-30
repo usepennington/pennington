@@ -7,8 +7,6 @@ order: 50
 uid: kitchen-sink.main.images-and-assets
 ---
 
-# Images and assets
-
 Pennington serves static files from two places at once:
 
 1. Anything under `wwwroot/` is served at the matching URL.

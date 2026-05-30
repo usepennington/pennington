@@ -4,8 +4,6 @@ description: Get started with the localized DocSite example.
 order: 30
 ---
 
-# Getting Started
-
 To add a new locale to your own Pennington site:
 
 1. Open `Program.cs` and call `loc.AddLocale(code, new LocaleInfo(displayName))`

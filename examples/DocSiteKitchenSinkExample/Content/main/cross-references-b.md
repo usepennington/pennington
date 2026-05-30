@@ -7,8 +7,6 @@ order: 120
 uid: kitchen-sink.main.cross-references-b
 ---
 
-# Cross-reference target
-
 This page is the target of the [cross-references source page](xref:kitchen-sink.main.cross-references-a).
 Its stable identity is `kitchen-sink.main.cross-references-b` — even if
 the file moves to a different folder or the title changes, the link on

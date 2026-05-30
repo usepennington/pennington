@@ -7,8 +7,6 @@ order: 90
 uid: kitchen-sink.main.diagrams
 ---
 
-# Mermaid diagrams
-
 Fence a block with the `mermaid` language and the DocSite's bundled
 `MermaidManager` picks it up at page load, lazy-loads mermaid from CDN,
 and replaces the `<code>` element with the rendered SVG. Theme changes

@@ -5,8 +5,6 @@ sectionLabel: Guides
 order: 10
 ---
 
-# DocSite Chrome Overrides
-
 This page renders through the stock DocSite template, but the
 surrounding chrome is customised end-to-end by
 `SiteChromeOverrides.BuildDocSiteOptions`:

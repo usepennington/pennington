@@ -6,8 +6,6 @@ author: Author Name
 tags: [intro, meta]
 ---
 
-# Adding a second post
-
 Adding a second post gives the archive and tag pages something to sort. Posts
 with shared tags cluster together on `/tags/<name>` pages.
 

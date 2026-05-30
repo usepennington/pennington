@@ -3,8 +3,6 @@ title: Welcome
 description: The home page of the Blazor-pages tutorial site.
 ---
 
-# Welcome to the site
-
 This page is `Content/index.md`. The browser asked for `/`; the Blazor catch-all
 in `Components/Pages/MarkdownPage.razor` matched, walked the configured
 `IContentService` instances to find this file, ran it through the parser and

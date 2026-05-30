@@ -5,8 +5,6 @@ sectionLabel: Guides
 order: 30
 ---
 
-# Configure the site
-
 `DocSiteOptions` is the one options record `AddDocSite` reads. Set the fields that surface in the rendered chrome and the rest of the template falls into place.
 
 ## Fields worth setting first

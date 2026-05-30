@@ -7,8 +7,6 @@ order: 110
 uid: kitchen-sink.main.cross-references-a
 ---
 
-# Cross-references
-
 Every page in this site carries a `uid:` front-matter key — a stable
 identifier independent of file location. Link to another page by uid
 and the engine resolves it to the canonical URL at render time, even

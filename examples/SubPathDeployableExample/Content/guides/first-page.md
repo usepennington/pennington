@@ -5,8 +5,6 @@ sectionLabel: Guides
 order: 10
 ---
 
-# First guide page
-
 This page lives under `Content/guides/` so its canonical URL is
 `/guides/first-page/` — a nested route that makes the effect of
 `BaseUrlHtmlRewriter` easy to see on either end of a link.

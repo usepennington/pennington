@@ -7,8 +7,6 @@ order: 80
 uid: kitchen-sink.main.alerts
 ---
 
-# Alerts and callouts
-
 Pennington recognises the GitHub-flavoured alert syntax: a blockquote
 whose first non-whitespace line is `[!KIND]` becomes a styled alert.
 

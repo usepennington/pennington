@@ -4,8 +4,6 @@ description: Acerca de este ejemplo de DocSite localizado.
 order: 20
 ---
 
-# Acerca de
-
 Este es un DocSite mínimo que demuestra **URLs conscientes del idioma**.
 Cada archivo markdown bajo `Content/` es la versión en inglés (el idioma
 predeterminado). Cada archivo correspondiente bajo `Content/es/` es la

@@ -6,7 +6,9 @@ author: Author Name
 tags: [intro]
 ---
 
-# Hello world
+> [!TIP]
+> The page title comes from the `title:` in this file's front matter — Pennington
+> renders it as the heading, so you don't repeat it with a `#` heading.
 
 Your first post. Add more files to `Content/Blog/` — each Markdown file becomes
 a post at `/blog/<filename>`, appears on the home page, the `/archive` page,

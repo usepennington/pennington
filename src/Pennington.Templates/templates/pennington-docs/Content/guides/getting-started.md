@@ -5,7 +5,9 @@ sectionLabel: Guides
 order: 20
 ---
 
-# Getting started
+> [!TIP]
+> The page title comes from the `title:` in this file's front matter — Pennington
+> renders it as the heading, so you don't repeat it with a `#` heading.
 
 This is a sample Guides page so the sidebar has something to render on first
 run. Replace it with your real content.

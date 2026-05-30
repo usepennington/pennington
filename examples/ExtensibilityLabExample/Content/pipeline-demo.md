@@ -3,8 +3,6 @@ title: Pipeline highlighter demo
 description: Fenced code block in the fictional pipeline DSL handled by PipelineHighlighter.
 ---
 
-# Pipeline highlighter demo
-
 The fence below is tagged `pipeline` — it is routed to
 `PipelineHighlighter` because that highlighter declares the `pipeline`
 language in its `SupportedLanguages`. Arrows (`->`, `|`) and known

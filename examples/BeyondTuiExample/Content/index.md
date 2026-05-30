@@ -3,8 +3,6 @@ title: Beyond TUI
 order: 1
 ---
 
-# Beyond TUI
-
 This example launches Pennington with the optional `Pennington.Tui` dev-time dashboard.
 When the host starts, a full-screen terminal UI shows:
 

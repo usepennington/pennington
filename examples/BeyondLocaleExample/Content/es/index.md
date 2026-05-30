@@ -4,8 +4,6 @@ description: Página de inicio de un DocSite que enseña la localización de Pen
 order: 10
 ---
 
-# Bienvenido
-
 Este sitio está escrito en dos idiomas. La versión en español que estás
 leyendo ahora vive en `Content/es/` — cada idioma adicional tiene su propia
 subcarpeta en el árbol de contenido y un prefijo de URL igual a su código

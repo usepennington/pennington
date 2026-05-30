@@ -4,8 +4,6 @@ description: A DocSite homepage teaching Pennington localization.
 order: 10
 ---
 
-# Welcome
-
 This site is written in two languages. The English version you're reading
 lives under `Content/` — the default locale owns the URL root so its pages
 serve from `/`, `/about`, and `/getting-started`.

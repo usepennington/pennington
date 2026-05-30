@@ -7,8 +7,6 @@ order: 30
 uid: kitchen-sink.main.drafts-tags-ordering
 ---
 
-# Drafts, tags, and ordering
-
 Three front-matter keys shape how a page shows up in the sidebar and in
 feeds:
 

@@ -5,8 +5,6 @@ sectionLabel: Core API
 order: 10
 ---
 
-# PenningtonOptions
-
 `PenningtonOptions` is the record the configuration callback on
 `AddPennington` mutates. It holds a handful of knobs that apply to every
 page in the site regardless of content source.
