@@ -84,7 +84,10 @@ internal static class BrandStyling
                         ("background-color", Color("base", "100")),
                         ("border", $"1px solid {Color("base", "200")}"),
                         ("color", Color("base", "700")),
-                        ("white-space", "nowrap"))),
+                        // Let long inline signatures (record ContentArea(string Title, ...))
+                        // wrap instead of forcing horizontal scroll on mobile; break
+                        // over-long tokens too. Default white-space (normal) wraps at spaces.
+                        ("overflow-wrap", "break-word"))),
                 ["sm"] = Rules(
                     Rule("ul",
                         ("list-style", "none"),
