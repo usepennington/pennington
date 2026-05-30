@@ -22,7 +22,7 @@ public class MonorailCssService(
     /// This deliberately skips <see cref="IClassRegistry.Css"/> (which caches against the
     /// framework that was baked into <c>MonorailDiscoveryOptions.Framework</c> at startup).
     /// Combined with transient lifetimes on <see cref="MonorailCssOptions"/> and this service
-    /// (see <c>MonorailServiceExtensions.AddMonorailCss</c>), dotnet-watch hot-reload edits to
+    /// (see <c>MonorailServiceExtensions.AddMonorailCss</c>), edits to
     /// <see cref="MonorailCssOptions.ColorScheme"/>, prose customizations, and
     /// <see cref="MonorailCssOptions.CustomCssFrameworkSettings"/> flow into the served
     /// stylesheet on the next request without a process restart.

@@ -68,21 +68,10 @@ examples/GettingStartedStylingExample/Stage3_UseMonorailCss.cs > Stage3.Run
 
 ## 3. Watch the stylesheet regenerate
 
-Under `dotnet watch`, MonorailCSS picks up new utility classes added to `.razor`, `.cshtml`, and `.cs` files on the next `/styles.css` request — no restart required. Markdown bodies are out of scope: a utility token added to a `.md` file will not produce a CSS rule. The [MonorailCSS integration explanation](xref:explanation.rendering.monorail-css) covers why.
+Under `dotnet run`, MonorailCSS picks up new utility classes added to `.razor`, `.cshtml`, and `.cs` files on the next `/styles.css` request — no restart required. Markdown bodies are out of scope: a utility token added to a `.md` file will not produce a CSS rule. The [MonorailCSS integration explanation](xref:explanation.rendering.monorail-css) covers why.
 
 <Steps>
 <Step StepNumber="1">
-
-**Restart under `dotnet watch`**
-
-Stop the previous `dotnet run` with `Ctrl+C` and start the watcher instead. The source-file watcher only runs in development.
-
-```bash
-dotnet watch
-```
-
-</Step>
-<Step StepNumber="2">
 
 **Add a new utility class to `MainLayout.razor`**
 
@@ -97,7 +86,7 @@ Open `Components/Layout/MainLayout.razor` and wrap the footer's "MonorailCSS" wo
 The class `text-accent-600` wasn't in the layout, so it doesn't yet exist in the stylesheet.
 
 </Step>
-<Step StepNumber="3">
+<Step StepNumber="2">
 
 **Reload and confirm the new rule**
 
@@ -110,7 +99,7 @@ Reload any page in the browser. The footer's "MonorailCSS" word renders in pink 
 
 - The footer's "MonorailCSS" word renders in pink italic on every page
 - `http://localhost:5000/styles.css` now contains a rule for `text-accent-600` that wasn't there before the edit
-- No server restart was required — `dotnet watch` and the MonorailCSS file watcher cooperated to refresh the stylesheet
+- No server restart was required — the MonorailCSS file watcher refreshed the stylesheet under the running `dotnet run`
 
 </Checkpoint>
 
@@ -121,6 +110,6 @@ Reload any page in the browser. The footer's "MonorailCSS" word renders in pink 
 - `MainLayout.razor` (a Blazor `LayoutComponentBase`) holds the utility-class scaffold every routed `@page` renders into via `App.razor`'s `DefaultLayout`.
 - `AddMonorailCss(...)` registers the service container; `UseMonorailCss()` mounts the `/styles.css` endpoint that regenerates on every request.
 - A `NamedColorScheme` of three `ColorName` constants drives every `primary-*`, `accent-*`, and `base-*` utility prefix.
-- Under `dotnet watch`, adding a new utility class to a `.razor` or `.cs` file regenerates the stylesheet on the next request without a restart — markdown edits do not participate.
+- Under `dotnet run`, adding a new utility class to a `.razor` or `.cs` file regenerates the stylesheet on the next request without a restart — markdown edits do not participate.
 
 The site is styled, but every page is an island with no way to reach the next. The [final getting-started tutorial](xref:tutorials.getting-started.navigation) adds a navigation menu that links them.
