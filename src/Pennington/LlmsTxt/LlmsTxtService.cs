@@ -2,7 +2,6 @@ namespace Pennington.LlmsTxt;
 
 using System.Collections.Immutable;
 using System.IO.Abstractions;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using AngleSharp.Dom;
@@ -31,7 +30,7 @@ public sealed class LlmsTxtService : IFileWatchAware
     /// <inheritdoc/>
     public FileWatchResponse OnFileChanged(FileChangeNotification change) => FileWatchResponse.Recreate;
 
-    private static readonly string PackageVersion = ResolvePackageVersion();
+    private static readonly string PackageVersion = PenningtonVersion.Value;
 
     private readonly AsyncLazy<LlmsTxtData> _dataLazy;
 
@@ -505,15 +504,6 @@ public sealed class LlmsTxtService : IFileWatchAware
         }
 
         return "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
-    }
-
-    private static string ResolvePackageVersion()
-    {
-        var attr = typeof(LlmsTxtService).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-        var raw = attr?.InformationalVersion ?? "unknown";
-        // MinVer appends "+<sha>" build metadata; trim it so the value matches the published NuGet PackageVersion.
-        var plus = raw.IndexOf('+');
-        return plus >= 0 ? raw[..plus] : raw;
     }
 
     private static void CollectLeafPaths(ImmutableList<NavigationTreeItem> items, HashSet<string> acc)

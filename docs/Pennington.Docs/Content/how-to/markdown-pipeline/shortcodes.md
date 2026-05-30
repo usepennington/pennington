@@ -12,9 +12,9 @@ To stamp a value into a page — a version string, a repo link, a build timestam
 > [!NOTE]
 > The shortcode expander only runs on markdown pages. Razor templates, HTML files, and other content services bypass it.
 
-## The built-in: Version
+## The built-ins: Version and PackageVersion
 
-Pennington ships one shortcode — `AssemblyVersionShortcode`, dispatched by the name `Version`. It reads the entry assembly and emits the host application's version string.
+Pennington ships two shortcodes. `AssemblyVersionShortcode`, dispatched by the name `Version`, reads the entry assembly and emits the host application's version string.
 
 ```markdown
 Running on Pennington \<?# Version /?>.
@@ -23,6 +23,12 @@ Major branch: \<?# Version format=major /?>.
 ```
 
 The `format` named argument accepts `full` (default), `major`, `minor`, and `informational`. The last reads `AssemblyInformationalVersionAttribute`, which captures the Git SHA and pre-release suffixes set by MSBuild.
+
+`PackageVersionShortcode`, dispatched by the name `PackageVersion`, emits Pennington's own published NuGet version — the MinVer-derived informational version with the `+<sha>` build metadata trimmed. It takes no arguments and always reports Pennington itself, so it's the one to stamp into install snippets that pin a `Pennington.*` package.
+
+```markdown
+\<?# PackageVersion /?>
+```
 
 ## Syntax
 
@@ -41,7 +47,7 @@ Names are case-insensitive and match the handler's `Name` property. Values that 
 Shortcodes expand everywhere in the markdown source — including inside fenced code blocks — so install snippets can carry the real version string straight out of the build:
 
 ```bash
-dotnet add package Pennington --version <?# Version /?>
+dotnet add package Pennington --version <?# PackageVersion /?>
 ```
 
 ## Errors degrade automatically

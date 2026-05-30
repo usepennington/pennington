@@ -68,7 +68,7 @@ Pennington uses C# 15 union types, which are still a preview language feature in
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Pennington.DocSite" Version="0.1.0-alpha.0.20" />
+    <PackageReference Include="Pennington.DocSite" Version="<?# PackageVersion /?>" />
   </ItemGroup>
 </Project>
 ```

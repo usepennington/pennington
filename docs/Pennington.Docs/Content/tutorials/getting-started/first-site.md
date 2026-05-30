@@ -66,7 +66,7 @@ Pennington uses C# 15 union types, which are still a preview language feature in
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup> <!-- [!code ++] -->
-    <PackageReference Include="Pennington" Version="0.1.0-alpha.0.20" /> <!-- [!code ++] -->
+    <PackageReference Include="Pennington" Version="<?# PackageVersion /?>" /> <!-- [!code ++] -->
   </ItemGroup> <!-- [!code ++] -->
 </Project>
 ```
