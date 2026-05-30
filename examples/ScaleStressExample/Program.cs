@@ -2,7 +2,6 @@ using System.Text;
 using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
-using Pennington.Pipeline;
 using Pennington.Routing;
 using ScaleStressExample;
 
@@ -61,57 +60,33 @@ app.MapGet("/", async (IEnumerable<IContentService> services) =>
     return Results.Content(sb.ToString(), "text/html");
 });
 
-// Page: walk content services, render the matching markdown file.
-app.MapGet("/{*path}", async (
-    string? path,
-    IEnumerable<IContentService> services,
-    IContentParser parser,
-    IContentRenderer renderer) =>
+// Page: resolve the matching markdown file and render it.
+app.MapGet("/{*path}", async (string? path, IPageResolver resolver) =>
 {
     var requested = new UrlPath(path ?? string.Empty).EnsureLeadingSlash();
 
-    foreach (var service in services)
+    if (await resolver.ResolveAsync(requested) is not { } page)
     {
-        await foreach (var discovered in service.DiscoverAsync())
-        {
-            if (!discovered.Route.CanonicalPath.Matches(requested))
-            {
-                continue;
-            }
-
-            var parsed = await parser.ParseAsync(discovered);
-            if (parsed is not ParsedItem parsedItem)
-            {
-                continue;
-            }
-
-            var rendered = await renderer.RenderAsync(parsedItem);
-            if (rendered is not RenderedItem renderedItem)
-            {
-                continue;
-            }
-
-            var html = $"""
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                  <meta charset="utf-8" />
-                  <title>{renderedItem.Metadata.Title}</title>
-                </head>
-                <body>
-                  <p><a href="/">&larr; index</a></p>
-                  <article>
-                    <h1>{renderedItem.Metadata.Title}</h1>
-                    {renderedItem.Content.Html}
-                  </article>
-                </body>
-                </html>
-                """;
-            return Results.Content(html, "text/html");
-        }
+        return Results.NotFound();
     }
 
-    return Results.NotFound();
+    var html = $"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>{page.Metadata.Title}</title>
+        </head>
+        <body>
+          <p><a href="/">&larr; index</a></p>
+          <article>
+            <h1>{page.Metadata.Title}</h1>
+            {page.Content.Html}
+          </article>
+        </body>
+        </html>
+        """;
+    return Results.Content(html, "text/html");
 });
 
 await app.RunOrBuildAsync(args);

@@ -127,20 +127,20 @@ examples/GettingStartedMinimalSiteExample/Stage2_AddPennington.cs > Stage2.Run
 
 ## 3. Wire the middleware and render the page
 
-Now we mount the middleware chain with `app.UsePennington()`, add a `MapGet` that hands each request to the content pipeline, and hand control to [`RunOrBuildAsync`](xref:reference.host.cli) — the same host that serves live today generates static HTML tomorrow with no code change. A Razor page would normally render the markdown, but a `MapGet` keeps the wiring visible in one place for this tutorial.
+Now we mount the middleware chain with `app.UsePennington()`, add a `MapGet` that hands each request to `IPageResolver`, and hand control to [`RunOrBuildAsync`](xref:reference.host.cli) — the same host that serves live today generates static HTML tomorrow with no code change. `IPageResolver` is the one service you need to turn a URL into a rendered page: it walks the registered content sources, parses the markdown that matches, and renders it. A Razor page would normally call it, but a `MapGet` keeps the wiring visible in one place for this tutorial.
 
 <Steps>
 <Step StepNumber="1">
 
 **Add `UsePennington`, `RunOrBuildAsync`, and the rendering endpoint**
 
-Update `Program.cs` to match the complete file below. `UsePennington` installs static files, the response-processing middleware, live reload, and auto-registered endpoints like `/sitemap.xml`; `RunOrBuildAsync` serves live when called with no args and generates static HTML when passed `-- build`; the `MapGet` walks the `IContentService` set, finds the matching markdown, and returns rendered HTML.
+Update `Program.cs` to match the complete file below. `UsePennington` installs static files, the response-processing middleware, live reload, and auto-registered endpoints like `/sitemap.xml`; `RunOrBuildAsync` serves live when called with no args and generates static HTML when passed `-- build`; the `MapGet` asks `IPageResolver` to resolve the request to a rendered page, then returns its HTML (or a 404 when nothing matches).
 
 ```csharp:symbol
 examples/GettingStartedMinimalSiteExample/Program.cs
 ```
 
-This `MapGet` is deliberately minimal. The next tutorial replaces it with a Blazor Server `@page` catch-all — the shape a real Pennington app stays in.
+This `MapGet` is deliberately minimal. `IPageResolver` collapses the discover → parse → render flow into one call; if you want to see the four-stage union pipeline it runs underneath, read [The content pipeline and union types](xref:explanation.core.content-pipeline). The next tutorial replaces this `MapGet` with a Blazor Server `@page` catch-all — the shape a real Pennington app stays in.
 
 </Step>
 </Steps>

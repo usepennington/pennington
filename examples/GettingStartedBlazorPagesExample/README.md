@@ -9,7 +9,7 @@ A Pennington host whose markdown is served through a Blazor Server `@page` catch
 - `app.UsePennington()` runs **before** `app.MapRazorComponents<App>()` so the catch-all `@page "/{*Path}"` doesn't swallow Pennington's redirect / sitemap / llms.txt routes.
 - `app.UseAntiforgery()` is required because Blazor's routed components opt into antiforgery metadata.
 - `Components/App.razor` owns the entire document — no MainLayout. The styling tutorial introduces a layout.
-- `Components/Pages/MarkdownPage.razor` is the `@page "/{*Path}"` catch-all. It walks `IContentService.DiscoverAsync` → `IContentParser.ParseAsync` → `IContentRenderer.RenderAsync` and renders the result via `(MarkupString)`.
+- `Components/Pages/MarkdownPage.razor` is the `@page "/{*Path}"` catch-all. It resolves the URL through `IPageResolver.ResolveAsync` and renders the result via `(MarkupString)`.
 - The file-path-to-URL convention from the markdown pipeline is unchanged: drop a new `.md` file under `Content/` and the catch-all serves it.
 
 ## Referenced from

@@ -283,6 +283,11 @@ public static class PenningtonExtensions
         // Pipeline
         services.AddTransient<IContentPipeline, ContentPipeline>();
 
+        // Single-URL resolver — walks the content services and returns the rendered
+        // page matching a requested route. Transient so each resolution snapshots the
+        // current service set, mirroring the pipeline registration above.
+        services.AddTransient<IPageResolver, PageResolver>();
+
         // Unified redirect map (from _redirects.yml + per-page redirectUrl front matter).
         // Registered as both a concrete service (for the middleware) and an IContentService
         // (so the build crawler hits the YAML-defined redirect sources and captures 301s).

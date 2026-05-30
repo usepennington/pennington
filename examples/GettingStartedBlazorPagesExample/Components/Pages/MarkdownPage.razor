@@ -1,12 +1,9 @@
-@* Catch-all that matches every URL and asks the Pennington pipeline to
-   resolve it to a markdown file. The injected services are the same trio used
-   by the MapGet host in the previous tutorial — the only thing that's changed
-   is where they're being called from. *@
+@* Catch-all that matches every URL and asks IPageResolver to resolve it to a
+   markdown file. It's the same IPageResolver the MapGet host injected in the
+   previous tutorial — the only thing that's changed is where it's called from. *@
 
 @page "/{*Path}"
-@inject IEnumerable<IContentService> ContentServices
-@inject IContentParser Parser
-@inject IContentRenderer Renderer
+@inject IPageResolver Resolver
 
 @if (_html is not null)
 {
@@ -32,22 +29,10 @@ else
     {
         var requested = new UrlPath(Path ?? string.Empty).EnsureLeadingSlash();
 
-        foreach (var service in ContentServices)
+        if (await Resolver.ResolveAsync(requested) is { } page)
         {
-            await foreach (var discovered in service.DiscoverAsync())
-            {
-                if (!discovered.Route.CanonicalPath.Matches(requested)) continue;
-
-                var parsed = await Parser.ParseAsync(discovered);
-                if (parsed is not ParsedItem parsedItem) continue;
-
-                var rendered = await Renderer.RenderAsync(parsedItem);
-                if (rendered is not RenderedItem renderedItem) continue;
-
-                _title = renderedItem.Metadata.Title;
-                _html = renderedItem.Content.Html;
-                return;
-            }
+            _title = page.Metadata.Title;
+            _html = page.Content.Html;
         }
     }
 }

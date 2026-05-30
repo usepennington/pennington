@@ -1,7 +1,6 @@
 using MultipleSourcesExample;
 using Pennington.Content;
 using Pennington.Infrastructure;
-using Pennington.Pipeline;
 using Pennington.Routing;
 using BlogFrontMatter = MultipleSourcesExample.BlogFrontMatter;
 using DocFrontMatter = Pennington.FrontMatter.DocFrontMatter;
@@ -40,64 +39,35 @@ var app = builder.Build();
 
 app.UsePennington();
 
-// Single catch-all route that walks every registered IContentService and
-// renders the first match. Both markdown sources surface as IContentService
-// instances, so the loop resolves /docs/* against the doc source and /blog/*
-// against the blog source from one place.
-app.MapGet("/{*path}", async (
-    string? path,
-    IEnumerable<IContentService> services,
-    IContentParser parser,
-    IContentRenderer renderer) =>
+// Single catch-all route that asks IPageResolver to render the first match.
+// Both markdown sources surface as IContentService instances, so one resolver
+// resolves /docs/* against the doc source and /blog/* against the blog source
+// from one place.
+app.MapGet("/{*path}", async (string? path, IPageResolver resolver) =>
 {
     var requested = new UrlPath(path ?? string.Empty).EnsureLeadingSlash();
 
-    foreach (var service in services)
+    if (await resolver.ResolveAsync(requested) is not { } page)
     {
-        await foreach (var discovered in service.DiscoverAsync())
-        {
-            if (!discovered.Route.CanonicalPath.Matches(requested))
-            {
-                continue;
-            }
-
-            if (discovered.Source is not MarkdownFileSource)
-            {
-                continue;
-            }
-
-            var parsed = await parser.ParseAsync(discovered);
-            if (parsed is not ParsedItem parsedItem)
-            {
-                continue;
-            }
-
-            var rendered = await renderer.RenderAsync(parsedItem);
-            if (rendered is not RenderedItem renderedItem)
-            {
-                continue;
-            }
-
-            var html = $"""
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                  <meta charset="utf-8" />
-                  <title>{renderedItem.Metadata.Title}</title>
-                </head>
-                <body>
-                  <article>
-                    <h1>{renderedItem.Metadata.Title}</h1>
-                    {renderedItem.Content.Html}
-                  </article>
-                </body>
-                </html>
-                """;
-            return Results.Content(html, "text/html");
-        }
+        return Results.NotFound();
     }
 
-    return Results.NotFound();
+    var html = $"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>{page.Metadata.Title}</title>
+        </head>
+        <body>
+          <article>
+            <h1>{page.Metadata.Title}</h1>
+            {page.Content.Html}
+          </article>
+        </body>
+        </html>
+        """;
+    return Results.Content(html, "text/html");
 });
 
 await app.RunOrBuildAsync(args);

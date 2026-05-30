@@ -133,7 +133,7 @@ examples/GettingStartedBlazorPagesExample/Components/App.razor
 
 **Add `Components/Pages/MarkdownPage.razor`**
 
-`MarkdownPage.razor` is the `@page "/{*Path}"` catch-all. Blazor binds the request path to the `Path` parameter; the component walks the content pipeline and injects the rendered HTML via `(MarkupString)`.
+`MarkdownPage.razor` is the `@page "/{*Path}"` catch-all. Blazor binds the request path to the `Path` parameter; the component asks `IPageResolver` to resolve that URL to a rendered page and injects the HTML via `(MarkupString)`. It's the same `IPageResolver` the `MapGet` host used in the previous tutorial — only the call site has moved into a component.
 
 ```razor:symbol
 examples/GettingStartedBlazorPagesExample/Components/Pages/MarkdownPage.razor
@@ -188,5 +188,5 @@ Open `http://localhost:5000/about` in the browser. The catch-all serves the new 
 
 - A Pennington host plus a Blazor Server router is two service registrations (`AddPennington`, `AddRazorComponents`) and three middleware calls (`UsePennington`, `UseAntiforgery`, `MapRazorComponents<App>()`).
 - `app.UsePennington()` must run before `app.MapRazorComponents<App>()` — the catch-all would otherwise swallow Pennington's redirect, sitemap, and llms.txt routes.
-- A single `@page "/{*Path}"` component (`MarkdownPage.razor`) handles every URL, walks the content pipeline, and injects the rendered HTML via `(MarkupString)`.
+- A single `@page "/{*Path}"` component (`MarkdownPage.razor`) handles every URL, resolves it through `IPageResolver`, and injects the rendered HTML via `(MarkupString)`.
 - The file-path-to-URL convention from the markdown pipeline still holds — adding or renaming a `.md` file under `Content/` is enough.

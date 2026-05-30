@@ -1,7 +1,6 @@
 using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
-using Pennington.Pipeline;
 using Pennington.Routing;
 
 // SPA engine playground — a minimal Pennington site whose only purpose is to
@@ -50,43 +49,19 @@ app.MapStaticAssets();
 // route — that's the MapGet below, so the host owns its routing shape.
 app.UsePennington();
 
-// Catch-all: walk the configured IContentService instances, find the first
-// one whose route matches the request, parse it, render it, and wrap the HTML
-// in Layout() below to add the chrome the SPA engine understands.
-app.MapGet("/{*path}", async (
-    string? path,
-    IEnumerable<IContentService> services,
-    IContentParser parser,
-    IContentRenderer renderer) =>
+// Catch-all: ask IPageResolver for the first content route matching the request,
+// then wrap the rendered HTML in Layout() below to add the chrome the SPA engine
+// understands.
+app.MapGet("/{*path}", async (string? path, IPageResolver resolver) =>
 {
     var requested = new UrlPath(path ?? string.Empty).EnsureLeadingSlash();
 
-    foreach (var service in services)
+    if (await resolver.ResolveAsync(requested) is not { } page)
     {
-        await foreach (var discovered in service.DiscoverAsync())
-        {
-            if (!discovered.Route.CanonicalPath.Matches(requested))
-            {
-                continue;
-            }
-
-            var parsed = await parser.ParseAsync(discovered);
-            if (parsed is not ParsedItem parsedItem)
-            {
-                continue;
-            }
-
-            var rendered = await renderer.RenderAsync(parsedItem);
-            if (rendered is not RenderedItem renderedItem)
-            {
-                continue;
-            }
-
-            return Results.Content(Layout(renderedItem.Metadata.Title, renderedItem.Content.Html), "text/html");
-        }
+        return Results.NotFound();
     }
 
-    return Results.NotFound();
+    return Results.Content(Layout(page.Metadata.Title, page.Content.Html), "text/html");
 });
 
 // Run live in dev mode, or crawl every discovered route and emit static HTML

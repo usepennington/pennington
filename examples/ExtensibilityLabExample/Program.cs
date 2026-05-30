@@ -97,9 +97,7 @@ app.UseMonorailCss();
 // duplicate fetches for the crawler.
 app.MapGet("/{*path}", async (
     string? path,
-    IEnumerable<IContentService> services,
-    IContentParser parser,
-    IContentRenderer renderer,
+    IPageResolver resolver,
     ReleaseNotesContentService releases) =>
 {
     var trimmed = (path ?? string.Empty).Trim('/');
@@ -122,35 +120,12 @@ app.MapGet("/{*path}", async (
         }
     }
 
-    // Markdown pages
-    foreach (var service in services)
+    // Markdown pages — IPageResolver finds the matching content route and renders
+    // it. Non-markdown sources (release notes, robots.txt) never resolve to a
+    // rendered page, so they fall through to the 404.
+    if (await resolver.ResolveAsync(requested) is { } page)
     {
-        await foreach (var discovered in service.DiscoverAsync())
-        {
-            if (!discovered.Route.CanonicalPath.Matches(requested))
-            {
-                continue;
-            }
-
-            if (discovered.Source is not MarkdownFileSource)
-            {
-                continue;
-            }
-
-            var parsed = await parser.ParseAsync(discovered);
-            if (parsed is not ParsedItem parsedItem)
-            {
-                continue;
-            }
-
-            var rendered = await renderer.RenderAsync(parsedItem);
-            if (rendered is not RenderedItem renderedItem)
-            {
-                continue;
-            }
-
-            return Results.Content(RenderMarkdownPage(renderedItem), "text/html");
-        }
+        return Results.Content(RenderMarkdownPage(page), "text/html");
     }
 
     return Results.NotFound();
