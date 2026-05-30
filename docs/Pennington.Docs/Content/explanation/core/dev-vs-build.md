@@ -43,13 +43,6 @@ The alternative — a pure in-process renderer that drives Markdig directly, wri
 
 The per-page request-pipeline cost of build mode is measurable on very small sites and mostly irrelevant on anything larger; the in-memory `BuildHtmlCache` further collapses the disk-write, search-index, and llms.txt passes to one render per URL. The architectural cost of a second renderer, by contrast, compounds with every feature added. Pennington pays the request-pipeline cost.
 
-## Trade-offs
-
-- **Cost — the build boots the full host.** Generation is not a pure function of the content directory; it starts the ASP.NET host (with `TestServer` in place of Kestrel) and loads every service `AddPennington` registers. For tiny sites this is measurable overhead. In exchange, nothing that works in dev fails in publish.
-- **Alternative considered — an offline renderer.** A second code path reading markdown and driving Markdig directly would skip the request pipeline entirely. It was rejected because the engine's value lives in the response-processor chain (xref, locale, base URL, diagnostics) and the MonorailCSS discovery pipeline; a renderer that bypasses those silently drops half the feature surface.
-- **Consequence — every feature pays one integration tax, not two.** A new response processor, rewriter, or endpoint works in build the moment it works in dev, with no "also wire this into the static generator" step. That is the invariant, and designs that split dev-serve and build-publish into separate implementations work against it.
-- **Consequence — the `/styles.css` (and other MapGet) endpoints are fetched after content pages.** The crawler issues content-page GETs first and `MapGet` GETs last so the class registry is fully resolved by the time the stylesheet is materialized. An endpoint whose correctness depends on fetch order is fighting this invariant.
-
 ## Further reading
 
 - Reference: [Build report fields](xref:reference.api.build-report)

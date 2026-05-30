@@ -77,16 +77,6 @@ Non-default locales are stored on disk under a locale folder (`Content/fr/...`),
 
 `FilterByLocale` runs before the level-by-level recursion begins. It keeps items whose `Locale` matches the requested locale or is `null` (for locale-agnostic content), and — for non-default locales only — strips `HierarchyParts[0]` when it equals the locale code. The recursion then sees a shape identical to what the default locale sees, with the language prefix removed. The min-of-children ordering and the section-node synthesis therefore work the same way regardless of which locale is being rendered. Items carrying `Locale == null` pass through every filter unchanged, which is why redirects and feeds appear in every locale's sidebar without requiring duplicate files on disk.
 
-## Trade-offs
-
-**The folder layout is the source of truth.** Renaming a folder renames the sidebar header, and moving a file changes its URL — there is no alias layer that lets the filesystem shape diverge from the public URL shape. For smaller sites or new documentation projects this is a feature: the filesystem is auditable and self-documenting. For sites with long URL histories and accumulated inbound links, it shifts the burden onto redirects. The absence of an alias layer is a considered choice rather than an omission, but it is a cost that grows with site age.
-
-**Explicit nav config was rejected as a primary mechanism.** A hand-written ordered tree duplicates information that the filesystem already encodes, and it drifts whenever authors move files without remembering to update the sidecar. The tradeoff Pennington accepts is that the `order:` staggering convention across folders is required knowledge for anyone managing section sequencing — it is implicit rather than spelled out in a config file, which makes it easier to get right at authoring time but harder to audit at a glance.
-
-**Merge-by-`sectionLabel:` was also considered and rejected.** Grouping the sidebar by a shared front-matter label would let two unrelated folders appear to merge under one header. Beyond the confusing UX, it would contradict `ContentRoute`'s canonical-path invariant: the URL structure and the navigation tree would diverge, and that divergence is the failure mode the design most wanted to avoid.
-
-**Section ordering is emergent by default, explicit when needed.** A folder without a `_meta.yml` sidecar takes its position from the minimum `order:` among its children — the original mental model. A folder with a sidecar overrides that with an explicit number, and its children can use local 1, 2, 3 ordering. The two modes coexist: sidecar-positioned folders sort by their declared order, non-sidecar folders by their emergent value, and both share the alphabetical tiebreaker.
-
 ## Further reading
 
 - Reference: [Navigation components (`TableOfContentsNavigation`, `OutlineNavigation`)](xref:reference.ui.navigation) — the UI that consumes the tree `NavigationBuilder` returns.

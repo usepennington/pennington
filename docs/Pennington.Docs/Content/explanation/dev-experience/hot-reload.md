@@ -37,12 +37,6 @@ Several services build expensive lookup tables from disk on startup: link resolv
 
 Both `LiveReloadScriptProcessor` and `UsePenningtonLiveReload` check whether the first command-line argument is `build`. When it is, the processor's `ShouldProcess` returns `false` and the middleware skips endpoint registration entirely. This means the `OutputGenerationService` crawler sees clean HTML with no script and no WebSocket endpoint: no publish-time stripping step, no build configuration to set, and no dev-only flag to forget.
 
-## Trade-offs
-
-- **Cost — every content edit triggers a full page reload, not a patch.** The broadcast message is a single string (`"reload"`); the browser responds with `location.reload()`. There is no HMR-style diff, no scroll preservation, no island re-render. For a docs engine this is the right shape — the alternative (partial DOM swaps) would need diffing infrastructure that neither Markdig nor the response processors expose today.
-- **Alternative considered — restart the host on every file change.** The watcher could in theory restart the host on `.md` changes. It was rejected because restart cost grows with the app (Kestrel bind, DI graph, Razor compile), and the cached derived state (`MarkdownLinkResolver`, `XrefResolver`, search index) would be thrown away on every typo. Instance invalidation via `FileWatchDependencyFactory<T>` is cheap and keeps the host warm.
-- **Consequence — file watchers are per-path, not recursive-from-root.** Each watched directory is registered explicitly, from the `WatchScopes` each `IFileWatchAware` service declares. A change outside any watched path — say, editing a file in `bin/` — does not fire. This is deliberate: watching from the solution root would generate noise from IDE writes, NuGet caches, and build output. The cost is that brand-new content roots only become live after the host restarts.
-
 ## Further reading
 
 - Reference: [DI and middleware extension methods](xref:reference.host.extensions)
