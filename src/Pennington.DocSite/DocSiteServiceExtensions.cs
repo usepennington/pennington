@@ -115,8 +115,8 @@ public static class DocSiteServiceExtensions
                 .AddMdazorComponent<Steps>();
 
         // MonorailCSS — re-invoke the user's factory per resolve (rather than reading the
-        // singleton snapshot) so dotnet-watch hot-reload edits to Program.cs flow into the
-        // served stylesheet. The MonorailCSS option factory is registered transient by
+        // singleton snapshot) so edits to Program.cs flow into the served stylesheet. The
+        // MonorailCSS option factory is registered transient by
         // AddMonorailCss, so this lambda runs on every /styles.css request.
         services.AddMonorailCss(_ =>
         {

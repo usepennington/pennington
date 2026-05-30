@@ -9,7 +9,7 @@ namespace Pennington.MonorailCss.Internal;
 /// Resolves the on-disk source-project directories that produced the loaded non-system
 /// assemblies, by reading portable PDB document paths and walking each path up to its owning
 /// <c>.csproj</c>. Used to populate <c>MonorailDiscoveryOptions.WatchSourceDirectories</c> so
-/// <c>dotnet watch</c> hot-reload picks up <c>.razor</c>/<c>.cs</c> edits in referenced
+/// the source-file watcher picks up <c>.razor</c>/<c>.cs</c> edits in referenced
 /// projects whose source lives outside <c>IHostEnvironment.ContentRootPath</c>.
 /// </summary>
 internal static class SourceWatchProbe

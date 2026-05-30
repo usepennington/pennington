@@ -32,9 +32,9 @@ public static class MonorailServiceExtensions
         }
         else
         {
-            // Transient so dotnet-watch hot-reload edits to the options factory (ColorScheme,
-            // SyntaxTheme, ExtraStyles, CustomCssFrameworkSettings, ExtendProseCustomization)
-            // are picked up on the next /styles.css fetch. The discovery pipeline seeds its own
+            // Transient so edits to the options factory (ColorScheme, SyntaxTheme, ExtraStyles,
+            // CustomCssFrameworkSettings, ExtendProseCustomization) are picked up on the next
+            // /styles.css fetch under dotnet run. The discovery pipeline seeds its own
             // framework snapshot at startup via IConfigureOptions<MonorailDiscoveryOptions> for
             // candidate validation, which is independent of palette values.
             services.AddTransient(optionFactory);
@@ -52,9 +52,8 @@ public static class MonorailServiceExtensions
         //
         // In development we also expand WatchSourceDirectories beyond the lone ContentRootPath
         // Discovery's defaults provide. PDBs of the loaded non-system assemblies tell us which
-        // .csproj produced each one; under dotnet watch, the IL on disk goes stale on EnC
-        // deltas, so the source-file watcher in those project dirs is what keeps the class
-        // set fresh for .razor edits in referenced libraries (e.g., Pennington.DocSite,
+        // .csproj produced each one, so the source-file watcher in those project dirs keeps the
+        // class set fresh for .razor edits in referenced libraries (e.g., Pennington.DocSite,
         // Pennington.UI) that live outside the entry app's content root.
         services.AddSingleton<IConfigureOptions<MonorailDiscoveryOptions>>(sp =>
             new ConfigureNamedOptions<MonorailDiscoveryOptions>(Options.DefaultName, opts =>

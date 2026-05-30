@@ -14,7 +14,7 @@ To replace the bundled DocSite header or footer (or inject head tags, append CSS
 - An existing Pennington site wired through `AddDocSite(...)` (see <xref:tutorials.docsite.scaffold> if not).
 - Edits made in the `DocSiteOptions` factory passed to `AddDocSite`, not the DocSite source — forking the template is out of scope (see <xref:explanation.positioning.docsite-positioning>).
 - Awareness that `ExtraStyles` is prepended above the generated MonorailCSS utility output in `/styles.css`, so rules added there ship inside the same stylesheet rather than as a separate file.
-- Awareness that these seams are set at host-build time — changes require a restart, or `dotnet watch` for hot-reload.
+- Awareness that these seams are set at host-build time — changes take effect on the next `dotnet run`, whose source watch reloads them.
 
 For a working setup, see `examples/DocSiteChromeOverridesExample`. `SiteChromeOverrides.cs` returns a populated `DocSiteOptions` exercising all four seams, `Components/ExtraHeadFragment.razor` backs the head-slot fragment, and `Components/ExtraPage.razor` is the routed `@page` component showing that `AdditionalRoutingAssemblies` widened the router. `Program.cs` runs the DocSite end-to-end against those overrides.
 

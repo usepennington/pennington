@@ -161,36 +161,25 @@ The rendered page is plain unstyled HTML — Times-New-Roman serif, default brow
 
 ## 4. Verify dev-mode hot reload
 
-Let's confirm that `UsePennington`'s file-watcher and live-reload WebSocket are working: restart under `dotnet watch`, edit the markdown file, and watch the browser reload without touching the terminal.
+Let's confirm that `UsePennington`'s file-watcher and live-reload WebSocket are working: with `dotnet run` still serving, edit the markdown file and watch the browser reload without touching the terminal.
 
 <Steps>
 <Step StepNumber="1">
 
-**Run under `dotnet watch`**
-
-Stop the previous `dotnet run` with `Ctrl+C`, then start the watcher. Live reload is gated on the `DOTNET_WATCH` environment variable, which `dotnet watch` sets automatically — no manual setup required. Leave `http://localhost:5000/` open in the browser.
-
-```bash
-dotnet watch
-```
-
-</Step>
-<Step StepNumber="2">
-
 **Edit the front-matter title**
 
-Open `Content/index.md` and change the `title:` value to something recognizable — for example `title: Hello, Pennington` — then save. The browser tab updates on its own within a second. If it doesn't, hard-refresh once; stale HTML may be cached from the earlier `dotnet run`.
+Leave `dotnet run` serving and keep `http://localhost:5000/` open in the browser. Open `Content/index.md` and change the `title:` value to something recognizable — for example `title: Hello, Pennington` — then save. The browser tab updates on its own within a second. If it doesn't, hard-refresh once; stale HTML may be cached from before the edit.
 
 </Step>
 </Steps>
 
 <Checkpoint>
 
-Without any terminal input, the browser tab updates to show the new title in both the `<h1>` and the tab title. The `dotnet watch` console logs a file-change line naming `Content/index.md`.
+Without any terminal input, the browser tab updates to show the new title in both the `<h1>` and the tab title. The `dotnet run` console logs a file-change line naming `Content/index.md`.
 
 - Edit `Content/index.md`'s `title:` field and save.
 - The browser tab title and page heading update to match — no manual refresh needed.
-- `dotnet watch` logs the change in the terminal.
+- `dotnet run` logs the change in the terminal.
 
 </Checkpoint>
 

@@ -18,9 +18,8 @@ keeps it short: save, and the browser updates itself.
 The dev server watches your content directory. Save a markdown file and it
 pushes a refresh to the browser over a WebSocket — no manual reload. A 300ms
 debounce coalesces rapid saves into a single reload, so a formatter-on-save
-doesn't trigger a storm of refreshes. It works under a plain `dotnet run`, not
-only `dotnet watch`, with a reconnect guard so the browser recovers cleanly
-after a server restart.
+doesn't trigger a storm of refreshes. It works under a plain `dotnet run`, with
+a reconnect guard so the browser recovers cleanly after a server restart.
 
 ## .cs edits, too
 
