@@ -496,7 +496,10 @@ output/
 *.received.*
 
 # Claude Code
-.claude/
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+.claude/settings.local.json
 
 # Playwright MCP runtime logs
 .playwright-mcp/
