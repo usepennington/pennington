@@ -3,6 +3,7 @@ namespace Pennington.Generation;
 using System.Collections.Immutable;
 using Content;
 using Infrastructure;
+using Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -21,7 +22,7 @@ public sealed class AuditRunner : IHostedService
     private readonly LocalizationOptions _localization;
     private readonly IHostApplicationLifetime _lifetime;
     private readonly ILogger<AuditRunner> _logger;
-    private readonly bool _isBuildMode;
+    private readonly bool _isHeadlessOneShot;
     private readonly Lock _runLock = new();
     private Task? _activeRun;
 
@@ -33,11 +34,11 @@ public sealed class AuditRunner : IHostedService
         LocalizationOptions localization,
         IHostApplicationLifetime lifetime,
         ILogger<AuditRunner> logger)
-        : this(services, cache, fileWatcher, localization, lifetime, logger, PenningtonBuildMode.WritesOutput)
+        : this(services, cache, fileWatcher, localization, lifetime, logger, PenningtonBuildMode.IsHeadlessOneShot)
     {
     }
 
-    // Test seam: lets unit tests drive the build-mode branch without depending on process args.
+    // Test seam: lets unit tests drive the headless-one-shot branch without depending on process args.
     internal AuditRunner(
         IServiceProvider services,
         AuditCache cache,
@@ -45,7 +46,7 @@ public sealed class AuditRunner : IHostedService
         LocalizationOptions localization,
         IHostApplicationLifetime lifetime,
         ILogger<AuditRunner> logger,
-        bool isBuildMode)
+        bool isHeadlessOneShot)
     {
         _services = services;
         _cache = cache;
@@ -53,7 +54,7 @@ public sealed class AuditRunner : IHostedService
         _localization = localization;
         _lifetime = lifetime;
         _logger = logger;
-        _isBuildMode = isBuildMode;
+        _isHeadlessOneShot = isHeadlessOneShot;
     }
 
     /// <inheritdoc/>
@@ -105,11 +106,13 @@ public sealed class AuditRunner : IHostedService
             // keeps anything they capture (e.g. file-watched content services) fresh.
             using var scope = _services.CreateScope();
             var auditors = scope.ServiceProvider.GetServices<IBuildAuditor>().ToList();
-            // Rendered auditors issue one HTTP self-fetch per TOC page. On a large corpus
-            // (e.g. ScaleStressExample's 5000 pages) that floods the dev log at startup and
-            // again after every file edit. The broken-link findings only need to gate the
-            // build report, so resolve rendered auditors only in build mode.
-            var renderedAuditors = _isBuildMode
+            // Rendered auditors issue one HTTP self-fetch per TOC page. In the long-lived serve
+            // process this pass re-runs after every file edit and, on a large corpus (e.g.
+            // ScaleStressExample's 5000 pages), floods the dev log — so serve skips them and
+            // catches broken links per-request via PageLinkAuditProcessor instead. The headless
+            // one-shot runs (build and diag) fire the pass once and exit, so resolve the rendered
+            // auditors there: build gates its report on them and `diag warnings` reports them too.
+            var renderedAuditors = _isHeadlessOneShot
                 ? scope.ServiceProvider.GetServices<IRenderedAuditor>().ToList()
                 : new List<IRenderedAuditor>();
             if (auditors.Count == 0 && renderedAuditors.Count == 0)
@@ -151,8 +154,36 @@ public sealed class AuditRunner : IHostedService
                 }
                 else
                 {
+                    // Rendered auditors (the broken-link crawl) must cover EVERY generated HTML
+                    // page, not just navigation entries — a broken link on a Razor route like the
+                    // homepage, which never enters the TOC, still has to surface. Start from full
+                    // discovery, then union the TOC's locale-expanded routes so per-locale pages
+                    // stay covered. Dedupe on canonical path.
+                    var renderedRoutes = ImmutableList.CreateBuilder<ContentRoute>();
+                    var seenRoutes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    await foreach (var item in contentServices.DiscoverAllAsync(cancellationToken))
+                    {
+                        if (item.Source is Pipeline.LlmsOnlySource)
+                        {
+                            continue;
+                        }
+
+                        if (seenRoutes.Add(item.Route.CanonicalPath.Value))
+                        {
+                            renderedRoutes.Add(item.Route);
+                        }
+                    }
+
+                    foreach (var page in pagesSnapshot)
+                    {
+                        if (seenRoutes.Add(page.Route.CanonicalPath.Value))
+                        {
+                            renderedRoutes.Add(page.Route);
+                        }
+                    }
+
                     var renderedContext = new RenderedAuditContext(
-                        pagesSnapshot,
+                        renderedRoutes.ToImmutable(),
                         _localization,
                         async (route, ct) =>
                         {
@@ -178,7 +209,7 @@ public sealed class AuditRunner : IHostedService
             var snapshot = allDiagnostics.ToImmutable();
             _cache.Set(snapshot);
 
-            if (!_isBuildMode)
+            if (!_isHeadlessOneShot)
             {
                 LogSummary(snapshot);
             }

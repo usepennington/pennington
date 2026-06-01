@@ -12,7 +12,7 @@ namespace Pennington.Tests.Generation;
 public class AuditRunnerTests
 {
     [Fact]
-    public async Task StartAsync_InBuildMode_RunsRenderedAuditor_AndCachesItsDiagnostics()
+    public async Task StartAsync_InHeadlessOneShot_RunsRenderedAuditor_AndCachesItsDiagnostics()
     {
         var services = new ServiceCollection();
         services.AddSingleton<AuditCache>();
@@ -32,7 +32,7 @@ public class AuditRunnerTests
             sp.GetRequiredService<LocalizationOptions>(),
             lifetime,
             NullLogger<AuditRunner>.Instance,
-            isBuildMode: true);
+            isHeadlessOneShot: true);
 
         await runner.StartAsync(TestContext.Current.CancellationToken);
 
@@ -74,7 +74,7 @@ public class AuditRunnerTests
             sp.GetRequiredService<LocalizationOptions>(),
             lifetime,
             NullLogger<AuditRunner>.Instance,
-            isBuildMode: false);
+            isHeadlessOneShot: false);
 
         await runner.StartAsync(TestContext.Current.CancellationToken);
         lifetime.FireStarted();

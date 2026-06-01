@@ -1,6 +1,5 @@
 namespace Pennington.Cli.Diag;
 
-using System.Collections.Immutable;
 using System.CommandLine;
 using Diagnostics;
 using Generation;
@@ -13,39 +12,26 @@ internal sealed class DiagWarningsCommand : IDiagCommand
     public string Name => "warnings";
 
     /// <inheritdoc/>
-    public string Description => "List current diagnostics (broken xrefs, translation, structure). Use --full to also crawl for broken links.";
+    public string Description => "List current diagnostics: broken links, broken xrefs, translation gaps, and structure.";
 
     /// <inheritdoc/>
     public Command Build(IServiceProvider services, TextWriter output)
     {
-        var fullOption = new Option<bool>("--full")
-        {
-            Description = "Run a full in-memory crawl that also reports broken links and render warnings. Slower.",
-        };
         var severityOption = new Option<string>("--severity")
         {
             Description = "Minimum severity to show: error, warning, or info (this level and above).",
         };
 
         var command = new Command(Name, Description);
-        command.Options.Add(fullOption);
         command.Options.Add(severityOption);
         command.SetAction(async (parseResult, _) =>
         {
-            var full = parseResult.GetValue(fullOption);
             var threshold = ParseThreshold(parseResult.GetValue(severityOption));
 
-            ImmutableList<BuildDiagnostic> diagnostics;
-            if (full)
-            {
-                var report = await services.GetRequiredService<OutputGenerationService>().GenerateAsync(writeToDisk: false);
-                diagnostics = report.Diagnostics;
-            }
-            else
-            {
-                await services.GetRequiredService<AuditRunner>().WaitForInitialPassAsync();
-                diagnostics = services.GetRequiredService<IAuditCache>().Diagnostics;
-            }
+            // The audit pass (structural auditors plus the rendered broken-link crawl) runs once at
+            // startup in this headless run; wait for it, then read the cache it populated.
+            await services.GetRequiredService<AuditRunner>().WaitForInitialPassAsync();
+            var diagnostics = services.GetRequiredService<IAuditCache>().Diagnostics;
 
             // The exit code reflects whether the site has any errors at all, independent of the
             // display filter, so `diag warnings` is a meaningful CI/agent gate.

@@ -48,24 +48,24 @@ public sealed class LinkAuditor : IRenderedAuditor
         var diagnostics = ImmutableList.CreateBuilder<BuildDiagnostic>();
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var page in context.Pages)
+        foreach (var route in context.Pages)
         {
             // Locale fallbacks reuse the same source file, but the rendered HTML
             // differs per locale (translated chrome around English body), so do not
             // dedupe on source file. Dedupe on canonical path instead — that's the
             // unit each rendered page renders at.
-            if (!visited.Add(page.Route.CanonicalPath.Value))
+            if (!visited.Add(route.CanonicalPath.Value))
             {
                 continue;
             }
 
-            var html = await context.GetRenderedHtmlAsync(page.Route, cancellationToken);
+            var html = await context.GetRenderedHtmlAsync(route, cancellationToken);
             if (html is null)
             {
                 continue;
             }
 
-            foreach (var result in verifier.VerifyLinks(page.Route, html))
+            foreach (var result in verifier.VerifyLinks(route, html))
             {
                 if (result.Value is not BrokenLinkResult broken)
                 {
@@ -74,7 +74,7 @@ public sealed class LinkAuditor : IRenderedAuditor
 
                 diagnostics.Add(new BuildDiagnostic(
                     Severity: DiagnosticSeverity.Warning,
-                    Route: page.Route,
+                    Route: route,
                     Message: $"Broken link to {broken.Url} ({broken.Reason})",
                     SourceFile: $"{Code}/{broken.Type}/{broken.Url}"));
             }
