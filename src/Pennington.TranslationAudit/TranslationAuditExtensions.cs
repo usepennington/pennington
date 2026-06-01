@@ -11,7 +11,7 @@ public static class TranslationAuditExtensions
     /// Register <see cref="TranslationAuditor"/> as an <see cref="IBuildAuditor"/>. Diagnostics
     /// land in the dev overlay (per-page) and in the build report (site-wide) automatically.
     /// </summary>
-    public static IServiceCollection AddPenningtonTranslationAudit(this IServiceCollection services, Action<TranslationAuditOptions>? configure = null)
+    public static IServiceCollection AddTranslationAudit(this IServiceCollection services, Action<TranslationAuditOptions>? configure = null)
     {
         var options = new TranslationAuditOptions();
         configure?.Invoke(options);

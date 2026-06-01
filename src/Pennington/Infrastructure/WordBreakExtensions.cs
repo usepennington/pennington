@@ -15,7 +15,7 @@ public static class WordBreakExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="configure">Optional configuration of the selector and break behavior.</param>
     /// <returns>The service collection, for chaining.</returns>
-    public static IServiceCollection AddPenningtonWordBreak(
+    public static IServiceCollection AddWordBreak(
         this IServiceCollection services,
         Action<WordBreakOptions>? configure = null)
     {

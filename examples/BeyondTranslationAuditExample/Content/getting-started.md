@@ -15,7 +15,7 @@ To wire it into your own host:
 using Pennington.TranslationAudit;
 
 builder.Services.AddDocSite(...);
-builder.Services.AddPenningtonTranslationAudit();
+builder.Services.AddTranslationAudit();
 ```
 
 That is the entire wiring. Repository path auto-discovers from cwd, severity

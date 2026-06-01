@@ -4,7 +4,7 @@ using Pennington.Tui;
 var builder = WebApplication.CreateBuilder(args);
 
 // Same DocSite host as the other "Beyond" tutorials — the only addition is the
-// AddPenningtonTui call below, which registers a dev-time full-screen terminal
+// AddTui call below, which registers a dev-time full-screen terminal
 // dashboard. When this example is launched with `dotnet run -- build`, the TUI
 // hosted service detects build mode and no-ops, so the static build runs
 // exactly as it would without the package reference.
@@ -20,7 +20,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
 // Opt in to the dev-time dashboard. No extra configuration is required for the
 // happy path — defaults run the dry-run validator once at startup and again
 // (debounced) whenever a watched file changes.
-builder.Services.AddPenningtonTui();
+builder.Services.AddTui();
 
 var app = builder.Build();
 

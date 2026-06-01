@@ -7,7 +7,7 @@ using SharpYaml.Serialization;
 /// <summary>
 /// Routes a type to the registered <see cref="YamlSerializerContext"/> that knows it — the
 /// built-in <see cref="PenningtonYamlContext"/>, a satellite package context, or one a user
-/// added via <see cref="Infrastructure.PenningtonExtensions.AddPenningtonYamlContext"/> — and
+/// added via <see cref="Infrastructure.PenningtonExtensions.AddYamlContext"/> — and
 /// falls back to reflection for everything else. A source-generated context only serves the
 /// types it was generated for and rejects foreign options, so each type is dispatched to its
 /// own context rather than combined into a single resolver.

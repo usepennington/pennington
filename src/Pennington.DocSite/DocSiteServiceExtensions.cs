@@ -99,7 +99,7 @@ public static class DocSiteServiceExtensions
         });
 
         // Source-generated YAML metadata for DocSite's front-matter types (reflection fallback otherwise).
-        services.AddPenningtonYamlContext(DocSiteYamlContext.Default);
+        services.AddYamlContext(DocSiteYamlContext.Default);
 
         // Make Pennington.UI components available inline in markdown via Mdazor.
         // <CodeBlock> is intentionally excluded: markdown authors should use fenced
@@ -181,7 +181,7 @@ public static class DocSiteServiceExtensions
     {
         var options = app.Services.GetRequiredService<DocSiteOptions>();
 
-        app.UsePenningtonLocaleRouting();
+        app.UseLocaleRouting();
         app.UseAntiforgery();
         app.UseStaticFiles();
         app.UseMonorailCss();

@@ -44,7 +44,7 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - `services.AddPennington(...)` / `app.UsePennington()` / `app.RunOrBuildAsync(args)` — core
 - `services.AddDocSite(...)` / `app.UseDocSite()` / `app.RunDocSiteAsync(args)` — doc site template
 - `services.AddBlogSite(...)` — blog site template
-- `services.AddPenningtonTreeSitter(...)` — optional tree-sitter multi-language `:symbol` fragment extraction (registers only when `ContentRoot` is set)
+- `services.AddTreeSitter(...)` — optional tree-sitter multi-language `:symbol` fragment extraction (registers only when `ContentRoot` is set)
 
 ## Cross-Platform (WSL)
 - When switching between Windows and WSL/Linux, run `dotnet clean Pennington.slnx` first — stale `obj/` artifacts from the other OS cause build failures (NuGet fallback paths, Razor editorconfig paths)

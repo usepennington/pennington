@@ -129,8 +129,8 @@ public static class PenningtonExtensions
 
         // YAML deserialization: register the built-in source-generated context and the provider
         // that dispatches each type to its context (or reflection). Satellite packages and users
-        // add their own contexts via AddPenningtonYamlContext.
-        services.AddPenningtonYamlContext(PenningtonYamlContext.Default);
+        // add their own contexts via AddYamlContext.
+        services.AddYamlContext(PenningtonYamlContext.Default);
         services.AddSingleton<PenningtonYamlContextProvider>();
 
         services.AddSingleton<FrontMatterParser>();
@@ -479,7 +479,7 @@ public static class PenningtonExtensions
     /// registered context fall back to reflection. Satellite templates call this for their own
     /// front-matter records; end users call it for theirs.
     /// </summary>
-    public static IServiceCollection AddPenningtonYamlContext(this IServiceCollection services, YamlSerializerContext context)
+    public static IServiceCollection AddYamlContext(this IServiceCollection services, YamlSerializerContext context)
     {
         services.AddSingleton<YamlSerializerContext>(context);
         return services;
@@ -510,7 +510,7 @@ public static class PenningtonExtensions
     /// <c>@page</c> directives with locale prefixes must call this explicitly.
     /// </para>
     /// </summary>
-    public static WebApplication UsePenningtonLocaleRouting(this WebApplication app)
+    public static WebApplication UseLocaleRouting(this WebApplication app)
     {
         var options = app.Services.GetRequiredService<PenningtonOptions>();
 
@@ -654,8 +654,8 @@ public static class PenningtonExtensions
 
         // Locale detection — ensure it's registered (idempotent).
         // For Blazor @page routing this must run before MapRazorComponents;
-        // callers that need that should call UsePenningtonLocaleRouting() explicitly.
-        app.UsePenningtonLocaleRouting();
+        // callers that need that should call UseLocaleRouting() explicitly.
+        app.UseLocaleRouting();
 
         // File-watch dispatcher: eagerly resolve so its constructor wires every
         // IFileWatchAware service's scopes and subscription to the file watcher.
@@ -663,7 +663,7 @@ public static class PenningtonExtensions
 
         // Live reload: eagerly resolve so it subscribes to file watcher, then map WebSocket endpoint
         _ = app.Services.GetRequiredService<LiveReloadServer>();
-        app.UsePenningtonLiveReload();
+        app.UseLiveReload();
 
         // Response processing middleware
         app.UseMiddleware<ResponseProcessingMiddleware>();

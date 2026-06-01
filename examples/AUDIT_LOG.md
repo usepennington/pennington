@@ -34,7 +34,7 @@ All 25 examples build and run. Highlights worth triaging:
 ### Framework bugs surfaced as blockers/major
 - **#5** Dev overlay for missing translations doesn't render (build report works). — resolved 2026-05-13 (verified rendering; the audit's CSS-selector probe missed the actual `#penn-diag-root` element — no framework change needed)
 - **#5** English content served with `<html lang="es">` when es translation is missing. — resolved 2026-05-13 (FallbackLangHtmlRewriter rewrites `<html lang/dir>` to the served content's locale when DocSite resolves a fallback)
-- **#6** TUI emits raw ANSI when stdout isn't a TTY — no line-mode fallback. — resolved 2026-05-13 (`AddPenningtonTui` short-circuits when `Console.IsOutputRedirected` so default Console logging stays line-mode)
+- **#6** TUI emits raw ANSI when stdout isn't a TTY — no line-mode fallback. — resolved 2026-05-13 (`AddTui` short-circuits when `Console.IsOutputRedirected` so default Console logging stays line-mode)
 - **#11** No "on this page" outline visible in DocSiteAuthorExample despite README advertising it. — resolved 2026-05-13 (verified rendering at viewports >=1280px; the outline lives in `<div data-spa-region="outline" class="hidden xl:block …">` so it's intentionally hidden below the `xl` Tailwind breakpoint — audit ran at <1280px and missed it)
 - **#13** `wwwroot/fonts/*.woff2` referenced by font-preload but the files don't exist → 404 errors on every page. — resolved 2026-05-13 (DocSite/BlogSite `App.razor` skips `<link rel="preload" as="font">` emission when the href doesn't resolve in WebRoot or Content/)
 - **#15** Folder-derived section labels mangle acronyms (`core-api/` → "Core Api", should be "Core API"). — resolved 2026-05-13 (`NavigationBuilder.FormatSectionTitle` upper-cases tokens that match a built-in acronym list: api, cli, css, html, http(s), json, sdk, sql, svg, ui, url, xml, yaml, rss, pdf, png)
@@ -316,7 +316,7 @@ All 25 examples build and run. Highlights worth triaging:
 - **[DOC] (minor)** README claims `UseDocSite` orders middleware (locale → antiforgery → static files → routing → MonorailCSS → SPA → Pennington middleware). That order is invisible to the reader unless they trace `src/Pennington.DocSite`. A diagnostics endpoint that dumps the middleware order would make this concrete; absent that, document the order on the `reference/host/extensions.md` page explicitly.
 
 **Resolved 2026-05-13:**
-- DOC UseDocSite ordering — added a "UseDocSite middleware order" section to `docs/Pennington.Docs/Content/reference/host/extensions.md` enumerating the six-step sequence (`UsePenningtonLocaleRouting` → `UseAntiforgery` → `UseStaticFiles` → `UseMonorailCss` → `UsePennington` → `MapRazorComponents`) with the load-bearing rationale per step. Notes that `UseBlogSite` follows the same shape minus locale-routing.
+- DOC UseDocSite ordering — added a "UseDocSite middleware order" section to `docs/Pennington.Docs/Content/reference/host/extensions.md` enumerating the six-step sequence (`UseLocaleRouting` → `UseAntiforgery` → `UseStaticFiles` → `UseMonorailCss` → `UsePennington` → `MapRazorComponents`) with the load-bearing rationale per step. Notes that `UseBlogSite` follows the same shape minus locale-routing.
 
 **Fixes applied.**
 
@@ -490,14 +490,14 @@ All 25 examples build and run. Highlights worth triaging:
 
 ## 6. BeyondTuiExample
 
-**README claim:** `AddPenningtonTui` enables a dev-time TUI dashboard. Under `dotnet run -- build` the TUI hosted service no-ops so static publish is unaffected.
+**README claim:** `AddTui` enables a dev-time TUI dashboard. Under `dotnet run -- build` the TUI hosted service no-ops so static publish is unaffected.
 
 **Verified:**
 - **Build mode (`-- build`)** — runs cleanly with no TUI artifact; emits standard "Build Complete — 5 pages in 0.6s". ✓
 - **Dev mode (`dotnet run`)** — process binds HTTP 5000, content renders (`/` returns 200, h1 "Beyond TUI"), but stdout is dominated by raw ANSI escape sequences the TUI emits (captured as `Pp` glyphs in a non-TTY). DocSite content itself works.
 
 **Findings:**
-- **[FW+DOC] (major)** When stdout is not a TTY (CI logs, container logs, `dotnet run > log.txt`), the TUI emits raw ANSI but nothing readable. The README says "under `dotnet run` the terminal hosts a full-screen validator dashboard" — but does not mention what happens when the terminal is not a TTY. Either fall back to line-mode (write the same validator messages as regular log lines) when `Console.IsOutputRedirected` is true, or document the non-TTY fallback explicitly. As-is, redirecting output of a dev run is unusable for grepping. **Resolved 2026-05-13 (framework-blocker):** `AddPenningtonTui` now short-circuits when `Console.IsOutputRedirected` is true, mirroring the existing `IsDotnetWatchMode` bypass. The host falls back to default Microsoft.Extensions.Logging Console output — no logging-provider override, no hosted-service registration — so redirected runs produce normal grep-friendly log lines. Verified: `dotnet run --project examples/BeyondTuiExample > log.txt` produces 0 ANSI escape sequences in the log.
+- **[FW+DOC] (major)** When stdout is not a TTY (CI logs, container logs, `dotnet run > log.txt`), the TUI emits raw ANSI but nothing readable. The README says "under `dotnet run` the terminal hosts a full-screen validator dashboard" — but does not mention what happens when the terminal is not a TTY. Either fall back to line-mode (write the same validator messages as regular log lines) when `Console.IsOutputRedirected` is true, or document the non-TTY fallback explicitly. As-is, redirecting output of a dev run is unusable for grepping. **Resolved 2026-05-13 (framework-blocker):** `AddTui` now short-circuits when `Console.IsOutputRedirected` is true, mirroring the existing `IsDotnetWatchMode` bypass. The host falls back to default Microsoft.Extensions.Logging Console output — no logging-provider override, no hosted-service registration — so redirected runs produce normal grep-friendly log lines. Verified: `dotnet run --project examples/BeyondTuiExample > log.txt` produces 0 ANSI escape sequences in the log.
 - **[DOC] (minor)** README mentions "dry-run validator on startup + debounced re-runs on file change" — those terms aren't defined anywhere in the docs site. A reference/how-to page documenting what the validator checks (broken xrefs, missing translations, dead links, etc.) would be valuable so readers know what value the TUI adds.
 - **[DOC] (minor)** README says the example is unreferenced. Add a how-to/reference page for `Pennington.Tui` so this example becomes discoverable from the docs site.
 
@@ -509,7 +509,7 @@ All 25 examples build and run. Highlights worth triaging:
 
 ## 5. BeyondTranslationAuditExample
 
-**README claim:** `AddPenningtonTranslationAudit` registers an `IBuildAuditor`. Spanish `getting-started.md` is deliberately missing. Auditor produces "missing es translation" warning visible in dev overlay AND in `dotnet run -- build` diagnostics.
+**README claim:** `AddTranslationAudit` registers an `IBuildAuditor`. Spanish `getting-started.md` is deliberately missing. Auditor produces "missing es translation" warning visible in dev overlay AND in `dotnet run -- build` diagnostics.
 
 **Verified in browser (`dotnet run`, port 5000):**
 - `/es/getting-started/` — page returns 200 with English content but `<html lang="es">`. (English fallback served when translation missing.)

@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // content — all we need to do is hand it a `ConfigureLocalization` action
 // that populates `LocalizationOptions` with the default locale and every
 // additional locale we want URL-prefixed. `UseDocSite` calls
-// `UsePenningtonLocaleRouting` first thing, which swaps `UseRequestLocalization`
+// `UseLocaleRouting` first thing, which swaps `UseRequestLocalization`
 // + `LocaleDetectionMiddleware` into the pipeline ahead of endpoint matching.
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
@@ -39,7 +39,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
 
 var app = builder.Build();
 
-// `UseDocSite` wires `UsePenningtonLocaleRouting` before `MapRazorComponents`
+// `UseDocSite` wires `UseLocaleRouting` before `MapRazorComponents`
 // so the Blazor `@page "/{*fileName:nonfile}"` route in `Pages.razor` sees a
 // locale-stripped path. The raw request path is still available via
 // `NavigationManager.Uri`, and `ContentResolver.GetContentByUrlAsync` uses

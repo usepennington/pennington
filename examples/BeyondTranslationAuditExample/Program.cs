@@ -27,7 +27,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
 // Repository auto-discovers from cwd. The auditor implements IBuildAuditor and
 // flows through the same audit cache that the dev overlay reads — no other wiring
 // required.
-builder.Services.AddPenningtonTranslationAudit();
+builder.Services.AddTranslationAudit();
 
 var app = builder.Build();
 

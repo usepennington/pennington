@@ -14,7 +14,7 @@ public static class PenningtonTuiExtensions
     /// (first command-line argument is <c>build</c>), the hosted service no-ops and
     /// the build runs exactly as without this package.
     /// </summary>
-    public static IServiceCollection AddPenningtonTui(this IServiceCollection services, Action<PenningtonTuiOptions>? configure = null)
+    public static IServiceCollection AddTui(this IServiceCollection services, Action<PenningtonTuiOptions>? configure = null)
     {
         // dotnet watch owns the console and re-launches the child on file changes;
         // the TUI can't share that surface, so we bail out before touching logging

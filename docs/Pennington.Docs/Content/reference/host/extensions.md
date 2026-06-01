@@ -37,14 +37,14 @@ examples/DocSiteScaffoldExample/Program.cs
 
 `UseDocSite` wraps a fixed middleware sequence before mapping the Razor component endpoint:
 
-1. `UsePenningtonLocaleRouting`
+1. `UseLocaleRouting`
 2. `UseAntiforgery`
 3. `UseStaticFiles`
 4. `UseMonorailCss`
 5. `UsePennington`
 6. `MapRazorComponents<App>()`
 
-`UseBlogSite` runs the same sequence without `UsePenningtonLocaleRouting`. For why each step lands where it does, see <xref:explanation.core.dev-vs-build>.
+`UseBlogSite` runs the same sequence without `UseLocaleRouting`. For why each step lands where it does, see <xref:explanation.core.dev-vs-build>.
 
 ## See also
 

@@ -4,7 +4,7 @@ using Pennington.TreeSitter;
 var builder = WebApplication.CreateBuilder(args);
 
 // Same DocSite host shape as the other tutorials. The extra line is
-// `AddPenningtonTreeSitter` below, which lights up the `:symbol` code-fence
+// `AddTreeSitter` below, which lights up the `:symbol` code-fence
 // modifier for *any* tree-sitter-supported language (Python, Rust, Go,
 // TypeScript, …). Tree-sitter resolves a member by name path across many
 // languages.
@@ -21,7 +21,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
 // path is resolved relative to the host's working directory (the folder that
 // contains this csproj when `dotnet run` is invoked). Each `:symbol` fence body
 // is `<file> > <Member.Path>`, with the file resolved under this ContentRoot.
-builder.Services.AddPenningtonTreeSitter(treeSitter =>
+builder.Services.AddTreeSitter(treeSitter =>
 {
     treeSitter.ContentRoot = "Samples";
 });

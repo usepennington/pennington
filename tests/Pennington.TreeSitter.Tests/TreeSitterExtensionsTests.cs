@@ -12,7 +12,7 @@ public sealed class TreeSitterExtensionsTests
     {
         var services = new ServiceCollection();
 
-        services.AddPenningtonTreeSitter(options => options.ContentRoot = ".");
+        services.AddTreeSitter(options => options.ContentRoot = ".");
 
         services.ShouldContain(d => d.ServiceType == typeof(ICodeBlockPreprocessor));
     }
@@ -22,7 +22,7 @@ public sealed class TreeSitterExtensionsTests
     {
         var services = new ServiceCollection();
 
-        services.AddPenningtonTreeSitter(options => options.ContentRoot = ".");
+        services.AddTreeSitter(options => options.ContentRoot = ".");
 
         services.ShouldContain(d => d.ServiceType == typeof(IFileWatchAware));
     }
@@ -32,7 +32,7 @@ public sealed class TreeSitterExtensionsTests
     {
         var services = new ServiceCollection();
 
-        services.AddPenningtonTreeSitter();
+        services.AddTreeSitter();
 
         services.ShouldNotContain(d => d.ServiceType == typeof(ICodeBlockPreprocessor));
         services.ShouldNotContain(d => d.ServiceType == typeof(IFileWatchAware));

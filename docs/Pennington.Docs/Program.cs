@@ -88,7 +88,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
 // Code-fragment fences (:symbol) run through tree-sitter, reading source files directly —
 // no MSBuild workspace, no compilation. ContentRoot is the repo root so fence bodies resolve
 // against src/ and examples/ paths.
-builder.Services.AddPenningtonTreeSitter(treeSitter =>
+builder.Services.AddTreeSitter(treeSitter =>
 {
     treeSitter.ContentRoot = "../..";
 });
@@ -126,14 +126,14 @@ builder.Services.AddMdazorComponent<FrontMatterKeys>();
 // "h1 *" are deliberately avoided — they made AngleSharp's selector engine walk
 // every element on the page (the dominant build hotspot). Text nested in a
 // <span> is reached because <span> is matched directly.
-builder.Services.AddPenningtonWordBreak(options =>
+builder.Services.AddWordBreak(options =>
 {
     options.CssSelector = "h1, h2, h3, h4, h5, h6, p, li, dt, dd, th, td, span, .text-break";
 });
 
 // Dev-time full-screen dashboard. No-ops when the host is launched with
 // `dotnet run -- build`, so the static build path is unchanged.
-// builder.Services.AddPenningtonTui();
+// builder.Services.AddTui();
 
 var app = builder.Build();
 app.UseDocSite();

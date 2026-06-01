@@ -38,12 +38,12 @@ Default-locale files stay directly under `ContentRootPath` with no prefix. For e
 examples/BeyondLocaleExample/Content/es/about.md
 ```
 
-### Confirm `UsePenningtonLocaleRouting` is in the pipeline
+### Confirm `UseLocaleRouting` is in the pipeline
 
-`UseDocSite` and `UseBlogSite` already register `UsePenningtonLocaleRouting` as the first middleware — template hosts need no extra call. On a bare `AddPennington` host, call it before mapping endpoints; it handles locale detection and `UseRouting` together, so `LocaleDetectionMiddleware` can strip the locale prefix into `PathBase` ahead of endpoint matching without a separate `UseRouting` call.
+`UseDocSite` and `UseBlogSite` already register `UseLocaleRouting` as the first middleware — template hosts need no extra call. On a bare `AddPennington` host, call it before mapping endpoints; it handles locale detection and `UseRouting` together, so `LocaleDetectionMiddleware` can strip the locale prefix into `PathBase` ahead of endpoint matching without a separate `UseRouting` call.
 
 ```csharp
-app.UsePenningtonLocaleRouting();
+app.UseLocaleRouting();
 ```
 
 ### Add UI string translations through `TranslationOptions`

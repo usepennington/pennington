@@ -137,7 +137,7 @@ public static class LiveReloadExtensions
     /// Adds live reload WebSocket support for development.
     /// Skipped during static build (see <see cref="PenningtonBuildMode"/>).
     /// </summary>
-    public static WebApplication UsePenningtonLiveReload(this WebApplication app)
+    public static WebApplication UseLiveReload(this WebApplication app)
     {
         if (PenningtonBuildMode.IsHeadlessOneShot)
         {

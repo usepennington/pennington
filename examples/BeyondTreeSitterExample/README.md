@@ -5,7 +5,7 @@ doc markdown via the `:symbol` fence modifier.
 
 ## What it teaches
 
-- `AddPenningtonTreeSitter(o => o.ContentRoot = "Samples")` lights up the
+- `AddTreeSitter(o => o.ContentRoot = "Samples")` lights up the
   `<lang>:symbol` fence for every tree-sitter-supported language.
 - Addressing a declaration by **name path** (`Type.Member`), which works
   uniformly across languages.
@@ -17,7 +17,7 @@ doc markdown via the `:symbol` fence modifier.
 
 ## Layout
 
-- `Program.cs` — `AddDocSite` + `AddPenningtonTreeSitter`.
+- `Program.cs` — `AddDocSite` + `AddTreeSitter`.
 - `Samples/` — the source files (`calc.py`, `calc.rs`, `calc.go`, `calc.ts`)
   the fences read. Excluded from the host's compile globs via `DefaultItemExcludes`.
 - `Content/index.md` — the page exercising each fence form.

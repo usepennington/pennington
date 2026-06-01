@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 /// <summary>
 /// Logs a single warning on startup when the TUI was skipped because the host
 /// is running under <c>dotnet watch</c>. Registered by
-/// <see cref="PenningtonTuiExtensions.AddPenningtonTui"/> in place of the real
+/// <see cref="PenningtonTuiExtensions.AddTui"/> in place of the real
 /// TUI hosted service so callers get a visible reason the dashboard didn't appear.
 /// </summary>
 internal sealed class DotnetWatchNoticeService(ILogger<DotnetWatchNoticeService> logger) : IHostedService
