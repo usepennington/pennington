@@ -32,7 +32,7 @@ new BlogSiteOptions
 
 ### Give every post a `date:`
 
-`BlogSiteContentService` builds the channel from posts where `Date` is non-null, ordered by descending date. A post without `date:` renders normally at its URL but does not appear in the feed. Use ISO-8601 (`2024-01-15`) so YAML parses the value as a `DateTimeOffset`.
+`BlogSiteContentService` builds the channel from posts where `Date` is non-null, ordered by descending date. A post without `date:` renders normally at its URL but does not appear in the feed. Use ISO-8601 (`2024-01-15`) so YAML parses the value as a `DateTime`.
 
 Minimal front matter for a post that appears in the feed:
 

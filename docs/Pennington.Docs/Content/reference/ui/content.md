@@ -37,7 +37,8 @@ Inline pill with ring and tinted background, variant-mapped to a MonorailCSS col
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `Size` | `string` | `"medium"` | One of `"small"`, `"medium"`, `"large"`; drives padding and text size. |
-| `Text` | `string` | `""` | Label rendered inside the badge. |
+| `Text` | `string` | `""` | Label rendered inside the badge when `ChildContent` is not set. |
+| `ChildContent` | `RenderFragment?` | `null` | Markup rendered inside the badge; takes precedence over `Text`. |
 | `Variant` | `string` | `"note"` | One of `"note"`, `"success"`, `"tip"`, `"caution"`, `"danger"`; selects the color palette (base / emerald / sky / amber / rose). |
 
 ### Example

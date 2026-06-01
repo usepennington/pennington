@@ -49,13 +49,13 @@ Two rules keep the feature predictable:
 
 ## When a partial is missing
 
-A target that does not exist, or an include cycle, collapses to an HTML comment instead of failing the build:
+A target that does not exist collapses to an HTML comment instead of failing the build:
 
 ```html
 <!-- Pennington: include not found: ../../../_includes/typo.md -->
 ```
 
-View source on a page during `dotnet run` to spot a mistyped path — the comment names the directive that could not be resolved. Only local relative paths are spliced: an `[!INCLUDE …](https://…)` directive is also skipped, emitting `<!-- Pennington: include skipped (not a local file): … -->`.
+View source on a page during `dotnet run` to spot a mistyped path — the comment names the directive that could not be resolved. Only local relative paths are spliced: an `[!INCLUDE …](https://…)` directive is also skipped, emitting `<!-- Pennington: include skipped (not a local file): … -->`. An include cycle is broken the same way, emitting `<!-- Pennington: include cycle broken: … -->`.
 
 ## Related
 

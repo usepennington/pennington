@@ -17,7 +17,7 @@ By the end of this tutorial the DocSite runs at `http://localhost:5000` with an 
 
 - .NET 11 SDK installed
 - Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the area-free `Content/guides/` host this tutorial turns into areas)
-- Completed [Author a documentation page with DocFrontMatter](xref:tutorials.docsite.first-doc-page) (so `DocSiteFrontMatter` keys like `sectionLabel:` and `order:` are already familiar)
+- Completed [Add doc pages and link between them](xref:tutorials.docsite.first-doc-page) (so `DocSiteFrontMatter` keys like `sectionLabel:` and `order:` are already familiar)
 
 The finished code for this tutorial lives in [`examples/DocSiteSectionsExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteSectionsExample).
 

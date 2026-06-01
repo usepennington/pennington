@@ -38,6 +38,14 @@ examples/BlogSiteScaffoldExample/Stage1_BeforeAddBlogSite.cs > Stage1.Run
 
 The three moving parts are the DI registration, the `UsePennington` call, and the hand-rolled `MapGet`. Absent: the home listing, `/archive`, `/blog/<slug>` pages, `/tags` and `/topics` aliases, the `/rss.xml` feed, and the [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) chrome. The next section brings all of that in with a single `AddBlogSite` call.
 
+**Add the first post**
+
+Posts live under `{ContentRootPath}/{BlogContentPath}` — `Content/Blog/` with the defaults. Add one placeholder post so the host has something to serve. It uses four front-matter keys — `title`, `description`, `date`, and `author` — the minimum the home listing and RSS feed will need once the template is wired:
+
+```markdown:symbol
+examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md
+```
+
 <Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/blog/hello-world` — the page shows unstyled HTML for the markdown. None of the BlogSite chrome (home listing, archive, tag pages, RSS) exists yet.
@@ -73,23 +81,9 @@ The options populated here cover site identity (`SiteTitle`, `Description`, `Can
 
 ---
 
-## 3. Drop in a placeholder post and verify every built-in route
+## 3. Verify every built-in route
 
-Posts live under `{ContentRootPath}/{BlogContentPath}` — with the defaults from step 2, that is `Content/Blog/`. A single placeholder post here keeps the home listing, archive, and RSS feed non-empty until the next tutorial introduces the full `BlogSiteFrontMatter` surface.
-
-<Steps>
-<Step StepNumber="1">
-
-**Create `Content/Blog/hello-world.md`**
-
-The placeholder post uses four front-matter keys: `title`, `description`, `date`, and `author`. These are the minimum the home listing and RSS feed need to render an entry. The next tutorial expands this to the full `BlogSiteFrontMatter` surface, adding `tags`, `series`, `repository`, `sectionLabel`, and `redirectUrl`.
-
-```markdown:symbol
-examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md
-```
-
-</Step>
-<Step StepNumber="2">
+With the post from section 1 in place and `AddBlogSite` wired, every route the template ships now responds. The next tutorial expands the post to the full `BlogSiteFrontMatter` surface, adding `tags`, `series`, `repository`, `sectionLabel`, and `redirectUrl`.
 
 **Visit the home listing and the RSS feed**
 
@@ -97,9 +91,6 @@ examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md
 - `/rss.xml` returns RSS 2.0 with one `<item>` carrying the post title, link, description, pub date, and author.
 
 The full route surface (`/archive`, `/blog/<slug>`, `/tags`, `/topics` aliases, `/rss.xml`) is catalogued in <xref:reference.blogsite.routes>.
-
-</Step>
-</Steps>
 
 <Checkpoint>
 

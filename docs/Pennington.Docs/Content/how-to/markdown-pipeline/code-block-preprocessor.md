@@ -28,7 +28,7 @@ The returned `CodeBlockPreprocessResult` carries the pre-rendered HTML, the `Bas
 
 ## Pick a Priority value
 
-`CodeHighlightRenderer` sorts preprocessors by `Priority` descending and returns the first non-null result. `LineCountPreprocessor` uses `500` so its `linecount` fence is never intercepted by a lower-priority modifier preprocessor. Pick a value above any preprocessor you need to beat on a contested `:modifier`, or below it to fall through first.
+`CodeBlockRenderingService` sorts preprocessors by `Priority` descending and returns the first non-null result. `LineCountPreprocessor` uses `500` so its `linecount` fence is never intercepted by a lower-priority modifier preprocessor. Pick a value above any preprocessor you need to beat on a contested `:modifier`, or below it to fall through first.
 
 ## Register the implementation
 
