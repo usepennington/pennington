@@ -93,7 +93,7 @@ Pennington uses C# 15 union types, which are still a preview language feature in
 examples/DocSiteScaffoldExample/Stage3_UseDocSite.cs > Stage3.Run
 ```
 
-The five fields populated here — `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, `FooterContent` — each surface in the rendered chrome as soon as they're set. `DocSiteOptions` carries many more fields; see <xref:reference.api.doc-site-options> for the full surface, and [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning) for what the template hard-codes.
+The five fields populated here — `SiteTitle`, `SiteDescription`, `GitHubUrl`, `HeaderContent`, `FooterContent` — each surface in the rendered chrome as soon as they're set. `DocSiteOptions` carries many more fields; see <xref:reference.api.doc-site-options> for the full surface, and [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning) for what the template hard-codes.
 
 </Step>
 </Steps>
@@ -188,7 +188,7 @@ Welcome to Scaffold Docs.
 ## Summary
 
 - An empty ASP.NET project picked up `AddDocSite` + `UseDocSite` + `RunDocSiteAsync`, and the full Razor chrome renders.
-- `DocSiteOptions` carries `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`, and each field appears in the rendered layout.
+- `DocSiteOptions` carries `SiteTitle`, `SiteDescription`, `GitHubUrl`, `HeaderContent`, and `FooterContent`, and each field appears in the rendered layout.
 - Markdown files under `Content/` become sidebar entries with no extra wiring — a subfolder turns into a navigation group named after the folder, and `order:` sorts the pages inside it.
 - The root `/` is served by `Content/index.md`; without it, `/` returns a 404.
 - To split the sidebar into switchable areas and labeled sections, see [Organize content with sections and areas](xref:tutorials.docsite.sections-and-areas). For what the template hard-codes, see [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning).

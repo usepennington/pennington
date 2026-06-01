@@ -94,7 +94,7 @@ public class BlogContentResolverPaginationTests : IDisposable
         var options = new BlogSiteOptions
         {
             SiteTitle = "Test",
-            Description = "Test",
+            SiteDescription = "Test",
             ContentRootPath = _root,
             BlogContentPath = ".",
             TagsPageUrl = "/tags",

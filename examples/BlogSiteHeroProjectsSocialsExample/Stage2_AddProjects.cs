@@ -21,7 +21,7 @@ public static class Stage2
         builder.Services.AddBlogSite(() => new BlogSiteOptions
         {
             SiteTitle = "Hero Blog",
-            Description = "A BlogSite tutorial app demonstrating hero, projects, and social links.",
+            SiteDescription = "A BlogSite tutorial app demonstrating hero, projects, and social links.",
             CanonicalBaseUrl = "https://example.com",
 
             AuthorName = "Author Name",

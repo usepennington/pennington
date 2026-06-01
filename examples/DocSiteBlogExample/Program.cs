@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Harbor Docs",
-    Description = "Documentation for Harbor, with a blog for release notes and field notes.",
+    SiteDescription = "Documentation for Harbor, with a blog for release notes and field notes.",
     CanonicalBaseUrl = "https://harbor.example.com",
     GitHubUrl = "https://github.com/usepennington/pennington",
     HeaderContent = """<a href="/">Harbor Docs</a>""",

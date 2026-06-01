@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Spectre.Console Docs",
-    Description = "Demo of Pennington's multi-source API metadata — one docsite that documents Spectre.Console and Spectre.Console.Cli as two separate reference trees, both resolved straight from their NuGet packages.",
+    SiteDescription = "Demo of Pennington's multi-source API metadata — one docsite that documents Spectre.Console and Spectre.Console.Cli as two separate reference trees, both resolved straight from their NuGet packages.",
     GitHubUrl = "https://github.com/spectreconsole/spectre.console",
     HeaderContent = """<a href="/" class="font-bold text-lg">Spectre.Console Docs</a>""",
     FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Spectre.Console © Patrik Svensson & contributors. Rendered by Pennington.</footer>""",

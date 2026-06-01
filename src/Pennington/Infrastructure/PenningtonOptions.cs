@@ -9,6 +9,7 @@ using Localization;
 using Markdig;
 using Markdown.Extensions.Tabs;
 using Pipeline;
+using Routing;
 using Search;
 
 /// <summary>Main configuration options for the Pennington content engine.</summary>
@@ -24,7 +25,7 @@ public sealed class PenningtonOptions
     public string? CanonicalBaseUrl { get; set; }
 
     /// <summary>Root filesystem directory containing site content.</summary>
-    public string ContentRootPath { get; set; } = "Content";
+    public FilePath ContentRootPath { get; set; } = new("Content");
 
     /// <summary>Code-highlighting configuration.</summary>
     public HighlightingOptions Highlighting { get; } = new();

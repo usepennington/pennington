@@ -571,9 +571,9 @@ public sealed class LlmsTxtService : IFileWatchAware
         IWebHostEnvironment hostingEnvironment,
         PenningtonOptions pennOptions)
     {
-        var contentRoot = Path.IsPathRooted(pennOptions.ContentRootPath)
-            ? pennOptions.ContentRootPath
-            : Path.Combine(hostingEnvironment.ContentRootPath, pennOptions.ContentRootPath);
+        var contentRoot = Path.IsPathRooted(pennOptions.ContentRootPath.Value)
+            ? pennOptions.ContentRootPath.Value
+            : Path.Combine(hostingEnvironment.ContentRootPath, pennOptions.ContentRootPath.Value);
 
         var llmsTxtPath = fileSystem.Path.Combine(contentRoot, "llms.txt");
         if (!fileSystem.File.Exists(llmsTxtPath))

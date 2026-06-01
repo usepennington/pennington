@@ -20,7 +20,7 @@ public static class Stage1
         builder.Services.AddDocSite(() => new DocSiteOptions
         {
             SiteTitle = "Beyond Locale",
-            Description = "Adding a second locale to a Pennington DocSite.",
+            SiteDescription = "Adding a second locale to a Pennington DocSite.",
             GitHubUrl = "https://github.com/usepennington/pennington",
             HeaderContent = """<a href="/">Beyond Locale</a>""",
             FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""",

@@ -42,7 +42,7 @@ public class RedirectMiddlewareTests : IAsyncLifetime
         builder.Services.AddDocSite(() => new DocSiteOptions
         {
             SiteTitle = "Redirect Test",
-            Description = "Redirect middleware integration test",
+            SiteDescription = "Redirect middleware integration test",
             ContentRootPath = new Routing.FilePath(Path.Combine(_tempRoot, "Content")),
         });
 

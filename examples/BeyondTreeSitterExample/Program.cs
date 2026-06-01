@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Beyond Tree-sitter",
-    Description = "Pulling live multi-language snippets into docs with :symbol fences.",
+    SiteDescription = "Pulling live multi-language snippets into docs with :symbol fences.",
     GitHubUrl = "https://github.com/usepennington/pennington",
     HeaderContent = """<a href="/">Beyond Tree-sitter</a>""",
     FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""",

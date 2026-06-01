@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Sections Docs",
-    Description = "Structure Content/ into areas and sections using subfolders, section, and order front matter.",
+    SiteDescription = "Structure Content/ into areas and sections using subfolders, section, and order front matter.",
     GitHubUrl = "https://github.com/usepennington/pennington",
     HeaderContent = """<a href="/">Sections Docs</a>""",
     FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""",

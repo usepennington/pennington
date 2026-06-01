@@ -582,9 +582,9 @@ public static class PenningtonExtensions
         }
 
         // Serve static files from content root
-        var contentRoot = Path.IsPathRooted(options.ContentRootPath)
-            ? options.ContentRootPath
-            : Path.Combine(hostContentRoot, options.ContentRootPath);
+        var contentRoot = Path.IsPathRooted(options.ContentRootPath.Value)
+            ? options.ContentRootPath.Value
+            : Path.Combine(hostContentRoot, options.ContentRootPath.Value);
         if (Directory.Exists(contentRoot))
         {
             app.UseStaticFiles(new StaticFileOptions

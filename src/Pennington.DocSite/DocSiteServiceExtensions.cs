@@ -35,9 +35,9 @@ public static class DocSiteServiceExtensions
         services.AddPennington(penn =>
         {
             penn.SiteTitle = options.SiteTitle;
-            penn.SiteDescription = options.Description;
+            penn.SiteDescription = options.SiteDescription;
             penn.CanonicalBaseUrl = options.CanonicalBaseUrl;
-            penn.ContentRootPath = options.ContentRootPath.Value;
+            penn.ContentRootPath = options.ContentRootPath;
 
             penn.AddMarkdownContent<DocSiteFrontMatter>(md =>
             {

@@ -102,7 +102,7 @@ internal static class ServiceConfiguration
     public static DocSiteOptions BuildDocSiteOptions() => new()
     {
         SiteTitle = "Kitchen Sink Docs",
-        Description = "A wide-surface DocSite example that backs eighteen how-to pages.",
+        SiteDescription = "A wide-surface DocSite example that backs eighteen how-to pages.",
         GitHubUrl = "https://github.com/usepennington/pennington",
         CanonicalBaseUrl = "https://example.com/",
         HeaderContent = """<a href="/" class="font-bold">Kitchen Sink Docs</a>""",

@@ -4,6 +4,7 @@ using System.Reflection;
 using Infrastructure;
 using Microsoft.AspNetCore.Components;
 using MonorailCss;
+using Routing;
 
 /// <summary>
 /// Options record passed to <see cref="BlogSiteServiceExtensions.AddBlogSite"/> that configures
@@ -16,7 +17,7 @@ public record BlogSiteOptions
     public required string SiteTitle { get; init; }
 
     /// <summary>Short description used for the meta description tag and RSS channel.</summary>
-    public required string Description { get; init; }
+    public required string SiteDescription { get; init; }
 
     /// <summary>Absolute base URL used to build canonical links, sitemap, and RSS entries.</summary>
     public string? CanonicalBaseUrl { get; init; }
@@ -25,7 +26,7 @@ public record BlogSiteOptions
     public IColorScheme? ColorScheme { get; init; }
 
     /// <summary>Root folder (relative to the content project) that holds the content tree.</summary>
-    public string ContentRootPath { get; init; } = "Content";
+    public FilePath ContentRootPath { get; init; } = new("Content");
 
     /// <summary>Folder (relative to <see cref="ContentRootPath"/>) containing blog post markdown files.</summary>
     public string BlogContentPath { get; init; } = "Blog";

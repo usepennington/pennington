@@ -22,7 +22,7 @@ public static class Stage2
         builder.Services.AddBlogSite(() => new BlogSiteOptions // [!code ++]
         { // [!code ++]
             SiteTitle = "Scaffold Blog", // [!code ++]
-            Description = "A minimal BlogSite scaffold showing AddBlogSite, UseBlogSite, and RunBlogSiteAsync.", // [!code ++]
+            SiteDescription = "A minimal BlogSite scaffold showing AddBlogSite, UseBlogSite, and RunBlogSiteAsync.", // [!code ++]
             CanonicalBaseUrl = "https://example.com", // [!code ++]
 
             ContentRootPath = "Content", // [!code ++]

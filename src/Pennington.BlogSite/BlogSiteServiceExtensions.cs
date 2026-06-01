@@ -25,12 +25,12 @@ public static class BlogSiteServiceExtensions
         services.AddPennington(penn =>
         {
             penn.SiteTitle = options.SiteTitle;
-            penn.SiteDescription = options.Description;
+            penn.SiteDescription = options.SiteDescription;
             penn.CanonicalBaseUrl = options.CanonicalBaseUrl;
             penn.ContentRootPath = options.ContentRootPath;
             penn.MapSitemap = options.EnableSitemap;
 
-            var blogContentPath = Path.Combine(options.ContentRootPath, options.BlogContentPath);
+            var blogContentPath = Path.Combine(options.ContentRootPath.Value, options.BlogContentPath);
             penn.AddMarkdownContent<BlogSiteFrontMatter>(md =>
             {
                 md.ContentPath = blogContentPath;
