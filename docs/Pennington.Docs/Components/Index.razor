@@ -11,11 +11,11 @@
         <span class="text-accent-four-600 dark:text-accent-four-400">Without leaving the SDK.</span>
     </h1>
     <p class="text-base lg:text-lg text-base-600 dark:text-base-400 max-w-2xl mb-8 leading-relaxed">
-        Markdown in, static site out. No Node, no npm, no YAML toolchain &mdash; just <code class="font-mono text-sm bg-base-100 dark:bg-base-800 px-1.5 py-0.5 rounded">dotnet run</code>.
+        Markdown in, static site out. No Node, no npm, no bundler &mdash; just <code class="font-mono text-sm bg-base-100 dark:bg-base-800 px-1.5 py-0.5 rounded">dotnet run</code>.
         Pennington ships content at the speed of your build.
     </p>
     <div class="flex flex-wrap items-center gap-3">
-        <a href="/tutorials/getting-started/first-site/"
+        <a href="xref:tutorials.getting-started.first-site"
            class="group inline-flex items-center gap-2 font-display font-semibold text-base bg-primary-600 hover:bg-primary-500 text-white rounded-xl px-6 py-3 shadow-lg shadow-primary-600/20 hover:shadow-primary-500/30 transition-all">
             Get Started
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-4 w-4 transition-transform group-hover:translate-x-0.5">
@@ -34,40 +34,9 @@
 </section>
 
 <section class="pb-12 lg:pb-16">
-    <div class="rounded-2xl overflow-hidden ring-1 ring-base-200 dark:ring-base-800 bg-base-950 shadow-xl shadow-primary-600/5">
-        <div class="flex items-center gap-2 px-4 py-3 bg-base-900 border-b border-base-800">
-            <span class="w-3 h-3 rounded-full bg-accent-one-500/80" aria-hidden="true"></span>
-            <span class="w-3 h-3 rounded-full bg-accent-two-500/80" aria-hidden="true"></span>
-            <span class="w-3 h-3 rounded-full bg-accent-three-500/80" aria-hidden="true"></span>
-            <span class="ml-3 font-mono text-xs text-base-400">my-site &mdash; bash</span>
-        </div>
-        <div class="p-6 lg:p-8 font-mono text-sm lg:text-base text-base-100 min-h-[320px] lg:min-h-[360px]">
-            <div class="terminal-cast space-y-1.5 leading-relaxed">
-                <div class="cast-line cast-line-1">
-                    <span class="text-primary-400 select-none">$</span> dotnet new install <span class="text-primary-300">Pennington.Templates</span>
-                </div>
-                <div class="cast-line cast-line-2 text-base-400">The template <span class="text-base-200">"Pennington Doc Site"</span> was installed successfully.</div>
-                <div class="cast-line cast-line-3">
-                    <span class="text-primary-400 select-none">$</span> dotnet new <span class="text-primary-300">pennington-docs</span> -o my-site
-                </div>
-                <div class="cast-line cast-line-4 text-base-400">The template <span class="text-base-200">"Pennington Doc Site"</span> was created successfully.</div>
-                <div class="cast-line cast-line-5">
-                    <span class="text-primary-400 select-none">$</span> cd my-site &amp;&amp; <span class="text-primary-300">dotnet run</span>
-                </div>
-                <div class="cast-line cast-line-6 pt-2">
-                    <span class="text-accent-two-400">info:</span> Microsoft.Hosting.Lifetime[14]
-                </div>
-                <div class="cast-line cast-line-7 pl-6 text-base-300">
-                    Now listening on: <span class="text-primary-300 underline decoration-dotted underline-offset-4">http://localhost:5000</span>
-                </div>
-                <div class="cast-line cast-line-8 pt-2 text-base-500">
-                    &mdash; your site is live. start writing markdown.<span class="cast-cursor text-primary-400">&#9608;</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <PipelineHero />
     <p class="mt-5 text-sm font-display text-base-500 dark:text-base-400 text-center">
-        The <code class="font-mono text-xs">pennington-docs</code> template is the shortcut &mdash; a finished docs site in three commands. Building your own host with <code class="font-mono text-xs">AddPennington</code> is the usual path: that&rsquo;s the <a href="/tutorials/getting-started/first-site/" class="underline decoration-dotted underline-offset-2 hover:text-primary-600 dark:hover:text-primary-400">getting-started tutorial</a>.
+        One ASP.NET server, two outputs &mdash; a live, hot-reloading site while you write, and the flat HTML you ship when you build. The <a href="xref:tutorials.getting-started.first-site" class="underline decoration-dotted underline-offset-2 hover:text-primary-600 dark:hover:text-primary-400">getting-started tutorial</a> wires it up from <code class="font-mono text-xs">dotnet new web</code>.
     </p>
 </section>
 
@@ -84,7 +53,7 @@
                 <p class="text-sm lg:text-base text-base-600 dark:text-base-400 leading-relaxed mb-6">
                     Start from <code class="font-mono text-sm bg-base-100 dark:bg-base-800 px-1.5 py-0.5 rounded">dotnet new web</code>, add the package, and wire <code class="font-mono text-sm bg-base-100 dark:bg-base-800 px-1.5 py-0.5 rounded">AddPennington</code>. The tutorial walks every line.
                 </p>
-                <a href="/tutorials/getting-started/first-site/"
+                <a href="xref:tutorials.getting-started.first-site"
                    class="group inline-flex items-center gap-2 font-display font-semibold text-sm text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 rounded-xl px-5 py-2.5 ring-1 ring-base-300 dark:ring-base-700 hover:ring-primary-500 dark:hover:ring-primary-400 transition-colors">
                     Walk through the full tutorial
                     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-4 w-4 transition-transform group-hover:translate-x-0.5">
@@ -138,9 +107,9 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4 text-accent-three-600 dark:text-accent-three-400" fill="none" stroke="currentColor" stroke-width="1.75">
                     <path d="M5 12l5 5L20 7" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
-                One .csproj
+                One .slnx
             </div>
-            <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed">No <code class="font-mono text-xs bg-base-100 dark:bg-base-800 px-1 rounded">package.json</code>. No <code class="font-mono text-xs bg-base-100 dark:bg-base-800 px-1 rounded">node_modules</code>. Your laptop&rsquo;s battery will notice.</p>
+            <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed">Your docs are a project in the same solution. Add a <code class="font-mono text-xs bg-base-100 dark:bg-base-800 px-1 rounded">&lt;ProjectReference&gt;</code> to the code you document &mdash; samples and API reference come straight from the source.</p>
         </div>
         <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-5">
             <div class="flex items-center gap-2 font-display text-sm font-semibold text-base-900 dark:text-base-50 mb-2">
@@ -240,7 +209,7 @@ and a rewritten navigation tree.</pre>
             The shell stays out of your way.
         </h2>
         <p class="text-base lg:text-lg text-base-600 dark:text-base-400 leading-relaxed">
-            Layout, navigation, search, dark mode &mdash; handled. Your attention belongs on the content: Razor components inside markdown, compiler-level C# highlighting, real <code class="font-mono text-sm bg-base-100 dark:bg-base-800 px-1.5 py-0.5 rounded">xmldocid</code> references.
+            Layout, navigation, search, dark mode &mdash; handled. Your attention belongs on the content: Razor components inside your markdown, syntax highlighting from the same grammars your editor uses, and an API reference generated from your assemblies&rsquo; XML docs.
         </p>
     </div>
 
@@ -250,7 +219,7 @@ and a rewritten navigation tree.</pre>
                 <h3 class="font-display text-xl lg:text-2xl font-bold text-base-900 dark:text-base-50 mb-1.5">Your components. In your markdown.</h3>
                 <p class="text-sm text-base-600 dark:text-base-400">Write a Razor component. Drop it in prose. Rendered at build time, no JS bundle required.</p>
             </div>
-            <a href="/tutorials/beyond-basics/custom-razor-component/" class="hidden sm:inline-flex shrink-0 items-center gap-1 font-display text-sm font-semibold text-accent-four-700 dark:text-accent-four-400 hover:underline whitespace-nowrap">
+            <a href="xref:tutorials.beyond-basics.custom-razor-component" class="hidden sm:inline-flex shrink-0 items-center gap-1 font-display text-sm font-semibold text-accent-four-700 dark:text-accent-four-400 hover:underline whitespace-nowrap">
                 Tutorial
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-4 w-4"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
             </a>
@@ -280,9 +249,9 @@ for the current shape.</pre>
         <div class="flex items-start justify-between gap-4 mb-5">
             <div>
                 <h3 class="font-display text-xl lg:text-2xl font-bold text-base-900 dark:text-base-50 mb-1.5">Pull real source into your docs.</h3>
-                <p class="text-sm text-base-600 dark:text-base-400">Reference a member by name path with <code class="font-mono text-xs bg-base-100 dark:bg-base-800 px-1 rounded">:symbol</code>. Pennington.TreeSitter extracts the declaration straight from source — no copy to drift out of sync.</p>
+                <p class="text-sm text-base-600 dark:text-base-400">Point at a file &mdash; or a single method by name &mdash; and the real declaration is pulled straight from your repo at build time. The sample can&rsquo;t drift out of date, because it <em>is</em> the source.</p>
             </div>
-            <a href="/explanation/rendering/highlighting/" class="hidden sm:inline-flex shrink-0 items-center gap-1 font-display text-sm font-semibold text-accent-four-700 dark:text-accent-four-400 hover:underline whitespace-nowrap">
+            <a href="xref:explanation.rendering.highlighting" class="hidden sm:inline-flex shrink-0 items-center gap-1 font-display text-sm font-semibold text-accent-four-700 dark:text-accent-four-400 hover:underline whitespace-nowrap">
                 How it works
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-4 w-4"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
             </a>
@@ -290,17 +259,15 @@ for the current shape.</pre>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div class="rounded-xl bg-base-950 p-5 font-mono text-sm overflow-x-auto">
                 <div class="text-xs font-display uppercase tracking-widest text-base-500 mb-3">writing.md</div>
-<pre class="text-base-200 leading-relaxed"><span class="text-base-500">```csharp:symbol,bodyonly</span>
-src/Pennington.BlogSite/
-  BlogSiteServiceExtensions.cs &gt;
-  BlogSiteServiceExtensions.AddBlogSite
+<pre class="text-base-200 text-xs leading-relaxed"><span class="text-base-500">```csharp:symbol,bodyonly</span>
+src/BlogSiteServiceExtensions.cs &gt; BlogSiteServiceExtensions.AddBlogSite
 <span class="text-base-500">```</span></pre>
             </div>
             <div class="rounded-xl bg-white dark:bg-base-900 border border-base-200 dark:border-base-800 p-0 overflow-hidden">
                 <div class="px-5 pt-4 pb-2">
                     <div class="text-xs font-display uppercase tracking-widest text-base-500">rendered</div>
                 </div>
-<pre class="px-5 pb-5 font-mono text-sm leading-relaxed overflow-x-auto bg-base-50 dark:bg-base-950"><span class="text-accent-one-700 dark:text-accent-one-300">services</span>.<span class="text-accent-three-700 dark:text-accent-three-300">AddSingleton</span>&lt;<span class="text-accent-three-700 dark:text-accent-three-300">IBlogContentService</span>, <span class="text-accent-three-700 dark:text-accent-three-300">BlogContentService</span>&gt;();
+<pre class="px-5 pb-5 pt-2 font-mono text-xs leading-relaxed overflow-x-auto bg-base-50 dark:bg-base-950"><span class="text-accent-one-700 dark:text-accent-one-300">services</span>.<span class="text-accent-three-700 dark:text-accent-three-300">AddSingleton</span>&lt;<span class="text-accent-three-700 dark:text-accent-three-300">IBlogContentService</span>, <span class="text-accent-three-700 dark:text-accent-three-300">BlogContentService</span>&gt;();
 <span class="text-accent-one-700 dark:text-accent-one-300">services</span>.<span class="text-accent-three-700 dark:text-accent-three-300">AddSingleton</span>&lt;<span class="text-accent-three-700 dark:text-accent-three-300">BlogHomeRouteGenerator</span>&gt;();
 <span class="text-accent-one-700 dark:text-accent-one-300">services</span>.<span class="text-accent-three-700 dark:text-accent-three-300">AddSingleton</span>&lt;<span class="text-accent-three-700 dark:text-accent-three-300">BlogArchiveRouteGenerator</span>&gt;();
 <span class="text-accent-one-700 dark:text-accent-one-300">services</span>.<span class="text-accent-three-700 dark:text-accent-three-300">AddSingleton</span>&lt;<span class="text-accent-three-700 dark:text-accent-three-300">TagRouteGenerator</span>&gt;();
@@ -312,16 +279,16 @@ src/Pennington.BlogSite/
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
         <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-5">
-            <h4 class="font-display font-semibold text-base-900 dark:text-base-50 mb-1">Front matter that types-check</h4>
-            <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed">Page metadata is a C# record, not YAML soup. IntelliSense on fields, compile errors instead of runtime surprises.</p>
+            <h4 class="font-display font-semibold text-base-900 dark:text-base-50 mb-1">Utility CSS, generated</h4>
+            <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed">Write Tailwind-style classes in your Razor and markdown. MonorailCSS scans them and emits exactly the CSS you used &mdash; in C#, at build time. No Tailwind CLI, no PostCSS, no purge step.</p>
         </div>
         <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-5">
             <h4 class="font-display font-semibold text-base-900 dark:text-base-50 mb-1">Rich Markdown</h4>
             <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed">Tabbed code blocks, Mermaid, alerts, diff highlights, and focus lines. Shipped. Configurable.</p>
         </div>
         <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-5">
-            <h4 class="font-display font-semibold text-base-900 dark:text-base-50 mb-1">All the boring parts</h4>
-            <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed">Search index, RSS, sitemap, llms.txt, structured data, locale routing. All opt-in, all zero-config.</p>
+            <h4 class="font-display font-semibold text-base-900 dark:text-base-50 mb-1">All the bells and whistles</h4>
+            <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed">Search, RSS, sitemap, structured data, llms.txt, locale routing &mdash; all built in. Sensible defaults; reach for config only when you want it.</p>
         </div>
     </div>
 </section>
@@ -345,19 +312,19 @@ src/Pennington.BlogSite/
             <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed mb-5">Step through a working site, one piece at a time.</p>
             <ul class="space-y-2 text-sm font-display mt-auto">
                 <li>
-                    <a href="/tutorials/getting-started/first-site/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                    <a href="xref:tutorials.getting-started.first-site" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
                         Your first site
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
                 </li>
                 <li>
-                    <a href="/tutorials/docsite/first-doc-page/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                    <a href="xref:tutorials.docsite.first-doc-page" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
                         Your first doc page
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
                 </li>
                 <li>
-                    <a href="/tutorials/beyond-basics/add-a-locale/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                    <a href="xref:tutorials.beyond-basics.add-a-locale" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
                         Add a second locale
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
@@ -370,19 +337,19 @@ src/Pennington.BlogSite/
             <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed mb-5">Short recipes to get unstuck and back to work.</p>
             <ul class="space-y-2 text-sm font-display mt-auto">
                 <li>
-                    <a href="/how-to/deployment/github-pages/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                    <a href="xref:how-to.deployment.github-pages" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
                         Deploy to GitHub Pages
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
                 </li>
                 <li>
-                    <a href="/how-to/configuration/monorail-css/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                    <a href="xref:how-to.theming.monorail-css" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
                         Customize MonorailCSS
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
                 </li>
                 <li>
-                    <a href="/how-to/content-authoring/code-annotations/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                    <a href="xref:how-to.code-samples.code-annotations" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
                         Annotate code blocks
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
@@ -395,19 +362,19 @@ src/Pennington.BlogSite/
             <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed mb-5">Context and reasoning behind the moving parts.</p>
             <ul class="space-y-2 text-sm font-display mt-auto">
                 <li>
-                    <a href="/explanation/core/dev-vs-build/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                    <a href="xref:explanation.core.dev-vs-build" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
                         Dev vs. build
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
                 </li>
                 <li>
-                    <a href="/explanation/core/content-pipeline/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                    <a href="xref:explanation.core.content-pipeline" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
                         The content pipeline
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
                 </li>
                 <li>
-                    <a href="/explanation/rendering/highlighting/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                    <a href="xref:explanation.rendering.highlighting" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
                         How highlighting works
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
@@ -420,19 +387,19 @@ src/Pennington.BlogSite/
             <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed mb-5">The dry, complete listings &mdash; for when you need a name.</p>
             <ul class="space-y-2 text-sm font-display mt-auto">
                 <li>
-                    <a href="/reference/markdown/code-block-args/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                    <a href="xref:reference.markdown.code-block-args" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
                         Code-block args
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
                 </li>
                 <li>
-                    <a href="/reference/front-matter/keys/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                    <a href="xref:reference.front-matter.keys" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
                         Front matter keys
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
                 </li>
                 <li>
-                    <a href="/reference/host/cli/" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
+                    <a href="xref:reference.host.cli" class="group inline-flex items-center gap-1.5 text-base-700 dark:text-base-200 hover:text-primary-700 dark:hover:text-primary-400 transition-colors">
                         CLI flags
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
                     </a>
@@ -441,34 +408,6 @@ src/Pennington.BlogSite/
         </div>
     </div>
 </section>
-
-<style>
-    .terminal-cast .cast-line { opacity: 0; }
-    .terminal-cast .cast-line-1 { animation: cast-1 9s infinite; }
-    .terminal-cast .cast-line-2 { animation: cast-2 9s infinite; }
-    .terminal-cast .cast-line-3 { animation: cast-3 9s infinite; }
-    .terminal-cast .cast-line-4 { animation: cast-4 9s infinite; }
-    .terminal-cast .cast-line-5 { animation: cast-5 9s infinite; }
-    .terminal-cast .cast-line-6 { animation: cast-6 9s infinite; }
-    .terminal-cast .cast-line-7 { animation: cast-7 9s infinite; }
-    .terminal-cast .cast-line-8 { animation: cast-8 9s infinite; }
-    .cast-cursor { display: inline-block; margin-left: 2px; animation: cast-cursor-blink 1s step-end infinite; }
-
-    @@keyframes cast-1  { 0%,2% { opacity: 0 } 5%,93% { opacity: 1 } 98%,100% { opacity: 0 } }
-    @@keyframes cast-2  { 0%,12% { opacity: 0 } 15%,93% { opacity: 1 } 98%,100% { opacity: 0 } }
-    @@keyframes cast-3  { 0%,24% { opacity: 0 } 27%,93% { opacity: 1 } 98%,100% { opacity: 0 } }
-    @@keyframes cast-4  { 0%,36% { opacity: 0 } 39%,93% { opacity: 1 } 98%,100% { opacity: 0 } }
-    @@keyframes cast-5  { 0%,48% { opacity: 0 } 51%,93% { opacity: 1 } 98%,100% { opacity: 0 } }
-    @@keyframes cast-6  { 0%,62% { opacity: 0 } 64%,93% { opacity: 1 } 98%,100% { opacity: 0 } }
-    @@keyframes cast-7  { 0%,66% { opacity: 0 } 68%,93% { opacity: 1 } 98%,100% { opacity: 0 } }
-    @@keyframes cast-8  { 0%,76% { opacity: 0 } 78%,93% { opacity: 1 } 98%,100% { opacity: 0 } }
-    @@keyframes cast-cursor-blink { 0%,50% { opacity: 1 } 50.01%,100% { opacity: 0 } }
-
-    @@media (prefers-reduced-motion: reduce) {
-        .terminal-cast .cast-line { opacity: 1; animation: none; }
-        .cast-cursor { animation: none; }
-    }
-</style>
 
 @code {
     private record QuickstartStep(string Number, string Title, string Command, string CommandHtml);
