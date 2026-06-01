@@ -49,4 +49,18 @@ public class ShellHighlighterTests
         result.ShouldContain("hljs-params");
     }
 
+    [Fact]
+    public void Highlight_EncodesShellMetacharacters()
+    {
+        // Redirections/pipes must be HTML-encoded — the output is re-parsed by
+        // AngleSharp downstream, so a raw "< b" would be swallowed as a bogus tag.
+        var code = "cat a < b > c";
+
+        var result = _highlighter.Highlight(code, "bash");
+
+        result.ShouldContain("&lt;");
+        result.ShouldContain("&gt;");
+        result.ShouldNotContain("a < b");
+    }
+
 }

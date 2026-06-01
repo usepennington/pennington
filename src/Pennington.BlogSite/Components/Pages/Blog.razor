@@ -99,6 +99,7 @@
     {
         if (_rendered == null || BlogOptions.SocialMediaImageUrlFactory == null) return "";
         var imageUrl = BlogOptions.SocialMediaImageUrlFactory(_rendered.Page);
+        if (string.IsNullOrEmpty(imageUrl)) return "";
         return imageUrl.StartsWith('/') ? $"{PenningtonOptions.CanonicalBaseUrl}{imageUrl}" : imageUrl;
     }
 

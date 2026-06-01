@@ -236,7 +236,17 @@ public sealed class ContentResolver
             return items;
         }
 
+        // Strip the leading locale segment before matching the area slug — for a
+        // non-default locale the hierarchy is [locale, area, …], so matching the
+        // raw HierarchyParts[0] never hits and the localized area TOC comes back
+        // empty. Mirrors NavigationBuilder.FilterByLocale.
         return items
+            .Select(i => i.Locale != null
+                    && locale != null
+                    && i.HierarchyParts.Length > 0
+                    && string.Equals(i.HierarchyParts[0], locale, StringComparison.OrdinalIgnoreCase)
+                ? i with { HierarchyParts = i.HierarchyParts[1..] }
+                : i)
             .Where(i => i.HierarchyParts.Length > 0
                 && string.Equals(i.HierarchyParts[0], area.Slug,
                     StringComparison.OrdinalIgnoreCase))

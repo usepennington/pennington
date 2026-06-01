@@ -78,6 +78,18 @@ public sealed class CompiledAssemblyApiMetadataProviderTests
     }
 
     [Fact]
+    public async Task Documents_public_nested_types()
+    {
+        var provider = CreateProvider();
+
+        // MarkdownFile is a public record nested in LlmsTxtService. Nested public types
+        // carrying their own xmldoc must be documented, not silently dropped.
+        var types = await provider.GetTypesAsync();
+
+        types.ShouldContain(t => t.FullTypeName.Contains("MarkdownFile", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task Excludes_operators_from_the_method_list()
     {
         var provider = CreateProvider();

@@ -2,7 +2,8 @@ namespace Pennington.Markdown;
 
 using System.Collections.Immutable;
 using System.IO.Abstractions;
-using AngleSharp;
+using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
 using Markdig;
 using Markdig.Renderers;
 using Pipeline;
@@ -17,9 +18,6 @@ using Shortcodes;
 /// </summary>
 public sealed class MarkdownContentRenderer : IContentRenderer
 {
-    private static readonly IBrowsingContext BrowsingContext =
-        AngleSharp.BrowsingContext.New(Configuration.Default);
-
     private readonly MarkdownPipeline _pipeline;
     private readonly MarkdownLinkResolver? _linkResolver;
     private readonly IFileSystem? _fileSystem;
@@ -108,7 +106,9 @@ public sealed class MarkdownContentRenderer : IContentRenderer
             return html;
         }
 
-        var document = await BrowsingContext.OpenAsync(req => req.Content(html));
+        // Stateless per-call parse (matching CodeTransformer): a shared browsing
+        // context would race under the parallel render path in SiteProjection.
+        var document = new HtmlParser().ParseDocument(html);
         var modified = false;
 
         foreach (var element in document.QuerySelectorAll("a[href]"))
