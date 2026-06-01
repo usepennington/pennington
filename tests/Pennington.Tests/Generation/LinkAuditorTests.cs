@@ -24,7 +24,7 @@ public class LinkAuditorTests
             new OutputOptions { OutputDirectory = new FilePath("output") });
 
         var context = new RenderedAuditContext(
-            ImmutableList.Create(new ContentTocItem("Page", page, 0, [], null, null)),
+            ImmutableList.Create(page),
             new LocalizationOptions(),
             (route, ct) => Task.FromResult<string?>("""<a href="/missing/">link</a>"""));
 
@@ -50,7 +50,7 @@ public class LinkAuditorTests
             new OutputOptions { OutputDirectory = new FilePath("output") });
 
         var context = new RenderedAuditContext(
-            ImmutableList.Create(new ContentTocItem("Page", page, 0, [], null, null)),
+            ImmutableList.Create(page),
             new LocalizationOptions(),
             (route, ct) => Task.FromResult<string?>("""<a href="/other/">link</a>"""));
 
@@ -73,7 +73,7 @@ public class LinkAuditorTests
             new OutputOptions { OutputDirectory = new FilePath("output") });
 
         var context = new RenderedAuditContext(
-            ImmutableList.Create(new ContentTocItem("Page", page, 0, [], null, null)),
+            ImmutableList.Create(page),
             new LocalizationOptions(),
             (route, ct) => Task.FromResult<string?>("""<img src="/media/foo.svg">"""));
 
@@ -94,7 +94,7 @@ public class LinkAuditorTests
             new OutputOptions { OutputDirectory = new FilePath("output") });
 
         var context = new RenderedAuditContext(
-            ImmutableList.Create(new ContentTocItem("Page", page, 0, [], null, null)),
+            ImmutableList.Create(page),
             new LocalizationOptions(),
             (route, ct) => Task.FromResult<string?>(null));
 
@@ -121,7 +121,7 @@ public class LinkAuditorTests
             new OutputOptions { OutputDirectory = new FilePath("output") });
 
         var context = new RenderedAuditContext(
-            ImmutableList.Create(new ContentTocItem("Page", page, 0, [], null, null)),
+            ImmutableList.Create(page),
             new LocalizationOptions(),
             (route, ct) => Task.FromResult<string?>("""<a href="/utility/llms.txt">subtree</a>"""));
 
@@ -142,7 +142,7 @@ public class LinkAuditorTests
             new OutputOptions { OutputDirectory = new FilePath("output") });
 
         var context = new RenderedAuditContext(
-            ImmutableList.Create(new ContentTocItem("Page", page, 0, [], null, null)),
+            ImmutableList.Create(page),
             new LocalizationOptions(),
             (route, ct) => Task.FromResult<string?>("""<img src="/missing.png">"""));
 
