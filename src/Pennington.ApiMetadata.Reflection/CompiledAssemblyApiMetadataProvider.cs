@@ -322,11 +322,6 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
             {
                 CollectExtensions(type, assemblyName);
             }
-
-            foreach (var nested in type.GetNestedTypes(BindingFlags.Public))
-            {
-                ReflectType(nested, assemblyName);
-            }
         }
 
         public Catalog ToCatalog() => new(
@@ -581,18 +576,11 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
         return builder.ToImmutable();
     }
 
-    private static bool ShouldSkipType(Type t)
-    {
-        // Filter out compiler-generated helper types.
-        if (t.GetCustomAttributesData().Any(a => a.AttributeType.FullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
-        {
-            return true;
-        }
-
-        // Skip nested types here — the outer type enumerates them explicitly so we visit them
-        // with the right reflection context. Treating them as top-level doubles them up.
-        return t.IsNested;
-    }
+    private static bool ShouldSkipType(Type t) =>
+        // Filter out compiler-generated helper types. Public nested types are kept:
+        // GetExportedTypes() already returns them flattened, so the top-level pass
+        // documents each one once (gated on having its own xmldoc by ShouldDocument).
+        t.GetCustomAttributesData().Any(a => a.AttributeType.FullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute");
 
     private static bool ShouldSkipMethod(MethodInfo m)
     {

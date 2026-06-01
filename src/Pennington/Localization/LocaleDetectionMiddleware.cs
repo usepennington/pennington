@@ -50,13 +50,14 @@ public sealed class LocaleDetectionMiddleware
         // Preserve the original path in PathBase so URL generation still works.
         if (!isDefault)
         {
-            var stripped = _localization.StripLocalePrefix(path, locale);
-            var prefix = path[..^stripped.Length]; // e.g., "/gen-z"
-            if (prefix.Length > 0 && !prefix.Equals("/", StringComparison.Ordinal))
-            {
-                context.Request.PathBase = context.Request.PathBase.Add(prefix);
-                context.Request.Path = new PathString(stripped);
-            }
+            // Move the locale segment into PathBase and serve the stripped content
+            // path. The locale came from the path's first segment, so "/" + locale
+            // is exactly that segment — computing it directly avoids the off-by-one
+            // that slicing by the stripped-suffix length hits for a bare locale root
+            // ("/fr" strips to "/", which would otherwise yield prefix "/f").
+            var prefix = "/" + locale;
+            context.Request.PathBase = context.Request.PathBase.Add(prefix);
+            context.Request.Path = new PathString(contentPath);
         }
 
         return _next(context);

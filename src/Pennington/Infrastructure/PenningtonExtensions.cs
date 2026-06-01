@@ -312,7 +312,11 @@ public static class PenningtonExtensions
         services.AddSingleton<IHtmlResponseRewriter, CanonicalLinkHtmlRewriter>();
         services.AddSingleton<IHtmlResponseRewriter>(sp =>
             new BaseUrlHtmlRewriter(sp.GetRequiredService<OutputOptions>()));
-        services.AddSingleton<IResponseProcessor, HtmlResponseRewritingProcessor>();
+        // Transient: this processor holds the IHtmlResponseRewriter list, which
+        // includes XrefHtmlRewriter capturing the file-watched XrefResolver. A
+        // singleton would pin the first-resolved (stale) resolver and share one
+        // IBrowsingContext across concurrent requests — see the chain comment above.
+        services.AddTransient<IResponseProcessor, HtmlResponseRewritingProcessor>();
         services.AddSingleton<IResponseProcessor>(sp =>
             new BaseUrlCssResponseProcessor(sp.GetRequiredService<OutputOptions>()));
         services.AddSingleton<IResponseProcessor, LiveReloadScriptProcessor>();

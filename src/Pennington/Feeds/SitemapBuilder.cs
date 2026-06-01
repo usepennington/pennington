@@ -45,12 +45,7 @@ public sealed class SitemapBuilder
 
         foreach (var candidate in candidates)
         {
-            if (candidate.Metadata is { } metadata && metadata.IsHiddenFromBuild(_clock))
-            {
-                continue;
-            }
-            // Redirects have no sitemap meaning — they aren't canonical URLs.
-            if (candidate.Metadata is IRedirectable { RedirectUrl: { Length: > 0 } })
+            if (!IsPublishable(candidate, _clock))
             {
                 continue;
             }
@@ -67,5 +62,28 @@ public sealed class SitemapBuilder
         }
 
         return builder.ToImmutable();
+    }
+
+    /// <summary>
+    /// Filters candidates down to the rows that actually belong in the sitemap —
+    /// drafts, future-dated (scheduled), and redirect rows removed. Use this when
+    /// deriving sitemap-adjacent data (e.g. hreflang alternates) so it stays in
+    /// lockstep with <see cref="Build"/>.
+    /// </summary>
+    public IReadOnlyList<SitemapCandidate> Publishable(IReadOnlyList<SitemapCandidate> candidates) =>
+        candidates.Where(c => IsPublishable(c, _clock)).ToList();
+
+    private static bool IsPublishable(SitemapCandidate candidate, TimeProvider clock)
+    {
+        if (candidate.Metadata is { } metadata && metadata.IsHiddenFromBuild(clock))
+        {
+            return false;
+        }
+        // Redirects have no sitemap meaning — they aren't canonical URLs.
+        if (candidate.Metadata is IRedirectable { RedirectUrl: { Length: > 0 } })
+        {
+            return false;
+        }
+        return true;
     }
 }

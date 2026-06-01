@@ -82,7 +82,7 @@ public record BlogSiteOptions
     public HeaderLink[] MainSiteLinks { get; init; } = [];
 
     /// <summary>Factory producing a social-share image URL for a given post. Return null to fall back to defaults.</summary>
-    public Func<BlogPostPage, string>? SocialMediaImageUrlFactory { get; init; }
+    public Func<BlogPostPage, string?>? SocialMediaImageUrlFactory { get; init; }
 }
 
 /// <summary>Icon and URL for a social media link.</summary>

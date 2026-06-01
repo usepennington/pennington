@@ -115,7 +115,9 @@ public sealed class SitemapService : IFileWatchAware
 
         if (localization.IsMultiLocale)
         {
-            var localeUrlMap = BuildLocaleUrlMap(candidates, localization);
+            // Feed only the publishable candidates so hreflang alternates can never
+            // point at a draft / scheduled / redirect URL that Build() dropped.
+            var localeUrlMap = BuildLocaleUrlMap(builder.Publishable(candidates), localization);
             return SerializeToXmlWithHreflang(entries, localeUrlMap, localization, builder.CanonicalBase);
         }
 
@@ -209,7 +211,7 @@ public sealed class SitemapService : IFileWatchAware
     /// Builds a map from content-relative URL to list of (locale, URL) pairs.
     /// </summary>
     private static Dictionary<string, List<(string Locale, string Url)>> BuildLocaleUrlMap(
-        List<SitemapCandidate> candidates,
+        IReadOnlyList<SitemapCandidate> candidates,
         LocalizationOptions localization)
     {
         var map = new Dictionary<string, List<(string, string)>>(StringComparer.OrdinalIgnoreCase);

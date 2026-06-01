@@ -59,24 +59,48 @@ public sealed partial class ShellHighlighter : ICodeHighlighter
                 index = match.Length;
             }
 
-            // Rest of the line
-            var rest = line[index..];
-
-            // Strings (in single or double quotes)
-            rest = StringRegex().Replace(rest,
-                m => $"<span class=\"hljs-string\">{System.Net.WebUtility.HtmlEncode(m.Value)}</span>");
-
-            // Flags/options
-            rest = FlagsRegex().Replace(rest,
-                m => $"<span class=\"hljs-params\">{System.Net.WebUtility.HtmlEncode(m.Value)}</span>");
-
-            sb.Append(rest);
+            // Rest of the line: highlight strings, then flags inside the non-string
+            // gaps. Every literal run is HTML-encoded so shell metacharacters
+            // (<, >, &) can't leak as markup — the output is re-parsed downstream.
+            sb.Append(HighlightRest(line[index..]));
             sb.Append('\n');
         }
 
         sb.Append("</code></pre>");
         return sb.ToString();
     }
+
+    // Strings take precedence; flags are highlighted only in the gaps between
+    // string spans. Literal text in every gap is HTML-encoded.
+    private static string HighlightRest(string rest)
+    {
+        var sb = new StringBuilder();
+        var pos = 0;
+        foreach (Match m in StringRegex().Matches(rest))
+        {
+            AppendWithFlags(sb, rest[pos..m.Index]);
+            sb.Append($"<span class=\"hljs-string\">{Encode(m.Value)}</span>");
+            pos = m.Index + m.Length;
+        }
+
+        AppendWithFlags(sb, rest[pos..]);
+        return sb.ToString();
+    }
+
+    private static void AppendWithFlags(StringBuilder sb, string text)
+    {
+        var pos = 0;
+        foreach (Match m in FlagsRegex().Matches(text))
+        {
+            sb.Append(Encode(text[pos..m.Index]));
+            sb.Append($"<span class=\"hljs-params\">{Encode(m.Value)}</span>");
+            pos = m.Index + m.Length;
+        }
+
+        sb.Append(Encode(text[pos..]));
+    }
+
+    private static string Encode(string value) => System.Net.WebUtility.HtmlEncode(value);
 
     [GeneratedRegex(@"^\s*#")]
     private static partial Regex CommentRegex();
