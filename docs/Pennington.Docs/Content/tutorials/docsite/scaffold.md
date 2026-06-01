@@ -1,13 +1,13 @@
 ---
 title: "Scaffold a documentation site with DocSite"
-description: "Stand up the DocSite template on an empty ASP.NET project and map content areas to top-level folders."
+description: "Stand up the DocSite template on an empty ASP.NET project and let a folder of markdown light up the sidebar."
 sectionLabel: Getting Started with DocSite
 order: 1
-tags: [docsite, template, areas, scaffold]
+tags: [docsite, template, scaffold, navigation]
 uid: tutorials.docsite.scaffold
 ---
 
-By the end of this tutorial the DocSite host runs with a "Scaffold Docs" title, GitHub icon, header/footer chrome, and two content areas — Guides and Reference — each serving an index page from its own top-level folder.
+By the end of this tutorial the DocSite host runs with a "Scaffold Docs" title, GitHub icon, and header/footer chrome — and a folder of markdown pages that show up in the sidebar on their own, with a landing page at the root.
 
 `AddDocSite` is a shortcut. It pre-wires what the [getting-started tutorials](xref:tutorials.getting-started.first-site) assemble by hand — host, layout, navigation, styling — into one call, tuned for a single shape: a Divio-style documentation site. Reach for it when that shape fits; build on `AddPennington` directly for anything else. For what the template wires and where the wiring stops, read [what the templates wire for you](xref:explanation.positioning.docsite-positioning) first.
 
@@ -107,38 +107,34 @@ The five fields populated here — `SiteTitle`, `Description`, `GitHubUrl`, `Hea
 
 ---
 
-## 3. Map content to areas
+## 3. Add pages and watch the sidebar fill in
 
-`DocSiteOptions.Areas` is a list of `ContentArea(Title, Slug)` pairs. Each slug binds a top-level folder under `ContentRootPath` to a URL prefix and to its own sidebar tab. `ContentArea` is a record with two required fields plus optional `Icon` and `SearchBoost` (`record ContentArea(string Title, string Slug, string? Icon = null, int? SearchBoost = null)`); the order of entries in `Areas` drives the order of tabs in the sidebar.
+DocSite builds the sidebar from the shape of `Content/`. Drop a markdown file into a folder and it becomes a sidebar entry — no routing table, no registration call. A subfolder turns into a navigation group named after the folder.
 
 <Steps>
 <Step StepNumber="1">
 
-**Add two `ContentArea` entries to `DocSiteOptions`**
+**Create a `guides` folder with a landing page**
 
-Update the `Areas` block in `Program.cs` to register `guides` and `reference`. The sidebar only shows the area selector when more than one area is configured, so two entries are the minimum to surface the tab switcher.
-
-```csharp
-Areas =
-[
-    new ContentArea("Guides", "guides"),
-    new ContentArea("Reference", "reference"),
-],
-```
-
-</Step>
-<Step StepNumber="2">
-
-**Create the area folders**
-
-Under `Content/`, create two folders — `guides/` and `reference/` — each with an `index.md`. The `guides` slug binds `Content/guides/` to the `/guides/` URL prefix and to the Guides sidebar tab; `reference` works the same way.
+Under `Content/`, create a `guides/` folder and add an `index.md`. The folder name becomes a **Guides** group in the sidebar, and `index.md` is the page it links to at `/guides/`.
 
 ```markdown:symbol
 examples/DocSiteScaffoldExample/Content/guides/index.md
 ```
 
+</Step>
+<Step StepNumber="2">
+
+**Add two pages inside the folder**
+
+Add two more files next to `index.md`. Each carries a `title`, a `description`, and an `order:` — the `order:` decides which sorts first. Dropping the files in the folder is the whole wiring.
+
 ```markdown:symbol
-examples/DocSiteScaffoldExample/Content/reference/index.md
+examples/DocSiteScaffoldExample/Content/guides/getting-started.md
+```
+
+```markdown:symbol
+examples/DocSiteScaffoldExample/Content/guides/configuration.md
 ```
 
 </Step>
@@ -146,8 +142,9 @@ examples/DocSiteScaffoldExample/Content/reference/index.md
 
 <Checkpoint>
 
-- Visit `http://localhost:5000/guides/` — the Guides index page renders with the Guides tab selected in the sidebar
-- Visit `http://localhost:5000/reference/` — the Reference index page renders, the Reference tab is now selected, and the sidebar TOC filters to the Reference area only
+- Run `dotnet run` and visit `http://localhost:5000/guides/getting-started`
+- The sidebar shows a **Guides** group with *Getting started* above *Configuration* — sorted by `order:`
+- The page you're viewing is highlighted in the sidebar; clicking *Configuration* swaps to it instantly
 
 </Checkpoint>
 
@@ -155,42 +152,34 @@ examples/DocSiteScaffoldExample/Content/reference/index.md
 
 ## 4. Give the root `/` a landing page
 
-With `Areas` configured, the URL `/` sits **outside** every area — it is not a default redirect into the first area, and the area selector shows no active tab there. To make `/` render something other than a 404, drop a markdown file at `Content/index.md` (next to the area folders, not inside them).
+The pages under `guides/` answer to `/guides/...`, but the root `/` has no page of its own yet — a request to `/` returns a 404. To serve the root, drop a markdown file at `Content/index.md`, next to the `guides/` folder.
 
 <Steps>
 <Step StepNumber="1">
 
 **Author `Content/index.md`**
 
-Use the same [`DocSiteFrontMatter`](xref:reference.api.doc-site-front-matter) shape as any other page. The page resolves through the same content pipeline as area pages — the only thing that makes it the root is its location at `Content/index.md`.
+Use the same [`DocSiteFrontMatter`](xref:reference.api.doc-site-front-matter) shape as any other page. What makes this page the root is its location — `Content/index.md` maps to `/`.
 
 ```markdown
 ---
-title: Welcome to Scaffold Docs
-description: Pick an area to get started.
+title: Welcome
+description: Start here, then pick a guide.
 ---
 
-# Welcome
+Welcome to Scaffold Docs.
 
-- [Guides](/guides/) — task walk-throughs and onboarding.
-- [Reference](/reference/) — every option, key, and surface.
+- [Getting started](/guides/getting-started) — install and run.
+- [Configuration](/guides/configuration) — where settings live.
 ```
-
-</Step>
-<Step StepNumber="2">
-
-**Verify the root renders without an active area**
-
-Visit `http://localhost:5000/` — the page renders inside the DocSite chrome, the area selector shows no active tab (because the root is outside every area), and the sidebar is empty for the same reason. Any `/guides/...` or `/reference/...` link inside the page navigates into the matching area and lights up the corresponding sidebar tab.
 
 </Step>
 </Steps>
 
 <Checkpoint>
 
-- `http://localhost:5000/` returns the rendered `Content/index.md` page with the DocSite chrome around it
-- The area selector shows neither *Guides* nor *Reference* as active until the reader clicks into one
-- A request to `/some-area/` still resolves the matching area as in unit 4
+- `http://localhost:5000/` returns the rendered `Content/index.md` page inside the DocSite chrome
+- Both links navigate into the `guides/` pages and highlight them in the sidebar
 
 </Checkpoint>
 
@@ -200,6 +189,6 @@ Visit `http://localhost:5000/` — the page renders inside the DocSite chrome, t
 
 - An empty ASP.NET project picked up `AddDocSite` + `UseDocSite` + `RunDocSiteAsync`, and the full Razor chrome renders.
 - `DocSiteOptions` carries `SiteTitle`, `Description`, `GitHubUrl`, `HeaderContent`, and `FooterContent`, and each field appears in the rendered layout.
-- Two `ContentArea` entries bind top-level folders under `Content/` to URL prefixes and to sidebar tabs.
-- The root `/` is served by `Content/index.md`, which sits outside every area — without it, `/` returns a 404 even when areas are configured.
-- For the seams DocSite leaves open and what it hard-codes, see [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning).
+- Markdown files under `Content/` become sidebar entries with no extra wiring — a subfolder turns into a navigation group named after the folder, and `order:` sorts the pages inside it.
+- The root `/` is served by `Content/index.md`; without it, `/` returns a 404.
+- To split the sidebar into switchable areas and labeled sections, see [Organize content with sections and areas](xref:tutorials.docsite.sections-and-areas). For what the template hard-codes, see [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning).
