@@ -77,7 +77,7 @@ public readonly record struct ColorName(string Value)
 /// <summary>
 /// Options for configuring the Monorail CSS framework integration.
 /// </summary>
-public class MonorailCssOptions
+public sealed class MonorailCssOptions
 {
     /// <summary>
     /// Gets or sets the color scheme for the site.

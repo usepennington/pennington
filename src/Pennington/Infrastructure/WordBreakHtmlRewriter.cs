@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http;
 /// third-party <c>WordBreakMiddleware</c>, which re-parsed the response string
 /// the rewriting pipeline had already parsed.
 /// </summary>
-public sealed class WordBreakHtmlRewriter : IHtmlResponseRewriter
+internal sealed class WordBreakHtmlRewriter : IHtmlResponseRewriter
 {
     private readonly WordBreakOptions _options;
     private readonly WordBreakProcessor _processor;

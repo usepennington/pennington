@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 /// Replaces the console logger provider (which would otherwise corrupt XenoAtom's
 /// terminal frames).
 /// </summary>
-public sealed class TuiLoggerProvider(BoundedSequenceLog<LogEntry> buffer, LogLevel minLevel) : ILoggerProvider
+internal sealed class TuiLoggerProvider(BoundedSequenceLog<LogEntry> buffer, LogLevel minLevel) : ILoggerProvider
 {
     private readonly ConcurrentDictionary<string, TuiLogger> _loggers = new();
 

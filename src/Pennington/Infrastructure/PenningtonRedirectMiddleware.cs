@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Http;
 /// <see cref="Generation.OutputGenerationService"/> writes the meta-refresh body
 /// to disk. One code path for dev and publish.
 /// </summary>
-public sealed class PenningtonRedirectMiddleware
+internal sealed class PenningtonRedirectMiddleware
 {
     private readonly RequestDelegate _next;
 

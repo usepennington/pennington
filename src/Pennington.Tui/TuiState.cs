@@ -10,7 +10,7 @@ using XenoAtom.Terminal.UI;
 /// dependency tracker only observes <c>State&lt;T&gt;.Value</c> reads, so views that
 /// read raw fields would paint once and never update.
 /// </summary>
-public sealed class TuiState
+internal sealed class TuiState
 {
     /// <summary>Base URL Kestrel bound to, or <c>null</c> if not yet known.</summary>
     public string? AppUrl { get; internal set; }
@@ -37,7 +37,7 @@ public sealed class TuiState
 /// <param name="ServiceLabel">Pretty-printed service type name (e.g. <c>MarkdownContentService&lt;DocFrontMatter&gt;</c>).</param>
 /// <param name="DefaultSectionLabel">The service's <see cref="IContentService.DefaultSectionLabel"/>, shown as a dim subtitle.</param>
 /// <param name="Items">Items the service returned on the most recent refresh.</param>
-public readonly record struct ContentGroup(
+internal readonly record struct ContentGroup(
     string ServiceLabel,
     string DefaultSectionLabel,
     IReadOnlyList<ContentTocItem> Items);

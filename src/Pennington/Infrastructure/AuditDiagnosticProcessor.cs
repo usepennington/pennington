@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// overlay (<see cref="DiagnosticOverlayProcessor"/>) renders them. Disabled during static
 /// build because audit results land directly in <see cref="BuildReport"/> there.
 /// </summary>
-public sealed class AuditDiagnosticProcessor : IResponseProcessor
+internal sealed class AuditDiagnosticProcessor : IResponseProcessor
 {
     private readonly bool _isDevMode = !PenningtonBuildMode.IsHeadlessOneShot;
 

@@ -12,7 +12,7 @@ namespace Pennington.MonorailCss;
 /// </summary>
 /// <param name="options">MonorailCSS configuration options.</param>
 /// <param name="classRegistry">Live snapshot of classes + generated CSS from the runtime scanner.</param>
-public class MonorailCssService(
+public sealed class MonorailCssService(
     MonorailCssOptions options,
     IClassRegistry classRegistry)
 {
@@ -59,7 +59,7 @@ public class MonorailCssService(
     /// Used during DI registration to seed <see cref="MonorailDiscoveryOptions.Framework"/>;
     /// the discovery pipeline may then rebuild the framework when it processes source CSS.
     /// </summary>
-    public static CssFramework BuildFramework(MonorailCssOptions options)
+    internal static CssFramework BuildFramework(MonorailCssOptions options)
     {
         var theme = options.ColorScheme.ApplyToTheme(Theme.CreateWithDefaults());
 

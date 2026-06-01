@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Http;
 /// their layout — this rewriter only fills in the default and never overwrites.
 /// </para>
 /// </summary>
-public sealed class CanonicalLinkHtmlRewriter : IHtmlResponseRewriter
+internal sealed class CanonicalLinkHtmlRewriter : IHtmlResponseRewriter
 {
     private readonly PenningtonOptions _options;
 

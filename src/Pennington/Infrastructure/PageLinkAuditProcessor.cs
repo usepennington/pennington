@@ -13,7 +13,7 @@ using Routing;
 /// per page and floods the log on large sites. The build-mode auditor still runs the
 /// full pass for the build report.
 /// </summary>
-public sealed class PageLinkAuditProcessor : IResponseProcessor
+internal sealed class PageLinkAuditProcessor : IResponseProcessor
 {
     private readonly bool _isDevMode = !PenningtonBuildMode.IsHeadlessOneShot;
 

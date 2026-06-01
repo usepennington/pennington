@@ -10,7 +10,7 @@ using Pennington.Diagnostics;
 /// user navigates the site. Replaces the crawl-based <c>BuildReport</c> model —
 /// diagnostics fill in on demand as pages are rendered, not ahead of time.
 /// </summary>
-public sealed class PageDiagnosticsCollector
+internal sealed class PageDiagnosticsCollector
 {
     private readonly ConcurrentDictionary<string, PageDiagnosticsEntry> _byPath = new(StringComparer.Ordinal);
 
@@ -66,7 +66,7 @@ public sealed class PageDiagnosticsCollector
 /// <param name="Path">Request path the snapshot belongs to.</param>
 /// <param name="CapturedAt">When the snapshot was taken (end of that request).</param>
 /// <param name="Diagnostics">Diagnostics the content pipeline recorded during that request.</param>
-public readonly record struct PageDiagnosticsEntry(
+internal readonly record struct PageDiagnosticsEntry(
     string Path,
     DateTimeOffset CapturedAt,
     ImmutableArray<Diagnostic> Diagnostics);

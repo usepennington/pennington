@@ -12,7 +12,7 @@ using Routing;
 /// anything registered through <see cref="StaticAssetDescriptor"/> — those
 /// either flow through their own copy phase or aren't link targets.
 /// </summary>
-public static class MapGetRouteDiscovery
+internal static class MapGetRouteDiscovery
 {
     /// <summary>Yields a <see cref="ContentRoute"/> for every static GET endpoint discovered on the data source.</summary>
     public static IEnumerable<ContentRoute> Discover(EndpointDataSource endpointDataSource)
