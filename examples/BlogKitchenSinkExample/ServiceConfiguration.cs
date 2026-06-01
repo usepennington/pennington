@@ -83,7 +83,7 @@ internal static class ServiceConfiguration
     public static BlogSiteOptions BuildBlogSiteOptions() => new()
     {
         SiteTitle = "Pennington Kitchen Sink Blog",
-        Description = "A kitchen-sink BlogSite example that backs two how-to pages and two reference pages.",
+        SiteDescription = "A kitchen-sink BlogSite example that backs two how-to pages and two reference pages.",
         CanonicalBaseUrl = "https://blog.example.com",
 
         AuthorName = "Jamie Rivers",

@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Pages & Links",
-    Description = "Two content pages and a hub index demonstrating relative, absolute, and uid:-based linking.",
+    SiteDescription = "Two content pages and a hub index demonstrating relative, absolute, and uid:-based linking.",
     GitHubUrl = "https://github.com/usepennington/pennington",
     HeaderContent = """<a href="/">Pages &amp; Links</a>""",
     FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""",

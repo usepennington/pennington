@@ -17,7 +17,7 @@ Set `PostsPerPage` on `BlogSiteOptions`. Paginated URLs appear automatically.
 builder.Services.AddBlogSite(new BlogSiteOptions
 {
     SiteTitle = "My Blog",
-    Description = "Posts and notes.",
+    SiteDescription = "Posts and notes.",
     PostsPerPage = 10,
 });
 ```

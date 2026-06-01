@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Beyond Translation Audit",
-    Description = "Translation status auditor wired into the build report and dev overlay.",
+    SiteDescription = "Translation status auditor wired into the build report and dev overlay.",
     GitHubUrl = "https://github.com/usepennington/pennington",
     HeaderContent = """<a href="/">Beyond Translation Audit</a>""",
     FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""",

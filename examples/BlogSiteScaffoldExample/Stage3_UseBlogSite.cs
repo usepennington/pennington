@@ -24,7 +24,7 @@ public static class Stage3
         builder.Services.AddBlogSite(() => new BlogSiteOptions
         {
             SiteTitle = "Scaffold Blog",
-            Description = "A minimal BlogSite scaffold showing AddBlogSite, UseBlogSite, and RunBlogSiteAsync.",
+            SiteDescription = "A minimal BlogSite scaffold showing AddBlogSite, UseBlogSite, and RunBlogSiteAsync.",
             CanonicalBaseUrl = "https://example.com",
 
             ContentRootPath = "Content",

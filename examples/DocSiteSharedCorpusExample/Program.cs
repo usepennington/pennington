@@ -16,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Bramble",
-    Description = "Documentation for Bramble, a small scripting language — backed by the shared fixture corpus.",
+    SiteDescription = "Documentation for Bramble, a small scripting language — backed by the shared fixture corpus.",
     ContentRootPath = new("../_shared/Bramble/Content"),
     CanonicalBaseUrl = "https://bramble.example.com",
     GitHubUrl = "https://github.com/bramble-lang/bramble",

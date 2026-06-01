@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "FusionCache Docs",
-    Description = "Demo of Pennington's reflection-based API metadata backend, documenting ZiggyCreatures.FusionCache straight from its NuGet package.",
+    SiteDescription = "Demo of Pennington's reflection-based API metadata backend, documenting ZiggyCreatures.FusionCache straight from its NuGet package.",
     GitHubUrl = "https://github.com/ZiggyCreatures/FusionCache",
     HeaderContent = """<a href="/" class="font-bold text-lg">FusionCache Docs</a>""",
     FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">FusionCache © ZiggyCreatures. Rendered by Pennington.</footer>""",

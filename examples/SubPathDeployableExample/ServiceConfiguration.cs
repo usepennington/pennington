@@ -17,7 +17,7 @@ internal static class ServiceConfiguration
     public static DocSiteOptions BuildDocSiteOptions() => new()
     {
         SiteTitle = "Deploy Docs",
-        Description = "A minimal DocSite used to demonstrate static build, base URL, and the five deployment host recipes.",
+        SiteDescription = "A minimal DocSite used to demonstrate static build, base URL, and the five deployment host recipes.",
         GitHubUrl = "https://github.com/usepennington/pennington",
         HeaderContent = """<a href="/">Deploy Docs</a>""",
         FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""",

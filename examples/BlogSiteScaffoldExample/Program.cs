@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddBlogSite(() => new BlogSiteOptions
 {
     SiteTitle = "Scaffold Blog",
-    Description = "A minimal BlogSite scaffold showing AddBlogSite, UseBlogSite, and RunBlogSiteAsync.",
+    SiteDescription = "A minimal BlogSite scaffold showing AddBlogSite, UseBlogSite, and RunBlogSiteAsync.",
     CanonicalBaseUrl = "https://example.com",
 
     // BlogSite defaults put posts under `{ContentRootPath}/{BlogContentPath}`

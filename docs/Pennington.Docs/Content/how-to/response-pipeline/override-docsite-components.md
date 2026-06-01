@@ -20,7 +20,7 @@ For a working setup, see `examples/DocSiteChromeOverridesExample`. `SiteChromeOv
 
 ## Build the populated options
 
-The whole code surface for this recipe lives in one factory method, so the four seams sit together on a single record initializer. The example sets `SiteTitle` and `Description` alongside the override seams, matching the shape produced by `AddDocSite(() => SiteChromeOverrides.BuildDocSiteOptions())`.
+The whole code surface for this recipe lives in one factory method, so the four seams sit together on a single record initializer. The example sets `SiteTitle` and `SiteDescription` alongside the override seams, matching the shape produced by `AddDocSite(() => SiteChromeOverrides.BuildDocSiteOptions())`.
 
 ```csharp:symbol
 examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverrides.BuildDocSiteOptions

@@ -160,7 +160,7 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
         var channel = new XElement("channel",
             new XElement("title", _options.SiteTitle),
             new XElement("link", string.IsNullOrEmpty(canonicalBase) ? "/" : canonicalBase + "/"),
-            new XElement("description", _options.Description));
+            new XElement("description", _options.SiteDescription));
 
         if (!string.IsNullOrEmpty(canonicalBase))
         {
@@ -214,7 +214,7 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
         var builder = ImmutableList.CreateBuilder<BlogPostDescriptor>();
 
         var contentRoot = Path.GetFullPath(
-            Path.Combine(_options.ContentRootPath, _options.BlogContentPath));
+            Path.Combine(_options.ContentRootPath.Value, _options.BlogContentPath));
         if (!Directory.Exists(contentRoot))
         {
             return builder.ToImmutable();

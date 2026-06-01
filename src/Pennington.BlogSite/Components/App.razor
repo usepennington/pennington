@@ -76,9 +76,9 @@
         if (WebHostEnvironment.WebRootFileProvider.GetFileInfo(path).Exists) return true;
         // Pennington also serves Content/ as static files — check there before
         // declaring the preload broken.
-        var contentRoot = System.IO.Path.IsPathRooted(Options.ContentRootPath)
-            ? Options.ContentRootPath
-            : System.IO.Path.Combine(WebHostEnvironment.ContentRootPath, Options.ContentRootPath);
+        var contentRoot = System.IO.Path.IsPathRooted(Options.ContentRootPath.Value)
+            ? Options.ContentRootPath.Value
+            : System.IO.Path.Combine(WebHostEnvironment.ContentRootPath, Options.ContentRootPath.Value);
         return System.IO.File.Exists(System.IO.Path.Combine(contentRoot, path));
     }
 }

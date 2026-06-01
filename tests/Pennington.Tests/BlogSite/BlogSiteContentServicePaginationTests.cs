@@ -92,7 +92,7 @@ public class BlogSiteContentServicePaginationTests : IDisposable
         var options = new BlogSiteOptions
         {
             SiteTitle = "Test",
-            Description = "Test",
+            SiteDescription = "Test",
             ContentRootPath = _root,
             BlogContentPath = ".",
             PostsPerPage = postsPerPage,

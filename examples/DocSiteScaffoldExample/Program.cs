@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Scaffold Docs",
-    Description = "A minimal DocSite scaffold built on AddDocSite.",
+    SiteDescription = "A minimal DocSite scaffold built on AddDocSite.",
     GitHubUrl = "https://github.com/usepennington/pennington",
     HeaderContent = """<a href="/">Scaffold Docs</a>""",
     FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""",

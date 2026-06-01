@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddBlogSite(() => new BlogSiteOptions
 {
     SiteTitle = "First Post Blog",
-    Description = "A BlogSite tutorial app demonstrating a fully-populated BlogSiteFrontMatter.",
+    SiteDescription = "A BlogSite tutorial app demonstrating a fully-populated BlogSiteFrontMatter.",
     CanonicalBaseUrl = "https://example.com",
 
     AuthorName = "Author Name",

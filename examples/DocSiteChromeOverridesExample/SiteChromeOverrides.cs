@@ -27,7 +27,7 @@ public static class SiteChromeOverrides
     public static DocSiteOptions BuildDocSiteOptions() => new()
     {
         SiteTitle = "DocSite Chrome Overrides",
-        Description = "Running DocSite that exercises every override seam on DocSiteOptions.",
+        SiteDescription = "Running DocSite that exercises every override seam on DocSiteOptions.",
         HeaderContent = """<span class="chrome-header" data-chrome-overrides="docsite-header">Chrome Overrides</span>""",
         FooterContent = """<span class="chrome-footer" data-chrome-overrides="docsite-footer">(c) 2026 Pennington</span>""",
         AdditionalHtmlHeadContent = BuildHtmlHeadContent(),

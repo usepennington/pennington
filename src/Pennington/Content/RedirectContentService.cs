@@ -145,7 +145,7 @@ public sealed class RedirectContentService : IContentService
 
     private async Task<ImmutableDictionary<string, string>> LoadYamlAsync()
     {
-        var root = _pennOptions.ContentRootPath;
+        var root = _pennOptions.ContentRootPath.Value;
         var absoluteRoot = _fileSystem.Path.GetFullPath(root);
         var redirectsFile = _fileSystem.Path.Combine(absoluteRoot, "_redirects.yml");
 

@@ -66,7 +66,7 @@ src/Pennington.DocSite/DocSiteOptions.cs > DocSiteOptions.ContentSelector
 services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "My Docs",
-    Description = "Project documentation",
+    SiteDescription = "Project documentation",
     ContentSelector = "article.prose",
 });
 ```
@@ -79,7 +79,7 @@ To make a term also match alternates, set `SearchIndexOptions.Synonyms`. Keys an
 services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "My Docs",
-    Description = "Project documentation",
+    SiteDescription = "Project documentation",
     ConfigurePennington = penn =>
         penn.SearchIndex.Synonyms = new Dictionary<string, string[]>
         {
@@ -96,7 +96,7 @@ services.AddDocSite(() => new DocSiteOptions
 services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "My Docs",
-    Description = "Project documentation",
+    SiteDescription = "Project documentation",
     ConfigurePennington = penn =>
         penn.SearchIndex.Facets = SearchFacetField.Area | SearchFacetField.Section | SearchFacetField.Tags,
 });

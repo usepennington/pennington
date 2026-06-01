@@ -22,7 +22,7 @@ public static class Stage2
         builder.Services.AddDocSite(() => new DocSiteOptions // [!code ++]
         { // [!code ++]
             SiteTitle = "Scaffold Docs", // [!code ++]
-            Description = "A minimal DocSite scaffold built on AddDocSite.", // [!code ++]
+            SiteDescription = "A minimal DocSite scaffold built on AddDocSite.", // [!code ++]
             GitHubUrl = "https://github.com/usepennington/pennington", // [!code ++]
             HeaderContent = """<a href="/">Scaffold Docs</a>""", // [!code ++]
             FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""", // [!code ++]

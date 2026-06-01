@@ -126,7 +126,7 @@ public sealed class BlogContentService : IContentService, ILlmsSubtreeProvider, 
         var channel = new XElement("channel",
             new XElement("title", _options.SiteTitle),
             new XElement("link", string.IsNullOrEmpty(canonicalBase) ? "/" : canonicalBase + "/"),
-            new XElement("description", _options.Description));
+            new XElement("description", _options.SiteDescription));
 
         if (!string.IsNullOrEmpty(canonicalBase))
         {

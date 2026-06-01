@@ -17,7 +17,7 @@ public record DocSiteOptions
     public required string SiteTitle { get; init; }
 
     /// <summary>Short description used in the meta description tag and default OpenGraph description.</summary>
-    public required string Description { get; init; }
+    public required string SiteDescription { get; init; }
 
     /// <summary>Color scheme driving the MonorailCSS theme. Defaults to the built-in DocSite palette when null.</summary>
     public IColorScheme? ColorScheme { get; init; }

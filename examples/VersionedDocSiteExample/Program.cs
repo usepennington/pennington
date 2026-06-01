@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Humanizer Docs",
-    Description = "Side-by-side documentation for two versions of Humanizer.Core, with version-scoped content and a sidebar version selector.",
+    SiteDescription = "Side-by-side documentation for two versions of Humanizer.Core, with version-scoped content and a sidebar version selector.",
     GitHubUrl = "https://github.com/Humanizr/Humanizer",
     HeaderContent = """<a href="/" class="font-bold text-lg">Humanizer Docs</a>""",
     FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Humanizer © Mehdi Khalili & contributors. Rendered by Pennington.</footer>""",

@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Pennington",
-    Description = "A Content Engine for .NET",
+    SiteDescription = "A Content Engine for .NET",
     SocialImageUrl = "/social.png",
     ColorScheme = new GrapeColorScheme(),
     SyntaxTheme = new SyntaxTheme
