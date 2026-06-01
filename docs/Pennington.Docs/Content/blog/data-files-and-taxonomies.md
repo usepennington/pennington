@@ -59,6 +59,8 @@ builder.Services.AddTaxonomy<RecipeFrontMatter, string>(opts =>
 });
 ```
 
+The snippet is abbreviated: a real registration also sets `BaseUrl` and the `IndexPage` / `TermPage` Razor components, which the how-to below walks in full.
+
 Multiple axes against the same content coexist — a single-valued `/topic` and a
 multi-valued `/tag` can both run off the same front matter. The [taxonomy
 how-to](xref:how-to.content-services.taxonomy) covers single- versus

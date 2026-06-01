@@ -33,7 +33,7 @@ Each field on `ContentTocItem` plays a distinct role in the algorithm: `Hierarch
 src/Pennington/Navigation/NavigationBuilder.cs > NavigationBuilder.BuildTreeAsync
 ```
 
-The `currentRoute` parameter passed to `BuildTreeAsync` marks items `IsSelected` and propagates `IsExpanded` up the ancestor chain. The same tree therefore powers both the "where am I" highlight and the collapsed or expanded state of every surrounding folder. The method returns an `ImmutableList<NavigationTreeItem>`, so the entire tree is a value rather than a mutable model the rendering layer binds to directly.
+The `currentPath` parameter passed to `BuildTreeAsync` marks items `IsSelected` and propagates `IsExpanded` up the ancestor chain. The same tree therefore powers both the "where am I" highlight and the collapsed or expanded state of every surrounding folder. The method returns an `ImmutableList<NavigationTreeItem>`, so the entire tree is a value rather than a mutable model the rendering layer binds to directly.
 
 ### Sections without a direct content file
 
@@ -43,7 +43,7 @@ This is the mechanism that lets an author drop markdown files into `/how-to/depl
 
 The important distinction is between folder-derived grouping and the per-page `sectionLabel:` front-matter key. Grouping comes entirely from subfolder; `sectionLabel:` controls only the label shown in breadcrumbs and prev/next. Two files carrying identical `sectionLabel: "Advanced"` values in different folders render under two different sidebar headers — each named after its own folder — rather than merging. Merging by label would let two unrelated folders collide under a single heading, reintroducing the configuration conflict the filesystem-driven approach was designed to eliminate.
 
-The synthesized section node and a real leaf page share the same `NavigationTreeItem` record shape (see <xref:reference.api.navigation-tree-item>). The rendering component distinguishes them by checking `Children.Count > 0 && Route.CanonicalPath.Value == ""` rather than consulting a discriminator field.
+The synthesized section node and a real leaf page share the same `NavigationTreeItem` record shape (see <xref:reference.api.navigation-tree-item>). The rendering component distinguishes them by checking `Route.CanonicalPath.Value == ""` rather than consulting a discriminator field.
 
 ### Ordering: front matter for leaves, `_meta.yml` for folders
 

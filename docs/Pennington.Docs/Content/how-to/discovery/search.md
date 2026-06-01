@@ -52,7 +52,7 @@ src/Pennington/FrontMatter/IFrontMatter.cs > IFrontMatter.Search
 
 `SearchIndexOptions.DefaultPriority` (default `5`) is the baseline weight assigned to every document whose content service does not override `IContentService.SearchPriority`. Raise it for sources that should outrank neighbours; lower it for auxiliary content. Per-source overrides take precedence — see <xref:reference.api.search-index-options> for the shipped defaults.
 
-Under `AddDocSite` this property is reachable via the `ConfigurePennington` escape hatch (`opts.SearchIndex.DefaultPriority = …`), so this adjustment does not require dropping down to bare `AddPennington`.
+Under `AddDocSite` this property is reachable via the `ConfigurePennington` escape hatch (`ConfigurePennington = penn => penn.SearchIndex.DefaultPriority = …`), so this adjustment does not require dropping down to bare `AddPennington`.
 
 ### Override the content selector on DocSite
 
@@ -63,9 +63,11 @@ src/Pennington.DocSite/DocSiteOptions.cs > DocSiteOptions.ContentSelector
 ```
 
 ```csharp
-services.AddDocSite(opts =>
+services.AddDocSite(() => new DocSiteOptions
 {
-    opts.ContentSelector = "article.prose";
+    SiteTitle = "My Docs",
+    Description = "Project documentation",
+    ContentSelector = "article.prose",
 });
 ```
 
@@ -74,13 +76,15 @@ services.AddDocSite(opts =>
 To make a term also match alternates, set `SearchIndexOptions.Synonyms`. Keys and values are stemmed at build time and shipped in the entrypoint, so authors write natural words; the client expands query terms as it searches.
 
 ```csharp
-services.AddDocSite(opts =>
+services.AddDocSite(() => new DocSiteOptions
 {
-    opts.ConfigurePennington = penn =>
+    SiteTitle = "My Docs",
+    Description = "Project documentation",
+    ConfigurePennington = penn =>
         penn.SearchIndex.Synonyms = new Dictionary<string, string[]>
         {
             ["config"] = ["configuration", "settings"],
-        };
+        },
 });
 ```
 
@@ -89,10 +93,12 @@ services.AddDocSite(opts =>
 `SearchIndexOptions.Facets` selects the dimensions surfaced as filter chips: content area (the first URL segment after any locale prefix), section, and tags. Only area is on by default — it stays a short, stable list that reads well as chips. Section and tag vocabularies grow large enough to bury the filter bar, so opt into them when the extra filtering is worth the chips.
 
 ```csharp
-services.AddDocSite(opts =>
+services.AddDocSite(() => new DocSiteOptions
 {
-    opts.ConfigurePennington = penn =>
-        penn.SearchIndex.Facets = SearchFacetField.Area | SearchFacetField.Section | SearchFacetField.Tags;
+    SiteTitle = "My Docs",
+    Description = "Project documentation",
+    ConfigurePennington = penn =>
+        penn.SearchIndex.Facets = SearchFacetField.Area | SearchFacetField.Section | SearchFacetField.Tags,
 });
 ```
 

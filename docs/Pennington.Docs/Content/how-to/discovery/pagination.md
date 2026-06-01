@@ -31,7 +31,7 @@ Resulting routes:
 
 The default is `10`. A non-positive value disables pagination entirely (all posts on one page). The home page is intentionally not paginated — it stays curated with the recent-post slot and a link to the archive.
 
-## In a custom MarkdownContentService
+## In a custom content service
 
 The pattern is three pieces: a tiny `PagedList<T>` record, a Razor page with two `@page` directives, and an `IContentService` that yields the paginated routes during discovery.
 

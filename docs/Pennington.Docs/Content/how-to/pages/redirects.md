@@ -1,13 +1,13 @@
 ---
 title: "Forward visitors from a renamed page"
-description: "Set redirectUrl in front matter to emit a meta-refresh stub that sends visitors from the old path to the new one."
+description: "Set redirectUrl in front matter to forward visitors from the old path to the new one — an HTTP 301 on the live server, plus a meta-refresh stub in the static build."
 uid: how-to.pages.redirects
 order: 4
 sectionLabel: "Pages"
 tags: [redirects, front-matter, routing]
 ---
 
-When a published page is renamed or deleted, set `redirectUrl:` in its front matter to forward visitors to the new URL. Pennington emits a meta-refresh stub at the old path; the page body is not rendered or indexed. For batch redirects or true HTTP 301s, configure them at the hosting layer instead — that is out of scope here.
+When a published page is renamed or deleted, set `redirectUrl:` in its front matter to forward visitors to the new URL. On the dev and self-hosted server, Pennington issues a real HTTP 301 from the old path; the page body is not rendered or indexed. The static build also writes a `<meta http-equiv="refresh">` stub at the old path, since a static host can't issue a server-side 301 without its own redirect config. For batch redirects, configure them at the hosting layer instead — that is out of scope here.
 
 ## Before you begin
 - An existing Pennington site using `AddDocSite` (see <xref:tutorials.docsite.scaffold> if not) or another host whose front-matter type implements `IRedirectable`. `DocSiteFrontMatter` and `BlogSiteFrontMatter` both do. For a custom record, add the interface — see <xref:explanation.core.front-matter-capabilities>.
