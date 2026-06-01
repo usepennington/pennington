@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Http;
 /// without having to strip the base URL first.
 /// </para>
 /// </summary>
-public sealed class BaseUrlHtmlRewriter : IHtmlResponseRewriter
+internal sealed class BaseUrlHtmlRewriter : IHtmlResponseRewriter
 {
     private readonly string _baseUrl;
 

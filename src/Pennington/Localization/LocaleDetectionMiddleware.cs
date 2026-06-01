@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// locale segment. This allows Razor components to use a single <c>@page</c>
 /// directive without duplicating routes per locale.
 /// </summary>
-public sealed class LocaleDetectionMiddleware
+internal sealed class LocaleDetectionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly LocalizationOptions _localization;

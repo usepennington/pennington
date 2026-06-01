@@ -9,7 +9,7 @@ using System.IO;
 /// the list with duplicates. The Main tab snapshots and renders ordered by
 /// last-changed descending.
 /// </summary>
-public sealed class FileChangeLog
+internal sealed class FileChangeLog
 {
     private readonly ConcurrentDictionary<string, FileChangeEntry> _entries = new(StringComparer.OrdinalIgnoreCase);
 
@@ -36,7 +36,7 @@ public sealed class FileChangeLog
 /// <param name="LastChangeType">Type of the most recent change.</param>
 /// <param name="LastChanged">Timestamp of the most recent change.</param>
 /// <param name="Count">Total number of changes recorded this session.</param>
-public readonly record struct FileChangeEntry(
+internal readonly record struct FileChangeEntry(
     string FullPath,
     WatcherChangeTypes LastChangeType,
     DateTimeOffset LastChanged,

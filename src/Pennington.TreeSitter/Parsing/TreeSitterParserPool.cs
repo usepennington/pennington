@@ -5,7 +5,7 @@ using TsLanguage = global::TreeSitter.Language;
 using TsParser = global::TreeSitter.Parser;
 
 /// <summary>A disposable rental of a tree-sitter parser; disposing returns the parser to its pool.</summary>
-public readonly struct ParserLease : IDisposable
+internal readonly struct ParserLease : IDisposable
 {
     private readonly TreeSitterParserPool _pool;
     private readonly string _languageName;

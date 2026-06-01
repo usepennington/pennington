@@ -20,7 +20,7 @@ public static class PenningtonBuildMode
         => args.Length > 0 && args[0].Equals("build", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Returns true when the current process was launched with the <c>build</c> verb.</summary>
-    public static bool IsBuildMode() => PenningtonCli.Current.WritesOutput;
+    internal static bool IsBuildMode() => PenningtonCli.Current.WritesOutput;
 
     /// <summary>
     /// True when the current process runs a headless one-shot command (<c>build</c> or

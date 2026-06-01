@@ -7,7 +7,7 @@ using Routing;
 /// <summary>
 /// Mutable accumulator for a single static-build run that produces a finalized <see cref="BuildReport"/>.
 /// </summary>
-public sealed class BuildReportBuilder
+internal sealed class BuildReportBuilder
 {
     private readonly List<BuildDiagnostic> _diagnostics = [];
     private readonly List<BrokenLink> _brokenLinks = [];

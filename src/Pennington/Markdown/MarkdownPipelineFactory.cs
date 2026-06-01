@@ -65,7 +65,7 @@ internal static class MarkdownPipelineBuilderExtensions
     /// <summary>
     /// Adds syntax highlighting support to the Markdig pipeline.
     /// </summary>
-    public static MarkdownPipelineBuilder UseSyntaxHighlighting(
+    internal static MarkdownPipelineBuilder UseSyntaxHighlighting(
         this MarkdownPipelineBuilder builder,
         CodeBlockRenderingService renderingService,
         Func<CodeHighlightRenderOptions>? options = null)
@@ -77,7 +77,7 @@ internal static class MarkdownPipelineBuilderExtensions
     /// <summary>
     /// Adds support for tabbed code blocks.
     /// </summary>
-    public static MarkdownPipelineBuilder UseTabbedCodeBlocks(
+    internal static MarkdownPipelineBuilder UseTabbedCodeBlocks(
         this MarkdownPipelineBuilder builder,
         Func<TabbedCodeBlockRenderOptions>? options = null)
     {
@@ -88,7 +88,7 @@ internal static class MarkdownPipelineBuilderExtensions
     /// <summary>
     /// Adds support for DocFX-style content tabs built from <c>#&#160;[Label](#tab/id)</c> headings.
     /// </summary>
-    public static MarkdownPipelineBuilder UseContentTabs(this MarkdownPipelineBuilder builder)
+    internal static MarkdownPipelineBuilder UseContentTabs(this MarkdownPipelineBuilder builder)
     {
         builder.Extensions.AddIfNotAlready(new ContentTabsExtension());
         return builder;
@@ -97,7 +97,7 @@ internal static class MarkdownPipelineBuilderExtensions
     /// <summary>
     /// Adds custom alert block support, replacing the built-in alert inline parser.
     /// </summary>
-    public static MarkdownPipelineBuilder UseCustomAlerts(this MarkdownPipelineBuilder builder)
+    internal static MarkdownPipelineBuilder UseCustomAlerts(this MarkdownPipelineBuilder builder)
     {
         builder.UseAlertBlocks();
         builder.Extensions.AddIfNotAlready(new CustomAlertsExtension());
@@ -109,7 +109,7 @@ internal static class MarkdownPipelineBuilderExtensions
     /// so wide markdown tables scroll horizontally inside their content column instead of
     /// forcing the surrounding layout to scroll.
     /// </summary>
-    public static MarkdownPipelineBuilder UseScrollableTables(this MarkdownPipelineBuilder builder)
+    internal static MarkdownPipelineBuilder UseScrollableTables(this MarkdownPipelineBuilder builder)
     {
         builder.Extensions.AddIfNotAlready(new ScrollableTablesExtension());
         return builder;

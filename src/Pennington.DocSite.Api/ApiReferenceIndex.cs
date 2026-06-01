@@ -15,7 +15,7 @@ using Pennington.Infrastructure;
 /// <param name="TypeName">Short type name without the namespace.</param>
 /// <param name="Namespace">Fully-qualified containing namespace, used for the index page's grouping headings.</param>
 /// <param name="Summary">First sentence of the type's xmldoc summary, or <c>null</c> if absent.</param>
-public sealed record ApiReferenceEntry(
+internal sealed record ApiReferenceEntry(
     string Slug,
     string Uid,
     string TypeName,
@@ -31,7 +31,7 @@ public sealed record ApiReferenceEntry(
 /// Singleton that asks the configured <see cref="IApiMetadataProvider"/> once
 /// and publishes a slug → entry map for the API-reference Razor page and content service.
 /// </summary>
-public sealed class ApiReferenceIndex
+internal sealed class ApiReferenceIndex
 {
     private readonly IApiMetadataProvider _provider;
     private readonly ILogger<ApiReferenceIndex> _logger;

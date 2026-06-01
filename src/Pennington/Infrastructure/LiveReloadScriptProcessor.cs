@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 /// Injects a live reload script into HTML responses during development.
 /// Skipped during static build so the output HTML is clean.
 /// </summary>
-public sealed class LiveReloadScriptProcessor : IResponseProcessor
+internal sealed class LiveReloadScriptProcessor : IResponseProcessor
 {
     private readonly bool _isDevMode = !PenningtonBuildMode.IsHeadlessOneShot;
 

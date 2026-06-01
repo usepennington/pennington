@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// Updates on SPA navigations via the spa:diagnostics custom event.
 /// Only active during dev-serve (disabled during static build).
 /// </summary>
-public sealed class DiagnosticOverlayProcessor : IResponseProcessor
+internal sealed class DiagnosticOverlayProcessor : IResponseProcessor
 {
     private readonly bool _isDevMode = !PenningtonBuildMode.IsHeadlessOneShot;
 

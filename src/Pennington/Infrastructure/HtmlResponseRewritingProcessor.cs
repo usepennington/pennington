@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Http;
 /// with its own parse/serialize cycle and its own <see cref="IBrowsingContext"/>.
 /// </para>
 /// </summary>
-public sealed class HtmlResponseRewritingProcessor : IResponseProcessor
+internal sealed class HtmlResponseRewritingProcessor : IResponseProcessor
 {
     private readonly IReadOnlyList<IHtmlResponseRewriter> _rewriters;
     private readonly IBrowsingContext _browsingContext = BrowsingContext.New(Configuration.Default);

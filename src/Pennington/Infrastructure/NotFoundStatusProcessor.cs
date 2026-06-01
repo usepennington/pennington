@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Http;
 /// and HTTP clients.
 /// </para>
 /// </summary>
-public sealed class NotFoundStatusProcessor : IResponseProcessor
+internal sealed class NotFoundStatusProcessor : IResponseProcessor
 {
     /// <summary>Marker key set on <see cref="HttpContext.Items"/> by pages that resolve a 404.</summary>
     public const string NotFoundKey = "Pennington.NotFound";

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 /// Runs as middleware (like the llms.txt sidecars) because a <c>{locale}/{prefix}</c> route
 /// can't be baked by the static crawler, and so it isn't claimed by content routes.
 /// </summary>
-public sealed class SearchArtifactMiddleware
+internal sealed class SearchArtifactMiddleware
 {
     private readonly RequestDelegate _next;
 

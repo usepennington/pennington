@@ -12,7 +12,7 @@ using Pennington.DocSite;
 /// matches. Runs before Blazor's router so the component sees a stable
 /// route template regardless of how the caller configured the public URL.
 /// </summary>
-public sealed class ApiReferenceRewriteMiddleware
+internal sealed class ApiReferenceRewriteMiddleware
 {
     private const string InternalPrefix = "/_pnn_api/";
 

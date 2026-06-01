@@ -19,7 +19,7 @@ public sealed record ContentRoute
     public bool IsFallback { get; init; }
 
     /// <summary>Composes the canonical path with a base URL path.</summary>
-    public UrlPath WithBaseUrl(UrlPath baseUrl) => baseUrl / CanonicalPath;
+    internal UrlPath WithBaseUrl(UrlPath baseUrl) => baseUrl / CanonicalPath;
 
     /// <summary>Compose the canonical path with the site's canonical base URL; see <see cref="UrlComposer.Combine"/>.</summary>
     public UrlPath AbsoluteUrl(UrlPath canonicalBase) => UrlComposer.Combine(canonicalBase, CanonicalPath);

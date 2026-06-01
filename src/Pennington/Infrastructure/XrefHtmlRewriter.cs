@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// Runs first in the HTML rewriting pipeline so the canonical paths it
 /// emits are available to later locale and base-URL rewriters.
 /// </summary>
-public sealed class XrefHtmlRewriter : IHtmlResponseRewriter
+internal sealed class XrefHtmlRewriter : IHtmlResponseRewriter
 {
     private readonly XrefResolvingService _service;
 

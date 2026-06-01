@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Http;
 /// and must apply last among URL rewriters.
 /// </para>
 /// </summary>
-public sealed class LocaleLinkHtmlRewriter : IHtmlResponseRewriter
+internal sealed class LocaleLinkHtmlRewriter : IHtmlResponseRewriter
 {
     private readonly LocalizationOptions _localization;
 

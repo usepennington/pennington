@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 /// when <paramref name="capacity"/> is exceeded; the minimum floor of 50 keeps the
 /// dashboard from rendering empty on a busy page even if a caller passes 0.
 /// </summary>
-public sealed class BoundedSequenceLog<T>(int capacity)
+internal sealed class BoundedSequenceLog<T>(int capacity)
 {
     private readonly ConcurrentQueue<T> _entries = new();
     private readonly int _capacity = Math.Max(50, capacity);
@@ -36,7 +36,7 @@ public sealed class BoundedSequenceLog<T>(int capacity)
 /// <param name="QueryString">Query string including the leading <c>?</c>, or empty.</param>
 /// <param name="Status">HTTP response status code.</param>
 /// <param name="Duration">Wall time between request start and completion.</param>
-public readonly record struct RequestEntry(
+internal readonly record struct RequestEntry(
     long Sequence,
     DateTimeOffset Timestamp,
     string Method,
@@ -52,7 +52,7 @@ public readonly record struct RequestEntry(
 /// <param name="Category">Logger category (typically the type name).</param>
 /// <param name="Message">Formatted log message.</param>
 /// <param name="Exception">Exception attached to the record, if any.</param>
-public readonly record struct LogEntry(
+internal readonly record struct LogEntry(
     long Sequence,
     DateTimeOffset Timestamp,
     LogLevel Level,

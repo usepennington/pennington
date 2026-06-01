@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 /// <c>/reference/api/llms.txt</c> get caught by the API-reference Razor route
 /// (whose <c>{slug}</c> segment matches <c>llms.txt</c>).
 /// </summary>
-public sealed class LlmsTxtMiddleware
+internal sealed class LlmsTxtMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly LlmsTxtOptions _options;
