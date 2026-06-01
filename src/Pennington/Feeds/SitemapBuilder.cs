@@ -55,9 +55,7 @@ public sealed class SitemapBuilder
 
             builder.Add(new SitemapEntry(
                 Url: absoluteUrl,
-                LastModified: lastModified,
-                ChangeFrequency: null,
-                Priority: null
+                LastModified: lastModified
             ));
         }
 

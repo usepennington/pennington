@@ -6,16 +6,12 @@ using Diagnostics;
 using Routing;
 
 /// <summary>
-/// Aggregated result of a static build run, including diagnostics, broken links, and per-page outcomes.
+/// Aggregated result of a static build run, including diagnostics and per-page outcomes.
 /// </summary>
 public sealed class BuildReport
 {
     /// <summary>Diagnostics recorded during the build.</summary>
     public ImmutableList<BuildDiagnostic> Diagnostics { get; }
-
-    /// <summary>Broken links discovered by link verification.</summary>
-    [Obsolete("Read Diagnostics filtered by source 'content.links/' instead. Scheduled for removal one release later.")]
-    public ImmutableList<BrokenLink> BrokenLinks { get; }
 
     /// <summary>Routes that were successfully written to the output directory.</summary>
     public ImmutableList<ContentRoute> GeneratedPages { get; }
@@ -29,12 +25,16 @@ public sealed class BuildReport
     /// <summary>Total wall-clock duration of the build.</summary>
     public TimeSpan Duration { get; }
 
-    /// <summary>True when the build produced any errors, failed pages, or broken links.</summary>
+    /// <summary>True when the build produced any error diagnostics, broken links, or failed pages.</summary>
     public bool HasErrors => Diagnostics.Any(d => d.Severity is DiagnosticSeverity.Error)
-#pragma warning disable CS0618
-                          || BrokenLinks.Count > 0
-#pragma warning restore CS0618
+                          || Diagnostics.Any(IsBrokenLink)
                           || FailedPages.Count > 0;
+
+    // LinkAuditor (Code "content.links") emits broken links as Warning diagnostics; they
+    // still fail the build, so HasErrors checks for that source prefix explicitly.
+    private static bool IsBrokenLink(BuildDiagnostic diagnostic) =>
+        diagnostic.SourceFile is { } source
+        && source.StartsWith("content.links/", StringComparison.Ordinal);
 
     /// <summary>Total number of pages considered, including generated, skipped, and failed.</summary>
     public int TotalPages => GeneratedPages.Count + SkippedPages.Count + FailedPages.Count;
@@ -42,16 +42,12 @@ public sealed class BuildReport
     /// <summary>Initializes a completed build report with all captured results.</summary>
     public BuildReport(
         ImmutableList<BuildDiagnostic> diagnostics,
-        ImmutableList<BrokenLink> brokenLinks,
         ImmutableList<ContentRoute> generatedPages,
         ImmutableList<ContentRoute> skippedPages,
         ImmutableList<ContentRoute> failedPages,
         TimeSpan duration)
     {
         Diagnostics = diagnostics;
-#pragma warning disable CS0618
-        BrokenLinks = brokenLinks;
-#pragma warning restore CS0618
         GeneratedPages = generatedPages;
         SkippedPages = skippedPages;
         FailedPages = failedPages;
@@ -94,12 +90,9 @@ public sealed class BuildReport
             writer.WriteLine();
         }
 
-        // Warnings section
+        // Warnings section (broken links arrive here as content.links/ warning diagnostics).
         var warningDiags = Diagnostics.Where(d => d.Severity is DiagnosticSeverity.Warning).ToList();
-#pragma warning disable CS0618
-        var brokenLinks = BrokenLinks;
-#pragma warning restore CS0618
-        if (warningDiags.Count > 0 || brokenLinks.Count > 0)
+        if (warningDiags.Count > 0)
         {
             writer.WriteLine("WARNINGS");
             foreach (var diag in warningDiags)
@@ -111,14 +104,6 @@ public sealed class BuildReport
                 else
                 {
                     writer.WriteLine($"  {diag.Message}");
-                }
-            }
-            if (brokenLinks.Count > 0)
-            {
-                writer.WriteLine($"  {brokenLinks.Count} broken links found:");
-                foreach (var link in brokenLinks)
-                {
-                    writer.WriteLine($"    {link.SourcePage.CanonicalPath} links to {link.Url} ({link.Reason})");
                 }
             }
             writer.WriteLine();

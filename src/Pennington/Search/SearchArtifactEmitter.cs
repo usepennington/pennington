@@ -24,10 +24,9 @@ public sealed class SearchArtifactEmitter : IContentEmitter
         var builder = ImmutableList.CreateBuilder<ContentToCreate>();
         foreach (var (path, bytes) in files)
         {
-            var captured = bytes;
             builder.Add(new ContentToCreate(
                 new FilePath(path),
-                () => Task.FromResult(captured),
+                () => Task.FromResult(bytes),
                 "application/json"));
         }
 
