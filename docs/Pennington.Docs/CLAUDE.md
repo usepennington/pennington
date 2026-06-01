@@ -115,7 +115,7 @@ Two more `:symbol` flags, comma-combinable with `,bodyonly`:
 - **Overloads** resolve to the first declaration of that name in the file — name-path addressing can't distinguish signatures. Point at an unambiguous member, or hand-write the snippet.
 - **`,imports` is unfiltered.** It prepends every top-of-file import, not just the ones the snippet references — trim by hand when a member needs only a few.
 
-Requires `Pennington.TreeSitter` wired (`AddPenningtonTreeSitter`) with `ContentRoot` set.
+Requires `Pennington.TreeSitter` wired (`AddTreeSitter`) with `ContentRoot` set.
 
 ## Writing conventions
 

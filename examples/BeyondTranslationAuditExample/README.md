@@ -1,10 +1,10 @@
 # BeyondTranslationAuditExample
 
-Wires `AddPenningtonTranslationAudit` into a two-locale DocSite. Spanish translations under `Content/es/` deliberately omit `getting-started.md` so the auditor produces a "missing es translation" warning visible both in the dev overlay (`#penn-diag-root` badge in the bottom-right when a page has diagnostics) and in `dotnet run -- build` diagnostics.
+Wires `AddTranslationAudit` into a two-locale DocSite. Spanish translations under `Content/es/` deliberately omit `getting-started.md` so the auditor produces a "missing es translation" warning visible both in the dev overlay (`#penn-diag-root` badge in the bottom-right when a page has diagnostics) and in `dotnet run -- build` diagnostics.
 
 ## Concepts
 
-- `AddPenningtonTranslationAudit` registering an `IBuildAuditor`
+- `AddTranslationAudit` registering an `IBuildAuditor`
 - Audit cache shared with the dev overlay — same data behind both surfaces (look for the `#penn-diag-root` badge, not `[class*=overlay]`)
 - Repository auto-discovery from the current working directory
 

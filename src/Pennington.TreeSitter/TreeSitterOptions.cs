@@ -7,7 +7,7 @@ public sealed class TreeSitterOptions
 {
     /// <summary>
     /// Base directory that <c>:symbol</c> file references resolve against. When null or empty,
-    /// <see cref="TreeSitterExtensions.AddPenningtonTreeSitter"/> registers only these options and no services.
+    /// <see cref="TreeSitterExtensions.AddTreeSitter"/> registers only these options and no services.
     /// </summary>
     public string? ContentRoot { get; set; }
 

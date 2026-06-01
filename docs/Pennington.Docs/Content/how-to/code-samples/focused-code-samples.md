@@ -10,7 +10,7 @@ tags: [authoring, symbol, code-samples, tree-sitter]
 To limit a code fence to the one member a walkthrough discusses — rather than dumping the whole enclosing file with every sibling member — use the `:symbol` preprocessor's member-scoped form. The recipes below scope a fence to a member, strip declaration noise, and diff two implementations. Address a member by its **name path** (`Type.Member`) rather than a hard-coded line range — a name path survives the line shifts that silently break a range. For the fence grammar itself, see <xref:reference.markdown.code-block-args>.
 
 ## Before you begin
-- An existing Pennington site (see <xref:tutorials.getting-started.first-site> if not), with `Pennington.TreeSitter` wired through `AddPenningtonTreeSitter` and `ContentRoot` pointing at the root that holds the source to fence.
+- An existing Pennington site (see <xref:tutorials.getting-started.first-site> if not), with `Pennington.TreeSitter` wired through `AddTreeSitter` and `ContentRoot` pointing at the root that holds the source to fence.
 - Comfort authoring markdown code fences — the techniques on this page are all info-string changes on a `csharp:symbol` fence.
 
 For a working setup, see [`examples/FocusedCodeSamplesExample`](https://github.com/usepennington/pennington/tree/main/examples/FocusedCodeSamplesExample). `MonolithWordCounter` carries one long `CountWords` method; `ModularWordCounter` splits the same logic into `Tokenize`, `Tally`, and `Format`. Both are referenced by the fences below.

@@ -33,7 +33,7 @@ builder.Services.AddPennington(penn =>
 
 // Opt the custom BlogFrontMatter into source-generated YAML metadata. DocFrontMatter is
 // already covered by Pennington's built-in context; types with no context use reflection.
-builder.Services.AddPenningtonYamlContext(BlogFrontMatterYamlContext.Default);
+builder.Services.AddYamlContext(BlogFrontMatterYamlContext.Default);
 
 var app = builder.Build();
 

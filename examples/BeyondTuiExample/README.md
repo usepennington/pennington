@@ -1,10 +1,10 @@
 # BeyondTuiExample
 
-Opts a DocSite host into the dev-time TUI dashboard via `AddPenningtonTui`. One line on top of the standard DocSite — under `dotnet run` (with a real terminal) the host paints a full-screen XenoAtom dashboard over stdout; under `dotnet run -- build`, when stdout is redirected, or when `DOTNET_WATCH=1`, the hosted service no-ops so static publish, CI logs, and `dotnet watch` continue to work normally.
+Opts a DocSite host into the dev-time TUI dashboard via `AddTui`. One line on top of the standard DocSite — under `dotnet run` (with a real terminal) the host paints a full-screen XenoAtom dashboard over stdout; under `dotnet run -- build`, when stdout is redirected, or when `DOTNET_WATCH=1`, the hosted service no-ops so static publish, CI logs, and `dotnet watch` continue to work normally.
 
 ## What the TUI surfaces
 
-`AddPenningtonTui` registers a hosted service (`PenningtonTuiHostedService`) that brings up four panels:
+`AddTui` registers a hosted service (`PenningtonTuiHostedService`) that brings up four panels:
 
 - **Main tab** — process status, app URL (resolved from `IServerAddressesFeature`), a ring buffer of recent HTTP requests, a ring buffer of log lines, and the file-change log.
 - **Content tab** — every registered `IContentService`'s discovered TOC entries, refreshed when `IFileWatcher` reports a change. The refresh is debounced by `PenningtonTuiOptions.FileChangeDebounce` (default 500 ms) so a `:w` in vim that touches many files batches into one TOC rebuild.
@@ -19,7 +19,7 @@ The hosted service skips all of that when:
 
 ## Concepts
 
-- `AddPenningtonTui` registering `PenningtonTuiHostedService` + four-tab dashboard
+- `AddTui` registering `PenningtonTuiHostedService` + four-tab dashboard
 - Debounced `IFileWatcher` subscription rebuilding the Content tab
 - Shared `IAuditCache` feeding the Diagnostics tab — the *same* data the dev overlay (`#penn-diag-root`) and the build report read
 - Dev-only — build mode, dotnet watch, and non-TTY stdout are all detected at startup
@@ -28,7 +28,7 @@ The hosted service skips all of that when:
 
 No dedicated how-to or reference page exists yet — the framework source is the authoritative surface:
 
-- `src/Pennington.Tui/PenningtonTuiExtensions.cs` — `AddPenningtonTui` registration + the three early-exit gates.
+- `src/Pennington.Tui/PenningtonTuiExtensions.cs` — `AddTui` registration + the three early-exit gates.
 - `src/Pennington.Tui/PenningtonTuiHostedService.cs` — hosted-service lifecycle (`OnApplicationStarted`, `RunTuiLoop`, `OnFileChanged`).
 - `src/Pennington.Tui/PenningtonTuiOptions.cs` — `FileChangeDebounce`, buffer sizes, `LogMinLevel`.
 - `src/Pennington.Tui/Views/TuiApp.cs` — XenoAtom rendering entry point (Main / Content / Diagnostics tabs).

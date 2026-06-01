@@ -32,7 +32,7 @@ The returned `CodeBlockPreprocessResult` carries the pre-rendered HTML, the `Bas
 
 ## Register the implementation
 
-Pennington collects every `ICodeBlockPreprocessor` from DI. Register anywhere after `AddPennington` — there is no `PenningtonOptions` knob. `AddPenningtonTreeSitter` performs the equivalent registration for its `:symbol` preprocessor.
+Pennington collects every `ICodeBlockPreprocessor` from DI. Register anywhere after `AddPennington` — there is no `PenningtonOptions` knob. `AddTreeSitter` performs the equivalent registration for its `:symbol` preprocessor.
 
 ```csharp
 builder.Services.AddSingleton<ICodeBlockPreprocessor, LineCountPreprocessor>();

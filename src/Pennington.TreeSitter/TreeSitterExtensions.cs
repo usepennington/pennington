@@ -15,7 +15,7 @@ public static class TreeSitterExtensions
     /// Adds tree-sitter based multi-language code-fragment extraction — the <c>:symbol</c> fence modifier.
     /// Services are registered only when <see cref="TreeSitterOptions.ContentRoot"/> is configured.
     /// </summary>
-    public static IServiceCollection AddPenningtonTreeSitter(this IServiceCollection services, Action<TreeSitterOptions>? configure = null)
+    public static IServiceCollection AddTreeSitter(this IServiceCollection services, Action<TreeSitterOptions>? configure = null)
     {
         var options = new TreeSitterOptions();
         configure?.Invoke(options);

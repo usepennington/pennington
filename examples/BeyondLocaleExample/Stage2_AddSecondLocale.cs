@@ -7,7 +7,7 @@ using Pennington.Localization; // [!code ++]
 /// Stage 2 — add a <c>ConfigureLocalization</c> action to
 /// <see cref="DocSiteOptions"/> and register two locales. This is the
 /// only code change required; DocSite's <c>UseDocSite</c> already calls
-/// <see cref="Pennington.Infrastructure.PenningtonExtensions.UsePenningtonLocaleRouting"/>,
+/// <see cref="Pennington.Infrastructure.PenningtonExtensions.UseLocaleRouting"/>,
 /// which is a no-op until <see cref="Pennington.Infrastructure.LocalizationOptions.IsMultiLocale"/>
 /// flips to <c>true</c>. Spanish content lives under <c>Content/es/</c>;
 /// each file mirrors a default-locale file by name. Tutorial prose

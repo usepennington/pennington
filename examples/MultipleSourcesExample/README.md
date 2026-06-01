@@ -7,7 +7,7 @@ Bare `AddPennington` host with two `AddMarkdownContent<T>` calls pointing at dif
 - Multiple markdown sources in one host
 - Per-source `ContentPath` / `BasePageUrl` / `ExcludePaths`
 - Per-source front-matter types
-- Opt a custom front-matter type into source-generated YAML metadata via `AddPenningtonYamlContext` (`BlogFrontMatterYamlContext`); reflection remains the fallback for unregistered types
+- Opt a custom front-matter type into source-generated YAML metadata via `AddYamlContext` (`BlogFrontMatterYamlContext`); reflection remains the fallback for unregistered types
 - Overlap demonstration toggled by the `MULTIPLE_SOURCES_OVERLAP=1` env var
 
 ## Referenced from
