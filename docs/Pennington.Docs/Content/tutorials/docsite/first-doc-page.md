@@ -16,7 +16,7 @@ By the end of this tutorial the Guides area has two new pages — `install.md` a
 ## Prerequisites
 
 - .NET 11 SDK installed
-- Completed [Scaffold a DocSite](xref:tutorials.docsite.scaffold) (or have a single-area DocSite project ready with a `Guides` area pointed at `Content/guides/`)
+- Completed [Scaffold a DocSite](xref:tutorials.docsite.scaffold) (or have a DocSite project with a `Content/guides/` folder ready — this tutorial adds pages to it)
 
 The finished code for this tutorial lives in [`examples/DocSitePagesAndLinksExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSitePagesAndLinksExample).
 

@@ -16,23 +16,23 @@ By the end of this tutorial the DocSite runs at `http://localhost:5000` with an 
 ## Prerequisites
 
 - .NET 11 SDK installed
-- Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the single-area host shape this tutorial extends)
+- Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the area-free `Content/guides/` host this tutorial turns into areas)
 - Completed [Author a documentation page with DocFrontMatter](xref:tutorials.docsite.first-doc-page) (so `DocSiteFrontMatter` keys like `sectionLabel:` and `order:` are already familiar)
 
 The finished code for this tutorial lives in [`examples/DocSiteSectionsExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteSectionsExample).
 
 ---
 
-## 1. Start from a flat area and see the limit
+## 1. Register two areas and start from a flat page
 
-Let's begin with a single page parked directly under an area folder — no subfolder, no `sectionLabel:`, no `order:` — so the sidebar has nothing to group. This establishes the baseline the rest of the tutorial builds on.
+The scaffold left `Content/` area-free — every page shared one sidebar tree. This tutorial splits that into two switchable tabs, **Guides** and **Reference**, then fills each with grouped sections. Start by registering the areas, then park a single page under one of them so the sidebar has a flat baseline before any grouping.
 
 <Steps>
 <Step StepNumber="1">
 
-**Keep the two-area host from the scaffolding tutorial**
+**Register two content areas in `Program.cs`**
 
-`Program.cs` already wires two `ContentArea` entries from the previous tutorial — `Guides` bound to `guides/` and `Reference` bound to `reference/`. Leave it untouched; every change in this tutorial is a filesystem change under `Content/`.
+Add two `ContentArea` entries — `Guides` bound to `guides/` and `Reference` bound to `reference/`. Each binds a top-level folder under `Content/` to its own sidebar tab, and the selector appears once more than one area is configured. Every other change in this tutorial is a filesystem change under `Content/`.
 
 ```csharp:symbol
 examples/DocSiteSectionsExample/Program.cs

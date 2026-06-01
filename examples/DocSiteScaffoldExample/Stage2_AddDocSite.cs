@@ -14,7 +14,7 @@ using Pennington.DocSite; // [!code ++]
 /// </summary>
 public static class Stage2
 {
-    /// <summary>Register DocSite services with areas and site options.</summary>
+    /// <summary>Register DocSite services with site options.</summary>
     public static async Task Run(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -22,16 +22,10 @@ public static class Stage2
         builder.Services.AddDocSite(() => new DocSiteOptions // [!code ++]
         { // [!code ++]
             SiteTitle = "Scaffold Docs", // [!code ++]
-            Description = "A minimal DocSite scaffold showing AddDocSite and area routing.", // [!code ++]
+            Description = "A minimal DocSite scaffold built on AddDocSite.", // [!code ++]
             GitHubUrl = "https://github.com/usepennington/pennington", // [!code ++]
             HeaderContent = """<a href="/">Scaffold Docs</a>""", // [!code ++]
             FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""", // [!code ++]
-
-            Areas = // [!code ++]
-            [ // [!code ++]
-                new ContentArea("Guides", "guides"), // [!code ++]
-                new ContentArea("Reference", "reference"), // [!code ++]
-            ], // [!code ++]
         }); // [!code ++]
 
         var app = builder.Build();
