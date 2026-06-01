@@ -33,20 +33,14 @@
     protected override async Task OnInitializedAsync()
     {
         // Collect the table-of-contents entries from every content source.
-        var entries = new List<ContentTocItem>();
-        foreach (var service in ContentServices)
-            entries.AddRange(await service.GetContentTocEntriesAsync());
+        var entries = await ContentServices.CollectTocEntriesAsync();
 
-        // Passing the current route lets NavigationBuilder return the matching
+        // Passing the current URL lets NavigationBuilder return the matching
         // node with IsSelected already set.
-        var currentRoute = new ContentRoute
-        {
-            CanonicalPath = new UrlPath(NavManager.ToBaseRelativePath(NavManager.Uri))
-                .EnsureLeadingSlash(),
-            OutputFile = new FilePath(""),
-        };
+        var currentPath = new UrlPath(NavManager.ToBaseRelativePath(NavManager.Uri))
+            .EnsureLeadingSlash();
 
-        _tree = await Navigation.BuildTreeAsync(entries, currentRoute);
+        _tree = await Navigation.BuildTreeAsync(entries, currentPath);
     }
 
     // The current page renders bold; the rest are muted links.

@@ -12,6 +12,10 @@ public class NavigationBuilderTests
         OutputFile = new FilePath($"{path.TrimStart('/')}/index.html")
     };
 
+    // The current-page argument to BuildTreeAsync/BuildNavigationInfoAsync is a
+    // UrlPath; matching is by canonical path, so normalize the trailing slash.
+    private static UrlPath Url(string path) => new UrlPath(path).EnsureTrailingSlash();
+
     private static ContentTocItem MakeTocItem(string title, string path, int order, params string[] hierarchy) => new(
         Title: title,
         Route: MakeRoute(path),
@@ -55,7 +59,7 @@ public class NavigationBuilderTests
             MakeTocItem("Installation", "/guides/installation", 10, "installation"),
         };
 
-        var tree = await _builder.BuildTreeAsync(items, MakeRoute("/guides/"));
+        var tree = await _builder.BuildTreeAsync(items, Url("/guides/"));
 
         tree[0].IsSelected.ShouldBeTrue();
         tree[1].IsSelected.ShouldBeFalse();
@@ -146,8 +150,8 @@ public class NavigationBuilderTests
             MakeTocItem("Guide", "/guide", 2, "Guide"),
         };
 
-        var currentRoute = MakeRoute("/docs/api/auth");
-        var tree = await _builder.BuildTreeAsync(items, currentRoute);
+        var currentPath = Url("/docs/api/auth");
+        var tree = await _builder.BuildTreeAsync(items, currentPath);
 
         // Auth should be selected
         var auth = tree[0].Children[0].Children[0];
@@ -177,8 +181,8 @@ public class NavigationBuilderTests
             MakeTocItem("C", "/c", 3, "C"),
         };
 
-        var currentRoute = MakeRoute("/b/b1");
-        var info = await _builder.BuildNavigationInfoAsync(items, currentRoute);
+        var currentPath = Url("/b/b1");
+        var info = await _builder.BuildNavigationInfoAsync(items, currentPath);
 
         // B1 is current, prev=B, next=B2
         info.PageTitle.ShouldBe("B1");
@@ -202,7 +206,7 @@ public class NavigationBuilderTests
             MakeTocItem("First Post", "/tutorials/blogsite/first-post", 4, "blogsite", "first-post"),
         };
 
-        var info = await _builder.BuildNavigationInfoAsync(items, MakeRoute("/tutorials/docsite/add-a-blog"));
+        var info = await _builder.BuildNavigationInfoAsync(items, Url("/tutorials/docsite/add-a-blog"));
 
         info.NextPage.ShouldNotBeNull();
         info.NextPage!.Route.CanonicalPath.Value.ShouldBe("/tutorials/blogsite/scaffold/");
@@ -218,8 +222,8 @@ public class NavigationBuilderTests
             MakeTocItem("Auth", "/docs/api/auth", 1, "Docs", "API", "Auth"),
         };
 
-        var currentRoute = MakeRoute("/docs/api/auth");
-        var info = await _builder.BuildNavigationInfoAsync(items, currentRoute);
+        var currentPath = Url("/docs/api/auth");
+        var info = await _builder.BuildNavigationInfoAsync(items, currentPath);
 
         info.Breadcrumbs.Count.ShouldBe(3);
         info.Breadcrumbs[0].Title.ShouldBe("Docs");
@@ -254,8 +258,8 @@ public class NavigationBuilderTests
             MakeTocItem("Contact", "/contact", 2, "Contact"),
         };
 
-        var currentRoute = MakeRoute("/about");
-        var info = await _builder.BuildNavigationInfoAsync(items, currentRoute);
+        var currentPath = Url("/about");
+        var info = await _builder.BuildNavigationInfoAsync(items, currentPath);
 
         info.PageTitle.ShouldBe("About");
         info.PreviousPage.ShouldNotBeNull();
@@ -275,7 +279,7 @@ public class NavigationBuilderTests
             MakeTocItem("Second", "/second", 2, "Second"),
         };
 
-        var info = await _builder.BuildNavigationInfoAsync(items, MakeRoute("/first"));
+        var info = await _builder.BuildNavigationInfoAsync(items, Url("/first"));
 
         info.PreviousPage.ShouldBeNull();
         info.NextPage.ShouldNotBeNull();
@@ -291,7 +295,7 @@ public class NavigationBuilderTests
             MakeTocItem("Second", "/second", 2, "Second"),
         };
 
-        var info = await _builder.BuildNavigationInfoAsync(items, MakeRoute("/second"));
+        var info = await _builder.BuildNavigationInfoAsync(items, Url("/second"));
 
         info.PreviousPage.ShouldNotBeNull();
         info.PreviousPage!.Title.ShouldBe("First");
@@ -428,15 +432,15 @@ public class NavigationBuilderTests
 
         // Two renders against the same current route — Guide subtree has no
         // selection under it, so it reuses the cached structural node.
-        var a = await _builder.BuildTreeAsync(items, MakeRoute("/docs/api"));
-        var b = await _builder.BuildTreeAsync(items, MakeRoute("/docs/api"));
+        var a = await _builder.BuildTreeAsync(items, Url("/docs/api"));
+        var b = await _builder.BuildTreeAsync(items, Url("/docs/api"));
         ReferenceEquals(a[1], b[1]).ShouldBeTrue();
         ReferenceEquals(a[1].Children[0], b[1].Children[0]).ShouldBeTrue();
 
         // Two renders against different current routes — the Docs branch is
         // still structurally shared in the "no selection here" case.
-        var onGuide = await _builder.BuildTreeAsync(items, MakeRoute("/guide/setup"));
-        var onApi = await _builder.BuildTreeAsync(items, MakeRoute("/docs/api"));
+        var onGuide = await _builder.BuildTreeAsync(items, Url("/guide/setup"));
+        var onApi = await _builder.BuildTreeAsync(items, Url("/docs/api"));
         ReferenceEquals(onGuide[0], onApi[0]).ShouldBeFalse(); // Docs differs — API is selected under it in onApi
         // But the unselected leaf under Guide in onApi is the same structural
         // reference as in the no-route render.
@@ -457,11 +461,11 @@ public class NavigationBuilderTests
             MakeTocItem("Guide", "/guide", 2, "Guide"),
         };
 
-        var onAuth = await _builder.BuildTreeAsync(items, MakeRoute("/docs/api/auth"));
+        var onAuth = await _builder.BuildTreeAsync(items, Url("/docs/api/auth"));
         onAuth[0].Children[0].Children[0].IsSelected.ShouldBeTrue();
         onAuth[1].IsSelected.ShouldBeFalse();
 
-        var onGuide = await _builder.BuildTreeAsync(items, MakeRoute("/guide"));
+        var onGuide = await _builder.BuildTreeAsync(items, Url("/guide"));
         onGuide[0].Children[0].Children[0].IsSelected.ShouldBeFalse();
         onGuide[0].IsExpanded.ShouldBeFalse();
         onGuide[1].IsSelected.ShouldBeTrue();

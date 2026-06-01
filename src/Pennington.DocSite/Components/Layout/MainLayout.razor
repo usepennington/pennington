@@ -195,11 +195,7 @@
 
         var locale = Localization.IsMultiLocale ? Localization.GetLocaleFromUrl(currentPath) : null;
 
-        var currentRoute = new ContentRoute
-        {
-            CanonicalPath = new UrlPath(currentPath),
-            OutputFile = new FilePath($"{currentPath.TrimStart('/')}/index.html"),
-        };
+        var currentUrl = new UrlPath(currentPath);
 
         if (DocSiteOptions.Areas.Count > 0)
         {
@@ -207,7 +203,7 @@
             foreach (var area in DocSiteOptions.Areas)
             {
                 var areaTocItems = await ContentResolver.GetTocItemsForAreaAsync(locale, area);
-                var tree = await NavBuilder.BuildTreeAsync(areaTocItems.ToList(), currentRoute, locale);
+                var tree = await NavBuilder.BuildTreeAsync(areaTocItems.ToList(), currentUrl, locale);
                 _areaTocs[area.Slug] = tree;
                 if (FirstLeafUrl(tree) is { } firstUrl)
                     _areaHrefs[area.Slug] = firstUrl;
@@ -216,7 +212,7 @@
         else
         {
             var tocItems = await ContentResolver.GetTocItemsForAreaAsync(locale, null);
-            _toc = await NavBuilder.BuildTreeAsync(tocItems.ToList(), currentRoute, locale);
+            _toc = await NavBuilder.BuildTreeAsync(tocItems.ToList(), currentUrl, locale);
         }
 
         // Build language switcher items

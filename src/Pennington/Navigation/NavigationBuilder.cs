@@ -49,30 +49,31 @@ public sealed class NavigationBuilder : IFileWatchAware
     /// snapshot once via <see cref="FolderMetadataRegistry.GetSnapshotAsync"/> when
     /// configured; recursion stays sync once the snapshot is in hand. When
     /// <paramref name="locale"/> is specified, filters to that locale and strips
-    /// the locale prefix from hierarchy parts.
+    /// the locale prefix from hierarchy parts. When <paramref name="currentPath"/>
+    /// is specified, stamps IsSelected/IsExpanded along the path to that page.
     /// </summary>
     public async Task<ImmutableList<NavigationTreeItem>> BuildTreeAsync(
         IReadOnlyList<ContentTocItem> items,
-        ContentRoute? currentRoute = null,
+        UrlPath? currentPath = null,
         string? locale = null)
     {
         var snapshot = await _folderMetadata.GetSnapshotAsync().ConfigureAwait(false);
         var structural = GetOrBuildStructural(items, locale, snapshot);
-        return currentRoute is null
+        return currentPath is null
             ? structural
-            : StampSelection(structural, currentRoute);
+            : StampSelection(structural, currentPath.Value);
     }
 
     /// <summary>
-    /// Build <see cref="NavigationInfo"/> for a specific route within the tree. See
-    /// <see cref="BuildTreeAsync"/> for snapshot-resolution semantics.
+    /// Build <see cref="NavigationInfo"/> for the page at <paramref name="currentPath"/>
+    /// within the tree. See <see cref="BuildTreeAsync"/> for snapshot-resolution semantics.
     /// </summary>
     public async Task<NavigationInfo> BuildNavigationInfoAsync(
         IReadOnlyList<ContentTocItem> items,
-        ContentRoute currentRoute,
+        UrlPath currentPath,
         string? locale = null)
     {
-        var tree = await BuildTreeAsync(items, currentRoute, locale).ConfigureAwait(false);
+        var tree = await BuildTreeAsync(items, currentPath, locale).ConfigureAwait(false);
 
         // Auto-created section headers carry an empty route and aren't navigable
         // pages; excluding them lets prev/next skip a section boundary straight to
@@ -81,12 +82,12 @@ public sealed class NavigationBuilder : IFileWatchAware
             .Where(n => !string.IsNullOrEmpty(n.Route.CanonicalPath.Value))
             .ToList();
 
-        var currentIndex = flatList.FindIndex(n => n.Route.CanonicalPath.Matches(currentRoute.CanonicalPath));
+        var currentIndex = flatList.FindIndex(n => n.Route.CanonicalPath.Matches(currentPath));
 
         var previous = currentIndex > 0 ? flatList[currentIndex - 1] : null;
         var next = currentIndex >= 0 && currentIndex < flatList.Count - 1 ? flatList[currentIndex + 1] : null;
 
-        var breadcrumbs = BuildBreadcrumbs(tree, currentRoute);
+        var breadcrumbs = BuildBreadcrumbs(tree, currentPath);
         var currentItem = currentIndex >= 0 ? flatList[currentIndex] : null;
 
         return new NavigationInfo(
@@ -291,18 +292,18 @@ public sealed class NavigationBuilder : IFileWatchAware
 
     /// <summary>
     /// Walks the cached structural tree and produces a tree with IsSelected/IsExpanded
-    /// stamped along the path to <paramref name="currentRoute"/>. Subtrees that don't
+    /// stamped along the path to <paramref name="currentPath"/>. Subtrees that don't
     /// contain the selection are returned by reference — the cache is shared across
     /// page renders, so only the selected ancestor chain allocates new records.
     /// </summary>
     private static ImmutableList<NavigationTreeItem> StampSelection(
-        ImmutableList<NavigationTreeItem> tree, ContentRoute currentRoute)
+        ImmutableList<NavigationTreeItem> tree, UrlPath currentPath)
     {
         var builder = ImmutableList.CreateBuilder<NavigationTreeItem>();
         var anyChanged = false;
         foreach (var node in tree)
         {
-            var stamped = StampNode(node, currentRoute);
+            var stamped = StampNode(node, currentPath);
             if (!ReferenceEquals(node, stamped))
             {
                 anyChanged = true;
@@ -313,9 +314,9 @@ public sealed class NavigationBuilder : IFileWatchAware
         return anyChanged ? builder.ToImmutable() : tree;
     }
 
-    private static NavigationTreeItem StampNode(NavigationTreeItem node, ContentRoute currentRoute)
+    private static NavigationTreeItem StampNode(NavigationTreeItem node, UrlPath currentPath)
     {
-        var isSelected = node.Route.CanonicalPath.Matches(currentRoute.CanonicalPath);
+        var isSelected = node.Route.CanonicalPath.Matches(currentPath);
 
         if (node.Children.Count == 0)
         {
@@ -329,7 +330,7 @@ public sealed class NavigationBuilder : IFileWatchAware
         for (var i = 0; i < node.Children.Count; i++)
         {
             var original = node.Children[i];
-            var stamped = StampNode(original, currentRoute);
+            var stamped = StampNode(original, currentPath);
             if (!ReferenceEquals(original, stamped))
             {
                 if (childBuilder is null)
@@ -445,21 +446,21 @@ public sealed class NavigationBuilder : IFileWatchAware
     /// </summary>
     private static ImmutableList<BreadcrumbItem> BuildBreadcrumbs(
         ImmutableList<NavigationTreeItem> tree,
-        ContentRoute currentRoute)
+        UrlPath currentPath)
     {
         var path = new List<BreadcrumbItem>();
-        FindPath(tree, currentRoute, path);
+        FindPath(tree, currentPath, path);
         return [.. path];
     }
 
     private static bool FindPath(
         ImmutableList<NavigationTreeItem> items,
-        ContentRoute target,
+        UrlPath target,
         List<BreadcrumbItem> path)
     {
         foreach (var item in items)
         {
-            if (item.Route.CanonicalPath.Matches(target.CanonicalPath))
+            if (item.Route.CanonicalPath.Matches(target))
             {
                 path.Add(new BreadcrumbItem(item.Title, item.Route));
                 return true;
