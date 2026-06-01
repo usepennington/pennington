@@ -134,14 +134,8 @@ public sealed class ContentResolver
         url = "/" + url.Trim('/');
         var locale = _localization.IsMultiLocale ? _localization.GetLocaleFromUrl(url) : null;
 
-        var route = new ContentRoute
-        {
-            CanonicalPath = new UrlPath(url),
-            OutputFile = new FilePath($"{url.TrimStart('/')}/index.html"),
-        };
-
         var tocItems = await _services.CollectTocEntriesAsync();
-        return await _navBuilder.BuildNavigationInfoAsync(tocItems.ToList(), route, locale);
+        return await _navBuilder.BuildNavigationInfoAsync(tocItems.ToList(), new UrlPath(url), locale);
     }
 
     /// <summary>
@@ -260,14 +254,8 @@ public sealed class ContentResolver
         url = "/" + url.Trim('/');
         var locale = _localization.IsMultiLocale ? _localization.GetLocaleFromUrl(url) : null;
 
-        var route = new ContentRoute
-        {
-            CanonicalPath = new UrlPath(url),
-            OutputFile = new FilePath($"{url.TrimStart('/')}/index.html"),
-        };
-
         var tocItems = await GetTocItemsForAreaAsync(locale, area);
-        return await _navBuilder.BuildNavigationInfoAsync(tocItems.ToList(), route, locale);
+        return await _navBuilder.BuildNavigationInfoAsync(tocItems.ToList(), new UrlPath(url), locale);
     }
 
     private async Task<DiscoveredItem?> FindDiscoveredItem(string url)

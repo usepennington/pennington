@@ -47,7 +47,7 @@ internal sealed class DiagTocCommand : IDiagCommand
                 ?? (localization.IsMultiLocale ? localization.DefaultLocale : null);
 
             var tree = await services.GetRequiredService<NavigationBuilder>()
-                .BuildTreeAsync(toc, currentRoute: null, locale: effectiveLocale);
+                .BuildTreeAsync(toc, currentPath: null, locale: effectiveLocale);
 
             // Recover per-page flags the nav tree drops by keying TOC items on canonical path.
             var byPath = new Dictionary<string, ContentTocItem>(StringComparer.OrdinalIgnoreCase);

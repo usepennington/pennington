@@ -88,7 +88,7 @@ This component does three things: it collects the table-of-contents entries ever
 examples/GettingStartedNavigationExample/Components/Layout/NavMenu.razor
 ```
 
-`GetContentTocEntriesAsync` returns a flat list — one `ContentTocItem` per page. `BuildTreeAsync` is what gives it shape: it sorts entries by their `order:` value and nests them by folder, so `Content/guides/` becomes a **Guides** section. Passing the current route makes the matching node come back with `IsSelected` set. For the full picture of how the tree is folded together, see [Navigation-tree construction](xref:explanation.routing.navigation-tree).
+`CollectTocEntriesAsync` gathers a flat list — one `ContentTocItem` per page — from every content source. `BuildTreeAsync` is what gives it shape: it sorts entries by their `order:` value and nests them by folder, so `Content/guides/` becomes a **Guides** section. Passing the current URL makes the matching node come back with `IsSelected` set. For the full picture of how the tree is folded together, see [Navigation-tree construction](xref:explanation.routing.navigation-tree).
 
 </Step>
 </Steps>
@@ -116,7 +116,7 @@ Run `dotnet run` and open `http://localhost:5000/`.
 ## Summary
 
 - `NavigationBuilder` ships with `AddPennington`; `NavMenu.razor` is the only new code, and `Program.cs` did not change.
-- `IContentService.GetContentTocEntriesAsync()` exposes each source's pages as flat `ContentTocItem` entries; `NavigationBuilder.BuildTreeAsync` sorts them by `order:` and nests them by folder.
+- `CollectTocEntriesAsync()` gathers each source's `GetContentTocEntriesAsync()` pages into one flat list of `ContentTocItem` entries; `NavigationBuilder.BuildTreeAsync` sorts them by `order:` and nests them by folder.
 - A folder without an `index.md` becomes a section node — that is why `guides/` rendered as a labelled group.
 - The bare host now serves a complete site: a content pipeline, a styled layout, and navigation — all on `AddPennington`.
 
