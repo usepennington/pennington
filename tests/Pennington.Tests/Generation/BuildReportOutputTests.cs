@@ -15,17 +15,20 @@ public class BuildReportOutputTests
 
     private static BuildReport MakeReport(
         ImmutableList<BuildDiagnostic>? diagnostics = null,
-        ImmutableList<BrokenLink>? brokenLinks = null,
         ImmutableList<ContentRoute>? generatedPages = null,
         ImmutableList<ContentRoute>? skippedPages = null,
         ImmutableList<ContentRoute>? failedPages = null,
         TimeSpan? duration = null) => new(
             diagnostics ?? [],
-            brokenLinks ?? [],
             generatedPages ?? [],
             skippedPages ?? [],
             failedPages ?? [],
             duration ?? TimeSpan.FromSeconds(1));
+
+    // Mirrors what LinkAuditor emits: a content.links/ warning diagnostic per broken link.
+    private static BuildDiagnostic BrokenLinkDiag(string page, string url, LinkType type, string reason) =>
+        new(DiagnosticSeverity.Warning, MakeRoute(page),
+            $"Broken link to {url} ({reason})", SourceFile: $"content.links/{type}/{url}");
 
     [Fact]
     public void CleanBuild_ShowsGeneratedPages_NoErrorsOrWarnings()
@@ -83,22 +86,24 @@ public class BuildReportOutputTests
     }
 
     [Fact]
-    public void BuildWithBrokenLinks_ShowsLinkDetails()
+    public void BuildWithBrokenLinks_ShowsInWarnings_AndFailsBuild()
     {
-        var brokenLinks = ImmutableList.Create(
-            new BrokenLink(MakeRoute("/docs/setup"), "/docs/install", LinkType.Internal, "404"),
-            new BrokenLink(MakeRoute("/blog/post"), "/missing-image.png", LinkType.Image, "404"));
+        var diagnostics = ImmutableList.Create(
+            BrokenLinkDiag("/docs/setup", "/docs/install", LinkType.Internal, "404"),
+            BrokenLinkDiag("/blog/post", "/missing-image.png", LinkType.Image, "404"));
 
         var report = MakeReport(
-            brokenLinks: brokenLinks,
+            diagnostics: diagnostics,
             generatedPages: [MakeRoute("/a")]);
 
-        var output = report.ToFormattedString();
+        // Broken links are content.links/ warning diagnostics — they render under
+        // WARNINGS and still fail the build (the relocated HasErrors gate).
+        report.HasErrors.ShouldBeTrue();
 
+        var output = report.ToFormattedString();
         output.ShouldContain("WARNINGS");
-        output.ShouldContain("2 broken links found:");
-        output.ShouldContain("/docs/setup/ links to /docs/install (404)");
-        output.ShouldContain("/blog/post/ links to /missing-image.png (404)");
+        output.ShouldContain("/docs/setup/: Broken link to /docs/install (404)");
+        output.ShouldContain("/blog/post/: Broken link to /missing-image.png (404)");
     }
 
     [Fact]
@@ -120,13 +125,11 @@ public class BuildReportOutputTests
         var errorRoute = MakeRoute("/broken", "Content/broken.md");
         var diagnostics = ImmutableList.Create(
             new BuildDiagnostic(DiagnosticSeverity.Error, errorRoute, "render failed"),
-            new BuildDiagnostic(DiagnosticSeverity.Warning, MakeRoute("/old"), "deprecated"));
-        var brokenLinks = ImmutableList.Create(
-            new BrokenLink(MakeRoute("/page"), "/missing", LinkType.Internal, "404"));
+            new BuildDiagnostic(DiagnosticSeverity.Warning, MakeRoute("/old"), "deprecated"),
+            BrokenLinkDiag("/page", "/missing", LinkType.Internal, "404"));
 
         var report = MakeReport(
             diagnostics: diagnostics,
-            brokenLinks: brokenLinks,
             generatedPages: [MakeRoute("/a"), MakeRoute("/b")],
             skippedPages: [MakeRoute("/draft")],
             failedPages: [errorRoute],
@@ -139,7 +142,7 @@ public class BuildReportOutputTests
         output.ShouldContain("2 pages generated");
         output.ShouldContain("1 pages skipped (draft)");
         output.ShouldContain("1 pages failed");
-        output.ShouldContain("1 warnings");
+        output.ShouldContain("2 warnings");
 
         // Errors section
         output.ShouldContain("ERRORS");
@@ -147,11 +150,10 @@ public class BuildReportOutputTests
         output.ShouldContain("render failed");
         output.ShouldContain("Source: Content/broken.md");
 
-        // Warnings section
+        // Warnings section (deprecation + broken link both render here)
         output.ShouldContain("WARNINGS");
         output.ShouldContain("/old/: deprecated");
-        output.ShouldContain("1 broken links found:");
-        output.ShouldContain("/page/ links to /missing (404)");
+        output.ShouldContain("/page/: Broken link to /missing (404)");
     }
 
 }

@@ -217,67 +217,9 @@ public sealed class OutputGenerationService
         foreach (var diag in _auditCache.Diagnostics)
         {
             reportBuilder.AddDiagnostic(diag);
-            // Mirror LinkAuditor diagnostics into BuildReport.BrokenLinks for
-            // backward compatibility. The diagnostics list is the canonical channel;
-            // BrokenLinks remains populated until consumers migrate.
-            if (TryParseBrokenLink(diag, out var brokenLink))
-            {
-#pragma warning disable CS0618
-                reportBuilder.AddBrokenLink(brokenLink);
-#pragma warning restore CS0618
-            }
         }
 
         return reportBuilder.Build();
-    }
-
-    private static bool TryParseBrokenLink(BuildDiagnostic diagnostic, out BrokenLink brokenLink)
-    {
-        brokenLink = default!;
-        if (diagnostic.Route is not { } route)
-        {
-            return false;
-        }
-
-        if (diagnostic.SourceFile is not { } source)
-        {
-            return false;
-        }
-
-        const string prefix = "content.links/";
-        if (!source.StartsWith(prefix, StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        var rest = source[prefix.Length..];
-        var slash = rest.IndexOf('/');
-        if (slash <= 0)
-        {
-            return false;
-        }
-
-        if (!Enum.TryParse<LinkType>(rest[..slash], out var type))
-        {
-            return false;
-        }
-
-        var url = rest[(slash + 1)..];
-        var reason = ExtractReason(diagnostic.Message);
-        brokenLink = new BrokenLink(route, url, type, reason);
-        return true;
-    }
-
-    private static string ExtractReason(string message)
-    {
-        var open = message.LastIndexOf('(');
-        var close = message.LastIndexOf(')');
-        if (open < 0 || close <= open)
-        {
-            return message;
-        }
-
-        return message[(open + 1)..close];
     }
 
     private static void ProcessFetchResults(BuildReportBuilder reportBuilder, List<FetchResult> results)

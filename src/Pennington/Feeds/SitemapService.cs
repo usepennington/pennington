@@ -118,16 +118,27 @@ public sealed class SitemapService : IFileWatchAware
             // Feed only the publishable candidates so hreflang alternates can never
             // point at a draft / scheduled / redirect URL that Build() dropped.
             var localeUrlMap = BuildLocaleUrlMap(builder.Publishable(candidates), localization);
-            return SerializeToXmlWithHreflang(entries, localeUrlMap, localization, builder.CanonicalBase);
+            return SerializeToXml(entries, localeUrlMap, localization, builder.CanonicalBase);
         }
 
         return SerializeToXml(entries);
     }
 
-    private static string SerializeToXml(IReadOnlyList<SitemapEntry> entries)
+    // One serializer for both the plain and multi-locale cases. Passing a localeUrlMap
+    // switches on the xhtml namespace and per-entry hreflang alternates.
+    private static string SerializeToXml(
+        IReadOnlyList<SitemapEntry> entries,
+        Dictionary<string, List<(string Locale, string Url)>>? localeUrlMap = null,
+        LocalizationOptions? localization = null,
+        Routing.UrlPath canonicalBase = default)
     {
         XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
+        XNamespace xhtml = "http://www.w3.org/1999/xhtml";
+
         var urlset = new XElement(ns + "urlset",
+            localeUrlMap is not null
+                ? new XAttribute(XNamespace.Xmlns + "xhtml", xhtml.NamespaceName)
+                : null,
             entries.Select(entry =>
             {
                 var url = new XElement(ns + "url",
@@ -138,14 +149,9 @@ public sealed class SitemapService : IFileWatchAware
                     url.Add(new XElement(ns + "lastmod", entry.LastModified.Value.ToString("yyyy-MM-dd")));
                 }
 
-                if (entry.ChangeFrequency != null)
+                if (localeUrlMap is not null)
                 {
-                    url.Add(new XElement(ns + "changefreq", entry.ChangeFrequency));
-                }
-
-                if (entry.Priority.HasValue)
-                {
-                    url.Add(new XElement(ns + "priority", entry.Priority.Value.ToString("F1")));
+                    AddHreflangAlternates(url, entry, xhtml, localeUrlMap, localization!, canonicalBase);
                 }
 
                 return url;
@@ -155,56 +161,39 @@ public sealed class SitemapService : IFileWatchAware
         return doc.Declaration + Environment.NewLine + doc;
     }
 
-    private static string SerializeToXmlWithHreflang(
-        IReadOnlyList<SitemapEntry> entries,
+    private static void AddHreflangAlternates(
+        XElement url,
+        SitemapEntry entry,
+        XNamespace xhtml,
         Dictionary<string, List<(string Locale, string Url)>> localeUrlMap,
         LocalizationOptions localization,
         Routing.UrlPath canonicalBase)
     {
-        XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
-        XNamespace xhtml = "http://www.w3.org/1999/xhtml";
+        // Find the content-relative URL for this entry to look up alternates.
+        var entryPath = entry.Url.Value;
+        if (canonicalBase.Value != "/" && entryPath.StartsWith(canonicalBase.Value))
+        {
+            entryPath = entryPath[canonicalBase.Value.Length..];
+        }
 
-        var urlset = new XElement(ns + "urlset",
-            new XAttribute(XNamespace.Xmlns + "xhtml", xhtml.NamespaceName),
-            entries.Select(entry =>
-            {
-                var url = new XElement(ns + "url",
-                    new XElement(ns + "loc", entry.Url.Value));
+        var contentRelative = StripLocalePrefix(entryPath, localization);
 
-                if (entry.LastModified.HasValue)
-                {
-                    url.Add(new XElement(ns + "lastmod", entry.LastModified.Value.ToString("yyyy-MM-dd")));
-                }
+        if (!localeUrlMap.TryGetValue(contentRelative, out var alternates) || alternates.Count <= 1)
+        {
+            return;
+        }
 
-                // Find the content-relative URL for this entry to look up alternates
-                var entryPath = entry.Url.Value;
-                if (canonicalBase.Value != "/" && entryPath.StartsWith(canonicalBase.Value))
-                {
-                    entryPath = entryPath[canonicalBase.Value.Length..];
-                }
+        foreach (var (locale, localeUrl) in alternates)
+        {
+            var hreflang = localization.Locales.TryGetValue(locale, out var info)
+                ? info.HtmlLang ?? locale
+                : locale;
 
-                var contentRelative = StripLocalePrefix(entryPath, localization);
-
-                if (localeUrlMap.TryGetValue(contentRelative, out var alternates) && alternates.Count > 1)
-                {
-                    foreach (var (locale, localeUrl) in alternates)
-                    {
-                        var hreflang = localization.Locales.TryGetValue(locale, out var info)
-                            ? info.HtmlLang ?? locale
-                            : locale;
-
-                        url.Add(new XElement(xhtml + "link",
-                            new XAttribute("rel", "alternate"),
-                            new XAttribute("hreflang", hreflang),
-                            new XAttribute("href", (canonicalBase / new Routing.UrlPath(localeUrl)).Value)));
-                    }
-                }
-
-                return url;
-            }));
-
-        var doc = new XDocument(new XDeclaration("1.0", "utf-8", null), urlset);
-        return doc.Declaration + Environment.NewLine + doc;
+            url.Add(new XElement(xhtml + "link",
+                new XAttribute("rel", "alternate"),
+                new XAttribute("hreflang", hreflang),
+                new XAttribute("href", (canonicalBase / new Routing.UrlPath(localeUrl)).Value)));
+        }
     }
 
     /// <summary>

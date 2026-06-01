@@ -8,11 +8,9 @@ using System.Collections.Immutable;
 /// <param name="SignatureHtml">Pre-highlighted declaration HTML, or <see langword="null"/> when not available.</param>
 /// <param name="Inheritance">Base-type uids, most-derived first. Empty for interfaces and <c>object</c>.</param>
 /// <param name="Implements">Implemented-interface uids.</param>
-/// <param name="Source">Optional source-link target for a "view source" button.</param>
 public sealed record ApiTypeDetail(
     ApiTypeSummary Summary,
     ParsedXmlDoc Xmldoc,
     string? SignatureHtml,
     ImmutableArray<string> Inheritance,
-    ImmutableArray<string> Implements,
-    ApiSourceLocation? Source);
+    ImmutableArray<string> Implements);

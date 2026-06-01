@@ -41,9 +41,8 @@ internal sealed class LocaleDetectionMiddleware
         localeContext.ContentPath = contentPath;
         localeContext.IsDefaultLocale = isDefault;
 
-        // Store for any non-DI access patterns
+        // Store the locale string for any non-DI access patterns.
         context.Items["Pennington.Locale"] = locale;
-        context.Items["Pennington.LocaleContext"] = localeContext;
 
         // Rewrite the request path to strip the locale prefix so Blazor routing
         // matches routes without locale-specific @page directives.

@@ -10,7 +10,6 @@ using Routing;
 internal sealed class BuildReportBuilder
 {
     private readonly List<BuildDiagnostic> _diagnostics = [];
-    private readonly List<BrokenLink> _brokenLinks = [];
     private readonly List<ContentRoute> _generatedPages = [];
     private readonly List<ContentRoute> _skippedPages = [];
     private readonly List<ContentRoute> _failedPages = [];
@@ -40,10 +39,6 @@ internal sealed class BuildReportBuilder
         _diagnostics.Add(new BuildDiagnostic(DiagnosticSeverity.Error, null, message, exception, sourceFile));
     }
 
-    /// <summary>Records a broken link discovered by link verification.</summary>
-    [Obsolete("LinkAuditor emits broken links as BuildDiagnostics; this builder method is preserved only for legacy callers. Scheduled for removal one release later.")]
-    public void AddBrokenLink(BrokenLink link) => _brokenLinks.Add(link);
-
     /// <summary>Marks <paramref name="route"/> as successfully generated.</summary>
     public void AddGeneratedPage(ContentRoute route) => _generatedPages.Add(route);
 
@@ -56,7 +51,6 @@ internal sealed class BuildReportBuilder
         _stopwatch.Stop();
         return new BuildReport(
             diagnostics: [.. _diagnostics],
-            brokenLinks: [.. _brokenLinks],
             generatedPages: [.. _generatedPages],
             skippedPages: [.. _skippedPages],
             failedPages: [.. _failedPages],

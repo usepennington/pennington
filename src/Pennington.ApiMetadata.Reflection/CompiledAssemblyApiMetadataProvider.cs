@@ -271,8 +271,7 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
                 Xmldoc: parsed,
                 SignatureHtml: highlighter.Highlight(SignatureFormatter.TypeDeclaration(type), "csharp"),
                 Inheritance: InheritanceChain(type),
-                Implements: ImplementedInterfaces(type),
-                Source: null);
+                Implements: ImplementedInterfaces(type));
 
             var isUnion = IsUnion(type);
             var list = new List<ApiMember>();
