@@ -12,7 +12,6 @@
       "src\\Pennington.TreeSitter\\Pennington.TreeSitter.csproj",
       "src\\Pennington.TranslationAudit\\Pennington.TranslationAudit.csproj",
       "src\\Pennington.BlogSite\\Pennington.BlogSite.csproj",
-      "src\\Pennington.Tui\\Pennington.Tui.csproj",
       "src\\Pennington.Templates\\Pennington.Templates.csproj"
     ]
   }
