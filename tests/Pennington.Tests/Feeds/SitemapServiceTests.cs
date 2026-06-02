@@ -46,13 +46,6 @@ public class SitemapServiceTests
         public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync() => Task.FromResult(ImmutableList<CrossReference>.Empty);
     }
 
-    private class StubProgrammaticGenerator : IProgrammaticContentGenerator
-    {
-        public Task<ProgrammaticContent> GenerateAsync(ContentRoute route)
-            => Task.FromResult(new ProgrammaticContent(
-                new TextProgrammaticContent(null, "<p>gen</p>", "text/html")));
-    }
-
     private static SitemapService CreateService(
         IContentService contentService,
         string canonicalBase = "https://example.com")
@@ -111,14 +104,13 @@ public class SitemapServiceTests
     }
 
     [Fact]
-    public async Task GetSitemapXml_IncludesProgrammaticSource()
+    public async Task GetSitemapXml_IncludesRouteWithoutMetadata()
     {
-        // Programmatic sources carry no discovery-time metadata — their route is
-        // emitted directly. Guards against the regression where search/llms
-        // enumerate TOC but sitemap used the parse pipeline, leaving programmatic
-        // content out of sitemap.xml.
+        // Razor page sources carry no discovery-time metadata — their route is
+        // emitted directly. Guards the regression where sitemap dropped routes the
+        // parse pipeline never produced metadata for.
         var route = MakeRoute("/generated/page");
-        var source = new ContentSource(new ProgrammaticSource(new StubProgrammaticGenerator()));
+        var source = new ContentSource(new RazorPageSource("Generated.Page"));
         var discovered = new DiscoveredItem(route, source);
 
         var service = CreateService(new StubContentService(discovered));
@@ -142,8 +134,8 @@ public class SitemapServiceTests
         var htmlRoute = MakeRoute("/docs/intro");
         var discovered = new[]
         {
-            new DiscoveredItem(jsonRoute, new ContentSource(new ProgrammaticSource(new StubProgrammaticGenerator()))),
-            new DiscoveredItem(htmlRoute, new ContentSource(new ProgrammaticSource(new StubProgrammaticGenerator()))),
+            new DiscoveredItem(jsonRoute, new ContentSource(new RazorPageSource("Data.Intro"))),
+            new DiscoveredItem(htmlRoute, new ContentSource(new RazorPageSource("Docs.Intro"))),
         };
 
         var service = CreateService(new StubContentService(discovered));

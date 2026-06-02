@@ -85,7 +85,6 @@ internal sealed class DiagRoutesCommand : IDiagCommand
         MarkdownFileSource => "markdown",
         RazorPageSource => "razor",
         RedirectSource => "redirect",
-        ProgrammaticSource => "programmatic",
         EndpointSource => "endpoint",
         LlmsOnlySource => "llms-only",
         _ => "unknown",
