@@ -96,6 +96,7 @@ The language switcher in the layout lists one entry per registered locale, and e
 ## Related
 
 - Tutorial: [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale)
+- How-to: [Catch missing and outdated translations at build time](xref:how-to.discovery.audit-translations)
 - Reference: [`LocalizationOptions`](xref:reference.api.localization-options)
 - Reference: [`TranslationOptions`](xref:reference.api.translation-options)
 - Background: [Locale-aware URLs and content fallback](xref:explanation.localization.urls-and-fallback)

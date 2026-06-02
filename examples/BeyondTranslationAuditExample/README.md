@@ -20,7 +20,7 @@ A reader copying just this folder into a non-git scratch directory still sees th
 
 ## See also
 
-No dedicated how-to or reference page exists yet — the framework source is the authoritative surface:
+The how-to `how-to/discovery/audit-translations.md` covers the setup. The framework source is the deeper reference:
 
 - `src/Pennington.TranslationAudit/TranslationAuditor.cs` — `IBuildAuditor` implementation that buckets pages by canonical path and classifies each translation as Up-to-date, Outdated, or Missing.
 - `src/Pennington.TranslationAudit/TranslationAuditOptions.cs` — configuration surface (`IncludedLocales`, `ReportMissing`, `MissingSeverity`, `OutdatedSeverity`, `RepositoryPath`).
@@ -28,4 +28,4 @@ No dedicated how-to or reference page exists yet — the framework source is the
 
 ## Referenced from
 
-This example exists as a working reference for the `Pennington.TranslationAudit` package. A dedicated docs-site how-to (likely `how-to/discovery/audit-translations.md`) is a known follow-up.
+This example backs the how-to `how-to/discovery/audit-translations.md` and exists as a working reference for the `Pennington.TranslationAudit` package.

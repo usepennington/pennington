@@ -40,6 +40,39 @@ Every registered `IHtmlResponseRewriter` is picked up and ordered by its `Order`
 builder.Services.AddSingleton<IHtmlResponseRewriter, AnchorLowercaseRewriter>();
 ```
 
+## Configure the shipped word-break rewriter
+
+The order-60 `WordBreakHtmlRewriter` is the one shipped rewriter you configure rather than implement. `AddWordBreak` turns it on; it inserts `<wbr>` break opportunities into long identifiers so dotted namespaces and PascalCase names wrap inside narrow columns instead of overflowing. It mutates the shared parsed document, so it adds no extra parse.
+
+```csharp
+builder.Services.AddWordBreak(options =>
+{
+    options.CssSelector = "h1, h2, h3, h4, h5, h6, span, .text-break";
+    options.MinimumCharacters = 20;
+    options.WordBreakCharacters = "<wbr>";
+});
+```
+
+- `CssSelector` — the elements whose text gets break opportunities. Only elements that hold text and have no child elements are rewritten. A descendant combinator forces AngleSharp to scan every element, so name inline elements directly (`span`) rather than `h1 *`.
+- `MinimumCharacters` — the shortest identifier that gets broken. Defaults to `20`.
+- `WordBreakCharacters` — the markup inserted at each break opportunity. Defaults to `<wbr>`.
+
+Breaks land after each dot and before an uppercase letter that follows a lowercase letter or digit. A heading like `Pennington.Infrastructure.WordBreakOptions` renders as:
+
+Before:
+
+```html
+<h3>Pennington.Infrastructure.WordBreakOptions</h3>
+```
+
+After:
+
+```html
+<h3>Pennington.<wbr>Infrastructure.<wbr>WordBreakOptions</h3>
+```
+
+A camel-cased name long enough to cross the threshold breaks at its case boundaries too — `ConfigureMarkdownPipelineExtensions` becomes `Configure<wbr>Markdown<wbr>Pipeline<wbr>Extensions`.
+
 ## Result
 
 Anchors marked `data-lowercase` have their text content lowercased, and the sentinel comment is gone from view-source.
@@ -69,5 +102,6 @@ Anchors without `data-lowercase` and non-HTML responses pass through unchanged.
 ## Related
 
 - Reference: [Response processing interfaces](xref:reference.api.i-response-processor)
+- Reference: [`WordBreakOptions`](xref:reference.api.word-break-options) — the shipped word-break rewriter's configuration
 - Background: [The response-processing pipeline](xref:explanation.core.response-processing)
 - Related how-to: [Write a response processor](xref:how-to.response-pipeline.response-processor)
