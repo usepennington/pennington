@@ -18,7 +18,6 @@
          front-matter reference complete. -->
     <ProjectReference Include="..\..\src\Pennington.BlogSite\Pennington.BlogSite.csproj" />
     <ProjectReference Include="..\..\src\Pennington.TreeSitter\Pennington.TreeSitter.csproj" />
-    <ProjectReference Include="..\..\src\Pennington.Tui\Pennington.Tui.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Watch Include="Content\**\*.*" />

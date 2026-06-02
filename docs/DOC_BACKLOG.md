@@ -21,7 +21,6 @@ Each item names the public API, where it lives in `src/`, and the recommended do
 
 | Topic | Current state | Recommended addition |
 |---|---|---|
-| **TUI dev dashboard** | `AddTui`, `PenningtonTuiOptions` — blog post only; wiring is commented out in `docs/Pennington.Docs/Program.cs`. | How-to (dev experience): registration, the no-op conditions (build mode, under `dotnet watch`, redirected stdout), and the four panels. |
 | **`dotnet new` templates** | `pennington`, `pennington-docs`, `pennington-blog` — blog-only coverage. | How-to (or getting-started variant) walking `dotnet new install Pennington.Templates` + each shortName; cross-link from the scaffold tutorials. |
 | **Full `DocSiteOptions` surface** | Only ~5 chrome-slot seams walked in prose; ~25 properties exist. | Reference page enumerating `DocSiteOptions` grouped by concern (identity, chrome, theming, routing, localization, advanced), one line each. |
 | **`ConfigureMarkdownPipeline`** | Referenced only indirectly (migration briefing). | How-to under `how-to/markdown-pipeline/` showing a concrete custom Markdig extension added after the built-ins. |

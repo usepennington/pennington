@@ -61,14 +61,12 @@ public static class MonorailServiceExtensions
                 var options = sp.GetRequiredService<MonorailCssOptions>();
                 opts.Framework = MonorailCssService.BuildFramework(options);
 
-                // IL discovery scans every non-BCL assembly for class-shaped strings. A few
-                // referenced assemblies only contribute noise — the MonorailCss framework
-                // ships utility *template* strings (e.g. "bg-{color}-500"), and Pennington.Tui
-                // is a terminal UI with no web markup. Excluding them keeps the discovered set
+                // IL discovery scans every non-BCL assembly for class-shaped strings. The
+                // MonorailCss framework only contributes noise — it ships utility *template*
+                // strings (e.g. "bg-{color}-500"). Excluding it keeps the discovered set
                 // closer to classes the site actually renders.
                 opts.ExcludeAssemblies.Add("MonorailCss");
                 opts.ExcludeAssemblies.Add("MonorailCss.Discovery");
-                opts.ExcludeAssemblies.Add("Pennington.Tui");
 
                 var hostEnv = sp.GetService<IHostEnvironment>();
                 if (hostEnv?.IsDevelopment() != true && Environment.GetEnvironmentVariable("DOTNET_WATCH") != "1")

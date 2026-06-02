@@ -10,7 +10,6 @@
     <Project Path="src/Pennington.TreeSitter/Pennington.TreeSitter.csproj" />
     <Project Path="src/Pennington.TranslationAudit/Pennington.TranslationAudit.csproj" />
     <Project Path="src/Pennington.BlogSite/Pennington.BlogSite.csproj" />
-    <Project Path="src/Pennington.Tui/Pennington.Tui.csproj" />
     <Project Path="src/Pennington.Templates/Pennington.Templates.csproj" />
   </Folder>
   <Folder Name="/tests/">
@@ -46,7 +45,6 @@
     <Project Path="examples/DocSiteChromeOverridesExample/DocSiteChromeOverridesExample.csproj" />
     <Project Path="examples/SubPathDeployableExample/SubPathDeployableExample.csproj" />
     <Project Path="examples/FocusedCodeSamplesExample/FocusedCodeSamplesExample.csproj" />
-    <Project Path="examples/BeyondTuiExample/BeyondTuiExample.csproj" />
     <Project Path="examples/FusionCacheDocSiteExample/FusionCacheDocSiteExample.csproj" />
     <Project Path="examples/SpectreConsoleDocSiteExample/SpectreConsoleDocSiteExample.csproj" />
     <Project Path="examples/VersionedDocSiteExample/VersionedDocSiteExample.csproj" />

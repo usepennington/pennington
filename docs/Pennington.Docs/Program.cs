@@ -131,10 +131,6 @@ builder.Services.AddWordBreak(options =>
     options.CssSelector = "h1, h2, h3, h4, h5, h6, p, li, dt, dd, th, td, span, .text-break";
 });
 
-// Dev-time full-screen dashboard. No-ops when the host is launched with
-// `dotnet run -- build`, so the static build path is unchanged.
-// builder.Services.AddTui();
-
 var app = builder.Build();
 app.UseDocSite();
 
