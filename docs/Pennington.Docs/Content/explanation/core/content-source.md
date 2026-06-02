@@ -1,13 +1,13 @@
 ---
 title: "Why ContentSource is a union"
-description: "Why the case-discriminated union — MarkdownFileSource, RazorPageSource, RedirectSource, ProgrammaticSource, EndpointSource, LlmsOnlySource — beats the polymorphic alternatives, and why every consumer goes through `.Value`."
+description: "Why the case-discriminated union — MarkdownFileSource, RazorPageSource, RedirectSource, EndpointSource, LlmsOnlySource — beats the polymorphic alternatives, and why every consumer goes through `.Value`."
 uid: explanation.core.content-source
 order: 2
 sectionLabel: "Core Architecture"
 tags: [pipeline, unions, content-source]
 ---
 
-`ContentSource` is the second of Pennington's two pipeline unions. Where `ContentItem` discriminates a page's stage in the pipeline, `ContentSource` discriminates *where the page came from*. The six cases — `MarkdownFileSource`, `RazorPageSource`, `RedirectSource`, `ProgrammaticSource`, `EndpointSource`, `LlmsOnlySource` — capture every origin Pennington ships. <xref:explanation.core.content-pipeline> covers why the pipeline as a whole is shaped as a union; this page is about why this *particular* shape, and why the polyfill choice matters more than it looks.
+`ContentSource` is the second of Pennington's two pipeline unions. Where `ContentItem` discriminates a page's stage in the pipeline, `ContentSource` discriminates *where the page came from*. The five cases — `MarkdownFileSource`, `RazorPageSource`, `RedirectSource`, `EndpointSource`, `LlmsOnlySource` — capture every origin Pennington ships. <xref:explanation.core.content-pipeline> covers why the pipeline as a whole is shaped as a union; this page is about why this *particular* shape, and why the polyfill choice matters more than it looks.
 
 ## Why a union and not polymorphism
 
