@@ -2,7 +2,7 @@
 title: "Auto-generate an API reference tree for a class library"
 description: "Wire the reflection metadata backend (a compiled .dll + .xml pair), call AddApiReference, and get one /reference/api/{type}/ page per public type plus inline Mdazor components for member tables, summaries, and extension-method catalogs."
 uid: how-to.content-services.auto-api-reference
-order: 2
+order: 3
 sectionLabel: "Content Services"
 tags: [extensibility, reflection, xmldoc, api-reference, content-service]
 ---

@@ -23,17 +23,17 @@ Pennington multi-targets `net10.0;net11.0`. On `net11.0+` the C# 15 `union` keyw
 
 The polyfill could have exposed a different surface — a constructor-as-pattern shortcut that pattern-matches against the case type without unwrapping. That shortcut works on `net10.0` only, and looks slightly cleaner there. It also breaks the moment a reader looks at the `net11.0` build. The design choice is to make the multi-TFM cost visible in every read site rather than hide it behind a shape that diverges silently between target frameworks.
 
-## Why `RedirectSource`, `EndpointSource`, and `LlmsOnlySource` exclude themselves from `sitemap.xml`
+## Why `RedirectSource` and `LlmsOnlySource` exclude themselves from `sitemap.xml`
 
-All three cases name a route, none owns the canonical HTML for it. `RedirectSource` has no body at all — the response is a 30x to another URL. `EndpointSource` defers the body to a sibling `MapGet` whose response is the canonical HTML at that URL; from `SitemapService`'s perspective, the content service knows the route but does not own the page. `LlmsOnlySource` has no HTML page anywhere — it only contributes to the llms.txt index and its sidecar markdown.
-
-The sitemap filters them out in one expression:
+Both name a route with no canonical HTML page to advertise. `RedirectSource` has no body at all — the response is a 30x to another URL. `LlmsOnlySource` has no HTML page anywhere — it only contributes to the llms.txt index and its sidecar markdown. Neither belongs in a crawler's list of indexable pages, so the sitemap filters them out in one expression:
 
 ```csharp
-if (discovered.Source.Value is RedirectSource or EndpointSource or LlmsOnlySource) continue;
+if (discovered.Source.Value is RedirectSource or LlmsOnlySource) continue;
 ```
 
-The alternative — a per-case `IncludeInSitemap` bool — would push that exclusion rule into every consumer that builds a sitemap-shaped output (the canonical sitemap, an RSS variant, a llms.txt index). Centralising it in one `is …or …` line keeps the rule discoverable: when a future case needs the same treatment, the diff is one token.
+`EndpointSource` is the case that *looks* like it should join them but doesn't. It defers rendering to a sibling `MapGet`, but that endpoint returns real, canonical HTML at a stable URL — a custom content service's pages, an `AddTaxonomy` term page. Those are exactly what a sitemap is for, so they stay in, and the on-site search index and the sitemap stay consistent about which pages exist. Transport endpoints that happen to use `EndpointSource` — a JSON data route, a generated feed — emit a non-`.html` output file and are dropped earlier by `SitemapService`'s output-extension check, so the source filter only has to name the two cases that are HTML-less by definition.
+
+Keeping that filter a single `is … or …` line — rather than a per-case `IncludeInSitemap` flag threaded through every sitemap-shaped consumer (the canonical sitemap, an RSS variant, a llms.txt index) — keeps the rule discoverable: the cases that are never crawlable are named in one place.
 
 ## See also
 

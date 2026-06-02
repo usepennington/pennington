@@ -91,12 +91,16 @@ public sealed class SitemapService : IFileWatchAware
             }
 
             // RedirectSource items are explicit redirects — no canonical value.
-            // EndpointSource items are framework-internal routes served by a
-            // live HTTP endpoint (e.g., /sitemap.xml, /llms.txt) and must not
-            // appear as canonical URLs either. LlmsOnlySource items have no
-            // HTML page at all — they only exist as llms.txt sidecars and
-            // shouldn't be advertised to crawlers. Skip all three.
-            if (discovered.Source.Value is RedirectSource or EndpointSource or LlmsOnlySource)
+            // LlmsOnlySource items have no HTML page at all — they only exist as
+            // llms.txt sidecars and shouldn't be advertised to crawlers. Skip both.
+            //
+            // EndpointSource is deliberately NOT skipped: those routes — custom
+            // IContentService pages, AddTaxonomy term pages — serve real canonical
+            // HTML at a stable URL and belong in the sitemap. Transport endpoints
+            // that happen to use EndpointSource (JSON feeds, data routes) emit a
+            // non-HTML output file and are already dropped by the extension check
+            // above, so they never reach this line.
+            if (discovered.Source.Value is RedirectSource or LlmsOnlySource)
             {
                 continue;
             }

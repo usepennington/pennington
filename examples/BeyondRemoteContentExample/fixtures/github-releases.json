@@ -1,0 +1,29 @@
+[
+  {
+    "tag_name": "v9.1.0",
+    "name": "9.1.0 — Fine-grained tokens",
+    "published_at": "2026-05-18T14:30:00Z",
+    "html_url": "https://github.com/octokit/octokit.net/releases/tag/v9.1.0",
+    "draft": false,
+    "prerelease": false,
+    "body": "## Highlights\n\nThis release adds first-class support for fine-grained personal access tokens and trims the cold-start allocation of the rate-limit handler.\n\n## New features\n\n- Fine-grained token scopes are now surfaced on `RateLimit`.\n- `GitHubClient` accepts a custom `TimeProvider`, which makes retry-after handling testable.\n\n## Bug fixes\n\n- Fixed a `NullReferenceException` when a release had no assets.\n- Pagination now follows the `Link` header when `per_page` is omitted.\n"
+  },
+  {
+    "tag_name": "v9.0.0",
+    "name": "9.0.0 — Trimming and AOT",
+    "published_at": "2026-03-02T09:15:00Z",
+    "html_url": "https://github.com/octokit/octokit.net/releases/tag/v9.0.0",
+    "draft": false,
+    "prerelease": false,
+    "body": "## Breaking changes\n\nThe synchronous `IGitHubClient` surface has been removed. Every call is now `async` and returns a `Task`.\n\n## Highlights\n\n- The library is fully trimmable and AOT-compatible.\n- Response deserialization moved to `System.Text.Json` source generators.\n\n## Migration\n\nReplace `client.Repository.Get(...)` with `await client.Repository.Get(...)`. The compiler will flag every call site that needs the change.\n"
+  },
+  {
+    "tag_name": "v8.1.0",
+    "name": "8.1.0 — Webhook verification",
+    "published_at": "2025-11-21T17:45:00Z",
+    "html_url": "https://github.com/octokit/octokit.net/releases/tag/v8.1.0",
+    "draft": false,
+    "prerelease": false,
+    "body": "## New features\n\n- Added `WebhookSignatureValidator` for verifying the `X-Hub-Signature-256` header.\n- Added strongly-typed payloads for the `release` and `workflow_run` webhook events.\n\n## Bug fixes\n\n- Corrected the media type sent for raw blob requests.\n"
+  }
+]

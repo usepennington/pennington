@@ -128,5 +128,6 @@ Serve at a separate path (`/atom.xml`) with `application/atom+xml`. Nothing stop
 
 - How-to: [Publish an RSS feed (BlogSite)](xref:how-to.feeds.rss)
 - How-to: [Source content from outside the file system](xref:how-to.content-services.custom-content-service)
+- How-to: [Source content from a remote API](xref:how-to.content-services.remote-api)
 - How-to: [Emit generated output artifacts](xref:how-to.content-services.emit-generated-artifacts)
 - Background: [The content pipeline and union types](xref:explanation.core.content-pipeline)

@@ -203,4 +203,40 @@ public class SitemapServiceTests
         xml.ShouldContain("/visible");
         xml.ShouldNotContain("/agent-context");
     }
+
+    [Fact]
+    public async Task GetSitemapXml_IncludesEndpointSourceHtmlRoutes()
+    {
+        // EndpointSource routes — custom IContentService pages, AddTaxonomy term
+        // pages — serve real canonical HTML through a sibling MapGet, so they belong
+        // in the sitemap alongside markdown and Razor pages.
+        var route = MakeRoute("/releases/1.0.0");
+        var discovered = new DiscoveredItem(route, new ContentSource(new EndpointSource()));
+
+        var service = CreateService(new StubContentService(discovered));
+
+        var xml = await service.GetSitemapXmlAsync();
+
+        xml.ShouldContain("https://example.com/releases/1.0.0/");
+    }
+
+    [Fact]
+    public async Task GetSitemapXml_ExcludesEndpointSourceNonHtmlOutputs()
+    {
+        // A transport endpoint (JSON data route) sourced via EndpointSource emits a
+        // non-HTML output file, so the output-extension check drops it before the
+        // source filter ever runs.
+        var jsonRoute = new ContentRoute
+        {
+            CanonicalPath = new UrlPath("/api/data.json"),
+            OutputFile = new FilePath("api/data.json"),
+        };
+        var discovered = new DiscoveredItem(jsonRoute, new ContentSource(new EndpointSource()));
+
+        var service = CreateService(new StubContentService(discovered));
+
+        var xml = await service.GetSitemapXmlAsync();
+
+        xml.ShouldNotContain("api/data.json");
+    }
 }

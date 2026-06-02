@@ -2,7 +2,7 @@
 title: "Build browse-by-{field} pages with AddTaxonomy"
 description: "Group your content by any front-matter field (cuisine, tag, audience, series) and render the resulting term pages from a Razor component. Hot-reloads when source files change."
 uid: how-to.content-services.taxonomy
-order: 5
+order: 6
 sectionLabel: "Content Services"
 tags: [taxonomy, navigation, content-service, hot-reload]
 ---
@@ -141,7 +141,7 @@ Edits during `dotnet run` propagate immediately.
 
 ## Caveats
 
-- **Sitemap exclusion.** Taxonomy routes use `EndpointSource` (the canonical HTML lives behind `MapTaxonomy`'s endpoints). They appear in navigation, search, and cross-references, but not in `/sitemap.xml` — same tradeoff as <xref:how-to.content-services.custom-content-service>.
+- **Listed in the sitemap.** Taxonomy routes use `EndpointSource` (the canonical HTML lives behind `MapTaxonomy`'s endpoints), but they serve real HTML, so they appear in navigation, search, cross-references, *and* `/sitemap.xml` — same as a <xref:how-to.content-services.custom-content-service> page.
 - **Markdown sources only.** The walker pattern-matches `MarkdownFileSource`. Items emitted by other custom services (Razor pages, programmatic content, JSON-backed releases) are ignored. If you want one of those to participate, expose its records through a separate index page, not via taxonomy. Sibling taxonomies are also skipped during the projection walk to avoid recursion when two axes share a front-matter type.
 - **Drafts and future-dated posts are skipped.** Items whose `IsHiddenFromBuild` is `true` — `IsDraft` set, or a `Date` in the future — are excluded from every term, same convention as the rest of the pipeline.
 - **One Razor component per axis.** Different cuisines can't render with different templates; switch on `Term.Key` inside `TermPage` if some terms need a custom layout.
