@@ -250,7 +250,7 @@ Stop and ask, don't guess:
 - Authentication-gated docs. Not yet a Pennington feature; flag it.
 - Multi-version docs with cross-version xrefs. Confirm whether cross-version links are required.
 - Live editing / instant previews specific to the source platform. Pennington has hot-reload (<xref:explanation.dev-experience.hot-reload>) but not the same model.
-- Custom JSX widgets that drive interactive UI (search-augmented filters, live API explorers). Pennington renders server-side with no client hydration (<xref:explanation.spa.islands>); ask whether to port as a server-rendered Razor component or to add your own client-side script that enhances the rendered HTML.
+- Custom JSX widgets that drive interactive UI (search-augmented filters, live API explorers). Pennington renders server-side with no client hydration (<xref:explanation.spa.islands>); ask whether to port as a server-rendered Razor component or to add your own client-side script that enhances the rendered HTML (<xref:how-to.rich-content.client-side-widget>).
 
 ## Read these when you need depth
 
