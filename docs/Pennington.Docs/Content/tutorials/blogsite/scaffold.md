@@ -90,7 +90,7 @@ With the post from section 1 in place and `AddBlogSite` wired, every route the t
 - `/` shows the home listing with `hello-world` as the only recent post.
 - `/rss.xml` returns RSS 2.0 with one `<item>` carrying the post title, link, description, pub date, and author.
 
-The full route surface (`/archive`, `/blog/<slug>`, `/tags`, `/topics` aliases, `/rss.xml`) is catalogued in <xref:reference.blogsite.routes>.
+The full route surface (`/archive`, `/blog/<slug>`, `/tags`, `/topics` aliases, `/rss.xml`) is cataloged in <xref:reference.blogsite.routes>.
 
 <Checkpoint>
 

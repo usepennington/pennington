@@ -1,13 +1,13 @@
 ---
 title: "Rewrite HTML attributes after parsing"
-description: "Implement IHtmlResponseRewriter to mutate already-parsed HTML — lowercase anchors, normalise hrefs, stamp rel=noopener — sharing the document parse with every other rewriter."
+description: "Implement IHtmlResponseRewriter to mutate already-parsed HTML — lowercase anchors, normalize hrefs, stamp rel=noopener — sharing the document parse with every other rewriter."
 uid: how-to.response-pipeline.html-rewriter
 order: 1
 sectionLabel: "Response Pipeline"
 tags: [html-rewriting, extensibility, anglesharp, response-pipeline]
 ---
 
-To rewrite anchors, inject attributes, normalise URLs, or strip sentinels in already-rendered HTML, implement `IHtmlResponseRewriter`. Every rewriter shares one AngleSharp parse against the same `IDocument`. For non-HTML response types (JSON, plain text) or work that needs the final byte stream, use <xref:how-to.response-pipeline.response-processor> instead.
+To rewrite anchors, inject attributes, normalize URLs, or strip sentinels in already-rendered HTML, implement `IHtmlResponseRewriter`. Every rewriter shares one AngleSharp parse against the same `IDocument`. For non-HTML response types (JSON, plain text) or work that needs the final byte stream, use <xref:how-to.response-pipeline.response-processor> instead.
 
 The recipe references `examples/ExtensibilityLabExample/AnchorLowercaseRewriter.cs`, which exercises both phases of the contract against a bare `AddPennington` host.
 

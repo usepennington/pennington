@@ -77,6 +77,6 @@ See <xref:reference.ui.content> for the parameters of each built-in component.
 
 ## Related
 
-- Reference: [Content components](xref:reference.ui.content) — parameters and render behaviour for `Badge`, `BigTable`, `Card`, `CardGrid`, `Checkpoint`, `LinkCard`, `RenderedFixture` (DocSite only), `Step`, and `Steps`.
+- Reference: [Content components](xref:reference.ui.content) — parameters and render behavior for `Badge`, `BigTable`, `Card`, `CardGrid`, `Checkpoint`, `LinkCard`, `RenderedFixture` (DocSite only), `Step`, and `Steps`.
 - Tutorial: [Author a custom Razor component for markdown](xref:tutorials.beyond-basics.custom-razor-component) — write your own `<PricingCard>`-style component and wire it through `AddMdazorComponent<T>()`.
 - How-to: [Customize DocSite layouts and components](xref:how-to.response-pipeline.override-docsite-components) — when you need to change the surrounding page, not only embed a tag inside markdown.

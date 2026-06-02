@@ -70,7 +70,7 @@ sequenceDiagram
 
 ## What the renderer emits
 
-Each fence renders as `<pre><code class="language-mermaid">…</code></pre>` with the body verbatim — Pennington does not transform it server-side. The client-side `MermaidManager` walks the DOM, dynamically imports Mermaid from `cdn.jsdelivr.net` the first time a diagram appears, and replaces every matching `<code>` element with an inline SVG. The theme toggle calls `MermaidManager.reinitializeForTheme()`, which reinitialises Mermaid with the matching built-in theme and re-renders every diagram in place. Diagrams render on both the live dev server and the static build output.
+Each fence renders as `<pre><code class="language-mermaid">…</code></pre>` with the body verbatim — Pennington does not transform it server-side. The client-side `MermaidManager` walks the DOM, dynamically imports Mermaid from `cdn.jsdelivr.net` the first time a diagram appears, and replaces every matching `<code>` element with an inline SVG. The theme toggle calls `MermaidManager.reinitializeForTheme()`, which reinitializes Mermaid with the matching built-in theme and re-renders every diagram in place. Diagrams render on both the live dev server and the static build output.
 
 For per-diagram theme overrides, use Mermaid's inline `%%{init: { 'theme': '…' } }%%` directive at the top of the fence body — Mermaid syntax, not Pennington syntax.
 
@@ -78,5 +78,5 @@ For per-diagram theme overrides, use Mermaid's inline `%%{init: { 'theme': '…'
 
 - Reference: [Markdown extensions catalog](xref:reference.markdown.extensions) — the full list of non-CommonMark features, for context on what Pennington does and does not preprocess
 - Reference: [Code-block argument reference](xref:reference.markdown.code-block-args) — the info-string grammar (`mermaid` is a bare language token, no arguments needed)
-- How-to: <xref:how-to.rich-content.alerts> — the neighbouring visual-element authoring surface, for comparison
+- How-to: <xref:how-to.rich-content.alerts> — the neighboring visual-element authoring surface, for comparison
 - Background: [MonorailCSS integration](xref:explanation.rendering.monorail-css) — how the DocSite's theme tokens (the same ones Mermaid tracks) are generated

@@ -7,7 +7,7 @@ sectionLabel: "Content Discovery"
 tags: [configuration, content-sources, areas, overlap-detection]
 ---
 
-When one markdown tree outgrows a single root — a `/docs/` section alongside a separate `/blog/` section, or a catch-all root paired with a specialised subtree — registering multiple content sources is the answer. The right recipe depends on the host: `AddDocSite` supports multiple folder-scoped sub-trees through `ContentArea` entries on a single `DocSiteFrontMatter` pipeline; bare `AddPennington` allows any number of chained `AddMarkdownContent<T>` calls with independent front-matter types. For a first site, start with <xref:tutorials.getting-started.first-page>.
+When one markdown tree outgrows a single root — a `/docs/` section alongside a separate `/blog/` section, or a catch-all root paired with a specialized subtree — registering multiple content sources is the answer. The right recipe depends on the host: `AddDocSite` supports multiple folder-scoped sub-trees through `ContentArea` entries on a single `DocSiteFrontMatter` pipeline; bare `AddPennington` allows any number of chained `AddMarkdownContent<T>` calls with independent front-matter types. For a first site, start with <xref:tutorials.getting-started.first-page>.
 
 ## Before you begin
 
@@ -51,7 +51,7 @@ examples/MultipleSourcesExample/ServiceConfiguration.cs > ServiceConfiguration.R
 
 ### Carve out an overlapping subtree with `ExcludePaths`
 
-When one source's `ContentPath` is a parent of another's, Pennington emits an overlap warning at startup because both pipelines would discover the inner tree and produce conflicting outputs. Adding `ExcludePaths` on the broader source gives the specialised source exclusive ownership of that subtree.
+When one source's `ContentPath` is a parent of another's, Pennington emits an overlap warning at startup because both pipelines would discover the inner tree and produce conflicting outputs. Adding `ExcludePaths` on the broader source gives the specialized source exclusive ownership of that subtree.
 
 ```csharp:symbol,bodyonly
 examples/MultipleSourcesExample/ServiceConfiguration.cs > ServiceConfiguration.RegisterOverlappingDocSource

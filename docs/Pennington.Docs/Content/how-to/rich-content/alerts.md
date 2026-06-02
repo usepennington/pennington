@@ -1,6 +1,6 @@
 ---
-title: "Add a coloured callout for a note, tip, warning, or caution"
-description: "GitHub-style alerts: open a blockquote whose first line is `[!KIND]` in uppercase. Pennington recognises five kinds and paints each one differently."
+title: "Add a colored callout for a note, tip, warning, or caution"
+description: "GitHub-style alerts: open a blockquote whose first line is `[!KIND]` in uppercase. Pennington recognizes five kinds and paints each one differently."
 uid: how-to.rich-content.alerts
 order: 1
 sectionLabel: "Rich Content"
@@ -70,7 +70,7 @@ Each kind below shows the source markdown above the rendered output. Every line 
 
 ## What the renderer emits
 
-Each alert wraps in three CSS classes: `markdown-alert` (always present), `markdown-alert-{kind}` where `{kind}` is the lower-cased token, and `not-prose` (which isolates the alert from the surrounding page-prose typography rules). Stylesheets target the first two classes for the colour treatment. An unrecognised token falls back to a plain `<blockquote>` with no alert styling, so the marker stays visible instead of turning into a misleading callout.
+Each alert wraps in three CSS classes: `markdown-alert` (always present), `markdown-alert-{kind}` where `{kind}` is the lower-cased token, and `not-prose` (which isolates the alert from the surrounding page-prose typography rules). Stylesheets target the first two classes for the color treatment. An unrecognized token falls back to a plain `<blockquote>` with no alert styling, so the marker stays visible instead of turning into a misleading callout.
 
 ````markdown
 > [!INFO]
@@ -84,9 +84,9 @@ See <xref:reference.markdown.extensions> for the full kind-to-class table.
 
 ## Verify
 
-- Each alert renders as a coloured callout with no `[!KIND]` text in the body.
+- Each alert renders as a colored callout with no `[!KIND]` text in the body.
 - View source — the outer element carries `class="markdown-alert markdown-alert-note"` (or the matching kind).
-- An unrecognised kind like `[!INFO]` falls back to a plain `<blockquote>`, signalling that the parser rejected the marker.
+- An unrecognized kind like `[!INFO]` falls back to a plain `<blockquote>`, signaling that the parser rejected the marker.
 
 ## Related
 

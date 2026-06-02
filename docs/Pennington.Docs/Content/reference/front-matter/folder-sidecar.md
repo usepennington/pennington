@@ -27,7 +27,7 @@ llms:
 ## Resolution rules
 
 - A field that's set wins over every other source for that folder.
-- A field that's omitted falls through to the original behaviour: `FormatSectionTitle(folderSlug)` for the title, `min(children.Order)` for the order, and "not an llms subtree" for the llms split.
+- A field that's omitted falls through to the original behavior: `FormatSectionTitle(folderSlug)` for the title, `min(children.Order)` for the order, and "not an llms subtree" for the llms split.
 - Folders without `_meta.yml` are unaffected — adoption is folder-by-folder.
 
 ## Discovery

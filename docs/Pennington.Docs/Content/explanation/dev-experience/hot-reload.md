@@ -17,7 +17,7 @@ The mechanism is a single chain: files change, cached services drop their state,
 
 `FileWatcher` is a thin layer over `System.IO.Abstractions.IFileSystemWatcher`. `FileWatchDispatcher` registers a watch for each directory a service declares through `IFileWatchAware.WatchScopes`, calling `AddPathWatch(path, pattern, onFileChanged)`. Each subscription is keyed by a `path|pattern` string so the same directory cannot be registered twice under identical conditions. Internally the watcher hooks `Changed`, `Created`, `Deleted`, and `Renamed` and fires a single `NotifySubscribers()` pass after each event.
 
-The reason for the abstraction sits at two levels. In tests, a `MockFileSystem` drives the same interface without touching the real filesystem. In production, the seam also contains the behaviour differences between filesystem event delivery on WSL and on Windows — quirks that would otherwise leak through every consumer.
+The reason for the abstraction sits at two levels. In tests, a `MockFileSystem` drives the same interface without touching the real filesystem. In production, the seam also contains the behavior differences between filesystem event delivery on WSL and on Windows — quirks that would otherwise leak through every consumer.
 
 ### `FileWatchDependencyFactory` reconstructs services on change
 
