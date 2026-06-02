@@ -14,10 +14,6 @@ public record RazorPageSource(string ComponentType);
 /// <param name="TargetUrl">Destination URL for the redirect.</param>
 public record RedirectSource(UrlPath TargetUrl);
 
-/// <summary>Content produced programmatically by a generator.</summary>
-/// <param name="Generator">Generator that produces the content on demand.</param>
-public record ProgrammaticSource(IProgrammaticContentGenerator Generator);
-
 /// <summary>
 /// Marker source for routes whose content is produced by a live HTTP endpoint
 /// (e.g., the SPA data endpoint). These items exist so the build crawler
@@ -40,7 +36,7 @@ public record LlmsOnlySource(FilePath Path);
 
 /// <summary>Union of all ways content can be sourced for a route.</summary>
 #if NET11_0_OR_GREATER
-public union ContentSource(MarkdownFileSource, RazorPageSource, RedirectSource, ProgrammaticSource, EndpointSource, LlmsOnlySource);
+public union ContentSource(MarkdownFileSource, RazorPageSource, RedirectSource, EndpointSource, LlmsOnlySource);
 #else
 [System.Runtime.CompilerServices.Union]
 public readonly struct ContentSource : System.Runtime.CompilerServices.IUnion
@@ -53,8 +49,6 @@ public readonly struct ContentSource : System.Runtime.CompilerServices.IUnion
     public ContentSource(RazorPageSource value) { Value = value; }
     /// <summary>Wraps a <see cref="RedirectSource"/>.</summary>
     public ContentSource(RedirectSource value) { Value = value; }
-    /// <summary>Wraps a <see cref="ProgrammaticSource"/>.</summary>
-    public ContentSource(ProgrammaticSource value) { Value = value; }
     /// <summary>Wraps an <see cref="EndpointSource"/>.</summary>
     public ContentSource(EndpointSource value) { Value = value; }
     /// <summary>Wraps an <see cref="LlmsOnlySource"/>.</summary>
@@ -65,8 +59,6 @@ public readonly struct ContentSource : System.Runtime.CompilerServices.IUnion
     public static implicit operator ContentSource(RazorPageSource value) => new(value);
     /// <summary>Implicit conversion from <see cref="RedirectSource"/>.</summary>
     public static implicit operator ContentSource(RedirectSource value) => new(value);
-    /// <summary>Implicit conversion from <see cref="ProgrammaticSource"/>.</summary>
-    public static implicit operator ContentSource(ProgrammaticSource value) => new(value);
     /// <summary>Implicit conversion from <see cref="EndpointSource"/>.</summary>
     public static implicit operator ContentSource(EndpointSource value) => new(value);
     /// <summary>Implicit conversion from <see cref="LlmsOnlySource"/>.</summary>

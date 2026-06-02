@@ -367,25 +367,6 @@ public class ContentPipelineTests
     }
 
     [Fact]
-    public async Task ProgrammaticSource_DiscoveredAndFlowsThroughPipeline()
-    {
-        var generator = new StubProgrammaticGenerator();
-        var route = MakeRoute("/generated/page");
-        var source = new ContentSource(new ProgrammaticSource(generator));
-        var item = new DiscoveredItem(route, source);
-        var service = new StubContentService(item);
-
-        // Parser checks source type, so use a parser that handles any source
-        var pipeline = new ContentPipeline([service], new StubParser(), new StubRenderer());
-
-        var report = await pipeline.RunAsync(MakeOptions());
-
-        // ProgrammaticSource passes through parser (our stub doesn't check source type)
-        report.GeneratedPages.Count.ShouldBe(1);
-        report.HasErrors.ShouldBeFalse();
-    }
-
-    [Fact]
     public async Task RenderStage_ParsedItemPassesThrough_AlreadyRenderedSkipped()
     {
         var route = MakeRoute("/already-rendered");
@@ -527,16 +508,5 @@ public class ContentPipelineTests
     {
         public Task<ContentItem> RenderAsync(ParsedItem item)
             => throw new InvalidOperationException("Component exploded");
-    }
-
-    // --- Stub programmatic content generator ---
-
-    private class StubProgrammaticGenerator : IProgrammaticContentGenerator
-    {
-        public Task<ProgrammaticContent> GenerateAsync(ContentRoute route)
-            => Task.FromResult(new ProgrammaticContent(
-                new TextProgrammaticContent(
-                    Metadata: null,
-                    RawContent: "<p>Generated content</p>")));
     }
 }

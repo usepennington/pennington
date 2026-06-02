@@ -44,15 +44,4 @@ public static class UnionAssertExtensions
         throw new ShouldAssertException(
             $"Expected LinkCheckResult to be {typeof(TCase).Name}");
     }
-
-    public static TCase ShouldBeCase<TCase>(this ProgrammaticContent union) where TCase : class
-    {
-        if (union switch { TCase t => t, _ => null } is TCase result)
-        {
-            return result;
-        }
-
-        throw new ShouldAssertException(
-            $"Expected ProgrammaticContent to be {typeof(TCase).Name}");
-    }
 }
