@@ -11,7 +11,7 @@ To keep an unfinished page out of navigation, embargo a post until a release dat
 
 ## Before you begin
 - A working Pennington site has markdown under `Content/` (see <xref:how-to.pages.front-matter> if not).
-- Pages use a front-matter record that implements the capability each key relies on. `isDraft:` and `date:` are universally available; `tags:` requires `ITaggable`; `order:` requires `IOrderable`. The four shipped records — `DocFrontMatter`, `DocSiteFrontMatter`, `BlogFrontMatter`, `BlogSiteFrontMatter` — implement different subsets; see <xref:reference.front-matter.keys> for the per-record matrix.
+- Pages use a front-matter record that implements the capability each key relies on. `isDraft:` and `date:` are universally available; `tags:` requires `ITaggable`; `order:` requires `IOrderable`. The five shipped records — `DocFrontMatter`, `BlogFrontMatter`, `BlogPostFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter` — implement different subsets; see <xref:reference.front-matter.keys> for the per-record matrix.
 - The sidebar currently renders in file-order; `TableOfContentsNavigation` has not been customized.
 
 Setting `order:` on a `BlogSiteFrontMatter` or `BlogFrontMatter` page has no effect — blog posts sort newest-first by `date:`. To reorder posts, adjust the date; to hide a post, use `isDraft: true`.

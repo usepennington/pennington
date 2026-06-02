@@ -17,6 +17,10 @@
          its public surface and BlogSiteFrontMatter keys, keeping /reference/api/ and the
          front-matter reference complete. -->
     <ProjectReference Include="..\..\src\Pennington.BlogSite\Pennington.BlogSite.csproj" />
+    <!-- TranslationAudit is referenced (not used at runtime) for the same reason as BlogSite:
+         so AddTranslationAudit appears in the host-extensions roster and the reflection API
+         provider documents the audit feature's public surface. -->
+    <ProjectReference Include="..\..\src\Pennington.TranslationAudit\Pennington.TranslationAudit.csproj" />
     <ProjectReference Include="..\..\src\Pennington.TreeSitter\Pennington.TreeSitter.csproj" />
   </ItemGroup>
   <ItemGroup>

@@ -50,6 +50,8 @@ internal sealed class FrontMatterKeyIndex
 
         foreach (var type in FrontMatterTypes())
         {
+            var instance = TryCreateInstance(type);
+
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
             {
                 if (property.GetIndexParameters().Length > 0)
@@ -61,7 +63,7 @@ internal sealed class FrontMatterKeyIndex
                     YamlKey: ToCamelCase(property.Name),
                     Clr: property.Name,
                     TypeDisplay: TypeDisplay(property, nullability),
-                    DefaultValue: ExtractDefault(property, nullability),
+                    DefaultValue: ExtractDefault(instance, property, nullability),
                     Record: type.Name,
                     Surface: ResolveDeclaringSurface(type, property.Name),
                     XmlDocId: "P:" + FullName(type) + "." + property.Name));
@@ -164,10 +166,25 @@ internal sealed class FrontMatterKeyIndex
         return "record-local";
     }
 
-    private static string? ExtractDefault(PropertyInfo property, NullabilityInfoContext nullability)
+    private static string? ExtractDefault(object? instance, PropertyInfo property, NullabilityInfoContext nullability)
     {
-        // Property initializers (= 0, = "x") compile into the constructor and are not visible to
-        // reflection, so fall back to type heuristics when no initializer was present.
+        // Prefer the real runtime default: construct the record and read the property. This is the
+        // only way to see `init`-property initializers (= true, = [], = "x") and interface default
+        // members (Search => true) — neither compiles into reflectable property metadata, and the
+        // type heuristic below would otherwise report every bool as "false".
+        if (instance is not null)
+        {
+            try
+            {
+                return FormatDefault(property.GetValue(instance));
+            }
+            catch
+            {
+                // Reading the value threw unexpectedly — fall through to the type heuristic.
+            }
+        }
+
+        // Heuristic fallback for types with no public parameterless constructor.
         var type = property.PropertyType;
         if (Nullable.GetUnderlyingType(type) is not null
             || (!type.IsValueType && nullability.Create(property).ReadState == NullabilityState.Nullable))
@@ -187,6 +204,31 @@ internal sealed class FrontMatterKeyIndex
 
         return null;
     }
+
+    /// <summary>Constructs a record through its public parameterless constructor, or returns null when it has none.</summary>
+    private static object? TryCreateInstance(Type type)
+    {
+        try
+        {
+            return Activator.CreateInstance(type);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Formats a runtime default value the way it would be written in C# source.</summary>
+    private static string FormatDefault(object? value) => value switch
+    {
+        null => "null",
+        bool b => b ? "true" : "false",
+        string s => "\"" + s + "\"",
+        char c => "'" + c + "'",
+        Enum e => e.ToString(),
+        System.Collections.IEnumerable seq => seq.Cast<object?>().Any() ? "[...]" : "[]",
+        _ => Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "",
+    };
 
     private static string TypeDisplay(PropertyInfo property, NullabilityInfoContext nullability)
     {

@@ -76,7 +76,7 @@ MDX lets you embed JSX in markdown. Mdazor lets you embed Razor in markdown. The
 | `<LinkCard>`, `<CardGrid>` (Starlight) | Use `Pennington.UI` `Card`, `CardGrid` — see <xref:reference.ui.content> — or port the source components. |
 | `<Steps>` (Nextra, Starlight) | Native ordered Markdown list. The `<Steps>` mdazor component exists if you need numbered step blocks — see <xref:reference.ui.content>. |
 | `<script setup>` Vue blocks (VitePress) | Move the logic into a `.razor` component, register with Mdazor, embed by tag. |
-| `defineClientComponent(() => import(...))` (VitePress hydration) | Pennington does SSR by default; for client hydration see <xref:explanation.spa.islands>. |
+| `defineClientComponent(() => import(...))` (VitePress hydration) | Pennington has no client hydration — every page is fully server-rendered (see <xref:explanation.spa.islands>). Port the widget as a server-rendered Razor/Mdazor component; if it needs in-browser interactivity, ship your own client-side script that enhances the rendered HTML. |
 
 If the source has 30+ unique components, port structural ones first (callouts, code groups, image grids). Decorative widgets can wait — leave them as plain HTML or stub `<div>` until the human prioritizes them.
 
@@ -250,7 +250,7 @@ Stop and ask, don't guess:
 - Authentication-gated docs. Not yet a Pennington feature; flag it.
 - Multi-version docs with cross-version xrefs. Confirm whether cross-version links are required.
 - Live editing / instant previews specific to the source platform. Pennington has hot-reload (<xref:explanation.dev-experience.hot-reload>) but not the same model.
-- Custom JSX widgets that drive interactive UI (search-augmented filters, live API explorers). Ask whether to port as a hydrated island (<xref:explanation.spa.islands>) or as a plain Razor component.
+- Custom JSX widgets that drive interactive UI (search-augmented filters, live API explorers). Pennington renders server-side with no client hydration (<xref:explanation.spa.islands>); ask whether to port as a server-rendered Razor component or to add your own client-side script that enhances the rendered HTML.
 
 ## Read these when you need depth
 
