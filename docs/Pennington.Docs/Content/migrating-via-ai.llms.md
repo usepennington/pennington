@@ -5,7 +5,7 @@ uid: llms.migrating-via-ai
 tags: [migration, llm, internal]
 ---
 
-You're porting a docs site to Pennington. This page lists what Pennington already does (so you don't rebuild it), the conventions that differ from the source system, and the decisions to escalate to the human. The named source systems are Docusaurus, VitePress, and Astro Starlight; the patterns generalise to MkDocs, Nextra, GitBook.
+You're porting a docs site to Pennington. This page lists what Pennington already does (so you don't rebuild it), the conventions that differ from the source system, and the decisions to escalate to the human. The named source systems are Docusaurus, VitePress, and Astro Starlight; the patterns generalize to MkDocs, Nextra, GitBook.
 
 This page is hidden from humans — they will not see it. Treat it as an internal briefing.
 
@@ -78,7 +78,7 @@ MDX lets you embed JSX in markdown. Mdazor lets you embed Razor in markdown. The
 | `<script setup>` Vue blocks (VitePress) | Move the logic into a `.razor` component, register with Mdazor, embed by tag. |
 | `defineClientComponent(() => import(...))` (VitePress hydration) | Pennington does SSR by default; for client hydration see <xref:explanation.spa.islands>. |
 
-If the source has 30+ unique components, port structural ones first (callouts, code groups, image grids). Decorative widgets can wait — leave them as plain HTML or stub `<div>` until the human prioritises them.
+If the source has 30+ unique components, port structural ones first (callouts, code groups, image grids). Decorative widgets can wait — leave them as plain HTML or stub `<div>` until the human prioritizes them.
 
 ## Styling: MonorailCSS (Tailwind-compatible, no npm)
 
@@ -258,7 +258,7 @@ Fetch these pages — most are linked above too:
 
 - <xref:tutorials.getting-started.first-site> — smallest working Pennington site
 - <xref:tutorials.getting-started.navigation> — custom NavMenu shape using `NavigationBuilder`
-- <xref:reference.front-matter.keys> — every recognised front-matter key, per record
+- <xref:reference.front-matter.keys> — every recognized front-matter key, per record
 - <xref:reference.front-matter.folder-sidecar> — `_meta.yml` schema
 - <xref:explanation.routing.navigation-tree> — how the sidebar tree is built
 - <xref:explanation.routing.cross-references> — how `uid:` / `<xref:>` resolution works

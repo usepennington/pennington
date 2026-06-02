@@ -1,6 +1,6 @@
 ---
 title: "Group adjacent code fences into a tabbed sample"
-description: "Collapse adjacent fenced code blocks into one tabbed widget and customise the rendered CSS class names."
+description: "Collapse adjacent fenced code blocks into one tabbed widget and customize the rendered CSS class names."
 uid: how-to.code-samples.tabbed-code
 order: 2
 sectionLabel: "Code Samples"

@@ -7,7 +7,7 @@ sectionLabel: "Markdown Pipeline"
 tags: [highlighting, extensibility, textmate, code-blocks]
 ---
 
-To colour a fence language TextMateSharp does not cover — a DSL, config format, or domain notation — implement `ICodeHighlighter`. For line-level callouts on a language already supported, see <xref:how-to.code-samples.code-annotations>. For transforming the fence body rather than colouring its tokens, see <xref:how-to.markdown-pipeline.code-block-preprocessor>.
+To color a fence language TextMateSharp does not cover — a DSL, config format, or domain notation — implement `ICodeHighlighter`. For line-level callouts on a language already supported, see <xref:how-to.code-samples.code-annotations>. For transforming the fence body rather than coloring its tokens, see <xref:how-to.markdown-pipeline.code-block-preprocessor>.
 
 The recipe below references `examples/ExtensibilityLabExample/PipelineHighlighter.cs`, which stakes out a fictional `pipeline` DSL against a bare `AddPennington` host.
 
@@ -50,7 +50,7 @@ source "orders" -> filter where=paid | transform total=sum | sink "warehouse"
 
 ## Verify
 
-- Run `dotnet run --project examples/ExtensibilityLabExample` and visit `/pipeline-demo/`. Each keyword, arrow, and string literal inside the `pipeline` fence carries a `pipeline-*` CSS class; the neighbouring `text` fence renders without spans through the hardcoded `PlainTextHighlighter` fallback.
+- Run `dotnet run --project examples/ExtensibilityLabExample` and visit `/pipeline-demo/`. Each keyword, arrow, and string literal inside the `pipeline` fence carries a `pipeline-*` CSS class; the neighboring `text` fence renders without spans through the hardcoded `PlainTextHighlighter` fallback.
 - Static build: `dotnet run --project examples/ExtensibilityLabExample -- build output` — grep the emitted HTML for `class="pipeline-keyword"` to confirm the highlighter runs during publish.
 
 ## Related

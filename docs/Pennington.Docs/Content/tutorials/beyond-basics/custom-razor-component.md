@@ -137,7 +137,7 @@ In `Content/pricing.md`, change `Price="49"` to `Price="99"` and extend the `Fea
 
 **Flip `Highlighted` on the Basic card**
 
-Add `Highlighted="true"` to the first `<PricingCard Tier="Basic" ... />` tag. Boolean attribute values from markdown bind with case-insensitive `true` / `false` — `Highlighted="True"` and `Highlighted="true"` both flip the card into its emphasised state.
+Add `Highlighted="true"` to the first `<PricingCard Tier="Basic" ... />` tag. Boolean attribute values from markdown bind with case-insensitive `true` / `false` — `Highlighted="True"` and `Highlighted="true"` both flip the card into its emphasized state.
 
 </Step>
 </Steps>

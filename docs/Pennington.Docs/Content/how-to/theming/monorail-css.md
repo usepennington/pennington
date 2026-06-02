@@ -57,7 +57,7 @@ examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguratio
 
 ### Tweak prose rules with `CustomCssFrameworkSettings`
 
-`DocSiteOptions.CustomCssFrameworkSettings` post-processes the `CssFrameworkSettings` after the DocSite theme is applied — prose tweaks, color maps, or apply directives without leaving DocSite. For customisations outside DocSite's scope, see <xref:explanation.positioning.docsite-positioning>. On a bare `AddPennington` host, the same knob sits on `MonorailCssOptions` directly.
+`DocSiteOptions.CustomCssFrameworkSettings` post-processes the `CssFrameworkSettings` after the DocSite theme is applied — prose tweaks, color maps, or apply directives without leaving DocSite. For customizations outside DocSite's scope, see <xref:explanation.positioning.docsite-positioning>. On a bare `AddPennington` host, the same knob sits on `MonorailCssOptions` directly.
 
 ```csharp:symbol,bodyonly
 examples/ExtensibilityLabExample/MonorailCssCustomization.cs > MonorailCssCustomization.BuildOptions

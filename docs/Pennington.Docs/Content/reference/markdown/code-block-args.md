@@ -31,7 +31,7 @@ quoted-value  := any chars up to the matching quote
 | Name | Values | Description | Example |
 |---|---|---|---|
 | `tabs` | `true` | Marks adjacent fenced blocks for grouping into a single tabbed widget. | ` ```csharp tabs=true title="C#"` |
-| `title` | any quoted string | Tab label shown on the tabbed widget; falls back to the normalised language name when omitted. | ` ```csharp tabs=true title="Program.cs"` |
+| `title` | any quoted string | Tab label shown on the tabbed widget; falls back to the normalized language name when omitted. | ` ```csharp tabs=true title="Program.cs"` |
 
 ## Suffix forms (code-embedding)
 
@@ -47,7 +47,7 @@ The `symbol` flags (`,bodyonly`, `,imports`, `,signatures`) are comma-separated 
 
 ## `[!code …]` directives
 
-A directive is the literal text `[!code <notation>]` wrapped in a line-trailing comment marker recognised for the block's language (`//`, `#`, `--`, `<!--`, `*`, `%`, `'`, `REM`, `;`, `/*`); the directive pass runs against the highlighted HTML. The comment marker is stripped when the directive consumes the whole comment and preserved when trailing content remains; the directive itself is always removed from the rendered line.
+A directive is the literal text `[!code <notation>]` wrapped in a line-trailing comment marker recognized for the block's language (`//`, `#`, `--`, `<!--`, `*`, `%`, `'`, `REM`, `;`, `/*`); the directive pass runs against the highlighted HTML. The comment marker is stripped when the directive consumes the whole comment and preserved when trailing content remains; the directive itself is always removed from the rendered line.
 
 | Directive | Behavior | Example |
 |---|---|---|

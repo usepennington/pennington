@@ -50,7 +50,7 @@ src/Pennington/FrontMatter/IFrontMatter.cs > IFrontMatter.Search
 
 ### Set the default document priority
 
-`SearchIndexOptions.DefaultPriority` (default `5`) is the baseline weight assigned to every document whose content service does not override `IContentService.SearchPriority`. Raise it for sources that should outrank neighbours; lower it for auxiliary content. Per-source overrides take precedence — see <xref:reference.api.search-index-options> for the shipped defaults.
+`SearchIndexOptions.DefaultPriority` (default `5`) is the baseline weight assigned to every document whose content service does not override `IContentService.SearchPriority`. Raise it for sources that should outrank neighbors; lower it for auxiliary content. Per-source overrides take precedence — see <xref:reference.api.search-index-options> for the shipped defaults.
 
 Under `AddDocSite` this property is reachable via the `ConfigurePennington` escape hatch (`ConfigurePennington = penn => penn.SearchIndex.DefaultPriority = …`), so this adjustment does not require dropping down to bare `AddPennington`.
 

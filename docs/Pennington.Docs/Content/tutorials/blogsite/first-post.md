@@ -45,7 +45,7 @@ Paste the markdown body below into the new file. These three fields are the smal
 examples/BlogSiteFirstPostExample/snippets/stage1.md
 ```
 
-The two `---` fences delimit the YAML front matter block. The `date:` value parses as an ISO-8601 date; any format that round-trips as a date string works. For the full list of recognised front-matter keys, see the <xref:reference.api.blog-site-front-matter> reference page.
+The two `---` fences delimit the YAML front matter block. The `date:` value parses as an ISO-8601 date; any format that round-trips as a date string works. For the full list of recognized front-matter keys, see the <xref:reference.api.blog-site-front-matter> reference page.
 
 </Step>
 </Steps>
