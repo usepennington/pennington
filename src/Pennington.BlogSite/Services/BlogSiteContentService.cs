@@ -2,8 +2,8 @@ namespace Pennington.BlogSite.Services;
 
 using System.Collections.Immutable;
 using System.Web;
-using System.Xml.Linq;
 using Content;
+using Feeds;
 using FrontMatter;
 using Infrastructure;
 using Pipeline;
@@ -148,65 +148,15 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
     public async Task<string> GetRssXmlAsync()
     {
         var posts = await _posts;
-        var ordered = posts
-            .Where(p => p.FrontMatter.Date.HasValue)
-            .OrderByDescending(p => p.FrontMatter.Date!.Value)
-            .ToList();
+        var items = posts.Select(p => new RssFeedItem(
+            p.FrontMatter.Title,
+            p.FrontMatter.Description,
+            p.Route.CanonicalPath,
+            p.FrontMatter.Date,
+            p.FrontMatter.Author));
 
-        var canonicalBase = _options.CanonicalBaseUrl?.TrimEnd('/') ?? string.Empty;
-
-        XNamespace atom = "http://www.w3.org/2005/Atom";
-
-        var channel = new XElement("channel",
-            new XElement("title", _options.SiteTitle),
-            new XElement("link", string.IsNullOrEmpty(canonicalBase) ? "/" : canonicalBase + "/"),
-            new XElement("description", _options.SiteDescription));
-
-        if (!string.IsNullOrEmpty(canonicalBase))
-        {
-            channel.Add(new XElement(atom + "link",
-                new XAttribute("href", canonicalBase + "/rss.xml"),
-                new XAttribute("rel", "self"),
-                new XAttribute("type", "application/rss+xml")));
-        }
-
-        foreach (var post in ordered)
-        {
-            var url = string.IsNullOrEmpty(canonicalBase)
-                ? post.Route.CanonicalPath.Value
-                : canonicalBase + post.Route.CanonicalPath.Value;
-
-            var entry = new XElement("item",
-                new XElement("title", post.FrontMatter.Title),
-                new XElement("link", url),
-                new XElement("guid", new XAttribute("isPermaLink", "true"), url));
-
-            if (!string.IsNullOrEmpty(post.FrontMatter.Description))
-            {
-                entry.Add(new XElement("description", post.FrontMatter.Description));
-            }
-
-            if (post.FrontMatter.Date.HasValue)
-            {
-                entry.Add(new XElement("pubDate",
-                    post.FrontMatter.Date.Value.ToUniversalTime().ToString("r")));
-            }
-
-            if (!string.IsNullOrEmpty(post.FrontMatter.Author))
-            {
-                entry.Add(new XElement("author", post.FrontMatter.Author));
-            }
-
-            channel.Add(entry);
-        }
-
-        var rss = new XElement("rss",
-            new XAttribute("version", "2.0"),
-            new XAttribute(XNamespace.Xmlns + "atom", atom.NamespaceName),
-            channel);
-
-        var doc = new XDocument(new XDeclaration("1.0", "utf-8", null), rss);
-        return doc.Declaration + Environment.NewLine + doc;
+        return RssFeedWriter.WriteXml(
+            _options.SiteTitle, _options.SiteDescription, _options.CanonicalBaseUrl, items);
     }
 
     private async Task<ImmutableList<BlogPostDescriptor>> LoadPostsAsync()
