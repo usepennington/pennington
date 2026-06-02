@@ -374,9 +374,6 @@ public static class PenningtonExtensions
         services.AddSingleton(sp => new SitemapBuilder(
             sp.GetRequiredService<CanonicalBaseUrl>().Value,
             sp.GetRequiredService<TimeProvider>()));
-        services.AddSingleton(sp => new RssFeedBuilder(
-            sp.GetRequiredService<CanonicalBaseUrl>().Value,
-            sp.GetRequiredService<TimeProvider>()));
 
         // Render-once cache for the in-process crawl: the disk-write pass and the
         // search/llms.txt sidecars all self-fetch the same pages, so this collapses
