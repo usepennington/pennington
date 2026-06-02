@@ -1,5 +1,6 @@
 namespace Pennington.Infrastructure;
 
+using System.Net;
 using AngleSharp.Dom;
 using Microsoft.AspNetCore.Http;
 
@@ -48,8 +49,22 @@ internal sealed class WordBreakHtmlRewriter : IHtmlResponseRewriter
                 continue;
             }
 
-            var processed = _processor.ProcessText(element.TextContent);
-            if (processed != element.TextContent)
+            // Highlighted code is always rendered as <pre><code> … </code></pre>; never
+            // splice <wbr> into its token spans. Guard on <pre> (not <code>) so an explicit
+            // .text-break opt-in on a standalone <code> still word-breaks.
+            if (element.Closest("pre") is not null)
+            {
+                continue;
+            }
+
+            // TextContent is decoded, so re-encode before splicing: assigning to InnerHtml
+            // re-parses the string, and any '<', '>', '&' in the text (a generic type, an
+            // HTML string literal) would otherwise become real markup. Breaks land only at
+            // dots and uppercase transitions, never inside an entity, so encoding first is safe.
+            var text = element.TextContent;
+            var encoded = WebUtility.HtmlEncode(text);
+            var processed = _processor.ProcessText(encoded);
+            if (processed != encoded)
             {
                 element.InnerHtml = processed;
             }

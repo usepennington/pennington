@@ -185,4 +185,32 @@ public class WordBreakHtmlRewriterTests
         // the nested <span> is matched on its own and its text is broken.
         content.ShouldContain("<h2>Use <span>System.<wbr>Net.<wbr>Http.<wbr>Http<wbr>Client</span> now</h2>");
     }
+
+    [Fact]
+    public async Task SkipsHighlightedCodeBlockSpans()
+    {
+        // A highlighted code line: the <span> selector matches the hljs token span, but it
+        // lives inside <pre>, so word-break must leave the escaped HTML literal untouched.
+        var html = """
+            <html><body><pre><code><span class="line"><span class="hljs-string">&lt;link href="https://cdn.jsdelivr.net/npm/glightbox.min.css"&gt;</span></span></code></pre></body></html>
+            """;
+        var content = await Rewrite(html);
+
+        content.ShouldContain("&lt;link"); // still escaped — rendered as code
+        content.ShouldNotContain("<link"); // no real <link> element leaked into the page
+        content.ShouldNotContain("<wbr>"); // the code block was skipped entirely
+    }
+
+    [Fact]
+    public async Task EscapesMarkupCharactersWhenBreaking()
+    {
+        // Outside code: a long generic identifier carrying angle brackets. The break must be
+        // spliced into escaped text, not re-parsed — the old code emitted a bogus <titem> element.
+        var content = await Rewrite("<html><body><span>Namespace.Generic&lt;TItem&gt;.Property</span></body></html>");
+
+        content.ShouldContain("Namespace.<wbr>Generic"); // break inserted at the dot
+        content.ShouldContain("Generic&lt;TItem&gt;");    // angle brackets stay escaped
+        content.ShouldNotContain("<titem");               // no bogus element from re-parsing
+        content.ShouldNotContain("<TItem");
+    }
 }
