@@ -25,5 +25,5 @@ public interface IContentPipeline
     /// <summary>
     /// Exit: generate output files.
     /// </summary>
-    Task<BuildReport> GenerateAsync(IAsyncEnumerable<ContentItem> items, OutputOptions options);
+    Task<BuildReport> GenerateAsync(IAsyncEnumerable<ContentItem> items);
 }

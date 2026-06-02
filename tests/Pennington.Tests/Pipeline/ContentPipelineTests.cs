@@ -28,11 +28,6 @@ public class ContentPipelineTests
         Social: null
     );
 
-    private static OutputOptions MakeOptions() => new()
-    {
-        OutputDirectory = new FilePath("output")
-    };
-
     // --- Test front matter types ---
 
     private record TestFrontMatter(string Title) : IFrontMatter;
@@ -139,7 +134,7 @@ public class ContentPipelineTests
 
         var pipeline = new ContentPipeline([service], new StubParser(), new StubRenderer());
 
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(2);
         report.FailedPages.Count.ShouldBe(0);
@@ -155,7 +150,7 @@ public class ContentPipelineTests
 
         var pipeline = new ContentPipeline([service], new FailingParser(), new StubRenderer());
 
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.FailedPages.Count.ShouldBe(1);
         report.GeneratedPages.Count.ShouldBe(0);
@@ -176,7 +171,7 @@ public class ContentPipelineTests
 
         var pipeline = new ContentPipeline([service], new StubParser(), new FailingRenderer());
 
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.FailedPages.Count.ShouldBe(1);
         report.GeneratedPages.Count.ShouldBe(0);
@@ -194,7 +189,7 @@ public class ContentPipelineTests
 
         var pipeline = new ContentPipeline([service], new ThrowingParser(), new StubRenderer());
 
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.FailedPages.Count.ShouldBe(1);
         report.GeneratedPages.Count.ShouldBe(0);
@@ -213,7 +208,7 @@ public class ContentPipelineTests
 
         var pipeline = new ContentPipeline([service], new DraftParser(), new StubRenderer());
 
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.SkippedPages.Count.ShouldBe(1);
         report.GeneratedPages.Count.ShouldBe(0);
@@ -234,7 +229,7 @@ public class ContentPipelineTests
 
         var pipeline = new ContentPipeline([service], parser, new StubRenderer());
 
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(1);
         report.FailedPages.Count.ShouldBe(1);
@@ -270,7 +265,7 @@ public class ContentPipelineTests
 
         var pipeline = new ContentPipeline([service], parser, renderer);
 
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(2);
         report.FailedPages.Count.ShouldBe(0);
@@ -283,7 +278,7 @@ public class ContentPipelineTests
     {
         var pipeline = new ContentPipeline([], new StubParser(), new StubRenderer());
 
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(0);
         report.FailedPages.Count.ShouldBe(0);
@@ -340,7 +335,7 @@ public class ContentPipelineTests
 
         var pipeline = new ContentPipeline([service], new StubParser(), new ThrowingRenderer());
 
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.FailedPages.Count.ShouldBe(1);
         report.HasErrors.ShouldBeTrue();
@@ -359,7 +354,7 @@ public class ContentPipelineTests
 
         var pipeline = new ContentPipeline([service], new SelectiveParser(), new StubRenderer());
 
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.FailedPages.Count.ShouldBe(2);
         report.GeneratedPages.Count.ShouldBe(1);
@@ -402,7 +397,7 @@ public class ContentPipelineTests
         }
 
         var pipeline = new ContentPipeline([], new StubParser(), new StubRenderer());
-        var report = await pipeline.GenerateAsync(Source(), MakeOptions());
+        var report = await pipeline.GenerateAsync(Source());
 
         report.GeneratedPages.Count.ShouldBe(0);
         report.Diagnostics.Any(d => d.Severity is DiagnosticSeverity.Warning).ShouldBeTrue();
@@ -420,7 +415,7 @@ public class ContentPipelineTests
             """<p>See <a href="/docs/config">Config</a> and <a href="/docs/setup/">Setup</a>.</p>""");
 
         var pipeline = new ContentPipeline([service], parser, renderer);
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(1);
         var warnings = report.Diagnostics.Where(d => d.Severity is DiagnosticSeverity.Warning).ToList();
@@ -440,7 +435,7 @@ public class ContentPipelineTests
             """<p>See <a href="/docs/config/">Config</a> and <a href="https://example.com">Ext</a>.</p>""");
 
         var pipeline = new ContentPipeline([service], parser, renderer);
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(1);
         report.Diagnostics.Where(d => d.Severity is DiagnosticSeverity.Warning).ShouldBeEmpty();
@@ -457,7 +452,7 @@ public class ContentPipelineTests
 
         var pipeline = new ContentPipeline([goodService, badService], new SelectiveParser(), new StubRenderer());
 
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(1);
         report.FailedPages.Count.ShouldBe(1);
