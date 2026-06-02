@@ -147,7 +147,7 @@ builder.Services.AddTransient<IContentService, ArticleListingContentService>();
 
 ## What ends up where
 
-- **Sitemap.** Paginated routes appear in `sitemap.xml` automatically — they come from `DiscoverAsync` as HTML routes and `SitemapService` includes everything that isn't a redirect, endpoint, or llms-only sidecar.
+- **Sitemap.** Paginated routes appear in `sitemap.xml` automatically — they come from `DiscoverAsync` as HTML routes and `SitemapService` includes everything that isn't a redirect or llms-only sidecar.
 - **Search index and llms.txt.** Excluded by default: `BlogSiteContentService` and the custom service above return empty `GetIndexableEntriesAsync()` (the default forwards to `GetContentTocEntriesAsync()`), so their routes never enter the search or llms paths. If a custom service does emit indexable entries for paginated routes, set `ExcludeFromSearch = true` and `ExcludeFromLlms = true` on those entries.
 - **Navigation tree.** Same — paginated routes have no TOC entry, so they don't show in the sidebar or breadcrumbs.
 

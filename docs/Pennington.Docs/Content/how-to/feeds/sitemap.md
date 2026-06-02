@@ -34,6 +34,8 @@ new BlogSiteOptions
 
 `SitemapBuilder.Build` drops any candidate whose front matter has `isDraft: true` or implements `IRedirectable` with a non-empty `RedirectUrl`. `search: false` and `llms: false` are not honored — those are client-side UX preferences, not SEO directives, so opting a page out of search does not remove it from the sitemap.
 
+Every other discovered HTML route is included, regardless of how it is sourced — markdown, Razor pages, and the `EndpointSource` routes that custom content services (<xref:how-to.content-services.custom-content-service>, <xref:how-to.content-services.remote-api>) and `AddTaxonomy` term pages emit all appear. Only routes with no canonical HTML are left out by source type: `RedirectSource` (a 30x) and `LlmsOnlySource` (an llms.txt-only sidecar). Non-HTML outputs (JSON feeds, generated data files) are skipped because their output file is not `.html`.
+
 ### (BlogSite only) Suppress the endpoint with `EnableSitemap = false`
 
 On an `AddBlogSite` host, set `BlogSiteOptions.EnableSitemap = false` to skip the `/sitemap.xml` MapGet entirely — useful when the host environment owns its own sitemap. The flag forwards into `PenningtonOptions.MapSitemap`; on bare `AddPennington` or `AddDocSite`, set that property directly to opt out.

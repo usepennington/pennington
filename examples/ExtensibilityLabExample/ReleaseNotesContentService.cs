@@ -49,9 +49,9 @@ public sealed class ReleaseNotesContentService : IContentService
     /// One discovered item for the index plus one per JSON file. Each route is
     /// paired with <see cref="EndpointSource"/> — the build crawler discovers
     /// the URL and fetches it through the live pipeline, where the sibling
-    /// <c>MapGet</c> endpoint in <c>Program.cs</c> produces the HTML. These
-    /// items do not appear in <c>sitemap.xml</c>; that's the intended tradeoff
-    /// for routes whose canonical HTML lives behind a custom endpoint.
+    /// <c>MapGet</c> endpoint in <c>Program.cs</c> produces the HTML. Because the
+    /// endpoint serves real canonical HTML, these routes are included in
+    /// <c>sitemap.xml</c> like any other page.
     /// </summary>
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {

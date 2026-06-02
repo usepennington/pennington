@@ -2,7 +2,7 @@
 title: "Use a YAML or JSON data file in pages"
 description: "Register a YAML or JSON file as a typed value any Razor page or component can read through IDataFiles. The file hot-reloads when you edit it."
 uid: how-to.content-services.data-files
-order: 4
+order: 5
 sectionLabel: "Content Services"
 tags: [data, yaml, json, hot-reload, content-service]
 ---

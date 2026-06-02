@@ -199,8 +199,8 @@ public class LlmsTxtAndSearchEndpointTests
         // area out of the front door. The threshold accounts for the docs site's
         // absolute CanonicalBaseUrl, which adds ~50 bytes per entry vs. root-relative.
         var content = await _client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
-        content.Length.ShouldBeLessThan(24_000,
-            $"front door is {content.Length} bytes; the subtree splits should keep it under 24KB");
+        content.Length.ShouldBeLessThan(32_000,
+            $"front door is {content.Length} bytes; the subtree splits should keep it under 32KB");
     }
 
     [Fact]

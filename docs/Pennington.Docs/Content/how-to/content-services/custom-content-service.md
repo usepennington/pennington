@@ -27,7 +27,7 @@ examples/ExtensibilityLabExample/ReleaseNotesContentService.cs
 
 Three non-obvious moves carry this service:
 
-- **`DiscoverAsync` pairs a route with a `ContentSource` case.** Build the route with `ContentRouteFactory.FromUrl` (synthetic URL, no backing file) or `ContentRouteFactory.FromCustom` (URL plus an on-disk `FilePath` so file-watching picks up edits). The example uses `EndpointSource` so the build crawler fetches each URL through a sibling `MapGet` endpoint; that case excludes the route from `sitemap.xml` because the canonical HTML is owned by the endpoint.
+- **`DiscoverAsync` pairs a route with a `ContentSource` case.** Build the route with `ContentRouteFactory.FromUrl` (synthetic URL, no backing file) or `ContentRouteFactory.FromCustom` (URL plus an on-disk `FilePath` so file-watching picks up edits). The example uses `EndpointSource` so the build crawler fetches each URL through a sibling `MapGet` endpoint; those routes serve real canonical HTML, so they appear in `sitemap.xml` like any other page.
 - **`GetContentTocEntriesAsync` feeds the sidebar and the search index.** Set `Title`, `Route`, `Order` (10/20/30 spacing), `HierarchyParts` (sidebar nesting), and `SectionLabel` (group header). The same items power search ranking.
 - **`GetCrossReferencesAsync` publishes one `CrossReference(uid, title, route)` per record** so authors can deep-link entries with `<xref:uid>`. Pick a stable prefix (`release-1.0.0` here) so the uid does not depend on a URL that may move.
 
@@ -42,6 +42,8 @@ builder.Services.AddSingleton<ReleaseNotesContentService>();
 builder.Services.AddSingleton<IContentService>(sp =>
     sp.GetRequiredService<ReleaseNotesContentService>());
 ```
+
+This service reads its JSON into a `Lazy<T>` once and lives as a singleton, so an edit to a release file during a dev session is not picked up until restart. When live-reload on source edits matters, register the service file-watched instead — `AddFileWatched<T>` plus a *transient* `IContentService` wrapper, as <xref:how-to.feeds.custom-feed> shows. `AddSingleton<IContentService>` over a file-watched type silently caches the first copy and serves stale data. To source from a remote API rather than disk, see <xref:how-to.content-services.remote-api>.
 
 ## Result
 
@@ -65,6 +67,7 @@ Each `/releases/{version}/` URL renders through the sibling `MapGet` endpoint, t
 
 - Reference: [Content pipeline interfaces](xref:reference.api.i-content-service)
 - Reference: [Routing types](xref:reference.api.content-route)
+- How-to: [Source content from a remote API](xref:how-to.content-services.remote-api)
 - How-to: [Use a YAML or JSON data file in pages](xref:how-to.content-services.data-files)
 - Background: [The content pipeline and union types](xref:explanation.core.content-pipeline)
 - Background: [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning)
