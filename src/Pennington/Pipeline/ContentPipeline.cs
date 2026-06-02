@@ -118,7 +118,7 @@ public sealed class ContentPipeline : IContentPipeline
     }
 
     /// <inheritdoc/>
-    public async Task<BuildReport> GenerateAsync(IAsyncEnumerable<ContentItem> items, OutputOptions options)
+    public async Task<BuildReport> GenerateAsync(IAsyncEnumerable<ContentItem> items)
     {
         var reportBuilder = new BuildReportBuilder();
 
@@ -177,11 +177,11 @@ public sealed class ContentPipeline : IContentPipeline
     /// <summary>
     /// Convenience: run the full pipeline end-to-end.
     /// </summary>
-    public async Task<BuildReport> RunAsync(OutputOptions options)
+    public async Task<BuildReport> RunAsync()
     {
         var discovered = DiscoverAsync();
         var parsed = ParseAsync(discovered);
         var rendered = RenderAsync(parsed);
-        return await GenerateAsync(rendered, options);
+        return await GenerateAsync(rendered);
     }
 }

@@ -9,8 +9,10 @@ using Pennington.Routing;
 namespace Pennington.Tests.Generation;
 
 /// <summary>
-/// End-to-end tests exercising the full content pipeline through to build report
-/// and link verification — the same flow a real "dotnet run -- build" would take.
+/// Exercises the full ContentPipeline composition through to build report and link
+/// verification. This is the pipeline class in isolation, not the production build
+/// path — a real "dotnet run -- build" HTTP-crawls the running app via
+/// OutputGenerationService.
 /// </summary>
 public class EndToEndBuildTests
 {
@@ -22,11 +24,6 @@ public class EndToEndBuildTests
 
     private static ContentSource MakeSource() =>
         new ContentSource(new MarkdownFileSource("content/page.md"));
-
-    private static OutputOptions MakeOptions() => new()
-    {
-        OutputDirectory = new FilePath("output")
-    };
 
     // --- Front matter types ---
 
@@ -111,7 +108,7 @@ public class EndToEndBuildTests
         var renderer = new RenderWithHtmlStub(_ => "<p>Content</p>");
 
         var pipeline = new ContentPipeline([service], parser, renderer);
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(3);
         report.FailedPages.ShouldBeEmpty();
@@ -145,7 +142,7 @@ public class EndToEndBuildTests
         var renderer = new RenderWithHtmlStub(_ => "<p>Content</p>");
 
         var pipeline = new ContentPipeline([service], parser, renderer);
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(1);
         report.SkippedPages.Count.ShouldBe(1);
@@ -182,7 +179,7 @@ public class EndToEndBuildTests
         var renderer = new RenderWithHtmlStub(_ => "<p>Content</p>");
 
         var pipeline = new ContentPipeline([docsService, blogService], parser, renderer);
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(3); // 2 docs + 1 blog
         report.SkippedPages.Count.ShouldBe(1); // 1 draft
@@ -212,7 +209,7 @@ public class EndToEndBuildTests
         });
 
         var pipeline = new ContentPipeline([service], parser, renderer);
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         // Verify links between the two pages
         var linkService = new LinkVerificationService(report.GeneratedPages);
@@ -249,7 +246,7 @@ public class EndToEndBuildTests
         var renderer = new RenderWithHtmlStub(_ => "<p>Content</p>");
 
         var pipeline = new ContentPipeline([service], parser, renderer);
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         var output = report.ToFormattedString();
 
@@ -269,7 +266,7 @@ public class EndToEndBuildTests
         var renderer = new RenderWithHtmlStub(_ => throw new InvalidOperationException("Should not be called"));
 
         var pipeline = new ContentPipeline([service], parser, renderer);
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.GeneratedPages.ShouldBeEmpty();
         report.FailedPages.ShouldBeEmpty();
@@ -294,7 +291,7 @@ public class EndToEndBuildTests
         var renderer = new RenderWithHtmlStub(_ => throw new InvalidOperationException("Should not be called"));
 
         var pipeline = new ContentPipeline([service], parser, renderer);
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         report.GeneratedPages.ShouldBeEmpty();
         report.FailedPages.Count.ShouldBe(3);
@@ -338,7 +335,7 @@ public class EndToEndBuildTests
         var renderer = new RenderWithHtmlStub(_ => navHtml);
 
         var pipeline = new ContentPipeline([service], parser, renderer);
-        var report = await pipeline.RunAsync(MakeOptions());
+        var report = await pipeline.RunAsync();
 
         var linkService = new LinkVerificationService(report.GeneratedPages);
 
