@@ -1,6 +1,6 @@
 ---
 title: "DI and middleware extension methods"
-description: "Index of every AddPennington/UsePennington/Run* extension method across the Pennington, DocSite, BlogSite, and MonorailCSS packages."
+description: "Index of every AddPennington/UsePennington/Run* extension method across the referenced Pennington packages."
 sectionLabel: "Host Integration"
 order: 1
 tags: [host, di, middleware, extensions]

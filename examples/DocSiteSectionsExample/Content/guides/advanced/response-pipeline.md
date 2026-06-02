@@ -21,7 +21,9 @@ work to particular routes, content types, or request metadata.
 
 ## Where this fits vs islands
 
-Response processors mutate the already-rendered page; islands let you hand
-a region of the DOM off to a Razor component that rehydrates on the
-client. Reach for a processor when the change is purely HTML; reach for an
-island when you need interactive state.
+Response processors mutate the already-rendered HTML server-side, before it
+reaches the browser. Islands — the SPA engine's `data-spa-region` blocks —
+mark which server-rendered regions swap in on in-site navigation; Pennington
+renders them on the server with no client hydration. Reach for a processor to
+change the HTML every page ships; for interactive client behavior, ship your
+own client-side script that enhances the rendered HTML.

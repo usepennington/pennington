@@ -78,4 +78,4 @@ Project Pages sites serve at `https://<user>.github.io/<repo>/`, so the workflow
 - Recipe: [Host under a sub-path (base URL)](xref:how-to.deployment.base-url) — how `BaseUrlHtmlRewriter` handles the `/<repo>/` prefix for non-GitHub-Pages hosts.
 - Recipe: [Adapt the deploy workflow for other hosts](xref:how-to.deployment.adapt-for-other-hosts) — Azure Static Web Apps, Cloudflare Pages, and Netlify deltas against this workflow.
 - Reference: [CLI and build arguments](xref:reference.host.cli) — the `build [baseUrl] [outputDirectory]` surface this workflow drives.
-- Reference: [Build report fields](xref:reference.api.build-report) — `BuildReport`, `BuildDiagnostic`, and `BrokenLink` semantics for the CI step above.
+- Reference: [Build report fields](xref:reference.api.build-report) — the `BuildReport` surface (`HasErrors`, `FailedPages`, `Diagnostics`) the CI step above checks.
