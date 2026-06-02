@@ -37,6 +37,7 @@
     <Project Path="examples/BeyondTranslationAuditExample/BeyondTranslationAuditExample.csproj" />
     <Project Path="examples/BeyondTreeSitterExample/BeyondTreeSitterExample.csproj" />
     <Project Path="examples/BeyondCustomRazorComponentExample/BeyondCustomRazorComponentExample.csproj" />
+    <Project Path="examples/BeyondClientWidgetExample/BeyondClientWidgetExample.csproj" />
     <Project Path="examples/BareHostRazorPageExample/BareHostRazorPageExample.csproj" />
     <Project Path="examples/DocSiteKitchenSinkExample/DocSiteKitchenSinkExample.csproj" />
     <Project Path="examples/MultipleSourcesExample/MultipleSourcesExample.csproj" />

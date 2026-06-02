@@ -1,0 +1,55 @@
+@* ImageGallery — a server-rendered Mdazor component that emits a thumbnail grid
+   of <a class="glightbox"> / <img> pairs. It runs entirely on the server; the
+   client-side script (wwwroot/gallery.js) finds the `.glightbox` anchors at page
+   load and upgrades them into a lightbox. This is the "SSR component plus your
+   own script" seam the how-to /how-to/rich-content/client-side-widget walks
+   through.
+
+   Consumed from markdown as:
+
+     <ImageGallery Images="merry-mixer.png, peppermint-express.png" Group="trains" />
+
+   Only primitive parameters bind from markdown attributes, so the image list
+   arrives as one comma-separated string and captions are derived from the file
+   names. *@
+<div class="not-prose my-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
+    @foreach (var image in ParsedImages)
+    {
+        @* target="_blank" opts the link out of Pennington's SPA navigation (it
+           skips links marked target/download/data-spa-reload) so the engine does
+           not hijack the click; GLightbox calls preventDefault, so the new tab
+           only opens as a graceful fallback when scripting is off. *@
+        <a href="@($"{BasePath}/{image.File}")"
+           target="_blank" rel="noopener"
+           class="glightbox group block overflow-hidden rounded-xl border border-base-200 dark:border-base-800"
+           data-gallery="@Group"
+           data-title="@image.Caption">
+            <img src="@($"{BasePath}/{image.File}")"
+                 alt="@image.Caption"
+                 loading="lazy"
+                 class="aspect-video w-full object-cover transition-transform duration-200 group-hover:scale-105" />
+        </a>
+    }
+</div>
+
+@code {
+    /// <summary>Comma-separated image file names served under <see cref="BasePath"/>.</summary>
+    [Parameter] public string Images { get; set; } = "";
+
+    /// <summary>GLightbox gallery group — anchors sharing a group page through one lightbox.</summary>
+    [Parameter] public string Group { get; set; } = "gallery";
+
+    /// <summary>URL prefix the image files are served from.</summary>
+    [Parameter] public string BasePath { get; set; } = "/guides/assets";
+
+    private IEnumerable<(string File, string Caption)> ParsedImages =>
+        Images.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+              .Select(file => (file, Caption: ToCaption(file)));
+
+    // "merry-mixer.png" -> "Merry Mixer"
+    private static string ToCaption(string file)
+    {
+        var name = Path.GetFileNameWithoutExtension(file).Replace('-', ' ');
+        return System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(name);
+    }
+}
