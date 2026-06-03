@@ -1,7 +1,9 @@
 using System.Collections.Immutable;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Pennington.Content;
 using Pennington.Diagnostics;
@@ -86,7 +88,18 @@ public class PageLinkAuditProcessorTests
         new(
             [new FakeService(knownRoutes)],
             new EmptyEndpointDataSource(),
-            new OutputOptions { OutputDirectory = new FilePath("output") });
+            new OutputOptions { OutputDirectory = new FilePath("output") },
+            new StubWebHostEnvironment());
+
+    private sealed class StubWebHostEnvironment : IWebHostEnvironment
+    {
+        public string WebRootPath { get; set; } = "";
+        public IFileProvider WebRootFileProvider { get; set; } = new NullFileProvider();
+        public string ApplicationName { get; set; } = "Test";
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
+        public string ContentRootPath { get; set; } = "";
+        public string EnvironmentName { get; set; } = "Test";
+    }
 
     private static ContentRoute MakeRoute(string canonical) => new()
     {

@@ -2,6 +2,7 @@ namespace Pennington.Infrastructure;
 
 using Content;
 using Generation;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Pipeline;
 
@@ -22,7 +23,8 @@ public sealed class PageLinkVerifier : IFileWatchAware
     public PageLinkVerifier(
         IEnumerable<IContentService> contentServices,
         EndpointDataSource endpointDataSource,
-        OutputOptions outputOptions)
+        OutputOptions outputOptions,
+        IWebHostEnvironment environment)
     {
         // includeEmitterOutputs: false — this verifier runs inside the response pipeline,
         // and emitter discovery walks the shared site projection, which kicks off corpus-wide
@@ -37,7 +39,8 @@ public sealed class PageLinkVerifier : IFileWatchAware
                 contentEmitters: [],
                 endpointDataSource,
                 outputOptions,
-                includeEmitterOutputs: false));
+                includeEmitterOutputs: false,
+                environment.WebRootFileProvider));
     }
 
     /// <summary>Returns the current verifier; rebuilds on first access after a file change.</summary>

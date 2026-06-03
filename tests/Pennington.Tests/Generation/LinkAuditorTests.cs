@@ -1,6 +1,8 @@
 using System.Collections.Immutable;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Pennington.Content;
 using Pennington.Generation;
@@ -21,7 +23,8 @@ public class LinkAuditorTests
             [service],
             [],
             new EmptyEndpointDataSource(),
-            new OutputOptions { OutputDirectory = new FilePath("output") });
+            new OutputOptions { OutputDirectory = new FilePath("output") },
+            StubEnv());
 
         var context = new RenderedAuditContext(
             ImmutableList.Create(page),
@@ -47,7 +50,8 @@ public class LinkAuditorTests
             [service],
             [],
             new EmptyEndpointDataSource(),
-            new OutputOptions { OutputDirectory = new FilePath("output") });
+            new OutputOptions { OutputDirectory = new FilePath("output") },
+            StubEnv());
 
         var context = new RenderedAuditContext(
             ImmutableList.Create(page),
@@ -70,7 +74,8 @@ public class LinkAuditorTests
             [service],
             [],
             new EmptyEndpointDataSource(),
-            new OutputOptions { OutputDirectory = new FilePath("output") });
+            new OutputOptions { OutputDirectory = new FilePath("output") },
+            StubEnv());
 
         var context = new RenderedAuditContext(
             ImmutableList.Create(page),
@@ -91,7 +96,8 @@ public class LinkAuditorTests
             [service],
             [],
             new EmptyEndpointDataSource(),
-            new OutputOptions { OutputDirectory = new FilePath("output") });
+            new OutputOptions { OutputDirectory = new FilePath("output") },
+            StubEnv());
 
         var context = new RenderedAuditContext(
             ImmutableList.Create(page),
@@ -118,7 +124,8 @@ public class LinkAuditorTests
             [service],
             [emitter],
             new EmptyEndpointDataSource(),
-            new OutputOptions { OutputDirectory = new FilePath("output") });
+            new OutputOptions { OutputDirectory = new FilePath("output") },
+            StubEnv());
 
         var context = new RenderedAuditContext(
             ImmutableList.Create(page),
@@ -139,7 +146,8 @@ public class LinkAuditorTests
             [service],
             [],
             new EmptyEndpointDataSource(),
-            new OutputOptions { OutputDirectory = new FilePath("output") });
+            new OutputOptions { OutputDirectory = new FilePath("output") },
+            StubEnv());
 
         var context = new RenderedAuditContext(
             ImmutableList.Create(page),
@@ -150,6 +158,31 @@ public class LinkAuditorTests
 
         diagnostics.Count.ShouldBe(1);
         diagnostics[0].SourceFile.ShouldBe("content.links/Image//missing.png");
+    }
+
+    [Fact]
+    public async Task AuditAsync_LinkToWebRootAsset_NoWarning()
+    {
+        // wwwroot assets (the documented home for shared, absolute-URL assets) are copied by the
+        // build but owned by no content service. The auditor must fold them in so they don't read
+        // as broken.
+        var page = MakeRoute("/page/", "/repo/page.md");
+        var service = new FakeService([page], []);
+        var auditor = new LinkAuditor(
+            [service],
+            [],
+            new EmptyEndpointDataSource(),
+            new OutputOptions { OutputDirectory = new FilePath("output") },
+            StubEnv("logo.svg", "/wwwroot/logo.svg"));
+
+        var context = new RenderedAuditContext(
+            ImmutableList.Create(page),
+            new LocalizationOptions(),
+            (route, ct) => Task.FromResult<string?>("""<img src="/logo.svg">"""));
+
+        var diagnostics = await auditor.AuditAsync(context, TestContext.Current.CancellationToken);
+
+        diagnostics.ShouldBeEmpty();
     }
 
     private static ContentRoute MakeRoute(string canonical, string sourcePath) => new()
@@ -188,5 +221,53 @@ public class LinkAuditorTests
     {
         public override IReadOnlyList<Endpoint> Endpoints => [];
         public override IChangeToken GetChangeToken() => new CancellationChangeToken(CancellationToken.None);
+    }
+
+    private static IWebHostEnvironment StubEnv(string? relativePath = null, string? physicalPath = null) =>
+        new StubWebHostEnvironment
+        {
+            WebRootFileProvider = relativePath is null
+                ? new NullFileProvider()
+                : new SingleFileProvider(relativePath, physicalPath!),
+        };
+
+    private sealed class StubWebHostEnvironment : IWebHostEnvironment
+    {
+        public string WebRootPath { get; set; } = "";
+        public IFileProvider WebRootFileProvider { get; set; } = new NullFileProvider();
+        public string ApplicationName { get; set; } = "Test";
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
+        public string ContentRootPath { get; set; } = "";
+        public string EnvironmentName { get; set; } = "Test";
+    }
+
+    // Exposes a single root-level file; enough for the walker to surface it as a known asset.
+    private sealed class SingleFileProvider(string name, string physicalPath) : IFileProvider
+    {
+        public IDirectoryContents GetDirectoryContents(string subpath) =>
+            string.IsNullOrEmpty(subpath?.Trim('/'))
+                ? new Contents(new FileInfo(name, physicalPath))
+                : NotFoundDirectoryContents.Singleton;
+
+        public IFileInfo GetFileInfo(string subpath) => new NotFoundFileInfo(subpath);
+        public IChangeToken Watch(string filter) => NullChangeToken.Singleton;
+
+        private sealed class Contents(IFileInfo entry) : IDirectoryContents
+        {
+            public bool Exists => true;
+            public IEnumerator<IFileInfo> GetEnumerator() { yield return entry; }
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        private sealed class FileInfo(string name, string physicalPath) : IFileInfo
+        {
+            public bool Exists => true;
+            public long Length => 0;
+            public string PhysicalPath => physicalPath;
+            public string Name => name;
+            public DateTimeOffset LastModified => DateTimeOffset.MinValue;
+            public bool IsDirectory => false;
+            public Stream CreateReadStream() => throw new NotSupportedException();
+        }
     }
 }

@@ -157,7 +157,45 @@ public class OutputGenerationServiceTests
         report.Diagnostics.Any(d => d.Message.Contains("Failed to copy")).ShouldBeFalse();
     }
 
+    [Fact]
+    public async Task GenerateAsync_TwoContentServices_SameAssetOutputPath_CopiesOnceFirstWins()
+    {
+        // The content-root asset source re-emits files a markdown source already copies (same
+        // output path). Output-path dedup keeps the first service's copy (registration order) and
+        // never lets two services race on one target.
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("srcA");
+        fs.Directory.CreateDirectory("srcB");
+        fs.File.WriteAllText("srcA/logo.svg", "A");
+        fs.File.WriteAllText("srcB/logo.svg", "B");
+
+        var options = new OutputOptions { OutputDirectory = new FilePath("output"), CleanOutput = false };
+
+        IContentService[] services =
+        [
+            new AssetContentService([new ContentToCopy(new FilePath("srcA/logo.svg"), new FilePath("assets/logo.svg"))]),
+            new AssetContentService([new ContentToCopy(new FilePath("srcB/logo.svg"), new FilePath("assets/logo.svg"))]),
+        ];
+
+        var service = CreateService(fs, options, services);
+        var report = await service.GenerateAsync();
+
+        fs.File.ReadAllText("output/assets/logo.svg").ShouldBe("A");
+        report.Diagnostics.Any(d => d.Message.Contains("Failed to copy")).ShouldBeFalse();
+    }
+
     // --- Stubs ---
+
+    private sealed class AssetContentService(IReadOnlyList<ContentToCopy> assets) : IContentService
+    {
+        public string DefaultSectionLabel => "";
+        public int SearchPriority => 0;
+        public IAsyncEnumerable<DiscoveredItem> DiscoverAsync() => System.Linq.AsyncEnumerable.Empty<DiscoveredItem>();
+        public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync() => Task.FromResult(assets.ToImmutableList());
+        public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync() => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
+        public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync() => Task.FromResult(ImmutableList<ContentTocItem>.Empty);
+        public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync() => Task.FromResult(ImmutableList<CrossReference>.Empty);
+    }
 
     private sealed class StubContentService(ContentRoute route) : IContentService
     {
