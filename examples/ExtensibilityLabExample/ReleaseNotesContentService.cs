@@ -1,11 +1,16 @@
 namespace ExtensibilityLabExample;
 
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Pennington.Content;
+using Pennington.FrontMatter;
 using Pennington.Pipeline;
 using Pennington.Routing;
+using Pennington.Search;
+using Pennington.StructuredData;
 
 /// <summary>
 /// Demonstrates <see cref="IContentService"/> by turning a folder of
@@ -52,6 +57,14 @@ public sealed class ReleaseNotesContentService : IContentService
     /// <c>MapGet</c> endpoint in <c>Program.cs</c> produces the HTML. Because the
     /// endpoint serves real canonical HTML, these routes are included in
     /// <c>sitemap.xml</c> like any other page.
+    /// <para>
+    /// Each release item carries its <see cref="ReleaseEntry"/> as
+    /// <see cref="DiscoveredItem.Metadata"/>. That single assignment surfaces the records to
+    /// discovery: the default <c>GetRecordsAsync</c> bridge picks them up, so the browse-by-channel
+    /// taxonomy, the custom <c>channel</c> search facet, and the per-page JSON-LD all light up from
+    /// the one record — no separate index page, the same treatment markdown gets.
+    /// The index item carries no metadata, so it is not itself a record.
+    /// </para>
     /// </summary>
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
@@ -64,7 +77,7 @@ public sealed class ReleaseNotesContentService : IContentService
             var route = ContentRouteFactory.FromCustom(
                 url: new UrlPath($"/releases/{entry.Version}/"),
                 sourceFile: new FilePath(entry.SourcePath));
-            yield return new DiscoveredItem(route, new EndpointSource());
+            yield return new DiscoveredItem(route, new EndpointSource()) { Metadata = entry };
         }
 
         await Task.CompletedTask;
@@ -145,12 +158,19 @@ public sealed class ReleaseNotesContentService : IContentService
                 continue;
             }
 
-            builder.Add(new ReleaseEntry(
-                Version: dto.Version,
-                Title: dto.Title,
-                Date: dto.Date,
-                Highlights: dto.Highlights ?? [],
-                SourcePath: file));
+            builder.Add(new ReleaseEntry
+            {
+                Version = dto.Version,
+                Title = dto.Title,
+                Date = DateTime.TryParse(dto.Date, CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var parsed)
+                        ? parsed
+                        : null,
+                Channel = string.IsNullOrWhiteSpace(dto.Channel) ? "stable" : dto.Channel!,
+                Tags = dto.Tags?.ToArray() ?? [],
+                Highlights = dto.Highlights ?? [],
+                SourcePath = file,
+            });
         }
 
         return [.. builder.OrderBy(e => e.Version, StringComparer.OrdinalIgnoreCase)];
@@ -161,13 +181,84 @@ public sealed class ReleaseNotesContentService : IContentService
         PropertyNameCaseInsensitive = true,
     };
 
-    private sealed record ReleaseJson(string Version, string Title, string Date, List<string>? Highlights);
+    private sealed record ReleaseJson(
+        string Version,
+        string Title,
+        string Date,
+        string? Channel,
+        List<string>? Tags,
+        List<string>? Highlights);
 }
 
-/// <summary>One parsed release record read from a JSON source file.</summary>
-public sealed record ReleaseEntry(
-    string Version,
-    string Title,
-    string Date,
-    IReadOnlyList<string> Highlights,
-    string SourcePath);
+/// <summary>
+/// One parsed release record. Implements <see cref="IFrontMatter"/> plus the discovery capability
+/// mixins, so a single record feeds the browse-by-channel taxonomy (<see cref="ITaggable"/> /
+/// the <c>Channel</c> key), the custom <c>channel</c> search facet (<see cref="IHasSearchFacets"/>),
+/// and the per-page JSON-LD (<see cref="IHasStructuredData"/>) — the same treatment markdown front
+/// matter gets, with no extra wiring beyond attaching it to the discovered item.
+/// </summary>
+public sealed record ReleaseEntry : IFrontMatter, ITaggable, IHasSearchFacets, IHasStructuredData
+{
+    /// <summary>Semantic version, used as the route slug (e.g. <c>1.1.0</c>).</summary>
+    public string Version { get; init; } = "";
+
+    /// <inheritdoc/>
+    public string Title { get; init; } = "";
+
+    /// <inheritdoc/>
+    public DateTime? Date { get; init; }
+
+    /// <summary>Release channel (<c>stable</c>, <c>beta</c>, ...) — the taxonomy key and custom search facet.</summary>
+    public string Channel { get; init; } = "stable";
+
+    /// <inheritdoc/>
+    public string[] Tags { get; init; } = [];
+
+    /// <summary>Bullet highlights rendered on the detail page.</summary>
+    public IReadOnlyList<string> Highlights { get; init; } = [];
+
+    /// <summary>Absolute path of the JSON source file (drives file-watching).</summary>
+    public string SourcePath { get; init; } = "";
+
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string[]> SearchFacets => new Dictionary<string, string[]>
+    {
+        ["channel"] = [Channel],
+    };
+
+    /// <inheritdoc/>
+    public IEnumerable<JsonLdEntity> GetStructuredData(StructuredDataContext context) =>
+    [
+        new ReleaseJsonLd
+        {
+            Name = Title,
+            SoftwareVersion = Version,
+            DatePublished = Date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            Url = context.CanonicalUrl,
+        },
+    ];
+}
+
+/// <summary>A schema.org <c>SoftwareApplication</c> describing one release, emitted as JSON-LD.</summary>
+public sealed record ReleaseJsonLd : JsonLdEntity
+{
+    /// <inheritdoc/>
+    [JsonPropertyName("@type")]
+    public override string Type => "SoftwareApplication";
+
+    /// <summary>Release title.</summary>
+    [JsonPropertyName("name")]
+    public required string Name { get; init; }
+
+    /// <summary>Semantic version string.</summary>
+    [JsonPropertyName("softwareVersion")]
+    public string? SoftwareVersion { get; init; }
+
+    /// <summary>ISO publication date.</summary>
+    [JsonPropertyName("datePublished")]
+    public string? DatePublished { get; init; }
+
+    /// <summary>Canonical URL of the release page.</summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; init; }
+}

@@ -1,6 +1,5 @@
 namespace Pennington.Taxonomy;
 
-using System.IO.Abstractions;
 using Content;
 using FrontMatter;
 using Infrastructure;
@@ -23,7 +22,7 @@ public static class TaxonomyServiceExtensions
     /// <typeparamref name="TFrontMatter"/>/<typeparamref name="TKey"/> pair coexist as long as
     /// each uses a distinct <see cref="TaxonomyOptions{TFrontMatter, TKey}.BaseUrl"/>.
     /// </summary>
-    /// <typeparam name="TFrontMatter">Front-matter type used to parse source markdown items.</typeparam>
+    /// <typeparam name="TFrontMatter">Front-matter type a content record must carry to participate in this axis.</typeparam>
     /// <typeparam name="TKey">Taxonomy key type (typically <see cref="string"/>).</typeparam>
     public static IServiceCollection AddTaxonomy<TFrontMatter, TKey>(
         this IServiceCollection services,
@@ -38,8 +37,6 @@ public static class TaxonomyServiceExtensions
         services.AddSingleton<IContentService>(sp => new TaxonomyContentService<TFrontMatter, TKey>(
             options,
             sp,
-            sp.GetRequiredService<FrontMatterParser>(),
-            sp.GetRequiredService<IFileSystem>(),
             sp.GetRequiredService<IFileWatcher>(),
             sp.GetRequiredService<TimeProvider>()));
 

@@ -30,12 +30,17 @@ public class TaxonomyContentServiceTests
         public string Cuisine { get; init; } = "";
     }
 
-    /// <summary>Yields DiscoveredItems pointing at MockFileSystem files for taxonomy to parse.</summary>
-    private sealed class FakeMarkdownContentService : IContentService
+    /// <summary>
+    /// A content service that projects records the way the real <see cref="MarkdownContentService{T}"/>
+    /// does — attaching parsed front matter as <see cref="DiscoveredItem.Metadata"/> so the default
+    /// <see cref="IContentService.GetRecordsAsync"/> bridge surfaces them. Taxonomy reads records,
+    /// not files, so no file system is involved.
+    /// </summary>
+    private sealed class FakeRecordContentService : IContentService
     {
-        private readonly List<(string url, string filePath)> _items;
+        private readonly List<(string url, RecipeFrontMatter fm)> _items;
 
-        public FakeMarkdownContentService(IEnumerable<(string url, string filePath)> items) =>
+        public FakeRecordContentService(IEnumerable<(string url, RecipeFrontMatter fm)> items) =>
             _items = items.ToList();
 
         public string DefaultSectionLabel => "fake";
@@ -43,11 +48,14 @@ public class TaxonomyContentServiceTests
 
         public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
         {
-            foreach (var (url, filePath) in _items)
+            foreach (var (url, fm) in _items)
             {
                 yield return new DiscoveredItem(
                     ContentRouteFactory.FromUrl(new UrlPath(url)),
-                    new MarkdownFileSource(new FilePath(filePath)));
+                    new MarkdownFileSource(new FilePath($"/content{url}index.md")))
+                {
+                    Metadata = fm,
+                };
             }
             await Task.CompletedTask;
         }
@@ -65,29 +73,11 @@ public class TaxonomyContentServiceTests
             => Task.FromResult(ImmutableList<CrossReference>.Empty);
     }
 
-    private static (TaxonomyContentService<RecipeFrontMatter, string> service, MockFileSystem fs)
-        BuildService(
-            Action<TaxonomyOptions<RecipeFrontMatter, string>> configure,
-            params (string url, string path, string body)[] files)
+    private static TaxonomyContentService<RecipeFrontMatter, string> BuildService(
+        Action<TaxonomyOptions<RecipeFrontMatter, string>> configure,
+        params (string url, RecipeFrontMatter fm)[] records)
     {
-        var fs = new MockFileSystem();
-        fs.Directory.CreateDirectory("/content");
-
-        var fakeItems = new List<(string url, string filePath)>();
-        foreach (var (url, path, body) in files)
-        {
-            var full = $"/content/{path}";
-            var dir = fs.Path.GetDirectoryName(full);
-            if (!string.IsNullOrEmpty(dir))
-            {
-                fs.Directory.CreateDirectory(dir);
-            }
-
-            fs.File.WriteAllText(full, body);
-            fakeItems.Add((url, full));
-        }
-
-        var fake = new FakeMarkdownContentService(fakeItems);
+        var fake = new FakeRecordContentService(records);
 
         var options = new TaxonomyOptions<RecipeFrontMatter, string>
         {
@@ -102,23 +92,19 @@ public class TaxonomyContentServiceTests
         services.AddSingleton<IContentService>(fake);
         var sp = services.BuildServiceProvider();
 
-        var taxonomy = new TaxonomyContentService<RecipeFrontMatter, string>(
+        return new TaxonomyContentService<RecipeFrontMatter, string>(
             options,
             sp,
-            new FrontMatterParser(),
-            fs,
-            new FileWatcher(fs));
-
-        return (taxonomy, fs);
+            new FileWatcher(new MockFileSystem()));
     }
 
     [Fact]
     public async Task SingleValuedKey_GroupsItems_ByCuisine()
     {
-        var (taxonomy, _) = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
-            ("/recipes/carbonara/", "carbonara.md", "---\ntitle: Carbonara\ncuisine: italian\n---\n"),
-            ("/recipes/pizza/", "pizza.md", "---\ntitle: Pizza\ncuisine: italian\n---\n"),
-            ("/recipes/sushi/", "sushi.md", "---\ntitle: Sushi\ncuisine: japanese\n---\n"));
+        var taxonomy = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
+            ("/recipes/carbonara/", new RecipeFrontMatter { Title = "Carbonara", Cuisine = "italian" }),
+            ("/recipes/pizza/", new RecipeFrontMatter { Title = "Pizza", Cuisine = "italian" }),
+            ("/recipes/sushi/", new RecipeFrontMatter { Title = "Sushi", Cuisine = "japanese" }));
 
         var terms = await taxonomy.GetTermsAsync();
 
@@ -134,9 +120,9 @@ public class TaxonomyContentServiceTests
     [Fact]
     public async Task MultiValuedKey_PutsItem_InEveryMatchingTerm()
     {
-        var (taxonomy, _) = BuildService(opts => opts.SelectKeys = fm => fm.Tags,
-            ("/recipes/pasta/", "pasta.md", "---\ntitle: Pasta\ntags: [italian, vegetarian]\n---\n"),
-            ("/recipes/salad/", "salad.md", "---\ntitle: Salad\ntags: [vegetarian, healthy]\n---\n"));
+        var taxonomy = BuildService(opts => opts.SelectKeys = fm => fm.Tags,
+            ("/recipes/pasta/", new RecipeFrontMatter { Title = "Pasta", Tags = ["italian", "vegetarian"] }),
+            ("/recipes/salad/", new RecipeFrontMatter { Title = "Salad", Tags = ["vegetarian", "healthy"] }));
 
         var terms = await taxonomy.GetTermsAsync();
 
@@ -149,9 +135,9 @@ public class TaxonomyContentServiceTests
     [Fact]
     public async Task DiscoverAsync_EmitsIndexAndOnePerTerm()
     {
-        var (taxonomy, _) = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
-            ("/recipes/a/", "a.md", "---\ntitle: A\ncuisine: italian\n---\n"),
-            ("/recipes/b/", "b.md", "---\ntitle: B\ncuisine: french\n---\n"));
+        var taxonomy = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
+            ("/recipes/a/", new RecipeFrontMatter { Title = "A", Cuisine = "italian" }),
+            ("/recipes/b/", new RecipeFrontMatter { Title = "B", Cuisine = "french" }));
 
         var items = new List<DiscoveredItem>();
         await foreach (var item in taxonomy.DiscoverAsync())
@@ -165,10 +151,25 @@ public class TaxonomyContentServiceTests
     }
 
     [Fact]
+    public async Task GetRecordsAsync_IsEmpty_SoSiblingTaxonomiesDoNotRecurse()
+    {
+        var taxonomy = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
+            ("/recipes/a/", new RecipeFrontMatter { Title = "A", Cuisine = "italian" }));
+
+        var records = new List<ContentRecord>();
+        await foreach (var record in taxonomy.GetRecordsAsync())
+        {
+            records.Add(record);
+        }
+
+        records.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task GetContentTocEntries_EmitsSectionHeaderAndTermEntries()
     {
-        var (taxonomy, _) = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
-            ("/recipes/a/", "a.md", "---\ntitle: A\ncuisine: italian\n---\n"));
+        var taxonomy = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
+            ("/recipes/a/", new RecipeFrontMatter { Title = "A", Cuisine = "italian" }));
 
         var entries = await taxonomy.GetContentTocEntriesAsync();
 
@@ -181,12 +182,12 @@ public class TaxonomyContentServiceTests
     [Fact]
     public async Task GetCrossReferences_EmitsOnePerTerm_WhenEnabled()
     {
-        var (taxonomy, _) = BuildService(opts =>
+        var taxonomy = BuildService(opts =>
             {
                 opts.SelectKey = fm => fm.Cuisine;
                 opts.EmitCrossReferences = true;
             },
-            ("/recipes/a/", "a.md", "---\ntitle: A\ncuisine: italian\n---\n"));
+            ("/recipes/a/", new RecipeFrontMatter { Title = "A", Cuisine = "italian" }));
 
         var refs = await taxonomy.GetCrossReferencesAsync();
 
@@ -197,12 +198,12 @@ public class TaxonomyContentServiceTests
     [Fact]
     public async Task GetCrossReferences_EmpyList_WhenDisabled()
     {
-        var (taxonomy, _) = BuildService(opts =>
+        var taxonomy = BuildService(opts =>
             {
                 opts.SelectKey = fm => fm.Cuisine;
                 opts.EmitCrossReferences = false;
             },
-            ("/recipes/a/", "a.md", "---\ntitle: A\ncuisine: italian\n---\n"));
+            ("/recipes/a/", new RecipeFrontMatter { Title = "A", Cuisine = "italian" }));
 
         (await taxonomy.GetCrossReferencesAsync()).Count.ShouldBe(0);
     }
@@ -210,9 +211,9 @@ public class TaxonomyContentServiceTests
     [Fact]
     public async Task Discover_SkipsDrafts()
     {
-        var (taxonomy, _) = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
-            ("/recipes/a/", "a.md", "---\ntitle: A\ncuisine: italian\nisDraft: true\n---\n"),
-            ("/recipes/b/", "b.md", "---\ntitle: B\ncuisine: italian\n---\n"));
+        var taxonomy = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
+            ("/recipes/a/", new RecipeFrontMatter { Title = "A", Cuisine = "italian", IsDraft = true }),
+            ("/recipes/b/", new RecipeFrontMatter { Title = "B", Cuisine = "italian" }));
 
         var terms = await taxonomy.GetTermsAsync();
 
@@ -223,9 +224,9 @@ public class TaxonomyContentServiceTests
     [Fact]
     public async Task Discover_SkipsItemsWithEmptyKey()
     {
-        var (taxonomy, _) = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
-            ("/recipes/a/", "a.md", "---\ntitle: A\ncuisine: ''\n---\n"),
-            ("/recipes/b/", "b.md", "---\ntitle: B\ncuisine: italian\n---\n"));
+        var taxonomy = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
+            ("/recipes/a/", new RecipeFrontMatter { Title = "A", Cuisine = "" }),
+            ("/recipes/b/", new RecipeFrontMatter { Title = "B", Cuisine = "italian" }));
 
         var terms = await taxonomy.GetTermsAsync();
 
@@ -235,8 +236,8 @@ public class TaxonomyContentServiceTests
     [Fact]
     public async Task TryGetTermAsync_ReturnsTermBySlug()
     {
-        var (taxonomy, _) = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
-            ("/recipes/a/", "a.md", "---\ntitle: A\ncuisine: 'Northern Italian'\n---\n"));
+        var taxonomy = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
+            ("/recipes/a/", new RecipeFrontMatter { Title = "A", Cuisine = "Northern Italian" }));
 
         var term = await taxonomy.TryGetTermAsync("northern-italian");
 
@@ -248,8 +249,8 @@ public class TaxonomyContentServiceTests
     [Fact]
     public async Task TryGetTermAsync_ReturnsNull_WhenSlugMissing()
     {
-        var (taxonomy, _) = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
-            ("/recipes/a/", "a.md", "---\ntitle: A\ncuisine: italian\n---\n"));
+        var taxonomy = BuildService(opts => opts.SelectKey = fm => fm.Cuisine,
+            ("/recipes/a/", new RecipeFrontMatter { Title = "A", Cuisine = "italian" }));
 
         (await taxonomy.TryGetTermAsync("french")).ShouldBeNull();
     }
@@ -257,12 +258,12 @@ public class TaxonomyContentServiceTests
     [Fact]
     public async Task LabelFor_OverridesDefault()
     {
-        var (taxonomy, _) = BuildService(opts =>
+        var taxonomy = BuildService(opts =>
             {
                 opts.SelectKey = fm => fm.Cuisine;
                 opts.LabelFor = key => key.ToUpperInvariant();
             },
-            ("/recipes/a/", "a.md", "---\ntitle: A\ncuisine: italian\n---\n"));
+            ("/recipes/a/", new RecipeFrontMatter { Title = "A", Cuisine = "italian" }));
 
         var terms = await taxonomy.GetTermsAsync();
         terms.Single().Label.ShouldBe("ITALIAN");

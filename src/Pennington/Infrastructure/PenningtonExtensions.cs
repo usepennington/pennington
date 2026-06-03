@@ -310,6 +310,9 @@ public static class PenningtonExtensions
         services.AddSingleton<IHtmlResponseRewriter, LocaleLinkHtmlRewriter>();
         services.AddSingleton<IHtmlResponseRewriter, FallbackLangHtmlRewriter>();
         services.AddSingleton<IHtmlResponseRewriter, CanonicalLinkHtmlRewriter>();
+        // Transient: captures the file-watched ContentRecordRegistry, so a fresh registry is
+        // resolved per request rather than pinning the first (stale) snapshot.
+        services.AddTransient<IHtmlResponseRewriter, StructuredData.StructuredDataHtmlRewriter>();
         services.AddSingleton<IHtmlResponseRewriter>(sp =>
             new BaseUrlHtmlRewriter(sp.GetRequiredService<OutputOptions>()));
         // Transient: this processor holds the IHtmlResponseRewriter list, which
@@ -419,6 +422,11 @@ public static class PenningtonExtensions
         // File-watched so a content edit recreates the cached array.
         services.AddSingleton(options.SiteProjection);
         services.AddFileWatched<Pipeline.ISiteProjection, Pipeline.SiteProjection>();
+
+        // Route -> ContentRecord lookup aggregated from every content service. The discovery join:
+        // search faceting and structured-data emission resolve a rendered route back to its typed
+        // front matter through this. File-watched so it tracks content edits.
+        services.AddFileWatched<Content.ContentRecordRegistry>();
 
         // Search artifact and sitemap services — factory-managed, trust IContentService for fresh data
         services.AddFileWatched<SearchArtifactService>();

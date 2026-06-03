@@ -1,5 +1,4 @@
 @page "/blog/{*fileName:nonfile}"
-@using Pennington.StructuredData
 @inject PenningtonOptions PenningtonOptions
 @inject BlogSiteOptions BlogOptions
 @inject BlogContentResolver ContentResolver
@@ -36,11 +35,6 @@
     }
 </HeadContent>
 
-@if (!string.IsNullOrEmpty(PenningtonOptions.CanonicalBaseUrl))
-{
-    <StructuredData Entities="BuildEntities()" />
-}
-
 <BlogPost Post="_rendered.Page" HtmlContent="@_rendered.Html" Series="_series"/>
 
 @code{
@@ -68,30 +62,6 @@
                 .Where(i => string.Equals(i.FrontMatter.Series, _rendered.Page.FrontMatter.Series, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i => i.FrontMatter.Date)
                 .ToList();
-        }
-    }
-
-    private IEnumerable<JsonLdEntity> BuildEntities()
-    {
-        if (_rendered == null || string.IsNullOrEmpty(PenningtonOptions.CanonicalBaseUrl))
-        {
-            yield break;
-        }
-
-        if (_rendered.Page.FrontMatter is not IHasStructuredData hasData)
-        {
-            yield break;
-        }
-
-        var ctx = new StructuredDataContext
-        {
-            CanonicalUrl = $"{PenningtonOptions.CanonicalBaseUrl.TrimEnd('/')}{_rendered.Page.Url}",
-            FallbackAuthorName = BlogOptions.AuthorName,
-        };
-
-        foreach (var entity in hasData.GetStructuredData(ctx))
-        {
-            yield return entity;
         }
     }
 

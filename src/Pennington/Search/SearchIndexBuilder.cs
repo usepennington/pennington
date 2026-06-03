@@ -2,6 +2,7 @@ namespace Pennington.Search;
 
 using Content;
 using DeweySearch;
+using FrontMatter;
 using Infrastructure;
 
 /// <summary>
@@ -29,7 +30,15 @@ public sealed class SearchIndexBuilder
     /// becomes the page record (page URL, page title, page description); each heading section
     /// becomes an anchored record carrying the page→heading breadcrumb trail.
     /// </summary>
-    public SearchDocument BuildSection(ContentTocItem toc, HeadingSection section)
+    /// <param name="toc">The page's table-of-contents entry (title, description, section, tags).</param>
+    /// <param name="section">The heading section to map (or the page-lead section).</param>
+    /// <param name="metadata">
+    /// The page's record front matter, when available. When it implements
+    /// <see cref="IHasSearchFacets"/>, its custom facet axes are emitted alongside the built-in
+    /// section/tag/area dimensions. Pass <c>null</c> for pages with no record (the built-in facets
+    /// still apply).
+    /// </param>
+    public SearchDocument BuildSection(ContentTocItem toc, HeadingSection section, IFrontMatter? metadata = null)
     {
         var pageUrl = toc.Route.CanonicalPath.Value;
         var area = Area(pageUrl);
@@ -48,7 +57,7 @@ public sealed class SearchIndexBuilder
             Headings: string.Join(' ', crumbs), // index page title + ancestor headings at heading boost
             Body: section.Text,
             Priority: PriorityFor(area),
-            Facets: BuildFacets(toc, area),
+            Facets: BuildFacets(toc, area, metadata),
             Crumbs: crumbs);
     }
 
@@ -63,7 +72,7 @@ public sealed class SearchIndexBuilder
     // dimension is present only when enabled in options and the page actually carries a value,
     // which is exactly how DeweySearch decides a facet exists. Facets are page-level — every section of
     // a page shares them.
-    private Dictionary<string, string[]>? BuildFacets(ContentTocItem toc, string? area)
+    private Dictionary<string, string[]>? BuildFacets(ContentTocItem toc, string? area, IFrontMatter? metadata)
     {
         var facets = new Dictionary<string, string[]>(StringComparer.Ordinal);
 
@@ -74,10 +83,7 @@ public sealed class SearchIndexBuilder
 
         if (FacetEnabled(SearchFacetField.Tags) && toc.Tags.Length > 0)
         {
-            var tags = toc.Tags
-                .Where(t => !string.IsNullOrWhiteSpace(t))
-                .Select(t => t.Trim())
-                .ToArray();
+            var tags = CleanValues(toc.Tags);
             if (tags.Length > 0)
             {
                 facets["tag"] = tags;
@@ -89,8 +95,37 @@ public sealed class SearchIndexBuilder
             facets["area"] = [area];
         }
 
+        // Custom facet axes declared on the record's front matter. Emitted unconditionally — they
+        // are the service author's explicit opt-in, not gated by SearchFacetField — but they never
+        // overwrite a built-in dimension, so section/tag/area stay authoritative. The reserved-name
+        // guard holds even when a built-in is disabled or absent for this page (so it was never
+        // added to the dict), which a plain ContainsKey check would miss.
+        if (metadata is IHasSearchFacets faceted)
+        {
+            foreach (var (axis, values) in faceted.SearchFacets)
+            {
+                if (string.IsNullOrWhiteSpace(axis) || ReservedFacetKeys.Contains(axis) || facets.ContainsKey(axis))
+                {
+                    continue;
+                }
+
+                var cleaned = CleanValues(values);
+                if (cleaned.Length > 0)
+                {
+                    facets[axis] = cleaned;
+                }
+            }
+        }
+
         return facets.Count > 0 ? facets : null;
     }
+
+    private static string[] CleanValues(IEnumerable<string> values) =>
+        values.Where(v => !string.IsNullOrWhiteSpace(v)).Select(v => v.Trim()).ToArray();
+
+    // The built-in facet dimension names, reserved so a custom IHasSearchFacets axis can never
+    // occupy them — even on a page/config where the built-in itself produced no value.
+    private static readonly HashSet<string> ReservedFacetKeys = new(StringComparer.Ordinal) { "section", "tag", "area" };
 
     private bool FacetEnabled(SearchFacetField field) => (_options.Facets & field) != 0;
 

@@ -45,6 +45,26 @@ builder.Services.AddSingleton<IContentService>(sp =>
 
 This service reads its JSON into a `Lazy<T>` once and lives as a singleton, so an edit to a release file during a dev session is not picked up until restart. When live-reload on source edits matters, register the service file-watched instead — `AddFileWatched<T>` plus a *transient* `IContentService` wrapper, as <xref:how-to.feeds.custom-feed> shows. `AddSingleton<IContentService>` over a file-watched type silently caches the first copy and serves stale data. To source from a remote API rather than disk, see <xref:how-to.content-services.remote-api>.
 
+## Feed your records to taxonomy, search, and JSON-LD
+
+The service above produces routes, navigation, and cross-references. To also let your records drive browse-by-field pages, custom search facets, and JSON-LD — the same way markdown records do — give each record a typed front matter that implements the capability mixins, and **attach it to the discovered item**. The example's `ReleaseEntry` does exactly this:
+
+```csharp:symbol
+examples/ExtensibilityLabExample/ReleaseNotesContentService.cs > ReleaseEntry
+```
+
+```csharp
+yield return new DiscoveredItem(route, new EndpointSource()) { Metadata = entry };
+```
+
+That single `Metadata` assignment is the seam: the engine reads it through `GetRecordsAsync` (the default bridges from `DiscoverAsync`, so attaching metadata is all it takes — no override needed) and every discovery pillar lights up:
+
+- **Taxonomy** — `AddTaxonomy<ReleaseEntry, string>(opts => opts.SelectKey = fm => fm.Channel)` gives you `/channel/` browse pages with no `MarkdownFileSource` required (see <xref:how-to.content-services.taxonomy>).
+- **Search facets** — the `IHasSearchFacets` `channel` axis emits alongside the built-in `section`/`tag`/`area` dimensions.
+- **JSON-LD** — the `IHasStructuredData` entity is injected into each release page's `<head>` automatically when `CanonicalBaseUrl` is set; no `<script>` to hand-write.
+
+A record participates in a taxonomy axis only when its metadata *is* that axis's `TFrontMatter`, so type your records as the front matter you intend to browse. If you project records that don't flow through `DiscoverAsync` (or want to filter which ones do), override `GetRecordsAsync` directly instead of attaching `Metadata`.
+
 ## Result
 
 The discovered records produce a "Releases" section in the sidebar, one route per entry, and one xref id per entry:

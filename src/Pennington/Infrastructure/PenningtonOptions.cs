@@ -24,6 +24,14 @@ public sealed class PenningtonOptions
     /// <summary>Absolute base URL used to generate canonical, OpenGraph, and feed links.</summary>
     public string? CanonicalBaseUrl { get; set; }
 
+    /// <summary>
+    /// Site-level author fallback for auto-emitted JSON-LD, surfaced as
+    /// <see cref="StructuredData.StructuredDataContext.FallbackAuthorName"/> when a record's front
+    /// matter describes structured data but names no author of its own. BlogSite forwards its
+    /// <c>BlogSiteOptions.AuthorName</c> here.
+    /// </summary>
+    public string? StructuredDataAuthorName { get; set; }
+
     /// <summary>Root filesystem directory containing site content.</summary>
     public FilePath ContentRootPath { get; set; } = new("Content");
 

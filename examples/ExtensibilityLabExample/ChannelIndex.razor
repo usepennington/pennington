@@ -1,0 +1,30 @@
+@* Browse-by-channel index. Receives the full term list AddTaxonomy projected from the
+   ReleaseEntry records — proof that a custom IContentService feeds the taxonomy walker. *@
+@using System.Collections.Immutable
+@using Microsoft.AspNetCore.Components
+@using Pennington.Taxonomy
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Release channels</title>
+    <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+    <article id="main-content" data-extensibility-lab="channel-index">
+        <h1>Release channels</h1>
+        <ul>
+            @foreach (var term in Terms)
+            {
+                <li><a href="@term.Url">@term.Label</a> (@term.Items.Count)</li>
+            }
+        </ul>
+    </article>
+</body>
+</html>
+
+@code {
+    [Parameter] public ImmutableList<TaxonomyTerm<ReleaseEntry, string>> Terms { get; set; } = [];
+}

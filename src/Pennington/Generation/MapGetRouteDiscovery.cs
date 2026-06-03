@@ -65,6 +65,13 @@ internal static class MapGetRouteDiscovery
             {
                 outputPath = "index.html";
             }
+            else if (outputPath.EndsWith('/'))
+            {
+                // A directory-style route (e.g. a taxonomy's "/channel/") maps to its index file,
+                // the same shape ContentRouteFactory produces — so it writes channel/index.html
+                // (not the directory channel/) and dedups against the matching content route.
+                outputPath += "index.html";
+            }
 
             yield return new ContentRoute
             {

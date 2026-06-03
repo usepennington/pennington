@@ -29,6 +29,9 @@ public static class BlogSiteServiceExtensions
             penn.CanonicalBaseUrl = options.CanonicalBaseUrl;
             penn.ContentRootPath = options.ContentRootPath;
             penn.MapSitemap = options.EnableSitemap;
+            // Forwarded so StructuredDataHtmlRewriter can fill the author on a post's JSON-LD
+            // when the front matter names none — mirrors the old per-page FallbackAuthorName.
+            penn.StructuredDataAuthorName = options.AuthorName;
 
             var blogContentPath = Path.Combine(options.ContentRootPath.Value, options.BlogContentPath);
             penn.AddMarkdownContent<BlogSiteFrontMatter>(md =>

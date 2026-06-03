@@ -10,8 +10,9 @@ using Microsoft.AspNetCore.Components;
 /// against them.
 /// </summary>
 /// <typeparam name="TFrontMatter">
-/// The front-matter type used to parse source markdown items. Items whose source is not a
-/// <see cref="Pipeline.MarkdownFileSource"/> are ignored.
+/// The front-matter type a <see cref="Content.ContentRecord"/> must carry to participate. Records
+/// whose <see cref="Content.ContentRecord.Metadata"/> is not assignable to this type — from any
+/// content service, markdown or custom — are ignored.
 /// </typeparam>
 /// <typeparam name="TKey">
 /// The taxonomy key type. Most sites use <see cref="string"/>; <see cref="Enum"/> or
