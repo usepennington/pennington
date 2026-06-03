@@ -7,7 +7,6 @@ using Diagnostics;
 using Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Pipeline;
 using Routing;
@@ -275,9 +274,21 @@ public sealed class OutputGenerationService
 
     private async Task CopyStaticAssetsAsync(string outputDir, BuildReportBuilder reportBuilder, bool writeToDisk)
     {
-        // Copy content directory assets (non-markdown files)
+        // Copy content directory assets (non-markdown files). Dedupe by output path: the
+        // content-root asset source re-emits files a markdown source already copies when their
+        // BasePageUrl matches the subfolder, and two services must never race on one target.
+        // First-wins follows registration order (markdown sources precede the content-root source),
+        // so the source's prefix-aware output is kept. OrdinalIgnoreCase matches the page-output and
+        // web-asset dedup convention below — case-variant outputs in one tree are a Windows-broken
+        // anti-pattern not worth a case-sensitive carve-out.
+        var copiedOutputPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in await _contentServices.CollectContentToCopyAsync())
         {
+            if (!copiedOutputPaths.Add(item.OutputPath.Value))
+            {
+                continue;
+            }
+
             if (writeToDisk)
             {
                 CopyFile(item.SourcePath.Value, _fileSystem.Path.Combine(outputDir, item.OutputPath.Value), reportBuilder);
@@ -288,12 +299,15 @@ public sealed class OutputGenerationService
         // whose GetDirectoryContents concatenates each child provider's entries without
         // deduping by name — so when the physical wwwroot and an RCL manifest provider both
         // own `_content/<Rcl>/`, the same logical path is yielded more than once and File.Copy
-        // races itself on Windows ("file is being used by another process"). Dedupe by
-        // relative path as we walk.
+        // races itself on Windows ("file is being used by another process"). StaticWebAssetWalker
+        // dedupes by relative path as it walks (first-wins) — the same walk the link auditor uses
+        // to fold these assets into its known-asset set.
         if (writeToDisk)
         {
-            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            CopyFileProvider(_environment.WebRootFileProvider, "", outputDir, reportBuilder, visited);
+            foreach (var asset in StaticWebAssetWalker.Walk(_environment.WebRootFileProvider))
+            {
+                CopyFile(asset.PhysicalPath, _fileSystem.Path.Combine(outputDir, asset.RelativePath), reportBuilder);
+            }
         }
     }
 
@@ -424,30 +438,6 @@ public sealed class OutputGenerationService
         {
             reportBuilder.AddWarning($"Failed to copy {source} to {target}", sourceFile: source);
             _logger.LogDebug(ex, "Failed to copy {Source} to {Target}", source, target);
-        }
-    }
-
-    private void CopyFileProvider(IFileProvider provider, string subpath, string outputDir, BuildReportBuilder reportBuilder, HashSet<string> visited)
-    {
-        var contents = provider.GetDirectoryContents(subpath);
-        foreach (var item in contents)
-        {
-            var relativePath = string.IsNullOrEmpty(subpath) ? item.Name : $"{subpath}/{item.Name}";
-
-            if (!visited.Add(relativePath))
-            {
-                continue;
-            }
-
-            if (item.IsDirectory)
-            {
-                CopyFileProvider(provider, relativePath, outputDir, reportBuilder, visited);
-            }
-            else if (item.PhysicalPath != null)
-            {
-                var targetPath = _fileSystem.Path.Combine(outputDir, relativePath);
-                CopyFile(item.PhysicalPath, targetPath, reportBuilder);
-            }
         }
     }
 

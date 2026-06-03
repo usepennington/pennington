@@ -3,6 +3,7 @@ namespace Pennington.Infrastructure;
 using Content;
 using Generation;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.FileProviders;
 using Pipeline;
 using Routing;
 
@@ -22,13 +23,19 @@ using Routing;
 /// </summary>
 public static class LinkVerificationServiceBuilder
 {
-    /// <summary>Builds a verifier from the content services, endpoint table, and output options. Pass <paramref name="includeEmitterOutputs"/>=true only from build-mode callers.</summary>
+    /// <summary>
+    /// Builds a verifier from the content services, endpoint table, and output options. Pass
+    /// <paramref name="includeEmitterOutputs"/>=true only from build-mode callers. Pass
+    /// <paramref name="webRootFileProvider"/> (the host's <c>WebRootFileProvider</c>) so wwwroot/RCL
+    /// assets — copied by the build but owned by no content service — are treated as known assets.
+    /// </summary>
     public static async Task<LinkVerificationService> BuildAsync(
         IEnumerable<IContentService> contentServices,
         IEnumerable<IContentEmitter> contentEmitters,
         EndpointDataSource endpointDataSource,
         OutputOptions outputOptions,
         bool includeEmitterOutputs,
+        IFileProvider? webRootFileProvider = null,
         CancellationToken cancellationToken = default)
     {
         var knownRoutes = new List<ContentRoute>();
@@ -50,6 +57,17 @@ public static class LinkVerificationServiceBuilder
         foreach (var copy in await contentServices.CollectContentToCopyAsync())
         {
             copiedAssetPaths.Add(copy.OutputPath.Value);
+        }
+
+        if (webRootFileProvider != null)
+        {
+            // wwwroot + RCL assets are copied by OutputGenerationService.CopyStaticAssetsAsync via the
+            // same walk; fold them in so absolute references to wwwroot files (the documented home for
+            // shared assets) resolve instead of being flagged as broken.
+            foreach (var asset in StaticWebAssetWalker.Walk(webRootFileProvider))
+            {
+                copiedAssetPaths.Add(asset.RelativePath);
+            }
         }
 
         if (includeEmitterOutputs)

@@ -296,6 +296,24 @@ public static class PenningtonExtensions
         services.AddSingleton<RedirectContentService>();
         services.AddSingleton<IContentService>(sp => sp.GetRequiredService<RedirectContentService>());
 
+        // Content-root static assets. The runtime mount in UsePennington serves the entire content
+        // root (ServeUnknownFileTypes = false), including shared folders that no markdown source
+        // owns (e.g. Content/assets/). Surfacing them as an IContentService routes them through the
+        // same CollectContentToCopyAsync path the build copy and both link auditors already consume,
+        // so the static build copies them and the auditors treat them as known — no dev/build
+        // divergence. Registered last so per-source asset outputs win the build's output-path dedup.
+        services.AddSingleton<IContentService>(sp =>
+        {
+            var penn = sp.GetRequiredService<PenningtonOptions>();
+            var env = sp.GetService<IWebHostEnvironment>();
+            var contentRoot = Path.IsPathRooted(penn.ContentRootPath.Value)
+                ? penn.ContentRootPath.Value
+                : env != null
+                    ? Path.Combine(env.ContentRootPath, penn.ContentRootPath.Value)
+                    : penn.ContentRootPath.Value;
+            return new ContentRootAssetService(contentRoot, sp.GetRequiredService<IFileSystem>());
+        });
+
         // Xref resolution — factory-managed, recreated on file changes
         services.AddFileWatched<XrefResolver>();
 

@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using Content;
 using Diagnostics;
 using Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 
 /// <summary>
@@ -18,21 +19,24 @@ public sealed class LinkAuditor : IRenderedAuditor
     private readonly IEnumerable<IContentEmitter> _contentEmitters;
     private readonly EndpointDataSource _endpointDataSource;
     private readonly OutputOptions _outputOptions;
+    private readonly IWebHostEnvironment _environment;
 
     /// <summary>Stable identifier surfaced on every diagnostic this auditor emits.</summary>
     public string Code => "content.links";
 
-    /// <summary>Wires the auditor to the content discovery surface, standalone content emitters, the endpoint table, and the output options.</summary>
+    /// <summary>Wires the auditor to the content discovery surface, standalone content emitters, the endpoint table, the output options, and the host environment (for wwwroot/RCL assets).</summary>
     public LinkAuditor(
         IEnumerable<IContentService> contentServices,
         IEnumerable<IContentEmitter> contentEmitters,
         EndpointDataSource endpointDataSource,
-        OutputOptions outputOptions)
+        OutputOptions outputOptions,
+        IWebHostEnvironment environment)
     {
         _contentServices = contentServices;
         _contentEmitters = contentEmitters;
         _endpointDataSource = endpointDataSource;
         _outputOptions = outputOptions;
+        _environment = environment;
     }
 
     /// <inheritdoc/>
@@ -44,6 +48,7 @@ public sealed class LinkAuditor : IRenderedAuditor
             _endpointDataSource,
             _outputOptions,
             includeEmitterOutputs: true,
+            _environment.WebRootFileProvider,
             cancellationToken);
         var diagnostics = ImmutableList.CreateBuilder<BuildDiagnostic>();
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
