@@ -226,7 +226,7 @@ Write the service. Don't try to model these as a markdown directory tree.
 
 ## Don't do these
 
-- Don't write a custom Markdown renderer. Configure Markdig via `options.ConfigureMarkdownPipeline`. To add a new fenced-block handler, see <xref:how-to.markdown-pipeline.code-block-preprocessor>.
+- Don't fork the Markdown renderer — but adding *syntax* is fully supported. Register a Markdig extension or a custom inline/block parser through `options.ConfigureMarkdownPipeline`: see <xref:how-to.markdown-pipeline.markdig-extension> (which also lists what the default pipeline already enables — math, footnotes, and definition lists are on, so don't re-add them). For a new fenced-block handler, see <xref:how-to.markdown-pipeline.code-block-preprocessor>.
 - Don't write a `getStaticPaths` equivalent. File discovery is automatic via `MarkdownContentService`.
 - Don't wire Algolia or lunr.js. `AddPennington` ships DeweySearch automatically.
 - Don't preprocess MDX before the pipeline sees it. Mdazor parses `<Component>` inline; just register the component once.

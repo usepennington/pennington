@@ -2,7 +2,7 @@
 title: "Attach derived metadata to every page"
 description: "Implement IMetadataEnricher to merge derived values like reading time or git timestamps into ParsedItem.Derived, kept separate from authored front matter."
 uid: how-to.markdown-pipeline.metadata-enrichers
-order: 4
+order: 5
 sectionLabel: "Markdown Pipeline"
 tags: [extensibility, pipeline, metadata, reading-time]
 ---

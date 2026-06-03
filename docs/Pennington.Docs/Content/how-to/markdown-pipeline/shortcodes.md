@@ -2,7 +2,7 @@
 title: "Expand a directive before Markdig parses"
 description: "Register an IShortcode handler so directives in markdown expand to text or HTML before the rest of the pipeline runs."
 uid: how-to.markdown-pipeline.shortcodes
-order: 3
+order: 4
 sectionLabel: "Markdown Pipeline"
 tags: [extensibility, markdown, shortcodes]
 ---
