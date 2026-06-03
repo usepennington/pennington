@@ -25,6 +25,18 @@ public static class ContentServiceExtensions
             }
         }
 
+        /// <summary>Yields every <see cref="ContentRecord"/> from every service in registration order.</summary>
+        public async IAsyncEnumerable<ContentRecord> GetAllRecordsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            foreach (var service in services)
+            {
+                await foreach (var record in service.GetRecordsAsync().WithCancellation(cancellationToken))
+                {
+                    yield return record;
+                }
+            }
+        }
+
         /// <summary>Yields every <see cref="ParsedItem"/> from every service (each parsed with its own front-matter type) in registration order.</summary>
         public async IAsyncEnumerable<ParsedItem> ParseAllContentAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {

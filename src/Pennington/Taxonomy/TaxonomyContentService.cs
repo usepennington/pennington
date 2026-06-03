@@ -9,10 +9,13 @@ using Pipeline;
 using Routing;
 
 /// <summary>
-/// Walks every other registered <see cref="IContentService"/>, parses each markdown source
-/// as <typeparamref name="TFrontMatter"/>, projects keys via <see cref="TaxonomyOptions{TFrontMatter, TKey}.SelectKey"/>
-/// or <see cref="TaxonomyOptions{TFrontMatter, TKey}.SelectKeys"/>, and exposes the result as
-/// the taxonomy's index plus one route per term.
+/// Walks every other registered <see cref="IContentService"/>'s <see cref="ContentRecord"/>s,
+/// selects those whose <see cref="ContentRecord.Metadata"/> is a <typeparamref name="TFrontMatter"/>,
+/// projects keys via <see cref="TaxonomyOptions{TFrontMatter, TKey}.SelectKey"/> or
+/// <see cref="TaxonomyOptions{TFrontMatter, TKey}.SelectKeys"/>, and exposes the result as the
+/// taxonomy's index plus one route per term. Because it reads records rather than re-parsing
+/// markdown files, any content service — markdown or custom — participates as long as it projects
+/// records of the taxonomy's front-matter type.
 ///
 /// <para>
 /// The service emits its routes with <see cref="EndpointSource"/> — the canonical HTML is
@@ -34,8 +37,6 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
 {
     private readonly TaxonomyOptions<TFrontMatter, TKey> _options;
     private readonly IServiceProvider _serviceProvider;
-    private readonly FrontMatterParser _parser;
-    private readonly System.IO.Abstractions.IFileSystem _fileSystem;
     private readonly TimeProvider _clock;
     private readonly Lock _lock = new();
     private AsyncLazy<ImmutableList<TaxonomyTerm<TFrontMatter, TKey>>> _termsLazy;
@@ -44,15 +45,11 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
     public TaxonomyContentService(
         TaxonomyOptions<TFrontMatter, TKey> options,
         IServiceProvider serviceProvider,
-        FrontMatterParser parser,
-        System.IO.Abstractions.IFileSystem fileSystem,
         IFileWatcher fileWatcher,
         TimeProvider? clock = null)
     {
         _options = options;
         _serviceProvider = serviceProvider;
-        _parser = parser;
-        _fileSystem = fileSystem;
         _clock = clock ?? TimeProvider.System;
         _termsLazy = new AsyncLazy<ImmutableList<TaxonomyTerm<TFrontMatter, TKey>>>(LoadTermsAsync);
 
@@ -108,6 +105,15 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
                 new EndpointSource());
         }
     }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// A taxonomy projects no records: its outputs are term index/listing pages, not content to be
+    /// re-taxonomized, faceted, or structure-marked. Returning empty also keeps the sibling walk in
+    /// <see cref="LoadTermsAsync"/> free of the recursion that reading a taxonomy's own records would cause.
+    /// </remarks>
+    public IAsyncEnumerable<ContentRecord> GetRecordsAsync()
+        => System.Linq.AsyncEnumerable.Empty<ContentRecord>();
 
     /// <inheritdoc/>
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
@@ -179,15 +185,13 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
 
     private async Task<ImmutableList<TaxonomyTerm<TFrontMatter, TKey>>> LoadTermsAsync()
     {
-        // Resolve siblings on demand. Two filters apply:
-        //  1. Exclude self — recursing into our own DiscoverAsync would re-enter
-        //     this exact LoadTermsAsync via _termsLazy and deadlock.
-        //  2. Exclude every other ITaxonomyContentService — other taxonomies on the
-        //     same content set yield EndpointSource items (not MarkdownFileSource),
-        //     so they contribute nothing to projection. More importantly, iterating
-        //     their DiscoverAsync triggers their own LoadTermsAsync, which would
-        //     recurse back into us. Pairs of taxonomies on the same TFrontMatter
-        //     would deadlock without this filter.
+        // Resolve siblings on demand, excluding self and every other taxonomy:
+        //  1. Self — enumerating our own records would re-enter this exact LoadTermsAsync
+        //     via _termsLazy and deadlock.
+        //  2. Every other ITaxonomyContentService — their records are empty by design (a
+        //     taxonomy's outputs are term pages, not content), and enumerating them would
+        //     trigger their own LoadTermsAsync, recursing back into us. Pairs of taxonomies
+        //     on the same TFrontMatter would deadlock without this filter.
         var siblings = _serviceProvider.GetServices<IContentService>()
             .Where(s => !ReferenceEquals(s, this) && s is not ITaxonomyContentService)
             .ToList();
@@ -195,51 +199,26 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
         // (key, item) pairs keyed by the user's TKey using its default equality semantics.
         var groups = new Dictionary<TKey, List<TaxonomyItem<TFrontMatter>>>();
 
-        foreach (var service in siblings)
+        await foreach (var record in siblings.GetAllRecordsAsync())
         {
-            await foreach (var discovered in service.DiscoverAsync())
+            // A record participates only when its metadata is the taxonomy's front-matter type.
+            // This is how taxonomy stays opt-in by type across every content service, markdown
+            // or custom: records of other types (or none) contribute nothing.
+            if (record.Metadata is not TFrontMatter metadata || metadata.IsHiddenFromBuild(_clock))
             {
-                if (discovered.Source.Value is not MarkdownFileSource markdown)
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                TFrontMatter? metadata;
-                try
-                {
-                    var content = await _fileSystem.File.ReadAllTextAsync(markdown.Path.Value);
-                    var parsed = _parser.Parse<TFrontMatter>(content, markdown.Path.Value);
-                    metadata = parsed.Metadata;
-                }
-                catch
-                {
-                    // A file that fails to parse against TFrontMatter is silently skipped —
-                    // taxonomy is opt-in (the user picks TFrontMatter), and surfacing per-file
-                    // diagnostics would double-report what the markdown service already logs.
-                    continue;
-                }
+            var item = new TaxonomyItem<TFrontMatter>(metadata, record.Route.CanonicalPath);
 
-                if (metadata is null)
+            foreach (var key in ProjectKeys(metadata))
+            {
+                if (!groups.TryGetValue(key, out var bucket))
                 {
-                    continue;
+                    bucket = [];
+                    groups[key] = bucket;
                 }
-
-                if (metadata.IsHiddenFromBuild(_clock))
-                {
-                    continue;
-                }
-
-                var item = new TaxonomyItem<TFrontMatter>(metadata, discovered.Route.CanonicalPath);
-
-                foreach (var key in ProjectKeys(metadata))
-                {
-                    if (!groups.TryGetValue(key, out var bucket))
-                    {
-                        bucket = [];
-                        groups[key] = bucket;
-                    }
-                    bucket.Add(item);
-                }
+                bucket.Add(item);
             }
         }
 

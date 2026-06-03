@@ -424,6 +424,27 @@ public sealed class MarkdownContentService<TFrontMatter>
     }
 
     /// <inheritdoc/>
+    public async IAsyncEnumerable<ContentRecord> GetRecordsAsync()
+    {
+        // Project the same pages DiscoverAsync surfaces as MarkdownFileSource — drafts/scheduled
+        // pages, redirects, and llms-only files are excluded — into the record channel that
+        // taxonomy, search faceting, and structured data consume. Markdown is just one record
+        // producer; custom services project the same shape.
+        var metadata = await SnapshotMetadataAsync();
+        foreach (var (route, frontMatter, isLlmsOnly) in metadata)
+        {
+            if (isLlmsOnly
+                || frontMatter.IsHiddenFromBuild(_clock)
+                || frontMatter is IRedirectable { RedirectUrl: { Length: > 0 } })
+            {
+                continue;
+            }
+
+            yield return new ContentRecord(route, frontMatter);
+        }
+    }
+
+    /// <inheritdoc/>
     public async IAsyncEnumerable<ParsedItem> ParseContentAsync()
     {
         var start = Stopwatch.GetTimestamp();

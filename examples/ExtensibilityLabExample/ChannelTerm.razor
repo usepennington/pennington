@@ -1,0 +1,29 @@
+@* One channel's releases. Term.Items are ReleaseEntry records the walker grouped by Channel. *@
+@using Microsoft.AspNetCore.Components
+@using Pennington.Taxonomy
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@Term.Label releases</title>
+    <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+    <article id="main-content" data-extensibility-lab="channel-term" data-channel="@Term.Slug">
+        <h1>@Term.Label releases</h1>
+        <ul>
+            @foreach (var item in Term.Items)
+            {
+                <li><a href="@item.Url">@item.FrontMatter.Title</a></li>
+            }
+        </ul>
+        <p><a href="/channel/">All channels</a></p>
+    </article>
+</body>
+</html>
+
+@code {
+    [Parameter] public TaxonomyTerm<ReleaseEntry, string> Term { get; set; } = null!;
+}

@@ -68,6 +68,36 @@ public interface IContentService : IContentEmitter
     }
 
     /// <summary>
+    /// Projects this service's routable content as <see cref="ContentRecord"/>s — the discovery
+    /// seam consumed by taxonomy, search faceting, and structured-data emission.
+    /// <para>
+    /// Default: bridges from <see cref="DiscoverAsync"/>, yielding one record per discovered item
+    /// that carries <see cref="DiscoveredItem.Metadata"/> and is neither a <see cref="RedirectSource"/>
+    /// (transport, not content) nor an <see cref="LlmsOnlySource"/> (no human-facing URL). A service
+    /// that attaches typed metadata to its discovered items — as <see cref="MarkdownContentService{T}"/>
+    /// does — therefore participates with no extra code. Override only to project records that do
+    /// not flow through <see cref="DiscoverAsync"/>, or to suppress records entirely.
+    /// </para>
+    /// <para>
+    /// A service that emits routable content from <see cref="DiscoverAsync"/> but leaves
+    /// <see cref="DiscoveredItem.Metadata"/> unset projects no records, and so silently sits out of
+    /// taxonomy, search faceting, and structured data. Set the metadata (or override this) to opt in.
+    /// </para>
+    /// </summary>
+    async IAsyncEnumerable<ContentRecord> GetRecordsAsync()
+    {
+        await foreach (var item in DiscoverAsync())
+        {
+            if (item.Metadata is null || item.Source.Value is RedirectSource or LlmsOnlySource)
+            {
+                continue;
+            }
+
+            yield return new ContentRecord(item.Route, item.Metadata);
+        }
+    }
+
+    /// <summary>
     /// Cross-references for xref resolution.
     /// </summary>
     Task<ImmutableList<CrossReference>> GetCrossReferencesAsync();

@@ -1,5 +1,6 @@
 namespace Pennington.Search;
 
+using Content;
 using DeweySearch;
 using Infrastructure;
 using Pipeline;
@@ -31,10 +32,11 @@ public sealed class SearchArtifactService : IFileWatchAware
         ISiteProjection projection,
         SearchIndexBuilder corpusBuilder,
         IndexBuilder indexBuilder,
-        LocalizationOptions localization)
+        LocalizationOptions localization,
+        ContentRecordRegistry recordRegistry)
     {
         _filesLazy = new AsyncLazy<IReadOnlyDictionary<string, byte[]>>(
-            () => BuildAllAsync(projection, corpusBuilder, indexBuilder, localization));
+            () => BuildAllAsync(projection, corpusBuilder, indexBuilder, localization, recordRegistry));
     }
 
     /// <summary>Returns every artifact keyed by its relative output path (e.g. <c>search/en/index.json</c>).</summary>
@@ -51,8 +53,13 @@ public sealed class SearchArtifactService : IFileWatchAware
         ISiteProjection projection,
         SearchIndexBuilder corpusBuilder,
         IndexBuilder indexBuilder,
-        LocalizationOptions localization)
+        LocalizationOptions localization,
+        ContentRecordRegistry recordRegistry)
     {
+        // Join the rendered corpus back to its records by canonical path so each page's custom
+        // facets (IHasSearchFacets) ride along with the built-in section/tag/area dimensions.
+        var records = await recordRegistry.GetSnapshotAsync();
+
         var groups = new Dictionary<string, List<SearchDocument>>(StringComparer.OrdinalIgnoreCase);
 
         // Seed an empty bucket for every configured locale so registered-but-empty locales
@@ -83,11 +90,13 @@ public sealed class SearchArtifactService : IFileWatchAware
                 groups[locale] = list = [];
             }
 
+            records.TryGetValue(page.Route.CanonicalPath.Value.Trim('/'), out var record);
+
             // One record per heading section (plus a page-lead record) so results are
             // heading-level and deep-link to anchors.
             foreach (var section in page.Sections.Value)
             {
-                list.Add(corpusBuilder.BuildSection(page.Toc, section));
+                list.Add(corpusBuilder.BuildSection(page.Toc, section, record?.Metadata));
             }
         }
 

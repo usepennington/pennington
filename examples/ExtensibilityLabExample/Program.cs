@@ -7,6 +7,7 @@ using Pennington.Markdown.Shortcodes;
 using Pennington.MonorailCss;
 using Pennington.Pipeline;
 using Pennington.Routing;
+using Pennington.Taxonomy;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +57,21 @@ builder.Services.AddSingleton<ReleaseNotesContentService>();
 builder.Services.AddSingleton<IContentService>(sp =>
     sp.GetRequiredService<ReleaseNotesContentService>());
 
+// 2.3.15 Make the custom records discoverable — each ReleaseEntry is attached as
+// DiscoveredItem.Metadata, so the engine treats them like markdown records. A browse-by-channel
+// taxonomy walks them directly (no MarkdownFileSource required); the `channel` search facet and
+// per-page JSON-LD come from the same record. Taxonomy term pages render through Razor components,
+// so the bare host opts into AddRazorComponents + AddHttpContextAccessor the way the how-to shows.
+builder.Services.AddRazorComponents();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTaxonomy<ReleaseEntry, string>(opts =>
+{
+    opts.BaseUrl = "/channel";
+    opts.SelectKey = fm => fm.Channel;
+    opts.IndexPage = typeof(ChannelIndex);
+    opts.TermPage = typeof(ChannelTerm);
+});
+
 // 2.3.90 Emit-only IContentService — writes robots.txt and nothing else.
 builder.Services.AddTransient<IContentService, RobotsTxtContentService>();
 
@@ -90,6 +106,9 @@ var app = builder.Build();
 
 app.UsePennington();
 app.UseMonorailCss();
+
+// Live HTTP handlers for the browse-by-channel taxonomy (/channel/ and /channel/{slug}/).
+app.MapTaxonomy<ReleaseEntry, string>();
 
 // Single catch-all fallback. Dispatches markdown via the pipeline and
 // release notes via ReleaseNotesContentService so the route comes from
@@ -157,7 +176,7 @@ static string RenderMarkdownPage(RenderedItem item) => $$"""
 static string RenderReleaseIndex(ReleaseNotesContentService releases)
 {
     var items = string.Join("\n", releases.Entries.Select(e =>
-        $"""<li><a href="/releases/{e.Version}/">{e.Title}</a> <time datetime="{e.Date}">{e.Date}</time></li>"""));
+        $"""<li><a href="/releases/{e.Version}/">{e.Title}</a> <time datetime="{e.Date:yyyy-MM-dd}">{e.Date:yyyy-MM-dd}</time> ({e.Channel})</li>"""));
     return $$"""
         <!DOCTYPE html>
         <html lang="en">
@@ -190,7 +209,7 @@ static string RenderReleaseEntry(ReleaseEntry entry)
         <body>
           <article data-extensibility-lab="release-entry" data-release-version="{{entry.Version}}">
             <h1>{{entry.Title}}</h1>
-            <p><time datetime="{{entry.Date}}">{{entry.Date}}</time></p>
+            <p><time datetime="{{entry.Date:yyyy-MM-dd}}">{{entry.Date:yyyy-MM-dd}}</time> · {{entry.Channel}}</p>
             <ul>{{highlights}}</ul>
             <p><a href="/releases/" data-lowercase>BACK TO INDEX</a></p>
           </article>

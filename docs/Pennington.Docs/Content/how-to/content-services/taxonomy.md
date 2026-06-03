@@ -7,7 +7,7 @@ sectionLabel: "Content Services"
 tags: [taxonomy, navigation, content-service, hot-reload]
 ---
 
-When the same content needs to be reachable through multiple browse axes — recipes by cuisine *and* by dietary tag, docs by audience, posts by series — wire each axis with `AddTaxonomy<TFrontMatter, TKey>`. The framework walks every other registered `IContentService`, parses each markdown source as `TFrontMatter`, projects keys via the configured selector, and emits `/{base}/` plus `/{base}/{slug}/` routes wired to your Razor templates.
+When the same content needs to be reachable through multiple browse axes — recipes by cuisine *and* by dietary tag, docs by audience, posts by series — wire each axis with `AddTaxonomy<TFrontMatter, TKey>`. The framework walks the records every other registered `IContentService` projects, keeps the ones whose front matter is `TFrontMatter`, projects keys via the configured selector, and emits `/{base}/` plus `/{base}/{slug}/` routes wired to your Razor templates. Markdown is one such source — but so is any custom content service whose records carry `TFrontMatter` (see <xref:how-to.content-services.custom-content-service>).
 
 ## Define your front matter
 
@@ -142,6 +142,6 @@ Edits during `dotnet run` propagate immediately.
 ## Caveats
 
 - **Listed in the sitemap.** Taxonomy routes use `EndpointSource` (the canonical HTML lives behind `MapTaxonomy`'s endpoints), but they serve real HTML, so they appear in navigation, search, cross-references, *and* `/sitemap.xml` — same as a <xref:how-to.content-services.custom-content-service> page.
-- **Markdown sources only.** The walker pattern-matches `MarkdownFileSource`. Items emitted by other custom services (Razor pages, programmatic content, JSON-backed releases) are ignored. If you want one of those to participate, expose its records through a separate index page, not via taxonomy. Sibling taxonomies are also skipped during the projection walk to avoid recursion when two axes share a front-matter type.
+- **Records of `TFrontMatter`, from any source.** The walker reads each content service's projected records and keeps those whose metadata is a `TFrontMatter` — markdown, a custom `IContentService`, or a Razor page all participate, as long as the producing service projects records of that exact front-matter type. (A custom service projects records by attaching the front matter to each `DiscoveredItem.Metadata`, or by overriding `GetRecordsAsync` — see <xref:how-to.content-services.custom-content-service>.) Records of any other type are ignored, so an axis only ever collects the front matter it was typed for. Sibling taxonomies are skipped during the walk to avoid recursion when two axes share a front-matter type.
 - **Drafts and future-dated posts are skipped.** Items whose `IsHiddenFromBuild` is `true` — `IsDraft` set, or a `Date` in the future — are excluded from every term, same convention as the rest of the pipeline.
 - **One Razor component per axis.** Different cuisines can't render with different templates; switch on `Term.Key` inside `TermPage` if some terms need a custom layout.

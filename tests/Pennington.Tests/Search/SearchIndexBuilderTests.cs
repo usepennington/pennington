@@ -1,4 +1,5 @@
 using Pennington.Content;
+using Pennington.FrontMatter;
 using Pennington.Infrastructure;
 using Pennington.Routing;
 using Pennington.Search;
@@ -7,6 +8,13 @@ namespace Pennington.Tests.Search;
 
 public class SearchIndexBuilderTests
 {
+    private sealed record FacetedFrontMatter : IFrontMatter, IHasSearchFacets
+    {
+        public string Title { get; init; } = "";
+        public IReadOnlyDictionary<string, string[]> SearchFacets { get; init; } =
+            new Dictionary<string, string[]>();
+    }
+
     private static ContentRoute MakeRoute(string path, string locale = "") => new()
     {
         CanonicalPath = new UrlPath(path).EnsureTrailingSlash(),
@@ -108,6 +116,97 @@ public class SearchIndexBuilderTests
 
         lead.Facets!["area"].ShouldBe(["guide"]);
         heading.Facets!["area"].ShouldBe(["guide"]);
+    }
+
+    [Fact]
+    public void BuildSection_EmitsCustomFacets_FromRecordMetadata()
+    {
+        // Custom facets emit even though the builder's enabled set is area-only — IHasSearchFacets
+        // is the record author's explicit opt-in, not gated by SearchFacetField.
+        var toc = MakeToc("Senior Engineer", "/jobs/senior-engineer");
+        var metadata = new FacetedFrontMatter
+        {
+            Title = "Senior Engineer",
+            SearchFacets = new Dictionary<string, string[]>
+            {
+                ["company"] = ["Acme"],
+                ["language"] = ["en", "de"],
+            },
+        };
+
+        var doc = _builder.BuildSection(toc, Lead(), metadata);
+
+        doc.Facets.ShouldNotBeNull();
+        doc.Facets!["area"].ShouldBe(["jobs"]);
+        doc.Facets["company"].ShouldBe(["Acme"]);
+        doc.Facets["language"].ShouldBe(["en", "de"]);
+    }
+
+    [Fact]
+    public void BuildSection_CustomFacets_DoNotOverrideBuiltInDimensions()
+    {
+        var builder = new SearchIndexBuilder(
+            new SearchIndexOptions { Facets = SearchFacetField.Tags },
+            new LocalizationOptions());
+        var toc = MakeToc("Post", "/blog/post") with { Tags = ["authoritative"] };
+        var metadata = new FacetedFrontMatter
+        {
+            SearchFacets = new Dictionary<string, string[]> { ["tag"] = ["hijacked"] },
+        };
+
+        var doc = builder.BuildSection(toc, Lead(), metadata);
+
+        // The built-in tag dimension stays authoritative; a colliding custom axis is dropped.
+        doc.Facets!["tag"].ShouldBe(["authoritative"]);
+    }
+
+    [Fact]
+    public void BuildSection_CustomFacets_NeverOccupyReservedNames_EvenWhenBuiltInDisabledOrEmpty()
+    {
+        // Default options enable Area only, so the built-in path never adds 'section' or 'tag'.
+        // A custom axis named after a reserved dimension must still be dropped, and a custom 'area'
+        // must not displace the real derived area.
+        var toc = MakeToc("Item", "/catalog/item");
+        var metadata = new FacetedFrontMatter
+        {
+            SearchFacets = new Dictionary<string, string[]>
+            {
+                ["section"] = ["sneaky"],
+                ["tag"] = ["sneaky"],
+                ["area"] = ["sneaky"],
+                ["color"] = ["red"],
+            },
+        };
+
+        var doc = _builder.BuildSection(toc, Lead(), metadata);
+
+        doc.Facets.ShouldNotBeNull();
+        doc.Facets!["area"].ShouldBe(["catalog"]); // the real derived area, not the custom one
+        doc.Facets!.ShouldNotContainKey("section");
+        doc.Facets!.ShouldNotContainKey("tag");
+        doc.Facets!["color"].ShouldBe(["red"]);
+    }
+
+    [Fact]
+    public void BuildSection_CustomFacets_SkipBlankAxesAndValues()
+    {
+        var toc = MakeToc("Item", "/catalog/item");
+        var metadata = new FacetedFrontMatter
+        {
+            SearchFacets = new Dictionary<string, string[]>
+            {
+                ["  "] = ["ignored"],
+                ["empty"] = [],
+                ["region"] = ["  EU  ", "", "US"],
+            },
+        };
+
+        var doc = _builder.BuildSection(toc, Lead(), metadata);
+
+        doc.Facets.ShouldNotBeNull();
+        doc.Facets!.ShouldNotContainKey("  ");
+        doc.Facets!.ShouldNotContainKey("empty");
+        doc.Facets!["region"].ShouldBe(["EU", "US"]);
     }
 
     [Fact]

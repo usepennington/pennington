@@ -77,18 +77,11 @@ else if (_notFound)
         var baseUrl = DocSiteOptions.CanonicalBaseUrl.TrimEnd('/');
         var canonicalUrl = $"{baseUrl}{_resolved.Route.CanonicalPath.EnsureTrailingSlash().Value}";
 
-        // Page-level entities — typically an Article — come from the front
-        // matter's IHasStructuredData capability. If the consumer registered a
-        // custom front matter that doesn't implement it, fall back to a default
-        // Article so DocSite stays useful for SEO either way.
-        if (_resolved.Metadata is IHasStructuredData hasData)
-        {
-            foreach (var entity in hasData.GetStructuredData(new StructuredDataContext { CanonicalUrl = canonicalUrl }))
-            {
-                yield return entity;
-            }
-        }
-        else
+        // A record's own IHasStructuredData entities are emitted centrally by
+        // StructuredDataHtmlRewriter. The template only adds what the rewriter can't know: a
+        // default Article for front matter that describes none (so DocSite stays useful for SEO),
+        // and the nav-derived breadcrumb trail below.
+        if (_resolved.Metadata is not IHasStructuredData)
         {
             yield return new JsonLdArticle
             {

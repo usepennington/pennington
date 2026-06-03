@@ -81,7 +81,11 @@ public sealed partial class RazorPageContentService : IContentService
             {
                 ContentSource source = new RazorPageSource(
                     entry.Component.AssemblyQualifiedName ?? entry.Component.FullName ?? entry.Component.Name);
-                yield return new DiscoveredItem(route, source);
+                // Attach the parsed sidecar front matter so the GetRecordsAsync bridge surfaces this
+                // page as a ContentRecord — letting a Razor page's metadata feed taxonomy, custom
+                // search facets, and JSON-LD the same way markdown does. Null is fine; the bridge
+                // skips records without metadata.
+                yield return new DiscoveredItem(route, source) { Metadata = entry.Metadata };
             }
         }
 

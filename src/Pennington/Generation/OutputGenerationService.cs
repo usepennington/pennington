@@ -92,6 +92,10 @@ public sealed class OutputGenerationService
         // discovery wins and the duplicate is reported as a warning.
         var contentPages = new List<PageToGenerate>();
         var claimedOutputFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // Output files whose content route is an EndpointSource — these are served by a live
+        // endpoint (a taxonomy's MapTaxonomy, a custom MapGet) BY DESIGN, so the matching MapGet
+        // discovered in Phase 2 is an expected duplicate, not a misconfiguration to warn about.
+        var endpointOutputFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         await foreach (var item in _contentServices.DiscoverAllAsync())
         {
             // Llms-only items contribute to the llms.txt sidecar and front
@@ -115,6 +119,11 @@ public sealed class OutputGenerationService
                 continue;
             }
 
+            if (item.Source is EndpointSource)
+            {
+                endpointOutputFiles.Add(outputFile);
+            }
+
             contentPages.Add(new PageToGenerate(item.Route));
         }
 
@@ -131,12 +140,18 @@ public sealed class OutputGenerationService
         {
             if (!claimedOutputFiles.Add(page.OutputFile.Value))
             {
-                reportBuilder.AddWarning(
-                    $"Duplicate route: '{page.Url}' is emitted by both a content service and a MapGet handler. " +
-                    $"The content-service discovery wins; the MapGet handler is skipped for static build. " +
-                    $"Prefer serving this route from only one source — a catch-all MapGet(\"/{{*path}}\") is " +
-                    $"the usual fix when custom endpoints need to coexist with content discovery.",
-                    sourceFile: page.Url);
+                // An EndpointSource content route is meant to be served by exactly this kind of
+                // MapGet (taxonomy, custom endpoint), so dedup it silently — the pairing is the
+                // documented pattern, not a misconfiguration.
+                if (!endpointOutputFiles.Contains(page.OutputFile.Value))
+                {
+                    reportBuilder.AddWarning(
+                        $"Duplicate route: '{page.Url}' is emitted by both a content service and a MapGet handler. " +
+                        $"The content-service discovery wins; the MapGet handler is skipped for static build. " +
+                        $"Prefer serving this route from only one source — a catch-all MapGet(\"/{{*path}}\") is " +
+                        $"the usual fix when custom endpoints need to coexist with content discovery.",
+                        sourceFile: page.Url);
+                }
                 continue;
             }
 
