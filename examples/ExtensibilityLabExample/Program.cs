@@ -1,4 +1,5 @@
 using ExtensibilityLabExample;
+using Markdig;
 using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
@@ -43,6 +44,13 @@ builder.Services.AddPennington(penn =>
     // content in <article>, so strip the surrounding chrome before indexing /
     // sidecar extraction. Shared by search and llms.txt.
     penn.SiteProjection.ContentSelector = "article";
+
+    // 2.2.65 Markdig pipeline hook — register a custom [[wiki-link]] inline parser.
+    // ConfigureMarkdownPipeline runs after every built-in extension (UseAdvancedExtensions
+    // already supplies math, footnotes, definition lists, …), so add only the parser the
+    // built-ins lack. AddIfNotAlready keeps the registration idempotent.
+    penn.ConfigureMarkdownPipeline = (pipeline, _) =>
+        pipeline.Extensions.AddIfNotAlready(new WikiLinkExtension());
 
     // 2.2.60 llms.txt on bare host — DocSite auto-wires this; bare
     // AddPennington consumers must opt in explicitly.

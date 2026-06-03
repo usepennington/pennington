@@ -272,6 +272,7 @@ Configure MonorailCSS through [the options record](xref:reference.api.monorail-c
 
 ## See also
 
+- How-to: [Add a Markdig extension or inline parser](xref:how-to.markdown-pipeline.markdig-extension) — register syntax this catalog doesn't list
 - How-to: [Tabbed code](xref:how-to.code-samples.tabbed-code)
 - How-to: [Content tabs](xref:how-to.rich-content.content-tabs)
 - How-to: [Reuse shared content](xref:how-to.pages.include-shared-content)

@@ -4,6 +4,7 @@ Bare `AddPennington` host that exercises every Pennington extension seam from on
 
 ## Extension points wired
 
+- **Markdig extension / inline parser** — `WikiLinkExtension` registers a `[[wiki-link]]` inline parser through `penn.ConfigureMarkdownPipeline`, emitting `<a class="wikilink" href="/notes/<slug>/">`. `Content/wikilinks-demo.md` exercises it (and shows the `<span class="math">` / `<div class="math">` markup the default pipeline already emits). (`how-to/markdown-pipeline/markdig-extension.md`)
 - **Custom highlighter** — `PipelineHighlighter` claims `pipeline` fences (`how-to/markdown-pipeline/custom-highlighter.md`)
 - **Code-block preprocessor** — `LineCountPreprocessor` claims `linecount` fences (`how-to/markdown-pipeline/code-block-preprocessor.md`)
 - **Custom shortcode** — `GitHubRepoShortcode` expands `<?# GitHubRepo "owner/repo" /?>` to a link (`how-to/markdown-pipeline/shortcodes.md`)
