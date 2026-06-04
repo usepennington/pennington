@@ -77,7 +77,7 @@ public class PageResolverTests
     public async Task ResolveAsync_MatchingRoute_ReturnsRenderedItem()
     {
         var item = new DiscoveredItem(MakeRoute("/page-1"), MakeSource());
-        var resolver = new PageResolver([new StubContentService(item)], new StubParser(), new StubRenderer());
+        var resolver = new PageResolver([new StubContentService(item)], new StubRenderer(), new StubParser());
 
         var rendered = await resolver.ResolveAsync(new UrlPath("/page-1"));
 
@@ -91,7 +91,7 @@ public class PageResolverTests
     public async Task ResolveAsync_NoMatch_ReturnsNull()
     {
         var item = new DiscoveredItem(MakeRoute("/page-1"), MakeSource());
-        var resolver = new PageResolver([new StubContentService(item)], new StubParser(), new StubRenderer());
+        var resolver = new PageResolver([new StubContentService(item)], new StubRenderer(), new StubParser());
 
         var rendered = await resolver.ResolveAsync(new UrlPath("/does-not-exist"));
 
@@ -102,7 +102,7 @@ public class PageResolverTests
     public async Task ResolveAsync_MatchFailsToParse_ReturnsNull()
     {
         var item = new DiscoveredItem(MakeRoute("/redirect"), MakeSource());
-        var resolver = new PageResolver([new StubContentService(item)], new FailingParser(), new StubRenderer());
+        var resolver = new PageResolver([new StubContentService(item)], new StubRenderer(), new FailingParser());
 
         var rendered = await resolver.ResolveAsync(new UrlPath("/redirect"));
 
@@ -114,11 +114,24 @@ public class PageResolverTests
     {
         var docService = new StubContentService(new DiscoveredItem(MakeRoute("/docs/intro"), MakeSource()));
         var blogService = new StubContentService(new DiscoveredItem(MakeRoute("/blog/post"), MakeSource()));
-        var resolver = new PageResolver([docService, blogService], new StubParser(), new StubRenderer());
+        var resolver = new PageResolver([docService, blogService], new StubRenderer(), new StubParser());
 
         var rendered = await resolver.ResolveAsync(new UrlPath("/blog/post"));
 
         rendered.ShouldNotBeNull();
         rendered.Route.CanonicalPath.Value.ShouldBe("/blog/post/");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_NoParser_ReturnsNullInsteadOfThrowing()
+    {
+        // Bare host: no markdown source means no IContentParser. The resolver must construct with
+        // the optional parser omitted and resolve nothing rather than fail (the bare-host bug).
+        var item = new DiscoveredItem(MakeRoute("/page-1"), MakeSource());
+        var resolver = new PageResolver([new StubContentService(item)], new StubRenderer());
+
+        var rendered = await resolver.ResolveAsync(new UrlPath("/page-1"));
+
+        rendered.ShouldBeNull();
     }
 }

@@ -107,7 +107,7 @@ public class EndToEndBuildTests
             new ContentItem(new ParsedItem(item.Route, new TestFrontMatter("Page"), "# Content")));
         var renderer = new RenderWithHtmlStub(_ => "<p>Content</p>");
 
-        var pipeline = new ContentPipeline([service], parser, renderer);
+        var pipeline = new ContentPipeline([service], renderer, parser);
         var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(3);
@@ -141,7 +141,7 @@ public class EndToEndBuildTests
         });
         var renderer = new RenderWithHtmlStub(_ => "<p>Content</p>");
 
-        var pipeline = new ContentPipeline([service], parser, renderer);
+        var pipeline = new ContentPipeline([service], renderer, parser);
         var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(1);
@@ -178,7 +178,7 @@ public class EndToEndBuildTests
         });
         var renderer = new RenderWithHtmlStub(_ => "<p>Content</p>");
 
-        var pipeline = new ContentPipeline([docsService, blogService], parser, renderer);
+        var pipeline = new ContentPipeline([docsService, blogService], renderer, parser);
         var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(3); // 2 docs + 1 blog
@@ -208,7 +208,7 @@ public class EndToEndBuildTests
             return """<p>Back to <a href="/docs/intro">Intro</a>.</p>""";
         });
 
-        var pipeline = new ContentPipeline([service], parser, renderer);
+        var pipeline = new ContentPipeline([service], renderer, parser);
         var report = await pipeline.RunAsync();
 
         // Verify links between the two pages
@@ -245,7 +245,7 @@ public class EndToEndBuildTests
         });
         var renderer = new RenderWithHtmlStub(_ => "<p>Content</p>");
 
-        var pipeline = new ContentPipeline([service], parser, renderer);
+        var pipeline = new ContentPipeline([service], renderer, parser);
         var report = await pipeline.RunAsync();
 
         var output = report.ToFormattedString();
@@ -265,7 +265,7 @@ public class EndToEndBuildTests
         var parser = new MarkdownParserStub(_ => throw new InvalidOperationException("Should not be called"));
         var renderer = new RenderWithHtmlStub(_ => throw new InvalidOperationException("Should not be called"));
 
-        var pipeline = new ContentPipeline([service], parser, renderer);
+        var pipeline = new ContentPipeline([service], renderer, parser);
         var report = await pipeline.RunAsync();
 
         report.GeneratedPages.ShouldBeEmpty();
@@ -290,7 +290,7 @@ public class EndToEndBuildTests
             new ContentItem(new FailedItem(item.Route, new ContentError($"Error in {item.Route.CanonicalPath.Value}"))));
         var renderer = new RenderWithHtmlStub(_ => throw new InvalidOperationException("Should not be called"));
 
-        var pipeline = new ContentPipeline([service], parser, renderer);
+        var pipeline = new ContentPipeline([service], renderer, parser);
         var report = await pipeline.RunAsync();
 
         report.GeneratedPages.ShouldBeEmpty();
@@ -334,7 +334,7 @@ public class EndToEndBuildTests
         // Every page includes the same nav
         var renderer = new RenderWithHtmlStub(_ => navHtml);
 
-        var pipeline = new ContentPipeline([service], parser, renderer);
+        var pipeline = new ContentPipeline([service], renderer, parser);
         var report = await pipeline.RunAsync();
 
         var linkService = new LinkVerificationService(report.GeneratedPages);
