@@ -17,7 +17,7 @@ public class PageResolverTests
     };
 
     private static ContentSource MakeSource() =>
-        new ContentSource(new MarkdownFileSource("content/page.md"));
+        new ContentSource(new FileSource("content/page.md", "markdown"));
 
     private static RenderedContent MakeRenderedContent() => new(
         Html: "<p>test</p>",

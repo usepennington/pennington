@@ -207,7 +207,7 @@ public class OutputGenerationServiceTests
             await Task.CompletedTask;
             yield return new DiscoveredItem(
                 route,
-                new ContentSource(new MarkdownFileSource(new FilePath("stub.md"))));
+                new ContentSource(new FileSource(new FilePath("stub.md"), "markdown")));
         }
 
         public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()

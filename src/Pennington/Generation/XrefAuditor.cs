@@ -44,13 +44,13 @@ public sealed partial class XrefAuditor : IBuildAuditor
 
         await foreach (var item in _contentServices.DiscoverAllAsync(cancellationToken))
         {
-            // Both source kinds back a markdown file on disk; xref scanning is
-            // identical and llms-only pages can still contain `<xref:uid>` links
-            // that need verification.
+            // Both source kinds back a file on disk; xref scanning is identical
+            // and llms-only pages can still contain `<xref:uid>` links that need
+            // verification.
             string path;
             switch (item.Source.Value)
             {
-                case MarkdownFileSource mfs: path = mfs.Path.Value; break;
+                case FileSource fs: path = fs.Path.Value; break;
                 case LlmsOnlySource llms: path = llms.Path.Value; break;
                 default: continue;
             }

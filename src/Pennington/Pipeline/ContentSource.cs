@@ -2,9 +2,10 @@ namespace Pennington.Pipeline;
 
 using Routing;
 
-/// <summary>Content sourced from a markdown file on disk.</summary>
-/// <param name="Path">Absolute path to the markdown file.</param>
-public record MarkdownFileSource(FilePath Path);
+/// <summary>Content sourced from a file on disk, tagged with a format key that selects its parser/renderer.</summary>
+/// <param name="Path">Absolute path to the source file.</param>
+/// <param name="Format">Format key (e.g. <c>"markdown"</c>, <c>"cook"</c>) selecting the parser and renderer.</param>
+public record FileSource(FilePath Path, string Format);
 
 /// <summary>Content rendered by a Razor page/component.</summary>
 /// <param name="ComponentType">Fully qualified name of the component type.</param>
@@ -36,15 +37,15 @@ public record LlmsOnlySource(FilePath Path);
 
 /// <summary>Union of all ways content can be sourced for a route.</summary>
 #if NET11_0_OR_GREATER
-public union ContentSource(MarkdownFileSource, RazorPageSource, RedirectSource, EndpointSource, LlmsOnlySource);
+public union ContentSource(FileSource, RazorPageSource, RedirectSource, EndpointSource, LlmsOnlySource);
 #else
 [System.Runtime.CompilerServices.Union]
 public readonly struct ContentSource : System.Runtime.CompilerServices.IUnion
 {
     /// <summary>Wrapped case instance; inspect via pattern matching on the case types.</summary>
     public object? Value { get; }
-    /// <summary>Wraps a <see cref="MarkdownFileSource"/>.</summary>
-    public ContentSource(MarkdownFileSource value) { Value = value; }
+    /// <summary>Wraps a <see cref="FileSource"/>.</summary>
+    public ContentSource(FileSource value) { Value = value; }
     /// <summary>Wraps a <see cref="RazorPageSource"/>.</summary>
     public ContentSource(RazorPageSource value) { Value = value; }
     /// <summary>Wraps a <see cref="RedirectSource"/>.</summary>
@@ -53,8 +54,8 @@ public readonly struct ContentSource : System.Runtime.CompilerServices.IUnion
     public ContentSource(EndpointSource value) { Value = value; }
     /// <summary>Wraps an <see cref="LlmsOnlySource"/>.</summary>
     public ContentSource(LlmsOnlySource value) { Value = value; }
-    /// <summary>Implicit conversion from <see cref="MarkdownFileSource"/>.</summary>
-    public static implicit operator ContentSource(MarkdownFileSource value) => new(value);
+    /// <summary>Implicit conversion from <see cref="FileSource"/>.</summary>
+    public static implicit operator ContentSource(FileSource value) => new(value);
     /// <summary>Implicit conversion from <see cref="RazorPageSource"/>.</summary>
     public static implicit operator ContentSource(RazorPageSource value) => new(value);
     /// <summary>Implicit conversion from <see cref="RedirectSource"/>.</summary>

@@ -67,7 +67,7 @@ public class MarkdownContentServiceTests
         items.Count.ShouldBe(2);
         foreach (var item in items)
         {
-            (item.Source is MarkdownFileSource).ShouldBeTrue();
+            (item.Source is FileSource).ShouldBeTrue();
         }
     }
 
@@ -102,10 +102,10 @@ public class MarkdownContentServiceTests
         }
 
         items.Count.ShouldBe(1);
-        (items[0].Source is MarkdownFileSource).ShouldBeTrue();
+        (items[0].Source is FileSource).ShouldBeTrue();
         var path = items[0].Source switch
         {
-            MarkdownFileSource m => m.Path.Value,
+            FileSource m => m.Path.Value,
             _ => ""
         };
         path.ShouldEndWith("intro.md");
@@ -1149,7 +1149,7 @@ public class MarkdownContentServiceTests
         }
 
         items.Count.ShouldBe(2);
-        var regular = items.Single(i => i.Source is MarkdownFileSource);
+        var regular = items.Single(i => i.Source is FileSource);
         var llmsOnly = items.Single(i => i.Source is LlmsOnlySource);
         regular.Route.CanonicalPath.Value.ShouldBe("/docs/regular/");
         llmsOnly.Route.CanonicalPath.Value.ShouldBe("/docs/agent-context/");

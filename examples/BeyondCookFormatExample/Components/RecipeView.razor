@@ -1,0 +1,145 @@
+@namespace BeyondCookFormatExample
+@using System.Net
+@using System.Text
+@using CooklangSharp.Models
+
+@* Renders a parsed Cooklang recipe. The page structure is Razor markup; only the tight inline
+   token run within a step is built as an HTML string (the PhilsRecipes Method.razor pattern),
+   because inline flow is whitespace-sensitive. *@
+
+<article class="recipe">
+    @if (!string.IsNullOrWhiteSpace(FrontMatter.Title))
+    {
+        <h1>@FrontMatter.Title</h1>
+    }
+    @if (!string.IsNullOrWhiteSpace(FrontMatter.Description))
+    {
+        <p class="description">@FrontMatter.Description</p>
+    }
+    @if (_meta.Count > 0)
+    {
+        <p class="meta">@string.Join(" · ", _meta)</p>
+    }
+
+    @if (_ingredients.Count > 0)
+    {
+        <h2>Ingredients</h2>
+        <ul class="ingredients">
+            @foreach (var ingredient in _ingredients)
+            {
+                <li>@if (ingredient.Qty.Length > 0){<span class="qty">@ingredient.Qty</span> }@ingredient.Name</li>
+            }
+        </ul>
+    }
+
+    <h2>Method</h2>
+    @foreach (var section in Recipe.Sections)
+    {
+        <section class="step-section">
+            @if (!string.IsNullOrWhiteSpace(section.Name))
+            {
+                <h3>@section.Name</h3>
+            }
+            <ol class="steps">
+                @foreach (var block in section.Content)
+                {
+                    if (block is StepContent step)
+                    {
+                        <li class="step">@((MarkupString)StepHtml(step.Step.Items))</li>
+                    }
+                    else if (block is NoteContent note)
+                    {
+                        <li class="note">@note.Value.Trim()</li>
+                    }
+                }
+            </ol>
+        </section>
+    }
+</article>
+
+@code {
+    /// <summary>The parsed Cooklang recipe to render.</summary>
+    [Parameter] public required Recipe Recipe { get; set; }
+
+    /// <summary>The recipe's typed front matter.</summary>
+    [Parameter] public required CookFrontMatter FrontMatter { get; set; }
+
+    private readonly List<string> _meta = [];
+    private readonly List<(string Name, string Qty)> _ingredients = [];
+
+    protected override void OnParametersSet()
+    {
+        _meta.Clear();
+        AddMeta("Serves", FrontMatter.Servings);
+        AddMeta("Prep", FrontMatter.PrepTime);
+        AddMeta("Cook", FrontMatter.CookTime);
+        AddMeta("Total", FrontMatter.TotalTime);
+        AddMeta("Rest", FrontMatter.RestTime);
+
+        _ingredients.Clear();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var section in Recipe.Sections)
+        {
+            foreach (var block in section.Content)
+            {
+                if (block is not StepContent step)
+                {
+                    continue;
+                }
+
+                foreach (var item in step.Step.Items)
+                {
+                    if (item is IngredientItem ingredient && seen.Add(ingredient.Name))
+                    {
+                        _ingredients.Add((ingredient.Name, Qty(ingredient.Quantity, ingredient.Units)));
+                    }
+                }
+            }
+        }
+    }
+
+    private void AddMeta(string label, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            _meta.Add($"{label} {value}");
+        }
+    }
+
+    // The inline token run: text interleaved with ingredient/cookware/timer spans, built as a
+    // string so adjacent tokens carry no stray whitespace (a space before a '.' or '(' would show).
+    private static string StepHtml(IReadOnlyList<Item> items)
+    {
+        var sb = new StringBuilder();
+        foreach (var item in items)
+        {
+            switch (item)
+            {
+                case TextItem text:
+                    sb.Append(Enc(text.Value));
+                    break;
+                case IngredientItem ingredient:
+                    var quantity = Qty(ingredient.Quantity, ingredient.Units);
+                    sb.Append($"<span class=\"ingredient\">{Enc(ingredient.Name)}");
+                    if (quantity.Length > 0)
+                    {
+                        sb.Append($" <span class=\"qty\">{Enc(quantity)}</span>");
+                    }
+                    sb.Append("</span>");
+                    break;
+                case CookwareItem cookware:
+                    sb.Append($"<span class=\"cookware\">{Enc(cookware.Name)}</span>");
+                    break;
+                case TimerItem timer:
+                    sb.Append($"<span class=\"timer\">{Enc(Qty(timer.Quantity, timer.Units))}</span>");
+                    break;
+            }
+        }
+        return sb.ToString();
+    }
+
+    private static string Qty(QuantityValue? quantity, string units)
+        => string.Join(" ", new[] { quantity?.ToString() ?? "", units }.Where(part => !string.IsNullOrWhiteSpace(part)));
+
+    private static string Enc(string value) => WebUtility.HtmlEncode(value);
+}

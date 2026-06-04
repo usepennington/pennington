@@ -139,7 +139,7 @@ public class BlogContentResolverPaginationTests : IDisposable
             foreach (var file in _files)
             {
                 var route = ContentRouteFactory.FromUrl(new UrlPath($"/blog/{Path.GetFileNameWithoutExtension(file)}/"));
-                yield return new DiscoveredItem(route, new MarkdownFileSource(new FilePath(file)));
+                yield return new DiscoveredItem(route, new FileSource(new FilePath(file), "markdown"));
             }
             await Task.CompletedTask;
         }

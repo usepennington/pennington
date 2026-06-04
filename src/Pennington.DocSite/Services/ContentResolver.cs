@@ -283,7 +283,7 @@ public sealed class ContentResolver
 
     private async Task<ParsedItem?> ParseItem(DiscoveredItem item)
     {
-        if (item.Source is not MarkdownFileSource source)
+        if (item.Source.Value is not FileSource { Format: "markdown" } source)
         {
             return null;
         }

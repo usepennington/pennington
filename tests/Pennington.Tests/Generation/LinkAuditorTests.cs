@@ -202,7 +202,7 @@ public class LinkAuditorTests
             await Task.Yield();
             foreach (var route in routes)
             {
-                yield return new DiscoveredItem(route, new MarkdownFileSource(route.SourceFile ?? new FilePath("stub.md")));
+                yield return new DiscoveredItem(route, new FileSource(route.SourceFile ?? new FilePath("stub.md"), "markdown"));
             }
         }
 

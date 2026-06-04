@@ -42,7 +42,7 @@ public sealed class BlogPostResolver
         var posts = new List<BlogPostSummary>();
         await foreach (var item in _services.DiscoverAllAsync())
         {
-            if (item.Source is not MarkdownFileSource source)
+            if (item.Source.Value is not FileSource { Format: "markdown" } source)
             {
                 continue;
             }
@@ -83,7 +83,7 @@ public sealed class BlogPostResolver
 
         await foreach (var item in _services.DiscoverAllAsync())
         {
-            if (item.Source is not MarkdownFileSource source)
+            if (item.Source.Value is not FileSource { Format: "markdown" } source)
             {
                 continue;
             }

@@ -52,7 +52,7 @@ public class TaxonomyContentServiceTests
             {
                 yield return new DiscoveredItem(
                     ContentRouteFactory.FromUrl(new UrlPath(url)),
-                    new MarkdownFileSource(new FilePath($"/content{url}index.md")))
+                    new FileSource(new FilePath($"/content{url}index.md"), "markdown"))
                 {
                     Metadata = fm,
                 };

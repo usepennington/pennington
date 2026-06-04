@@ -156,7 +156,7 @@ public class XrefAuditorTests
             await Task.Yield();
             foreach (var (route, sourcePath) in items)
             {
-                yield return new DiscoveredItem(route, new MarkdownFileSource(new FilePath(sourcePath)));
+                yield return new DiscoveredItem(route, new FileSource(new FilePath(sourcePath), "markdown"));
             }
         }
 

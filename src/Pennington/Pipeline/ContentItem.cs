@@ -28,6 +28,9 @@ public record ParsedItem(ContentRoute Route, IFrontMatter Metadata, string RawMa
     /// so authored front matter stays the single source of truth.
     /// </summary>
     public IReadOnlyDictionary<string, object?> Derived { get; init; } = ImmutableDictionary<string, object?>.Empty;
+
+    /// <summary>Format key selecting the renderer for this item; defaults to <c>"markdown"</c>.</summary>
+    public string Format { get; init; } = "markdown";
 }
 
 /// <summary>A content item whose body has been rendered to HTML.</summary>

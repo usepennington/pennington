@@ -52,7 +52,7 @@ public sealed class BlogContentResolver : IFileWatchAware
         var posts = new List<BlogPostPage>();
         await foreach (var item in _services.DiscoverAllAsync())
         {
-            if (item.Source is not MarkdownFileSource source)
+            if (item.Source.Value is not FileSource { Format: "markdown" } source)
             {
                 continue;
             }
@@ -164,7 +164,7 @@ public sealed class BlogContentResolver : IFileWatchAware
                 continue;
             }
 
-            if (item.Source is not MarkdownFileSource source)
+            if (item.Source.Value is not FileSource { Format: "markdown" } source)
             {
                 continue;
             }
