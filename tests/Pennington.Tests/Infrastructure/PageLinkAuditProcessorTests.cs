@@ -117,7 +117,7 @@ public class PageLinkAuditProcessorTests
             await Task.Yield();
             foreach (var route in routes)
             {
-                yield return new DiscoveredItem(route, new MarkdownFileSource(new FilePath("stub.md")));
+                yield return new DiscoveredItem(route, new FileSource(new FilePath("stub.md"), "markdown"));
             }
         }
 

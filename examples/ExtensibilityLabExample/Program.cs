@@ -67,7 +67,7 @@ builder.Services.AddSingleton<IContentService>(sp =>
 
 // 2.3.15 Make the custom records discoverable — each ReleaseEntry is attached as
 // DiscoveredItem.Metadata, so the engine treats them like markdown records. A browse-by-channel
-// taxonomy walks them directly (no MarkdownFileSource required); the `channel` search facet and
+// taxonomy walks them directly (no FileSource required); the `channel` search facet and
 // per-page JSON-LD come from the same record. Taxonomy term pages render through Razor components,
 // so the bare host opts into AddRazorComponents + AddHttpContextAccessor the way the how-to shows.
 builder.Services.AddRazorComponents();

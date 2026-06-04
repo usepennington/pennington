@@ -290,12 +290,12 @@ public sealed class MarkdownLinkResolver : IFileWatchAware
 
         await foreach (var item in services.DiscoverAllAsync())
         {
-            if (item.Source is not MarkdownFileSource markdown)
+            if (item.Source.Value is not FileSource file)
             {
                 continue;
             }
 
-            var sourcePath = Path.GetFullPath(markdown.Path.Value);
+            var sourcePath = Path.GetFullPath(file.Path.Value);
             var canonical = item.Route.CanonicalPath.Value;
 
             // Store three keys so lookups can match regardless of whether the

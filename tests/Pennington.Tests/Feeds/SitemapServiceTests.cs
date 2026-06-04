@@ -61,7 +61,7 @@ public class SitemapServiceTests
     {
         var date = new DateTime(2026, 3, 15);
         var route = MakeRoute("/blog/my-post");
-        var source = new ContentSource(new MarkdownFileSource("content/post.md"));
+        var source = new ContentSource(new FileSource("content/post.md", "markdown"));
         var metadata = new TestFrontMatter { Title = "My Post", Date = date };
         var discovered = new DiscoveredItem(route, source) { Metadata = metadata };
 
@@ -76,7 +76,7 @@ public class SitemapServiceTests
     public async Task GetSitemapXml_OmitsLastModified_WhenContentHasNoDate()
     {
         var route = MakeRoute("/about");
-        var source = new ContentSource(new MarkdownFileSource("content/about.md"));
+        var source = new ContentSource(new FileSource("content/about.md", "markdown"));
         var metadata = new TestFrontMatter { Title = "About" };
         var discovered = new DiscoveredItem(route, source) { Metadata = metadata };
 
@@ -92,7 +92,7 @@ public class SitemapServiceTests
     public async Task GetSitemapXml_ExcludesDrafts()
     {
         var route = MakeRoute("/draft-post");
-        var source = new ContentSource(new MarkdownFileSource("content/draft.md"));
+        var source = new ContentSource(new FileSource("content/draft.md", "markdown"));
         var metadata = new TestFrontMatter { Title = "Draft", IsDraft = true };
         var discovered = new DiscoveredItem(route, source) { Metadata = metadata };
 
@@ -170,9 +170,9 @@ public class SitemapServiceTests
         // metadata, but it still renders and is served — so it belongs in the
         // sitemap, just without a <lastmod>. (Drafts and redirects are filtered
         // upstream by the content service, never reaching here as a bare
-        // MarkdownFileSource.)
+        // markdown FileSource.)
         var route = MakeRoute("/corrupt");
-        var source = new ContentSource(new MarkdownFileSource("content/corrupt.md"));
+        var source = new ContentSource(new FileSource("content/corrupt.md", "markdown"));
         var discovered = new DiscoveredItem(route, source);
 
         var service = CreateService(new StubContentService(discovered));
@@ -190,7 +190,7 @@ public class SitemapServiceTests
         // be advertised to crawlers or other sitemap consumers.
         var visibleRoute = MakeRoute("/visible");
         var visibleItem = new DiscoveredItem(visibleRoute,
-            new ContentSource(new MarkdownFileSource("content/visible.md")));
+            new ContentSource(new FileSource("content/visible.md", "markdown")));
 
         var llmsRoute = MakeRoute("/agent-context");
         var llmsItem = new DiscoveredItem(llmsRoute,

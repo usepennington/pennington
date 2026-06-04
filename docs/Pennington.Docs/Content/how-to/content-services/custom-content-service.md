@@ -59,7 +59,7 @@ yield return new DiscoveredItem(route, new EndpointSource()) { Metadata = entry 
 
 That single `Metadata` assignment is the seam: the engine reads it through `GetRecordsAsync` (the default bridges from `DiscoverAsync`, so attaching metadata is all it takes — no override needed) and every discovery pillar lights up:
 
-- **Taxonomy** — `AddTaxonomy<ReleaseEntry, string>(opts => opts.SelectKey = fm => fm.Channel)` gives you `/channel/` browse pages with no `MarkdownFileSource` required (see <xref:how-to.content-services.taxonomy>).
+- **Taxonomy** — `AddTaxonomy<ReleaseEntry, string>(opts => opts.SelectKey = fm => fm.Channel)` gives you `/channel/` browse pages with no `FileSource` required (see <xref:how-to.content-services.taxonomy>).
 - **Search facets** — the `IHasSearchFacets` `channel` axis emits alongside the built-in `section`/`tag`/`area` dimensions.
 - **JSON-LD** — the `IHasStructuredData` entity is injected into each release page's `<head>` automatically when `CanonicalBaseUrl` is set; no `<script>` to hand-write.
 

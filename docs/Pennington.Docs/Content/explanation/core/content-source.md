@@ -1,21 +1,21 @@
 ---
 title: "Why ContentSource is a union"
-description: "Why the case-discriminated union — MarkdownFileSource, RazorPageSource, RedirectSource, EndpointSource, LlmsOnlySource — beats the polymorphic alternatives, and why every consumer goes through `.Value`."
+description: "Why the case-discriminated union — FileSource, RazorPageSource, RedirectSource, EndpointSource, LlmsOnlySource — beats the polymorphic alternatives, and why every consumer goes through `.Value`."
 uid: explanation.core.content-source
 order: 2
 sectionLabel: "Core Architecture"
 tags: [pipeline, unions, content-source]
 ---
 
-`ContentSource` is the second of Pennington's two pipeline unions. Where `ContentItem` discriminates a page's stage in the pipeline, `ContentSource` discriminates *where the page came from*. The five cases — `MarkdownFileSource`, `RazorPageSource`, `RedirectSource`, `EndpointSource`, `LlmsOnlySource` — capture every origin Pennington ships. <xref:explanation.core.content-pipeline> covers why the pipeline as a whole is shaped as a union; this page is about why this *particular* shape, and why the polyfill choice matters more than it looks.
+`ContentSource` is the second of Pennington's two pipeline unions. Where `ContentItem` discriminates a page's stage in the pipeline, `ContentSource` discriminates *where the page came from*. The five cases — `FileSource`, `RazorPageSource`, `RedirectSource`, `EndpointSource`, `LlmsOnlySource` — capture every origin Pennington ships. `FileSource` carries a path *and* a format key (`"markdown"`, `"cook"`, …), so one case covers every file-backed format — the key selects the parser and renderer, which is how a custom format like Cooklang flows through the same pipeline as markdown (see <xref:how-to.content-services.custom-content-format>). <xref:explanation.core.content-pipeline> covers why the pipeline as a whole is shaped as a union; this page is about why this *particular* shape, and why the polyfill choice matters more than it looks.
 
 ## Why a union and not polymorphism
 
 A first instinct is to make `ContentSource` an interface with six implementations and dispatch through virtual methods. That solves the dispatch problem but introduces three drag points the union avoids:
 
 - **Exhaustiveness disappears.** With an interface, adding a seventh implementation later compiles silently — every existing switch keeps its `default` clause and quietly stops covering the new case. With the union, the compiler complains at every switch that no longer covers every case. New cases land with a known fix-up surface.
-- **The "no canonical body" cases get awkward.** `RedirectSource` carries a `TargetUrl` and nothing else; `EndpointSource` carries no payload at all; `LlmsOnlySource` carries a path that explicitly never produces HTML. Modeling them as interface implementations forces them to satisfy the same shape as `MarkdownFileSource`, which actually has a path to read and an HTML body to render. The union lets each case carry exactly its own data.
-- **Pattern matching becomes the natural read.** Consumers want to *branch on the case*, not call a virtual method that wraps the branch. With a union, `source.Value switch { MarkdownFileSource md => …, RedirectSource r => … }` is exactly the read; with polymorphism, you'd either bake the consumer logic into each implementation (poor separation) or end up with a visitor.
+- **The "no canonical body" cases get awkward.** `RedirectSource` carries a `TargetUrl` and nothing else; `EndpointSource` carries no payload at all; `LlmsOnlySource` carries a path that explicitly never produces HTML. Modeling them as interface implementations forces them to satisfy the same shape as `FileSource`, which carries a path to read and a format key naming its parser and renderer. The union lets each case carry exactly its own data.
+- **Pattern matching becomes the natural read.** Consumers want to *branch on the case*, not call a virtual method that wraps the branch. With a union, `source.Value switch { FileSource f => …, RedirectSource r => … }` is exactly the read; with polymorphism, you'd either bake the consumer logic into each implementation (poor separation) or end up with a visitor.
 
 ## Why `.Value` and not the case type directly
 

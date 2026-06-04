@@ -82,7 +82,7 @@ internal sealed class DiagRoutesCommand : IDiagCommand
 
     private static string KindOf(ContentSource source) => source.Value switch
     {
-        MarkdownFileSource => "markdown",
+        FileSource fs => fs.Format,
         RazorPageSource => "razor",
         RedirectSource => "redirect",
         EndpointSource => "endpoint",

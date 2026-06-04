@@ -37,7 +37,7 @@ public class MarkdownContentParserTests
             "---\ntitle: Hello World\n---\n# Hello\n\nSome content."));
 
         var parser = new MarkdownContentParser<DocFrontMatter>(new FrontMatterParser(), fs);
-        var source = new ContentSource(new MarkdownFileSource(new FilePath("/content/hello.md")));
+        var source = new ContentSource(new FileSource(new FilePath("/content/hello.md"), "markdown"));
         var discovered = new DiscoveredItem(MakeRoute("/hello"), source);
 
         var result = await parser.ParseAsync(discovered);
@@ -53,7 +53,7 @@ public class MarkdownContentParserTests
     {
         var fs = new MockFileSystem();
         var parser = new MarkdownContentParser<DocFrontMatter>(new FrontMatterParser(), fs);
-        var source = new ContentSource(new MarkdownFileSource(new FilePath("/nonexistent/path/file.md")));
+        var source = new ContentSource(new FileSource(new FilePath("/nonexistent/path/file.md"), "markdown"));
         var discovered = new DiscoveredItem(MakeRoute("/missing"), source);
 
         var result = await parser.ParseAsync(discovered);
@@ -84,7 +84,7 @@ public class MarkdownContentParserTests
             "# Just Markdown\n\nNo front matter here."));
 
         var parser = new MarkdownContentParser<DocFrontMatter>(new FrontMatterParser(), fs);
-        var source = new ContentSource(new MarkdownFileSource(new FilePath("/content/plain.md")));
+        var source = new ContentSource(new FileSource(new FilePath("/content/plain.md"), "markdown"));
         var discovered = new DiscoveredItem(MakeRoute("/plain"), source);
 
         var result = await parser.ParseAsync(discovered);
@@ -102,7 +102,7 @@ public class MarkdownContentParserTests
             "---\r\ntitle: Windows File\r\n---\r\n# Hello\r\n\r\nWindows line endings."));
 
         var parser = new MarkdownContentParser<DocFrontMatter>(new FrontMatterParser(), fs);
-        var source = new ContentSource(new MarkdownFileSource(new FilePath("/content/windows.md")));
+        var source = new ContentSource(new FileSource(new FilePath("/content/windows.md"), "markdown"));
         var discovered = new DiscoveredItem(MakeRoute("/windows"), source);
 
         var result = await parser.ParseAsync(discovered);

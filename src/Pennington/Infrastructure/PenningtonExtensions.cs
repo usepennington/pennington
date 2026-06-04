@@ -194,7 +194,14 @@ public static class PenningtonExtensions
         // (for the transient renderer below) and the factory type.
         services.AddFileWatched<MarkdownLinkResolver>();
 
-        services.AddTransient<IContentRenderer>(sp =>
+        // Content-format dispatch registry: maps a format key ("markdown", "cook", …) to the parser
+        // and renderer factories the dispatchers resolve at request time.
+        var formatRegistry = new ContentFormatRegistry();
+        services.AddSingleton(formatRegistry);
+
+        // Markdown renderer registered as its concrete type; the registry maps "markdown" to it
+        // (the dispatching IContentRenderer is registered after the format loops below).
+        services.AddTransient(sp =>
             new MarkdownContentRenderer(
                 sp.GetRequiredService<MarkdownPipeline>(),
                 sp.GetService<MarkdownLinkResolver>(),
@@ -253,14 +260,17 @@ public static class PenningtonExtensions
             services.AddSingleton(typeof(IContentService), Resolve);
             services.AddSingleton(typeof(IFileWatchAware), Resolve);
 
-            // Register parser for the front matter type
+            // Register markdown in the dispatch registry under the "markdown" format key. The parser
+            // closes over this source's front-matter type; the last markdown source wins the single
+            // "markdown" entry — the same last-registration-wins outcome the previous per-source
+            // IContentParser registration produced, since consumers resolve one parser.
             var parserType = typeof(MarkdownContentParser<>).MakeGenericType(frontMatterType);
-            services.AddTransient(typeof(IContentParser), sp =>
-            {
-                var fmParser = sp.GetRequiredService<FrontMatterParser>();
-                var fileSystem = sp.GetRequiredService<IFileSystem>();
-                return Activator.CreateInstance(parserType, fmParser, fileSystem)!;
-            });
+            formatRegistry.Register("markdown",
+                parser: sp => (IContentParser)Activator.CreateInstance(
+                    parserType,
+                    sp.GetRequiredService<FrontMatterParser>(),
+                    sp.GetRequiredService<IFileSystem>())!,
+                renderer: sp => sp.GetRequiredService<MarkdownContentRenderer>());
         }
 
         // Register Razor page content service for @page component discovery.
@@ -280,6 +290,85 @@ public static class PenningtonExtensions
                     sp.GetRequiredService<FrontMatterParser>(),
                     sp.GetRequiredService<ILogger<RazorPageContentService>>(),
                     sp.GetRequiredService<TimeProvider>()));
+        }
+
+        // Custom content formats (AddContentFormat): a FileContentService<T> per source for
+        // discovery, plus the consumer's parser/renderer registered in the dispatch registry.
+        foreach (var format in options.ContentFormats)
+        {
+            var capturedFormat = format;
+            var formatFrontMatterType = capturedFormat.FrontMatterType ?? typeof(DocFrontMatter);
+            var serviceType = typeof(FileContentService<>).MakeGenericType(formatFrontMatterType);
+
+            // One instance per source, shared between the IContentService and IFileWatchAware
+            // registrations so FileWatchDispatcher refreshes the very service that serves content.
+            object? instance = null;
+            var gate = new object();
+            object ResolveFormatService(IServiceProvider sp)
+            {
+                if (instance is not null)
+                {
+                    return instance;
+                }
+
+                lock (gate)
+                {
+                    if (instance is not null)
+                    {
+                        return instance;
+                    }
+
+                    var env = sp.GetService<IWebHostEnvironment>();
+                    var resolvedContentPath = Path.IsPathRooted(capturedFormat.ContentPath)
+                        ? capturedFormat.ContentPath
+                        : env != null
+                            ? Path.Combine(env.ContentRootPath, capturedFormat.ContentPath)
+                            : capturedFormat.ContentPath;
+
+                    var fileOptions = new FileContentServiceOptions
+                    {
+                        ContentPath = new FilePath(resolvedContentPath),
+                        Format = capturedFormat.Format,
+                        BasePageUrl = new UrlPath(capturedFormat.BasePageUrl),
+                        FilePattern = capturedFormat.FilePattern,
+                        SectionLabel = capturedFormat.SectionLabel,
+                        ExcludePaths = capturedFormat.ExcludePaths,
+                    };
+
+                    instance = ActivatorUtilities.CreateInstance(sp, serviceType, fileOptions);
+                }
+                return instance;
+            }
+
+            services.AddSingleton(typeof(IContentService), ResolveFormatService);
+            services.AddSingleton(typeof(IFileWatchAware), ResolveFormatService);
+
+            // The consumer's parser/renderer are resolved from DI by the registry factories below.
+            if (capturedFormat.ParserType is { } cfParserType)
+            {
+                services.TryAddTransient(cfParserType);
+            }
+            if (capturedFormat.RendererType is { } cfRendererType)
+            {
+                services.TryAddTransient(cfRendererType);
+            }
+
+            formatRegistry.Register(capturedFormat.Format,
+                parser: sp => (IContentParser)sp.GetRequiredService(capturedFormat.ParserType!),
+                renderer: sp => (IContentRenderer)sp.GetRequiredService(capturedFormat.RendererType!));
+        }
+
+        // Dispatchers are the single IContentParser/IContentRenderer the pipeline resolves; they
+        // route each item to its format's registered parser/renderer. The renderer is always
+        // registered (a bare host never produces a ParsedItem to render); the parser is gated so a
+        // truly bare host leaves IContentParser unregistered, and PageResolver/ContentPipeline run
+        // parser-less via their optional-parser constructors.
+        services.AddTransient<IContentRenderer>(sp =>
+            new DispatchingContentRenderer(sp.GetRequiredService<ContentFormatRegistry>(), sp));
+        if (options.MarkdownSources.Count > 0 || options.ContentFormats.Count > 0)
+        {
+            services.AddTransient<IContentParser>(sp =>
+                new DispatchingContentParser(sp.GetRequiredService<ContentFormatRegistry>(), sp));
         }
 
         // Pipeline
@@ -603,6 +692,18 @@ public static class PenningtonExtensions
                     contentPath);
             }
         }
+        foreach (var format in options.ContentFormats)
+        {
+            var contentPath = Path.IsPathRooted(format.ContentPath)
+                ? format.ContentPath
+                : Path.Combine(hostContentRoot, format.ContentPath);
+            if (!Directory.Exists(contentPath))
+            {
+                logger?.LogWarning(
+                    "Pennington: content path '{ContentPath}' for format '{Format}' does not exist. No content will be discovered from this source.",
+                    contentPath, format.Format);
+            }
+        }
 
         // Serve static files from content root
         var contentRoot = Path.IsPathRooted(options.ContentRootPath.Value)
@@ -630,6 +731,31 @@ public static class PenningtonExtensions
             }
 
             var requestPath = new UrlPath(source.BasePageUrl).EnsureLeadingSlash().RemoveTrailingSlash().Value;
+            if (requestPath == "/")
+            {
+                requestPath = "";
+            }
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(contentPath),
+                RequestPath = requestPath,
+                ServeUnknownFileTypes = true,
+            });
+        }
+
+        // Serve static files (sibling assets) from each custom content-format source directory.
+        foreach (var format in options.ContentFormats)
+        {
+            var contentPath = Path.IsPathRooted(format.ContentPath)
+                ? format.ContentPath
+                : Path.Combine(hostContentRoot, format.ContentPath);
+            if (!Directory.Exists(contentPath))
+            {
+                continue;
+            }
+
+            var requestPath = new UrlPath(format.BasePageUrl).EnsureLeadingSlash().RemoveTrailingSlash().Value;
             if (requestPath == "/")
             {
                 requestPath = "";

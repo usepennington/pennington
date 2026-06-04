@@ -15,6 +15,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Pennington.Tests/Pennington.Tests.csproj" />
     <Project Path="tests/Pennington.IntegrationTests/Pennington.IntegrationTests.csproj" />
+    <Project Path="tests/Pennington.BeyondCookFormat.Tests/Pennington.BeyondCookFormat.Tests.csproj" />
     <Project Path="tests/Pennington.TreeSitter.Tests/Pennington.TreeSitter.Tests.csproj" />
   </Folder>
   <Folder Name="/docs/">
@@ -39,6 +40,7 @@
     <Project Path="examples/BeyondCustomRazorComponentExample/BeyondCustomRazorComponentExample.csproj" />
     <Project Path="examples/BeyondClientWidgetExample/BeyondClientWidgetExample.csproj" />
     <Project Path="examples/BeyondRemoteContentExample/BeyondRemoteContentExample.csproj" />
+    <Project Path="examples/BeyondCookFormatExample/BeyondCookFormatExample.csproj" />
     <Project Path="examples/BareHostRazorPageExample/BareHostRazorPageExample.csproj" />
     <Project Path="examples/DocSiteKitchenSinkExample/DocSiteKitchenSinkExample.csproj" />
     <Project Path="examples/MultipleSourcesExample/MultipleSourcesExample.csproj" />

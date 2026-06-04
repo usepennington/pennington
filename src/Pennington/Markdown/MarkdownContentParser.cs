@@ -24,13 +24,14 @@ public sealed class MarkdownContentParser<TFrontMatter> : IContentParser
     /// <inheritdoc/>
     public async Task<ContentItem> ParseAsync(DiscoveredItem item)
     {
-        // MarkdownFileSource and LlmsOnlySource both wrap a markdown file on disk;
-        // they parse identically — the source-type discrimination only matters
-        // downstream (HTML emission vs. llms-only sidecar).
+        // FileSource and LlmsOnlySource both wrap a file on disk; they parse
+        // identically here — the source-type discrimination only matters downstream
+        // (HTML emission vs. llms-only sidecar). The dispatcher only routes
+        // markdown-format FileSources to this parser.
         FilePath path;
         switch (item.Source)
         {
-            case MarkdownFileSource md: path = md.Path; break;
+            case FileSource fs: path = fs.Path; break;
             case LlmsOnlySource llms: path = llms.Path; break;
             default:
                 return new FailedItem(item.Route,

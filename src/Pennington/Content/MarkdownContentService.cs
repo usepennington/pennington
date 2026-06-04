@@ -419,14 +419,14 @@ public sealed class MarkdownContentService<TFrontMatter>
                 continue;
             }
 
-            yield return new DiscoveredItem(route, new MarkdownFileSource(route.SourceFile!.Value)) { Metadata = frontMatter };
+            yield return new DiscoveredItem(route, new FileSource(route.SourceFile!.Value, "markdown")) { Metadata = frontMatter };
         }
     }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<ContentRecord> GetRecordsAsync()
     {
-        // Project the same pages DiscoverAsync surfaces as MarkdownFileSource — drafts/scheduled
+        // Project the same pages DiscoverAsync surfaces as a markdown FileSource — drafts/scheduled
         // pages, redirects, and llms-only files are excluded — into the record channel that
         // taxonomy, search faceting, and structured data consume. Markdown is just one record
         // producer; custom services project the same shape.

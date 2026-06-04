@@ -76,6 +76,27 @@ public sealed class PenningtonOptions
     /// <summary>Markdown content sources registered via <see cref="AddMarkdownContent{TFrontMatter}"/>.</summary>
     public IReadOnlyList<MarkdownContentOptions> MarkdownSources => _markdownSources;
 
+    private readonly List<ContentFormatOptions> _contentFormats = [];
+
+    /// <summary>
+    /// Register a content source for a custom file format. The format's <see cref="IContentParser"/> and
+    /// <see cref="IContentRenderer"/> are supplied via <see cref="ContentFormatOptions.UseParser{T}"/> /
+    /// <see cref="ContentFormatOptions.UseRenderer{T}"/> and the pipeline routes to them by
+    /// <paramref name="format"/>. The format's files are discovered, parsed, and rendered through the same
+    /// pipeline as markdown.
+    /// </summary>
+    public ContentFormatOptions AddContentFormat<TFrontMatter>(string format, Action<ContentFormatOptions> configure)
+        where TFrontMatter : IFrontMatter
+    {
+        var options = new ContentFormatOptions { Format = format, FrontMatterType = typeof(TFrontMatter) };
+        configure(options);
+        _contentFormats.Add(options);
+        return options;
+    }
+
+    /// <summary>Content formats registered via <see cref="AddContentFormat{TFrontMatter}"/>.</summary>
+    public IReadOnlyList<ContentFormatOptions> ContentFormats => _contentFormats;
+
     private LlmsTxtOptions? _llmsTxtOptions;
 
     /// <summary>Enable llms.txt generation for this site.</summary>
@@ -139,6 +160,44 @@ public sealed class MarkdownContentOptions
     public ImmutableArray<string> ExcludePaths { get; set; } = ImmutableArray<string>.Empty;
 
     internal Type? FrontMatterType { get; set; }
+}
+
+/// <summary>Options for a custom content-format source registered via <see cref="PenningtonOptions.AddContentFormat{TFrontMatter}"/>.</summary>
+public sealed class ContentFormatOptions
+{
+    /// <summary>Filesystem path to the directory containing the format's source files.</summary>
+    public string ContentPath { get; set; } = "Content";
+
+    /// <summary>URL prefix prepended to routes generated from this source.</summary>
+    public string BasePageUrl { get; set; } = "/";
+
+    /// <summary>Glob pattern used to enumerate source files (for example <c>*.cook</c>).</summary>
+    public string FilePattern { get; set; } = "*.*";
+
+    /// <summary>Default section label applied when front matter does not specify one.</summary>
+    public string? SectionLabel { get; set; }
+
+    /// <summary>Relative subpaths (from <see cref="ContentPath"/>) to skip during discovery.</summary>
+    public ImmutableArray<string> ExcludePaths { get; set; } = ImmutableArray<string>.Empty;
+
+    internal string Format { get; set; } = "";
+    internal Type? FrontMatterType { get; set; }
+    internal Type? ParserType { get; set; }
+    internal Type? RendererType { get; set; }
+
+    /// <summary>Sets the <see cref="IContentParser"/> type that parses this format's files (resolved from DI).</summary>
+    public ContentFormatOptions UseParser<TParser>() where TParser : class, IContentParser
+    {
+        ParserType = typeof(TParser);
+        return this;
+    }
+
+    /// <summary>Sets the <see cref="IContentRenderer"/> type that renders this format's parsed items (resolved from DI).</summary>
+    public ContentFormatOptions UseRenderer<TRenderer>() where TRenderer : class, IContentRenderer
+    {
+        RendererType = typeof(TRenderer);
+        return this;
+    }
 }
 
 /// <summary>Options for code highlighting configuration.</summary>
