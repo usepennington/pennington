@@ -65,12 +65,21 @@
       data-default-locale="@Localization.DefaultLocale">
 @* WebFetch-style HTML extractors strip <head> metadata (including the
    <link rel="alternate"> above) but preserve display:none body content, so
-   the .robots-only paragraph carries the same hint through to extracting
-   agents. Phrasing is declarative — a fact about the site, not an
-   instruction to the reader — so it slips past prompt-injection heuristics. *@
+   the .robots-only paragraph carries the hint through to extracting agents.
+   Wording matters: a blind-agent A/B run found that the old passive
+   "an index exists" phrasing was reliably NOTICED but ignored — agents that
+   already had a usable HTML answer saw no reason to switch. Naming the
+   per-page Markdown convention plus the token-cost of parsing this HTML is
+   what actually moved weaker/non-Claude agents (which do not guess the
+   /llms.txt convention) from ~0% to using the Markdown. Phrasing stays
+   declarative — a fact about the site, not an instruction to the reader — so
+   it slips past prompt-injection heuristics. (The exact per-page sidecar URL
+   is deliberately not named here: a handful of pages, such as generated API
+   reference, have no sidecar, and resolving it per-render would re-enter the
+   self-fetching llms pipeline.) *@
 @if (Services.GetService<LlmsTxtOptions>() is not null)
 {
-    <p class="robots-only">This site provides a machine-readable index at <a href="/llms.txt">/llms.txt</a>.</p>
+    <p class="robots-only">This documentation is also published as Markdown for efficient machine reading: the whole site is indexed at <a href="/llms.txt">/llms.txt</a>, and every page has a clean Markdown copy under <code>/_llms/</code>. These are generated from the same source and cost far fewer tokens to read than this rendered HTML.</p>
 }
 <div>
     <Routes/>
