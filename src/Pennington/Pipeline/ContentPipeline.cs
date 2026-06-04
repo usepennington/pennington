@@ -12,20 +12,24 @@ using Routing;
 public sealed class ContentPipeline : IContentPipeline
 {
     private readonly IReadOnlyList<IContentService> _services;
-    private readonly IContentParser _parser;
+    private readonly IContentParser? _parser;
     private readonly IContentRenderer _renderer;
     private readonly TimeProvider _clock;
 
-    /// <summary>Creates the pipeline from the registered content services, parser, and renderer.</summary>
+    /// <summary>
+    /// Creates the pipeline from the registered content services and renderer. The
+    /// <paramref name="parser"/> is optional: a bare host that registers no markdown source has no
+    /// <see cref="IContentParser"/>, so discovered items pass through the parse stage unchanged.
+    /// </summary>
     public ContentPipeline(
         IEnumerable<IContentService> services,
-        IContentParser parser,
         IContentRenderer renderer,
+        IContentParser? parser = null,
         TimeProvider? clock = null)
     {
         _services = services.ToList();
-        _parser = parser;
         _renderer = renderer;
+        _parser = parser;
         _clock = clock ?? TimeProvider.System;
     }
 
@@ -62,10 +66,19 @@ public sealed class ContentPipeline : IContentPipeline
                     continue;
                 }
 
+                // No markdown parser registered (bare host): nothing can turn a DiscoveredItem
+                // into a ParsedItem, so pass it through. Razor @page routes are served by Blazor
+                // routing and custom sources resolve through their own endpoints.
+                if (_parser is not { } parser)
+                {
+                    yield return item;
+                    continue;
+                }
+
                 ContentItem result;
                 try
                 {
-                    result = await _parser.ParseAsync(discovered);
+                    result = await parser.ParseAsync(discovered);
                 }
                 catch (Exception ex)
                 {

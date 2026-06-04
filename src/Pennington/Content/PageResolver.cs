@@ -9,20 +9,35 @@ using Routing;
 public sealed class PageResolver : IPageResolver
 {
     private readonly IReadOnlyList<IContentService> _services;
-    private readonly IContentParser _parser;
+    private readonly IContentParser? _parser;
     private readonly IContentRenderer _renderer;
 
-    /// <summary>Creates the resolver from the registered content services, parser, and renderer.</summary>
-    public PageResolver(IEnumerable<IContentService> services, IContentParser parser, IContentRenderer renderer)
+    /// <summary>
+    /// Creates the resolver from the registered content services and renderer. The
+    /// <paramref name="parser"/> is optional: a bare host that registers no markdown source has no
+    /// <see cref="IContentParser"/>, so <see cref="ResolveAsync"/> resolves nothing.
+    /// </summary>
+    public PageResolver(
+        IEnumerable<IContentService> services,
+        IContentRenderer renderer,
+        IContentParser? parser = null)
     {
         _services = services.ToList();
-        _parser = parser;
         _renderer = renderer;
+        _parser = parser;
     }
 
     /// <inheritdoc/>
     public async Task<RenderedItem?> ResolveAsync(UrlPath requested)
     {
+        // No markdown parser registered (bare host): markdown routes can't be resolved here.
+        // Razor @page routes are matched by Blazor endpoint routing before this fallback, and
+        // custom IContentService sources serve their own HTML, so there's nothing to render.
+        if (_parser is null)
+        {
+            return null;
+        }
+
         await foreach (var discovered in _services.DiscoverAllAsync())
         {
             if (!discovered.Route.CanonicalPath.Matches(requested))

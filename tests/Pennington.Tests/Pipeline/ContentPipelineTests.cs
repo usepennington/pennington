@@ -132,7 +132,7 @@ public class ContentPipelineTests
         var item2 = new DiscoveredItem(MakeRoute("/page-2"), MakeSource());
         var service = new StubContentService(item1, item2);
 
-        var pipeline = new ContentPipeline([service], new StubParser(), new StubRenderer());
+        var pipeline = new ContentPipeline([service], new StubRenderer(), new StubParser());
 
         var report = await pipeline.RunAsync();
 
@@ -148,7 +148,7 @@ public class ContentPipelineTests
         var item = new DiscoveredItem(MakeRoute("/broken"), MakeSource());
         var service = new StubContentService(item);
 
-        var pipeline = new ContentPipeline([service], new FailingParser(), new StubRenderer());
+        var pipeline = new ContentPipeline([service], new StubRenderer(), new FailingParser());
 
         var report = await pipeline.RunAsync();
 
@@ -169,7 +169,7 @@ public class ContentPipelineTests
         var item = new DiscoveredItem(MakeRoute("/render-fail"), MakeSource());
         var service = new StubContentService(item);
 
-        var pipeline = new ContentPipeline([service], new StubParser(), new FailingRenderer());
+        var pipeline = new ContentPipeline([service], new FailingRenderer(), new StubParser());
 
         var report = await pipeline.RunAsync();
 
@@ -187,7 +187,7 @@ public class ContentPipelineTests
         var item = new DiscoveredItem(MakeRoute("/crash"), MakeSource());
         var service = new StubContentService(item);
 
-        var pipeline = new ContentPipeline([service], new ThrowingParser(), new StubRenderer());
+        var pipeline = new ContentPipeline([service], new StubRenderer(), new ThrowingParser());
 
         var report = await pipeline.RunAsync();
 
@@ -206,7 +206,7 @@ public class ContentPipelineTests
         var item = new DiscoveredItem(MakeRoute("/draft-page"), MakeSource());
         var service = new StubContentService(item);
 
-        var pipeline = new ContentPipeline([service], new DraftParser(), new StubRenderer());
+        var pipeline = new ContentPipeline([service], new StubRenderer(), new DraftParser());
 
         var report = await pipeline.RunAsync();
 
@@ -227,7 +227,7 @@ public class ContentPipelineTests
         var parser = new SelectiveParser();
         var service = new StubContentService(successItem, failItem, draftItem);
 
-        var pipeline = new ContentPipeline([service], parser, new StubRenderer());
+        var pipeline = new ContentPipeline([service], new StubRenderer(), parser);
 
         var report = await pipeline.RunAsync();
 
@@ -245,7 +245,7 @@ public class ContentPipelineTests
         var service1 = new StubContentService(item1);
         var service2 = new StubContentService(item2);
 
-        var pipeline = new ContentPipeline([service1, service2], new StubParser(), new StubRenderer());
+        var pipeline = new ContentPipeline([service1, service2], new StubRenderer(), new StubParser());
 
         var discovered = await CollectAsync(pipeline.DiscoverAsync());
 
@@ -263,7 +263,7 @@ public class ContentPipelineTests
         var parser = new StubParser();
         var renderer = new StubRenderer();
 
-        var pipeline = new ContentPipeline([service], parser, renderer);
+        var pipeline = new ContentPipeline([service], renderer, parser);
 
         var report = await pipeline.RunAsync();
 
@@ -276,7 +276,7 @@ public class ContentPipelineTests
     [Fact]
     public async Task EmptyPipeline_NoServices_EmptyReport()
     {
-        var pipeline = new ContentPipeline([], new StubParser(), new StubRenderer());
+        var pipeline = new ContentPipeline([], new StubRenderer(), new StubParser());
 
         var report = await pipeline.RunAsync();
 
@@ -299,7 +299,7 @@ public class ContentPipelineTests
             await Task.CompletedTask;
         }
 
-        var pipeline = new ContentPipeline([], new StubParser(), new StubRenderer());
+        var pipeline = new ContentPipeline([], new StubRenderer(), new StubParser());
         var results = await CollectAsync(pipeline.ParseAsync(Source()));
 
         results.Count.ShouldBe(1);
@@ -319,7 +319,7 @@ public class ContentPipelineTests
             await Task.CompletedTask;
         }
 
-        var pipeline = new ContentPipeline([], new StubParser(), new StubRenderer());
+        var pipeline = new ContentPipeline([], new StubRenderer(), new StubParser());
         var results = await CollectAsync(pipeline.RenderAsync(Source()));
 
         results.Count.ShouldBe(1);
@@ -333,7 +333,7 @@ public class ContentPipelineTests
         var item = new DiscoveredItem(MakeRoute("/render-crash"), MakeSource());
         var service = new StubContentService(item);
 
-        var pipeline = new ContentPipeline([service], new StubParser(), new ThrowingRenderer());
+        var pipeline = new ContentPipeline([service], new ThrowingRenderer(), new StubParser());
 
         var report = await pipeline.RunAsync();
 
@@ -352,13 +352,34 @@ public class ContentPipelineTests
         var item3 = new DiscoveredItem(MakeRoute("/success"), MakeSource());
         var service = new StubContentService(item1, item2, item3);
 
-        var pipeline = new ContentPipeline([service], new SelectiveParser(), new StubRenderer());
+        var pipeline = new ContentPipeline([service], new StubRenderer(), new SelectiveParser());
 
         var report = await pipeline.RunAsync();
 
         report.FailedPages.Count.ShouldBe(2);
         report.GeneratedPages.Count.ShouldBe(1);
         report.TotalPages.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task ParseStage_NoParser_DiscoveredItemPassesThrough()
+    {
+        // Bare host: with the optional parser omitted, the pipeline leaves DiscoveredItems unparsed
+        // and passes them through rather than throwing on a null parser.
+        var route = MakeRoute("/needs-parsing");
+        var discoveredItem = new ContentItem(new DiscoveredItem(route, MakeSource()));
+
+        async IAsyncEnumerable<ContentItem> Source()
+        {
+            yield return discoveredItem;
+            await Task.CompletedTask;
+        }
+
+        var pipeline = new ContentPipeline([], new StubRenderer());
+        var results = await CollectAsync(pipeline.ParseAsync(Source()));
+
+        results.Count.ShouldBe(1);
+        (results[0] is DiscoveredItem).ShouldBeTrue();
     }
 
     [Fact]
@@ -374,7 +395,7 @@ public class ContentPipelineTests
             await Task.CompletedTask;
         }
 
-        var pipeline = new ContentPipeline([], new StubParser(), new StubRenderer());
+        var pipeline = new ContentPipeline([], new StubRenderer(), new StubParser());
         var results = await CollectAsync(pipeline.RenderAsync(Source()));
 
         results.Count.ShouldBe(1);
@@ -396,7 +417,7 @@ public class ContentPipelineTests
             await Task.CompletedTask;
         }
 
-        var pipeline = new ContentPipeline([], new StubParser(), new StubRenderer());
+        var pipeline = new ContentPipeline([], new StubRenderer(), new StubParser());
         var report = await pipeline.GenerateAsync(Source());
 
         report.GeneratedPages.Count.ShouldBe(0);
@@ -414,7 +435,7 @@ public class ContentPipelineTests
         var renderer = new CustomHtmlRenderer(_ =>
             """<p>See <a href="/docs/config">Config</a> and <a href="/docs/setup/">Setup</a>.</p>""");
 
-        var pipeline = new ContentPipeline([service], parser, renderer);
+        var pipeline = new ContentPipeline([service], renderer, parser);
         var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(1);
@@ -434,7 +455,7 @@ public class ContentPipelineTests
         var renderer = new CustomHtmlRenderer(_ =>
             """<p>See <a href="/docs/config/">Config</a> and <a href="https://example.com">Ext</a>.</p>""");
 
-        var pipeline = new ContentPipeline([service], parser, renderer);
+        var pipeline = new ContentPipeline([service], renderer, parser);
         var report = await pipeline.RunAsync();
 
         report.GeneratedPages.Count.ShouldBe(1);
@@ -450,7 +471,7 @@ public class ContentPipelineTests
         var goodService = new StubContentService(goodItem);
         var badService = new StubContentService(badItem);
 
-        var pipeline = new ContentPipeline([goodService, badService], new SelectiveParser(), new StubRenderer());
+        var pipeline = new ContentPipeline([goodService, badService], new StubRenderer(), new SelectiveParser());
 
         var report = await pipeline.RunAsync();
 
