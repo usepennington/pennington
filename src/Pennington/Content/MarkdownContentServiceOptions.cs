@@ -1,6 +1,7 @@
 namespace Pennington.Content;
 
 using System.Collections.Immutable;
+using Pipeline;
 using Routing;
 
 /// <summary>
@@ -13,6 +14,14 @@ public sealed class MarkdownContentServiceOptions
 
     /// <summary>URL prefix prepended to routes generated from this content directory.</summary>
     public UrlPath BasePageUrl { get; init; } = new("/");
+
+    /// <summary>
+    /// Dispatch key stamped on this source's discovered items so the pipeline routes them to this
+    /// source's front-matter parser rather than a shared one. The host assigns a distinct key per
+    /// markdown source via <see cref="MarkdownFormat.SourceKey"/>; defaults to the shared
+    /// <see cref="MarkdownFormat.Key"/> for standalone construction.
+    /// </summary>
+    public string Format { get; init; } = MarkdownFormat.Key;
 
     /// <summary>Default section label applied to discovered items when front matter doesn't specify one.</summary>
     public string? SectionLabel { get; init; }

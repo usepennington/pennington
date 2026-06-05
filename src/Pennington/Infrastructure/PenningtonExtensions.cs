@@ -199,8 +199,8 @@ public static class PenningtonExtensions
         var formatRegistry = new ContentFormatRegistry();
         services.AddSingleton(formatRegistry);
 
-        // Markdown renderer registered as its concrete type; the registry maps "markdown" to it
-        // (the dispatching IContentRenderer is registered after the format loops below).
+        // Markdown renderer registered as its concrete type; every markdown source's format key maps
+        // to it below (the dispatching IContentRenderer is registered after the format loops below).
         services.AddTransient(sp =>
             new MarkdownContentRenderer(
                 sp.GetRequiredService<MarkdownPipeline>(),
@@ -209,10 +209,14 @@ public static class PenningtonExtensions
                 sp.GetService<ShortcodeExpander>()));
 
         // Register markdown content services for each configured source
-        foreach (var source in options.MarkdownSources)
+        for (var sourceIndex = 0; sourceIndex < options.MarkdownSources.Count; sourceIndex++)
         {
-            // Capture loop variable for closure
-            var capturedSource = source;
+            // Capture loop variables for closure
+            var capturedSource = options.MarkdownSources[sourceIndex];
+
+            // Distinct dispatch key per source so two markdown sources with different front-matter
+            // types route to their own parser instead of the last-registered one clobbering the rest.
+            var formatKey = MarkdownFormat.SourceKey(sourceIndex);
 
             // Register the content service — resolve content path at activation time
             // using IWebHostEnvironment.ContentRootPath so tests and hosts both work.
@@ -250,6 +254,7 @@ public static class PenningtonExtensions
                         BasePageUrl = new UrlPath(capturedSource.BasePageUrl),
                         SectionLabel = capturedSource.SectionLabel,
                         ExcludePaths = capturedSource.ExcludePaths,
+                        Format = formatKey,
                     };
 
                     instance = ActivatorUtilities.CreateInstance(sp, serviceType, sourceOptions);
@@ -260,12 +265,11 @@ public static class PenningtonExtensions
             services.AddSingleton(typeof(IContentService), Resolve);
             services.AddSingleton(typeof(IFileWatchAware), Resolve);
 
-            // Register markdown in the dispatch registry under the "markdown" format key. The parser
-            // closes over this source's front-matter type; the last markdown source wins the single
-            // "markdown" entry — the same last-registration-wins outcome the previous per-source
-            // IContentParser registration produced, since consumers resolve one parser.
+            // Register this source's parser under its distinct format key (closing over the source's
+            // front-matter type) so DispatchingContentParser routes each source's files to the right
+            // parser. The renderer is shared across every markdown source — they all render the same.
             var parserType = typeof(MarkdownContentParser<>).MakeGenericType(frontMatterType);
-            formatRegistry.Register("markdown",
+            formatRegistry.Register(formatKey,
                 parser: sp => (IContentParser)Activator.CreateInstance(
                     parserType,
                     sp.GetRequiredService<FrontMatterParser>(),

@@ -159,7 +159,7 @@ public static class DocSiteServiceExtensions
         });
 
         // Content resolver
-        services.AddTransient<Services.ContentResolver>();
+        services.AddTransient<Services.DocSiteContentResolver>();
 
         // Blog services. The resolver renders posts with their own front matter; the
         // content service yields the blog index, tag index, and per-tag routes for the

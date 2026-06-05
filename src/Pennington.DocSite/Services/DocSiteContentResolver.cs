@@ -2,7 +2,6 @@ namespace Pennington.DocSite.Services;
 
 using System.Collections.Immutable;
 using Content;
-using Diagnostics;
 using FrontMatter;
 using Infrastructure;
 using Localization;
@@ -11,36 +10,32 @@ using Pipeline;
 using Routing;
 
 /// <summary>
-/// Resolves content pages by URL for the DocSite.
-/// Locale-aware: detects locale from URL, searches locale-specific content first,
-/// then falls back to the default locale. Works with all content sources (markdown,
-/// Razor pages, custom services).
+/// The DocSite's per-request content facade. Resolves a page by URL (delegating the
+/// discover → parse → render step to the core <see cref="IPageResolver"/>) and adds the
+/// DocSite-specific concerns around it: locale detection with fallback to the default locale,
+/// the <see cref="ResolvedContent"/> view-model, navigation/TOC, alternate languages, and area
+/// scoping. Distinct from <see cref="IPageResolver"/>, which is the locale-naive single-page
+/// primitive shared with bare hosts.
 /// </summary>
-public sealed class ContentResolver
+public sealed class DocSiteContentResolver
 {
     private readonly IEnumerable<IContentService> _services;
-    private readonly FrontMatterParser _parser;
-    private readonly IContentRenderer _renderer;
+    private readonly IPageResolver _pageResolver;
     private readonly NavigationBuilder _navBuilder;
-    private readonly DiagnosticContext _diagnostics;
     private readonly LocalizationOptions _localization;
     private readonly DocSiteOptions _docSiteOptions;
 
-    /// <summary>Creates a new resolver with the supplied content services and options.</summary>
-    public ContentResolver(
+    /// <summary>Creates a new resolver with the supplied content services, page resolver, and options.</summary>
+    public DocSiteContentResolver(
         IEnumerable<IContentService> services,
-        FrontMatterParser parser,
-        IContentRenderer renderer,
+        IPageResolver pageResolver,
         NavigationBuilder navBuilder,
-        DiagnosticContext diagnostics,
         LocalizationOptions localization,
         DocSiteOptions docSiteOptions)
     {
         _services = services;
-        _parser = parser;
-        _renderer = renderer;
+        _pageResolver = pageResolver;
         _navBuilder = navBuilder;
-        _diagnostics = diagnostics;
         _localization = localization;
         _docSiteOptions = docSiteOptions;
     }
@@ -59,10 +54,11 @@ public sealed class ContentResolver
             url = "/";
         }
 
-        // Try exact URL first (finds locale-specific markdown, fallback entries, or exact matches)
-        var found = await FindDiscoveredItem(url);
+        // Try exact URL first (finds locale-specific markdown, fallback entries, or exact matches).
+        // IPageResolver runs discover → parse (per-source typed) → render and returns the rendered page.
+        var rendered = await _pageResolver.ResolveAsync(new UrlPath(url));
         var locale = _localization.GetLocaleFromUrl(url);
-        var isFallback = found?.Route.IsFallback ?? false;
+        var isFallback = rendered?.Route.IsFallback ?? false;
         var requestedLocale = isFallback ? locale : null;
         if (isFallback)
         {
@@ -70,39 +66,20 @@ public sealed class ContentResolver
         }
 
         // Runtime fallback: strip locale prefix and try the content-relative path
-        if (found == null
+        if (rendered == null
             && _localization.IsMultiLocale
             && !string.Equals(locale, _localization.DefaultLocale, StringComparison.OrdinalIgnoreCase))
         {
             var contentPath = _localization.StripLocalePrefix(url, locale);
-            found = await FindDiscoveredItem(contentPath);
-            if (found != null)
+            rendered = await _pageResolver.ResolveAsync(new UrlPath(contentPath));
+            if (rendered != null)
             {
                 isFallback = true;
                 requestedLocale = locale;
             }
         }
 
-        if (found == null)
-        {
-            return null;
-        }
-
-        // Parse
-        var parseResult = await ParseItem(found);
-        if (parseResult == null)
-        {
-            return null;
-        }
-
-        // Render
-        var renderResult = await _renderer.RenderAsync(parseResult);
-        if (renderResult.Value is FailedItem failed)
-        {
-            _diagnostics.AddError(failed.Error.Message, "ContentResolver");
-            return null;
-        }
-        if (renderResult.Value is not RenderedItem rendered)
+        if (rendered == null)
         {
             return null;
         }
@@ -267,34 +244,6 @@ public sealed class ContentResolver
         var tocItems = await GetTocItemsForAreaAsync(locale, area);
         return await _navBuilder.BuildNavigationInfoAsync(tocItems.ToList(), new UrlPath(url), locale);
     }
-
-    private async Task<DiscoveredItem?> FindDiscoveredItem(string url)
-    {
-        var target = new UrlPath(url);
-        await foreach (var item in _services.DiscoverAllAsync())
-        {
-            if (item.Route.CanonicalPath.Matches(target))
-            {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    private async Task<ParsedItem?> ParseItem(DiscoveredItem item)
-    {
-        if (item.Source.Value is not FileSource { Format: "markdown" } source)
-        {
-            return null;
-        }
-
-        var content = await File.ReadAllTextAsync(source.Path.Value);
-        var result = _parser.Parse<DocSiteFrontMatter>(content, source.Path.Value);
-        var metadata = result.Metadata ?? new DocSiteFrontMatter();
-
-        return new ParsedItem(item.Route, metadata, result.Body);
-    }
-
 }
 
 /// <summary>Rendered content plus the surrounding locale/fallback metadata needed to render a page.</summary>

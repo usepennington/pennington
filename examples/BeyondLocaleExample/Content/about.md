@@ -10,6 +10,6 @@ matching file under `Content/es/` is the Spanish translation.
 
 When a visitor navigates to `/es/about`, `LocaleDetectionMiddleware` strips
 the `/es` prefix, stores `"es"` in `LocaleContext`, and the DocSite's
-`ContentResolver` picks up the Spanish markdown from `Content/es/about.md`.
+`DocSiteContentResolver` picks up the Spanish markdown from `Content/es/about.md`.
 If a Spanish file is missing, the resolver falls back to the English copy
 and marks the page as a translation-fallback so the reader knows.

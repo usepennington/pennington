@@ -10,8 +10,8 @@ using Routing;
 /// <summary>
 /// Resolves blog posts by URL and provides query methods for listings and tag filtering.
 /// Parses <see cref="BlogPostFrontMatter"/> directly so post <c>Date</c>/<c>Author</c> fields
-/// survive — the DocSite <see cref="ContentResolver"/> is bound to <see cref="DocSiteFrontMatter"/>
-/// and would drop them.
+/// survive — the DocSite <see cref="DocSiteContentResolver"/> resolves through the doc source's
+/// <see cref="DocSiteFrontMatter"/> and would drop them.
 /// </summary>
 public sealed class BlogPostResolver
 {
@@ -42,7 +42,7 @@ public sealed class BlogPostResolver
         var posts = new List<BlogPostSummary>();
         await foreach (var item in _services.DiscoverAllAsync())
         {
-            if (item.Source.Value is not FileSource { Format: "markdown" } source)
+            if (item.Source.Value is not FileSource source || !source.IsMarkdown)
             {
                 continue;
             }
@@ -83,7 +83,7 @@ public sealed class BlogPostResolver
 
         await foreach (var item in _services.DiscoverAllAsync())
         {
-            if (item.Source.Value is not FileSource { Format: "markdown" } source)
+            if (item.Source.Value is not FileSource source || !source.IsMarkdown)
             {
                 continue;
             }
@@ -102,7 +102,7 @@ public sealed class BlogPostResolver
             var parsed = _parser.Parse<BlogPostFrontMatter>(content, source.Path.Value);
             var fm = parsed.Metadata ?? new BlogPostFrontMatter();
 
-            var rendered = await _renderer.RenderAsync(new ParsedItem(item.Route, fm, parsed.Body));
+            var rendered = await _renderer.RenderAsync(new ParsedItem(item.Route, fm, parsed.Body) { Format = source.Format });
             if (rendered.Value is RenderedItem renderedItem)
             {
                 var summary = new BlogPostSummary(fm, item.Route.CanonicalPath.Value);

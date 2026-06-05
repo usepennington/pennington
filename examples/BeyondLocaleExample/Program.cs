@@ -42,7 +42,7 @@ var app = builder.Build();
 // `UseDocSite` wires `UseLocaleRouting` before `MapRazorComponents`
 // so the Blazor `@page "/{*fileName:nonfile}"` route in `Pages.razor` sees a
 // locale-stripped path. The raw request path is still available via
-// `NavigationManager.Uri`, and `ContentResolver.GetContentByUrlAsync` uses
+// `NavigationManager.Uri`, and `DocSiteContentResolver.GetContentByUrlAsync` uses
 // that full path to resolve the right translation (or fall back to English).
 app.UseDocSite();
 

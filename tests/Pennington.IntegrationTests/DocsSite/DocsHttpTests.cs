@@ -91,7 +91,7 @@ public class DocsHttpTests
     [Fact]
     public async Task NonExistentPage_Returns404_WithNotFoundBody()
     {
-        // DocSite pages signal Pennington.NotFound when ContentResolver returns
+        // DocSite pages signal Pennington.NotFound when DocSiteContentResolver returns
         // null; NotFoundStatusProcessor flips the response to 404 after every
         // other rewriter has run, so the body still ships with localized chrome.
         var response = await _client.GetAsync("/this-does-not-exist/", TestContext.Current.CancellationToken);

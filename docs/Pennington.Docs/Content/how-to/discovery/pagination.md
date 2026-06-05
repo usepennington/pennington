@@ -105,7 +105,7 @@ public sealed class ArticleListingContentService(
         var count = 0;
         await foreach (var item in services.DiscoverAllAsync())
         {
-            if (item.Source.Value is FileSource { Format: "markdown" } &&
+            if (item.Source.Value is FileSource { IsMarkdown: true } &&
                 item.Route.CanonicalPath.Value.StartsWith("/articles/"))
             {
                 count++;
