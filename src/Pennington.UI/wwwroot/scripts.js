@@ -1310,6 +1310,7 @@ class SearchManager {
         this.engine = null;             // DeweySearchEngine for the loaded locale
         this.engineFailed = false;
         this.loadedLocale = null;
+        this._scriptPromise = null;     // cached on-demand injection of dewey-search.js
         this.lastRanked = [];           // ranked results from the last query
         this.lastQuery = '';
         this.queryId = 0;               // monotonic id guarding against stale async renders
@@ -1325,7 +1326,12 @@ class SearchManager {
         this.createSearchModal();
         this.setupEventListeners();
 
-        // Don't load the search index until the user actually wants to search.
+        // Warm the slim DeweySearch client now (fire-and-forget) so the first
+        // open is a same-tick construct rather than a network round-trip. The
+        // heavier search index still waits until the user actually searches. A
+        // warm failure is swallowed — ensureSearchEngineScript() drops its cache
+        // on error, so openModal() re-attempts and surfaces the proper error UI.
+        this.ensureSearchEngineScript().catch(() => {});
     }
 
     // Inline icon set (stroke-style, 24x24). Markup is built in JS, so SVGs live here.
@@ -1449,6 +1455,7 @@ class SearchManager {
         if (!this.engine) {
             this.showLoading();
             try {
+                await this.ensureSearchEngineScript();
                 const engine = new DeweySearchEngine(`${this.baseUrl()}/search/${activeLocale}`);
                 await engine.loadManifest();
                 this.engine = engine;
@@ -1474,6 +1481,34 @@ class SearchManager {
         let b = document.body.getAttribute('data-base-url') || '';
         if (b.endsWith('/')) b = b.slice(0, -1);
         return b;
+    }
+
+    // Pull in DeweySearch.Web's browser client (dewey-search.js) on first open,
+    // rather than via a <script> tag every host must remember to add. The
+    // dependency rides with the search UI: a host with no #search-input never
+    // constructs this manager, so the client is never fetched. A host that still
+    // loads the script itself is honored by the already-defined guard — a
+    // deferred manual <script> has executed by the time the user opens search.
+    // The URL is base-url prefixed (from data-base-url) because, unlike the
+    // server-rendered <script src> tags, a runtime-injected element does not pass
+    // through BaseUrlHtmlRewriter.
+    ensureSearchEngineScript() {
+        if (typeof DeweySearchEngine !== 'undefined') return Promise.resolve();
+        if (this._scriptPromise) return this._scriptPromise;
+
+        this._scriptPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = `${this.baseUrl()}/_content/DeweySearch.Web/dewey-search.js`;
+            script.addEventListener('load', () => resolve(), { once: true });
+            script.addEventListener('error', () => {
+                // Drop the cache and the dead element so Retry re-attempts the load.
+                this._scriptPromise = null;
+                script.remove();
+                reject(new Error('Failed to load dewey-search.js'));
+            }, { once: true });
+            document.head.appendChild(script);
+        });
+        return this._scriptPromise;
     }
 
     async performSearch(query) {

@@ -28,7 +28,8 @@
         }
     }
     <link rel="stylesheet" href="@GetVersioned("/styles.css")">
-    <script src="@GetVersioned("/_content/DeweySearch.Web/dewey-search.js")" defer></script>
+    @* scripts.js pulls in DeweySearch.Web's client on demand the first time the
+       search modal opens — no separate dewey-search.js tag needed here. *@
     <script src="@GetVersioned("/_content/Pennington.UI/scripts.js")" defer></script>
     <script src="@GetVersioned("/_content/Pennington.UI/spa-engine.js")" defer></script>
 

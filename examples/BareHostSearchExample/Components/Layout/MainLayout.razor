@@ -1,7 +1,8 @@
 @* The search modal ships in Pennington.UI/scripts.js and styles itself from the
    @apply blocks Pennington.MonorailCss safelists, so lighting it up on a bare
    (non-DocSite) host is three pieces of markup:
-     1. the two scripts in <head> (DeweySearch client first, then scripts.js),
+     1. scripts.js in <head> — it pulls in DeweySearch.Web's client on demand the
+        first time search opens, so there's no separate dewey-search.js tag,
      2. data-default-locale on <body> — the client reads it to find the index, and
      3. a trigger element with id="search-input".
    scripts.js self-initializes on load and binds the click + Ctrl/Cmd-K shortcut. *@
@@ -14,7 +15,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="/styles.css" />
-    <script src="/_content/DeweySearch.Web/dewey-search.js" defer></script>
     <script src="/_content/Pennington.UI/scripts.js" defer></script>
     <HeadOutlet />
 </head>
