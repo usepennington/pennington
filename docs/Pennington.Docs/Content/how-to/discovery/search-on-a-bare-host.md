@@ -35,7 +35,7 @@ examples/BareHostSearchExample/BareHostSearchExample.csproj
 
 **Serve the `/_content/` static assets.**
 
-`UsePennington` mounts your content folders, not the RCL assets. Call `app.MapStaticAssets()` so `/_content/Pennington.UI/scripts.js` and `/_content/DeweySearch.Web/dewey-search.js` are served.
+`UsePennington` mounts your content folders, not the RCL assets. Call `app.MapStaticAssets()` so `/_content/Pennington.UI/scripts.js` and `/_content/DeweySearch.Web/dewey-search.js` are served — `scripts.js` fetches the latter on demand when search first opens.
 
 ```csharp:symbol
 examples/BareHostSearchExample/Program.cs
@@ -44,9 +44,9 @@ examples/BareHostSearchExample/Program.cs
 </Step>
 <Step StepNumber="3">
 
-**Load the scripts and add the trigger.**
+**Load the script and add the trigger.**
 
-In your layout, load `dewey-search.js` before `scripts.js` (both `defer`), set `data-default-locale` on `<body>`, and add a trigger element with `id="search-input"`. `scripts.js` self-initializes on load: it binds the click and the Ctrl/Cmd-K shortcut to that element and reads the locale attribute to locate the index. For a multi-locale or subpath-deployed site, also set `data-locales` and `data-base-url`.
+In your layout, load `scripts.js` (`defer`), set `data-default-locale` on `<body>`, and add a trigger element with `id="search-input"`. `scripts.js` self-initializes on load: it binds the click and the Ctrl/Cmd-K shortcut to that element, reads the locale attribute to locate the index, and pulls in `dewey-search.js` on demand the first time the modal opens — so you don't reference that script yourself. For a multi-locale or subpath-deployed site, also set `data-locales` and `data-base-url`.
 
 ```razor:symbol
 examples/BareHostSearchExample/Components/Layout/MainLayout.razor
