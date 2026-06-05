@@ -5,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddBlogSite(() => new BlogSiteOptions
 {
     SiteTitle = "My Blog",
-    Description = "A blog built with Pennington.",
+    SiteDescription = "A blog built with Pennington.",
     CanonicalBaseUrl = "https://example.com",
 
     ContentRootPath = "Content",
