@@ -415,11 +415,11 @@ public sealed class MarkdownContentService<TFrontMatter>
 
             if (isLlmsOnly)
             {
-                yield return new DiscoveredItem(route, new LlmsOnlySource(route.SourceFile!.Value)) { Metadata = frontMatter };
+                yield return new DiscoveredItem(route, new LlmsOnlySource(route.SourceFile!.Value, _options.Format)) { Metadata = frontMatter };
                 continue;
             }
 
-            yield return new DiscoveredItem(route, new FileSource(route.SourceFile!.Value, "markdown")) { Metadata = frontMatter };
+            yield return new DiscoveredItem(route, new FileSource(route.SourceFile!.Value, _options.Format)) { Metadata = frontMatter };
         }
     }
 
@@ -478,7 +478,7 @@ public sealed class MarkdownContentService<TFrontMatter>
             }
 
             yielded++;
-            yield return new ParsedItem(route, frontMatter, body);
+            yield return new ParsedItem(route, frontMatter, body) { Format = _options.Format };
         }
 
         _logger?.LogDebug(

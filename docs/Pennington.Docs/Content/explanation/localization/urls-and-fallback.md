@@ -1,6 +1,6 @@
 ---
 title: "Locale-aware URLs and content fallback"
-description: "Why Pennington treats the URL path prefix as the authoritative locale signal, how ContentResolver strips it and falls back to the default locale, and why the search index is split per locale."
+description: "Why Pennington treats the URL path prefix as the authoritative locale signal, how DocSiteContentResolver strips it and falls back to the default locale, and why the search index is split per locale."
 uid: explanation.localization.urls-and-fallback
 order: 1
 sectionLabel: "Localization"
@@ -21,9 +21,9 @@ A multilingual site has to pick a locale signal early enough that routing, conte
 
 The middleware never consults `Accept-Language`. The culture provider (`PenningtonUrlRequestCultureProvider`) also derives its answer from the URL, so the entire request pipeline agrees on the same locale code without any negotiation step. The Accept-Language header is advisory at most, never authoritative. Prefix-first means the same link produces the same page for everyone who clicks it, regardless of their browser settings or location.
 
-### ContentResolver normalizes then searches
+### DocSiteContentResolver normalizes then searches
 
-`ContentResolver.GetContentByUrlAsync` takes the full URL — locale prefix intact — and runs two passes. The first pass asks every `IContentService` for a `DiscoveredItem` whose route matches the exact URL. This catches locale-specific markdown (`/fr/guides/intro`) and any `IsFallback` route a service pre-computed at startup. The second pass is the runtime fallback: when the first pass misses and the site is multi-locale and the active locale is not the default, the resolver strips the prefix via `LocalizationOptions.StripLocalePrefix` and searches again against the content-relative path. Either a localized file wins or the default-locale file stands in.
+`DocSiteContentResolver.GetContentByUrlAsync` takes the full URL — locale prefix intact — and runs two passes. The first pass asks every `IContentService` for a `DiscoveredItem` whose route matches the exact URL. This catches locale-specific markdown (`/fr/guides/intro`) and any `IsFallback` route a service pre-computed at startup. The second pass is the runtime fallback: when the first pass misses and the site is multi-locale and the active locale is not the default, the resolver strips the prefix via `LocalizationOptions.StripLocalePrefix` and searches again against the content-relative path. Either a localized file wins or the default-locale file stands in.
 
 When the second pass succeeds, the resolver sets `IsFallback: true` and records `RequestedLocale` so the view layer can render a "this page has not been translated yet" notice via `FallbackNotice`. The resolver never rewrites URLs — the URL the reader typed stays in the address bar, only the content source changes.
 
@@ -33,7 +33,7 @@ There is exactly one fallback rung: the default locale. A missing `/es/guides/in
 
 The default locale is not a special kind of locale — it is the locale that owns the unprefixed URL space. `StripLocalePrefix` is a no-op for the default locale, `BuildLocaleUrl` emits unprefixed URLs for it, and content authored at `Content/guides/intro.md` is default-locale content by virtue of sitting outside every locale subdirectory. The fallback rule is a consequence of those URL-math rules, not a separate "fallback locale" setting.
 
-`StripLocalePrefix` (see <xref:reference.api.localization-options>) is pure URL math with no file-system knowledge. `ContentResolver` decides whether the stripped path resolves to a file on disk, and that separation is what lets the same helper serve both request-time fallback and build-time URL generation.
+`StripLocalePrefix` (see <xref:reference.api.localization-options>) is pure URL math with no file-system knowledge. `DocSiteContentResolver` decides whether the stripped path resolves to a file on disk, and that separation is what lets the same helper serve both request-time fallback and build-time URL generation.
 
 ### Per-locale search indices
 

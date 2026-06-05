@@ -82,7 +82,8 @@ internal sealed class DiagRoutesCommand : IDiagCommand
 
     private static string KindOf(ContentSource source) => source.Value switch
     {
-        FileSource fs => fs.Format,
+        // Markdown sources carry a distinct per-source dispatch key; collapse them to one display kind.
+        FileSource fs => fs.IsMarkdown ? MarkdownFormat.Key : fs.Format,
         RazorPageSource => "razor",
         RedirectSource => "redirect",
         EndpointSource => "endpoint",

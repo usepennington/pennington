@@ -11,7 +11,7 @@ traducción al español.
 
 Cuando un visitante navega a `/es/about`, el middleware
 `LocaleDetectionMiddleware` elimina el prefijo `/es`, guarda `"es"` en
-`LocaleContext`, y el `ContentResolver` del DocSite busca el markdown
+`LocaleContext`, y el `DocSiteContentResolver` del DocSite busca el markdown
 en `Content/es/about.md`. Si falta un archivo en español, el resolvedor
 recurre a la copia en inglés y marca la página como una traducción de
 reserva para que el lector lo sepa.

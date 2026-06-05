@@ -194,7 +194,7 @@ public class SitemapServiceTests
 
         var llmsRoute = MakeRoute("/agent-context");
         var llmsItem = new DiscoveredItem(llmsRoute,
-            new ContentSource(new LlmsOnlySource("content/agent-context.llms.md")));
+            new ContentSource(new LlmsOnlySource("content/agent-context.llms.md", "markdown")));
 
         var service = CreateService(new StubContentService(visibleItem, llmsItem));
 

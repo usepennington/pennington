@@ -5,7 +5,11 @@ using Routing;
 /// <summary>Content sourced from a file on disk, tagged with a format key that selects its parser/renderer.</summary>
 /// <param name="Path">Absolute path to the source file.</param>
 /// <param name="Format">Format key (e.g. <c>"markdown"</c>, <c>"cook"</c>) selecting the parser and renderer.</param>
-public record FileSource(FilePath Path, string Format);
+public record FileSource(FilePath Path, string Format)
+{
+    /// <summary>True when <see cref="Format"/> is one of the built-in markdown dispatch keys (see <see cref="MarkdownFormat"/>).</summary>
+    public bool IsMarkdown => MarkdownFormat.Matches(Format);
+}
 
 /// <summary>Content rendered by a Razor page/component.</summary>
 /// <param name="ComponentType">Fully qualified name of the component type.</param>
@@ -33,7 +37,8 @@ public record EndpointSource();
 /// stripped, and downstream stages key off the source type to skip HTML.
 /// </summary>
 /// <param name="Path">Absolute path to the markdown file.</param>
-public record LlmsOnlySource(FilePath Path);
+/// <param name="Format">Markdown dispatch key (see <see cref="MarkdownFormat"/>) of the source that produced this file, selecting the parser for its front-matter type.</param>
+public record LlmsOnlySource(FilePath Path, string Format);
 
 /// <summary>Union of all ways content can be sourced for a route.</summary>
 #if NET11_0_OR_GREATER

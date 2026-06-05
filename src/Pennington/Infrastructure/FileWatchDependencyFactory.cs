@@ -50,7 +50,7 @@ using Microsoft.Extensions.Logging;
 //   PenningtonStringLocalizerFactory singleton
 //   OutputGenerationService          transient (build orchestrator)
 //   LlmsTxtContentService            transient (wraps file-watched LlmsTxtService)
-//   ContentResolver (DocSite)        transient
+//   DocSiteContentResolver           transient
 //   BlogContentResolver              AddFileWatched<>
 //                                    [aggregates IContentService results - file-watched
 //                                     lifetime keeps the post cache fresh]

@@ -24,7 +24,7 @@ public sealed class DispatchingContentParser : IContentParser
         var format = item.Source.Value switch
         {
             FileSource fs => fs.Format,
-            LlmsOnlySource => "markdown",
+            LlmsOnlySource llms => llms.Format,
             _ => null,
         };
 

@@ -52,7 +52,7 @@ public sealed class BlogContentResolver : IFileWatchAware
         var posts = new List<BlogPostPage>();
         await foreach (var item in _services.DiscoverAllAsync())
         {
-            if (item.Source.Value is not FileSource { Format: "markdown" } source)
+            if (item.Source.Value is not FileSource source || !source.IsMarkdown)
             {
                 continue;
             }
@@ -164,7 +164,7 @@ public sealed class BlogContentResolver : IFileWatchAware
                 continue;
             }
 
-            if (item.Source.Value is not FileSource { Format: "markdown" } source)
+            if (item.Source.Value is not FileSource source || !source.IsMarkdown)
             {
                 continue;
             }
@@ -177,7 +177,7 @@ public sealed class BlogContentResolver : IFileWatchAware
                 .Select(t => new BlogTag(t, $"{_options.TagsPageUrl}/{HttpUtility.UrlEncode(t)}"))
                 .ToArray();
 
-            var parsedItem = new ParsedItem(item.Route, fm, parsed.Body);
+            var parsedItem = new ParsedItem(item.Route, fm, parsed.Body) { Format = source.Format };
             var rendered = await _renderer.RenderAsync(parsedItem);
             if (rendered.Value is RenderedItem renderedItem)
             {

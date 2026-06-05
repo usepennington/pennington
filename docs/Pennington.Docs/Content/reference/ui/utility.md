@@ -21,7 +21,7 @@ Renders a `<details>`-backed dropdown of alternate-language links pre-wired for 
 
 ### `AlternateLanguageItem`
 
-Nested record type that callers supply when constructing an explicit `AlternateLanguages` list; `DocSite`'s `MainLayout` builds one instance per locale per-request from `ContentResolver.GetAlternateLanguagesAsync`.
+Nested record type that callers supply when constructing an explicit `AlternateLanguages` list; `DocSite`'s `MainLayout` builds one instance per locale per-request from `DocSiteContentResolver.GetAlternateLanguagesAsync`.
 
 | Name | Type | Description |
 |---|---|---|
