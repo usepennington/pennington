@@ -33,14 +33,6 @@
     <script src="@GetVersioned("/_content/Pennington.UI/scripts.js")" defer></script>
     <script src="@GetVersioned("/_content/Pennington.UI/spa-engine.js")" defer></script>
 
-    @* When llms.txt is enabled the host registers LlmsTxtOptions; advertise the
-       site index as an alternate markdown representation so an agent reading the
-       page head can discover it without knowing the conventional path. *@
-    @if (Services.GetService<LlmsTxtOptions>() is not null)
-    {
-        <link rel="alternate" type="text/markdown" title="LLM-friendly site index" href="/llms.txt" />
-    }
-
     @if (!string.IsNullOrEmpty(DocSiteOptions.AdditionalHtmlHeadContent))
     {
         @((MarkupString)DocSiteOptions.AdditionalHtmlHeadContent)
@@ -56,26 +48,6 @@
             } catch (e) { }
         })();
     </script>
-
-    @* Site-wide social and discovery meta. These are page-invariant, so they live here as plain
-       <head> markup rather than in a layout's <HeadContent>: Blazor renders only the LAST
-       <HeadContent> per page (head content is not additive), so layout-level head meta silently
-       lose to a page's own <HeadContent>. Keeping them here guarantees they render. Per-page tags
-       (og:title/description/type and the social-card og:image) stay in the page components. *@
-    <meta property="og:site_name" content="@DocSiteOptions.SiteTitle" />
-    <meta name="twitter:site" content="@DocSiteOptions.SiteTitle" />
-    @if (DocSiteOptions.SocialCards is null && !string.IsNullOrEmpty(DocSiteOptions.SocialImageUrl))
-    {
-        @* When generated social cards are enabled, each page emits its own og:image (Pages.razor /
-           BlogPost.razor), so the site-wide default steps aside to avoid a duplicate tag. *@
-        <meta property="og:image" content="@DocSiteOptions.SocialImageUrl" />
-        <meta name="twitter:image" content="@DocSiteOptions.SocialImageUrl" />
-        <meta name="twitter:card" content="summary_large_image" />
-    }
-    @if (Services.GetService<BlogFeature>()?.Enabled == true)
-    {
-        <link rel="alternate" type="application/rss+xml" title="@DocSiteOptions.SiteTitle" href="/rss.xml" />
-    }
 
     <HeadOutlet/>
 </head>

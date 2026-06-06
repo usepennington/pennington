@@ -8,6 +8,7 @@
 
 # Design handoff scratch (extracted prototype HTML; do not commit)
 .design-tmp/
+design/
 
 # In-page docs feedback inbox (dev-only; consumed by an agent loop)
 feedback.json

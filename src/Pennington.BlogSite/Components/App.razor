@@ -12,14 +12,6 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    @if (BlogOptions.EnableRss)
-    {
-        <link type="application/rss+xml" rel="alternate" title="@Options.SiteTitle" href="/rss.xml" />
-    }
-    @if (Services.GetService<LlmsTxtOptions>() is not null)
-    {
-        <link rel="alternate" type="text/markdown" title="LLM-friendly site index" href="/llms.txt" />
-    }
     @foreach (var font in BlogOptions.FontPreloads)
     {
         @* Skip when the referenced file isn't shipped — emitting a preload hint

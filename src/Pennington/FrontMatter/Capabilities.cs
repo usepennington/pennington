@@ -37,3 +37,15 @@ public interface IOrderable
     /// <summary>Sort order for this page within its section (lower sorts first).</summary>
     int Order { get; }
 }
+
+/// <summary>
+/// Content published as a Standard Site (AT Protocol) <c>site.standard.document</c> record. Carries
+/// the record key the verification head tag links back to. A page opts in by setting
+/// <c>atprotoRkey</c> in its front matter once the record exists; pages without it emit no document
+/// link (graceful).
+/// </summary>
+public interface IStandardSiteDocument
+{
+    /// <summary>Record key of this page's <c>site.standard.document</c> record; <c>null</c> when none exists yet.</summary>
+    string? AtprotoRkey => null;
+}

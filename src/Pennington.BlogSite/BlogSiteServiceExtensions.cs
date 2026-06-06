@@ -4,6 +4,7 @@ using System.Reflection;
 using Content;
 using Infrastructure;
 using Mdazor;
+using Pennington.Head;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,9 @@ public static class BlogSiteServiceExtensions
         services.AddSingleton(options);
         services.AddRazorComponents();
 
+        // RSS alternate link — was literal markup in App.razor, now a head contributor.
+        services.AddHeadContributor<BlogSiteHeadContributor>();
+
         services.AddPennington(penn =>
         {
             penn.SiteTitle = options.SiteTitle;
@@ -33,6 +37,7 @@ public static class BlogSiteServiceExtensions
             // when the front matter names none — mirrors the old per-page FallbackAuthorName.
             penn.StructuredDataAuthorName = options.AuthorName;
             penn.SocialCards = options.SocialCards;
+            penn.StandardSite = options.StandardSite;
 
             var blogContentPath = Path.Combine(options.ContentRootPath.Value, options.BlogContentPath);
             penn.AddMarkdownContent<BlogSiteFrontMatter>(md =>

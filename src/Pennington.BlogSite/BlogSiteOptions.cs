@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using MonorailCss;
 using Routing;
 using SocialCards;
+using StandardSite;
 
 /// <summary>
 /// Options record passed to <see cref="BlogSiteServiceExtensions.AddBlogSite"/> that configures
@@ -92,6 +93,11 @@ public record BlogSiteOptions
     /// for that post, which wins). The host supplies the drawing via <see cref="SocialCardOptions.Render"/>.
     /// </summary>
     public SocialCardOptions? SocialCards { get; init; }
+
+    /// <summary>
+    /// Standard Site (AT Protocol) integration. Forwarded to <see cref="PenningtonOptions.StandardSite"/>.
+    /// </summary>
+    public StandardSiteOptions? StandardSite { get; init; }
 }
 
 /// <summary>Icon and URL for a social media link.</summary>

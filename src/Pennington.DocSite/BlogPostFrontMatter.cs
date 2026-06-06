@@ -7,7 +7,7 @@ using FrontMatter;
 /// <see cref="DocSiteServiceExtensions.AddDocSite"/> when the blog is active. Implements
 /// <see cref="IFrontMatter"/>, <see cref="ITaggable"/>, and <see cref="IRedirectable"/>.
 /// </summary>
-public record BlogPostFrontMatter : IFrontMatter, ITaggable, IRedirectable
+public record BlogPostFrontMatter : IFrontMatter, ITaggable, IRedirectable, IStandardSiteDocument
 {
     /// <summary>Post title rendered in the browser tab and post heading.</summary>
     public string Title { get; init; } = "";
@@ -45,4 +45,7 @@ public record BlogPostFrontMatter : IFrontMatter, ITaggable, IRedirectable
     /// index and tag pages.
     /// </summary>
     public bool SearchOnly => true;
+
+    /// <summary>Record key of this post's published <c>site.standard.document</c> record (Standard Site), if any.</summary>
+    public string? AtprotoRkey { get; init; }
 }
