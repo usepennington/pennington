@@ -11,6 +11,7 @@ using Markdown.Extensions.Tabs;
 using Pipeline;
 using Routing;
 using Search;
+using SocialCards;
 
 /// <summary>Main configuration options for the Pennington content engine.</summary>
 public sealed class PenningtonOptions
@@ -109,6 +110,13 @@ public sealed class PenningtonOptions
 
     /// <summary>llms.txt options registered via <see cref="AddLlmsTxt"/>, or <c>null</c> when not enabled.</summary>
     public LlmsTxtOptions? LlmsTxt => _llmsTxtOptions;
+
+    /// <summary>
+    /// Social-card (OpenGraph / Twitter image) generation. Set to enable per-page card discovery,
+    /// the on-demand rendering endpoint, and the meta-tag wiring; null disables the feature.
+    /// Templates forward their own option into this.
+    /// </summary>
+    public SocialCardOptions? SocialCards { get; set; }
 
     /// <summary>Configuration for the search index.</summary>
     public SearchIndexOptions SearchIndex { get; } = new();

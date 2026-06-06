@@ -1,4 +1,6 @@
 @page "/blog/{*fileName:nonfile}"
+@using Pennington.Routing
+@using Pennington.SocialCards
 @inject PenningtonOptions PenningtonOptions
 @inject BlogSiteOptions BlogOptions
 @inject BlogContentResolver ContentResolver
@@ -12,11 +14,12 @@
 <PageTitle>@PenningtonOptions.SiteTitle - @_rendered.Page.FrontMatter.Title</PageTitle>
 
 <HeadContent>
+    @{ var socialImage = GetSocialImageUrl(); }
     <meta property="og:title" content="@_rendered.Page.FrontMatter.Title" />
     <meta property="og:description" content="@_rendered.Page.FrontMatter.Description" />
-    @if (BlogOptions.SocialMediaImageUrlFactory != null)
+    @if (!string.IsNullOrEmpty(socialImage))
     {
-        <meta property="og:image" content="@GetSocialImageUrl()" />
+        <meta property="og:image" content="@socialImage" />
     }
     <meta property="og:url" content="@GetFullUrl()" />
     <meta property="og:type" content="article" />
@@ -29,9 +32,9 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="@_rendered.Page.FrontMatter.Title" />
     <meta name="twitter:description" content="@_rendered.Page.FrontMatter.Description" />
-    @if (BlogOptions.SocialMediaImageUrlFactory != null)
+    @if (!string.IsNullOrEmpty(socialImage))
     {
-        <meta name="twitter:image" content="@GetSocialImageUrl()" />
+        <meta name="twitter:image" content="@socialImage" />
     }
 </HeadContent>
 
@@ -67,10 +70,21 @@
 
     private string GetSocialImageUrl()
     {
-        if (_rendered == null || BlogOptions.SocialMediaImageUrlFactory == null) return "";
-        var imageUrl = BlogOptions.SocialMediaImageUrlFactory(_rendered.Page);
-        if (string.IsNullOrEmpty(imageUrl)) return "";
-        return imageUrl.StartsWith('/') ? $"{PenningtonOptions.CanonicalBaseUrl}{imageUrl}" : imageUrl;
+        if (_rendered == null) return "";
+
+        // An explicit author-supplied image wins, preserving the existing factory behavior.
+        if (BlogOptions.SocialMediaImageUrlFactory?.Invoke(_rendered.Page) is { Length: > 0 } imageUrl)
+        {
+            return imageUrl.StartsWith('/') ? $"{PenningtonOptions.CanonicalBaseUrl}{imageUrl}" : imageUrl;
+        }
+
+        // Otherwise fall back to a generated social card when enabled.
+        if (BlogOptions.SocialCards is { } cards)
+        {
+            return SocialCardUrl.For(new UrlPath(_rendered.Page.Url), cards.BaseUrl, PenningtonOptions.CanonicalBaseUrl);
+        }
+
+        return "";
     }
 
     private string GetFullUrl() => _rendered == null ? "" : $"{PenningtonOptions.CanonicalBaseUrl}{_rendered.Page.Url}";

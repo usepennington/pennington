@@ -1,9 +1,12 @@
-<HeadContent>
-    @foreach (var json in _entityJson)
-    {
-        <script type="application/ld+json">@((MarkupString)json)</script>
-    }
-</HeadContent>
+@* JSON-LD scripts render inline where this component sits, NOT inside a <HeadContent>.
+   Blazor's <HeadContent> is last-registered-wins (not additive): wrapping this in one would
+   clobber the host page's own <HeadContent> (description, og:image, hreflang) on any page that
+   uses both — which is exactly what happened on DocSite content pages. A <script type="application/ld+json">
+   is valid anywhere in the document and search engines read it from the body, so inline is safe. *@
+@foreach (var json in _entityJson)
+{
+    <script type="application/ld+json">@((MarkupString)json)</script>
+}
 
 @code {
     [Parameter] public IEnumerable<JsonLdEntity>? Entities { get; set; }

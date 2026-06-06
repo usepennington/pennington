@@ -4,20 +4,7 @@
 @inherits LayoutComponentBase
 @inject DocSiteContentResolver ContentResolver
 @inject NavigationManager NavigationManager
-@inject DocSiteOptions DocSiteOptions
 @inject LocalizationOptions Localization
-
-<HeadContent>
-    @if (!string.IsNullOrEmpty(DocSiteOptions.SocialImageUrl))
-    {
-        <meta property="og:image" content="@DocSiteOptions.SocialImageUrl" />
-        <meta name="twitter:image" content="@DocSiteOptions.SocialImageUrl" />
-        <meta name="twitter:card" content="summary_large_image" />
-    }
-    <meta property="og:site_name" content="@DocSiteOptions.SiteTitle" />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:site" content="@DocSiteOptions.SiteTitle" />
-</HeadContent>
 
 <div class="dark:scheme-dark font-sans box-border bg-base-100 dark:bg-base-950 text-base-900 dark:text-base-50">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-primary-700 focus:text-white focus:p-3">Skip to main content</a>

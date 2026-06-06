@@ -36,6 +36,7 @@ using Pipeline;
 using Routing;
 using Search;
 using SharpYaml.Serialization;
+using SocialCards;
 using Testably.Abstractions;
 
 /// <summary>
@@ -567,6 +568,18 @@ public static class PenningtonExtensions
             services.AddTransient<IContentEmitter, LlmsTxtContentService>();
         }
 
+        // Social-card generation: discover one card route per content page (baked by the build
+        // crawler) and render each on demand via MapSocialCards. The service emits EndpointSource
+        // routes — the documented pairing with the MapGet endpoint that produces the bytes.
+        if (options.SocialCards is { } socialCardOptions)
+        {
+            services.AddSingleton(socialCardOptions);
+            // Singleton IContentService that resolves its sibling services on demand (like the
+            // taxonomy service) — registered directly so build discovery enumerates its card routes.
+            services.AddSingleton<IContentService>(sp =>
+                new SocialCardContentService(sp, socialCardOptions));
+        }
+
         // Per-request diagnostic context
         services.AddHttpContextAccessor();
         services.AddScoped<Diagnostics.DiagnosticContext>();
@@ -856,6 +869,14 @@ public static class PenningtonExtensions
         {
             app.MapGet("/llms.txt", async (LlmsTxtService service) =>
                 Results.Content(await service.GetLlmsTxtAsync(), "text/plain"));
+        }
+
+        // On-demand social-card rendering. The catch-all {**slug} route is skipped by the build's
+        // MapGet discovery (it is parameterized); the concrete card routes come from
+        // SocialCardContentService and are fetched through this endpoint during the crawl.
+        if (app.Services.GetService<SocialCardOptions>() is not null)
+        {
+            app.MapSocialCards();
         }
 
         return app;

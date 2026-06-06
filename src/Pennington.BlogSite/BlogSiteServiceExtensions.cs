@@ -32,6 +32,7 @@ public static class BlogSiteServiceExtensions
             // Forwarded so StructuredDataHtmlRewriter can fill the author on a post's JSON-LD
             // when the front matter names none — mirrors the old per-page FallbackAuthorName.
             penn.StructuredDataAuthorName = options.AuthorName;
+            penn.SocialCards = options.SocialCards;
 
             var blogContentPath = Path.Combine(options.ContentRootPath.Value, options.BlogContentPath);
             penn.AddMarkdownContent<BlogSiteFrontMatter>(md =>

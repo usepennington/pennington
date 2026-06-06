@@ -1,0 +1,18 @@
+@using Pennington.SocialCards
+@inject DocSiteOptions DocSiteOptions
+
+@* Emits a page's social-card og:image/twitter:image when generated cards are enabled.
+   Bare <meta> (no <HeadContent> wrapper) so callers place it inside their own page-level
+   <HeadContent> — a nested wrapper would clobber the rest of the page's head (see StructuredData). *@
+@if (DocSiteOptions.SocialCards is { } cards)
+{
+    var url = SocialCardUrl.For(CanonicalPath, cards.BaseUrl, DocSiteOptions.CanonicalBaseUrl);
+    <meta property="og:image" content="@url" />
+    <meta name="twitter:image" content="@url" />
+    <meta name="twitter:card" content="summary_large_image" />
+}
+
+@code {
+    /// <summary>Canonical path of the page the card represents.</summary>
+    [Parameter, EditorRequired] public UrlPath CanonicalPath { get; set; }
+}

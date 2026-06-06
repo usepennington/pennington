@@ -5,6 +5,7 @@ using Infrastructure;
 using Microsoft.AspNetCore.Components;
 using MonorailCss;
 using Routing;
+using SocialCards;
 
 /// <summary>
 /// Options record passed to <see cref="BlogSiteServiceExtensions.AddBlogSite"/> that configures
@@ -84,6 +85,13 @@ public record BlogSiteOptions
 
     /// <summary>Factory producing a social-share image URL for a given post. Return null to fall back to defaults.</summary>
     public Func<BlogPostPage, string?>? SocialMediaImageUrlFactory { get; init; }
+
+    /// <summary>
+    /// Enables generated per-post social cards. When set, each post's <c>og:image</c>/<c>twitter:image</c>
+    /// points at an on-demand-rendered card (unless <see cref="SocialMediaImageUrlFactory"/> returns a URL
+    /// for that post, which wins). The host supplies the drawing via <see cref="SocialCardOptions.Render"/>.
+    /// </summary>
+    public SocialCardOptions? SocialCards { get; init; }
 }
 
 /// <summary>Icon and URL for a social media link.</summary>
