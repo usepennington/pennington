@@ -34,6 +34,7 @@
     <Project Path="examples/BlogSiteScaffoldExample/BlogSiteScaffoldExample.csproj" />
     <Project Path="examples/BlogSiteFirstPostExample/BlogSiteFirstPostExample.csproj" />
     <Project Path="examples/BlogSiteHeroProjectsSocialsExample/BlogSiteHeroProjectsSocialsExample.csproj" />
+    <Project Path="examples/BlogSiteSocialCardsExample/BlogSiteSocialCardsExample.csproj" />
     <Project Path="examples/BeyondLocaleExample/BeyondLocaleExample.csproj" />
     <Project Path="examples/BeyondTranslationAuditExample/BeyondTranslationAuditExample.csproj" />
     <Project Path="examples/BeyondTreeSitterExample/BeyondTreeSitterExample.csproj" />

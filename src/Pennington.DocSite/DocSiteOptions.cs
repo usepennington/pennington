@@ -4,6 +4,7 @@ using System.Reflection;
 using Infrastructure;
 using MonorailCss;
 using Routing;
+using SocialCards;
 
 /// <summary>
 /// Options record passed to <see cref="DocSiteServiceExtensions.AddDocSite"/> that configures
@@ -49,6 +50,14 @@ public record DocSiteOptions
 
     /// <summary>Default social-share image URL used when a page does not specify its own.</summary>
     public string? SocialImageUrl { get; init; }
+
+    /// <summary>
+    /// Enables generated per-page social cards. When set, each page emits an <c>og:image</c>/
+    /// <c>twitter:image</c> pointing at an on-demand-rendered card (and the site-wide
+    /// <see cref="SocialImageUrl"/> default steps aside). The host supplies the drawing via
+    /// <see cref="SocialCardOptions.Render"/>.
+    /// </summary>
+    public SocialCardOptions? SocialCards { get; init; }
 
     /// <summary>CSS font-family stack used for display type (headings and hero copy).</summary>
     public string? DisplayFontFamily { get; init; }

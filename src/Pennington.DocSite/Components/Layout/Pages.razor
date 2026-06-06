@@ -17,6 +17,8 @@
     <PageTitle>@_resolved.Title — @DocSiteOptions.SiteTitle</PageTitle>
     <HeadContent>
         <meta name="description" content="@_resolved.Description" />
+        <meta property="og:type" content="website" />
+        <SocialCardMeta CanonicalPath="_resolved.Route.CanonicalPath" />
         @foreach (var alt in _alternateLanguages)
         {
             var hreflang = Localization.Locales.TryGetValue(alt.Locale, out var info)

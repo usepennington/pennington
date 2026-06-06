@@ -38,6 +38,7 @@ public static class DocSiteServiceExtensions
             penn.SiteDescription = options.SiteDescription;
             penn.CanonicalBaseUrl = options.CanonicalBaseUrl;
             penn.ContentRootPath = options.ContentRootPath;
+            penn.SocialCards = options.SocialCards;
 
             penn.AddMarkdownContent<DocSiteFrontMatter>(md =>
             {
