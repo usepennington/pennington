@@ -296,42 +296,20 @@
     // -----------------------------------------------------------------------
 
     /**
-     * Replace the current document head's title and managed meta/link tags
-     * with the incoming document's. Tags handled: title, description meta,
-     * og:* / twitter:* meta, canonical, hreflang alternates, JSON-LD scripts.
+     * Sync the document head for soft navigation: the title plus every element the
+     * server stamped with data-head. The server-side head composition pass marks all
+     * managed meta/link/script tags, so this stays generic — no per-tag allowlist.
      */
     function applyHead(doc) {
         if (doc.title) document.title = doc.title;
 
-        const swap = (sel) => {
-            const incoming = doc.head.querySelector(sel);
-            const current = document.head.querySelector(sel);
-            if (incoming && current) {
-                current.replaceWith(incoming.cloneNode(true));
-            } else if (incoming) {
-                document.head.appendChild(incoming.cloneNode(true));
-            } else if (current) {
-                current.remove();
-            }
-        };
-
-        swap('meta[name="description"]');
-        swap('meta[property="og:title"]');
-        swap('meta[property="og:description"]');
-        swap('meta[property="og:url"]');
-        swap('meta[name="twitter:title"]');
-        swap('meta[name="twitter:description"]');
-        swap('link[rel="canonical"]');
-
-        // Hreflang alternates: replace the whole set.
-        document.head.querySelectorAll('link[rel="alternate"][hreflang]').forEach(n => n.remove());
-        doc.head.querySelectorAll('link[rel="alternate"][hreflang]').forEach(n => {
-            document.head.appendChild(n.cloneNode(true));
-        });
-
-        // JSON-LD: replace the whole set.
-        document.head.querySelectorAll('script[type="application/ld+json"]').forEach(n => n.remove());
-        doc.head.querySelectorAll('script[type="application/ld+json"]').forEach(n => {
+        // Every element the server stamps with data-head — page-authored meta/links (description,
+        // og:*, twitter:*, canonical, hreflang), JSON-LD, and contributor-emitted tags alike — is
+        // replaced wholesale. The server-side head composition pass is the single source of truth for
+        // what syncs across soft navigation. Tags marked data-head-transient (dev-only meta) are
+        // left as-is.
+        document.head.querySelectorAll('[data-head]:not([data-head-transient])').forEach(n => n.remove());
+        doc.head.querySelectorAll('[data-head]:not([data-head-transient])').forEach(n => {
             document.head.appendChild(n.cloneNode(true));
         });
     }

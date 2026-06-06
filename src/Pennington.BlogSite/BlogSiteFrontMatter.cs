@@ -13,7 +13,7 @@ using Pennington.StructuredData;
 /// schema.org <c>Article</c>).
 /// </summary>
 public record BlogSiteFrontMatter : IFrontMatter, ITaggable,
-    ISectionable, IRedirectable, IHasStructuredData
+    ISectionable, IRedirectable, IHasStructuredData, IStandardSiteDocument
 {
     /// <summary>Post title.</summary>
     public string Title { get; init; } = "Empty title";
@@ -56,6 +56,9 @@ public record BlogSiteFrontMatter : IFrontMatter, ITaggable,
 
     /// <summary>When true, the post is indexed for search/llms but hidden from the rendered navigation tree.</summary>
     public bool SearchOnly { get; init; }
+
+    /// <summary>Record key of this post's published <c>site.standard.document</c> record (Standard Site), if any.</summary>
+    public string? AtprotoRkey { get; init; }
 
     /// <inheritdoc />
     public IEnumerable<JsonLdEntity> GetStructuredData(StructuredDataContext context)

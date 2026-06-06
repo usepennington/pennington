@@ -4,6 +4,7 @@ using System.Reflection;
 using Content;
 using Infrastructure;
 using Mdazor;
+using Pennington.Head;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +32,10 @@ public static class DocSiteServiceExtensions
             && Directory.EnumerateFiles(blogContentDir, "*.md", SearchOption.AllDirectories).Any();
         services.AddSingleton(new BlogFeature(hasBlog));
 
+        // Site-invariant discovery meta (og:site_name, default card image, RSS alternate) — was
+        // literal markup in App.razor, now a head contributor.
+        services.AddHeadContributor<DocSiteHeadContributor>();
+
         // Pennington core
         services.AddPennington(penn =>
         {
@@ -39,6 +44,7 @@ public static class DocSiteServiceExtensions
             penn.CanonicalBaseUrl = options.CanonicalBaseUrl;
             penn.ContentRootPath = options.ContentRootPath;
             penn.SocialCards = options.SocialCards;
+            penn.StandardSite = options.StandardSite;
 
             penn.AddMarkdownContent<DocSiteFrontMatter>(md =>
             {

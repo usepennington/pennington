@@ -9,6 +9,7 @@ using Content;
 using Feeds;
 using FrontMatter;
 using Generation;
+using Head;
 using Highlighting;
 using LlmsTxt;
 using Localization;
@@ -37,6 +38,7 @@ using Routing;
 using Search;
 using SharpYaml.Serialization;
 using SocialCards;
+using StandardSite;
 using Testably.Abstractions;
 
 /// <summary>
@@ -421,12 +423,24 @@ public static class PenningtonExtensions
         services.AddTransient<IHtmlResponseRewriter, XrefHtmlRewriter>();
         services.AddSingleton<IHtmlResponseRewriter, LocaleLinkHtmlRewriter>();
         services.AddSingleton<IHtmlResponseRewriter, FallbackLangHtmlRewriter>();
-        services.AddSingleton<IHtmlResponseRewriter, CanonicalLinkHtmlRewriter>();
-        // Transient: captures the file-watched ContentRecordRegistry, so a fresh registry is
-        // resolved per request rather than pinning the first (stale) snapshot.
-        services.AddTransient<IHtmlResponseRewriter, StructuredData.StructuredDataHtmlRewriter>();
+        // Canonical and structured-data head tags are now IHeadContributors registered by AddHead()
+        // below (replacing the former CanonicalLinkHtmlRewriter / StructuredDataHtmlRewriter).
         services.AddSingleton<IHtmlResponseRewriter>(sp =>
             new BaseUrlHtmlRewriter(sp.GetRequiredService<OutputOptions>()));
+        // Head composition: one rewriter (Order 25) reconciles every IHeadContributor into <head>.
+        // Inert until contributors are registered, so this leaves head output byte-identical.
+        services.AddHead();
+
+        // Standard Site (AT Protocol) verification surface — registered only when configured. The
+        // well-known emitter, head links, and dev middleware all no-op on blank config (fail-safe).
+        if (options.StandardSite is { } standardSite)
+        {
+            services.AddSingleton(standardSite);
+            services.AddSingleton<IDiagCommand, DiagStandardSiteCommand>();
+            services.AddTransient<StandardSiteUriResolver>();
+            services.AddTransient<IContentEmitter, WellKnownEmitter>();
+            services.AddHeadContributor<StandardSiteHeadContributor>();
+        }
         // Transient: this processor holds the IHtmlResponseRewriter list, which
         // includes XrefHtmlRewriter capturing the file-watched XrefResolver. A
         // singleton would pin the first-resolved (stale) resolver and share one
@@ -558,6 +572,8 @@ public static class PenningtonExtensions
         if (options.LlmsTxt is { } llmsTxtOptions)
         {
             services.AddSingleton(llmsTxtOptions);
+            // Advertise the llms.txt index as a head alternate link (was literal template markup).
+            services.AddHeadContributor<AlternateLinksHeadContributor>();
             services.AddFileWatched<LlmsTxtService>();
             // Transient so each resolution captures the current file-watched
             // LlmsTxtService — a singleton here would pin the first instance.
@@ -853,6 +869,13 @@ public static class PenningtonExtensions
         // {locale}/{prefix} files aren't claimed by content routes and don't depend
         // on the crawler, which can't bake parameterized routes.
         app.UseMiddleware<SearchArtifactMiddleware>();
+
+        // Standard Site well-known verification files served in dev (the build emitter bakes them
+        // into static output). Registered only when Standard Site is configured.
+        if (app.Services.GetService<StandardSiteOptions>() is not null)
+        {
+            app.UseMiddleware<WellKnownMiddleware>();
+        }
 
         // Sitemap endpoint (auto-discovered and baked by the static build). The
         // sharded search index is emitted by SearchArtifactEmitter instead.

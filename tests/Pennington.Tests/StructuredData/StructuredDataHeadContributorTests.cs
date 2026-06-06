@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Pennington.Content;
 using Pennington.FrontMatter;
+using Pennington.Head;
 using Pennington.Infrastructure;
 using Pennington.Routing;
 using Pennington.StructuredData;
@@ -9,11 +10,12 @@ using Pennington.StructuredData;
 namespace Pennington.Tests.StructuredData;
 
 /// <summary>
-/// DOM-level tests for <see cref="StructuredDataHtmlRewriter"/>, driven through the real
-/// <see cref="HtmlResponseRewritingProcessor"/> so the rewriter resolves the record, builds the
-/// canonical URL, and injects the JSON-LD exactly as it does in the response pipeline.
+/// DOM-level tests for <see cref="StructuredDataHeadContributor"/>, driven through the real
+/// <see cref="HeadCompositionHtmlRewriter"/> + <see cref="HtmlResponseRewritingProcessor"/> so the
+/// contributor resolves the record, builds the canonical URL, and injects the JSON-LD exactly as it
+/// does in the response pipeline.
 /// </summary>
-public class StructuredDataHtmlRewriterTests
+public class StructuredDataHeadContributorTests
 {
     // A self-contained JsonLdEntity subclass so the test needn't depend on a template's concrete types.
     private sealed record TestJobPosting : JsonLdEntity
@@ -54,7 +56,7 @@ public class StructuredDataHtmlRewriterTests
     private static ContentRecord Record(string url, IFrontMatter fm) =>
         new(ContentRouteFactory.FromUrl(new UrlPath(url)), fm);
 
-    private static async Task<string> Rewrite(
+    private static async Task<string> Render(
         string requestPath,
         ContentRecordRegistry registry,
         string? canonicalBaseUrl = "https://example.com",
@@ -65,7 +67,8 @@ public class StructuredDataHtmlRewriterTests
             CanonicalBaseUrl = canonicalBaseUrl,
             StructuredDataAuthorName = authorName,
         };
-        var processor = new HtmlResponseRewritingProcessor([new StructuredDataHtmlRewriter(options, registry)]);
+        var processor = new HtmlResponseRewritingProcessor(
+            [new HeadCompositionHtmlRewriter([new StructuredDataHeadContributor(options)], registry)]);
         var ctx = new DefaultHttpContext();
         ctx.Request.Path = requestPath;
         ctx.Response.StatusCode = 200;
@@ -78,11 +81,10 @@ public class StructuredDataHtmlRewriterTests
     {
         var registry = new ContentRecordRegistry([Record("/jobs/senior/", new JobFrontMatter { Title = "Senior Engineer" })]);
 
-        var html = await Rewrite("/jobs/senior/", registry);
+        var html = await Render("/jobs/senior/", registry);
 
-        html.ShouldContain("""<script type="application/ld+json">""");
+        html.ShouldContain("application/ld+json");
         html.ShouldContain("\"title\":\"Senior Engineer\"");
-        // The canonical URL is composed from the base URL and the request path.
         html.ShouldContain("https://example.com/jobs/senior/");
     }
 
@@ -91,7 +93,7 @@ public class StructuredDataHtmlRewriterTests
     {
         var registry = new ContentRecordRegistry([Record("/jobs/senior/", new JobFrontMatter { Title = "Senior Engineer" })]);
 
-        var html = await Rewrite("/jobs/junior/", registry);
+        var html = await Render("/jobs/junior/", registry);
 
         html.ShouldNotContain("application/ld+json");
     }
@@ -101,17 +103,17 @@ public class StructuredDataHtmlRewriterTests
     {
         var registry = new ContentRecordRegistry([Record("/about/", new PlainFrontMatter { Title = "About" })]);
 
-        var html = await Rewrite("/about/", registry);
+        var html = await Render("/about/", registry);
 
         html.ShouldNotContain("application/ld+json");
     }
 
     [Fact]
-    public async Task DoesNotRun_WhenCanonicalBaseUrlIsUnset()
+    public async Task EmitsNothing_WhenCanonicalBaseUrlIsUnset()
     {
         var registry = new ContentRecordRegistry([Record("/jobs/senior/", new JobFrontMatter { Title = "Senior Engineer" })]);
 
-        var html = await Rewrite("/jobs/senior/", registry, canonicalBaseUrl: null);
+        var html = await Render("/jobs/senior/", registry, canonicalBaseUrl: null);
 
         html.ShouldNotContain("application/ld+json");
     }
@@ -121,7 +123,7 @@ public class StructuredDataHtmlRewriterTests
     {
         var registry = new ContentRecordRegistry([Record("/jobs/senior/", new JobFrontMatter { Title = "Senior Engineer" })]);
 
-        var html = await Rewrite("/jobs/senior/", registry, authorName: "Acme Editorial");
+        var html = await Render("/jobs/senior/", registry, authorName: "Acme Editorial");
 
         html.ShouldContain("\"author\":\"Acme Editorial\"");
     }

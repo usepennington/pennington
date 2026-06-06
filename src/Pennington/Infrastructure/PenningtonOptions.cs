@@ -12,6 +12,7 @@ using Pipeline;
 using Routing;
 using Search;
 using SocialCards;
+using StandardSite;
 
 /// <summary>Main configuration options for the Pennington content engine.</summary>
 public sealed class PenningtonOptions
@@ -117,6 +118,13 @@ public sealed class PenningtonOptions
     /// Templates forward their own option into this.
     /// </summary>
     public SocialCardOptions? SocialCards { get; set; }
+
+    /// <summary>
+    /// Standard Site (AT Protocol long-form publishing) integration. Set to emit the verification
+    /// well-known files and per-page <c>site.standard.*</c> head links; null disables the feature.
+    /// Templates forward their own option into this.
+    /// </summary>
+    public StandardSiteOptions? StandardSite { get; set; }
 
     /// <summary>Configuration for the search index.</summary>
     public SearchIndexOptions SearchIndex { get; } = new();

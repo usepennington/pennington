@@ -5,6 +5,7 @@ using Infrastructure;
 using MonorailCss;
 using Routing;
 using SocialCards;
+using StandardSite;
 
 /// <summary>
 /// Options record passed to <see cref="DocSiteServiceExtensions.AddDocSite"/> that configures
@@ -58,6 +59,11 @@ public record DocSiteOptions
     /// <see cref="SocialCardOptions.Render"/>.
     /// </summary>
     public SocialCardOptions? SocialCards { get; init; }
+
+    /// <summary>
+    /// Standard Site (AT Protocol) integration. Forwarded to <see cref="PenningtonOptions.StandardSite"/>.
+    /// </summary>
+    public StandardSiteOptions? StandardSite { get; init; }
 
     /// <summary>CSS font-family stack used for display type (headings and hero copy).</summary>
     public string? DisplayFontFamily { get; init; }
