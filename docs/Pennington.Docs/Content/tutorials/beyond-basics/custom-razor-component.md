@@ -79,7 +79,7 @@ Open `Program.cs` and add a single `builder.Services.AddMdazorComponent<PricingC
 examples/BeyondCustomRazorComponentExample/Stage2_RegisterMdazorComponent.cs > Stage2.Run
 ```
 
-`AddMdazorComponent<T>()` returns `IServiceCollection`, so additional component registrations can chain off the same call. That becomes handy when registering several custom components at once.
+`AddMdazorComponent<T>()` returns `IServiceCollection`, so additional component registrations can chain off the same call. That becomes useful when registering several custom components at once.
 
 </Step>
 </Steps>

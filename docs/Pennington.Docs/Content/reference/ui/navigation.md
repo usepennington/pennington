@@ -94,7 +94,7 @@ Renders a visible breadcrumb trail inside an article header from the `ImmutableL
 src/Pennington.UI/Components/Pagination.razor
 ```
 
-Prev / numbered / next pagination controls. URL-shape agnostic — the caller supplies a `Func<int, string>` that maps a 1-based page index to a URL, so the same component drives `/archive/page/N/`, `/tags/{tag}/page/N/`, or any other shape. Renders nothing when `TotalPages` is 1 or less.
+Prev / numbered / next pagination controls. URL-pattern agnostic — the caller supplies a `Func<int, string>` that maps a 1-based page index to a URL, so the same component drives `/archive/page/N/`, `/tags/{tag}/page/N/`, or any other pattern. Renders nothing when `TotalPages` is 1 or less.
 
 ### Parameters
 

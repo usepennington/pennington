@@ -43,7 +43,7 @@ See <xref:reference.host.cli> for the full grammar.
 
 **Read the `BuildReport` printed to stdout**
 
-When the crawl finishes, `RunOrBuildAsync` writes a human-readable report and exits with a non-zero code when `HasErrors` is true. The key collections are `GeneratedPages`, `SkippedPages` (drafts), `FailedPages`, and `Diagnostics`; see <xref:reference.api.build-report> for the full field list. `HasErrors` is what blocks shipping — it is true when a page failed, an error diagnostic was recorded, or a broken internal link was found (broken links surface as `content.links/` warning diagnostics inside `Diagnostics`). Fix the listed routes before deploying.
+When the crawl finishes, `RunOrBuildAsync` writes a human-readable report and exits with a non-zero code when `HasErrors` is true. The key collections are `GeneratedPages`, `SkippedPages` (drafts), `FailedPages`, and `Diagnostics`; see <xref:reference.api.build-report> for the full field list. `HasErrors` is what causes the build command to fail — it is true when a page failed, an error diagnostic was recorded, or a broken internal link was found (broken links surface as `content.links/` warning diagnostics inside `Diagnostics`). Fix the listed routes before deploying.
 
 For custom CI presentation (a GitHub Actions summary, a Slack message), use `BuildHost.PrintBuildReport` in `examples/SubPathDeployableExample/BuildHost.cs` as a starting point.
 

@@ -19,9 +19,9 @@ For a working setup, see [`examples/SubPathDeployableExample`](https://github.co
 
 ## Shared values
 
-Every host configuration restates four knobs:
+Every host configuration restates four settings:
 
-| Knob | Value |
+| Setting | Value |
 |---|---|
 | Build command | `dotnet run --project <your-project> -- build "$BASE_URL"` |
 | Publish directory | `output/` (the default from `OutputOptions`) |

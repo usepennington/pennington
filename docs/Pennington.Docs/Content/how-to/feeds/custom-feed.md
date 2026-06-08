@@ -7,9 +7,9 @@ sectionLabel: "Feeds & Indexes"
 tags: [feeds, rss, atom, podcast, content-service]
 ---
 
-When the records driving a feed are not `BlogSiteFrontMatter`, `BlogSiteOptions.EnableRss` does not apply. Use the same pattern `BlogSite` itself uses: a content service caches the records, exposes a `Task<string>` builder that returns the feed XML, and a `MapGet` endpoint serves it. The static-build crawler picks the endpoint up via `DiscoverMapGetRoutes`, so the feed file lands in `output/` next to every other page — no separate `GetContentToCreateAsync` plumbing.
+When the records driving a feed are not `BlogSiteFrontMatter`, `BlogSiteOptions.EnableRss` does not apply. Use the same pattern `BlogSite` itself uses: a content service caches the records, exposes a `Task<string>` builder that returns the feed XML, and a `MapGet` endpoint serves it. The static-build crawler picks the endpoint up via `DiscoverMapGetRoutes`, so the feed file lands in `output/` next to every other page — no separate `GetContentToCreateAsync` registration.
 
-The reference implementation is `BlogSiteContentService.GetRssXmlAsync` plus the `MapGet` in `UseBlogSite`. This guide names the seams in that pair so the same shape can carry a podcast feed (with the iTunes namespace), an events feed (with iCalendar enclosures), or any custom feed format.
+The reference implementation is `BlogSiteContentService.GetRssXmlAsync` plus the `MapGet` in `UseBlogSite`. This guide names the points you adapt — the *seams* (the extension points in the pattern) — in that pair so the same approach can carry a podcast feed (with the iTunes namespace), an events feed (with iCalendar enclosures), or any custom feed format.
 
 ## Before you begin
 

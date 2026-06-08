@@ -68,6 +68,6 @@ examples/BareHostSearchExample/Components/Layout/MainLayout.razor
 
 ## Related
 
-- How-to: [Tune what the search box returns](xref:how-to.discovery.search) — shape the same index (exclude pages, weight priority, scope the indexed HTML)
+- How-to: [Tune what the search box returns](xref:how-to.discovery.search) — configure the same index (exclude pages, weight priority, scope the indexed HTML)
 - Background: [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning)
 - Reference: [`SearchIndexOptions`](xref:reference.api.search-index-options)

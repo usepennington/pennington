@@ -7,7 +7,7 @@ sectionLabel: "Response Pipeline"
 tags: [response-pipeline, extensibility, middleware, html-injection]
 ---
 
-To inject a feedback widget, banner, or analytics tag before `</body>` on every rendered page, implement `IResponseProcessor`. The processor receives the full response body as a string and returns the replacement — useful when the goal is to splice a pre-serialized HTML fragment, log an outgoing payload, or append a non-HTML footer. When the work is DOM-shaped (anchor rewrites, attribute additions, element injection at a CSS selector), implement `IHtmlResponseRewriter` instead so every rewriter shares one AngleSharp parse. See <xref:how-to.response-pipeline.html-rewriter>.
+To inject a feedback widget, banner, or analytics tag before `</body>` on every rendered page, implement `IResponseProcessor`. The processor receives the full response body as a string and returns the replacement — useful when the goal is to insert a pre-serialized HTML fragment, log an outgoing payload, or append a non-HTML footer. When the work is DOM-shaped (anchor rewrites, attribute additions, element injection at a CSS selector), implement `IHtmlResponseRewriter` instead so every rewriter shares one AngleSharp parse. See <xref:how-to.response-pipeline.html-rewriter>.
 
 The recipe references `examples/ExtensibilityLabExample/FeedbackWidgetProcessor.cs`, which injects a "Was this helpful?" aside before `</body>` against a bare `AddPennington` host.
 
@@ -21,7 +21,7 @@ The recipe references `examples/ExtensibilityLabExample/FeedbackWidgetProcessor.
 Implement <xref:reference.api.i-response-processor> as a sealed class. Two rules carry the page:
 
 - `ShouldProcess` runs before the body is buffered. Returning `false` skips body capture entirely, so this is where filtering by status code, content type, or request path belongs. The example accepts only 2xx HTML responses, letting static assets, JSON endpoints, and redirects pass through untouched.
-- `ProcessAsync` receives the full captured body as a string and returns the replacement. The example locates the last `</body>` with `LastIndexOf` and splices the widget HTML in, falling back to append-at-end when the tag is absent so content still reaches the browser.
+- `ProcessAsync` receives the full captured body as a string and returns the replacement. The example locates the last `</body>` with `LastIndexOf` and inserts the widget HTML there, falling back to append-at-end when the tag is absent so content still reaches the browser.
 
 ```csharp:symbol
 examples/ExtensibilityLabExample/FeedbackWidgetProcessor.cs
@@ -29,7 +29,7 @@ examples/ExtensibilityLabExample/FeedbackWidgetProcessor.cs
 
 ## Pick an Order value
 
-Slot into the `Order` sequence so the processor sees the body shape it expects. Anything below `10` would see un-resolved `<xref:...>` placeholders that `HtmlResponseRewritingProcessor` expands. The example uses `500` so the widget is spliced after every built-in pass has landed. For the full table of shipped `Order` values, see <xref:reference.api.i-response-processor>.
+Slot into the `Order` sequence so the processor sees the HTML state it expects. Anything below `10` would see un-resolved `<xref:...>` placeholders that `HtmlResponseRewritingProcessor` expands. The example uses `500` so the widget is inserted after every built-in pass has run. For the full table of shipped `Order` values, see <xref:reference.api.i-response-processor>.
 
 ## Register the processor
 

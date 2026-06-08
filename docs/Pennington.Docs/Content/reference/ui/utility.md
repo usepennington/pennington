@@ -11,7 +11,7 @@ tags: [ui, components, localization, structured-data]
 
 ## `LanguageSwitcher`
 
-Renders a `<details>`-backed dropdown of alternate-language links pre-wired for SPA reload via `data-spa-reload`. Hides itself when fewer than two locales are available. Auto-computes the list from `LocaleContext` and `LocalizationOptions` when `AlternateLanguages` is null or empty.
+Renders a `<details>`-backed dropdown of alternate-language links configured for SPA reload via `data-spa-reload`. Hides itself when fewer than two locales are available. Auto-computes the list from `LocaleContext` and `LocalizationOptions` when `AlternateLanguages` is null or empty.
 
 ### Parameters
 
@@ -88,6 +88,6 @@ Renders an inline amber notice banner above the article region when the requeste
 ## See also
 
 - Related reference: [Navigation components](xref:reference.ui.navigation) — sibling `Pennington.UI` reference page for `TableOfContentsNavigation` and `OutlineNavigation`.
-- Related reference: [Content components](xref:reference.ui.content) — sibling `Pennington.UI` reference page for `Card`, `Badge`, `CodeBlock`, and the rest of the content-authoring surface.
+- Related reference: [Content components](xref:reference.ui.content) — sibling `Pennington.UI` reference page for `Card`, `Badge`, `CodeBlock`, and the rest of the content-authoring API.
 - How-to: [Add a custom schema.org JSON-LD type](xref:how-to.rich-content.structured-data-custom-types) — define a new `JsonLdEntity` subclass and emit it through `StructuredData`.
 - How-to: [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale) — tutorial that wires `LanguageSwitcher` and `FallbackNotice` end-to-end via `AddDocSite`.

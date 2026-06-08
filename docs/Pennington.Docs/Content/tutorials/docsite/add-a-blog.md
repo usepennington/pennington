@@ -36,7 +36,7 @@ A DocSite turns on its blog when it finds a folder named `blog` under `Content/`
 Add a `blog` folder under `Content/`, alongside your area folders, and create `launching-the-docs.md` inside it. The filename minus `.md` becomes the post's URL slug, so this post serves at `/blog/launching-the-docs`.
 
 > [!NOTE]
-> The folder must be named exactly `blog`, in lowercase. On a case-sensitive filesystem `Blog` or `blogs` is not detected.
+> The folder must be named exactly `blog`, in lowercase. On a case-sensitive filesystem `Blog` or `blogs` is not detected. This applies to DocSite's content-detected blog; the standalone BlogSite template instead reads `BlogSiteOptions.BlogContentPath`, which defaults to `Blog`.
 
 </Step>
 <Step StepNumber="2">

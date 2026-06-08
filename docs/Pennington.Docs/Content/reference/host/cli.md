@@ -7,7 +7,7 @@ tags: [host, cli, build, arguments]
 uid: reference.host.cli
 ---
 
-The command-line surface that `RunOrBuildAsync` dispatches on. It builds a System.CommandLine root command with two verbs — `build` (generate the static site) and `diag` (read-only inspection) — and dev-serves when neither verb is present. `--help`, `-h`, `-?`, and `--version` print and exit without booting the host. Build arguments — an optional base URL and output directory, or the equivalent `--base-url` / `--output` named flags — are parsed by `OutputOptions.FromArgs`.
+The command-line arguments and environment variables `RunOrBuildAsync` dispatches on. It builds a System.CommandLine root command with two verbs — `build` (generate the static site) and `diag` (read-only inspection) — and dev-serves when neither verb is present. `--help`, `-h`, `-?`, and `--version` print and exit without booting the host. Build arguments — an optional base URL and output directory, or the equivalent `--base-url` / `--output` named flags — are parsed by `OutputOptions.FromArgs`.
 
 ## Commands
 
@@ -15,7 +15,7 @@ The command-line surface that `RunOrBuildAsync` dispatches on. It builds a Syste
 |---|---|---|
 | _(none)_ | — | Dev-serve. |
 | `build` | `[baseUrl] [outputDirectory]` positional, or `--base-url` / `--output` named flags | Static build; writes to `OutputOptions.OutputDirectory`, prints `BuildReport`, sets `Environment.ExitCode = 1` when the report has errors. |
-| `diag <subcommand>` | one of `info`, `toc`, `routes`, `warnings`, `translation`, `frontmatter`, `llms` | Read-only inspection. Runs the host headless (in-process, no socket bind), writes text to stdout, and exits. `diag --help` lists the subcommands. |
+| `diag <subcommand>` | one of `info`, `toc`, `routes`, `warnings`, `translation`, `frontmatter`, `llms`, `standard-site` | Read-only inspection. Runs the host headless (in-process, no socket bind), writes text to stdout, and exits. `diag --help` lists the subcommands. |
 | `--help` / `--version` | — | Print usage (or the package version) and exit without serving. `-h` and `-?` are help aliases. |
 | _anything else_ | — | Dev-serve. An unrecognized `args[0]` is not interpreted as `build`/`diag` arguments. |
 

@@ -7,7 +7,7 @@ sectionLabel: "Markdown Pipeline"
 tags: [extensibility, markdown, highlighting, preprocessor]
 ---
 
-To intercept a fence language or `:modifier` suffix — a chart block, a plaintext wrapper, an xmldocid resolver — implement `ICodeBlockPreprocessor`. The preprocessor returns pre-rendered HTML before the default highlighter chain runs and owns the rendered `<pre><code>...</code></pre>`. For line-level CSS classes on an otherwise normal code block, trailing-comment directives are the lighter-weight choice — see <xref:how-to.code-samples.code-annotations>.
+To intercept a fence language or `:modifier` suffix — a chart block, a plaintext wrapper, an xmldocid resolver — implement `ICodeBlockPreprocessor`. The preprocessor returns pre-rendered HTML before the default highlighter chain runs, including the rendered `<pre><code>...</code></pre>`. For line-level CSS classes on an otherwise normal code block, trailing-comment directives are the lighter-weight choice — see <xref:how-to.code-samples.code-annotations>.
 
 The recipe references `examples/ExtensibilityLabExample/LineCountPreprocessor.cs`, which claims the `linecount` fence.
 

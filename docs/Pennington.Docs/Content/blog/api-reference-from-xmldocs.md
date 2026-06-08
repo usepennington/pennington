@@ -37,7 +37,7 @@ to bottom.
 
 Two things the generator handles that hand-written pages tend to skip. Interface
 pages show members inherited from base interfaces under an "Inherited from"
-heading. And C# 15 union types surface their cases as a "Cases" group at the top
+heading. And C# 15 union types show their cases as a "Cases" group at the top
 of the page — tedious to keep up by hand, automatic when the compiler is the
 source.
 

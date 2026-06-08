@@ -41,5 +41,5 @@ and the site is in your browser with live reload.
 A setup checklist is a place to make small mistakes: a missing package
 reference, a `Program.cs` line in the wrong order, a layout file that doesn't
 quite match. Starting from a template that already works means your first commit
-is content instead of plumbing — `dotnet new` is the fastest way to the same
+is content rather than project setup — `dotnet new` is the fastest way to the same
 place the tutorials build by hand.

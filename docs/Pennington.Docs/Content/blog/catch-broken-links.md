@@ -16,7 +16,7 @@ catches them continuously and shows you where.
 
 ## One audit pipeline, two surfaces
 
-The new piece is a build-auditor seam. An auditor is a check that runs against
+The new piece is a build auditor. An auditor is a check that runs against
 your content: a broken-link verifier, a content-overlap detector, a translation
 completeness pass. Pennington runs them through one `AuditRunner` that primes a
 cache at startup and re-runs on every file change.
@@ -29,13 +29,13 @@ The findings go two places from that single source:
   live in the browser as you write.
 
 So a broken link doesn't wait for a build. Introduce one, save, and the overlay
-on that page points it out. The diagnostic plumbing behind the overlay is in the
+on that page points it out. The diagnostic code behind the overlay is in the
 [request-scoped diagnostics
 reference](xref:reference.diagnostics.request-context).
 
 ## Two kinds of check
 
-Auditors come in two shapes. Structural auditors — content overlap, translation
+Auditors come in two kinds. Structural auditors — content overlap, translation
 coverage, unresolved [cross-references](xref:explanation.routing.cross-references)
 — work from the content model. Rendered auditors need the finished HTML:
 broken-link verification has to follow links against real routes, so it runs

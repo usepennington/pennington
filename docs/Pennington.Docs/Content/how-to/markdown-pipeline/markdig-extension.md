@@ -9,7 +9,7 @@ tags: [extensibility, markdown, markdig, inline-parser]
 
 To add syntax Markdig doesn't parse out of the box — `[[wiki-links]]`, a definition shortcut, a custom container — register a Markdig extension or a raw inline/block parser through `PenningtonOptions.ConfigureMarkdownPipeline`. The hook runs after every built-in extension with the resolved `IServiceProvider`, so you extend the same pipeline that renders the rest of the site rather than replacing it.
 
-This is the seam to reach for instead of writing your own renderer. For directives that expand to a string before parsing, a [shortcode](xref:how-to.markdown-pipeline.shortcodes) is lighter; to claim a whole fenced block, use a [code-block preprocessor](xref:how-to.markdown-pipeline.code-block-preprocessor). Everything else — new inline tokens, new block syntax, swapping a renderer — goes through `ConfigureMarkdownPipeline`.
+This is the hook to reach for instead of writing your own renderer. For directives that expand to a string before parsing, a [shortcode](xref:how-to.markdown-pipeline.shortcodes) is lighter; to claim a whole fenced block, use a [code-block preprocessor](xref:how-to.markdown-pipeline.code-block-preprocessor). Everything else — new inline tokens, new block syntax, swapping a renderer — goes through `ConfigureMarkdownPipeline`.
 
 The recipe references `examples/ExtensibilityLabExample/WikiLinkExtension.cs`, which adds a `[[…]]` inline parser to a bare `AddPennington` host.
 
@@ -35,7 +35,7 @@ penn.ConfigureMarkdownPipeline = (pipeline, _) =>
 
 Because `UseAdvancedExtensions()` includes the mathematics extension, math is parsed today with no configuration. Inline `$E = mc^2$` renders to `<span class="math">\(E = mc^2\)</span>` and a `$$…$$` block to `<div class="math">\[…\]</div>` — already in the `\(…\)` / `\[…\]` delimiters KaTeX and MathJax expect. Registering `UseMathematics()` again is the double-register to avoid.
 
-What's missing is the *rendering* of that markup, which is a client-side step, not a Markdig one. Load KaTeX (or MathJax) through the head seam and run its auto-render once per page. On a DocSite that seam is `DocSiteOptions.AdditionalHtmlHeadContent`:
+What's missing is the *rendering* of that markup, which is a client-side step, not a Markdig one. Load KaTeX (or MathJax) through the head content option and run its auto-render once per page. On a DocSite that option is `DocSiteOptions.AdditionalHtmlHeadContent`:
 
 ```csharp
 options.AdditionalHtmlHeadContent = """
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", typeset);
 document.addEventListener("spa:commit", typeset);
 ```
 
-This is the same wiring as any browser library that upgrades server-rendered markup — see <xref:how-to.rich-content.client-side-widget> for the full pattern and <xref:how-to.rich-content.diagrams> for the bundled Mermaid version of it. On a bare `AddPennington` host, inject the same tags through your own layout's `<head>` or a <xref:how-to.response-pipeline.response-processor>.
+This is the same pattern as any browser library that upgrades server-rendered markup — see <xref:how-to.rich-content.client-side-widget> for the full pattern and <xref:how-to.rich-content.diagrams> for the bundled Mermaid version of it. On a bare `AddPennington` host, inject the same tags through your own layout's `<head>` or a <xref:how-to.response-pipeline.response-processor>.
 
 ## Write a custom inline parser
 
@@ -110,7 +110,7 @@ The wiki-links render as anchors carrying `class="wikilink"`, and the math block
 
 ## How your custom HTML survives the response pipeline
 
-After rendering, every page passes through the response rewriters and is harvested by the site projection for search and llms.txt. Custom markup is a first-class citizen in all three, with one thing to watch.
+After rendering, every page passes through the response rewriters and is harvested by the site projection for search and llms.txt. Custom markup is handled the same way as built-in markup in all three, with one thing to watch.
 
 **Response rewriters mutate only what their selectors match.** Each `IHtmlResponseRewriter` runs an AngleSharp query over the parsed document; elements and classes it doesn't target pass through untouched. Internal `href`s you emit *are* rewritten — the shipped rewriters add the locale prefix and the deploy base URL — so a wiki-link to `/notes/glossary/` is portable across locales and sub-path deploys exactly like an authored link. The one to know about: the opt-in [word-break rewriter](xref:how-to.response-pipeline.html-rewriter)'s default selector includes `span`, so if you emit a text-bearing `<span>` that a client script reads verbatim (a math span, say), either leave word-break off for it or narrow its selector.
 
@@ -127,6 +127,6 @@ After rendering, every page passes through the response rewriters and is harvest
 
 - How-to: [Expand a directive before Markdig parses](xref:how-to.markdown-pipeline.shortcodes) — string expansion before the parser runs, for stamping values rather than new syntax.
 - How-to: [Add a custom fence syntax](xref:how-to.markdown-pipeline.code-block-preprocessor) — claim a fenced block instead of an inline token.
-- How-to: [Ship a custom client-side widget](xref:how-to.rich-content.client-side-widget) — the head-seam + `spa:commit` pattern the math example uses.
+- How-to: [Ship a custom client-side widget](xref:how-to.rich-content.client-side-widget) — the head-content + `spa:commit` pattern the math example uses.
 - Reference: [Markdown extensions catalog](xref:reference.markdown.extensions) — the syntax the default pipeline already provides.
 - Background: [The response-processing pipeline](xref:explanation.core.response-processing) — where the rewriters and projection run.

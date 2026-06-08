@@ -42,11 +42,11 @@ Each kind below shows the source markdown above the rendered output. Every line 
 
 ````markdown
 > [!IMPORTANT]
-> Important callouts flag content that is load-bearing for the rest of the page.
+> Important callouts flag content that is required for the rest of the page.
 ````
 
 > [!IMPORTANT]
-> Important callouts flag content that is load-bearing for the rest of the page.
+> Important callouts flag content that is required for the rest of the page.
 
 ### Warning
 
@@ -62,11 +62,11 @@ Each kind below shows the source markdown above the rendered output. Every line 
 
 ````markdown
 > [!CAUTION]
-> Cautions surface destructive operations — wire-format breaks, security footguns.
+> Cautions surface destructive operations — wire-format breaks, security risks.
 ````
 
 > [!CAUTION]
-> Cautions surface destructive operations — wire-format breaks, security footguns.
+> Cautions surface destructive operations — wire-format breaks, security risks.
 
 ## What the renderer emits
 

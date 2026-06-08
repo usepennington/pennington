@@ -19,7 +19,7 @@ A working reference: `examples/BareHostRazorPageExample` — one Razor component
 
 ## Author the page component
 
-Write a Razor component whose `[Parameter]` surface is everything the page needs — there is no ambient `HttpContext`, layout, or cascading state from a parent. The component renders the entire document so it includes `<!DOCTYPE html>` and the `<link rel="stylesheet" href="/styles.css">` tag for [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) output.
+Write a Razor component whose `[Parameter]` properties are everything the page needs — there is no ambient `HttpContext`, layout, or cascading state from a parent. The component renders the entire document so it includes `<!DOCTYPE html>` and the `<link rel="stylesheet" href="/styles.css">` tag for [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) output.
 
 ```razor:symbol
 examples/BareHostRazorPageExample/Components/StatusPage.razor
@@ -37,7 +37,7 @@ The `RenderRazorPageAsync<TComponent>` helper at the bottom of `Program.cs` is t
 
 ## Publish the routes through `IContentService`
 
-A custom `IContentService` yields one `EndpointSource` per route so the build crawler discovers each URL and fetches it through the live pipeline — your `MapGet` produces the HTML the same way at build time as at request time. See <xref:how-to.content-services.custom-content-service> for the per-record discovery shape, including a worked `EndpointSource` example.
+A custom `IContentService` yields one `EndpointSource` per route so the build crawler discovers each URL and fetches it through the live pipeline — your `MapGet` produces the HTML the same way at build time as at request time. See <xref:how-to.content-services.custom-content-service> for the per-record discovery pattern, including a worked `EndpointSource` example.
 
 ## Verify
 

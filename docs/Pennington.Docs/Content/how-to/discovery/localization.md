@@ -7,7 +7,7 @@ sectionLabel: "Content Discovery"
 tags: [localization, locales, translations, routing]
 ---
 
-When the site needs to ship in more than one language, the knobs below cover wiring options, content layout on disk, routing middleware, and UI translations — everything needed to take a single-locale site multilingual. For a first locale, the tutorial [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale) walks through the same moving parts at a teaching pace.
+When the site needs to ship in more than one language, the options below cover the wiring, content layout on disk, routing middleware, and UI translations — everything needed to take a single-locale site multilingual. For a first locale, the tutorial [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale) walks through the same moving parts at a teaching pace.
 
 ## Before you begin
 - An existing Pennington site with at least one markdown page (see [Create your first Pennington site](xref:tutorials.getting-started.first-site) if not).

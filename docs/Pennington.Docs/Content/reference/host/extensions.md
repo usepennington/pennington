@@ -7,11 +7,11 @@ tags: [host, di, middleware, extensions]
 uid: reference.host.extensions
 ---
 
-The complete roster of public extension methods Pennington exposes for wiring the library into an ASP.NET Core host — `Add*` (DI registration), `Use*` (middleware and endpoints), and `Run*` (host entry points). Grouped below by receiver type; each method is declared in an `*Extensions` static class under its owning feature namespace.
+The list of public extension methods Pennington exposes for wiring the library into an ASP.NET Core host — `Add*` (DI registration), `Use*` (middleware and endpoints), and `Run*` (host entry points). Grouped below by receiver type; each method is declared in an `*Extensions` static class under its owning feature namespace.
 
 ## `IServiceCollection` extensions
 
-DI registration entry points. Each method's options surface is documented on its own reference page, linked from the method's xmldoc.
+DI registration entry points. Each method's options are documented on its own reference page, linked from the method's xmldoc.
 
 <ExtensionMethods Receiver="IServiceCollection" />
 

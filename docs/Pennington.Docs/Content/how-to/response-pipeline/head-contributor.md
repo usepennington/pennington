@@ -7,7 +7,7 @@ sectionLabel: "Response Pipeline"
 tags: [head, contributors, extensibility, response-pipeline]
 ---
 
-To add a head tag that deduplicates against other writers, orders predictably against site and page defaults, and survives SPA navigation, implement `IHeadContributor`. For genuinely page-local markup that no other writer touches, a Razor `<HeadContent>` block on the page is still the right tool — the head reconciler normalizes it into the same model. Reach for a contributor when the tag is cross-cutting: emitted on many pages, or competing with another writer for the same slot. For background on why the head funnels through one seam, see <xref:explanation.core.head-subsystem>.
+To add a head tag that deduplicates against other writers, orders predictably against site and page defaults, and survives SPA navigation, implement `IHeadContributor`. For genuinely page-local markup that no other writer touches, a Razor `<HeadContent>` block on the page is still the right tool — the head reconciler normalizes it into the same model. Reach for a contributor when the tag is shared across pages: emitted on many pages, or competing with another writer for the same slot. For background on why the head funnels through one extension point that every writer goes through, see <xref:explanation.core.head-subsystem>.
 
 ## Before you begin
 

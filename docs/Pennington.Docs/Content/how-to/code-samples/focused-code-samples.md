@@ -145,7 +145,7 @@ examples/FocusedCodeSamplesExample/ModularWordCounter.cs > ModularWordCounter.Fo
 
 ## Show a type's shape with `,signatures`
 
-When the point is a type's surface — what it exposes, not how each member works — append `,signatures`. Every member body collapses to `{ … }`, leaving the declarations, signatures, doc comments, and member order intact for an at-a-glance outline.
+When the point is a type's public members — what it exposes, not how each member works — append `,signatures`. Every member body collapses to `{ … }`, leaving the declarations, signatures, doc comments, and member order intact for an at-a-glance outline.
 
 ````markdown
 ```csharp:symbol,signatures

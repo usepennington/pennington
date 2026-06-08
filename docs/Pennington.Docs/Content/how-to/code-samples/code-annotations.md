@@ -85,7 +85,7 @@ config.Save();
 
 ### Flag errors and warnings
 
-Use `[!code error]` and `[!code warning]` to surface diagnostics inline. The transformer applies `error` and `warning` classes so the rendered lines read like compiler output.
+Use `[!code error]` and `[!code warning]` to show diagnostics inline. The transformer applies `error` and `warning` classes so the rendered lines read like compiler output.
 
 ````markdown
 ```csharp

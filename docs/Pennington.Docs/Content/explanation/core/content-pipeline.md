@@ -31,7 +31,7 @@ A `DiscoveredItem` pairs a `ContentRoute` with a second union, `ContentSource`, 
 src/Pennington/Pipeline/ContentSource.cs
 ```
 
-The five cases cover every origin Pennington ships — `FileSource`, `RazorPageSource`, `RedirectSource`, `EndpointSource`, and `LlmsOnlySource` — and downstream stages (parsers, renderers, the output writer) never pattern-match on `ContentSource`; by the time they run, the source has been replaced by the parsed shape. For the construction and consumption shapes in detail, including the `.Value` pattern that works across both target frameworks, see <xref:explanation.core.content-source>.
+The five cases cover every origin Pennington ships — `FileSource`, `RazorPageSource`, `RedirectSource`, `EndpointSource`, and `LlmsOnlySource` — and downstream stages (parsers, renderers, the output writer) never pattern-match on `ContentSource`; by the time they run, the source has been replaced by a `ParsedItem`. For the construction and consumption shapes in detail, including the `.Value` pattern that works across both target frameworks, see <xref:explanation.core.content-source>.
 
 ### Stage transitions replace the item
 
@@ -49,13 +49,13 @@ The implementation has three explicit branches: a `FailedItem` passes through wi
 
 Exceptions thrown inside `IContentParser.ParseAsync` or `IContentRenderer.RenderAsync` are caught at the pipeline boundary and rewritten as a `FailedItem` carrying the route and a `ContentError` that describes what went wrong. From that point on, the failed item rides the same async stream as the successful ones. Downstream stages check `is FailedItem` and short-circuit without touching the error or trying to make sense of absent fields.
 
-The payoff arrives in `GenerateAsync`. Because `FailedItem` is a peer case in the union, the exhaustive pattern match there routes it to `BuildReportBuilder.AddError` — every parse or render exception ends up as a named entry in the build report rather than an unhandled exception that aborts the crawl. One broken markdown file does not prevent the other four hundred from rendering. This is the concrete benefit of treating failure as data: the "sad path" and the "happy path" have identical shape in the stream, which means the final aggregation step sees them through the same lens.
+This is what `GenerateAsync` relies on. Because `FailedItem` is a case in the union, the exhaustive pattern match there routes it to `BuildReportBuilder.AddError` — every parse or render exception ends up as a named entry in the build report rather than an unhandled exception that aborts the crawl. One broken markdown file does not prevent the other four hundred from rendering. Because failure is just another data case, a failed item and a successful one are the same kind of value in the stream, so the final aggregation step handles them the same way.
 
 ```csharp:symbol
 src/Pennington/Pipeline/ContentItem.cs > FailedItem
 ```
 
-Treating failure as a data case is what makes the exhaustive match in `GenerateAsync` meaningful rather than ceremonial. If `FailedItem` were an exception that escaped the pipeline, there would be no case to match — and no way for the compiler to confirm that every outcome was handled.
+Treating failure as a data case is what gives the exhaustive match in `GenerateAsync` something to act on. If `FailedItem` were an exception that escaped the pipeline, there would be no case to match — and no way for the compiler to confirm that every outcome was handled.
 
 ## Further reading
 

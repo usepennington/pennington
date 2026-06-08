@@ -25,23 +25,23 @@ Pennington models this split directly on the type system. The universal question
 src/Pennington/FrontMatter/IFrontMatter.cs > IFrontMatter
 ```
 
-The contract reads as a typed baseline with opt-outs. A minimal record exposes a single required `Title` property and the engine handles drafts, search indexing, LLM indexing, cross-references, descriptions, and dates gracefully. Engine code uses the members directly — `if (page.IsDraft)` works on every `IFrontMatter` with no pattern-match ceremony.
+The contract gives every record common defaults it can override. A minimal record exposes a single required `Title` property and the engine handles drafts, search indexing, LLM indexing, cross-references, descriptions, and dates gracefully. Engine code uses the members directly — `if (page.IsDraft)` works on every `IFrontMatter` without checking for each interface first.
 
-### The four capability interfaces
+### The capability interfaces
 
-Tags, order, section labels, and redirects live on separate interfaces because their adoption is genuinely selective. A blog post has tags but no meaningful order among siblings; a doc page has an order but no redirect target; a redirect stub carries a destination URL and little else. Folding these into `IFrontMatter` would force every record to carry empty tag arrays and meaningless sort keys — and, more importantly, would erase the signal that the interface's *presence* carries.
+Tags, order, section labels, redirects, and Standard Site document keys live on separate interfaces because their adoption is genuinely selective. A blog post has tags but no meaningful order among siblings; a doc page has an order but no redirect target; a redirect stub carries a destination URL and little else. Folding these into `IFrontMatter` would force every record to carry empty tag arrays and meaningless sort keys — and, more importantly, would erase the signal that the interface's *presence* carries.
 
 ```csharp:symbol
 src/Pennington/FrontMatter/Capabilities.cs > IOrderable
 ```
 
-`NavigationBuilder` reads `IOrderable` the type, not the value. A content type either participates in ordered navigation or it does not; there is no "this page has no meaningful order" case to handle. The same applies to `ITaggable` (tag cloud participation), `ISectionable` (section-label breadcrumbs), and `IRedirectable` (redirect-stub semantics).
+`NavigationBuilder` reads `IOrderable` the type, not the value. A content type either participates in ordered navigation or it does not; there is no "this page has no meaningful order" case to handle. The same applies to `ITaggable` (tag cloud participation), `ISectionable` (section-label breadcrumbs), `IRedirectable` (redirect-stub semantics), and `IStandardSiteDocument` (the AT Protocol record key for Standard Site syndication).
 
-The rule of thumb the shape encodes: if adoption is universal, the member lives on `IFrontMatter` with a sensible default. If adoption is selective, it lives on a capability interface so that pattern-matching on the interface remains meaningful. Seeing `IOrderable` on a record means the content type consciously opted into ordered navigation.
+The rule of thumb is simple: if adoption is universal, the member lives on `IFrontMatter` with a sensible default. If adoption is selective, it lives on a capability interface so that pattern-matching on the interface remains meaningful. Seeing `IOrderable` on a record means the content type consciously opted into ordered navigation.
 
 ### Custom front-matter records
 
-A custom record buys typed access to extra keys (an `apiVersion` or `gitHubUrl` field becomes a strongly-typed property) plus the same capability-opt-in surface. The defaults give what the shipped records would give for free; the custom record only declares what it adds. See <xref:how-to.pages.front-matter> for the recipe.
+A custom record buys typed access to extra keys (an `apiVersion` or `gitHubUrl` field becomes a strongly-typed property) plus the same set of capability interfaces to opt into. The defaults give what the shipped records would give; the custom record only declares what it adds. See <xref:how-to.pages.front-matter> for the recipe.
 
 ## Further reading
 

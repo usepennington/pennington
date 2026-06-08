@@ -38,7 +38,7 @@ reserved for absolute canonical and feed links. The [GitHub Pages
 how-to](xref:how-to.deployment.github-pages) has the complete workflow file and
 the base-URL setup.
 
-## Smaller CSS, for free
+## Smaller CSS in the workflow
 
 A later follow-up wired PurgeCSS into the same workflow. Pennington generates
 utility CSS on demand, and PurgeCSS trims the result against the built HTML, so

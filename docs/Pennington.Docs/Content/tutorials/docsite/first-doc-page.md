@@ -48,7 +48,7 @@ Add a second file next to the first with the markdown below. Note `order: 30` �
 examples/DocSitePagesAndLinksExample/snippets/configure-step1.md
 ```
 
-The 20 / 30 spacing leaves room to drop a page between them later without renumbering. For deeper coverage of section grouping and `order:` strategy, see <xref:tutorials.docsite.sections-and-areas>.
+Numbering in tens rather than consecutively — 20, then 30 — keeps a gap free, so a future page can sit between the two without touching either file. For deeper coverage of section grouping and `order:` strategy, see <xref:tutorials.docsite.sections-and-areas>.
 
 </Step>
 </Steps>
@@ -96,7 +96,7 @@ examples/DocSitePagesAndLinksExample/Content/guides/configure.md
 
 - Reload `http://localhost:5000/guides/install` — a **Configure the site** link sits at the bottom of the page. Click it.
 - The browser lands on `/guides/configure`. A **Install Pennington** link at the bottom of that page returns home.
-- Both transitions are instant — the SPA navigation that ships with DocSite swaps the article without a full page reload.
+- Both links navigate without a full page reload — the SPA navigation that ships with DocSite.
 
 </Checkpoint>
 

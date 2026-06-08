@@ -11,7 +11,7 @@ tags:
 ---
 
 Three things a content site should do for its readers are now handled by the
-DocSite and BlogSite templates rather than left to you: structured data for
+DocSite and BlogSite templates: structured data for
 search engines, accessibility landmarks for keyboard and screen-reader users,
 and font preloading to reduce the flash of unstyled text.
 

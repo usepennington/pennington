@@ -23,13 +23,13 @@ is reframed around the one-time publication setup as THE path and per-document
 records are clearly marked optional / forward-looking.
 -->
 
-Share a link to your site on Bluesky and it shows a link preview. Turn this on and that preview becomes a card the AT Protocol network attributes to *your publication* — recognized as content you own, with your name and branding — instead of a generic preview of an anonymous page.
+Share a link to your site on Bluesky and it shows a link preview. Turn this on and the AT Protocol network can attribute that preview to *your publication* — content you own, with your name and branding — rather than treating it as a generic preview of an anonymous page.
 
-The bigger payoff is what *publication* means on the network. The AT Protocol is the open social layer behind Bluesky, and on it a publication is something readers can follow, the same way they follow an account: reader apps can surface your posts and let people subscribe to them. And because the canonical metadata lives in records you own rather than on any single host, your audience and identity travel with you if you ever move hosts. Verification is what lets the network connect your web pages to that publication.
+The bigger payoff is what *publication* means on the network. The AT Protocol is the open social layer behind Bluesky, and on it a publication is something readers can follow, the same way they follow an account: reader apps can surface your posts and let people subscribe to them. And because the canonical metadata lives in records you own rather than on any single host, your identity stays tied to those records rather than to one host. Verification is what lets the network connect your web pages to that publication.
 
 [Standard Site](https://standard.site) defines the shared format that makes this work, and it comes in two pieces that live in different places. The first is a set of records — one for the *publication* (your site as a whole) and one for each *document* (a post or page) — that hold the canonical metadata the network reads. These aren't your site's content: they live in your AT Protocol account, and you author them in a Standard Site editor such as [standard.horse](https://standard.horse), the way you'd manage any other data on your account. Pennington never creates or edits them.
 
-Verification is the second piece, and it's Pennington's half. From your built site it publishes the proof that ties the site to those records — a `/.well-known/` file naming your publication and the `site.standard.*` `<link>` tags a card reader checks — so the network trusts that this site is the web home of that publication. You own the records; Pennington vouches that this site backs them.
+Verification is the second piece, and it's Pennington's half. From your built site it publishes the files that tie the site to those records — a `/.well-known/` file naming your publication and the `site.standard.*` `<link>` tags a card reader checks — so the network can treat this site as the web home of that publication. You own the records; Pennington emits the files that point back to them.
 
 ## Before you begin
 
@@ -115,7 +115,7 @@ EmitAtprotoDid = true,
 
 ### Drop the site-wide publication link
 
-`EmitPublicationLink` defaults to `true` — it is the head tag that makes a shared link render a rich Bluesky card, and the point of Tier 1 verification. Set it to `false` to keep the well-known file but suppress the head link.
+`EmitPublicationLink` defaults to `true` — it is the head tag a card reader checks when rendering a shared link, and the point of Tier 1 verification. Set it to `false` to keep the well-known file but suppress the head link.
 
 ## Result
 

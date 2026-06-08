@@ -7,7 +7,7 @@ sectionLabel: "Feeds & Indexes"
 tags: [sitemap, seo, canonical-base-url, front-matter]
 ---
 
-`/sitemap.xml` is registered and served automatically on every `AddPennington`-based host; a working site already emits one. The knobs below tune what crawlers see — absolute `<loc>` values, draft/redirect exclusion, or turning the sitemap off on BlogSite. For a first site, start with <xref:tutorials.getting-started.first-site>.
+`/sitemap.xml` is registered and served automatically on every `AddPennington`-based host; a working site already emits one. The options below tune what crawlers see — absolute `<loc>` values, draft/redirect exclusion, or turning the sitemap off on BlogSite. For a first site, start with <xref:tutorials.getting-started.first-site>.
 
 ## Before you begin
 - A working Pennington site (see <xref:tutorials.getting-started.first-site> if not)

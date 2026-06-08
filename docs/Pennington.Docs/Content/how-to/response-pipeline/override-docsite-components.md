@@ -7,20 +7,20 @@ sectionLabel: "Response Pipeline"
 tags: [docsite, theming, slots, routing]
 ---
 
-To replace the bundled DocSite header or footer (or inject head tags, append CSS, route additional `@page` components) without forking the template, populate the four slot seams on `DocSiteOptions`. The bundled layout, content pipeline, SPA navigation, and [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) wiring keep working. To rearrange the layout shell fundamentally, read <xref:explanation.positioning.docsite-positioning> before deciding whether `AddDocSite` is still the right starting point.
+To replace the bundled DocSite header or footer (or inject head tags, append CSS, route additional `@page` components) without forking the template, populate the four extension points — the *slot seams* — on `DocSiteOptions`. The bundled layout, content pipeline, SPA navigation, and [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) wiring keep working. To rearrange the layout shell fundamentally, read <xref:explanation.positioning.docsite-positioning> before deciding whether `AddDocSite` is still the right starting point.
 
 ## Before you begin
 
 - An existing Pennington site wired through `AddDocSite(...)` (see <xref:tutorials.docsite.scaffold> if not).
 - Edits made in the `DocSiteOptions` factory passed to `AddDocSite`, not the DocSite source — forking the template is out of scope (see <xref:explanation.positioning.docsite-positioning>).
 - Awareness that `ExtraStyles` is prepended above the generated MonorailCSS utility output in `/styles.css`, so rules added there ship inside the same stylesheet rather than as a separate file.
-- Awareness that these seams are set at host-build time — changes take effect on the next `dotnet run`, whose source watch reloads them.
+- Awareness that these extension points are set at host-build time — changes take effect on the next `dotnet run`, whose source watch reloads them.
 
-For a working setup, see `examples/DocSiteChromeOverridesExample`. `SiteChromeOverrides.cs` returns a populated `DocSiteOptions` exercising all four seams, `Components/ExtraHeadFragment.razor` backs the head-slot fragment, and `Components/ExtraPage.razor` is the routed `@page` component showing that `AdditionalRoutingAssemblies` widened the router. `Program.cs` runs the DocSite end-to-end against those overrides.
+For a working setup, see `examples/DocSiteChromeOverridesExample`. `SiteChromeOverrides.cs` returns a populated `DocSiteOptions` exercising all four extension points, `Components/ExtraHeadFragment.razor` backs the head-slot fragment, and `Components/ExtraPage.razor` is the routed `@page` component showing that `AdditionalRoutingAssemblies` widened the router. `Program.cs` runs the DocSite end-to-end against those overrides.
 
 ## Build the populated options
 
-The whole code surface for this recipe lives in one factory method, so the four seams sit together on a single record initializer. The example sets `SiteTitle` and `SiteDescription` alongside the override seams, matching the shape produced by `AddDocSite(() => SiteChromeOverrides.BuildDocSiteOptions())`.
+All the code for this recipe lives in one factory method, so the four extension points sit together on a single record initializer. The example sets `SiteTitle` and `SiteDescription` alongside the override properties, matching the options produced by `AddDocSite(() => SiteChromeOverrides.BuildDocSiteOptions())`.
 
 ```csharp:symbol
 examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverrides.BuildDocSiteOptions
@@ -28,7 +28,7 @@ examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverri
 
 ### Inject tags into `<head>` via `AdditionalHtmlHeadContent`
 
-`AdditionalHtmlHeadContent` is a raw HTML string rendered inside every page's `<head>`, making it the right seam for meta tags, preconnect hints, analytics snippets, and font `<link>` elements that MonorailCSS does not know about. To author the fragment as a Razor component instead, render it with `ToHtmlString()` once at startup and pass the resulting string — the example pairs `SiteChromeOverrides.BuildHtmlHeadContent` with `Components/ExtraHeadFragment.razor` so both shapes sit side by side.
+`AdditionalHtmlHeadContent` is a raw HTML string rendered inside every page's `<head>`, making it the right place for meta tags, preconnect hints, analytics snippets, and font `<link>` elements that MonorailCSS does not know about. To author the fragment as a Razor component instead, render it with `ToHtmlString()` once at startup and pass the resulting string — the example pairs `SiteChromeOverrides.BuildHtmlHeadContent` with `Components/ExtraHeadFragment.razor` so both approaches sit side by side.
 
 ```csharp:symbol,bodyonly
 examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverrides.BuildHtmlHeadContent
@@ -83,7 +83,7 @@ The chrome on every page is replaced by the configured fragments. The header tit
 
 ## Related
 
-- Reference: <xref:reference.api.doc-site-options> — the full property surface, including `ConfigurePennington`, `CustomCssFrameworkSettings`, and every other override seam beyond the four covered here.
+- Reference: <xref:reference.api.doc-site-options> — the full set of properties, including `ConfigurePennington`, `CustomCssFrameworkSettings`, and every other override point beyond the four covered here.
 - How-to: <xref:how-to.discovery.multiple-sources> — register extra markdown sources through `DocSiteOptions.ConfigurePennington`.
 - How-to: <xref:how-to.content-services.custom-content-service> — register a custom `IContentService` alongside DocSite's own.
 - Background: <xref:explanation.positioning.docsite-positioning> — when forking DocSite or dropping to bare `AddPennington` becomes the right move.
