@@ -20,9 +20,11 @@ BlogSite is a separate template — no DocSite experience needed.
 > right choice when the blog *is* the site. If you mainly want documentation with
 > a blog attached, use DocSite's native blog instead.
 
-- .NET 11 SDK installed
+- .NET 10 SDK installed
 - Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site)
 - Completed [Serve markdown through a Blazor catch-all](xref:tutorials.getting-started.first-page) (so `Content/` already has at least one markdown file)
+
+The stable .NET 10 SDK is all BlogSite needs — its package targets .NET 10, and you never write the `union` keyword that would call for a preview SDK. See [the SDK and the union shim](xref:explanation.positioning.sdk-and-the-union-shim) for when the .NET 11 beta is worth opting into.
 
 The finished code for this tutorial lives in [`examples/BlogSiteScaffoldExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteScaffoldExample).
 

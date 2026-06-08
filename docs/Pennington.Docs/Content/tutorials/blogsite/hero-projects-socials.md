@@ -11,7 +11,7 @@ By the end of this tutorial, the BlogSite host displays a hero headline on the h
 
 ## Prerequisites
 
-- .NET 11 SDK installed
+- .NET 10 SDK installed
 - Completed [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold)
 - Completed [Publish your first post and light up the RSS feed](xref:tutorials.blogsite.first-post)
 

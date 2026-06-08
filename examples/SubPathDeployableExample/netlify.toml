@@ -13,7 +13,7 @@
   publish = "output"
 
 [build.environment]
-  DOTNET_VERSION = "11.0.x"
+  DOTNET_VERSION = "10.0.x"
   BASE_URL = "/"
 
 [[headers]]

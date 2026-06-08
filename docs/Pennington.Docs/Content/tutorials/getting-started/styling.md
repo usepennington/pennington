@@ -11,7 +11,7 @@ By the end of this tutorial the Blazor-pages site from [Serve markdown through a
 
 ## Prerequisites
 
-- .NET 11 SDK installed
+- .NET 10 SDK installed
 - Completed [Serve markdown through a Blazor catch-all](xref:tutorials.getting-started.first-page) (or a Pennington project with `MapRazorComponents<App>()` wired and a catch-all `MarkdownPage.razor`)
 
 The finished code for this tutorial lives in [`examples/GettingStartedStylingExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedStylingExample). For a documentation site, the DocSite template ships this MonorailCSS-plus-`MainLayout` stack with a sidebar, search, and theme toggle already assembled — <xref:tutorials.docsite.scaffold> covers it.

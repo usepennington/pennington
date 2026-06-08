@@ -33,10 +33,10 @@ The same partial expands the same way on every page that references it — edit 
 To splice a partial into the middle of a sentence, put the directive inline. The partial should hold a single run of text with no trailing newline.
 
 ````markdown
-The current target SDK is [!INCLUDE [version](../../../_includes/sdk-version.md)], a preview build.
+The current target SDK is [!INCLUDE [version](../../../_includes/sdk-version.md)], the stable release.
 ````
 
-The current target SDK is [!INCLUDE [version](../../../_includes/sdk-version.md)], a preview build.
+The current target SDK is [!INCLUDE [version](../../../_includes/sdk-version.md)], the stable release.
 
 ## How paths resolve
 

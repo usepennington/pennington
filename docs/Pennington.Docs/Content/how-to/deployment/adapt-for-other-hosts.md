@@ -25,7 +25,7 @@ Every host configuration restates four settings:
 |---|---|
 | Build command | `dotnet run --project <your-project> -- build "$BASE_URL"` |
 | Publish directory | `output/` (the default from `OutputOptions`) |
-| .NET SDK pin | `11.0.x` (matches `setup-dotnet@v4` in the GitHub Pages workflow) |
+| .NET SDK pin | `10.0.x` (matches `setup-dotnet@v4` in the GitHub Pages workflow) |
 | Base URL | `/` for apex domains, `/<path>` for sub-path hosting |
 
 The per-host files below are each those same four values expressed in that host's syntax. See <xref:reference.host.cli> for the `OutputOptions.FromArgs` grammar.
@@ -39,7 +39,7 @@ The table is the diff against the GitHub Pages workflow — blank cells mean not
 | Config file | `.github/workflows/deploy.yml` | `staticwebapp.config.json` + SWA's own build action | Pages dashboard or `wrangler.toml` | `netlify.toml` |
 | Build command | `dotnet run --project … -- build "$BASE_URL"` | same (invoked via `Azure/static-web-apps-deploy@v1` `app_build_command`) | same (set in dashboard → **Build command**) | same (declared in `[build] command`) |
 | Publish directory | `output` (via `upload-pages-artifact@v3`) | `output_location: "output"` on the SWA action | **Build output directory:** `output` | `publish = "output"` |
-| .NET SDK pin | `actions/setup-dotnet@v4` with `11.0.x` | add `actions/setup-dotnet@v4` before the SWA action | dashboard env: `DOTNET_VERSION = 11.0.x` | `[build.environment] DOTNET_VERSION = "11.0.x"` |
+| .NET SDK pin | `actions/setup-dotnet@v4` with `10.0.x` | add `actions/setup-dotnet@v4` before the SWA action | dashboard env: `DOTNET_VERSION = 10.0.x` | `[build.environment] DOTNET_VERSION = "10.0.x"` |
 | Base URL strategy | derived from `${{ github.event.repository.name }}` | pass explicitly — SWA serves at apex by default | pass explicitly — Cloudflare serves at apex | `$BASE_URL` env var with `/` default; override in dashboard per site |
 | SPA / deep-link fallback | `.nojekyll` marker + `404.html` | `navigationFallback.rewrite: "/404.html"` (see Azure below) | Cloudflare auto-serves `404.html` from build output | `[[redirects]]` with `status = 404 → /404.html` (see Netlify below) |
 | Cache headers for `/_content/*` | GitHub Pages default (short TTL) | `routes[]` entry, `Cache-Control: public, max-age=31536000, immutable` | `_headers` file in `output/` (same directive) | `[[headers]] for = "/_content/*"` (same directive) |
@@ -67,13 +67,13 @@ Cloudflare Pages has no first-party config file equivalent to SWA or Netlify, so
 
 - **Build command:** `dotnet run --project <your-project> -- build`
 - **Build output directory:** `output`
-- **Environment variables:** `DOTNET_VERSION=11.0.x`, `BASE_URL=/` (or the relevant sub-path)
+- **Environment variables:** `DOTNET_VERSION=10.0.x`, `BASE_URL=/` (or the relevant sub-path)
 
 For custom cache headers on `/_content/*`, drop a `_headers` file into `wwwroot/` so it ships as part of `output/` — the directive format matches the Netlify and Azure snippets above.
 
 ## Verify
 
-- Trigger a deploy on the target host. The build log shows `setup-dotnet` (or equivalent) picking up `11.0.x`, `dotnet run -- build` exiting zero, and the host uploading `output/` as the publish directory.
+- Trigger a deploy on the target host. The build log shows `setup-dotnet` (or equivalent) picking up `10.0.x`, `dotnet run -- build` exiting zero, and the host uploading `output/` as the publish directory.
 - Open the deployed URL — the landing page loads, nested links resolve, and view-source shows the expected `<body data-base-url="...">` (either absent for root deployments, or `/<path>` with no trailing slash for sub-path hosts).
 - Visit a non-existent path like `/does-not-exist/` — the response body is the generated `output/404.html` rather than the host's default 404 shell.
 

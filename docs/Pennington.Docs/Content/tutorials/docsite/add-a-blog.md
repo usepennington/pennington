@@ -17,7 +17,7 @@ The blog activates from content alone — a folder named `blog` under `Content/`
 
 ## Prerequisites
 
-- .NET 11 SDK installed
+- .NET 10 SDK installed
 - Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) — or any DocSite host ready to run
 
 The finished code for this tutorial lives in [`examples/DocSiteBlogExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteBlogExample).

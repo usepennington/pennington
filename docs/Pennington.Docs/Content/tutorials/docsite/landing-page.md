@@ -17,7 +17,7 @@ Along the way the tutorial covers routing a Razor component at `/`, why a `@page
 
 ## Prerequisites
 
-- .NET 11 SDK installed
+- .NET 10 SDK installed
 - Completed [Add doc pages and link between them](xref:tutorials.docsite.first-doc-page) — it provides the single-area host and the `install` / `configure` guide pages this landing page links to
 
 The finished code for this tutorial lives in [`examples/DocSitePagesAndLinksExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSitePagesAndLinksExample).

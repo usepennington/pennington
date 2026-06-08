@@ -13,7 +13,7 @@ This is the last step of the getting-started arc. After it, a bare `AddPenningto
 
 ## Prerequisites
 
-- .NET 11 SDK installed
+- .NET 10 SDK installed
 - Completed [Style the site with MonorailCSS](xref:tutorials.getting-started.styling) — this tutorial extends that project's `MainLayout.razor` and `Content/` folder
 
 The finished code for this tutorial lives in [`examples/GettingStartedNavigationExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedNavigationExample).

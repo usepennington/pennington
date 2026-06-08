@@ -11,10 +11,10 @@ By the end of this tutorial a runnable ASP.NET project — `MyFirstPenningtonSit
 
 ## Prerequisites
 
-Pennington targets .NET 11 with C# 15 union types, so install the .NET 11 SDK before starting.
+Pennington's published packages target .NET 10, so the stable .NET 10 SDK is all you need to build a site — no preview language flag. The .NET 11 beta SDK is an opt-in that only matters when you extend the pipeline yourself; [the SDK and the union shim](xref:explanation.positioning.sdk-and-the-union-shim) explains when that pays off.
 
-- .NET 11 SDK installed (preview build — `dotnet --version` reports `11.0.*`)
-- A terminal and a text editor or IDE that understands C# 15
+- .NET 10 SDK installed
+- A terminal and a text editor or IDE
 
 The finished code for this tutorial lives in [`examples/GettingStartedMinimalSiteExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedMinimalSiteExample).
 
@@ -52,27 +52,6 @@ dotnet add package Pennington
 
 </Step>
 <Step StepNumber="3">
-
-**Opt into C# preview language features**
-
-Pennington uses C# 15 union types, which are still a preview language feature in the .NET 11 SDK. Edit the csproj to add `<LangVersion>preview</LangVersion>` so they compile:
-
-```xml
-<Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
-    <LangVersion>preview</LangVersion> <!-- [!code ++] -->
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-  <ItemGroup> <!-- [!code ++] -->
-    <PackageReference Include="Pennington" Version="<?# PackageVersion /?>" /> <!-- [!code ++] -->
-  </ItemGroup> <!-- [!code ++] -->
-</Project>
-```
-
-</Step>
-<Step StepNumber="4">
 
 **Run the bare host**
 

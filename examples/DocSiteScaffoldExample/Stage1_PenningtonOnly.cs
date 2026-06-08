@@ -54,13 +54,13 @@ public static class Stage1
                     }
 
                     var parsed = await parser.ParseAsync(discovered);
-                    if (parsed is not ParsedItem parsedItem)
+                    if (parsed.Value is not ParsedItem parsedItem)
                     {
                         continue;
                     }
 
                     var rendered = await renderer.RenderAsync(parsedItem);
-                    if (rendered is not RenderedItem renderedItem)
+                    if (rendered.Value is not RenderedItem renderedItem)
                     {
                         continue;
                     }

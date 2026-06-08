@@ -17,7 +17,7 @@ Along the way, the tutorial covers authoring a Razor component with `[Parameter]
 
 ## Prerequisites
 
-- .NET 11 SDK installed
+- .NET 10 SDK installed
 - Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the `AddDocSite` / `UseDocSite` / `RunDocSiteAsync` host shape this tutorial extends)
 - Basic Razor familiarity — a `.razor` file with `@code {}` and `[Parameter]` properties should feel routine
 

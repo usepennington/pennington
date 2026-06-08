@@ -15,7 +15,7 @@ By the end of this tutorial the DocSite runs at `http://localhost:5000` with an 
 
 ## Prerequisites
 
-- .NET 11 SDK installed
+- .NET 10 SDK installed
 - Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the area-free `Content/guides/` host this tutorial turns into areas)
 - Completed [Add doc pages and link between them](xref:tutorials.docsite.first-doc-page) (so `DocSiteFrontMatter` keys like `sectionLabel:` and `order:` are already familiar)
 

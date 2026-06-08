@@ -17,7 +17,7 @@ A single `ConfigureLocalization` action on `DocSiteOptions` enables multi-locale
 
 ## Prerequisites
 
-- .NET 11 SDK installed
+- .NET 10 SDK installed
 - Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the single-locale DocSite host this tutorial extends)
 - Completed [Add doc pages and link between them](xref:tutorials.docsite.first-doc-page) (so the front-matter shape of each page is already familiar)
 

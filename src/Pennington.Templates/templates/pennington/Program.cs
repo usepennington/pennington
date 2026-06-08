@@ -37,10 +37,10 @@ app.MapGet("/{*path}", async (
             if (!discovered.Route.CanonicalPath.Matches(requested)) continue;
 
             var parsed = await parser.ParseAsync(discovered);
-            if (parsed is not ParsedItem parsedItem) continue;
+            if (parsed.Value is not ParsedItem parsedItem) continue;
 
             var rendered = await renderer.RenderAsync(parsedItem);
-            if (rendered is not RenderedItem renderedItem) continue;
+            if (rendered.Value is not RenderedItem renderedItem) continue;
 
             var html = $"""
                 <!DOCTYPE html>

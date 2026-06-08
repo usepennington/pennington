@@ -15,8 +15,8 @@ By the end of this tutorial a runnable ASP.NET project — `MyBlazorPenningtonSi
 
 ## Prerequisites
 
-- .NET 11 SDK installed
-- (Optional) Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site) — this tutorial repeats its `dotnet new web` + Pennington package + `<LangVersion>preview</LangVersion>` bootstrap
+- .NET 10 SDK installed
+- (Optional) Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site) — this tutorial repeats its `dotnet new web` + Pennington package bootstrap
 
 The finished code for this tutorial lives in [`examples/GettingStartedBlazorPagesExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedBlazorPagesExample). The DocSite template pre-wires this same Blazor shape for documentation sites — see <xref:tutorials.docsite.scaffold> if that is exactly what you are building.
 
@@ -41,9 +41,9 @@ cd MyBlazorPenningtonSite
 </Step>
 <Step StepNumber="2">
 
-**Add the Pennington package and opt into C# preview**
+**Add the Pennington package**
 
-Add the Pennington package so the `AddPennington` extension method resolves, then edit the csproj to set `<LangVersion>preview</LangVersion>` (Pennington uses C# 15 union types, still a preview language feature in the .NET 11 SDK).
+Add the Pennington package so the `AddPennington` extension method resolves. The command writes the `<PackageReference>` into the project file:
 
 ```bash
 dotnet add package Pennington
@@ -52,8 +52,7 @@ dotnet add package Pennington
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
-    <LangVersion>preview</LangVersion> <!-- [!code ++] -->
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>

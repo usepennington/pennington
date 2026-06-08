@@ -9,7 +9,7 @@ tags:
   - project-templates
 ---
 
-Pennington is a content engine for .NET 11 and C# 15. Point it at a folder of
+Pennington is a content engine for .NET. Point it at a folder of
 markdown and it builds a site — with navigation, search, feeds, and a static
 build included.
 

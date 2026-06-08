@@ -15,7 +15,7 @@ By the end of this tutorial, a running BlogSite at `http://localhost:5000` surfa
 
 ## Prerequisites
 
-- .NET 11 SDK installed
+- .NET 10 SDK installed
 - Completed [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold) (or have that example's `Program.cs` and a single placeholder post ready to reuse)
 - A code editor that renders YAML front matter cleanly (VS Code, Rider, and so on)
 

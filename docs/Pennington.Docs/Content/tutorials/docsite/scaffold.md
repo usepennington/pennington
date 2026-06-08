@@ -19,8 +19,10 @@ By the end of this tutorial the DocSite host runs with a "Scaffold Docs" title, 
 
 ## Prerequisites
 
-- .NET 11 SDK installed
-- A terminal and a text editor or IDE that understands C# 15
+The DocSite template ships as a NuGet package built for .NET 10, so the stable .NET 10 SDK is all you need — no preview language flag. The .NET 11 beta SDK only matters if you later extend the pipeline by hand; see [the SDK and the union shim](xref:explanation.positioning.sdk-and-the-union-shim).
+
+- .NET 10 SDK installed
+- A terminal and a text editor or IDE
 
 The finished code for this tutorial lives in [`examples/DocSiteScaffoldExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteScaffoldExample).
 
@@ -51,27 +53,6 @@ dotnet add package Pennington.DocSite
 
 > [!IMPORTANT]
 > Pennington is in alpha — check NuGet for the current prerelease and pin every `Pennington.*` package to that same version.
-
-</Step>
-<Step StepNumber="3">
-
-**Opt into C# preview language features**
-
-Pennington uses C# 15 union types, which are still a preview language feature in the .NET 11 SDK. Edit the csproj to add `<LangVersion>preview</LangVersion>` so they compile:
-
-```xml
-<Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
-    <LangVersion>preview</LangVersion>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Pennington.DocSite" Version="<?# PackageVersion /?>" />
-  </ItemGroup>
-</Project>
-```
 
 </Step>
 </Steps>
