@@ -1,0 +1,33 @@
+@* PageFacts — reads the ambient MdazorContext that Pennington populates for each
+   page and renders a few host-supplied facts. Unlike PricingCard, this component
+   takes none of its values from tag attributes: the file name, URL, and front
+   matter all cascade in from the page being rendered. Registered in Program.cs
+   with services.AddMdazorComponent<PageFacts>(). *@
+@using Mdazor
+@using Pennington.FrontMatter
+
+<div class="not-prose my-6 rounded-lg border border-base-200 bg-base-50 p-4 text-sm dark:border-base-800 dark:bg-base-900">
+    <p class="mb-2 font-semibold text-base-900 dark:text-base-50">This page, straight from <code>MdazorContext</code>:</p>
+    @if (Context is null)
+    {
+        <p class="text-base-500 dark:text-base-400">No context was supplied for this page.</p>
+    }
+    else
+    {
+        <ul class="space-y-1 text-base-700 dark:text-base-300">
+            <li><strong>Source file:</strong> <code>@Context["FileName"]</code></li>
+            <li><strong>Canonical URL:</strong> <code>@Context["Url"]</code></li>
+            <li><strong>Front-matter title:</strong> @Title</li>
+        </ul>
+    }
+</div>
+
+@code {
+    // Pennington fills this in per page (file name, URL, front matter, derived
+    // metadata). The component never receives it as a tag attribute — it cascades
+    // in from the surrounding render, so any registered component can read it.
+    [CascadingParameter] public MdazorContext? Context { get; set; }
+
+    // The "Metadata" key carries the page's parsed front matter as an IFrontMatter.
+    private string? Title => (Context?["Metadata"] as IFrontMatter)?.Title;
+}

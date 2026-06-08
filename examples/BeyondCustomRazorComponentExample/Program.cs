@@ -18,13 +18,17 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""",
 });
 
-// Register the custom PricingCard component with the Mdazor component registry.
+// Register the custom components with the Mdazor component registry.
 // `AddMdazorComponent<T>()` is an `IServiceCollection` extension shipped by the
 // `Mdazor` NuGet package (already transitively referenced through Pennington.DocSite).
-// With this one line, the markdown renderer will pick up `<PricingCard ... />`
-// tags in any page under `Content/` and render them as real Blazor components
-// with their parameters bound from the tag attributes.
-builder.Services.AddMdazorComponent<PricingCard>();
+// With this one line per component, the markdown renderer picks up `<PricingCard ... />`
+// and `<PageFacts />` tags in any page under `Content/` and renders them as real Blazor
+// components — PricingCard binds its parameters from tag attributes, while PageFacts
+// reads page facts (file name, URL, front matter) from the ambient MdazorContext that
+// Pennington supplies per page.
+builder.Services
+    .AddMdazorComponent<PricingCard>()
+    .AddMdazorComponent<PageFacts>();
 
 var app = builder.Build();
 

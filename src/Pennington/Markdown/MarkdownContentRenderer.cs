@@ -6,6 +6,7 @@ using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using Markdig;
 using Markdig.Renderers;
+using Mdazor;
 using Pipeline;
 using Routing;
 using Shortcodes;
@@ -62,11 +63,16 @@ public sealed class MarkdownContentRenderer : IContentRenderer
                 markdown = await _shortcodeExpander.ExpandAsync(markdown, shortcodeContext, CancellationToken.None);
             }
 
-            var document = Markdown.Parse(markdown, _pipeline);
+            // Hand page facts (file name, route, front matter, derived metadata) to any Mdazor
+            // components on the page. They read it via [CascadingParameter] MdazorContext. This is
+            // captured at parse time and surfaced at render time; harmless when the pipeline has no Mdazor.
+            var parserContext = BuildMdazorContext(item);
+            var document = Markdown.Parse(markdown, _pipeline, parserContext);
 
             using var writer = new StringWriter();
             var htmlRenderer = new HtmlRenderer(writer);
             _pipeline.Setup(htmlRenderer);
+
             htmlRenderer.Render(document);
             writer.Flush();
             var html = writer.ToString();
@@ -94,6 +100,33 @@ public sealed class MarkdownContentRenderer : IContentRenderer
             return new FailedItem(item.Route,
                 new ContentError($"Render failed: {ex.Message}", ex));
         }
+    }
+
+    /// <summary>
+    /// Builds the ambient <see cref="MdazorContext"/> handed to Mdazor components rendered from this
+    /// page. Exposes a curated set of page facts under stable, case-insensitive keys: the source
+    /// <c>FileName</c>/<c>FileNameWithoutExtension</c>/<c>SourceFile</c>, the canonical <c>Url</c>
+    /// (also <c>CanonicalPath</c>), <c>OutputFile</c>, <c>Locale</c>, the front-matter
+    /// <c>Metadata</c> object, and the <c>Derived</c> enricher dictionary. A component reads any of
+    /// these via <c>[CascadingParameter] public MdazorContext? Context</c>.
+    /// </summary>
+    private static MarkdownParserContext BuildMdazorContext(ParsedItem item)
+    {
+        var route = item.Route;
+        var values = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["SourceFile"] = route.SourceFile?.Value,
+            ["FileName"] = route.SourceFile?.FileName,
+            ["FileNameWithoutExtension"] = route.SourceFile?.FileNameWithoutExtension,
+            ["Url"] = route.CanonicalPath.ToString(),
+            ["CanonicalPath"] = route.CanonicalPath.ToString(),
+            ["OutputFile"] = route.OutputFile.ToString(),
+            ["Locale"] = route.Locale,
+            ["Metadata"] = item.Metadata,
+            ["Derived"] = item.Derived,
+        };
+
+        return new MarkdownParserContext().SetMdazorContext(values);
     }
 
     private static async Task<string> RewriteRelativeLinksAsync(
