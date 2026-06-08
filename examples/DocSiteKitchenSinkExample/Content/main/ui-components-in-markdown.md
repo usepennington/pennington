@@ -32,6 +32,35 @@ strings, numbers, booleans. Pack complex data into a delimited string
 or use `ChildContent` for rich content.
 </FeatureCallout>
 
+## Reading page context
+
+Attributes aren't the only input a component gets. Pennington hands every page a
+read-only `MdazorContext` — the source file, canonical URL, front matter, and
+derived metadata — that a component reads through a `[CascadingParameter]`, with
+nothing on the tag. The `<PageFacts />` component below (see `Components/PageFacts.razor`)
+prints values pulled straight from *this* page:
+
+<PageFacts />
+
+```razor
+@using Mdazor
+@using Pennington.FrontMatter
+
+<ul>
+    <li>Source file: @Context?["FileName"]</li>
+    <li>Canonical URL: @Context?["Url"]</li>
+    <li>Front-matter title: @((Context?["Metadata"] as IFrontMatter)?.Title)</li>
+</ul>
+
+@code {
+    [CascadingParameter] public MdazorContext? Context { get; set; }
+}
+```
+
+Pennington populates `SourceFile`, `FileName`, `FileNameWithoutExtension`,
+`Url`/`CanonicalPath`, `OutputFile`, `Locale`, the front-matter `Metadata` object,
+and the `Derived` enricher dictionary — all keyed case-insensitively.
+
 ## Built-ins
 
 Pennington.UI ships seven components pre-registered by `AddDocSite` —

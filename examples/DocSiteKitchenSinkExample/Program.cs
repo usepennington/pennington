@@ -12,10 +12,14 @@ var builder = WebApplication.CreateBuilder(args);
 // teaches.
 builder.Services.AddDocSite(DocSiteKitchenSinkExample.ServiceConfiguration.BuildDocSiteOptions);
 
-// Register the custom Mdazor component used by `Content/main/ui-components-in-markdown.md`.
-// `AddMdazorComponent<T>()` is the one DI line needed — Mdazor's registry
-// discovers the tag at markdown render time.
-builder.Services.AddMdazorComponent<FeatureCallout>();
+// Register the custom Mdazor components used by `Content/main/ui-components-in-markdown.md`.
+// `AddMdazorComponent<T>()` is the one DI line needed per component — Mdazor's registry
+// discovers the tags at markdown render time. FeatureCallout binds its parameters from
+// tag attributes; PageFacts instead reads page facts (file name, URL, front matter) from
+// the ambient MdazorContext that Pennington supplies per page.
+builder.Services
+    .AddMdazorComponent<FeatureCallout>()
+    .AddMdazorComponent<PageFacts>();
 
 var app = builder.Build();
 

@@ -7,6 +7,7 @@ Authoring a Razor component and rendering it inline from markdown via Mdazor. Sa
 - Authoring a Razor component (`Components/PricingCard.razor`)
 - `AddMdazorComponent<T>()` registering the tag with the Mdazor registry
 - `<PricingCard ... />` tags inside markdown rendering as real Blazor components with parameters bound from attributes
+- Reading page context (file name, URL, front matter) from `MdazorContext` via a `[CascadingParameter]` — see `Components/PageFacts.razor` and `Content/page-context.md`
 
 ## Tutorial stages
 

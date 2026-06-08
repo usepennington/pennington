@@ -75,6 +75,35 @@ Mdazor parses the component tag out of the HTML block, instantiates the matching
 
 See <xref:reference.ui.content> for the parameters of each built-in component.
 
+## Read page context in a component
+
+Attributes carry what the author types on the tag. For facts about the *page* — the source file, the canonical URL, the front matter — a component reads the ambient `MdazorContext` that Pennington supplies for every rendered page. Declare a `[CascadingParameter]` of type `MdazorContext`; nothing goes on the tag.
+
+```razor
+@using Mdazor
+@using Pennington.FrontMatter
+
+<p>Rendered from <code>@Context?["FileName"]</code> at <code>@Context?["Url"]</code>.</p>
+
+@code {
+    [CascadingParameter] public MdazorContext? Context { get; set; }
+}
+```
+
+`MdazorContext` exposes the bag through `Values`, an indexer (`Context["FileName"]`), `TryGet`, and `Get<T>`. Pennington fills it with these keys, matched case-insensitively:
+
+| Key | Value |
+| --- | --- |
+| `SourceFile` | Source path on disk for the page |
+| `FileName` / `FileNameWithoutExtension` | The source file name, with and without extension |
+| `Url` / `CanonicalPath` | Canonical URL path for the page |
+| `OutputFile` | Static output path written during `build` |
+| `Locale` | Locale code; empty for the default locale |
+| `Metadata` | The page's front matter as an [`IFrontMatter`](xref:reference.front-matter.keys) (`Title`, `Description`, `Uid`, …) |
+| `Derived` | Enricher-contributed values (reading time, git last-modified, …) keyed by enricher name |
+
+The context is delivered as a cascading value, so it reaches the component and any components nested inside it. It does **not** cross into an interactive (WebAssembly/Server) island, so read it from the statically rendered components that make up the page body. The [`BeyondCustomRazorComponentExample`](https://github.com/usepennington/pennington/tree/main/examples/BeyondCustomRazorComponentExample) `PageFacts` component shows the full pattern.
+
 ## Related
 
 - Reference: [Content components](xref:reference.ui.content) — parameters and render behavior for `Badge`, `BigTable`, `Card`, `CardGrid`, `Checkpoint`, `LinkCard`, `RenderedFixture` (DocSite only), `Step`, and `Steps`.
