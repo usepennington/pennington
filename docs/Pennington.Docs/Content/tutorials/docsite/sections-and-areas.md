@@ -25,7 +25,7 @@ The finished code for this tutorial lives in [`examples/DocSiteSectionsExample`]
 
 ## 1. Register two areas and start from a flat page
 
-The scaffold left `Content/` area-free — every page shared one sidebar tree. This tutorial splits that into two switchable tabs, **Guides** and **Reference**, then fills each with grouped sections. Start by registering the areas, then park a single page under one of them so the sidebar has a flat baseline before any grouping.
+The scaffold left `Content/` area-free — every page shared one sidebar tree. This tutorial splits that into two switchable tabs, **Guides** and **Reference**, then fills each with grouped sections. Start by registering the areas, then add one page with minimal front matter under one of them, so the sidebar starts as a single ungrouped entry before any sections appear.
 
 <Steps>
 <Step StepNumber="1">
@@ -49,7 +49,7 @@ Create `Content/guides/install.md` with minimal front matter — a `title:` and 
 examples/DocSiteSectionsExample/Stage1_FlatArea.cs > Stage1.Source
 ```
 
-Paste the YAML-plus-markdown content above into `Content/guides/install.md`. With no subfolder and no `order:`, the page sorts to the top of the Guides area as a flat entry.
+Paste the YAML-plus-markdown content above into `Content/guides/install.md`. With no subfolder and no `order:`, the page sorts to the top of the Guides area as a single ungrouped entry.
 
 </Step>
 </Steps>
@@ -141,7 +141,7 @@ examples/DocSiteSectionsExample/Content/guides/advanced/custom-layouts.md
 examples/DocSiteSectionsExample/Content/guides/advanced/response-pipeline.md
 ```
 
-Section headers inherit the minimum `order:` of their pages. Staggering across sibling sections — `getting-started/` at 10/20/30, `advanced/` at 40/50 — keeps *Getting Started* above *Advanced* without relying on alphabetical tie-breaks.
+Section headers inherit the minimum `order:` of their pages. Leaving gaps between section order ranges — `getting-started/` at 10/20/30, `advanced/` at 40/50 — keeps *Getting Started* above *Advanced* without relying on alphabetical tie-breaks.
 
 </Step>
 </Steps>
@@ -184,7 +184,7 @@ examples/DocSiteSectionsExample/Content/reference/core-api/content-pipeline.md
 
 **Add `Content/reference/extensions/` with `order: 30` and `order: 40`**
 
-Create `extensions/` and drop two pages in it with `sectionLabel: Extensions` and `order:` values of `30` and `40`. Using `30`/`40` rather than restarting at `10` applies the same staggering rule from unit 3 — the *Core API* minimum is `10` and the *Extensions* minimum is `30`, so the sections sort *Core API → Extensions* without relying on the alphabetical tie-break.
+Create `extensions/` and drop two pages in it with `sectionLabel: Extensions` and `order:` values of `30` and `40`. Using `30`/`40` rather than restarting at `10` leaves gaps between the section order ranges as in unit 3 — the *Core API* minimum is `10` and the *Extensions* minimum is `30`, so the sections sort *Core API → Extensions* without relying on the alphabetical tie-break.
 
 ```markdown:symbol
 examples/DocSiteSectionsExample/Content/reference/extensions/markdown-extensions.md

@@ -63,7 +63,7 @@ The two `---` fences delimit the YAML front matter block. The `date:` value pars
 
 ## 2. Populate every `BlogSiteFrontMatter` field
 
-Next, the front-matter block expands to cover every `BlogSiteFrontMatter` field a post author touches — `author`, `tags`, `series`, `repository`, `sectionLabel`, and `redirectUrl` — and each one lights up a different surface in the running site.
+Next, the front-matter block expands to cover every `BlogSiteFrontMatter` field a post author touches — `author`, `tags`, `series`, `repository`, `sectionLabel`, and `redirectUrl` — and each one drives a different surface in the running site.
 
 <Steps>
 <Step StepNumber="1">
@@ -87,7 +87,7 @@ examples/BlogSiteFirstPostExample/snippets/stage2.md
 </Step>
 <Step StepNumber="2">
 
-**Reload and confirm every surface lit up**
+**Reload and confirm every surface updated**
 
 With the file saved, reload the running site and verify each new field in turn. No code changes are needed — the host from the scaffold tutorial stays untouched.
 

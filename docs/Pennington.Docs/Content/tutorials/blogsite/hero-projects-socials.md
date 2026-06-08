@@ -80,7 +80,7 @@ examples/BlogSiteHeroProjectsSocialsExample/Stage3_AddSocialsAndHeader.cs > Stag
 
 The same `Program.cs` listing from the previous step includes the final surface: `MainSiteLinks`, a `HeaderLink[]` that BlogSite renders in both the top-nav of `MainLayout.razor` and the footer. Each entry is a `HeaderLink(string Title, string Url)` positional record.
 
-The `MainSiteLinks = [...]` block pasted in section 3 already wires three entries — `Home` pointing to `/`, `Archive` to `/archive`, and `Tags` to `/tags`. Those URLs match the routes BlogSite exposes out of the box, so no additional code is needed for the top-nav to populate.
+The `MainSiteLinks = [...]` block pasted in section 3 already wires three entries — `Home` pointing to `/`, `Archive` to `/archive`, and `Tags` to `/tags`. Those URLs match the routes BlogSite includes, so no additional code is needed for the top-nav to populate.
 
 <Checkpoint>
 

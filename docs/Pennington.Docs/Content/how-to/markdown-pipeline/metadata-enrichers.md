@@ -7,7 +7,7 @@ sectionLabel: "Markdown Pipeline"
 tags: [extensibility, pipeline, metadata, reading-time]
 ---
 
-To compute values from a page rather than have an author type them — reading time, a git last-modified date, a word count — implement `IMetadataEnricher`. Each enricher contributes a dictionary that `MetadataEnrichmentService` merges into `ParsedItem.Derived`, a bag kept separate from the strongly-typed `Metadata` so authored front matter stays the single source of truth.
+To compute values from a page rather than have an author type them — reading time, a git last-modified date, a word count — implement `IMetadataEnricher`. Each enricher contributes a dictionary that `MetadataEnrichmentService` merges into `ParsedItem.Derived`, a bag kept separate from the strongly-typed `Metadata` so authored front matter remains separate.
 
 ## Before you begin
 
@@ -15,7 +15,7 @@ To compute values from a page rather than have an author type them — reading t
 
 ## Reading time ships built in
 
-`AddPennington` registers `ReadingTimeEnricher` by default, so every page already carries an estimate under the `reading_time_minutes` key. The estimate divides the word count by 200 words per minute and rounds up, with a floor of one minute. Read it downstream from `ParsedItem.Derived`:
+`AddPennington` registers `ReadingTimeEnricher` by default, so every page with body text carries an estimate under the `reading_time_minutes` key (a page with no words gets no key, which is why the read below guards with `TryGetValue`). The estimate divides the word count by 200 words per minute and rounds up, with a floor of one minute. Read it downstream from `ParsedItem.Derived`:
 
 ```csharp
 if (item.Derived.TryGetValue(ReadingTimeEnricher.Key, out var minutes))

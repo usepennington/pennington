@@ -9,11 +9,11 @@ tags: [client-side, javascript, mdazor, components, spa]
 
 Pennington renders every page on the server in a single pass — there is no client-side hydration. To add interactive browser behavior (a lightbox, a chart, a copy-to-clipboard button), you ship your own script and attach it to the server-rendered HTML. Components are server-rendered; client behavior attaches via your own script.
 
-This guide builds an image-gallery lightbox from three parts: a server-rendered component that emits the markup, a browser script that enhances it, and the head seam that loads both your script and the third-party library. The worked library is [GLightbox](https://github.com/biati-digital/glightbox) (MIT-licensed, dependency-free), but the shape is the same for any library that scans the DOM and upgrades matching elements — the bundled Mermaid support (<xref:how-to.rich-content.diagrams>) follows it too.
+This guide builds an image-gallery lightbox from three parts: a server-rendered component that emits the markup, a browser script that enhances it, and the head content option that loads both your script and the third-party library. The worked library is [GLightbox](https://github.com/biati-digital/glightbox) (MIT-licensed, dependency-free), but the pattern is the same for any library that scans the DOM and upgrades matching elements — the bundled Mermaid support (<xref:how-to.rich-content.diagrams>) follows it too.
 
 ## Before you begin
 
-- A DocSite (`AddDocSite`) or BlogSite host — this example is a DocSite. On a bare `AddPennington` host the only difference is the head seam: inject the tags through your own layout's `<head>` or a response processor that splices before `</body>` (see <xref:how-to.response-pipeline.response-processor>).
+- A DocSite (`AddDocSite`) or BlogSite host — this example is a DocSite. On a bare `AddPennington` host the only difference is the head content: inject the tags through your own layout's `<head>` or a response processor that inserts before `</body>` (see <xref:how-to.response-pipeline.response-processor>).
 - Familiarity with the library you are wrapping. This page covers the wiring, not GLightbox itself.
 - For a complete, running setup, see `examples/BeyondClientWidgetExample`. `Components/ImageGallery.razor` is the server-rendered tag, `wwwroot/gallery.js` is the enhancer, and `GalleryWidget.cs` returns the `DocSiteOptions` that load both. `Program.cs` runs it end to end.
 
@@ -45,13 +45,13 @@ Put the script in `wwwroot`, where the host serves it at `/gallery.js` and the s
 
 ## Load the library and your script
 
-`DocSiteOptions.AdditionalHtmlHeadContent` is a raw HTML string rendered inside every page's `<head>` — the seam for the library's stylesheet and script plus your own. Load the library first, then your script. Both `<script>` tags use `defer`, so they execute in document order: the library defines its global before your script calls it.
+`DocSiteOptions.AdditionalHtmlHeadContent` is a raw HTML string rendered inside every page's `<head>` — the place for the library's stylesheet and script plus your own. Load the library first, then your script. Both `<script>` tags use `defer`, so they execute in document order: the library defines its global before your script calls it.
 
 ```csharp:symbol,bodyonly
 examples/BeyondClientWidgetExample/GalleryWidget.cs > GalleryWidget.BuildGalleryHeadContent
 ```
 
-Pin the library to a version so the build is reproducible, and assign the fragment to the head seam on the options record:
+Pin the library to a version so the build is reproducible, and assign the fragment to the head content option on the options record:
 
 ```csharp:symbol
 examples/BeyondClientWidgetExample/GalleryWidget.cs > GalleryWidget.BuildDocSiteOptions

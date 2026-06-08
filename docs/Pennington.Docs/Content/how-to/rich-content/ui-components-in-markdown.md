@@ -16,7 +16,7 @@ To place a Razor component tag — `<Badge>`, `<Card>`, or one of your own — d
 
 ## Authoring shapes
 
-`AddBlogSite` pre-registers eight components — `<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<Checkpoint>`, `<LinkCard>`, `<Step>`, and `<Steps>`. `AddDocSite` adds one more, `<RenderedFixture>`, for embedding rendered example output into a page. The H3s below cover the three most common authoring shapes; for the full parameter surface of each component, see <xref:reference.ui.content>.
+`AddBlogSite` pre-registers eight components — `<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<Checkpoint>`, `<LinkCard>`, `<Step>`, and `<Steps>`. `AddDocSite` adds one more, `<RenderedFixture>`, for embedding rendered example output into a page. The H3s below cover the three most common authoring patterns; for the full parameters of each component, see <xref:reference.ui.content>.
 
 ### Inline a built-in tag
 

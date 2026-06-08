@@ -7,7 +7,12 @@ sectionLabel: "Content Services"
 tags: [extensibility, content-service, http, remote, caching]
 ---
 
-To build pages from a remote HTTP API instead of local files — a release feed, a CMS, a product catalog behind a JSON endpoint — implement `IContentService` over a typed `HttpClient`. This guide is the remote counterpart to <xref:how-to.content-services.custom-content-service>: that page covers the discovery, TOC, and cross-reference shape every content service shares; this one adds the four things a *network* source needs — awaiting HTTP in `DiscoverAsync`, caching one fetch across every pipeline pass, rendering markdown bodies that arrive over the wire, and surviving a slow or unreachable API at build time.
+To build pages from a remote HTTP API instead of local files — a release feed, a CMS, a product catalog behind a JSON endpoint — implement `IContentService` over a typed `HttpClient`. This guide is the remote counterpart to <xref:how-to.content-services.custom-content-service>: that page covers the discovery, TOC, and cross-reference work every content service shares. This one adds the four things a *network* source needs:
+
+- awaiting HTTP in `DiscoverAsync`,
+- caching one fetch across every pipeline pass,
+- rendering markdown bodies that arrive over the wire,
+- and surviving a slow or unreachable API at build time.
 
 The recipe references `examples/BeyondRemoteContentExample`, which turns the [GitHub Releases API](https://docs.github.com/en/rest/releases/releases) into `/releases/{version}/` pages.
 

@@ -9,7 +9,7 @@ uid: tutorials.docsite.scaffold
 
 By the end of this tutorial the DocSite host runs with a "Scaffold Docs" title, GitHub icon, and header/footer chrome — and a folder of markdown pages that show up in the sidebar on their own, with a landing page at the root.
 
-`AddDocSite` is a shortcut. It pre-wires what the [getting-started tutorials](xref:tutorials.getting-started.first-site) assemble by hand — host, layout, navigation, styling — into one call, tuned for a single shape: a Divio-style documentation site. Reach for it when that shape fits; build on `AddPennington` directly for anything else. For what the template wires and where the wiring stops, read [what the templates wire for you](xref:explanation.positioning.docsite-positioning) first.
+`AddDocSite` wires what the [getting-started tutorials](xref:tutorials.getting-started.first-site) assemble by hand — host, layout, navigation, styling — into one call, configured for a Divio-style documentation site. Use it when that fits; build on `AddPennington` directly for anything else. For what the template wires and where the wiring stops, read [what the templates wire for you](xref:explanation.positioning.docsite-positioning) first.
 
 > [!NOTE]
 > DocSite and BlogSite can't run in the same app — pick one. If you want a blog
@@ -80,14 +80,14 @@ Pennington uses C# 15 union types, which are still a preview language feature in
 
 ## 2. Wire `AddDocSite`, `UseDocSite`, and `RunDocSiteAsync`
 
-`AddDocSite` is a single DI call that registers Pennington core, [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/), SPA navigation, the content resolver, and the article-slot renderer — all driven from one options object. `UseDocSite` is its middleware counterpart; `RunDocSiteAsync` dispatches the host between dev-serve and static-build modes (see <xref:reference.host.cli> for the args contract).
+`AddDocSite` is a single DI call that registers Pennington core, [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/), SPA navigation, the content resolver, and the component that renders the page body into the layout — all driven from one options object. `UseDocSite` is its middleware counterpart; `RunDocSiteAsync` dispatches the host between dev-serve and static-build modes (see <xref:reference.host.cli> for the args contract).
 
 <Steps>
 <Step StepNumber="1">
 
 **Replace `Program.cs` with the three DocSite calls**
 
-`AddDocSite` takes a `Func<DocSiteOptions>` rather than an `Action`, so the call constructs and returns a fresh options record. The template registers the markdown content reader internally — no separate `AddMarkdownContent` call is needed. `RunDocSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves pages live in development and generates static HTML when invoked as `dotnet run -- build <baseUrl> <outputDir>`.
+`AddDocSite` takes a `Func<DocSiteOptions>` rather than an `Action`, so the call constructs and returns a fresh options record. The template registers the markdown content reader internally — no separate `AddMarkdownContent` call is needed. `RunDocSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves pages live in development and generates static HTML when invoked as `dotnet run -- build --base-url <url> --output <dir>`.
 
 ```csharp:symbol,bodyonly
 examples/DocSiteScaffoldExample/Stage3_UseDocSite.cs > Stage3.Run

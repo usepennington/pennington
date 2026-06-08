@@ -10,15 +10,15 @@ tags:
 ---
 
 Most of a content site is pages — a markdown file becomes a URL. But every site
-has edges that don't fit that shape: a sponsor strip, a conference schedule, a
+has parts that aren't a routed page: a sponsor strip, a conference schedule, a
 "recipes by cuisine" index. This release adds two building blocks for those
-edges.
+cases.
 
 ## Data files: structured content without a page
 
 Some content isn't a page. A list of sponsors, a navigation config, a table of
 release dates — that's data, and putting it in a markdown file or hard-coding it
-into a component is the wrong shape.
+into a component is the wrong fit.
 
 `AddDataFile<T>` registers a YAML or JSON file as a typed dataset:
 

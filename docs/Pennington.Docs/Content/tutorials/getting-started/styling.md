@@ -7,7 +7,7 @@ tags: [monorailcss, styling, color-scheme, blazor, layout]
 uid: tutorials.getting-started.styling
 ---
 
-By the end of this tutorial the Blazor-pages site from [Serve markdown through a Blazor catch-all](xref:tutorials.getting-started.first-page) is styled with [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) — a Tailwind-compatible JIT compiler in pure .NET. Every routed `@page` flows through a `MainLayout.razor` whose utility classes the [MonorailCSS Discovery pipeline](xref:explanation.rendering.monorail-css) turns into real CSS rules — served at `/styles.css` and regenerated whenever a new class appears in the source.
+By the end of this tutorial the Blazor-pages site from [Serve markdown through a Blazor catch-all](xref:tutorials.getting-started.first-page) is styled with [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) — a Tailwind-compatible JIT compiler in pure .NET. Every routed `@page` renders through a `MainLayout.razor` that carries the utility classes. The [MonorailCSS Discovery pipeline](xref:explanation.rendering.monorail-css) turns those classes into real CSS rules, served at `/styles.css`. The stylesheet regenerates whenever a new class appears in the source.
 
 ## Prerequisites
 
@@ -68,7 +68,7 @@ examples/GettingStartedStylingExample/Stage3_UseMonorailCss.cs > Stage3.Run
 
 ## 3. Watch the stylesheet regenerate
 
-Under `dotnet run`, MonorailCSS picks up new utility classes added to `.razor`, `.cshtml`, and `.cs` files on the next `/styles.css` request — no restart required. Markdown bodies are out of scope: a utility token added to a `.md` file will not produce a CSS rule. The [MonorailCSS integration explanation](xref:explanation.rendering.monorail-css) covers why.
+Under `dotnet run`, MonorailCSS rescans your project for new utility classes on the next `/styles.css` request, so classes you add in source (Razor components and other compiled C#) appear without a restart. Markdown bodies are out of scope: a utility token added to a `.md` file will not produce a CSS rule. The [MonorailCSS integration explanation](xref:explanation.rendering.monorail-css) covers why.
 
 <Steps>
 <Step StepNumber="1">

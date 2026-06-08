@@ -57,7 +57,7 @@ examples/ExtensibilityLabExample/ReleaseNotesContentService.cs > ReleaseEntry
 yield return new DiscoveredItem(route, new EndpointSource()) { Metadata = entry };
 ```
 
-That single `Metadata` assignment is the seam: the engine reads it through `GetRecordsAsync` (the default bridges from `DiscoverAsync`, so attaching metadata is all it takes — no override needed) and every discovery pillar lights up:
+That `Metadata` assignment lets taxonomy, search, and JSON-LD read the record: the engine reads it through `GetRecordsAsync` (the default bridges from `DiscoverAsync`, so attaching metadata is all it takes — no override needed):
 
 - **Taxonomy** — `AddTaxonomy<ReleaseEntry, string>(opts => opts.SelectKey = fm => fm.Channel)` gives you `/channel/` browse pages with no `FileSource` required (see <xref:how-to.content-services.taxonomy>).
 - **Search facets** — the `IHasSearchFacets` `channel` axis emits alongside the built-in `section`/`tag`/`area` dimensions.

@@ -9,7 +9,7 @@ tags: [seo, structured-data, json-ld, schema-org]
 
 Pennington's `<StructuredData>` component takes any `JsonLdEntity` and emits it as a `<script type="application/ld+json">` in the page head. To support a schema.org type the framework doesn't ship — `Recipe`, `Product`, `ScholarlyArticle`, `Event`, or anything else — write a record in your own assembly.
 
-There are two ways to wire it in: implement `IHasStructuredData` on your front matter so the template emits it automatically, or build the entity inline from a Razor page. The capability-interface path is the default; the inline path is the escape hatch when the page doesn't have a front matter (a hand-routed Razor page) or when the entity depends on something other than front-matter values.
+There are two ways to wire it in: implement `IHasStructuredData` on your front matter so the template emits it automatically, or build the entity inline from a Razor page. The capability-interface path is the default; the inline path is the fallback when the page doesn't have a front matter (a hand-routed Razor page) or when the entity depends on something other than front-matter values.
 
 ## Before you begin
 - A working Pennington site with `CanonicalBaseUrl` set on `PenningtonOptions` or `DocSiteOptions`. The shipped templates skip JSON-LD when this is empty so URLs don't end up relative.
@@ -21,6 +21,8 @@ Subclass `JsonLdEntity`, override `Type` with the schema.org type literal, and a
 ```csharp:symbol
 examples/BlogKitchenSinkExample/StructuredDataBuilder.cs
 ```
+
+This example defines `JsonLdRecipe`, a `Recipe` entity record. It is not a framework type — you own it in your own assembly — and it is the record the wiring snippets in steps 3a and 3b instantiate.
 
 The base `JsonLdEntity` already supplies `@context` (defaulted to `https://schema.org`). Override the `Context` initializer if you need a different vocabulary.
 

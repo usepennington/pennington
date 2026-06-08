@@ -7,7 +7,7 @@ sectionLabel: "Feeds & Indexes"
 tags: [configuration, llms-txt, discovery, front-matter]
 ---
 
-Expose a `/llms.txt` index plus per-page stripped-markdown sidecars so LLM crawlers and agents can ingest the site without scraping HTML. On `AddDocSite` hosts the wiring is automatic; on bare `AddPennington` hosts a single `AddLlmsTxt(...)` call enables it.
+Expose a `/llms.txt` index plus per-page stripped-markdown sidecars so LLM crawlers and agents can read the site without scraping HTML. On `AddDocSite` hosts the wiring is automatic; on bare `AddPennington` hosts a single `AddLlmsTxt(...)` call enables it.
 
 ## Before you begin
 - A working Pennington site (see <xref:tutorials.getting-started.first-page> if not).

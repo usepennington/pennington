@@ -7,7 +7,7 @@ tags: [blogsite, icons, render-fragment]
 uid: reference.blogsite.social-icons
 ---
 
-`SocialIcons` is a Razor component with no render body whose only surface is four `public static readonly RenderFragment` fields, each a self-contained inline SVG for use as the `Icon` property on a `SocialLink`. It lives in namespace `Pennington.BlogSite.Components` and is consumed by `BlogSiteOptions.Socials` via the `SocialLink` record in namespace `Pennington.BlogSite`.
+`SocialIcons` is a Razor component with no render body whose public API is four `public static readonly RenderFragment` fields, each a self-contained inline SVG for use as the `Icon` property on a `SocialLink`. It lives in namespace `Pennington.BlogSite.Components` and is consumed by `BlogSiteOptions.Socials` via the `SocialLink` record in namespace `Pennington.BlogSite`.
 
 ## Declaration
 
@@ -34,7 +34,7 @@ All four fragments share `viewBox="0 0 24 24"`, `stroke="currentColor"`, and `fi
 src/Pennington.BlogSite/BlogSiteOptions.cs > SocialLink
 ```
 
-`SocialLink` is a `record SocialLink(RenderFragment Icon, string Url)`. The `Icon` field accepts the static `RenderFragment` directly (`SocialIcons.GithubIcon`), not the Razor component tag form. For consumer wiring see <xref:how-to.theming.blogsite-homepage>.
+`SocialLink` is a `record SocialLink(RenderFragment Icon, string Url)`. The `Icon` property accepts the static `RenderFragment` directly (`SocialIcons.GithubIcon`), not the Razor component tag form. For consumer wiring see <xref:how-to.theming.blogsite-homepage>.
 
 ## See also
 

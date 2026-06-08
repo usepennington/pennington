@@ -30,7 +30,7 @@ examples/ExtensibilityLabExample/AnchorLowercaseRewriter.cs
 
 ## Pick an Order value
 
-The shipped rewriters run at 10 (`XrefHtmlRewriter`), 20 (`LocaleLinkHtmlRewriter`), 30 (`BaseUrlHtmlRewriter`), 40 (`FallbackLangHtmlRewriter`), 50 (`CanonicalLinkHtmlRewriter`), and 60 (`WordBreakHtmlRewriter`). The first three carry load-bearing ordering — xref resolution → locale prefixing → base-URL prefixing — and the others slot in after them. Pick above 60 to see every shipped transform's output, below 10 to preempt xref resolution, or between the built-ins only when slotting into that chain is deliberate. The example uses 500 so anchors are lowercased after every transport-layer transform has landed.
+The shipped rewriters run at 10 (`XrefHtmlRewriter`), 20 (`LocaleLinkHtmlRewriter`), 25 (`HeadCompositionHtmlRewriter`), 30 (`BaseUrlHtmlRewriter`), 40 (`FallbackLangHtmlRewriter`), and 60 (`WordBreakHtmlRewriter`). Xref resolution, locale prefixing, and base-URL prefixing must keep that relative order because each produces the link form the next one consumes; the rest run afterward. Pick above 60 to run after every shipped transform, below 10 to run before xref resolution, or between the built-ins only when that placement is deliberate. The example uses 500 so anchors are lowercased after every shipped transform has run.
 
 ## Register the rewriter
 

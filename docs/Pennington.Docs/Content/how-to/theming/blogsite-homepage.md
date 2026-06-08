@@ -12,7 +12,7 @@ When a BlogSite homepage needs its hero block, "My Work" card, social-icon row, 
 ## Before you begin
 - A running BlogSite built with `AddBlogSite` / `UseBlogSite` (see [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold) if not).
 - At least one post under `BlogContentPath` so the recent-posts slot is not empty (see [Author your first post with BlogSiteFrontMatter](xref:tutorials.blogsite.first-post)).
-- A single `AddBlogSite(() => new BlogSiteOptions { ... })` call to edit — the four surfaces are init-only properties on that same record literal.
+- A single `AddBlogSite(() => new BlogSiteOptions { ... })` call to edit — the four sections are init-only properties on that same record literal.
 
 For a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteHeroProjectsSocialsExample).
 
@@ -72,7 +72,7 @@ examples/BlogSiteHeroProjectsSocialsExample/Stage3_AddSocialsAndHeader.cs > Stag
 
 ## Result
 
-The homepage at `/` renders the hero block above the post list, the "My Work" card and social-icon row in the right rail, and every `HeaderLink` in both the top nav and the footer. The four surfaces are independent; populating any one renders that surface and leaves the rest at their template defaults.
+The homepage at `/` renders the hero block above the post list, the "My Work" card and social-icon row in the right rail, and every `HeaderLink` in both the top nav and the footer. The four sections are independent; populating any one renders that section and leaves the rest at their template defaults.
 
 ## Verify
 
@@ -82,6 +82,6 @@ The homepage at `/` renders the hero block above the post list, the "My Work" ca
 
 ## Related
 
-- Tutorial: [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials) — the hand-held walkthrough of the same four surfaces.
+- Tutorial: [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials) — the hand-held walkthrough of the same four sections.
 - Reference: [`BlogSiteOptions`](xref:reference.api.blog-site-options) — the full property catalog (site metadata, content paths, feeds, fonts).
 - Background: [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning) — what each template assembles and where the wiring stops.

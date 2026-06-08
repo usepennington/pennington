@@ -132,7 +132,7 @@ Run `dotnet run` and visit `http://localhost:5000/`.
 
 ## `CodeBlock`
 
-Razor-page entry to the shared code-block rendering pipeline — registered `ICodeBlockPreprocessor` implementations (including tree-sitter `:symbol` fences when `AddTreeSitter` is wired), highlighter dispatch via `HighlightingService`, `[!code …]` line transformations, and the standard `code-highlight-wrapper` container. Not registered with Mdazor — markdown authors should use a fenced code block (same pipeline, same output shape) instead.
+Razor-page entry to the shared code-block rendering pipeline — registered `ICodeBlockPreprocessor` implementations (including tree-sitter `:symbol` fences when `AddTreeSitter` is wired), highlighter dispatch via `HighlightingService`, `[!code …]` line transformations, and the standard `code-highlight-wrapper` container. Not registered with Mdazor — markdown authors should use a fenced code block (same pipeline, same output) instead.
 
 ### Parameters
 

@@ -7,7 +7,7 @@ sectionLabel: "Feeds & Indexes"
 tags: [configuration, rss, blogsite, feeds]
 ---
 
-`/rss.xml` is wired by `UseBlogSite` out of the box — `BlogSiteOptions.EnableRss` defaults to `true`. Two things break a working feed: a post missing `date:` (silently dropped from the channel), and an unset `CanonicalBaseUrl` (feed links emit relative URLs that aggregators cannot follow). The feed endpoint ships with the BlogSite template; on bare `AddPennington`, see <xref:tutorials.blogsite.scaffold>.
+`/rss.xml` is wired by `UseBlogSite` and enabled by default — `BlogSiteOptions.EnableRss` defaults to `true`. Two things break a working feed: a post missing `date:` (silently dropped from the channel), and an unset `CanonicalBaseUrl` (feed links emit relative URLs that aggregators cannot follow). The feed endpoint ships with the BlogSite template; on bare `AddPennington`, see <xref:tutorials.blogsite.scaffold>.
 
 ## Before you begin
 - A working BlogSite (see <xref:tutorials.blogsite.scaffold> if not)

@@ -7,7 +7,7 @@ tags: [markdown, extensions, alerts, tabs]
 uid: reference.markdown.extensions
 ---
 
-The catalog of non-CommonMark Markdown features wired into Pennington's Markdig pipeline. Markdig's own built-in syntax (tables, footnotes, and so on) is not covered here.
+The catalog of non-CommonMark Markdown features enabled in Pennington's Markdig pipeline. Markdig's own built-in syntax (tables, footnotes, and so on) is not covered here.
 
 | Extension | Syntax | Controlled by | Doc page |
 |---|---|---|---|
@@ -17,6 +17,9 @@ The catalog of non-CommonMark Markdown features wired into Pennington's Markdig 
 | Alerts | `> [!KIND]` inside blockquote | `UseCustomAlerts` | [Alerts](xref:how-to.rich-content.alerts) |
 | Code annotations | Trailing-comment `[!code …]` directive | `UseSyntaxHighlighting` | [Code annotations](xref:how-to.code-samples.code-annotations) |
 | Cross-reference tags | `<xref:uid>` or `href="xref:uid"` | `XrefHtmlRewriter` (response stage) | [Cross-references](xref:how-to.navigation.cross-references) |
+| Shortcodes | `<?# Name args /?>` | Registered `IShortcode` handlers (pre-parse expansion) | [Shortcodes](xref:how-to.markdown-pipeline.shortcodes) |
+
+Shortcodes run before Markdig parses the page rather than as a Markdig extension: each `<?# Name args /?>` directive is expanded to text or HTML first, and the result flows through the pipeline as ordinary markdown. Pennington ships `Version` and `PackageVersion` built-ins; see the linked how-to for the handler contract.
 
 ## Tabs
 
@@ -279,4 +282,5 @@ Configure MonorailCSS through [the options record](xref:reference.api.monorail-c
 - How-to: [Alerts](xref:how-to.rich-content.alerts)
 - How-to: [Code annotations](xref:how-to.code-samples.code-annotations)
 - How-to: [Cross-references](xref:how-to.navigation.cross-references)
+- How-to: [Expand a directive before Markdig parses](xref:how-to.markdown-pipeline.shortcodes)
 - Related reference: [Code-block argument reference](xref:reference.markdown.code-block-args)

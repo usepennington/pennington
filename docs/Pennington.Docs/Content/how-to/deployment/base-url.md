@@ -33,7 +33,7 @@ See <xref:reference.host.cli> for the argument grammar.
 
 ## Reproduce the prefix from client-side code
 
-When an island, Blazor component, or hand-rolled script builds URLs at runtime, read the prefix from `document.body.dataset.baseUrl` (stamped by the rewriter) instead of hard-coding `/docs`. The same `output/` then runs under `/docs` in staging and `/` in preview with only a different `--base-url`.
+When an island, Blazor component, or custom script builds URLs at runtime, read the prefix from `document.body.dataset.baseUrl` (stamped by the rewriter) instead of hard-coding `/docs`. The same `output/` then runs under `/docs` in staging and `/` in preview with only a different `--base-url`.
 
 ```javascript
 const base = document.body.dataset.baseUrl ?? "";

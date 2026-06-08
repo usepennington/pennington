@@ -13,11 +13,11 @@ Why are there two extension points for rewriting the response body — a general
 
 Two kinds of work want to touch the response body. Some concerns care about HTML structure — rewriting `href` attributes, inserting elements at specific selectors, normalizing document shape. Others treat the body as an opaque string — appending a script before `</body>`, prepending a cache buster, injecting a dev overlay into HTML responses only.
 
-A single chain of string-to-string processors forces the structure-aware concerns to either reparse the body themselves or rewrite HTML with regex, neither of which composes. A single HTML-shaped rewriter forces the opaque-string concerns to take an AngleSharp dependency they do not need. Pennington splits the work along that fault line: a generic string-in/string-out contract for body-level concerns that have no need for a DOM, and one shared parse that all DOM-shaped concerns participate in together.
+A single chain of string-to-string processors forces the structure-aware concerns to either reparse the body themselves or rewrite HTML with regex, neither of which composes. A single HTML-shaped rewriter forces the opaque-string concerns to take an AngleSharp dependency they do not need. Pennington splits the work along that line: a generic string-in/string-out contract for body-level concerns that have no need for a DOM, and one shared parse that all DOM concerns participate in together.
 
 ## How it works
 
-Pennington splits the work along that fault line into two tiers. **Tier A** is the generic body pipeline (`IResponseProcessor`); every body-touching concern, HTML or not, registers here. **Tier B** is one specific `IResponseProcessor` — `HtmlResponseRewritingProcessor` — that hosts a shared AngleSharp pass for HTML-DOM concerns (`IHtmlResponseRewriter`). Several Tier-A processors ship built in. The always-on ones are `HtmlResponseRewritingProcessor` (the Tier-B host), `BaseUrlCssResponseProcessor` (rewrites root-relative URLs inside CSS responses), and `NotFoundStatusProcessor`; `LiveReloadScriptProcessor` and `DiagnosticOverlayProcessor` are body-level string operations that run in dev only, alongside dev-only audit processors. They are all body-level concerns that share the same generic contract.
+Pennington uses two extension points. The first is the generic body pipeline (`IResponseProcessor`); every body-touching concern, HTML or not, registers here. The second is one specific `IResponseProcessor` — `HtmlResponseRewritingProcessor` — that hosts a shared AngleSharp pass for HTML-DOM concerns (`IHtmlResponseRewriter`). Several body processors ship built in. The always-on ones are `HtmlResponseRewritingProcessor` (the host for the HTML-DOM rewriters), `BaseUrlCssResponseProcessor` (rewrites root-relative URLs inside CSS responses), and `NotFoundStatusProcessor`; `LiveReloadScriptProcessor` and `DiagnosticOverlayProcessor` are body-level string operations that run in dev only, alongside dev-only audit processors. They are all body-level concerns that share the same generic contract.
 
 ### Tier A: `IResponseProcessor` (generic body capture)
 
@@ -27,23 +27,23 @@ Pennington splits the work along that fault line into two tiers. **Tier A** is t
 
 ### Tier B: `IHtmlResponseRewriter` (shared AngleSharp pass)
 
-Tier B lives entirely inside `HtmlResponseRewritingProcessor`. The orchestrator calls each rewriter's `ShouldApply(HttpContext)` first. If none return `true`, the body comes back untouched and AngleSharp never fires — the fast path for non-HTML content types, error pages, and opted-out endpoints. If at least one applies, the orchestrator runs all of them through a two-phase pipeline.
+The HTML rewriters live entirely inside `HtmlResponseRewritingProcessor`. The orchestrator calls each rewriter's `ShouldApply(HttpContext)` first. If none return `true`, the body comes back untouched and AngleSharp never fires — non-HTML content types, error pages, and opted-out endpoints skip the parse entirely. If at least one applies, the orchestrator runs all of them through a two-phase pipeline.
 
 The first phase, `PreParseAsync`, operates on the raw HTML string. This handles constructs AngleSharp cannot represent cleanly — the `<xref:uid>` tag syntax is not valid HTML, so it needs to be rewritten into something the parser can consume before the document is built. The second phase, `ApplyAsync`, receives a single shared `IDocument` that every rewriter mutates in turn. The document is serialized once at the end.
 
-The invariant worth internalizing: N rewriters, one parse, one serialize, one DOM. Adding a new DOM-shaped concern — a heading-anchor normalizer, an image lazy-loader, a table classifier — costs a method call, not another parse/serialize round trip. See <xref:reference.api.i-response-processor> for the `IResponseProcessor` and `IHtmlResponseRewriter` contracts.
+The result is the invariant that matters here: N rewriters, one parse, one serialize, one DOM. Adding a new DOM-shaped concern — a heading-anchor normalizer, an image lazy-loader, a table classifier — costs a method call, not another parse/serialize round trip. See <xref:reference.api.i-response-processor> for the `IResponseProcessor` and `IHtmlResponseRewriter` contracts.
 
 ### Why two tiers, not one
 
-Collapsing everything into `IHtmlResponseRewriter` would be wrong in both directions. Pulling the string processors into Tier B forces an AngleSharp parse on operations that do not benefit from a DOM, and it also means the parser tries to fix partially-valid or framework-generated HTML that those processors are content to treat as an opaque string. Conversely, letting every DOM-shaped concern be its own `IResponseProcessor` means each one parses, mutates, and serializes independently — N parses and N DOM copies where one of each would do — and it hides the cross-concern ordering assumptions behind DI registration sequence.
+Collapsing everything into `IHtmlResponseRewriter` would be wrong in both directions. Making the string processors HTML rewriters forces an AngleSharp parse on operations that do not benefit from a DOM, and it also means the parser tries to fix partially-valid or framework-generated HTML that those processors are content to treat as an opaque string. Conversely, letting every DOM concern be its own `IResponseProcessor` means each one parses, mutates, and serializes independently — N parses and N DOM copies instead of one of each — and it hides the cross-concern ordering assumptions behind DI registration sequence.
 
-The split follows a natural fault line: does this concern care about HTML structure? Body-level injection and scraping live on one side; link rewriting and attribute manipulation live on the other. Each contract stays narrow to its side of that line.
+The split follows one question: does this concern care about HTML structure? Body-level injection and scraping live on one side; link rewriting and attribute manipulation live on the other. Each contract stays narrow to its side of that line.
 
 The body-capture middleware itself remains deliberately agnostic about HTML. The gate — checking `Content-Type`, confirming `StatusCode` is in the 2xx/3xx range, verifying at least one rewriter's `ShouldApply` returned `true` — lives in `HtmlResponseRewritingProcessor.ShouldProcess`, not in the middleware. That keeps the AngleSharp dependency from activating on JSON responses, 404 pages, or any endpoint that opted out. Delegating that gate downward is the sort of thing a generic middleware should do rather than special-case inline.
 
-### Why order is load-bearing
+### Why the order matters
 
-The first three built-in HTML rewriters run in a specific sequence because each one produces the link shape the next one expects to consume. The remaining shipped rewriters (`FallbackLangHtmlRewriter`, `CanonicalLinkHtmlRewriter`, `WordBreakHtmlRewriter`) slot in after them without participating in this dependency chain.
+Three of the built-in HTML rewriters run in a fixed sequence because each one produces the link shape the next expects to consume: `XrefHtmlRewriter`, then `LocaleLinkHtmlRewriter`, then `BaseUrlHtmlRewriter`. The remaining shipped rewriters (`FallbackLangHtmlRewriter` and `WordBreakHtmlRewriter`) slot in afterward without joining that dependency chain.
 
 `XrefHtmlRewriter` at `Order 10` resolves `<xref:uid>` tag syntax (in `PreParseAsync`) and `href="xref:uid"` attributes (in `ApplyAsync`) into canonical root-relative paths. It runs first so everything downstream sees real URLs rather than symbolic cross-reference handles.
 

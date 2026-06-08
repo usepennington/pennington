@@ -7,14 +7,14 @@ sectionLabel: "Content Discovery"
 tags: [blog-site, pagination, content-services]
 ---
 
-Long listings — a five-year archive, a popular tag with hundreds of posts — get unwieldy past a few dozen entries. BlogSite paginates archives and tag pages out of the box; custom content services can do the same with a few lines of code and the shared `Pagination` component.
+Long listings — a five-year archive, a popular tag with hundreds of posts — get unwieldy past a few dozen entries. BlogSite includes pagination for archives and tag pages; custom content services can reuse the shared `Pagination` component to do the same.
 
 ## In BlogSite
 
 Set `PostsPerPage` on `BlogSiteOptions`. Paginated URLs appear automatically.
 
 ```csharp
-builder.Services.AddBlogSite(new BlogSiteOptions
+builder.Services.AddBlogSite(() => new BlogSiteOptions
 {
     SiteTitle = "My Blog",
     SiteDescription = "Posts and notes.",

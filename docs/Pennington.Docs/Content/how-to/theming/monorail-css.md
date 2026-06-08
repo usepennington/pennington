@@ -7,7 +7,7 @@ sectionLabel: "Theming"
 tags: [monorailcss, color-scheme, styling, theming]
 ---
 
-When the site needs a different palette, a tweak to prose rules, or a chunk of site-wide CSS, the knobs below live on `MonorailCssOptions`, the options record for Pennington's [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) integration. `DocSiteOptions` and `BlogSiteOptions` forward `ColorScheme`, `ExtraStyles`, and `CustomCssFrameworkSettings` directly, so most reskins do not need to leave the template.
+When the site needs a different palette, a change to prose rules, or a chunk of site-wide CSS, the options below live on `MonorailCssOptions`, the options record for Pennington's [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) integration. `DocSiteOptions` and `BlogSiteOptions` forward `ColorScheme`, `ExtraStyles`, and `CustomCssFrameworkSettings` directly, so most reskins do not need to leave the template.
 
 ## Before you begin
 - A running Pennington site (see <xref:tutorials.getting-started.first-site> if not).
@@ -57,7 +57,7 @@ examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguratio
 
 ### Tweak prose rules with `CustomCssFrameworkSettings`
 
-`DocSiteOptions.CustomCssFrameworkSettings` post-processes the `CssFrameworkSettings` after the DocSite theme is applied — prose tweaks, color maps, or apply directives without leaving DocSite. For customizations outside DocSite's scope, see <xref:explanation.positioning.docsite-positioning>. On a bare `AddPennington` host, the same knob sits on `MonorailCssOptions` directly.
+`DocSiteOptions.CustomCssFrameworkSettings` post-processes the `CssFrameworkSettings` after the DocSite theme is applied — prose adjustments, color maps, or apply directives without leaving DocSite. For customizations DocSite does not cover, see <xref:explanation.positioning.docsite-positioning>. On a bare `AddPennington` host, the same property sits on `MonorailCssOptions` directly.
 
 ```csharp:symbol,bodyonly
 examples/ExtensibilityLabExample/MonorailCssCustomization.cs > MonorailCssCustomization.BuildOptions

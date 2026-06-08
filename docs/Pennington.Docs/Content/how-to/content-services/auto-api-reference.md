@@ -7,7 +7,7 @@ sectionLabel: "Content Services"
 tags: [extensibility, reflection, xmldoc, api-reference, content-service]
 ---
 
-To ship a DocSite whose reference section stays in sync with a class library's public surface, register a metadata backend and call `AddApiReference()`. One Razor template renders every public type, and a handful of Mdazor components (`<ApiMemberTable>`, `<ApiSummary>`, `<ExtensionMethods>`, `<ApiParameterTable>`) are available inline in markdown for hand-authored reference pages. Every downstream page, search entry, and xref keys off a single pass over the configured backend.
+To ship a DocSite whose reference section stays in sync with a class library's public API, register a metadata backend and call `AddApiReference()`. One Razor template renders every public type, and a handful of Mdazor components (`<ApiMemberTable>`, `<ApiSummary>`, `<ExtensionMethods>`, `<ApiParameterTable>`) are available inline in markdown for hand-authored reference pages. Every generated page, search entry, and xref keys off a single pass over the configured backend.
 
 `Pennington.ApiMetadata.Reflection.AddApiMetadataFromCompiledAssembly()` is the metadata backend: it reflects over a compiled `.dll` and parses the companion xmldoc `.xml` file. It documents any assembly — one you build alongside the docs host, or a third-party NuGet package — without needing its source.
 
@@ -37,7 +37,7 @@ The reflection backend inspects metadata without running the assembly's code —
 
 ## Customize the route prefix
 
-The default prefix is `/reference/api/`. Override it per registration via `AddApiReference`'s `RoutePrefix` option when the shorter `/api/` (or any other shape) is a better fit:
+The default prefix is `/reference/api/`. Override it per registration via `AddApiReference`'s `RoutePrefix` option when the shorter `/api/` (or any other prefix) is a better fit:
 
 ```csharp
 builder.Services.AddApiMetadataFromCompiledAssembly(opts => { /* ... */ });
@@ -148,5 +148,5 @@ Xref links like `<xref:reference.api.api-type-summary>` resolve, the pages flow 
 
 ## Related
 
-- How-to: <xref:how-to.content-services.custom-content-service> — hand-write an `IContentService` when `AddApiReference`'s discovery rules are not the right shape.
+- How-to: <xref:how-to.content-services.custom-content-service> — hand-write an `IContentService` when `AddApiReference`'s discovery rules are not the right fit.
 - Reference: <xref:reference.api.api-type-summary>, <xref:reference.api.api-member>.

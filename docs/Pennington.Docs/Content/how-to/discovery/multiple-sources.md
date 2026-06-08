@@ -7,7 +7,7 @@ sectionLabel: "Content Discovery"
 tags: [configuration, content-sources, areas, overlap-detection]
 ---
 
-When one markdown tree outgrows a single root — a `/docs/` section alongside a separate `/blog/` section, or a catch-all root paired with a specialized subtree — registering multiple content sources is the answer. The right recipe depends on the host: `AddDocSite` supports multiple folder-scoped sub-trees through `ContentArea` entries on a single `DocSiteFrontMatter` pipeline; bare `AddPennington` allows any number of chained `AddMarkdownContent<T>` calls with independent front-matter types. For a first site, start with <xref:tutorials.getting-started.first-page>.
+When one markdown tree needs more than one content root — a `/docs/` section alongside a separate `/blog/` section, or a catch-all root paired with a specialized subtree — registering multiple content sources is the answer. The right recipe depends on the host: `AddDocSite` supports multiple folder-scoped sub-trees through `ContentArea` entries on a single `DocSiteFrontMatter` pipeline; bare `AddPennington` allows any number of chained `AddMarkdownContent<T>` calls with independent front-matter types. For a first site, start with <xref:tutorials.getting-started.first-page>.
 
 ## Before you begin
 
@@ -19,7 +19,7 @@ For a working DocSite multi-area setup, see [`examples/DocSiteKitchenSinkExample
 
 ## Split a DocSite into areas
 
-`AddDocSite` owns exactly one markdown pipeline keyed on `DocSiteFrontMatter`. To carve that pipeline into folder-scoped sub-trees, populate `DocSiteOptions.Areas` with one `ContentArea` per slug — each slug becomes both the URL prefix and the top-level folder under `ContentRootPath`.
+`AddDocSite` owns exactly one markdown pipeline keyed on `DocSiteFrontMatter`. To split that pipeline into folder-scoped sub-trees, populate `DocSiteOptions.Areas` with one `ContentArea` per slug — each slug becomes both the URL prefix and the top-level folder under `ContentRootPath`.
 
 ### Declare the areas
 

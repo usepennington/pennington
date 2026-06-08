@@ -9,7 +9,7 @@ uid: tutorials.blogsite.scaffold
 
 By the end of this tutorial, a running BlogSite host titled "Scaffold Blog" serves a home listing, `/archive`, `/blog/<slug>/`, `/tags/`, `/tags/<name>/` (plus the `/topics` aliases), and `/rss.xml` — all from a single placeholder post under `Content/Blog/`.
 
-`AddBlogSite` is a shortcut, the same kind `AddDocSite` is. It pre-wires what the [getting-started tutorials](xref:tutorials.getting-started.first-site) assemble by hand — host, layout, navigation, styling — into one call, tuned for a single shape: a site where the blog *is* the site. Reach for it when that shape fits; build on `AddPennington` directly for anything else. [What the templates wire for you](xref:explanation.positioning.docsite-positioning) covers what each call assembles and where the wiring stops.
+Like `AddDocSite`, `AddBlogSite` is a packaged starting point. The [getting-started tutorials](xref:tutorials.getting-started.first-site) build up the host, layout, navigation, and styling step by step; this one call folds all of that into a single line, configured for a site where the blog *is* the site. If that matches what you're building, start here. If it doesn't, you keep more control by composing on top of `AddPennington` yourself. For a breakdown of what each call assembles and where its automation ends, see [What the templates wire for you](xref:explanation.positioning.docsite-positioning).
 
 ## Prerequisites
 

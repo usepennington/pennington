@@ -9,9 +9,9 @@ tags:
   - ai-agents
 ---
 
-When an AI agent reads your documentation, it parses rendered HTML — nav chrome,
+When an LLM crawler reads your documentation, it parses rendered HTML — nav chrome,
 sidebars, highlighting spans — to recover the prose underneath. The `llms.txt`
-convention skips that by handing agents clean markdown directly. Pennington now
+convention skips that by handing crawlers clean markdown directly. Pennington now
 generates it.
 
 ## An index and a markdown copy of every page

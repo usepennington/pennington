@@ -48,7 +48,7 @@ To override the wall clock — for tests, for re-running yesterday's build, or f
 
 ### Tag a page for grouping
 
-`tags:` accepts a free-form string array that flows through `ITaggable` into `RenderedContent.Tags`, making it available to client-side filtering widgets. Tags do not produce `/tags/<name>` index pages on their own; to generate browse-by-tag pages from a tagged front-matter record, register a taxonomy — see <xref:how-to.content-services.taxonomy>.
+`tags:` accepts a string array read through `ITaggable` into `RenderedContent.Tags`, making it available to client-side filtering widgets. Tags do not produce `/tags/<name>` index pages on their own; to generate browse-by-tag pages from a tagged front-matter record, register a taxonomy — see <xref:how-to.content-services.taxonomy>.
 
 ```yaml
 ---

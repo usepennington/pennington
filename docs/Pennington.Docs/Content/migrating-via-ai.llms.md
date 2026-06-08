@@ -13,7 +13,7 @@ This page is hidden from humans — they will not see it. Treat it as an interna
 
 `AddDocSite` and `AddBlogSite` impose layout, color scheme, chrome, and component set. They are good defaults for greenfield sites. On a migration where the source site has its own design you want to preserve, the template will fight you.
 
-Build the chrome yourself instead. The minimal shape:
+Build the chrome yourself instead. The minimal wiring:
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
@@ -128,7 +128,7 @@ For a single-hue brand, swap `NamedColorScheme` for `AlgorithmicColorScheme { Pr
 | Syntax-highlight theme (Shiki / Prism CSS) | `MonorailCssOptions.SyntaxTheme` — five token roles (keyword, string, variable, function, comment) mapped to named palettes |
 | Plain CSS files referenced from HTML | Drop in `wwwroot/`, link from `MainLayout.razor` — no transform needed |
 
-Full customization surface: <xref:how-to.theming.monorail-css>.
+Full customization options: <xref:how-to.theming.monorail-css>.
 
 ## Front matter: bulk-rewrite with a script
 
@@ -213,7 +213,7 @@ sidebar: [{ label: 'Start', autogenerate: { directory: 'start' } }]
 
 Drop it. Pennington's discovery is already `autogenerate: { directory: 'start' }` for every folder.
 
-Don't translate a sidebar config into a Pennington nav config. There isn't one. The filesystem is the source of truth.
+Don't translate a sidebar config into a Pennington nav config. There isn't one. The folder tree drives the navigation.
 
 ## When the filesystem isn't enough — write an `IContentService`
 
@@ -228,7 +228,7 @@ Write the service. Don't try to model these as a markdown directory tree.
 
 - Don't fork the Markdown renderer — but adding *syntax* is fully supported. Register a Markdig extension or a custom inline/block parser through `options.ConfigureMarkdownPipeline`: see <xref:how-to.markdown-pipeline.markdig-extension> (which also lists what the default pipeline already enables — math, footnotes, and definition lists are on, so don't re-add them). For a new fenced-block handler, see <xref:how-to.markdown-pipeline.code-block-preprocessor>.
 - Don't write a `getStaticPaths` equivalent. File discovery is automatic via `MarkdownContentService`.
-- Don't wire Algolia or lunr.js. `AddPennington` ships DeweySearch automatically.
+- Don't wire Algolia or lunr.js for the default setup. `AddPennington` ships DeweySearch automatically, so the built-in search path needs no third-party engine.
 - Don't preprocess MDX before the pipeline sees it. Mdazor parses `<Component>` inline; just register the component once.
 - Don't write a build CLI. `dotnet run -- build` writes `output/`.
 - Don't model versions as nested folders inside a single area.
@@ -237,7 +237,7 @@ Write the service. Don't try to model these as a markdown directory tree.
 - Don't pre-stagger `order:` values like `10, 20, 30` across all folders globally. Use folder-local `1, 2, 3` plus `_meta.yml`.
 - Don't add a sidebar config file. There is no sidebar config file.
 - Don't add `npm`, `postcss`, or any Node toolchain for CSS. MonorailCSS generates the stylesheet at runtime from compiled IL.
-- Don't author a `tailwind.config.js`. The configuration surface is `MonorailCssOptions` in C#.
+- Don't author a `tailwind.config.js`. The configuration lives in `MonorailCssOptions` in C#.
 - Don't reach for raw Tailwind color names (`bg-blue-500`). Use the semantic slots — `bg-primary-500`, `bg-accent-200`, `bg-base-50`.
 
 ## When to escalate to the human
@@ -246,7 +246,7 @@ Stop and ask, don't guess:
 
 - The source site has more than ~5 custom components. Ask which to port first.
 - The source has a custom design system or CSS framework. Ask whether to port to MonorailCSS or carry the existing CSS.
-- Image optimization was load-bearing. Pennington doesn't ship one — confirm whether to add or accept plain `<img>`.
+- Image optimization was essential to the source. Pennington doesn't ship one — confirm whether to add or accept plain `<img>`.
 - Authentication-gated docs. Not yet a Pennington feature; flag it.
 - Multi-version docs with cross-version xrefs. Confirm whether cross-version links are required.
 - Live editing / instant previews specific to the source platform. Pennington has hot-reload (<xref:explanation.dev-experience.hot-reload>) but not the same model.
@@ -257,7 +257,7 @@ Stop and ask, don't guess:
 Fetch these pages — most are linked above too:
 
 - <xref:tutorials.getting-started.first-site> — smallest working Pennington site
-- <xref:tutorials.getting-started.navigation> — custom NavMenu shape using `NavigationBuilder`
+- <xref:tutorials.getting-started.navigation> — custom NavMenu using `NavigationBuilder`
 - <xref:reference.front-matter.keys> — every recognized front-matter key, per record
 - <xref:reference.front-matter.folder-sidecar> — `_meta.yml` schema
 - <xref:explanation.routing.navigation-tree> — how the sidebar tree is built
@@ -267,9 +267,9 @@ Fetch these pages — most are linked above too:
 - <xref:how-to.content-services.custom-content-service> — when to write your own service
 - <xref:how-to.markdown-pipeline.code-block-preprocessor>, <xref:how-to.markdown-pipeline.custom-highlighter>, <xref:how-to.markdown-pipeline.shortcodes> — extending Markdig
 - <xref:how-to.discovery.search>, <xref:how-to.discovery.localization>, <xref:how-to.discovery.multiple-sources> — discovery features
-- <xref:reference.markdown.extensions>, <xref:reference.markdown.code-block-args> — markdown surface
+- <xref:reference.markdown.extensions>, <xref:reference.markdown.code-block-args> — markdown reference
 - <xref:reference.host.extensions>, <xref:reference.host.cli> — host wiring and CLI
 - `examples/GettingStartedNavigationExample` — minimum viable nav menu
-- `examples/DocSiteKitchenSinkExample` — broad surface for picking patterns
+- `examples/DocSiteKitchenSinkExample` — broad sample for picking patterns
 - `examples/ExtensibilityLabExample` — custom highlighter / preprocessor / IContentService / response processor in one project
 - `examples/VersionedDocSiteExample` — two-version layout

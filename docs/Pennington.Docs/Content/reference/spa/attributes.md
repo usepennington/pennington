@@ -7,7 +7,7 @@ tags: [spa, attributes, navigation, regions]
 uid: reference.spa.attributes
 ---
 
-`Pennington.UI` ships `spa-engine.js`, a single-render-path navigation engine that fetches the destination URL, parses the HTML response, swaps marked regions, and merges head deltas. This page catalogs the `data-spa-*` attribute contract the engine reads from markup, plus the three custom events it dispatches on `document`.
+`Pennington.UI` ships `spa-engine.js`, a navigation script that fetches the destination URL, parses the HTML response, swaps marked regions, and merges head changes. This page catalogs the `data-spa-*` attribute contract the engine reads from markup, plus the three custom events it dispatches on `document`.
 
 For the design rationale, see [SPA navigation through region swaps](xref:explanation.spa.islands).
 

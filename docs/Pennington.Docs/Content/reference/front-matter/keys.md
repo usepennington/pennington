@@ -18,7 +18,7 @@ Rows are alphabetical by YAML key. Each entry shows the records that expose the 
 ### Parse rules
 
 - YAML keys are the camelCase form of the C# property names. Matching is case-insensitive.
-- Unknown keys are silently ignored (`IgnoreUnmatchedProperties`).
+- Unknown keys are dropped with a warning diagnostic in lenient mode (the default outside build); in strict mode (the build default) they throw a `YamlException` and fail the parse.
 - Absent keys fall through to the record's `init` default.
 
 ## Example

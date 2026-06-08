@@ -7,7 +7,7 @@ sectionLabel: "Publishing & Deployment"
 tags: [deployment, github-pages, ci, base-url]
 ---
 
-This guide covers deploying a working Pennington site committed to a GitHub repo, so Pages builds and deploys it automatically on every push to `main`. When the site still only runs under `dotnet run`, complete <xref:how-to.deployment.static-build> first — the shape of `output/` is easier to automate once it's familiar.
+This guide covers deploying a working Pennington site committed to a GitHub repo, so Pages builds and deploys it automatically on every push to `main`. When the site still only runs under `dotnet run`, complete <xref:how-to.deployment.static-build> first — the directory structure of `output/` is easier to automate once it's familiar.
 
 ## Before you begin
 - A Pennington site that builds locally with `dotnet run --project <your-project> -- build` (see [Build a static site](xref:how-to.deployment.static-build) if not).
