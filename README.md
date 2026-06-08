@@ -11,18 +11,36 @@ A content engine for .NET that turns Markdown into static sites, documentation p
 - **Documentation site template** with built-in layouts, search, and content areas
 - **Blog site template** for content-driven blogs
 
+## Mental model
+
+Pennington is an ASP.NET content engine. In development it serves your site as a normal web app; in build mode it crawls that same app in process and writes the responses as static files.
+
+There are three entry points:
+
+| Package | Use it when |
+|---|---|
+| `Pennington.DocSite` | You want a documentation site with sidebar navigation, search, styling, and static output wired for you. |
+| `Pennington.BlogSite` | You want a content-driven blog as the whole site. |
+| `Pennington` | You want the lower-level engine and will bring your own layout, routing, and styling. |
+
+Most documentation projects should start with `Pennington.DocSite`. Drop down to `Pennington` when the template shape no longer fits.
+
 ## Installation
 
+Pennington currently targets .NET 11 and uses preview C# language features.
+
+For the DocSite quick start:
+
 ```shell
-dotnet add package Pennington
+dotnet add package Pennington.DocSite
 ```
 
 Additional packages for specific features:
 
 ```shell
+dotnet add package Pennington               # Core content engine
 dotnet add package Pennington.UI            # Razor components
 dotnet add package Pennington.MonorailCss   # Utility-first CSS
-dotnet add package Pennington.DocSite       # Documentation site template
 dotnet add package Pennington.BlogSite      # Blog site template
 ```
 
