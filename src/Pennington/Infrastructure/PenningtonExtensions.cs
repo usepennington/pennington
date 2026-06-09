@@ -257,6 +257,7 @@ public static class PenningtonExtensions
                         BasePageUrl = new UrlPath(capturedSource.BasePageUrl),
                         SectionLabel = capturedSource.SectionLabel,
                         ExcludePaths = capturedSource.ExcludePaths,
+                        ReserveNotFoundPage = capturedSource.ReserveNotFoundPage,
                         Format = formatKey,
                     };
 

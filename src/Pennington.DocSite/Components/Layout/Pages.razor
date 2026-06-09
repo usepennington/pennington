@@ -55,8 +55,20 @@ else if (_homeComponentType != null)
 }
 else if (_notFound)
 {
-    <PageTitle>@Localizer["pennington.notfound.title"]</PageTitle>
-    <p>@Localizer["pennington.notfound.body"]</p>
+    @if (_notFoundResolved is not null)
+    {
+        <PageTitle>@_notFoundResolved.Title — @DocSiteOptions.SiteTitle</PageTitle>
+        <DocSiteArticle Title="@_notFoundResolved.Title" HtmlContent="@_notFoundResolved.Html" />
+    }
+    else if (_notFoundComponentType is not null)
+    {
+        <DynamicComponent Type="_notFoundComponentType" />
+    }
+    else
+    {
+        <PageTitle>@Localizer["pennington.notfound.title"]</PageTitle>
+        <p>@Localizer["pennington.notfound.body"]</p>
+    }
 }
 
 @code {
@@ -66,6 +78,8 @@ else if (_notFound)
     private NavigationInfo? _navInfo;
     private ContentArea? _activeArea;
     private bool _notFound;
+    private ResolvedContent? _notFoundResolved;
+    private Type? _notFoundComponentType;
     private Type? _homeComponentType;
     private ImmutableList<AlternateLanguagePage> _alternateLanguages = ImmutableList<AlternateLanguagePage>.Empty;
 
@@ -166,6 +180,24 @@ else if (_notFound)
         }
         else
         {
+            // Author-supplied not-found body: a content-root 404.md first, then a
+            // host-provided NotFound component, then the built-in localized message.
+            _notFoundResolved = await ContentResolver.GetNotFoundContentAsync();
+            if (_notFoundResolved is null)
+            {
+                // Mirror the home Index lookup: find a NotFound component (no @page) and
+                // render it via DynamicComponent. Skip framework assemblies for speed/safety.
+                _notFoundComponentType = AppDomain.CurrentDomain.GetAssemblies()
+                    .Where(a => a.FullName is { } n
+                        && !n.StartsWith("Microsoft.", StringComparison.Ordinal)
+                        && !n.StartsWith("System.", StringComparison.Ordinal))
+                    .SelectMany(a => { try { return a.GetTypes(); } catch { return []; } })
+                    .FirstOrDefault(t => t.Name == "NotFound"
+                        && typeof(IComponent).IsAssignableFrom(t)
+                        && !t.IsAbstract
+                        && t != typeof(Pages));
+            }
+
             _notFound = true;
             if (HttpContextAccessor.HttpContext is { } notFoundCtx)
             {

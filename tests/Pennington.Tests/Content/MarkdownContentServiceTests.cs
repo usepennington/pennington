@@ -20,13 +20,15 @@ public class MarkdownContentServiceTests
         string? section = "Documentation",
         UrlPath? basePageUrl = null,
         LocalizationOptions? localization = null,
-        System.TimeProvider? clock = null)
+        System.TimeProvider? clock = null,
+        bool reserveNotFound = false)
     {
         var options = new MarkdownContentServiceOptions
         {
             ContentPath = new FilePath("/content"),
             BasePageUrl = basePageUrl ?? new UrlPath("/docs"),
-            SectionLabel = section
+            SectionLabel = section,
+            ReserveNotFoundPage = reserveNotFound
         };
 
         return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, localization ?? DefaultLocalization, clock);
@@ -109,6 +111,97 @@ public class MarkdownContentServiceTests
             _ => ""
         };
         path.ShouldEndWith("intro.md");
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_ReservedNotFoundPage_ExcludedWhenFlagSet()
+    {
+        var fs = CreateFs(
+            ("404.md", "---\ntitle: Not Found\n---\nMissing."),
+            ("intro.md", "---\ntitle: Intro\n---\n# Intro"));
+        var service = CreateTestService(fs, reserveNotFound: true);
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+        {
+            items.Add(item);
+        }
+
+        items.Count.ShouldBe(1);
+        items[0].Route.CanonicalPath.Value.ShouldBe("/docs/intro/");
+        items.ShouldNotContain(i => i.Route.CanonicalPath.Value.Contains("404"));
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_NotFoundPage_IncludedWhenFlagUnset()
+    {
+        var fs = CreateFs(
+            ("404.md", "---\ntitle: Not Found\n---\nMissing."));
+        var service = CreateTestService(fs); // reserveNotFound defaults to false (bare-host behavior)
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+        {
+            items.Add(item);
+        }
+
+        items.Count.ShouldBe(1);
+        items[0].Route.CanonicalPath.Value.ShouldBe("/docs/404/");
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_NestedNotFoundPage_NotReserved()
+    {
+        var fs = CreateFs(
+            ("404.md", "---\ntitle: Not Found\n---\nMissing."),
+            ("guides/404.md", "---\ntitle: Guides 404\n---\nNested."));
+        var service = CreateTestService(fs, reserveNotFound: true);
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+        {
+            items.Add(item);
+        }
+
+        // Only the content-root 404.md is reserved — a nested guides/404.md stays a normal page.
+        items.Count.ShouldBe(1);
+        items[0].Route.CanonicalPath.Value.ShouldBe("/docs/guides/404/");
+    }
+
+    [Fact]
+    public async Task GetContentTocEntriesAsync_ReservedNotFoundPage_Excluded()
+    {
+        var fs = CreateFs(
+            ("404.md", "---\ntitle: Not Found\n---\nMissing."),
+            ("intro.md", "---\ntitle: Intro\norder: 1\n---\n# Intro"));
+        var service = CreateTestService(fs, reserveNotFound: true);
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        entries.Count.ShouldBe(1);
+        entries[0].Title.ShouldBe("Intro");
+    }
+
+    [Fact]
+    public async Task DiscoverAsync_MultiLocale_ReservedNotFoundPage_Excluded()
+    {
+        var fs = CreateMultiLocaleFs(
+            ("404.md", "---\ntitle: Not Found\n---\nMissing."),
+            ("intro.md", "---\ntitle: Intro\n---\n# Intro"),
+            ("fr/404.md", "---\ntitle: Introuvable\n---\nManquant."),
+            ("fr/intro.md", "---\ntitle: Intro FR\n---\n# Intro FR"));
+        var service = CreateTestService(
+            fs, basePageUrl: new UrlPath("/"), localization: CreateMultiLocale(), reserveNotFound: true);
+
+        var items = new List<DiscoveredItem>();
+        await foreach (var item in service.DiscoverAsync())
+        {
+            items.Add(item);
+        }
+
+        items.ShouldNotContain(i => i.Route.CanonicalPath.Value.Contains("404"));
+        items.ShouldContain(i => i.Route.CanonicalPath.Value == "/intro/");
+        items.ShouldContain(i => i.Route.CanonicalPath.Value == "/fr/intro/");
     }
 
     [Fact]

@@ -1,0 +1,69 @@
+@page "/{*path:nonfile}"
+@inject BlogContentResolver ContentResolver
+@inject IHttpContextAccessor HttpContextAccessor
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Pages> Localizer
+
+@* Root catch-all: any request that matches no other route lands here. The build's
+   sentinel GET (/__pennington-404-generator) also lands here, so whatever this renders
+   becomes output/404.html. Author the body with a content-root 404.md or a NotFound
+   component; otherwise the built-in localized message shows. The `{` in the @page
+   template keeps this out of RazorPageContentService discovery (never a built route);
+   `nonfile` keeps it off /styles.css and /rss.xml. *@
+
+@if (_resolved is not null)
+{
+    <PageTitle>@_resolved.Title</PageTitle>
+    <div class="mx-auto max-w-2xl px-4 py-16">
+        <article class="prose lg:prose-lg dark:prose-invert prose-headings:font-display max-w-none">
+            <h1>@_resolved.Title</h1>
+            @((MarkupString)_resolved.Html)
+        </article>
+    </div>
+}
+else if (_componentType is not null)
+{
+    <DynamicComponent Type="_componentType" />
+}
+else
+{
+    <PageTitle>@Localizer["pennington.notfound.title"]</PageTitle>
+    <div class="mx-auto max-w-2xl px-4 py-16">
+        <article class="prose lg:prose-lg dark:prose-invert prose-headings:font-display max-w-none">
+            <h1>@Localizer["pennington.notfound.title"]</h1>
+            <p>@Localizer["pennington.notfound.body"]</p>
+        </article>
+    </div>
+}
+
+@code {
+    [Parameter] public string? Path { get; set; }
+
+    private RenderedNotFound? _resolved;
+    private Type? _componentType;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Precedence: content-root 404.md, then a host-provided NotFound component,
+        // then the built-in localized message.
+        _resolved = await ContentResolver.GetNotFoundContentAsync();
+        if (_resolved is null)
+        {
+            _componentType = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => a.FullName is { } n
+                    && !n.StartsWith("Microsoft.", StringComparison.Ordinal)
+                    && !n.StartsWith("System.", StringComparison.Ordinal))
+                .SelectMany(a => { try { return a.GetTypes(); } catch { return []; } })
+                .FirstOrDefault(t => t.Name == "NotFound"
+                    && typeof(IComponent).IsAssignableFrom(t)
+                    && !t.IsAbstract
+                    && t != typeof(Pages));
+        }
+
+        if (HttpContextAccessor.HttpContext is { } ctx)
+        {
+            // Flip to 404 after body rewriting (see NotFoundStatusProcessor) — setting the
+            // status here directly would gate every IResponseProcessor and empty the body.
+            ctx.Items["Pennington.NotFound"] = true;
+        }
+    }
+}

@@ -91,13 +91,35 @@ public class DocsHttpTests
     [Fact]
     public async Task NonExistentPage_Returns404_WithNotFoundBody()
     {
-        // DocSite pages signal Pennington.NotFound when DocSiteContentResolver returns
-        // null; NotFoundStatusProcessor flips the response to 404 after every
-        // other rewriter has run, so the body still ships with localized chrome.
+        // A miss has no matching content, so the catch-all renders the content-root
+        // 404.md (docs/Pennington.Docs/Content/404.md); NotFoundStatusProcessor flips the
+        // response to 404 after every other rewriter has run, so the body still ships
+        // with full chrome.
         var response = await _client.GetAsync("/this-does-not-exist/", TestContext.Current.CancellationToken);
         response.StatusCode.ShouldBe(System.Net.HttpStatusCode.NotFound);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         content.ShouldContain("Page not found");
+        // The distinctive body line proves the 404.md rendered rather than the built-in fallback.
+        content.ShouldContain("never existed at all");
+    }
+
+    [Fact]
+    public async Task ReservedNotFoundFile_HasNoRouteOfItsOwn()
+    {
+        // 404.md is reserved out of discovery, so /404/ is not a real page — it resolves
+        // as a miss and returns 404, never a 200.
+        var response = await _client.GetAsync("/404/", TestContext.Current.CancellationToken);
+        response.StatusCode.ShouldBe(System.Net.HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task NotFoundGeneratorSentinel_RendersNotFoundBody()
+    {
+        // The static build GETs this sentinel URL and writes the response body to
+        // output/404.html. It must render the content-root 404.md.
+        var response = await _client.GetAsync("/__pennington-404-generator", TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        content.ShouldContain("never existed at all");
     }
 
     [Fact]

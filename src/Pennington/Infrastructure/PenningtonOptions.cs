@@ -175,6 +175,14 @@ public sealed class MarkdownContentOptions
     /// </summary>
     public ImmutableArray<string> ExcludePaths { get; set; } = ImmutableArray<string>.Empty;
 
+    /// <summary>
+    /// When true, a content-root <c>404.md</c> is reserved as the not-found body: skipped during
+    /// discovery so it never becomes a routable page or a nav/sitemap/search/llms entry. Host
+    /// templates render it on demand as the 404 page. See
+    /// <c>MarkdownContentServiceOptions.ReserveNotFoundPage</c>.
+    /// </summary>
+    public bool ReserveNotFoundPage { get; set; }
+
     internal Type? FrontMatterType { get; set; }
 }
 

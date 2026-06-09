@@ -33,6 +33,9 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <summary>File-name suffix that marks a markdown file as llms-only — emitted to the llms.txt sidecar but never as an HTML page.</summary>
     public const string LlmsOnlyFileSuffix = ".llms.md";
 
+    /// <summary>Content-root file name reserved as the not-found page body when <see cref="MarkdownContentServiceOptions.ReserveNotFoundPage"/> is set.</summary>
+    public const string NotFoundPageFileName = "404.md";
+
     private readonly MarkdownContentServiceOptions _options;
     private readonly FrontMatterParser _parser;
     private readonly IFileSystem _fileSystem;
@@ -122,6 +125,12 @@ public sealed class MarkdownContentService<TFrontMatter>
         // locale is cheaper than scanning _entries mid-watcher-callback to learn which
         // locales actually have their own copy.
         var absolutePath = _fileSystem.Path.GetFullPath(change.FullPath);
+        if (IsReservedNotFoundPageAbsolute(absolutePath))
+        {
+            // The reserved 404.md produces no routes — nothing to invalidate.
+            return ContentChangeImpact.None;
+        }
+
         var locale = LocaleForPath(absolutePath);
         var file = new FilePath(absolutePath);
         return ContentChangeImpact.Routes(
@@ -170,6 +179,15 @@ public sealed class MarkdownContentService<TFrontMatter>
                 _entries.Clear();
             }
             _seededLazy = new AsyncLazy<bool>(SeedMetadataAsync);
+            return FileWatchResponse.Refreshed;
+        }
+
+        // The reserved content-root 404.md is resolved on demand as the not-found body —
+        // it is never a discovered route, so a create/edit/delete must not add it to the
+        // entry cache. Renames fall through above to a full re-seed, which re-applies the
+        // discovery-time skip.
+        if (IsReservedNotFoundPageAbsolute(absolutePath))
+        {
             return FileWatchResponse.Refreshed;
         }
 
@@ -387,6 +405,40 @@ public sealed class MarkdownContentService<TFrontMatter>
             }
         }
         return false;
+    }
+
+    /// <summary>
+    /// True when <paramref name="relativePath"/> (forward-slash, relative to the content or
+    /// locale root) is the reserved content-root <c>404.md</c> and
+    /// <see cref="MarkdownContentServiceOptions.ReserveNotFoundPage"/> is set. Only the root
+    /// file is reserved — a nested <c>foo/404.md</c> stays an ordinary page.
+    /// </summary>
+    private bool IsReservedNotFoundPage(string relativePath) =>
+        _options.ReserveNotFoundPage
+        && string.Equals(relativePath, NotFoundPageFileName, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// True when the file at <paramref name="absolutePath"/> is the reserved content-root
+    /// <c>404.md</c> (or a non-default locale root's <c>404.md</c>). Used by the file-watch
+    /// path, which builds entries directly rather than through <see cref="DiscoverFiles"/>,
+    /// so a runtime create/edit can't re-introduce the not-found file as a route.
+    /// </summary>
+    private bool IsReservedNotFoundPageAbsolute(string absolutePath)
+    {
+        if (!_options.ReserveNotFoundPage)
+        {
+            return false;
+        }
+
+        var fileName = _fileSystem.Path.GetFileName(absolutePath) ?? "";
+        if (!string.Equals(fileName, NotFoundPageFileName, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var root = GetContentRootForLocale(LocaleForPath(absolutePath));
+        var relative = _fileSystem.Path.GetRelativePath(root, absolutePath).Replace('\\', '/');
+        return IsReservedNotFoundPage(relative);
     }
 
     /// <inheritdoc/>
@@ -740,6 +792,11 @@ public sealed class MarkdownContentService<TFrontMatter>
                 continue;
             }
 
+            if (IsReservedNotFoundPage(relativePath))
+            {
+                continue;
+            }
+
             var locale = _localization.IsMultiLocale ? _localization.DefaultLocale : _options.Locale;
             results.Add((new FilePath(file), locale));
         }
@@ -760,6 +817,11 @@ public sealed class MarkdownContentService<TFrontMatter>
                 // also means "fr/changelog" in fr (without forcing users to list both).
                 var localeRelative = _fileSystem.Path.GetRelativePath(localePath, file).Replace('\\', '/');
                 if (IsRelativePathExcluded(localeRelative))
+                {
+                    continue;
+                }
+
+                if (IsReservedNotFoundPage(localeRelative))
                 {
                     continue;
                 }

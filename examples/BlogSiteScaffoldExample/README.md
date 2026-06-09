@@ -8,6 +8,7 @@ The smallest possible BlogSite. `AddBlogSite` / `UseBlogSite` / `RunBlogSiteAsyn
 - Author identity (`AuthorName`, `AuthorBio`) feeding RSS and JSON-LD
 - `UseBlogSite` ordering — antiforgery, static files, Razor routing, MonorailCSS, Pennington middleware
 - One `tags:` entry on `hello-world.md` keeps the `/tags/<name>` route discoverable from the post page (the post body links to `/tags/scaffold/` via `BlogPost.razor`'s tag chip) — drop the front-matter line and that link disappears.
+- A root `Content/404.md` (outside `Content/Blog/`) — the not-found body. BlogSite renders it from its root catch-all for any unmatched URL and writes it to `output/404.html` during the static build.
 
 ## Tutorial stages
 

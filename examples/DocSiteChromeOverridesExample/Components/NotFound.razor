@@ -1,0 +1,17 @@
+@namespace DocSiteChromeOverridesExample.Components
+@using Microsoft.AspNetCore.Components.Web
+
+@* A component named NotFound with no @page directive. DocSite's catch-all finds it by
+   reflection and renders it for any unmatched URL when no Content/404.md is present —
+   so it is the not-found body, never a route. Unlike ExtraPage.razor it needs no
+   AdditionalRoutingAssemblies wiring; the reflection scan walks every loaded assembly. *@
+
+<PageTitle>Page not found</PageTitle>
+
+<article class="prose mx-auto py-12">
+    <h1>This page wandered off</h1>
+    <p>
+        We couldn't find what you were looking for. Try the
+        <a href="/">home page</a> or one of the guides in the sidebar.
+    </p>
+</article>
