@@ -44,6 +44,10 @@ public static class BlogSiteServiceExtensions
             {
                 md.ContentPath = blogContentPath;
                 md.BasePageUrl = options.BlogBaseUrl;
+                // The not-found body lives at the content root (Content/404.md), outside this
+                // blog source; reserve it here too in case a host points the blog source at the
+                // content root (BlogContentPath = "") so a 404.md never becomes a post route.
+                md.ReserveNotFoundPage = true;
             });
 
             // The BlogSite ships Home/Archive/Tag/Tags/Blog Razor pages inside

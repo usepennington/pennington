@@ -190,6 +190,42 @@ public sealed class BlogContentResolver : IFileWatchAware
     }
 
     /// <summary>
+    /// Resolves the site's not-found body from a content-root <c>404.md</c>, rendered through the
+    /// markdown pipeline. Returns null when no <c>404.md</c> exists — the catch-all then tries a
+    /// <c>NotFound</c> component, then the built-in message. The file is reserved out of discovery
+    /// (<see cref="MarkdownContentServiceOptions.ReserveNotFoundPage"/>), so it is never a post route.
+    /// </summary>
+    public async Task<RenderedNotFound?> GetNotFoundContentAsync()
+    {
+        var root = Path.GetFullPath(_options.ContentRootPath.Value);
+        var path = Path.Combine(root, MarkdownContentService<BlogSiteFrontMatter>.NotFoundPageFileName);
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        var content = await File.ReadAllTextAsync(path);
+        var parsed = _parser.Parse<BlogSiteFrontMatter>(content, path);
+        var fm = parsed.Metadata ?? new BlogSiteFrontMatter();
+
+        var route = new ContentRoute
+        {
+            CanonicalPath = new UrlPath("/404"),
+            OutputFile = new FilePath("404.html"),
+        };
+        // Single blog markdown source => index 0 => MarkdownFormat.Key.
+        var parsedItem = new ParsedItem(route, fm, parsed.Body) { Format = MarkdownFormat.Key };
+        var rendered = await _renderer.RenderAsync(parsedItem);
+        if (rendered.Value is RenderedItem renderedItem)
+        {
+            var title = string.IsNullOrWhiteSpace(fm.Title) ? "Not Found" : fm.Title;
+            return new RenderedNotFound(title, renderedItem.Content.Html);
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Get all unique tags with their post counts.
     /// </summary>
     public async Task<ImmutableList<(BlogTag Tag, int Count)>> GetTagsWithCountsAsync()

@@ -46,4 +46,14 @@ public sealed class MarkdownContentServiceOptions
     /// anything beneath it, but not <c>a/bcd</c>.
     /// </summary>
     public ImmutableArray<string> ExcludePaths { get; init; } = ImmutableArray<string>.Empty;
+
+    /// <summary>
+    /// When true, a content-root-level <c>404.md</c> (and its per-locale
+    /// <c>{locale}/404.md</c> sibling) is skipped during discovery so it never becomes a
+    /// routable page or appears in navigation, the sitemap, search, llms.txt, or build
+    /// output. Host templates (DocSite, BlogSite) render the file's body on demand as the
+    /// not-found page instead. Nested <c>404.md</c> files (e.g. <c>guides/404.md</c>) stay
+    /// ordinary pages. Bare hosts leave this false, keeping <c>404.md</c> a normal route.
+    /// </summary>
+    public bool ReserveNotFoundPage { get; init; }
 }

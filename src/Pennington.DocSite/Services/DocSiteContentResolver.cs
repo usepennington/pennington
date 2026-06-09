@@ -24,20 +24,26 @@ public sealed class DocSiteContentResolver
     private readonly NavigationBuilder _navBuilder;
     private readonly LocalizationOptions _localization;
     private readonly DocSiteOptions _docSiteOptions;
+    private readonly IContentParser? _parser;
+    private readonly IContentRenderer? _renderer;
 
-    /// <summary>Creates a new resolver with the supplied content services, page resolver, and options.</summary>
+    /// <summary>Creates a new resolver with the supplied content services, page resolver, options, and pipeline primitives.</summary>
     public DocSiteContentResolver(
         IEnumerable<IContentService> services,
         IPageResolver pageResolver,
         NavigationBuilder navBuilder,
         LocalizationOptions localization,
-        DocSiteOptions docSiteOptions)
+        DocSiteOptions docSiteOptions,
+        IContentParser? parser = null,
+        IContentRenderer? renderer = null)
     {
         _services = services;
         _pageResolver = pageResolver;
         _navBuilder = navBuilder;
         _localization = localization;
         _docSiteOptions = docSiteOptions;
+        _parser = parser;
+        _renderer = renderer;
     }
 
     /// <summary>
@@ -101,6 +107,69 @@ public sealed class DocSiteContentResolver
                 ? (_localization.Locales.TryGetValue(locale, out var defInfo) ? defInfo.DisplayName : locale)
                 : null
         );
+    }
+
+    /// <summary>
+    /// Resolves the site's not-found body from a content-root <c>404.md</c>, rendered through the
+    /// full markdown pipeline. Returns null when no <c>404.md</c> exists (the catch-all then tries
+    /// a <c>NotFound</c> component, then the built-in message) or when the host registered no
+    /// markdown parser. The file is reserved out of discovery
+    /// (<see cref="MarkdownContentServiceOptions.ReserveNotFoundPage"/>), so it is never a routable
+    /// page. One body serves every locale: the static build emits a single root <c>404.html</c>,
+    /// which is all any static host serves for an unknown URL.
+    /// </summary>
+    public async Task<ResolvedContent?> GetNotFoundContentAsync()
+    {
+        if (_parser is null || _renderer is null)
+        {
+            return null;
+        }
+
+        // The DocSite's primary markdown source is rooted at "/" (the doc tree); its
+        // AbsoluteContentRoot is where 404.md lives. It's registered first, so its dispatch
+        // key is MarkdownFormat.Key (per-source keys come from MarkdownFormat.SourceKey — if
+        // the doc source were ever registered after another markdown source, capture the
+        // source's real key instead of assuming the default).
+        var source = _services.OfType<IMarkdownContentSource>()
+            .FirstOrDefault(s => s.BasePageUrl.Value == "/");
+        if (source is null)
+        {
+            return null;
+        }
+
+        var path = Path.Combine(
+            source.AbsoluteContentRoot, MarkdownContentService<DocSiteFrontMatter>.NotFoundPageFileName);
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        var route = new ContentRoute
+        {
+            CanonicalPath = new UrlPath("/404"),
+            OutputFile = new FilePath("404.html"),
+        };
+        var discovered = new DiscoveredItem(route, new FileSource(new FilePath(path), MarkdownFormat.Key));
+
+        var parsed = await _parser.ParseAsync(discovered);
+        if (parsed.Value is not ParsedItem parsedItem)
+        {
+            return null;
+        }
+
+        var rendered = await _renderer.RenderAsync(parsedItem);
+        if (rendered.Value is not RenderedItem renderedItem)
+        {
+            return null;
+        }
+
+        return new ResolvedContent(
+            Route: renderedItem.Route,
+            Title: renderedItem.Metadata.Title,
+            Description: renderedItem.Metadata.Description,
+            Html: renderedItem.Content.Html,
+            Outline: renderedItem.Content.Outline,
+            Metadata: renderedItem.Metadata);
     }
 
     /// <summary>

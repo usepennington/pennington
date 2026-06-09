@@ -50,6 +50,9 @@ public static class DocSiteServiceExtensions
             {
                 md.ContentPath = options.ContentRootPath.Value;
                 md.BasePageUrl = "/";
+                // A content-root 404.md is the not-found body, rendered on demand by the
+                // catch-all (Pages.razor) — never a routable /404/ page or a nav/sitemap entry.
+                md.ReserveNotFoundPage = true;
                 // Carve the blog subtree out of the doc source so blog posts aren't
                 // double-discovered as documentation pages.
                 if (hasBlog)
