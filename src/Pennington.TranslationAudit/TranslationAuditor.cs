@@ -76,6 +76,11 @@ public sealed class TranslationAuditor : IBuildAuditor
             }
         }
 
+        // Git state is constant across one audit run, so each distinct file's history is
+        // walked at most once. Without this, GetLatestCommit(page.SourceFile) below re-walks
+        // the same source file once per non-default locale (the reader has no cache).
+        var commitCache = new Dictionary<string, CommitInfo?>(StringComparer.Ordinal);
+
         var diagnostics = ImmutableList.CreateBuilder<BuildDiagnostic>();
         foreach (var (locale, info) in nonDefaultLocales)
         {
@@ -101,8 +106,8 @@ public sealed class TranslationAuditor : IBuildAuditor
                     continue;
                 }
 
-                var sourceCommit = _git.GetLatestCommit(page.SourceFile);
-                var translationCommit = _git.GetLatestCommit(translation.SourcePath);
+                var sourceCommit = GetLatestCommit(commitCache, page.SourceFile);
+                var translationCommit = GetLatestCommit(commitCache, translation.SourcePath);
                 if (sourceCommit is null || translationCommit is null)
                 {
                     continue;
@@ -122,6 +127,18 @@ public sealed class TranslationAuditor : IBuildAuditor
         }
 
         return Task.FromResult<IReadOnlyList<BuildDiagnostic>>(diagnostics.ToImmutable());
+    }
+
+    private CommitInfo? GetLatestCommit(Dictionary<string, CommitInfo?> cache, string path)
+    {
+        if (cache.TryGetValue(path, out var commit))
+        {
+            return commit;
+        }
+
+        commit = _git.GetLatestCommit(path);
+        cache[path] = commit;
+        return commit;
     }
 
     private sealed class PageEntry
