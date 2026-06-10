@@ -2,6 +2,7 @@ namespace Pennington.Cli;
 
 using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
+using Generation;
 
 /// <summary>
 /// Single source of truth for run-mode detection and owner of the <c>build</c> / <c>diag</c>
@@ -68,17 +69,20 @@ internal sealed class PenningtonCli
     /// Builds the <c>build</c> verb. Its options exist to document the build CLI in <c>--help</c>;
     /// the effective values come from <see cref="Generation.OutputOptions.FromArgs"/> at DI time, so
     /// the action wired by the caller ignores the parsed option/positional values. Unmatched tokens
-    /// are tolerated to preserve the historical positional forms (<c>build /sub dist</c>).
+    /// are tolerated to preserve the historical positional forms (<c>build /sub dist</c>). The flag names
+    /// and defaults come from <see cref="Generation.OutputOptions.BaseUrlFlag"/> /
+    /// <see cref="Generation.OutputOptions.OutputFlag"/> — the same constants the parser matches — so the
+    /// documented flags and the parsed flags cannot disagree.
     /// </summary>
     public static Command CreateBuildCommand()
     {
-        var baseUrl = new Option<string>("--base-url")
+        var baseUrl = new Option<string>(OutputOptions.BaseUrlFlag)
         {
-            Description = "Base URL the site is deployed under, e.g. /docs (also accepted positionally). Default: /",
+            Description = $"Base URL the site is deployed under, e.g. /docs (also accepted positionally). Default: {OutputOptions.DefaultBaseUrl}",
         };
-        var output = new Option<string>("--output")
+        var output = new Option<string>(OutputOptions.OutputFlag)
         {
-            Description = "Directory to write generated output to (also accepted positionally). Default: output",
+            Description = $"Directory to write generated output to (also accepted positionally). Default: {OutputOptions.DefaultOutputDirectory}",
         };
 
         var build = new Command("build", "Generate the static site to the output directory, then exit.");

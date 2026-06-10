@@ -8,11 +8,27 @@ using Routing;
 /// </summary>
 public sealed class OutputOptions
 {
+    /// <summary>
+    /// Long name of the <c>--base-url</c> build flag. The single source for the flag spelling, read by
+    /// both <see cref="FromArgs"/> (the real parser) and the <c>--help</c> projection
+    /// (<see cref="Cli.PenningtonCli.CreateBuildCommand"/>), so the documented and parsed flags cannot drift.
+    /// </summary>
+    internal const string BaseUrlFlag = "--base-url";
+
+    /// <summary>Long name of the <c>--output</c> build flag — see <see cref="BaseUrlFlag"/>.</summary>
+    internal const string OutputFlag = "--output";
+
+    /// <summary>Default base URL when no <c>--base-url</c> flag or positional argument is supplied.</summary>
+    internal const string DefaultBaseUrl = "/";
+
+    /// <summary>Default output directory when no <c>--output</c> flag or positional argument is supplied.</summary>
+    internal const string DefaultOutputDirectory = "output";
+
     /// <summary>Directory where generated output is written.</summary>
     public required FilePath OutputDirectory { get; init; }
 
     /// <summary>Base URL the site is deployed under (used to rewrite links in generated HTML).</summary>
-    public UrlPath BaseUrl { get; init; } = new("/");
+    public UrlPath BaseUrl { get; init; } = new(DefaultBaseUrl);
 
     /// <summary>When true, the output directory is cleared before a build run.</summary>
     public bool CleanOutput { get; init; } = true;
@@ -31,7 +47,7 @@ public sealed class OutputOptions
         // corrupted every rewritten <a href> in integration tests.
         if (!PenningtonCli.IsBuildVerb(args))
         {
-            return new OutputOptions { OutputDirectory = new FilePath("output") };
+            return new OutputOptions { OutputDirectory = new FilePath(DefaultOutputDirectory) };
         }
 
         // Supported shapes (all relative to args[0] = "build"):
@@ -50,11 +66,11 @@ public sealed class OutputOptions
         for (var i = 1; i < args.Length; i++)
         {
             var a = args[i];
-            if (TryReadFlag(a, "--base-url", args, ref i, out var baseUrlValue))
+            if (TryReadFlag(a, BaseUrlFlag, args, ref i, out var baseUrlValue))
             {
                 baseUrl = baseUrlValue;
             }
-            else if (TryReadFlag(a, "--output", args, ref i, out var outputValue))
+            else if (TryReadFlag(a, OutputFlag, args, ref i, out var outputValue))
             {
                 outputDir = outputValue;
             }
@@ -84,8 +100,8 @@ public sealed class OutputOptions
 
         return new OutputOptions
         {
-            OutputDirectory = new FilePath(outputDir ?? "output"),
-            BaseUrl = new UrlPath(NormalizeBaseUrl(baseUrl) ?? "/"),
+            OutputDirectory = new FilePath(outputDir ?? DefaultOutputDirectory),
+            BaseUrl = new UrlPath(NormalizeBaseUrl(baseUrl) ?? DefaultBaseUrl),
         };
     }
 

@@ -1,3 +1,4 @@
+using Pennington.Cli;
 using Pennington.Generation;
 
 namespace Pennington.Tests.Generation;
@@ -149,5 +150,22 @@ public class OutputOptionsTests
         var options = OutputOptions.FromArgs(["build", "--BASE-URL=/sub"]);
 
         options.BaseUrl.Value.ShouldBe("/sub");
+    }
+
+    [Fact]
+    public void BuildHelpCommand_DeclaresTheSameFlags_TheParserHonors()
+    {
+        // F014 regression / drift guard: the System.CommandLine `build` command documents the flags
+        // in --help, while OutputOptions.FromArgs is the actual parser. Both now read the same flag-name
+        // constants, so this pins that the help command declares exactly the flags the parser honors —
+        // help can never document a flag the parser ignores, or vice versa.
+        var command = PenningtonCli.CreateBuildCommand();
+        var declaredFlags = command.Options.Select(o => o.Name.TrimStart('-')).ToList();
+
+        declaredFlags.ShouldContain(OutputOptions.BaseUrlFlag.TrimStart('-'));
+        declaredFlags.ShouldContain(OutputOptions.OutputFlag.TrimStart('-'));
+
+        OutputOptions.FromArgs(["build", $"{OutputOptions.BaseUrlFlag}=/docs"]).BaseUrl.Value.ShouldBe("/docs");
+        OutputOptions.FromArgs(["build", $"{OutputOptions.OutputFlag}=dist"]).OutputDirectory.Value.ShouldBe("dist");
     }
 }
