@@ -79,6 +79,30 @@ public class RazorPageContentServiceTests
     }
 
     [Fact]
+    public async Task GetContentTocEntriesAsync_LoadsSidecarMetadata_ViaContentRoot()
+    {
+        // No .csproj lives above the test binary (centralized artifacts output), so the
+        // content root is the only path that locates the .razor source and its sidecar.
+        var fs = new MockFileSystem();
+        fs.Directory.CreateDirectory("/app/Components");
+        fs.File.WriteAllText("/app/App.csproj", "<Project />");
+        fs.File.WriteAllText("/app/Components/AboutPage.razor", "@page \"/about/\"");
+        fs.File.WriteAllText("/app/Components/AboutPage.razor.metadata.yml", "title: About Us");
+
+        var service = new RazorPageContentService(
+            [typeof(AboutPage).Assembly],
+            fs,
+            new FrontMatterParser(),
+            NullLogger<RazorPageContentService>.Instance,
+            contentRootPath: "/app");
+
+        var entries = await service.GetContentTocEntriesAsync();
+
+        var about = entries.First(e => e.Route.CanonicalPath.Value == "/about/");
+        about.Title.ShouldBe("About Us");
+    }
+
+    [Fact]
     public async Task GetIndexableEntriesAsync_DefaultsSearchFlagsToFalse()
     {
         var service = CreateService();

@@ -13,10 +13,12 @@ using Routing;
 public sealed record SocialCardOptions
 {
     /// <summary>
-    /// Host renderer invoked once per page to produce the card image bytes. Return <c>null</c> to
-    /// skip a page (its card route then serves 404 and is omitted from the build).
+    /// Host renderer invoked once per page to produce the card image bytes. Receives the request's
+    /// <see cref="IServiceProvider"/> so a renderer can resolve registered services (font caches,
+    /// theming options, ...). Return <c>null</c> to skip a page (its card route then serves 404 and
+    /// is omitted from the build).
     /// </summary>
-    public required Func<SocialCardRequest, CancellationToken, Task<byte[]?>> Render { get; init; }
+    public required Func<SocialCardRequest, IServiceProvider, CancellationToken, Task<byte[]?>> Render { get; init; }
 
     /// <summary>URL prefix under which card routes are published (e.g. <c>/social-cards/blog/post.png</c>).</summary>
     public string BaseUrl { get; init; } = "/social-cards";

@@ -62,7 +62,7 @@ public class SocialCardContentServiceTests
     {
         var services = new ServiceCollection();
         services.AddSingleton<IContentService>(new FakeRecordContentService(urls));
-        var options = new SocialCardOptions { Render = (_, _) => Task.FromResult<byte[]?>([1]) };
+        var options = new SocialCardOptions { Render = (_, _, _) => Task.FromResult<byte[]?>([1]) };
         services.AddSingleton(options);
         // Register the service itself so DiscoverAsync resolves it as a sibling and must exclude it.
         services.AddSingleton<IContentService>(sp => new SocialCardContentService(sp, options));

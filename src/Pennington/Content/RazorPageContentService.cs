@@ -29,6 +29,7 @@ public sealed partial class RazorPageContentService : IContentService
     private readonly IFileSystem _fileSystem;
     private readonly FrontMatterParser _frontMatterParser;
     private readonly ILogger<RazorPageContentService> _logger;
+    private readonly string? _contentRootPath;
     private readonly TimeProvider _clock;
     private readonly List<(string Template, string TypeName)> _missingTrailingSlashPages = [];
     private readonly Lazy<Dictionary<string, string>> _razorFileCache;
@@ -38,18 +39,23 @@ public sealed partial class RazorPageContentService : IContentService
 
     /// <summary>
     /// Initializes the service with the assemblies to scan for routable Razor components.
+    /// <paramref name="contentRootPath"/> (the host content root) seeds the sidecar file scan
+    /// alongside the assembly-location walkup — required under a centralized artifacts output,
+    /// where no <c>.csproj</c> lives above the compiled binary.
     /// </summary>
     public RazorPageContentService(
         Assembly[] assemblies,
         IFileSystem fileSystem,
         FrontMatterParser frontMatterParser,
         ILogger<RazorPageContentService> logger,
+        string? contentRootPath = null,
         TimeProvider? clock = null)
     {
         _assemblies = assemblies;
         _fileSystem = fileSystem;
         _frontMatterParser = frontMatterParser;
         _logger = logger;
+        _contentRootPath = contentRootPath;
         _clock = clock ?? TimeProvider.System;
         _razorFileCache = new Lazy<Dictionary<string, string>>(BuildRazorFileCache);
         _componentMetadataCache = new Lazy<List<ComponentWithMetadata>>(BuildComponentMetadataCache);
@@ -331,6 +337,19 @@ public sealed partial class RazorPageContentService : IContentService
             if (projectRoot is not null && _fileSystem.Directory.Exists(projectRoot))
             {
                 projectRoots.Add(projectRoot);
+            }
+        }
+
+        // The assembly-location walkup covers the classic bin/<config>/<tfm> layout, where the
+        // project file sits above the binary. Under a centralized artifacts output it finds
+        // nothing, so the host content root (the project directory under `dotnet run`) is the
+        // candidate that locates the host's own .razor sources and their sidecars.
+        if (!string.IsNullOrEmpty(_contentRootPath))
+        {
+            var contentRootProject = FindProjectRoot(_contentRootPath);
+            if (contentRootProject is not null)
+            {
+                projectRoots.Add(contentRootProject);
             }
         }
 

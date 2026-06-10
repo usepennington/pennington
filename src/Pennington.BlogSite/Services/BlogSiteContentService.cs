@@ -124,6 +124,25 @@ public sealed class BlogSiteContentService : IContentService, IFileWatchAware
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// The home page is template-owned (<c>Home.razor</c>) — no markdown or sidecar metadata
+    /// projects a record for it, so without this override <c>/</c> sits out of record-joined
+    /// features, most visibly social-card generation and its <c>og:image</c> tagging. Projects one
+    /// record carrying the site identity; <see cref="DiscoverAsync"/>'s items carry no metadata,
+    /// so the default bridge would yield nothing anyway.
+    /// </remarks>
+    public async IAsyncEnumerable<ContentRecord> GetRecordsAsync()
+    {
+        yield return new ContentRecord(
+            ContentRouteFactory.FromUrl(new UrlPath("/")),
+            new HomePageFrontMatter(_options.SiteTitle, _options.SiteDescription));
+        await Task.CompletedTask;
+    }
+
+    /// <summary>Site-identity metadata for the template-owned home page record.</summary>
+    private sealed record HomePageFrontMatter(string Title, string? Description) : IFrontMatter;
+
+    /// <inheritdoc />
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
         => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 

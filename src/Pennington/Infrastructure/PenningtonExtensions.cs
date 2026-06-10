@@ -297,6 +297,7 @@ public static class PenningtonExtensions
                     sp.GetRequiredService<IFileSystem>(),
                     sp.GetRequiredService<FrontMatterParser>(),
                     sp.GetRequiredService<ILogger<RazorPageContentService>>(),
+                    sp.GetService<Microsoft.Extensions.Hosting.IHostEnvironment>()?.ContentRootPath,
                     sp.GetRequiredService<TimeProvider>()));
         }
 
@@ -595,6 +596,9 @@ public static class PenningtonExtensions
             // taxonomy service) — registered directly so build discovery enumerates its card routes.
             services.AddSingleton<IContentService>(sp =>
                 new SocialCardContentService(sp, socialCardOptions));
+            // Per-page og:image/twitter:image meta tags for every page with a content record —
+            // template-agnostic, so cards tag markdown on any host and sidecar-backed Razor pages.
+            services.AddHeadContributor<SocialCardHeadContributor>();
         }
 
         // Per-request diagnostic context

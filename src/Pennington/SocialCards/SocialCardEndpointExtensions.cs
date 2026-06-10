@@ -53,7 +53,7 @@ public static class SocialCardEndpointExtensions
                 Width: options.Width,
                 Height: options.Height);
 
-            var bytes = await options.Render(request, ctx.RequestAborted);
+            var bytes = await options.Render(request, ctx.RequestServices, ctx.RequestAborted);
             return bytes is null
                 ? Results.NotFound()
                 : Results.Bytes(bytes, options.ContentType);
