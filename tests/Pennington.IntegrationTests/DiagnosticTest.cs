@@ -2,6 +2,7 @@ using Pennington.Content;
 using Pennington.DocSite;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
+using Pennington.Localization;
 using Pennington.Pipeline;
 using Pennington.Routing;
 using Testably.Abstractions;

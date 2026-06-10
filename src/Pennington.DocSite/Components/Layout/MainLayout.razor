@@ -137,7 +137,7 @@
     private ImmutableList<NavigationTreeItem>? _toc;
     private Dictionary<string, ImmutableList<NavigationTreeItem>> _areaTocs = new();
     private Dictionary<string, string> _areaHrefs = new();
-    private IReadOnlyList<LanguageSwitcher.AlternateLanguageItem> _langSwitcherItems = [];
+    private IReadOnlyList<AlternateLanguage> _langSwitcherItems = [];
     private ContentArea? _activeArea;
 
     private readonly RenderFragment _defaultHeaderIcon =
@@ -206,11 +206,7 @@
         // Build language switcher items
         if (Localization.IsMultiLocale)
         {
-            var alternates = await ContentResolver.GetAlternateLanguagesAsync(currentPath);
-            _langSwitcherItems = alternates
-                .Select(a => new LanguageSwitcher.AlternateLanguageItem(
-                    a.Locale, a.DisplayName, a.Route.CanonicalPath.Value, a.IsCurrentLocale))
-                .ToList();
+            _langSwitcherItems = await ContentResolver.GetAlternateLanguagesAsync(currentPath);
         }
 
         await base.OnInitializedAsync();

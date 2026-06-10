@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using Content;
 using FrontMatter;
 using Infrastructure;
+using Localization;
 using Pipeline;
 
 /// <summary>

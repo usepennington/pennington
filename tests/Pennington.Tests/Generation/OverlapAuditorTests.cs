@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using Pennington.Content;
 using Pennington.Generation;
 using Pennington.Infrastructure;
+using Pennington.Localization;
 using Pennington.Pipeline;
 using Pennington.Routing;
 

@@ -8,7 +8,7 @@ using Pennington.Localization; // [!code ++]
 /// <see cref="DocSiteOptions"/> and register two locales. This is the
 /// only code change required; DocSite's <c>UseDocSite</c> already calls
 /// <see cref="Pennington.Infrastructure.PenningtonExtensions.UseLocaleRouting"/>,
-/// which is a no-op until <see cref="Pennington.Infrastructure.LocalizationOptions.IsMultiLocale"/>
+/// which is a no-op until <see cref="Pennington.Localization.LocalizationOptions.IsMultiLocale"/>
 /// flips to <c>true</c>. Spanish content lives under <c>Content/es/</c>;
 /// each file mirrors a default-locale file by name. Tutorial prose
 /// extracts the body of <see cref="Run"/> via <c>xmldocid,bodyonly</c>.

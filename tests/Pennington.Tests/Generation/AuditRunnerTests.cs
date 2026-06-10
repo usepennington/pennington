@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Pennington.Generation;
 using Pennington.Infrastructure;
+using Pennington.Localization;
 using Pennington.Pipeline;
 using Pennington.Routing;
 

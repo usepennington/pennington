@@ -3,6 +3,7 @@ namespace Pennington.Cli.Diag;
 using System.CommandLine;
 using Content;
 using Infrastructure;
+using Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Navigation;
 

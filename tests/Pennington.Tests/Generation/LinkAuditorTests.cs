@@ -7,6 +7,7 @@ using Microsoft.Extensions.Primitives;
 using Pennington.Content;
 using Pennington.Generation;
 using Pennington.Infrastructure;
+using Pennington.Localization;
 using Pennington.Pipeline;
 using Pennington.Routing;
 

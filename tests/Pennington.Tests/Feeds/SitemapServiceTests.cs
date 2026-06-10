@@ -3,6 +3,7 @@ using Pennington.Content;
 using Pennington.Feeds;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
+using Pennington.Localization;
 using Pennington.Pipeline;
 using Pennington.Routing;
 

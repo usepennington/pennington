@@ -7,7 +7,7 @@ using Pennington.Localization;
 /// Stage 3 — the fully-wired host, identical in shape to <c>Program.cs</c>.
 /// The built-in <c>LanguageSwitcher</c> in DocSite's <c>MainLayout.razor</c>
 /// now appears in the site header because
-/// <see cref="Pennington.Infrastructure.LocalizationOptions.IsMultiLocale"/>
+/// <see cref="Pennington.Localization.LocalizationOptions.IsMultiLocale"/>
 /// is <c>true</c>. Clicking a locale rewrites the URL — the default locale
 /// stays at the root (<c>/about</c>) and every other locale gets a code
 /// prefix (<c>/es/about</c>). Tutorial prose extracts the body of

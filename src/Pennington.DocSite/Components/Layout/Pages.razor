@@ -19,10 +19,7 @@
         <meta property="og:type" content="website" />
         @foreach (var alt in _alternateLanguages)
         {
-            var hreflang = Localization.Locales.TryGetValue(alt.Locale, out var info)
-                ? info.HtmlLang ?? alt.Locale
-                : alt.Locale;
-            <link rel="alternate" hreflang="@hreflang" href="@alt.Route.CanonicalPath.Value" />
+            <link rel="alternate" hreflang="@alt.HtmlLang" href="@alt.Url" />
         }
     </HeadContent>
     @if (!string.IsNullOrEmpty(DocSiteOptions.CanonicalBaseUrl))
@@ -79,7 +76,7 @@ else if (_notFound)
     private ResolvedContent? _notFoundResolved;
     private Type? _notFoundComponentType;
     private Type? _homeComponentType;
-    private ImmutableList<AlternateLanguagePage> _alternateLanguages = ImmutableList<AlternateLanguagePage>.Empty;
+    private ImmutableList<AlternateLanguage> _alternateLanguages = ImmutableList<AlternateLanguage>.Empty;
 
     private IEnumerable<JsonLdEntity> BuildArticleEntities()
     {

@@ -2,6 +2,7 @@ namespace Pennington.DocSite;
 
 using System.Reflection;
 using Infrastructure;
+using Localization;
 using MonorailCss;
 using Routing;
 using SocialCards;

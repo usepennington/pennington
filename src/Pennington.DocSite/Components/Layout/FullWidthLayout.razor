@@ -27,7 +27,7 @@
 </div>
 
 @code {
-    private IReadOnlyList<LanguageSwitcher.AlternateLanguageItem> _langSwitcherItems = [];
+    private IReadOnlyList<AlternateLanguage> _langSwitcherItems = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -43,11 +43,7 @@
             currentPath = "/";
         }
 
-        var alternates = await ContentResolver.GetAlternateLanguagesAsync(currentPath);
-        _langSwitcherItems = alternates
-            .Select(a => new LanguageSwitcher.AlternateLanguageItem(
-                a.Locale, a.DisplayName, a.Route.CanonicalPath.Value, a.IsCurrentLocale))
-            .ToList();
+        _langSwitcherItems = await ContentResolver.GetAlternateLanguagesAsync(currentPath);
 
         await base.OnInitializedAsync();
     }

@@ -232,35 +232,10 @@ public sealed class DocSiteContentResolver
     /// <summary>
     /// Get alternate language versions for a page URL.
     /// Always includes all configured locales — fallback resolution handles missing translations.
-    /// Delegates URL math to <see cref="LocalizationOptions.GetAlternateLanguages"/> and
-    /// wraps results with <see cref="ContentRoute"/> for DocSite consumption.
+    /// Delegates the URL math to <see cref="LocalizationOptions.GetAlternateLanguages"/>.
     /// </summary>
-    public Task<ImmutableList<AlternateLanguagePage>> GetAlternateLanguagesAsync(string url)
-    {
-        if (!_localization.IsMultiLocale)
-        {
-            return Task.FromResult(ImmutableList<AlternateLanguagePage>.Empty);
-        }
-
-        var alternates = _localization.GetAlternateLanguages(url);
-        var builder = ImmutableList.CreateBuilder<AlternateLanguagePage>();
-
-        foreach (var alt in alternates)
-        {
-            builder.Add(new AlternateLanguagePage(
-                Locale: alt.Locale,
-                DisplayName: alt.DisplayName,
-                Route: new ContentRoute
-                {
-                    CanonicalPath = new UrlPath(alt.Url),
-                    OutputFile = new FilePath($"{alt.Url.Trim('/')}/index.html"),
-                    Locale = alt.Locale,
-                },
-                IsCurrentLocale: alt.IsCurrentLocale));
-        }
-
-        return Task.FromResult(builder.ToImmutable());
-    }
+    public Task<ImmutableList<AlternateLanguage>> GetAlternateLanguagesAsync(string url) =>
+        Task.FromResult(_localization.GetAlternateLanguages(url).ToImmutableList());
 
     /// <summary>
     /// Resolves which content area the given URL belongs to, based on the first path segment

@@ -4,6 +4,7 @@ using Content;
 using DeweySearch;
 using FrontMatter;
 using Infrastructure;
+using Localization;
 
 /// <summary>
 /// Maps a page's <see cref="HeadingSection"/>s onto DeweySearch <see cref="SearchDocument"/> records —

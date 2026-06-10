@@ -1,6 +1,7 @@
 using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
+using Pennington.Localization;
 using Pennington.Markdown;
 using Pennington.Markdown.Shortcodes;
 using Pennington.Pipeline;

@@ -2,6 +2,7 @@ using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
 using Pennington.LlmsTxt;
+using Pennington.Localization;
 using Pennington.Routing;
 using Testably.Abstractions.Testing;
 

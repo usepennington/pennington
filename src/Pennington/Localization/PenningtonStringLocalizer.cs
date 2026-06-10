@@ -1,25 +1,31 @@
 namespace Pennington.Localization;
 
 using System.Globalization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using LocalizationOptions = Infrastructure.LocalizationOptions;
 
 /// <summary>
 /// An <see cref="IStringLocalizer"/> backed by <see cref="TranslationOptions"/>.
-/// Reads <see cref="CultureInfo.CurrentUICulture"/> to determine the current locale,
-/// maps it back to a Pennington locale code, and looks up translations with fallback to the
-/// default locale, then to the key itself.
+/// Reads the locale that <see cref="LocaleDetectionMiddleware"/> already detected for the
+/// request from the scoped <see cref="LocaleContext"/>, and looks up translations with
+/// fallback to the default locale, then to the key itself.
 /// </summary>
 public sealed class PenningtonStringLocalizer : IStringLocalizer
 {
     private readonly TranslationOptions _translations;
     private readonly LocalizationOptions _localization;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
 
-    /// <summary>Creates the localizer.</summary>
-    public PenningtonStringLocalizer(TranslationOptions translations, LocalizationOptions localization)
+    /// <summary>Creates the localizer. <paramref name="httpContextAccessor"/> supplies the per-request <see cref="LocaleContext"/>; when absent (outside a request) the default locale is used.</summary>
+    public PenningtonStringLocalizer(
+        TranslationOptions translations,
+        LocalizationOptions localization,
+        IHttpContextAccessor? httpContextAccessor = null)
     {
         _translations = translations;
         _localization = localization;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     /// <summary>Returns the translation for <paramref name="name"/>, or the key itself when no translation is registered.</summary>
@@ -90,40 +96,11 @@ public sealed class PenningtonStringLocalizer : IStringLocalizer
     }
 
     /// <summary>
-    /// Maps CultureInfo.CurrentUICulture back to a Pennington locale code.
-    /// Checks the culture name against registered locales and their HtmlLang values.
+    /// Returns the request's Pennington locale code straight from the scoped
+    /// <see cref="LocaleContext"/> that <see cref="LocaleDetectionMiddleware"/> populated —
+    /// no <see cref="CultureInfo"/> round-trip. Falls back to the default locale outside a request.
     /// </summary>
-    private string ResolveLocale()
-    {
-        var culture = CultureInfo.CurrentUICulture;
-        var cultureName = culture.Name;
-
-        // Direct match: culture name is a registered Pennington locale
-        if (_localization.Locales.ContainsKey(cultureName))
-        {
-            return cultureName;
-        }
-
-        // Check if any locale has this culture as its HtmlLang
-        foreach (var (code, info) in _localization.Locales)
-        {
-            if (info.HtmlLang is not null &&
-                string.Equals(info.HtmlLang, cultureName, StringComparison.OrdinalIgnoreCase))
-            {
-                return code;
-            }
-        }
-
-        // Try parent culture (e.g., "en-US" -> "en")
-        if (!string.IsNullOrEmpty(culture.Parent?.Name))
-        {
-            var parentName = culture.Parent!.Name;
-            if (_localization.Locales.ContainsKey(parentName))
-            {
-                return parentName;
-            }
-        }
-
-        return _localization.DefaultLocale;
-    }
+    private string ResolveLocale() =>
+        _httpContextAccessor?.HttpContext?.RequestServices.GetService<LocaleContext>()?.Locale
+            ?? _localization.DefaultLocale;
 }

@@ -123,7 +123,7 @@
     /// </summary>
     [Parameter] public bool CenterSearch { get; set; }
 
-    [Parameter] public IReadOnlyList<LanguageSwitcher.AlternateLanguageItem>? AlternateLanguages { get; set; }
+    [Parameter] public IReadOnlyList<AlternateLanguage>? AlternateLanguages { get; set; }
 
     private readonly RenderFragment _mobileMenuButton =
         @<button id="menu-toggle" aria-label="Toggle Navigation Menu" aria-controls="nav-sidebar"

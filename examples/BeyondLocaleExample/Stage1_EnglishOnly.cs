@@ -6,7 +6,7 @@ using Pennington.DocSite;
 /// Stage 1 — the starting point. A single-locale DocSite host with three
 /// English pages under <c>Content/</c>. No <c>ConfigureLocalization</c>,
 /// no <c>LanguageSwitcher</c> — the switcher is hidden because
-/// <see cref="Pennington.Infrastructure.LocalizationOptions.IsMultiLocale"/>
+/// <see cref="Pennington.Localization.LocalizationOptions.IsMultiLocale"/>
 /// is false. Tutorial prose extracts the body of <see cref="Run"/> via
 /// <c>xmldocid,bodyonly</c>. This class is never instantiated.
 /// </summary>

@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using Cli;
 using Content;
 using Infrastructure;
+using Localization;
 using Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

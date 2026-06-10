@@ -3,6 +3,7 @@ namespace Pennington.Search;
 using Content;
 using DeweySearch;
 using Infrastructure;
+using Localization;
 using Pipeline;
 
 /// <summary>

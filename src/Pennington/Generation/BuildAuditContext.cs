@@ -3,6 +3,7 @@ namespace Pennington.Generation;
 using System.Collections.Immutable;
 using Content;
 using Infrastructure;
+using Localization;
 
 /// <summary>Inputs handed to <see cref="IBuildAuditor.AuditAsync"/>.</summary>
 /// <param name="Pages">All TOC entries from every registered <see cref="IContentService"/>, post-discovery and locale-aware.</param>

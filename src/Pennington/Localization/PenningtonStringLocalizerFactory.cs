@@ -1,7 +1,7 @@
 namespace Pennington.Localization;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Localization;
-using LocalizationOptions = Infrastructure.LocalizationOptions;
 
 /// <summary>
 /// An <see cref="IStringLocalizerFactory"/> that returns <see cref="PenningtonStringLocalizer"/>
@@ -13,9 +13,12 @@ public sealed class PenningtonStringLocalizerFactory : IStringLocalizerFactory
     private readonly PenningtonStringLocalizer _localizer;
 
     /// <summary>Creates the factory with the shared localizer instance.</summary>
-    public PenningtonStringLocalizerFactory(TranslationOptions translations, LocalizationOptions localization)
+    public PenningtonStringLocalizerFactory(
+        TranslationOptions translations,
+        LocalizationOptions localization,
+        IHttpContextAccessor httpContextAccessor)
     {
-        _localizer = new PenningtonStringLocalizer(translations, localization);
+        _localizer = new PenningtonStringLocalizer(translations, localization, httpContextAccessor);
     }
 
     /// <summary>Returns the shared localizer; <paramref name="resourceSource"/> is ignored.</summary>

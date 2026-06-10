@@ -6,6 +6,7 @@ using System.IO.Abstractions;
 using FrontMatter;
 using Infrastructure;
 using LlmsTxt;
+using Localization;
 using Microsoft.Extensions.Logging;
 using Pipeline;
 using Routing;

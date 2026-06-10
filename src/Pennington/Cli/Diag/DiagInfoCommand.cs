@@ -4,6 +4,7 @@ using System.CommandLine;
 using Content;
 using Generation;
 using Infrastructure;
+using Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Navigation;
 

@@ -32,9 +32,9 @@
     /// Optional explicit alternate languages. When provided, the switcher uses these URLs.
     /// When null or empty, auto-computes from LocaleContext and LocalizationOptions.
     /// </summary>
-    [Parameter] public IReadOnlyList<AlternateLanguageItem>? AlternateLanguages { get; set; }
+    [Parameter] public IReadOnlyList<AlternateLanguage>? AlternateLanguages { get; set; }
 
-    private IReadOnlyList<AlternateLanguageItem> _items = [];
+    private IReadOnlyList<AlternateLanguage> _items = [];
 
     private string CurrentDisplayName => _items
         .FirstOrDefault(l => l.IsCurrentLocale)?.DisplayName ?? "";
@@ -46,16 +46,13 @@
             : BuildFromLocaleContext();
     }
 
-    private List<AlternateLanguageItem> BuildFromLocaleContext()
-    {
+    private IReadOnlyList<AlternateLanguage> BuildFromLocaleContext() =>
         // Use ContentPath (locale-stripped) for URL building, but determine
         // "current" from LocaleContext.Locale since the path is already stripped.
-        return Localization.GetAlternateLanguages(Locale.ContentPath)
-            .Select(a => new AlternateLanguageItem(
-                a.Locale, a.DisplayName, a.Url,
-                IsCurrentLocale: string.Equals(a.Locale, Locale.Locale, StringComparison.OrdinalIgnoreCase)))
+        Localization.GetAlternateLanguages(Locale.ContentPath)
+            .Select(a => a with
+            {
+                IsCurrentLocale = string.Equals(a.Locale, Locale.Locale, StringComparison.OrdinalIgnoreCase),
+            })
             .ToList();
-    }
-
-    public record AlternateLanguageItem(string Locale, string DisplayName, string Url, bool IsCurrentLocale);
 }

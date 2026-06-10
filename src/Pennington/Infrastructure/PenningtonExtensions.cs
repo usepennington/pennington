@@ -525,7 +525,7 @@ public static class PenningtonExtensions
         services.AddSingleton(options.SearchIndex);
         services.AddSingleton(sp => new SearchIndexBuilder(
             sp.GetRequiredService<SearchIndexOptions>(),
-            sp.GetRequiredService<LocalizationOptions>()));
+            sp.GetRequiredService<Localization.LocalizationOptions>()));
         services.AddSingleton<HeadingSectionExtractor>();
         services.AddSingleton(sp =>
         {
@@ -601,7 +601,7 @@ public static class PenningtonExtensions
         // Locale context — scoped per request, populated by LocaleDetectionMiddleware
         services.AddScoped(sp =>
         {
-            var localization = sp.GetRequiredService<LocalizationOptions>();
+            var localization = sp.GetRequiredService<Localization.LocalizationOptions>();
             return new LocaleContext(localization);
         });
 
