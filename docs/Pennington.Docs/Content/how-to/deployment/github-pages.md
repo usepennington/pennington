@@ -38,6 +38,9 @@ Commit the YAML below to `.github/workflows/deploy.yml` at the repo root. It pin
 examples/SubPathDeployableExample/.github/workflows/deploy.yml
 ```
 
+> [!NOTE]
+> The `touch output/.nojekyll` step is load-bearing: without it GitHub Pages runs the artifact through Jekyll, which strips any path starting with an underscore — including Pennington's `_content/` static-web-asset folder. The marker disables Jekyll so `_content/*` ships verbatim.
+
 </Step>
 <Step StepNumber="3">
 
@@ -48,21 +51,22 @@ The template targets `examples/SubPathDeployableExample`; edit the `--project` a
 </Step>
 <Step StepNumber="4">
 
-**Keep `.nojekyll` in the artifact**
-
-GitHub Pages would otherwise run content through Jekyll, which strips paths starting with an underscore — including Pennington's `_content/` static-web-asset folder. The `touch output/.nojekyll` step in the workflow disables Jekyll processing.
-
-</Step>
-<Step StepNumber="5">
-
 **Match the build `baseUrl` to the Pages URL**
 
-Project Pages sites serve at `https://<user>.github.io/<repo>/`, so the workflow passes `/<repo>` as the first positional `build` argument and `BaseUrlHtmlRewriter` prefixes every internal `href`, `src`, and `action` on the way out. For sites at an org-level root or a custom apex domain, replace the `BASE_URL` env with an empty string and drop the argument entirely. Sub-path wiring is covered in <xref:how-to.deployment.base-url>.
+Project Pages sites serve at `https://<user>.github.io/<repo>/`, so the workflow passes `/<repo>` as the first positional `build` argument and `BaseUrlHtmlRewriter` prefixes every internal `href`, `src`, and `action` on the way out. For sites at an org-level root (`https://<org>.github.io/`) or a custom apex domain, the site serves from `/`: set `BASE_URL` to an empty string so `build "$BASE_URL"` passes an empty argument and the rewriter leaves links untouched. The workflow's header comment marks the same two lines to change. Sub-path wiring is covered in <xref:how-to.deployment.base-url>.
 
 </Step>
 </Steps>
 
-`RunOrBuildAsync` sets a non-zero exit code on errors, so the workflow fails fast on broken pages. For stricter exit semantics (failing the main-branch build on broken xrefs while letting warnings pass on feature branches), wrap the call and write the report to stdout — see `BuildHost.RunOrBuildAsync` and `BuildHost.PrintBuildReport` in `examples/SubPathDeployableExample/BuildHost.cs`.
+## Customize the exit semantics
+
+`RunOrBuildAsync` already sets a non-zero exit code on errors, so the workflow above fails fast on broken pages. When you need stricter or more selective behavior — failing the main-branch build on broken xrefs while letting warnings pass on feature branches — skip the `RunOrBuildAsync` extension, run the generator yourself, and inspect the `BuildReport` before setting the exit code. The `BuildHost` helper in the example does exactly that:
+
+```csharp:symbol
+examples/SubPathDeployableExample/BuildHost.cs > BuildHost.PrintBuildReport
+```
+
+`report.HasErrors` covers broken xrefs and failed pages; branch on `report.Diagnostics` for finer-grained rules. Call `BuildHost.RunOrBuildAsync` from `Program.cs` in place of the default extension to route the build through it.
 
 ---
 

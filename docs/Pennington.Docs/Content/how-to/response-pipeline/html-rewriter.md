@@ -30,7 +30,7 @@ examples/ExtensibilityLabExample/AnchorLowercaseRewriter.cs
 
 ## Pick an Order value
 
-The shipped rewriters run at 10 (`XrefHtmlRewriter`), 20 (`LocaleLinkHtmlRewriter`), 25 (`HeadCompositionHtmlRewriter`), 30 (`BaseUrlHtmlRewriter`), 40 (`FallbackLangHtmlRewriter`), and 60 (`WordBreakHtmlRewriter`). Xref resolution, locale prefixing, and base-URL prefixing must keep that relative order because each produces the link form the next one consumes; the rest run afterward. Pick above 60 to run after every shipped transform, below 10 to run before xref resolution, or between the built-ins only when that placement is deliberate. The example uses 500 so anchors are lowercased after every shipped transform has run.
+The shipped rewriters occupy `Order` values from 10 (xref resolution) through 60 (the last built-in transform); xref resolution, locale prefixing, and base-URL prefixing run in that relative order because each produces the link form the next one consumes. Pick above 60 to run after every shipped transform, below 10 to run before xref resolution, or between the built-ins only when that placement is deliberate. For the exact `Order` of each shipped rewriter, see <xref:reference.api.i-html-response-rewriter>. The example uses 500 so anchors are lowercased after every shipped transform has run.
 
 ## Register the rewriter
 
@@ -42,22 +42,17 @@ builder.Services.AddSingleton<IHtmlResponseRewriter, AnchorLowercaseRewriter>();
 
 ## Configure the shipped word-break rewriter
 
-The order-60 `WordBreakHtmlRewriter` is the one shipped rewriter you configure rather than implement. `AddWordBreak` turns it on; it inserts `<wbr>` break opportunities into long identifiers so dotted namespaces and PascalCase names wrap inside narrow columns instead of overflowing. It mutates the shared parsed document, so it adds no extra parse.
+One shipped rewriter you configure rather than implement is the word-break rewriter. `AddWordBreak` turns it on; it inserts `<wbr>` break opportunities into long identifiers so dotted namespaces and PascalCase names wrap inside narrow columns instead of overflowing.
 
 ```csharp
 builder.Services.AddWordBreak(options =>
 {
     options.CssSelector = "h1, h2, h3, h4, h5, h6, span, .text-break";
     options.MinimumCharacters = 20;
-    options.WordBreakCharacters = "<wbr>";
 });
 ```
 
-- `CssSelector` — the elements whose text gets break opportunities. Only elements that hold text and have no child elements are rewritten. A descendant combinator forces AngleSharp to scan every element, so name inline elements directly (`span`) rather than `h1 *`.
-- `MinimumCharacters` — the shortest identifier that gets broken. Defaults to `20`.
-- `WordBreakCharacters` — the markup inserted at each break opportunity. Defaults to `<wbr>`.
-
-Breaks land after each dot and before an uppercase letter that follows a lowercase letter or digit. A heading like `Pennington.Infrastructure.WordBreakOptions` renders as:
+A heading like `Pennington.Infrastructure.WordBreakOptions` then renders with breaks after each dot and before each interior case boundary:
 
 Before:
 
@@ -71,7 +66,7 @@ After:
 <h3>Pennington.<wbr>Infrastructure.<wbr>WordBreakOptions</h3>
 ```
 
-A camel-cased name long enough to cross the threshold breaks at its case boundaries too — `ConfigureMarkdownPipelineExtensions` becomes `Configure<wbr>Markdown<wbr>Pipeline<wbr>Extensions`.
+For every option and its default, see <xref:reference.api.word-break-options>.
 
 ## Result
 

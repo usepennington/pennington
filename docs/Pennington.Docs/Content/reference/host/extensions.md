@@ -11,31 +11,25 @@ The list of public extension methods Pennington exposes for wiring the library i
 
 ## `IServiceCollection` extensions
 
-DI registration entry points. Each method's options are documented on its own reference page, linked from the method's xmldoc.
+DI registration entry points. The three composition roots and the options record each configures:
+
+- [`AddPennington`](xref:reference.api.pennington-extensions) — [`PenningtonOptions`](xref:reference.api.pennington-options)
+- [`AddDocSite`](xref:reference.api.doc-site-service-extensions) — [`DocSiteOptions`](xref:reference.api.doc-site-options)
+- [`AddBlogSite`](xref:reference.api.blog-site-service-extensions) — [`BlogSiteOptions`](xref:reference.api.blog-site-options)
+
+The full set follows, each tagged with its owning package.
 
 <ExtensionMethods Receiver="IServiceCollection" />
 
 ## `WebApplication` extensions
 
-Middleware and endpoint wiring. Each method's xmldoc states its ordering invariant.
+Middleware and endpoint wiring. The template `Use*` methods each wrap a fixed sequence, listed below.
 
 <ExtensionMethods Receiver="WebApplication" />
 
-## Host runtime helpers
+### `UseDocSite` middleware order
 
-Entry points that dispatch between dev-serve and static-build based on `args[0]`. See [`RunOrBuildAsync`](xref:reference.api.pennington-extensions) for the dispatch contract.
-
-## Example
-
-A complete DocSite host wiring all three layers — `AddDocSite`, `UseDocSite`, `RunDocSiteAsync` — in call order.
-
-```csharp:symbol
-examples/DocSiteScaffoldExample/Program.cs
-```
-
-## `UseDocSite` middleware order
-
-`UseDocSite` wraps a fixed middleware sequence before mapping the Razor component endpoint:
+`UseDocSite` registers this sequence before mapping the Razor component endpoint:
 
 1. `UseLocaleRouting`
 2. `UseAntiforgery`
@@ -44,7 +38,33 @@ examples/DocSiteScaffoldExample/Program.cs
 5. `UsePennington`
 6. `MapRazorComponents<App>()`
 
-`UseBlogSite` runs the same sequence without `UseLocaleRouting`. For why each step lands where it does, see <xref:explanation.core.dev-vs-build>.
+### `UseBlogSite` middleware order
+
+`UseBlogSite` registers the same sequence minus locale routing, which BlogSite does not wire:
+
+1. `UseAntiforgery`
+2. `UseStaticFiles`
+3. `UseMonorailCss`
+4. `UsePennington`
+5. `MapRazorComponents<App>()`
+
+For why each step lands where it does, see <xref:explanation.core.dev-vs-build>.
+
+## `Run*` host entry points
+
+Host entry points that run one System.CommandLine pipeline: serve live with no verb, build the static site with `build`, or run a read-only inspection with `diag <sub>`. Build and diag run one-shot against a started in-memory host that is disposed afterward; serve hands off to `RunAsync`.
+
+- [`RunOrBuildAsync`](xref:reference.api.pennington-extensions) — the core dispatcher; call it directly on a bare `AddPennington` host.
+- [`RunDocSiteAsync`](xref:reference.api.doc-site-service-extensions) — DocSite wrapper over `RunOrBuildAsync`.
+- [`RunBlogSiteAsync`](xref:reference.api.blog-site-service-extensions) — BlogSite wrapper over `RunOrBuildAsync`.
+
+## Example
+
+A complete DocSite host wiring all three layers — `AddDocSite`, `UseDocSite`, `RunDocSiteAsync` — in call order.
+
+```csharp:symbol
+examples/DocSiteScaffoldExample/Program.cs
+```
 
 ## See also
 

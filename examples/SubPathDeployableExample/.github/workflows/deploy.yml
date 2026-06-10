@@ -13,8 +13,9 @@
 #      folders verbatim (Jekyll would silently strip underscore paths).
 #   4. Uploads `output/` as a Pages artifact and deploys it.
 #
-# If your site sits at a custom domain (root `/`), replace the `BASE_URL`
-# calculation with an empty string and strip the `/` from the build arg.
+# If your site sits at an org root or a custom domain (served from `/`),
+# set `BASE_URL` to an empty string. `build "$BASE_URL"` then passes an
+# empty argument and the base-URL rewriter leaves internal links untouched.
 name: Deploy to GitHub Pages
 
 on:

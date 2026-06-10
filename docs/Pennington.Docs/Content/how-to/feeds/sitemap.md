@@ -12,7 +12,7 @@ tags: [sitemap, seo, canonical-base-url, front-matter]
 ## Before you begin
 - A working Pennington site (see <xref:tutorials.getting-started.first-site> if not)
 - Pages using an `IFrontMatter` implementation — `DocFrontMatter`, `BlogFrontMatter`, or a custom one — so `IsDraft` and (optionally) `Date` flow through to the sitemap builder
-- A known publishing target: either a fully-qualified URL (set `CanonicalBaseUrl`) or a sub-path via `dotnet run -- build /sub/` (the sitemap falls back to `OutputOptions.BaseUrl`)
+- A known publishing target: either a fully-qualified URL (set `CanonicalBaseUrl`) or a sub-path via `dotnet run -- build --base-url /sub/` (the sitemap falls back to `OutputOptions.BaseUrl`)
 
 ---
 
@@ -32,9 +32,9 @@ new BlogSiteOptions
 
 ### Exclude drafts and redirects with front matter
 
-`SitemapBuilder.Build` drops any candidate whose front matter has `isDraft: true` or implements `IRedirectable` with a non-empty `RedirectUrl`. `search: false` and `llms: false` are not honored — those are client-side UX preferences, not SEO directives, so opting a page out of search does not remove it from the sitemap.
+The sitemap drops any page whose front matter has `isDraft: true` or sets `redirectUrl:`. `search: false` and `llms: false` are not honored — those are client-side UX preferences, not SEO directives, so opting a page out of search does not remove it from the sitemap.
 
-Every other discovered HTML route is included, regardless of how it is sourced — markdown, Razor pages, and the `EndpointSource` routes that custom content services (<xref:how-to.content-services.custom-content-service>, <xref:how-to.content-services.remote-api>) and `AddTaxonomy` term pages emit all appear. Only routes with no canonical HTML are left out by source type: `RedirectSource` (a 30x) and `LlmsOnlySource` (an llms.txt-only sidecar). Non-HTML outputs (JSON feeds, generated data files) are skipped because their output file is not `.html`.
+Every other discovered HTML route is included, regardless of how it is sourced — markdown, Razor pages, and the routes that custom content services (<xref:how-to.content-services.custom-content-service>, <xref:how-to.content-services.remote-api>) and `AddTaxonomy` term pages emit all appear. The only routes left out are those with no canonical HTML page: redirects (which serve a 30x) and llms.txt-only sidecars. Non-HTML outputs such as JSON feeds and generated data files are skipped because their output file is not `.html`.
 
 ### (BlogSite only) Suppress the endpoint with `EnableSitemap = false`
 
@@ -61,7 +61,7 @@ new BlogSiteOptions
     <lastmod>2024-01-15</lastmod>
   </url>
   <url>
-    <loc>https://example.com/how-to/configuration/sitemap/</loc>
+    <loc>https://example.com/how-to/feeds/sitemap/</loc>
     <lastmod>2024-02-03</lastmod>
   </url>
 </urlset>

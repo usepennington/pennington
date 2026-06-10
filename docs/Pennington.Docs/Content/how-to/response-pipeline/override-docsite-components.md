@@ -12,9 +12,8 @@ To replace the bundled DocSite header or footer (or inject head tags, append CSS
 ## Before you begin
 
 - An existing Pennington site wired through `AddDocSite(...)` (see <xref:tutorials.docsite.scaffold> if not).
-- Edits made in the `DocSiteOptions` factory passed to `AddDocSite`, not the DocSite source — forking the template is out of scope (see <xref:explanation.positioning.docsite-positioning>).
-- Awareness that `ExtraStyles` is prepended above the generated MonorailCSS utility output in `/styles.css`, so rules added there ship inside the same stylesheet rather than as a separate file.
-- Awareness that these extension points are set at host-build time — changes take effect on the next `dotnet run`, whose source watch reloads them.
+- All edits go in the `DocSiteOptions` factory passed to `AddDocSite`, not the DocSite source.
+- These extension points are set at host-build time — changes take effect on the next `dotnet run`, whose source watch reloads them.
 
 For a working setup, see `examples/DocSiteChromeOverridesExample`. `SiteChromeOverrides.cs` returns a populated `DocSiteOptions` exercising all four extension points, `Components/ExtraHeadFragment.razor` backs the head-slot fragment, and `Components/ExtraPage.razor` is the routed `@page` component showing that `AdditionalRoutingAssemblies` widened the router. `Program.cs` runs the DocSite end-to-end against those overrides.
 
@@ -29,6 +28,8 @@ examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverri
 ### Inject tags into `<head>` via `AdditionalHtmlHeadContent`
 
 `AdditionalHtmlHeadContent` is a raw HTML string rendered inside every page's `<head>`, making it the right place for meta tags, preconnect hints, analytics snippets, and font `<link>` elements that MonorailCSS does not know about. To author the fragment as a Razor component instead, render it with `ToHtmlString()` once at startup and pass the resulting string — the example pairs `SiteChromeOverrides.BuildHtmlHeadContent` with `Components/ExtraHeadFragment.razor` so both approaches sit side by side.
+
+Use this string for static site-wide markup you do not want to write a class for; reach for an [`IHeadContributor`](xref:how-to.response-pipeline.head-contributor) instead when the tag must deduplicate against another writer, order against site or page defaults, or be computed per-page. Both routes flow through the same head reconciler, so either way the tags get a `data-head` stamp and survive SPA navigation.
 
 ```csharp:symbol,bodyonly
 examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverrides.BuildHtmlHeadContent
@@ -49,11 +50,13 @@ examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverri
 ```csharp
 var options = new DocSiteOptions
 {
-    HeaderContent = "<span class=\"chrome-header\">Extensibility Lab</span>",
-    FooterContent = "<span class=\"chrome-footer\">(c) 2026 Pennington</span>",
+    HeaderContent = """<span class="chrome-header" data-chrome-overrides="docsite-header">Chrome Overrides</span>""",
+    FooterContent = """<span class="chrome-footer" data-chrome-overrides="docsite-footer">(c) 2026 Pennington</span>""",
     // ...
 };
 ```
+
+The `data-chrome-overrides` attributes are not required by `DocSiteOptions` — they are markers that make the swapped-in chrome easy to spot in page source, matching what the example renders and what the Result describes below.
 
 ### Route your own `@page` components via `AdditionalRoutingAssemblies`
 
@@ -73,7 +76,12 @@ examples/DocSiteChromeOverridesExample/Program.cs
 
 ## Result
 
-The chrome on every page is replaced by the configured fragments. The header title reads "Chrome Overrides" on the left (rendered as `<span class="chrome-header" data-chrome-overrides="docsite-header">` in place of the default `<a href="/">…</a>` link, with the rest of the header chrome intact), the footer carries the matching copyright span, every `<head>` gains the `<meta name="x-chrome-overrides-head">` tag and the `https://example.com` preconnect, and `/styles.css` begins with the prepended `.chrome-header` / `.chrome-footer` rules. Any `@page "/route"` component in the host assembly (for example `/extra`) routes alongside the bundled DocSite pages.
+The chrome on every page is replaced by the configured fragments, one outcome per extension point:
+
+- **Header and footer.** The header title reads "Chrome Overrides" on the left, rendered as `<span class="chrome-header" data-chrome-overrides="docsite-header">` in place of the default `<a href="/">…</a>` link, with the rest of the header chrome (icon, search, theme toggle, repo link) intact; the footer carries the matching `data-chrome-overrides="docsite-footer"` copyright span.
+- **Head content.** Every `<head>` gains the `<meta name="x-chrome-overrides-head">` tag and the `https://example.com` preconnect.
+- **Styles.** `/styles.css` begins with the prepended `.chrome-header` / `.chrome-footer` rules, above the generated MonorailCSS utilities.
+- **Routing.** Any `@page "/route"` component in the host assembly (for example `/extra`) routes alongside the bundled DocSite pages.
 
 ## Verify
 
@@ -84,6 +92,7 @@ The chrome on every page is replaced by the configured fragments. The header tit
 ## Related
 
 - Reference: <xref:reference.api.doc-site-options> — the full set of properties, including `ConfigurePennington`, `CustomCssFrameworkSettings`, and every other override point beyond the four covered here.
+- How-to: <xref:how-to.response-pipeline.head-contributor> — the typed alternative to `AdditionalHtmlHeadContent` when a head tag must dedup, order, or compute per-page.
 - How-to: <xref:how-to.discovery.multiple-sources> — register extra markdown sources through `DocSiteOptions.ConfigurePennington`.
 - How-to: <xref:how-to.content-services.custom-content-service> — register a custom `IContentService` alongside DocSite's own.
 - Background: <xref:explanation.positioning.docsite-positioning> — when forking DocSite or dropping to bare `AddPennington` becomes the right move.

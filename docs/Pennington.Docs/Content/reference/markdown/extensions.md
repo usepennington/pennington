@@ -16,10 +16,8 @@ The catalog of non-CommonMark Markdown features enabled in Pennington's Markdig 
 | Includes | `[!INCLUDE …]` (full form under [Includes](#includes)) | Markdown parser (always on) | [Reuse shared content](xref:how-to.pages.include-shared-content) |
 | Alerts | `> [!KIND]` inside blockquote | `UseCustomAlerts` | [Alerts](xref:how-to.rich-content.alerts) |
 | Code annotations | Trailing-comment `[!code …]` directive | `UseSyntaxHighlighting` | [Code annotations](xref:how-to.code-samples.code-annotations) |
-| Cross-reference tags | `<xref:uid>` or `href="xref:uid"` | `XrefHtmlRewriter` (response stage) | [Cross-references](xref:how-to.navigation.cross-references) |
-| Shortcodes | `<?# Name args /?>` | Registered `IShortcode` handlers (pre-parse expansion) | [Shortcodes](xref:how-to.markdown-pipeline.shortcodes) |
-
-Shortcodes run before Markdig parses the page rather than as a Markdig extension: each `<?# Name args /?>` directive is expanded to text or HTML first, and the result flows through the pipeline as ordinary markdown. Pennington ships `Version` and `PackageVersion` built-ins; see the linked how-to for the handler contract.
+| Cross-reference tags | `<xref:uid>` or `href="xref:uid"` | Resolved in the response stage | [Cross-references](xref:how-to.navigation.linking) |
+| Shortcodes | `\<?# Name args /?>` | Registered `IShortcode` handlers (pre-parse expansion) | [Shortcodes](xref:how-to.markdown-pipeline.shortcodes) |
 
 ## Tabs
 
@@ -122,6 +120,22 @@ A third path segment — `#tab/<id>/<condition>` — gates the tab on another gr
 
 The first panel is active in the server-rendered HTML; the client script recomputes selection on load, syncs equal ids page-wide, and persists each choice in `localStorage`.
 
+### Minimal example
+
+A two-tab group whose panels hold prose; the `---` thematic break closes the set:
+
+````markdown
+# [Bash](#tab/bash)
+
+Run the bash script.
+
+# [PowerShell](#tab/pwsh)
+
+Run the PowerShell script.
+
+---
+````
+
 ## Includes
 
 Splices a referenced Markdown file into the host page during parsing. The directive works as a standalone block or inline within a sentence; the referenced file is expanded recursively.
@@ -153,6 +167,14 @@ Text before [!INCLUDE [inline partial](../_includes/snippet.md)] and after.
 
 Relative links and images inside an included file are not rebased — they resolve as if written in the host page.
 
+### Minimal example
+
+A standalone block include splicing a shared partial into the host page:
+
+````markdown
+[!INCLUDE [install steps](../_includes/install.md)]
+````
+
 ## Alerts
 
 Parses a GitHub-flavored `> [!KIND]` token as the first line of a blockquote and emits an `AlertBlock` with two CSS classes. The blockquote form is the only accepted syntax.
@@ -164,7 +186,7 @@ Parses a GitHub-flavored `> [!KIND]` token as the first line of a blockquote and
 > Body text of the alert, CommonMark rendered.
 ````
 
-`KIND` is a case-insensitive alphabetic token; unrecognized kinds still parse and emit a `markdown-alert-<kind>` class using the lowercased token.
+`KIND` is a case-insensitive alphabetic token.
 
 ### Arguments
 
@@ -206,22 +228,7 @@ var z = 3; // [!code word:z|renamed from q]
 ```
 ````
 
-The directive must appear inside a recognized comment marker for the language (`//`, `#`, `--`, `<!-- -->`, `*`, `%`, `'`, `REM`, `;`, `/* */`). The directive and any now-empty comment wrapper are removed, leaving trailing content intact.
-
-### Notations
-
-| Directive | Line class | `<pre>` class | Description |
-|---|---|---|---|
-| `highlight` (alias `hl`) | `highlight` | `has-highlighted` | Marks a line as emphasized. |
-| `++` | `diff-add` | `has-diff` | Marks a line as an addition. |
-| `--` | `diff-remove` | `has-diff` | Marks a line as a removal. |
-| `focus` | `focused` | `has-focused` | Focuses listed lines; all others receive `blurred`. |
-| `error` | `error` | `has-errors` | Marks a line as an error. |
-| `warning` | `warning` | `has-warnings` | Marks a line as a warning. |
-| `word:TEXT` | — | `has-word-highlights` | Wraps the first occurrence of `TEXT` in `<span class="word-highlight">`. Example: `[!code word:Multiply]`. |
-| `word:TEXT\|MESSAGE` | — | `has-word-highlights` | Wraps the match in `word-highlight-with-message` and renders an adjacent `word-highlight-message` callout containing `MESSAGE`. Example: `[!code word:queue\|renamed from buffer]`. |
-| `include-start` / `include-end` | — | — | Structural. Keep only lines between matching markers; markers are removed. |
-| `exclude-start` / `exclude-end` | — | — | Structural. Drop lines between matching markers; markers are removed. |
+The directive must appear inside a comment marker recognized for the language; the marker and any now-empty comment wrapper are removed, leaving trailing content intact. <xref:reference.markdown.code-block-args> is the canonical reference for the full directive set (`highlight`, `++`/`--`, `focus`, `error`, `warning`, `word:`, the `include`/`exclude` region markers) and the recognized comment markers.
 
 ### Emitted CSS classes
 
@@ -273,6 +280,31 @@ See <xref:reference.api.pennington-options> for the full options catalog.
 Configure MonorailCSS through [the options record](xref:reference.api.monorail-css-options).
 ```
 
+## Shortcodes
+
+Shortcodes run before Markdig parses the page rather than as a Markdig extension: each `\<?# Name args /?>` directive is expanded to text or HTML first by a registered `IShortcode` handler, and the result flows through the pipeline as ordinary markdown. Names are case-insensitive.
+
+### Syntax
+
+A call has a self-closing form and a block form with inline content:
+
+````markdown
+\<?# Name positional key="value" /?>
+
+\<?# Name ?>inline content\<?#/ Name ?>
+````
+
+To document a directive without expanding it, prefix the opener with a backslash — the expander emits the directive verbatim. (Every literal directive on this page uses that escape.)
+
+### Built-ins
+
+| Name | Arguments | Description |
+|---|---|---|
+| `Version` | `format=full\|major\|minor\|informational` (default `full`) | Emits the host application's assembly version. |
+| `PackageVersion` | none | Emits Pennington's own published NuGet version. |
+
+Unknown names and handler failures degrade to an HTML comment plus a warning diagnostic, so one bad call site never fails the render. See [the shortcodes how-to](xref:how-to.markdown-pipeline.shortcodes) for the handler contract and registration.
+
 ## See also
 
 - How-to: [Add a Markdig extension or inline parser](xref:how-to.markdown-pipeline.markdig-extension) — register syntax this catalog doesn't list
@@ -281,6 +313,6 @@ Configure MonorailCSS through [the options record](xref:reference.api.monorail-c
 - How-to: [Reuse shared content](xref:how-to.pages.include-shared-content)
 - How-to: [Alerts](xref:how-to.rich-content.alerts)
 - How-to: [Code annotations](xref:how-to.code-samples.code-annotations)
-- How-to: [Cross-references](xref:how-to.navigation.cross-references)
+- How-to: [Cross-references](xref:how-to.navigation.linking)
 - How-to: [Expand a directive before Markdig parses](xref:how-to.markdown-pipeline.shortcodes)
 - Related reference: [Code-block argument reference](xref:reference.markdown.code-block-args)

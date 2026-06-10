@@ -7,7 +7,7 @@ sectionLabel: "Rich Content"
 tags: [markdown, mermaid, diagrams, client-side]
 ---
 
-To drop a flowchart, sequence diagram, or other visual into a markdown article without authoring SVG by hand, fence the diagram with `mermaid` as the language. The DocSite's client script (`MermaidManager`) scans the DOM on page load, lazy-loads Mermaid from `cdn.jsdelivr.net`, and swaps each `<code>` block for the rendered SVG. Authoring sites that build offline or behind a firewall will need to vendor Mermaid themselves; the default CDN load fails silently otherwise.
+To drop a flowchart, sequence diagram, or other visual into a markdown article without authoring SVG by hand, fence the diagram with `mermaid` as the language. The DocSite renders the fence body verbatim, then a client script swaps each block for an SVG in the browser. Sites that build offline or behind a firewall must vendor Mermaid themselves — see [Vendor the library for offline builds](#vendor-the-library-for-offline-builds) below.
 
 ## Before you begin
 - An existing Pennington site renders markdown (see <xref:tutorials.getting-started.first-site> if not).
@@ -49,30 +49,35 @@ Sequence diagrams use the same `mermaid` fence with a `sequenceDiagram` body.
 ````markdown
 ```mermaid
 sequenceDiagram
-    Browser->>Pennington: GET /main/diagrams
-    Pennington-->>Browser: HTML with <code class="language-mermaid">
-    Note right of Browser: MermaidManager scans the DOM
-    Browser->>CDN: import('mermaid')
-    CDN-->>Browser: mermaid module
-    Browser->>Browser: render diagrams in place
+    Alice->>Bob: Hello Bob, how are you?
+    Bob-->>Alice: I'm good, thanks!
+    Alice->>Bob: Want to grab lunch?
+    Bob-->>Alice: Sounds great.
 ```
 ````
 
 ```mermaid
 sequenceDiagram
-    Browser->>Pennington: GET /main/diagrams
-    Pennington-->>Browser: HTML with <code class="language-mermaid">
-    Note right of Browser: MermaidManager scans the DOM
-    Browser->>CDN: import('mermaid')
-    CDN-->>Browser: mermaid module
-    Browser->>Browser: render diagrams in place
+    Alice->>Bob: Hello Bob, how are you?
+    Bob-->>Alice: I'm good, thanks!
+    Alice->>Bob: Want to grab lunch?
+    Bob-->>Alice: Sounds great.
 ```
 
 ## What the renderer emits
 
-Each fence renders as `<pre><code class="language-mermaid">…</code></pre>` with the body verbatim — Pennington does not transform it server-side. The client-side `MermaidManager` walks the DOM, dynamically imports Mermaid from `cdn.jsdelivr.net` the first time a diagram appears, and replaces every matching `<code>` element with an inline SVG. The theme toggle calls `MermaidManager.reinitializeForTheme()`, which reinitializes Mermaid with the matching built-in theme and re-renders every diagram in place. Diagrams render on both the live dev server and the static build output.
+Each fence renders as `<pre><code class="language-mermaid">…</code></pre>` with the body verbatim — Pennington does not transform it server-side. The browser script then loads Mermaid from `cdn.jsdelivr.net` and replaces each block with an inline SVG. The theme toggle re-renders every diagram with the matching built-in Mermaid theme, so diagrams track light and dark mode. Diagrams render on both the live dev server and the static build output.
 
 For per-diagram theme overrides, use Mermaid's inline `%%{init: { 'theme': '…' } }%%` directive at the top of the fence body — Mermaid syntax, not Pennington syntax.
+
+## Vendor the library for offline builds
+
+The bundled support loads Mermaid from `cdn.jsdelivr.net` at first render. A site that builds offline or behind a firewall must serve the library itself: vendor the Mermaid module into `wwwroot` and load it from your own layout. This is the same pattern any CDN-backed widget follows — see [Load the library and your script](xref:how-to.rich-content.client-side-widget#load-the-library-and-your-script) for the vendoring recipe.
+
+## Verify
+
+- Open a page with a diagram in the browser. The fence renders as an SVG, not as a raw code block. A diagram still showing its `flowchart`/`sequenceDiagram` text means the script never replaced it.
+- On a failure, open the browser network tab and confirm the `import` from `cdn.jsdelivr.net` succeeds. A blocked or 404'd jsdelivr request is the silent-failure signature — Mermaid never loads and the original code block stays in place. Vendor the library to fix it.
 
 ## Related
 

@@ -21,10 +21,13 @@ public record RedirectSource(UrlPath TargetUrl);
 
 /// <summary>
 /// Marker source for routes whose content is produced by a live HTTP endpoint
-/// (e.g., the SPA data endpoint). These items exist so the build crawler
+/// (e.g., a custom <see cref="Content.IContentService"/> page or an
+/// <c>AddTaxonomy</c> term page). These items exist so the build crawler
 /// discovers the URL and fetches it through the live pipeline — they do not
-/// participate in parse/render, are not redirects, and do not appear in the
-/// sitemap.
+/// participate in parse/render and are not redirects. Because the endpoint
+/// serves real canonical HTML at a stable URL, the route is listed in the
+/// sitemap; transport endpoints that emit a non-HTML file are dropped earlier
+/// by <see cref="Feeds.SitemapService"/>'s output-extension check.
 /// </summary>
 public record EndpointSource();
 

@@ -1,0 +1,24 @@
+@* LastModified — reads the ambient MdazorContext that Pennington populates for each
+   page and renders the git_last_modified date contributed by GitTimestampEnricher.
+   The enricher merges into ParsedItem.Derived; the renderer exposes that dictionary
+   under the "Derived" context key. Registered in Program.cs with
+   services.AddMdazorComponent<LastModified>(). *@
+@using Mdazor
+@using Microsoft.AspNetCore.Components
+
+@if (Date is not null)
+{
+    <p class="last-modified" data-extensibility-lab="last-modified">Last modified: @Date</p>
+}
+
+@code {
+    // Pennington cascades the page's facts in per render — no tag attributes needed.
+    [CascadingParameter] public MdazorContext? Context { get; set; }
+
+    // The "Derived" key carries the IMetadataEnricher contributions for this page.
+    private string? Date =>
+        Context?["Derived"] is IReadOnlyDictionary<string, object?> derived
+        && derived.TryGetValue(GitTimestampEnricher.Key, out var value)
+            ? value?.ToString()
+            : null;
+}

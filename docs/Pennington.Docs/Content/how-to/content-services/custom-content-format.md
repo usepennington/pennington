@@ -55,22 +55,29 @@ The renderer parses the Cooklang body and hands the model to the component:
 examples/BeyondCookFormatExample/CookContentRenderer.cs
 ```
 
-Throwing from `BuildParameters` (here, when the body won't parse) is captured as a `FailedItem` — it lands in the build report and the dev overlay like any markdown failure. The base produces the page-body HTML and its outline; the host or layout supplies the surrounding chrome, the same way it wraps a rendered markdown body. The host registers Razor's component services with `AddRazorComponents()`.
+Throwing from `BuildParameters` (here, when the body won't parse) is captured as a `FailedItem` — it lands in the build report and the dev overlay like any markdown failure. The base produces the page-body HTML and its outline; the host or layout supplies the surrounding chrome, the same way it wraps a rendered markdown body.
 
 ## Register the format
 
-`AddContentFormat` ties the pieces together — a content directory, a file glob, the format key, and the parser and renderer types (resolved from DI). Register it alongside `AddMarkdownContent` so prose and recipes share the host:
+`AddContentFormat` ties the pieces together — a content directory, a file glob, the format key, and the parser and renderer types (resolved from DI). Call it on the `penn` options inside your `AddPennington` callback, alongside `AddMarkdownContent`, so prose and recipes share the host. Because the renderer dispatches through Blazor's `HtmlRenderer`, the host also needs Razor's component services — register `AddRazorComponents()` on the service collection first:
 
 ```csharp
-penn.AddContentFormat<CookFrontMatter>("cook", cook =>
+builder.Services.AddRazorComponents();
+
+builder.Services.AddPennington(penn =>
 {
-    cook.ContentPath = "recipes";
-    cook.FilePattern = "*.cook";
-    cook.BasePageUrl = "/recipes";
-    cook.SectionLabel = "Recipes";
-})
-.UseParser<CookContentParser>()
-.UseRenderer<CookContentRenderer>();
+    penn.AddMarkdownContent<DocFrontMatter>(md => md.BasePageUrl = "/");
+
+    penn.AddContentFormat<CookFrontMatter>("cook", cook =>
+    {
+        cook.ContentPath = "recipes";
+        cook.FilePattern = "*.cook";
+        cook.BasePageUrl = "/recipes";
+        cook.SectionLabel = "Recipes";
+    })
+    .UseParser<CookContentParser>()
+    .UseRenderer<CookContentRenderer>();
+});
 ```
 
 That's the whole wiring. The pipeline routes each URL to the parser and renderer registered for its format, so `IPageResolver`, the build crawler, navigation, search, and the sitemap treat cook pages exactly like markdown ones — the catch-all `MapGet("/{*path}", IPageResolver resolver)` resolves both without changes.

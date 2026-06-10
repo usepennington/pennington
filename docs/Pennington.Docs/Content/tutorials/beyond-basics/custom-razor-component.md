@@ -27,18 +27,22 @@ The finished code for this tutorial lives in [`examples/BeyondCustomRazorCompone
 
 ## 1. Author the PricingCard component
 
-Before Mdazor can render a custom tag from markdown, a real Razor component has to exist in the project. This unit adds `Components/PricingCard.razor` and a top-level `_Imports.razor` so `[Parameter]` is in scope without per-file `@using` lines.
+Before Mdazor can render a custom tag from markdown, a real Razor component has to exist in your project. This unit adds `Components/PricingCard.razor` and a top-level `_Imports.razor` so `[Parameter]` is in scope without per-file `@using` lines.
 
 <Steps>
 <Step StepNumber="1">
 
 **Add a project-wide `_Imports.razor`**
 
-Drop an `_Imports.razor` file at the project root so every `.razor` file in the project gets the Blazor component namespaces. This is the same file a Blazor template ships with — the two `@using` lines are what make `[Parameter]` resolve inside the component file in the next step.
+Drop an `_Imports.razor` file at your project root so every `.razor` file in the project gets the Blazor component namespaces. This is the same file a Blazor template ships with — the `@using` lines are what make `[Parameter]` resolve inside the component file in the next step, and the last line brings your `Components/` folder into scope so markdown can reference `PricingCard` by name.
 
-```razor:symbol
-examples/BeyondCustomRazorComponentExample/_Imports.razor
+```razor
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using <your root namespace>.Components
 ```
+
+> **Use your own root namespace.** Replace `<your root namespace>` with your project's default namespace (the `.csproj` name).
 
 </Step>
 <Step StepNumber="2">
@@ -51,14 +55,14 @@ Create a `Components/` folder and add `PricingCard.razor` with four `[Parameter]
 examples/BeyondCustomRazorComponentExample/snippets/stage1/PricingCard.razor
 ```
 
-The file is a regular Blazor component — nothing Pennington-specific yet. The disk version of `Components/PricingCard.razor` in the example folder ships with dark-mode utilities and "Most Popular" badge polish; the snippet above is the minimal starting form, and the next unit hooks it up before polishing.
+The file is a regular Blazor component — nothing Pennington-specific yet.
 
 </Step>
 </Steps>
 
 <Checkpoint>
 
-Run `dotnet build` from `examples/BeyondCustomRazorComponentExample`. The build succeeds and produces `BeyondCustomRazorComponentExample.dll`. The `PricingCard` type exists at `BeyondCustomRazorComponentExample.Components.PricingCard` but is not yet wired to Mdazor, so a `<PricingCard />` tag in markdown renders as a literal custom element.
+Run `dotnet build` from your project root. The build succeeds. The `PricingCard` type now exists at `<your root namespace>.Components.PricingCard`, but it is not yet wired to Mdazor, so a `<PricingCard />` tag in markdown would still render as a literal custom element.
 
 </Checkpoint>
 
@@ -79,10 +83,14 @@ Open `Program.cs` and add a single `builder.Services.AddMdazorComponent<PricingC
 examples/BeyondCustomRazorComponentExample/Stage2_RegisterMdazorComponent.cs > Stage2.Run
 ```
 
-`AddMdazorComponent<T>()` returns `IServiceCollection`, so additional component registrations can chain off the same call. That becomes useful when registering several custom components at once.
-
 </Step>
 </Steps>
+
+<Checkpoint>
+
+Run `dotnet build` from your project root again. The build still succeeds, and Mdazor's registry now contains `PricingCard`. Nothing renders differently yet — the next section adds a markdown page that uses the tag.
+
+</Checkpoint>
 
 ---
 
@@ -106,16 +114,16 @@ Mdazor matches tag names case-sensitively on the leading character — `<Pricing
 </Step>
 <Step StepNumber="2">
 
-**Refresh the pricing page in the browser**
+**Run the site**
 
-With `dotnet run` still active, open `http://localhost:5000/pricing`. Mdazor intercepts each `<PricingCard ... />` tag, looks up the registered type, instantiates it, binds the attributes to its parameters, and inlines the rendered HTML in place of the tag.
+Start the host with `dotnet run` from your project root, then open `http://localhost:5000/pricing`. Mdazor intercepts each `<PricingCard ... />` tag, looks up the registered type, instantiates it, binds the attributes to its parameters, and inlines the rendered HTML in place of the tag.
 
 </Step>
 </Steps>
 
 <Checkpoint>
 
-Visit `http://localhost:5000/pricing`. Two pricing cards appear: a plain **Basic** card at `$9 / month` and a **Pro** card at `$49 / month` with a "Most Popular" pill and a thicker accent border. View the page source — `<PricingCard>` has been replaced by real HTML (a `<div>` tree with the card classes), not left as a literal custom element.
+Visit `http://localhost:5000/pricing`. Two pricing cards appear: a **Basic** card at `$9 / month` with a thin border, and a **Pro** card at `$49 / month` with a thicker accent border (its `Highlighted="true"` attribute). View the page source — `<PricingCard>` has been replaced by real HTML (a `<div>` tree with the card classes), not left as a literal custom element.
 
 </Checkpoint>
 
@@ -147,7 +155,7 @@ Add `Highlighted="true"` to the first `<PricingCard Tier="Basic" ... />` tag. Bo
 Reload `http://localhost:5000/pricing`. The dev host picks up markdown changes as you save, so no rebuild is required.
 
 - The Pro card now reads **$99 / month** and lists the extra feature bullet
-- The Basic card now has the "Most Popular" pill and the highlighted border
+- The Basic card now renders with the thicker accent border instead of its plain one
 - Open the browser's dev tools — the generated HTML under each `<PricingCard>` has changed to match
 
 </Checkpoint>

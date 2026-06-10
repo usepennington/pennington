@@ -7,7 +7,7 @@ tags: [host, cli, build, arguments]
 uid: reference.host.cli
 ---
 
-The command-line arguments and environment variables `RunOrBuildAsync` dispatches on. It builds a System.CommandLine root command with two verbs — `build` (generate the static site) and `diag` (read-only inspection) — and dev-serves when neither verb is present. `--help`, `-h`, `-?`, and `--version` print and exit without booting the host. Build arguments — an optional base URL and output directory, or the equivalent `--base-url` / `--output` named flags — are parsed by `OutputOptions.FromArgs`.
+The command-line arguments and environment variables `RunOrBuildAsync` dispatches on. Two verbs are recognized — `build` (generate the static site) and `diag` (read-only inspection); dev-serving is the default when neither verb is present. `--help`, `-h`, `-?`, and `--version` print and exit without booting the host. Build arguments are an optional base URL and output directory, or the equivalent `--base-url` / `--output` named flags.
 
 ## Commands
 
@@ -21,29 +21,45 @@ The command-line arguments and environment variables `RunOrBuildAsync` dispatche
 
 ## Positional arguments
 
-| Position | Name | Default | Description |
+Two positional slots follow the `build` verb, in this order:
+
+| Slot | Name | Default | Description |
 |---|---|---|---|
-| `args[1]` | `baseUrl` | `/` | The URL sub-path the site will be served from; materialized as `OutputOptions.BaseUrl` (a `UrlPath`). When `--base-url` is supplied, the parser advances past it and reads this argument from `args[2]` instead. |
-| `args[2]` | `outputDirectory` | `output` | The filesystem directory to write the generated site into; materialized as `OutputOptions.OutputDirectory` (a `FilePath`). When `--output` is supplied, the parser advances past it. |
+| 1 | `baseUrl` | `/` | The URL sub-path the site will be served from; materialized as `OutputOptions.BaseUrl` (a `UrlPath`). |
+| 2 | `outputDirectory` | `output` | The filesystem directory to write the generated site into; materialized as `OutputOptions.OutputDirectory` (a `FilePath`). |
 
 ## Named flags
 
-| Flag | Value form | Maps to | Notes |
-|---|---|---|---|
-| `--base-url` | `--base-url /sub` or `--base-url=/sub` | `OutputOptions.BaseUrl` | Read by `TryReadFlag` in `OutputOptions.FromArgs`. Case-insensitive match. |
-| `--output` | `--output dist` or `--output=dist` | `OutputOptions.OutputDirectory` | Read by `TryReadFlag`. Case-insensitive match. |
+| Flag | Value form | Maps to |
+|---|---|---|
+| `--base-url` | `--base-url /sub` or `--base-url=/sub` | `OutputOptions.BaseUrl` |
+| `--output` | `--output dist` or `--output=dist` | `OutputOptions.OutputDirectory` |
+
+Both flags match case-insensitively and accept either the space-separated or `=`-joined value form.
+
+## Flag and positional resolution
+
+Named flags win outright. A value given by `--base-url` or `--output` always populates its slot. The remaining positional arguments then fill any slots not already claimed by a flag, in declaration order — first the unclaimed `baseUrl`, then the unclaimed `outputDirectory`. So `build --base-url=/sub dist` puts `/sub` in `baseUrl` and the lone positional `dist` in `outputDirectory`, because the flag took the first slot and the positional flows into the next free one.
+
+Unknown flags are silently ignored, which lets stray dev-mode arguments (`--urls`, the flags `dotnet watch` injects) pass through `build` without error.
+
+## Accepted input normalization
+
+The base-URL value is normalized so common shell shapes resolve to a usable path:
+
+- **Bare segment.** `--base-url my-app` is accepted and promoted to `/my-app`. A leading slash is optional, which lets POSIX shells pass the value without the slash that MSYS would otherwise rewrite.
+- **Windows-path recovery.** A value shaped like `C:/Program Files/Git/my-app` — the result of Git Bash translating a leading-slash argument — triggers a warning on stderr and is recovered to its last segment (`/my-app`) so the build still produces usable links.
 
 ## Environment variables
 
 | Variable | Consumer | Effect when set |
 |---|---|---|
-| `ASPNETCORE_URLS` | ASP.NET Core host | Standard ASP.NET binding for dev-serve. Build mode replaces Kestrel with `TestServer` at service-registration time, so this variable has no effect under `build`. |
-
-`ASPNETCORE_ENVIRONMENT` has no Pennington-specific effect: dev tooling (live reload, diagnostic overlay) gates on the `build` command-line argument, not on this variable.
+| `ASPNETCORE_URLS` | ASP.NET Core host | Standard ASP.NET URL binding for dev-serve. Inert under `build`, which [binds no port](xref:explanation.core.dev-vs-build). |
+| `ASPNETCORE_ENVIRONMENT` | ASP.NET Core host | No Pennington-specific effect. Dev tooling (live reload, diagnostic overlay) gates on the run mode, not on this variable. |
 
 ## Listening port
 
-In dev mode, Pennington uses the standard ASP.NET Core host port-binding mechanisms — `--urls`, `ASPNETCORE_URLS`, or `launchSettings.json` — and the library adds middleware and endpoints on top of whatever URL Kestrel is told to listen on. Build mode does not bind a port: Kestrel is replaced with `TestServer` at service-registration time, and the crawler dispatches requests in-memory through the same middleware pipeline.
+In dev mode, Pennington uses the standard ASP.NET Core host port-binding mechanisms — `--urls`, `ASPNETCORE_URLS`, or `launchSettings.json` — and the library adds middleware and endpoints on top of whatever URL Kestrel is told to listen on. Build mode binds no port: it drives the same pipeline in process. See [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build) for the mechanism.
 
 ## Exit codes
 

@@ -1,0 +1,41 @@
+@* Two @page directives: the canonical /articles URL plus the numbered /articles/page/N/
+   variant. ArticleResolver slices the article list; the shared Pagination component renders
+   the prev/numbered/next controls, with PageUrl mapping page 1 back to the canonical URL. *@
+
+@page "/articles"
+@page "/articles/page/{Page:int}"
+@inject ArticleResolver Resolver
+
+<PageTitle>Articles@(_page is { Page: > 1 } p ? $" (page {p.Page})" : "")</PageTitle>
+
+@if (_page is null)
+{
+    <p>No articles.</p>
+    return;
+}
+
+<h1>Articles</h1>
+<ul>
+    @foreach (var article in _page.Items)
+    {
+        <li><a href="@article.Url">@article.Title</a></li>
+    }
+</ul>
+
+<Pagination CurrentPage="@_page.Page" TotalPages="@_page.TotalPages" UrlFor="@PageUrl" />
+
+@code {
+    /// <summary>1-based page index from the route. Null on the canonical /articles URL (page 1).</summary>
+    [Parameter] public int? Page { get; set; }
+
+    private PagedList<Article>? _page;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _page = await Resolver.GetPagedAsync(Page ?? 1, pageSize: 20);
+    }
+
+    private static string PageUrl(int page) => page <= 1
+        ? "/articles"
+        : $"/articles/page/{page}/";
+}

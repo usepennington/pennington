@@ -1,6 +1,6 @@
 ---
-title: "Navigation-tree construction"
-description: "How Pennington folds a flat list of ContentTocItems into the sidebar tree using HierarchyParts, folder-derived sections, _meta.yml sidecars, and front-matter ordering."
+title: "Why the sidebar mirrors your folders"
+description: "Why Pennington derives the sidebar tree from folder structure and front-matter order instead of a hand-written nav file, and what that costs when sections reorder."
 uid: explanation.routing.navigation-tree
 order: 2
 sectionLabel: "Routing and Navigation"
@@ -29,10 +29,6 @@ There is one special case at depth 0: a `ContentTocItem` whose `HierarchyParts.L
 
 Each field on `ContentTocItem` plays a distinct role in the algorithm: `HierarchyParts` shapes the tree, `Order` and `Title` sort siblings, `SectionLabel` surfaces only in prev/next and breadcrumbs, and `Locale` feeds the filter described below (see <xref:reference.api.content-toc-item> for the type).
 
-```csharp:symbol
-src/Pennington/Navigation/NavigationBuilder.cs > NavigationBuilder.BuildTreeAsync
-```
-
 The `currentPath` parameter passed to `BuildTreeAsync` marks items `IsSelected` and propagates `IsExpanded` up the ancestor chain. The same tree therefore powers both the "where am I" highlight and the collapsed or expanded state of every surrounding folder. The method returns an `ImmutableList<NavigationTreeItem>`, so the entire tree is a value rather than a mutable model the rendering layer binds to directly.
 
 ### Sections without a direct content file
@@ -43,33 +39,15 @@ This is the mechanism that lets an author drop markdown files into `/how-to/depl
 
 The important distinction is between folder-derived grouping and the per-page `sectionLabel:` front-matter key. Grouping comes entirely from subfolder; `sectionLabel:` controls only the label shown in breadcrumbs and prev/next. Two files carrying identical `sectionLabel: "Advanced"` values in different folders render under two different sidebar headers — each named after its own folder — rather than merging. Merging by label would let two unrelated folders collide under a single heading, reintroducing the configuration conflict the filesystem-driven approach was designed to eliminate.
 
-The synthesized section node and a real leaf page share the same `NavigationTreeItem` record shape (see <xref:reference.api.navigation-tree-item>). The rendering component distinguishes them by checking `Route.CanonicalPath.Value == ""` rather than consulting a discriminator field.
+The synthesized section node and a real leaf page share the same `NavigationTreeItem` record shape (see <xref:reference.api.navigation-tree-item>); a section node carries an empty route, which is how the rendering component tells the two apart.
 
 ### Ordering: front matter for leaves, `_meta.yml` for folders
 
-Leaf pages at any given level sort first by their authored `Order` value, then by title using a case-insensitive ordinal comparison as a stable fallback. Folders can override their own title and position by dropping a `_meta.yml` sidecar in the folder:
+Leaf pages at any given level sort first by their authored `Order` value, then by title using a case-insensitive ordinal comparison as a stable fallback. Folders, having no front matter of their own, take their order from a different source: by default a synthesized section node gets `Order = children.Min(c => c.Order)`, so it sorts as if it were whichever of its children would sort first. A folder with an `index.md` but no sidecar takes its order and title from that page instead.
 
-```yaml
-title: "Getting Started"
-order: 1
-```
+That default — min-of-children — has an awkward consequence: sibling sections interleave by the smallest `order:` value found anywhere inside each. If "Getting Started" contains a page with `order: 10` and "Deployment" contains a page with `order: 20`, the sidebar places Getting Started above Deployment. If someone later adds a page with `order: 5` to Deployment — perhaps because they want it first within that section — the whole Deployment group jumps above Getting Started. Sites that grow past a handful of sections end up choosing globally-unique numeric prefixes (`301010, 301020, 302010, …`) to keep folder ordering stable while still allowing in-folder inserts.
 
-When a folder has a sidecar, its `order` overrides everything else — including the default min-of-children folder ordering below and any `order:` set on a sibling `index.md`. The `title` field overrides both `FormatSectionTitle`'s kebab-to-title-case fallback and the `index.md` front-matter title. Either field can be omitted; the other still applies.
-
-When a folder has **no** sidecar, `BuildLevel` falls back to the default folder ordering: synthesized section nodes get `Order = children.Min(c => c.Order)`, so the section sorts as if it were whichever of its children would sort first. Folders with an `index.md` but no sidecar take their order and title from that page's front matter.
-
-The sidecar exists because the default folder ordering has an awkward consequence: sibling sections interleave by the smallest `order:` value found anywhere inside each. If "Getting Started" contains a page with `order: 10` and "Deployment" contains a page with `order: 20`, the sidebar places Getting Started above Deployment. If someone later adds a page with `order: 5` to Deployment — perhaps because they want it first within that section — the whole Deployment group jumps above Getting Started. Sites that grow past a handful of sections end up choosing globally-unique numeric prefixes (`301010, 301020, 302010, …`) to keep folder ordering stable while still allowing in-folder inserts. A `_meta.yml` declaring `order: 1` for the folder breaks that coupling: each folder's children can restart at `1` without affecting where the folder lands in its parent.
-
-The same sidecar can opt the folder into `llms.txt` subtree generation by including an `llms:` block:
-
-```yaml
-title: "Reference"
-order: 5
-llms:
-  description: "API surface, host extensions, front-matter keys, ..."
-```
-
-When `llms:` is present and a folder title is set, the subtree splits out into a dedicated `{prefix}llms.txt`, exactly as the older standalone `_llms.yaml` did.
+The escape hatch is a `_meta.yml` sidecar: a folder declaring its own `order: 1` decouples its position from its children, so each folder's pages can restart at `1` without disturbing where the folder lands in its parent. The sidecar can also override the folder's display title and opt the subtree into a dedicated `llms.txt` split. The full schema and precedence rules live in the <xref:reference.front-matter.folder-sidecar> reference.
 
 ### Locale prefix stripping
 
@@ -79,6 +57,7 @@ Non-default locales are stored on disk under a locale folder (`Content/fr/...`),
 
 ## Further reading
 
+- Reference: [Folder sidecar (`_meta.yml`)](xref:reference.front-matter.folder-sidecar) — the full schema and precedence rules for the folder-level overrides this page motivates.
 - Reference: [Navigation components (`TableOfContentsNavigation`, `OutlineNavigation`)](xref:reference.ui.navigation) — the UI that consumes the tree `NavigationBuilder` returns.
 - How-to: [Customize the sidebar](xref:how-to.navigation.customize-sidebar) — the recipe that leans on the ordering rules this page explains.
 - Tutorial: [Organize content with sections and areas](xref:tutorials.docsite.sections-and-areas) — the tutorial that introduces folder-driven grouping for new authors.

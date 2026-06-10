@@ -22,7 +22,7 @@ The finished code for this tutorial lives in [`examples/GettingStartedNavigation
 
 ## 1. Add pages to navigate to
 
-The styling site has a single home page. A menu needs somewhere to point, so let's add three more pages — two inside a `guides/` folder, one at the top level.
+The styling site has a single home page. A menu needs somewhere to point, so let's add three more pages — two inside a `guides/` folder, one at the top level. A folder with no `index.md` becomes a section node in the tree, so `guides/` will render as a labeled **Guides** group with its two pages nested under it.
 
 <Steps>
 <Step StepNumber="1">
@@ -55,7 +55,7 @@ examples/GettingStartedNavigationExample/Content/about.md
 
 <Checkpoint>
 
-- `dotnet run`, then visit `http://localhost:5000/guides/installation/` and `http://localhost:5000/about/`
+- `dotnet run --urls http://localhost:5000`, then visit `http://localhost:5000/guides/installation/` and `http://localhost:5000/about/`
 - Both pages render through the styled layout — but there is still no menu, so the only way to reach them is by typing the URL
 
 </Checkpoint>
@@ -69,20 +69,22 @@ examples/GettingStartedNavigationExample/Content/about.md
 <Steps>
 <Step StepNumber="1">
 
-**Import the navigation namespace**
+**Add the `Pennington.Navigation` namespace to `_Imports.razor`**
 
-`NavMenu.razor` uses types from `Pennington.Navigation`. Add this line to `_Imports.razor`:
+`NavMenu.razor` uses types from `Pennington.Navigation`, so add that namespace to the project's `_Imports.razor`:
 
 ```razor
 @using Pennington.Navigation
 ```
+
+`<NavMenu />` is referenced by its short tag name in `MainLayout.razor`, which resolves only when the layout folder's namespace (`<RootNamespace>.Components.Layout`) is in scope. The styling tutorial already added that line when it moved the shell into `MainLayout.razor`, so it is in place — an unresolved component tag is a build warning, not an error, and `<NavMenu />` would silently render as raw markup without it.
 
 </Step>
 <Step StepNumber="2">
 
 **Create `Components/Layout/NavMenu.razor`**
 
-This component does three things: it collects the table-of-contents entries every content service exposes, hands them to `NavigationBuilder` to sort and nest, and renders the resulting tree as links.
+This component renders the menu from the content pipeline:
 
 ```razor:symbol
 examples/GettingStartedNavigationExample/Components/Layout/NavMenu.razor
@@ -103,7 +105,7 @@ examples/GettingStartedNavigationExample/Components/Layout/MainLayout.razor
 
 <Checkpoint>
 
-Run `dotnet run` and open `http://localhost:5000/`.
+Run `dotnet run --urls http://localhost:5000` and open `http://localhost:5000/`.
 
 - The header shows a menu: **Welcome**, a **Guides** group containing **Installation** and **Deployment**, then **About**
 - The entry for the page you are viewing renders bold — click into `/guides/deployment/` and the highlight follows
@@ -116,8 +118,7 @@ Run `dotnet run` and open `http://localhost:5000/`.
 ## Summary
 
 - `NavigationBuilder` ships with `AddPennington`; `NavMenu.razor` is the only new code, and `Program.cs` did not change.
-- `CollectTocEntriesAsync()` gathers each source's `GetContentTocEntriesAsync()` pages into one flat list of `ContentTocItem` entries; `NavigationBuilder.BuildTreeAsync` sorts them by `order:` and nests them by folder.
-- A folder without an `index.md` becomes a section node — that is why `guides/` rendered as a labeled group.
+- `NavMenu.razor` collects each source's table-of-contents entries and `NavigationBuilder.BuildTreeAsync` turns that flat list into a sorted, folder-nested tree.
 - The bare host now serves a complete site: a content pipeline, a styled layout, and navigation — all on `AddPennington`.
 
 That is the whole getting-started arc. `AddPennington` gives you the lower-level host: you wire the pipeline, the layout, and the navigation yourself, and you have now done each part. The [DocSite](xref:tutorials.docsite.scaffold) and [BlogSite](xref:tutorials.blogsite.scaffold) templates package this wiring for documentation and blog sites. The [beyond-basics tutorials](xref:tutorials.beyond-basics.custom-razor-component) build on the host you just finished.

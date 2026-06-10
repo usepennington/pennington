@@ -7,7 +7,7 @@ sectionLabel: "Rich Content"
 tags: [client-side, javascript, mdazor, components, spa]
 ---
 
-Pennington renders every page on the server in a single pass — there is no client-side hydration. To add interactive browser behavior (a lightbox, a chart, a copy-to-clipboard button), you ship your own script and attach it to the server-rendered HTML. Components are server-rendered; client behavior attaches via your own script.
+Pennington renders every page on the server in a single pass — there is no client-side hydration. To add interactive browser behavior (a lightbox, a chart, a copy-to-clipboard button), you ship your own script and attach it to the server-rendered HTML.
 
 This guide builds an image-gallery lightbox from three parts: a server-rendered component that emits the markup, a browser script that enhances it, and the head content option that loads both your script and the third-party library. The worked library is [GLightbox](https://github.com/biati-digital/glightbox) (MIT-licensed, dependency-free), but the pattern is the same for any library that scans the DOM and upgrades matching elements — the bundled Mermaid support (<xref:how-to.rich-content.diagrams>) follows it too.
 
@@ -15,7 +15,7 @@ This guide builds an image-gallery lightbox from three parts: a server-rendered 
 
 - A DocSite (`AddDocSite`) or BlogSite host — this example is a DocSite. On a bare `AddPennington` host the only difference is the head content: inject the tags through your own layout's `<head>` or a response processor that inserts before `</body>` (see <xref:how-to.response-pipeline.response-processor>).
 - Familiarity with the library you are wrapping. This page covers the wiring, not GLightbox itself.
-- For a complete, running setup, see `examples/BeyondClientWidgetExample`. `Components/ImageGallery.razor` is the server-rendered tag, `wwwroot/gallery.js` is the enhancer, and `GalleryWidget.cs` returns the `DocSiteOptions` that load both. `Program.cs` runs it end to end.
+- For a complete, running setup, see `examples/BeyondClientWidgetExample`; the sections below embed each of its files where they apply.
 
 ## Render the markup on the server
 

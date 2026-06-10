@@ -1,5 +1,5 @@
 ---
-title: "Use multiple content sources"
+title: "Serve docs and a blog from separate content roots"
 description: "Register more than one markdown root — either as DocSite areas or as chained AddMarkdownContent calls on a bare Pennington host — and keep them from overlapping."
 uid: how-to.discovery.multiple-sources
 order: 1
@@ -23,11 +23,15 @@ For a working DocSite multi-area setup, see [`examples/DocSiteKitchenSinkExample
 
 ### Declare the areas
 
+Build the `ContentArea` list — one entry per slug, where the slug is both the URL prefix and the top-level content folder.
+
 ```csharp:symbol,bodyonly
 examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.BuildAreas
 ```
 
 ### Wire the areas onto `DocSiteOptions`
+
+Assign that list to `DocSiteOptions.Areas` so the single `DocSiteFrontMatter` pipeline discovers each folder as its own sub-tree.
 
 ```csharp:symbol,bodyonly
 examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.BuildDocSiteOptions

@@ -25,15 +25,15 @@ Nothing in this path is marked "dev-only." The diagnostic overlay and live-reloa
 
 ### Build mode: a crawler driving the same pipeline
 
-When the first argument is `build`, Pennington replaces Kestrel with `Microsoft.AspNetCore.TestHost.TestServer` at service-registration time, then `RunOrBuildAsync` calls `app.StartAsync()` against that test host. No socket bind, no dev-cert prompt, no port. From there, `OutputGenerationService` resolves `IInProcessHttpDispatcher` (backed by `HttpDispatcher`), which hands out an `HttpClient` whose handler is `TestServer.CreateHandler()` — requests flow directly into the same `RequestDelegate` Kestrel would have invoked in dev.
+When the first argument is `build`, Pennington replaces Kestrel with an in-memory test host at service-registration time, then starts that host without a socket bind, a dev-cert prompt, or a port. The crawler dispatches requests straight into the same `RequestDelegate` Kestrel would have invoked in dev — there is no network round-trip, but every request runs the full pipeline.
 
 URL discovery comes from two sources. Every registered `IContentService` exposes `DiscoverAsync`, which returns the set of content routes it knows about. The live `EndpointDataSource` covers `MapGet` handlers — `/styles.css`, `/sitemap.xml`, the per-locale `/search/{locale}/...` artifacts, and anything else the host has wired up explicitly. Each response is written to `OutputOptions.OutputDirectory` using the route's `OutputFile` mapping.
 
-The 404 page is a small special case: the service fetches a sentinel URL (`"/__pennington-404-generator"`) that no route matches, so the catch-all fallback fires and its output is written as `404.html`. The mechanism remains a GET against the same pipeline.
+The 404 page is a small special case: the crawler fetches a URL that no route matches, so the catch-all fallback fires and its output is written as `404.html`. The mechanism remains a GET against the same pipeline.
 
 ### The shared pipeline
 
-Because the build drives requests through the same pipeline, every cross-cutting system runs identically in both modes. `ResponseProcessingMiddleware` captures and rewrites bodies. `IHtmlResponseRewriter` resolves xref links and applies locale prefixes and the base URL. The [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) discovery pipeline scans loaded assemblies and watched source files at startup, so the class registry is already populated before the crawler starts; content-page GETs run first and `MapGet` GETs last as a separate ordering rule, ensuring `/styles.css` and other generated endpoints see a fully-warm system. That phase ordering lives in `OutputGenerationService.GenerateAsync` and nowhere else.
+Because the build drives requests through the same pipeline, every cross-cutting system runs identically in both modes. `ResponseProcessingMiddleware` captures and rewrites bodies. `IHtmlResponseRewriter` resolves xref links and applies locale prefixes and the base URL. The [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) discovery pipeline scans loaded assemblies and watched source files at startup, so the class registry is already populated before the crawler starts; content-page GETs run first and `MapGet` GETs last as a separate ordering rule, ensuring `/styles.css` and other generated endpoints see a fully-warm system.
 
 The consequence is that dev and build cannot drift apart. The pipeline that produced `localhost:5000/foo` is the pipeline that produced `output/foo/index.html`. A feature that works in dev works in build, and one that breaks in build would have broken in dev first.
 
@@ -41,7 +41,7 @@ The consequence is that dev and build cannot drift apart. The pipeline that prod
 
 The alternative — a pure in-process renderer that drives Markdig directly, writes files, skips the request pipeline entirely — is faster for small sites and simpler to maintain if the feature set never grows. The tradeoff is that every capability built on top of ASP.NET would have to be reimplemented for the offline path. Locale middleware, response processors, Blazor SSR for islands, the per-locale search artifacts, the diagnostic-header transport — each would require a second implementation. Each new feature becomes two edits and two chances for the implementations to diverge.
 
-The per-page request-pipeline cost of build mode is measurable on very small sites and mostly irrelevant on anything larger; the in-memory `BuildHtmlCache` further collapses the disk-write, search-index, and llms.txt passes to one render per URL. The cost of maintaining a second renderer, by contrast, grows with every feature added. Pennington accepts the per-request overhead to avoid it.
+Build mode does add a fixed cost per page — routing and the middleware stack run on every URL rather than being bypassed — but with no socket round-trip that cost is a thin slice of each page's render time and stays flat as the site grows. The in-memory `BuildHtmlCache` further collapses the disk-write, search-index, and llms.txt passes to one render per URL. The cost of maintaining a second renderer, by contrast, grows with every feature added. Pennington accepts the per-request overhead to avoid it.
 
 ## Further reading
 

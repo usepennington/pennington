@@ -8,7 +8,7 @@ Kitchen-sink DocSite host. The configuration surface is deliberately wide — tw
 - **Cross-references** — `xref:uid` round-trip pairings; every kitchen-sink page sets `uid:` so the xref resolver can name it.
 - **MonorailCSS theming** — color scheme, font preloads, extra CSS (see `ServiceConfiguration.cs`).
 - **`<FeatureCallout />`** — registering a custom Mdazor component, rendered at `/main/ui-components-in-markdown/`.
-- **Front-matter examples** — built-in `DocSiteFrontMatter` everywhere, plus a custom `ApiFrontMatter` record on `Content/api/*`.
+- **Front-matter examples** — built-in `DocSiteFrontMatter` across the areas, plus a custom `ApiFrontMatter` record registered as its own markdown source over `Content/symbols/*` (via `ServiceConfiguration.RegisterApiSource`, chained through `DocSiteOptions.ConfigurePennington`). The `<StabilityBadge />` component reads the custom `stability` key off that source's front matter.
 - **Search-index opt-out** — `Content/main/hidden.md` carries `search: false`. The page still renders at its URL and still appears in the sidebar; only the entry in `/search-index-en.json` is omitted (open the JSON and search for "Not in search" — it isn't there).
 - **`llms.txt` opt-out** — `Content/main/llms-hidden.md` carries `llms: false`. The page renders and appears in the sidebar; `/llms.txt` skips it (`curl /llms.txt | grep "Not in llms.txt"` returns nothing).
 - **Multi-area `Content/` layout** — `Content/main/` and `Content/api/` produce two top-level areas; `Content/fr/` provides the localized tree.

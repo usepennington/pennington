@@ -17,7 +17,6 @@ By the end of this tutorial, a running BlogSite at `http://localhost:5000` surfa
 
 - .NET 10 SDK installed
 - Completed [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold) (or have that example's `Program.cs` and a single placeholder post ready to reuse)
-- A code editor that renders YAML front matter cleanly (VS Code, Rider, and so on)
 
 The finished code for this tutorial lives in [`examples/BlogSiteFirstPostExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteFirstPostExample).
 
@@ -61,9 +60,9 @@ The two `---` fences delimit the YAML front matter block. The `date:` value pars
 
 ---
 
-## 2. Populate every `BlogSiteFrontMatter` field
+## 2. Add the author, tags, series, and repository fields
 
-Next, the front-matter block expands to cover every `BlogSiteFrontMatter` field a post author touches — `author`, `tags`, `series`, `repository`, `sectionLabel`, and `redirectUrl` — and each one drives a different surface in the running site.
+Next, the front-matter block expands with the four `BlogSiteFrontMatter` fields that each light up a distinct blog surface — `author`, `tags`, `series`, and `repository`.
 
 <Steps>
 <Step StepNumber="1">
@@ -76,13 +75,12 @@ Replace the existing YAML block with the fully-populated block below. Each new k
 - `tags:` — `/tags/<tag>/` index pages plus chips on the post page
 - `series:` — shared-banner threading on the post chrome
 - `repository:` — "Source Code" link card on the post page
-- `sectionLabel:` — groups the post under a named slice of the archive
 
 ```markdown:symbol
 examples/BlogSiteFirstPostExample/snippets/stage2.md
 ```
 
-`redirectUrl:` is also available for migrated posts; see <xref:how-to.pages.redirects>. For the full record definition, see <xref:reference.api.blog-site-front-matter>.
+`BlogSiteFrontMatter` carries more keys than this — `sectionLabel` for navigation grouping and `redirectUrl` for migrated posts among them. For the full record definition, see <xref:reference.api.blog-site-front-matter>.
 
 </Step>
 <Step StepNumber="2">
@@ -94,12 +92,14 @@ With the file saved, reload the running site and verify each new field in turn. 
 </Step>
 </Steps>
 
+The RSS feed is on because `EnableRss` defaults to `true`; to turn it off, set it on `BlogSiteOptions` (see <xref:reference.api.blog-site-options>).
+
 <Checkpoint>
 
 - Visit `http://localhost:5000/blog/my-first-post/` — the post header shows the byline **Author Name**, the series banner **Pennington Field Notes**, three tag chips (**pennington**, **dotnet**, **blogging**), and a **Source Code** link card pointing at the `repository:` URL.
 - Visit `http://localhost:5000/tags/pennington/` — the post appears on the per-tag index; repeat for `/tags/dotnet/` and `/tags/blogging/`.
 - Visit `http://localhost:5000/archive` — the archive card carries the longer description from the expanded front matter.
-- Visit `http://localhost:5000/rss.xml` — the feed `<channel>` carries the site title and one `<item>` whose `<title>`, `<description>`, `<pubDate>`, `<author>`, and `<link>` all map back to the front matter (`EnableRss` defaults to `true`; for turning the feed off, see <xref:reference.api.blog-site-options>).
+- Visit `http://localhost:5000/rss.xml` — the feed `<channel>` carries the site title and one `<item>` whose `<title>`, `<description>`, `<pubDate>`, `<author>`, and `<link>` all map back to the front matter.
 
 </Checkpoint>
 
@@ -108,5 +108,4 @@ With the file saved, reload the running site and verify each new field in turn. 
 ## Summary
 
 - A Pennington blog post backed by `BlogSiteFrontMatter` maps predictably onto each blog surface — title/description/date for listings, author for byline and RSS, tags for `/tags/<tag>/` indexes, series for the shared banner, repository for the source-code link card.
-- `AddBlogSite` binds `AddMarkdownContent<BlogSiteFrontMatter>`, the BlogSite-specific front-matter record. It is parallel to the core `BlogFrontMatter` (not an inheritor) and implements the same capability interfaces with the extra fields BlogSite needs.
 - Dropping a new `Content/Blog/*.md` file brings it straight to the home page, the archive, every tag it claims, and `/rss.xml` — no `Program.cs` changes needed.

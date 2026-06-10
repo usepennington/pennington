@@ -1,0 +1,32 @@
+@* StabilityBadge — reads the custom `stability` key off the page's front matter
+   and renders it as a Badge. The page's parsed front matter cascades in through
+   MdazorContext["Metadata"] as an IFrontMatter; casting to the custom
+   ApiFrontMatter record exposes the typed Stability property. This is how a
+   component consumes a key a custom front-matter record adds. Registered in
+   Program.cs via AddMdazorComponent<StabilityBadge>(). *@
+@using DocSiteKitchenSinkExample
+@using Mdazor
+@using Pennington.FrontMatter
+@using Pennington.UI.Components
+
+@if (Stability is not null)
+{
+    <Badge Text="@Stability" Variant="@Variant" />
+}
+
+@code {
+    [CascadingParameter] public MdazorContext? Context { get; set; }
+
+    // The "Metadata" key carries the page's parsed front matter. On pages served
+    // by the ApiFrontMatter source it is an ApiFrontMatter, so the cast succeeds
+    // and the typed Stability value round-trips from the YAML.
+    private string? Stability => (Context?["Metadata"] as ApiFrontMatter)?.Stability;
+
+    private string Variant => Stability switch
+    {
+        "stable" => "success",
+        "preview" => "tip",
+        "experimental" => "caution",
+        _ => "note",
+    };
+}

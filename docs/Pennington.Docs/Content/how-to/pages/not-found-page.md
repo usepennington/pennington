@@ -24,7 +24,7 @@ Run `dotnet run -- build` and the file lands at `output/404.html`. The file is r
 
 ## Why there's no `/404/` route
 
-Nothing runs on a static host, so a 404 can't be decided by a Razor page with an `if` at request time. It also can't be a real page: a routable `/404/` would be a *valid* route whose whole job is to announce an *invalid* destination. Pennington's build enumerates routes and never crawls links, so a missing URL is never rendered as a page — a broken link surfaces as a build diagnostic instead. The not-found body is rendered only at the catch-all and reaches readers solely through your host's `404.html` mapping. That's why the body lives in a reserved file rather than at a URL.
+A routable `/404/` would be a valid route whose job is to announce an invalid destination, and nothing runs on a static host to choose it; instead the body renders at the catch-all and reaches readers only through your host's `404.html` mapping. For how the build materializes that file, see <xref:explanation.core.dev-vs-build>.
 
 ## Use a Razor component instead
 
@@ -52,5 +52,5 @@ Producing `404.html` is half the job — your host has to return it for unknown 
 ## Related
 
 - How-to: [Build a static site](xref:how-to.deployment.static-build) — where `output/404.html` comes from in the build.
-- Background: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build) — the sentinel URL the crawler fetches to materialize `404.html`.
+- Background: [Dev mode and build mode share one code path](xref:explanation.core.dev-vs-build) — how the crawler materializes `404.html`.
 - Background: [The response pipeline](xref:explanation.core.response-processing) — how the rendered 404 body keeps an HTTP 404 status.

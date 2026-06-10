@@ -7,7 +7,7 @@ sectionLabel: "Response Pipeline"
 tags: [head, contributors, extensibility, response-pipeline]
 ---
 
-To add a head tag that deduplicates against other writers, orders predictably against site and page defaults, and survives SPA navigation, implement `IHeadContributor`. For genuinely page-local markup that no other writer touches, a Razor `<HeadContent>` block on the page is still the right tool — the head reconciler normalizes it into the same model. Reach for a contributor when the tag is shared across pages: emitted on many pages, or competing with another writer for the same slot. For background on why the head funnels through one extension point that every writer goes through, see <xref:explanation.core.head-subsystem>.
+To add a head tag that deduplicates against other writers, orders predictably against site and page defaults, and survives SPA navigation, implement `IHeadContributor`. Reach for a contributor when the tag is shared across pages — emitted on many pages, or competing with another writer for the same slot. For one-off, page-local markup there are two lighter options instead: a Razor `<HeadContent>` block (see [Keep authoring in Razor](#keep-authoring-in-razor)) or, on a DocSite, the `AdditionalHtmlHeadContent` string (see [Customize the DocSite chrome](xref:how-to.response-pipeline.override-docsite-components)). For background on why the head funnels through one extension point that every writer goes through, see <xref:explanation.core.head-subsystem>.
 
 ## Before you begin
 
@@ -16,17 +16,9 @@ To add a head tag that deduplicates against other writers, orders predictably ag
 
 ## Write the contributor
 
-Implement `IHeadContributor` as a sealed class. The interface is three members:
+Implement `IHeadContributor` as a sealed class. The interface is three members — `Order`, `ShouldContribute`, and `ContributeAsync` (see [`IHeadContributor`](xref:reference.api.i-head-contributor) for the member catalog).
 
-```csharp:symbol,bodyonly
-src/Pennington/Head/IHeadContributor.cs > IHeadContributor
-```
-
-Push tags through the `HeadBuilder` handed to `ContributeAsync`. Its helpers cover the common cases — `Title`, `Meta` (name/content), `Property` (OpenGraph), and `Link` (rel/href) each add under a dedup key, while `AddRepeatable` appends a tag that may occur more than once.
-
-```csharp:symbol,signatures
-src/Pennington/Head/HeadBuilder.cs > HeadBuilder
-```
+Push tags through the `HeadBuilder` handed to `ContributeAsync`. Its helpers cover the common cases — `Title`, `Meta` (name/content), `Property` (OpenGraph), and `Link` (rel/href) each add under a dedup key, while `AddRepeatable` appends a tag that may occur more than once (see [`HeadBuilder`](xref:reference.api.head-builder) for the full surface).
 
 A minimal contributor that stamps a site-wide `generator` meta tag on every page:
 
@@ -47,15 +39,31 @@ internal sealed class GeneratorMetaHeadContributor : IHeadContributor
 }
 ```
 
+The page authored no generator tag, so before composition its `<head>` carries none:
+
+```html
+<head>
+  <title>Getting started</title>
+  <!-- no generator meta -->
+</head>
+```
+
+After composition the rewriter appends the contributed tag and stamps it with `data-head` — the value is the dedup key, here `meta:name:generator`:
+
+```html
+<head>
+  <title data-head="title">Getting started</title>
+  <meta name="generator" content="Pennington" data-head="meta:name:generator">
+</head>
+```
+
+That `data-head` stamp is what later same-key contributors dedup against and what the SPA engine carries across a soft navigation.
+
 ## Pick an order band
 
 `Order` is chosen from the `HeadOrder` bands, not a raw integer. Contributors run lowest-first, and on a dedup-key collision the lowest order wins — so a tag in a lower band overrides the same key in a higher one.
 
-```csharp:symbol,bodyonly
-src/Pennington/Head/HeadOrder.cs > HeadOrder
-```
-
-Use `Page` (40) for tags computed from the current page that should beat site defaults, `Site` (60) for site-wide defaults, and `Discovery` (80) for structured-data and verification payloads. The generator meta above sits at `Site` because it is a constant site default with no page-level override.
+Use `Page` (40) for tags computed from the current page that should beat site defaults, `Site` (60) for site-wide defaults, and `Discovery` (80) for structured-data and verification payloads. The generator meta above sits at `Site` because it is a constant site default with no page-level override. See [`HeadOrder`](xref:reference.api.head-order) for the complete band list with values.
 
 ## Register it
 
@@ -86,11 +94,7 @@ src/Pennington/Head/Contributors/CanonicalHeadContributor.cs > CanonicalHeadCont
 
 ### Read the resolved page record
 
-`HeadContext` carries the request and the content record resolved for it, so a contributor can compute tags from the page's front matter.
-
-```csharp:symbol,bodyonly
-src/Pennington/Head/HeadContext.cs > HeadContext
-```
+`HeadContext` carries the request and the content record resolved for it, so a contributor can compute tags from the page's front matter. Its members are `HttpContext`, `FullPath`, and the nullable `Record` (see [`HeadContext`](xref:reference.api.head-context)).
 
 `Record` is `null` on endpoint and 404 pages, so guard it. `FullPath` is the request path with the locale segment reattached — the same key the content registry and structured-data join on.
 
@@ -100,13 +104,15 @@ To replace a tag a built-in contributor emits, add the same key from a lower ban
 
 ### Keep authoring in Razor
 
-A `<HeadContent>` or `<PageTitle>` block on a page still works. The reconciler pulls whatever `HeadOutlet` rendered into the same model, stamps it, and dedups it against contributor output — with the page winning on a key collision. Use Razor for one-off, page-local head markup; use a contributor when the tag is shared or needs to beat another writer.
+A `<HeadContent>` or `<PageTitle>` block on a page still works. The reconciler pulls whatever `HeadOutlet` rendered into the same model, stamps it, and dedups it against contributor output — with the page winning on a key collision.
+
+There are three routes to "add a head tag", and the decision rule is which scope owns it: a contributor for anything shared across pages or competing for a slot (it dedups, orders, and survives navigation); a Razor `<HeadContent>` block for one-off markup local to a single page; and, on a DocSite, [`AdditionalHtmlHeadContent`](xref:how-to.response-pipeline.override-docsite-components) for a raw site-wide string (analytics snippets, preconnect hints) you do not want to write a class for. The string route runs through the same head reconciler, so its tags also get a `data-head` stamp.
 
 ## Verify
 
-- Run `dotnet run` and view-source on any page. The contributed tag is present and carries a `data-head` attribute (the stamp that drives dedup and SPA-navigation survival).
+- Run `dotnet run` and view-source on any page. The contributed tag is present and carries a `data-head` attribute (the stamp that drives dedup and SPA-navigation survival) — for the generator example above, expect `<meta name="generator" content="Pennington" data-head="meta:name:generator">`.
 - Navigate between pages without a full reload and confirm the tag is still present — the generic `[data-head]` sweep carries it across the region swap with no per-tag wiring.
-- Static build: `dotnet run -- build output` and grep an output HTML file to confirm the tag is emitted at publish time too.
+- Static build: `dotnet run -- build output`, then grep a published page for the stamped tag to confirm it ships at publish time too — `grep 'data-head="meta:name:generator"' output/index.html`.
 
 ## Related
 

@@ -40,7 +40,7 @@ app.UsePennington();
 app.UseMonorailCss();
 
 app.MapGet("/status/{slug}/", (string slug, StatusPagesContentService statuses, HtmlRenderer renderer)
-    => RenderRazorPageAsync<StatusPage>(renderer, statuses.TryGet(slug) is { } entry
+    => BareHostRenderer.RenderRazorPageAsync<StatusPage>(renderer, statuses.TryGet(slug) is { } entry
         ? new Dictionary<string, object?>
         {
             [nameof(StatusPage.Slug)] = entry.Slug,
@@ -51,33 +51,43 @@ app.MapGet("/status/{slug}/", (string slug, StatusPagesContentService statuses, 
         : null));
 
 await app.RunOrBuildAsync(args);
-return;
-
-// Render a Razor component to HTML inside a request handler. HtmlRenderer
-// runs the component on the request thread via Dispatcher.InvokeAsync, then
-// returns the HTML as a string. The component owns the whole document, so the
-// result is a complete HTML page ready to flush to the response.
-static async Task<IResult> RenderRazorPageAsync<TComponent>(
-    HtmlRenderer renderer,
-    IDictionary<string, object?>? parameters)
-    where TComponent : IComponent
-{
-    if (parameters is null)
-    {
-        return Results.NotFound();
-    }
-
-    var html = await renderer.Dispatcher.InvokeAsync(async () =>
-    {
-        var output = await renderer.RenderComponentAsync<TComponent>(
-            ParameterView.FromDictionary(parameters));
-        return output.ToHtmlString();
-    });
-    return Results.Content(html, "text/html");
-}
 
 namespace BareHostRazorPageExample
 {
+    /// <summary>Renders a Razor component to a complete HTML response on a bare host.</summary>
+    public static class BareHostRenderer
+    {
+        /// <summary>
+        /// Renders <typeparamref name="TComponent"/> to HTML inside a request handler.
+        /// <see cref="HtmlRenderer"/> runs the component on the request thread via
+        /// <c>Dispatcher.InvokeAsync</c>, then returns the HTML as a string. The component
+        /// owns the whole document, so the result is a complete HTML page ready to flush
+        /// to the response; a null <paramref name="parameters"/> means no record matched
+        /// and the route 404s.
+        /// </summary>
+        /// <typeparam name="TComponent">The component that renders the whole document.</typeparam>
+        /// <param name="renderer">The Blazor <see cref="HtmlRenderer"/> from DI.</param>
+        /// <param name="parameters">The component's <c>[Parameter]</c> values, or null to 404.</param>
+        public static async Task<IResult> RenderRazorPageAsync<TComponent>(
+            HtmlRenderer renderer,
+            IDictionary<string, object?>? parameters)
+            where TComponent : IComponent
+        {
+            if (parameters is null)
+            {
+                return Results.NotFound();
+            }
+
+            var html = await renderer.Dispatcher.InvokeAsync(async () =>
+            {
+                var output = await renderer.RenderComponentAsync<TComponent>(
+                    ParameterView.FromDictionary(parameters));
+                return output.ToHtmlString();
+            });
+            return Results.Content(html, "text/html");
+        }
+    }
+
     /// <summary>One status page entry — the data StatusPage.razor binds.</summary>
     public sealed record StatusEntry(
         string Slug,

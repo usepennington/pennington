@@ -19,17 +19,13 @@ For a working setup, see [`examples/SubPathDeployableExample`](https://github.co
 
 ## Build with the prefix
 
-`OutputOptions.FromArgs` accepts the sub-path as a positional token or a named flag; named flags survive CI script reorderings more reliably. Include the leading slash and omit the trailing slash — the rewriter normalizes either way.
+Pass the sub-path as the `--base-url` flag. Include the leading slash and omit the trailing slash — the rewriter normalizes either way.
 
 ```bash
-# positional — base URL first, output directory second
-dotnet run -- build /docs
-
-# named flag (preferred for CI)
-dotnet run -- build --base-url=/docs --output=dist
+dotnet run -- build --base-url=/docs
 ```
 
-See <xref:reference.host.cli> for the argument grammar.
+For the positional form and the rest of the argument grammar, see <xref:reference.host.cli>.
 
 ## Reproduce the prefix from client-side code
 
@@ -45,7 +41,7 @@ const href = `${base}/guides/first-page/`;
 ## Verify
 
 - Run `dotnet run -- build --base-url=/docs` and open `output/index.html` — every internal `href`, `src`, and `action` now starts with `/docs/`, and `<body>` carries `data-base-url="/docs"`.
-- Serve `output/` under the same sub-path (for example `npx http-server output -p 5000` behind a reverse proxy at `/docs/`) — deep links like `/docs/guides/first-page/` resolve and their in-page links stay under the prefix.
+- Serve the build so the prefix is part of the path. A static server roots at `/`, so place `output/` inside a folder named for the prefix and serve the parent: `mkdir -p site/docs && cp -r output/* site/docs/ && npx http-server site -p 5000`. Open `http://localhost:5000/docs/` — deep links like `/docs/guides/first-page/` resolve and their in-page links stay under the prefix.
 - Re-run with no `--base-url` — the generated HTML reverts to root-relative paths with no `data-base-url` attribute, confirming the rewriter short-circuits when the prefix is empty or `/`.
 
 ## Related

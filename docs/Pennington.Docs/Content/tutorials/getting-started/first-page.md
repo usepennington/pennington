@@ -16,7 +16,7 @@ By the end of this tutorial a runnable ASP.NET project — `MyBlazorPenningtonSi
 ## Prerequisites
 
 - .NET 10 SDK installed
-- (Optional) Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site) — this tutorial repeats its `dotnet new web` + Pennington package bootstrap
+- [Create your first Pennington site](xref:tutorials.getting-started.first-site) — this tutorial builds on its `IPageResolver` walkthrough. It does repeat the `dotnet new web` + Pennington package bootstrap from scratch, so you can also start here cold if you prefer.
 
 The finished code for this tutorial lives in [`examples/GettingStartedBlazorPagesExample`](https://github.com/usepennington/pennington/tree/main/examples/GettingStartedBlazorPagesExample). The DocSite template pre-wires this same Blazor shape for documentation sites — see <xref:tutorials.docsite.scaffold> if that is exactly what you are building.
 
@@ -31,7 +31,7 @@ Start from an empty ASP.NET web project and add the Pennington package. No Penni
 
 **Create the web project**
 
-Run these two commands in a working folder. The `web` template produces a minimal top-level-statement `Program.cs` that returns `Hello from ASP.NET.` — the starting shape we'll replace in the next section.
+Run these two commands in a working folder. The `web` template produces a minimal top-level-statement `Program.cs` that returns `Hello World!` — the starting shape we'll replace in the next section.
 
 ```bash
 dotnet new web -n MyBlazorPenningtonSite
@@ -82,7 +82,7 @@ examples/GettingStartedBlazorPagesExample/Content/index.md
 <Checkpoint>
 
 - `dotnet build` succeeds with no errors
-- `dotnet run` followed by visiting `http://localhost:5000/` returns the literal text `Hello from ASP.NET.` — the bare web template's response. Pennington takes over in the next section
+- `dotnet run --urls http://localhost:5000` followed by visiting `http://localhost:5000/` returns the literal text `Hello World!` — the bare web template's response. Pennington takes over in the next section
 - Stop the process with `Ctrl+C` before continuing
 
 </Checkpoint>
@@ -95,6 +95,9 @@ Replace the `Program.cs` body with the host below, then add three Razor files: a
 
 > [!IMPORTANT]
 > `app.UsePennington()` must run before `app.MapRazorComponents<App>()`. The Blazor catch-all `@page "/{*Path}"` would otherwise swallow Pennington's redirect, sitemap, and llms.txt routes.
+
+> [!NOTE]
+> The embeds come from the finished example, so they use its root namespace `GettingStartedBlazorPagesExample` (in `Program.cs` and `_Imports.razor`). Swap in your own — here, `MyBlazorPenningtonSite`.
 
 <Steps>
 <Step StepNumber="1">
@@ -143,7 +146,7 @@ examples/GettingStartedBlazorPagesExample/Components/Pages/MarkdownPage.razor
 
 <Checkpoint>
 
-- `dotnet run` and visit `http://localhost:5000/` — the page renders `Content/index.md`.
+- `dotnet run --urls http://localhost:5000` and visit `http://localhost:5000/` — the page renders `Content/index.md`.
 - View source. The `<title>` and `<h1>` both pull from `index.md`'s front-matter `title:`.
 
 </Checkpoint>

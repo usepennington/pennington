@@ -7,7 +7,12 @@ sectionLabel: "Content Services"
 tags: [extensibility, content-service, artifacts]
 ---
 
-To emit a byte artifact into the output — `robots.txt`, a sitemap variant, a social-image `.png`, a sidecar `.json` search index — that is not a routed page, not in navigation, and not an xref target, implement `IContentService` with `GetContentToCreateAsync` as the only meaningful member. Every other interface member returns empty. Artifacts emit during the static build only; the dev server returns 404 for them unless a sibling `MapGet` serves the same bytes at request time — the `/llms.txt` endpoint wired by `AddLlmsTxt` is the reference for that pattern.
+To emit a byte artifact into the output — `robots.txt`, a sitemap variant, a social-image `.png`, a sidecar `.json` search index — that is not a routed page, not in navigation, and not an xref target, implement `IContentService` with `GetContentToCreateAsync` as the only meaningful member. Every other interface member returns empty. Artifacts emit during the static build only; the dev server returns 404 for them unless a sibling `MapGet` serves the same bytes at request time:
+
+```csharp
+app.MapGet("/robots.txt", () =>
+    Results.Text("User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n", "text/plain"));
+```
 
 For the opposite case — a service that contributes routed pages, TOC entries, and xrefs from a non-markdown source — see <xref:how-to.content-services.custom-content-service>.
 

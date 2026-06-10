@@ -3,7 +3,7 @@ namespace GettingStartedStylingExample;
 using GettingStartedStylingExample.Components;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
-using Pennington.MonorailCss;
+using Pennington.MonorailCss; // [!code ++]
 
 /// <summary>
 /// Stage 3 — call <c>app.UseMonorailCss()</c> to mount the <c>/styles.css</c>
@@ -35,15 +35,18 @@ public static class Stage3
             });
         });
 
-        builder.Services.AddMonorailCss(_ => new MonorailCssOptions
-        {
-            ColorScheme = new NamedColorScheme
-            {
-                PrimaryColorName = ColorName.Indigo,
-                AccentColorName = ColorName.Pink,
-                BaseColorName = ColorName.Slate,
-            },
-        });
+        // New in this stage: register MonorailCSS. Pick which named palettes // [!code ++]
+        // back the `primary`, `accent`, and `base` utility prefixes. Any // [!code ++]
+        // ColorName constant works — swap freely. // [!code ++]
+        builder.Services.AddMonorailCss(_ => new MonorailCssOptions // [!code ++]
+        { // [!code ++]
+            ColorScheme = new NamedColorScheme // [!code ++]
+            { // [!code ++]
+                PrimaryColorName = ColorName.Indigo, // [!code ++]
+                AccentColorName = ColorName.Pink, // [!code ++]
+                BaseColorName = ColorName.Slate, // [!code ++]
+            }, // [!code ++]
+        }); // [!code ++]
 
         builder.Services.AddRazorComponents();
 

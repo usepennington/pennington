@@ -7,7 +7,7 @@ sectionLabel: "Code Samples"
 tags: [authoring, symbol, code-samples, tree-sitter]
 ---
 
-To limit a code fence to the one member a walkthrough discusses — rather than dumping the whole enclosing file with every sibling member — use the `:symbol` preprocessor's member-scoped form. The recipes below scope a fence to a member, strip declaration noise, and diff two implementations. Address a member by its **name path** (`Type.Member`) rather than a hard-coded line range — a name path survives the line shifts that silently break a range. For the fence grammar itself, see <xref:reference.markdown.code-block-args>.
+To limit a code fence to the one member a walkthrough discusses — rather than dumping the whole enclosing file with every sibling member — use the `:symbol` preprocessor's member-scoped form. The recipes below scope a fence to one member, strip declaration noise with `,bodyonly`, carry the file's imports with `,imports`, walk a multi-phase method through named helpers, outline a type's shape with `,signatures`, diff two implementations with `symbol-diff`, and embed a whole file with a bare path. Address a member by its **name path** (`Type.Member`) rather than a hard-coded line range — a name path survives the line shifts that silently break a range. For the fence grammar itself, see <xref:reference.markdown.code-block-args>.
 
 ## Before you begin
 - An existing Pennington site (see <xref:tutorials.getting-started.first-site> if not), with `Pennington.TreeSitter` wired through `AddTreeSitter` and `ContentRoot` pointing at the root that holds the source to fence.
@@ -193,12 +193,17 @@ examples/FocusedCodeSamplesExample/Program.cs
 ```
 ````
 
+Which renders as:
+
+```csharp:symbol
+examples/FocusedCodeSamplesExample/Program.cs
+```
+
 ---
 
 ## Verify
 
-- Rebuild the site with `dotnet run --project docs/Pennington.Docs -- build` and reload the page — each fence renders at the scope its info string declares, with no carry-over of enclosing-type members.
-- Grep `output/**/*.html` for `<pre>` elements taller than 25 lines — those are candidates for a `,bodyonly` or member-scoped follow-up pass.
+- Rebuild the site with `dotnet run --project docs/Pennington.Docs -- build` and reload the page — each fence renders at the scope its info string declares, with no carry-over of enclosing-type members. A member-scoped fence (`> Type.Member`) shows only that member; a `,bodyonly` fence drops the signature; the whole-file fence shows every line of `Program.cs`.
 - Rename `Tokenize` to `Split` in `examples/FocusedCodeSamplesExample/ModularWordCounter.cs` and rebuild — the build report surfaces an unresolved `ModularWordCounter.Tokenize` reference rather than silently rendering nothing.
 
 ## Related

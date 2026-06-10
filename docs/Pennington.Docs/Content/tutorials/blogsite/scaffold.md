@@ -9,16 +9,9 @@ uid: tutorials.blogsite.scaffold
 
 By the end of this tutorial, a running BlogSite host titled "Scaffold Blog" serves a home listing, `/archive`, `/blog/<slug>/`, `/tags/`, `/tags/<name>/` (plus the `/topics` aliases), and `/rss.xml` — all from a single placeholder post under `Content/Blog/`.
 
-Like `AddDocSite`, `AddBlogSite` is a packaged starting point. The [getting-started tutorials](xref:tutorials.getting-started.first-site) build up the host, layout, navigation, and styling step by step; this one call folds all of that into a single line, configured for a site where the blog *is* the site. If that matches what you're building, start here. If it doesn't, you keep more control by composing on top of `AddPennington` yourself. For a breakdown of what each call assembles and where its automation ends, see [What the templates wire for you](xref:explanation.positioning.docsite-positioning).
+`AddBlogSite` folds the host, layout, navigation, and styling into one call, configured for a site where the blog *is* the site; for what the template wires, where the wiring stops, and why DocSite and BlogSite can't share an app, read [what the templates wire for you](xref:explanation.positioning.docsite-positioning) first.
 
 ## Prerequisites
-
-BlogSite is a separate template — no DocSite experience needed.
-
-> [!NOTE]
-> DocSite and BlogSite can't run in the same app — pick one. BlogSite is the
-> right choice when the blog *is* the site. If you mainly want documentation with
-> a blog attached, use DocSite's native blog instead.
 
 - .NET 10 SDK installed
 - Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site)
@@ -32,13 +25,12 @@ The finished code for this tutorial lives in [`examples/BlogSiteScaffoldExample`
 
 ## 1. Start from the bare Pennington host
 
-The host you built in the getting-started tutorials calls `AddPennington`, registers content with `AddMarkdownContent<DocFrontMatter>`, mounts `UsePennington`, and wires a hand-written `MapGet` fallback that walks `IContentService` to serve individual pages.
+The host you built in the getting-started tutorials calls `AddPennington`, registers content with `AddMarkdownContent<DocFrontMatter>`, mounts `UsePennington`, and routes through a Blazor `@page "/{*Path}"` catch-all (`MarkdownPage.razor`) that resolves each URL with `IPageResolver` to serve individual pages.
 
-```csharp:symbol,bodyonly
-examples/BlogSiteScaffoldExample/Stage1_BeforeAddBlogSite.cs > Stage1.Run
-```
+That host serves individual pages but nothing else: no home listing, no `/archive`, no `/blog/<slug>` pages, no `/tags` and `/topics` aliases, no `/rss.xml` feed, and no [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) chrome. The next section brings all of that in with a single `AddBlogSite` call.
 
-The three moving parts are the DI registration, the `UsePennington` call, and the hand-rolled `MapGet`. Absent: the home listing, `/archive`, `/blog/<slug>` pages, `/tags` and `/topics` aliases, the `/rss.xml` feed, and the [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) chrome. The next section brings all of that in with a single `AddBlogSite` call.
+<Steps>
+<Step StepNumber="1">
 
 **Add the first post**
 
@@ -48,9 +40,12 @@ Posts live under `{ContentRootPath}/{BlogContentPath}` — `Content/Blog/` with 
 examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md
 ```
 
+</Step>
+</Steps>
+
 <Checkpoint>
 
-- Run `dotnet run` and visit `http://localhost:5000/blog/hello-world` — the page shows unstyled HTML for the markdown. None of the BlogSite chrome (home listing, archive, tag pages, RSS) exists yet.
+- Run `dotnet run` and visit `/blog/hello-world` at the URL the console prints — the page shows unstyled HTML for the markdown. None of the BlogSite chrome (home listing, archive, tag pages, RSS) exists yet.
 
 </Checkpoint>
 
@@ -76,7 +71,7 @@ The options populated here cover site identity (`SiteTitle`, `SiteDescription`, 
 
 <Checkpoint>
 
-- Run `dotnet run` and visit `http://localhost:5000/`
+- Run `dotnet run` and visit `/` at the URL the console prints
 - The BlogSite home layout appears: site title "Scaffold Blog", a recent-posts list with one entry, header chrome, and MonorailCSS styling
 
 </Checkpoint>
@@ -85,18 +80,36 @@ The options populated here cover site identity (`SiteTitle`, `SiteDescription`, 
 
 ## 3. Verify every built-in route
 
-With the post from section 1 in place and `AddBlogSite` wired, every route the template ships now responds. The next tutorial expands the post to the full `BlogSiteFrontMatter` surface, adding `tags`, `series`, `repository`, `sectionLabel`, and `redirectUrl`.
+With the post from section 1 in place and `AddBlogSite` wired, every route the template ships now responds. The placeholder post carries `tags: [scaffold]`, so the tag routes have one entry to list.
 
-**Visit the home listing and the RSS feed**
+<Steps>
+<Step StepNumber="1">
 
-- `/` shows the home listing with `hello-world` as the only recent post.
-- `/rss.xml` returns RSS 2.0 with one `<item>` carrying the post title, link, description, pub date, and author.
+**Walk the page routes**
 
-The full route surface (`/archive`, `/blog/<slug>`, `/tags`, `/topics` aliases, `/rss.xml`) is cataloged in <xref:reference.blogsite.routes>.
+With the host running, visit each of these at the URL the console prints. Every one returns 200:
+
+- `/` — home listing with `hello-world` as the only recent post.
+- `/archive` — full archive, same single post in reverse-chronological order.
+- `/blog/hello-world` — the post itself, now rendered with BlogSite chrome.
+- `/tags` and its `/topics` alias — the tag index, showing `scaffold` with a count of one.
+- `/tags/scaffold` and its `/topics/scaffold` alias — the per-tag listing with the one post.
+
+</Step>
+<Step StepNumber="2">
+
+**Check the RSS feed**
+
+Visit `/rss.xml`. It returns `application/rss+xml` with one `<item>` carrying the post title, link, description, pub date, and author.
+
+</Step>
+</Steps>
+
+The full route surface, including the paginated `/archive/page/{n}` and per-tag pages, is cataloged in <xref:reference.blogsite.routes>. The next tutorial expands the post to the full `BlogSiteFrontMatter` surface, adding `tags`, `series`, `repository`, `sectionLabel`, and `redirectUrl`.
 
 <Checkpoint>
 
-- Each URL above returns 200 and renders the placeholder post's metadata
+- Each page route above returns 200 and renders the placeholder post's metadata
 - `/rss.xml` returns `application/rss+xml` content with one item whose `<guid>` matches the canonical post URL
 
 </Checkpoint>

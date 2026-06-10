@@ -1,5 +1,5 @@
 ---
-title: "Catch missing and outdated translations at build time"
+title: "Flag missing and outdated translations in the build report and dev overlay"
 description: "Register AddTranslationAudit so missing and stale per-locale translations surface in the build report and the dev overlay, gated by git commit history."
 uid: how-to.discovery.audit-translations
 order: 6
@@ -14,12 +14,20 @@ Once a site ships in more than one language, translations drift — a page gets 
 - A multi-locale site with default-locale content and at least one locale subfolder (see <xref:how-to.discovery.localization>).
 - A git repository. The auditor reads commit dates to decide whether a translation is *outdated*; without git it still reports *missing* files but skips staleness checks.
 
+## Install the package
+
+`AddTranslationAudit` ships in its own package, separate from the core library and the site templates. Add it to the host project:
+
+```bash
+dotnet add package Pennington.TranslationAudit
+```
+
 ## Register the auditor
 
-`AddTranslationAudit` needs no other wiring — the auditor flows through the same audit cache the dev overlay reads, so registering it next to the host configuration is enough. The repository auto-discovers from the current working directory.
+`AddTranslationAudit` needs no other wiring — the auditor flows through the same audit cache the dev overlay reads, so one call next to the rest of your service registration is enough. The repository auto-discovers from the current working directory.
 
-```csharp:symbol
-examples/BeyondTranslationAuditExample/Program.cs
+```csharp
+builder.Services.AddTranslationAudit();
 ```
 
 ## Configure what gets audited

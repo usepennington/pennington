@@ -1,13 +1,13 @@
 ---
-title: "Populate the blog homepage surfaces"
-description: "Populate the four BlogSite homepage surfaces — HeroContent, MyWork, Socials, and MainSiteLinks — on BlogSiteOptions in one pass."
+title: "Populate the blog homepage"
+description: "Populate the BlogSite homepage — hero block, My Work card, social-icon row, and top-nav links — from the four init-only properties on BlogSiteOptions."
 uid: how-to.theming.blogsite-homepage
 order: 3
 sectionLabel: "Theming"
 tags: [blogsite, homepage, socials, hero]
 ---
 
-When a BlogSite homepage needs its hero block, "My Work" card, social-icon row, and top-nav links populated in one pass, the four init-only properties on `BlogSiteOptions` cover it. For the hand-held walkthrough, see [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials).
+When a BlogSite homepage needs its hero block, "My Work" card, social-icon row, and top-nav links populated in one pass, four init-only properties on `BlogSiteOptions` cover it — `HeroContent`, `MyWork`, `Socials`, and `MainSiteLinks`. Their record types (`HeroContent`, `Project`, `SocialLink`, `HeaderLink`) are catalogued in the [`BlogSiteOptions`](xref:reference.api.blog-site-options) reference; this page shows how to fill them. For the hand-held walkthrough, see [Add a hero, projects, and social links](xref:tutorials.blogsite.hero-projects-socials).
 
 ## Before you begin
 - A running BlogSite built with `AddBlogSite` / `UseBlogSite` (see [Scaffold a blog with BlogSite](xref:tutorials.blogsite.scaffold) if not).
@@ -24,10 +24,6 @@ For a working setup, see [`examples/BlogSiteHeroProjectsSocialsExample`](https:/
 
 `HeroContent` is a two-field positional record (`Title`, `Description`) rendered at the top of `/`. `Description` is emitted as a `MarkupString` in `Home.razor`, so light HTML is permitted; plain prose works for most sites.
 
-```csharp:symbol
-src/Pennington.BlogSite/BlogSiteOptions.cs > HeroContent
-```
-
 ```csharp:symbol,bodyonly
 examples/BlogSiteHeroProjectsSocialsExample/Stage1_HeroOnly.cs > Stage1.Run
 ```
@@ -36,37 +32,21 @@ examples/BlogSiteHeroProjectsSocialsExample/Stage1_HeroOnly.cs > Stage1.Run
 
 `MyWork` takes a `Project[]`, where each `Project(Title, Description, Url)` renders as a linked entry in the "My Work" sidebar card. The array is rendered verbatim, so ordering entries in the initializer controls their display order.
 
-```csharp:symbol
-src/Pennington.BlogSite/BlogSiteOptions.cs > Project
-```
-
 ```csharp:symbol,bodyonly
 examples/BlogSiteHeroProjectsSocialsExample/Stage2_AddProjects.cs > Stage2.Run
 ```
 
 ### Wire `Socials` with the built-in icon fragments
 
-`Socials` takes a `SocialLink[]`, where `SocialLink(Icon, Url)` pairs a `RenderFragment` with an `<a href>` target. The four built-in fragments — `GithubIcon`, `BlueskyIcon`, `LinkedInIcon`, `MastodonIcon` — are `static readonly` fields on `Pennington.BlogSite.Components.SocialIcons` and are passed directly without any wrapper type or component registration.
-
-```csharp:symbol
-src/Pennington.BlogSite/BlogSiteOptions.cs > SocialLink
-```
-
-```razor:symbol
-src/Pennington.BlogSite/Components/SocialIcons.razor
-```
-
-### Populate `MainSiteLinks` for the top nav
-
-`MainSiteLinks` takes a `HeaderLink[]`, where each `HeaderLink(Title, Url)` appears in both the site header and footer via `MainLayout.razor`. Use relative URLs (`/`, `/archive`, `/tags`) so `BaseUrlHtmlRewriter` can prefix them correctly on sub-path deployments.
-
-```csharp:symbol
-src/Pennington.BlogSite/BlogSiteOptions.cs > HeaderLink
-```
+`Socials` takes a `SocialLink[]`, where `SocialLink(Icon, Url)` pairs a `RenderFragment` with an `<a href>` target. The four built-in fragments — `GithubIcon`, `BlueskyIcon`, `LinkedInIcon`, `MastodonIcon` — are `static readonly` fields on `Pennington.BlogSite.Components.SocialIcons` and are passed directly without any wrapper type or component registration. Add a `using Pennington.BlogSite.Components;` directive so the field names resolve. The same block below also fills `MainSiteLinks` (the next section).
 
 ```csharp:symbol,bodyonly
 examples/BlogSiteHeroProjectsSocialsExample/Stage3_AddSocialsAndHeader.cs > Stage3.Run
 ```
+
+### Populate `MainSiteLinks` for the top nav
+
+`MainSiteLinks` takes a `HeaderLink[]`, where each `HeaderLink(Title, Url)` appears in both the site header and footer via `MainLayout.razor`. Use relative URLs (`/`, `/archive`, `/tags`) so `BaseUrlHtmlRewriter` can prefix them correctly on sub-path deployments. The `MainSiteLinks = [...]` block sits alongside `Socials` in the snippet above.
 
 ---
 

@@ -7,7 +7,7 @@ sectionLabel: "Core Architecture"
 tags: [head, contributors, response-processing, spa]
 ---
 
-A surprising number of concerns want to write into the document `<head>`: the title and description, the canonical link, schema.org JSON-LD, OpenGraph and Twitter card meta, RSS and llms.txt alternates, `hreflang` locale alternates, the dev-host meta that live reload reads, and — newest — the Standard Site verification links. Why does Pennington route all of them through a single `IHeadContributor` extension point instead of letting each one emit its own markup where it already lives?
+A surprising number of concerns want to write into the document `<head>`: the title and description, the canonical link, schema.org JSON-LD, OpenGraph and Twitter card meta, RSS and llms.txt alternates, `hreflang` locale alternates, the dev-host meta that live reload reads, and the Standard Site verification links. Why does Pennington route all of them through a single `IHeadContributor` extension point instead of letting each one emit its own markup where it already lives?
 
 ## Context
 
@@ -51,7 +51,11 @@ A page-OpenGraph contributor at `Page` (40) and a site-default contributor at `S
 
 A single rewriter, `HeadCompositionHtmlRewriter`, is the only place head tags are finalized. It runs inside the shared AngleSharp pass described in [the response-processing explanation](xref:explanation.core.response-processing) — so composing the entire head costs no extra parse or serialize, just another mutation of the already-parsed document.
 
-Its order matters here for a subtle reason. It sits at `25`, after locale rewriting (20) but before base-URL prefixing (30), so any root-relative `href` a contributor emits — an asset, an alternate link — gets sub-path prefixed by the base-URL rewriter exactly as literal head markup would. A contributor never has to know the deployment base URL; it emits `/rss.xml` and the downstream rewriter handles the rest.
+Its order matters here for a subtle reason. It sits between locale rewriting and base-URL prefixing in the [shared rewriter chain](xref:explanation.core.response-processing), so any root-relative `href` a contributor emits — an asset, an alternate link — gets sub-path prefixed by the base-URL rewriter exactly as literal head markup would. A contributor never has to know the deployment base URL; it emits `/rss.xml` and the downstream rewriter handles the rest. That slot is the rewriter's own `Order`:
+
+```csharp:symbol
+src/Pennington/Head/HeadCompositionHtmlRewriter.cs > HeadCompositionHtmlRewriter.Order
+```
 
 The rewriter does two things in sequence. First it composes: it runs every registered contributor whose `ShouldContribute` returns true, lowest order first, into one `HeadBuilder`, then reconciles the built tags into the document head. Tags whose keys a page already authored are left untouched — contributors fill gaps, they do not overwrite page intent. Second, it normalizes what the page authored itself.
 

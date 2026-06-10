@@ -19,7 +19,8 @@ builder.Services.AddDocSite(DocSiteKitchenSinkExample.ServiceConfiguration.Build
 // the ambient MdazorContext that Pennington supplies per page.
 builder.Services
     .AddMdazorComponent<FeatureCallout>()
-    .AddMdazorComponent<PageFacts>();
+    .AddMdazorComponent<PageFacts>()
+    .AddMdazorComponent<StabilityBadge>();
 
 var app = builder.Build();
 

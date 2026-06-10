@@ -9,8 +9,6 @@ tags:
   - blogging
 series: Pennington Field Notes
 repository: https://github.com/example/pennington-field-notes
-sectionLabel: field-notes
-redirectUrl:
 ---
 
 Welcome to the first real post on this blog. The scaffold from the

@@ -71,9 +71,9 @@ order: 3
 
 The front-matter `sectionLabel:` key is separate from both — it sets the page-context label surfaced for breadcrumbs and prev/next navigation, not the sidebar group header.
 
-### Hide a page from the sidebar
+### Hide an unfinished page from the sidebar
 
-Set `isDraft: true` to keep the page compiled — so `xref:` links still resolve — while dropping it from the sidebar, the search index, and `llms.txt`. A page with `redirectUrl:` is also omitted from the sidebar.
+For a page that isn't ready to publish, set `isDraft: true`. It drops out of the sidebar, the search index, and `llms.txt`, and `dotnet run` still serves it so you can preview your work.
 
 ```yaml
 ---
@@ -81,6 +81,20 @@ title: Work in progress
 isDraft: true
 ---
 ```
+
+Under `dotnet run -- build` a draft is excluded from the static output entirely — the page file is never written, so any `xref:` link to it fails to resolve. This is the canonical draft rule documented in [the front-matter key reference](xref:reference.front-matter.keys); `isDraft` is for pages that aren't meant to ship, not for hiding pages you still want published.
+
+### Keep a page published but out of the sidebar
+
+To ship a page at its URL while keeping it off the sidebar — a "published but unlisted" page — leave its `title:` empty instead of drafting it. A page with no title produces no sidebar entry (and no search or `llms.txt` entry), but the route still renders and builds, so `xref:` links to it resolve.
+
+```yaml
+---
+title: ""
+---
+```
+
+A page with `redirectUrl:` is also omitted from the sidebar.
 
 ---
 
@@ -90,6 +104,7 @@ isDraft: true
 - A folder with a `_meta.yml` lands at the position its `order:` specifies, even when its descendants' values would have placed it elsewhere
 - The section subfolder's `index.md` lands at `/<area>/<section>/` and renders as the section's lead entry in the sidebar
 - The drafted page's URL still serves the page in `dotnet run`; the entry is absent from the sidebar on reload. Under `dotnet run -- build` the page is excluded from the static output.
+- The empty-`title:` page has no sidebar entry but its URL serves in both `dotnet run` and `dotnet run -- build`
 
 ## Related
 

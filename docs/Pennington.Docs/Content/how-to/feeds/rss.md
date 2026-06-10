@@ -7,7 +7,7 @@ sectionLabel: "Feeds & Indexes"
 tags: [configuration, rss, blogsite, feeds]
 ---
 
-`/rss.xml` is wired by `UseBlogSite` and enabled by default — `BlogSiteOptions.EnableRss` defaults to `true`. Two things break a working feed: a post missing `date:` (silently dropped from the channel), and an unset `CanonicalBaseUrl` (feed links emit relative URLs that aggregators cannot follow). The feed endpoint ships with the BlogSite template; on bare `AddPennington`, see <xref:tutorials.blogsite.scaffold>.
+`/rss.xml` is wired by `UseBlogSite` and enabled by default — `BlogSiteOptions.EnableRss` defaults to `true`. Two things break a working feed: a post missing `date:` (silently dropped from the channel), and an unset `CanonicalBaseUrl` (feed links emit relative URLs that aggregators cannot follow). The feed endpoint ships with the BlogSite template; to emit a feed from a bare `AddPennington` host or any non-blog content type, see <xref:how-to.feeds.custom-feed>.
 
 ## Before you begin
 - A working BlogSite (see <xref:tutorials.blogsite.scaffold> if not)
@@ -17,18 +17,6 @@ tags: [configuration, rss, blogsite, feeds]
 ---
 
 ## Options
-
-### Pin `EnableRss = true` explicitly
-
-`BlogSiteOptions.EnableRss` defaults to `true`. Setting it explicitly in the options builder makes the intent visible and guards against a future default change:
-
-```csharp
-new BlogSiteOptions
-{
-    EnableRss = true,
-    // ...
-}
-```
 
 ### Give every post a `date:`
 
@@ -84,9 +72,11 @@ new BlogSiteOptions
 - Run `dotnet run` and fetch `/rss.xml`. Expect a `<rss version="2.0">` document with one `<item>` per dated post, newest first
 - Inspect one `<item>`. `<link>` and `<guid>` start with the `CanonicalBaseUrl`, not a relative `/blog/...` path
 - Posts without a `date:` field are absent from the channel. When an expected post is missing, add `date:` to its front matter
+- After a static build (see <xref:how-to.deployment.static-build>), `output/rss.xml` exists and carries the same dated items with absolute `CanonicalBaseUrl` links
 
 ## Related
 
+- How-to: <xref:how-to.feeds.custom-feed>
 - Reference: <xref:reference.api.blog-site-options>
 - Reference: <xref:reference.blogsite.routes>
 - Reference: <xref:reference.front-matter.keys>

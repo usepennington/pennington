@@ -55,10 +55,10 @@ dotnet add package Pennington
 
 **Run the bare host**
 
-The `dotnet new web` template produces a `Program.cs` with a single `MapGet` returning `"Hello World!"`. Change that string to `"Hello from ASP.NET."`, then run it now to confirm the shell works before Pennington takes over.
+The `dotnet new web` template produces a `Program.cs` with a single `MapGet` returning `"Hello World!"`. Change that string to `"Hello from ASP.NET."` — a value the template never writes, so seeing it in the browser proves you're running your own edited code and not a cached default — then run the host to confirm the shell works before Pennington takes over.
 
 ```bash
-dotnet run
+dotnet run --urls http://localhost:5000
 ```
 
 </Step>
@@ -93,13 +93,15 @@ examples/GettingStartedMinimalSiteExample/Content/index.md
 
 **Wire `AddPennington` in `Program.cs`**
 
-Replace the body of `Program.cs` with the service-registration block below, which walks through `WebApplication.CreateBuilder` → `AddPennington` → `AddMarkdownContent<DocFrontMatter>` → `app.Build()`.
+Replace the body of `Program.cs` with the service-registration block below, which walks through `WebApplication.CreateBuilder` → `AddPennington` → `AddMarkdownContent<DocFrontMatter>` → `app.Build()`. The two `using` directives at the top bring in `DocFrontMatter` and the `AddPennington` extension — keep them, or the file won't compile.
 
-```csharp:symbol,bodyonly
+```csharp:symbol,bodyonly,imports
 examples/GettingStartedMinimalSiteExample/Stage2_AddPennington.cs > Stage2.Run
 ```
 
 `ContentRootPath` sets the host's base for static files; the `ContentPath` passed to `AddMarkdownContent` is where this particular markdown source reads from — both point at `"Content"` here.
+
+Don't run it yet — the services are registered but nothing serves them. The middleware and the rendering endpoint go in next, and you'll run the finished host then.
 
 </Step>
 </Steps>
@@ -126,39 +128,39 @@ This `MapGet` is deliberately minimal. `IPageResolver` collapses the discover �
 
 <Checkpoint>
 
-That's the working site. `dotnet run` serves live, and `http://localhost:5000/` returns HTML whose `<title>` element and top-level `<h1>` both read `Welcome to your first Pennington site`, pulled straight from `Content/index.md`'s front matter.
+That's the working site. `dotnet run --urls http://localhost:5000` serves live, and `http://localhost:5000/` returns HTML whose `<title>` element and top-level `<h1>` both read `Welcome to your first Pennington site`, pulled straight from `Content/index.md`'s front matter.
 
-- Run `dotnet run` from the project folder.
+- Run `dotnet run --urls http://localhost:5000` from the project folder.
 - Open `http://localhost:5000/` and confirm the page title in the browser tab reads `Welcome to your first Pennington site`.
 - View source and confirm the same string appears inside the `<title>` tag and the article's `<h1>`.
 
 </Checkpoint>
 
-The rendered page is plain unstyled HTML — Times-New-Roman serif, default browser margins, blue underlined links. That is on purpose: this host wires only the content pipeline, not the CSS layer. Replacing the bare `MapGet` with a Blazor Server `@page` catch-all is the next tutorial: [Using Blazor Pages](xref:tutorials.getting-started.first-page).
+The rendered page is plain unstyled HTML — Times-New-Roman serif, default browser margins, blue underlined links. That is on purpose: this host wires only the content pipeline, not the CSS layer. Replacing the bare `MapGet` with a Blazor Server `@page` catch-all is the next tutorial: [Serve markdown through Blazor Pages](xref:tutorials.getting-started.first-page).
 
 ---
 
 ## 4. Verify dev-mode hot reload
 
-Let's confirm that `UsePennington`'s file-watcher and live-reload WebSocket are working: with `dotnet run` still serving, edit the markdown file and watch the browser reload without touching the terminal.
+Let's confirm that `UsePennington`'s file-watcher and live-reload WebSocket are working: with `dotnet run --urls http://localhost:5000` still serving, edit the markdown file and watch the browser reload without touching the terminal.
 
 <Steps>
 <Step StepNumber="1">
 
 **Edit the front-matter title**
 
-Leave `dotnet run` serving and keep `http://localhost:5000/` open in the browser. Open `Content/index.md` and change the `title:` value to something recognizable — for example `title: Hello, Pennington` — then save. The browser tab updates on its own within a second. If it doesn't, hard-refresh once; stale HTML may be cached from before the edit.
+Leave `dotnet run --urls http://localhost:5000` serving and keep `http://localhost:5000/` open in the browser. Open `Content/index.md` and change the `title:` value to something recognizable — for example `title: Hello, Pennington` — then save. The browser tab updates on its own within a second. If it doesn't, hard-refresh once; stale HTML may be cached from before the edit.
 
 </Step>
 </Steps>
 
 <Checkpoint>
 
-Without any terminal input, the browser tab updates to show the new title in both the `<h1>` and the tab title. The `dotnet run` console logs a file-change line naming `Content/index.md`.
+Without any terminal input, the browser tab updates to show the new title in both the `<h1>` and the tab title. The running console logs a file-change line naming `Content/index.md`.
 
 - Edit `Content/index.md`'s `title:` field and save.
 - The browser tab title and page heading update to match — no manual refresh needed.
-- `dotnet run` logs the change in the terminal.
+- The terminal logs the change.
 
 </Checkpoint>
 

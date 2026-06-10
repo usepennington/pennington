@@ -48,7 +48,7 @@ Add a second file next to the first with the markdown below. Note `order: 30` �
 examples/DocSitePagesAndLinksExample/snippets/configure-step1.md
 ```
 
-Numbering in tens rather than consecutively — 20, then 30 — keeps a gap free, so a future page can sit between the two without touching either file. For deeper coverage of section grouping and `order:` strategy, see <xref:tutorials.docsite.sections-and-areas>.
+For deeper coverage of section grouping and `order:` strategy, see <xref:tutorials.docsite.sections-and-areas>.
 
 </Step>
 </Steps>
@@ -95,8 +95,8 @@ examples/DocSitePagesAndLinksExample/Content/guides/configure.md
 <Checkpoint>
 
 - Reload `http://localhost:5000/guides/install` — a **Configure the site** link sits at the bottom of the page. Click it.
-- The browser lands on `/guides/configure`. A **Install Pennington** link at the bottom of that page returns home.
-- Both links navigate without a full page reload — the SPA navigation that ships with DocSite.
+- The browser lands on `/guides/configure`. A **Install Pennington** link at the bottom of that page returns to the first.
+- View source on either page: the relative `./configure` and `./install` markdown links rendered as `href="/guides/configure"` and `href="/guides/install"`.
 
 </Checkpoint>
 
@@ -104,14 +104,14 @@ examples/DocSitePagesAndLinksExample/Content/guides/configure.md
 
 ## 3. Turn the index into a hub with absolute paths
 
-The `Content/guides/index.md` page from the scaffold still says "Authoring walkthroughs live in this area" or similar — a placeholder that no longer matches the content under it. Let's rewrite it as a hub that links to both pages with absolute paths.
+The `Content/guides/index.md` page from the scaffold still says "Walkthroughs and how-tos live in this folder" — a placeholder that no longer matches the content under it. Let's rewrite it as a hub that links to both pages with absolute paths.
 
 <Steps>
 <Step StepNumber="1">
 
 **Replace `index.md` with the hub markdown below**
 
-Absolute paths (`/guides/install`) survive folder moves of the source page. Use them when the target sits in a different folder than the source, or when the link is structural rather than narrative. For the full link-form rundown, see <xref:how-to.navigation.linking>.
+Absolute paths (`/guides/install`) survive folder moves of the source page. For the full link-form rundown, see <xref:how-to.navigation.linking>.
 
 ```markdown:symbol
 examples/DocSitePagesAndLinksExample/snippets/index-as-hub.md
@@ -174,4 +174,4 @@ examples/DocSitePagesAndLinksExample/Content/guides/index.md
 - Relative paths (`./configure`) link tightly coupled sibling pages — the form that survives area-folder renames.
 - Absolute paths (`/guides/configure`) link from a hub where the source page may move but the target's location is stable.
 - `uid:` plus `xref:` — the rename-safe form — turns the page identifier itself into the link target.
-- For the full link-form reference (anchors, assets, sub-path deployments), see <xref:how-to.navigation.linking>. For deeper `uid:` semantics, see <xref:how-to.navigation.cross-references>.
+- For the full link-form reference (anchors, assets, sub-path deployments), see <xref:how-to.navigation.linking>. For deeper `uid:` semantics, see <xref:explanation.routing.cross-references>.

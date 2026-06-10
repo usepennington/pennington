@@ -1,13 +1,13 @@
 ---
-title: "Inject HTML before </body> on every page"
-description: "Implement IResponseProcessor to splice a feedback widget, banner, or analytics tag before </body> on every rendered HTML page."
+title: "Transform the response body on every page"
+description: "Implement IResponseProcessor to rewrite the final response body as a string — inject HTML before </body>, log an outgoing payload, or append a non-HTML footer."
 uid: how-to.response-pipeline.response-processor
 order: 2
 sectionLabel: "Response Pipeline"
 tags: [response-pipeline, extensibility, middleware, html-injection]
 ---
 
-To inject a feedback widget, banner, or analytics tag before `</body>` on every rendered page, implement `IResponseProcessor`. The processor receives the full response body as a string and returns the replacement — useful when the goal is to insert a pre-serialized HTML fragment, log an outgoing payload, or append a non-HTML footer. When the work is DOM-shaped (anchor rewrites, attribute additions, element injection at a CSS selector), implement `IHtmlResponseRewriter` instead so every rewriter shares one AngleSharp parse. See <xref:how-to.response-pipeline.html-rewriter>.
+To transform the final response body on every rendered page, implement `IResponseProcessor`. The processor receives the full body as a string and returns the replacement — use it to insert a pre-serialized HTML fragment before `</body>`, log an outgoing payload, or append a non-HTML footer. When the work is DOM-shaped (anchor rewrites, attribute additions, element injection at a CSS selector), implement `IHtmlResponseRewriter` instead so every rewriter shares one AngleSharp parse. See <xref:how-to.response-pipeline.html-rewriter>.
 
 The recipe references `examples/ExtensibilityLabExample/FeedbackWidgetProcessor.cs`, which injects a "Was this helpful?" aside before `</body>` against a bare `AddPennington` host.
 
@@ -33,7 +33,7 @@ Slot into the `Order` sequence so the processor sees the HTML state it expects. 
 
 ## Register the processor
 
-Every registered `IResponseProcessor` is picked up and ordered by its `Order` value, so a single `AddSingleton` is the entire wiring step.
+Every registered `IResponseProcessor` is picked up and ordered by its `Order` value, so a single registration is the entire wiring step. Use the lifetime that matches your dependencies — `AddSingleton` for stateless processors, `AddTransient` (or `AddFileWatched`) when the processor captures file-watched state.
 
 ```csharp
 builder.Services.AddSingleton<IResponseProcessor, FeedbackWidgetProcessor>();

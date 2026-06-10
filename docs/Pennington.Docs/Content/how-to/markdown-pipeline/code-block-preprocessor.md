@@ -28,7 +28,7 @@ The returned `CodeBlockPreprocessResult` carries the pre-rendered HTML, the `Bas
 
 ## Pick a Priority value
 
-`CodeBlockRenderingService` sorts preprocessors by `Priority` descending and returns the first non-null result. `LineCountPreprocessor` uses `500` so its `linecount` fence is never intercepted by a lower-priority modifier preprocessor. Pick a value above any preprocessor you need to beat on a contested `:modifier`, or below it to fall through first.
+`CodeBlockRenderingService` sorts preprocessors by `Priority` descending and returns the first non-null result. The only shipped preprocessor is the tree-sitter one that claims `:symbol` and `:symbol-diff`, at `100`. `LineCountPreprocessor` uses `500` so its `linecount` fence runs ahead of the tree-sitter preprocessor — relevant only if both could claim the same info string. Pick above `100` to beat the shipped `:symbol` preprocessor on a contested `:modifier`, or below it to let `:symbol` resolve first.
 
 ## Register the implementation
 
@@ -38,9 +38,9 @@ Pennington collects every `ICodeBlockPreprocessor` from DI. Register anywhere af
 builder.Services.AddSingleton<ICodeBlockPreprocessor, LineCountPreprocessor>();
 ```
 
-## Result
+## Verify
 
-A markdown fence tagged `linecount` renders inside a `<figure>` with the line-count badge instead of going through the default highlighter:
+On your own site, add a fence tagged with the language your preprocessor claims, then run `dotnet run` and view source on the page that holds it. A claimed `linecount` fence renders inside a `<figure>` with the line-count badge instead of going through the default highlighter, while adjacent fences with other languages keep flowing through the highlighter chain:
 
 ```html
 <figure class="linecount" data-extensibility-lab="line-count-preprocessor">
@@ -51,12 +51,9 @@ third line</code></pre>
 </figure>
 ```
 
-Adjacent fences with other languages (`text`, `csharp`) keep flowing through the default highlighter chain.
+The wrapper markup proves `TryProcess` returned a result rather than the default highlighter rendering the block. Confirm too that a static build picks the preprocessor up: `dotnet run -- build output`, then grep the emitted HTML for the same wrapper.
 
-## Verify
-
-- Run `dotnet run --project examples/ExtensibilityLabExample` and visit `/line-count-demo/` — the `linecount` fence renders inside a `<figure class="linecount">` with the badge while the adjacent `text` fence highlights through the default chain.
-- View source and confirm the `linecount` figure carries `data-extensibility-lab="line-count-preprocessor"` — that attribute means `TryProcess` returned a result rather than the default `CodeHighlightRenderer` path rendering the block.
+To see the shipped example instead, run `dotnet run --project examples/ExtensibilityLabExample` and visit `/line-count-demo/` — the `linecount` fence renders the figure above while the adjacent `text` fence highlights through the default chain.
 
 ## Related
 

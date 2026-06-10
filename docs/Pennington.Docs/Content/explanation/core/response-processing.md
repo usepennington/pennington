@@ -17,7 +17,11 @@ A single chain of string-to-string processors forces the structure-aware concern
 
 ## How it works
 
-Pennington uses two extension points. The first is the generic body pipeline (`IResponseProcessor`); every body-touching concern, HTML or not, registers here. The second is one specific `IResponseProcessor` — `HtmlResponseRewritingProcessor` — that hosts a shared AngleSharp pass for HTML-DOM concerns (`IHtmlResponseRewriter`). Several body processors ship built in. The always-on ones are `HtmlResponseRewritingProcessor` (the host for the HTML-DOM rewriters), `BaseUrlCssResponseProcessor` (rewrites root-relative URLs inside CSS responses), and `NotFoundStatusProcessor`; `LiveReloadScriptProcessor` and `DiagnosticOverlayProcessor` are body-level string operations that run in dev only, alongside dev-only audit processors. They are all body-level concerns that share the same generic contract.
+Pennington uses two extension points. The first is the generic body pipeline (`IResponseProcessor`); every body-touching concern, HTML or not, registers here. The second is one specific `IResponseProcessor` — `HtmlResponseRewritingProcessor` — that hosts a shared AngleSharp pass for HTML-DOM concerns (`IHtmlResponseRewriter`).
+
+Several body processors ship built in: the rewriter host above, a CSS URL rewriter, the dev-only live-reload and diagnostic-overlay injectors, and `NotFoundStatusProcessor`. They are all body-level concerns that share the same generic contract; the [response-processing interfaces reference](xref:reference.api.i-response-processor) catalogs each one.
+
+`NotFoundStatusProcessor` is the one that needs a word, because it is doing something the others are not. A content page that resolves to a missing route does not set `StatusCode = 404` itself — it sets a marker on `HttpContext.Items` and renders the 404 body normally. Every other processor in the chain gates on a 2xx status, so flipping the status early would short-circuit them. `NotFoundStatusProcessor` runs last and flips the status to 404 only after the body is fully composed, which keeps the rendered 404 page — localized chrome, layout, structured data — intact while still surfacing a real 404 to crawlers and link checkers.
 
 ### Tier A: `IResponseProcessor` (generic body capture)
 
@@ -39,19 +43,22 @@ Collapsing everything into `IHtmlResponseRewriter` would be wrong in both direct
 
 The split follows one question: does this concern care about HTML structure? Body-level injection and scraping live on one side; link rewriting and attribute manipulation live on the other. Each contract stays narrow to its side of that line.
 
-The body-capture middleware itself remains deliberately agnostic about HTML. The gate — checking `Content-Type`, confirming `StatusCode` is in the 2xx/3xx range, verifying at least one rewriter's `ShouldApply` returned `true` — lives in `HtmlResponseRewritingProcessor.ShouldProcess`, not in the middleware. That keeps the AngleSharp dependency from activating on JSON responses, 404 pages, or any endpoint that opted out. Delegating that gate downward is the sort of thing a generic middleware should do rather than special-case inline.
-
 ### Why the order matters
 
-Three of the built-in HTML rewriters run in a fixed sequence because each one produces the link shape the next expects to consume: `XrefHtmlRewriter`, then `LocaleLinkHtmlRewriter`, then `BaseUrlHtmlRewriter`. The remaining shipped rewriters (`FallbackLangHtmlRewriter` and `WordBreakHtmlRewriter`) slot in afterward without joining that dependency chain.
+This is the page that owns the rewriter ordering; the other explanation pages that depend on one slot of it link here rather than restate the whole chain. Six rewriters ship, and they run lowest `Order` first:
 
-`XrefHtmlRewriter` at `Order 10` resolves `<xref:uid>` tag syntax (in `PreParseAsync`) and `href="xref:uid"` attributes (in `ApplyAsync`) into canonical root-relative paths. It runs first so everything downstream sees real URLs rather than symbolic cross-reference handles.
+| `Order` | Rewriter | What it does |
+|---|---|---|
+| 10 | `XrefHtmlRewriter` | Resolves `<xref:uid>` tags and `href="xref:uid"` into canonical paths |
+| 20 | `LocaleLinkHtmlRewriter` | Prefixes internal links with the active locale segment |
+| 25 | `HeadCompositionHtmlRewriter` | Composes the `IHeadContributor` output into the head |
+| 30 | `BaseUrlHtmlRewriter` | Prepends the deployment base URL and stamps `data-base-url` |
+| 40 | `FallbackLangHtmlRewriter` | Marks links served from default-locale fallback |
+| 60 | `WordBreakHtmlRewriter` | Inserts soft word breaks into long identifiers |
 
-`LocaleLinkHtmlRewriter` at `Order 20` prefixes internal links with the active locale segment, turning `/some/path` into `/fr/some/path`. It runs after xref resolution because an unresolved `xref:uid` is not a path yet, and before base-URL rewriting so the locale segment ends up inside the base URL rather than outside it.
+The first four form a dependency chain because each produces the link shape the next consumes. `XrefHtmlRewriter` runs first so everything downstream sees real URLs rather than symbolic cross-reference handles. `LocaleLinkHtmlRewriter` runs after it because an unresolved `xref:uid` is not yet a path, and before base-URL rewriting so the locale segment ends up inside the base URL rather than outside it. `HeadCompositionHtmlRewriter` slots in between locale and base-URL rewriting so that any root-relative `href` a head contributor emits gets sub-path prefixed exactly as literal head markup would — the head subsystem explains this dependency from its own side. `BaseUrlHtmlRewriter` runs last of the four as the outermost transport layer: everyone upstream works with clean `/`-rooted paths and never has to strip a base URL before operating.
 
-`BaseUrlHtmlRewriter` at `Order 30` prefixes root-relative URLs with the configured deployment base URL and stamps `data-base-url` on `<body>`. Running last means it acts as the outermost transport layer: the two earlier rewriters can work with clean `/`-rooted paths and never have to strip a base URL before operating.
-
-Reversing any two of these breaks one of the others' invariants. Keeping the ordering explicit in the `Order` property — rather than implicit in DI registration sequence — is what makes the dependency between rewriters visible at the call site.
+`FallbackLangHtmlRewriter` and `WordBreakHtmlRewriter` slot in afterward without joining that chain — they read the finished URLs but no later rewriter depends on their output. Reversing any two of the first four breaks one of the others' invariants. Keeping the ordering explicit in the `Order` property — rather than implicit in DI registration sequence — is what makes the dependency between rewriters visible at the call site.
 
 ## Further reading
 

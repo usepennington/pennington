@@ -7,7 +7,7 @@ sectionLabel: "Navigation & Links"
 tags: [linking, routing, base-url, authoring]
 ---
 
-To link from one page to another without hardcoding a URL that may break on rename or sub-path deploy, pick the link form that matches the target's relationship to the source. For `uid:`-based cross-references that survive arbitrary page moves, see <xref:how-to.navigation.cross-references>.
+To link from one page to another without hardcoding a URL that may break on rename or sub-path deploy, pick the link form that matches the target's relationship to the source. When rename safety matters most, give the target a stable `uid:` and cross-reference it — the last form below.
 
 ## Before you begin
 - An existing Pennington site with at least two markdown pages (see <xref:tutorials.getting-started.first-page> if not).
@@ -45,13 +45,40 @@ Build with `--base-url /docs` so every rendered response has its `href`, `src`, 
 
 Hardcoding the prefix in markdown defeats the rewriter. See <xref:how-to.deployment.base-url> for the build invocation.
 
+### Cross-reference by uid
+
+When the target may move to a different folder or get renamed, link by `uid:` instead of by path. Give the target page a stable, dot-separated `uid:` in its front matter — every shipped front-matter type already exposes the field through `IFrontMatter`, so filling it opts the page in.
+
+```yaml
+---
+title: Configure the build pipeline
+uid: how-to.build.configure
+---
+```
+
+Then link to it with either form. The inline `<xref:uid>` defaults its link text to the target's `Title`:
+
+```markdown
+See <xref:kitchen-sink.main.cross-references-b> for the other half of this pairing.
+```
+
+The anchor-style `[text](xref:uid)` form takes a custom label:
+
+```markdown
+See the [cross-reference target page](xref:kitchen-sink.main.cross-references-b) for details.
+```
+
+Both resolve to an ordinary `<a href="/canonical/path">` at request and build time, so moving or renaming the target file leaves the link intact as long as its `uid:` does not change.
+
 ## Verify
 
-- Run `dotnet run` and click each link shape on `/main/linking/` — relative, absolute, anchor, asset, and external links all navigate correctly.
-- View source on the rendered page with `BaseUrl="/docs/"` — every internal `href` starts with `/docs/` and the `<body>` carries a `data-base-url="/docs"` attribute (no trailing slash) stamped by `BaseUrlHtmlRewriter`.
-- Run `dotnet run -- build` — the build report lists zero broken-link diagnostics from `LinkVerificationService`.
+- Run `dotnet run` and click each link shape on a page that uses them — relative, absolute, anchor, asset, and external links all navigate to the right target.
+- Build for a sub-path with `dotnet run -- build --base-url /docs` and open any output page: every internal `href` starts with `/docs/` and the `<body>` carries a `data-base-url="/docs"` attribute (no trailing slash). Markdown that still hardcodes the prefix shows up as `/docs/docs/…`.
+- Break a `uid:` on purpose — the `xref:` link renders with `data-xref-error="Reference not found"`, a warning appears in the dev diagnostic overlay, and `dotnet run -- build` surfaces it in the `BuildReport`.
+- Run `dotnet run -- build` — the build report lists zero broken-link diagnostics.
 
 ## Related
 
 - Reference: <xref:reference.api.output-options> — `BaseUrl` and the rest of the build-output surface.
-- Reference: <xref:reference.api.i-response-processor> — rewriter order (`XrefHtmlRewriter` -> `LocaleLinkHtmlRewriter` -> `BaseUrlHtmlRewriter`) and how they compose.
+- Reference: <xref:reference.api.i-response-processor> — the response-stage rewriters and how they compose.
+- Background: <xref:explanation.routing.cross-references> — the two-phase uid resolver, ordering, and diagnostics.

@@ -1,10 +1,10 @@
 ---
 title: "The SDK you need and the union shim"
-description: "Why the published packages need only the stable .NET 10 SDK, when the .NET 11 beta SDK is worth opting into, and what the union polyfill does underneath."
+description: "Why the published packages need only the stable .NET 10 SDK, when the .NET 11 preview SDK is worth opting into, and what the union shim does underneath."
 uid: explanation.positioning.sdk-and-the-union-shim
 order: 2
 sectionLabel: "Positioning"
-tags: [sdk, dotnet, unions, polyfill, pipeline]
+tags: [sdk, dotnet, unions, shim, pipeline]
 ---
 
 Pennington's source is written in C# 15 — it uses the `union` keyword for its pipeline types. A reasonable question follows: does building a site on Pennington need the C# 15 compiler and a preview .NET SDK? For the published packages, no. The stable .NET 10 SDK is enough.
@@ -21,16 +21,18 @@ The one place the preview SDK is still required is building Pennington itself. T
 
 ## What the union shim is
 
-Multi-targeting is what lets one source tree serve both SDKs. On `net11.0` the C# 15 `union` keyword synthesizes each pipeline union. On `net10.0`, where that keyword does not exist, a hand-written polyfill struct stands in — same cases, same `.Value` field, same shape at every call site. The polyfill is why a `net10.0` consumer sees an API identical to a `net11.0` one. <xref:explanation.core.content-source> covers why every read goes through `.Value`, and why the polyfill is shaped to match the keyword exactly rather than take a shortcut that would diverge between the two builds.
+Multi-targeting is what lets one source tree serve both SDKs. On `net11.0` the C# 15 `union` keyword synthesizes each pipeline union. On `net10.0`, where that keyword does not exist, a hand-written shim struct stands in — same cases, same `.Value` field, same shape at every call site. The shim is why a `net10.0` consumer sees an API identical to a `net11.0` one. <xref:explanation.core.content-source> covers why every read goes through `.Value`, and why the shim is shaped to match the keyword exactly rather than take a shortcut that would diverge between the two builds.
 
-## What the .NET 11 beta SDK buys you
+## What the .NET 11 preview SDK buys you
 
 Opting into the .NET 11 preview SDK and targeting `net11.0` changes one thing, and it matters to one audience: people extending the pipeline. When you branch on the `ContentItem` or `ContentSource` cases in your own code, the `net11.0` build lets you switch over the union directly, and the compiler enforces exhaustiveness — a `switch` that stops covering every case becomes a compile error that points at exactly the code a new case broke. On `net10.0` that direct match is the preview feature you are avoiding, so you read the case through `.Value` and switch over that instead — `item.Value switch { ParsedItem p => … }` — which compiles cleanly but gives up the exhaustiveness check. Reading `.Value` is the portable form, and it is the one the templates and examples use so they build on either SDK.
+
+Opting in is three concrete changes. Install the .NET 11 preview SDK (the version the library builds against; the repository's `global.json` records the exact preview it pins). Pin that SDK for your own project with a `global.json` of your own — `"version"` set to the installed preview, `"allowPrerelease": true` — so the build does not silently fall back to the stable SDK. Then move the project's `<TargetFramework>` from `net10.0` to `net11.0` so the `union` keyword and its exhaustive `switch` are in scope. Nothing about a host's content, layout, or wiring changes; only the SDK, the `global.json`, and the TFM do.
 
 That safety net is the whole of the upgrade. It is invisible to anyone who is not extending the pipeline, which is why stable .NET 10 is the default the templates and tutorials assume. The tradeoff for a pipeline author — a preview SDK in exchange for a compiler guarantee — is the one worth weighing; see <xref:explanation.core.content-pipeline> for why the unions are exhaustive in the first place, and <xref:how-to.content-services.custom-content-service> for the extension recipe.
 
 ## Further reading
 
-- Explanation: [Why ContentSource is a union](xref:explanation.core.content-source) — why every consumer goes through `.Value`, and why the polyfill matches the keyword.
+- Explanation: [Why ContentSource is a union](xref:explanation.core.content-source) — why every consumer goes through `.Value`, and why the shim matches the keyword.
 - Explanation: [The content pipeline and union types](xref:explanation.core.content-pipeline) — the pipeline unions and why exhaustiveness matters when you extend them.
 - Tutorial: [Create your first Pennington site](xref:tutorials.getting-started.first-site) — a consumer host wired on stable .NET 10.

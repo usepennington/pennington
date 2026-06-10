@@ -7,11 +7,13 @@ sectionLabel: "Pages"
 tags: [front-matter, drafts, tags, ordering, scheduling]
 ---
 
-To keep an unfinished page out of navigation, embargo a post until a release date, attach grouping keywords to a page, or change where a page appears within its sidebar section, set one of four front-matter keys. For how front matter is parsed, see <xref:how-to.pages.front-matter>.
+To keep an unfinished page out of navigation, embargo a post until a release date, attach grouping keywords to a page, or change where a page appears within its sidebar section, set one of four front-matter keys.
+
+A draft is excluded from build output. `isDraft: true` (and an unreached future `date:`) keeps the page visible under `dotnet run` for preview, but `dotnet run -- build` drops it from the static site entirely — no HTML file, and any `xref:` link targeting it dangles in the published build. Drafts are a "not yet shipping" flag, not a "shipped but unlisted" one. For the canonical key catalog and parse rules, see <xref:reference.front-matter.keys>.
 
 ## Before you begin
-- A working Pennington site has markdown under `Content/` (see <xref:how-to.pages.front-matter> if not).
-- Pages use a front-matter record that implements the capability each key relies on. `isDraft:` and `date:` are universally available; `tags:` requires `ITaggable`; `order:` requires `IOrderable`. The five shipped records — `DocFrontMatter`, `BlogFrontMatter`, `BlogPostFrontMatter`, `DocSiteFrontMatter`, `BlogSiteFrontMatter` — implement different subsets; see <xref:reference.front-matter.keys> for the per-record matrix.
+- A working Pennington site has markdown under `Content/` (see <xref:tutorials.getting-started.first-site> if not).
+- Each key needs a front-matter record that implements its backing capability — `tags:` requires `ITaggable`, `order:` requires `IOrderable`; `isDraft:` and `date:` are universal. The shipped records implement different subsets, so check the per-record matrix in <xref:reference.front-matter.keys> before reaching for a key.
 - The sidebar currently renders in file-order; `TableOfContentsNavigation` has not been customized.
 
 Setting `order:` on a `BlogSiteFrontMatter` or `BlogFrontMatter` page has no effect — blog posts sort newest-first by `date:`. To reorder posts, adjust the date; to hide a post, use `isDraft: true`.
@@ -20,7 +22,7 @@ Setting `order:` on a `BlogSiteFrontMatter` or `BlogFrontMatter` page has no eff
 
 ### Hide an unfinished page with `isDraft: true`
 
-Setting `isDraft: true` keeps the page compiled — `xref:` links targeting it still resolve — but drops it from navigation, search, and `llms.txt`.
+Setting `isDraft: true` drops the page from navigation, search, and `llms.txt`. Under `dotnet run` it stays served and `xref:` links to it resolve, so you can preview it; under `dotnet run -- build` it is excluded from output entirely.
 
 ```yaml
 ---
@@ -57,12 +59,6 @@ tags: [advanced, performance, pipeline]
 ---
 ```
 
-Backing symbol on the DocSite front-matter record:
-
-```csharp:symbol
-src/Pennington.DocSite/DocSiteFrontMatter.cs > DocSiteFrontMatter.Tags
-```
-
 ### Order a page inside its section
 
 Lower `order:` values sort earlier within a section. Spacing like 10/20/30 leaves room for later inserts between existing siblings.
@@ -70,11 +66,11 @@ Lower `order:` values sort earlier within a section. Spacing like 10/20/30 leave
 ```yaml
 ---
 title: Install
-order: 201020
+order: 20
 ---
 ```
 
-For how sections inherit their own sort key from child `order:` values, see <xref:explanation.routing.navigation-tree>.
+`order:` positions a page among its siblings; it does not position the *folder* that holds it. To set a section's own sort key — rather than letting it inherit the min-of-children value — drop a `_meta.yml` sidecar in the folder with its own `order` key; see <xref:reference.front-matter.folder-sidecar>. For how the navigation tree assembles those values, see <xref:explanation.routing.navigation-tree>.
 
 ## Verify
 

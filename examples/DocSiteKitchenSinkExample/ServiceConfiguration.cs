@@ -85,6 +85,31 @@ internal static class ServiceConfiguration
         """;
 
     /// <summary>
+    /// Registers a custom front-matter source so a subtree parses the
+    /// <c>namespace</c> and <c>stability</c> keys that <see cref="ApiFrontMatter"/>
+    /// adds on top of the built-in records. Called from
+    /// <see cref="DocSiteOptions.ConfigurePennington"/> so the extra source is
+    /// chained onto the DocSite template rather than replacing it. The
+    /// <c>symbols</c> subtree is carved out of the template's own doc source
+    /// first so exactly one source owns those pages. This is the user-side
+    /// registration the front-matter how-to fences against.
+    /// </summary>
+    public static void RegisterApiSource(PenningtonOptions penn)
+    {
+        // DocSite's default source serves all of Content/ at /. Carve out the
+        // symbols subtree so the custom-typed source below owns it without an
+        // overlap warning.
+        penn.MarkdownSources[0].ExcludePaths = ["symbols"];
+
+        penn.AddMarkdownContent<ApiFrontMatter>(o =>
+        {
+            o.ContentPath = "Content/symbols";
+            o.BasePageUrl = "/symbols";
+            o.SectionLabel = "Symbols";
+        });
+    }
+
+    /// <summary>
     /// Footer HTML injected below the article region. Raw HTML string
     /// rendered via <c>MarkupString</c> — keep it minimal.
     /// </summary>
@@ -113,6 +138,7 @@ internal static class ServiceConfiguration
         FontPreloads = BuildFontPreloads(),
         ExtraStyles = BuildExtraStyles(),
         ConfigureLocalization = ConfigureLocalization,
+        ConfigurePennington = RegisterApiSource,
         Areas = BuildAreas(),
     };
 }

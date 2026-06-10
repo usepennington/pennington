@@ -21,21 +21,26 @@ A single `ConfigureLocalization` action on `DocSiteOptions` enables multi-locale
 - Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the single-locale DocSite host this tutorial extends)
 - Completed [Add doc pages and link between them](xref:tutorials.docsite.first-doc-page) (so the front-matter shape of each page is already familiar)
 
-The finished code for this tutorial lives in [`examples/BeyondLocaleExample`](https://github.com/usepennington/pennington/tree/main/examples/BeyondLocaleExample); the Spanish translations are already authored in the example folder.
+You'll work in the DocSite project from [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold). The finished version of every change lives in [`examples/BeyondLocaleExample`](https://github.com/usepennington/pennington/tree/main/examples/BeyondLocaleExample) — including the Spanish translations you'll author in section 3 — as a reference to check against.
 
 ---
 
-## 1. Start from a single-locale DocSite
+## 1. Confirm the single-locale baseline
 
-Start with a plain DocSite host serving three English pages from `Content/` — no localization, no switcher. A clear baseline makes the contrast obvious when localization arrives in section 2.
+Your scaffold host serves markdown from `Content/` with no localization and no switcher. A clear baseline makes the contrast obvious when localization arrives in section 2.
 
-Here's the starting host. There is no `ConfigureLocalization` action on `DocSiteOptions`, so `LocalizationOptions.IsMultiLocale` is false and the built-in `LanguageSwitcher` in `MainLayout.razor` renders nothing.
+There is no `ConfigureLocalization` action on `DocSiteOptions` yet, so `LocalizationOptions.IsMultiLocale` is false and the built-in `LanguageSwitcher` in `MainLayout.razor` renders nothing. The host you carry forward looks like this — the same `AddDocSite` shape from the scaffold tutorial:
 
 ```csharp:symbol,bodyonly
 examples/BeyondLocaleExample/Stage1_EnglishOnly.cs > Stage1.Run
 ```
 
-Place `index.md`, `about.md`, and `getting-started.md` directly under `Content/`. These are the default-locale pages — they own the URL root. No locale subfolder belongs here yet.
+<Steps>
+<Step StepNumber="1">
+
+**Place three English pages directly under `Content/`**
+
+Add `index.md`, `about.md`, and `getting-started.md` directly under `Content/` — not in any locale subfolder. These are the default-locale pages, and they own the URL root.
 
 ```markdown:symbol
 examples/BeyondLocaleExample/Content/index.md
@@ -49,9 +54,12 @@ examples/BeyondLocaleExample/Content/about.md
 examples/BeyondLocaleExample/Content/getting-started.md
 ```
 
+</Step>
+</Steps>
+
 <Checkpoint>
 
-- Run `dotnet run` from `examples/BeyondLocaleExample`
+- Run `dotnet run` from your project folder
 - Visit `http://localhost:5000/`, `http://localhost:5000/about`, and `http://localhost:5000/getting-started` — each English page renders
 - The DocSite header shows the site title and GitHub link but **no language switcher pill** — because only one locale is registered
 
@@ -63,7 +71,14 @@ examples/BeyondLocaleExample/Content/getting-started.md
 
 Add a `ConfigureLocalization` action that names `"en"` as the default and registers `"es"` as a second locale. Once [`LocalizationOptions.IsMultiLocale`](xref:reference.api.localization-options) is `true`, the switcher, the locale detection middleware, and the per-locale search index all activate. `UseDocSite` already wires the locale-routing middleware internally — no extra `app.Use…` call.
 
-```csharp:symbol,bodyonly
+<Steps>
+<Step StepNumber="1">
+
+**Add the `ConfigureLocalization` action to your existing `DocSiteOptions`**
+
+The snippet below is your host with the change applied — the highlighted lines are the only additions. Add the `ConfigureLocalization` property inside the `DocSiteOptions` you already pass to `AddDocSite`, alongside the `SiteTitle`, `GitHubUrl`, and the rest, not replacing them. The `using Pennington.Localization;` directive at the top brings `LocaleInfo` into scope.
+
+```csharp:symbol,bodyonly,imports
 examples/BeyondLocaleExample/Stage2_AddSecondLocale.cs > Stage2.Run
 ```
 
@@ -73,7 +88,10 @@ The new action has three pieces:
 - `AddLocale("en", new LocaleInfo("English"))` — registers English with the display name the switcher shows.
 - `AddLocale("es", new LocaleInfo("Español", HtmlLang: "es"))` — registers Spanish. `HtmlLang` is what Pennington emits on the `<html>` element for that locale's pages.
 
-`AddLocale` is overloaded: the string-only form is shorthand when a custom display name or `HtmlLang` is not needed.
+`AddLocale` is overloaded with a string-only display-name shorthand; the [localization how-to](xref:how-to.discovery.localization) surveys the full `LocalizationOptions` surface.
+
+</Step>
+</Steps>
 
 <Checkpoint>
 

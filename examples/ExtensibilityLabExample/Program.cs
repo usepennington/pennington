@@ -1,5 +1,6 @@
 using ExtensibilityLabExample;
 using Markdig;
+using Mdazor;
 using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
@@ -72,6 +73,11 @@ builder.Services.AddSingleton<IContentService>(sp =>
 // so the bare host opts into AddRazorComponents + AddHttpContextAccessor the way the how-to shows.
 builder.Services.AddRazorComponents();
 builder.Services.AddHttpContextAccessor();
+
+// 2.3.35 Derived-metadata consumer — an Mdazor component that reads Context["Derived"]
+// and renders the git_last_modified date GitTimestampEnricher contributes. Any page can
+// drop <LastModified /> into its body. See Content/metadata-demo.md.
+builder.Services.AddMdazorComponent<LastModified>();
 builder.Services.AddTaxonomy<ReleaseEntry, string>(opts =>
 {
     opts.BaseUrl = "/channel";
@@ -85,6 +91,11 @@ builder.Services.AddTransient<IContentService, RobotsTxtContentService>();
 
 // 2.3.20 Code-block preprocessor — handles "linecount" fences.
 builder.Services.AddSingleton<ICodeBlockPreprocessor, LineCountPreprocessor>();
+
+// 2.3.35 Metadata enricher — merges a git_last_modified date into ParsedItem.Derived
+// alongside the built-in reading_time_minutes. Surfaces in each page's /llms.txt sidecar
+// and to any Mdazor component that reads Context["Derived"].
+builder.Services.AddTransient<IMetadataEnricher, GitTimestampEnricher>();
 
 // 2.3.25 Custom shortcode — turns <?# GitHubRepo "owner/repo" /?> into a link.
 // The framework ships AssemblyVersionShortcode (<?# Version /?>) by default;

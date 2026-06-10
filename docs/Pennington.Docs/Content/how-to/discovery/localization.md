@@ -14,18 +14,25 @@ When the site needs to ship in more than one language, the options below cover t
 - Either an `AddDocSite` host (which accepts a `ConfigureLocalization` callback) or a bare `AddPennington` host (which exposes `LocalizationOptions` directly on `PenningtonOptions.Localization`).
 - Default-locale content already directly under `ContentRootPath` (not in a locale subfolder). Pennington treats the default locale as URL-root and every other locale as URL-prefixed.
 
-For a complete reference setup, the `BeyondLocaleExample` project has English under `Content/` and Spanish under `Content/es/`, wired with a single `ConfigureLocalization` action.
+For a complete reference setup, [`examples/BeyondLocaleExample`](https://github.com/usepennington/pennington/tree/main/examples/BeyondLocaleExample) has English under `Content/` and Spanish under `Content/es/`, wired with a single `ConfigureLocalization` action.
 
 ---
 
-## Options
+## Wire localization end to end
+
+Each subsection below is one part of the same setup, not an alternative — work through all five to take a single-locale site multilingual.
 
 ### Populate `LocalizationOptions` with the default locale and every additional locale
 
 On a DocSite host, set `DefaultLocale` and call `AddLocale` once per additional language inside `ConfigureLocalization`. On a bare `AddPennington` host, configure `PenningtonOptions.Localization` the same way. The default locale owns the URL root; each additional locale gets a URL prefix matching its code, so choose codes that read well in URLs.
 
-```csharp:symbol,bodyonly
-examples/BeyondLocaleExample/Stage3_SwitcherAppears.cs > Stage3.Run
+```csharp
+ConfigureLocalization = loc =>
+{
+    loc.DefaultLocale = "en";
+    loc.AddLocale("en", new LocaleInfo("English"));
+    loc.AddLocale("es", new LocaleInfo("Español", HtmlLang: "es"));
+},
 ```
 
 See <xref:reference.api.localization-options> for the `LocalizationOptions` members (`DefaultLocale`, `Locales`, `AddLocale`, `LocaleInfo`).
@@ -96,7 +103,7 @@ The language switcher in the layout lists one entry per registered locale, and e
 ## Related
 
 - Tutorial: [Add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale)
-- How-to: [Catch missing and outdated translations at build time](xref:how-to.discovery.audit-translations)
+- How-to: [Flag missing and outdated translations in the build report and dev overlay](xref:how-to.discovery.audit-translations)
 - Reference: [`LocalizationOptions`](xref:reference.api.localization-options)
 - Reference: [`TranslationOptions`](xref:reference.api.translation-options)
 - Background: [Locale-aware URLs and content fallback](xref:explanation.localization.urls-and-fallback)

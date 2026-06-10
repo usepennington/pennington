@@ -25,13 +25,7 @@ The conventional escape routes both have a cost. A single `ContentItem` class wi
 
 ### `ContentSource` discriminates where an item came from
 
-A `DiscoveredItem` pairs a `ContentRoute` with a second union, `ContentSource`, which records where the item came from: a file on disk, a Razor `@page`, a redirect definition, or a programmatic generator. The reason this is a separate union rather than a field on `DiscoveredItem` is that discovery is itself a pluggable step — different sources need to carry different data (a file path, a Razor component type, a target URL) without forcing later stages to care. Once an item has been parsed, its source has already done its job; the parser and renderer work entirely against the resolved front matter and content text, and `ContentSource` disappears from the picture.
-
-```csharp:symbol
-src/Pennington/Pipeline/ContentSource.cs
-```
-
-The five cases cover every origin Pennington ships — `FileSource`, `RazorPageSource`, `RedirectSource`, `EndpointSource`, and `LlmsOnlySource` — and downstream stages (parsers, renderers, the output writer) never pattern-match on `ContentSource`; by the time they run, the source has been replaced by a `ParsedItem`. For the construction and consumption shapes in detail, including the `.Value` pattern that works across both target frameworks, see <xref:explanation.core.content-source>.
+A `DiscoveredItem` pairs a `ContentRoute` with a second union, `ContentSource`, which records where the item came from. The reason this is a separate union rather than a field on `DiscoveredItem` is that discovery is itself a pluggable step — different sources carry different data (a file path, a Razor component type, a target URL) without forcing later stages to care. Once an item has been parsed, its source has already done its job: the parser and renderer work entirely against the resolved front matter and content text, and `ContentSource` disappears from the picture. For why this second union is shaped the way it is — its cases, and the `.Value` read that works across both target frameworks — see <xref:explanation.core.content-source>.
 
 ### Stage transitions replace the item
 

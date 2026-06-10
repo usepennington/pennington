@@ -23,14 +23,14 @@ Serve an `output/` directory produced by `dotnet run -- build` from a server you
 
 **Upload `output/` to the web root**
 
-Copy the full contents of `output/` to the directory the web server will serve — `/var/www/pennington/` for Nginx or the IIS site's **Physical path** for IIS. Keep the `_content/` folder intact; fingerprinted static-web-asset bundles (Razor library CSS and JS) live under that underscore-prefixed path and ship verbatim.
+Copy the full contents of `output/` to the directory the web server will serve — `/var/www/pennington/output/` for Nginx (the path the snippet's `root` points at) or the IIS site's **Physical path** for IIS. Keep the `_content/` folder intact; fingerprinted static-web-asset bundles (Razor library CSS and JS) live under that underscore-prefixed path and ship verbatim.
 
 </Step>
 <Step StepNumber="2">
 
 **Install the server config**
 
-Drop the snippet for your server into its config location and reload. Both snippets cover trailing-slash directory indexes, the generated `404.html` as the miss fallback, MIME types for `.webmanifest` and `.woff2`, and `public, immutable` cache headers on `/_content/` fingerprinted assets.
+Drop the snippet for your server into its config location and reload. Both snippets cover trailing-slash directory indexes, the generated `404.html` as the miss fallback (served with a real 404 status), and `public, immutable` cache headers on `/_content/` fingerprinted assets. The IIS snippet also declares MIME types for `.webmanifest` and `.woff2`, which IIS does not know by default; Nginx serves those from its global `mime.types` include.
 
 ### Nginx
 
@@ -52,6 +52,21 @@ examples/SubPathDeployableExample/web.config
 </Steps>
 
 ---
+
+## Serve under a sub-path
+
+When the site does not own the domain root — it lives at `https://host/docs/` — build with the prefix (`dotnet run -- build --base-url=/docs`, see [Host under a sub-path (base URL)](xref:how-to.deployment.base-url)) so every internal link carries it, then point the server at `output/` under that same path.
+
+For Nginx, mount the directory with `alias` (not `root`) inside a `location` block named for the prefix:
+
+```nginx
+location /docs/ {
+    alias /var/www/pennington/output/;
+    try_files $uri $uri/ =404;
+}
+```
+
+For IIS, host the site as an application or virtual directory named `docs` and drop the same `web.config` into its physical path — the rewrite and `404.html` rules apply relative to the application root, so no changes are needed.
 
 ## Verify
 

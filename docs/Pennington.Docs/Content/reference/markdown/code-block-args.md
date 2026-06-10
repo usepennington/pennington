@@ -7,7 +7,7 @@ tags: [markdown, code-blocks, directives]
 uid: reference.markdown.code-block-args
 ---
 
-The fence info-string grammar: the opening-fence text after the three backticks, tokenised left-to-right into a language (with optional colon-suffix) followed by `key=value` attribute pairs. The `[!code …]` directive grammar runs separately, against the highlighted HTML.
+Pennington tokenises the fence info-string — the opening-fence text after the three backticks — left-to-right into a language (with an optional colon-suffix) followed by `key=value` attribute pairs. The `[!code …]` directive grammar runs separately, against the highlighted HTML.
 
 ## Fence info-string grammar
 
@@ -24,7 +24,7 @@ bare-value    := any run of non-whitespace chars
 quoted-value  := any chars up to the matching quote
 ```
 
-`language` is typically `csharp`, `razor`, `text`, and so on. Quoting is required only when a value contains whitespace. Markdig exposes the language and colon-suffix on `FencedCodeBlock.Info` and the attribute tail on `FencedCodeBlock.Arguments`; attribute keys are matched case-insensitively.
+`language` is typically `csharp`, `razor`, `text`, and so on. Quoting is required only when a value contains whitespace, and attribute keys are matched case-insensitively. Authors of a [custom Markdig extension](xref:how-to.markdown-pipeline.markdig-extension) read the same fence through Markdig's own API: the language and colon-suffix arrive on `FencedCodeBlock.Info` and the attribute tail on `FencedCodeBlock.Arguments`.
 
 ## Attributes
 

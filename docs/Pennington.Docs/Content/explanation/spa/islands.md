@@ -30,7 +30,7 @@ Anywhere in the layout that should update on navigation gets a `data-spa-region=
 - `content` — the article body, including breadcrumbs and prev/next links.
 - `outline` — the right-rail page outline, populated client-side from the article headings on every commit.
 
-Anything outside a marked region — the top bar, the sidebar, the outer page chrome, the mobile menu's expanded state, scroll position — stays put. The header and sidebar are intentionally outside the region system: the search button keeps its event handlers across navigations, and the sidebar keeps its scroll position and active-state can be patched in place. Both follow the persistent-chrome pattern covered in the next section.
+Anything outside a marked region — the top bar, the sidebar, the outer page chrome, the mobile menu's expanded state, scroll position — stays put. The header and sidebar are intentionally outside the region system: the search button keeps its event handlers across navigations, and the sidebar keeps its scroll position while its active-state flags are patched in place from the destination's HTML. Both follow the persistent-chrome pattern covered in the next section.
 
 The client picks the regions in the current document, finds elements with the same name in the parsed response, and swaps `innerHTML`. If the set of regions does not match — for example, navigating from a `MainLayout` page (`content` plus `outline`) to a `FullWidthLayout` page (only `content`) — the engine triggers a full page load. Crossing a layout boundary reloads rather than half-updating the page.
 
@@ -44,7 +44,7 @@ The `spa:commit` event is the extension point. It fires after each navigation wi
 
 ### Head merging
 
-The `<head>` of the parsed response is authoritative for everything page-specific. The client updates the title and a fixed list of managed tags: the description meta, OpenGraph and Twitter card metadata, the canonical link, hreflang alternates, and JSON-LD scripts. Stylesheet `<link>` elements are merged by href — any new ones append to the head before the region swap so the browser has the rules ready when the new content paints. A stylesheet tagged `data-spa-reload` re-fetches with a cache buster on every navigation, the opt-in workaround for JIT stylesheets like [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) in dev where the URL stays constant but the contents diverge per page.
+The `<head>` of the parsed response is authoritative for everything page-specific: the client overwrites the title and a fixed set of managed tags — the page metadata the server already computes per URL — from the destination's head. Stylesheet `<link>` elements are merged by href — any new ones append to the head before the region swap so the browser has the rules ready when the new content paints. A stylesheet tagged `data-spa-reload` re-fetches with a cache buster on every navigation, the opt-in workaround for JIT stylesheets like [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) in dev where the URL stays constant but the contents diverge per page; the attribute is documented in <xref:reference.spa.attributes>.
 
 ### Synchronous swap, no animation
 
@@ -60,5 +60,7 @@ The single-path approach trades some payload size for the elimination of all of 
 
 ## Further reading
 
+- Reference: <xref:reference.spa.attributes> — the `data-spa-*` attribute contract and the `spa:commit`/`spa:before-navigate` events this page describes.
+- How-to: <xref:how-to.rich-content.client-side-widget> — attach your own browser behavior to the server-rendered HTML and re-bind it from `spa:commit` after each navigation.
 - Reference: <xref:reference.api.doc-site-options>
 - External: [Islands Architecture (Jason Miller)](https://jasonformat.com/islands-architecture/) — the term "island" originates here; Pennington's regions are a degenerate case where the server renders every "island" itself.

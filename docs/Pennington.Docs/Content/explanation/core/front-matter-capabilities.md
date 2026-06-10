@@ -29,15 +29,15 @@ The contract gives every record common defaults it can override. A minimal recor
 
 ### The capability interfaces
 
-Tags, order, section labels, redirects, and Standard Site document keys live on separate interfaces because their adoption is genuinely selective. A blog post has tags but no meaningful order among siblings; a doc page has an order but no redirect target; a redirect stub carries a destination URL and little else. Folding these into `IFrontMatter` would force every record to carry empty tag arrays and meaningless sort keys — and, more importantly, would erase the signal that the interface's *presence* carries.
+Tags, order, section labels, redirects, and Standard Site document keys live on separate interfaces because the interface's *presence* is itself a signal. Seeing `IOrderable` on a record says the content type consciously participates in ordered navigation; folding it into `IFrontMatter` would erase that distinction, since every record would then carry the member whether it meant anything or not. The selectivity is real, too: a blog post has tags but no meaningful order among siblings; a doc page has an order but no redirect target; a redirect stub carries a destination URL and little else. Folding these into `IFrontMatter` would force every record to carry empty tag arrays and meaningless sort keys.
 
 ```csharp:symbol
 src/Pennington/FrontMatter/Capabilities.cs > IOrderable
 ```
 
-`NavigationBuilder` reads `IOrderable` the type, not the value. A content type either participates in ordered navigation or it does not; there is no "this page has no meaningful order" case to handle. The same applies to `ITaggable` (tag cloud participation), `ISectionable` (section-label breadcrumbs), `IRedirectable` (redirect-stub semantics), and `IStandardSiteDocument` (the AT Protocol record key for Standard Site syndication).
+`NavigationBuilder` keys off the `IOrderable` interface itself, not a sentinel value in the `Order` property. A content type either implements the interface and participates in ordered navigation, or it does not; there is no "this page has no meaningful order" case to handle. The same applies to `ITaggable` (tag cloud participation), `ISectionable` (section-label breadcrumbs), `IRedirectable` (redirect-stub semantics), and `IStandardSiteDocument` (the AT Protocol record key for Standard Site syndication).
 
-The rule of thumb is simple: if adoption is universal, the member lives on `IFrontMatter` with a sensible default. If adoption is selective, it lives on a capability interface so that pattern-matching on the interface remains meaningful. Seeing `IOrderable` on a record means the content type consciously opted into ordered navigation.
+The rule of thumb is simple: if adoption is universal, the member lives on `IFrontMatter` with a sensible default. If adoption is selective, it lives on a capability interface so that pattern-matching on the interface remains meaningful.
 
 ### Custom front-matter records
 

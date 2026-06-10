@@ -7,9 +7,11 @@ sectionLabel: "Versioning"
 tags: [versioning, api-reference, docsite]
 ---
 
-To document multiple versions of a library side by side — `/v1/` and `/v2/`, each with its own content tree and its own API reference — pair `DocSiteOptions.Areas` (one area per version) with one `AddApiMetadataFromCompiledAssembly` plus matching `AddApiReference` registration per version. The framework already supports this pattern; the only friction is NuGet's one-version-per-assembly rule, which forces a `<PackageDownload>` workaround for the off-version DLL.
+To serve `/v1/` and `/v2/` URL trees from one DocSite host, give each version its own `ContentArea`. One area per version is the whole mechanism for prose-only docs — the [Lay out content by version](#lay-out-content-by-version) section below is all you need.
 
-The recipe references `examples/VersionedDocSiteExample/`, which documents `Humanizer.Core` 2.8.26 alongside 2.14.1. For the backend basics — how `AddApiMetadataFromCompiledAssembly` and `AddApiReference` work in isolation — see <xref:how-to.content-services.auto-api-reference>.
+The rest of this page layers a per-version API reference on top, which is where the only real friction lives: NuGet allows one version of an assembly per project, so the off-version DLL needs a `<PackageDownload>` workaround. If you don't need a reflected API tree, stop after the areas section.
+
+The recipe references `examples/VersionedDocSiteExample/`, which documents `Humanizer.Core` 2.8.26 alongside 2.14.1. For how `AddApiMetadataFromCompiledAssembly` and `AddApiReference` work on a single version, see <xref:how-to.content-services.auto-api-reference>.
 
 ## Before you begin
 
@@ -21,10 +23,12 @@ The recipe references `examples/VersionedDocSiteExample/`, which documents `Huma
 Use one `ContentArea` per version. The `Slug` is both the URL prefix and the folder name under `Content/`, so files at `Content/v1/foo.md` route to `/v1/foo` and the sidebar renders an area selector that doubles as a version switcher.
 
 ```csharp:symbol
-examples/VersionedDocSiteExample/Program.cs
+examples/VersionedDocSiteExample/Program.cs > Wiring.AddVersionedAreas
 ```
 
 The `Areas` declaration is the only place the version names appear in the host wiring. Adding a `v3` later is two lines plus a `Content/v3/` folder.
+
+A bare `/` request — anyone landing on the site root with no version prefix — falls through to the DocSite not-found page unless you give the root a page; add a `Content/index.md` (or a routed landing component) that redirects to or links the version you treat as current. Marking one version "latest" and showing a deprecation banner on older trees are content-level conventions, not host wiring: drop a shared `[!INCLUDE]` partial into each old version's pages for the banner, and point the root and header link at the current slug. See <xref:how-to.pages.redirects> for the root-redirect mechanics.
 
 ## Reference two versions of the same NuGet package
 
@@ -34,12 +38,16 @@ NuGet allows only one `<PackageReference>` per assembly per project. To document
 examples/VersionedDocSiteExample/VersionedDocSiteExample.csproj
 ```
 
-In `Program.cs`, register one named provider per version:
+In `Program.cs`, register one named provider per version, then pair each with an `AddApiReference` registration whose `RoutePrefix` nests under the matching area slug:
+
+```csharp:symbol
+examples/VersionedDocSiteExample/Program.cs > Wiring.AddVersionedApiReferences
+```
 
 - The active reference uses `FromPackageReference("Humanizer")` — `Assembly.Load` finds the v2 DLL via the project's `deps.json`.
-- The off-version uses `AssemblyFiles.Add(path)` with an explicit path under `%NUGET_PACKAGES%` (or `%USERPROFILE%\.nuget\packages\`). The simple-name folder is lowercased; the version is the literal `<PackageDownload>` value; the TFM is whichever `lib/<tfm>/` the package ships.
+- The off-version uses `AssemblyFiles.Add(path)` with an explicit path under the NuGet global-packages folder. Read that folder from the `NUGET_PACKAGES` environment variable and fall back to the per-user default (`~/.nuget/packages` on Linux and macOS, `%USERPROFILE%\.nuget\packages` on Windows) — `Environment.GetFolderPath(SpecialFolder.UserProfile)` resolves the home directory on every platform. Inside it, the simple-name folder is lowercased; the version is the literal `<PackageDownload>` value; the TFM is whichever `lib/<tfm>/` the package ships.
 
-Pair each provider with an `AddApiReference` registration whose `RoutePrefix` nests under the matching area slug:
+The two registrations resolve as follows:
 
 | Provider name | `RoutePrefix` | Resolves |
 |---|---|---|

@@ -22,46 +22,11 @@ The recipe references `examples/ExtensibilityLabExample/WikiLinkExtension.cs`, w
 
 Pennington's pipeline is Markdig's `UseAdvancedExtensions()` plus its own renderers. Before you register anything, confirm the feature isn't already parsed — re-adding an extension that's present is a double-register that, depending on the extension, duplicates parsers, reorders them, or shadows the built-in.
 
-`UseAdvancedExtensions()` enables abbreviations, auto-identifiers (heading `id`s), citations, custom containers, definition lists, emphasis extras, figures, footers, footnotes, grid tables, **mathematics**, media links, pipe tables, list extras, task lists, diagrams, auto links, and generic attributes. On top of that Pennington adds YAML front matter, syntax highlighting, tabbed code blocks, [content tabs](xref:how-to.rich-content.content-tabs), [custom alerts](xref:how-to.rich-content.alerts), horizontally scrollable tables, and Mdazor component rendering. The [extensions catalog](xref:reference.markdown.extensions) documents the Pennington-specific syntax.
-
-The durable way to stay safe is `AddIfNotAlready` — it adds your extension only when an instance of that type isn't already in the pipeline:
-
-```csharp
-penn.ConfigureMarkdownPipeline = (pipeline, _) =>
-    pipeline.Extensions.AddIfNotAlready(new WikiLinkExtension());
-```
+`UseAdvancedExtensions()` already turns on the usual advanced set — auto-identifiers, footnotes, grid and pipe tables, task lists, **mathematics**, and the rest — and Pennington layers its own front matter, syntax highlighting, tabbed code, [content tabs](xref:how-to.rich-content.content-tabs), [custom alerts](xref:how-to.rich-content.alerts), and Mdazor rendering on top. The [extensions catalog](xref:reference.markdown.extensions) is the full list to check against.
 
 ## Math already works — don't re-register it
 
-Because `UseAdvancedExtensions()` includes the mathematics extension, math is parsed today with no configuration. Inline `$E = mc^2$` renders to `<span class="math">\(E = mc^2\)</span>` and a `$$…$$` block to `<div class="math">\[…\]</div>` — already in the `\(…\)` / `\[…\]` delimiters KaTeX and MathJax expect. Registering `UseMathematics()` again is the double-register to avoid.
-
-What's missing is the *rendering* of that markup, which is a client-side step, not a Markdig one. Load KaTeX (or MathJax) through the head content option and run its auto-render once per page. On a DocSite that option is `DocSiteOptions.AdditionalHtmlHeadContent`:
-
-```csharp
-options.AdditionalHtmlHeadContent = """
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-    <script defer src="/math.js"></script>
-    """;
-```
-
-`math.js` calls `renderMathInElement` on load and again on `spa:commit`, since the SPA engine swaps page content without a full reload:
-
-```javascript
-function typeset() {
-  renderMathInElement(document.body, {
-    delimiters: [
-      { left: "\\(", right: "\\)", display: false },
-      { left: "\\[", right: "\\]", display: true },
-    ],
-  });
-}
-document.addEventListener("DOMContentLoaded", typeset);
-document.addEventListener("spa:commit", typeset);
-```
-
-This is the same pattern as any browser library that upgrades server-rendered markup — see <xref:how-to.rich-content.client-side-widget> for the full pattern and <xref:how-to.rich-content.diagrams> for the bundled Mermaid version of it. On a bare `AddPennington` host, inject the same tags through your own layout's `<head>` or a <xref:how-to.response-pipeline.response-processor>.
+`UseAdvancedExtensions()` includes the mathematics extension, so math is parsed today with no configuration. Inline `$E = mc^2$` renders to `<span class="math">\(E = mc^2\)</span>` and a `$$…$$` block to `<div class="math">\[…\]</div>` — already in the `\(…\)` / `\[…\]` delimiters KaTeX and MathJax expect. Registering `UseMathematics()` again is the double-register to avoid. Turning that markup into typeset math is a client-side step, not a Markdig one: load KaTeX (or MathJax) through the head content option and re-run its auto-render on `spa:commit`, exactly the head-content-plus-script pattern in <xref:how-to.rich-content.client-side-widget>.
 
 ## Write a custom inline parser
 
@@ -110,18 +75,17 @@ The wiki-links render as anchors carrying `class="wikilink"`, and the math block
 
 ## How your custom HTML survives the response pipeline
 
-After rendering, every page passes through the response rewriters and is harvested by the site projection for search and llms.txt. Custom markup is handled the same way as built-in markup in all three, with one thing to watch.
+After rendering, every page passes through the response rewriters and is harvested by the site projection. Custom markup rides through the same as built-in markup, with two things to do.
 
-**Response rewriters mutate only what their selectors match.** Each `IHtmlResponseRewriter` runs an AngleSharp query over the parsed document; elements and classes it doesn't target pass through untouched. Internal `href`s you emit *are* rewritten — the shipped rewriters add the locale prefix and the deploy base URL — so a wiki-link to `/notes/glossary/` is portable across locales and sub-path deploys exactly like an authored link. The one to know about: the opt-in [word-break rewriter](xref:how-to.response-pipeline.html-rewriter)'s default selector includes `span`, so if you emit a text-bearing `<span>` that a client script reads verbatim (a math span, say), either leave word-break off for it or narrow its selector.
+**Emit your HTML into the content region.** Search, llms.txt, and the link audit read the element named by `PenningtonOptions.SiteProjection.ContentSelector` (the lab uses `article`); markup placed there is captured and indexed by its visible text, while anything injected into the chrome or `<head>` is not. See <xref:how-to.discovery.search> and <xref:how-to.feeds.llms-txt>.
 
-**The site projection keeps whatever is inside the content region.** Search, llms.txt, and the link audit read the element named by `PenningtonOptions.SiteProjection.ContentSelector` (the lab uses `article`). Emit your custom HTML into the article body and it's captured; HTML injected into the chrome or `<head>` is not. See <xref:how-to.discovery.search> and <xref:how-to.feeds.llms-txt>.
-
-**Search indexes your custom HTML as plain text.** The heading-section extractor walks the rendered content, indexing each section's `textContent` (whitespace-collapsed) and dropping `<pre>` subtrees. So a wiki-link is found by its visible label, and a math span by its LaTeX source; the classes and structure don't reach the index, only the text does. Headings need an `id` to start a section — `UseAdvancedExtensions()` already supplies those.
+**Watch the word-break rewriter if you emit text-bearing `<span>`s.** The shipped rewriters rewrite the internal `href`s you emit — adding the locale prefix and deploy base URL, so a wiki-link to `/notes/glossary/` stays portable — but the opt-in [word-break rewriter](xref:how-to.response-pipeline.html-rewriter)'s default selector includes `span`. If a client script reads a `<span>` verbatim (a math span, say), leave word-break off for it or narrow its selector.
 
 ## Verify
 
-- Run `dotnet run --project examples/ExtensibilityLabExample` and visit `/wikilinks-demo/`. View source: the wiki-links are `<a class="wikilink" href="/notes/…/">` and the math block is `<div class="math">`.
-- Static build: `dotnet run --project examples/ExtensibilityLabExample -- build` — grep `output/wikilinks-demo/index.html` for `class="wikilink"` and `<div class="math">`. The build also reports the `/notes/…/` links as broken, since the lab has no `/notes/` pages — the build-time link audit treats your custom anchors as real internal links, exactly as intended.
+On your own site, register your extension through `ConfigureMarkdownPipeline`, put a `[[Target]]` (or your token) in any content page, run your site, and view source on that page: your token rendered as the markup your parser emits — `<a class="wikilink" href="/notes/…/">` for the wiki-link parser. Then run your static build and grep the page's `index.html` in the output for the same markup. The build-time link audit treats custom anchors as real internal links, so it reports any `href` with no matching page as broken — which is the audit working, not a misfire.
+
+To check against the reference implementation, run `dotnet run --project examples/ExtensibilityLabExample`, visit `/wikilinks-demo/`, and confirm the wiki-links are `<a class="wikilink" href="/notes/…/">` and the math block is `<div class="math">`.
 
 ## Related
 

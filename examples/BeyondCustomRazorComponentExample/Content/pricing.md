@@ -23,8 +23,7 @@ pipeline.
 Rendering the component twice with different attribute values proves that
 Mdazor resolves `<PricingCard />` tags on every occurrence, not just the
 first. The second card passes `Highlighted="true"`, which flips the
-component into its emphasised visual state — a different border, a pale
-accent background, and a "Most Popular" pill at the top.
+component into its emphasised visual state — a thicker accent border.
 
 ## How the wiring works
 

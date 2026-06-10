@@ -13,21 +13,23 @@ Utility-first CSS normally needs a build step that scans source files and regene
 
 Utility-first CSS frameworks like Tailwind and [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) (the Tailwind-compatible .NET JIT compiler Pennington integrates) ship a vast class surface and rely on a scanner to collect only the classes in use, keeping the final stylesheet small. Traditional setups solve this with a pre-build step that globs source files. That model fights a runtime-rendering content engine in two ways: markdown is rendered at runtime through Markdig extensions, so classes do not exist on disk until a request renders them, and adding a Razor component or a new page would require rerunning a separate tool.
 
-Pennington uses the `MonorailCss.Discovery` package. Discovery force-loads every non-BCL referenced assembly at startup, walks the IL for string literals that parse as utility candidates, and watches source files in development for live updates. The discovered set is exposed through an `IClassRegistry`. The `/styles.css` endpoint reads the current class set and runs it through a fresh `CssFramework` on every request — there is no Pennington-side cache, so an option change or a newly observed class shows up on the next fetch without a process restart.
+Pennington uses the `MonorailCss.Discovery` package. Discovery force-loads every non-BCL referenced assembly at startup, walks the IL for string literals that parse as utility candidates, and watches source files in development for live updates. The discovered set is exposed through an `IClassRegistry`. The `/styles.css` endpoint reads the current class set and runs it through a fresh `CssFramework` on every request, so an option change or a newly observed class shows up on the next fetch without a process restart.
 
 ## How it works
 
 ### Classes are discovered by scanning compiled output
 
-`AddMonorailCss` calls `services.AddMonorailClassDiscovery()`, which registers the runtime scanner. At startup the scanner enumerates every assembly the entry app references (skipping the BCL), force-loads each one if needed, and walks IL string literals through Pennington's configured `CssFramework` to keep only the candidates the framework actually recognizes. That last step is wired through `IConfigureOptions<MonorailDiscoveryOptions>` in `MonorailServiceExtensions`: the same `CssFramework` instance that generates the stylesheet validates discovery candidates, so the theme is consistent across both halves of the pipeline.
+`AddMonorailCss` calls `services.AddMonorailClassDiscovery()`, which registers the runtime scanner. At startup the scanner enumerates every assembly the entry app references (skipping the BCL), force-loads each one if needed, and walks IL string literals through Pennington's configured `CssFramework` to keep only the candidates the framework actually recognizes. The same theme drives both halves of the pipeline: the framework that validates discovery candidates and the one that generates the stylesheet are built from the same options, so a class survives discovery only if it would render.
 
 Because the scan reads compiled IL rather than source text, every `class="bg-primary-500"` literal in a Razor component, every string constant in a C# helper, and every utility token in `Pennington.UI`'s shipped components participates without any per-project glob configuration. In development, Discovery also watches the source files behind the loaded assemblies and re-scans on edits, so a new utility added to a `.razor` or `.cs` file shows up on the next `/styles.css` fetch. If a `wwwroot/app.css` is present, Discovery treats it as the source CSS prefix.
 
 ### The stylesheet generates on demand, every request
 
-`UseMonorailCss` maps a `GET /styles.css` endpoint that calls `MonorailCssService.GetStyleSheet()`. Each hit builds a fresh `CssFramework` from the current `MonorailCssOptions`, runs it over `IClassRegistry.GetClasses()`, and prepends Pennington's content-visibility preamble plus any configured `ExtraStyles`. The service deliberately skips `IClassRegistry.Css` — that upstream cache is keyed against the framework baked in at startup, and the per-call rebuild is what lets hot-reload edits to `CustomCssFrameworkSettings` or theme tokens flow into the next stylesheet without restarting the process.
+`UseMonorailCss` maps a `GET /styles.css` endpoint that calls `MonorailCssService.GetStyleSheet()`. Each hit builds a fresh `CssFramework` from the current `MonorailCssOptions`, runs it over `IClassRegistry.GetClasses()`, and prepends Pennington's content-visibility preamble plus any configured `ExtraStyles`. The per-call rebuild is what lets hot-reload edits to `CustomCssFrameworkSettings` or theme tokens flow into the next stylesheet without restarting the process.
 
 Pennington is a static content engine: the build is one-shot and the dev server is the only other consumer, so per-call regeneration is cheap enough to make caching unnecessary. The first page load primes the registry with whatever classes that page emits; the browser then fetches `/styles.css` and gets a stylesheet generated from the current class set. A subsequent navigation that introduces a new class is reflected on the very next stylesheet fetch.
+
+A static build leans on the same ordering. The build fetches every HTML page first — priming the registry with every class the rendered site actually emits — and fetches `/styles.css` last, after all that markup has run through the pipeline. So the `styles.css` written to the output directory is a single tree-shaken file: exactly the utilities the site uses, nothing more, generated once and served as a plain static asset with no runtime regeneration in production.
 
 ### Color schemes: named vs algorithmic
 
@@ -37,11 +39,9 @@ Syntax-highlight colors are deliberately kept off the brand scheme. `SyntaxTheme
 
 ### OKLCH palette generation
 
-The algorithmic scheme delegates to the `ApplyAlgorithmicColorScheme` extension method on `Theme`, which generates each palette as an 11-stop dictionary keyed by the familiar `50` through `950` shade names. Two curve families do the work. Foreground palettes (used for primary and accents) scale a fixed lightness curve fitted from averaged Tailwind palettes, and chroma is anchored at step 500 to the seed value — every other step is a relative fraction of that peak. Neutral palettes (used for the base) follow a flatter lightness curve and an absolute chroma curve scaled by the seed's intensity, with the dark tail blending between a tapered and a held-high shape so deep base colors keep a usable hue cast.
+From a single `PrimaryHue`, the algorithmic scheme synthesizes a full palette — each color as the familiar 11-stop ramp keyed by `50` through `950` shade names, derived in the OKLCH color space rather than HSL.
 
-The property that makes OKLCH the right choice here is perceptual uniformity. OKLCH is a cylindrical coordinate system over the OK-Lab color space — lightness, chroma, and hue tuned so equal numeric steps look equal to the eye. That is not true of HSL, where a 500-weight green at HSL lightness 40% looks brighter than a 500-weight blue at the same value. OKLCH makes the generated scheme feel visually coherent without per-hue handwork, which is what makes "give me a palette from hue 214" a reasonable thing to ask.
-
-`ColorPaletteGenerator.GenerateForeground` and `GenerateNeutral` are plain static methods, so nothing in palette generation depends on DI — a test or a small designer tool can call them directly to preview a palette before committing to a seed.
+OKLCH is the right choice here because of perceptual uniformity. It is a cylindrical coordinate system over the OK-Lab color space — lightness, chroma, and hue tuned so equal numeric steps look equal to the eye. That is not true of HSL, where a 500-weight green at HSL lightness 40% looks brighter than a 500-weight blue at the same value. OKLCH makes the generated scheme feel visually coherent without per-hue handwork, which is what makes "give me a palette from hue 214" a reasonable thing to ask.
 
 ## Further reading
 

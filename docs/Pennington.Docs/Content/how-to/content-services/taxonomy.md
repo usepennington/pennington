@@ -7,7 +7,9 @@ sectionLabel: "Content Services"
 tags: [taxonomy, navigation, content-service, hot-reload]
 ---
 
-When the same content needs to be reachable through multiple browse axes — recipes by cuisine *and* by dietary tag, docs by audience, posts by series — wire each axis with `AddTaxonomy<TFrontMatter, TKey>`. The framework walks the records every other registered `IContentService` projects, keeps the ones whose front matter is `TFrontMatter`, projects keys via the configured selector, and emits `/{base}/` plus `/{base}/{slug}/` routes wired to your Razor templates. Markdown is one such source — but so is any custom content service whose records carry `TFrontMatter` (see <xref:how-to.content-services.custom-content-service>).
+To make the same content reachable through more than one browse axis — recipes by cuisine *and* by dietary tag, docs by audience, posts by series — wire each axis with `AddTaxonomy<TFrontMatter, TKey>`. Each call emits a `/{base}/` index plus one `/{base}/{slug}/` term page per distinct key, each rendered from a Razor component you supply.
+
+`AddTaxonomy` groups the records every other registered `IContentService` already projects — it does not re-parse files. Markdown is one such source, but so is any custom content service whose records carry `TFrontMatter` (see <xref:how-to.content-services.custom-content-service>).
 
 ## Define your front matter
 
@@ -17,14 +19,8 @@ Add a property for the field you want to group on. Implement <xref:reference.api
 public record RecipeFrontMatter : IFrontMatter, ITaggable
 {
     public string Title { get; init; } = "";
-    public string? Description { get; init; }
-    public bool IsDraft { get; init; }
     public string Cuisine { get; init; } = "";
     public string[] Tags { get; init; } = [];
-    public string? Uid { get; init; }
-    public bool Search { get; init; } = true;
-    public bool Llms { get; init; } = true;
-    public bool SearchOnly { get; init; }
 }
 ```
 
@@ -122,15 +118,15 @@ The index page receives the full term list as `Terms`:
 }
 ```
 
-The Razor components own the entire HTML document — they are full-page templates, not partials. Wrap them in your site layout the same way you would any bare-host Razor page.
+The snippets above are deliberately minimal — bare fragments that get the term data onto the page. Each component backs a route, so wrap its markup in your site layout the same way you would any bare-host Razor page.
 
 ## Customize slugs and labels
 
 Default slug encoding lowercases the key, replaces whitespace with hyphens, and URL-encodes the rest. Override either:
 
 ```csharp
-opts.SlugFor  = key => key.ToLowerInvariant();           // skip the URL-encode for plain ASCII
-opts.LabelFor = key => culture.TextInfo.ToTitleCase(key); // pretty-print on the term page
+opts.SlugFor  = key => key.ToLowerInvariant();                                       // skip the URL-encode for plain ASCII
+opts.LabelFor = key => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(key);         // pretty-print on the term page
 ```
 
 ## Hot reload
@@ -139,9 +135,22 @@ When a markdown file the taxonomy reads changes, the cached term list is invalid
 
 Edits during `dotnet run` propagate immediately.
 
+## Verify
+
+- Run `dotnet run` and visit `/cuisine/` — the index lists every cuisine, and `/cuisine/japanese/` renders the term page with the sushi recipe in it.
+- Visit `/tag/pasta/` — the same carbonara recipe appears under its tag axis, confirming both registrations coexist.
+- Run `dotnet run -- build` and confirm the static build writes `output/cuisine/japanese/index.html` (and one folder per term under `output/tag/`).
+
+## Related
+
+- How-to: [Source content from outside the file system](xref:how-to.content-services.custom-content-service)
+- How-to: [Paginate a long listing](xref:how-to.discovery.pagination)
+- How-to: [Render a Razor page on a bare host](xref:how-to.response-pipeline.razor-page-on-bare-host)
+- Background: [The content pipeline and union types](xref:explanation.core.content-pipeline)
+
 ## Caveats
 
 - **Listed in the sitemap.** Taxonomy routes use `EndpointSource` (the canonical HTML lives behind `MapTaxonomy`'s endpoints), but they serve real HTML, so they appear in navigation, search, cross-references, *and* `/sitemap.xml` — same as a <xref:how-to.content-services.custom-content-service> page.
-- **Records of `TFrontMatter`, from any source.** The walker reads each content service's projected records and keeps those whose metadata is a `TFrontMatter` — markdown, a custom `IContentService`, or a Razor page all participate, as long as the producing service projects records of that exact front-matter type. (A custom service projects records by attaching the front matter to each `DiscoveredItem.Metadata`, or by overriding `GetRecordsAsync` — see <xref:how-to.content-services.custom-content-service>.) Records of any other type are ignored, so an axis only ever collects the front matter it was typed for. Sibling taxonomies are skipped during the walk to avoid recursion when two axes share a front-matter type.
+- **Records of `TFrontMatter`, from any source.** An axis collects only records whose metadata is a `TFrontMatter`; everything else is ignored. To feed it from something other than markdown, project that type from a custom service (see <xref:how-to.content-services.custom-content-service>).
 - **Drafts and future-dated posts are skipped.** Items whose `IsHiddenFromBuild` is `true` — `IsDraft` set, or a `Date` in the future — are excluded from every term, same convention as the rest of the pipeline.
 - **One Razor component per axis.** Different cuisines can't render with different templates; switch on `Term.Key` inside `TermPage` if some terms need a custom layout.

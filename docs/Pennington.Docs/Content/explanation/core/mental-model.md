@@ -37,6 +37,18 @@ Start here for a conventional documentation site. You can still customize option
 
 Use it when the blog is the site. If you want a blog alongside documentation, use DocSite's built-in blog folder instead of combining DocSite and BlogSite in the same app.
 
+### `Pennington.UI`
+
+`Pennington.UI` is the Razor component library — table-of-contents and outline navigation, breadcrumbs, pagination, cards, badges, code blocks, callouts, the search modal, and the client-side SPA navigation script. DocSite and BlogSite reference it for you and pre-register the markdown-facing components, so you rarely call it directly on a template.
+
+You meet it the moment you go bare-engine. `AddPennington` does not assume a layout, so a custom shell that wants the same navigation chrome or wants to drop components into markdown pulls these in itself. The components and their parameters are catalogued in the UI reference: <xref:reference.ui.content>, <xref:reference.ui.navigation>, and <xref:reference.ui.utility>. To use them inside markdown, see <xref:how-to.rich-content.ui-components-in-markdown>.
+
+### `Pennington.TreeSitter`
+
+`Pennington.TreeSitter` is the optional code-fragment extractor. It powers the `:symbol` fence — addressing a member by its name path so a code block shows one method instead of a whole file — across the languages tree-sitter parses.
+
+It is opt-in: register it with `AddTreeSitter` and point `ContentRoot` at the root that holds the source you want to fence. Nothing else changes, so you add it only when a site embeds live source. The recipes live in <xref:how-to.code-samples.focused-code-samples>.
+
 ## Terms you will see
 
 | Term | Meaning |

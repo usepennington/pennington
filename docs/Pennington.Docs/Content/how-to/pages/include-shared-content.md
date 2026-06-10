@@ -42,8 +42,10 @@ The current target SDK is [!INCLUDE [version](../../../_includes/sdk-version.md)
 
 The path in the directive is resolved relative to the **referencing file**, not the content root — `../` climbs out of the page's folder. Includes nest: a partial may itself contain `[!INCLUDE]` directives, resolved relative to that partial in turn.
 
-Two rules keep the feature predictable:
+Expansion is plain text substitution: the partial's content replaces the directive in place, then the combined Markdown parses as one document. Two consequences follow from that, plus two rules that keep the feature predictable:
 
+- **A block partial may hold many blocks** — paragraphs, lists, callouts, fences. Because the directive sits on its own line with blank lines around it, each block splices in as its own block. A trailing newline at the end of the partial is harmless here.
+- **An inline partial must be a single run of text with no trailing newline.** A trailing newline splices a line break into the middle of the host sentence, ending the paragraph early; `_includes/sdk-version.md` is a single line (`10.0.100`) with no terminating newline for exactly this reason.
 - A directive inside a fenced code block is left verbatim, so this page can show the syntax without expanding it.
 - Relative links and images inside a partial are **not** rebased — they resolve as if written in the host page. Keep partials free of relative links, or use site-absolute paths.
 
@@ -56,6 +58,14 @@ A target that does not exist collapses to an HTML comment instead of failing the
 ```
 
 View source on a page during `dotnet run` to spot a mistyped path — the comment names the directive that could not be resolved. Only local relative paths are spliced: an `[!INCLUDE …](https://…)` directive is also skipped, emitting `<!-- Pennington: include skipped (not a local file): … -->`. An include cycle is broken the same way, emitting `<!-- Pennington: include cycle broken: … -->`.
+
+A missing include is the one failure mode you have to catch yourself. Neither the build report nor `dotnet run -- diag warnings` flags an unresolved directive — expansion happens inside the Markdown parser, which swallows the failure into the HTML comment and moves on. A typo'd path drops its content from the published site silently, so inspect the rendered output rather than trusting a clean build.
+
+## Verify
+
+- Run `dotnet run`, open a host page, and confirm the partial's text appears where the directive sat — block partials as their own blocks, an inline partial spliced into the sentence with no stray line break.
+- Edit the partial (for example, change `_includes/sdk-version.md`) and reload every host page — each one reflects the new text on the next build.
+- Mistype a path on purpose and view source: the body carries `<!-- Pennington: include not found: ... -->` and that block is empty. Search the rendered HTML for `Pennington: include` to sweep a page for skipped, missing, or cyclic directives — the build itself reports nothing.
 
 ## Related
 

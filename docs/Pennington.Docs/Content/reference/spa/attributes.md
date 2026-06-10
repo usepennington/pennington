@@ -26,9 +26,7 @@ Every attribute in this table is read on a region element — the element marked
 |---|---|---|
 | `<a>` | `data-spa-reload` | Forces a full-page navigation for that link; the engine treats it as a non-SPA anchor. Used by `LanguageSwitcher` so the locale change re-runs the request pipeline. |
 | `<a>` | `target="_blank"` or `download` | Excluded from SPA handling automatically; no opt-in attribute required. |
-| `<link rel="stylesheet">` | `data-spa-reload` | Re-fetches the stylesheet with a `_spa=<timestamp>` cache-buster query on every navigation. The opt-in workaround for JIT stylesheets like [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) in dev where the URL stays constant but contents diverge per page. |
-
-In production builds the stylesheet URL changes per content set, so `data-spa-reload` on a `<link>` becomes redundant.
+| `<link rel="stylesheet">` | `data-spa-reload` | Re-fetches the stylesheet with a `_spa=<timestamp>` cache-buster query on every navigation. Opt-in only; see [why dev needs it and production doesn't](xref:explanation.core.dev-vs-build). |
 
 ## Document-root tuning
 

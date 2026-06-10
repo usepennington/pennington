@@ -19,7 +19,7 @@ There are two ways to wire it in: implement `IHasStructuredData` on your front m
 Subclass `JsonLdEntity`, override `Type` with the schema.org type literal, and attribute every field with `[JsonPropertyName]`. Repeat the `[JsonPropertyName("@type")]` attribute on the override — `System.Text.Json` doesn't inherit attributes through `override`.
 
 ```csharp:symbol
-examples/BlogKitchenSinkExample/StructuredDataBuilder.cs
+examples/BlogKitchenSinkExample/StructuredDataBuilder.cs > JsonLdRecipe
 ```
 
 This example defines `JsonLdRecipe`, a `Recipe` entity record. It is not a framework type — you own it in your own assembly — and it is the record the wiring snippets in steps 3a and 3b instantiate.
@@ -100,7 +100,7 @@ When the entity isn't a function of front matter — a hand-routed landing page,
 2. Copy the rendered HTML into [Google's Rich Results test](https://search.google.com/test/rich-results) and confirm the type validates.
 3. If a field is missing from the JSON, check that the property is non-null and that it carries a `[JsonPropertyName]` attribute — properties without one use the C# member name verbatim.
 
-## See also
+## Related
 
 - Reference: [Utility components](xref:reference.ui.utility) — `<StructuredData>` parameters.
 - How-to: [Render a Razor component as a page on a bare host](xref:how-to.response-pipeline.razor-page-on-bare-host) — wires the page that emits the JSON-LD.

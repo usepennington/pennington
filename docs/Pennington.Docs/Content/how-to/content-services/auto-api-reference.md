@@ -13,7 +13,7 @@ To ship a DocSite whose reference section stays in sync with a class library's p
 
 ## Before you begin
 
-- `AddDocSite` is already wired: `AddApiReference` appends its own assembly to `DocSiteOptions.AdditionalRoutingAssemblies` at registration time, so it must run after `AddDocSite`.
+- `AddApiReference` runs after `AddDocSite`. It appends its own assembly to `DocSiteOptions.AdditionalRoutingAssemblies` at registration time, so `AddDocSite` must already be wired.
 - One metadata backend is registered before `AddApiReference`. Without one, the content service has nothing to publish.
 
 ## Wire the reflection backend
@@ -24,7 +24,7 @@ Add a project reference to `Pennington.ApiMetadata.Reflection`, add a `<PackageR
 examples/FusionCacheDocSiteExample/Program.cs
 ```
 
-`FromPackageReference` calls `Assembly.Load` against the project's deps.json and reads the resolved `.dll` path from `Assembly.Location` (typically the project's bin folder). The companion `.xml` file ships alongside the dll for any package built with `<GenerateDocumentationFile>true</GenerateDocumentationFile>` — MSBuild does not always stage that xml into `bin/`, so when the xml is missing next to the resolved bin-path DLL the provider falls back to the matching NuGet cache copy (where the package originally ships both files together). No staging, no committed binary, and bumping the documented version is a `<PackageReference Version=…>` change.
+`FromPackageReference` resolves the `.dll` (and its companion xmldoc `.xml`) from a matching `<PackageReference>` by simple name — no staged dll, no committed binary, and bumping the documented version is a `<PackageReference Version=…>` change.
 
 When the target isn't a normal NuGet reference — a locally-built assembly, a single-file bundle, or something else without a file location — fall back to the explicit form:
 
@@ -33,7 +33,7 @@ builder.Services.AddApiMetadataFromCompiledAssembly(opts =>
     opts.AssemblyFiles.Add(Path.Combine(builder.Environment.ContentRootPath, "lib", "net9.0", "Foo.dll")));
 ```
 
-The reflection backend inspects metadata without running the assembly's code — no MSBuild workspace, no source needed. It resolves `<inheritdoc/>` and union-case xmldoc from metadata. Only the `:xmldocid` source fence is unavailable under this backend, since it extracts source text rather than metadata.
+The reflection backend loads each `.dll` into a `MetadataLoadContext` — it inspects metadata without running the assembly's code, so it needs no MSBuild workspace and no source. It resolves `<inheritdoc/>` and union-case xmldoc from that metadata. Because it reads metadata rather than source text, this backend can populate the `<ApiSummary>` and `<ApiMemberTable>` components below, but it cannot back a fence that embeds a member's *source* — the kind of resolver you would write with an [`ICodeBlockPreprocessor`](xref:how-to.markdown-pipeline.code-block-preprocessor) has nothing to read.
 
 ## Customize the route prefix
 

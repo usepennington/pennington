@@ -26,7 +26,7 @@ Set `SocialCards` with a `Render` hook. This is the complete `BlogSiteSocialCard
 examples/BlogSiteSocialCardsExample/Program.cs
 ```
 
-`Render` is invoked once per page with the page's resolved metadata, the request's `IServiceProvider` (resolve anything registered — a font cache, theme options), and a cancellation token. Return the image bytes, or `null` to skip the page: its card route serves 404 and is omitted from the build.
+`Render` runs whenever a card route is requested: once per page during a static build, and on demand in development each time the route is hit. It receives the page's resolved metadata, the request's `IServiceProvider` (resolve anything registered — a font cache, theme options), and a cancellation token. Return the image bytes, or `null` to skip the page: its card route serves 404 and is omitted from the build.
 
 Everything the hook receives arrives on the request:
 
@@ -65,7 +65,11 @@ Return `null` from `Render`. The card route 404s, the build omits the file, and 
 
 ## Use your own image for some pages
 
-A page that authors its own `og:image` wins — the generated card's tags only fill gaps, through the same head reconciliation every contributor goes through (see [the head subsystem](xref:explanation.core.head-subsystem)). On BlogSite, `SocialMediaImageUrlFactory` is the per-post hook: return an image URL to use it for that post, or `null` to fall back to the generated card.
+A page that authors its own `og:image` wins — the generated card's tags only fill gaps, through the same head reconciliation every contributor goes through (see [the head subsystem](xref:explanation.core.head-subsystem)). How a page declares that image depends on the host shape.
+
+### BlogSite
+
+`SocialMediaImageUrlFactory` is the per-post hook: return an image URL to use it for that post, or `null` to fall back to the generated card.
 
 ```csharp
 new BlogSiteOptions
@@ -74,6 +78,34 @@ new BlogSiteOptions
         post.FrontMatter.Tags.Contains("announcement") ? "/img/announcement-card.png" : null,
     SocialCards = new SocialCardOptions { Render = ... },
 }
+```
+
+### DocSite or a bare host
+
+There is no per-page factory option here, so override the card the way any tag overrides a built-in one: a head contributor that emits `og:image` from a band below the card's. The card contributor sits at `HeadOrder.Page`, so a lower `Order` wins the slot through the lowest-order-wins rule, and the card's tag steps aside for those pages. Read the per-page image off the resolved record's front matter (give your front-matter type an image field, or branch on tags as below) and skip pages that should keep the generated card.
+
+```csharp
+internal sealed class CardOverrideHeadContributor : IHeadContributor
+{
+    // Below HeadOrder.Page so this wins the og:image slot against the generated card.
+    public int Order => HeadOrder.Page - 1;
+
+    public bool ShouldContribute(HeadContext context) =>
+        context.Record?.Metadata is ITaggable { Tags: var tags } && tags.Contains("announcement");
+
+    public Task ContributeAsync(HeadContext context, HeadBuilder head)
+    {
+        head.Property("og:image", "/img/announcement-card.png");
+        head.Meta("twitter:image", "/img/announcement-card.png");
+        return Task.CompletedTask;
+    }
+}
+```
+
+Register it after the host wiring (see [Add tags to the document head](xref:how-to.response-pipeline.head-contributor) for the full contributor surface):
+
+```csharp
+builder.Services.AddHeadContributor<CardOverrideHeadContributor>();
 ```
 
 ## Result

@@ -43,7 +43,7 @@ See <xref:reference.host.cli> for the full grammar.
 
 **Read the `BuildReport` printed to stdout**
 
-When the crawl finishes, `RunOrBuildAsync` writes a human-readable report and exits with a non-zero code when `HasErrors` is true. The key collections are `GeneratedPages`, `SkippedPages` (drafts), `FailedPages`, and `Diagnostics`; see <xref:reference.api.build-report> for the full field list. `HasErrors` is what causes the build command to fail — it is true when a page failed, an error diagnostic was recorded, or a broken internal link was found (broken links surface as `content.links/` warning diagnostics inside `Diagnostics`). Fix the listed routes before deploying.
+When the crawl finishes, `RunOrBuildAsync` writes a human-readable report and exits with a non-zero code when the build failed; see <xref:reference.api.build-report> for the fields and the exact failure conditions. Fix the routes it lists before deploying.
 
 For custom CI presentation (a GitHub Actions summary, a Slack message), use `BuildHost.PrintBuildReport` in `examples/SubPathDeployableExample/BuildHost.cs` as a starting point.
 
@@ -54,9 +54,8 @@ For custom CI presentation (a GitHub Actions summary, a Slack message), use `Bui
 
 ## Verify
 
-- `dotnet run -- build` exits `0` and `output/index.html` exists — open it in a browser and every internal link resolves
-- The stdout report opens with `Build Complete — N pages in Xs` followed by `N pages generated`, shows no `ERRORS` or `WARNINGS` section, and the process exits `0`
-- `output/404.html` exists (the crawler fetches the internal `/__pennington-404-generator` sentinel to materialize it)
+- `dotnet run -- build` exits `0` and the stdout report opens with `Build Complete — N pages in Xs` followed by `N pages generated`, with no `ERRORS` or `WARNINGS` section. A broken internal link is reported as a warning, so an empty `WARNINGS` section means every internal link resolved.
+- `output/index.html` and `output/404.html` both exist — open `index.html` in a browser to spot-check the rendered output.
 
 ## Related
 

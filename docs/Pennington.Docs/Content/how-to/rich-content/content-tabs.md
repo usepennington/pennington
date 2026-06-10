@@ -23,13 +23,24 @@ Each tab opens with a level-1 heading whose link points at `#tab/<id>`. The link
 
 Install the SDK with the official `.pkg` installer or Homebrew's cask.
 
+- Confirm the install with `dotnet --list-sdks`.
+- On Apple Silicon, grab the `arm64` build.
+
 # [Linux](#tab/linux)
 
 Install `dotnet-sdk-11.0` from your distribution's package feed.
 
+```bash
+sudo apt-get install dotnet-sdk-11.0
+```
+
 # [Windows](#tab/windows)
 
 Install the SDK with the Windows installer or `winget`.
+
+```powershell
+winget install Microsoft.DotNet.SDK.11
+```
 
 ---
 ````
@@ -54,12 +65,12 @@ sudo apt-get install dotnet-sdk-11.0
 Install the SDK with the Windows installer or `winget`.
 
 ```powershell
-winget install Microsoft.DotNet.SDK.Preview
+winget install Microsoft.DotNet.SDK.11
 ```
 
 ---
 
-The first tab is active by default. Each panel is ordinary Markdown — the bullet list, callout, and fenced code above all render with the page's normal prose styling.
+The first tab is active by default. Each panel is ordinary Markdown — the bullet list and fenced code above both render with the page's normal prose styling.
 
 ## Tabs sync across the page
 
@@ -129,14 +140,13 @@ A condition that names an id with no selector of its own never resolves, so give
 
 A group renders as a `ctabs` container holding a `ctabs-bar` tab strip and one `ctab-panel` per tab. The tab strip carries `not-prose` so the buttons stay out of page typography; the panels deliberately do **not**, so panel content renders with full prose styling.
 
-| Element | Class | `not-prose` | Role |
-|---|---|---|---|
-| Container | `ctabs` | no | Carries `data-content-tabs`. |
-| Tab strip | `ctabs-bar` | yes | `role="tablist"` row of buttons. |
-| Button | `ctab-btn` | (inherits) | `role="tab"`; carries `data-tab` and `data-active`. |
-| Panel | `ctab-panel` | no | `role="tabpanel"`; carries `data-tab`, `data-condition`, `data-active`. |
+See <xref:reference.markdown.extensions> for the full element, attribute, and class reference.
 
-See <xref:reference.markdown.extensions> for the full syntax and class reference.
+## Verify
+
+- The group renders as a tab strip with one button per heading, not as stacked headings — the first panel shows and the rest are hidden.
+- Clicking a button switches the visible panel; two groups that share ids switch together when you pick one.
+- View source — the container is a `<div class="ctabs" data-content-tabs>` holding a `ctabs-bar` strip and one `ctab-panel` per tab, with `data-active` on the first.
 
 ## Related
 

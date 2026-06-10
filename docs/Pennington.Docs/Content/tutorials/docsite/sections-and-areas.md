@@ -25,7 +25,7 @@ The finished code for this tutorial lives in [`examples/DocSiteSectionsExample`]
 
 ## 1. Register two areas and start from a flat page
 
-The scaffold left `Content/` area-free — every page shared one sidebar tree. This tutorial splits that into two switchable tabs, **Guides** and **Reference**, then fills each with grouped sections. Start by registering the areas, then add one page with minimal front matter under one of them, so the sidebar starts as a single ungrouped entry before any sections appear.
+So far `Content/` is area-free — every page shares one sidebar tree. This tutorial splits that into two switchable tabs, **Guides** and **Reference**, then fills each with grouped sections. To watch the grouping build up from nothing, reset the Guides area to a single flat page first: delete the `configure.md` and hub `index.md` you added in [Add doc pages and link between them](xref:tutorials.docsite.first-doc-page), leaving just `install.md`. Then register the areas and strip `install.md` back to minimal front matter, so the sidebar starts as a single ungrouped entry before any sections appear.
 
 <Steps>
 <Step StepNumber="1">
@@ -41,15 +41,15 @@ examples/DocSiteSectionsExample/Program.cs
 </Step>
 <Step StepNumber="2">
 
-**Drop a single page into `Content/guides/` with no section or order**
+**Strip `Content/guides/install.md` back to minimal front matter**
 
-Create `Content/guides/install.md` with minimal front matter — a `title:` and a `description:`, nothing else.
+Leave `Content/guides/install.md` with just a `title:` and a `description:` — drop the `order:`, `uid:`, and the Next footer from the earlier tutorial so the page starts as a bare entry.
 
-```csharp:symbol,bodyonly
-examples/DocSiteSectionsExample/Stage1_FlatArea.cs > Stage1.Source
+```markdown:symbol
+examples/DocSiteSectionsExample/snippets/stage1.md
 ```
 
-Paste the YAML-plus-markdown content above into `Content/guides/install.md`. With no subfolder and no `order:`, the page sorts to the top of the Guides area as a single ungrouped entry.
+With no subfolder, the page is a single ungrouped entry directly under the Guides area — there is no section header because there is no folder to title-case into one. A missing `order:` defaults to `int.MaxValue`, so an un-ordered page sorts *after* any page with an explicit `order:` — but here it is the only page, so it just appears on its own.
 
 </Step>
 </Steps>
@@ -58,9 +58,8 @@ Paste the YAML-plus-markdown content above into `Content/guides/install.md`. Wit
 
 The sidebar shows the page directly, with no section header above it.
 
-- Run `dotnet run` from `examples/DocSiteSectionsExample`
-- Visit `http://localhost:5000/guides/install`
-- The Guides sidebar shows the **Install Pennington** link at the top of the area with no section header above it
+- Run `dotnet run` from your project and visit `http://localhost:5000/guides/install`
+- The Guides sidebar shows the **Install Pennington** link directly under the area with no section header above it
 
 </Checkpoint>
 
@@ -77,13 +76,15 @@ Now let's move the same page under a `getting-started/` subfolder and add `secti
 
 Delete `Content/guides/install.md` and create `Content/guides/getting-started/installation.md` in its place. The subfolder name is what creates the sidebar section header — Pennington title-cases the folder (`getting-started` → *Getting Started*) and renders it as a non-navigable group label.
 
+Moving the file changes its URL. Routes preserve subfolders, so the page no longer serves at `/guides/install` — it now serves at `/guides/getting-started/installation/`, mirroring its path under `Content/`. The folder you added for grouping also became a URL segment.
+
 </Step>
 <Step StepNumber="2">
 
 **Add `sectionLabel: Getting Started` and `order: 10` to the front matter**
 
-```csharp:symbol,bodyonly
-examples/DocSiteSectionsExample/Stage2_SectionAndOrder.cs > Stage2.Source
+```markdown:symbol
+examples/DocSiteSectionsExample/snippets/stage2.md
 ```
 
 `order:` sorts pages within the section (smaller first). `sectionLabel:` surfaces in breadcrumbs and prev/next chrome.
@@ -93,7 +94,7 @@ examples/DocSiteSectionsExample/Stage2_SectionAndOrder.cs > Stage2.Source
 
 <Checkpoint>
 
-- Reload `http://localhost:5000/guides/installation`
+- The old `http://localhost:5000/guides/install` URL now 404s — the page moved. Visit `http://localhost:5000/guides/getting-started/installation/` instead
 - The Guides sidebar shows a non-navigable **Getting Started** header with the **Install Pennington** link indented under it
 - The breadcrumb at the top of the article reads *Guides › Getting Started › Install Pennington*
 
@@ -148,8 +149,8 @@ Section headers inherit the minimum `order:` of their pages. Leaving gaps betwee
 
 <Checkpoint>
 
-- Revisit `http://localhost:5000/guides/installation`
-- The Guides sidebar shows, top to bottom: **Getting Started** (with *Install Pennington*, *Create your first project*, *Configure Pennington*) then **Advanced** (with *Custom layouts*, *The response pipeline*)
+- Revisit `http://localhost:5000/guides/getting-started/installation/`
+- The Guides sidebar shows, top to bottom: **Getting Started** (with *Install Pennington*, *Create your first project*, *Configure your site*) then **Advanced** (with *Custom layouts*, *The response pipeline*)
 - Click around — breadcrumbs and prev/next labels reflect the `sectionLabel:` on each page
 
 </Checkpoint>
@@ -184,7 +185,7 @@ examples/DocSiteSectionsExample/Content/reference/core-api/content-pipeline.md
 
 **Add `Content/reference/extensions/` with `order: 30` and `order: 40`**
 
-Create `extensions/` and drop two pages in it with `sectionLabel: Extensions` and `order:` values of `30` and `40`. Using `30`/`40` rather than restarting at `10` leaves gaps between the section order ranges as in unit 3 — the *Core API* minimum is `10` and the *Extensions* minimum is `30`, so the sections sort *Core API → Extensions* without relying on the alphabetical tie-break.
+Create `extensions/` and drop two pages in it with `sectionLabel: Extensions` and `order:` values of `30` and `40`. Continuing the count rather than restarting at `10` keeps the section order ranges separated — *Core API* at 10/20, *Extensions* at 30/40 — so *Core API* sorts above *Extensions* by the same minimum-`order:` rule from unit 3.
 
 ```markdown:symbol
 examples/DocSiteSectionsExample/Content/reference/extensions/markdown-extensions.md

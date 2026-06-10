@@ -36,7 +36,7 @@ A DocSite turns on its blog when it finds a folder named `blog` under `Content/`
 Add a `blog` folder under `Content/`, alongside your area folders, and create `launching-the-docs.md` inside it. The filename minus `.md` becomes the post's URL slug, so this post serves at `/blog/launching-the-docs`.
 
 > [!NOTE]
-> The folder must be named exactly `blog`, in lowercase. On a case-sensitive filesystem `Blog` or `blogs` is not detected. This applies to DocSite's content-detected blog; the standalone BlogSite template instead reads `BlogSiteOptions.BlogContentPath`, which defaults to `Blog`.
+> The folder must be named exactly `blog`, in lowercase. On a case-sensitive filesystem `Blog` or `blogs` is not detected.
 
 </Step>
 <Step StepNumber="2">
@@ -148,17 +148,28 @@ Save both files and reload `http://localhost:5000/blog/launching-the-docs`.
 - The post page now lists its tags beneath the body — **launching-the-docs** shows **announcements** and **docs** as links.
 - Following a tag opens its page — `http://localhost:5000/blog/tags/announcements` lists both posts; `/blog/tags/docs` lists only the first.
 - The blog index carries a **Browse by tag** link to `http://localhost:5000/blog/tags`, which lists all three tags with their post counts — **announcements** (2), **docs** (1), and **roadmap** (1).
-- `http://localhost:5000/rss.xml` is a valid RSS feed — a `<channel>` with the site title and two `<item>` elements whose `<title>`, `<description>`, `<pubDate>`, and `<author>` come from the front matter. `CanonicalBaseUrl` makes the `<link>` URLs absolute.
+
+</Checkpoint>
+
+Now look at the feed the blog has been publishing since your first post.
+
+<Checkpoint>
+
+- `http://localhost:5000/rss.xml` is a valid RSS feed — a `<channel>` with the site title and two `<item>` elements whose `<title>`, `<description>`, `<pubDate>`, and `<author>` come from the front matter. The `<link>` URLs are relative to your site root, since no `CanonicalBaseUrl` is set; set `DocSiteOptions.CanonicalBaseUrl` to make them absolute.
 - Run `dotnet run -- build` — the static build writes `blog/index.html`, the two post pages, the `blog/tags/` pages, and `rss.xml` into `output/`.
 
 </Checkpoint>
 
 ---
 
+Every front-matter field you wrote into those posts is parsed into a [`BlogPostFrontMatter`](xref:reference.front-matter.keys) record, the type a DocSite binds for content under the `blog` folder.
+
 ## Summary
 
 - A folder named `blog` under `Content/` is the whole switch — `AddDocSite` finds it at startup and turns on the blog index, post pages, tag pages, the RSS feed, and the header link.
 - Each `BlogPostFrontMatter` field drives a surface: `title`, `description`, and `date` for the index; `author` for the byline and RSS; `tags` for the `/blog/tags/` pages.
 - Posts sort newest-first by `date`.
-- `/rss.xml` is generated automatically; `CanonicalBaseUrl` makes its links absolute.
+- `/rss.xml` is generated automatically; its `<link>` URLs are relative until you set `DocSiteOptions.CanonicalBaseUrl`.
 - None of it needed a `Program.cs` change — the blog is pure content.
+
+That rounds out the Getting Started with DocSite series. To go further, the **Beyond the Basics** tutorials build on this same host: [add a second locale to your site](xref:tutorials.beyond-basics.add-a-locale) and [author a custom Razor component for markdown](xref:tutorials.beyond-basics.custom-razor-component).

@@ -1,13 +1,13 @@
 ---
 title: "Navigation components"
-description: "Parameters, slots, and NavigationInfo bindings for TableOfContentsNavigation and OutlineNavigation."
+description: "Parameters, slots, and NavigationInfo bindings for the four Pennington.UI navigation components — TableOfContentsNavigation, OutlineNavigation, Breadcrumb, and Pagination."
 uid: reference.ui.navigation
 order: 1
 sectionLabel: UI Components
 tags: [ui, navigation, razor, components]
 ---
 
-`TableOfContentsNavigation` and `OutlineNavigation` are the two Razor components in `Pennington.UI` that render, respectively, the sidebar page tree and the floating in-page heading outline. Both live in namespace `Pennington.UI.Components.Navigation` and are consumed by `Pennington.DocSite`'s `MainLayout`.
+The four navigation-oriented Razor components in `Pennington.UI`. `TableOfContentsNavigation` and `OutlineNavigation` render, respectively, the sidebar page tree and the floating in-page heading outline, and live in namespace `Pennington.UI.Components.Navigation`. `Breadcrumb` and `Pagination` render the article-header trail and prev/numbered/next paging controls, and live in the base namespace `Pennington.UI.Components`. All four are consumed by `Pennington.DocSite`'s `MainLayout`.
 
 ## `TableOfContentsNavigation`
 
@@ -17,26 +17,36 @@ tags: [ui, navigation, razor, components]
 src/Pennington.UI/Components/Navigation/TableOfContentsNavigation.razor
 ```
 
-Renders an ordered `<nav><ul>` of `NavigationTreeItem` entries, recursing one level into each entry's `Children` collection. Root entries with an empty `Route.CanonicalPath` render as plain section headers; entries with a path render as anchor links carrying `data-current="true"` when `IsSelected` is set.
+Renders an ordered `<nav><ul>` of `NavigationTreeItem` entries, recursing one level into each entry's `Children` collection and sorting by `NavigationTreeItem.Order` at each level. Root entries with an empty `Route.CanonicalPath` render as plain section headers; entries with a path render as anchor links carrying `data-current="true"` when `IsSelected` is set.
 
 ### Parameters
 
 | Name | Type | Default | Description |
 |---|---|---|---|
-| `TableOfContents` | `ImmutableList<NavigationTreeItem>?` | `null` | Navigation tree to render; when `null` the component renders nothing, and entries are sorted by `NavigationTreeItem.Order` at each level. |
+| `TableOfContents` | `ImmutableList<NavigationTreeItem>?` | `null` | Navigation tree to render; when `null` the component renders nothing. |
 | `SectionLabel` | `string?` | `null` | Optional label forwarded from the caller's `NavigationInfo.SectionName`; not rendered by the default template. |
 | `ListGapClass` | `string` | `"gap-4"` | CSS classes applied to the outer `<ul>` that holds the top-level navigation entries. |
 | `ChildListClass` | `string` | `"mt-4"` | CSS classes applied to the nested `<ul>` that holds a section's child entries. |
 | `SectionHeaderStructureClass` | `string` | `"font-display font-medium first:pt-0"` | Layout and typography classes applied to the section-header element. |
 | `SectionHeaderColorClass` | `string` | `"text-base-900 dark:text-base-50"` | CSS classes applied to section-header text — both the plain `<div>` for empty-route entries and the `<a>` when a top-level entry has children. |
 | `LinkStructureClass` | `string` | `"block text-sm w-full border-l pl-3.5 py-1.5"` | Layout and typography classes applied to each child-level `<a>` element under a section. |
-| `LinkColorClass` | `string` | see source | CSS classes applied to each child-level `<a>` for color and `data-current=true` state, composed after `LinkStructureClass`. |
+| `LinkColorClass` | `string` | `"transition-colors transition-300 border-base-300 dark:border-base-800 data-[current=true]:border-primary-400 text-base-500 dark:text-base-400 data-[current=true]:text-primary-800 dark:data-[current=true]:text-primary-500 hover:text-accent-400 dark:hover:text-base-50"` | CSS classes applied to each child-level `<a>` for color and `data-current=true` state, composed after `LinkStructureClass`. |
 | `RootLinkStructureClass` | `string` | `"block w-full py-1"` | Layout classes applied to a leaf root-level `<a>` when a top-level entry has no children. |
-| `RootLinkColorClass` | `string` | see source | CSS classes applied to a leaf root-level `<a>` (a top-level entry with no children), composed after `RootLinkStructureClass`. |
+| `RootLinkColorClass` | `string` | `"transition-colors transition-300 text-base-700 dark:text-base-400 data-[current=true]:text-primary-800 dark:data-[current=true]:text-primary-500 hover:text-accent-400 dark:hover:text-base-50"` | CSS classes applied to a leaf root-level `<a>` (a top-level entry with no children), composed after `RootLinkStructureClass`. |
 
 ### Binding
 
 `TableOfContents` accepts an `ImmutableList<NavigationTreeItem>` produced by `await NavigationBuilder.BuildTreeAsync(items, currentPath, locale)`. It does not accept a `NavigationInfo`. `SectionLabel` is typically passed from `NavigationInfo.SectionName`. No `RenderFragment` slots.
+
+### Example
+
+```razor
+@{
+    var tree = await NavigationBuilder.BuildTreeAsync(items, currentPath, locale);
+}
+
+<TableOfContentsNavigation TableOfContents="tree" SectionLabel="@navigation.SectionName" />
+```
 
 ## `OutlineNavigation`
 
@@ -62,12 +72,18 @@ Emits a `data-role="page-outline"` container and an empty `<ul>` whose items are
 | `ContainerColorClass` | `string` | `""` | CSS classes applied to the outer container for color treatment, composed after `ContainerStructureClass`. |
 | `ListStructureClass` | `string` | `"list-none pl-4"` | Layout classes applied to the outline `<ul>`. |
 | `ListColorClass` | `string` | `"text-base-500 dark:text-base-400"` | CSS classes applied to the `<ul>` that holds outline links, composed after `ListStructureClass`. |
-| `OutlineLinkColorClass` | `string` | see source | CSS classes emitted on the container as `data-outline-link-color-class` and applied by the client-side script to each generated `<li><a>` for color and `data-selected=true` state. |
-| `OutlineLinkStructureClass` | `string` | see source | Layout classes emitted on the container as `data-outline-link-structure-class` and applied by the client-side script to each generated `<li><a>`. |
+| `OutlineLinkColorClass` | `string` | `"transition-colors duration-150 hover:text-base-900 dark:hover:text-base-50 data-[selected=true]:text-primary-700 dark:data-[selected=true]:text-primary-300 data-[selected=true]:font-medium"` | CSS classes emitted on the container as `data-outline-link-color-class` and applied by the client-side script to each generated `<li><a>` for color and `data-selected=true` state. |
+| `OutlineLinkStructureClass` | `string` | `"block py-1 ml-[calc(-1*(4em-1px))] pl-[calc(4em+1px)]"` | Layout classes emitted on the container as `data-outline-link-structure-class` and applied by the client-side script to each generated `<li><a>`. |
 
 ### Binding
 
 The component performs no server-side heading extraction. The outline list is populated at runtime by the companion client script in `Pennington.UI/wwwroot/`, which queries the element matched by `ContentSelector` and reads `data-content-selector`, `data-outline-link-structure-class`, and `data-outline-link-color-class` from the container. `NavigationInfo` is not consulted. No `RenderFragment` slots.
+
+### Example
+
+```razor
+<OutlineNavigation ContentSelector="#main-content" Title="On this page" />
+```
 
 ## `Breadcrumb`
 
@@ -85,6 +101,20 @@ Renders a visible breadcrumb trail inside an article header from the `ImmutableL
 |---|---|---|---|
 | `Items` | `ImmutableList<BreadcrumbItem>` | `[]` | The breadcrumb trail to render. Empty list renders nothing. |
 | `TrailingContent` | `RenderFragment?` | `null` | Optional content rendered on the trailing edge of the breadcrumb row; pushed right via `ml-auto`. |
+
+### Binding
+
+`Items` accepts the `ImmutableList<BreadcrumbItem>` exposed as `NavigationInfo.Breadcrumbs`. The last item renders as the current page; every prior item with a `Route` renders as a link. `TrailingContent` is a `RenderFragment` slot for right-aligned chrome on the same row.
+
+### Example
+
+```razor
+<Breadcrumb Items="navigation.Breadcrumbs">
+    <TrailingContent>
+        <a href="@editUrl">Edit on GitHub</a>
+    </TrailingContent>
+</Breadcrumb>
+```
 
 ## `Pagination`
 
@@ -104,6 +134,20 @@ Prev / numbered / next pagination controls. URL-pattern agnostic — the caller 
 | `TotalPages` | `int` | `1` | Total number of pages. The component renders nothing when this is 1 or less. |
 | `UrlFor` | `Func<int, string>` | `page => "?page={page}"` | Returns the URL for a given 1-based page index. Callers should map page 1 to the canonical (non-paginated) URL of the listing. |
 | `SiblingCount` | `int` | `1` | Number of numeric page links flanking the current page in the truncated list. The first and last pages are always rendered; gaps collapse to `...`. Default of 1 yields windows like `1 ... 4 5 6 ... 12`. |
+
+### Binding
+
+`Pagination` does not consult `NavigationInfo`. The caller supplies `CurrentPage` and `TotalPages` as plain integers and maps each 1-based page index to a URL through the `UrlFor` delegate, so the same component drives any paging URL shape. No `RenderFragment` slots.
+
+### Example
+
+```razor
+@{
+    string PageUrl(int page) => page == 1 ? "/archive/" : $"/archive/page/{page}/";
+}
+
+<Pagination CurrentPage="currentPage" TotalPages="totalPages" UrlFor="PageUrl" />
+```
 
 ## See also
 

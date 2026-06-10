@@ -7,7 +7,7 @@ sectionLabel: "Pages"
 tags: [front-matter, authoring, yaml]
 ---
 
-To parse YAML keys the shipped front-matter records do not expose — a `namespace`, a `stability` badge, a `productName` — declare a custom `record` implementing `IFrontMatter` and the capability interfaces relevant to the keys, then register it with `AddMarkdownContent<T>` on a bare `AddPennington` host. For the full catalog of built-in keys, see <xref:reference.front-matter.keys>; for the design rationale behind the capability interfaces, see <xref:explanation.core.front-matter-capabilities>.
+To parse YAML keys the shipped front-matter records do not expose — a `namespace`, a `stability` badge, a `productName` — declare a custom `record` implementing `IFrontMatter` and the capability interfaces relevant to the keys, then register it as a markdown source with `AddMarkdownContent<T>`. For the full catalog of built-in keys, see <xref:reference.front-matter.keys>; for the design rationale behind the capability interfaces, see <xref:explanation.core.front-matter-capabilities>.
 
 The recipe references `examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs`, which adds `namespace` and `stability` keys on top of the built-in front-matter records.
 
@@ -28,30 +28,38 @@ Property names map to YAML keys under `CamelCaseNamingConvention` — `Namespace
 
 ## Register the record
 
-Pass the record type to `AddMarkdownContent<T>` so the pipeline deserializes the YAML into that type. The options delegate selects the content root the source reads from.
+Pass the record type to `AddMarkdownContent<T>` so the pipeline deserializes the YAML into that type. The configure delegate selects the content root the source reads from and the URL prefix its pages serve under. On a bare host this call goes inside the `AddPennington` lambda; on a DocSite or BlogSite host, chain it through the `ConfigurePennington` escape hatch so the extra source sits alongside the template's own. The kitchen-sink example registers its `ApiFrontMatter` source this way:
 
 ```csharp:symbol,bodyonly
-src/Pennington/Infrastructure/PenningtonOptions.cs > PenningtonOptions.AddMarkdownContent
+examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguration.RegisterApiSource
 ```
 
-## Result
+`ExcludePaths` on the template's own doc source carves the subtree out so exactly one source owns those pages — drop that line on a bare `AddPennington` host where no template source claims the folder.
 
-A page under the registered content source can now author the custom keys at the top of its YAML block:
+## Read the key in a component
+
+The lede promised a `stability` badge — here is what consumes it. A page under the registered source authors the custom keys at the top of its YAML block:
 
 ```yaml
 ---
-title: "Pennington API surface"
+title: "Highlighting service"
 namespace: "Pennington.Highlighting"
 stability: "preview"
 ---
 ```
 
-Consumers read the typed properties on the resolved `IFrontMatter` via the content services that produced the page.
+A component renders the `stability` value by casting the page's resolved front matter to the custom record. The ambient `MdazorContext` carries the parsed front matter under the `Metadata` key as an `IFrontMatter`; casting to `ApiFrontMatter` exposes the typed `Stability` property:
+
+```razor:symbol
+examples/DocSiteKitchenSinkExample/Components/StabilityBadge.razor
+```
+
+Drop `<StabilityBadge />` into a markdown page served by the source and the badge renders the value the YAML supplied — the round-trip from key to component.
 
 ## Verify
 
-- Run `dotnet run` and visit a page whose YAML uses the custom keys. The build report contains no `FrontMatterParseError` diagnostics for pages under the new source.
-- Consume the typed property on the resolved `IFrontMatter` returned by the content service (cast to the custom record) and confirm the value round-trips from the YAML.
+- Run `dotnet run` and visit `/symbols/highlighting-service/`. The `<StabilityBadge />` renders the literal `preview` from that page's `stability:` key — proof the YAML deserialized into the typed `ApiFrontMatter.Stability` property.
+- The build report contains no `FrontMatterParseError` diagnostics for pages under the new source.
 
 ## Related
 

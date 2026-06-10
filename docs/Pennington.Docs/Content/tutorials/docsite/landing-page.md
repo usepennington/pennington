@@ -24,12 +24,19 @@ The finished code for this tutorial lives in [`examples/DocSitePagesAndLinksExam
 
 ---
 
-## 1. See that the root has no page
+## 1. Clear the root so a Razor component can claim it
 
-The host from the previous tutorial has one area, `guides`. The root `/` sits **outside** that area — there's no `Content/index.md` and no routed component pointed at it — so a request to `/` returns a 404.
+The host from [Add doc pages and link between them](xref:tutorials.docsite.first-doc-page) binds one content area, `guides`, to the `/guides/` tab. If you also followed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold), a `Content/index.md` is serving the root — that's the markdown landing page this tutorial replaces with a routed Razor component. Delete it so the root is free, then confirm `/` returns a 404 before you route a component at it.
 
 <Steps>
 <Step StepNumber="1">
+
+**Delete `Content/index.md`**
+
+Remove the scaffold's root markdown page. With nothing bound to the root — no `Content/index.md` and no routed component pointed at `/` — a request to `/` returns a 404.
+
+</Step>
+<Step StepNumber="2">
 
 **Run the host and visit the root**
 
@@ -45,7 +52,7 @@ Open `http://localhost:5000/` in a browser.
 <Checkpoint>
 
 - `http://localhost:5000/` returns a 404 — nothing serves the root.
-- `http://localhost:5000/guides/` still renders the Guides hub from the previous tutorial.
+- `http://localhost:5000/guides/` still renders the Guides hub from [Add doc pages and link between them](xref:tutorials.docsite.first-doc-page).
 
 </Checkpoint>
 
@@ -53,7 +60,7 @@ Open `http://localhost:5000/` in a browser.
 
 ## 2. Route a Razor component at the root
 
-A routed Razor component whose `@page` template is `/` owns the root URL. `AddDocSite` adds your project's assembly to the routing assemblies it hands both the live Blazor router and the static build's page scanner, so a `@page` component in your project is picked up by both with no extra wiring. And the literal `/` route is more specific than the catch-all `/{*fileName:nonfile}` in DocSite's own `Pages.razor`, so it wins the match.
+A routed Razor component whose `@page` template is `/` owns the root URL. `AddDocSite` adds your project's assembly to the routing assemblies it hands both the live Blazor router and the static build's page scanner, so a `@page` component in your project is picked up by both with no extra wiring. And a literal `/` route is more specific than DocSite's own catch-all, so it wins the match.
 
 <Steps>
 <Step StepNumber="1">
@@ -116,6 +123,8 @@ Add one line under `@page` naming the layout by its full type name.
 
 **Restart the host**
 
+The `@layout` directive is another `.razor` edit, so stop the host and run `dotnet run` again to recompile.
+
 </Step>
 </Steps>
 
@@ -141,12 +150,14 @@ With routing and layout settled, the component is plain Razor markup. Fill it wi
 examples/DocSitePagesAndLinksExample/Components/Index.razor
 ```
 
-The two cards link to `/guides/install` and `/guides/configure` — the pages built in the previous tutorial. `<PageTitle>` sets the browser tab text, the same component DocSite uses on doc pages.
+The two cards link to `/guides/install` and `/guides/configure` — the pages built in [Add doc pages and link between them](xref:tutorials.docsite.first-doc-page). `<PageTitle>` sets the browser tab text, the same component DocSite uses on doc pages.
 
 </Step>
 <Step StepNumber="2">
 
 **Restart the host and open the root**
+
+Stop the host and run `dotnet run` again to recompile the component, then open `http://localhost:5000/`.
 
 </Step>
 </Steps>
@@ -164,6 +175,6 @@ The two cards link to `/guides/install` and `/guides/configure` — the pages bu
 ## Summary
 
 - A Razor component with `@page "/"` owns the site root — `AddDocSite` already routes your project's assembly, so the directive is the whole wiring.
-- The literal `/` route beats DocSite's catch-all `Pages.razor`, and the same route is honored by both the live host and the static build.
+- A literal `/` route beats DocSite's catch-all, and the same route is honored by both the live host and the static build.
 - A routed component defaults to `MainLayout`; a `@layout` directive naming `FullWidthLayout` drops the sidebar for a landing-page shape.
 - The component body is ordinary Razor styled with MonorailCSS — semantic palette utilities, `dark:` variants, and links straight into the content areas.

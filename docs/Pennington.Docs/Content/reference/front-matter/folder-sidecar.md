@@ -9,6 +9,8 @@ uid: reference.front-matter.folder-sidecar
 
 A `_meta.yml` file dropped in any content folder declares folder-level metadata: an alternative display title, an explicit position in the parent navigation level, and (optionally) opt-in to a dedicated `llms.txt` subtree split. All fields are optional.
 
+Without a sidecar, a folder's sort position is the **min-of-children** value: the smallest `order:` found on any page inside it. The `order` key below overrides that emergent value.
+
 ## Schema
 
 ```yaml
@@ -22,17 +24,17 @@ llms:
 |---|---|---|---|
 | `title` | string | `null` | Overrides both `FormatSectionTitle` (auto-generated from the folder slug) and the title from a sibling `index.md`. |
 | `order` | int | `null` | Sets the folder's position among its parent's children. Overrides the emergent min-of-children rule and any `order:` set on a sibling `index.md`. |
-| `llms.description` | string | `null` | When present, opts the folder into `llms.txt` subtree generation. Requires `title` to also be set. |
+| `llms.description` | string | `null` | When present, opts the folder into `llms.txt` subtree generation. Requires `title` to also be set; without it the description is silently ignored (no subtree, no warning, no error). |
 
 ## Resolution rules
 
 - A field that's set wins over every other source for that folder.
-- A field that's omitted falls through to the original behavior: `FormatSectionTitle(folderSlug)` for the title, `min(children.Order)` for the order, and "not an llms subtree" for the llms split.
+- A field that's omitted falls through to the original behavior: `FormatSectionTitle(folderSlug)` for the title, min-of-children for the order, and "not an llms subtree" for the llms split.
 - Folders without `_meta.yml` are unaffected — adoption is folder-by-folder.
 
 ## Discovery
 
-The sidecar is discovered by `MarkdownContentService`: any `_meta.yml` under the configured content path is loaded into `FolderMetadataRegistry`, keyed by the folder's canonical URL prefix. Hot-reload refreshes the registry on file change.
+`MarkdownContentService` discovers `_meta.yml` files under its content path, but it is not the only source. `FolderMetadataRegistry` aggregates rows from every registered `IContentService` that implements `IFolderMetadataProvider`, keyed by the folder's canonical URL prefix. A custom content service that surfaces its own folder metadata through that interface contributes sidecars on equal footing. Hot-reload refreshes the registry on file change.
 
 ## Example
 

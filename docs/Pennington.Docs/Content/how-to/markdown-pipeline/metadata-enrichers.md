@@ -7,7 +7,7 @@ sectionLabel: "Markdown Pipeline"
 tags: [extensibility, pipeline, metadata, reading-time]
 ---
 
-To compute values from a page rather than have an author type them — reading time, a git last-modified date, a word count — implement `IMetadataEnricher`. Each enricher contributes a dictionary that `MetadataEnrichmentService` merges into `ParsedItem.Derived`, a bag kept separate from the strongly-typed `Metadata` so authored front matter remains separate.
+To compute values from a page rather than have an author type them — reading time, a git last-modified date, a word count — implement `IMetadataEnricher`. Each enricher contributes a dictionary that `MetadataEnrichmentService` merges into `ParsedItem.Derived`. Derived values land in their own bag, not in the strongly-typed `Metadata`, so authored front matter stays the single source of truth and computed values can change between builds without rewriting any page.
 
 ## Before you begin
 
@@ -15,24 +15,21 @@ To compute values from a page rather than have an author type them — reading t
 
 ## Reading time ships built in
 
-`AddPennington` registers `ReadingTimeEnricher` by default, so every page with body text carries an estimate under the `reading_time_minutes` key (a page with no words gets no key, which is why the read below guards with `TryGetValue`). The estimate divides the word count by 200 words per minute and rounds up, with a floor of one minute. Read it downstream from `ParsedItem.Derived`:
-
-```csharp
-if (item.Derived.TryGetValue(ReadingTimeEnricher.Key, out var minutes))
-{
-    // minutes is an int — "5 min read"
-}
-```
-
-## Write an enricher
-
-Implement `IMetadataEnricher` and return the keys you contribute. `EnrichAsync` receives the parsed item and returns an `IReadOnlyDictionary<string, object?>`; return an empty dictionary to contribute nothing for a given page. The shipped `ReadingTimeEnricher` is the reference implementation — a pure function of `ParsedItem.RawMarkdown` with no file access:
+`AddPennington` registers `ReadingTimeEnricher` by default, so every page with body text carries an estimate under the `reading_time_minutes` key. The estimate divides the word count by 200 words per minute and rounds up, with a floor of one minute. A page with no words contributes no key, so consumers guard the read with `TryGetValue`. The shipped enricher is a pure function of `ParsedItem.RawMarkdown` — no file access:
 
 ```csharp:symbol
 src/Pennington/Pipeline/ReadingTimeEnricher.cs
 ```
 
 Expose the key as a `const` (as `ReadingTimeEnricher.Key` does) so consumers reference it without retyping the string.
+
+## Write an enricher
+
+Implement `IMetadataEnricher` and return the keys you contribute. `EnrichAsync` receives the parsed item and returns an `IReadOnlyDictionary<string, object?>`; return an empty dictionary to contribute nothing for a given page. `GitTimestampEnricher` reads the source file's timestamp from `ParsedItem.Route.SourceFile` and contributes a `git_last_modified` date — the value a real enricher would instead pull from `git log -1`. Pages with no file on disk (generated content) contribute nothing:
+
+```csharp:symbol
+examples/ExtensibilityLabExample/GitTimestampEnricher.cs > GitTimestampEnricher
+```
 
 ## Register your enricher
 
@@ -42,14 +39,20 @@ Register the implementation after `AddPennington` — there is no `PenningtonOpt
 builder.Services.AddTransient<IMetadataEnricher, GitTimestampEnricher>();
 ```
 
-## Result
+## Read derived metadata in a component
 
-Every page's `ParsedItem.Derived` now carries the contributed keys alongside the built-in `reading_time_minutes`. The values feed any consumer that reads `Derived` — most visibly `llms.txt`, which emits derived metadata into its per-page front-matter blocks.
+The renderer exposes the merged `Derived` dictionary to every Mdazor component under the `Derived` context key. A component reads it through `[CascadingParameter] public MdazorContext? Context` — no tag attributes, the dictionary cascades in from the page being rendered. `LastModified.razor` reads the `git_last_modified` key and renders the date:
+
+```razor:symbol
+examples/ExtensibilityLabExample/LastModified.razor
+```
+
+Register the component with `AddMdazorComponent<LastModified>()`, then drop `<LastModified />` into any page body.
 
 ## Verify
 
-- Render a page and confirm `item.Derived[ReadingTimeEnricher.Key]` returns the expected `int`.
-- Add a custom enricher, build the site, and confirm its key appears in `/llms.txt` for a page it enriched.
+- Build the lab (`dotnet run --project examples/ExtensibilityLabExample -- build`) and open `/_llms/metadata-demo.md` in the output — its front-matter block carries both `git_last_modified` and `reading_time_minutes`, the two keys `Derived` accumulated for that page.
+- Render `/metadata-demo/` and confirm the `<LastModified />` component prints the date, proving a component read `Context["Derived"]`.
 
 ## Related
 

@@ -1,13 +1,13 @@
 ---
 title: "Content components"
-description: "Parameter and usage reference for the nine Pennington.UI content components — Card, CardGrid, LinkCard, Badge, Step, Steps, Checkpoint, BigTable (Mdazor-registered), and CodeBlock (Razor-page only)."
+description: "Parameter and usage reference for the ten Pennington.UI content components — Badge, BigTable, Card, CardGrid, Checkpoint, LinkCard, Step, Steps (Mdazor-registered), RenderedFixture (DocSite Mdazor only), and CodeBlock (Razor-page only)."
 sectionLabel: "UI Components"
 order: 2
 tags: [ui, components, mdazor, razor]
 uid: reference.ui.content
 ---
 
-The content-oriented subset of the `Pennington.UI.Components` Razor component library, covering callout cards, numbered steps, syntax-highlighted code, and wide-table overflow handling. Components live in namespace `Pennington.UI.Components` (`src/Pennington.UI/`). All but `CodeBlock` are pre-registered with Mdazor by `DocSiteServiceExtensions.AddDocSite`, making them available as tags inside markdown without additional wiring; `CodeBlock` is Razor-page-only — markdown authors use fenced code blocks instead.
+The content-oriented subset of the `Pennington.UI.Components` Razor component library, covering callout cards, numbered steps, syntax-highlighted code, and wide-table overflow handling. Components live in namespace `Pennington.UI.Components`. All but `CodeBlock` are pre-registered with Mdazor by `DocSiteServiceExtensions.AddDocSite`, making them available as tags inside markdown without additional wiring; `CodeBlock` is Razor-page-only — markdown authors use fenced code blocks instead.
 
 ## Stylesheet
 
@@ -22,11 +22,13 @@ The components ship as [MonorailCSS](https://monorailcss.github.io/MonorailCss.F
 | `Card` | Static callout card with optional icon and title. | `<Card Title="..." Color="primary">@ChildContent</Card>` | `<Card Title="..." Color="primary">` ... `</Card>` |
 | `CardGrid` | Responsive grid container for Card / LinkCard children. | `<CardGrid Columns="3">@ChildContent</CardGrid>` | `<CardGrid Columns="3">` ... `</CardGrid>` |
 | `Checkpoint` | "Verify what you should see now" callout for tutorial pages. | `<Checkpoint>@ChildContent</Checkpoint>` | `<Checkpoint>` ... `</Checkpoint>` |
+| `CodeBlock` | Razor-page entry to the shared code-block rendering pipeline. | `<CodeBlock Language="csharp">@ChildContent</CodeBlock>` | Not registered — use a fenced code block. |
 | `LinkCard` | Clickable card wrapping its content in an anchor. | `<LinkCard Title="..." Href="/foo">@ChildContent</LinkCard>` | `<LinkCard Title="..." Href="/foo">` ... `</LinkCard>` |
+| `RenderedFixture` | Renders a solution fixture file as a captioned `<figure>`. | `<RenderedFixture Path="examples/Foo/bar.md" />` | `<RenderedFixture Path="examples/Foo/bar.md" />` (DocSite only) |
 | `Step` | Single numbered list item inside a `Steps` container. | `<Step StepNumber="1">@ChildContent</Step>` | `<Step StepNumber="1">` ... `</Step>` |
 | `Steps` | Vertical numbered-step list container for `Step` children. | `<Steps>@ChildContent</Steps>` | `<Steps>` ... `</Steps>` |
 
-Each component is listed alphabetically below with its declaration fence, parameter table, and a minimal usage example.
+Each component is listed alphabetically below with a one-line summary, a parameter table, and a minimal usage example.
 
 ## `Badge`
 
@@ -132,7 +134,7 @@ Run `dotnet run` and visit `http://localhost:5000/`.
 
 ## `CodeBlock`
 
-Razor-page entry to the shared code-block rendering pipeline — registered `ICodeBlockPreprocessor` implementations (including tree-sitter `:symbol` fences when `AddTreeSitter` is wired), highlighter dispatch via `HighlightingService`, `[!code …]` line transformations, and the standard `code-highlight-wrapper` container. Not registered with Mdazor — markdown authors should use a fenced code block (same pipeline, same output) instead.
+Razor-page entry to the shared code-block rendering pipeline. A modifier-bearing `Language` (for example, `csharp:symbol`) routes through the registered `ICodeBlockPreprocessor` implementations — the public extension point that the tree-sitter `:symbol` family plugs into when `AddTreeSitter` is wired. Not registered with Mdazor — markdown authors should use a fenced code block (same pipeline, same output) instead.
 
 ### Parameters
 
@@ -175,6 +177,24 @@ Clickable variant of `Card`; wraps the entire card body in an `<a>` bound to `Hr
 </LinkCard>
 ```
 
+## `RenderedFixture` (DocSite only)
+
+Embeds a fixture file (markdown or HTML) from anywhere in the solution as a captioned `<figure>`, rendering markdown through the standard `MarkdownPipeline`. Useful when a how-to page wants to show the actual rendered output of a complete example file (a full alert syntax, a composed configuration) rather than authoring the same content twice. Registered with Mdazor by `AddDocSite` but not by `AddBlogSite`.
+
+### Parameters
+
+| Name | Type | Default | Description |
+|---|---|---|---|
+| `Path` | `string` | `""` (required) | Solution-relative path to the fixture file (for example, `examples/Foo/Content/bar.md`). Rejected when it contains `..` or is rooted. |
+| `Caption` | `string?` | `null` | Caption shown in the `<figcaption>` above the rendered output. When unset or blank, the figcaption renders the literal `"Rendered output"`. |
+
+### Example
+
+```razor
+<RenderedFixture Path="examples/DocSitePagesAndLinksExample/snippets/markdown-alert-example.md"
+                 Caption="Built-in alert syntax" />
+```
+
 ## `Step`
 
 One step inside a `Steps` list; renders a `<section class="step">` with a numbered medallion on the left rail, an optional title, the body content, and an optional `Checkpoint` slot for a "verify the result" callout. Must be nested directly inside `<Steps>` for the rail border to align.
@@ -215,24 +235,6 @@ Container for a vertical step list; emits `<div class="steps-thread not-prose">`
     <Step StepNumber="2">Then, run.</Step>
     <Step StepNumber="3">Finally, deploy.</Step>
 </Steps>
-```
-
-## `RenderedFixture` (DocSite only)
-
-Embeds a fixture file (markdown or HTML) from anywhere in the solution as a captioned `<figure>`, rendering markdown through the standard `MarkdownPipeline`. Useful when a how-to page wants to show the actual rendered output of a complete example file (a full alert syntax, a composed configuration) rather than authoring the same content twice. Registered with Mdazor by `AddDocSite` but not by `AddBlogSite`.
-
-### Parameters
-
-| Name | Type | Default | Description |
-|---|---|---|---|
-| `Path` | `string` | `""` (required) | Solution-relative path to the fixture file (for example, `examples/Foo/Content/bar.md`). Rejected when it contains `..` or is rooted. |
-| `Caption` | `string?` | `null` | Caption shown in the `<figcaption>` above the rendered output. Defaults to `"Rendered output"`. |
-
-### Example
-
-```razor
-<RenderedFixture Path="examples/DocSitePagesAndLinksExample/snippets/markdown-alert-example.md"
-                 Caption="Built-in alert syntax" />
 ```
 
 ## Mdazor registration

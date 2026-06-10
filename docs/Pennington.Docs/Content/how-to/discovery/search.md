@@ -7,14 +7,14 @@ sectionLabel: "Content Discovery"
 tags: [search, front-matter, localization, configuration]
 ---
 
-When the search index is already live but results contain nav or footer noise, a page appears that should be hidden, or relative document weight needs adjusting, the options below tune the index without touching the search client. The build emits a sharded index under `/search/{locale}/` — an `index.json` entrypoint plus term shards and per-section fragments — and the bundled client (`dewey-search.js`, from the `DeweySearch.Web` package) fetches only the parts a query needs. Records are heading-level: each page is split into one record per heading, so results deep-link to the matching heading (`/page/#heading`) and carry a page→heading breadcrumb the UI can group by.
+When the search index is already live but results contain nav or footer noise, a page appears that should be hidden, or relative document weight needs adjusting, the options below tune the index without touching the search client. For how the index is built, sharded, and queried, see <xref:explanation.discovery.search>.
 
 ## Before you begin
 - A working Pennington site that serves `/search/en/index.json` (or the default locale code) — the search index entrypoint
 - Pages using `DocSiteFrontMatter` or another `IFrontMatter` implementation (which carries the `Search` default member)
 - The default locale code (from `LocalizationOptions`) — it is the suffix in the index filename
 
-The `DocSiteKitchenSinkExample` ships with the DocSite-pinned `#main-content` selector and a `Content/main/hidden.md` fixture demonstrating `search: false`.
+[`examples/DocSiteKitchenSinkExample`](https://github.com/usepennington/pennington/tree/main/examples/DocSiteKitchenSinkExample) ships with the DocSite-pinned `#main-content` selector and a `Content/main/hidden.md` fixture demonstrating `search: false`.
 
 ---
 
@@ -22,7 +22,7 @@ The `DocSiteKitchenSinkExample` ships with the DocSite-pinned `#main-content` se
 
 ### Exclude a markdown page with `search: false`
 
-Add `search: false` to the page's front matter. The value flows through `IFrontMatter.Search` into `ContentTocItem.ExcludeFromSearch`; the index builder skips the page entirely while it continues to render at its URL and appear in the sidebar.
+Add `search: false` to the page's front matter. The index builder skips the page entirely while it continues to render at its URL and appear in the sidebar.
 
 ```yaml
 ---
@@ -44,10 +44,6 @@ title: Internal Tools
 search: false
 ```
 
-```csharp:symbol
-src/Pennington/FrontMatter/IFrontMatter.cs > IFrontMatter.Search
-```
-
 ### Set the default document priority
 
 `SearchIndexOptions.DefaultPriority` (default `5`) is the baseline weight assigned to every document whose content service does not override `IContentService.SearchPriority`. Raise it for sources that should outrank neighbors; lower it for auxiliary content. Per-source overrides take precedence — see <xref:reference.api.search-index-options> for the shipped defaults.
@@ -57,10 +53,6 @@ Under `AddDocSite` this property is reachable via the `ConfigurePennington` esca
 ### Override the content selector on DocSite
 
 The selector scopes which HTML element's text becomes the search body — and the same element drives llms.txt sidecars and the build-time link audit, so chrome is stripped once. `DocSiteOptions.ContentSelector` defaults to `#main-content` to match the stock `MainLayout.razor`; set it after replacing the layout or to widen the indexed region. See <xref:explanation.positioning.docsite-positioning> for the cases that require dropping to bare `AddPennington`.
-
-```csharp:symbol
-src/Pennington.DocSite/DocSiteOptions.cs > DocSiteOptions.ContentSelector
-```
 
 ```csharp
 services.AddDocSite(() => new DocSiteOptions
@@ -125,11 +117,15 @@ The page body lives in its fragment (`f-{docId}.json`), fetched only when the pa
 - Run `dotnet run` and fetch `/search/{locale}/index.json`. The excluded page is absent from the `docs` table
 - Add a second locale and observe one index tree per locale (`/search/en/index.json`, `/search/fr/index.json`). Registered-but-empty locales return a valid entrypoint with an empty `docs` array
 - Fetch the matching `/search/{locale}/f-{docId}.json` and confirm its `body` contains only the scoped element's text (no header / sidebar / footer noise)
+- After raising `DefaultPriority` (or a per-source `SearchPriority`), fetch `index.json` and confirm the affected rows carry the new value in their `p` field
+- After adding a synonym, fetch `index.json` and confirm the stemmed synonym map carries the entry; in the modal, query the key term and confirm pages that mention only the alternate now appear
+- After enabling the section and tag facets, fetch `index.json` and confirm rows carry `section` and `tag` ids in their `f` object; in the modal, confirm the matching filter chips appear above the results
 
 ## Related
 
 - How-to: [Add the search modal to a non-DocSite site](xref:how-to.discovery.search-on-a-bare-host) — surface this index in a search UI on a bare host
 - Reference: [Front matter key reference](xref:reference.front-matter.keys)
 - Reference: [`SearchIndexOptions`](xref:reference.api.search-index-options) — the knobs this how-to touches; see also [`HighlightingOptions`](xref:reference.api.highlighting-options), [`LlmsTxtOptions`](xref:reference.api.llms-txt-options), and [`OutputOptions`](xref:reference.api.output-options)
+- Background: [How the search index is built and queried](xref:explanation.discovery.search)
 - Background: [What the DocSite and BlogSite templates wire for you](xref:explanation.positioning.docsite-positioning)
 - How-to: [Make the site discoverable to LLM crawlers](xref:how-to.feeds.llms-txt)

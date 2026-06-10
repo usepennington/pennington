@@ -7,9 +7,9 @@ sectionLabel: "Feeds & Indexes"
 tags: [feeds, rss, atom, podcast, content-service]
 ---
 
-When the records driving a feed are not `BlogSiteFrontMatter`, `BlogSiteOptions.EnableRss` does not apply. Use the same pattern `BlogSite` itself uses: a content service caches the records, exposes a `Task<string>` builder that returns the feed XML, and a `MapGet` endpoint serves it. The static-build crawler picks the endpoint up via `DiscoverMapGetRoutes`, so the feed file lands in `output/` next to every other page — no separate `GetContentToCreateAsync` registration.
+`BlogSiteOptions.EnableRss` only applies to `BlogSiteFrontMatter` records. For any other content type — podcast episodes, conference sessions, a changelog — reuse the pattern `BlogSite` builds on: a content service caches the records, a `Task<string>` builder turns them into feed XML, and a `MapGet` endpoint serves that XML. Every `MapGet` endpoint is fetched and baked during the static build, so the feed file lands in `output/` next to every other page with no extra registration.
 
-The reference implementation is `BlogSiteContentService.GetRssXmlAsync` plus the `MapGet` in `UseBlogSite`. This guide names the points you adapt — the *seams* (the extension points in the pattern) — in that pair so the same approach can carry a podcast feed (with the iTunes namespace), an events feed (with iCalendar enclosures), or any custom feed format.
+The reference implementation lives in `BlogSiteContentService.GetRssXmlAsync` and the `MapGet` call in `UseBlogSite`. This guide walks the three points you adapt in that pair, so the same shape can carry a podcast feed (with the iTunes namespace), an events feed (with iCalendar enclosures), or any custom format.
 
 ## Before you begin
 
@@ -27,7 +27,7 @@ src/Pennington.BlogSite/Services/BlogSiteContentService.cs > BlogSiteContentServ
 
 The pieces to adapt for your records:
 
-- **The cache.** `_posts` is an `AsyncLazy<ImmutableList<BlogPostDescriptor>>` loaded once per file-watch generation. `DiscoverAsync` and the feed builder share it so the source files read once. For a non-file content service, the same `Lazy<T>` cache that already backs `DiscoverAsync` works without changes.
+- **The cache.** `DiscoverAsync` and the feed builder read from one cached list loaded once per generation, so the source files are parsed once and both paths see the same records. The `Lazy<T>` cache that already backs `DiscoverAsync` works here without changes.
 - **The filter.** BlogSite drops posts without a `Date`. Replace this with whatever predicate keeps an entry in the feed (`IsPublished`, `Status == Released`, future-date skip via `TimeProvider`).
 - **The ordering.** Newest-first is conventional for RSS; podcast aggregators expect it.
 - **Absolute URLs.** Prefix every `<link>` and `<guid>` with `canonicalBase`. Relative paths break in feed readers.
@@ -48,7 +48,7 @@ services.AddTransient<IContentService>(sp =>
     sp.GetRequiredService<PodcastContentService>());
 ```
 
-`AddSingleton<IContentService>` here would cache the first file-watched copy and never refresh — the transient wrapper avoids that trap.
+`AddSingleton<IContentService>` here would cache the first file-watched copy and never refresh — the transient wrapper avoids that trap. The full lifetime contract for `AddFileWatched<T>` and the stale-data failure mode is in [Register the service](xref:how-to.content-services.custom-content-service#register-the-service).
 
 ## Map the endpoint
 
@@ -62,7 +62,7 @@ app.MapGet("/feed.xml", async (PodcastContentService service) =>
 Two reasons this single line carries both dev and build:
 
 - **Dev mode** serves `/feed.xml` straight from the handler.
-- **Static build** enumerates every `MapGet` endpoint via `DiscoverMapGetRoutes`, fetches each over HTTP through the live pipeline, and writes the body to `output/feed.xml`. No `ContentToCreate` registration is needed.
+- **Static build** fetches every `MapGet` endpoint over HTTP through the live pipeline and writes each body to `output/` — so `output/feed.xml` is baked from the same handler. No `ContentToCreate` registration is needed.
 
 Reach for `IContentService.GetContentToCreateAsync` instead only when there is no dev-time URL — for example, a `robots.txt` that should not respond live. See <xref:how-to.content-services.emit-generated-artifacts> for that shape.
 
@@ -95,7 +95,7 @@ Channel-level iTunes elements (`<itunes:image>`, `<itunes:category>`, `<itunes:o
 
 ## Adapt for Atom feeds
 
-Atom 1.0 uses a different root and element vocabulary. The shape is identical — same cache, same builder method, same `MapGet` — only the XML changes:
+Atom 1.0 uses a different root and element vocabulary. The shape is identical — same cache, same builder method, same `MapGet` — only the XML changes. The sketch below shows the element structure; `canonicalBase`, `ordered`, and `absoluteUrl` are the same locals the RSS builder above sets up, dropped here for focus:
 
 ```csharp
 XNamespace atom = "http://www.w3.org/2005/Atom";

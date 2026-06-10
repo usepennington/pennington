@@ -21,13 +21,21 @@ The finished code for this tutorial lives in [`examples/BlogSiteHeroProjectsSoci
 
 ## 1. Populate the hero block
 
-The BlogSite home page renders a headline block at the very top, driven entirely by `BlogSiteOptions.HeroContent`. Open the `AddBlogSite` call from the previous tutorial and add one property. `HeroContent` is a two-field positional record — `Title` and `Description` — so a single constructor call is all it takes.
+The BlogSite home page renders a headline block at the very top, driven entirely by `BlogSiteOptions.HeroContent`. `HeroContent` is a two-field positional record — `Title` and `Description` — so a single constructor call is all it takes.
+
+<Steps>
+<Step StepNumber="1">
+
+**Add `HeroContent` to the `AddBlogSite` call**
+
+Open the `AddBlogSite` call from the previous tutorial and add one property. The `HeroContent = new HeroContent(Title: …, Description: …)` assignment is the only addition — no new DI registrations, no new Razor files, no front matter changes. The rest of the options block carries forward unchanged from the scaffold tutorial.
 
 ```csharp:symbol,bodyonly
 examples/BlogSiteHeroProjectsSocialsExample/Stage1_HeroOnly.cs > Stage1.Run
 ```
 
-The `HeroContent = new HeroContent(Title: …, Description: …)` assignment is the only addition — no new DI registrations, no new Razor files, no front matter changes. The rest of the options block carries forward unchanged from the scaffold tutorial.
+</Step>
+</Steps>
 
 <Checkpoint>
 
@@ -40,51 +48,60 @@ The `HeroContent = new HeroContent(Title: …, Description: …)` assignment is 
 
 ## 2. Add a "My Work" projects section
 
-`BlogSiteOptions.MyWork` accepts a `Project[]` that the home page renders as a sidebar card titled "My Work". `Project` is a three-field positional record — `Title`, `Description`, `Url` — populated with a C# collection expression right below `HeroContent`. The `Url` becomes the `<a href>` around each rendered entry, so it can point at a GitHub repo, a product page, or any other URL.
+`BlogSiteOptions.MyWork` accepts a `Project[]` that the home page renders as a sidebar card titled "My Work". `Project` is a three-field positional record — `Title`, `Description`, `Url`. The `Url` becomes the `<a href>` around each rendered entry, so it can point at a GitHub repo, a product page, or any other URL.
+
+<Steps>
+<Step StepNumber="1">
+
+**Populate `MyWork` with a `Project[]` collection expression**
+
+Add the `MyWork` property right below `HeroContent`, populated with a C# collection expression. The property is typed as `Project[]` on `BlogSiteOptions`; its default is an empty list, so the "My Work" card stays invisible in the UI until populated here.
 
 ```csharp:symbol,bodyonly
 examples/BlogSiteHeroProjectsSocialsExample/Stage2_AddProjects.cs > Stage2.Run
 ```
 
-The `MyWork` property is typed as `Project[]` on `BlogSiteOptions`. Its default is an empty list, so the "My Work" card stays invisible in the UI until populated here.
+</Step>
+</Steps>
 
 <Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/`
-- A "My Work" card appears in the home-page right rail with three linked entries — Pennington, MonorailCSS, Mdazor — each clickable
+- A "My Work" sidebar card appears with three linked entries — Pennington, MonorailCSS, Mdazor — each clickable
 
 </Checkpoint>
 
 ---
 
-## 3. Wire social links with the built-in icons
+## 3. Wire social links and top-nav header links
 
-Social links are `SocialLink(RenderFragment Icon, string Url)` records. The four built-in icons ship as `static readonly RenderFragment` fields on [`SocialIcons`](xref:reference.blogsite.social-icons) — pass the field directly, not as a component tag (`SocialIcons.GithubIcon`, not `<SocialIcons.GithubIcon />`).
+The final two surfaces land in the same `AddBlogSite` call. `Socials` is a `SocialLink(RenderFragment Icon, string Url)[]`; `MainSiteLinks` is a `HeaderLink(string Title, string Url)[]` that BlogSite renders in both the top-nav of `MainLayout.razor` and the footer. The listing below adds both.
 
-Add a `using Pennington.BlogSite.Components;` directive at the top of `Program.cs` so `SocialIcons.GithubIcon` resolves, then a `Socials = [...]` block with four entries covering all four built-ins.
+<Steps>
+<Step StepNumber="1">
+
+**Reference the built-in social icons**
+
+The four built-in icons ship as `static readonly RenderFragment` fields on [`SocialIcons`](xref:reference.blogsite.social-icons) — pass the field directly, not as a component tag (`SocialIcons.GithubIcon`, not `<SocialIcons.GithubIcon />`). Add a `using Pennington.BlogSite.Components;` directive at the top of `Program.cs` so `SocialIcons.GithubIcon` resolves.
+
+</Step>
+<Step StepNumber="2">
+
+**Add the `Socials` and `MainSiteLinks` blocks**
+
+Add a `Socials = [...]` block with four entries covering all four built-ins, then a `MainSiteLinks = [...]` block with three entries — `Home` pointing to `/`, `Archive` to `/archive`, and `Tags` to `/tags`. Those URLs match the routes BlogSite includes, so the top-nav populates with no additional code.
 
 ```csharp:symbol,bodyonly
 examples/BlogSiteHeroProjectsSocialsExample/Stage3_AddSocialsAndHeader.cs > Stage3.Run
 ```
 
-<Checkpoint>
-
-- Run `dotnet run` and visit `http://localhost:5000/`
-- A horizontal row of four SVG icons — GitHub, Bluesky, LinkedIn, Mastodon — sits below the "My Work" card, each linking out to its `Url`
-
-</Checkpoint>
-
----
-
-## 4. Add header links for top-nav
-
-The same `Program.cs` listing from the previous step includes the final surface: `MainSiteLinks`, a `HeaderLink[]` that BlogSite renders in both the top-nav of `MainLayout.razor` and the footer. Each entry is a `HeaderLink(string Title, string Url)` positional record.
-
-The `MainSiteLinks = [...]` block pasted in section 3 already wires three entries — `Home` pointing to `/`, `Archive` to `/archive`, and `Tags` to `/tags`. Those URLs match the routes BlogSite includes, so no additional code is needed for the top-nav to populate.
+</Step>
+</Steps>
 
 <Checkpoint>
 
 - Run `dotnet run` and visit `http://localhost:5000/`
+- A horizontal row of four SVG icons — GitHub, Bluesky, LinkedIn, Mastodon — sits below the "My Work" sidebar card, each linking out to its `Url`
 - A "Home / Archive / Tags" link row appears in the site header, and the same three links repeat in the footer nav
 - Click **Archive** — the archive page lists the first post from the previous tutorial
 
@@ -99,3 +116,5 @@ The `MainSiteLinks = [...]` block pasted in section 3 already wires three entrie
 - Four `SocialLink` entries wire the built-in `SocialIcons.GithubIcon`, `BlueskyIcon`, `LinkedInIcon`, and `MastodonIcon` `RenderFragment` fields — no Razor required.
 - `MainSiteLinks` holds three `HeaderLink` entries, and they render in both the top-nav and the footer.
 - All four homepage surfaces on `BlogSiteOptions` (hero, work, socials, header links) populate from one options block.
+
+That completes the BlogSite getting-started arc — you have a scaffolded host, a fully-populated post, and a configured home page. From here, [populate the blog homepage](xref:how-to.theming.blogsite-homepage) is the how-to that revisits these same options when you need them on their own, [generate social card images](xref:how-to.feeds.social-cards) adds OpenGraph cards to every post, and <xref:reference.blogsite.routes> catalogs the full route surface the template serves.

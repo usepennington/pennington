@@ -19,7 +19,14 @@ Rows are alphabetical by YAML key. Each entry shows the records that expose the 
 
 - YAML keys are the camelCase form of the C# property names. Matching is case-insensitive.
 - Unknown keys are dropped with a warning diagnostic in lenient mode (the default outside build); in strict mode (the build default) they throw a `YamlException` and fail the parse.
+- Lenient versus strict is controlled by `PenningtonOptions.FrontMatter.StrictUnknownKeys`, settable in the `AddPennington(options => …)` callback. It defaults to `false` (lenient), and `-- build` flips it to `true` unless the host has already set it. `diag frontmatter` prints the active value.
 - Absent keys fall through to the record's `init` default.
+
+### Drafts and scheduled pages
+
+`isDraft: true` excludes a page from build output entirely: `-- build` skips the route, so it is never written, never crawled, and its `uid` does not resolve in the static site. Development requests still render it so authors can preview. A `date:` set after the build clock has the same effect until the clock catches up (scheduled publishing).
+
+This is the canonical statement of the rule. `isDraft` is a build switch, not a navigation switch — to keep a page published but out of the sidebar, use `searchOnly: true` instead, which leaves the route in the build and indexes while hiding it from the rendered navigation tree.
 
 ## Example
 
@@ -29,7 +36,11 @@ A `DocSiteFrontMatter` page populating the most common keys:
 examples/DocSiteKitchenSinkExample/Content/main/front-matter.md
 ```
 
-The blog-only keys (`author`, `series`, `repository`, `date`) appear in `examples/BlogSiteFirstPostExample/Content/Blog/my-first-post.md`.
+A `BlogSiteFrontMatter` page populating the blog-only keys (`author`, `series`, `repository`, `date`):
+
+```markdown:symbol
+examples/BlogSiteFirstPostExample/Content/Blog/my-first-post.md
+```
 
 ## See also
 

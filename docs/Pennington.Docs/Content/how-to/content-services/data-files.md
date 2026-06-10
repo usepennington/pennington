@@ -90,16 +90,28 @@ When a data file changes on disk, the cached value is invalidated and the next `
 
 This is the same lifetime model that `MarkdownContentService<T>` uses for content files. Edits during `dotnet run` propagate immediately.
 
+## Verify
+
+- Run `dotnet run` and open a page that reads the data file — confirm the records render (the sponsors list, the nav links, whatever you registered).
+- With the server still running, edit a value in `data/sponsors.yml` and save. Refresh the page — the new value appears without a restart, confirming hot reload.
+- Request the data under a name you never registered (`Data.Get<List<Sponsor>>("sponsorz")`) and confirm the `KeyNotFoundException` message lists the registered names — proof the registration took.
+
 ## Errors
 
-`AddDataFile` itself never reads the file; the read happens on the first `Get<T>`. The exceptions surface there:
+`AddDataFile` itself never reads the file; the read happens on the first `Get<T>`. The three you will actually hit while authoring:
 
-- **`FileNotFoundException`** — the path does not exist. For `AddDataDirectory`, a missing directory raises **`DirectoryNotFoundException`**.
-- **`NotSupportedException`** — the extension is not `.yml`, `.yaml`, or `.json`.
-- **`InvalidDataException`** — the file content failed to deserialize. The message includes the absolute path and the underlying serializer error.
+- **`FileNotFoundException`** — the registered path does not exist (usually a typo). For `AddDataDirectory`, a missing directory raises `DirectoryNotFoundException`.
+- **`InvalidDataException`** — the file content failed to deserialize. The message includes the absolute path and the underlying serializer error, so a bad indent or stray comma points straight at the file.
 - **`KeyNotFoundException`** — `Get<T>` was called with a name that was never registered. The message lists every registered name.
-- **`InvalidCastException`** — the registered `T` does not match the requested `T`.
+
+The wrong-extension (`NotSupportedException`) and type-mismatch (`InvalidCastException`) cases are catalogued in <xref:reference.api.i-data-files>.
 
 ## What this is not
 
 `AddDataFile` is for data that *decorates* pages (sponsors strip on the homepage, footer links, a feature flag). It does not produce routes — a `data/speakers.yml` registered this way will not give you `/speakers/jane-doe/`. For one-page-per-record needs, write a custom <xref:how-to.content-services.custom-content-service>.
+
+## Related
+
+- Reference: <xref:reference.api.i-data-files> — `Get<T>`, `TryGet<T>`, and `Names` with the full exception list.
+- How-to: [Source content from outside the file system](xref:how-to.content-services.custom-content-service) — when each record needs its own route.
+- Background: [The content pipeline and union types](xref:explanation.core.content-pipeline) — why data files sit outside the route-producing pipeline.

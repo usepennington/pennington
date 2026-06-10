@@ -9,13 +9,7 @@ uid: tutorials.docsite.scaffold
 
 By the end of this tutorial the DocSite host runs with a "Scaffold Docs" title, GitHub icon, and header/footer chrome — and a folder of markdown pages that show up in the sidebar on their own, with a landing page at the root.
 
-`AddDocSite` wires what the [getting-started tutorials](xref:tutorials.getting-started.first-site) assemble by hand — host, layout, navigation, styling — into one call, configured for a Divio-style documentation site. Use it when that fits; build on `AddPennington` directly for anything else. For what the template wires and where the wiring stops, read [what the templates wire for you](xref:explanation.positioning.docsite-positioning) first.
-
-> [!NOTE]
-> DocSite and BlogSite can't run in the same app — pick one. If you want a blog
-> alongside your documentation, stay on DocSite: it has a native blog you switch
-> on by adding a `Content/blog/` folder, no `Program.cs` change required. See
-> [Add a blog to your documentation site](xref:tutorials.docsite.add-a-blog).
+`AddDocSite` wires a Divio-style documentation site — host, layout, navigation, styling — into one call; for what the template wires, where the wiring stops, and why DocSite and BlogSite can't share an app, read [what the templates wire for you](xref:explanation.positioning.docsite-positioning) first.
 
 ## Prerequisites
 
@@ -57,6 +51,12 @@ dotnet add package Pennington.DocSite
 </Step>
 </Steps>
 
+<Checkpoint>
+
+- Run `dotnet build` — the empty project with the DocSite package added compiles before you touch `Program.cs`
+
+</Checkpoint>
+
 ---
 
 ## 2. Wire `AddDocSite`, `UseDocSite`, and `RunDocSiteAsync`
@@ -68,7 +68,7 @@ dotnet add package Pennington.DocSite
 
 **Replace `Program.cs` with the three DocSite calls**
 
-`AddDocSite` takes a `Func<DocSiteOptions>` rather than an `Action`, so the call constructs and returns a fresh options record. The template registers the markdown content reader internally — no separate `AddMarkdownContent` call is needed. `RunDocSiteAsync` delegates to `RunOrBuildAsync`, so the same host serves pages live in development and generates static HTML when invoked as `dotnet run -- build --base-url <url> --output <dir>`.
+`AddDocSite` takes a function that returns a fresh `DocSiteOptions`, and the template registers the markdown content reader for you — no separate `AddMarkdownContent` call. `RunDocSiteAsync` serves pages live in development and generates static HTML when invoked as `dotnet run -- build`.
 
 ```csharp:symbol,bodyonly
 examples/DocSiteScaffoldExample/Stage3_UseDocSite.cs > Stage3.Run

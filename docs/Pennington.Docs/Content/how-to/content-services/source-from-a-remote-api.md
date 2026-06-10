@@ -70,7 +70,18 @@ GitHub returns each release's notes as markdown. `EndpointSource` routes are *no
 examples/BeyondRemoteContentExample/ReleasePages.cs > ReleasePages.RenderDetailAsync
 ```
 
-Wrap that HTML in the element named by `SiteProjection.ContentSelector` (here `<article>`, set in `Program.cs`). At build time the projection self-fetches every TOC-listed route through the live pipeline and splits the selected element into heading sections — so an `EndpointSource` page rendered this way **is indexed at heading level for search and llms.txt**, exactly like a markdown page. Without the selector match, the page chrome leaks into the index instead of the release body.
+Wrap that HTML in the element named by `SiteProjection.ContentSelector`. Set the selector to match that element in the `AddPennington` callback — here both are `<article>`:
+
+```csharp
+builder.Services.AddPennington(penn =>
+{
+    // The endpoint below wraps each release body in <article>; point the
+    // projection selector at that element.
+    penn.SiteProjection.ContentSelector = "article";
+});
+```
+
+At build time the projection self-fetches every TOC-listed route through the live pipeline and splits the selected element into heading sections — so an `EndpointSource` page rendered this way **is indexed at heading level for search and llms.txt**, exactly like a markdown page. Without the selector match, the page chrome leaks into the index instead of the release body.
 
 > [!NOTE]
 > Because each release page serves real canonical HTML at a stable URL, it **is** included in `sitemap.xml` — `EndpointSource` routes are crawled like any other page. (Only `RedirectSource` and `LlmsOnlySource` routes, which have no canonical HTML, are left out.) See <xref:how-to.feeds.sitemap>.
@@ -98,25 +109,16 @@ To **fail closed** instead — stop the build when the data is unavailable rathe
 > [!WARNING]
 > A static build is a point-in-time snapshot. The published site shows the releases that existed *when you built it* and will not change until you build again — a new release on GitHub does not appear on its own.
 
-For content that updates on its own schedule, rebuild on a schedule. A nightly GitHub Actions job rebuilds and redeploys so the live site never drifts more than a day behind:
+For content that updates on its own schedule, rebuild on a schedule. The only thing a scheduled rebuild adds to an ordinary deploy workflow is a `schedule` trigger — a `cron` entry that fires the same build-and-deploy job on a timer instead of (or alongside) a push:
 
 ```yaml
 on:
   schedule:
-    - cron: "0 6 * * *"   # 06:00 UTC daily
+    - cron: "0 6 * * *"   # rebuild nightly at 06:00 UTC
   workflow_dispatch:       # plus a manual trigger
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-      - run: dotnet run --project examples/BeyondRemoteContentExample -- build output
-      # ...then deploy output/ as usual
 ```
 
-Wire the deploy step the same way a push build does — see <xref:how-to.deployment.github-pages>.
+The job that this trigger runs — checkout, `setup-dotnet`, `dotnet run -- build`, and the deploy steps — is the same one a push build uses. Build it from <xref:how-to.deployment.github-pages> and add the `schedule` trigger above.
 
 ## Verify
 

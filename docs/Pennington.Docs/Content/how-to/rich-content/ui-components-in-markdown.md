@@ -16,7 +16,7 @@ To place a Razor component tag — `<Badge>`, `<Card>`, or one of your own — d
 
 ## Authoring shapes
 
-`AddBlogSite` pre-registers eight components — `<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<Checkpoint>`, `<LinkCard>`, `<Step>`, and `<Steps>`. `AddDocSite` adds one more, `<RenderedFixture>`, for embedding rendered example output into a page. The H3s below cover the three most common authoring patterns; for the full parameters of each component, see <xref:reference.ui.content>.
+`AddDocSite` pre-registers nine components — `<Badge>`, `<BigTable>`, `<Card>`, `<CardGrid>`, `<Checkpoint>`, `<LinkCard>`, `<RenderedFixture>`, `<Step>`, and `<Steps>`. `AddBlogSite` pre-registers the same set minus `<RenderedFixture>` (eight). The H3s below cover the three most common authoring patterns; for the full parameters of each component, see <xref:reference.ui.content>.
 
 ### Inline a built-in tag
 
@@ -103,6 +103,12 @@ Attributes carry what the author types on the tag. For facts about the *page* �
 | `Derived` | Enricher-contributed values (reading time, git last-modified, …) keyed by enricher name |
 
 The context is delivered as a cascading value, so it reaches the component and any components nested inside it. It does **not** cross into an interactive (WebAssembly/Server) island, so read it from the statically rendered components that make up the page body. The [`BeyondCustomRazorComponentExample`](https://github.com/usepennington/pennington/tree/main/examples/BeyondCustomRazorComponentExample) `PageFacts` component shows the full pattern.
+
+## Verify
+
+- The `<Badge Text="Preview" />` example renders as a styled pill — a rounded, ring-bordered chip — not the literal text `<Badge Text="Preview" />`. Seeing the raw tag means the component is not registered on the host.
+- View source — the badge is a `<span class="not-prose inline-flex ...">`, and no `<Badge>` literal survives in the HTML.
+- On a bare `AddPennington` host, an unregistered tag passes through unchanged and shows as literal text. Add the `AddMdazorComponent<Badge>()` call and the pill appears, confirming the registration is what activates the tag.
 
 ## Related
 

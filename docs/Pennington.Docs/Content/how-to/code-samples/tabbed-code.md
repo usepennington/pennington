@@ -16,7 +16,7 @@ When two or more code variants show the same operation — bash vs. PowerShell, 
 
 ## Tabs and labels
 
-Each H3 below shows the source markdown above the rendered widget. The first tab is active by default; switching tabs reveals the matching panel.
+Each H3 below shows the source markdown above its rendered result. In the first, adjacent fences collapse into one tablist — the first tab is active by default, and switching tabs reveals the matching panel. In the second, intervening prose splits the fences into two separate widgets.
 
 ### Adjacent fences become tabs
 
@@ -66,7 +66,12 @@ A paragraph here ends the first tablist.
 echo "second group"
 ```
 
-## What the renderer emits
+## Verify
+
+- Run `dotnet run` and load the page with the back-to-back fences. They render as one widget with a tab per `title`, and clicking a tab swaps the visible panel.
+- View source: the group is a single `<div>` carrying the tablist classes, with one `<button role="tab">` per fence and one panel each. A fence split by intervening prose produces a second, separate `<div>`.
+
+## Customize the tab CSS classes
 
 The rendered HTML draws its CSS class names from `TabbedCodeBlockRenderOptions`. The `Default` instance ships with `not-prose` on the outer wrapper plus `tab-container`, `tab-list`, `tab-button`, and `tab-panel` on the nested elements — enough for the [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) preset to style them without extra work.
 
