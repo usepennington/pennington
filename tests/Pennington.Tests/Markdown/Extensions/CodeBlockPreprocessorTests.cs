@@ -81,6 +81,22 @@ public class CodeBlockPreprocessorTests
     }
 
     [Fact]
+    public void IndentedCodeBlock_IsRendered_NotDropped()
+    {
+        // An indented (4-space) code block is a CodeBlock but not a FencedCodeBlock.
+        // The CodeHighlightRenderer replaces Markdig's default CodeBlockRenderer, so if it
+        // only handles fenced blocks the indented body is silently dropped from the output.
+        var markdown = "Before.\n\n    var dropped = 42;\n\nAfter.";
+
+        var result = RenderMarkdown(markdown);
+
+        // The body survives (no highlighters registered here, so it is plain HTML-encoded text)...
+        result.ShouldContain("var dropped = 42;");
+        // ...and it flowed through the code-block chrome rather than being treated as a paragraph.
+        result.ShouldContain("code-highlight-wrapper");
+    }
+
+    [Fact]
     public void SkipTransform_PreventsCodeTransformer()
     {
         // CodeTransformer wraps lines in <span class="line"> elements.

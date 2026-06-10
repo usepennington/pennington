@@ -27,32 +27,29 @@ internal sealed class CodeHighlightRenderer : HtmlObjectRenderer<CodeBlock>
 
     protected override void Write(HtmlRenderer renderer, CodeBlock codeBlock)
     {
-        if (!TryExtractFencedCodeBlock(codeBlock, out var languageId, out var code))
-        {
-            return;
-        }
+        // This renderer replaces Markdig's default CodeBlockRenderer for every CodeBlock,
+        // so indented code blocks (a CodeBlock that is not a FencedCodeBlock) must render too.
+        // They carry no info string, so they take the empty-language path — identical to a
+        // fenced block opened with no language tag.
+        var languageId = ExtractFenceLanguage(codeBlock);
+        var code = ExtractCode(codeBlock);
 
         var isInTabGroup = codeBlock.Parent is TabbedCodeBlock;
         var html = _renderingService.Render(code, languageId, _optionsFactory(), isInTabGroup);
         renderer.Write(html);
     }
 
-    private static bool TryExtractFencedCodeBlock(CodeBlock codeBlock, out string languageId, out string code)
+    private static string ExtractFenceLanguage(CodeBlock codeBlock)
     {
-        languageId = "";
-        code = "";
-
         if (codeBlock is not FencedCodeBlock fencedCodeBlock ||
             codeBlock.Parser is not FencedCodeBlockParser fencedCodeBlockParser ||
             fencedCodeBlock.Info == null ||
             fencedCodeBlockParser.InfoPrefix == null)
         {
-            return false;
+            return "";
         }
 
-        languageId = fencedCodeBlock.Info.Replace(fencedCodeBlockParser.InfoPrefix, string.Empty);
-        code = ExtractCode(codeBlock);
-        return true;
+        return fencedCodeBlock.Info.Replace(fencedCodeBlockParser.InfoPrefix, string.Empty);
     }
 
     private static string ExtractCode(LeafBlock leafBlock)
