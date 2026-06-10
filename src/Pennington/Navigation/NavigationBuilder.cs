@@ -92,7 +92,6 @@ public sealed class NavigationBuilder : IFileWatchAware
 
         return new NavigationInfo(
             SectionName: currentItem?.SectionLabel,
-            SectionRoute: null,
             Breadcrumbs: breadcrumbs,
             PageTitle: currentItem?.Title ?? "",
             PreviousPage: previous,

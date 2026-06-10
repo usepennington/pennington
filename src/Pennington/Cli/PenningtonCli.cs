@@ -43,7 +43,7 @@ internal sealed class PenningtonCli
             return PenningtonRunMode.Serve;
         }
 
-        if (args[0].Equals("build", StringComparison.OrdinalIgnoreCase))
+        if (IsBuildVerb(args))
         {
             return PenningtonRunMode.Build;
         }
@@ -90,6 +90,14 @@ internal sealed class PenningtonCli
 
     /// <summary>True when <paramref name="arg"/> is a help or version request token.</summary>
     public static bool IsHelpOrVersionToken(string arg) => arg is "--help" or "-h" or "-?" or "--version";
+
+    /// <summary>
+    /// True when <paramref name="args"/> (param-style: verb at index 0) starts with the <c>build</c>
+    /// verb. The single home for the build-verb literal — shared by run-mode classification and
+    /// <see cref="Generation.OutputOptions.FromArgs"/>, which holds a forwarded args array.
+    /// </summary>
+    public static bool IsBuildVerb(string[] args)
+        => args.Length > 0 && args[0].Equals("build", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Builds the <c>diag</c> command group from every registered <see cref="IDiagCommand"/>, each

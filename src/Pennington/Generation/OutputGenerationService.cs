@@ -391,9 +391,7 @@ public sealed class OutputGenerationService
 
                         _logger.LogDebug("Generated: {Url} ({StatusCode})", page.Url, (int)response.StatusCode);
 
-                        // Capture HTML content for link verification
-                        var htmlContent = contentType.Contains("html") ? content : null;
-                        results.Add(new FetchResult(page, FetchOutcome.Generated, HtmlContent: htmlContent, Diagnostics: diagnostics));
+                        results.Add(new FetchResult(page, FetchOutcome.Generated, Diagnostics: diagnostics));
                     }
                     else
                     {
@@ -486,7 +484,6 @@ public sealed class OutputGenerationService
         PageToGenerate Page,
         FetchOutcome Outcome,
         string? Detail = null,
-        string? HtmlContent = null,
         IReadOnlyList<Diagnostic>? Diagnostics = null)
     {
         public IReadOnlyList<Diagnostic> Diagnostics { get; init; } = Diagnostics ?? [];

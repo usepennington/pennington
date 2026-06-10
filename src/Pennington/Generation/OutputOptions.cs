@@ -1,6 +1,6 @@
 namespace Pennington.Generation;
 
-using Infrastructure;
+using Cli;
 using Routing;
 
 /// <summary>
@@ -29,7 +29,7 @@ public sealed class OutputOptions
         // or output directory. Previously we blindly read args[1]/args[2],
         // which under `dotnet test` pulled a temp path into BaseUrl and
         // corrupted every rewritten <a href> in integration tests.
-        if (!PenningtonBuildMode.IsBuildMode(args))
+        if (!PenningtonCli.IsBuildVerb(args))
         {
             return new OutputOptions { OutputDirectory = new FilePath("output") };
         }

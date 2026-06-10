@@ -1,5 +1,6 @@
 namespace Pennington.Infrastructure;
 
+using Cli;
 using Microsoft.AspNetCore.Http;
 
 /// <summary>
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 /// </summary>
 internal sealed class LiveReloadScriptProcessor : IResponseProcessor
 {
-    private readonly bool _isDevMode = !PenningtonBuildMode.IsHeadlessOneShot;
+    private readonly bool _isDevMode = !PenningtonCli.Current.IsHeadlessOneShot;
 
     // Per-process fingerprint. Lets the SPA engine in a still-open browser tab
     // from a previous dev session detect that it's now talking to a different

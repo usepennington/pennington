@@ -1,5 +1,6 @@
 namespace Pennington.Infrastructure;
 
+using Cli;
 using Diagnostics;
 using Generation;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// </summary>
 internal sealed class AuditDiagnosticProcessor : IResponseProcessor
 {
-    private readonly bool _isDevMode = !PenningtonBuildMode.IsHeadlessOneShot;
+    private readonly bool _isDevMode = !PenningtonCli.Current.IsHeadlessOneShot;
 
     /// <summary>Order picked so this runs before <see cref="DiagnosticOverlayProcessor"/> (Order=30) reads the context.</summary>
     public int Order => 25;

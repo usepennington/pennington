@@ -8,12 +8,6 @@ namespace Pennington.Head;
 /// </summary>
 public static class HeadOrder
 {
-    /// <summary>Pre-paint essentials: charset/viewport and the theme bootstrap that must run before first paint.</summary>
-    public const int Critical = 0;
-
-    /// <summary>Stylesheets, scripts, font preloads, and preconnect hints.</summary>
-    public const int Asset = 20;
-
     /// <summary>Page-authored or page-computed tags: title, description, per-page OpenGraph. Wins ties against site defaults.</summary>
     public const int Page = 40;
 
@@ -22,7 +16,4 @@ public static class HeadOrder
 
     /// <summary>Discovery payloads: JSON-LD structured data and Standard Site verification links.</summary>
     public const int Discovery = 80;
-
-    /// <summary>Diagnostic-only tags such as the dev-host meta used by live reload.</summary>
-    public const int Diagnostic = 100;
 }

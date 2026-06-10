@@ -1,6 +1,7 @@
 namespace Pennington.Infrastructure;
 
 using System.Text.Json;
+using Cli;
 using Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// </summary>
 internal sealed class DiagnosticOverlayProcessor : IResponseProcessor
 {
-    private readonly bool _isDevMode = !PenningtonBuildMode.IsHeadlessOneShot;
+    private readonly bool _isDevMode = !PenningtonCli.Current.IsHeadlessOneShot;
 
     // Runs after the HTML rewriting pipeline (10).
     /// <inheritdoc/>

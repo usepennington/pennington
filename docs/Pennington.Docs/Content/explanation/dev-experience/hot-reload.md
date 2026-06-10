@@ -35,7 +35,7 @@ This is the extension point you reach for when your own service caches something
 
 ### Build-mode gating
 
-Both `LiveReloadScriptProcessor` and `UseLiveReload` check `PenningtonBuildMode.IsHeadlessOneShot` — true for any headless one-shot run, which covers `build` and `diag` alike, not just the `build` verb. When it is true, the processor's `ShouldProcess` returns `false` and the middleware skips endpoint registration entirely. This means the `OutputGenerationService` crawler sees clean HTML with no script and no WebSocket endpoint: no publish-time stripping step, no build configuration to set, and no dev-only flag to forget.
+Both `LiveReloadScriptProcessor` and `UseLiveReload` check `PenningtonCli.Current.IsHeadlessOneShot` — true for any headless one-shot run, which covers `build` and `diag` alike, not just the `build` verb. When it is true, the processor's `ShouldProcess` returns `false` and the middleware skips endpoint registration entirely. This means the `OutputGenerationService` crawler sees clean HTML with no script and no WebSocket endpoint: no publish-time stripping step, no build configuration to set, and no dev-only flag to forget.
 
 ## Relation to `dotnet watch` and .NET Hot Reload
 

@@ -60,12 +60,6 @@ public sealed class HighlightingService
         return highlighter.Highlight(code, language);
     }
 
-    /// <summary>
-    /// Returns true if any registered highlighter (not the fallback) supports this language.
-    /// </summary>
-    public bool HasHighlighter(string language)
-        => _highlighters.Any(h => h.SupportedLanguages.Contains(language));
-
     private ICodeHighlighter FindHighlighter(string language, out bool isFallback)
     {
         foreach (var h in _highlighters)

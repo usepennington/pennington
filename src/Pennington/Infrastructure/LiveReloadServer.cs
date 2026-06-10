@@ -2,6 +2,7 @@ namespace Pennington.Infrastructure;
 
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using Cli;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -135,11 +136,11 @@ public static class LiveReloadExtensions
 
     /// <summary>
     /// Adds live reload WebSocket support for development.
-    /// Skipped during static build (see <see cref="PenningtonBuildMode"/>).
+    /// Skipped during static build (see <see cref="PenningtonCli"/>).
     /// </summary>
     public static WebApplication UseLiveReload(this WebApplication app)
     {
-        if (PenningtonBuildMode.IsHeadlessOneShot)
+        if (PenningtonCli.Current.IsHeadlessOneShot)
         {
             return app;
         }

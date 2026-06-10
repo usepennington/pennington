@@ -57,23 +57,6 @@ public class HighlightingServiceTests
     }
 
     [Fact]
-    public void HasHighlighter_SupportedLanguage_ReturnsTrue()
-    {
-        var service = new HighlightingService([new CSharpHighlighter(), new PythonHighlighter()]);
-
-        service.HasHighlighter("csharp").ShouldBeTrue();
-        service.HasHighlighter("python").ShouldBeTrue();
-    }
-
-    [Fact]
-    public void HasHighlighter_UnsupportedLanguage_ReturnsFalse()
-    {
-        var service = new HighlightingService([new CSharpHighlighter()]);
-
-        service.HasHighlighter("rust").ShouldBeFalse();
-    }
-
-    [Fact]
     public void Highlight_HtmlSpecialChars_AreEncodedByFallback()
     {
         var service = new HighlightingService([]);
@@ -180,13 +163,6 @@ public class HighlightingServiceTests
         public IReadOnlySet<string> SupportedLanguages { get; } = new HashSet<string> { "csharp", "cs" };
         public int Priority => 100;
         public string Highlight(string code, string language) => $"<span class=\"premium-cs\">{code}</span>";
-    }
-
-    private class PythonHighlighter : ICodeHighlighter
-    {
-        public IReadOnlySet<string> SupportedLanguages { get; } = new HashSet<string> { "python", "py" };
-        public int Priority => 50;
-        public string Highlight(string code, string language) => $"<span class=\"py\">{code}</span>";
     }
 
     private class HighPriorityWildcardHighlighter : ICodeHighlighter

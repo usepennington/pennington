@@ -18,9 +18,6 @@ public sealed record ContentRoute
     /// <summary>True when this route serves default-locale content as a fallback for a missing translation.</summary>
     public bool IsFallback { get; init; }
 
-    /// <summary>Composes the canonical path with a base URL path.</summary>
-    internal UrlPath WithBaseUrl(UrlPath baseUrl) => baseUrl / CanonicalPath;
-
     /// <summary>Compose the canonical path with the site's canonical base URL; see <see cref="UrlComposer.Combine"/>.</summary>
     public UrlPath AbsoluteUrl(UrlPath canonicalBase) => UrlComposer.Combine(canonicalBase, CanonicalPath);
 

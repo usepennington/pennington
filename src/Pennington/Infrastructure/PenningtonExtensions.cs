@@ -79,7 +79,7 @@ public static class PenningtonExtensions
         // Build and diag run in-process: swap Kestrel for TestServer so the crawler dispatches
         // through the same middleware with no socket bind, dev-cert prompt, or random-port race.
         // Last-registered IServer wins, overriding the Kestrel registration CreateBuilder() adds.
-        if (PenningtonBuildMode.IsHeadlessOneShot)
+        if (PenningtonCli.Current.IsHeadlessOneShot)
         {
             services.AddSingleton<IServer, TestServer>();
         }
@@ -90,12 +90,12 @@ public static class PenningtonExtensions
         // surfaces its own progress at Information; diag, --help, and --version keep stdout clean —
         // the explicit Pennington filter overrides hosts whose appsettings elevate it (e.g. the docs
         // site sets Pennington to Trace).
-        if (PenningtonBuildMode.IsHeadlessOneShot || PenningtonBuildMode.IsHelpOrVersion)
+        if (PenningtonCli.Current.IsHeadlessOneShot || PenningtonCli.Current.IsHelpOrVersion)
         {
             services.AddLogging(b =>
             {
                 b.AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Warning);
-                if (PenningtonBuildMode.WritesOutput && !PenningtonBuildMode.IsHelpOrVersion)
+                if (PenningtonCli.Current.WritesOutput && !PenningtonCli.Current.IsHelpOrVersion)
                 {
                     b.AddFilter("Pennington", LogLevel.Information);
                 }
@@ -123,7 +123,7 @@ public static class PenningtonExtensions
         // Build mode defaults StrictUnknownKeys to true so typo'd keys fail the build.
         // The user wins if they already flipped it on; flip-down for build is rare and
         // can still be done by registering a replacement options instance after AddPennington.
-        if (PenningtonBuildMode.WritesOutput && !options.FrontMatter.StrictUnknownKeys)
+        if (PenningtonCli.Current.WritesOutput && !options.FrontMatter.StrictUnknownKeys)
         {
             options.FrontMatter.StrictUnknownKeys = true;
         }
@@ -245,11 +245,7 @@ public static class PenningtonExtensions
                     }
 
                     var env = sp.GetService<IWebHostEnvironment>();
-                    var resolvedContentPath = Path.IsPathRooted(capturedSource.ContentPath)
-                        ? capturedSource.ContentPath
-                        : env != null
-                            ? Path.Combine(env.ContentRootPath, capturedSource.ContentPath)
-                            : capturedSource.ContentPath;
+                    var resolvedContentPath = FilePath.ResolveAgainstRoot(capturedSource.ContentPath, env?.ContentRootPath);
 
                     var sourceOptions = new MarkdownContentServiceOptions
                     {
@@ -328,11 +324,7 @@ public static class PenningtonExtensions
                     }
 
                     var env = sp.GetService<IWebHostEnvironment>();
-                    var resolvedContentPath = Path.IsPathRooted(capturedFormat.ContentPath)
-                        ? capturedFormat.ContentPath
-                        : env != null
-                            ? Path.Combine(env.ContentRootPath, capturedFormat.ContentPath)
-                            : capturedFormat.ContentPath;
+                    var resolvedContentPath = FilePath.ResolveAgainstRoot(capturedFormat.ContentPath, env?.ContentRootPath);
 
                     var fileOptions = new FileContentServiceOptions
                     {
@@ -409,11 +401,7 @@ public static class PenningtonExtensions
         {
             var penn = sp.GetRequiredService<PenningtonOptions>();
             var env = sp.GetService<IWebHostEnvironment>();
-            var contentRoot = Path.IsPathRooted(penn.ContentRootPath.Value)
-                ? penn.ContentRootPath.Value
-                : env != null
-                    ? Path.Combine(env.ContentRootPath, penn.ContentRootPath.Value)
-                    : penn.ContentRootPath.Value;
+            var contentRoot = FilePath.ResolveAgainstRoot(penn.ContentRootPath.Value, env?.ContentRootPath);
             return new ContentRootAssetService(contentRoot, sp.GetRequiredService<IFileSystem>());
         });
 
@@ -725,9 +713,7 @@ public static class PenningtonExtensions
         var logger = app.Services.GetService<ILoggerFactory>()?.CreateLogger("Pennington");
         foreach (var source in options.MarkdownSources)
         {
-            var contentPath = Path.IsPathRooted(source.ContentPath)
-                ? source.ContentPath
-                : Path.Combine(hostContentRoot, source.ContentPath);
+            var contentPath = FilePath.ResolveAgainstRoot(source.ContentPath, hostContentRoot);
             if (!Directory.Exists(contentPath))
             {
                 logger?.LogWarning(
@@ -737,9 +723,7 @@ public static class PenningtonExtensions
         }
         foreach (var format in options.ContentFormats)
         {
-            var contentPath = Path.IsPathRooted(format.ContentPath)
-                ? format.ContentPath
-                : Path.Combine(hostContentRoot, format.ContentPath);
+            var contentPath = FilePath.ResolveAgainstRoot(format.ContentPath, hostContentRoot);
             if (!Directory.Exists(contentPath))
             {
                 logger?.LogWarning(
@@ -749,9 +733,7 @@ public static class PenningtonExtensions
         }
 
         // Serve static files from content root
-        var contentRoot = Path.IsPathRooted(options.ContentRootPath.Value)
-            ? options.ContentRootPath.Value
-            : Path.Combine(hostContentRoot, options.ContentRootPath.Value);
+        var contentRoot = FilePath.ResolveAgainstRoot(options.ContentRootPath.Value, hostContentRoot);
         if (Directory.Exists(contentRoot))
         {
             app.UseStaticFiles(new StaticFileOptions
@@ -765,9 +747,7 @@ public static class PenningtonExtensions
         // Serve static files from each content source directory
         foreach (var source in options.MarkdownSources)
         {
-            var contentPath = Path.IsPathRooted(source.ContentPath)
-                ? source.ContentPath
-                : Path.Combine(hostContentRoot, source.ContentPath);
+            var contentPath = FilePath.ResolveAgainstRoot(source.ContentPath, hostContentRoot);
             if (!Directory.Exists(contentPath))
             {
                 continue;
@@ -790,9 +770,7 @@ public static class PenningtonExtensions
         // Serve static files (sibling assets) from each custom content-format source directory.
         foreach (var format in options.ContentFormats)
         {
-            var contentPath = Path.IsPathRooted(format.ContentPath)
-                ? format.ContentPath
-                : Path.Combine(hostContentRoot, format.ContentPath);
+            var contentPath = FilePath.ResolveAgainstRoot(format.ContentPath, hostContentRoot);
             if (!Directory.Exists(contentPath))
             {
                 continue;
@@ -817,9 +795,7 @@ public static class PenningtonExtensions
         {
             foreach (var source in options.MarkdownSources)
             {
-                var contentPath = Path.IsPathRooted(source.ContentPath)
-                    ? source.ContentPath
-                    : Path.Combine(hostContentRoot, source.ContentPath);
+                var contentPath = FilePath.ResolveAgainstRoot(source.ContentPath, hostContentRoot);
 
                 foreach (var locale in options.Localization.Locales.Keys)
                 {

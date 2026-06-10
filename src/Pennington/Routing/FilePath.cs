@@ -25,6 +25,17 @@ public readonly record struct FilePath(string Value)
         return new FilePath(l + "/" + r);
     }
 
+    /// <summary>
+    /// Resolves <paramref name="path"/> against <paramref name="root"/>: returns it unchanged when it is
+    /// already rooted or when <paramref name="root"/> is null or empty, otherwise combines the two.
+    /// </summary>
+    /// <param name="path">A path that may be absolute or relative to <paramref name="root"/>.</param>
+    /// <param name="root">The base directory used to resolve a relative <paramref name="path"/>.</param>
+    public static string ResolveAgainstRoot(string path, string? root)
+        => Path.IsPathRooted(path) || string.IsNullOrEmpty(root)
+            ? path
+            : Path.Combine(root, path);
+
     /// <summary>The file extension including the leading dot, or empty if none.</summary>
     public string Extension => Path.GetExtension(Value);
 

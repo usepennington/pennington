@@ -1,6 +1,7 @@
 namespace Pennington.Generation;
 
 using System.Collections.Immutable;
+using Cli;
 using Content;
 using Infrastructure;
 using Routing;
@@ -34,7 +35,7 @@ public sealed class AuditRunner : IHostedService
         LocalizationOptions localization,
         IHostApplicationLifetime lifetime,
         ILogger<AuditRunner> logger)
-        : this(services, cache, fileWatcher, localization, lifetime, logger, PenningtonBuildMode.IsHeadlessOneShot)
+        : this(services, cache, fileWatcher, localization, lifetime, logger, PenningtonCli.Current.IsHeadlessOneShot)
     {
     }
 

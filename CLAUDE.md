@@ -39,7 +39,7 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - `Pennington.LlmsTxt` — LlmsTxtService, LlmsTxtContentService (llms.txt index + stripped markdown)
 - `Pennington.StructuredData` — JsonLdEntity, JsonLdSerializer, IHasStructuredData, and the concrete schema.org types shared by both templates: JsonLdArticle/JsonLdPerson/JsonLdWebSite/JsonLdBreadcrumbList
 - `Pennington.Diagnostics` — Diagnostic, DiagnosticContext, DiagnosticSeverity (per-request diagnostics)
-- `Pennington.Infrastructure` — PenningtonExtensions (AddPennington/UsePennington/RunOrBuildAsync), ResponseProcessingMiddleware, IResponseProcessor, NotFoundStatusProcessor + `NotFoundResponseExtensions` (public `HttpContext.MarkNotFound()`/`IsMarkedNotFound()` — pages signal a 404 with this, never the `"Pennington.NotFound"` literal), LiveReloadServer, PenningtonBuildMode (legacy shim over PenningtonCli)
+- `Pennington.Infrastructure` — PenningtonExtensions (AddPennington/UsePennington/RunOrBuildAsync), ResponseProcessingMiddleware, IResponseProcessor, NotFoundStatusProcessor + `NotFoundResponseExtensions` (public `HttpContext.MarkNotFound()`/`IsMarkedNotFound()` — pages signal a 404 with this, never the `"Pennington.NotFound"` literal), LiveReloadServer
 - `Pennington.Cli` — System.CommandLine host CLI. `PenningtonCli` is the single source of run-mode detection (`PenningtonRunMode` serve/build/diag; `IsHeadlessOneShot`/`WritesOutput` gate TestServer swap, logging, dev overlays). `RunOrBuildAsync` dispatches on it. `IDiagCommand` (DI-discovered) + the `diag` subcommands under `Cli/Diag` (info/toc/routes/warnings/translation/frontmatter/llms), plus `AsciiTreeWriter`. Read-only, text-only output.
 
 ## DI Wiring

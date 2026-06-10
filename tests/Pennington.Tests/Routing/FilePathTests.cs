@@ -67,4 +67,32 @@ public class FilePathTests
         result.Value.ShouldBe("content\\docs/page.md");
     }
 
+    [Fact]
+    public void ResolveAgainstRoot_RelativePath_CombinesWithRoot()
+    {
+        var result = FilePath.ResolveAgainstRoot("Content", "/site/root");
+        result.ShouldBe(Path.Combine("/site/root", "Content"));
+    }
+
+    [Fact]
+    public void ResolveAgainstRoot_RootedPath_ReturnedUnchanged()
+    {
+        var rooted = Path.IsPathRooted("/abs/content") ? "/abs/content" : Path.Combine(Path.GetTempPath(), "content");
+        var result = FilePath.ResolveAgainstRoot(rooted, "/site/root");
+        result.ShouldBe(rooted);
+    }
+
+    [Fact]
+    public void ResolveAgainstRoot_NullRoot_ReturnsPathUnchanged()
+    {
+        var result = FilePath.ResolveAgainstRoot("Content", null);
+        result.ShouldBe("Content");
+    }
+
+    [Fact]
+    public void ResolveAgainstRoot_EmptyRoot_ReturnsPathUnchanged()
+    {
+        var result = FilePath.ResolveAgainstRoot("Content", "");
+        result.ShouldBe("Content");
+    }
 }
