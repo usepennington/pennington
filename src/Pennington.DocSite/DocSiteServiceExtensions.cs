@@ -4,6 +4,7 @@ using System.Reflection;
 using Content;
 using Infrastructure;
 using Mdazor;
+using Taxonomy;
 using Pennington.Head;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -171,16 +172,24 @@ public static class DocSiteServiceExtensions
         // Content resolver
         services.AddTransient<Services.DocSiteContentResolver>();
 
-        // Blog services. The resolver renders posts with their own front matter; the
-        // content service yields the blog index, tag index, and per-tag routes for the
-        // static build and produces the RSS feed. Aliased to IContentService through a
-        // transient indirection so each resolve sees the current file-watched instance.
-        services.AddTransient<Services.BlogPostResolver>();
+        // Blog services. Post listings, single-post rendering, and RSS all come from the shared core
+        // BlogPostQuery (registered by AddPennington) reading the cached content-record snapshot.
         if (hasBlog)
         {
-            services.AddFileWatched<Services.BlogContentService>();
-            services.AddTransient<IContentService>(sp =>
-                sp.GetRequiredService<Services.BlogContentService>());
+            // Browse-by-tag via the core taxonomy subsystem. The @page tag components
+            // (BlogTags/BlogTagPage) render them with full chrome and search indexing while this
+            // axis supplies term data (via TaxonomyAccessor), route discovery, and cross-references.
+            // MapTaxonomy is intentionally not called — the @page routes serve the HTML.
+            services.AddTaxonomy<BlogPostFrontMatter, string>(tax =>
+            {
+                tax.BaseUrl = "/blog/tags";
+                tax.SelectKeys = fm => fm.Tags;
+                tax.IndexPage = typeof(Components.Pages.BlogTags);
+                tax.TermPage = typeof(Components.Pages.BlogTagPage);
+            });
+
+            // Emits the /blog index route for the static crawler and declares the /blog llms subtree.
+            services.AddSingleton<IContentService, Services.BlogContentService>();
         }
 
         return services;
@@ -210,8 +219,12 @@ public static class DocSiteServiceExtensions
         // lands in both dev-server responses and the generated output.
         if (app.Services.GetRequiredService<BlogFeature>().Enabled)
         {
-            app.MapGet("/rss.xml", async (Services.BlogContentService service) =>
-                Results.Content(await service.GetRssXmlAsync(), "application/xml"));
+            app.MapGet("/rss.xml", async (BlogPostQuery posts) =>
+                Results.Content(
+                    await posts.GetRssXmlAsync<BlogPostFrontMatter>(
+                        options.SiteTitle, options.SiteDescription, options.CanonicalBaseUrl, "/blog",
+                        fm => fm.Author),
+                    "application/xml"));
         }
 
         return app;

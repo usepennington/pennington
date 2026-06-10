@@ -1,4 +1,4 @@
-namespace Pennington.BlogSite.Services;
+namespace Pennington.Content;
 
 /// <summary>
 /// A single page of items with the bookkeeping the <c>Pagination</c> component needs to render

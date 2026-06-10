@@ -1,9 +1,11 @@
 @page "/blog/{*slug:nonfile}"
 @layout BlogLayout
 @using System.Globalization
-@using System.Web
-@using Pennington.DocSite.Services
-@inject BlogPostResolver Resolver
+@using Pennington.Content
+@using Pennington.Infrastructure
+@using Pennington.Routing
+@using Pennington.Taxonomy
+@inject BlogPostQuery Posts
 @inject BlogFeature Blog
 @inject DocSiteOptions DocSiteOptions
 @inject NavigationManager NavigationManager
@@ -11,7 +13,7 @@
 
 @if (_rendered != null)
 {
-    var fm = _rendered.Post.FrontMatter;
+    var fm = _rendered.FrontMatter;
     <PageTitle>@fm.Title — @DocSiteOptions.SiteTitle</PageTitle>
     <HeadContent>
         <meta name="description" content="@fm.Description" />
@@ -43,7 +45,7 @@
             <div class="mt-8 flex flex-wrap gap-2">
                 @foreach (var tag in fm.Tags)
                 {
-                    <a href="/blog/tags/@HttpUtility.UrlEncode(tag)"
+                    <a href="/blog/tags/@TaxonomySlug.Slugify(tag)/"
                        class="inline-flex items-center rounded-full border border-base-200 dark:border-base-800 px-3 py-1 text-xs font-medium text-base-600 dark:text-base-300 hover:border-primary-300 dark:hover:border-primary-700 hover:text-primary-700 dark:hover:text-primary-400">
                         @tag
                     </a>
@@ -60,28 +62,24 @@
     /// <summary>Catch-all route segment for the post slug. Resolution uses the request path instead.</summary>
     [Parameter] public string? Slug { get; set; }
 
-    private RenderedBlogPost? _rendered;
+    private RenderedBlogPost<BlogPostFrontMatter>? _rendered;
 
     protected override async Task OnInitializedAsync()
     {
         if (!Blog.Enabled)
         {
-            MarkNotFound();
+            HttpContextAccessor.HttpContext?.MarkNotFound();
             return;
         }
 
         // Use the full request path, not the Slug route value — Blazor routing sees a
         // locale-stripped path (LocaleDetectionMiddleware moves the locale into PathBase).
         var url = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath;
-        _rendered = await Resolver.GetPostByUrlAsync(url);
+        _rendered = await Posts.GetRenderedPostAsync<BlogPostFrontMatter>(new UrlPath(url));
 
         if (_rendered == null)
-            MarkNotFound();
-    }
-
-    private void MarkNotFound()
-    {
-        if (HttpContextAccessor.HttpContext is { } ctx)
-            ctx.Items["Pennington.NotFound"] = true;
+        {
+            HttpContextAccessor.HttpContext?.MarkNotFound();
+        }
     }
 }

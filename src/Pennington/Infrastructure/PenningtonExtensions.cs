@@ -388,6 +388,11 @@ public static class PenningtonExtensions
         // current service set, mirroring the pipeline registration above.
         services.AddTransient<IPageResolver, PageResolver>();
 
+        // Shared blog read model (post listings, pagination, single-post render, RSS) over the
+        // cached record registry + page resolver. Transient so it captures the current file-watched
+        // ContentRecordRegistry; holds no cache of its own.
+        services.AddTransient<Content.BlogPostQuery>();
+
         // Unified redirect map (from _redirects.yml + per-page redirectUrl front matter).
         // Registered as both a concrete service (for the middleware) and an IContentService
         // (so the build crawler hits the YAML-defined redirect sources and captures 301s).

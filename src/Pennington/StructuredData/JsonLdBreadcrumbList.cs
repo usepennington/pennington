@@ -1,9 +1,8 @@
-namespace Pennington.DocSite.StructuredData;
+namespace Pennington.StructuredData;
 
 using System.Text.Json.Serialization;
-using Pennington.StructuredData;
 
-/// <summary>schema.org BreadcrumbList describing the page's place in the navigation tree.</summary>
+/// <summary>schema.org BreadcrumbList describing a page's place in the navigation tree.</summary>
 public sealed record JsonLdBreadcrumbList : JsonLdEntity
 {
     /// <inheritdoc />

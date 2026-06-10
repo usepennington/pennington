@@ -1,7 +1,7 @@
 @layout ContentWithProseLayout
 @page "/archive"
 @page "/archive/page/{Page:int}"
-@inject BlogContentResolver ContentResolver
+@inject BlogPostQuery Posts
 @inject PenningtonOptions PenningtonOptions
 @inject BlogSiteOptions BlogOptions
 
@@ -28,13 +28,13 @@
     /// <summary>1-based page index from the route. Null on the canonical <c>/archive</c> URL (treated as page 1).</summary>
     [Parameter] public int? Page { get; set; }
 
-    private PagedList<BlogPostPage>? _page;
+    private PagedList<BlogPostRef<BlogSiteFrontMatter>>? _page;
 
     protected override async Task OnInitializedAsync()
     {
         var requested = Page ?? 1;
         var pageSize = BlogOptions.PostsPerPage > 0 ? BlogOptions.PostsPerPage : int.MaxValue;
-        _page = await ContentResolver.GetPagedPostsAsync(requested, pageSize);
+        _page = await Posts.GetPageAsync<BlogSiteFrontMatter>(BlogOptions.BlogBaseUrl, requested, pageSize);
     }
 
     private static string PageUrl(int page) => page <= 1 ? "/archive" : $"/archive/page/{page}/";

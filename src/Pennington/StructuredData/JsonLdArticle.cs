@@ -1,9 +1,8 @@
-namespace Pennington.DocSite.StructuredData;
+namespace Pennington.StructuredData;
 
 using System.Text.Json.Serialization;
-using Pennington.StructuredData;
 
-/// <summary>schema.org Article emitted in the head of DocSite content pages.</summary>
+/// <summary>schema.org Article — a blog post or content page, emitted in the page head.</summary>
 public sealed record JsonLdArticle : JsonLdEntity
 {
     /// <inheritdoc />
@@ -32,7 +31,7 @@ public sealed record JsonLdArticle : JsonLdEntity
     public JsonLdPerson? Author { get; init; }
 }
 
-/// <summary>schema.org Person — author or contributor on a DocSite article.</summary>
+/// <summary>schema.org Person — author or contributor on an <see cref="JsonLdArticle"/>.</summary>
 public sealed record JsonLdPerson
 {
     /// <summary>schema.org @type literal.</summary>

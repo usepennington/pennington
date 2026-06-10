@@ -4,6 +4,7 @@ using System.Reflection;
 using Content;
 using Infrastructure;
 using Mdazor;
+using Taxonomy;
 using Pennington.Head;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -92,18 +93,25 @@ public static class BlogSiteServiceExtensions
             };
         });
 
-        services.AddFileWatched<BlogContentResolver>();
+        // Not-found body resolver (content-root 404.md). Post listings, single-post rendering, and RSS
+        // come from the shared core BlogPostQuery (registered by AddPennington) over the cached records.
+        services.AddTransient<BlogContentResolver>();
 
-        // Content service that yields per-tag routes and the /rss.xml file.
-        // Reads markdown directly from disk instead of going through
-        // BlogContentResolver so it doesn't take a circular dependency on the
-        // still-initializing IContentService set during DiscoverAsync.
-        services.AddFileWatched<BlogSiteContentService>();
-        // Transient wrapper — AddSingleton here would capture the first
-        // file-watched instance and never see a refresh, defeating the
-        // AddFileWatched above.
-        services.AddTransient<IContentService>(sp =>
-            sp.GetRequiredService<BlogSiteContentService>());
+        // Browse-by-tag via the core taxonomy subsystem. The @page Tags/Tag components render the index
+        // and term pages with full chrome and search indexing; this axis supplies term data (via
+        // TaxonomyAccessor), route discovery, and cross-references. MapTaxonomy is intentionally not
+        // called — the @page routes serve the HTML.
+        services.AddTaxonomy<BlogSiteFrontMatter, string>(tax =>
+        {
+            tax.BaseUrl = "/tags";
+            tax.SelectKeys = fm => fm.Tags;
+            tax.IndexPage = typeof(Components.Pages.Tags);
+            tax.TermPage = typeof(Components.Pages.Tag);
+        });
+
+        // Emits the paginated archive routes the static crawler can't auto-discover and projects the
+        // template-owned home-page record (for social-card generation).
+        services.AddSingleton<IContentService, BlogSiteContentService>();
 
         return services;
     }
@@ -132,8 +140,12 @@ public static class BlogSiteServiceExtensions
         {
             // Static crawler picks this up via DiscoverMapGetRoutes, so /rss.xml
             // lands both in dev-server responses and in the generated output.
-            app.MapGet("/rss.xml", async (BlogSiteContentService service) =>
-                Results.Content(await service.GetRssXmlAsync(), "application/xml"));
+            app.MapGet("/rss.xml", async (BlogPostQuery posts) =>
+                Results.Content(
+                    await posts.GetRssXmlAsync<BlogSiteFrontMatter>(
+                        options.SiteTitle, options.SiteDescription, options.CanonicalBaseUrl,
+                        options.BlogBaseUrl, fm => fm.Author),
+                    "application/xml"));
         }
 
         return app;

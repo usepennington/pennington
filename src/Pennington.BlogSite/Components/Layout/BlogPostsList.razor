@@ -8,5 +8,5 @@
 </div>
 
 @code {
-    [Parameter, EditorRequired] public required IList<BlogPostPage> Posts { get; set; }
+    [Parameter, EditorRequired] public required IReadOnlyList<BlogPostRef<BlogSiteFrontMatter>> Posts { get; set; }
 }

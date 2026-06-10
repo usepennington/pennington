@@ -15,6 +15,7 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - `src/Pennington.MonorailCss/` — MonorailCSS integration (utility-first CSS generation)
 - `src/Pennington.DocSite/` — Documentation site template (layout, pages, content resolver)
 - `src/Pennington.BlogSite/` — Blog site template (home/archive/tag pages, blog front matter, content service)
+  - Both site templates share their blog **data/logic** through core (`BlogPostQuery`, `PagedList<T>`, the `Pennington.StructuredData` JSON-LD types, and `TaxonomyContentService` for browse-by-tag). What stays template-specific is chrome: layouts, `App.razor`, the options record, and the front-matter type (`BlogPostFrontMatter` vs `BlogSiteFrontMatter` — kept separate because their `SearchOnly` policy and `Repository`/`Series` fields differ). Tag pages are `@page` components backed by a registered taxonomy axis (not `MapTaxonomy`), so they keep full chrome + search indexing.
 - `src/Pennington.TreeSitter/` — Optional tree-sitter-based multi-language code-fragment extraction (`:symbol` fence, name-path addressing) via the `TreeSitter.DotNet` package
 - `docs/Pennington.Docs/` — The Pennington docs site (Divio-style: tutorials, how-to, reference, explanation)
 - `examples/` — Variety of example sites used for reference and verification across scenarios
@@ -26,18 +27,19 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 - `Pennington.Routing` — UrlPath, FilePath, ContentRoute, ContentRouteFactory
 - `Pennington.FrontMatter` — IFrontMatter, capability interfaces, FrontMatterParser
 - `Pennington.Pipeline` — ContentItem/ContentSource unions, ContentPipeline, IContentParser/IContentRenderer
-- `Pennington.Content` — IContentService, MarkdownContentService, RazorPageContentService, FolderMetadata/FolderMetadataRegistry/IFolderMetadataProvider (folder-level `_meta.yml` sidecars: per-folder title + order + optional llms.txt subtree opt-in)
+- `Pennington.Content` — IContentService, MarkdownContentService, RazorPageContentService, ContentRecordRegistry; BlogPostQuery (the shared blog read model — listings, pagination, single-post render, and RSS over the cached records; both site templates consume it), PagedList\<T\>, BlogPostRef\<T\>/RenderedBlogPost\<T\>; **IMetaContentService** (marker for a service that derives from the *other* registered services — taxonomy, paginated listings, social cards — which must filter its sibling set through `ContentServiceExtensions.SourceServices()` so meta-services never recurse into each other or a transient copy of themselves); FolderMetadata/FolderMetadataRegistry/IFolderMetadataProvider (folder-level `_meta.yml` sidecars: per-folder title + order + optional llms.txt subtree opt-in)
 - `Pennington.Markdown` — MarkdownContentParser/Renderer, MarkdownPipelineFactory, extensions (highlighting, tabs, alerts)
 - `Pennington.Highlighting` — ICodeHighlighter, TextMateHighlighter, ShellHighlighter, HighlightingService
 - `Pennington.Generation` — BuildReport, OutputGenerationService, OutputOptions
 - `Pennington.Navigation` — NavigationBuilder, NavigationTreeItem, NavigationInfo
 - `Pennington.Localization` — LocaleContext, LocaleDetectionMiddleware, LocaleLinkHtmlRewriter, PenningtonStringLocalizer, TranslationOptions
 - `Pennington.Search` — host adapter over the external **DeweySearch** engine: SearchArtifactService/Emitter/Middleware + HeadingSectionExtractor (splits post-pipeline HTML into one section per heading) + SearchIndexBuilder (maps each section onto a `DeweySearch.SearchDocument` — anchor URL, page→heading breadcrumb, open facets), SearchIndexOptions/SearchFacetField (host config). Records are **heading-level** (DocSearch-style): results deep-link to `/page/#heading` and carry crumbs for grouping. The engine (tokenizer/stemmer/inverted index) is the `DeweySearch` NuGet package; the JS client ships from `DeweySearch.Web` at `_content/DeweySearch.Web/dewey-search.js`. Per-locale sharded index under `/search/{locale}/`.
-- `Pennington.Feeds` — RssFeedBuilder, SitemapBuilder, SitemapService
+- `Pennington.Taxonomy` — TaxonomyContentService/TaxonomyOptions (browse-by-field axes), TaxonomyAccessor (resolve a registered axis's terms by base URL from a routed `@page` — the blog tag pages use this for full chrome + search instead of `MapTaxonomy`'s bare render), TaxonomySlug (shared term-slug encoding so links and discovered routes agree). A meta content service (see `IMetaContentService`).
+- `Pennington.Feeds` — RssFeedBuilder, SitemapBuilder, SitemapService, RssFeedWriter
 - `Pennington.LlmsTxt` — LlmsTxtService, LlmsTxtContentService (llms.txt index + stripped markdown)
-- `Pennington.StructuredData` — JsonLdSerializer, JsonLdTypes (schema.org)
+- `Pennington.StructuredData` — JsonLdEntity, JsonLdSerializer, IHasStructuredData, and the concrete schema.org types shared by both templates: JsonLdArticle/JsonLdPerson/JsonLdWebSite/JsonLdBreadcrumbList
 - `Pennington.Diagnostics` — Diagnostic, DiagnosticContext, DiagnosticSeverity (per-request diagnostics)
-- `Pennington.Infrastructure` — PenningtonExtensions (AddPennington/UsePennington/RunOrBuildAsync), ResponseProcessingMiddleware, IResponseProcessor, LiveReloadServer, PenningtonBuildMode (legacy shim over PenningtonCli)
+- `Pennington.Infrastructure` — PenningtonExtensions (AddPennington/UsePennington/RunOrBuildAsync), ResponseProcessingMiddleware, IResponseProcessor, NotFoundStatusProcessor + `NotFoundResponseExtensions` (public `HttpContext.MarkNotFound()`/`IsMarkedNotFound()` — pages signal a 404 with this, never the `"Pennington.NotFound"` literal), LiveReloadServer, PenningtonBuildMode (legacy shim over PenningtonCli)
 - `Pennington.Cli` — System.CommandLine host CLI. `PenningtonCli` is the single source of run-mode detection (`PenningtonRunMode` serve/build/diag; `IsHeadlessOneShot`/`WritesOutput` gate TestServer swap, logging, dev overlays). `RunOrBuildAsync` dispatches on it. `IDiagCommand` (DI-discovered) + the `diag` subcommands under `Cli/Diag` (info/toc/routes/warnings/translation/frontmatter/llms), plus `AsciiTreeWriter`. Read-only, text-only output.
 
 ## DI Wiring

@@ -59,11 +59,8 @@ else
                     && t != typeof(Pages));
         }
 
-        if (HttpContextAccessor.HttpContext is { } ctx)
-        {
-            // Flip to 404 after body rewriting (see NotFoundStatusProcessor) — setting the
-            // status here directly would gate every IResponseProcessor and empty the body.
-            ctx.Items["Pennington.NotFound"] = true;
-        }
+        // Flip to 404 after body rewriting (see NotFoundStatusProcessor) — setting the status here
+        // directly would gate every IResponseProcessor and empty the body.
+        HttpContextAccessor.HttpContext?.MarkNotFound();
     }
 }

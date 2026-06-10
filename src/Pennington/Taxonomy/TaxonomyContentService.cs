@@ -31,7 +31,7 @@ using Routing;
 /// and the next request rebuilds it.
 /// </para>
 /// </summary>
-public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService, ITaxonomyContentService
+public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService, ITaxonomyContentService, IMetaContentService
     where TFrontMatter : IFrontMatter, new()
     where TKey : notnull
 {
@@ -185,15 +185,12 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
 
     private async Task<ImmutableList<TaxonomyTerm<TFrontMatter, TKey>>> LoadTermsAsync()
     {
-        // Resolve siblings on demand, excluding self and every other taxonomy:
-        //  1. Self — enumerating our own records would re-enter this exact LoadTermsAsync
-        //     via _termsLazy and deadlock.
-        //  2. Every other ITaxonomyContentService — their records are empty by design (a
-        //     taxonomy's outputs are term pages, not content), and enumerating them would
-        //     trigger their own LoadTermsAsync, recursing back into us. Pairs of taxonomies
-        //     on the same TFrontMatter would deadlock without this filter.
+        // Resolve siblings on demand (a ctor IEnumerable<IContentService> would be a DI cycle — this
+        // service is itself in that set). Exclude every meta-service (this instance, other taxonomies,
+        // listings, social cards): they derive from source content and project nothing to taxonomize,
+        // so walking them is pointless and would recurse back into discovery.
         var siblings = _serviceProvider.GetServices<IContentService>()
-            .Where(s => !ReferenceEquals(s, this) && s is not ITaxonomyContentService)
+            .SourceServices()
             .ToList();
 
         // (key, item) pairs keyed by the user's TKey using its default equality semantics.

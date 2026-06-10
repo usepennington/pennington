@@ -13,7 +13,7 @@ using Routing;
 /// <see cref="Taxonomy.TaxonomyContentService{TFrontMatter, TKey}"/> — it emits
 /// <see cref="EndpointSource"/> routes served by an endpoint and projects no records of its own.
 /// </summary>
-public sealed class SocialCardContentService : IContentService
+public sealed class SocialCardContentService : IContentService, IMetaContentService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly SocialCardOptions _options;
@@ -35,10 +35,10 @@ public sealed class SocialCardContentService : IContentService
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
         // Resolve siblings on demand (rather than via a ctor IEnumerable<IContentService>) to avoid a
-        // DI cycle: this service is itself in that set. Exclude self so the sibling record walk can't
-        // recurse back into this discovery.
+        // DI cycle: this service is itself in that set. Exclude every meta-service (this instance
+        // included) so the sibling record walk can't recurse back into derived-route discovery.
         var siblings = _serviceProvider.GetServices<IContentService>()
-            .Where(s => !ReferenceEquals(s, this))
+            .SourceServices()
             .ToList();
 
         await foreach (var record in siblings.GetAllRecordsAsync())

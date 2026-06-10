@@ -1,7 +1,6 @@
 namespace Pennington.BlogSite;
 
 using FrontMatter;
-using Pennington.BlogSite.StructuredData;
 using Pennington.StructuredData;
 
 /// <summary>

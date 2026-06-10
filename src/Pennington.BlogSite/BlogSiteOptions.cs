@@ -1,6 +1,7 @@
 namespace Pennington.BlogSite;
 
 using System.Reflection;
+using Content;
 using Infrastructure;
 using Microsoft.AspNetCore.Components;
 using MonorailCss;
@@ -36,20 +37,11 @@ public record BlogSiteOptions
     /// <summary>URL prefix under which blog posts are published.</summary>
     public string BlogBaseUrl { get; init; } = "/blog";
 
-    /// <summary>URL for the tag index page.</summary>
-    public string TagsPageUrl { get; init; } = "/tags";
-
-    /// <summary>Number of posts per page on the archive and per-tag listings. Set to a non-positive value to disable pagination.</summary>
+    /// <summary>Number of posts per page on the archive listing. Set to a non-positive value to disable pagination.</summary>
     public int PostsPerPage { get; init; } = 10;
 
     /// <summary>Additional CSS appended to the generated stylesheet.</summary>
     public string? ExtraStyles { get; init; }
-
-    /// <summary>CSS font-family stack used for display type (headings).</summary>
-    public string? DisplayFontFamily { get; init; }
-
-    /// <summary>CSS font-family stack used for body copy.</summary>
-    public string? BodyFontFamily { get; init; }
 
     /// <summary>Raw HTML appended to the document <c>&lt;head&gt;</c> (for analytics, meta tags, etc.).</summary>
     public string? AdditionalHtmlHeadContent { get; init; }
@@ -85,7 +77,7 @@ public record BlogSiteOptions
     public HeaderLink[] MainSiteLinks { get; init; } = [];
 
     /// <summary>Factory producing a social-share image URL for a given post. Return null to fall back to defaults.</summary>
-    public Func<BlogPostPage, string?>? SocialMediaImageUrlFactory { get; init; }
+    public Func<BlogPostRef<BlogSiteFrontMatter>, string?>? SocialMediaImageUrlFactory { get; init; }
 
     /// <summary>
     /// Enables generated per-post social cards. When set, each post's <c>og:image</c>/<c>twitter:image</c>

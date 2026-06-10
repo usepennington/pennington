@@ -1,24 +1,26 @@
 @page "/blog/tags/{tagSlug}"
 @layout BlogLayout
-@using Pennington.DocSite.Services
-@inject BlogPostResolver Resolver
+@using Pennington.Content
+@using Pennington.Infrastructure
+@using Pennington.Taxonomy
+@inject TaxonomyAccessor Taxonomy
 @inject BlogFeature Feature
 @inject DocSiteOptions DocSiteOptions
 @inject IHttpContextAccessor HttpContextAccessor
 
-@if (_tag != null && _posts != null)
+@if (_term != null)
 {
-    <PageTitle>@_tag.Name — @DocSiteOptions.SiteTitle</PageTitle>
+    <PageTitle>@_term.Label — @DocSiteOptions.SiteTitle</PageTitle>
 
     <header class="mb-8">
         <p class="text-sm uppercase tracking-wide text-base-500 dark:text-base-400">Tag</p>
-        <h1 class="font-display text-3xl font-bold tracking-tight text-base-900 dark:text-base-50">@_tag.Name</h1>
+        <h1 class="font-display text-3xl font-bold tracking-tight text-base-900 dark:text-base-50">@_term.Label</h1>
     </header>
 
     <ul class="divide-y divide-base-200 dark:divide-base-800">
-        @foreach (var post in _posts)
+        @foreach (var item in _term.Items)
         {
-            <BlogPostCard Post="post" />
+            <BlogPostCard Post="@(new BlogPostRef<BlogPostFrontMatter>(item.FrontMatter, item.Url))" />
         }
     </ul>
 
@@ -28,25 +30,22 @@
 }
 
 @code {
-    /// <summary>URL-encoded tag name from the route.</summary>
+    /// <summary>Tag slug from the route, matched against the taxonomy term slug.</summary>
     [Parameter] public required string TagSlug { get; set; }
 
-    private BlogTag? _tag;
-    private ImmutableList<BlogPostSummary>? _posts;
+    private TaxonomyTerm<BlogPostFrontMatter, string>? _term;
 
     protected override async Task OnInitializedAsync()
     {
         if (Feature.Enabled && !string.IsNullOrWhiteSpace(TagSlug))
         {
-            var result = await Resolver.GetPostsByTagAsync(TagSlug);
-            if (result != null)
+            _term = await Taxonomy.TryGetTermAsync<BlogPostFrontMatter, string>("/blog/tags", TagSlug);
+            if (_term != null)
             {
-                (_tag, _posts) = result.Value;
                 return;
             }
         }
 
-        if (HttpContextAccessor.HttpContext is { } ctx)
-            ctx.Items["Pennington.NotFound"] = true;
+        HttpContextAccessor.HttpContext?.MarkNotFound();
     }
 }

@@ -24,6 +24,7 @@ public sealed class DocSiteContentResolver
     private readonly NavigationBuilder _navBuilder;
     private readonly LocalizationOptions _localization;
     private readonly DocSiteOptions _docSiteOptions;
+    private readonly BlogFeature _blog;
     private readonly IContentParser? _parser;
     private readonly IContentRenderer? _renderer;
 
@@ -34,6 +35,7 @@ public sealed class DocSiteContentResolver
         NavigationBuilder navBuilder,
         LocalizationOptions localization,
         DocSiteOptions docSiteOptions,
+        BlogFeature blog,
         IContentParser? parser = null,
         IContentRenderer? renderer = null)
     {
@@ -42,6 +44,7 @@ public sealed class DocSiteContentResolver
         _navBuilder = navBuilder;
         _localization = localization;
         _docSiteOptions = docSiteOptions;
+        _blog = blog;
         _parser = parser;
         _renderer = renderer;
     }
@@ -180,7 +183,7 @@ public sealed class DocSiteContentResolver
         url = "/" + url.Trim('/');
         var locale = _localization.IsMultiLocale ? _localization.GetLocaleFromUrl(url) : null;
 
-        var tocItems = await _services.CollectTocEntriesAsync();
+        var tocItems = await CollectDocTocEntriesAsync();
         return await _navBuilder.BuildNavigationInfoAsync(tocItems.ToList(), new UrlPath(url), locale);
     }
 
@@ -189,7 +192,7 @@ public sealed class DocSiteContentResolver
     /// </summary>
     public async Task<IReadOnlyList<ContentTocItem>> GetTocItemsAsync(string? locale = null)
     {
-        var items = await _services.CollectTocEntriesAsync();
+        var items = await CollectDocTocEntriesAsync();
 
         if (locale != null)
         {
@@ -200,6 +203,30 @@ public sealed class DocSiteContentResolver
         }
 
         return items;
+    }
+
+    /// <summary>
+    /// Collects the TOC entries that drive the documentation sidebar. When the blog is active, the
+    /// blog (its index, browse-by-tag taxonomy, and posts) is reached through the header link and its
+    /// own pages — never the doc sidebar — so its routes are dropped here. Without this, the taxonomy's
+    /// TOC entries would surface in an area-less site's nav tree.
+    /// </summary>
+    private async Task<IReadOnlyList<ContentTocItem>> CollectDocTocEntriesAsync()
+    {
+        var items = await _services.CollectTocEntriesAsync();
+        if (!_blog.Enabled)
+        {
+            return items;
+        }
+
+        return items.Where(i => !IsBlogRoute(i)).ToList();
+    }
+
+    private static bool IsBlogRoute(ContentTocItem item)
+    {
+        var path = item.Route.CanonicalPath.Value;
+        return path.Equals("/blog", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/blog/", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

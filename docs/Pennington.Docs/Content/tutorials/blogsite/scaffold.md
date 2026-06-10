@@ -7,7 +7,7 @@ tags: [blogsite, template, scaffold, options]
 uid: tutorials.blogsite.scaffold
 ---
 
-By the end of this tutorial, a running BlogSite host titled "Scaffold Blog" serves a home listing, `/archive`, `/blog/<slug>/`, `/tags/`, `/tags/<name>/` (plus the `/topics` aliases), and `/rss.xml` — all from a single placeholder post under `Content/Blog/`.
+By the end of this tutorial, a running BlogSite host titled "Scaffold Blog" serves a home listing, `/archive`, `/blog/<slug>/`, `/tags/`, `/tags/<name>/`, and `/rss.xml` — all from a single placeholder post under `Content/Blog/`.
 
 `AddBlogSite` folds the host, layout, navigation, and styling into one call, configured for a site where the blog *is* the site; for what the template wires, where the wiring stops, and why DocSite and BlogSite can't share an app, read [what the templates wire for you](xref:explanation.positioning.docsite-positioning) first.
 
@@ -27,7 +27,7 @@ The finished code for this tutorial lives in [`examples/BlogSiteScaffoldExample`
 
 The host you built in the getting-started tutorials calls `AddPennington`, registers content with `AddMarkdownContent<DocFrontMatter>`, mounts `UsePennington`, and routes through a Blazor `@page "/{*Path}"` catch-all (`MarkdownPage.razor`) that resolves each URL with `IPageResolver` to serve individual pages.
 
-That host serves individual pages but nothing else: no home listing, no `/archive`, no `/blog/<slug>` pages, no `/tags` and `/topics` aliases, no `/rss.xml` feed, and no [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) chrome. The next section brings all of that in with a single `AddBlogSite` call.
+That host serves individual pages but nothing else: no home listing, no `/archive`, no `/blog/<slug>` pages, no `/tags` listings, no `/rss.xml` feed, and no [MonorailCSS](https://monorailcss.github.io/MonorailCss.Framework/) chrome. The next section brings all of that in with a single `AddBlogSite` call.
 
 <Steps>
 <Step StepNumber="1">
@@ -64,7 +64,7 @@ examples/BlogSiteScaffoldExample/Content/Blog/hello-world.md
 examples/BlogSiteScaffoldExample/Stage3_UseBlogSite.cs > Stage3.Run
 ```
 
-The options populated here cover site identity (`SiteTitle`, `SiteDescription`, `CanonicalBaseUrl`), content paths shown at their defaults (`ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, `TagsPageUrl`), and author fallbacks (`AuthorName`, `AuthorBio`). The full surface lives in <xref:reference.api.blog-site-options>.
+The options populated here cover site identity (`SiteTitle`, `SiteDescription`, `CanonicalBaseUrl`), content paths shown at their defaults (`ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`), and author fallbacks (`AuthorName`, `AuthorBio`). The full surface lives in <xref:reference.api.blog-site-options>.
 
 </Step>
 </Steps>
@@ -92,8 +92,8 @@ With the host running, visit each of these at the URL the console prints. Every 
 - `/` — home listing with `hello-world` as the only recent post.
 - `/archive` — full archive, same single post in reverse-chronological order.
 - `/blog/hello-world` — the post itself, now rendered with BlogSite chrome.
-- `/tags` and its `/topics` alias — the tag index, showing `scaffold` with a count of one.
-- `/tags/scaffold` and its `/topics/scaffold` alias — the per-tag listing with the one post.
+- `/tags` — the tag index, showing `scaffold` with a count of one.
+- `/tags/scaffold` — the per-tag listing with the one post.
 
 </Step>
 <Step StepNumber="2">
@@ -119,6 +119,6 @@ The full route surface, including the paginated `/archive/page/{n}` and per-tag 
 ## Summary
 
 - The bare `AddPennington` host gave way to `AddBlogSite` + `UseBlogSite` + `RunBlogSiteAsync`, and the full BlogSite chrome now renders.
-- The core `BlogSiteOptions` surface — `SiteTitle`, `SiteDescription`, `CanonicalBaseUrl`, `ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, `TagsPageUrl`, `AuthorName`, `AuthorBio` — is populated, and each field flows through to the rendered output.
+- The core `BlogSiteOptions` surface — `SiteTitle`, `SiteDescription`, `CanonicalBaseUrl`, `ContentRootPath`, `BlogContentPath`, `BlogBaseUrl`, `AuthorName`, `AuthorBio` — is populated, and each field flows through to the rendered output.
 - BlogSite binds posts through `AddMarkdownContent<BlogSiteFrontMatter>` (introduced in the next tutorial) and defaults content paths to `Content/Blog` served at `/blog`, which distinguishes it from the `DocSite` template's area-driven layout.
-- Every built-in route the template ships responds: `/`, `/archive`, `/blog/<slug>`, `/tags` (and `/topics` aliases), `/tags/<name>`, and `/rss.xml`.
+- Every built-in route the template ships responds: `/`, `/archive`, `/blog/<slug>`, `/tags`, `/tags/<name>`, and `/rss.xml`.

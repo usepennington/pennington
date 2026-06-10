@@ -1,7 +1,6 @@
 @page "/"
-@using Pennington.BlogSite.StructuredData
 @using Pennington.StructuredData
-@inject BlogContentResolver ContentResolver
+@inject BlogPostQuery Posts
 @inject PenningtonOptions PenningtonOptions
 @inject BlogSiteOptions BlogOptions
 
@@ -88,8 +87,8 @@
 </div>
 
 @code{
-    private List<BlogPostPage>? _posts;
-    private List<BlogPostPage>? _recentPosts;
+    private IReadOnlyList<BlogPostRef<BlogSiteFrontMatter>>? _posts;
+    private IReadOnlyList<BlogPostRef<BlogSiteFrontMatter>>? _recentPosts;
 
     private IEnumerable<JsonLdEntity> BuildEntities()
     {
@@ -108,7 +107,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _posts = await ContentResolver.GetAllPostsAsync();
+        _posts = await Posts.GetPostsAsync<BlogSiteFrontMatter>(BlogOptions.BlogBaseUrl);
         _recentPosts = _posts.Take(10).ToList();
     }
 }

@@ -15,13 +15,13 @@
                 <ul class="mt-2 space-y-1 list-disc pl-6 text-sm text-base-600 dark:text-base-400">
                     @foreach (var seriesPost in Series)
                     {
-                        @if (seriesPost.Url == Post.Url)
+                        @if (seriesPost.Url.Value == Post.Url.Value)
                         {
                             <li><strong class="text-primary-600 dark:text-primary-400">@seriesPost.FrontMatter.Title</strong></li>
                         }
                         else
                         {
-                            <li><a href="@seriesPost.Url" class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">@seriesPost.FrontMatter.Title</a></li>
+                            <li><a href="@seriesPost.Url.Value" class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">@seriesPost.FrontMatter.Title</a></li>
                         }
                     }
                 </ul>
@@ -35,7 +35,7 @@
         @if (_nextPost != null)
         {
             <div class="mt-8 p-6 bg-base-50 dark:bg-base-900/50 border border-base-200 dark:border-base-700 rounded-lg">
-                <a href="@_nextPost.Url" class="block group">
+                <a href="@_nextPost.Url.Value" class="block group">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-base-600 dark:text-base-400">Ready for the next article in the series?</p>
@@ -49,15 +49,15 @@
             </div>
         }
 
-        @if (Post.Tags.Any())
+        @if (Post.FrontMatter.Tags.Length > 0)
         {
             <div class="mt-8 pt-8 border-t border-base-200 dark:border-base-700">
                 <h2 class="text-sm font-display font-medium text-base-600 dark:text-base-400">Tags</h2>
                 <div class="mt-2 flex flex-wrap gap-2">
-                    @foreach (var tag in Post.Tags)
+                    @foreach (var tag in Post.FrontMatter.Tags)
                     {
-                        <a href="@tag.Url" class="inline-flex items-center px-3 py-1 text-sm font-medium text-primary-600 dark:text-primary-400 bg-base-100 dark:bg-base-800 rounded-full hover:bg-base-200 dark:hover:bg-base-700">
-                            @tag.Name
+                        <a href="/tags/@TaxonomySlug.Slugify(tag)/" class="inline-flex items-center px-3 py-1 text-sm font-medium text-primary-600 dark:text-primary-400 bg-base-100 dark:bg-base-800 rounded-full hover:bg-base-200 dark:hover:bg-base-700">
+                            @tag
                         </a>
                     }
                 </div>
@@ -83,17 +83,17 @@
 </div>
 
 @code {
-    [Parameter, EditorRequired] public required BlogPostPage Post { get; init; }
-    [Parameter] public List<BlogPostPage>? Series { get; init; }
+    [Parameter, EditorRequired] public required BlogPostRef<BlogSiteFrontMatter> Post { get; init; }
+    [Parameter] public List<BlogPostRef<BlogSiteFrontMatter>>? Series { get; init; }
     [Parameter, EditorRequired] public required string HtmlContent { get; init; }
 
-    private BlogPostPage? _nextPost;
+    private BlogPostRef<BlogSiteFrontMatter>? _nextPost;
 
     protected override void OnInitialized()
     {
         if (Series != null)
         {
-            var thisPostIndex = Series.FindIndex(x => x.Url == Post.Url);
+            var thisPostIndex = Series.FindIndex(x => x.Url.Value == Post.Url.Value);
             if (thisPostIndex >= 0 && thisPostIndex < Series.Count - 1)
             {
                 _nextPost = Series[thisPostIndex + 1];

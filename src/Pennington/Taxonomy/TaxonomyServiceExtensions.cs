@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 /// <summary>
 /// DI + endpoint helpers for registering and mounting taxonomy axes
@@ -39,6 +40,9 @@ public static class TaxonomyServiceExtensions
             sp,
             sp.GetRequiredService<IFileWatcher>(),
             sp.GetRequiredService<TimeProvider>()));
+
+        // Lets a routed @page read this axis's terms by base URL without mounting MapTaxonomy.
+        services.TryAddTransient<TaxonomyAccessor>();
 
         return services;
     }

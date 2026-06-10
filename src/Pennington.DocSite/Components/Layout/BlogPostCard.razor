@@ -1,7 +1,8 @@
 @using System.Globalization
+@using Pennington.Content
 
 <li class="py-6 group">
-    <a href="@Post.Url" class="block">
+    <a href="@Post.Url.Value" class="block">
         @if (Post.FrontMatter.Date is { } date)
         {
             <p class="text-sm text-base-500 dark:text-base-400">
@@ -20,5 +21,5 @@
 
 @code {
     /// <summary>The post rendered as a list entry.</summary>
-    [Parameter] public required BlogPostSummary Post { get; set; }
+    [Parameter] public required BlogPostRef<BlogPostFrontMatter> Post { get; set; }
 }

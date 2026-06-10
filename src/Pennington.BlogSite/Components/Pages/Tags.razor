@@ -1,34 +1,33 @@
 @layout ContentWithProseLayout
 @page "/tags"
-@page "/topics"
-@inject BlogContentResolver ContentResolver
+@inject TaxonomyAccessor Taxonomy
 @inject PenningtonOptions PenningtonOptions
 
 <PageTitle>@PenningtonOptions.SiteTitle - Tags</PageTitle>
 
 <h1>All Tags</h1>
 
-@if (_tagsWithCount == null)
+@if (_terms == null || _terms.Count == 0)
 {
     <div>No tags?</div>
     return;
 }
 
 <ul>
-    @foreach (var tagGroup in _tagsWithCount)
+    @foreach (var term in _terms)
     {
         <li>
-            <a href="@tagGroup.Tag.Url">@tagGroup.Tag.Name</a>
-            <span class="text-xs text-base-600 dark:text-base-400"> (@tagGroup.Count)</span>
+            <a href="@term.Url.Value">@term.Label</a>
+            <span class="text-xs text-base-600 dark:text-base-400"> (@term.Items.Count)</span>
         </li>
     }
 </ul>
 
 @code {
-    private ImmutableList<(BlogTag Tag, int Count)>? _tagsWithCount;
+    private ImmutableList<TaxonomyTerm<BlogSiteFrontMatter, string>>? _terms;
 
     protected override async Task OnInitializedAsync()
     {
-        _tagsWithCount = await ContentResolver.GetTagsWithCountsAsync();
+        _terms = await Taxonomy.GetTermsAsync<BlogSiteFrontMatter, string>("/tags");
     }
 }

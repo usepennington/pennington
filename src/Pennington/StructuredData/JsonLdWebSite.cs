@@ -1,9 +1,8 @@
-namespace Pennington.DocSite.StructuredData;
+namespace Pennington.StructuredData;
 
 using System.Text.Json.Serialization;
-using Pennington.StructuredData;
 
-/// <summary>schema.org WebSite emitted on the DocSite home page.</summary>
+/// <summary>schema.org WebSite — site-level identity, emitted on the home page.</summary>
 public sealed record JsonLdWebSite : JsonLdEntity
 {
     /// <inheritdoc />

@@ -137,10 +137,5 @@ public sealed class TaxonomyOptions<TFrontMatter, TKey>
 
     internal string TermUrl(string slug) => IndexUrl + slug + "/";
 
-    private static string DefaultSlug(TKey key)
-    {
-        var raw = (key.ToString() ?? "").Trim().ToLowerInvariant();
-        var hyphenated = System.Text.RegularExpressions.Regex.Replace(raw, @"\s+", "-");
-        return Uri.EscapeDataString(hyphenated);
-    }
+    private static string DefaultSlug(TKey key) => TaxonomySlug.Slugify(key.ToString() ?? "");
 }

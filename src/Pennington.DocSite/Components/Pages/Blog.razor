@@ -1,7 +1,8 @@
 @page "/blog"
 @layout BlogLayout
-@using Pennington.DocSite.Services
-@inject BlogPostResolver Resolver
+@using Pennington.Content
+@using Pennington.Infrastructure
+@inject BlogPostQuery Posts
 @inject BlogFeature Feature
 @inject DocSiteOptions DocSiteOptions
 @inject IHttpContextAccessor HttpContextAccessor
@@ -35,17 +36,16 @@
 }
 
 @code {
-    private IReadOnlyList<BlogPostSummary>? _posts;
+    private IReadOnlyList<BlogPostRef<BlogPostFrontMatter>>? _posts;
 
     protected override async Task OnInitializedAsync()
     {
         if (!Feature.Enabled)
         {
-            if (HttpContextAccessor.HttpContext is { } ctx)
-                ctx.Items["Pennington.NotFound"] = true;
+            HttpContextAccessor.HttpContext?.MarkNotFound();
             return;
         }
 
-        _posts = await Resolver.GetAllPostsAsync();
+        _posts = await Posts.GetPostsAsync<BlogPostFrontMatter>("/blog");
     }
 }

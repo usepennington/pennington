@@ -1,6 +1,5 @@
 @page "/{*fileName:nonfile}"
 @using Pennington.DocSite.Services
-@using Pennington.DocSite.StructuredData
 @using Pennington.Infrastructure
 @using Pennington.Localization
 @using Pennington.StructuredData
@@ -198,14 +197,11 @@ else if (_notFound)
             }
 
             _notFound = true;
-            if (HttpContextAccessor.HttpContext is { } notFoundCtx)
-            {
-                // Signal to NotFoundStatusProcessor to flip status to 404 AFTER
-                // all body rewriting has run — setting it here directly would
-                // gate every IResponseProcessor (ShouldProcess returns false on
-                // non-2xx) and produce an empty response body.
-                notFoundCtx.Items["Pennington.NotFound"] = true;
-            }
+            // Signal to NotFoundStatusProcessor to flip status to 404 AFTER all body
+            // rewriting has run — setting StatusCode here directly would gate every
+            // IResponseProcessor (ShouldProcess returns false on non-2xx) and produce
+            // an empty response body.
+            HttpContextAccessor.HttpContext?.MarkNotFound();
         }
     }
 }

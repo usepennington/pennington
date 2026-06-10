@@ -1,7 +1,6 @@
 namespace Pennington.DocSite;
 
 using FrontMatter;
-using Pennington.DocSite.StructuredData;
 using Pennington.StructuredData;
 
 /// <summary>

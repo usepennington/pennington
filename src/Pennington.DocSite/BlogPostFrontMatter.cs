@@ -1,13 +1,16 @@
 namespace Pennington.DocSite;
 
 using FrontMatter;
+using Pennington.StructuredData;
 
 /// <summary>
 /// Front matter for blog posts under the content project's <c>blog</c> folder. Bound by
 /// <see cref="DocSiteServiceExtensions.AddDocSite"/> when the blog is active. Implements
-/// <see cref="IFrontMatter"/>, <see cref="ITaggable"/>, and <see cref="IRedirectable"/>.
+/// <see cref="IFrontMatter"/>, <see cref="ITaggable"/>, <see cref="IRedirectable"/>,
+/// <see cref="IStandardSiteDocument"/>, and <see cref="IHasStructuredData"/> (emits a schema.org
+/// <c>Article</c> with the post's date and author).
 /// </summary>
-public record BlogPostFrontMatter : IFrontMatter, ITaggable, IRedirectable, IStandardSiteDocument
+public record BlogPostFrontMatter : IFrontMatter, ITaggable, IRedirectable, IStandardSiteDocument, IHasStructuredData
 {
     /// <summary>Post title rendered in the browser tab and post heading.</summary>
     public string Title { get; init; } = "";
@@ -48,4 +51,21 @@ public record BlogPostFrontMatter : IFrontMatter, ITaggable, IRedirectable, ISta
 
     /// <summary>Record key of this post's published <c>site.standard.document</c> record (Standard Site), if any.</summary>
     public string? AtprotoRkey { get; init; }
+
+    /// <inheritdoc />
+    public IEnumerable<JsonLdEntity> GetStructuredData(StructuredDataContext context)
+    {
+        var authorName = !string.IsNullOrEmpty(Author) ? Author
+            : !string.IsNullOrEmpty(context.FallbackAuthorName) ? context.FallbackAuthorName
+            : null;
+
+        yield return new JsonLdArticle
+        {
+            Headline = Title,
+            Description = Description,
+            Url = context.CanonicalUrl,
+            DatePublished = Date,
+            Author = authorName is null ? null : new JsonLdPerson { Name = authorName },
+        };
+    }
 }

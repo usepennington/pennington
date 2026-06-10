@@ -1,7 +1,8 @@
 @page "/blog/tags"
 @layout BlogLayout
-@using Pennington.DocSite.Services
-@inject BlogPostResolver Resolver
+@using Pennington.Infrastructure
+@using Pennington.Taxonomy
+@inject TaxonomyAccessor Taxonomy
 @inject BlogFeature Blog
 @inject DocSiteOptions DocSiteOptions
 @inject IHttpContextAccessor HttpContextAccessor
@@ -15,15 +16,15 @@
         <a href="/blog" class="mt-1 inline-block text-sm text-primary-700 dark:text-primary-400 hover:underline">Back to blog</a>
     </header>
 
-    @if (_tags is { Count: > 0 })
+    @if (_terms is { Count: > 0 })
     {
         <ul class="flex flex-wrap gap-3">
-            @foreach (var (tag, count) in _tags)
+            @foreach (var term in _terms)
             {
                 <li>
-                    <a href="@tag.Url" class="inline-flex items-center gap-2 rounded-lg border border-base-200 dark:border-base-800 px-3 py-1.5 text-sm text-base-700 dark:text-base-300 hover:border-primary-300 dark:hover:border-primary-700 hover:text-primary-700 dark:hover:text-primary-400">
-                        <span>@tag.Name</span>
-                        <span class="text-xs text-base-500 dark:text-base-400">@count</span>
+                    <a href="@term.Url.Value" class="inline-flex items-center gap-2 rounded-lg border border-base-200 dark:border-base-800 px-3 py-1.5 text-sm text-base-700 dark:text-base-300 hover:border-primary-300 dark:hover:border-primary-700 hover:text-primary-700 dark:hover:text-primary-400">
+                        <span>@term.Label</span>
+                        <span class="text-xs text-base-500 dark:text-base-400">@term.Items.Count</span>
                     </a>
                 </li>
             }
@@ -36,17 +37,16 @@
 }
 
 @code {
-    private ImmutableList<(BlogTag Tag, int Count)>? _tags;
+    private ImmutableList<TaxonomyTerm<BlogPostFrontMatter, string>>? _terms;
 
     protected override async Task OnInitializedAsync()
     {
         if (!Blog.Enabled)
         {
-            if (HttpContextAccessor.HttpContext is { } ctx)
-                ctx.Items["Pennington.NotFound"] = true;
+            HttpContextAccessor.HttpContext?.MarkNotFound();
             return;
         }
 
-        _tags = await Resolver.GetTagsWithCountsAsync();
+        _terms = await Taxonomy.GetTermsAsync<BlogPostFrontMatter, string>("/blog/tags");
     }
 }

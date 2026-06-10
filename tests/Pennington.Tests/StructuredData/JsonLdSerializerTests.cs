@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Pennington.BlogSite.StructuredData;
 using Pennington.StructuredData;
 
 namespace Pennington.Tests.StructuredData;

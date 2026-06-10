@@ -30,7 +30,6 @@ public static class Stage3
             ContentRootPath = "Content",
             BlogContentPath = "Blog",
             BlogBaseUrl = "/blog",
-            TagsPageUrl = "/tags",
 
             AuthorName = "Author Name",
             AuthorBio = "Writing about software, tools, and the occasional side project.",

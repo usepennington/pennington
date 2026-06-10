@@ -14,13 +14,14 @@ using Pennington.Routing;
 /// discovery skips the parameterized template, so the numbered pages are declared here instead.
 /// </summary>
 /// <remarks>
-/// Mirrors <c>SocialCardContentService</c>: this service is itself one of the registered
-/// <see cref="IContentService"/> instances, so it resolves its siblings on demand from
-/// <see cref="IServiceProvider"/> inside <see cref="DiscoverAsync"/> and excludes itself with
-/// <c>!ReferenceEquals(s, this)</c>. Constructor-injecting <c>IEnumerable&lt;IContentService&gt;</c>
-/// here would form a DI cycle and throw at startup.
+/// Mirrors <c>SocialCardContentService</c>: this service derives its routes from the OTHER registered
+/// <see cref="IContentService"/> instances, so it is marked <see cref="IMetaContentService"/> and
+/// resolves its siblings on demand from <see cref="IServiceProvider"/> inside <see cref="DiscoverAsync"/>,
+/// filtering them through <c>SourceServices()</c> to drop every meta-service (itself included).
+/// Constructor-injecting <c>IEnumerable&lt;IContentService&gt;</c> here would form a DI cycle and throw
+/// at startup.
 /// </remarks>
-public sealed class ArticleListingContentService(IServiceProvider serviceProvider) : IContentService
+public sealed class ArticleListingContentService(IServiceProvider serviceProvider) : IContentService, IMetaContentService
 {
     private const int PageSize = 20;
 
@@ -34,10 +35,11 @@ public sealed class ArticleListingContentService(IServiceProvider serviceProvide
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
         // Resolve siblings on demand rather than via a ctor IEnumerable<IContentService>: this
-        // service is itself in that set, so the ctor injection would be a DI cycle. Exclude self
-        // so the sibling walk can't recurse back into this discovery.
+        // service is itself in that set, so the ctor injection would be a DI cycle. Filter out every
+        // meta-service (this one included) so the sibling walk can't recurse back into this discovery
+        // — reference-equality self-exclusion would miss the fresh transient copies GetServices hands back.
         var siblings = serviceProvider.GetServices<IContentService>()
-            .Where(s => !ReferenceEquals(s, this))
+            .SourceServices()
             .ToList();
 
         var count = 0;

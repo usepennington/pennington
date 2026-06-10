@@ -14,14 +14,12 @@ builder.Services.AddBlogSite(() => new BlogSiteOptions
     CanonicalBaseUrl = "https://example.com",
 
     // BlogSite defaults put posts under `{ContentRootPath}/{BlogContentPath}`
-    // (Content/Blog) and serves them at `BlogBaseUrl` (/blog). Tag listings
-    // live at `TagsPageUrl` (/tags). Overriding the defaults is as simple as
-    // setting the matching property — shown here with the defaults for
-    // clarity.
+    // (Content/Blog) and serves them at `BlogBaseUrl` (/blog); tag listings live
+    // at /tags. Overriding the defaults is as simple as setting the matching
+    // property — shown here with the defaults for clarity.
     ContentRootPath = "Content",
     BlogContentPath = "Blog",
     BlogBaseUrl = "/blog",
-    TagsPageUrl = "/tags",
 
     // Author identity feeds into the RSS channel, JSON-LD article markup,
     // and any post that omits its own `author:` front-matter value.

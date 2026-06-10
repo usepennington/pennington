@@ -9,7 +9,7 @@ tags: [feeds, rss, atom, podcast, content-service]
 
 `BlogSiteOptions.EnableRss` only applies to `BlogSiteFrontMatter` records. For any other content type — podcast episodes, conference sessions, a changelog — reuse the pattern `BlogSite` builds on: a content service caches the records, a `Task<string>` builder turns them into feed XML, and a `MapGet` endpoint serves that XML. Every `MapGet` endpoint is fetched and baked during the static build, so the feed file lands in `output/` next to every other page with no extra registration.
 
-The reference implementation lives in `BlogSiteContentService.GetRssXmlAsync` and the `MapGet` call in `UseBlogSite`. This guide walks the three points you adapt in that pair, so the same shape can carry a podcast feed (with the iTunes namespace), an events feed (with iCalendar enclosures), or any custom format.
+The reference implementation is core's `RssFeedWriter.WriteXml` — called from `BlogPostQuery.GetRssXmlAsync` and the `MapGet` in `UseBlogSite`. This guide walks the three points you adapt in that pair, so the same shape can carry a podcast feed (with the iTunes namespace), an events feed (with iCalendar enclosures), or any custom format.
 
 ## Before you begin
 
@@ -19,10 +19,10 @@ The reference implementation lives in `BlogSiteContentService.GetRssXmlAsync` an
 
 ## Build the feed XML on the content service
 
-Add a `Task<string>` method to your content service that orders the cached records and emits XML with `System.Xml.Linq`. `BlogSiteContentService.GetRssXmlAsync` is the reference body:
+Order the cached records and emit XML with `System.Xml.Linq`. Core's `RssFeedWriter.WriteXml` — which the BlogSite feed reuses — is the reference body:
 
 ```csharp:symbol
-src/Pennington.BlogSite/Services/BlogSiteContentService.cs > BlogSiteContentService.GetRssXmlAsync
+src/Pennington/Feeds/RssFeedWriter.cs > RssFeedWriter.WriteXml
 ```
 
 The pieces to adapt for your records:
@@ -80,7 +80,7 @@ var rss = new XElement("rss",
     new XAttribute(XNamespace.Xmlns + "itunes", itunes.NamespaceName),
     channel);
 
-// Per-item additions inside the foreach in GetRssXmlAsync:
+// Per-item additions inside the feed builder's item loop:
 entry.Add(
     new XElement(itunes + "duration", episode.Duration.ToString(@"hh\:mm\:ss")),
     new XElement(itunes + "episode", episode.EpisodeNumber),

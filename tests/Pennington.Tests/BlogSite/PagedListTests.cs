@@ -1,4 +1,4 @@
-using Pennington.BlogSite.Services;
+using Pennington.Content;
 
 namespace Pennington.Tests.BlogSite;
 

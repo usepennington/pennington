@@ -41,12 +41,14 @@ The default is `10`. A non-positive value disables pagination entirely (all post
 
 ## In a custom content service
 
-The pattern is three pieces: a tiny `PagedList<T>` record, a Razor page with two `@page` directives, and an `IContentService` that yields the paginated routes during discovery.
+The pattern is three pieces: core's `PagedList<T>` record, a Razor page with two `@page` directives, and an `IContentService` that yields the paginated routes during discovery.
 
 ### The PagedList record
 
+Core ships `Pennington.Content.PagedList<T>` — a page slice plus the metadata the `Pagination` component needs to render prev/next and numbered links:
+
 ```csharp:symbol
-examples/PaginatedListingExample/PagedList.cs > PagedList
+src/Pennington/Content/PagedList.cs > PagedList
 ```
 
 ### The Razor page

@@ -13,6 +13,15 @@ public static class ContentServiceExtensions
 {
     extension(IEnumerable<IContentService> services)
     {
+        /// <summary>
+        /// Drops every <see cref="IMetaContentService"/> — the services that derive their output from
+        /// other services. A meta-service calls this on its sibling set before walking discovery or
+        /// records, so meta-services never recurse into each other (or into a transient copy of
+        /// themselves whose reference-equality self-check would miss).
+        /// </summary>
+        public IEnumerable<IContentService> SourceServices()
+            => services.Where(s => s is not IMetaContentService);
+
         /// <summary>Yields every <see cref="DiscoveredItem"/> from every service in registration order.</summary>
         public async IAsyncEnumerable<DiscoveredItem> DiscoverAllAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {

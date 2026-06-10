@@ -28,7 +28,6 @@ public static class Stage2
             ContentRootPath = "Content", // [!code ++]
             BlogContentPath = "Blog", // [!code ++]
             BlogBaseUrl = "/blog", // [!code ++]
-            TagsPageUrl = "/tags", // [!code ++]
 
             AuthorName = "Author Name", // [!code ++]
             AuthorBio = "Writing about software, tools, and the occasional side project.", // [!code ++]
