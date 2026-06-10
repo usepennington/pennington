@@ -1,18 +1,11 @@
-@inject IServiceProvider Services
-@inject IXmlDocHtmlRenderer Renderer
-@inject IHttpContextAccessor HttpContextAccessor
+@inherits ApiReferenceComponentBase
 
 @((MarkupString)_html)
 
 @code {
     [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
-    [Parameter] public string? Source { get; set; }
-    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private string _html = string.Empty;
-
-    private DiagnosticContext? Diagnostics =>
-        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
 
     protected override void OnParametersSet()
     {
@@ -23,18 +16,21 @@
     {
         if (string.IsNullOrWhiteSpace(XmlDocId))
         {
-            Diagnostics?.AddError("<ApiReturns> missing XmlDocId");
-            return "<div class=\"diag-error\">&lt;ApiReturns&gt; missing XmlDocId</div>";
+            return DiagError(MissingAttributeError("ApiReturns", "XmlDocId"));
         }
 
-        var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
-        var parsed = AsyncHelpers.RunSync(() => provider.GetXmldocAsync(XmlDocId));
-        if (!parsed.HasReturns)
+        var result = Fetch("ApiReturns", XmlDocId, p => p.GetXmldocAsync(XmlDocId));
+        if (!result.Ok)
+        {
+            return DiagError(result.ErrorHtml!);
+        }
+
+        if (!result.Value.HasReturns)
         {
             Diagnostics?.AddWarning($"{XmlDocId} has no <returns>");
             return string.Empty;
         }
 
-        return Renderer.RenderHtml(parsed.Returns);
+        return Renderer.RenderHtml(result.Value.Returns);
     }
 }

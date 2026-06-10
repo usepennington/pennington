@@ -1,18 +1,11 @@
-@inject IServiceProvider Services
-@inject IXmlDocHtmlRenderer Renderer
-@inject IHttpContextAccessor HttpContextAccessor
+@inherits ApiReferenceComponentBase
 
 @((MarkupString)_html)
 
 @code {
     [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
-    [Parameter] public string? Source { get; set; }
-    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private string _html = string.Empty;
-
-    private DiagnosticContext? Diagnostics =>
-        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
 
     protected override void OnParametersSet()
     {
@@ -23,17 +16,15 @@
     {
         if (string.IsNullOrWhiteSpace(XmlDocId))
         {
-            Diagnostics?.AddError("<ApiRemarks> missing XmlDocId");
-            return "<div class=\"diag-error\">&lt;ApiRemarks&gt; missing XmlDocId</div>";
+            return DiagError(MissingAttributeError("ApiRemarks", "XmlDocId"));
         }
 
-        var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
-        var parsed = AsyncHelpers.RunSync(() => provider.GetXmldocAsync(XmlDocId));
-        if (!parsed.HasRemarks)
+        var result = Fetch("ApiRemarks", XmlDocId, p => p.GetXmldocAsync(XmlDocId));
+        if (!result.Ok)
         {
-            return string.Empty;
+            return DiagError(result.ErrorHtml!);
         }
 
-        return Renderer.RenderHtml(parsed.Remarks);
+        return result.Value.HasRemarks ? Renderer.RenderHtml(result.Value.Remarks) : string.Empty;
     }
 }

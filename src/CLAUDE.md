@@ -36,6 +36,8 @@ Authors use small folder-local orders (`1, 2, 3`) inside each folder rather than
 ## Razor components
 Components in `src/Pennington.UI/Components/` are single `.razor` files with inline `@code` — no separate code-behind, no separate CSS. Variants are parameter-driven via `switch` expressions on enums/strings. Match this shape for new components instead of introducing a partial-class or CSS-file pattern.
 
+The API-reference components in `src/Pennington.DocSite.Api/Components/Reference/` are the one exception: the nine provider-fetching ones `@inherits ApiReferenceComponentBase`, which owns the shared service injection, the `Source`/`CascadingSource` parameters, the request-scoped `Diagnostics` lookup, and a single guarded `Fetch<T>` (resolve keyed provider → run → catch into a `diag-error` + diagnostic). Add a new such component by inheriting the base and supplying only its unique parameters + markup — don't re-inline the inject/resolve/try-catch boilerplate.
+
 ## DI lifetimes
 
 Three tiers:

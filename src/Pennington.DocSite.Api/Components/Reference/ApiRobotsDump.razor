@@ -2,9 +2,7 @@
    as a declaration-only skeleton — member signatures with xmldoc summaries,
    no method bodies — inside one <pre><code class="language-csharp"> block
    that the HtmlToMarkdownConverter emits as a clean ```csharp fence. *@
-@inject IServiceProvider Services
-@inject IXmlDocHtmlRenderer Renderer
-@inject IHttpContextAccessor HttpContextAccessor
+@inherits ApiReferenceComponentBase
 
 @if (_detail is not null)
 {
@@ -15,14 +13,9 @@
 
 @code {
     [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
-    [Parameter] public string? Source { get; set; }
-    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private ApiTypeDetail? _detail;
     private System.Collections.Immutable.ImmutableArray<ApiMember> _members = [];
-
-    private DiagnosticContext? Diagnostics =>
-        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
 
     protected override void OnParametersSet()
     {
@@ -31,22 +24,19 @@
 
         if (string.IsNullOrWhiteSpace(XmlDocId)) return;
 
-        try
+        // Render nothing on failure — this dump feeds llms.txt extraction — but still log via Fetch.
+        var typeResult = Fetch("ApiRobotsDump", XmlDocId, p => p.GetTypeAsync(XmlDocId));
+        if (!typeResult.Ok) return;
+
+        _detail = typeResult.Value;
+        if (_detail is not null)
         {
-            var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
-            _detail = AsyncHelpers.RunSync(() => provider.GetTypeAsync(XmlDocId));
-            if (_detail is not null)
+            var membersResult = Fetch("ApiRobotsDump", XmlDocId,
+                p => p.GetMembersAsync(XmlDocId, MemberKind.All, AccessFilter.Public, MemberOrder.Alphabetical));
+            if (membersResult.Ok)
             {
-                _members = AsyncHelpers.RunSync(() => provider.GetMembersAsync(
-                    XmlDocId,
-                    MemberKind.All,
-                    AccessFilter.Public,
-                    MemberOrder.Alphabetical));
+                _members = membersResult.Value;
             }
-        }
-        catch (Exception ex)
-        {
-            Diagnostics?.AddError($"<ApiRobotsDump> failed for {XmlDocId}: {ex.Message}");
         }
     }
 

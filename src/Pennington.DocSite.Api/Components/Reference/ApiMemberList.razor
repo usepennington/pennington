@@ -1,6 +1,4 @@
-@inject IServiceProvider Services
-@inject IXmlDocHtmlRenderer Renderer
-@inject IHttpContextAccessor HttpContextAccessor
+@inherits ApiReferenceComponentBase
 
 @((MarkupString)_html)
 
@@ -10,13 +8,8 @@
     [Parameter] public string Access { get; set; } = "public";
     [Parameter] public string Order { get; set; } = "alphabetical";
     [Parameter] public int HeadingLevel { get; set; } = 3;
-    [Parameter] public string? Source { get; set; }
-    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private string _html = string.Empty;
-
-    private DiagnosticContext? Diagnostics =>
-        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
 
     protected override void OnParametersSet()
     {
@@ -27,26 +20,20 @@
     {
         if (string.IsNullOrWhiteSpace(XmlDocId))
         {
-            Diagnostics?.AddError("<ApiMemberList> missing XmlDocId");
-            return "<div class=\"diag-error\">&lt;ApiMemberList&gt; missing XmlDocId</div>";
+            return DiagError(MissingAttributeError("ApiMemberList", "XmlDocId"));
         }
 
         var kind = MemberOptionParser.ParseKind(Kind);
         var access = MemberOptionParser.ParseAccess(Access);
         var order = MemberOptionParser.ParseOrder(Order);
 
-        System.Collections.Immutable.ImmutableArray<ApiMember> members;
-        try
+        var result = Fetch("ApiMemberList", XmlDocId, p => p.GetMembersAsync(XmlDocId, kind, access, order));
+        if (!result.Ok)
         {
-            var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
-            members = AsyncHelpers.RunSync(() => provider.GetMembersAsync(XmlDocId, kind, access, order));
-        }
-        catch (Exception ex)
-        {
-            Diagnostics?.AddError($"<ApiMemberList> failed to enumerate {XmlDocId}: {ex.Message}");
-            return $"<div class=\"diag-error\">Failed to enumerate {WebUtility.HtmlEncode(XmlDocId)}: {WebUtility.HtmlEncode(ex.Message)}</div>";
+            return DiagError(result.ErrorHtml!);
         }
 
+        var members = result.Value;
         if (members.Length == 0)
         {
             Diagnostics?.AddWarning($"<ApiMemberList> no {Kind.ToLowerInvariant()} matched for {XmlDocId}");

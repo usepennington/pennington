@@ -1,6 +1,4 @@
-@inject IServiceProvider Services
-@inject IXmlDocHtmlRenderer Renderer
-@inject IHttpContextAccessor HttpContextAccessor
+@inherits ApiReferenceComponentBase
 
 @if (_error is not null)
 {
@@ -13,14 +11,9 @@ else if (!string.IsNullOrEmpty(_html))
 
 @code {
     [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
-    [Parameter] public string? Source { get; set; }
-    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private string _html = string.Empty;
     private string? _error;
-
-    private DiagnosticContext? Diagnostics =>
-        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
 
     protected override void OnParametersSet()
     {
@@ -29,24 +22,18 @@ else if (!string.IsNullOrEmpty(_html))
 
         if (string.IsNullOrWhiteSpace(XmlDocId))
         {
-            Diagnostics?.AddError("<ApiSummary> missing XmlDocId");
-            _error = "&lt;ApiSummary&gt; missing XmlDocId";
+            _error = MissingAttributeError("ApiSummary", "XmlDocId");
             return;
         }
 
-        ParsedXmlDoc parsed;
-        try
+        var result = Fetch("ApiSummary", XmlDocId, p => p.GetXmldocAsync(XmlDocId));
+        if (!result.Ok)
         {
-            var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
-            parsed = AsyncHelpers.RunSync(() => provider.GetXmldocAsync(XmlDocId));
-        }
-        catch (Exception ex)
-        {
-            Diagnostics?.AddError($"<ApiSummary> resolution failed for {XmlDocId}: {ex.Message}");
-            _error = $"Resolution failed for <code>{WebUtility.HtmlEncode(XmlDocId)}</code>: {WebUtility.HtmlEncode(ex.Message)}";
+            _error = result.ErrorHtml;
             return;
         }
 
+        var parsed = result.Value;
         if (!parsed.HasSummary)
         {
             Diagnostics?.AddWarning($"<ApiSummary> {XmlDocId} has no <summary>");

@@ -1,6 +1,4 @@
-@inject IServiceProvider Services
-@inject IXmlDocHtmlRenderer Renderer
-@inject IHttpContextAccessor HttpContextAccessor
+@inherits ApiReferenceComponentBase
 
 @if (_error is not null)
 {
@@ -17,15 +15,10 @@ else
 
 @code {
     [Parameter, EditorRequired] public string Receiver { get; set; } = string.Empty;
-    [Parameter] public string? Source { get; set; }
-    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private IReadOnlyList<ApiDefinitionRow> _rows = [];
     private string? _error;
     private string? _empty;
-
-    private DiagnosticContext? Diagnostics =>
-        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
 
     protected override void OnParametersSet()
     {
@@ -35,13 +28,18 @@ else
 
         if (string.IsNullOrWhiteSpace(Receiver))
         {
-            Diagnostics?.AddError("<ExtensionMethods> missing Receiver");
-            _error = "&lt;ExtensionMethods&gt; missing Receiver";
+            _error = MissingAttributeError("ExtensionMethods", "Receiver");
             return;
         }
 
-        var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
-        var entries = AsyncHelpers.RunSync(() => provider.GetExtensionMethodsForAsync(Receiver));
+        var result = Fetch("ExtensionMethods", Receiver, p => p.GetExtensionMethodsForAsync(Receiver));
+        if (!result.Ok)
+        {
+            _error = result.ErrorHtml;
+            return;
+        }
+
+        var entries = result.Value;
         if (entries.Length == 0)
         {
             Diagnostics?.AddWarning($"<ExtensionMethods> no methods found for receiver {Receiver}");

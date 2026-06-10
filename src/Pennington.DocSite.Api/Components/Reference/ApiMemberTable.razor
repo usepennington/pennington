@@ -1,6 +1,4 @@
-@inject IServiceProvider Services
-@inject IXmlDocHtmlRenderer Renderer
-@inject IHttpContextAccessor HttpContextAccessor
+@inherits ApiReferenceComponentBase
 
 @if (_error is not null)
 {
@@ -106,16 +104,11 @@ else
     [Parameter] public string Kind { get; set; } = "Properties";
     [Parameter] public string Access { get; set; } = "public";
     [Parameter] public string Order { get; set; } = "alphabetical";
-    [Parameter] public string? Source { get; set; }
-    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private IReadOnlyList<ApiDefinitionRow> _rows = [];
     private IReadOnlyList<MemberGroup>? _groups;
     private string? _error;
     private string? _empty;
-
-    private DiagnosticContext? Diagnostics =>
-        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
 
     protected override void OnParametersSet()
     {
@@ -135,19 +128,14 @@ else
         var access = MemberOptionParser.ParseAccess(Access);
         var order = MemberOptionParser.ParseOrder(Order);
 
-        System.Collections.Immutable.ImmutableArray<ApiMember> members;
-        try
+        var result = Fetch("ApiMemberTable", XmlDocId, p => p.GetMembersAsync(XmlDocId, kind, access, order));
+        if (!result.Ok)
         {
-            var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
-            members = AsyncHelpers.RunSync(() => provider.GetMembersAsync(XmlDocId, kind, access, order));
-        }
-        catch (Exception ex)
-        {
-            Diagnostics?.AddError($"<ApiMemberTable> failed to enumerate {XmlDocId}: {ex.Message}");
-            _error = $"Failed to enumerate {WebUtility.HtmlEncode(XmlDocId)}: {WebUtility.HtmlEncode(ex.Message)}";
+            _error = result.ErrorHtml;
             return;
         }
 
+        var members = result.Value;
         if (members.Length == 0)
         {
             // Kind=All matching nothing is a legitimate state — marker interfaces,

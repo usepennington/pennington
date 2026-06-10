@@ -1,17 +1,11 @@
-@inject IServiceProvider Services
-@inject IHttpContextAccessor HttpContextAccessor
+@inherits ApiReferenceComponentBase
 
 @((MarkupString)_html)
 
 @code {
     [Parameter, EditorRequired] public string XmlDocId { get; set; } = string.Empty;
-    [Parameter] public string? Source { get; set; }
-    [CascadingParameter(Name = "ApiSource")] public string? CascadingSource { get; set; }
 
     private string _html = string.Empty;
-
-    private DiagnosticContext? Diagnostics =>
-        HttpContextAccessor.HttpContext?.RequestServices.GetService<DiagnosticContext>();
 
     protected override void OnParametersSet()
     {
@@ -22,12 +16,16 @@
     {
         if (string.IsNullOrWhiteSpace(XmlDocId))
         {
-            Diagnostics?.AddError("<ApiSeeAlso> missing XmlDocId");
-            return "<div class=\"diag-error\">&lt;ApiSeeAlso&gt; missing XmlDocId</div>";
+            return DiagError(MissingAttributeError("ApiSeeAlso", "XmlDocId"));
         }
 
-        var provider = ApiSourceResolver.ResolveProvider(Services, Source, CascadingSource);
-        var parsed = AsyncHelpers.RunSync(() => provider.GetXmldocAsync(XmlDocId));
+        var result = Fetch("ApiSeeAlso", XmlDocId, p => p.GetXmldocAsync(XmlDocId));
+        if (!result.Ok)
+        {
+            return DiagError(result.ErrorHtml!);
+        }
+
+        var parsed = result.Value;
         if (parsed.SeeAlso.Length == 0)
         {
             return string.Empty;
