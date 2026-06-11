@@ -60,10 +60,17 @@ public sealed class ChromiumBrowserProvider : IAsyncDisposable
 
     private async Task<IBrowser> LaunchAsync()
     {
+        var isLinux = OperatingSystem.IsLinux();
+        var isContinuousIntegration = IsContinuousIntegration();
+        if (isLinux && isContinuousIntegration)
+        {
+            _logger.LogInformation("Linux CI detected; launching Chromium with --no-sandbox (book content is the site's own trusted HTML).");
+        }
+
         var launchOptions = new LaunchOptions
         {
             Headless = true,
-            Args = _options.AdditionalChromiumArgs,
+            Args = ResolveChromiumArgs(_options.AdditionalChromiumArgs, isLinux, isContinuousIntegration),
         };
 
         if (!string.IsNullOrWhiteSpace(_options.ChromiumExecutablePath))
@@ -82,6 +89,45 @@ public sealed class ChromiumBrowserProvider : IAsyncDisposable
         var browser = await Puppeteer.LaunchAsync(launchOptions);
         _live = browser;
         return browser;
+    }
+
+    /// <summary>
+    /// Resolves Chromium launch arguments, appending the sandbox-disabling flags on Linux CI runners
+    /// where AppArmor blocks unprivileged user namespaces (Ubuntu 23.10+, GitHub Actions). Chromium's
+    /// sandbox guards against malicious web pages; book content is always the site's own trusted HTML,
+    /// so dropping it in CI is safe. Pure and parameterized for testing.
+    /// </summary>
+    internal static string[] ResolveChromiumArgs(IReadOnlyList<string> additionalArgs, bool isLinux, bool isContinuousIntegration)
+    {
+        var args = new List<string>(additionalArgs);
+
+        if (isLinux && isContinuousIntegration)
+        {
+            AddIfMissing(args, "--no-sandbox");
+            AddIfMissing(args, "--disable-setuid-sandbox");
+        }
+
+        return [.. args];
+
+        static void AddIfMissing(List<string> list, string flag)
+        {
+            if (!list.Contains(flag))
+            {
+                list.Add(flag);
+            }
+        }
+    }
+
+    /// <summary>True when a CI marker env var (<c>CI</c> or <c>GITHUB_ACTIONS</c>) is set to a truthy value.</summary>
+    private static bool IsContinuousIntegration()
+    {
+        static bool Truthy(string? value) =>
+            !string.IsNullOrEmpty(value)
+            && !string.Equals(value, "false", StringComparison.OrdinalIgnoreCase)
+            && value != "0";
+
+        return Truthy(Environment.GetEnvironmentVariable("CI"))
+            || Truthy(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
     }
 
     /// <summary>Closes the browser process if one was launched.</summary>
