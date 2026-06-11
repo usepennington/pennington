@@ -59,8 +59,20 @@ internal sealed class ApiReferenceIndex
         var collected = new List<ApiReferenceEntry>(types.Length);
         foreach (var t in types)
         {
+            // The provider strips generic arity from Name (Image`1 → "Image"),
+            // so a non-generic type and its generic twin would slug identically
+            // and namespace qualification can never separate them (same name,
+            // same namespace). Fold the arity back in from the uid so they get
+            // distinct base slugs ("image" vs "image-1") up front.
+            var slug = ToSlug(t.Name);
+            var arity = ArityOf(t.Uid);
+            if (arity > 0)
+            {
+                slug = $"{slug}-{arity}";
+            }
+
             collected.Add(new ApiReferenceEntry(
-                Slug: ToSlug(t.Name),
+                Slug: slug,
                 Uid: t.Uid,
                 TypeName: t.Name,
                 Namespace: t.Namespace,
@@ -107,6 +119,24 @@ internal sealed class ApiReferenceIndex
         foreach (var entry in collected)
         {
             var slug = BuildSlug(entry, depths[entry.Uid]);
+
+            // Arity separates a non-generic type from its generic twin, and the
+            // namespace loop separates same-named types in different namespaces.
+            // Any residual clash (two differently-named types in one namespace
+            // that kebab to the same slug) takes an ordinal suffix, so the index
+            // degrades gracefully instead of throwing on a duplicate key.
+            if (builder.ContainsKey(slug))
+            {
+                var ordinal = 2;
+                string candidate;
+                do
+                {
+                    candidate = $"{slug}-{ordinal++}";
+                }
+                while (builder.ContainsKey(candidate));
+                slug = candidate;
+            }
+
             builder.Add(slug, entry with { Slug = slug });
         }
 
@@ -138,6 +168,31 @@ internal sealed class ApiReferenceIndex
 
     private static int SegmentCount(string ns) =>
         string.IsNullOrEmpty(ns) ? 0 : ns.AsSpan().Count('.') + 1;
+
+    /// <summary>
+    /// Generic arity encoded in an xmldocid's type-name segment
+    /// (<c>T:System.Collections.Generic.Dictionary`2</c> → 2), or 0 for a
+    /// non-generic type. Lets a non-generic type and its generic counterpart
+    /// (<c>Image</c> vs <c>Image`1</c>) resolve to distinct slugs.
+    /// </summary>
+    private static int ArityOf(string uid)
+    {
+        var lastDot = uid.LastIndexOf('.');
+        var name = lastDot >= 0 ? uid.AsSpan(lastDot + 1) : uid.AsSpan();
+        var backtick = name.IndexOf('`');
+        if (backtick < 0)
+        {
+            return 0;
+        }
+
+        var arity = 0;
+        for (var i = backtick + 1; i < name.Length && char.IsAsciiDigit(name[i]); i++)
+        {
+            arity = (arity * 10) + (name[i] - '0');
+        }
+
+        return arity;
+    }
 
     internal static string ToSlug(string name)
     {
