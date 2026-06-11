@@ -13,7 +13,12 @@ internal sealed class CustomAlertInlineParser : InlineParser
 {
     private static readonly HashSet<string> KnownKinds = new(StringComparer.OrdinalIgnoreCase)
     {
-        "NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION",
+        // CHECKPOINT closes the loop with HtmlToMarkdownConverter, which already emits
+        // `> [!CHECKPOINT]` for the <Checkpoint> component's markdown-alert-checkpoint box.
+        // Without it here, that round-trip (llms.txt, and re-rendered book pages) degrades the
+        // checkpoint to a literal `[!CHECKPOINT]` blockquote. Markdig has no icon for the kind,
+        // so it renders as a text-only "Checkpoint" label — matching the component exactly.
+        "NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION", "CHECKPOINT",
     };
 
     public CustomAlertInlineParser()

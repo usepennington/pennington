@@ -31,7 +31,7 @@ public sealed class TranslationOptions
     }
 
     /// <summary>Look up a translation by locale and key. Returns null if not found.</summary>
-    internal string? Get(string locale, string key)
+    public string? Get(string locale, string key)
         => _translations.TryGetValue(locale, out var dict) && dict.TryGetValue(key, out var value)
             ? value
             : null;

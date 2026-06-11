@@ -4,11 +4,12 @@ using System.CommandLine;
 
 /// <summary>
 /// A <c>diag</c> subcommand. Implementations register in DI as <see cref="IDiagCommand"/>;
-/// <see cref="PenningtonCli.BuildDiagGroup"/> discovers them and adds one System.CommandLine
-/// <see cref="Command"/> per implementation under the <c>diag</c> group. Each command inspects
-/// the started app's services and writes a human-readable text report.
+/// the CLI discovers them and adds one System.CommandLine <see cref="Command"/> per
+/// implementation under the <c>diag</c> group. Each command inspects the started app's
+/// services and writes a human-readable text report. Optional packages (and hosts) add
+/// their own inspection verbs by registering an implementation.
 /// </summary>
-internal interface IDiagCommand
+public interface IDiagCommand
 {
     /// <summary>Subcommand verb shown under <c>diag</c> (e.g. <c>toc</c>, <c>warnings</c>).</summary>
     string Name { get; }

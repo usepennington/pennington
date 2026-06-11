@@ -1,0 +1,93 @@
+/*
+ * Pennington.Book grayscale override. Appended after book.css (and before any
+ * BookOptions.AdditionalCss) when BookOptions.Monochrome is set. Every rule here
+ * mirrors a hue-bearing selector in book.css, so it has identical specificity and
+ * wins purely by coming later in the cascade — no !important needed. The result is
+ * a color-free document: neutral grays for links, alert chrome, code backgrounds,
+ * and the syntax palette, with structure preserved by light-gray fills and borders.
+ */
+
+/* Accent (links, cover subtitle) drops to a dark neutral gray. The other base
+   variables (ink / muted / rule) are already grayscale. */
+:root {
+    --book-accent: #333;
+}
+
+/* ---- Faintly tinted backgrounds -> neutral gray ----------------------- */
+
+pre {
+    background: #f6f6f6;
+    border-color: #e2e2e2;
+}
+
+.markdown-alert {
+    background: #f6f6f6;
+}
+
+/* ---- Alert flavors: drop every hue, keep the light-gray box ----------- */
+/* The printed flavor label (Note / Tip / Warning / …) still identifies the box. */
+
+.markdown-alert-note,
+.markdown-alert-tip,
+.markdown-alert-important,
+.markdown-alert-warning,
+.markdown-alert-caution,
+.markdown-alert-checkpoint {
+    background: #f6f6f6;
+    border-color: var(--book-rule);
+}
+
+.markdown-alert-note .markdown-alert-title,
+.markdown-alert-tip .markdown-alert-title,
+.markdown-alert-important .markdown-alert-title,
+.markdown-alert-warning .markdown-alert-title,
+.markdown-alert-caution .markdown-alert-title,
+.markdown-alert-checkpoint .markdown-alert-title {
+    color: var(--book-ink);
+}
+
+/* ---- Syntax palette: all ink, comments stay gray, keywords stay bold --- */
+
+.hljs-keyword,
+.hljs-operator,
+.hljs-string,
+.hljs-regexp,
+.hljs-number,
+.hljs-literal,
+.hljs-type,
+.hljs-built_in,
+.hljs-title,
+.hljs-function,
+.hljs-name,
+.hljs-attr,
+.hljs-variable,
+.hljs-tag,
+.hljs-selector-tag,
+.hljs-punctuation {
+    color: var(--book-ink);
+}
+
+.hljs-comment {
+    color: var(--book-muted);
+}
+
+.hljs-meta {
+    color: var(--book-muted);
+}
+
+/* Bold keywords keep code legible once color is gone. */
+.hljs-keyword,
+.hljs-operator {
+    font-weight: 600;
+}
+
+/* Diff add/remove: neutral grays (lighter for additions) instead of green/red. */
+.hljs-addition {
+    color: var(--book-ink);
+    background: #efefef;
+}
+
+.hljs-deletion {
+    color: var(--book-ink);
+    background: #e2e2e2;
+}

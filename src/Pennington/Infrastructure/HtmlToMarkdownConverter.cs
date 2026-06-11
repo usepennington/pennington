@@ -16,7 +16,7 @@ using AngleSharp.Dom;
 /// on NuGet) rather than expanding it further.
 /// </para>
 /// </summary>
-internal static class HtmlToMarkdownConverter
+public static class HtmlToMarkdownConverter
 {
     /// <summary>
     /// Converts <paramref name="root"/> to markdown.

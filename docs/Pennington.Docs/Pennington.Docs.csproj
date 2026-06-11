@@ -21,6 +21,7 @@
          provider documents the audit feature's public surface. -->
     <ProjectReference Include="..\..\src\Pennington.TranslationAudit\Pennington.TranslationAudit.csproj" />
     <ProjectReference Include="..\..\src\Pennington.TreeSitter\Pennington.TreeSitter.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.Book\Pennington.Book.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Watch Include="Content\**\*.*" />

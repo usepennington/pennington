@@ -8,6 +8,7 @@
     <Project Path="src/Pennington.ApiMetadata/Pennington.ApiMetadata.csproj" />
     <Project Path="src/Pennington.ApiMetadata.Reflection/Pennington.ApiMetadata.Reflection.csproj" />
     <Project Path="src/Pennington.TreeSitter/Pennington.TreeSitter.csproj" />
+    <Project Path="src/Pennington.Book/Pennington.Book.csproj" />
     <Project Path="src/Pennington.TranslationAudit/Pennington.TranslationAudit.csproj" />
     <Project Path="src/Pennington.BlogSite/Pennington.BlogSite.csproj" />
     <Project Path="src/Pennington.Templates/Pennington.Templates.csproj" />
@@ -17,6 +18,7 @@
     <Project Path="tests/Pennington.IntegrationTests/Pennington.IntegrationTests.csproj" />
     <Project Path="tests/Pennington.BeyondCookFormat.Tests/Pennington.BeyondCookFormat.Tests.csproj" />
     <Project Path="tests/Pennington.TreeSitter.Tests/Pennington.TreeSitter.Tests.csproj" />
+    <Project Path="tests/Pennington.Book.Tests/Pennington.Book.Tests.csproj" />
   </Folder>
   <Folder Name="/docs/">
     <Project Path="docs/Pennington.Docs/Pennington.Docs.csproj" />

@@ -1,8 +1,23 @@
-<div class="not-prose mt-6 mb-8 grid grid-cols-1 gap-6 sm:grid-cols-@Columns">
+<div class="not-prose mt-6 mb-8 grid grid-cols-1 gap-6 @GetColumnClass(Columns)">
     @ChildContent
 </div>
 
 @code {
-    [Parameter] public string Columns { get; set; } = "2";
+    [Parameter] public int Columns { get; set; } = 2;
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    string GetColumnClass(int index)
+    {
+        // we need to hard code these values so that monorail discovery can find them
+        switch (index)
+        {
+            case 0: return "sm:col-span-2";
+            case 1: return "sm:col-span-1";
+            case 2: return "sm:col-span-2";
+            case 3: return "sm:col-span-3";
+            case 4: return "sm:col-span-4";
+        }
+
+        throw new ArgumentOutOfRangeException(nameof(index));
+    }
 }

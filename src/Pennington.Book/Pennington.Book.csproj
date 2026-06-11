@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>PDF book generation for Pennington documentation sites (paged.js + PuppeteerSharp)</Description>
+    <PackageTags>dotnet pdf documentation paged-media puppeteer static-site-generator</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Pennington.Book.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Pennington\Pennington.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PuppeteerSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\book.css" />
+    <EmbeddedResource Include="Assets\book-bw.css" />
+    <EmbeddedResource Include="Assets\paged.polyfill.js" />
+  </ItemGroup>
+</Project>

@@ -1,6 +1,7 @@
 @using Pennington.DocSite.Services
 @using Pennington.Generation
 @using Pennington.Infrastructure
+@using Microsoft.Extensions.DependencyInjection
 @inherits LayoutComponentBase
 @inject DocSiteContentResolver ContentResolver
 @inject NavigationBuilder NavBuilder
@@ -8,6 +9,7 @@
 @inject DocSiteOptions DocSiteOptions
 @inject LocalizationOptions Localization
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IServiceProvider Services
 
 <div class="dark:scheme-dark font-sans box-border bg-base-100 dark:bg-base-950 text-base-900 dark:text-base-50">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-primary-700 focus:text-white focus:p-3">Skip to main content</a>
@@ -63,6 +65,10 @@
                                     LinkColorClass="@TocLinkColorClass"
                                     RootLinkStructureClass="@TocLinkStructureClass"
                                     RootLinkColorClass="@TocLinkColorClass" />
+                                @if (DownloadsForArea(area) is { Count: > 0 } areaDownloads)
+                                {
+                                    @DownloadLinks(areaDownloads)
+                                }
                             </div>
                         }
                     }
@@ -77,6 +83,10 @@
                             LinkColorClass="@TocLinkColorClass"
                             RootLinkStructureClass="@TocLinkStructureClass"
                             RootLinkColorClass="@TocLinkColorClass" />
+                        @if (_downloads.Count > 0)
+                        {
+                            @DownloadLinks(_downloads)
+                        }
                     }
                 </div>
             </nav>
@@ -139,6 +149,34 @@
     private Dictionary<string, string> _areaHrefs = new();
     private IReadOnlyList<AlternateLanguage> _langSwitcherItems = [];
     private ContentArea? _activeArea;
+    private IReadOnlyList<DownloadLink> _downloads = [];
+
+    // Resolved at request time from every registered IDownloadLinkProvider (core contract —
+    // DocSite knows nothing about what produces the artifacts). Matched to an area by route
+    // prefix; all links back the no-areas branch.
+    private List<DownloadLink> DownloadsForArea(ContentArea area)
+        => _downloads.Where(d =>
+            d.RoutePrefix.Trim('/').Equals(area.Slug, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private RenderFragment DownloadLinks(IReadOnlyList<DownloadLink> links) =>
+        @<div class="mt-4 pt-4 border-t border-base-200 dark:border-base-800">
+            @foreach (var link in links)
+            {
+                <a href="/@link.Url" class="@TocLinkStructureClass @TocLinkColorClass">
+                    @_downloadIcon
+                    <span>@link.Label</span>
+                </a>
+            }
+        </div>;
+
+    private readonly RenderFragment _downloadIcon =
+        @<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+              class="h-4 w-4 flex-none" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>;
 
     private readonly RenderFragment _defaultHeaderIcon =
         @<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -182,6 +220,10 @@
         }
 
         var locale = Localization.IsMultiLocale ? Localization.GetLocaleFromUrl(currentPath) : null;
+
+        _downloads = Services.GetServices<IDownloadLinkProvider>()
+            .SelectMany(p => p.GetLinks(locale))
+            .ToList();
 
         var currentUrl = new UrlPath(currentPath);
 

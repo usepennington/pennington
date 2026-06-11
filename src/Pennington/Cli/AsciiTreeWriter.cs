@@ -1,7 +1,7 @@
 namespace Pennington.Cli;
 
 /// <summary>Renders a hierarchy as an ASCII tree (<c>├─ └─ │</c>) to a <see cref="TextWriter"/>.</summary>
-internal static class AsciiTreeWriter
+public static class AsciiTreeWriter
 {
     private const string Tee = "├─ ";
     private const string Ell = "└─ ";

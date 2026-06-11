@@ -8,6 +8,7 @@ using Pennington.DocSite.Api;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
 using Pennington.TreeSitter;
+using Pennington.Book;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -131,7 +132,20 @@ builder.Services.AddWordBreak(options =>
     options.CssSelector = "h1, h2, h3, h4, h5, h6, p, li, dt, dd, th, td, span, .text-break";
 });
 
+// Downloadable PDF books — one per Diataxis area, each rendered from the area's TOC with
+// paged.js + Chromium. Slugs match the area slugs, so the sidebar "Download as PDF" link in
+// each area maps to its book by route prefix.
+builder.Services.AddPenningtonBook(book =>
+{
+    book.Books.Add(new BookDefinition("Getting Started", "/tutorials/"));
+    book.Books.Add(new BookDefinition("Guides", "/how-to/"));
+    book.Books.Add(new BookDefinition("Under the Hood", "/explanation/"));
+    book.Books.Add(new BookDefinition("Reference", "/reference/"));
+    book.Monochrome = true;
+});
+
 var app = builder.Build();
 app.UseDocSite();
+app.UsePenningtonBook();
 
 await app.RunDocSiteAsync(args);
