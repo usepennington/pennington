@@ -21,18 +21,20 @@ Renders an ordered `<nav><ul>` of `NavigationTreeItem` entries, recursing one le
 
 ### Parameters
 
+Every `*Class` parameter defaults to `null` and resolves through the style-registry slot listed in its Default column; an explicitly passed value is used verbatim for that instance. Run `dotnet run -- diag styles` for effective slot values, and see <xref:how-to.theming.component-styles> for overriding slots app-wide.
+
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `TableOfContents` | `ImmutableList<NavigationTreeItem>?` | `null` | Navigation tree to render; when `null` the component renders nothing. |
 | `SectionLabel` | `string?` | `null` | Optional label forwarded from the caller's `NavigationInfo.SectionName`; not rendered by the default template. |
-| `ListGapClass` | `string` | `"gap-4"` | CSS classes applied to the outer `<ul>` that holds the top-level navigation entries. |
-| `ChildListClass` | `string` | `"mt-4"` | CSS classes applied to the nested `<ul>` that holds a section's child entries. |
-| `SectionHeaderStructureClass` | `string` | `"font-display font-medium first:pt-0"` | Layout and typography classes applied to the section-header element. |
-| `SectionHeaderColorClass` | `string` | `"text-base-900 dark:text-base-50"` | CSS classes applied to section-header text — both the plain `<div>` for empty-route entries and the `<a>` when a top-level entry has children. |
-| `LinkStructureClass` | `string` | `"block text-sm w-full border-l pl-3.5 py-1.5"` | Layout and typography classes applied to each child-level `<a>` element under a section. |
-| `LinkColorClass` | `string` | `"transition-colors transition-300 border-base-300 dark:border-base-800 data-[current=true]:border-primary-400 text-base-500 dark:text-base-400 data-[current=true]:text-primary-800 dark:data-[current=true]:text-primary-500 hover:text-accent-400 dark:hover:text-base-50"` | CSS classes applied to each child-level `<a>` for color and `data-current=true` state, composed after `LinkStructureClass`. |
-| `RootLinkStructureClass` | `string` | `"block w-full py-1"` | Layout classes applied to a leaf root-level `<a>` when a top-level entry has no children. |
-| `RootLinkColorClass` | `string` | `"transition-colors transition-300 text-base-700 dark:text-base-400 data-[current=true]:text-primary-800 dark:data-[current=true]:text-primary-500 hover:text-accent-400 dark:hover:text-base-50"` | CSS classes applied to a leaf root-level `<a>` (a top-level entry with no children), composed after `RootLinkStructureClass`. |
+| `ListGapClass` | `string?` | `toc.list-gap` slot | CSS classes applied to the outer `<ul>` that holds the top-level navigation entries. |
+| `ChildListClass` | `string?` | `toc.child-list` slot | CSS classes applied to the nested `<ul>` that holds a section's child entries. |
+| `SectionHeaderStructureClass` | `string?` | `toc.section-header-structure` slot | Layout and typography classes applied to the section-header element. |
+| `SectionHeaderColorClass` | `string?` | `toc.section-header-color` slot | CSS classes applied to section-header text — both the plain `<div>` for empty-route entries and the `<a>` when a top-level entry has children. |
+| `LinkStructureClass` | `string?` | `toc.link-structure` slot | Layout and typography classes applied to each child-level `<a>` element under a section. |
+| `LinkColorClass` | `string?` | `toc.link-color` slot | CSS classes applied to each child-level `<a>` for color and `data-current=true` state, composed after `LinkStructureClass`. |
+| `RootLinkStructureClass` | `string?` | `toc.root-link-structure` slot | Layout classes applied to a leaf root-level `<a>` when a top-level entry has no children. |
+| `RootLinkColorClass` | `string?` | `toc.root-link-color` slot | CSS classes applied to a leaf root-level `<a>` (a top-level entry with no children), composed after `RootLinkStructureClass`. |
 
 ### Binding
 
@@ -60,20 +62,20 @@ Emits a `data-role="page-outline"` container and an empty `<ul>` whose items are
 
 ### Parameters
 
-`ContentSelector` is `[EditorRequired]`; all other parameters carry defaults tuned for the DocSite main-content column.
+`ContentSelector` is `[EditorRequired]`. Every `*Class` parameter defaults to `null` and resolves through the style-registry slot listed in its Default column; an explicitly passed value is used verbatim for that instance. Run `dotnet run -- diag styles` for effective slot values, and see <xref:how-to.theming.component-styles> for overriding slots app-wide.
 
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `ContentSelector` | `string` | `""` (required) | CSS selector the client-side outline script queries to discover heading elements; must be non-empty for the outline to populate. |
 | `Title` | `string` | `"On this page"` | Eyebrow rendered above the outline list as a `<div>`; pass an empty string to suppress. |
-| `TitleStructureClass` | `string` | `"font-display text-[13px] font-semibold mb-3"` | Layout and typography classes applied to the eyebrow above the outline list. |
-| `TitleColorClass` | `string` | `"text-base-600 dark:text-base-300"` | CSS classes applied to the eyebrow text. |
-| `ContainerStructureClass` | `string` | `"border-l border-base-200 dark:border-base-800"` | Layout and border classes applied to the outer `data-role="page-outline"` container. |
-| `ContainerColorClass` | `string` | `""` | CSS classes applied to the outer container for color treatment, composed after `ContainerStructureClass`. |
-| `ListStructureClass` | `string` | `"list-none pl-4"` | Layout classes applied to the outline `<ul>`. |
-| `ListColorClass` | `string` | `"text-base-500 dark:text-base-400"` | CSS classes applied to the `<ul>` that holds outline links, composed after `ListStructureClass`. |
-| `OutlineLinkColorClass` | `string` | `"transition-colors duration-150 hover:text-base-900 dark:hover:text-base-50 data-[selected=true]:text-primary-700 dark:data-[selected=true]:text-primary-300 data-[selected=true]:font-medium"` | CSS classes emitted on the container as `data-outline-link-color-class` and applied by the client-side script to each generated `<li><a>` for color and `data-selected=true` state. |
-| `OutlineLinkStructureClass` | `string` | `"block py-1 ml-[calc(-1*(4em-1px))] pl-[calc(4em+1px)]"` | Layout classes emitted on the container as `data-outline-link-structure-class` and applied by the client-side script to each generated `<li><a>`. |
+| `TitleStructureClass` | `string?` | `outline.title-structure` slot | Layout and typography classes applied to the eyebrow above the outline list. |
+| `TitleColorClass` | `string?` | `outline.title-color` slot | CSS classes applied to the eyebrow text. |
+| `ContainerStructureClass` | `string?` | `outline.container-structure` slot | Layout and border classes applied to the outer `data-role="page-outline"` container. |
+| `ContainerColorClass` | `string?` | `outline.container-color` slot | CSS classes applied to the outer container for color treatment, composed after `ContainerStructureClass`. |
+| `ListStructureClass` | `string?` | `outline.list-structure` slot | Layout classes applied to the outline `<ul>`. |
+| `ListColorClass` | `string?` | `outline.list-color` slot | CSS classes applied to the `<ul>` that holds outline links, composed after `ListStructureClass`. |
+| `OutlineLinkColorClass` | `string?` | `outline.link-color` slot | CSS classes emitted on the container as `data-outline-link-color-class` and applied by the client-side script to each generated `<li><a>` for color and `data-selected=true` state. |
+| `OutlineLinkStructureClass` | `string?` | `outline.link-structure` slot | Layout classes emitted on the container as `data-outline-link-structure-class` and applied by the client-side script to each generated `<li><a>`. |
 
 ### Binding
 

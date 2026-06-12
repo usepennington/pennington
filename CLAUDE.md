@@ -12,6 +12,7 @@ Content engine library targeting .NET 11 / C# 15 with union types.
 ## Project Structure
 - `src/Pennington/` — Core library (Markdig, SharpYaml, AngleSharp, TextMateSharp)
 - `src/Pennington.UI/` — Razor component library (TableOfContentsNav, OutlineNav, Badge, Card, CodeBlock, etc.)
+  - `Pennington.UI.Styling` — the style registry: `StyleKeys` (slot catalog) → `StyleRegistry` (`effective = merge(templateSkin ?? uiDefault, consumerOverride)` — skins replace wholesale, consumer `DocSiteOptions.Styles`/`BlogSiteOptions.Styles` values Tailwind-merge over the result via the MonorailCSS class merger; all values must be IL string literals for MonorailCss discovery). The merger comes from `MonorailCssService.CreateClassMerger(options)` (conflicts derived from the site's own `CssFramework`), which the templates pass into `AddPenningtonStyles` — Pennington.UI stays MonorailCss-free, taking only a `Func<string,string,string>` delegate. Components' `*Class` params are nullable and fall back to slots; `AddPenningtonStyles()` registers it (templates call it; last call wins) plus `diag styles`. DocSite's skin lives in `DocSiteStyleSkin`.
 - `src/Pennington.MonorailCss/` — MonorailCSS integration (utility-first CSS generation)
 - `src/Pennington.DocSite/` — Documentation site template (layout, pages, content resolver)
 - `src/Pennington.BlogSite/` — Blog site template (home/archive/tag pages, blog front matter, content service)

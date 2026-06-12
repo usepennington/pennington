@@ -1,6 +1,7 @@
 @using Pennington.DocSite.Services
 @using Pennington.Generation
 @using Pennington.Infrastructure
+@using Pennington.UI.Styling
 @using Microsoft.Extensions.DependencyInjection
 @inherits LayoutComponentBase
 @inject DocSiteContentResolver ContentResolver
@@ -10,6 +11,7 @@
 @inject LocalizationOptions Localization
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IServiceProvider Services
+@inject StyleRegistry Styles
 
 <div class="dark:scheme-dark font-sans box-border bg-base-100 dark:bg-base-950 text-base-900 dark:text-base-50">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-primary-700 focus:text-white focus:p-3">Skip to main content</a>
@@ -57,14 +59,7 @@
                                 && string.Equals(area.Slug, _activeArea.Slug, StringComparison.OrdinalIgnoreCase);
                             <div data-area-toc="@area.Slug" class="@(isActive ? null : "hidden")">
                                 <TableOfContentsNavigation TableOfContents="_areaTocs.GetValueOrDefault(area.Slug)"
-                                    ListGapClass="gap-1"
-                                    ChildListClass="@TocChildListClass"
-                                    SectionHeaderStructureClass="@TocSectionHeaderStructureClass"
-                                    SectionHeaderColorClass="@TocSectionHeaderColorClass"
-                                    LinkStructureClass="@TocLinkStructureClass"
-                                    LinkColorClass="@TocLinkColorClass"
-                                    RootLinkStructureClass="@TocLinkStructureClass"
-                                    RootLinkColorClass="@TocLinkColorClass" />
+                                    ListGapClass="gap-1" />
                                 @if (DownloadsForArea(area) is { Count: > 0 } areaDownloads)
                                 {
                                     @DownloadLinks(areaDownloads)
@@ -75,14 +70,7 @@
                     else
                     {
                         <TableOfContentsNavigation TableOfContents="_toc"
-                            ListGapClass="gap-0"
-                            ChildListClass="@TocChildListClass"
-                            SectionHeaderStructureClass="@TocSectionHeaderStructureClass"
-                            SectionHeaderColorClass="@TocSectionHeaderColorClass"
-                            LinkStructureClass="@TocLinkStructureClass"
-                            LinkColorClass="@TocLinkColorClass"
-                            RootLinkStructureClass="@TocLinkStructureClass"
-                            RootLinkColorClass="@TocLinkColorClass" />
+                            ListGapClass="gap-0" />
                         @if (_downloads.Count > 0)
                         {
                             @DownloadLinks(_downloads)
@@ -123,27 +111,9 @@
 </div>
 
 @code{
-    // Shared TOC styling — area-aware and single-tree branches pass the same strings.
-    // The pill-style nav links replaced the previous border-l indicator; the active
-    // state is now a tinted background, matching the area-pill / outline-rail family.
-    private string TocChildListClass = "mt-1 flex flex-col gap-0.5";
-
-    private string TocSectionHeaderStructureClass =
-        "font-display text-[12.5px] font-semibold mt-6 first:mt-0 mb-2 px-2.5";
-
-    private string TocSectionHeaderColorClass = "text-base-700 dark:text-base-200 uppercase";
-
-    private string TocLinkStructureClass =
-        "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm leading-snug";
-
-    private string TocLinkColorClass =
-        "transition-colors duration-150 " +
-        "text-base-500 dark:text-base-400 " +
-        "hover:text-base-900 hover:bg-base-100 dark:hover:text-base-50 dark:hover:bg-base-900 " +
-        "data-[current=true]:text-primary-700 data-[current=true]:bg-primary-500/8 " +
-        "dark:data-[current=true]:text-primary-300 dark:data-[current=true]:bg-primary-300/8 " +
-        "data-[current=true]:font-medium";
-
+    // TOC styling lives in DocSiteStyleSkin (slot-keyed, consumer-overridable via
+    // DocSiteOptions.Styles); TableOfContentsNavigation pulls it from the StyleRegistry.
+    // Only the per-instance list gap is still passed as a parameter above.
     private ImmutableList<NavigationTreeItem>? _toc;
     private Dictionary<string, ImmutableList<NavigationTreeItem>> _areaTocs = new();
     private Dictionary<string, string> _areaHrefs = new();
@@ -162,7 +132,7 @@
         @<div class="mt-4 pt-4 border-t border-base-200 dark:border-base-800">
             @foreach (var link in links)
             {
-                <a href="/@link.Url" class="@TocLinkStructureClass @TocLinkColorClass">
+                <a href="/@link.Url" class="@Styles[StyleKeys.TocLinkStructure] @Styles[StyleKeys.TocLinkColor]">
                     @_downloadIcon
                     <span>@link.Label</span>
                 </a>

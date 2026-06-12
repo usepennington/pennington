@@ -78,6 +78,16 @@ public record DocSiteOptions
     /// <summary>Additional CSS appended to the generated stylesheet.</summary>
     public string? ExtraStyles { get; init; }
 
+    /// <summary>
+    /// Per-slot CSS class overrides keyed by <see cref="UI.Styling.StyleKeys"/> constants. Each
+    /// value is Tailwind-merged over the template's default for that slot — conflicting
+    /// utilities are replaced, non-conflicting ones kept (<c>dark:</c> variants only conflict
+    /// with other <c>dark:</c> classes, so override them explicitly). Unknown keys throw at
+    /// startup. Write values as compile-time string literals — MonorailCSS class discovery
+    /// scans IL string literals and cannot see runtime-built strings.
+    /// </summary>
+    public Dictionary<string, string> Styles { get; init; } = new();
+
     /// <summary>Additional raw HTML appended to the document <c>&lt;head&gt;</c> (for analytics, meta tags, etc.).</summary>
     public string? AdditionalHtmlHeadContent { get; init; }
 

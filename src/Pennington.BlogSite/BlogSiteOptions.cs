@@ -43,6 +43,16 @@ public record BlogSiteOptions
     /// <summary>Additional CSS appended to the generated stylesheet.</summary>
     public string? ExtraStyles { get; init; }
 
+    /// <summary>
+    /// Per-slot CSS class overrides keyed by <see cref="UI.Styling.StyleKeys"/> constants. Each
+    /// value is Tailwind-merged over the component default for that slot — conflicting utilities
+    /// are replaced, non-conflicting ones kept. The BlogSite chrome has no registry-keyed slots
+    /// yet; overrides apply to Pennington.UI components composed in custom layouts. Unknown keys
+    /// throw at startup. Write values as compile-time string literals — MonorailCSS class
+    /// discovery scans IL string literals and cannot see runtime-built strings.
+    /// </summary>
+    public Dictionary<string, string> Styles { get; init; } = new();
+
     /// <summary>Raw HTML appended to the document <c>&lt;head&gt;</c> (for analytics, meta tags, etc.).</summary>
     public string? AdditionalHtmlHeadContent { get; init; }
 

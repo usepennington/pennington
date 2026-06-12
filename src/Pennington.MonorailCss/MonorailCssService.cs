@@ -59,6 +59,24 @@ public sealed class MonorailCssService(
     /// Used during DI registration to seed <see cref="MonorailDiscoveryOptions.Framework"/>;
     /// the discovery pipeline may then rebuild the framework when it processes source CSS.
     /// </summary>
+    /// <summary>
+    /// Builds a Tailwind-aware class merge delegate from Pennington's options:
+    /// <c>(baseClasses, overrideClasses) =&gt; merged</c>, dropping utilities in
+    /// <paramref name="options"/>-rendered <c>baseClasses</c> that conflict with later
+    /// <c>overrideClasses</c>. Backed by <see cref="CssFramework.Merger"/> over the same framework
+    /// the site renders with, so the semantic palette and custom utilities define the conflicts.
+    /// Consumed by the Pennington.UI style registry's consumer-override layer
+    /// (<c>AddPenningtonStyles</c>).
+    /// </summary>
+    /// <param name="options">MonorailCSS options whose framework defines the merge conflicts.</param>
+    public static Func<string, string, string> CreateClassMerger(MonorailCssOptions options)
+    {
+        // ClassMerger is documented thread-safe with its own LRU cache, so one instance is
+        // shared across every overridden slot and every resolve.
+        var merger = BuildFramework(options).Merger;
+        return (baseClasses, overrideClasses) => merger.Merge([baseClasses, overrideClasses]);
+    }
+
     internal static CssFramework BuildFramework(MonorailCssOptions options)
     {
         var theme = options.ColorScheme.ApplyToTheme(Theme.CreateWithDefaults());

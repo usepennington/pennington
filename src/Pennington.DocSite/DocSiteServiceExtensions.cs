@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using MonorailCss;
 using Pennington.UI.Components;
+using Pennington.UI.Styling;
 
 /// <summary>DI extension methods for registering and running the DocSite template.</summary>
 public static class DocSiteServiceExtensions
@@ -129,45 +130,20 @@ public static class DocSiteServiceExtensions
         // singleton snapshot) so edits to Program.cs flow into the served stylesheet. The
         // MonorailCSS option factory is registered transient by
         // AddMonorailCss, so this lambda runs on every /styles.css request.
-        services.AddMonorailCss(_ =>
-        {
-            var options = configureOptions();
+        services.AddMonorailCss(_ => BuildMonorailOptions(configureOptions()));
 
-            // Sensible cross-platform sans-serif stack used when the consumer
-            // doesn't supply DisplayFontFamily / BodyFontFamily. Both `font-display`
-            // and `font-sans` utilities must resolve to something — the docs site
-            // chrome (headers, body) leans on them.
-            const string defaultFontStack =
-                "-apple-system, BlinkMacSystemFont, 'avenir next', avenir, 'segoe ui', " +
-                "'helvetica neue', 'Adwaita Sans', Cantarell, Ubuntu, roboto, noto, " +
-                "helvetica, arial, sans-serif";
-            const string defaultMonoStack =
-                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', " +
-                "'Courier New', monospace";
-            var displayFont = options.DisplayFontFamily ?? defaultFontStack;
-            var bodyFont = options.BodyFontFamily ?? defaultFontStack;
-            var monoFont = options.MonoFontFamily ?? defaultMonoStack;
-            var userCustomization = options.CustomCssFrameworkSettings ?? (settings => settings);
-
-            var monoOptions = new MonorailCssOptions
-            {
-                ColorScheme = options.ColorScheme ?? new MonorailCssOptions().ColorScheme,
-                SyntaxTheme = options.SyntaxTheme ?? SyntaxTheme.Default,
-                ExtraStyles = options.ExtraStyles ?? string.Empty,
-                // Register fonts first so the user's CustomCssFrameworkSettings
-                // hook still gets the last word if it wants to swap them.
-                CustomCssFrameworkSettings = settings => userCustomization(settings with
-                {
-                    Theme = settings.Theme
-                        .AddFontFamily("display", displayFont)
-                        .AddFontFamily("sans", bodyFont)
-                        .AddFontFamily("mono", monoFont),
-                }),
-                ExtendProseCustomization = options.ExtendProseCustomization ?? (prose => prose),
-            };
-
-            return monoOptions;
-        });
+        // Component style registry: DocSite's skin over the Pennington.UI defaults, with the
+        // user's Styles merged on top. Like the MonorailCss factory above, the overrides func
+        // re-invokes the user's options factory per resolve so Styles edits flow under dotnet
+        // run; unknown keys throw here at startup, listing the valid catalog. The class merger
+        // resolves override-vs-skin conflicts through DocSite's own MonorailCSS framework — built
+        // lazily on the first override merge, since most hosts set no Styles.
+        var styleMerger = new Lazy<Func<string, string, string>>(
+            () => MonorailCssService.CreateClassMerger(BuildMonorailOptions(configureOptions())));
+        services.AddPenningtonStyles(
+            DocSiteStyleSkin.Styles,
+            () => configureOptions().Styles,
+            (baseClasses, overrideClasses) => styleMerger.Value(baseClasses, overrideClasses));
 
         // Content resolver
         services.AddTransient<Services.DocSiteContentResolver>();
@@ -193,6 +169,46 @@ public static class DocSiteServiceExtensions
         }
 
         return services;
+
+        // Builds the MonorailCSS options DocSite renders with: the user's color scheme, syntax
+        // theme, prose extensions, and extra styles, plus a cross-platform default font stack when
+        // the consumer supplies none. Shared by the stylesheet factory and the style registry's
+        // class merger so both reason about the same utility model.
+        static MonorailCssOptions BuildMonorailOptions(DocSiteOptions options)
+        {
+            // Sensible cross-platform sans-serif stack used when the consumer
+            // doesn't supply DisplayFontFamily / BodyFontFamily. Both `font-display`
+            // and `font-sans` utilities must resolve to something — the docs site
+            // chrome (headers, body) leans on them.
+            const string defaultFontStack =
+                "-apple-system, BlinkMacSystemFont, 'avenir next', avenir, 'segoe ui', " +
+                "'helvetica neue', 'Adwaita Sans', Cantarell, Ubuntu, roboto, noto, " +
+                "helvetica, arial, sans-serif";
+            const string defaultMonoStack =
+                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', " +
+                "'Courier New', monospace";
+            var displayFont = options.DisplayFontFamily ?? defaultFontStack;
+            var bodyFont = options.BodyFontFamily ?? defaultFontStack;
+            var monoFont = options.MonoFontFamily ?? defaultMonoStack;
+            var userCustomization = options.CustomCssFrameworkSettings ?? (settings => settings);
+
+            return new MonorailCssOptions
+            {
+                ColorScheme = options.ColorScheme ?? new MonorailCssOptions().ColorScheme,
+                SyntaxTheme = options.SyntaxTheme ?? SyntaxTheme.Default,
+                ExtraStyles = options.ExtraStyles ?? string.Empty,
+                // Register fonts first so the user's CustomCssFrameworkSettings
+                // hook still gets the last word if it wants to swap them.
+                CustomCssFrameworkSettings = settings => userCustomization(settings with
+                {
+                    Theme = settings.Theme
+                        .AddFontFamily("display", displayFont)
+                        .AddFontFamily("sans", bodyFont)
+                        .AddFontFamily("mono", monoFont),
+                }),
+                ExtendProseCustomization = options.ExtendProseCustomization ?? (prose => prose),
+            };
+        }
     }
 
     /// <summary>Wires DocSite middleware and Razor components into the request pipeline.</summary>

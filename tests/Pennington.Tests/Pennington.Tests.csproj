@@ -27,5 +27,6 @@
     <ProjectReference Include="..\..\src\Pennington.BlogSite\Pennington.BlogSite.csproj" />
     <ProjectReference Include="..\..\src\Pennington.MonorailCss\Pennington.MonorailCss.csproj" />
     <ProjectReference Include="..\..\src\Pennington.TranslationAudit\Pennington.TranslationAudit.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.UI\Pennington.UI.csproj" />
   </ItemGroup>
 </Project>
