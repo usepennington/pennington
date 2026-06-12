@@ -5,7 +5,6 @@ using System.CommandLine;
 using Cli;
 using Content;
 using Infrastructure;
-using Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Navigation;
 
@@ -28,7 +27,7 @@ internal sealed class DiagBooksCommand : IDiagCommand
 
         var command = new Command(Name, Description);
         command.Options.Add(localeOption);
-        command.SetAction(async (parseResult, _) =>
+        command.SetAction(async (parseResult, ct) =>
         {
             var penn = services.GetRequiredService<PenningtonOptions>();
             var localization = penn.Localization;
@@ -41,8 +40,8 @@ internal sealed class DiagBooksCommand : IDiagCommand
 
             var books = bookOptions.ResolveBooks(penn);
             var siteTitle = string.IsNullOrWhiteSpace(penn.SiteTitle) ? "(untitled)" : penn.SiteTitle;
-            await output.WriteLineAsync($"{siteTitle}  ({books.Count} book{(books.Count == 1 ? "" : "s")})");
-            await output.WriteLineAsync();
+            await output.WriteLineWithCancellationAsync($"{siteTitle}  ({books.Count} book{(books.Count == 1 ? "" : "s")})", ct: ct);
+            await output.WriteLineWithCancellationAsync(ct: ct);
 
             foreach (var book in books)
             {
@@ -50,17 +49,16 @@ internal sealed class DiagBooksCommand : IDiagCommand
                 var tree = await navigationBuilder.BuildTreeAsync(scoped, currentPath: null, locale: effectiveLocale);
                 var pdfPath = BookRoutes.PdfPath(book.EffectiveSlug, effectiveLocale, localization.DefaultLocale);
 
-                await output.WriteLineAsync(book.Title);
-                await output.WriteLineAsync($"  slug:   {book.EffectiveSlug}");
-                await output.WriteLineAsync($"  prefix: {book.NormalizedRoutePrefix}");
-                await output.WriteLineAsync($"  output: {pdfPath}");
-                await output.WriteLineAsync($"  pages:  {CountPages(tree)}");
+                await output.WriteLineWithCancellationAsync(book.Title, ct: ct);
+                await output.WriteLineWithCancellationAsync($"  slug:   {book.EffectiveSlug}", ct: ct);
+                await output.WriteLineWithCancellationAsync($"  prefix: {book.NormalizedRoutePrefix}", ct: ct);
+                await output.WriteLineWithCancellationAsync($"  output: {pdfPath}", ct: ct);
+                await output.WriteLineWithCancellationAsync($"  pages:  {CountPages(tree)}", ct: ct);
 
                 // Mirror the composer's unwrap so the printed tree matches the book's chapters.
                 // A routeless wrapper has no page and never reaches the composed book.
                 var (intro, chapters) = BookScoping.UnwrapBookRoot(tree, book);
-                ImmutableList<NavigationTreeItem> display =
-                    intro is null || string.IsNullOrEmpty(intro.Route.CanonicalPath.Value)
+                var display = intro is null || string.IsNullOrEmpty(intro.Route.CanonicalPath.Value)
                         ? chapters
                         : [intro, .. chapters];
                 if (display.Count > 0)
@@ -68,7 +66,7 @@ internal sealed class DiagBooksCommand : IDiagCommand
                     AsciiTreeWriter.Write(output, display, Label, node => node.Children);
                 }
 
-                await output.WriteLineAsync();
+                await output.WriteLineWithCancellationAsync(ct);
             }
 
             return 0;
@@ -101,5 +99,33 @@ internal sealed class DiagBooksCommand : IDiagCommand
                 Walk(node.Children);
             }
         }
+    }
+}
+
+/// <summary>
+/// TextWriter extensions for .NET 11.
+/// </summary>
+/// <remarks>
+/// .NET 11 wants the cancellation token to be passed in as a separate parameter, but .NET 10
+///  doesn't have the overload. Quick helper until we can drop .NET 11.
+/// </remarks>
+static class TextWriterExtensions
+{
+    public static async Task WriteLineWithCancellationAsync(this TextWriter writer, string value, CancellationToken ct = default)
+    {
+#if NET11_0_OR_GREATER
+        await writer.WriteLineAsync(value, ct);
+#else
+        await writer.WriteLineAsync(value.AsMemory(), ct);
+#endif
+    }
+
+    public static async Task WriteLineWithCancellationAsync(this TextWriter writer, CancellationToken ct = default)
+    {
+#if NET11_0_OR_GREATER
+        await writer.WriteLineAsync(ct);
+#else
+        await writer.WriteLineAsync();
+#endif
     }
 }
