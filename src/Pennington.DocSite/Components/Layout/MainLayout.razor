@@ -58,8 +58,7 @@
                             var isActive = _activeArea != null
                                 && string.Equals(area.Slug, _activeArea.Slug, StringComparison.OrdinalIgnoreCase);
                             <div data-area-toc="@area.Slug" class="@(isActive ? null : "hidden")">
-                                <TableOfContentsNavigation TableOfContents="_areaTocs.GetValueOrDefault(area.Slug)"
-                                    ListGapClass="gap-1" />
+                                <TableOfContentsNavigation TableOfContents="_areaTocs.GetValueOrDefault(area.Slug)" />
                                 @if (DownloadsForArea(area) is { Count: > 0 } areaDownloads)
                                 {
                                     @DownloadLinks(areaDownloads)
@@ -69,8 +68,7 @@
                     }
                     else
                     {
-                        <TableOfContentsNavigation TableOfContents="_toc"
-                            ListGapClass="gap-0" />
+                        <TableOfContentsNavigation TableOfContents="_toc" />
                         @if (_downloads.Count > 0)
                         {
                             @DownloadLinks(_downloads)
@@ -113,7 +111,6 @@
 @code{
     // TOC styling lives in DocSiteStyleSkin (slot-keyed, consumer-overridable via
     // DocSiteOptions.Styles); TableOfContentsNavigation pulls it from the StyleRegistry.
-    // Only the per-instance list gap is still passed as a parameter above.
     private ImmutableList<NavigationTreeItem>? _toc;
     private Dictionary<string, ImmutableList<NavigationTreeItem>> _areaTocs = new();
     private Dictionary<string, string> _areaHrefs = new();
@@ -132,7 +129,7 @@
         @<div class="mt-4 pt-4 border-t border-base-200 dark:border-base-800">
             @foreach (var link in links)
             {
-                <a href="/@link.Url" class="@Styles[StyleKeys.TocLinkStructure] @Styles[StyleKeys.TocLinkColor]">
+                <a href="/@link.Url" class="@Styles[StyleKeys.TocLink]">
                     @_downloadIcon
                     <span>@link.Label</span>
                 </a>

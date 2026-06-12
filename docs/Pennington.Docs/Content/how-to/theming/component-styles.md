@@ -15,7 +15,7 @@ To restyle a piece of template chrome — the sidebar's link color, the outline 
 
 ## Override a slot
 
-Add entries to `Styles` keyed by `StyleKeys` constants (raw strings like `"toc.link-color"` work too):
+Add entries to `Styles` keyed by `StyleKeys` constants (raw strings like `"toc.link"` work too):
 
 ```csharp
 using Pennington.UI.Styling;
@@ -26,12 +26,12 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     SiteDescription = "Documentation",
     Styles = new()
     {
-        [StyleKeys.TocLinkColor] = "text-emerald-600 dark:text-emerald-400",
+        [StyleKeys.TocLink] = "text-emerald-600 dark:text-emerald-400",
     },
 });
 ```
 
-The default `toc.link-color` slot carries transition, hover, and `data-[current=true]` classes alongside its text color. The override above replaces only the conflicting color utilities; the rest render unchanged. An unknown key throws at startup with the full list of valid keys, so typos surface immediately.
+The default `toc.link` slot carries layout, transition, hover, and `data-[current=true]` classes alongside its text color. The override above replaces only the conflicting color utilities; the rest render unchanged. An unknown key throws at startup with the full list of valid keys, so typos surface immediately.
 
 ## Inspect the result
 
@@ -42,26 +42,31 @@ dotnet run -- diag styles
 ```
 
 ```text
-toc.link-color  override  transition-colors duration-150 ... text-emerald-600 dark:text-emerald-400
-                base:     transition-colors duration-150 text-base-500 dark:text-base-400 ...
-                override: text-emerald-600 dark:text-emerald-400
+toc.link  override  flex items-center gap-1.5 px-2.5 py-1.5 ... text-emerald-600 dark:text-emerald-400
+          base:     flex items-center gap-1.5 px-2.5 py-1.5 ... text-base-500 dark:text-base-400 ...
+          override: text-emerald-600 dark:text-emerald-400
 ```
 
 ## Slot reference
 
-TOC slots style the DocSite sidebar's `TableOfContentsNavigation`; outline slots style the `OutlineNavigation` rail. Each element splits into a structure slot (layout, spacing, typography) and a color slot (palette and state), so a recolor never has to restate the layout.
+TOC slots style the DocSite sidebar's `TableOfContentsNavigation`; outline slots style the `OutlineNavigation` rail. Each slot covers one rendered element — layout, color, and state variants together — so any single utility can be replaced without restating the rest.
 
 | Key | Styles |
 | --- | ------ |
-| `toc.list-gap` | Gap on the outer list (fixed per-instance in the stock DocSite layout — override has no effect there) |
-| `toc.child-list` | The nested list holding a section's entries |
-| `toc.section-header-structure` / `toc.section-header-color` | Section headers |
-| `toc.link-structure` / `toc.link-color` | Child-level links |
-| `toc.root-link-structure` / `toc.root-link-color` | Top-level links without children |
-| `outline.title-structure` / `outline.title-color` | The "On this page" eyebrow |
-| `outline.container-structure` / `outline.container-color` | The outline's outer container |
-| `outline.list-structure` / `outline.list-color` | The outline list |
-| `outline.link-structure` / `outline.link-color` | Each generated outline link |
+| `toc.list` | The outer list — layout and the gap between top-level entries |
+| `toc.section` | Each top-level list item (empty by default — a hook for per-section margins) |
+| `toc.section-title` | A section's label — the plain heading, or the link when a top-level entry has children |
+| `toc.section-list` | The nested list holding a section's entries |
+| `toc.link` | Child-level links, including the `data-[current=true]` state |
+| `toc.top-link` | Top-level links without children, including the `data-[current=true]` state |
+| `outline.title` | The "On this page" eyebrow |
+| `outline.container` | The outline's outer container |
+| `outline.marker` | The moving highlight bar that tracks the active heading |
+| `outline.list` | The outline list |
+| `outline.link` | Each generated outline link, including the `data-[selected=true]` state |
+| `outline.nested-link` | Extra classes appended to nested (H3-level) outline links |
+
+A few classes never appear in any slot because the outline script depends on them: `relative` on the container, and `absolute` plus the `opacity-0`/`opacity-100` toggle on the marker. Overrides can't break the highlight behavior.
 
 ## Merge rules worth knowing
 
@@ -70,4 +75,4 @@ TOC slots style the DocSite sidebar's `TableOfContentsNavigation`; outline slots
 - **Write values as string literals.** The stylesheet generator discovers classes by scanning compiled string literals; a class name assembled at runtime never makes it into `/styles.css`. Concatenating literals with `+` is fine — the compiler folds it.
 
 > [!NOTE]
-> Per-component parameters still win. Passing `LinkColorClass` directly to `TableOfContentsNavigation` in a custom layout uses that value verbatim for that instance — no merge, no registry.
+> Per-component parameters follow the same rule. Passing `LinkClass` directly to `TableOfContentsNavigation` in a custom layout merges that value over the resolved slot for that one instance — `Styles` changes every instance, a parameter changes one.

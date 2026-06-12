@@ -21,20 +21,18 @@ Renders an ordered `<nav><ul>` of `NavigationTreeItem` entries, recursing one le
 
 ### Parameters
 
-Every `*Class` parameter defaults to `null` and resolves through the style-registry slot listed in its Default column; an explicitly passed value is used verbatim for that instance. Run `dotnet run -- diag styles` for effective slot values, and see <xref:how-to.theming.component-styles> for overriding slots app-wide.
+Every `*Class` parameter defaults to `null` and resolves through the style-registry slot listed in its Default column; an explicitly passed value is Tailwind-merged over the slot for that instance. Run `dotnet run -- diag styles` for effective slot values, and see <xref:how-to.theming.component-styles> for overriding slots app-wide.
 
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `TableOfContents` | `ImmutableList<NavigationTreeItem>?` | `null` | Navigation tree to render; when `null` the component renders nothing. |
 | `SectionLabel` | `string?` | `null` | Optional label forwarded from the caller's `NavigationInfo.SectionName`; not rendered by the default template. |
-| `ListGapClass` | `string?` | `toc.list-gap` slot | CSS classes applied to the outer `<ul>` that holds the top-level navigation entries. |
-| `ChildListClass` | `string?` | `toc.child-list` slot | CSS classes applied to the nested `<ul>` that holds a section's child entries. |
-| `SectionHeaderStructureClass` | `string?` | `toc.section-header-structure` slot | Layout and typography classes applied to the section-header element. |
-| `SectionHeaderColorClass` | `string?` | `toc.section-header-color` slot | CSS classes applied to section-header text — both the plain `<div>` for empty-route entries and the `<a>` when a top-level entry has children. |
-| `LinkStructureClass` | `string?` | `toc.link-structure` slot | Layout and typography classes applied to each child-level `<a>` element under a section. |
-| `LinkColorClass` | `string?` | `toc.link-color` slot | CSS classes applied to each child-level `<a>` for color and `data-current=true` state, composed after `LinkStructureClass`. |
-| `RootLinkStructureClass` | `string?` | `toc.root-link-structure` slot | Layout classes applied to a leaf root-level `<a>` when a top-level entry has no children. |
-| `RootLinkColorClass` | `string?` | `toc.root-link-color` slot | CSS classes applied to a leaf root-level `<a>` (a top-level entry with no children), composed after `RootLinkStructureClass`. |
+| `ListClass` | `string?` | `toc.list` slot | The outer `<ul>` that holds the top-level navigation entries. |
+| `SectionClass` | `string?` | `toc.section` slot | Each top-level `<li>`. |
+| `SectionTitleClass` | `string?` | `toc.section-title` slot | A section's label — the plain `<div>` for empty-route entries, or the `<a>` when a top-level entry has children. |
+| `SectionListClass` | `string?` | `toc.section-list` slot | The nested `<ul>` that holds a section's child entries. |
+| `LinkClass` | `string?` | `toc.link` slot | Each child-level `<a>`, including its `data-current=true` state styling. |
+| `TopLinkClass` | `string?` | `toc.top-link` slot | A top-level leaf `<a>` (an entry with no children), including its `data-current=true` state styling. |
 
 ### Binding
 
@@ -58,28 +56,26 @@ Every `*Class` parameter defaults to `null` and resolves through the style-regis
 src/Pennington.UI/Components/Navigation/OutlineNavigation.razor
 ```
 
-Emits a `data-role="page-outline"` container and an empty `<ul>` whose items are populated client-side by scraping headings from the element matched by `ContentSelector`. The component performs no server-side heading extraction; the companion script in `Pennington.UI/wwwroot/` reads `data-content-selector`, `data-outline-link-structure-class`, and `data-outline-link-color-class` to build and highlight the outline in the browser.
+Emits a `data-role="page-outline"` container and an empty `<ul>` whose items are populated client-side by scraping headings from the element matched by `ContentSelector`. The component performs no server-side heading extraction; the companion script in `Pennington.UI/wwwroot/` reads `data-content-selector`, `data-outline-link-class`, and `data-outline-nested-link-class` to build and highlight the outline in the browser.
 
 ### Parameters
 
-`ContentSelector` is `[EditorRequired]`. Every `*Class` parameter defaults to `null` and resolves through the style-registry slot listed in its Default column; an explicitly passed value is used verbatim for that instance. Run `dotnet run -- diag styles` for effective slot values, and see <xref:how-to.theming.component-styles> for overriding slots app-wide.
+`ContentSelector` is `[EditorRequired]`. Every `*Class` parameter defaults to `null` and resolves through the style-registry slot listed in its Default column; an explicitly passed value is Tailwind-merged over the slot for that instance. Run `dotnet run -- diag styles` for effective slot values, and see <xref:how-to.theming.component-styles> for overriding slots app-wide.
 
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `ContentSelector` | `string` | `""` (required) | CSS selector the client-side outline script queries to discover heading elements; must be non-empty for the outline to populate. |
 | `Title` | `string` | `"On this page"` | Eyebrow rendered above the outline list as a `<div>`; pass an empty string to suppress. |
-| `TitleStructureClass` | `string?` | `outline.title-structure` slot | Layout and typography classes applied to the eyebrow above the outline list. |
-| `TitleColorClass` | `string?` | `outline.title-color` slot | CSS classes applied to the eyebrow text. |
-| `ContainerStructureClass` | `string?` | `outline.container-structure` slot | Layout and border classes applied to the outer `data-role="page-outline"` container. |
-| `ContainerColorClass` | `string?` | `outline.container-color` slot | CSS classes applied to the outer container for color treatment, composed after `ContainerStructureClass`. |
-| `ListStructureClass` | `string?` | `outline.list-structure` slot | Layout classes applied to the outline `<ul>`. |
-| `ListColorClass` | `string?` | `outline.list-color` slot | CSS classes applied to the `<ul>` that holds outline links, composed after `ListStructureClass`. |
-| `OutlineLinkColorClass` | `string?` | `outline.link-color` slot | CSS classes emitted on the container as `data-outline-link-color-class` and applied by the client-side script to each generated `<li><a>` for color and `data-selected=true` state. |
-| `OutlineLinkStructureClass` | `string?` | `outline.link-structure` slot | Layout classes emitted on the container as `data-outline-link-structure-class` and applied by the client-side script to each generated `<li><a>`. |
+| `TitleClass` | `string?` | `outline.title` slot | The eyebrow above the outline list. |
+| `ContainerClass` | `string?` | `outline.container` slot | The outer `data-role="page-outline"` container; `relative` stays hardcoded for marker positioning. |
+| `MarkerClass` | `string?` | `outline.marker` slot | The moving highlight bar that tracks the active heading; `absolute` and `opacity-0` stay hardcoded — the script positions the bar and toggles its opacity. |
+| `ListClass` | `string?` | `outline.list` slot | The outline `<ul>`. |
+| `LinkClass` | `string?` | `outline.link` slot | Emitted as `data-outline-link-class` and applied by the client-side script to each generated `<a>`, including its `data-selected=true` state styling. |
+| `NestedLinkClass` | `string?` | `outline.nested-link` slot | Emitted as `data-outline-nested-link-class` and appended by the client-side script to nested (H3-level) outline links. |
 
 ### Binding
 
-The component performs no server-side heading extraction. The outline list is populated at runtime by the companion client script in `Pennington.UI/wwwroot/`, which queries the element matched by `ContentSelector` and reads `data-content-selector`, `data-outline-link-structure-class`, and `data-outline-link-color-class` from the container. `NavigationInfo` is not consulted. No `RenderFragment` slots.
+The component performs no server-side heading extraction. The outline list is populated at runtime by the companion client script in `Pennington.UI/wwwroot/`, which queries the element matched by `ContentSelector` and reads `data-content-selector`, `data-outline-link-class`, and `data-outline-nested-link-class` from the container. `NavigationInfo` is not consulted. No `RenderFragment` slots.
 
 ### Example
 

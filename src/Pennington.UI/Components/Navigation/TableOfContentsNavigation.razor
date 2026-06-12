@@ -2,7 +2,7 @@
 @if (TableOfContents != null)
 {
     <nav>
-        <ul class="flex flex-col @_listGap">
+        <ul class="@_list">
             @foreach (var tableOfContentEntry in TableOfContents.OrderBy(i => i.Order))
             {
                 @TocEntry(tableOfContentEntry)
@@ -18,77 +18,70 @@
     /// <summary>Optional label forwarded from the caller's <c>NavigationInfo.SectionName</c>; not rendered by the default template.</summary>
     [Parameter] public string? SectionLabel { get; set; }
 
-    /// <summary>CSS classes applied to the outer <c>&lt;ul&gt;</c> that holds the top-level navigation entries. When null, falls back to the <c>toc.list-gap</c> style-registry slot; an explicit value is used verbatim.</summary>
-    [Parameter] public string? ListGapClass { get; set; }
+    /// <summary>Classes Tailwind-merged over the <c>toc.list</c> slot on the outer <c>&lt;ul&gt;</c> that holds the top-level navigation entries.</summary>
+    [Parameter] public string? ListClass { get; set; }
 
-    /// <summary>CSS classes applied to the nested <c>&lt;ul&gt;</c> that holds a section's child entries. When null, falls back to the <c>toc.child-list</c> style-registry slot; an explicit value is used verbatim.</summary>
-    [Parameter] public string? ChildListClass { get; set; }
+    /// <summary>Classes Tailwind-merged over the <c>toc.section</c> slot on each top-level <c>&lt;li&gt;</c>.</summary>
+    [Parameter] public string? SectionClass { get; set; }
 
-    /// <summary>Layout and typography classes applied to the section-header element. When null, falls back to the <c>toc.section-header-structure</c> style-registry slot; an explicit value is used verbatim.</summary>
-    [Parameter] public string? SectionHeaderStructureClass { get; set; }
+    /// <summary>Classes Tailwind-merged over the <c>toc.section-title</c> slot on a section's label — the plain <c>&lt;div&gt;</c> for empty-route entries, or the <c>&lt;a&gt;</c> when a top-level entry has children.</summary>
+    [Parameter] public string? SectionTitleClass { get; set; }
 
-    /// <summary>CSS classes applied to section-header text — both the plain <c>&lt;div&gt;</c> for empty-route entries and the <c>&lt;a&gt;</c> when a top-level entry has children. When null, falls back to the <c>toc.section-header-color</c> style-registry slot; an explicit value is used verbatim.</summary>
-    [Parameter] public string? SectionHeaderColorClass { get; set; }
+    /// <summary>Classes Tailwind-merged over the <c>toc.section-list</c> slot on the nested <c>&lt;ul&gt;</c> that holds a section's child entries.</summary>
+    [Parameter] public string? SectionListClass { get; set; }
 
-    /// <summary>Layout and typography classes applied to each child-level <c>&lt;a&gt;</c> element under a section. When null, falls back to the <c>toc.link-structure</c> style-registry slot; an explicit value is used verbatim.</summary>
-    [Parameter] public string? LinkStructureClass { get; set; }
+    /// <summary>Classes Tailwind-merged over the <c>toc.link</c> slot on each child-level <c>&lt;a&gt;</c>; the slot also carries the <c>data-current=true</c> state styling.</summary>
+    [Parameter] public string? LinkClass { get; set; }
 
-    /// <summary>CSS classes applied to each child-level <c>&lt;a&gt;</c> for color and <c>data-current=true</c> state, composed after <see cref="LinkStructureClass"/>. When null, falls back to the <c>toc.link-color</c> style-registry slot; an explicit value is used verbatim.</summary>
-    [Parameter] public string? LinkColorClass { get; set; }
-
-    /// <summary>Layout classes applied to a leaf root-level <c>&lt;a&gt;</c> when a top-level entry has no children. When null, falls back to the <c>toc.root-link-structure</c> style-registry slot; an explicit value is used verbatim.</summary>
-    [Parameter] public string? RootLinkStructureClass { get; set; }
-
-    /// <summary>CSS classes applied to a leaf root-level <c>&lt;a&gt;</c> (a top-level entry with no children), composed after <see cref="RootLinkStructureClass"/>. When null, falls back to the <c>toc.root-link-color</c> style-registry slot; an explicit value is used verbatim.</summary>
-    [Parameter] public string? RootLinkColorClass { get; set; }
+    /// <summary>Classes Tailwind-merged over the <c>toc.top-link</c> slot on a top-level leaf <c>&lt;a&gt;</c> (an entry with no children); the slot also carries the <c>data-current=true</c> state styling.</summary>
+    [Parameter] public string? TopLinkClass { get; set; }
 
     // Optional resolve: bare hosts that never call AddPenningtonStyles still render with the
     // built-in defaults. Blazor's [Inject] has no optional mode, hence GetService.
     private StyleRegistry? _styles;
 
-    private string _listGap = "";
-    private string _childList = "";
-    private string _sectionHeaderStructure = "";
-    private string _sectionHeaderColor = "";
-    private string _linkStructure = "";
-    private string _linkColor = "";
-    private string _rootLinkStructure = "";
-    private string _rootLinkColor = "";
+    private string _list = "";
+    private string _section = "";
+    private string _sectionTitle = "";
+    private string _sectionList = "";
+    private string _link = "";
+    private string _topLink = "";
 
     protected override void OnInitialized() => _styles = Services.GetService<StyleRegistry>();
 
     protected override void OnParametersSet()
     {
-        _listGap = Resolve(ListGapClass, StyleKeys.TocListGap);
-        _childList = Resolve(ChildListClass, StyleKeys.TocChildList);
-        _sectionHeaderStructure = Resolve(SectionHeaderStructureClass, StyleKeys.TocSectionHeaderStructure);
-        _sectionHeaderColor = Resolve(SectionHeaderColorClass, StyleKeys.TocSectionHeaderColor);
-        _linkStructure = Resolve(LinkStructureClass, StyleKeys.TocLinkStructure);
-        _linkColor = Resolve(LinkColorClass, StyleKeys.TocLinkColor);
-        _rootLinkStructure = Resolve(RootLinkStructureClass, StyleKeys.TocRootLinkStructure);
-        _rootLinkColor = Resolve(RootLinkColorClass, StyleKeys.TocRootLinkColor);
+        _list = Resolve(ListClass, StyleKeys.TocList);
+        _section = Resolve(SectionClass, StyleKeys.TocSection);
+        _sectionTitle = Resolve(SectionTitleClass, StyleKeys.TocSectionTitle);
+        _sectionList = Resolve(SectionListClass, StyleKeys.TocSectionList);
+        _link = Resolve(LinkClass, StyleKeys.TocLink);
+        _topLink = Resolve(TopLinkClass, StyleKeys.TocTopLink);
     }
 
+    // Parameters Tailwind-merge over the resolved slot; without a registry (bare host) the
+    // parameter is appended, accepting that conflicting base utilities are not removed.
     private string Resolve(string? parameter, string key)
-        => parameter ?? _styles?[key] ?? UiStyleDefaults.Get(key);
+        => _styles?.Merge(key, parameter)
+           ?? (string.IsNullOrEmpty(parameter) ? UiStyleDefaults.Get(key) : $"{UiStyleDefaults.Get(key)} {parameter}".Trim());
 
     private RenderFragment TocEntry(NavigationTreeItem tocEntry) =>
-        @<li class="block mt-4 first:mt-0">
+        @<li class="@_section">
             @if (tocEntry.Route.CanonicalPath.Value == "")
             {
-                <div class="@_sectionHeaderStructure @_sectionHeaderColor">@tocEntry.Title</div>
+                <div class="@_sectionTitle">@tocEntry.Title</div>
             }
             else
             {
-                <a data-current="@tocEntry.IsSelected.ToString().ToLowerInvariant()" href="@tocEntry.Route.CanonicalPath.Value" class="@(tocEntry.Children.Count == 0 ? _rootLinkStructure + " " + _rootLinkColor : _sectionHeaderStructure + " " + _sectionHeaderColor)">@tocEntry.Title</a>
+                <a data-current="@tocEntry.IsSelected.ToString().ToLowerInvariant()" href="@tocEntry.Route.CanonicalPath.Value" class="@(tocEntry.Children.Count == 0 ? _topLink : _sectionTitle)">@tocEntry.Title</a>
             }
             @if (tocEntry.Children.Count > 0)
             {
-                <ul class="@_childList">
+                <ul class="@_sectionList">
                     @foreach (var childEntry in tocEntry.Children.OrderBy(i => i.Order).Where(i => i.Route.CanonicalPath.Value != ""))
                     {
-                        <li class="block">
-                            <a data-current="@childEntry.IsSelected.ToString().ToLowerInvariant()" href="@childEntry.Route.CanonicalPath.Value" class="@_linkStructure @_linkColor">@childEntry.Title</a>
+                        <li>
+                            <a data-current="@childEntry.IsSelected.ToString().ToLowerInvariant()" href="@childEntry.Route.CanonicalPath.Value" class="@_link">@childEntry.Title</a>
                         </li>
                     }
                 </ul>

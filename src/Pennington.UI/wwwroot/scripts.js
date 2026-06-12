@@ -258,8 +258,8 @@ class OutlineManager {
         if (!ul) return;
 
         // Get CSS classes from data attributes
-        const linkStructureClass = ul.dataset.outlineLinkStructureClass || '';
-        const linkColorClass = ul.dataset.outlineLinkColorClass || '';
+        const linkClass = ul.dataset.outlineLinkClass || '';
+        const nestedLinkClass = ul.dataset.outlineNestedLinkClass || '';
 
         // Clear existing content
         ul.innerHTML = '';
@@ -267,17 +267,16 @@ class OutlineManager {
         // Render each entry
         outlineStructure.forEach(entry => {
             // Create parent link
-            const parentLi = this.createOutlineLink(entry.id, entry.text, '', linkStructureClass, linkColorClass);
+            const parentLi = this.createOutlineLink(entry.id, entry.text, '', linkClass);
             ul.appendChild(parentLi);
 
             // Create children if any
             if (entry.children.length > 0) {
                 const childrenContainer = document.createElement('li');
                 const childrenUl = document.createElement('ul');
-                childrenUl.className = 'pb-1px';
 
                 entry.children.forEach(child => {
-                    const childLi = this.createOutlineLink(child.id, child.text, 'pl-4', linkStructureClass, linkColorClass);
+                    const childLi = this.createOutlineLink(child.id, child.text, nestedLinkClass, linkClass);
                     childrenUl.appendChild(childLi);
                 });
 
@@ -287,12 +286,12 @@ class OutlineManager {
         });
     }
 
-    createOutlineLink(id, text, padding, structureClass, colorClass) {
+    createOutlineLink(id, text, nestedClass, linkClass) {
         const li = document.createElement('li');
-        li.className = `${padding} flex`;
+        li.className = `${nestedClass} flex`.trim();
 
         const a = document.createElement('a');
-        a.className = `${padding} ${structureClass} ${colorClass}`;
+        a.className = `${nestedClass} ${linkClass}`.trim();
         a.href = `#${id}`;
         a.textContent = text;
         a.dataset.selected = 'false';

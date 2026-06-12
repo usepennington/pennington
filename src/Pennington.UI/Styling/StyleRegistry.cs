@@ -37,15 +37,18 @@ public sealed record StyleEntry(
 /// that replaces a default wholesale, and optional consumer overrides that are merged over the
 /// result with Tailwind conflict resolution (conflicting utilities replaced, the rest kept) —
 /// <c>effective = merge(skin ?? default, override)</c>, where <c>merge</c> is the MonorailCSS
-/// class merger supplied by the caller. Keys are case-insensitive.
+/// class merger supplied by the caller. Component <c>*Class</c> parameters add a per-instance
+/// layer on top via <see cref="Merge(string, string?)"/>. Keys are case-insensitive.
 /// </summary>
 public sealed class StyleRegistry
 {
     private readonly FrozenDictionary<string, StyleEntry> _entries;
+    private readonly Func<string, string, string>? _mergeOverride;
 
-    private StyleRegistry(FrozenDictionary<string, StyleEntry> entries)
+    private StyleRegistry(FrozenDictionary<string, StyleEntry> entries, Func<string, string, string>? mergeOverride)
     {
         _entries = entries;
+        _mergeOverride = mergeOverride;
         Entries = [.. entries.Values.OrderBy(e => e.Key, StringComparer.Ordinal)];
     }
 
@@ -60,6 +63,14 @@ public sealed class StyleRegistry
         _entries.TryGetValue(key, out var entry) ? entry.Effective : throw UnknownKey(key);
 
     /// <summary>
+    /// Effective class string for <paramref name="key"/> with <paramref name="classes"/>
+    /// Tailwind-merged over it — the per-instance layer behind component <c>*Class</c>
+    /// parameters. Null or empty <paramref name="classes"/> returns the effective value unchanged.
+    /// </summary>
+    public string Merge(string key, string? classes) =>
+        string.IsNullOrEmpty(classes) ? Get(key) : Merge(Get(key), classes, _mergeOverride);
+
+    /// <summary>
     /// Builds a registry from the component defaults, an optional template skin, and optional
     /// consumer overrides. Skin and override keys must exist in <see cref="StyleKeys"/>; an
     /// unknown key throws an <see cref="InvalidOperationException"/> naming the valid catalog.
@@ -67,9 +78,10 @@ public sealed class StyleRegistry
     /// <param name="templateSkin">Per-slot replacements a site template applies to the component defaults.</param>
     /// <param name="overrides">Per-slot consumer classes Tailwind-merged over the skinned defaults.</param>
     /// <param name="mergeOverride">
-    /// Tailwind-aware merge for overridden slots — <c>(baseClasses, overrideClasses) =&gt; effective</c>,
-    /// typically the MonorailCSS class merger from <c>MonorailCssService.CreateClassMerger</c>. When
-    /// null the override is appended without conflict resolution (the bare-host fallback).
+    /// Tailwind-aware merge for overridden slots and per-instance <see cref="Merge(string, string?)"/>
+    /// calls — <c>(baseClasses, overrideClasses) =&gt; effective</c>, typically the MonorailCSS class
+    /// merger from <c>MonorailCssService.CreateClassMerger</c>. When null the override is appended
+    /// without conflict resolution (the bare-host fallback).
     /// </param>
     public static StyleRegistry Create(
         IReadOnlyDictionary<string, string>? templateSkin = null,
@@ -104,7 +116,7 @@ public sealed class StyleRegistry
             entries[key] = new StyleEntry(key, effective, source, defaultValue, skinValue, overrideValue);
         }
 
-        return new StyleRegistry(entries.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase));
+        return new StyleRegistry(entries.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase), mergeOverride);
     }
 
     // The MonorailCSS merger derives conflicts from what each class compiles to in the owning

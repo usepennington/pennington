@@ -17,7 +17,7 @@ public class StyleRegistryTests
     {
         var registry = StyleRegistry.Create();
 
-        registry[StyleKeys.TocListGap].ShouldBe("gap-4");
+        registry[StyleKeys.TocList].ShouldBe("flex flex-col gap-8");
         registry.Entries.ShouldAllBe(e => e.Source == StyleSource.Default);
     }
 
@@ -25,16 +25,16 @@ public class StyleRegistryTests
     public void Get_ReturnsSkinVerbatim_WhenSkinProvided()
     {
         // A skin replaces the component default wholesale — no merge, so none of the
-        // default's structure (border-l, pl-3.5) survives.
+        // default's layout (border-l, pl-3.5) survives.
         var skin = new Dictionary<string, string>
         {
-            [StyleKeys.TocLinkStructure] = "flex items-center px-2.5 py-1.5 rounded-md",
+            [StyleKeys.TocLink] = "flex items-center px-2.5 py-1.5 rounded-md",
         };
 
         var registry = StyleRegistry.Create(skin);
 
-        registry[StyleKeys.TocLinkStructure].ShouldBe("flex items-center px-2.5 py-1.5 rounded-md");
-        registry.Entries.Single(e => e.Key == StyleKeys.TocLinkStructure)
+        registry[StyleKeys.TocLink].ShouldBe("flex items-center px-2.5 py-1.5 rounded-md");
+        registry.Entries.Single(e => e.Key == StyleKeys.TocLink)
             .Source.ShouldBe(StyleSource.TemplateSkin);
     }
 
@@ -43,21 +43,21 @@ public class StyleRegistryTests
     {
         var skin = new Dictionary<string, string>
         {
-            [StyleKeys.TocLinkColor] = "transition-colors duration-150 text-base-500 hover:bg-base-100",
+            [StyleKeys.TocLink] = "transition-colors duration-150 text-base-500 hover:bg-base-100",
         };
         var overrides = new Dictionary<string, string>
         {
-            [StyleKeys.TocLinkColor] = "text-emerald-600",
+            [StyleKeys.TocLink] = "text-emerald-600",
         };
 
         var registry = StyleRegistry.Create(skin, overrides, Merger);
 
-        var classes = registry[StyleKeys.TocLinkColor].Split(' ');
+        var classes = registry[StyleKeys.TocLink].Split(' ');
         classes.ShouldContain("text-emerald-600");
         classes.ShouldContain("hover:bg-base-100");
         classes.ShouldContain("transition-colors");
         classes.ShouldNotContain("text-base-500");
-        registry.Entries.Single(e => e.Key == StyleKeys.TocLinkColor)
+        registry.Entries.Single(e => e.Key == StyleKeys.TocLink)
             .Source.ShouldBe(StyleSource.ConsumerOverride);
     }
 
@@ -66,26 +66,48 @@ public class StyleRegistryTests
     {
         var overrides = new Dictionary<string, string>
         {
-            [StyleKeys.TocRootLinkColor] = "text-emerald-600",
+            [StyleKeys.TocTopLink] = "text-emerald-600",
         };
 
         var registry = StyleRegistry.Create(overrides: overrides, mergeOverride: Merger);
 
-        var classes = registry[StyleKeys.TocRootLinkColor].Split(' ');
+        var classes = registry[StyleKeys.TocTopLink].Split(' ');
         classes.ShouldContain("text-emerald-600");
         classes.ShouldNotContain("text-base-700");
         classes.ShouldContain("dark:text-base-400");
     }
 
     [Fact]
+    public void Merge_AppliesPerInstanceClassesOverEffectiveValue()
+    {
+        // Component *Class parameters resolve through Merge — a gap tweak replaces the
+        // default gap but keeps the rest of the slot's layout.
+        var registry = StyleRegistry.Create(mergeOverride: Merger);
+
+        var classes = registry.Merge(StyleKeys.TocList, "gap-1").Split(' ');
+        classes.ShouldContain("gap-1");
+        classes.ShouldContain("flex-col");
+        classes.ShouldNotContain("gap-8");
+    }
+
+    [Fact]
+    public void Merge_ReturnsEffectiveValue_WhenClassesNullOrEmpty()
+    {
+        var registry = StyleRegistry.Create(mergeOverride: Merger);
+
+        registry.Merge(StyleKeys.TocList, null).ShouldBe(registry[StyleKeys.TocList]);
+        registry.Merge(StyleKeys.TocList, "").ShouldBe(registry[StyleKeys.TocList]);
+    }
+
+    [Fact]
     public void Create_Throws_OnUnknownOverrideKey_ListingValidKeys()
     {
-        var overrides = new Dictionary<string, string> { ["toc.link-colour"] = "text-emerald-600" };
+        var overrides = new Dictionary<string, string> { ["toc.links"] = "text-emerald-600" };
 
         var ex = Should.Throw<InvalidOperationException>(() => StyleRegistry.Create(overrides: overrides));
 
-        ex.Message.ShouldContain("toc.link-colour");
-        ex.Message.ShouldContain(StyleKeys.TocLinkColor);
+        ex.Message.ShouldContain("toc.links");
+        ex.Message.ShouldContain(StyleKeys.TocLink);
     }
 
     [Fact]
@@ -103,18 +125,18 @@ public class StyleRegistryTests
 
         var ex = Should.Throw<InvalidOperationException>(() => registry["toc.nope"]);
 
-        ex.Message.ShouldContain(StyleKeys.TocListGap);
+        ex.Message.ShouldContain(StyleKeys.TocList);
     }
 
     [Fact]
     public void Keys_AreCaseInsensitive()
     {
-        var overrides = new Dictionary<string, string> { ["TOC.List-Gap"] = "gap-2" };
+        var skin = new Dictionary<string, string> { ["TOC.Section"] = "mt-2" };
 
-        var registry = StyleRegistry.Create(overrides: overrides, mergeOverride: Merger);
+        var registry = StyleRegistry.Create(skin);
 
-        registry["TOC.LIST-GAP"].ShouldBe("gap-2");
-        registry[StyleKeys.TocListGap].ShouldBe("gap-2");
+        registry["TOC.SECTION"].ShouldBe("mt-2");
+        registry[StyleKeys.TocSection].ShouldBe("mt-2");
     }
 
     [Fact]
@@ -122,10 +144,13 @@ public class StyleRegistryTests
     {
         // The MonorailCSS merger derives gap conflicts from compiled output natively, so a gap
         // override replaces the default instead of stacking next to it.
-        var overrides = new Dictionary<string, string> { [StyleKeys.TocListGap] = "gap-2" };
+        var overrides = new Dictionary<string, string> { [StyleKeys.TocList] = "gap-2" };
 
-        StyleRegistry.Create(overrides: overrides, mergeOverride: Merger)[StyleKeys.TocListGap]
-            .ShouldBe("gap-2");
+        var classes = StyleRegistry.Create(overrides: overrides, mergeOverride: Merger)[StyleKeys.TocList]
+            .Split(' ');
+        classes.ShouldContain("gap-2");
+        classes.ShouldContain("flex-col");
+        classes.ShouldNotContain("gap-8");
     }
 
     [Fact]

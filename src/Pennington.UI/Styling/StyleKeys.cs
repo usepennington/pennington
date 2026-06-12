@@ -1,57 +1,46 @@
 namespace Pennington.UI.Styling;
 
 /// <summary>
-/// Catalog of style-slot keys accepted by <see cref="StyleRegistry"/>. Each constant names one
-/// overridable CSS class string on a Pennington.UI component; pass them as dictionary keys in
+/// Catalog of style-slot keys accepted by <see cref="StyleRegistry"/>. One slot per rendered
+/// element — Tailwind-aware merging lets an override change a single utility without restating
+/// the rest, so layout and color share a slot. Pass them as dictionary keys in
 /// <c>DocSiteOptions.Styles</c> / <c>BlogSiteOptions.Styles</c>. Keys are case-insensitive.
 /// </summary>
 public static class StyleKeys
 {
-    /// <summary>Gap classes on the outer <c>&lt;ul&gt;</c> of <c>TableOfContentsNavigation</c>.</summary>
-    public const string TocListGap = "toc.list-gap";
+    /// <summary>The outer <c>&lt;ul&gt;</c> of <c>TableOfContentsNavigation</c> — list layout and the gap between top-level entries.</summary>
+    public const string TocList = "toc.list";
 
-    /// <summary>Classes on the nested <c>&lt;ul&gt;</c> that holds a TOC section's child entries.</summary>
-    public const string TocChildList = "toc.child-list";
+    /// <summary>Each top-level <c>&lt;li&gt;</c> of <c>TableOfContentsNavigation</c>. Empty by default — a hook for per-section margins.</summary>
+    public const string TocSection = "toc.section";
 
-    /// <summary>Layout and typography classes on TOC section-header elements.</summary>
-    public const string TocSectionHeaderStructure = "toc.section-header-structure";
+    /// <summary>A TOC section's label — the plain <c>&lt;div&gt;</c> for empty-route entries, or the <c>&lt;a&gt;</c> when a top-level entry has children.</summary>
+    public const string TocSectionTitle = "toc.section-title";
 
-    /// <summary>Color classes on TOC section-header text.</summary>
-    public const string TocSectionHeaderColor = "toc.section-header-color";
+    /// <summary>The nested <c>&lt;ul&gt;</c> that holds a TOC section's child entries.</summary>
+    public const string TocSectionList = "toc.section-list";
 
-    /// <summary>Layout classes on each child-level TOC <c>&lt;a&gt;</c>.</summary>
-    public const string TocLinkStructure = "toc.link-structure";
+    /// <summary>Each child-level TOC <c>&lt;a&gt;</c>, including its <c>data-[current=true]</c> state styling.</summary>
+    public const string TocLink = "toc.link";
 
-    /// <summary>Color and <c>data-current=true</c> state classes on each child-level TOC <c>&lt;a&gt;</c>.</summary>
-    public const string TocLinkColor = "toc.link-color";
+    /// <summary>A top-level leaf TOC <c>&lt;a&gt;</c> (an entry with no children), including its <c>data-[current=true]</c> state styling.</summary>
+    public const string TocTopLink = "toc.top-link";
 
-    /// <summary>Layout classes on a leaf root-level TOC <c>&lt;a&gt;</c> (a top-level entry with no children).</summary>
-    public const string TocRootLinkStructure = "toc.root-link-structure";
+    /// <summary>The eyebrow above the <c>OutlineNavigation</c> list.</summary>
+    public const string OutlineTitle = "outline.title";
 
-    /// <summary>Color and <c>data-current=true</c> state classes on a leaf root-level TOC <c>&lt;a&gt;</c>.</summary>
-    public const string TocRootLinkColor = "toc.root-link-color";
+    /// <summary>The outline's outer <c>data-role="page-outline"</c> container; <c>relative</c> stays hardcoded for marker positioning.</summary>
+    public const string OutlineContainer = "outline.container";
 
-    /// <summary>Layout and typography classes on the eyebrow above the <c>OutlineNavigation</c> list.</summary>
-    public const string OutlineTitleStructure = "outline.title-structure";
+    /// <summary>The moving highlight bar that tracks the active heading; <c>absolute</c> and <c>opacity-0</c> stay hardcoded — the client script positions it and toggles its opacity.</summary>
+    public const string OutlineMarker = "outline.marker";
 
-    /// <summary>Color classes on the <c>OutlineNavigation</c> eyebrow text.</summary>
-    public const string OutlineTitleColor = "outline.title-color";
+    /// <summary>The outline <c>&lt;ul&gt;</c>.</summary>
+    public const string OutlineList = "outline.list";
 
-    /// <summary>Layout and border classes on the outline's outer <c>data-role="page-outline"</c> container.</summary>
-    public const string OutlineContainerStructure = "outline.container-structure";
+    /// <summary>Each outline <c>&lt;a&gt;</c> the client script generates, including its <c>data-[selected=true]</c> state styling.</summary>
+    public const string OutlineLink = "outline.link";
 
-    /// <summary>Color classes on the outline's outer container, composed after <see cref="OutlineContainerStructure"/>.</summary>
-    public const string OutlineContainerColor = "outline.container-color";
-
-    /// <summary>Layout classes on the outline <c>&lt;ul&gt;</c>.</summary>
-    public const string OutlineListStructure = "outline.list-structure";
-
-    /// <summary>Color classes on the outline <c>&lt;ul&gt;</c>, composed after <see cref="OutlineListStructure"/>.</summary>
-    public const string OutlineListColor = "outline.list-color";
-
-    /// <summary>Layout classes the client-side outline script applies to each generated outline <c>&lt;a&gt;</c>.</summary>
-    public const string OutlineLinkStructure = "outline.link-structure";
-
-    /// <summary>Color and <c>data-selected=true</c> state classes the client-side outline script applies to each generated outline <c>&lt;a&gt;</c>.</summary>
-    public const string OutlineLinkColor = "outline.link-color";
+    /// <summary>Extra classes the client script appends to nested (H3-level) outline links.</summary>
+    public const string OutlineNestedLink = "outline.nested-link";
 }
