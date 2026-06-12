@@ -66,9 +66,6 @@ internal sealed class ApiReferenceContentService : IContentService, ILlmsSubtree
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
         => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
-    public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
-        => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
-
     public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {
         if (_registration.TocTitle is null)

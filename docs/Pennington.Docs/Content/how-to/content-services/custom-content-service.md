@@ -33,7 +33,7 @@ Three non-obvious moves carry this service:
 - **`GetContentTocEntriesAsync` feeds the sidebar and the search index.** Set `Title`, `Route`, `Order` (10/20/30 spacing), `HierarchyParts` (sidebar nesting), and `SectionLabel` (group header). The same items power search ranking.
 - **`GetCrossReferencesAsync` publishes one `CrossReference(uid, title, route)` per record** so authors can deep-link entries with `<xref:uid>`. Pick a stable prefix (`release-1.0.0` here) so the uid does not depend on a URL that may move.
 
-`GetContentToCopyAsync` and `GetContentToCreateAsync` return `ImmutableList.Empty` when HTML served by an endpoint is the only output.
+`GetContentToCopyAsync` returns `ImmutableList.Empty` when HTML served by an endpoint is the only output. Byte artifacts (a `robots.txt`, a JSON sidecar) are not a content-service concern — they belong on `IArtifactContentService` (<xref:how-to.content-services.emit-generated-artifacts>).
 
 ## Register the service
 

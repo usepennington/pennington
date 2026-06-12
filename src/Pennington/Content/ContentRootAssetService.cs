@@ -86,6 +86,15 @@ public sealed class ContentRootAssetService : IContentService
                 continue;
             }
 
+            // llms-header.txt is an input to the generated llms.txt front door (read by
+            // LlmsTxtService), not a publishable asset — same class as the .yml sidecars
+            // above. The runtime mount still serves it (harmless), but it must not be
+            // copied into the published output.
+            if (relativePath.Equals("llms-header.txt", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             // Mirror the runtime content-root mount, which serves with ServeUnknownFileTypes = false:
             // only files whose extension maps to a known content type are reachable, so an unmapped
             // extension is a 404 at runtime and must not be copied either.
@@ -99,10 +108,6 @@ public sealed class ContentRootAssetService : IContentService
 
         return Task.FromResult(builder.ToImmutable());
     }
-
-    /// <inheritdoc/>
-    public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync() =>
-        Task.FromResult(ImmutableList<ContentToCreate>.Empty);
 
     /// <inheritdoc/>
     public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync() =>

@@ -146,6 +146,5 @@ builder.Services.AddPenningtonBook(book =>
 
 var app = builder.Build();
 app.UseDocSite();
-app.UsePenningtonBook();
 
 await app.RunDocSiteAsync(args);

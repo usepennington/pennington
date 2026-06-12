@@ -103,10 +103,6 @@ public sealed partial class RazorPageContentService : IContentService
         => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
     /// <inheritdoc/>
-    public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
-        => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
-
-    /// <inheritdoc/>
     public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {
         var builder = ImmutableList.CreateBuilder<ContentTocItem>();

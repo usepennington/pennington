@@ -2,21 +2,22 @@ namespace ExtensibilityLabExample;
 
 using System.Collections.Immutable;
 using System.Text;
-using Pennington.Content;
+using Pennington.Artifacts;
 using Pennington.Pipeline;
 using Pennington.Routing;
 
 /// <summary>
-/// Demonstrates the "emit artifacts only" <see cref="IContentService"/> shape —
-/// every discovery member returns empty, and <see cref="GetContentToCreateAsync"/>
-/// writes a single <c>robots.txt</c> to the output root. Useful for services
-/// whose job is to produce a byte artifact (robots, search-index sidecars,
-/// social-image generators) rather than contribute routed pages.
+/// Demonstrates the artifact tier — <see cref="IArtifactContentService"/> for byte outputs
+/// (robots, search-index sidecars, social-image generators) that are not routed pages, not in
+/// navigation, and not xref targets. <see cref="Claims"/> declares the URL territory,
+/// <see cref="ResolveAsync"/> produces the bytes (served live in dev by the artifact router),
+/// and <see cref="DiscoverAsync"/> enumerates the routes the static build writes — one byte
+/// path for both surfaces.
 /// <para>
 /// Backs how-to <c>/how-to/extensibility/emit-generated-artifacts</c>.
 /// </para>
 /// </summary>
-public sealed class RobotsTxtContentService : IContentService
+public sealed class RobotsTxtContentService : IArtifactContentService
 {
     private const string Body = """
         User-agent: *
@@ -24,42 +25,29 @@ public sealed class RobotsTxtContentService : IContentService
         Sitemap: /sitemap.xml
         """;
 
-    /// <inheritdoc/>
-    public string DefaultSectionLabel => "";
+    /// <summary>The one URL this service owns.</summary>
+    public ImmutableList<ArtifactClaim> Claims { get; } =
+        [new ArtifactClaim("robots", new ExactClaim(new UrlPath("/robots.txt")), "robots.txt")];
 
-    /// <inheritdoc/>
-    public int SearchPriority => 0;
+    /// <summary>
+    /// Produces the robots.txt bytes — for a live dev request and for the static build alike.
+    /// Returning null declines the request so it falls through to content routing.
+    /// </summary>
+    public Task<ArtifactContent?> ResolveAsync(string relativePath, CancellationToken cancellationToken)
+        => Task.FromResult(relativePath.Equals("robots.txt", StringComparison.OrdinalIgnoreCase)
+            ? new ArtifactContent(Encoding.UTF8.GetBytes(Body), "text/plain; charset=utf-8")
+            : null);
 
-    /// <inheritdoc/>
+    /// <summary>Enumerates the single robots.txt route for the static build.</summary>
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
         await Task.CompletedTask;
-        yield break;
+        yield return new DiscoveredItem(
+            new ContentRoute
+            {
+                CanonicalPath = new UrlPath("/robots.txt"),
+                OutputFile = new FilePath("robots.txt"),
+            },
+            new GeneratedSource("text/plain"));
     }
-
-    /// <inheritdoc/>
-    public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
-        => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
-
-    /// <summary>
-    /// Emits a single <c>robots.txt</c> at the site root. The generator runs
-    /// only when output is written, so it can depend on late-stage state.
-    /// </summary>
-    public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
-    {
-        var artifact = new ContentToCreate(
-            new FilePath("robots.txt"),
-            () => Task.FromResult(Encoding.UTF8.GetBytes(Body)),
-            "text/plain");
-
-        return Task.FromResult(ImmutableList.Create(artifact));
-    }
-
-    /// <inheritdoc/>
-    public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
-        => Task.FromResult(ImmutableList<ContentTocItem>.Empty);
-
-    /// <inheritdoc/>
-    public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync()
-        => Task.FromResult(ImmutableList<CrossReference>.Empty);
 }

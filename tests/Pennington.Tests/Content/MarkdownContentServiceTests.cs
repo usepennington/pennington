@@ -545,6 +545,21 @@ public class MarkdownContentServiceTests
     }
 
     [Fact]
+    public async Task GetContentToCopyAsync_ExcludesRootLlmsHeaderInput()
+    {
+        // A source mounted at "/" shares the content root, so its asset copy would
+        // otherwise publish the llms.txt front-door input verbatim at /llms-header.txt.
+        var fs = CreateFs(
+            ("llms-header.txt", "# Site"),
+            ("notes.txt", "real asset"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/"));
+
+        var toCopy = await service.GetContentToCopyAsync();
+
+        toCopy.Select(c => c.OutputPath.Value).ShouldBe(["notes.txt"]);
+    }
+
+    [Fact]
     public async Task EmptyDirectory_ReturnsEmptyResults()
     {
         var fs = new MockFileSystem();

@@ -2,6 +2,7 @@ namespace Pennington.Generation;
 
 using System.Collections.Concurrent;
 using System.IO.Abstractions;
+using Artifacts;
 using Content;
 using Diagnostics;
 using Infrastructure;
@@ -31,7 +32,7 @@ public sealed class OutputGenerationService
     public const string NotFoundGeneratorPath = "/__pennington-404-generator";
 
     private readonly IEnumerable<IContentService> _contentServices;
-    private readonly IEnumerable<IContentEmitter> _contentEmitters;
+    private readonly IEnumerable<IArtifactContentService> _artifactServices;
     private readonly OutputOptions _outputOptions;
     private readonly IWebHostEnvironment _environment;
     private readonly EndpointDataSource _endpointDataSource;
@@ -45,7 +46,7 @@ public sealed class OutputGenerationService
     /// </summary>
     public OutputGenerationService(
         IEnumerable<IContentService> contentServices,
-        IEnumerable<IContentEmitter> contentEmitters,
+        IEnumerable<IArtifactContentService> artifactServices,
         OutputOptions outputOptions,
         IWebHostEnvironment environment,
         EndpointDataSource endpointDataSource,
@@ -55,7 +56,7 @@ public sealed class OutputGenerationService
         ILogger<OutputGenerationService> logger)
     {
         _contentServices = contentServices;
-        _contentEmitters = contentEmitters;
+        _artifactServices = artifactServices;
         _outputOptions = outputOptions;
         _environment = environment;
         _endpointDataSource = endpointDataSource;
@@ -104,6 +105,17 @@ public sealed class OutputGenerationService
             // legitimately host an HTML page from another service).
             if (item.Source is LlmsOnlySource)
             {
+                continue;
+            }
+
+            // GeneratedSource belongs to the artifact tier (IArtifactContentService); a plain
+            // content service yielding one is a tier mix-up — the route has no page to crawl.
+            if (item.Source is GeneratedSource)
+            {
+                reportBuilder.AddWarning(
+                    $"Route '{item.Route.CanonicalPath.Value}' is a GeneratedSource yielded by an IContentService. " +
+                    $"Generated artifacts belong on IArtifactContentService; the route was skipped.",
+                    sourceFile: item.Route.OutputFile.Value);
                 continue;
             }
 
@@ -182,23 +194,24 @@ public sealed class OutputGenerationService
             reportBuilder.AddError("Failed to copy static assets", ex);
         }
 
-        // Phase 5: Create dynamic content files (sitemap.xml, rss, llms.txt, etc.)
-        if (writeToDisk)
-        {
-            try
-            {
-                await CreateContentFilesAsync(outputDir, reportBuilder);
-            }
-            catch (Exception ex)
-            {
-                reportBuilder.AddError("Failed to create dynamic content files", ex);
-            }
-        }
-
-        // Phase 6: Fetch all HTML content pages (in parallel)
+        // Phase 5: Fetch all HTML content pages (in parallel). Runs before artifact
+        // generation so the projection the artifact services fold over replays these
+        // renders from BuildHtmlCache instead of rendering the corpus a second time —
+        // and so a broken page surfaces as a page error here, not as a downstream
+        // artifact failure.
         _logger.LogInformation("Generating pages");
         var contentResults = await FetchPagesAsync(client, contentPages, outputDir, writeToDisk);
         ProcessFetchResults(reportBuilder, contentResults);
+
+        // Phase 6: Write artifact-tier outputs (search shards, llms.txt files, book PDFs)
+        // through each service's resolver — the same byte path the dev router serves.
+        // Before the MapGet pass: artifact generation may still render pages (via the
+        // projection), and /styles.css must be fetched after every HTML render has
+        // registered its classes.
+        if (writeToDisk)
+        {
+            await WriteArtifactsAsync(outputDir, claimedOutputFiles, reportBuilder);
+        }
 
         // Phase 7: Fetch MapGet routes LAST (CSS needs all HTML to have been processed first)
         var mapGetResults = await FetchPagesAsync(client, mapGetPages, outputDir, writeToDisk);
@@ -311,30 +324,47 @@ public sealed class OutputGenerationService
         }
     }
 
-    private async Task CreateContentFilesAsync(string outputDir, BuildReportBuilder reportBuilder)
+    private async Task WriteArtifactsAsync(string outputDir, HashSet<string> claimedOutputFiles, BuildReportBuilder reportBuilder)
     {
-        foreach (var emitter in _contentServices.WithStandaloneEmitters(_contentEmitters))
+        foreach (var service in _artifactServices)
         {
-            var toCreate = await emitter.GetContentToCreateAsync();
-            foreach (var item in toCreate)
+            try
             {
-                try
+                await foreach (var item in service.DiscoverAsync())
                 {
-                    var targetPath = _fileSystem.Path.Combine(outputDir, item.OutputPath.Value);
-                    var dir = _fileSystem.Path.GetDirectoryName(targetPath);
-                    if (dir != null)
+                    var outputFile = item.Route.OutputFile.Value;
+                    if (!claimedOutputFiles.Add(outputFile))
                     {
-                        _fileSystem.Directory.CreateDirectory(dir);
+                        reportBuilder.AddWarning(
+                            $"Artifact route '{item.Route.CanonicalPath.Value}' collides with an already-claimed " +
+                            $"output file '{outputFile}'; the artifact was skipped.",
+                            sourceFile: outputFile);
+                        continue;
                     }
 
-                    var bytes = await item.ContentGenerator();
-                    await _fileSystem.File.WriteAllBytesAsync(targetPath, bytes);
+                    try
+                    {
+                        var content = await service.ResolveAsync(item.Route.CanonicalPath.Value.TrimStart('/'), CancellationToken.None)
+                            ?? throw new InvalidOperationException("The owning service's resolver returned null for its own discovered route.");
+
+                        var targetPath = _fileSystem.Path.Combine(outputDir, outputFile);
+                        var dir = _fileSystem.Path.GetDirectoryName(targetPath);
+                        if (dir != null)
+                        {
+                            _fileSystem.Directory.CreateDirectory(dir);
+                        }
+
+                        await _fileSystem.File.WriteAllBytesAsync(targetPath, content.Bytes);
+                    }
+                    catch (Exception ex)
+                    {
+                        reportBuilder.AddError($"Failed to create artifact: {outputFile}", ex, sourceFile: outputFile);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    reportBuilder.AddError($"Failed to create content file: {item.OutputPath.Value}", ex,
-                        sourceFile: item.OutputPath.Value);
-                }
+            }
+            catch (Exception ex)
+            {
+                reportBuilder.AddError($"Artifact discovery failed for {service.GetType().Name}", ex);
             }
         }
     }

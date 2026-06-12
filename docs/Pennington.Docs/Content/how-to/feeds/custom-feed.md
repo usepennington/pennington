@@ -62,9 +62,9 @@ app.MapGet("/feed.xml", async (PodcastContentService service) =>
 Two reasons this single line carries both dev and build:
 
 - **Dev mode** serves `/feed.xml` straight from the handler.
-- **Static build** fetches every `MapGet` endpoint over HTTP through the live pipeline and writes each body to `output/` — so `output/feed.xml` is baked from the same handler. No `ContentToCreate` registration is needed.
+- **Static build** fetches every `MapGet` endpoint over HTTP through the live pipeline and writes each body to `output/` — so `output/feed.xml` is baked from the same handler. No artifact-service registration is needed.
 
-Reach for `IContentService.GetContentToCreateAsync` instead only when there is no dev-time URL — for example, a `robots.txt` that should not respond live. See <xref:how-to.content-services.emit-generated-artifacts> for that shape.
+Reach for `IArtifactContentService` instead when the URL set is dynamic or derived from the rendered corpus — search shards and llms.txt files ship that way. See <xref:how-to.content-services.emit-generated-artifacts> for that shape.
 
 ## Adapt for podcast feeds (iTunes namespace)
 

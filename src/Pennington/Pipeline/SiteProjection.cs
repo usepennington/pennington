@@ -133,6 +133,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
     /// <inheritdoc/>
     public async IAsyncEnumerable<RenderedPage> GetPagesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        ThrowIfReentrant();
         await _seededLazy;
         await RefreshIfStaleAsync(cancellationToken);
 
@@ -151,6 +152,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
     /// <inheritdoc/>
     public async Task<RenderedPage?> GetPageAsync(UrlPath canonicalPath, CancellationToken cancellationToken = default)
     {
+        ThrowIfReentrant();
         await _seededLazy;
         await RefreshIfStaleAsync(cancellationToken);
 
@@ -230,12 +232,45 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
         }
     }
 
+    /// <summary>
+    /// Fail-fast for the b719d73 deadlock class. The projection's single-flight tasks
+    /// (<see cref="_seededLazy"/>, the refresh gate) cannot be awaited from work they spawned:
+    /// neither from a request the projection itself issued to render a page
+    /// (<see cref="CorpusFetchScope.InsideCorpusFetch"/>, header-propagated), nor from
+    /// in-process work running inside the materialization
+    /// (<see cref="CorpusFetchScope.InsideMaterialization"/>). Both are task-level circular
+    /// waits that would otherwise hang the site forever with zero CPU.
+    /// </summary>
+    private static void ThrowIfReentrant()
+    {
+        if (CorpusFetchScope.InsideCorpusFetch)
+        {
+            throw new InvalidOperationException(
+                "ISiteProjection was consumed during a corpus self-fetch — from a component running while "
+                + "the projection rendered this very page. The projection is blocked waiting on this request, "
+                + "so awaiting it here is a task-cycle deadlock (see commit b719d73). On the request path, "
+                + "resolve page data from ContentRecordRegistry instead; consume the projection only from "
+                + "artifact services or build-time auditors.");
+        }
+
+        if (CorpusFetchScope.InsideMaterialization)
+        {
+            throw new InvalidOperationException(
+                "ISiteProjection was re-entered from inside its own corpus materialization (content-service "
+                + "discovery, parsing, or in-process rendering spawned by the projection). The single-flight "
+                + "materialization task cannot be awaited by work it spawned — that is a self-deadlock. Move "
+                + "the consumer out of the projection's build path.");
+        }
+    }
+
     private async Task<(ImmutableArray<RenderedPage> Pages, FrozenDictionary<string, int> Index)> BuildOrRefreshAsync(
         ImmutableDictionary<string, RenderedPage> reusable,
         IReadOnlySet<string> staleRoutes,
         bool staleAll,
         CancellationToken cancellationToken)
     {
+        using var materializationScope = CorpusFetchScope.EnterMaterialization();
+
         // 1) Build the ParsedItem map so MarkdownOrigin pages carry enriched front-matter
         //    and derived metadata, and so Llms-only items can be rendered in-process.
         //    On a wildcard refresh we replace the map; on a stale-set refresh we only

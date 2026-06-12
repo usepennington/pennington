@@ -12,15 +12,15 @@ using Pipeline;
 using Rendering;
 
 /// <summary>
-/// Single source of truth for every book artifact, shared by the build-time emitter
-/// (<see cref="BookContentEmitter"/>) and the dev-time middleware (<see cref="BookMiddleware"/>) —
-/// the same trio shape as <c>SearchArtifactService</c>.
+/// Single source of truth for every book artifact, behind the artifact-tier façade
+/// <see cref="BookArtifactContentService"/> (which serves dev requests and enumerates the PDFs
+/// for the static build) — the same shape as <c>SearchArtifactService</c>.
 /// <para>
 /// The projection fold (post-pipeline HTML per page) and the static-asset map are computed once,
 /// lazily; each book's composed HTML is cached per (book, locale); PDF bytes are rendered on demand
 /// through the singleton <see cref="ChromiumBrowserProvider"/> and cached until a file change drops the
 /// whole service. <see cref="EnumerateArtifacts"/> is deliberately cheap — pure options × locales, no
-/// projection, no Chromium — so emitter enumeration and link verification never trigger a render.
+/// projection, no Chromium — so build enumeration and link verification never trigger a render.
 /// </para>
 /// </summary>
 public sealed class BookArtifactService : IFileWatchAware

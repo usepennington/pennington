@@ -3,6 +3,7 @@ namespace Pennington.Infrastructure;
 using System.CommandLine;
 using System.IO.Abstractions;
 using System.Reflection;
+using Artifacts;
 using Cli;
 using Cli.Diag;
 using Content;
@@ -427,13 +428,13 @@ public static class PenningtonExtensions
         services.AddHead();
 
         // Standard Site (AT Protocol) verification surface — registered only when configured. The
-        // well-known emitter, head links, and dev middleware all no-op on blank config (fail-safe).
+        // well-known artifact service and head links no-op on blank config (fail-safe).
         if (options.StandardSite is { } standardSite)
         {
             services.AddSingleton(standardSite);
             services.AddSingleton<IDiagCommand, DiagStandardSiteCommand>();
             services.AddTransient<StandardSiteUriResolver>();
-            services.AddTransient<IContentEmitter, WellKnownEmitter>();
+            services.AddTransient<IArtifactContentService, WellKnownArtifactService>();
             services.AddHeadContributor<StandardSiteHeadContributor>();
         }
         // Transient: this processor holds the IHtmlResponseRewriter list, which
@@ -464,6 +465,7 @@ public static class PenningtonExtensions
         services.AddHostedService(sp => sp.GetRequiredService<AuditRunner>());
         services.AddTransient<IBuildAuditor, OverlapAuditor>();
         services.AddTransient<IBuildAuditor, XrefAuditor>();
+        services.AddTransient<IBuildAuditor, ClaimConflictAuditor>();
         services.AddTransient<IRenderedAuditor, LinkAuditor>();
 
         // Diagnostic CLI (`diag <sub>`): each command is discovered by PenningtonCli.BuildDiagGroup
@@ -553,9 +555,10 @@ public static class PenningtonExtensions
         services.AddFileWatched<SearchArtifactService>();
         services.AddFileWatched<SitemapService>();
 
-        // Emit the sharded search artifacts into the static build (mirrors llms.txt);
-        // transient so each resolution captures the current file-watched service.
-        services.AddTransient<IContentEmitter, SearchArtifactEmitter>();
+        // Artifact-tier façade serving /search/**.json in dev and emitting the same shards
+        // into the static build; transient so each resolution captures the current
+        // file-watched service.
+        services.AddTransient<IArtifactContentService, SearchArtifactContentService>();
 
         // Derived-metadata enrichment: enrichers contribute non-authored fields
         // (reading time, …) merged into ParsedItem.Derived. Consumed by LlmsTxtService;
@@ -572,11 +575,10 @@ public static class PenningtonExtensions
             services.AddFileWatched<LlmsTxtService>();
             // Transient so each resolution captures the current file-watched
             // LlmsTxtService — a singleton here would pin the first instance.
-            // Registered as IContentEmitter (not IContentService) to keep it
-            // out of LlmsTxtService's own IEnumerable<IContentService>; the
-            // build crawler picks it up via OutputGenerationService's emitter
-            // pass.
-            services.AddTransient<IContentEmitter, LlmsTxtContentService>();
+            // Registered on the artifact tier (never IContentService) so it stays
+            // out of LlmsTxtService's own IEnumerable<IContentService> and out of
+            // every request-path discovery walk.
+            services.AddTransient<IArtifactContentService, LlmsArtifactContentService>();
         }
 
         // Social-card generation: discover one card route per content page (baked by the build
@@ -833,6 +835,26 @@ public static class PenningtonExtensions
         _ = app.Services.GetRequiredService<LiveReloadServer>();
         app.UseLiveReload();
 
+        // Corpus-fetch tripwire: RenderedHtmlFetcher stamps every projection-issued self-fetch
+        // with this header; entering the scope here (before response processing, so it spans
+        // every processor and the endpoint render) lets ISiteProjection fail fast with a
+        // descriptive exception — instead of the b719d73 task-cycle deadlock — if anything on
+        // this request's render path awaits the projection.
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Headers.ContainsKey(CorpusFetchScope.HeaderName))
+            {
+                using (CorpusFetchScope.EnterCorpusFetch())
+                {
+                    await next(context);
+                }
+
+                return;
+            }
+
+            await next(context);
+        });
+
         // Response processing middleware
         app.UseMiddleware<ResponseProcessingMiddleware>();
 
@@ -842,29 +864,16 @@ public static class PenningtonExtensions
         // and publish share one code path for redirects.
         app.UseMiddleware<PenningtonRedirectMiddleware>();
 
-        // Llms.txt subtree files and per-page sidecars. Runs as middleware so
-        // /reference/api/llms.txt isn't claimed by the API-reference Razor route's
-        // {slug} segment.
-        if (app.Services.GetService<LlmsTxtOptions>() is not null)
-        {
-            app.UseMiddleware<LlmsTxtMiddleware>();
-        }
-
-        // Sharded search artifacts under /search/... served from the same in-memory
-        // service the build emitter writes from. Middleware (not an endpoint) so the
-        // {locale}/{prefix} files aren't claimed by content routes and don't depend
-        // on the crawler, which can't bake parameterized routes.
-        app.UseMiddleware<SearchArtifactMiddleware>();
-
-        // Standard Site well-known verification files served in dev (the build emitter bakes them
-        // into static output). Registered only when Standard Site is configured.
-        if (app.Services.GetService<StandardSiteOptions>() is not null)
-        {
-            app.UseMiddleware<WellKnownMiddleware>();
-        }
+        // Artifact router: serves every registered IArtifactContentService's claimed territory
+        // (llms.txt files, search shards, well-known files, book PDFs) from the same resolver
+        // the static build writes from. One middleware instead of per-feature path sniffing.
+        // Runs before endpoint routing so a claimed path like /reference/api/llms.txt can't be
+        // captured by a content route's {slug} segment, and falls through on a resolver miss so
+        // real content under a claimed prefix keeps working.
+        app.UseMiddleware<ArtifactRouterMiddleware>();
 
         // Sitemap endpoint (auto-discovered and baked by the static build). The
-        // sharded search index is emitted by SearchArtifactEmitter instead.
+        // sharded search index and llms.txt files go through the artifact tier instead.
         // Gated so a host can opt out (e.g. BlogSiteOptions.EnableSitemap = false);
         // when false the crawler also skips /sitemap.xml since MapGetRouteDiscovery
         // walks the live EndpointDataSource.
@@ -872,12 +881,6 @@ public static class PenningtonExtensions
         {
             app.MapGet("/sitemap.xml", async (SitemapService service) =>
                 Results.Content(await service.GetSitemapXmlAsync(), "application/xml"));
-        }
-
-        if (app.Services.GetService<LlmsTxtOptions>() is not null)
-        {
-            app.MapGet("/llms.txt", async (LlmsTxtService service) =>
-                Results.Content(await service.GetLlmsTxtAsync(), "text/plain"));
         }
 
         // On-demand social-card rendering. The catch-all {**slug} route is skipped by the build's

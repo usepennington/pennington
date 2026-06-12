@@ -1,6 +1,7 @@
 namespace Pennington.Cli.Diag;
 
 using System.CommandLine;
+using Artifacts;
 using Content;
 using Microsoft.Extensions.DependencyInjection;
 using Pipeline;
@@ -75,6 +76,24 @@ internal sealed class DiagRoutesCommand : IDiagCommand
             var byKind = rows.GroupBy(r => r.Kind).OrderBy(g => g.Key, StringComparer.Ordinal)
                 .Select(g => $"{g.Count()} {g.Key}");
             output.WriteLine($"{rows.Count} route{(rows.Count == 1 ? "" : "s")} ({string.Join(", ", byKind)})");
+
+            // Artifact territories — claims are options-derived (cheap), so listing them never
+            // triggers artifact discovery or the site projection.
+            var claims = services.GetServices<IArtifactContentService>()
+                .SelectMany(s => s.Claims)
+                .ToList();
+            if (claims.Count > 0)
+            {
+                output.WriteLine();
+                output.WriteLine("Artifact territories (served by the artifact router; lazy URL sets):");
+                var patternWidth = Math.Max(7, claims.Max(c => c.Pattern.Length));
+                var ownerWidth = Math.Max(5, claims.Max(c => c.Owner.Length));
+                foreach (var claim in claims)
+                {
+                    output.WriteLine($"{claim.Pattern.PadRight(patternWidth)}  {claim.Owner.PadRight(ownerWidth)}  {claim.Description}");
+                }
+            }
+
             return 0;
         });
         return command;
@@ -88,6 +107,7 @@ internal sealed class DiagRoutesCommand : IDiagCommand
         RedirectSource => "redirect",
         EndpointSource => "endpoint",
         LlmsOnlySource => "llms-only",
+        GeneratedSource => "generated",
         _ => "unknown",
     };
 

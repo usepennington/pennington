@@ -192,7 +192,6 @@ public class OutputGenerationServiceTests
         public int SearchPriority => 0;
         public IAsyncEnumerable<DiscoveredItem> DiscoverAsync() => System.Linq.AsyncEnumerable.Empty<DiscoveredItem>();
         public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync() => Task.FromResult(assets.ToImmutableList());
-        public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync() => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
         public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync() => Task.FromResult(ImmutableList<ContentTocItem>.Empty);
         public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync() => Task.FromResult(ImmutableList<CrossReference>.Empty);
     }
@@ -212,9 +211,6 @@ public class OutputGenerationServiceTests
 
         public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
             => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
-
-        public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
-            => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
 
         public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
             => Task.FromResult(ImmutableList<ContentTocItem>.Empty);

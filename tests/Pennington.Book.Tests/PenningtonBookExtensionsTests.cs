@@ -1,17 +1,17 @@
 namespace Pennington.Book.Tests;
 
 using Microsoft.Extensions.DependencyInjection;
+using Pennington.Artifacts;
 using Pennington.Book;
 using Pennington.Book.Composition;
 using Pennington.Book.Rendering;
-using Pennington.Content;
 using Pennington.Infrastructure;
 using Pennington.Navigation;
 
 public sealed class PenningtonBookExtensionsTests
 {
     [Fact]
-    public void Registers_options_catalog_browser_artifact_emitter_and_composer()
+    public void Registers_options_catalog_browser_artifact_service_and_composer()
     {
         var services = new ServiceCollection();
 
@@ -22,7 +22,9 @@ public sealed class PenningtonBookExtensionsTests
         services.ShouldContain(d => d.ServiceType == typeof(ChromiumBrowserProvider));
         services.ShouldContain(d => d.ServiceType == typeof(BookArtifactService));
         services.ShouldContain(d => d.ServiceType == typeof(IFileWatchAware));
-        services.ShouldContain(d => d.ServiceType == typeof(IContentEmitter));
+        services.ShouldContain(d =>
+            d.ServiceType == typeof(IArtifactContentService)
+            && d.ImplementationType == typeof(BookArtifactContentService));
         services.ShouldContain(d => d.ServiceType == typeof(BookComposer));
         services.ShouldContain(d => d.ServiceType == typeof(AssetInliner));
     }

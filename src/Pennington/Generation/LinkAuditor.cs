@@ -1,6 +1,7 @@
 namespace Pennington.Generation;
 
 using System.Collections.Immutable;
+using Artifacts;
 using Content;
 using Diagnostics;
 using Infrastructure;
@@ -16,7 +17,7 @@ using Microsoft.AspNetCore.Routing;
 public sealed class LinkAuditor : IRenderedAuditor
 {
     private readonly IEnumerable<IContentService> _contentServices;
-    private readonly IEnumerable<IContentEmitter> _contentEmitters;
+    private readonly IEnumerable<IArtifactContentService> _artifactServices;
     private readonly EndpointDataSource _endpointDataSource;
     private readonly OutputOptions _outputOptions;
     private readonly IWebHostEnvironment _environment;
@@ -24,16 +25,16 @@ public sealed class LinkAuditor : IRenderedAuditor
     /// <summary>Stable identifier surfaced on every diagnostic this auditor emits.</summary>
     public string Code => "content.links";
 
-    /// <summary>Wires the auditor to the content discovery surface, standalone content emitters, the endpoint table, the output options, and the host environment (for wwwroot/RCL assets).</summary>
+    /// <summary>Wires the auditor to the content discovery surface, the artifact tier, the endpoint table, the output options, and the host environment (for wwwroot/RCL assets).</summary>
     public LinkAuditor(
         IEnumerable<IContentService> contentServices,
-        IEnumerable<IContentEmitter> contentEmitters,
+        IEnumerable<IArtifactContentService> artifactServices,
         EndpointDataSource endpointDataSource,
         OutputOptions outputOptions,
         IWebHostEnvironment environment)
     {
         _contentServices = contentServices;
-        _contentEmitters = contentEmitters;
+        _artifactServices = artifactServices;
         _endpointDataSource = endpointDataSource;
         _outputOptions = outputOptions;
         _environment = environment;
@@ -44,10 +45,10 @@ public sealed class LinkAuditor : IRenderedAuditor
     {
         var verifier = await LinkVerificationServiceBuilder.BuildAsync(
             _contentServices,
-            _contentEmitters,
+            _artifactServices,
             _endpointDataSource,
             _outputOptions,
-            includeEmitterOutputs: true,
+            enumerateArtifactRoutes: true,
             _environment.WebRootFileProvider,
             cancellationToken);
         var diagnostics = ImmutableList.CreateBuilder<BuildDiagnostic>();

@@ -2,6 +2,7 @@ namespace Pennington.Infrastructure;
 
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
+using Artifacts;
 using Generation;
 using Routing;
 
@@ -13,6 +14,7 @@ using Routing;
 public sealed partial class LinkVerificationService
 {
     private readonly HashSet<string> _knownPaths;
+    private readonly ImmutableList<ArtifactClaim> _artifactClaims;
     private readonly string _basePrefix;
 
     /// <summary>
@@ -29,12 +31,20 @@ public sealed partial class LinkVerificationService
     /// they get normalized into absolute root-relative URLs (<c>/media/sample.svg</c>)
     /// and added to the known-paths set so that <c>&lt;img src&gt;</c> references to
     /// assets the engine just copied aren't flagged as broken.
+    ///
+    /// <paramref name="artifactClaims"/> are the artifact tier's declared URL territories: a
+    /// link landing inside one is treated as valid without per-path verification, because the
+    /// exact artifact set is lazy and may not be enumerable on the request path. Build-mode
+    /// callers that enumerate exact artifact routes into <paramref name="knownRoutes"/> should
+    /// pass no claims, so typos inside a claimed territory still get flagged.
     /// </summary>
     public LinkVerificationService(
         IEnumerable<ContentRoute> knownRoutes,
         IEnumerable<string>? copiedAssetPaths = null,
-        string baseUrl = "/")
+        string baseUrl = "/",
+        IEnumerable<ArtifactClaim>? artifactClaims = null)
     {
+        _artifactClaims = artifactClaims?.ToImmutableList() ?? ImmutableList<ArtifactClaim>.Empty;
         _knownPaths = new HashSet<string>(
             knownRoutes.Select(r => NormalizePath(r.CanonicalPath.Value)),
             StringComparer.OrdinalIgnoreCase);
@@ -157,6 +167,13 @@ public sealed partial class LinkVerificationService
         var normalizedUrl = NormalizePath(pathOnly);
 
         if (_knownPaths.Contains(normalizedUrl))
+        {
+            return new ValidLink(sourcePage, url);
+        }
+
+        // Links into a declared artifact territory (e.g. /reference/api/llms.txt, /pdf/x.pdf)
+        // can't be verified per-path here — the artifact set is lazy — so the claim vouches.
+        if (_artifactClaims.Count > 0 && _artifactClaims.Any(claim => claim.Matches(pathOnly)))
         {
             return new ValidLink(sourcePage, url);
         }

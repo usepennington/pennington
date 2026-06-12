@@ -60,6 +60,21 @@ public class ContentRootAssetServiceTests
     }
 
     [Fact]
+    public async Task ExcludesLlmsHeaderInput()
+    {
+        // llms-header.txt feeds the generated llms.txt front door; publishing the raw
+        // input alongside the generated file would be a confusing duplicate.
+        var fs = CreateFs(
+            ("llms-header.txt", "# Site"),
+            ("notes.txt", "real asset"));
+        var service = new ContentRootAssetService("/content", fs);
+
+        var outputs = (await service.GetContentToCopyAsync()).Select(c => c.OutputPath.Value).ToList();
+
+        outputs.ShouldBe(["notes.txt"]);
+    }
+
+    [Fact]
     public async Task ExcludesDotPrefixedSegments()
     {
         // The runtime mount (new PhysicalFileProvider) defaults to ExclusionFilters.Sensitive, which
@@ -110,6 +125,5 @@ public class ContentRootAssetServiceTests
         discovered.ShouldBeEmpty();
         (await service.GetContentTocEntriesAsync()).ShouldBeEmpty();
         (await service.GetCrossReferencesAsync()).ShouldBeEmpty();
-        (await service.GetContentToCreateAsync()).ShouldBeEmpty();
     }
 }

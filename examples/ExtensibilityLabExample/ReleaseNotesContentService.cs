@@ -87,15 +87,6 @@ public sealed class ReleaseNotesContentService : IContentService
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
         => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
-    /// <summary>
-    /// No dynamically generated files — each discovered route is served by a
-    /// <c>MapGet</c> endpoint whose HTTP response the crawler writes to disk.
-    /// Override this method when the output format is orthogonal to the site's
-    /// HTML pages (see <c>LlmsTxtContentService</c> for an example).
-    /// </summary>
-    public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
-        => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
-
     /// <summary>TOC entries so the pages show up in navigation and the search index.</summary>
     public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {

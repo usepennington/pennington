@@ -120,10 +120,6 @@ public sealed class TaxonomyContentService<TFrontMatter, TKey> : IContentService
         => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
     /// <inheritdoc/>
-    public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
-        => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
-
-    /// <inheritdoc/>
     public async Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {
         var terms = await _termsLazy;

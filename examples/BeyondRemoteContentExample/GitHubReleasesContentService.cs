@@ -64,10 +64,6 @@ public sealed class GitHubReleasesContentService : IContentService
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
         => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
-    /// <summary>No generated files — each route's HTML is produced by the endpoint and crawled.</summary>
-    public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
-        => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
-
     /// <summary>TOC entries place the releases in navigation and the search index.</summary>
     public async Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
     {

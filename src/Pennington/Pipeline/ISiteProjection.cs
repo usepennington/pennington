@@ -9,15 +9,18 @@ using Routing;
 /// (search index, llms.txt, build-time link audit) folds over this stream
 /// instead of independently fanning out across the corpus.
 /// <para>
-/// <b>Critical lifecycle invariant:</b> this projection is for build-time and
-/// file-watched-sidecar consumers only. Do <i>not</i> consume it from any
-/// <c>IResponseProcessor</c>, middleware, or other component on the request
-/// path. Materialization triggers parallel HTTP self-fetches that re-enter
-/// the request pipeline; consuming this from a request would deadlock the
-/// same way <c>PageLinkVerifier</c>'s emitter walk did (see commit b719d73).
-/// Request-path link verification stays on
-/// <c>Infrastructure.PageLinkVerifier</c>, which consults
-/// <c>IContentService.DiscoverAllAsync</c> only.
+/// <b>Critical lifecycle invariant (runtime-enforced):</b> this projection is for
+/// build-time and artifact-service consumers only. Materialization triggers parallel
+/// HTTP self-fetches that re-enter the request pipeline, so no component that runs
+/// during a content page's render or response processing may await it — that is the
+/// task-cycle deadlock from commit b719d73. The implementation fails fast instead of
+/// hanging: every projection-issued fetch is stamped via
+/// <c>Infrastructure.CorpusFetchScope</c>, and consuming the projection from such a
+/// request (or from inside its own materialization) throws a descriptive
+/// <see cref="InvalidOperationException"/>. Artifact services may consume it freely —
+/// their claimed URLs are disjoint from the page corpus the projection fetches.
+/// Request-path link verification stays on <c>Infrastructure.PageLinkVerifier</c>,
+/// which consults <c>IContentService.DiscoverAllAsync</c> and artifact claims only.
 /// </para>
 /// </summary>
 public interface ISiteProjection

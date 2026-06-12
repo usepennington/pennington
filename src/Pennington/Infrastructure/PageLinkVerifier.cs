@@ -1,5 +1,6 @@
 namespace Pennington.Infrastructure;
 
+using Artifacts;
 using Content;
 using Generation;
 using Microsoft.AspNetCore.Hosting;
@@ -22,24 +23,25 @@ public sealed class PageLinkVerifier : IFileWatchAware
     /// <summary>Creates the verifier; the underlying <see cref="LinkVerificationService"/> is built lazily on first request.</summary>
     public PageLinkVerifier(
         IEnumerable<IContentService> contentServices,
+        IEnumerable<IArtifactContentService> artifactServices,
         EndpointDataSource endpointDataSource,
         OutputOptions outputOptions,
         IWebHostEnvironment environment)
     {
-        // includeEmitterOutputs: false — this verifier runs inside the response pipeline,
-        // and emitter discovery walks the shared site projection, which kicks off corpus-wide
+        // enumerateArtifactRoutes: false — this verifier runs inside the response pipeline,
+        // and artifact discovery walks the shared site projection, which kicks off corpus-wide
         // HTTP self-fetches. Those self-fetches would re-enter the per-request audit
-        // processor and deadlock on the verifier-build task that's waiting on them. The
-        // ISiteProjection xmldoc codifies the same constraint. Build-mode LinkAuditor
-        // still includes emitter outputs (consumed via the projection out-of-band) in
-        // the full report.
+        // processor and deadlock on the verifier-build task that's waiting on them — the
+        // exact b719d73 cycle ISiteProjection now fails fast on. Only the cheap artifact
+        // claims are folded here (a link into a claimed territory is trusted); build-mode
+        // LinkAuditor enumerates the exact artifact routes out-of-band instead.
         _verifierLazy = new AsyncLazy<LinkVerificationService>(
             () => LinkVerificationServiceBuilder.BuildAsync(
                 contentServices,
-                contentEmitters: [],
+                artifactServices,
                 endpointDataSource,
                 outputOptions,
-                includeEmitterOutputs: false,
+                enumerateArtifactRoutes: false,
                 environment.WebRootFileProvider));
     }
 

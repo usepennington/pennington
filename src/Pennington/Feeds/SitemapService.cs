@@ -93,7 +93,8 @@ public sealed class SitemapService : IFileWatchAware
 
             // RedirectSource items are explicit redirects — no canonical value.
             // LlmsOnlySource items have no HTML page at all — they only exist as
-            // llms.txt sidecars and shouldn't be advertised to crawlers. Skip both.
+            // llms.txt sidecars and shouldn't be advertised to crawlers.
+            // GeneratedSource items are artifact bytes, not pages. Skip all three.
             //
             // EndpointSource is deliberately NOT skipped: those routes — custom
             // IContentService pages, AddTaxonomy term pages — serve real canonical
@@ -101,7 +102,7 @@ public sealed class SitemapService : IFileWatchAware
             // that happen to use EndpointSource (JSON feeds, data routes) emit a
             // non-HTML output file and are already dropped by the extension check
             // above, so they never reach this line.
-            if (discovered.Source.Value is RedirectSource or LlmsOnlySource)
+            if (discovered.Source.Value is RedirectSource or LlmsOnlySource or GeneratedSource)
             {
                 continue;
             }

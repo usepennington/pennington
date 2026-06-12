@@ -1,22 +1,21 @@
 ---
 title: "Emit generated output artifacts"
-description: "Implement an IContentService whose only job is to write a byte artifact to the output — robots.txt, search-index sidecars, social images — with no pages, TOC entries, or xrefs."
+description: "Implement an IArtifactContentService that owns a URL territory and produces byte artifacts — robots.txt, JSON sidecars, generated images — served live in dev and written into the static build."
 uid: how-to.content-services.emit-generated-artifacts
 order: 4
 sectionLabel: "Content Services"
-tags: [extensibility, content-service, artifacts]
+tags: [extensibility, artifacts]
 ---
 
-To emit a byte artifact into the output — `robots.txt`, a sitemap variant, a social-image `.png`, a sidecar `.json` search index — that is not a routed page, not in navigation, and not an xref target, implement `IContentService` with `GetContentToCreateAsync` as the only meaningful member. Every other interface member returns empty. Artifacts emit during the static build only; the dev server returns 404 for them unless a sibling `MapGet` serves the same bytes at request time:
+To emit a byte artifact — `robots.txt`, a sitemap variant, a social-image `.png`, a sidecar `.json` index — that is not a routed page, not in navigation, and not an xref target, implement `IArtifactContentService`. The interface has three members and one rule: the same resolver produces the bytes for a live dev request and for the static build, so the two surfaces can never drift.
 
-```csharp
-app.MapGet("/robots.txt", () =>
-    Results.Text("User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n", "text/plain"));
-```
+- `Claims` declares the URL territory the service owns (an exact path, a prefix, or a path suffix). Claims derive from options alone — they are consulted on every request and must never trigger expensive work.
+- `ResolveAsync` turns one claimed path into bytes plus a content type, or returns null to decline so the request falls through to content routing.
+- `DiscoverAsync` enumerates the routes the static build writes — each one resolved through `ResolveAsync` and written to its output file.
+
+Pennington's own search shards (`/search/**.json`), llms.txt files, and book PDFs ship through this interface; `RobotsTxtContentService` below is the smallest possible example.
 
 For the opposite case — a service that contributes routed pages, TOC entries, and xrefs from a non-markdown source — see <xref:how-to.content-services.custom-content-service>.
-
-The recipe references `examples/ExtensibilityLabExample/RobotsTxtContentService.cs`. `LlmsTxtContentService` in the core library is the production example of the same pattern.
 
 ## Before you begin
 
@@ -25,29 +24,28 @@ The recipe references `examples/ExtensibilityLabExample/RobotsTxtContentService.
 
 ## Write the service
 
-Implement <xref:reference.api.i-content-service> as a sealed class. Every member returns empty except `GetContentToCreateAsync`, which yields one `ContentToCreate` per artifact.
-
 ```csharp:symbol
 examples/ExtensibilityLabExample/RobotsTxtContentService.cs
 ```
 
-The three fields on `ContentToCreate`:
+The pieces:
 
-- `OutputPath` is a `FilePath` relative to the output root. `new FilePath("robots.txt")` writes to `/robots.txt`; `new FilePath("assets/og/home.png")` writes to `/assets/og/home.png`.
-- `ContentGenerator` is a `Func<Task<byte[]>>` — deferred, not a prebuilt `byte[]`. The generator runs only when output is written, so it can depend on late-stage state (the final search index, the resolved xref map) without blocking discovery. Return `Task.FromResult(bytes)` when the content is ready synchronously.
-- `ContentType` is a MIME string. Common values: `text/plain`, `text/markdown`, `application/json`, `application/xml`, `image/png`.
+- `ArtifactClaim` carries an owner name, a shape, and a description. The shape is a union: `ExactClaim` (one path), `PrefixClaim` (everything under a prefix, optionally narrowed by extension — `/search/` + `.json`), or `SuffixClaim` (a path ending at any depth — this is how `{section}/llms.txt` works, a territory no endpoint route template can express). `diag routes` lists every registered claim.
+- `ResolveAsync` receives the request path without its leading slash (`robots.txt`, `search/en/index.json`). Returning null declines: the request continues into content routing, so a real page under a claimed prefix keeps working.
+- `DiscoverAsync` yields `DiscoveredItem`s with a `GeneratedSource`. Routes that should exist only in dev are resolvable without being enumerated — the book package serves its live `/book-preview/` this way while enumerating only the PDFs.
+- The resolver may do expensive work on demand (build an index, fold over `ISiteProjection`, run a headless browser). The claims must not.
 
 ## Register the service
 
-`AddPennington` does not auto-discover `IContentService` implementations — register directly on `IServiceCollection`. The service is stateless, so transient works.
+Register on the artifact tier — never as `IContentService`, which would put the service in every request-path discovery walk:
 
 ```csharp
-builder.Services.AddTransient<IContentService, RobotsTxtContentService>();
+builder.Services.AddTransient<IArtifactContentService, RobotsTxtContentService>();
 ```
 
 ## Result
 
-The static build writes a single file at the output root:
+The dev server answers `/robots.txt` live, and the static build writes the same bytes to the output root:
 
 ```text
 User-agent: *
@@ -57,8 +55,9 @@ Sitemap: /sitemap.xml
 
 ## Verify
 
+- Fetch `/robots.txt` from the dev server and expect the body above — same bytes both surfaces.
 - Run `dotnet run --project examples/ExtensibilityLabExample -- build output` and confirm `output/robots.txt` exists with the expected body.
-- Fetch `/robots.txt` from the dev server and expect a 404 — the artifact is a build-time output, not a live route.
+- Run `dotnet run -- diag routes` and confirm the claim appears under "Artifact territories".
 
 ## Related
 

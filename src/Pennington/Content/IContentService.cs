@@ -8,7 +8,7 @@ using Routing;
 /// <summary>
 /// Discovers and provides content for the pipeline.
 /// </summary>
-public interface IContentService : IContentEmitter
+public interface IContentService
 {
     /// <summary>
     /// Maps a file-change notification to the set of routes this service projects from
@@ -88,7 +88,7 @@ public interface IContentService : IContentEmitter
     {
         await foreach (var item in DiscoverAsync())
         {
-            if (item.Metadata is null || item.Source.Value is RedirectSource or LlmsOnlySource)
+            if (item.Metadata is null || item.Source.Value is RedirectSource or LlmsOnlySource or GeneratedSource)
             {
                 continue;
             }

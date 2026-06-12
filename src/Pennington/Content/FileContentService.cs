@@ -167,10 +167,6 @@ public sealed class FileContentService<TFrontMatter> : IContentService, IFileWat
     public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync()
         => Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
-    /// <inheritdoc/>
-    public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
-        => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
-
     private ContentTocItem? BuildTocItem(ContentRoute route, TFrontMatter fm)
     {
         if (fm.IsHiddenFromBuild(_clock)

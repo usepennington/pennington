@@ -141,6 +141,56 @@ public class SiteProjectionTests
         dispatcher.CreateClientCalls.ShouldBeGreaterThanOrEqualTo(2);
     }
 
+    [Fact]
+    public async Task GetPagesAsync_InsideCorpusFetch_FailsFastInsteadOfDeadlocking()
+    {
+        // The b719d73 guard: a request the projection itself issued (marked by the
+        // corpus-fetch scope) must never await the projection — that's a task-cycle
+        // deadlock. The projection throws a descriptive exception instead of hanging.
+        var projection = CreateProjection();
+        using var scope = CorpusFetchScope.EnterCorpusFetch();
+
+        var ex = await Should.ThrowAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var _ in projection.GetPagesAsync(TestContext.Current.CancellationToken))
+            {
+            }
+        });
+
+        ex.Message.ShouldContain("b719d73");
+    }
+
+    [Fact]
+    public async Task GetPageAsync_InsideMaterialization_FailsFastInsteadOfDeadlocking()
+    {
+        // Re-entering the projection from work its own materialization spawned would
+        // await a single-flight task that is waiting on the caller.
+        var projection = CreateProjection();
+        using var scope = CorpusFetchScope.EnterMaterialization();
+
+        var ex = await Should.ThrowAsync<InvalidOperationException>(
+            () => projection.GetPageAsync(new UrlPath("/page/"), TestContext.Current.CancellationToken));
+
+        ex.Message.ShouldContain("self-deadlock");
+    }
+
+    [Fact]
+    public async Task GetPagesAsync_AfterScopeDisposed_Succeeds()
+    {
+        var projection = CreateProjection();
+        using (CorpusFetchScope.EnterCorpusFetch())
+        {
+        }
+
+        var pages = new List<RenderedPage>();
+        await foreach (var page in projection.GetPagesAsync(TestContext.Current.CancellationToken))
+        {
+            pages.Add(page);
+        }
+
+        pages.ShouldBeEmpty();
+    }
+
     private static SiteProjection CreateProjection(
         EndpointDataSource? endpointDataSource = null,
         IEnumerable<IContentService>? contentServices = null,
@@ -247,9 +297,6 @@ public class SiteProjectionTests
 
         public Task<System.Collections.Immutable.ImmutableList<CrossReference>> GetCrossReferencesAsync()
             => Task.FromResult(System.Collections.Immutable.ImmutableList<CrossReference>.Empty);
-
-        public Task<System.Collections.Immutable.ImmutableList<ContentToCreate>> GetContentToCreateAsync()
-            => Task.FromResult(System.Collections.Immutable.ImmutableList<ContentToCreate>.Empty);
 
         public string DefaultSectionLabel => "";
         public int SearchPriority => 0;

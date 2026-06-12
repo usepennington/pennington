@@ -1,6 +1,7 @@
 using ExtensibilityLabExample;
 using Markdig;
 using Mdazor;
+using Pennington.Artifacts;
 using Pennington.Content;
 using Pennington.FrontMatter;
 using Pennington.Infrastructure;
@@ -86,8 +87,8 @@ builder.Services.AddTaxonomy<ReleaseEntry, string>(opts =>
     opts.TermPage = typeof(ChannelTerm);
 });
 
-// 2.3.90 Emit-only IContentService — writes robots.txt and nothing else.
-builder.Services.AddTransient<IContentService, RobotsTxtContentService>();
+// 2.3.90 Artifact service — serves /robots.txt live in dev and writes it into the build output.
+builder.Services.AddTransient<IArtifactContentService, RobotsTxtContentService>();
 
 // 2.3.20 Code-block preprocessor — handles "linecount" fences.
 builder.Services.AddSingleton<ICodeBlockPreprocessor, LineCountPreprocessor>();

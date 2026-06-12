@@ -8,9 +8,9 @@ using Pipeline;
 
 /// <summary>
 /// Builds the sharded search artifacts for every configured locale and exposes them as a
-/// single <c>path -&gt; bytes</c> map — the one source of truth shared by the build-time
-/// emitter (<see cref="SearchArtifactEmitter"/>) and the dev-time middleware
-/// (<see cref="SearchArtifactMiddleware"/>).
+/// single <c>path -&gt; bytes</c> map — the one source of truth behind
+/// <see cref="SearchArtifactContentService"/>, which serves them in dev and enumerates
+/// them for the static build.
 /// <para>
 /// Folds over <see cref="ISiteProjection"/> — every page's post-pipeline HTML and
 /// heading-split sections have already been produced once by the shared projection, so

@@ -727,6 +727,14 @@ public sealed class MarkdownContentService<TFrontMatter>
             var outputPath = outputPrefix.Length == 0
                 ? relativePath
                 : $"{outputPrefix}/{relativePath}";
+
+            // A root-level llms-header.txt is the llms.txt front-door input (see
+            // LlmsTxtService.ReadUserHeaderAsync), not a publishable asset.
+            if (outputPath.Equals("llms-header.txt", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             builder.Add(new ContentToCopy(new FilePath(file), new FilePath(outputPath)));
         }
 
@@ -759,10 +767,6 @@ public sealed class MarkdownContentService<TFrontMatter>
 
         return Task.FromResult(builder.ToImmutable());
     }
-
-    /// <inheritdoc/>
-    public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync()
-        => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
 
     /// <summary>
     /// Discovers markdown files. When multi-locale, discovers from the base path

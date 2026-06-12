@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 /// Fetches fully rendered page HTML from the running app and exposes a section
 /// of it (via CSS selector) as an AngleSharp <see cref="IElement"/>.
 /// <para>
-/// Both <c>LlmsTxtService</c> and <c>SearchArtifactService</c> use this to get
+/// <see cref="Pipeline.SiteProjection"/> (its sole consumer) uses this to get
 /// post-pipeline HTML — i.e., after Markdig extensions, Razor SSR, xref
 /// resolution, locale rewriting, and any other middleware have run. The
 /// pre-pipeline <c>IContentRenderer</c> path misses Razor pages entirely and
@@ -18,7 +18,11 @@ using Microsoft.Extensions.Logging;
 /// Requests are dispatched via <see cref="IInProcessHttpDispatcher"/>, which
 /// delivers them in-memory through <c>TestServer</c> (build mode + integration
 /// tests) or over Kestrel's listening socket (dev mode). The middleware pipeline
-/// runs identically in either case.
+/// runs identically in either case. Every fetch carries
+/// <see cref="CorpusFetchScope.HeaderName"/> so the served request can fail fast
+/// (instead of deadlocking) if its render path awaits the projection — a future
+/// consumer of this fetcher outside the projection inherits that header and its
+/// tripwire semantics.
 /// </para>
 /// </summary>
 public sealed class RenderedHtmlFetcher
@@ -42,6 +46,7 @@ public sealed class RenderedHtmlFetcher
     public async Task<IElement?> FetchContentAsync(string path, string? selector, CancellationToken ct = default)
     {
         using var client = _dispatcher.CreateClient();
+        client.DefaultRequestHeaders.TryAddWithoutValidation(CorpusFetchScope.HeaderName, "1");
 
         HttpResponseMessage response;
         try

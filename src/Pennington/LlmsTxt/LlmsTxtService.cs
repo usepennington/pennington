@@ -566,6 +566,13 @@ public sealed class LlmsTxtService : IFileWatchAware
         return canonicalBase.Combine(relative).Value;
     }
 
+    /// <summary>
+    /// Reads the optional author-supplied front-door header from
+    /// <c>{contentRoot}/llms-header.txt</c>. Deliberately NOT named <c>llms.txt</c>: the content
+    /// root is also a static-file root, so an input file at that name would be served verbatim
+    /// at <c>/llms.txt</c> — shadowing the generated front door the artifact router serves.
+    /// The <c>.txt</c> extension keeps it out of markdown discovery (no page route).
+    /// </summary>
     private static async Task<string?> ReadUserHeaderAsync(
         IFileSystem fileSystem,
         IWebHostEnvironment hostingEnvironment,
@@ -573,13 +580,13 @@ public sealed class LlmsTxtService : IFileWatchAware
     {
         var contentRoot = FilePath.ResolveAgainstRoot(pennOptions.ContentRootPath.Value, hostingEnvironment.ContentRootPath);
 
-        var llmsTxtPath = fileSystem.Path.Combine(contentRoot, "llms.txt");
-        if (!fileSystem.File.Exists(llmsTxtPath))
+        var headerPath = fileSystem.Path.Combine(contentRoot, "llms-header.txt");
+        if (!fileSystem.File.Exists(headerPath))
         {
             return null;
         }
 
-        return await fileSystem.File.ReadAllTextAsync(llmsTxtPath);
+        return await fileSystem.File.ReadAllTextAsync(headerPath);
     }
 
     private static string NormalizePath(string canonicalPath)

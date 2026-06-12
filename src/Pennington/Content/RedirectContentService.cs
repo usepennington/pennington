@@ -96,10 +96,6 @@ public sealed class RedirectContentService : IContentService
         Task.FromResult(ImmutableList<ContentToCopy>.Empty);
 
     /// <inheritdoc/>
-    public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync() =>
-        Task.FromResult(ImmutableList<ContentToCreate>.Empty);
-
-    /// <inheritdoc/>
     public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync() =>
         Task.FromResult(ImmutableList<ContentTocItem>.Empty);
 

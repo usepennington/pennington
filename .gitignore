@@ -70,7 +70,10 @@ BenchmarkDotNet.Artifacts/
 # .NET
 project.lock.json
 project.fragment.lock.json
-artifacts/
+# Root-anchored: this is the .NET build-output dir (UseArtifactsOutput).
+# Without the leading slash it also matched the src/Pennington/Artifacts/
+# source dir on case-insensitive filesystems (Windows).
+/artifacts/
 
 # Tye
 .tye/

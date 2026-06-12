@@ -3,16 +3,20 @@ using Pennington.StandardSite;
 
 namespace Pennington.Tests.StandardSite;
 
-/// <summary>Unit tests for <see cref="WellKnownEmitter"/> output and fail-safe behavior.</summary>
-public class WellKnownEmitterTests
+/// <summary>Unit tests for <see cref="WellKnownArtifactService"/> output and fail-safe behavior.</summary>
+public class WellKnownArtifactServiceTests
 {
     private static async Task<Dictionary<string, string>> Emit(StandardSiteOptions options)
     {
-        var files = await new WellKnownEmitter(options).GetContentToCreateAsync();
+        var service = new WellKnownArtifactService(options);
         var result = new Dictionary<string, string>();
-        foreach (var file in files)
+        await foreach (var item in service.DiscoverAsync())
         {
-            result[file.OutputPath.Value] = Encoding.UTF8.GetString(await file.ContentGenerator());
+            var content = await service.ResolveAsync(
+                item.Route.CanonicalPath.Value.TrimStart('/'),
+                TestContext.Current.CancellationToken);
+            content.ShouldNotBeNull();
+            result[item.Route.OutputFile.Value] = Encoding.UTF8.GetString(content.Bytes);
         }
 
         return result;
@@ -67,5 +71,29 @@ public class WellKnownEmitterTests
         var files = await Emit(new StandardSiteOptions { Did = "", PublicationRkey = "" });
 
         files.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void ClaimsNothing_WhenConfigIsBlank()
+    {
+        var service = new WellKnownArtifactService(new StandardSiteOptions { Did = "", PublicationRkey = "" });
+
+        service.Claims.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Resolve_UnknownPath_Declines()
+    {
+        var service = new WellKnownArtifactService(new StandardSiteOptions
+        {
+            Did = "did:plc:abc",
+            PublicationRkey = "pub1",
+            EmitAtprotoDid = true,
+        });
+
+        // Prefix-adjacent but not exact — must decline so the request falls through.
+        var content = await service.ResolveAsync(".well-known/atproto-did-x", TestContext.Current.CancellationToken);
+
+        content.ShouldBeNull();
     }
 }

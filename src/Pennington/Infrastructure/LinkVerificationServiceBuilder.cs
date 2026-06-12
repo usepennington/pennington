@@ -1,5 +1,6 @@
 namespace Pennington.Infrastructure;
 
+using Artifacts;
 using Content;
 using Generation;
 using Microsoft.AspNetCore.Routing;
@@ -11,30 +12,32 @@ using Routing;
 /// Shared builder for <see cref="LinkVerificationService"/> instances. Both the in-pipeline
 /// per-page verifier (<see cref="PageLinkVerifier"/>) and the corpus-wide build auditor
 /// (<see cref="LinkAuditor"/>) collect the same <c>(knownRoutes, copiedAssetPaths, MapGet)</c>
-/// triple from the content surface; only the build auditor additionally folds in emitter
-/// outputs. The <c>includeEmitterOutputs</c> flag on <see cref="BuildAsync"/> selects between
-/// the two modes.
-/// <para>
-/// In-pipeline consumers must pass <c>false</c>: emitters fan out through the shared site
-/// projection, which self-fetches every page, which re-enters the per-request
-/// <see cref="PageLinkAuditProcessor"/> — pulling that work onto a verifier-build task
-/// deadlocks.
-/// </para>
+/// triple from the content surface. Artifact-tier URLs are folded in one of two ways, selected
+/// by <c>enumerateArtifactRoutes</c>:
+/// <list type="bullet">
+/// <item><c>false</c> (request path): only the cheap, options-derived
+/// <see cref="IArtifactContentService.Claims"/> are folded — a link into a claimed territory is
+/// trusted. Artifact discovery fans out through the site projection, which must never run on
+/// the request path (see <see cref="ISiteProjection"/>).</item>
+/// <item><c>true</c> (build mode): exact artifact routes are enumerated into the known set and
+/// no claims are folded, so a typo inside a claimed territory is still flagged.</item>
+/// </list>
 /// </summary>
 public static class LinkVerificationServiceBuilder
 {
     /// <summary>
-    /// Builds a verifier from the content services, endpoint table, and output options. Pass
-    /// <paramref name="includeEmitterOutputs"/>=true only from build-mode callers. Pass
-    /// <paramref name="webRootFileProvider"/> (the host's <c>WebRootFileProvider</c>) so wwwroot/RCL
-    /// assets — copied by the build but owned by no content service — are treated as known assets.
+    /// Builds a verifier from the content services, artifact services, endpoint table, and
+    /// output options. Pass <paramref name="enumerateArtifactRoutes"/>=true only from build-mode
+    /// callers. Pass <paramref name="webRootFileProvider"/> (the host's <c>WebRootFileProvider</c>)
+    /// so wwwroot/RCL assets — copied by the build but owned by no content service — are treated
+    /// as known assets.
     /// </summary>
     public static async Task<LinkVerificationService> BuildAsync(
         IEnumerable<IContentService> contentServices,
-        IEnumerable<IContentEmitter> contentEmitters,
+        IEnumerable<IArtifactContentService> artifactServices,
         EndpointDataSource endpointDataSource,
         OutputOptions outputOptions,
-        bool includeEmitterOutputs,
+        bool enumerateArtifactRoutes,
         IFileProvider? webRootFileProvider = null,
         CancellationToken cancellationToken = default)
     {
@@ -70,22 +73,26 @@ public static class LinkVerificationServiceBuilder
             }
         }
 
-        if (includeEmitterOutputs)
+        IEnumerable<ArtifactClaim>? claims = null;
+        if (enumerateArtifactRoutes)
         {
-            // Mirrors OutputGenerationService.CreateContentFilesAsync so files emitted via
-            // GetContentToCreateAsync (e.g. per-subtree llms.txt files) are treated as known
-            // assets rather than broken links.
-            foreach (var emitter in contentServices.WithStandaloneEmitters(contentEmitters))
+            // Mirrors OutputGenerationService.WriteArtifactsAsync so every artifact route the
+            // build writes (per-subtree llms.txt files, search shards, PDFs) is a known path.
+            foreach (var service in artifactServices)
             {
-                foreach (var emitted in await emitter.GetContentToCreateAsync())
+                await foreach (var item in service.DiscoverAsync().WithCancellation(cancellationToken))
                 {
-                    copiedAssetPaths.Add(emitted.OutputPath.Value);
+                    knownRoutes.Add(item.Route);
                 }
             }
+        }
+        else
+        {
+            claims = artifactServices.SelectMany(service => service.Claims).ToList();
         }
 
         knownRoutes.AddRange(MapGetRouteDiscovery.Discover(endpointDataSource));
 
-        return new LinkVerificationService(knownRoutes, copiedAssetPaths, outputOptions.BaseUrl.Value);
+        return new LinkVerificationService(knownRoutes, copiedAssetPaths, outputOptions.BaseUrl.Value, claims);
     }
 }

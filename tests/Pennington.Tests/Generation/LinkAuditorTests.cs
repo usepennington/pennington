@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
+using Pennington.Artifacts;
 using Pennington.Content;
 using Pennington.Generation;
 using Pennington.Infrastructure;
@@ -115,15 +116,16 @@ public class LinkAuditorTests
     {
         var page = MakeRoute("/page/", "/repo/page.md");
         var service = new FakeService([page], []);
-        var emitter = new FakeEmitter([
-            new ContentToCreate(
-                new FilePath("utility/llms.txt"),
-                () => Task.FromResult(Array.Empty<byte>()),
-                "text/markdown"),
+        var artifactService = new FakeArtifactService([
+            new ContentRoute
+            {
+                CanonicalPath = new UrlPath("/utility/llms.txt"),
+                OutputFile = new FilePath("utility/llms.txt"),
+            },
         ]);
         var auditor = new LinkAuditor(
             [service],
-            [emitter],
+            [artifactService],
             new EmptyEndpointDataSource(),
             new OutputOptions { OutputDirectory = new FilePath("output") },
             StubEnv());
@@ -208,14 +210,25 @@ public class LinkAuditorTests
         }
 
         public Task<ImmutableList<ContentToCopy>> GetContentToCopyAsync() => Task.FromResult(assets.ToImmutableList());
-        public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync() => Task.FromResult(ImmutableList<ContentToCreate>.Empty);
         public Task<ImmutableList<ContentTocItem>> GetContentTocEntriesAsync() => Task.FromResult(ImmutableList<ContentTocItem>.Empty);
         public Task<ImmutableList<CrossReference>> GetCrossReferencesAsync() => Task.FromResult(ImmutableList<CrossReference>.Empty);
     }
 
-    private sealed class FakeEmitter(IReadOnlyList<ContentToCreate> items) : IContentEmitter
+    private sealed class FakeArtifactService(IReadOnlyList<ContentRoute> routes) : IArtifactContentService
     {
-        public Task<ImmutableList<ContentToCreate>> GetContentToCreateAsync() => Task.FromResult(items.ToImmutableList());
+        public ImmutableList<ArtifactClaim> Claims => ImmutableList<ArtifactClaim>.Empty;
+
+        public Task<ArtifactContent?> ResolveAsync(string relativePath, CancellationToken cancellationToken)
+            => Task.FromResult<ArtifactContent?>(null);
+
+        public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
+        {
+            await Task.Yield();
+            foreach (var route in routes)
+            {
+                yield return new DiscoveredItem(route, new GeneratedSource("text/plain"));
+            }
+        }
     }
 
     private sealed class EmptyEndpointDataSource : EndpointDataSource

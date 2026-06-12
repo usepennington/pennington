@@ -49,7 +49,7 @@ using Microsoft.Extensions.Logging;
 //   RenderedHtmlFetcher              singleton
 //   PenningtonStringLocalizerFactory singleton
 //   OutputGenerationService          transient (build orchestrator)
-//   LlmsTxtContentService            transient (wraps file-watched LlmsTxtService)
+//   LlmsArtifactContentService       transient (wraps file-watched LlmsTxtService)
 //   DocSiteContentResolver           transient
 //   BlogContentResolver              AddFileWatched<>
 //                                    [aggregates IContentService results - file-watched

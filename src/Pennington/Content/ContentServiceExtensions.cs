@@ -106,15 +106,5 @@ public static class ContentServiceExtensions
 
             return builder.ToImmutable();
         }
-
-        /// <summary>
-        /// Widens <see cref="IContentService"/> instances to <see cref="IContentEmitter"/>
-        /// and appends standalone emitter registrations. The DI container does not
-        /// auto-widen the service-to-emitter relationship — services registered as
-        /// <see cref="IContentService"/> are absent from the <see cref="IContentEmitter"/>
-        /// set even though every <see cref="IContentService"/> extends it.
-        /// </summary>
-        public IEnumerable<IContentEmitter> WithStandaloneEmitters(IEnumerable<IContentEmitter> emitters)
-            => services.Cast<IContentEmitter>().Concat(emitters);
     }
 }
