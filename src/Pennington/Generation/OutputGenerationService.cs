@@ -39,11 +39,17 @@ public sealed class OutputGenerationService
     private readonly IFileSystem _fileSystem;
     private readonly IInProcessHttpDispatcher _dispatcher;
     private readonly IAuditCache _auditCache;
+    private readonly AuditRunner? _auditRunner;
     private readonly ILogger<OutputGenerationService> _logger;
 
     /// <summary>
     /// Initializes the service with the dependencies required to crawl the running app and write output.
     /// </summary>
+    /// <remarks>
+    /// <paramref name="auditRunner"/> is optional purely as a unit-test seam: production DI always
+    /// injects the registered singleton, so the build awaits the initial audit pass before reading
+    /// its cache; tests that don't exercise auditing omit it and the wait becomes a no-op.
+    /// </remarks>
     public OutputGenerationService(
         IEnumerable<IContentService> contentServices,
         IEnumerable<IArtifactContentService> artifactServices,
@@ -53,7 +59,8 @@ public sealed class OutputGenerationService
         IFileSystem fileSystem,
         IInProcessHttpDispatcher dispatcher,
         IAuditCache auditCache,
-        ILogger<OutputGenerationService> logger)
+        ILogger<OutputGenerationService> logger,
+        AuditRunner? auditRunner = null)
     {
         _contentServices = contentServices;
         _artifactServices = artifactServices;
@@ -63,6 +70,7 @@ public sealed class OutputGenerationService
         _fileSystem = fileSystem;
         _dispatcher = dispatcher;
         _auditCache = auditCache;
+        _auditRunner = auditRunner;
         _logger = logger;
     }
 
@@ -237,10 +245,17 @@ public sealed class OutputGenerationService
             }
         }
 
-        // Phase 8.5: Copy auditor diagnostics into the report. AuditRunner has been
-        // priming IAuditCache on every file change since startup, so by the time the
-        // build crawls the running app the cache reflects the same state the dev
-        // overlay was showing locally — same diagnostics, two surfaces.
+        // Phase 8.5: Copy auditor diagnostics into the report. AuditRunner kicks the audit pass
+        // (structural auditors plus, in this headless build, the rendered broken-link crawl) off
+        // in the background from ApplicationStarted, overlapping it with this crawl. Join it before
+        // reading the cache so its diagnostics actually land in the report, and so the pass can't
+        // outlive the host and touch a disposed IServiceProvider during teardown. Mirrors how the
+        // diag commands await the same pass.
+        if (_auditRunner is not null)
+        {
+            await _auditRunner.WaitForInitialPassAsync();
+        }
+
         foreach (var diag in _auditCache.Diagnostics)
         {
             reportBuilder.AddDiagnostic(diag);
