@@ -2,6 +2,7 @@ namespace Pennington.Infrastructure;
 
 using System.Collections.Immutable;
 using System.Reflection;
+using Favicon;
 using FrontMatter;
 using Highlighting;
 using LlmsTxt;
@@ -125,6 +126,13 @@ public sealed class PenningtonOptions
     /// Templates forward their own option into this.
     /// </summary>
     public StandardSiteOptions? StandardSite { get; set; }
+
+    /// <summary>
+    /// Favicon / icon link generation. Set to emit <c>&lt;link rel="icon"&gt;</c> (and apple-touch-icon,
+    /// mask-icon, manifest) tags into every page head; null disables the feature. The icon files are
+    /// user-provided static assets in the content root. Templates forward their own option into this.
+    /// </summary>
+    public FaviconOptions? Favicons { get; set; }
 
     /// <summary>Configuration for the search index.</summary>
     public SearchIndexOptions SearchIndex { get; } = new();

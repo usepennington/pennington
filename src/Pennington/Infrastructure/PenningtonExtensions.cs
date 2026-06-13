@@ -7,6 +7,7 @@ using Artifacts;
 using Cli;
 using Cli.Diag;
 using Content;
+using Favicon;
 using Feeds;
 using FrontMatter;
 using Generation;
@@ -436,6 +437,15 @@ public static class PenningtonExtensions
             services.AddTransient<StandardSiteUriResolver>();
             services.AddTransient<IArtifactContentService, WellKnownArtifactService>();
             services.AddHeadContributor<StandardSiteHeadContributor>();
+        }
+
+        // Favicon / icon links — registered only when configured. The contributor no-ops on an empty
+        // icon list, and root-relative hrefs are sub-path prefixed by BaseUrlHtmlRewriter. No artifact
+        // service: the icon files are user-provided static assets already served by ContentRootAssetService.
+        if (options.Favicons is { } favicons)
+        {
+            services.AddSingleton(favicons);
+            services.AddHeadContributor<FaviconHeadContributor>();
         }
         // Transient: this processor holds the IHtmlResponseRewriter list, which
         // includes XrefHtmlRewriter capturing the file-watched XrefResolver. A
