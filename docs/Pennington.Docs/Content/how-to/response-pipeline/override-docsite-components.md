@@ -43,9 +43,9 @@ examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverri
 examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverrides.BuildExtraStyles
 ```
 
-### Replace the site-title link and footer with the string slots
+### Replace the site-title link and footer with the content slots
 
-`HeaderContent` substitutes for the default `<a href="/">SiteTitle</a>` link inside the header's title span; the rest of the header chrome (optional `HeaderIcon`, search button, theme toggle, repo link) keeps rendering around it. `FooterContent` is the raw HTML fragment the layout drops into the footer region. Both accept anything an HTML fragment can hold, from a branded logo wordmark to a compliance notice. Because they are strings, no `AdditionalRoutingAssemblies` entry is needed for them; for a component-authored fragment, render it to HTML at startup the same way as the head snippet above.
+`HeaderContent` owns the entire header brand area: the default document icon and the `<a href="/">SiteTitle</a>` link both step aside, so you control that region outright while the rest of the header chrome (search button, theme toggle, repo link) keeps rendering around it. `FooterContent` is what the layout drops into the footer region. Both accept either a raw HTML string or a `RenderFragment` — assign a string for inline markup, or point them at a `RenderFragment` (for example a static fragment defined in a `.razor`) for a component-authored header, no `AdditionalRoutingAssemblies` entry required.
 
 ```csharp
 var options = new DocSiteOptions
@@ -78,7 +78,7 @@ examples/DocSiteChromeOverridesExample/Program.cs
 
 The chrome on every page is replaced by the configured fragments, one outcome per extension point:
 
-- **Header and footer.** The header title reads "Chrome Overrides" on the left, rendered as `<span class="chrome-header" data-chrome-overrides="docsite-header">` in place of the default `<a href="/">…</a>` link, with the rest of the header chrome (icon, search, theme toggle, repo link) intact; the footer carries the matching `data-chrome-overrides="docsite-footer"` copyright span.
+- **Header and footer.** The header brand area reads "Chrome Overrides" on the left, rendered as `<span class="chrome-header" data-chrome-overrides="docsite-header">` in place of the default icon and `<a href="/">…</a>` link, with the rest of the header chrome (search, theme toggle, repo link) intact; the footer carries the matching `data-chrome-overrides="docsite-footer"` copyright span.
 - **Head content.** Every `<head>` gains the `<meta name="x-chrome-overrides-head">` tag and the `https://example.com` preconnect.
 - **Styles.** `/styles.css` begins with the prepended `.chrome-header` / `.chrome-footer` rules, above the generated MonorailCSS utilities.
 - **Routing.** Any `@page "/route"` component in the host assembly (for example `/extra`) routes alongside the bundled DocSite pages.

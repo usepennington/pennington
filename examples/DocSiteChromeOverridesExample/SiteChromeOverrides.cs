@@ -21,7 +21,7 @@ public static class SiteChromeOverrides
     /// slot seams the how-to covers: <see cref="DocSiteOptions.AdditionalHtmlHeadContent"/>,
     /// <see cref="DocSiteOptions.ExtraStyles"/>,
     /// <see cref="DocSiteOptions.HeaderContent"/> / <see cref="DocSiteOptions.FooterContent"/>
-    /// (the string-HTML slots), and
+    /// (the string-or-fragment content slots), and
     /// <see cref="DocSiteOptions.AdditionalRoutingAssemblies"/>.
     /// </summary>
     public static DocSiteOptions BuildDocSiteOptions() => new()
