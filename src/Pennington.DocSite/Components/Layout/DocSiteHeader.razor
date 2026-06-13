@@ -11,32 +11,21 @@
         }
         <div
             class="@(ShowMobileMenuButton ? "lg:hidden" : "") flex flex-1 @(CenterSearch ? "lg:basis-0 lg:justify-start" : "lg:flex-none") min-w-0 shrink items-center place-content-center gap-x-2 lg:gap-x-4">
-            @* HeaderIcon convention: null = default icon, "" = no icon (suppressed), non-empty = user-supplied markup. *@
-            @if (DocSiteOptions.HeaderIcon != "")
+            @* HeaderContent owns the whole brand area when set; null keeps the default icon + title. *@
+            @if (DocSiteOptions.HeaderContent is { } header)
+            {
+                @header.Content
+            }
+            else
             {
                 <div class="transition-all w-0 sm:w-5 overflow-hidden">
-                    @if (DocSiteOptions.HeaderIcon != null)
-                    {
-                        @((MarkupString)DocSiteOptions.HeaderIcon)
-                    }
-                    else
-                    {
-                        @_defaultHeaderIcon
-                    }
+                    @_defaultHeaderIcon
                 </div>
-            }
-
-            <span
-                class="font-display dark:text-base-50 text-sm lg:text-base font-medium text-base-900 tracking-tight">
-                @if (DocSiteOptions.HeaderContent != null)
-                {
-                    @((MarkupString)DocSiteOptions.HeaderContent)
-                }
-                else
-                {
+                <span
+                    class="font-display dark:text-base-50 text-sm lg:text-base font-medium text-base-900 tracking-tight">
                     <a href="/">@DocSiteOptions.SiteTitle</a>
-                }
-            </span>
+                </span>
+            }
         </div>
 
         <div class="lg:flex-1 @(CenterSearch ? "lg:basis-0 lg:flex lg:justify-center" : "")">

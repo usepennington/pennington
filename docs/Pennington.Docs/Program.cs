@@ -37,7 +37,6 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         new FontPreload("/fonts/noto-sans.woff2"),
         new FontPreload("/fonts/jetbrains-mono.woff2"),
     ],
-    HeaderIcon = "",
     HeaderContent = """<a href="/" class="text-primary-700 dark:text-primary-400 font-bold text-lg">Pennington</a>""",
     ExtraStyles = """
         @font-face {

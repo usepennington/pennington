@@ -7,7 +7,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
     SiteTitle = "My Docs",
     SiteDescription = "Documentation built with Pennington.",
     GitHubUrl = "https://github.com/your-org/your-repo",
-    HeaderContent = """<a href="/">My Docs</a>""",
+    HeaderContent = """<a href="/" class="font-display font-medium tracking-tight">My Docs</a>""",
     FooterContent = """<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with Pennington DocSite.</footer>""",
 
     Areas =

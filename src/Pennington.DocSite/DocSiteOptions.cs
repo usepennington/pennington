@@ -1,10 +1,12 @@
 namespace Pennington.DocSite;
 
 using System.Reflection;
+using Microsoft.AspNetCore.Components;
 using Favicon;
 using Infrastructure;
 using Localization;
 using MonorailCss;
+using Pennington.UI;
 using Routing;
 using SocialCards;
 using StandardSite;
@@ -39,14 +41,19 @@ public record DocSiteOptions
     /// <summary>Root folder (relative to the content project) that holds the markdown and razor content tree.</summary>
     public FilePath ContentRootPath { get; init; } = new("Content");
 
-    /// <summary>Optional image URL rendered as the header logo/icon.</summary>
-    public string? HeaderIcon { get; init; }
+    /// <summary>
+    /// The header brand area (logo + title). Assign a raw HTML string or a
+    /// <see cref="RenderFragment"/> — both convert implicitly. When set, it replaces the default
+    /// icon and <see cref="SiteTitle"/> link outright, giving total control over that region; when
+    /// null, the default document icon and title link render. Strings are emitted as raw HTML, not markdown.
+    /// </summary>
+    public MarkupContent? HeaderContent { get; init; }
 
-    /// <summary>Markdown or HTML inserted into the site header alongside the icon and title.</summary>
-    public string? HeaderContent { get; init; }
-
-    /// <summary>Markdown or HTML inserted into the site footer.</summary>
-    public string? FooterContent { get; init; }
+    /// <summary>
+    /// Content rendered in the site footer. Assign a raw HTML string or a
+    /// <see cref="RenderFragment"/> — both convert implicitly. Strings are emitted as raw HTML, not markdown.
+    /// </summary>
+    public MarkupContent? FooterContent { get; init; }
 
     /// <summary>URL to the project's GitHub repository. When set, a GitHub link is shown in the header.</summary>
     public string? GitHubUrl { get; init; }
