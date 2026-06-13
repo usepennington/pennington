@@ -1,6 +1,7 @@
 namespace Pennington.DocSite;
 
 using System.Reflection;
+using Favicon;
 using Infrastructure;
 using Localization;
 using MonorailCss;
@@ -65,6 +66,11 @@ public record DocSiteOptions
     /// Standard Site (AT Protocol) integration. Forwarded to <see cref="PenningtonOptions.StandardSite"/>.
     /// </summary>
     public StandardSiteOptions? StandardSite { get; init; }
+
+    /// <summary>
+    /// Favicon / icon links. Forwarded to <see cref="PenningtonOptions.Favicons"/>.
+    /// </summary>
+    public FaviconOptions? Favicons { get; init; }
 
     /// <summary>CSS font-family stack used for display type (headings and hero copy).</summary>
     public string? DisplayFontFamily { get; init; }

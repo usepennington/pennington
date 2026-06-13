@@ -40,6 +40,7 @@ public static class BlogSiteServiceExtensions
             penn.StructuredDataAuthorName = options.AuthorName;
             penn.SocialCards = options.SocialCards;
             penn.StandardSite = options.StandardSite;
+            penn.Favicons = options.Favicons;
 
             var blogContentPath = Path.Combine(options.ContentRootPath.Value, options.BlogContentPath);
             penn.AddMarkdownContent<BlogSiteFrontMatter>(md =>

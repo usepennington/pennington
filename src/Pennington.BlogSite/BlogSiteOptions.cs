@@ -2,6 +2,7 @@ namespace Pennington.BlogSite;
 
 using System.Reflection;
 using Content;
+using Favicon;
 using Infrastructure;
 using Microsoft.AspNetCore.Components;
 using MonorailCss;
@@ -100,6 +101,11 @@ public record BlogSiteOptions
     /// Standard Site (AT Protocol) integration. Forwarded to <see cref="PenningtonOptions.StandardSite"/>.
     /// </summary>
     public StandardSiteOptions? StandardSite { get; init; }
+
+    /// <summary>
+    /// Favicon / icon links. Forwarded to <see cref="PenningtonOptions.Favicons"/>.
+    /// </summary>
+    public FaviconOptions? Favicons { get; init; }
 }
 
 /// <summary>Icon and URL for a social media link.</summary>

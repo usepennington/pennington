@@ -47,6 +47,7 @@ public static class DocSiteServiceExtensions
             penn.ContentRootPath = options.ContentRootPath;
             penn.SocialCards = options.SocialCards;
             penn.StandardSite = options.StandardSite;
+            penn.Favicons = options.Favicons;
 
             penn.AddMarkdownContent<DocSiteFrontMatter>(md =>
             {
