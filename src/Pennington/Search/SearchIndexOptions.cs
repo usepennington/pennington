@@ -15,6 +15,15 @@ public sealed class SearchIndexOptions
     public Dictionary<string, int> AreaPriorities { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
+    /// Per-route-prefix search priority (URL prefix to priority), checked before
+    /// <see cref="AreaPriorities"/>; the longest matching prefix wins and its value replaces the
+    /// area value rather than stacking. Drops a whole URL territory below comparable prose that
+    /// keeps its area lean — generated API reference, for example, registers its route prefix here
+    /// so its pages don't bury conceptual articles. Default: empty (area/default apply).
+    /// </summary>
+    public Dictionary<string, int> PrefixPriorities { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
     /// Number of leading characters of a stemmed term used as its shard key. Lower values
     /// produce fewer, larger shards; higher values produce more, smaller shards. Default: 2.
     /// </summary>

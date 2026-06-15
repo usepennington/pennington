@@ -23,4 +23,12 @@ public sealed class ApiReferenceRegistrationOptions
     /// <c>sectionLabel</c> to join that section.
     /// </summary>
     public string? TocSectionLabel { get; set; }
+
+    /// <summary>
+    /// Search priority for every page under this tree's <see cref="RoutePrefix"/>, registered into
+    /// <c>SearchIndexOptions.PrefixPriorities</c> so it populates the index <c>p</c> field. Lower
+    /// ranks later. Defaults to <c>3</c> — below typical prose so generated reference pages don't
+    /// bury conceptual articles that match the same term.
+    /// </summary>
+    public int SearchPriority { get; set; } = 3;
 }

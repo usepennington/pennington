@@ -34,9 +34,11 @@ public static class ApiReferenceServiceExtensions
         var options = new ApiReferenceRegistrationOptions();
         configure?.Invoke(options);
         var prefix = NormalizePrefix(options.RoutePrefix);
-        var registration = new ApiReferenceRegistration(name, prefix, options.TocTitle, options.TocSectionLabel);
+        var registration = new ApiReferenceRegistration(
+            name, prefix, options.TocTitle, options.TocSectionLabel, options.SearchPriority);
 
         services.AddSingleton(registration);
+        RegisterPrefixPriority(services, prefix, options.SearchPriority);
 
         services.AddKeyedSingleton(name, (sp, key) =>
             ActivatorUtilities.CreateInstance<ApiReferenceIndex>(sp,
@@ -50,6 +52,27 @@ public static class ApiReferenceServiceExtensions
 
         RegisterSharedOnce(services);
         return services;
+    }
+
+    // Stamp the API tree's route prefix onto the shared search options so SearchIndexBuilder gives
+    // every page under it this priority — dropping generated reference pages below comparable prose.
+    // SearchIndexOptions is registered as a singleton instance by AddPennington (via AddDocSite),
+    // so it is already in the collection at this point; the mutation lands before any index build.
+    private static void RegisterPrefixPriority(IServiceCollection services, string prefix, int priority)
+    {
+        for (var i = 0; i < services.Count; i++)
+        {
+            if (services[i] is { ServiceType: { } t, ImplementationInstance: Pennington.Search.SearchIndexOptions search }
+                && t == typeof(Pennington.Search.SearchIndexOptions))
+            {
+                search.PrefixPriorities[prefix] = priority;
+                return;
+            }
+        }
+
+        throw new InvalidOperationException(
+            "AddApiReference requires AddDocSite to be called first so the API-reference route prefix "
+            + "can be registered as a search priority.");
     }
 
     private static string NormalizePrefix(string raw)

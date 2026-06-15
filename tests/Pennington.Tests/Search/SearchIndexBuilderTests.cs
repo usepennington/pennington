@@ -224,4 +224,66 @@ public class SearchIndexBuilderTests
         // An area without a configured priority falls back to DefaultPriority.
         builder.BuildSection(MakeToc("Post", "/blog/post"), Lead()).Priority.ShouldBe(5);
     }
+
+    [Fact]
+    public void BuildSection_PrefixPriority_OverridesArea_ReplacingNotStacking()
+    {
+        var options = new SearchIndexOptions
+        {
+            AreaPriorities = new(StringComparer.OrdinalIgnoreCase) { ["imagesharp"] = 15 },
+            PrefixPriorities = new(StringComparer.OrdinalIgnoreCase) { ["/imagesharp/api/"] = 3 },
+        };
+        var builder = new SearchIndexBuilder(options, new LocalizationOptions());
+
+        // A page under the registered prefix takes the prefix priority outright (not 15 + anything).
+        builder.BuildSection(MakeToc("WebpEncoder", "/imagesharp/api/webp-encoder"), Lead()).Priority.ShouldBe(3);
+        // A same-area page outside the prefix keeps its area priority.
+        builder.BuildSection(MakeToc("WebP", "/imagesharp/imageformats/webp"), Lead()).Priority.ShouldBe(15);
+    }
+
+    [Fact]
+    public void BuildSection_PrefixPriority_LongestMatchWins()
+    {
+        var options = new SearchIndexOptions
+        {
+            PrefixPriorities = new(StringComparer.OrdinalIgnoreCase)
+            {
+                ["/imagesharp/api/"] = 3,
+                ["/imagesharp/api/internals/"] = 1,
+            },
+        };
+        var builder = new SearchIndexBuilder(options, new LocalizationOptions());
+
+        builder.BuildSection(MakeToc("Encoder", "/imagesharp/api/webp-encoder"), Lead()).Priority.ShouldBe(3);
+        builder.BuildSection(MakeToc("Guts", "/imagesharp/api/internals/buffers"), Lead()).Priority.ShouldBe(1);
+    }
+
+    [Fact]
+    public void BuildSection_PrefixPriority_NonMatchingUrl_FallsBackToAreaThenDefault()
+    {
+        var options = new SearchIndexOptions
+        {
+            AreaPriorities = new(StringComparer.OrdinalIgnoreCase) { ["imagesharp"] = 15 },
+            PrefixPriorities = new(StringComparer.OrdinalIgnoreCase) { ["/imagesharp/api/"] = 3 },
+        };
+        var builder = new SearchIndexBuilder(options, new LocalizationOptions());
+
+        // Non-empty prefix map but no match: resolve area, then default.
+        builder.BuildSection(MakeToc("WebP", "/imagesharp/imageformats/webp"), Lead()).Priority.ShouldBe(15);
+        builder.BuildSection(MakeToc("Post", "/blog/post"), Lead()).Priority.ShouldBe(5);
+    }
+
+    [Fact]
+    public void BuildSection_EmptyPrefixMap_IdenticalToAreaOnly()
+    {
+        // Regression guard for the Count > 0 short-circuit: an empty prefix map changes nothing.
+        var options = new SearchIndexOptions
+        {
+            AreaPriorities = new(StringComparer.OrdinalIgnoreCase) { ["how-to"] = 10 },
+        };
+        var builder = new SearchIndexBuilder(options, new LocalizationOptions());
+
+        builder.BuildSection(MakeToc("Auth", "/how-to/auth"), Lead()).Priority.ShouldBe(10);
+        builder.BuildSection(MakeToc("Post", "/blog/post"), Lead()).Priority.ShouldBe(5);
+    }
 }

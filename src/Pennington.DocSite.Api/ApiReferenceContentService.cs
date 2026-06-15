@@ -40,7 +40,7 @@ internal sealed class ApiReferenceContentService : IContentService, ILlmsSubtree
 
     public string DefaultSectionLabel => "";
 
-    public int SearchPriority => 3;
+    public int SearchPriority => _registration.SearchPriority;
 
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {

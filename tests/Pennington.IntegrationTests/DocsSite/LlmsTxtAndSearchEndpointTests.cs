@@ -97,6 +97,42 @@ public class LlmsTxtAndSearchEndpointTests
     }
 
     [Fact]
+    public async Task SearchIndex_ApiReferencePages_CarryLowPrefixPriority()
+    {
+        // AddApiReference registers its /reference/api/ tree at SearchPriority 3 (the default) via
+        // SearchIndexOptions.PrefixPriorities, so every generated API page row carries p=3 while
+        // same-area prose under /reference/ keeps its (higher) area priority. This proves the
+        // prefix-priority override flows all the way into the emitted index.
+        var json = await _client.GetStringAsync("/search/en/index.json", TestContext.Current.CancellationToken);
+        using var doc = JsonDocument.Parse(json);
+        var docs = doc.RootElement.GetProperty("docs");
+
+        var apiPriorities = new List<int>();
+        var proseReferencePriorities = new List<int>();
+        foreach (var entry in docs.EnumerateArray())
+        {
+            var u = entry.GetProperty("u").GetString() ?? "";
+            var p = entry.GetProperty("p").GetInt32();
+            if (u.StartsWith("/reference/api/", StringComparison.Ordinal))
+            {
+                apiPriorities.Add(p);
+            }
+            else if (u.StartsWith("/reference/", StringComparison.Ordinal))
+            {
+                proseReferencePriorities.Add(p);
+            }
+        }
+
+        apiPriorities.ShouldNotBeEmpty("expected indexed /reference/api/ pages");
+        apiPriorities.ShouldAllBe(p => p == 3);
+
+        // Same content area (reference), but hand-written prose keeps its area priority — strictly
+        // above the API drop, so an article outranks a generated reference page on a tie.
+        proseReferencePriorities.ShouldNotBeEmpty("expected indexed /reference/ prose pages");
+        proseReferencePriorities.ShouldAllBe(p => p > 3);
+    }
+
+    [Fact]
     public async Task SearchFragments_HaveNonEmptyBodyText()
     {
         // Bodies live in per-page fragments (f-{docId}.json), fetched lazily by the

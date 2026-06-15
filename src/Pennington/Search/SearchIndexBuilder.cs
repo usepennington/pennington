@@ -57,17 +57,43 @@ public sealed class SearchIndexBuilder
             Description: section.IsLead ? toc.Description : null,
             Headings: string.Join(' ', crumbs), // index page title + ancestor headings at heading boost
             Body: section.Text,
-            Priority: PriorityFor(area),
+            Priority: PriorityFor(pageUrl, area),
             Facets: BuildFacets(toc, area, metadata),
             Crumbs: crumbs);
     }
 
-    // Per-area boost (derived from the host's area order) lets comparable matches in earlier areas
-    // outrank later ones; areas without an explicit priority fall back to the default.
-    private int PriorityFor(string? area) =>
-        area is not null && _options.AreaPriorities.TryGetValue(area, out var p)
+    // A registered route prefix (longest match) wins over the area boost and replaces it outright,
+    // so a low-priority URL territory (generated API reference, archived sections) drops below
+    // comparable prose that keeps its area lean. Falling back: per-area boost (derived from the
+    // host's area order) lets comparable matches in earlier areas outrank later ones; areas without
+    // an explicit priority fall back to the default.
+    private int PriorityFor(string pageUrl, string? area)
+    {
+        if (_options.PrefixPriorities.Count > 0)
+        {
+            var normalized = pageUrl.StartsWith('/') ? pageUrl : "/" + pageUrl;
+            var bestLen = -1;
+            var bestPriority = 0;
+            foreach (var (prefix, priority) in _options.PrefixPriorities)
+            {
+                if (prefix.Length > bestLen
+                    && normalized.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    bestLen = prefix.Length;
+                    bestPriority = priority;
+                }
+            }
+
+            if (bestLen >= 0)
+            {
+                return bestPriority;
+            }
+        }
+
+        return area is not null && _options.AreaPriorities.TryGetValue(area, out var p)
             ? p
             : _options.DefaultPriority;
+    }
 
     // Maps the enabled Pennington facet dimensions onto DeweySearch's open facet dictionary. A
     // dimension is present only when enabled in options and the page actually carries a value,

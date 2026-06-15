@@ -46,9 +46,25 @@ search: false
 
 ### Set the default document priority
 
-`SearchIndexOptions.DefaultPriority` (default `5`) is the baseline weight assigned to every document whose content service does not override `IContentService.SearchPriority`. Raise it for sources that should outrank neighbors; lower it for auxiliary content. Per-source overrides take precedence — see <xref:reference.api.search-index-options> for the shipped defaults.
+`SearchIndexOptions.DefaultPriority` (default `5`) is the baseline weight every document starts from — `p` is a linear multiplier on a result's score, so a document with twice the priority needs only half the term relevance to tie. Raise it for sites whose content should outrank neighbors; lower it for auxiliary content. `AreaPriorities` and `PrefixPriorities` (below) override it per content area and per URL prefix; see <xref:reference.api.search-index-options> for the shipped defaults.
 
 Under `AddDocSite` this property is reachable via the `ConfigurePennington` escape hatch (`ConfigurePennington = penn => penn.SearchIndex.DefaultPriority = …`), so this adjustment does not require dropping down to bare `AddPennington`.
+
+### Drop a URL territory below prose with a prefix priority
+
+To rank a whole URL subtree below comparable prose — generated API reference is the usual case, where dozens of type pages repeat a term and bury the article that explains it — register the prefix in `SearchIndexOptions.PrefixPriorities`. The longest matching prefix wins, and its value *replaces* the area priority rather than stacking, so the subtree drops to an absolute low `p` even inside a boosted area.
+
+```csharp
+services.AddDocSite(() => new DocSiteOptions
+{
+    SiteTitle = "My Docs",
+    SiteDescription = "Project documentation",
+    ConfigurePennington = penn =>
+        penn.SearchIndex.PrefixPriorities["/imagesharp/api/"] = 3,
+});
+```
+
+`AddApiReference` registers each reference tree's route prefix here automatically at priority `3`; set `ApiReferenceRegistrationOptions.SearchPriority` to choose a different value (`AddApiReference(o => o.SearchPriority = 2)`).
 
 ### Override the content selector on DocSite
 
@@ -110,14 +126,14 @@ The build emits the index under `/search/{locale}/`: an `index.json` entrypoint 
 }
 ```
 
-The page body lives in its fragment (`f-{docId}.json`), fetched only when the page appears in results. Pages with `search: false` are absent from the table; per-source `SearchPriority` values populate `p`.
+The page body lives in its fragment (`f-{docId}.json`), fetched only when the page appears in results. Pages with `search: false` are absent from the table; each row's `p` is `DefaultPriority`, overridden by any matching `AreaPriorities` or `PrefixPriorities` entry.
 
 ## Verify
 
 - Run `dotnet run` and fetch `/search/{locale}/index.json`. The excluded page is absent from the `docs` table
 - Add a second locale and observe one index tree per locale (`/search/en/index.json`, `/search/fr/index.json`). Registered-but-empty locales return a valid entrypoint with an empty `docs` array
 - Fetch the matching `/search/{locale}/f-{docId}.json` and confirm its `body` contains only the scoped element's text (no header / sidebar / footer noise)
-- After raising `DefaultPriority` (or a per-source `SearchPriority`), fetch `index.json` and confirm the affected rows carry the new value in their `p` field
+- After raising `DefaultPriority` (or registering an `AreaPriorities` / `PrefixPriorities` entry), fetch `index.json` and confirm the affected rows carry the new value in their `p` field
 - After adding a synonym, fetch `index.json` and confirm the stemmed synonym map carries the entry; in the modal, query the key term and confirm pages that mention only the alternate now appear
 - After enabling the section and tag facets, fetch `index.json` and confirm rows carry `section` and `tag` ids in their `f` object; in the modal, confirm the matching filter chips appear above the results
 
