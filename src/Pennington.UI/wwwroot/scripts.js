@@ -190,7 +190,7 @@ class OutlineManager {
         const headings = this.extractHeadings(contentElement);
         if (headings.length === 0) return;
 
-        // Build outline structure (H2 as parent, H3 as children)
+        // Build outline structure (shallowest level as parents, deeper as children)
         const outlineStructure = this.buildOutlineStructure(headings);
 
         // Render the outline
@@ -230,23 +230,21 @@ class OutlineManager {
 
     buildOutlineStructure(headings) {
         const structure = [];
-        let currentH2 = null;
+        if (headings.length === 0) return structure;
+
+        // Use the shallowest heading level present as the outline's top level so a
+        // page that starts at H3 (no H2) still produces a populated outline. Deeper
+        // headings nest under the most recent top-level entry; a deeper heading with
+        // no preceding top-level entry is promoted so it is never dropped.
+        const topLevel = Math.min(...headings.map(h => h.level));
+        let currentParent = null;
 
         headings.forEach(heading => {
-            if (heading.level === 2) {
-                // Create new parent entry
-                currentH2 = {
-                    id: heading.id,
-                    text: heading.text,
-                    children: []
-                };
-                structure.push(currentH2);
-            } else if (heading.level === 3 && currentH2) {
-                // Add as child to current H2
-                currentH2.children.push({
-                    id: heading.id,
-                    text: heading.text
-                });
+            if (heading.level === topLevel || !currentParent) {
+                currentParent = { id: heading.id, text: heading.text, children: [] };
+                structure.push(currentParent);
+            } else {
+                currentParent.children.push({ id: heading.id, text: heading.text });
             }
         });
 
