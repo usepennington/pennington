@@ -24,7 +24,12 @@
     <ProjectReference Include="..\..\src\Pennington.Book\Pennington.Book.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <!-- The showcase component deserializes Data/showcase.yml with SharpYaml. -->
+    <PackageReference Include="SharpYaml" />
+  </ItemGroup>
+  <ItemGroup>
     <Watch Include="Content\**\*.*" />
+    <Watch Include="Data\**\*.*" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Pennington.IntegrationTests" />

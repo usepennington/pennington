@@ -2,6 +2,7 @@ using Mdazor;
 using Pennington.ApiMetadata.Reflection;
 using Pennington.Docs;
 using Pennington.Docs.ApiReference;
+using Pennington.Docs.Components;
 using Pennington.Docs.Components.Reference;
 using Pennington.DocSite;
 using Pennington.DocSite.Api;
@@ -73,6 +74,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         new ContentArea("Guides", "how-to"),
         new ContentArea("Under the Hood", "explanation"),
         new ContentArea("Reference", "reference"),
+        new ContentArea("Showcase", "showcase"),
     ],
     // Brand styling lives in BrandStyling.cs — pseudo-element @apply blocks
     // (H2 gradient bar, bullet dot) and the prose flair (animated underline,
@@ -118,6 +120,11 @@ builder.Services.AddApiReference();
 // stays in this project rather than shipping from Pennington.DocSite.Api.
 builder.Services.AddSingleton<FrontMatterKeyIndex>();
 builder.Services.AddMdazorComponent<FrontMatterKeys>();
+
+// The "Built with Pennington" showcase gallery — its own single-page area
+// (Content/showcase/index.md), backed by a data-driven Mdazor component that
+// reads Data/showcase.yml.
+builder.Services.AddMdazorComponent<Showcase>();
 
 // Word-break typography, folded into the shared HTML rewriting pipeline so it
 // mutates the already-parsed DOM instead of re-parsing the response string.

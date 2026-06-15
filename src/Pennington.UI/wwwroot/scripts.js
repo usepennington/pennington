@@ -1174,6 +1174,9 @@ class AreaNavManager {
     onPillClick(e) {
         const pill = e.target.closest('[data-area]');
         if (!pill) return;
+        // Single-page areas have no TOC worth previewing — let the pill's <a href>
+        // navigate straight to the page instead of toggling a one-item TOC.
+        if (pill.dataset.areaSingle === 'true') return;
         e.preventDefault();
         e.stopPropagation(); // Prevent SPA engine from navigating
         this.switchToArea(pill.dataset.area);

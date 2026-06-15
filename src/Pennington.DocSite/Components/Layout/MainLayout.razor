@@ -43,7 +43,7 @@
                     </div>
                     @if (DocSiteOptions.Areas.Count > 0)
                     {
-                        <AreaNavigation Areas="DocSiteOptions.Areas" ActiveArea="_activeArea" AreaHrefs="_areaHrefs" />
+                        <AreaNavigation Areas="DocSiteOptions.Areas" ActiveArea="_activeArea" AreaHrefs="_areaHrefs" SinglePageAreas="_singlePageAreas" />
                         @foreach (var area in DocSiteOptions.Areas)
                         {
                             var isActive = _activeArea != null
@@ -105,6 +105,7 @@
     private ImmutableList<NavigationTreeItem>? _toc;
     private Dictionary<string, ImmutableList<NavigationTreeItem>> _areaTocs = new();
     private Dictionary<string, string> _areaHrefs = new();
+    private HashSet<string> _singlePageAreas = new(StringComparer.OrdinalIgnoreCase);
     private IReadOnlyList<AlternateLanguage> _langSwitcherItems = [];
     private ContentArea? _activeArea;
     private IReadOnlyList<DownloadLink> _downloads = [];
@@ -157,6 +158,14 @@
         return null;
     }
 
+    private static int LeafCount(ImmutableList<NavigationTreeItem> items)
+    {
+        var count = 0;
+        foreach (var item in items)
+            count += item.Children.Count == 0 ? 1 : LeafCount(item.Children);
+        return count;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         var currentPath = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath;
@@ -195,6 +204,8 @@
                 _areaTocs[area.Slug] = tree;
                 if (FirstLeafUrl(tree) is { } firstUrl)
                     _areaHrefs[area.Slug] = firstUrl;
+                if (LeafCount(tree) == 1)
+                    _singlePageAreas.Add(area.Slug);
             }
         }
         else

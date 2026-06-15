@@ -1,0 +1,180 @@
+@* Showcase — a data-driven Mdazor gallery. Consumed from markdown as:
+
+     <Showcase Source="Data/showcase.yml" />
+
+   It reads a YAML file (relative to the content root) and renders each entry as an
+   alternating "rows" card: a faux-browser screenshot on one side, a monogram +
+   title + description + "Notable Pennington use" block on the other.
+
+   Styling is 100% MonorailCSS semantic utilities (primary / accent / base), so the
+   gallery inherits the site's color scheme — no hard-coded colors. `not-prose`
+   opts the subtree out of the article's prose typography. *@
+@using System.Collections.Concurrent
+@using System.Text.Json
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Hosting
+@using SharpYaml
+@using SharpYaml.Serialization
+@using Pennington.Docs
+@inject IWebHostEnvironment Env
+
+@if (_error is { } error)
+{
+    <p class="not-prose text-accent-one-700 dark:text-accent-one-300">@error</p>
+}
+else
+{
+    <div class="pn-showcase not-prose flex flex-col gap-24 mt-11">
+        @for (var i = 0; i < _data.Entries.Count; i++)
+        {
+            var e = _data.Entries[i];
+            var mediaRight = i % 2 == 1;
+            var hasDark = !string.IsNullOrEmpty(e.ScreenshotDark);
+            <section id="@Slug(e.Name)" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-x-8 lg:gap-x-12 gap-y-6 items-start scroll-mt-24">
+
+                @* Header (monogram + title + url). One column (base + xl): sits above the screenshot.
+                   Two columns (lg + 2xl): heads the text column via explicit grid placement. *@
+                <div class="@(mediaRight
+                        ? "lg:col-start-1 lg:row-start-1"
+                        : "lg:col-start-2 lg:row-start-1 xl:col-start-1 2xl:col-start-2") min-w-0 flex items-center gap-3">
+                    <div class="min-w-0">
+                        <h2 id="@Slug(e.Name)-h" class="m-0 font-display font-semibold text-2xl tracking-tight text-base-900 dark:text-base-50">@e.Name</h2>
+                        <div class="font-mono text-xs text-base-400 dark:text-base-500 break-all">@e.Url</div>
+                    </div>
+                </div>
+
+                @* Screenshot in a faux browser frame. Spans both text rows when two columns are shown. *@
+                <div class="@(mediaRight
+                        ? "lg:col-start-2 lg:row-start-1 lg:row-span-2 xl:col-start-1 xl:row-start-2 xl:row-span-1 2xl:col-start-2 2xl:row-start-1 2xl:row-span-2"
+                        : "lg:col-start-1 lg:row-start-1 lg:row-span-2 xl:row-start-2 xl:row-span-1 2xl:row-start-1 2xl:row-span-2") min-w-0">
+                    <div class="relative aspect-[16/10] rounded-xl overflow-hidden border border-base-200 dark:border-base-800 shadow-lg bg-base-100 dark:bg-base-900">
+                        <div class="absolute inset-x-0 top-0 z-10 h-[30px] flex items-center gap-1.5 px-3 bg-base-100/85 dark:bg-base-900/85 backdrop-blur-sm border-b border-base-200 dark:border-base-800">
+                            <span class="size-2 rounded-full bg-base-300 dark:bg-base-700"></span>
+                            <span class="size-2 rounded-full bg-base-300 dark:bg-base-700"></span>
+                            <span class="size-2 rounded-full bg-base-300 dark:bg-base-700"></span>
+                            <span class="ml-2 font-mono text-[10.5px] text-base-400 dark:text-base-500 truncate">@e.Url</span>
+                        </div>
+                        <div class="absolute inset-x-0 bottom-0 top-[30px] overflow-hidden">
+                            @* WebP (640w for 1x displays, full-res for retina) with the original PNG as a
+                               universal fallback. When a dark shot exists, the site's dark mode (.dark on
+                               <html>) flips which <picture> renders — no JS, the variants ship in the page. *@
+                            @MediaFrame(e.Screenshot, $"Screenshot of {e.Name}", hasDark ? "dark:hidden block size-full" : "block size-full")
+                            @if (hasDark)
+                            {
+                                @MediaFrame(e.ScreenshotDark, $"Screenshot of {e.Name} in dark mode", "hidden dark:block size-full")
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @* Description, notable use, chips, visit link *@
+                <div class="@(mediaRight
+                        ? "lg:col-start-1 lg:row-start-2 xl:row-start-3 2xl:row-start-2"
+                        : "lg:col-start-2 lg:row-start-2 xl:col-start-1 xl:row-start-3 2xl:col-start-2 2xl:row-start-2") min-w-0">
+                    <p class="text-base leading-relaxed text-base-600 dark:text-base-300 text-pretty">@Inline(e.Description)</p>
+
+                    <div class="mt-6">
+                        <div class="font-display text-[11px] font-semibold uppercase tracking-wider text-base-400 dark:text-base-500">Notable Pennington use</div>
+                        <div class="mt-2 flex items-start gap-2 font-display text-[15px] leading-snug text-base-800 dark:text-base-100">
+                            <span class="mt-[7px] size-1.5 shrink-0 rotate-45 bg-primary-500"></span>
+                            <span>@Inline(e.Notable)</span>
+                        </div>
+                        <div class="mt-3.5 flex flex-wrap gap-2">
+                            @foreach (var chip in e.Chips)
+                            {
+                                <span class="font-mono text-xs leading-none px-2.5 py-1.5 rounded-md bg-base-100 text-base-600 border border-base-200 dark:bg-base-800/60 dark:text-base-300 dark:border-base-700">@chip</span>
+                            }
+                        </div>
+                    </div>
+
+                    <a href="@e.Href" target="_blank" rel="noopener"
+                       class="mt-5 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-900 font-display text-sm font-medium text-base-800 dark:text-base-100 hover:border-primary-500/40 hover:text-primary-700 dark:hover:text-primary-300 transition-colors">
+                        Visit site
+                        <svg viewBox="0 0 24 24" class="size-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"></path></svg>
+                    </a>
+                </div>
+            </section>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Path to the YAML data file, relative to the content root (e.g. <c>Data/showcase.yml</c>).</summary>
+    [Parameter] public string Source { get; set; } = "Data/showcase.yml";
+
+    private ShowcaseData _data = new();
+    private string? _error;
+
+    // Same camelCase / reflection setup Pennington uses for non-built-in front-matter types,
+    // so the data file's lowercase keys map onto the PascalCase model properties.
+    private static readonly YamlSerializerOptions YamlOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true,
+        TypeInfoResolver = ReflectionYamlTypeInfoResolver.Default,
+    };
+
+    // Cache parsed data per (path, last-write) so dev edits to the YAML refresh on save
+    // but repeated renders don't re-read the file.
+    private static readonly ConcurrentDictionary<string, (DateTime Stamp, ShowcaseData Data)> Cache = new();
+
+    protected override void OnParametersSet()
+    {
+        _error = null;
+        var path = Path.Combine(Env.ContentRootPath, Source);
+        if (!File.Exists(path))
+        {
+            _error = $"Showcase data file not found: {Source}";
+            _data = new ShowcaseData();
+            return;
+        }
+
+        var stamp = File.GetLastWriteTimeUtc(path);
+        if (!Cache.TryGetValue(path, out var hit) || hit.Stamp != stamp)
+        {
+            hit = (stamp, YamlSerializer.Deserialize<ShowcaseData>(File.ReadAllText(path), YamlOptions) ?? new ShowcaseData());
+            Cache[path] = hit;
+        }
+
+        _data = hit.Data;
+    }
+
+    // Slugify a name for stable anchor ids: "Spectre.Console" -> "spectre-console", "VCR#" -> "vcr".
+    private static string Slug(string name) =>
+        string.Join('-',
+                new string([.. name.ToLowerInvariant().Select(c => char.IsLetterOrDigit(c) ? c : ' ')])
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries));
+
+    // Render limited inline markup: HTML-encode, then turn `code` spans into styled <code>.
+    private static MarkupString Inline(string? text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return default;
+        }
+
+        var encoded = System.Net.WebUtility.HtmlEncode(text);
+        encoded = System.Text.RegularExpressions.Regex.Replace(
+            encoded,
+            "`([^`]+)`",
+            "<code class=\"font-mono text-[0.9em] text-primary-700 dark:text-primary-300\">$1</code>");
+        return new MarkupString(encoded);
+    }
+
+    // Renders a screenshot as WebP (640w small for 1x, full-res for retina) inside a <picture>,
+    // with the original PNG as a universal <img> fallback. pictureClass carries the dark-mode swap
+    // plus the block + size-full sizing that lets the inner <img> fill the faux-browser frame.
+    private RenderFragment MediaFrame(string png, string alt, string pictureClass) =>
+        @<picture class="@pictureClass">
+            <source type="image/webp" srcset="@WebpSmall(png) 1x, @Webp(png) 2x" />
+            <img src="@png" alt="@alt" loading="lazy" class="size-full object-cover object-top" />
+        </picture>;
+
+    // "/showcase/vcr.png" -> "/showcase/vcr.webp" (full-resolution WebP, the 2x source).
+    private static string Webp(string png) =>
+        png.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? png[..^4] + ".webp" : png;
+
+    // "/showcase/vcr.png" -> "/showcase/vcr-sm.webp" (640px-wide WebP, the 1x source).
+    private static string WebpSmall(string png) =>
+        png.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? png[..^4] + "-sm.webp" : png;
+}
