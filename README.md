@@ -27,7 +27,7 @@ Most documentation projects should start with `Pennington.DocSite`. Drop down to
 
 ## Installation
 
-Pennington currently targets .NET 11 and uses preview C# language features.
+Pennington targets .NET 10 and .NET 11, and uses preview C# language features.
 
 For the DocSite quick start:
 
