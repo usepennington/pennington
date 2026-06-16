@@ -5,7 +5,7 @@ using Generation;
 using Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// Prefixes root-relative URLs (<c>href</c>, <c>src</c>, <c>action</c>)
+/// Prefixes root-relative URLs (<c>href</c>, <c>src</c>, <c>srcset</c>, <c>action</c>)
 /// with the configured base URL. Also stamps <c>data-base-url</c> on
 /// <c>&lt;body&gt;</c> so client-side code can reproduce the same prefix
 /// on dynamically-generated links.
@@ -37,11 +37,12 @@ internal sealed class BaseUrlHtmlRewriter : IHtmlResponseRewriter
     {
         document.Body?.SetAttribute("data-base-url", _baseUrl);
 
-        foreach (var element in document.QuerySelectorAll("[href], [src], [action]"))
+        foreach (var element in document.QuerySelectorAll("[href], [src], [action], [srcset]"))
         {
             RewriteAttribute(element, "href");
             RewriteAttribute(element, "src");
             RewriteAttribute(element, "action");
+            RewriteSrcset(element);
         }
 
         return Task.CompletedTask;
@@ -53,6 +54,35 @@ internal sealed class BaseUrlHtmlRewriter : IHtmlResponseRewriter
         if (value is not null && value.StartsWith('/') && !value.StartsWith("//"))
         {
             element.SetAttribute(attrName, _baseUrl + value);
+        }
+    }
+
+    // srcset is a comma-separated list of "url [descriptor]" candidates (descriptor
+    // like 1x / 2x / 640w), so the single-URL path above can't handle it. Each trimmed
+    // candidate starts with its URL, so the same root-relative guard prefixes the whole
+    // candidate — the descriptor rides along untouched.
+    private void RewriteSrcset(IElement element)
+    {
+        var value = element.GetAttribute("srcset");
+        if (string.IsNullOrEmpty(value))
+        {
+            return;
+        }
+
+        var changed = false;
+        var candidates = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        for (var i = 0; i < candidates.Length; i++)
+        {
+            if (candidates[i].StartsWith('/') && !candidates[i].StartsWith("//"))
+            {
+                candidates[i] = _baseUrl + candidates[i];
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            element.SetAttribute("srcset", string.Join(", ", candidates));
         }
     }
 }

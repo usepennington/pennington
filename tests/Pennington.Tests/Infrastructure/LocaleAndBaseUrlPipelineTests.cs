@@ -185,6 +185,23 @@ public class LocaleAndBaseUrlPipelineTests
     }
 
     [Fact]
+    public async Task Srcset_RootRelativeCandidates_GetBaseUrlPrefix()
+    {
+        // Regression: <picture><source srcset> and responsive <img srcset> were skipped
+        // by the base-URL rewriter, so under a sub-path deploy the WebP candidates 404'd
+        // while the <img src> fallback resolved — a broken <picture> on GitHub Pages.
+        var input = """<html><body><picture><source srcset="/img/a-sm.webp 1x, /img/a.webp 2x" /><img src="/img/a.png" srcset="/img/a.png 1x, //cdn.example.com/a.png 2x" /></picture></body></html>""";
+
+        var result = await RunChainAsync(input, locale: "en");
+
+        result.ShouldContain("srcset=\"/preview/img/a-sm.webp 1x, /preview/img/a.webp 2x\"");
+        result.ShouldContain("src=\"/preview/img/a.png\"");
+        // Protocol-relative candidates pass through, mirroring the single-URL path.
+        result.ShouldContain("//cdn.example.com/a.png 2x");
+        result.ShouldNotContain("/preview//cdn.example.com");
+    }
+
+    [Fact]
     public void LocaleLinkHtmlRewriter_RunsBefore_BaseUrlHtmlRewriter()
     {
         var localeRewriter = new LocaleLinkHtmlRewriter(CreateLocalization());
