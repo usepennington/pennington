@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://usepennington.github.io/pennington/sitemap.xml
+Sitemap: https://usepennington.net/sitemap.xml
