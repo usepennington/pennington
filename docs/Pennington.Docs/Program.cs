@@ -28,7 +28,7 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         Comment = "base",
     },
     GitHubUrl = "https://github.com/usepennington/pennington",
-    CanonicalBaseUrl = "https://usepennington.github.io/pennington/",
+    CanonicalBaseUrl = "https://usepennington.net/",
     DisplayFontFamily = "Lexend, sans-serif",
     BodyFontFamily = "'Noto Sans', sans-serif",
     MonoFontFamily = "'JetBrains Mono', ui-monospace, SFMono-Regular, monospace",

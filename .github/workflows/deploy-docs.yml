@@ -1,0 +1,143 @@
+# Deploys the docs site to Cloudflare Pages (Direct Upload — we build here, push the
+# finished folder). Three environments, picked by trigger:
+#   tag  v*    -> project "pennington"      (production)  https://usepennington.net
+#   push main  -> project "pennington-dev"  (production)  https://dev.usepennington.net
+#   pull_req   -> project "pennington-dev"  (branch pr-N) https://pr-N.pennington-dev.pages.dev
+#
+# Version shown on the site comes from MinVer's AssemblyInformationalVersion, so a tag
+# build shows the clean release version and a main/PR build shows the -alpha.N height
+# version automatically — no override needed.
+name: Deploy docs
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+env:
+  ASPNETCORE_ENVIRONMENT: Production
+  WEBAPP_PATH: ./docs/Pennington.Docs/
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: deploy-docs-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Fork PRs don't receive repo secrets, so CLOUDFLARE_API_TOKEN is empty there.
+    # The build still runs (validating the PR), but the Cloudflare steps gate on this
+    # flag and skip cleanly instead of hard-failing on missing credentials.
+    env:
+      HAS_CF_CREDS: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so MinVer can read tags
+
+      - name: Cache .NET packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            ~/.dotnet
+          key: ${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj', '**/global.json', '**/packages.lock.json') }}
+          restore-keys: ${{ runner.os }}-dotnet-
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+            11.0.x
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build docs site to static output
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: true
+        run: |
+          dotnet build -c Release
+          dotnet run --project ${{ env.WEBAPP_PATH }} --configuration Release --no-build -- build
+
+      - name: Tree-shake CSS with PurgeCSS
+        run: |
+          CSS="${{ env.WEBAPP_PATH }}output/styles.css"
+          before=$(wc -c < "$CSS")
+          npx --yes purgecss@7 --config purgecss.config.cjs --output ${{ env.WEBAPP_PATH }}output/
+          after=$(wc -c < "$CSS")
+          echo "styles.css: $before -> $after bytes ($(( (before - after) * 100 / before ))% removed)"
+
+      - name: Verify purged CSS retains runtime-toggled rules
+        run: |
+          CSS="${{ env.WEBAPP_PATH }}output/styles.css"
+          for needle in ':where(.dark' 'mobile-menu-open' '@keyframes'; do
+            grep -qF "$needle" "$CSS" || {
+              echo "::error::PurgeCSS dropped '$needle' — a runtime-toggled style would break. Update the safelist in purgecss.config.cjs."
+              exit 1
+            }
+          done
+          echo "purged styles.css retains dark-mode, mobile-menu and keyframe rules"
+
+      - name: Install minify
+        run: |
+          curl -sfL https://github.com/tdewolff/minify/releases/latest/download/minify_linux_amd64.tar.gz | tar -xzf - -C /tmp
+          sudo mv /tmp/minify /usr/local/bin/
+
+      - name: Minify CSS and JavaScript
+        run: |
+          find "${{ env.WEBAPP_PATH }}output" -type f -name "*.css" -exec /usr/local/bin/minify -o {} {} \;
+          find "${{ env.WEBAPP_PATH }}output" -type f -name "*.js"  -exec /usr/local/bin/minify -o {} {} \;
+
+      - name: Resolve deploy target
+        id: target
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "project=pennington"     >> "$GITHUB_OUTPUT"
+            echo "branch=main"            >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_REF}" == refs/heads/main ]]; then
+            echo "project=pennington-dev" >> "$GITHUB_OUTPUT"
+            echo "branch=main"            >> "$GITHUB_OUTPUT"
+          else
+            echo "project=pennington-dev" >> "$GITHUB_OUTPUT"
+            echo "branch=pr-${{ github.event.number }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        if: env.HAS_CF_CREDS == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy ${{ env.WEBAPP_PATH }}output --project-name=${{ steps.target.outputs.project }} --branch=${{ steps.target.outputs.branch }}
+
+      - name: Comment preview URL on PR
+        if: github.event_name == 'pull_request' && env.HAS_CF_CREDS == 'true'
+        uses: actions/github-script@v7
+        env:
+          ALIAS_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.deployment-url }}
+        with:
+          script: |
+            const url = process.env.ALIAS_URL || process.env.DEPLOY_URL;
+            const marker = '<!-- pennington-preview -->';
+            const body = `${marker}\n🛰️ **Docs preview:** ${url}\n\n_Rebuilt on every push to this PR; torn down when it closes._`;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            const args = { owner: context.repo.owner, repo: context.repo.repo, body };
+            if (existing) await github.rest.issues.updateComment({ ...args, comment_id: existing.id });
+            else await github.rest.issues.createComment({ ...args, issue_number: context.issue.number });
