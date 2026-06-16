@@ -51,8 +51,19 @@ jobs:
         with:
           node-version: 20
 
+      - name: Resolve last released (non-alpha) version
+        id: released
+        run: |
+          # Highest v-prefixed tag with no prerelease suffix (no '-'); empty if none.
+          # The docs always display the last *released* version, so a post-release
+          # docs deploy doesn't show MinVer's 0.1.2-alpha.0.N height version.
+          v=$(git tag --list 'v*' --sort=-v:refname | grep -vE '-' | head -1 | sed 's/^v//')
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "Docs will display Pennington version: ${v:-<minver default>}"
+
       - name: Build docs site to static output
         env:
+          MinVerVersionOverride: ${{ steps.released.outputs.version }}
           DOTNET_CLI_TELEMETRY_OPTOUT: true
         run: |
           dotnet build -c Release
