@@ -1,0 +1,8 @@
+# Sidecar metadata for the home page (Components/Index.razor, @page "/"). Gives the landing page a
+# ContentRecord purely so it earns a generated social card + og:image like every other page. The
+# body still renders through the Index component (the page resolver ignores Razor-page sources), so
+# this only feeds the card and head meta — kept out of search, llms.txt, and the nav tree.
+title: A static site your .NET project deserves
+description: Markdown in, static site out. No Node, no npm — just dotnet run.
+search: false
+llms: false

@@ -1,3 +1,4 @@
+using Ashcroft;
 using Mdazor;
 using Pennington.ApiMetadata.Reflection;
 using Pennington.Docs;
@@ -8,16 +9,61 @@ using Pennington.DocSite;
 using Pennington.DocSite.Api;
 using Pennington.Infrastructure;
 using Pennington.MonorailCss;
+using Pennington.SocialCards;
 using Pennington.TreeSitter;
 using Pennington.Book;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Social-card render assets, copied next to the app by the csproj and read once at startup:
+// the dark blueprint background (passed as bytes per render — stateless, no re-read) and the
+// Lexend face Ashcroft loads via Theme.FontPath (the site's woff2 fonts can't feed SkiaSharp,
+// and the ubuntu-latest build has no system Lexend, so the TTF ships in the repo).
+ReadOnlyMemory<byte> cardBackground =
+    File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "blueprint-1200x630.png"));
 
 builder.Services.AddDocSite(() => new DocSiteOptions
 {
     SiteTitle = "Pennington",
     SiteDescription = "A Content Engine for .NET",
     SocialImageUrl = "/social.png",
+    // Per-page Open Graph / X cards drawn by Ashcroft over the blueprint background. The framework
+    // discovers one /social-cards/**.png route per page and invokes Render to bake it; each page's
+    // og:image/twitter:image then points at its card (SocialImageUrl stays as the global fallback).
+    SocialCards = new SocialCardOptions
+    {
+        Render = (request, _, _) =>
+        {
+            var brand = string.IsNullOrEmpty(request.SiteDescription)
+                ? request.SiteTitle
+                : $"{request.SiteTitle} · {request.SiteDescription}";
+
+            var card = SocialCard.Create(request.Width, request.Height)
+                .Background(cardBackground)
+                .Theme(new Theme
+                {
+                    TextColor = "#f8fafc",
+                })
+                .At(Anchor.BottomLeft, stack =>
+                {
+                    stack.Text(request.Title, new TextStyle
+                    {
+                        Color = "#f8fafc", Size = 64, Weight = 700, LetterSpacing = -0.15f
+                    });
+                    if (!string.IsNullOrWhiteSpace(request.Description))
+                    {
+                        stack.Text(request.Description, new TextStyle
+                        {
+                            Color = "#f8fafc", Size = 24, Weight = 300
+                        });
+                    }
+
+                    stack.Text(brand, new TextStyle { Color = "#aaa", Size = 18, Weight = 300});
+                });
+
+            return Task.FromResult<byte[]?>(card.ToBytes());
+        },
+    },
     ColorScheme = new GrapeColorScheme(),
     SyntaxTheme = new SyntaxTheme
     {

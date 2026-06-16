@@ -1,10 +1,14 @@
 <Project>
   <ItemGroup>
     <PackageVersion Include="AngleSharp" Version="1.5.1" />
+    <PackageVersion Include="Ashcroft" Version="0.3.0" />
     <PackageVersion Include="CooklangSharp" Version="0.0.0-alpha.0.9" />
     <PackageVersion Include="DeweySearch" Version="0.1.2" />
     <PackageVersion Include="DeweySearch.Web" Version="0.1.2" />
     <PackageVersion Include="DiffPlex" Version="1.9.0" />
+    <!-- Linux/CI native binaries for Ashcroft's SkiaSharp + HarfBuzz render path; versions track
+         Ashcroft 0.2.0's SkiaSharp 3.119.4 / HarfBuzzSharp 8.3.1.5 dependencies exactly. -->
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.5" />
     <PackageVersion Include="Humanizer.Core" Version="3.0.10" />
     <PackageVersion Include="LibGit2Sharp" Version="0.31.0" />
     <PackageVersion Include="Markdig" Version="1.3.0" />
@@ -20,6 +24,7 @@
     <PackageVersion Include="PuppeteerSharp" Version="25.1.1" />
     <PackageVersion Include="SharpYaml" Version="3.10.0" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.4" />
     <PackageVersion Include="Spectre.Console" Version="0.57.0" />
     <PackageVersion Include="Spectre.Console.Cli" Version="1.0.0-alpha.0.7" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0" />

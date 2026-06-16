@@ -28,6 +28,19 @@
     <PackageReference Include="SharpYaml" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Social-card (OG image) generation via Ashcroft (SkiaSharp + HarfBuzz). The two
+         *.NativeAssets.Linux* packages supply the headless native binaries the ubuntu-latest
+         docs build needs; on Windows/macOS SkiaSharp's in-box natives are used and these stay inert. -->
+    <PackageReference Include="Ashcroft" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Social-card render assets, read at runtime from AppContext.BaseDirectory by Program.cs:
+         the blueprint background and the Lexend face Ashcroft loads through Theme.FontPath. -->
+    <None Update="blueprint-1200x630.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <Watch Include="Content\**\*.*" />
     <Watch Include="Data\**\*.*" />
   </ItemGroup>
