@@ -1,0 +1,39 @@
+# Tears down a PR's Cloudflare Pages preview deployments when the PR closes/merges.
+# Previews are free and harmless to leave, so this is best-effort tidiness — if the
+# API call flakes, the stale pr-N alias is simply overwritten by the next PR that
+# happens to reuse the number.
+name: Cleanup PR preview
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  delete-preview:
+    # Same-repo PRs only — fork PRs never got a preview (no secrets), so there is
+    # nothing to delete and no credentials to delete it with.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete Cloudflare Pages preview deployments for this PR
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PROJECT: pennington-dev
+          BRANCH: pr-${{ github.event.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${PROJECT}/deployments"
+          deleted=0
+          for page in $(seq 1 20); do
+            resp=$(curl -s -H "Authorization: Bearer ${CF_API_TOKEN}" "${api}?env=preview&page=${page}&per_page=25")
+            [ "$(echo "$resp" | jq -r '.success')" = "true" ] || { echo "API error:"; echo "$resp" | jq -c '.errors'; exit 1; }
+            count=$(echo "$resp" | jq '.result | length')
+            [ "$count" -eq 0 ] && break
+            for id in $(echo "$resp" | jq -r --arg b "$BRANCH" '.result[] | select(.deployment_trigger.metadata.branch == $b) | .id'); do
+              curl -s -X DELETE -H "Authorization: Bearer ${CF_API_TOKEN}" "${api}/${id}?force=true" > /dev/null
+              deleted=$((deleted + 1))
+            done
+          done
+          echo "Deleted ${deleted} preview deployment(s) for ${BRANCH}."
