@@ -7,12 +7,12 @@ on:
     paths-ignore:
       - '**.md'
       - 'LICENSE'
-      - 'docs/Pennington.Docs/Content/**'
+      - 'docs/**'
   pull_request:
     paths-ignore:
       - '**.md'
       - 'LICENSE'
-      - 'docs/Pennington.Docs/Content/**'
+      - 'docs/**'
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -98,5 +98,6 @@ jobs:
           for pkg in ./artifacts/*.nupkg; do
             dotnet nuget push "$pkg" \
               --api-key "$NUGET_API_KEY" \
-              --source https://api.nuget.org/v3/index.json
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
           done
