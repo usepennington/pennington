@@ -46,8 +46,8 @@ entries:
       - "VCR# terminal SVGs"
 
   - name: "Pennington"
-    url: "usepennington.github.io/pennington"
-    href: "https://usepennington.github.io/pennington/"
+    url: "usepennington.net"
+    href: "https://usepennington.net/"
     screenshot: "/showcase/pennington.png"
     screenshotDark: "/showcase/pennington-dark.png"
     description: >-
