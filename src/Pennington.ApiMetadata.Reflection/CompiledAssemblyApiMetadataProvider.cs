@@ -712,23 +712,7 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
         }
 
         var sb = new System.Text.StringBuilder();
-        foreach (var node in doc.Summary)
-        {
-            switch (node.Value)
-            {
-                case TextNode t: sb.Append(t.Text); break;
-                case InlineCodeNode c: sb.Append(c.Text); break;
-                case ParaNode p:
-                    foreach (var child in p.Children)
-                    {
-                        if (child.Value is TextNode pt)
-                        {
-                            sb.Append(pt.Text);
-                        }
-                    }
-                    break;
-            }
-        }
+        AppendPlainText(sb, doc.Summary);
 
         var collapsed = System.Text.RegularExpressions.Regex.Replace(sb.ToString(), @"\s+", " ").Trim();
         if (collapsed.Length == 0)
@@ -738,6 +722,25 @@ public sealed class CompiledAssemblyApiMetadataProvider : IApiMetadataProvider
 
         var period = collapsed.IndexOf('.');
         return period > 0 ? collapsed[..(period + 1)] : collapsed;
+    }
+
+    // Flattens an inline node tree to plain text, mirroring XmlDocHtmlRenderer's text content:
+    // a <see cref/> contributes its display text (or the shortened uid), and param/typeparam refs
+    // their names. Without this, those nodes vanish — leaving gaps like "extension methods for .".
+    private static void AppendPlainText(System.Text.StringBuilder sb, ImmutableArray<XmlDocNode> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            switch (node.Value)
+            {
+                case TextNode t: sb.Append(t.Text); break;
+                case InlineCodeNode c: sb.Append(c.Text); break;
+                case CrefNode cref: sb.Append(cref.DisplayText ?? UidDisplay.Shorten(cref.CrefId)); break;
+                case ParamRefNode pr: sb.Append(pr.ParamName); break;
+                case TypeParamRefNode tpr: sb.Append(tpr.ParamName); break;
+                case ParaNode p: AppendPlainText(sb, p.Children); break;
+            }
+        }
     }
 
     private sealed record Catalog(

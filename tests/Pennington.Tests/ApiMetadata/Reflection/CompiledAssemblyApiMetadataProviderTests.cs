@@ -102,4 +102,18 @@ public sealed class CompiledAssemblyApiMetadataProviderTests
         methods.ShouldNotBeEmpty();
         methods.ShouldNotContain(m => m.Name.StartsWith("op_", StringComparison.Ordinal));
     }
+
+    [Fact]
+    public async Task Renders_see_cref_text_in_the_plain_text_type_summary()
+    {
+        var provider = CreateProvider();
+
+        // BuildAuditContext's xmldoc summary is "Inputs handed to <see cref="IBuildAuditor.AuditAsync"/>.".
+        // The plain-text flattener must surface the cref's shortened name rather than drop the node
+        // and leave a dangling "Inputs handed to .".
+        var types = await provider.GetTypesAsync();
+        var context = types.First(t => t.Uid == "T:Pennington.Generation.BuildAuditContext");
+
+        context.Summary.ShouldBe("Inputs handed to AuditAsync.");
+    }
 }
