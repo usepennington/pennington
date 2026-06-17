@@ -61,7 +61,33 @@ public class MapGetEntryTests
         index.ShouldNotContain("Parameterized");
     }
 
-    private static LlmsTxtService CreateService(EndpointDataSource endpointDataSource)
+    [Fact]
+    public async Task FrontDoor_WithoutSiteVersion_ReportsPenningtonVersion()
+    {
+        var service = CreateService(new StubEndpointDataSource());
+
+        var index = await service.GetLlmsTxtAsync();
+
+        index.ShouldContain("penningtonVersion:");
+        index.ShouldNotContain("\nversion:");
+    }
+
+    [Fact]
+    public async Task FrontDoor_WithSiteVersion_EmitsVersionAndDropsPenningtonVersion()
+    {
+        var service = CreateService(
+            new StubEndpointDataSource(),
+            pennOptions: new PenningtonOptions { SiteTitle = "Test Site", SiteVersion = "0.57" });
+
+        var index = await service.GetLlmsTxtAsync();
+
+        index.ShouldContain("version: 0.57");
+        index.ShouldNotContain("penningtonVersion:");
+    }
+
+    private static LlmsTxtService CreateService(
+        EndpointDataSource endpointDataSource,
+        PenningtonOptions? pennOptions = null)
     {
         var fs = new MockFileSystem();
         var canonicalBase = new CanonicalBaseUrl(new UrlPath("https://example.test"));
@@ -83,7 +109,7 @@ public class MapGetEntryTests
             subtrees: [],
             fileSystem: fs,
             hostingEnvironment: new StubHostEnvironment(),
-            pennOptions: new PenningtonOptions { SiteTitle = "Test Site" },
+            pennOptions: pennOptions ?? new PenningtonOptions { SiteTitle = "Test Site" },
             llmsTxtOptions: new LlmsTxtOptions(),
             canonicalBase: canonicalBase,
             navigationBuilder: new NavigationBuilder(new FolderMetadataRegistry(Array.Empty<FolderMetadata>())),

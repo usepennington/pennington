@@ -24,6 +24,16 @@ public sealed class PenningtonOptions
     /// <summary>Default site description used for meta tags when a page supplies none.</summary>
     public string SiteDescription { get; set; } = "";
 
+    /// <summary>
+    /// Version of the subject the site documents (a library, product, or API) — emitted as the
+    /// <c>version:</c> line in <c>llms.txt</c>. When set it replaces the generator's own
+    /// <c>penningtonVersion:</c>, since a reader cares which release of the documented thing the
+    /// content describes, not which Pennington build produced it. Resolve it however suits the site
+    /// (for example, a referenced assembly's informational version); left null, <c>llms.txt</c> falls
+    /// back to reporting the Pennington version.
+    /// </summary>
+    public string? SiteVersion { get; set; }
+
     /// <summary>Absolute base URL used to generate canonical, OpenGraph, and feed links.</summary>
     public string? CanonicalBaseUrl { get; set; }
 

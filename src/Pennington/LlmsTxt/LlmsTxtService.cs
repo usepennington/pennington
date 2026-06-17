@@ -236,7 +236,11 @@ public sealed class LlmsTxtService : IFileWatchAware
         sb.AppendLine($"site: {canonicalBase.Value.Value}");
         sb.AppendLine($"canonical: {canonicalSelf}");
         sb.AppendLine($"generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC");
-        sb.AppendLine($"penningtonVersion: {PackageVersion}");
+        // The documented subject's version is what a reader wants; fall back to the generator's
+        // own version only when the site doesn't declare one.
+        sb.AppendLine(string.IsNullOrWhiteSpace(pennOptions.SiteVersion)
+            ? $"penningtonVersion: {PackageVersion}"
+            : $"version: {pennOptions.SiteVersion.Trim()}");
         sb.AppendLine();
     }
 

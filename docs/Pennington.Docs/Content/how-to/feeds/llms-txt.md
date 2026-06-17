@@ -27,6 +27,17 @@ examples/ExtensibilityLabExample/LlmsTxtConfiguration.cs > LlmsTxtConfiguration.
 
 Set `GenerateFullFile = true` to also emit `/llms-full.txt` — every sidecar concatenated into one file, useful for one-shot ingest by agents that cannot follow per-page links. Off by default because the file can be large.
 
+### Report the documented version with `SiteVersion`
+
+The `/llms.txt` front door stamps a version line so a crawler can tell which release the content describes. By default that is Pennington's own package version, emitted as `penningtonVersion:` — which says what generated the file, not what it documents. When your site documents a specific library or product, set `PenningtonOptions.SiteVersion` to that subject's version; the front door then emits `version:` and drops `penningtonVersion:`.
+
+```csharp
+penn.SiteTitle = "Spectre.Console";
+penn.SiteVersion = SpectreVersion.FromReferencedAssembly().Display; // "0.57"
+```
+
+Resolve the value however suits the site — a constant, a build property, or the informational version of a referenced assembly.
+
 ### (DocSite) Opt a page out with `llms: false`
 
 Every non-draft page is included in the index by default (`Llms = true`). Setting `llms: false` in a page's front matter causes `LlmsTxtService` to skip it when assembling `/llms.txt` and its sidecar markdown. The page still renders, appears in the sidebar, and participates in search unless `search: false` is also set. `Content/main/llms-hidden.md` in `examples/DocSiteKitchenSinkExample` is a working opted-out page:
