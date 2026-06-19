@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Pennington.Tool</RootNamespace>
+
+    <!-- Packaged as a .NET global tool installed via `dotnet tool install`, then invoked as
+         `pennington`. See AOT-NOTES.md for why PublishAot is not yet viable. -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>pennington</ToolCommandName>
+    <PackageId>Pennington.Tool</PackageId>
+    <IsPackable>true</IsPackable>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tomlyn" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Pennington.DocSite\Pennington.DocSite.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.BlogSite\Pennington.BlogSite.csproj" />
+  </ItemGroup>
+
+</Project>

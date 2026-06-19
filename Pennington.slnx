@@ -13,6 +13,9 @@
     <Project Path="src/Pennington.BlogSite/Pennington.BlogSite.csproj" />
     <Project Path="src/Pennington.Templates/Pennington.Templates.csproj" />
   </Folder>
+  <Folder Name="/tool/">
+    <Project Path="tool/Pennington.Tool/Pennington.Tool.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Pennington.Tests/Pennington.Tests.csproj" />
     <Project Path="tests/Pennington.IntegrationTests/Pennington.IntegrationTests.csproj" />

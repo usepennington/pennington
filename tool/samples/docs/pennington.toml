@@ -1,0 +1,18 @@
+# Pennington tool sample — documentation site.
+template = "docs"
+
+[site]
+title = "Sample Docs"
+description = "A documentation site served by the pennington tool from a pennington.toml file."
+github_url = "https://github.com/usepennington/pennington"
+content_root = "Content"
+header = '<a href="/" class="font-display font-medium tracking-tight">Sample Docs</a>'
+footer = '<footer class="mt-16 py-8 text-center text-sm text-base-500">Built with the Pennington tool.</footer>'
+
+[[area]]
+title = "Guides"
+slug = "guides"
+
+[[area]]
+title = "Reference"
+slug = "reference"
