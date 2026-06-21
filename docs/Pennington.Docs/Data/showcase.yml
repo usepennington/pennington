@@ -111,6 +111,29 @@ entries:
       - "Self-rendered SVG demos"
       - "Diataxis four areas"
 
+  - name: "Beck"
+    url: "usepennington.github.io/beck"
+    href: "https://usepennington.github.io/beck/"
+    screenshot: "/showcase/beck.png"
+    screenshotDark: "/showcase/beck-dark.png"
+    description: >-
+      Declarative, animated architecture diagrams from YAML — "Mermaid, but sexy." Describe a
+      system in a few lines of YAML and Beck lays it out, routes the edges, themes itself from
+      the host's CSS variables, and animates packets flowing through it. The docs are a bare
+      `AddPennington` host that owns the entire chrome — a custom landing, a live playground, a
+      hand-built sidebar — and dogfood the tool: every diagram is rendered live by Beck, wearing
+      the site's MonorailCSS emerald palette and following its dark mode.
+    notable: >-
+      The reference pages hand-maintain no token tables. A `BeckGallery` Mdazor component reflects
+      over Beck's authoring enums and renders each value as a live `beck` fence, so the gallery
+      tracks the schema automatically — and inherits the host palette and dark mode for free.
+    chips:
+      - "Raw AddPennington host"
+      - "Custom Blazor chrome"
+      - "Mdazor token gallery"
+      - ":symbol source fences"
+      - "Self-rendered diagrams"
+
   - name: "Thirty25"
     url: "thirty25.blog"
     href: "https://thirty25.blog/"
