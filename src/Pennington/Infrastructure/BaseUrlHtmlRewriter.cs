@@ -5,7 +5,7 @@ using Generation;
 using Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// Prefixes root-relative URLs (<c>href</c>, <c>src</c>, <c>srcset</c>, <c>action</c>)
+/// Prefixes root-relative URLs (<c>href</c>, <c>src</c>, <c>data-src</c>, <c>srcset</c>, <c>action</c>)
 /// with the configured base URL. Also stamps <c>data-base-url</c> on
 /// <c>&lt;body&gt;</c> so client-side code can reproduce the same prefix
 /// on dynamically-generated links.
@@ -37,10 +37,11 @@ internal sealed class BaseUrlHtmlRewriter : IHtmlResponseRewriter
     {
         document.Body?.SetAttribute("data-base-url", _baseUrl);
 
-        foreach (var element in document.QuerySelectorAll("[href], [src], [action], [srcset]"))
+        foreach (var element in document.QuerySelectorAll("[href], [src], [data-src], [action], [srcset]"))
         {
             RewriteAttribute(element, "href");
             RewriteAttribute(element, "src");
+            RewriteAttribute(element, "data-src");
             RewriteAttribute(element, "action");
             RewriteSrcset(element);
         }
