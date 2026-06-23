@@ -12,7 +12,7 @@
 @inject IServiceProvider Services
 
 <!DOCTYPE html>
-<html lang="@Locale.HtmlLang" dir="@Locale.Direction">
+<html lang="@Locale.HtmlLang" dir="@Locale.Direction" class="bg-base-100 dark:bg-base-950 dark:scheme-dark">
 
 <head>
     <meta charset="utf-8"/>
@@ -46,6 +46,18 @@
                 const dark = stored ? stored === 'dark' : prefersDark;
                 if (dark) document.documentElement.classList.add('dark');
             } catch (e) { }
+            // Keep <meta name="theme-color"> (mobile browser chrome) matched to
+            // the painted root background, whatever the configured palette
+            // resolves it to. Reused by the theme toggle in scripts.js.
+            window.syncThemeColor = function () {
+                try {
+                    const bg = getComputedStyle(document.documentElement).backgroundColor;
+                    let meta = document.querySelector('meta[name="theme-color"]');
+                    if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
+                    meta.content = bg;
+                } catch (e) { }
+            };
+            window.syncThemeColor();
         })();
     </script>
 
