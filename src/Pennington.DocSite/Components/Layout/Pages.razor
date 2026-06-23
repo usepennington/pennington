@@ -2,13 +2,16 @@
 @using Pennington.DocSite.Services
 @using Pennington.Infrastructure
 @using Pennington.Localization
+@using Pennington.LlmsTxt
 @using Pennington.StructuredData
+@using Microsoft.Extensions.DependencyInjection
 @inject DocSiteContentResolver ContentResolver
 @inject NavigationBuilder NavBuilder
 @inject DocSiteOptions DocSiteOptions
 @inject NavigationManager NavigationManager
 @inject LocalizationOptions Localization
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IServiceProvider Services
 @inject Microsoft.Extensions.Localization.IStringLocalizer<Pages> Localizer
 
 @if (_resolved != null)
@@ -17,6 +20,10 @@
     <HeadContent>
         <meta name="description" content="@_resolved.Description" />
         <meta property="og:type" content="website" />
+        @if (MarkdownAlternateHref() is { } mdHref)
+        {
+            <link rel="alternate" type="text/markdown" href="@mdHref" />
+        }
         @foreach (var alt in _alternateLanguages)
         {
             <link rel="alternate" hreflang="@alt.HtmlLang" href="@alt.Url" />
@@ -135,6 +142,29 @@ else if (_notFound)
             Url = DocSiteOptions.CanonicalBaseUrl.TrimEnd('/') + "/",
             Description = DocSiteOptions.SiteDescription,
         };
+    }
+
+    // Advertises the page's co-located markdown copy (page URL + index.md) as an alternate
+    // representation, so agents that honour content negotiation (Claude Code's WebFetch sends
+    // Accept: text/markdown) can discover the token-cheap variant. The URL is pure string math on
+    // the page's own route — no llms-service lookup, so it never re-enters the self-fetching
+    // projection. Emitted only when llms generation is on and the page actually produces a
+    // sidecar: this catch-all renders content pages only (routed components like the API
+    // reference never reach it), and `llms: false` / locale-fallback pages are gated out.
+    private string? MarkdownAlternateHref()
+    {
+        if (_resolved is null || _resolved.IsFallback || !_resolved.Metadata.Llms)
+        {
+            return null;
+        }
+
+        if (Services.GetService<LlmsTxtOptions>() is null)
+        {
+            return null;
+        }
+
+        var key = _resolved.Route.CanonicalPath.Value.Trim('/');
+        return key.Length == 0 ? "/index.md" : $"/{key}/index.md";
     }
 
     protected override async Task OnInitializedAsync()

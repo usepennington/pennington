@@ -346,6 +346,28 @@ public class LlmsTxtAndSearchEndpointTests
     }
 
     [Fact]
+    public async Task ContentPage_AdvertisesCoLocatedMarkdownAlternate()
+    {
+        // A markdown content page carries <link rel="alternate" type="text/markdown"> in <head>
+        // pointing at its co-located {route}/index.md — the signal Claude Code's WebFetch keys on
+        // when it sends Accept: text/markdown. The advertised URL must actually resolve to markdown.
+        var html = await _client.GetStringAsync("/how-to/feeds/llms-txt/", TestContext.Current.CancellationToken);
+
+        var context = BrowsingContext.New(Configuration.Default);
+        var page = await context.OpenAsync(req => req.Content(html), TestContext.Current.CancellationToken);
+
+        var link = page.QuerySelector("link[rel='alternate'][type='text/markdown']");
+        link.ShouldNotBeNull("content pages should advertise their co-located markdown copy");
+        var href = link!.GetAttribute("href");
+        href.ShouldNotBeNull();
+        href!.ShouldEndWith("/how-to/feeds/llms-txt/index.md");
+
+        var markdown = await _client.GetAsync(href, TestContext.Current.CancellationToken);
+        markdown.EnsureSuccessStatusCode();
+        markdown.Content.Headers.ContentType?.MediaType.ShouldBe("text/markdown");
+    }
+
+    [Fact]
     public async Task DocsPage_BodyCarriesRobotsOnlyCueToLlmsTxt()
     {
         // <link rel="alternate" type="text/markdown"> in <head> is stripped by

@@ -33,10 +33,11 @@ covers the setup.
 
 Generating the files isn't enough if nothing points to them. DocSite and
 BlogSite emit a `<link rel="alternate" type="text/markdown">` tag in every
-page's head — the standard way to advertise an alternate representation. And
-because tools like WebFetch strip `<head>` before an agent sees it, Pennington
-also drops a paired hidden hint at the top of the `<body>`, so an agent reading
-the page the hard way still learns there's a clean copy.
+content page's head, pointing at that page's co-located `index.md` — the
+standard way to advertise an alternate representation. And because tools like
+WebFetch strip `<head>` before an agent sees it, Pennington also drops a paired
+hidden hint at the top of the `<body>`, so an agent reading the page the hard
+way still learns there's a clean copy.
 
 ## Content that's only for agents
 
