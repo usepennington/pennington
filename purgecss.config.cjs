@@ -26,13 +26,21 @@ module.exports = {
   // classList.toggle / setAttribute in the shipped Pennington.UI scripts — keep in sync
   // when new runtime-toggled classes are added.
   safelist: {
-    standard: ["dark", "active", "is-active", "hljs", "hidden"],
+    // bg-accent-500 / bg-base-400 are toggled onto the active nav item by scripts.js
+    // (classList.toggle); they happen to also render statically today, but list them so
+    // survival doesn't depend on that coincidence.
+    standard: ["dark", "active", "is-active", "hljs", "hidden", "bg-accent-500", "bg-base-400"],
     greedy: [/^data-/, /^aria-/, /^opacity-(0|100)$/, /-state$/],
   },
 
-  // Never strip these — they are referenced indirectly (animation:, var(), @font-face)
-  // rather than by a selector PurgeCSS can see in the HTML.
-  keyframes: true,
+  // @keyframes and @font-face are reached through MonorailCSS's `var()` indirection
+  // (`animation: var(--animate-pulse)`, `font-family: var(--font-*)`), which PurgeCSS can't
+  // follow — enabling their removal strips `@keyframes pulse`/`ping` and a web `@font-face`
+  // while keeping the utilities that depend on them. Leave OFF (false is the default).
+  keyframes: false,
+  fontFace: false,
+
+  // Variables are safe to purge: PurgeCSS keeps any custom property reached by a `var()` in
+  // retained CSS, and dropping the unused palette entries saves ~2 KB brotli.
   variables: true,
-  fontFace: true,
 };

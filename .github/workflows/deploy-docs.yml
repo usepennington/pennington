@@ -81,13 +81,13 @@ jobs:
       - name: Verify purged CSS retains runtime-toggled rules
         run: |
           CSS="${{ env.WEBAPP_PATH }}output/styles.css"
-          for needle in ':where(.dark' 'mobile-menu-open' '@keyframes'; do
+          for needle in ':where(.dark' 'mobile-menu-open' '@keyframes' '@font-face'; do
             grep -qF "$needle" "$CSS" || {
-              echo "::error::PurgeCSS dropped '$needle' — a runtime-toggled style would break. Update the safelist in purgecss.config.cjs."
+              echo "::error::PurgeCSS dropped '$needle' — a runtime-toggled or var()-indirected style would break. Check the safelist / keyframes / fontFace settings in purgecss.config.cjs."
               exit 1
             }
           done
-          echo "purged styles.css retains dark-mode, mobile-menu and keyframe rules"
+          echo "purged styles.css retains dark-mode, mobile-menu, keyframe and font-face rules"
 
       - name: Install minify
         run: |
