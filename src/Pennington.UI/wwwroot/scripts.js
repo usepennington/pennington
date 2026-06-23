@@ -104,6 +104,9 @@ class ThemeManager {
         document.head.appendChild(css);
         document.documentElement.classList.toggle('dark', dark);
         try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch (e) { }
+        // Re-match the browser chrome to the new theme (defined inline in each
+        // site's <head> bootstrap, so it may be absent on bare hosts).
+        if (window.syncThemeColor) window.syncThemeColor();
         // Force the override into the same paint as the class flip, then drop
         // it on the next frame so hover transitions keep working normally.
         window.getComputedStyle(css).opacity;

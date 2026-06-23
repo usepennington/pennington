@@ -6,7 +6,7 @@
 @inject IWebHostEnvironment WebHostEnvironment
 @inject IServiceProvider Services
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="bg-base-50 dark:bg-base-950 dark:scheme-dark">
 
 <head>
     <meta charset="utf-8"/>
@@ -39,6 +39,18 @@
         } else {
             document.documentElement.classList.remove('dark');
         }
+        // Keep <meta name="theme-color"> (mobile browser chrome) matched to the
+        // painted root background, whatever the configured palette resolves it
+        // to. Reused by the theme toggle in scripts.js.
+        window.syncThemeColor = function () {
+            try {
+                const bg = getComputedStyle(document.documentElement).backgroundColor;
+                let meta = document.querySelector('meta[name="theme-color"]');
+                if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
+                meta.content = bg;
+            } catch (e) { }
+        };
+        window.syncThemeColor();
     </script>
     @* Default title — pages override via their own <PageTitle> from a child
        component. Must register BEFORE <HeadOutlet/>, otherwise the
