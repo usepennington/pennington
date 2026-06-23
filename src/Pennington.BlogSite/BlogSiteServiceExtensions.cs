@@ -87,17 +87,14 @@ public static class BlogSiteServiceExtensions
         // request.
         services.AddMonorailCss(_ => BuildMonorailOptions(configureOptions()));
 
-        // Component style registry. BlogSite ships no skin (its chrome has no registry-keyed
-        // slots yet); the user's Styles merge over the Pennington.UI component defaults. The
-        // overrides func re-invokes the options factory per resolve so Styles edits flow under
-        // dotnet run; unknown keys throw here at startup, listing the valid catalog. The class
-        // merger resolves override-vs-default conflicts through BlogSite's own MonorailCSS
-        // framework — built lazily on the first override merge, since most hosts set no Styles.
+        // Pennington.UI components style themselves (inline defaults + a Variant param); a
+        // per-instance *Class param Tailwind-merges over that base via ClassMerge, run through
+        // BlogSite's own MonorailCSS framework so the palette and custom utilities define the
+        // conflicts. Lazy: most renders pass no *Class, so the framework is only built on first use.
         var styleMerger = new Lazy<Func<string, string, string>>(
             () => MonorailCssService.CreateClassMerger(BuildMonorailOptions(configureOptions())));
-        services.AddPenningtonStyles(
-            styleOverrides: () => configureOptions().Styles,
-            classMerger: (baseClasses, overrideClasses) => styleMerger.Value(baseClasses, overrideClasses));
+        services.AddSingleton(new ClassMerge(
+            (baseClasses, overrideClasses) => styleMerger.Value(baseClasses, overrideClasses)));
 
         // Not-found body resolver (content-root 404.md). Post listings, single-post rendering, and RSS
         // come from the shared core BlogPostQuery (registered by AddPennington) over the cached records.
@@ -122,7 +119,7 @@ public static class BlogSiteServiceExtensions
         return services;
 
         // Builds the MonorailCSS options BlogSite renders with. Shared by the stylesheet factory
-        // and the style registry's class merger so both reason about the same utility model.
+        // and the component class merger (ClassMerge) so both reason about the same utility model.
         static MonorailCssOptions BuildMonorailOptions(BlogSiteOptions options) =>
             new()
             {
