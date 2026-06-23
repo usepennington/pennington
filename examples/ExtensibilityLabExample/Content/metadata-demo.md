@@ -15,6 +15,6 @@ the `Derived` context key. `<LastModified />` reads it and prints the date:
 
 <LastModified />
 
-This page's enriched keys also surface in its `/llms.txt` sidecar at
-`/_llms/metadata-demo.md` — the front-matter block there carries both
+This page's enriched keys also surface in its co-located markdown at
+`/metadata-demo/index.md` — the front-matter block there carries both
 `git_last_modified` and `reading_time_minutes`.

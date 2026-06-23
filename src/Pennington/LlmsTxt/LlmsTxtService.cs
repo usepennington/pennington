@@ -116,11 +116,10 @@ public sealed class LlmsTxtService : IFileWatchAware
         CollectLeafPaths(subtreeOnlyTree, linkablePaths);
 
         var ctx = new BuildContext(
-            Options: llmsTxtOptions,
             CanonicalBase: canonicalBase,
             Logger: logger,
             PageByPath: pageByPath,
-            RewriteHref: BuildLinkRewriter(linkablePaths, llmsTxtOptions.OutputDirectory, canonicalBase),
+            RewriteHref: BuildLinkRewriter(linkablePaths, canonicalBase),
             Nodes: new List<RenderedNode>(),
             MarkdownFiles: ImmutableList.CreateBuilder<MarkdownFile>(),
             FullContent: llmsTxtOptions.GenerateFullFile ? new StringBuilder() : null);
@@ -346,11 +345,12 @@ public sealed class LlmsTxtService : IFileWatchAware
 
             var rendition = BuildRendition(markdown);
             var body = rendition.MarkdownBody;
-            // Root-level pages (canonical path "/") have an empty key; use "index" as the
-            // slug so the sidecar lands at /_llms/index.md instead of /_llms/.md.
-            var sidecarKey = string.IsNullOrEmpty(key) ? "index" : key;
-            var mdPath = $"{ctx.Options.OutputDirectory}/{sidecarKey}.md";
-            var linkUrl = BuildStrippedMarkdownUrl(ctx.CanonicalBase, ctx.Options.OutputDirectory, sidecarKey);
+            // Co-located markdown: the sidecar lands beside the page it mirrors as
+            // {route}/index.md (the root page at /index.md), so an agent can reach it by
+            // appending "index.md" to any page URL — and the static build writes it into
+            // the same output folder as the page's index.html.
+            var mdPath = BuildCoLocatedMarkdownPath(key);
+            var linkUrl = BuildCoLocatedMarkdownUrl(ctx.CanonicalBase, key);
             var description = frontMatter?.Description ?? page.Toc.Description;
             var derived = page.Origin?.Value is MarkdownOrigin md2 ? md2.Parsed.Derived : null;
             var sidecarHeader = BuildSidecarHeader(item, frontMatter, description, ctx.CanonicalBase, linkUrl, rendition, derived);
@@ -527,7 +527,6 @@ public sealed class LlmsTxtService : IFileWatchAware
 
     private static Func<string, string> BuildLinkRewriter(
         HashSet<string> linkablePaths,
-        string outputDirectory,
         CanonicalBaseUrl canonicalBase)
     {
         return href =>
@@ -550,23 +549,30 @@ public sealed class LlmsTxtService : IFileWatchAware
             var pathPart = queryIdx >= 0 ? beforeFragment[..queryIdx] : beforeFragment;
 
             var key = NormalizePath(pathPart);
-            if (string.IsNullOrEmpty(key) || !linkablePaths.Contains(key))
+            if (!linkablePaths.Contains(key))
             {
                 return href;
             }
 
-            return BuildStrippedMarkdownUrl(canonicalBase, outputDirectory, key) + query + fragment;
+            return BuildCoLocatedMarkdownUrl(canonicalBase, key) + query + fragment;
         };
     }
 
     /// <summary>
-    /// Builds the public URL for a stripped markdown file, combining the canonical
-    /// base with the <c>{outputDirectory}/{key}.md</c> suffix. Produces an absolute
-    /// URL when the base has an http(s) scheme; otherwise a root-relative path.
+    /// Builds the relative output path for a page's co-located markdown: <c>{key}/index.md</c>,
+    /// or <c>index.md</c> for the root page (empty key). Mirrors the page's <c>index.html</c>.
     /// </summary>
-    private static string BuildStrippedMarkdownUrl(CanonicalBaseUrl canonicalBase, string outputDirectory, string key)
+    private static string BuildCoLocatedMarkdownPath(string key)
+        => string.IsNullOrEmpty(key) ? "index.md" : $"{key}/index.md";
+
+    /// <summary>
+    /// Builds the public URL for a page's co-located markdown, combining the canonical base
+    /// with <c>/{key}/index.md</c> (<c>/index.md</c> for the root). Produces an absolute URL
+    /// when the base has an http(s) scheme; otherwise a root-relative path.
+    /// </summary>
+    private static string BuildCoLocatedMarkdownUrl(CanonicalBaseUrl canonicalBase, string key)
     {
-        var relative = new UrlPath($"/{outputDirectory}/{key}.md");
+        var relative = new UrlPath("/" + BuildCoLocatedMarkdownPath(key));
         return canonicalBase.Combine(relative).Value;
     }
 
@@ -619,7 +625,6 @@ public sealed class LlmsTxtService : IFileWatchAware
     private sealed record LlmRendition(string MarkdownBody, string ContentHash, int TokenEstimate);
 
     private sealed record BuildContext(
-        LlmsTxtOptions Options,
         CanonicalBaseUrl CanonicalBase,
         ILogger Logger,
         Dictionary<string, RenderedPage> PageByPath,

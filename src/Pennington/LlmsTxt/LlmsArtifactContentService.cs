@@ -11,8 +11,9 @@ using Routing;
 /// the root <c>/llms.txt</c> front door (and optional <c>/llms-full.txt</c>), the per-subtree
 /// <c>{prefix}/llms.txt</c> indexes (a mid-path territory only a <see cref="SuffixClaim"/> can
 /// express — endpoint routing would let a content route's <c>{slug}</c> segment capture them),
-/// and the per-page <c>{OutputDirectory}/{path}.md</c> sidecars. Serves dev requests through the
-/// artifact router and enumerates the same files for the static build. Transient so each
+/// and the per-page co-located <c>{route}/index.md</c> markdown (root page at <c>/index.md</c>).
+/// Serves dev requests through the artifact router and enumerates the same files for the static
+/// build. Transient so each
 /// resolution captures the current file-watched service.
 /// </summary>
 public sealed class LlmsArtifactContentService : IArtifactContentService
@@ -30,7 +31,6 @@ public sealed class LlmsArtifactContentService : IArtifactContentService
         _service = service;
         _options = options;
 
-        var sidecarPrefix = "/" + options.OutputDirectory.Trim('/') + "/";
         var builder = ImmutableList.CreateBuilder<ArtifactClaim>();
         builder.Add(new ArtifactClaim("llms", new ExactClaim(new UrlPath("/llms.txt")), "llms.txt front door"));
         if (options.GenerateFullFile)
@@ -39,7 +39,11 @@ public sealed class LlmsArtifactContentService : IArtifactContentService
         }
 
         builder.Add(new ArtifactClaim("llms", new SuffixClaim("/llms.txt"), "per-subtree llms.txt indexes"));
-        builder.Add(new ArtifactClaim("llms", new PrefixClaim(new UrlPath(sidecarPrefix), ".md"), "per-page markdown sidecars"));
+        // Co-located per-page markdown: {route}/index.md beside each page's index.html. The
+        // SuffixClaim catches every nested page; the root page's /index.md is the bare suffix,
+        // which SuffixClaim deliberately excludes, so it needs its own ExactClaim.
+        builder.Add(new ArtifactClaim("llms", new ExactClaim(new UrlPath("/index.md")), "root page markdown"));
+        builder.Add(new ArtifactClaim("llms", new SuffixClaim("/index.md"), "per-page co-located markdown"));
         _claims = builder.ToImmutable();
     }
 

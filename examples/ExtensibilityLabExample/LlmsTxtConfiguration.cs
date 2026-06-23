@@ -11,15 +11,14 @@ using Pennington.LlmsTxt;
 public static class LlmsTxtConfiguration
 {
     /// <summary>
-    /// Default output directory and <c>GenerateFullFile = false</c> for the
-    /// common per-page-sidecar case. The chrome-stripping selector lives on
-    /// <c>PenningtonOptions.SiteProjection.ContentSelector</c> (shared with
-    /// the search index), so it is configured once at the projection layer
+    /// <c>GenerateFullFile = false</c> for the common per-page-markdown case. Per-page
+    /// markdown is co-located as <c>{route}/index.md</c> beside each page. The
+    /// chrome-stripping selector lives on <c>PenningtonOptions.SiteProjection.ContentSelector</c>
+    /// (shared with the search index), so it is configured once at the projection layer
     /// rather than per channel.
     /// </summary>
     public static void Configure(LlmsTxtOptions opts)
     {
-        opts.OutputDirectory = "_llms";
         opts.GenerateFullFile = false;
     }
 }

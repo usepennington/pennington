@@ -51,7 +51,7 @@ Register the component with `AddMdazorComponent<LastModified>()`, then drop `<La
 
 ## Verify
 
-- Build the lab (`dotnet run --project examples/ExtensibilityLabExample -- build`) and open `/_llms/metadata-demo.md` in the output — its front-matter block carries both `git_last_modified` and `reading_time_minutes`, the two keys `Derived` accumulated for that page.
+- Build the lab (`dotnet run --project examples/ExtensibilityLabExample -- build`) and open `/metadata-demo/index.md` in the output — its front-matter block carries both `git_last_modified` and `reading_time_minutes`, the two keys `Derived` accumulated for that page.
 - Render `/metadata-demo/` and confirm the `<LastModified />` component prints the date, proving a component read `Context["Derived"]`.
 
 ## Related

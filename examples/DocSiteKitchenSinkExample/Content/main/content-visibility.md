@@ -31,4 +31,4 @@ This paragraph has no marker class, so it shows up both in the browser and in th
 ## Verification
 
 - View this page in a browser and confirm only the "For humans" and shared paragraphs render.
-- Fetch `/_llms/main/content-visibility.md` and confirm the "For humans" paragraph is gone and the "For robots" paragraph is present.
+- Fetch `/main/content-visibility/index.md` and confirm the "For humans" paragraph is gone and the "For robots" paragraph is present.
