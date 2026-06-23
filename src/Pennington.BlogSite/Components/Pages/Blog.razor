@@ -1,10 +1,13 @@
 @page "/blog/{*fileName:nonfile}"
 @using Pennington.Routing
 @using Pennington.SocialCards
+@using Pennington.LlmsTxt
+@using Microsoft.Extensions.DependencyInjection
 @inject PenningtonOptions PenningtonOptions
 @inject BlogSiteOptions BlogOptions
 @inject BlogPostQuery Posts
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IServiceProvider Services
 
 @if (_rendered == null)
 {
@@ -19,6 +22,10 @@
 
 <HeadContent>
     @{ var socialImage = GetSocialImageUrl(post); }
+    @if (MarkdownAlternateHref() is { } mdHref)
+    {
+        <link rel="alternate" type="text/markdown" href="@mdHref" />
+    }
     <meta property="og:title" content="@fm.Title" />
     <meta property="og:description" content="@fm.Description" />
     @if (!string.IsNullOrEmpty(socialImage))
@@ -90,4 +97,19 @@
     }
 
     private string GetFullUrl() => _rendered == null ? "" : $"{PenningtonOptions.CanonicalBaseUrl}{_rendered.Url.Value}";
+
+    // Advertises the post's co-located markdown copy (post URL + index.md) as an alternate
+    // representation for content-negotiating agents (Claude Code's WebFetch sends
+    // Accept: text/markdown). Pure string math on the post's own canonical URL — no llms-service
+    // lookup — gated on llms generation being enabled and the post not opting out via `llms: false`.
+    private string? MarkdownAlternateHref()
+    {
+        if (_rendered is null || !_rendered.FrontMatter.Llms || Services.GetService<LlmsTxtOptions>() is null)
+        {
+            return null;
+        }
+
+        var key = _rendered.Url.Value.Trim('/');
+        return key.Length == 0 ? "/index.md" : $"/{key}/index.md";
+    }
 }

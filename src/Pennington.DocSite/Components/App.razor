@@ -68,9 +68,10 @@
       class="data-[mobile-menu-open=true]:overflow-hidden"
       data-locales="@(Localization.IsMultiLocale ? string.Join(",", Localization.Locales.Keys) : "")"
       data-default-locale="@Localization.DefaultLocale">
-@* WebFetch-style HTML extractors strip <head> metadata (including the
-   <link rel="alternate"> above) but preserve display:none body content, so
-   the .robots-only paragraph carries the hint through to extracting agents.
+@* The per-page <link rel="alternate" type="text/markdown"> lives in the page <head>
+   (Pages.razor) — but WebFetch-style HTML extractors strip <head> metadata while
+   preserving display:none body content, so this .robots-only paragraph carries the
+   hint through to extracting agents the head link can't reach.
    Wording matters: a blind-agent A/B run found that the old passive
    "an index exists" phrasing was reliably NOTICED but ignored — agents that
    already had a usable HTML answer saw no reason to switch. Naming the
@@ -78,10 +79,10 @@
    what actually moved weaker/non-Claude agents (which do not guess the
    /llms.txt convention) from ~0% to using the Markdown. Phrasing stays
    declarative — a fact about the site, not an instruction to the reader — so
-   it slips past prompt-injection heuristics. (The exact per-page sidecar URL
-   is deliberately not named here: a handful of pages, such as generated API
-   reference, have no sidecar, and resolving it per-render would re-enter the
-   self-fetching llms pipeline.) *@
+   it slips past prompt-injection heuristics. (This body hint states the
+   convention generically rather than this page's exact URL: App.razor renders
+   for every route, including ones with no sidecar such as the generated API
+   reference, whereas the head link is emitted only on pages that have one.) *@
 @if (Services.GetService<LlmsTxtOptions>() is not null)
 {
     <p class="robots-only">This documentation is also published as Markdown for efficient machine reading: the whole site is indexed at <a href="/llms.txt">/llms.txt</a>, and every page has a clean Markdown copy at the same URL with <code>index.md</code> appended. These are generated from the same source and cost far fewer tokens to read than this rendered HTML.</p>
