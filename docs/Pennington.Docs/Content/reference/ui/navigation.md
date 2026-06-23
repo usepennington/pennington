@@ -21,18 +21,19 @@ Renders an ordered `<nav><ul>` of `NavigationTreeItem` entries, recursing one le
 
 ### Parameters
 
-Every `*Class` parameter defaults to `null` and resolves through the style-registry slot listed in its Default column; an explicitly passed value is Tailwind-merged over the slot for that instance. Run `dotnet run -- diag styles` for effective slot values, and see <xref:how-to.theming.component-styles> for overriding slots app-wide.
+Every `*Class` parameter defaults to `null`, meaning the component renders its built-in default for that element. A value you pass is Tailwind-merged over that default for the instance — conflicting utilities are replaced, the rest kept. `Variant` selects which built-in look those defaults come from.
 
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `TableOfContents` | `ImmutableList<NavigationTreeItem>?` | `null` | Navigation tree to render; when `null` the component renders nothing. |
 | `SectionLabel` | `string?` | `null` | Optional label forwarded from the caller's `NavigationInfo.SectionName`; not rendered by the default template. |
-| `ListClass` | `string?` | `toc.list` slot | The outer `<ul>` that holds the top-level navigation entries. |
-| `SectionClass` | `string?` | `toc.section` slot | Each top-level `<li>`. |
-| `SectionTitleClass` | `string?` | `toc.section-title` slot | A section's label — the plain `<div>` for empty-route entries, or the `<a>` when a top-level entry has children. |
-| `SectionListClass` | `string?` | `toc.section-list` slot | The nested `<ul>` that holds a section's child entries. |
-| `LinkClass` | `string?` | `toc.link` slot | Each child-level `<a>`, including its `data-current=true` state styling. |
-| `TopLinkClass` | `string?` | `toc.top-link` slot | A top-level leaf `<a>` (an entry with no children), including its `data-current=true` state styling. |
+| `Variant` | `TocVariant` | `TocVariant.Rail` | Built-in look: `Rail` (a bordered left rail) or `Pill` (rounded pill buttons with a tinted active state). |
+| `ListClass` | `string?` | `null` | The outer `<ul>` that holds the top-level navigation entries. |
+| `SectionClass` | `string?` | `null` | Each top-level `<li>`. |
+| `SectionTitleClass` | `string?` | `null` | A section's label — the plain `<div>` for empty-route entries, or the `<a>` when a top-level entry has children. |
+| `SectionListClass` | `string?` | `null` | The nested `<ul>` that holds a section's child entries. |
+| `LinkClass` | `string?` | `null` | Each child-level `<a>`, including its `data-current=true` state styling. |
+| `TopLinkClass` | `string?` | `null` | A top-level leaf `<a>` (an entry with no children), including its `data-current=true` state styling. |
 
 ### Binding
 
@@ -60,18 +61,18 @@ Emits a `data-role="page-outline"` container and an empty `<ul>` whose items are
 
 ### Parameters
 
-`ContentSelector` is `[EditorRequired]`. Every `*Class` parameter defaults to `null` and resolves through the style-registry slot listed in its Default column; an explicitly passed value is Tailwind-merged over the slot for that instance. Run `dotnet run -- diag styles` for effective slot values, and see <xref:how-to.theming.component-styles> for overriding slots app-wide.
+`ContentSelector` is `[EditorRequired]`. Every `*Class` parameter defaults to `null`, meaning the component renders its built-in default for that element; a value you pass is Tailwind-merged over that default for the instance.
 
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `ContentSelector` | `string` | `""` (required) | CSS selector the client-side outline script queries to discover heading elements; must be non-empty for the outline to populate. |
 | `Title` | `string` | `"On this page"` | Eyebrow rendered above the outline list as a `<div>`; pass an empty string to suppress. |
-| `TitleClass` | `string?` | `outline.title` slot | The eyebrow above the outline list. |
-| `ContainerClass` | `string?` | `outline.container` slot | The outer `data-role="page-outline"` container; `relative` stays hardcoded for marker positioning. |
-| `MarkerClass` | `string?` | `outline.marker` slot | The moving highlight bar that tracks the active heading; `absolute` and `opacity-0` stay hardcoded — the script positions the bar and toggles its opacity. |
-| `ListClass` | `string?` | `outline.list` slot | The outline `<ul>`. |
-| `LinkClass` | `string?` | `outline.link` slot | Emitted as `data-outline-link-class` and applied by the client-side script to each generated `<a>`, including its `data-selected=true` state styling. |
-| `NestedLinkClass` | `string?` | `outline.nested-link` slot | Emitted as `data-outline-nested-link-class` and appended by the client-side script to nested (H3-level) outline links. |
+| `TitleClass` | `string?` | `null` | The eyebrow above the outline list. |
+| `ContainerClass` | `string?` | `null` | The outer `data-role="page-outline"` container; `relative` stays hardcoded for marker positioning. |
+| `MarkerClass` | `string?` | `null` | The moving highlight bar that tracks the active heading; `absolute` and `opacity-0` stay hardcoded — the script positions the bar and toggles its opacity. |
+| `ListClass` | `string?` | `null` | The outline `<ul>`. |
+| `LinkClass` | `string?` | `null` | Emitted as `data-outline-link-class` and applied by the client-side script to each generated `<a>`, including its `data-selected=true` state styling. |
+| `NestedLinkClass` | `string?` | `null` | Emitted as `data-outline-nested-link-class` and appended by the client-side script to nested (H3-level) outline links. |
 
 ### Binding
 

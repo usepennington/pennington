@@ -133,18 +133,15 @@ public static class DocSiteServiceExtensions
         // AddMonorailCss, so this lambda runs on every /styles.css request.
         services.AddMonorailCss(_ => BuildMonorailOptions(configureOptions()));
 
-        // Component style registry: DocSite's skin over the Pennington.UI defaults, with the
-        // user's Styles merged on top. Like the MonorailCss factory above, the overrides func
-        // re-invokes the user's options factory per resolve so Styles edits flow under dotnet
-        // run; unknown keys throw here at startup, listing the valid catalog. The class merger
-        // resolves override-vs-skin conflicts through DocSite's own MonorailCSS framework — built
-        // lazily on the first override merge, since most hosts set no Styles.
+        // Pennington.UI components style themselves (inline defaults + a Variant param); a
+        // per-instance *Class param Tailwind-merges over that base via ClassMerge. The merge runs
+        // through DocSite's own MonorailCSS framework so the semantic palette and custom utilities
+        // define the conflicts. Lazy: most renders pass no *Class, so the framework is only built
+        // on the first actual merge.
         var styleMerger = new Lazy<Func<string, string, string>>(
             () => MonorailCssService.CreateClassMerger(BuildMonorailOptions(configureOptions())));
-        services.AddPenningtonStyles(
-            DocSiteStyleSkin.Styles,
-            () => configureOptions().Styles,
-            (baseClasses, overrideClasses) => styleMerger.Value(baseClasses, overrideClasses));
+        services.AddSingleton(new ClassMerge(
+            (baseClasses, overrideClasses) => styleMerger.Value(baseClasses, overrideClasses)));
 
         // Content resolver
         services.AddTransient<Services.DocSiteContentResolver>();

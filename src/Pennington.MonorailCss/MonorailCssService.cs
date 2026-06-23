@@ -132,8 +132,8 @@ public sealed class MonorailCssService(
     /// <paramref name="options"/>-rendered <c>baseClasses</c> that conflict with later
     /// <c>overrideClasses</c>. Backed by <see cref="CssFramework.Merge(string)"/> over the same framework
     /// the site renders with, so the semantic palette and custom utilities define the conflicts.
-    /// Consumed by the Pennington.UI style registry's consumer-override layer
-    /// (<c>AddPenningtonStyles</c>).
+    /// Consumed by Pennington.UI's <c>ClassMerge</c> so a component's per-instance <c>*Class</c>
+    /// parameter merges over its variant base through the same framework the site renders with.
     /// </summary>
     /// <param name="options">MonorailCSS options whose framework defines the merge conflicts.</param>
     public static Func<string, string, string> CreateClassMerger(MonorailCssOptions options)

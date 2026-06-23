@@ -21,27 +21,28 @@
     /// <summary>Optional eyebrow rendered above the outline; pass an empty string to suppress.</summary>
     [Parameter] public string Title { get; set; } = "On this page";
 
-    /// <summary>Classes Tailwind-merged over the <c>outline.title</c> slot on the eyebrow above the outline list.</summary>
+    /// <summary>Classes Tailwind-merged over the eyebrow above the outline list.</summary>
     [Parameter] public string? TitleClass { get; set; }
 
-    /// <summary>Classes Tailwind-merged over the <c>outline.container</c> slot on the outer <c>data-role="page-outline"</c> container; <c>relative</c> stays hardcoded for marker positioning.</summary>
+    /// <summary>Classes Tailwind-merged over the outer <c>data-role="page-outline"</c> container; <c>relative</c> stays hardcoded for marker positioning.</summary>
     [Parameter] public string? ContainerClass { get; set; }
 
-    /// <summary>Classes Tailwind-merged over the <c>outline.marker</c> slot on the moving highlight bar; <c>absolute</c> and <c>opacity-0</c> stay hardcoded — the client script positions the bar and toggles its opacity.</summary>
+    /// <summary>Classes Tailwind-merged over the moving highlight bar; <c>absolute</c> and <c>opacity-0</c> stay hardcoded — the client script positions the bar and toggles its opacity.</summary>
     [Parameter] public string? MarkerClass { get; set; }
 
-    /// <summary>Classes Tailwind-merged over the <c>outline.list</c> slot on the outline <c>&lt;ul&gt;</c>.</summary>
+    /// <summary>Classes Tailwind-merged over the outline <c>&lt;ul&gt;</c>.</summary>
     [Parameter] public string? ListClass { get; set; }
 
-    /// <summary>Classes Tailwind-merged over the <c>outline.link</c> slot, emitted as <c>data-outline-link-class</c> and applied by the client-side script to each generated <c>&lt;a&gt;</c>; the slot also carries the <c>data-selected=true</c> state styling.</summary>
+    /// <summary>Classes Tailwind-merged over the link base, emitted as <c>data-outline-link-class</c> and applied by the client-side script to each generated <c>&lt;a&gt;</c>; the base also carries the <c>data-[selected=true]</c> state styling.</summary>
     [Parameter] public string? LinkClass { get; set; }
 
-    /// <summary>Classes Tailwind-merged over the <c>outline.nested-link</c> slot, emitted as <c>data-outline-nested-link-class</c> and appended by the client-side script to nested (H3-level) outline links.</summary>
+    /// <summary>Classes Tailwind-merged over the nested-link base, emitted as <c>data-outline-nested-link-class</c> and appended by the client-side script to nested (H3-level) outline links.</summary>
     [Parameter] public string? NestedLinkClass { get; set; }
 
-    // Optional resolve: bare hosts that never call AddPenningtonStyles still render with the
-    // built-in defaults. Blazor's [Inject] has no optional mode, hence GetService.
-    private StyleRegistry? _styles;
+    // Optional: site templates register ClassMerge so a passed *Class param knocks out conflicting
+    // base utilities; bare hosts get no service and we append instead. Blazor's [Inject] has no
+    // optional mode, hence GetService.
+    private ClassMerge? _merge;
 
     private string _title = "";
     private string _container = "";
@@ -50,21 +51,24 @@
     private string _link = "";
     private string _nestedLink = "";
 
-    protected override void OnInitialized() => _styles = Services.GetService<StyleRegistry>();
+    protected override void OnInitialized() => _merge = Services.GetService<ClassMerge>();
 
+    // Defaults are inline literals (a method body, so an edit hot-reloads); the per-instance
+    // *Class param merges over each.
     protected override void OnParametersSet()
     {
-        _title = Resolve(TitleClass, StyleKeys.OutlineTitle);
-        _container = Resolve(ContainerClass, StyleKeys.OutlineContainer);
-        _marker = Resolve(MarkerClass, StyleKeys.OutlineMarker);
-        _list = Resolve(ListClass, StyleKeys.OutlineList);
-        _link = Resolve(LinkClass, StyleKeys.OutlineLink);
-        _nestedLink = Resolve(NestedLinkClass, StyleKeys.OutlineNestedLink);
+        _title = Apply("font-display text-[13px] font-semibold mb-3 text-base-600 dark:text-base-300", TitleClass);
+        _container = Apply("border-l border-base-200 dark:border-base-800", ContainerClass);
+        _marker = Apply("left-[-1px] w-[2px] rounded-sm bg-primary-600 dark:bg-primary-300 transition-all duration-500", MarkerClass);
+        _list = Apply("list-none pl-4 text-base-500 dark:text-base-400", ListClass);
+        _link = Apply("block py-1 ml-[calc(-1*(4em-1px))] pl-[calc(4em+1px)] transition-colors duration-150 hover:text-base-900 dark:hover:text-base-50 data-[selected=true]:text-primary-700 dark:data-[selected=true]:text-primary-300 data-[selected=true]:font-medium", LinkClass);
+        _nestedLink = Apply("pl-4", NestedLinkClass);
     }
 
-    // Parameters Tailwind-merge over the resolved slot; without a registry (bare host) the
-    // parameter is appended, accepting that conflicting base utilities are not removed.
-    private string Resolve(string? parameter, string key)
-        => _styles?.Merge(key, parameter)
-           ?? (string.IsNullOrEmpty(parameter) ? UiStyleDefaults.Get(key) : $"{UiStyleDefaults.Get(key)} {parameter}".Trim());
+    // A registered ClassMerge resolves conflicts; without one (bare host) we append, accepting
+    // that conflicting base utilities are not removed.
+    private string Apply(string baseClasses, string? extra)
+        => _merge is not null
+            ? _merge.Apply(baseClasses, extra)
+            : string.IsNullOrEmpty(extra) ? baseClasses : $"{baseClasses} {extra}".Trim();
 }

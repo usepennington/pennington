@@ -1,7 +1,6 @@
 @using Pennington.DocSite.Services
 @using Pennington.Generation
 @using Pennington.Infrastructure
-@using Pennington.UI.Styling
 @using Microsoft.Extensions.DependencyInjection
 @inherits LayoutComponentBase
 @inject DocSiteContentResolver ContentResolver
@@ -11,7 +10,6 @@
 @inject LocalizationOptions Localization
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IServiceProvider Services
-@inject StyleRegistry Styles
 
 <div class="dark:scheme-dark font-sans box-border bg-base-100 dark:bg-base-950 text-base-900 dark:text-base-50">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-primary-700 focus:text-white focus:p-3">Skip to main content</a>
@@ -49,7 +47,7 @@
                             var isActive = _activeArea != null
                                 && string.Equals(area.Slug, _activeArea.Slug, StringComparison.OrdinalIgnoreCase);
                             <div data-area-toc="@area.Slug" class="@(isActive ? null : "hidden")">
-                                <TableOfContentsNavigation TableOfContents="_areaTocs.GetValueOrDefault(area.Slug)" />
+                                <TableOfContentsNavigation TableOfContents="_areaTocs.GetValueOrDefault(area.Slug)" Variant="TocVariant.Pill" />
                                 @if (DownloadsForArea(area) is { Count: > 0 } areaDownloads)
                                 {
                                     @DownloadLinks(areaDownloads)
@@ -59,7 +57,7 @@
                     }
                     else
                     {
-                        <TableOfContentsNavigation TableOfContents="_toc" />
+                        <TableOfContentsNavigation TableOfContents="_toc" Variant="TocVariant.Pill" />
                         @if (_downloads.Count > 0)
                         {
                             @DownloadLinks(_downloads)
@@ -100,9 +98,12 @@
 </div>
 
 @code{
-    // TOC styling lives in DocSiteStyleSkin (slot-keyed, consumer-overridable via
-    // DocSiteOptions.Styles); TableOfContentsNavigation pulls it from the StyleRegistry.
+    // The DocSite sidebar look is TableOfContentsNavigation's Pill variant.
     private ImmutableList<NavigationTreeItem>? _toc;
+
+    // Download links reuse the sidebar pill look — one source of truth, the component's Pill
+    // recipe. A property (not a cached field) so an edit to the recipe hot-reloads.
+    private static string DownloadLinkClass => TocVariantStyles.For(TocVariant.Pill).Link;
     private Dictionary<string, ImmutableList<NavigationTreeItem>> _areaTocs = new();
     private Dictionary<string, string> _areaHrefs = new();
     private HashSet<string> _singlePageAreas = new(StringComparer.OrdinalIgnoreCase);
@@ -121,7 +122,7 @@
         @<div class="mt-4 pt-4 border-t border-base-200 dark:border-base-800">
             @foreach (var link in links)
             {
-                <a href="/@link.Url" class="@Styles[StyleKeys.TocLink]">
+                <a href="/@link.Url" class="@DownloadLinkClass">
                     @_downloadIcon
                     <span>@link.Label</span>
                 </a>
