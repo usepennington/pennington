@@ -39,7 +39,7 @@ else
                         : "lg:col-start-2 lg:row-start-1 xl:col-start-1 2xl:col-start-2") min-w-0 flex items-center gap-3">
                     <div class="min-w-0">
                         <h2 id="@Slug(e.Name)-h" class="m-0 font-display font-semibold text-2xl tracking-tight text-base-900 dark:text-base-50">@e.Name</h2>
-                        <div class="font-mono text-xs text-base-400 dark:text-base-500 break-all">@e.Url</div>
+                        <div class="font-mono text-xs text-base-600 dark:text-base-400 break-all">@e.Url</div>
                     </div>
                 </div>
 
@@ -48,11 +48,11 @@ else
                         ? "lg:col-start-2 lg:row-start-1 lg:row-span-2 xl:col-start-1 xl:row-start-2 xl:row-span-1 2xl:col-start-2 2xl:row-start-1 2xl:row-span-2"
                         : "lg:col-start-1 lg:row-start-1 lg:row-span-2 xl:row-start-2 xl:row-span-1 2xl:row-start-1 2xl:row-span-2") min-w-0">
                     <div class="relative aspect-[16/10] rounded-xl overflow-hidden border border-base-200 dark:border-base-800 shadow-lg bg-base-100 dark:bg-base-900">
-                        <div class="absolute inset-x-0 top-0 z-10 h-[30px] flex items-center gap-1.5 px-3 bg-base-100/85 dark:bg-base-900/85 backdrop-blur-sm border-b border-base-200 dark:border-base-800">
+                        <div aria-hidden="true" class="absolute inset-x-0 top-0 z-10 h-[30px] flex items-center gap-1.5 px-3 bg-base-100/85 dark:bg-base-900/85 backdrop-blur-sm border-b border-base-200 dark:border-base-800">
                             <span class="size-2 rounded-full bg-base-300 dark:bg-base-700"></span>
                             <span class="size-2 rounded-full bg-base-300 dark:bg-base-700"></span>
                             <span class="size-2 rounded-full bg-base-300 dark:bg-base-700"></span>
-                            <span class="ml-2 font-mono text-[10.5px] text-base-400 dark:text-base-500 truncate">@e.Url</span>
+                            <span class="ml-2 font-mono text-[10.5px] text-base-600 dark:text-base-400 truncate">@e.Url</span>
                         </div>
                         <div class="absolute inset-x-0 bottom-0 top-[30px] overflow-hidden">
                             @* WebP (640w for 1x displays, full-res for retina) with the original PNG as a
@@ -74,7 +74,7 @@ else
                     <p class="text-base leading-relaxed text-base-600 dark:text-base-300 text-pretty">@Inline(e.Description)</p>
 
                     <div class="mt-6">
-                        <div class="font-display text-[11px] font-semibold uppercase tracking-wider text-base-400 dark:text-base-500">Notable Pennington use</div>
+                        <div class="font-display text-[11px] font-semibold uppercase tracking-wider text-base-600 dark:text-base-400">Notable Pennington use</div>
                         <div class="mt-2 flex items-start gap-2 font-display text-[15px] leading-snug text-base-800 dark:text-base-100">
                             <span class="mt-[7px] size-1.5 shrink-0 rotate-45 bg-primary-500"></span>
                             <span>@Inline(e.Notable)</span>

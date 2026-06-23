@@ -53,6 +53,9 @@ else if (_notFound)
     @if (_notFoundResolved is not null)
     {
         <PageTitle>@_notFoundResolved.Title — @DocSiteOptions.SiteTitle</PageTitle>
+        <HeadContent>
+            <meta name="description" content="@_notFoundResolved.Description" />
+        </HeadContent>
         <DocSiteArticle Title="@_notFoundResolved.Title" HtmlContent="@_notFoundResolved.Html" />
     }
     else if (_notFoundComponentType is not null)
