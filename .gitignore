@@ -414,6 +414,9 @@ FodyWeavers.xsd
 *.sln.iml
 .idea/
 
+# JetBrains Junie (local AI assistant state)
+.junie/
+
 ##
 ## Visual studio for Mac
 ##
