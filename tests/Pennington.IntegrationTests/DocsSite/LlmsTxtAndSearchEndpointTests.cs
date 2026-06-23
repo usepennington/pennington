@@ -346,6 +346,28 @@ public class LlmsTxtAndSearchEndpointTests
     }
 
     [Fact]
+    public async Task Home_ServesMarketingHtml_AndAdvertisesAgentMarkdown()
+    {
+        // The landing page at "/" stays marketing HTML for humans, but advertises a purpose-built
+        // machine-readable home at /index.md (served by a MapGet, not derived from the splash).
+        var html = await _client.GetStringAsync("/", TestContext.Current.CancellationToken);
+
+        var context = BrowsingContext.New(Configuration.Default);
+        var page = await context.OpenAsync(req => req.Content(html), TestContext.Current.CancellationToken);
+        page.QuerySelector("link[rel='alternate'][type='text/markdown'][href='/index.md']")
+            .ShouldNotBeNull("the marketing home should advertise /index.md");
+
+        var md = await _client.GetAsync("/index.md", TestContext.Current.CancellationToken);
+        md.EnsureSuccessStatusCode();
+        md.Content.Headers.ContentType?.MediaType.ShouldBe("text/markdown");
+        var body = await md.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        body.ShouldContain("# Pennington");
+        body.ShouldContain("Read this site as Markdown");
+        // It is the authored orientation, not the converted marketing splash.
+        body.ShouldNotContain("A static site your .NET project deserves");
+    }
+
+    [Fact]
     public async Task ContentPage_AdvertisesCoLocatedMarkdownAlternate()
     {
         // A markdown content page carries <link rel="alternate" type="text/markdown"> in <head>
