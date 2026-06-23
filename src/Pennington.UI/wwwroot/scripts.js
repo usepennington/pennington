@@ -1192,7 +1192,7 @@ class AreaNavManager {
             p.setAttribute('aria-current', isActive ? 'true' : 'false');
             const dot = p.querySelector('[data-area-dot]');
             if (dot) {
-                dot.classList.toggle('bg-primary-500', isActive);
+                dot.classList.toggle('bg-accent-500', isActive);
                 dot.classList.toggle('bg-base-400', !isActive);
             }
         }

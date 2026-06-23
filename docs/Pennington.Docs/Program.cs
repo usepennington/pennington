@@ -38,28 +38,21 @@ builder.Services.AddDocSite(() => new DocSiteOptions
                 ? request.SiteTitle
                 : $"{request.SiteTitle} · {request.SiteDescription}";
 
-            var card = SocialCard.Create(request.Width, request.Height)
-                .Background(cardBackground)
-                .Theme(new Theme
-                {
-                    TextColor = "#f8fafc",
-                })
-                .At(Anchor.BottomLeft, stack =>
-                {
-                    stack.Text(request.Title, new TextStyle
+                var card = SocialCard.Create(request.Width, request.Height)
+                    .Background(cardBackground)
+                    .Theme(new Theme { TextColor = "#f8fafc", })
+                    .At(Anchor.BottomLeft, stack =>
                     {
-                        Color = "#f8fafc", Size = 64, Weight = 700, LetterSpacing = -0.15f
-                    });
-                    if (!string.IsNullOrWhiteSpace(request.Description))
-                    {
-                        stack.Text(request.Description, new TextStyle
+                        stack.Text(request.Title,
+                            new TextStyle { Color = "#f8fafc", Size = 64, Weight = 700, LetterSpacing = -0.15f });
+                        if (!string.IsNullOrWhiteSpace(request.Description))
                         {
-                            Color = "#f8fafc", Size = 24, Weight = 300
-                        });
-                    }
+                            stack.Text(request.Description,
+                                new TextStyle { Color = "#f8fafc", Size = 24, Weight = 300 });
+                        }
 
-                    stack.Text(brand, new TextStyle { Color = "#aaa", Size = 18, Weight = 300});
-                });
+                        stack.Text(brand, new TextStyle { Color = "#aaa", Size = 18, Weight = 300 });
+                    });
 
             return Task.FromResult<byte[]?>(card.ToBytes());
         },
