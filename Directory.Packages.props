@@ -1,7 +1,7 @@
 <Project>
   <ItemGroup>
     <PackageVersion Include="AngleSharp" Version="1.5.1" />
-    <PackageVersion Include="Ashcroft" Version="0.3.0" />
+    <PackageVersion Include="Ashcroft" Version="0.5.0" />
     <PackageVersion Include="CooklangSharp" Version="0.0.0-alpha.0.9" />
     <PackageVersion Include="DeweySearch" Version="0.1.2" />
     <PackageVersion Include="DeweySearch.Web" Version="0.1.2" />
@@ -12,7 +12,7 @@
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="14.2.0-rc.1.2" />
     <PackageVersion Include="Humanizer.Core" Version="3.0.10" />
     <PackageVersion Include="LibGit2Sharp" Version="0.31.0" />
-    <PackageVersion Include="Markdig" Version="1.3.0" />
+    <PackageVersion Include="Markdig" Version="1.3.2" />
     <PackageVersion Include="Mdazor" Version="0.0.0-alpha.0.17" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.8" />
@@ -20,8 +20,8 @@
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.10.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
     <PackageVersion Include="MinVer" Version="7.0.0" />
-    <PackageVersion Include="MonorailCss" Version="0.1.1-alpha.0.5" />
-    <PackageVersion Include="MonorailCss.Discovery" Version="0.1.1-alpha.0.5" />
+    <PackageVersion Include="MonorailCss" Version="0.1.1" />
+    <PackageVersion Include="MonorailCss.Discovery" Version="0.1.1" />
     <PackageVersion Include="PuppeteerSharp" Version="25.1.1" />
     <PackageVersion Include="SharpYaml" Version="3.10.0" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
