@@ -8,10 +8,10 @@
             var isActive = ActiveArea != null
                 && string.Equals(area.Slug, ActiveArea.Slug, StringComparison.OrdinalIgnoreCase);
             var href = AreaHrefs.TryGetValue(area.Slug, out var resolved) ? resolved : $"/{area.Slug}/";
-            var isSingle = SinglePageAreas.Contains(area.Slug);
+            var isDirect = DirectNavAreas.Contains(area.Slug);
             <a href="@href"
                data-area="@area.Slug"
-               data-area-single="@(isSingle ? "true" : null)"
+               data-area-direct="@(isDirect ? "true" : null)"
                aria-current="@(isActive ? "true" : "false")"
                class="flex items-center gap-2 px-2.5 py-1.5 rounded-[7px] font-display text-[13px] font-medium transition-colors
                       aria-[current=true]:bg-base-50 aria-[current=true]:dark:bg-base-800
@@ -35,5 +35,5 @@
     [Parameter] public IReadOnlyList<ContentArea> Areas { get; set; } = [];
     [Parameter] public ContentArea? ActiveArea { get; set; }
     [Parameter] public IReadOnlyDictionary<string, string> AreaHrefs { get; set; } = new Dictionary<string, string>();
-    [Parameter] public IReadOnlySet<string> SinglePageAreas { get; set; } = new HashSet<string>();
+    [Parameter] public IReadOnlySet<string> DirectNavAreas { get; set; } = new HashSet<string>();
 }
