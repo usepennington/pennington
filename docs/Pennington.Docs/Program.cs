@@ -8,6 +8,7 @@ using Pennington.Docs.Components.Reference;
 using Pennington.DocSite;
 using Pennington.DocSite.Api;
 using Pennington.Infrastructure;
+using Pennington.LlmsTxt;
 using Pennington.MonorailCss;
 using Pennington.SocialCards;
 using Pennington.TreeSitter;
@@ -191,5 +192,13 @@ builder.Services.AddPenningtonBook(book =>
 
 var app = builder.Build();
 app.UseDocSite();
+
+// Machine-readable home. The landing page at "/" is a marketing splash that converts poorly to
+// markdown, so serve a purpose-built orientation at /index.md instead (the URL agents reach by
+// appending index.md to "/"). The artifact router claims /index.md but falls through here when no
+// generated sidecar exists; WithLlmsTxtEntry lists it in /llms.txt. Index.razor advertises it via
+// <link rel="alternate" type="text/markdown">.
+app.MapGet("/index.md", () => Results.Text(AgentHomeMarkdown.Body, "text/markdown"))
+   .WithLlmsTxtEntry(AgentHomeMarkdown.Title, AgentHomeMarkdown.Description);
 
 await app.RunDocSiteAsync(args);
