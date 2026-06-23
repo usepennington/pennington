@@ -346,6 +346,19 @@ public class LlmsTxtAndSearchEndpointTests
     }
 
     [Fact]
+    public async Task LlmsOnlyPage_HasNoHtmlPage_ButMarkdownCopyServes()
+    {
+        // *.llms.md content (migrating-via-ai.llms.md) is agent-only: it must not render as an HTML
+        // page for humans, but its markdown copy still serves and stays in the corpus.
+        var html = await _client.GetAsync("/migrating-via-ai/", TestContext.Current.CancellationToken);
+        ((int)html.StatusCode).ShouldBe(404, "an llms-only page must not be served as HTML");
+
+        var md = await _client.GetAsync("/migrating-via-ai/index.md", TestContext.Current.CancellationToken);
+        md.EnsureSuccessStatusCode();
+        md.Content.Headers.ContentType?.MediaType.ShouldBe("text/markdown");
+    }
+
+    [Fact]
     public async Task Home_ServesMarketingHtml_AndAdvertisesAgentMarkdown()
     {
         // The landing page at "/" stays marketing HTML for humans, but advertises a purpose-built

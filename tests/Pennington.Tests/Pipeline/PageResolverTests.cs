@@ -122,6 +122,38 @@ public class PageResolverTests
     }
 
     [Fact]
+    public async Task ResolveAsync_LlmsOnlySource_ReturnsNull()
+    {
+        // *.llms.md routes feed llms.txt only — they have no HTML page, so an HTTP request for
+        // one must 404 rather than render agent-only content for a human.
+        var item = new DiscoveredItem(
+            MakeRoute("/agent-context"),
+            new ContentSource(new LlmsOnlySource("content/agent-context.llms.md", "markdown")));
+        var resolver = new PageResolver([new StubContentService(item)], new StubRenderer(), new StubParser());
+
+        var rendered = await resolver.ResolveAsync(new UrlPath("/agent-context"));
+
+        rendered.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task ResolveAsync_LlmsOnlyDoesNotShadowRealPageAtSameSlug()
+    {
+        // The resolver declines an llms-only match (continue) rather than returning, so a real
+        // HTML page from another service at the same slug still wins.
+        var llmsService = new StubContentService(new DiscoveredItem(
+            MakeRoute("/overlap"),
+            new ContentSource(new LlmsOnlySource("content/overlap.llms.md", "markdown"))));
+        var pageService = new StubContentService(new DiscoveredItem(MakeRoute("/overlap"), MakeSource()));
+        var resolver = new PageResolver([llmsService, pageService], new StubRenderer(), new StubParser());
+
+        var rendered = await resolver.ResolveAsync(new UrlPath("/overlap"));
+
+        rendered.ShouldNotBeNull();
+        rendered.Content.Html.ShouldBe("<p>test</p>");
+    }
+
+    [Fact]
     public async Task ResolveAsync_NoParser_ReturnsNullInsteadOfThrowing()
     {
         // Bare host: no markdown source means no IContentParser. The resolver must construct with
