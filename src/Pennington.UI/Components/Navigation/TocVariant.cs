@@ -52,7 +52,7 @@ public static class TocVariantStyles
                     "data-[current=true]:font-medium";
 
                 return new Slots(
-                    List: "flex flex-col ",
+                    List: "flex flex-col [li:first-child>&]:mt-2",
                     Section: "",
                     SectionTitle: "font-display text-[12.5px] font-semibold mb-2 mt-8 [li:first-child>&]:mt-2 px-2.5 text-base-700 dark:text-base-200 uppercase",
                     SectionList: "mt-1 flex flex-col gap-0.5",
@@ -62,7 +62,7 @@ public static class TocVariantStyles
 
             default:
                 return new Slots(
-                    List: "flex flex-col gap-8",
+                    List: "flex flex-col [li:first-child>&]:mt-2",
                     Section: "",
                     SectionTitle: "font-display font-medium text-base-900 dark:text-base-50",
                     SectionList: "mt-4",

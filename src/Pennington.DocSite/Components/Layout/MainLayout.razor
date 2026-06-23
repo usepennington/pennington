@@ -41,7 +41,7 @@
                     </div>
                     @if (DocSiteOptions.Areas.Count > 0)
                     {
-                        <AreaNavigation Areas="DocSiteOptions.Areas" ActiveArea="_activeArea" AreaHrefs="_areaHrefs" SinglePageAreas="_singlePageAreas" />
+                        <AreaNavigation Areas="DocSiteOptions.Areas" ActiveArea="_activeArea" AreaHrefs="_areaHrefs" DirectNavAreas="_directNavAreas" />
                         @foreach (var area in DocSiteOptions.Areas)
                         {
                             var isActive = _activeArea != null
@@ -106,7 +106,10 @@
     private static string DownloadLinkClass => TocVariantStyles.For(TocVariant.Pill).Link;
     private Dictionary<string, ImmutableList<NavigationTreeItem>> _areaTocs = new();
     private Dictionary<string, string> _areaHrefs = new();
-    private HashSet<string> _singlePageAreas = new(StringComparer.OrdinalIgnoreCase);
+
+    // Areas whose pill navigates straight to a destination (a single page, or an index
+    // home) on click, instead of just previewing that area's TOC in the sidebar.
+    private HashSet<string> _directNavAreas = new(StringComparer.OrdinalIgnoreCase);
     private IReadOnlyList<AlternateLanguage> _langSwitcherItems = [];
     private ContentArea? _activeArea;
     private IReadOnlyList<DownloadLink> _downloads = [];
@@ -202,11 +205,28 @@
             {
                 var areaTocItems = await ContentResolver.GetTocItemsForAreaAsync(locale, area);
                 var tree = await NavBuilder.BuildTreeAsync(areaTocItems.ToList(), currentUrl, locale);
+
+                // An area's index.md is its home page: GetTocItemsForAreaAsync strips the
+                // area slug, leaving the landing page with no hierarchy parts (the overview
+                // item NavigationBuilder pins to the top). When one exists, the area pill
+                // links and navigates straight to it — like a single-page area — and the now
+                // redundant top entry is dropped from the sidebar TOC.
+                var home = areaTocItems.FirstOrDefault(i => i.HierarchyParts.Length == 0 && !i.SearchOnly);
+                if (home is not null)
+                {
+                    _areaHrefs[area.Slug] = home.Route.CanonicalPath.Value;
+                    _directNavAreas.Add(area.Slug);
+                    tree = tree.RemoveAll(i => i.Route.CanonicalPath.Matches(home.Route.CanonicalPath));
+                }
+                else
+                {
+                    if (FirstLeafUrl(tree) is { } firstUrl)
+                        _areaHrefs[area.Slug] = firstUrl;
+                    if (LeafCount(tree) == 1)
+                        _directNavAreas.Add(area.Slug);
+                }
+
                 _areaTocs[area.Slug] = tree;
-                if (FirstLeafUrl(tree) is { } firstUrl)
-                    _areaHrefs[area.Slug] = firstUrl;
-                if (LeafCount(tree) == 1)
-                    _singlePageAreas.Add(area.Slug);
             }
         }
         else
