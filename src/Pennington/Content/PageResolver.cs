@@ -45,6 +45,15 @@ public sealed class PageResolver : IPageResolver
                 continue;
             }
 
+            // Llms-only routes (*.llms.md) contribute to llms.txt and its sidecar markdown but
+            // never produce an HTML page — the projection renders them in-process, so serving them
+            // here would expose agent-only content to humans. Decline (don't return) so a real page
+            // from another service at the same slug can still win; otherwise the request 404s.
+            if (discovered.Source is LlmsOnlySource)
+            {
+                continue;
+            }
+
             var parsed = await _parser.ParseAsync(discovered);
             if (parsed.Value is not ParsedItem parsedItem)
             {
