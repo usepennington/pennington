@@ -3,9 +3,12 @@
 @using Microsoft.AspNetCore.Components.Web
 
 <PageTitle>Pennington</PageTitle>
+<HeadContent>
+    <meta name="description" content="Pennington is a static content engine for .NET. Markdown in, static site out, with search, RSS, sitemap, and an API reference generated from your XML docs. No Node, no npm. Just dotnet run." />
+</HeadContent>
 
 <section class="pt-8 pb-10 lg:pt-14 lg:pb-14">
-    <p class="text-xs font-display font-semibold tracking-widest uppercase text-primary-600 dark:text-primary-400 mb-5">A static content engine for .NET</p>
+    <p class="text-xs font-display font-semibold tracking-widest uppercase text-primary-700 dark:text-primary-400 mb-5">A static content engine for .NET</p>
     <h1 class="font-display text-4xl lg:text-6xl font-bold tracking-tight text-base-900 dark:text-base-50 leading-[1.05] mb-6 text-balance">
         A static site your .NET project deserves.<br />
         <span class="text-accent-four-600 dark:text-accent-four-400">Without leaving the SDK.</span>
@@ -44,7 +47,7 @@
     <div class="rounded-2xl border border-base-200 dark:border-base-700/50 bg-base-50 dark:bg-base-900/50 p-6 lg:p-10">
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-12">
             <div>
-                <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-one-600 dark:text-accent-one-400 mb-4">
+                <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-one-700 dark:text-accent-one-400 mb-4">
                     <span aria-hidden="true" class="mr-1">&mdash;</span> Quickstart
                 </p>
                 <h2 class="font-display text-3xl font-bold tracking-tight text-base-900 dark:text-base-50 leading-tight mb-4 text-balance">
@@ -71,14 +74,14 @@
                         <div class="min-w-0 flex-1">
                             <p class="text-sm font-display font-medium text-base-900 dark:text-base-100 mb-0.5">@step.Title</p>
                             <div class="font-mono text-xs lg:text-sm text-base-600 dark:text-base-300">
-                                <span class="text-primary-500 select-none">$</span>
+                                <span class="text-primary-700 dark:text-primary-400 select-none">$</span>
                                 @((MarkupString)step.CommandHtml)
                             </div>
                         </div>
                         <button type="button"
                                 onclick="navigator.clipboard.writeText(this.dataset.cmd);this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1200)"
                                 data-cmd="@step.Command"
-                                class="shrink-0 text-xs font-display font-medium text-base-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors px-2 py-1">
+                                class="shrink-0 text-xs font-display font-medium text-base-600 dark:text-base-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors px-2 py-1">
                             Copy
                         </button>
                     </div>
@@ -90,7 +93,7 @@
 
 <section class="pb-16 lg:pb-24 pt-4">
     <div class="max-w-3xl">
-        <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-three-600 dark:text-accent-three-400 mb-4">
+        <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-three-700 dark:text-accent-three-400 mb-4">
             <span aria-hidden="true" class="mr-1">&mdash;</span> Familiar on purpose
         </p>
         <h2 class="font-display text-3xl lg:text-4xl font-bold tracking-tight text-base-900 dark:text-base-50 leading-tight mb-5 text-balance">
@@ -134,7 +137,7 @@
 
 <section class="pb-16 lg:pb-24">
     <div class="max-w-3xl mb-10">
-        <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-two-600 dark:text-accent-two-400 mb-4">
+        <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-two-700 dark:text-accent-two-400 mb-4">
             <span aria-hidden="true" class="mr-1">&mdash;</span> The dev loop
         </p>
         <h2 class="font-display text-3xl lg:text-4xl font-bold tracking-tight text-base-900 dark:text-base-50 leading-tight mb-5 text-balance">
@@ -144,13 +147,13 @@
             Run <code class="font-mono text-sm bg-base-100 dark:bg-base-800 px-1.5 py-0.5 rounded">dotnet run</code> once. Markdown, front matter, navigation, cross-references, and Razor components all hot-reload. The feedback loop is the one you already trust for web apps &mdash; pointed at your content.
         </p>
     </div>
-    <div class="relative grid grid-cols-1 lg:grid-cols-2 gap-0 items-stretch rounded-2xl overflow-hidden ring-1 ring-base-200 dark:ring-base-800">
+    <div aria-hidden="true" class="relative grid grid-cols-1 lg:grid-cols-2 gap-0 items-stretch rounded-2xl overflow-hidden ring-1 ring-base-200 dark:ring-base-800">
         <div class="bg-base-950 p-6 lg:p-7 font-mono text-sm">
             <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-display font-semibold tracking-widest uppercase text-base-500">Content/index.md</span>
-                <span class="text-xs text-base-500">saved &bull; just now</span>
+                <span class="text-xs font-display font-semibold tracking-widest uppercase text-base-400">Content/index.md</span>
+                <span class="text-xs text-base-400">saved &bull; just now</span>
             </div>
-            <pre class="text-base-200 whitespace-pre-wrap leading-relaxed"><span class="text-base-500">---
+            <pre class="text-base-200 whitespace-pre-wrap leading-relaxed"><span class="text-base-400">---
 title: Release notes
 order: 1
 ---</span>
@@ -167,7 +170,7 @@ and a rewritten navigation tree.</pre>
         </div>
         <div class="bg-white dark:bg-base-900 p-6 lg:p-7 border-t lg:border-t-0 lg:border-l border-base-200 dark:border-base-800 flex flex-col">
             <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-display font-semibold tracking-widest uppercase text-base-500">localhost:5000</span>
+                <span class="text-xs font-display font-semibold tracking-widest uppercase text-base-600 dark:text-base-400">localhost:5000</span>
                 <span class="inline-flex items-center gap-1.5 text-xs font-display text-accent-two-600 dark:text-accent-two-400">
                     <span class="relative flex h-2 w-2">
                         <span class="absolute inline-flex h-full w-full rounded-full bg-accent-two-500 opacity-75 animate-ping"></span>
@@ -184,15 +187,15 @@ and a rewritten navigation tree.</pre>
             </p>
             <div class="mt-auto grid grid-cols-3 gap-3 pt-4 border-t border-base-200 dark:border-base-800">
                 <div>
-                    <p class="text-xs font-display uppercase tracking-widest text-base-500 mb-1">Nav</p>
+                    <p class="text-xs font-display uppercase tracking-widest text-base-600 dark:text-base-400 mb-1">Nav</p>
                     <p class="text-xs text-base-600 dark:text-base-400">Tree rebuilt</p>
                 </div>
                 <div>
-                    <p class="text-xs font-display uppercase tracking-widest text-base-500 mb-1">Search</p>
+                    <p class="text-xs font-display uppercase tracking-widest text-base-600 dark:text-base-400 mb-1">Search</p>
                     <p class="text-xs text-base-600 dark:text-base-400">Index refreshed</p>
                 </div>
                 <div>
-                    <p class="text-xs font-display uppercase tracking-widest text-base-500 mb-1">Xrefs</p>
+                    <p class="text-xs font-display uppercase tracking-widest text-base-600 dark:text-base-400 mb-1">Xrefs</p>
                     <p class="text-xs text-base-600 dark:text-base-400">Resolved</p>
                 </div>
             </div>
@@ -202,7 +205,7 @@ and a rewritten navigation tree.</pre>
 
 <section class="pb-16 lg:pb-24">
     <div class="max-w-3xl mb-10">
-        <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-one-600 dark:text-accent-one-400 mb-4">
+        <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-one-700 dark:text-accent-one-400 mb-4">
             <span aria-hidden="true" class="mr-1">&mdash;</span> Content-first
         </p>
         <h2 class="font-display text-3xl lg:text-4xl font-bold tracking-tight text-base-900 dark:text-base-50 leading-tight mb-5 text-balance">
@@ -224,22 +227,22 @@ and a rewritten navigation tree.</pre>
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-4 w-4"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
             </a>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div aria-hidden="true" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div class="rounded-xl bg-base-950 p-5 font-mono text-sm overflow-x-auto">
-                <div class="text-xs font-display uppercase tracking-widest text-base-500 mb-3">guide.md</div>
-<pre class="text-base-200 leading-relaxed"><span class="text-base-500">## API Status</span>
+                <div class="text-xs font-display uppercase tracking-widest text-base-400 mb-3">guide.md</div>
+<pre class="text-base-200 leading-relaxed"><span class="text-base-400">## API Status</span>
 
 The ingest endpoint is <span class="text-primary-300">&lt;Badge Variant="Warning"&gt;</span>beta<span class="text-primary-300">&lt;/Badge&gt;</span>.
 Read the <span class="text-primary-300">&lt;ApiLink Id="T:Ingest.Client" /&gt;</span>
 for the current shape.</pre>
             </div>
             <div class="rounded-xl bg-white dark:bg-base-900 border border-base-200 dark:border-base-800 p-5">
-                <div class="text-xs font-display uppercase tracking-widest text-base-500 mb-3">rendered</div>
+                <div class="text-xs font-display uppercase tracking-widest text-base-600 dark:text-base-400 mb-3">rendered</div>
                 <h4 class="font-display text-lg font-bold text-base-900 dark:text-base-50 mb-3">API Status</h4>
                 <p class="text-sm text-base-700 dark:text-base-300 leading-relaxed">
                     The ingest endpoint is
                     <span class="inline-flex items-center rounded-md bg-accent-one-100 dark:bg-accent-one-900/40 px-2 py-0.5 text-xs font-display font-semibold text-accent-one-700 dark:text-accent-one-300 mx-0.5">beta</span>.
-                    Read the <a href="#" class="font-mono text-sm text-accent-four-700 dark:text-accent-four-400 underline decoration-dotted underline-offset-4">Ingest.Client</a> for the current shape.
+                    Read the <span class="font-mono text-sm text-accent-four-700 dark:text-accent-four-400 underline decoration-dotted underline-offset-4">Ingest.Client</span> for the current shape.
                 </p>
             </div>
         </div>
@@ -256,16 +259,16 @@ for the current shape.</pre>
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-4 w-4"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m11.5 6.5 3 3.5m0 0-3 3.5m3-3.5h-9"/></svg>
             </a>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div aria-hidden="true" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div class="rounded-xl bg-base-950 p-5 font-mono text-sm overflow-x-auto">
-                <div class="text-xs font-display uppercase tracking-widest text-base-500 mb-3">writing.md</div>
-<pre class="text-base-200 text-xs leading-relaxed"><span class="text-base-500">```csharp:symbol,bodyonly</span>
+                <div class="text-xs font-display uppercase tracking-widest text-base-400 mb-3">writing.md</div>
+<pre class="text-base-200 text-xs leading-relaxed"><span class="text-base-400">```csharp:symbol,bodyonly</span>
 src/BlogSiteServiceExtensions.cs &gt; BlogSiteServiceExtensions.AddBlogSite
-<span class="text-base-500">```</span></pre>
+<span class="text-base-400">```</span></pre>
             </div>
             <div class="rounded-xl bg-white dark:bg-base-900 border border-base-200 dark:border-base-800 p-0 overflow-hidden">
                 <div class="px-5 pt-4 pb-2">
-                    <div class="text-xs font-display uppercase tracking-widest text-base-500">rendered</div>
+                    <div class="text-xs font-display uppercase tracking-widest text-base-600 dark:text-base-400">rendered</div>
                 </div>
 <pre class="px-5 pb-5 pt-2 font-mono text-xs leading-relaxed overflow-x-auto bg-base-50 dark:bg-base-950"><span class="text-accent-one-700 dark:text-accent-one-300">services</span>.<span class="text-accent-three-700 dark:text-accent-three-300">AddSingleton</span>&lt;<span class="text-accent-three-700 dark:text-accent-three-300">IBlogContentService</span>, <span class="text-accent-three-700 dark:text-accent-three-300">BlogContentService</span>&gt;();
 <span class="text-accent-one-700 dark:text-accent-one-300">services</span>.<span class="text-accent-three-700 dark:text-accent-three-300">AddSingleton</span>&lt;<span class="text-accent-three-700 dark:text-accent-three-300">BlogHomeRouteGenerator</span>&gt;();
@@ -295,7 +298,7 @@ src/BlogSiteServiceExtensions.cs &gt; BlogSiteServiceExtensions.AddBlogSite
 
 <section class="pb-16 lg:pb-24">
     <div class="max-w-3xl mb-10">
-        <p class="text-xs font-display font-semibold tracking-widest uppercase text-primary-600 dark:text-primary-400 mb-4">
+        <p class="text-xs font-display font-semibold tracking-widest uppercase text-primary-700 dark:text-primary-400 mb-4">
             <span aria-hidden="true" class="mr-1">&mdash;</span> Where to next
         </p>
         <h2 class="font-display text-3xl lg:text-4xl font-bold tracking-tight text-base-900 dark:text-base-50 leading-tight mb-5 text-balance">
@@ -307,7 +310,7 @@ src/BlogSiteServiceExtensions.cs &gt; BlogSiteServiceExtensions.AddBlogSite
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-5 flex flex-col">
-            <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-two-600 dark:text-accent-two-400 mb-3">Tutorials</p>
+            <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-two-700 dark:text-accent-two-400 mb-3">Tutorials</p>
             <h3 class="font-display text-lg font-semibold text-base-900 dark:text-base-50 mb-1.5">Build it alongside us.</h3>
             <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed mb-5">Step through a working site, one piece at a time.</p>
             <ul class="space-y-2 text-sm font-display mt-auto">
@@ -332,7 +335,7 @@ src/BlogSiteServiceExtensions.cs &gt; BlogSiteServiceExtensions.AddBlogSite
             </ul>
         </div>
         <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-5 flex flex-col">
-            <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-one-600 dark:text-accent-one-400 mb-3">How-to</p>
+            <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-one-700 dark:text-accent-one-400 mb-3">How-to</p>
             <h3 class="font-display text-lg font-semibold text-base-900 dark:text-base-50 mb-1.5">Solve one thing.</h3>
             <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed mb-5">Short recipes to get unstuck and back to work.</p>
             <ul class="space-y-2 text-sm font-display mt-auto">
@@ -357,7 +360,7 @@ src/BlogSiteServiceExtensions.cs &gt; BlogSiteServiceExtensions.AddBlogSite
             </ul>
         </div>
         <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-5 flex flex-col">
-            <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-three-600 dark:text-accent-three-400 mb-3">Explanation</p>
+            <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-three-700 dark:text-accent-three-400 mb-3">Explanation</p>
             <h3 class="font-display text-lg font-semibold text-base-900 dark:text-base-50 mb-1.5">See how it fits together.</h3>
             <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed mb-5">Context and reasoning behind the moving parts.</p>
             <ul class="space-y-2 text-sm font-display mt-auto">
@@ -382,7 +385,7 @@ src/BlogSiteServiceExtensions.cs &gt; BlogSiteServiceExtensions.AddBlogSite
             </ul>
         </div>
         <div class="rounded-xl border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900/50 p-5 flex flex-col">
-            <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-four-600 dark:text-accent-four-400 mb-3">Reference</p>
+            <p class="text-xs font-display font-semibold tracking-widest uppercase text-accent-four-700 dark:text-accent-four-400 mb-3">Reference</p>
             <h3 class="font-display text-lg font-semibold text-base-900 dark:text-base-50 mb-1.5">Look it up.</h3>
             <p class="text-sm text-base-600 dark:text-base-400 leading-relaxed mb-5">The dry, complete listings &mdash; for when you need a name.</p>
             <ul class="space-y-2 text-sm font-display mt-auto">
@@ -416,12 +419,12 @@ src/BlogSiteServiceExtensions.cs &gt; BlogSiteServiceExtensions.AddBlogSite
     [
         new("1", "Create an ASP.NET host",
             "dotnet new web -n my-site",
-            """ dotnet new web -n <span class="text-primary-500">my-site</span>"""),
+            """ dotnet new web -n <span class="text-primary-700 dark:text-primary-400">my-site</span>"""),
         new("2", "Add the Pennington package",
             "dotnet add package Pennington",
-            """ dotnet add package <span class="text-primary-500">Pennington</span>"""),
+            """ dotnet add package <span class="text-primary-700 dark:text-primary-400">Pennington</span>"""),
         new("3", "Wire AddPennington, then run",
             "cd my-site && dotnet run",
-            """ cd my-site &amp;&amp; <span class="text-primary-500">dotnet run</span>"""),
+            """ cd my-site &amp;&amp; <span class="text-primary-700 dark:text-primary-400">dotnet run</span>"""),
     ];
 }

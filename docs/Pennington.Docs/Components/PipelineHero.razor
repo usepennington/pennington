@@ -1,7 +1,9 @@
 @* Animated "Hub & Spokes" build-pipeline hero: raw content -> one ASP.NET server -> live dev + static deploy. *@
 
-<div class="rounded-2xl overflow-hidden ring-1 ring-base-200 dark:ring-base-800 bg-base-950 shadow-xl shadow-primary-600/5">
-    <div id="ph-root">
+<div role="img"
+     aria-label="Diagram: your content files flow into a single Pennington ASP.NET server, which produces two outputs from the same code: a live, hot-reloading development site and static HTML for deployment."
+     class="rounded-2xl overflow-hidden ring-1 ring-base-200 dark:ring-base-800 bg-base-950 shadow-xl shadow-primary-600/5">
+    <div id="ph-root" aria-hidden="true">
         <div class="ph-wrap">
             <div class="ph-stage">
 
@@ -14,7 +16,7 @@
                         <span class="rounded-full bg-accent-400" style="width:7px;height:7px;box-shadow:0 0 10px var(--color-accent-400)"></span>
                         Your content
                     </span>
-                    <div class="font-mono text-base-500" style="font-size:10px;margin-top:4px">/content</div>
+                    <div class="font-mono text-base-400" style="font-size:10px;margin-top:4px">/content</div>
                 </div>
 
                 @* streaming file cards (all six rendered; the scaler caps how many show + staggers them) *@
@@ -52,12 +54,12 @@
                         </div>
                         <div class="text-center">
                             <div class="font-semibold text-base-100" style="font-size:15px;letter-spacing:-.01em">Pennington Server</div>
-                            <div class="font-mono text-base-500" style="font-size:10px;margin-top:3px;letter-spacing:.06em">ASP.NET &middot; Kestrel</div>
+                            <div class="font-mono text-base-400" style="font-size:10px;margin-top:3px;letter-spacing:.06em">ASP.NET &middot; Kestrel</div>
                         </div>
                         <span class="font-mono text-primary-300 bg-primary-950 border border-primary-800 rounded-full" style="font-size:11px;padding:3px 10px">dotnet run</span>
                     </div>
                     <div class="absolute text-center" style="left:0;top:416px;width:230px">
-                        <span class="font-mono text-base-500" style="font-size:9.5px;letter-spacing:.08em">one server &middot; two outputs</span>
+                        <span class="font-mono text-base-400" style="font-size:9.5px;letter-spacing:.08em">one server &middot; two outputs</span>
                     </div>
 
                     @* packets traveling the two branch curves *@
@@ -84,7 +86,7 @@
                                 <span class="rounded-full bg-accent-four-400" style="width:7px;height:7px;box-shadow:0 0 10px var(--color-accent-four-400)"></span>
                                 Development
                             </span>
-                            <span class="font-mono text-base-500" style="font-size:9.5px">interactive &middot; hot reload</span>
+                            <span class="font-mono text-base-400" style="font-size:9.5px">interactive &middot; hot reload</span>
                         </div>
                         <div class="rounded-xl bg-base-900 border border-base-700 overflow-hidden" style="width:300px;box-shadow:0 30px 60px -30px #000">
                             <div class="flex items-center border-b border-base-800" style="gap:7px;padding:9px 12px">
@@ -93,7 +95,7 @@
                                     <span class="rounded-full bg-accent-two-500/80" style="width:9px;height:9px"></span>
                                     <span class="rounded-full bg-accent-three-500/80" style="width:9px;height:9px"></span>
                                 </span>
-                                <span class="flex items-center bg-base-950 border border-base-800 rounded font-mono text-base-500" style="flex:1;height:16px;padding:0 8px;font-size:9px">localhost:5000</span>
+                                <span class="flex items-center bg-base-950 border border-base-800 rounded font-mono text-base-400" style="flex:1;height:16px;padding:0 8px;font-size:9px">localhost:5000</span>
                                 <svg class="ph-reload" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-four-400)" stroke-width="2.4"><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 3v5h-5" /></svg>
                             </div>
                             <div style="padding:0 12px 12px">
@@ -101,7 +103,7 @@
                                 <div class="ph-pvline" style="height:7px;border-radius:3px;background:var(--color-base-700);margin-bottom:6px;width:92%"></div>
                                 <div class="ph-pvline" style="height:7px;border-radius:3px;background:var(--color-base-700);margin-bottom:6px;width:80%;animation-delay:.15s"></div>
                                 <div class="grid place-items-center bg-base-800" style="height:42px;border-radius:6px;border:1px dashed var(--color-base-700);margin:9px 0">
-                                    <span class="font-mono text-base-500" style="font-size:9px">hero.png</span>
+                                    <span class="font-mono text-base-400" style="font-size:9px">hero.png</span>
                                 </div>
                                 <div class="ph-pvline" style="height:7px;border-radius:3px;background:var(--color-base-700);margin-bottom:6px;width:88%;animation-delay:.3s"></div>
                                 <div class="ph-pvline" style="height:7px;border-radius:3px;background:var(--color-base-700);width:54%;animation-delay:.45s"></div>
@@ -116,7 +118,7 @@
                                 <span class="rounded-full bg-primary-400" style="width:7px;height:7px;box-shadow:0 0 10px var(--color-primary-400)"></span>
                                 Deployment
                             </span>
-                            <span class="font-mono text-base-500" style="font-size:9.5px">static html &middot; shipped</span>
+                            <span class="font-mono text-base-400" style="font-size:9.5px">static html &middot; shipped</span>
                         </div>
                         <div class="flex items-center" style="gap:18px">
                             <div class="relative" style="width:150px;height:96px">
@@ -136,7 +138,7 @@
                                 <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-300)" stroke-width="1.6"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.5 2.5 15.5 0 18M12 3c-2.5 2.5-2.5 15.5 0 18" /></svg>
                             </div>
                         </div>
-                        <div class="font-mono text-base-500" style="font-size:9.5px;margin-top:12px;margin-left:2px">dotnet run -- build &rarr; output</div>
+                        <div class="font-mono text-base-400" style="font-size:9.5px;margin-top:12px;margin-left:2px">dotnet run -- build &rarr; output</div>
                     </div>
                 </div>@* /cluster *@
 
