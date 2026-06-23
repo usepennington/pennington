@@ -2,8 +2,6 @@ namespace Pennington.Infrastructure;
 
 using System.CommandLine;
 using System.IO.Abstractions;
-using System.Net;
-using System.Net.Sockets;
 using System.Reflection;
 using Artifacts;
 using Cli;
@@ -28,7 +26,6 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -123,24 +120,6 @@ public static class PenningtonExtensions
             // before forcing the socket closed — a 5–10s hang. 500ms is plenty
             // for a dev host to drain; anything still in flight gets cancelled.
             services.Configure<HostOptions>(opts => opts.ShutdownTimeout = TimeSpan.FromMilliseconds(500));
-
-            // Dev server: bind a free port instead of Kestrel's default localhost:5000, so
-            // multiple sites can run at once and nothing collides with whatever already squats
-            // 5000. We only do this when the user hasn't picked a port themselves — an explicit
-            // endpoint takes effect only with no others configured, so we skip it when one is set
-            // (see ShouldUseEphemeralPort) to leave their choice untouched. IConfiguration is read
-            // at options-materialization time, after the host config (and Kestrel's own config
-            // binding) is fully assembled. Kestrel disallows ListenLocalhost(0) — it can't promise
-            // the same dynamic port on both loopbacks — so we pick the free port up front and bind
-            // localhost to it, keeping the one-port, both-loopback, HTTP shape :5000 had.
-            services.AddOptions<KestrelServerOptions>()
-                .Configure<IConfiguration>((kestrel, config) =>
-                {
-                    if (ShouldUseEphemeralPort(config))
-                    {
-                        kestrel.ListenLocalhost(FindFreePort());
-                    }
-                });
         }
 
         // Core services
@@ -317,7 +296,7 @@ public static class PenningtonExtensions
                     sp.GetRequiredService<IFileSystem>(),
                     sp.GetRequiredService<FrontMatterParser>(),
                     sp.GetRequiredService<ILogger<RazorPageContentService>>(),
-                    sp.GetService<Microsoft.Extensions.Hosting.IHostEnvironment>()?.ContentRootPath,
+                    sp.GetService<IHostEnvironment>()?.ContentRootPath,
                     sp.GetRequiredService<TimeProvider>()));
         }
 
@@ -407,7 +386,7 @@ public static class PenningtonExtensions
         // Shared blog read model (post listings, pagination, single-post render, RSS) over the
         // cached record registry + page resolver. Transient so it captures the current file-watched
         // ContentRecordRegistry; holds no cache of its own.
-        services.AddTransient<Content.BlogPostQuery>();
+        services.AddTransient<BlogPostQuery>();
 
         // Unified redirect map (from _redirects.yml + per-page redirectUrl front matter).
         // Registered as both a concrete service (for the middleware) and an IContentService
@@ -576,12 +555,12 @@ public static class PenningtonExtensions
         // across every site-wide aggregator (search, llms.txt, build-time link audit).
         // File-watched so a content edit recreates the cached array.
         services.AddSingleton(options.SiteProjection);
-        services.AddFileWatched<Pipeline.ISiteProjection, Pipeline.SiteProjection>();
+        services.AddFileWatched<ISiteProjection, SiteProjection>();
 
         // Route -> ContentRecord lookup aggregated from every content service. The discovery join:
         // search faceting and structured-data emission resolve a rendered route back to its typed
         // front matter through this. File-watched so it tracks content edits.
-        services.AddFileWatched<Content.ContentRecordRegistry>();
+        services.AddFileWatched<ContentRecordRegistry>();
 
         // Search artifact and sitemap services — factory-managed, trust IContentService for fresh data
         services.AddFileWatched<SearchArtifactService>();
@@ -658,7 +637,7 @@ public static class PenningtonExtensions
     /// </summary>
     public static IServiceCollection AddYamlContext(this IServiceCollection services, YamlSerializerContext context)
     {
-        services.AddSingleton<YamlSerializerContext>(context);
+        services.AddSingleton(context);
         return services;
     }
 
@@ -675,34 +654,6 @@ public static class PenningtonExtensions
         }
 
         return [.. configured, entryAssembly];
-    }
-
-    /// <summary>
-    /// True when the dev server should bind an OS-assigned ephemeral port — i.e. the user
-    /// hasn't already chosen one. <c>urls</c> is the sink for <c>ASPNETCORE_URLS</c>, the
-    /// <c>--urls</c> argument, and <c>UseUrls</c>; <c>Kestrel:Endpoints</c> covers the
-    /// appsettings-endpoints form (which isn't surfaced under <c>urls</c>).
-    /// </summary>
-    internal static bool ShouldUseEphemeralPort(IConfiguration config) =>
-        string.IsNullOrEmpty(config[WebHostDefaults.ServerUrlsKey])
-        && !config.GetSection("Kestrel:Endpoints").GetChildren().Any();
-
-    /// <summary>
-    /// Asks the OS for a free loopback TCP port by binding port 0 and reading the assignment back.
-    /// The listener is closed before returning, so Kestrel can claim the port itself.
-    /// </summary>
-    private static int FindFreePort()
-    {
-        var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        try
-        {
-            return ((IPEndPoint)listener.LocalEndpoint).Port;
-        }
-        finally
-        {
-            listener.Stop();
-        }
     }
 
     /// <summary>
