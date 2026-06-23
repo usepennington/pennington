@@ -1,0 +1,244 @@
+---
+title: "Publish your docs as Markdown for AI agents"
+description: "Discover the Markdown copy DocSite already publishes for every page, see how agents find it, brand the llms.txt front door, keep a page out of the agent corpus, and give a Razor landing page a machine-readable twin."
+sectionLabel: "Beyond the Basics"
+order: 3
+tags:
+  - llms-txt
+  - markdown
+  - agents
+  - docsite
+uid: tutorials.beyond-basics.markdown-for-agents
+---
+
+AI coding agents read documentation badly when it arrives as HTML — they spend most of their token budget on layout, scripts, and SVG markup before reaching a sentence of prose. By the end of this tutorial you'll have a DocSite that hands those agents clean Markdown instead: every page available as a `.md` copy, an `/llms.txt` index an agent can crawl, a branded front door, one page deliberately held back, and a machine-readable home for your marketing landing page.
+
+You don't turn any of this on. `AddDocSite` calls `AddLlmsTxt` for you, so the index and the per-page Markdown copies already exist the moment your site runs. This tutorial is about *seeing* them, *verifying* them, and *shaping* them to fit your site.
+
+## Prerequisites
+
+- .NET 10 SDK installed
+- Completed [Scaffold a documentation site with DocSite](xref:tutorials.docsite.scaffold) (provides the running DocSite host this tutorial builds on)
+- A terminal with `curl` (every checkpoint below fetches a URL so you can see the actual bytes an agent receives)
+
+You'll work in the DocSite project from the scaffold tutorial. Keep `dotnet run` going in one terminal and run the `curl` commands in another.
+
+---
+
+## 1. See your docs the way an agent does
+
+Your running site serves HTML at every page URL. Alongside each one, it also publishes a Markdown copy at the same URL with `index.md` appended — and an index of everything at `/llms.txt`. Let's add a page to look at, then fetch both forms.
+
+<Steps>
+<Step StepNumber="1">
+
+**Add a page to inspect**
+
+Create `Content/guides/install.md` so there's a concrete page to fetch. The front matter is the ordinary DocSite shape.
+
+````markdown
+---
+title: "Install"
+description: "Add the package and wire the host."
+---
+
+## Install the package
+
+```
+dotnet add package Pennington
+```
+
+Then call `AddPennington` in your host and point it at a `Content/` folder.
+````
+
+</Step>
+<Step StepNumber="2">
+
+**Fetch the page as HTML, then as Markdown**
+
+The page renders at `/guides/install/`. Its Markdown copy lives at `/guides/install/index.md`.
+
+```bash
+curl http://localhost:5000/guides/install/
+curl http://localhost:5000/guides/install/index.md
+```
+
+The first command returns a full HTML document — `<head>`, scripts, navigation chrome, the works. The second returns just the page, as Markdown, with a small YAML header and the body underneath:
+
+````markdown
+---
+title: Install
+description: Add the package and wire the host.
+canonical_url: http://localhost:5000/guides/install/
+content_hash: sha256:…
+tokens: 41
+---
+
+## Install the package
+
+```
+dotnet add package Pennington
+```
+
+Then call `AddPennington` in your host and point it at a `Content/` folder.
+````
+
+</Step>
+</Steps>
+
+<Checkpoint>
+
+- `curl http://localhost:5000/guides/install/index.md` returns Markdown with a `Content-Type: text/markdown` response — not HTML
+- The header carries `canonical_url`, `content_hash`, and a `tokens` estimate, so a budget-aware agent knows what it's fetching before it commits
+- `curl http://localhost:5000/llms.txt` returns an index that lists *Install* under its section, linked to `/guides/install/index.md`
+
+</Checkpoint>
+
+---
+
+## 2. See how an agent finds the Markdown
+
+Generating the Markdown isn't enough — an agent has to discover it. DocSite advertises every page's copy two ways, and you can see both from the page you already have.
+
+The first is a `<link rel="alternate">` tag in the page's `<head>`. View the source of `/guides/install/` and look near the other metadata:
+
+```html
+<link rel="alternate" type="text/markdown" href="/guides/install/index.md">
+```
+
+This is the standard way to declare an alternate representation of a page. Claude Code's WebFetch sends an `Accept: text/markdown` header and looks for exactly this signal; other agents read it the same way. The second route is `/llms.txt` itself — a crawlable map of the whole corpus, with per-section grouping and token estimates so an agent can plan which pages to pull.
+
+<Checkpoint>
+
+- The HTML at `/guides/install/` contains a `<link rel="alternate" type="text/markdown" …>` pointing at `/guides/install/index.md`
+- `/llms.txt` lists the same `.md` URL, so an agent that starts from the index reaches the page without ever parsing HTML
+
+</Checkpoint>
+
+---
+
+## 3. Brand the front door
+
+The top of `/llms.txt` is the first thing an agent reads. By default it uses your site title and description. To give it a fuller introduction — what the project is, what an agent should know before diving in — drop a header file in your content root.
+
+<Steps>
+<Step StepNumber="1">
+
+**Add `Content/llms-header.txt`**
+
+The file is named `llms-header.txt`, not `llms.txt`, on purpose: a file literally named `llms.txt` in your content root would be served verbatim and shadow the generated index. Everything in this file becomes the preamble above the generated page list.
+
+```text
+# Acme Widgets Docs
+
+> The official documentation for Acme Widgets, a .NET content toolkit.
+
+These docs cover installation, configuration, and the public API. Code samples
+are pulled from the live source, so they compile. Prefer the Markdown copies
+linked below over scraping the HTML pages.
+```
+
+</Step>
+</Steps>
+
+<Checkpoint>
+
+- `curl http://localhost:5000/llms.txt` now opens with your header text, followed by the generated index
+- The section list and per-page links below the header are unchanged — you've replaced only the preamble
+
+</Checkpoint>
+
+---
+
+## 4. Keep a page out of the agent corpus
+
+Some pages aren't worth an agent's tokens — a thank-you page, a redirect stub, a placeholder. Set `llms: false` in a page's front matter and DocSite leaves it out of everything machine-facing while still serving it to humans.
+
+<Steps>
+<Step StepNumber="1">
+
+**Add `llms: false` to the install page's front matter**
+
+You'll undo this in a moment — it's here so you can watch the page leave the agent corpus.
+
+```markdown
+---
+title: "Install"
+description: "Add the package and wire the host."
+llms: false
+---
+```
+
+</Step>
+</Steps>
+
+<Checkpoint>
+
+- `curl http://localhost:5000/guides/install/` still returns the HTML page — humans are unaffected
+- `curl http://localhost:5000/guides/install/index.md` now returns a 404 — there is no Markdown copy
+- The page no longer appears in `/llms.txt`, and its `<link rel="alternate">` tag is gone from the HTML `<head>`
+- Remove the `llms: false` line again before moving on, so the page rejoins the corpus
+
+</Checkpoint>
+
+---
+
+## 5. Give a Razor landing page a Markdown twin
+
+A page backed by Markdown gets its `.md` copy for free, as you saw in section 1. A page backed by a Razor component — a marketing landing page, say — does not: there's no source Markdown to publish, and converting a splash full of layout would hand an agent the same noise you're trying to avoid. If you've built a [Razor landing page](xref:tutorials.docsite.landing-page), give it a purpose-built Markdown twin instead.
+
+<Steps>
+<Step StepNumber="1">
+
+**Serve a hand-written Markdown home at `/index.md`**
+
+Map an endpoint that returns the orientation you'd want an agent to read — what the project is, and where to go next. `WithLlmsTxtEntry` lists it in `/llms.txt`; the `using Pennington.LlmsTxt;` directive brings the extension into scope. Add this to your host after `app.UseDocSite()` and before `app.RunDocSiteAsync(args)`.
+
+```csharp
+const string agentHome = """
+    # Acme Widgets
+
+    Acme Widgets is a .NET content toolkit. The page at `/` is a marketing
+    landing page; this is its machine-readable equivalent.
+
+    - `/llms.txt` — the full index of every page as Markdown.
+    - Start with `/guides/install/index.md`, then read `/guides/`.
+    """;
+
+app.MapGet("/index.md", () => Results.Text(agentHome, "text/markdown"))
+   .WithLlmsTxtEntry("Acme Widgets docs — home", "Machine-readable orientation for agents.");
+```
+
+</Step>
+<Step StepNumber="2">
+
+**Point the landing page at it**
+
+Add the alternate link to your landing component's `<HeadContent>`, so an agent on the home page is steered to the Markdown twin the same way it would be on any other page.
+
+```razor
+<HeadContent>
+    <link rel="alternate" type="text/markdown" href="/index.md" />
+</HeadContent>
+```
+
+</Step>
+</Steps>
+
+<Checkpoint>
+
+- `curl http://localhost:5000/` returns your marketing HTML, unchanged
+- `curl http://localhost:5000/index.md` returns the hand-written orientation as `text/markdown`
+- The source of `/` carries `<link rel="alternate" type="text/markdown" href="/index.md">`, and `/llms.txt` lists the home entry
+
+</Checkpoint>
+
+---
+
+## Summary
+
+- DocSite publishes a Markdown copy of every page at its URL with `index.md` appended, plus an `/llms.txt` index — both wired automatically by `AddDocSite`.
+- Each page advertises its Markdown copy with a `<link rel="alternate" type="text/markdown">` tag and through `/llms.txt`, the two routes agents use to find it.
+- A `Content/llms-header.txt` file replaces the front-door preamble without touching the generated page list.
+- `llms: false` in a page's front matter keeps it human-visible but removes it from the Markdown copies, the index, and the alternate-link advertisement.
+- A Razor-backed page has no Markdown copy of its own; serve a purpose-built one with `MapGet("/index.md", …).WithLlmsTxtEntry(…)` and advertise it with an alternate link.
