@@ -8,9 +8,12 @@
                 @* input runway rail (width tracks --rw, set by the scaler) *@
                 <div class="ph-rail absolute" style="left:26px;top:299px;height:2px;width:444px;background:linear-gradient(90deg, transparent, var(--color-primary-700));opacity:.9"></div>
 
-                @* content source label *@
+                @* content source label — accent marks the pipeline's origin, rhyming with the dev/deploy node dots *@
                 <div class="absolute" style="left:26px;top:150px">
-                    <span class="inline-flex items-center gap-2 font-mono font-semibold uppercase text-base-400" style="font-size:10.5px;letter-spacing:.14em">Your content</span>
+                    <span class="inline-flex items-center gap-2 font-mono font-semibold uppercase text-accent-400" style="font-size:10.5px;letter-spacing:.14em">
+                        <span class="rounded-full bg-accent-400" style="width:7px;height:7px;box-shadow:0 0 10px var(--color-accent-400)"></span>
+                        Your content
+                    </span>
                     <div class="font-mono text-base-500" style="font-size:10px;margin-top:4px">/content</div>
                 </div>
 

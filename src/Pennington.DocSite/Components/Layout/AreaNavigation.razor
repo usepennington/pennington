@@ -18,8 +18,9 @@
                       aria-[current=true]:text-base-900 aria-[current=true]:dark:text-base-50
                       aria-[current=true]:shadow-sm aria-[current=true]:dark:shadow-none
                       aria-[current=false]:text-base-500 aria-[current=false]:dark:text-base-400
-                      aria-[current=false]:hover:text-base-900 aria-[current=false]:dark:hover:text-base-100">
-                <span data-area-dot class="@(isActive ? "bg-primary-500" : "bg-base-400") w-1.5 h-1.5 rounded-full shrink-0"></span>
+                      aria-[current=false]:hover:text-base-900 aria-[current=false]:dark:hover:text-base-100
+                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500">
+                <span data-area-dot class="@(isActive ? "bg-accent-500" : "bg-base-400") w-1.5 h-1.5 rounded-full shrink-0"></span>
                 @if (area.Icon != null)
                 {
                     <span class="w-3.5 h-3.5 shrink-0 opacity-80">@((MarkupString)area.Icon)</span>

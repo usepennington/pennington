@@ -31,7 +31,7 @@
         <div class="lg:flex-1 @(CenterSearch ? "lg:basis-0 lg:flex lg:justify-center" : "")">
             <button type="button"
                     id="search-input"
-                    class="w-8 md:w-32 lg:w-full m-0 max-w-md h-9 px-2 lg:px-3 flex items-center gap-2 rounded-lg bg-base-100 border border-base-200 text-sm text-base-500 transition-colors hover:bg-base-200 hover:border-base-300 dark:bg-base-900 dark:border-base-800 dark:text-base-400 dark:hover:bg-base-800 dark:hover:border-base-700">
+                    class="w-8 md:w-32 lg:w-full m-0 max-w-md h-9 px-2 lg:px-3 flex items-center gap-2 rounded-lg bg-base-100 border border-base-200 text-sm text-base-500 transition-colors hover:bg-base-200 hover:border-base-300 dark:bg-base-900 dark:border-base-800 dark:text-base-400 dark:hover:bg-base-800 dark:hover:border-base-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500">
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="h-4 w-4 stroke-current shrink-0" stroke-width="2">
                     <circle cx="11" cy="11" r="7"/>
                     <path stroke-linecap="round" d="m21 21-4.3-4.3"/>
@@ -54,14 +54,14 @@
             @if (Blog.Enabled)
             {
                 <a href="/blog"
-                   class="px-2 text-sm font-medium text-base-700 dark:text-base-300 hover:text-primary-700 dark:hover:text-primary-400">
+                   class="px-2 text-sm font-medium text-base-700 dark:text-base-300 hover:text-primary-700 dark:hover:text-primary-400 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500">
                     Blog
                 </a>
             }
 
             <!-- sun icon -->
             <button aria-label="Toggle Dark Mode"
-                    class="hover:bg-base-200 dark:hover:bg-base-800 rounded-md p-1" data-theme-toggle>
+                    class="hover:bg-base-200 dark:hover:bg-base-800 rounded-md p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500" data-theme-toggle>
                 <svg xmlns="http://www.w3.org/2000/svg"
                      class="dark:hidden text-base-900 dark:text-base-200 h-5 w-5" viewBox="0 0 24 24"
                      stroke="currentColor" fill="none">
@@ -88,7 +88,7 @@
                 <!-- github icon -->
                 <a href="@DocSiteOptions.GitHubUrl"
                    aria-label="GitHub repository"
-                   class="hover:bg-base-200 dark:hover:bg-base-800 rounded-md p-1">
+                   class="hover:bg-base-200 dark:hover:bg-base-800 rounded-md p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500">
                     <svg xmlns="http://www.w3.org/2000/svg" class="text-base-900 dark:text-base-200 h-5 w-5"
                          viewBox="0 0 24 24" stroke="currentColor" fill="none">
                         <path d="M10 20.5675C6.57143 21.7248 3.71429 20.5675 2 17" stroke-width="1"
@@ -116,7 +116,7 @@
 
     private readonly RenderFragment _mobileMenuButton =
         @<button id="menu-toggle" aria-label="Toggle Navigation Menu" aria-controls="nav-sidebar"
-                 class="lg:hidden text-base-700 dark:text-base-100 rounded-md hover:bg-primary-100 dark:hover:bg-primary-800">
+                 class="lg:hidden text-base-700 dark:text-base-100 rounded-md hover:bg-primary-100 dark:hover:bg-primary-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M4 6h16M4 12h16M4 18h16"></path>
