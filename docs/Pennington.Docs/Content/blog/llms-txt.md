@@ -20,8 +20,9 @@ During the static build, Pennington produces two things:
 
 - `llms.txt` — an index of the whole site, organized by your navigation tree.
   Drop a custom `llms.txt` in your content root and it becomes the index header.
-- `_llms/` — a directory holding a front-matter-stripped markdown copy of every
-  page.
+- a co-located markdown copy of every page at `<page>/index.md`, beside its
+  `index.html` — a front-matter-stripped copy an agent reaches by appending
+  `index.md` to the page URL.
 
 The markdown is real markdown, not a degraded HTML dump. The converter handles
 highlighted code blocks, tabbed groups, and GFM alerts, so a code sample
@@ -44,7 +45,7 @@ HTML page. The first is a `*.llms.md` file. The second is `WithLlmsTxtEntry` on 
 `MapGet` endpoint, for serving the markdown dynamically:
 
 ```csharp
-app.MapGet("/_llms/architecture.md", () => Results.Text(overview, "text/markdown"))
+app.MapGet("/agents/architecture.md", () => Results.Text(overview, "text/markdown"))
    .WithLlmsTxtEntry("Architecture overview", "A high-level map for agents.");
 ```
 
