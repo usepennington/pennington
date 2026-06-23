@@ -39,17 +39,28 @@ public class ColorThemeTests
     }
 
     [Fact]
-    public void BaseColorName_OverridesAlgorithmicBaseWithNamedNeutral()
+    public void Base_AutoSelectsNearestNeutral_AndBaseColorNameOverridesIt()
     {
-        // Default: base-500 is a hue-tinted oklch literal grown from the seed.
-        var generated = ColorVar(ProcessWithTheme(ColorTheme.Azure, "bg-base-500"), "base-500");
-        generated.ShouldContain("oklch(");
-        generated.ShouldNotContain("zinc");
+        // Default: base-500 resolves to the stock neutral whose undertone is nearest the seed hue.
+        // Azure (hue 242) lands on slate.
+        var auto = ColorVar(ProcessWithTheme(ColorTheme.Azure, "bg-base-500"), "base-500");
+        auto.ShouldContain("slate");
 
-        // Overridden: base-500 now resolves to the stock zinc palette instead.
+        // Overridden: base-500 now resolves to the requested zinc palette instead.
         var overridden = ColorVar(ProcessWithTheme(ColorTheme.Azure with { BaseColorName = ColorName.Zinc }, "bg-base-500"), "base-500");
         overridden.ShouldContain("zinc");
-        overridden.ShouldNotBe(generated);
+        overridden.ShouldNotBe(auto);
+    }
+
+    [Theory]
+    [InlineData(30, "taupe")]   // Ember — warm
+    [InlineData(115, "olive")]  // Citron — yellow-green
+    [InlineData(210, "mist")]   // Aqua — cyan
+    [InlineData(242, "slate")]  // Azure — cool blue
+    [InlineData(325, "mauve")]  // Orchid — magenta
+    public void NeutralForHue_PicksNearestUndertone(double hue, string expected)
+    {
+        ColorTheme.NeutralForHue(hue).Value.ShouldBe(expected);
     }
 
     // Pulls the value out of a `--color-<key>: <value>;` custom-property definition.

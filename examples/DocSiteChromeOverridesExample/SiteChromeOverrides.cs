@@ -2,6 +2,7 @@ namespace DocSiteChromeOverridesExample;
 
 using System.Reflection;
 using Pennington.DocSite;
+using Pennington.MonorailCss;
 
 /// <summary>
 /// Static helpers that show how the <see cref="DocSiteOptions"/> slot
@@ -28,6 +29,11 @@ public static class SiteChromeOverrides
     {
         SiteTitle = "DocSite Chrome Overrides",
         SiteDescription = "Running DocSite that exercises every override seam on DocSiteOptions.",
+        // A curated ColorTheme repigments the whole site from one hue. Orchid's neutral
+        // `base` is auto-selected to coordinate with its magenta brand (mauve grays, not a
+        // generic neutral); the home page renders the palette via Components/BrandPalette.razor.
+        ColorScheme = ColorTheme.Orchid,
+        SyntaxTheme = ColorTheme.Orchid.SyntaxTheme,
         HeaderContent = """<span class="chrome-header" data-chrome-overrides="docsite-header">Chrome Overrides</span>""",
         FooterContent = """<span class="chrome-footer" data-chrome-overrides="docsite-footer">(c) 2026 Pennington</span>""",
         AdditionalHtmlHeadContent = BuildHtmlHeadContent(),

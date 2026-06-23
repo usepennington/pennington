@@ -9,6 +9,7 @@ Live wiring behind "override DocSite components." `SiteChromeOverrides.cs` retur
 - **`AdditionalRoutingAssemblies`** widening the router to the host assembly — set in `SiteChromeOverrides.cs` as `AdditionalRoutingAssemblies = [typeof(Program).Assembly]`. Passing a non-routable assembly (one without `@page` directives) is a silent no-op — Blazor's `Router` simply finds zero routes in it and moves on. No throw, no log.
 - **`DocSiteOptions` overrides** for header / footer / layout chrome — `HeaderContent`, `FooterContent`, layout component references on the options object in `SiteChromeOverrides.cs`.
 - **`NotFound.razor` 404 body** via `Components/NotFound.razor` — a non-routed component named `NotFound`. With no `Content/404.md` present, DocSite's catch-all finds it by reflection and renders it for any unmatched URL. No `@page`, and no routing-assembly wiring needed (the scan walks every loaded assembly).
+- **Brand `ColorScheme`** via `ColorTheme.Orchid` — set in `SiteChromeOverrides.cs` alongside its coordinated `SyntaxTheme`. The home page (`Content/index.md`) renders the generated palette through `Components/BrandPalette.razor`, an Mdazor component registered in `Program.cs`. It shows the neutral `base` ramp auto-selected to coordinate with the brand hue (Orchid's magenta lands on `mauve`), next to a stock `neutral` ramp for contrast.
 
 ## Referenced from
 
