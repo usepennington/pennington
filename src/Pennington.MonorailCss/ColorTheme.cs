@@ -3,14 +3,16 @@ using MonorailCss.Theme;
 namespace Pennington.MonorailCss;
 
 /// <summary>
-/// A curated, named color theme: one seed hue grows an algorithmic brand scheme
-/// (<c>primary</c> / <c>base</c> / <c>accent</c>) plus a coordinating OKLCH syntax-highlight
-/// palette. Assign <see cref="MonorailCssOptions.ColorScheme"/> to the theme and
-/// <see cref="MonorailCssOptions.SyntaxTheme"/> to its <see cref="SyntaxTheme"/>.
+/// A curated, named color theme: one seed hue grows the algorithmic <c>primary</c> and
+/// <c>accent</c> brand palettes plus a coordinating OKLCH syntax-highlight palette, while
+/// <c>base</c> is the stock MonorailCss neutral whose undertone sits nearest the hue (see
+/// <see cref="NeutralForHue"/>). Assign <see cref="MonorailCssOptions.ColorScheme"/> to the theme
+/// and <see cref="MonorailCssOptions.SyntaxTheme"/> to its <see cref="SyntaxTheme"/>.
 /// </summary>
 /// <remarks>
-/// The brand roles come from <see cref="ColorPaletteGenerator.ApplyAlgorithmicColorScheme"/>;
-/// the syntax tokens are foreground palettes at a tetradic spread off the primary hue
+/// The <c>primary</c>/<c>accent</c> roles come from
+/// <see cref="ColorPaletteGenerator.ApplyAlgorithmicColorScheme"/> (its generated base is replaced
+/// by the named neutral); the syntax tokens are foreground palettes at a tetradic spread off the primary hue
 /// (<c>+0/+60/+150/+240°</c>), mirroring the layout you can preview and tune at
 /// <see href="https://monorailcss.github.io/color-scheme-gen/"/>. The built-in catalog
 /// (<see cref="Ember"/> … <see cref="Graphite"/>, enumerated by <see cref="All"/>) walks the
@@ -46,25 +48,40 @@ public sealed record ColorTheme : IColorScheme
     public CoordinatingScheme Coordinating { get; init; } = CoordinatingScheme.Complementary;
 
     /// <summary>
-    /// Optional neutral palette to use for <c>base</c> instead of the hue-derived algorithmic base.
-    /// Set it to a Tailwind neutral (e.g. <see cref="ColorName.Zinc"/>, <see cref="ColorName.Stone"/>,
-    /// <see cref="ColorName.Slate"/>) when you want crisp, untinted grays rather than a base subtly
-    /// shifted toward <see cref="PrimaryHue"/>. <see langword="null"/> (the default) keeps the
-    /// generated, hue-tinted base. Comments — which track <c>base</c> — follow this choice too.
+    /// Optional override for the <c>base</c> neutral. Leave it <see langword="null"/> (the default)
+    /// to auto-pick the MonorailCss neutral whose undertone is nearest <see cref="PrimaryHue"/> via
+    /// <see cref="NeutralForHue"/>. Set it to a specific family (e.g. <see cref="ColorName.Zinc"/>, or
+    /// <see cref="ColorName.Neutral"/> for crisp untinted grays) to force that one instead. Comments —
+    /// which track <c>base</c> — follow this choice too.
     /// </summary>
     public ColorName? BaseColorName { get; init; }
+
+    // 500-stop OKLCH undertone hue of every named neutral MonorailCss ships, in hue order. Pure
+    // `neutral` is excluded — it has no hue, so it is never auto-selected (request it explicitly via
+    // BaseColorName). NeutralForHue snaps the seed to the family whose undertone sits nearest, so a
+    // warm seed lands on stone/taupe, a cool one on slate/gray, a magenta one on mauve, and so on.
+    private static readonly (ColorName Name, double Hue)[] NeutralHues =
+    [
+        (ColorName.Taupe, 43.1),
+        (ColorName.Stone, 58.1),
+        (ColorName.Olive, 107.3),
+        (ColorName.Mist, 213.5),
+        (ColorName.Slate, 257.4),
+        (ColorName.Gray, 264.4),
+        (ColorName.Zinc, 285.9),
+        (ColorName.Mauve, 322.5),
+    ];
 
     /// <inheritdoc />
     public Theme ApplyToTheme(Theme theme)
     {
         theme = theme.ApplyAlgorithmicColorScheme(PrimaryHue, Chroma, Coordinating);
 
-        // Swap the generated base for a named neutral when one is requested; the algorithmic
-        // primary/accent palettes are untouched, so only the surface grays change.
-        if (BaseColorName is { } neutral)
-        {
-            theme = theme.MapColorPalette(neutral.Value, "base");
-        }
+        // Replace the generated base with a stock MonorailCss neutral — the requested family, or the
+        // one whose undertone sits nearest the seed hue — so the surface grays coordinate with the
+        // brand. The algorithmic primary/accent palettes are untouched.
+        var neutral = BaseColorName ?? NeutralForHue(PrimaryHue);
+        theme = theme.MapColorPalette(neutral.Value, "base");
 
         var syntaxChroma = Math.Max(Chroma, SyntaxChromaFloor);
         return theme
@@ -72,6 +89,26 @@ public sealed record ColorTheme : IColorScheme
             .AddColorPalette("syntax-string", ColorPaletteGenerator.GenerateForeground(PrimaryHue + StringHueOffset, syntaxChroma))
             .AddColorPalette("syntax-variable", ColorPaletteGenerator.GenerateForeground(PrimaryHue + VariableHueOffset, syntaxChroma))
             .AddColorPalette("syntax-function", ColorPaletteGenerator.GenerateForeground(PrimaryHue + FunctionHueOffset, syntaxChroma));
+    }
+
+    /// <summary>
+    /// Picks the MonorailCss neutral palette whose undertone hue sits nearest <paramref name="hue"/>
+    /// (measured around the color wheel), giving <c>base</c> grays that coordinate with the brand.
+    /// The pure, hueless <see cref="ColorName.Neutral"/> is never auto-selected — request it explicitly
+    /// via <see cref="BaseColorName"/> when you want untinted grays.
+    /// </summary>
+    /// <param name="hue">Seed hue in degrees; normalized into 0–360 before comparison.</param>
+    public static ColorName NeutralForHue(double hue)
+    {
+        var h = ((hue % 360) + 360) % 360;
+        return NeutralHues.MinBy(n => HueDistance(h, n.Hue)).Name;
+    }
+
+    // Shortest angular distance between two hues, in degrees (0–180).
+    private static double HueDistance(double a, double b)
+    {
+        var d = Math.Abs(a - b) % 360;
+        return Math.Min(d, 360 - d);
     }
 
     /// <summary>

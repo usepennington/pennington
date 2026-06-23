@@ -19,7 +19,7 @@ For a working setup, see `examples/DocSiteChromeOverridesExample`. `SiteChromeOv
 
 ## Build the populated options
 
-All the code for this recipe lives in one factory method, so the four extension points sit together on a single record initializer. The example sets `SiteTitle` and `SiteDescription` alongside the override properties, matching the options produced by `AddDocSite(() => SiteChromeOverrides.BuildDocSiteOptions())`.
+All the code for this recipe lives in one factory method, so the four extension points sit together on a single record initializer. The example sets `SiteTitle` and `SiteDescription` alongside the override properties — plus a brand `ColorScheme` (covered below) — matching the options produced by `AddDocSite(() => SiteChromeOverrides.BuildDocSiteOptions())`.
 
 ```csharp:symbol
 examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverrides.BuildDocSiteOptions
@@ -66,9 +66,20 @@ The DocSite shell only discovers `@page` directives in its own assembly by defau
 examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverrides.BuildAdditionalRoutingAssemblies
 ```
 
+### Recolor the chrome with `ColorScheme`
+
+The four points above inject markup; `ColorScheme` repaints it. It is the other `DocSiteOptions` property this example sets — assigned to `ColorTheme.Orchid`, one of the curated catalog schemes. A `ColorTheme` grows the whole palette from a single hue: the `primary` and `accent` brand roles algorithmically, and the neutral `base` ramp by auto-selecting the stock MonorailCSS neutral whose undertone sits nearest that hue. Orchid's magenta lands on `mauve`, so the surface grays carry a faint mauve tint instead of a generic gray. The example forwards the theme's coordinated `SyntaxTheme` too.
+
+```csharp
+ColorScheme = ColorTheme.Orchid,
+SyntaxTheme = ColorTheme.Orchid.SyntaxTheme,
+```
+
+The home page renders the resulting palette as swatches through a small Mdazor component, `Components/BrandPalette.razor`, registered in `Program.cs` with `AddMdazorComponent<BrandPalette>()`. See <xref:how-to.theming.monorail-css> for the full range of color-scheme options and <xref:tutorials.beyond-basics.custom-razor-component> for authoring Mdazor components.
+
 ## Register the implementation
 
-`AddDocSite` takes a `Func<DocSiteOptions>` factory, so the most direct wiring is to pass the helper as a method reference and keep the host file short. The example's `Program.cs` runs this exact shape end-to-end.
+`AddDocSite` takes a `Func<DocSiteOptions>` factory, so the most direct wiring is to pass the helper as a method reference and keep the host file short. The example's `Program.cs` runs this exact shape end-to-end, with the one extra `AddMdazorComponent<BrandPalette>()` line that registers the home-page palette component.
 
 ```csharp:symbol
 examples/DocSiteChromeOverridesExample/Program.cs
@@ -87,6 +98,7 @@ The chrome on every page is replaced by the configured fragments, one outcome pe
 
 - Run `dotnet run` and view page source on `/` — expect the `<meta name="x-chrome-overrides-head">` tag inside `<head>`, your `HeaderContent` and `FooterContent` markup in the layout, and the `.chrome-header` rule inside `/styles.css`.
 - Navigate to a route defined by a Razor component in your app assembly (for example `/extra`) and confirm it renders. A 404 here means `AdditionalRoutingAssemblies` is not including the right assembly.
+- Visit `/` and confirm the `<BrandPalette />` swatches render. The `base` ramp reads mauve-tinted next to the stock `neutral` ramp — proof the `ColorScheme` auto-picked a coordinating neutral for the brand hue.
 - Run `dotnet run -- build output` and search `output/index.html` for your head fragment and `output/styles.css` for your `ExtraStyles` rules to confirm the overrides survive publish.
 
 ## Related

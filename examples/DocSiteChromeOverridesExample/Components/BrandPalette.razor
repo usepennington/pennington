@@ -1,0 +1,64 @@
+@namespace DocSiteChromeOverridesExample.Components
+
+@* BrandPalette — a small Mdazor component that renders the active ColorTheme's
+   generated palettes as swatches. Registered with services.AddMdazorComponent<BrandPalette>()
+   in Program.cs and consumed from Content/index.md as <BrandPalette />.
+
+   Every swatch carries a *literal* bg-* utility class: MonorailCss.Discovery scans
+   string literals in this assembly, so interpolated/looped class names would never
+   resolve. Spelling each stop out is what makes the colors show up. *@
+<div class="not-prose my-8 space-y-10">
+
+    <section>
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-base-500">Brand</h2>
+        <div class="flex flex-wrap gap-6">
+            <figure class="space-y-2">
+                <div class="size-24 rounded-xl bg-primary-500 shadow-sm"></div>
+                <figcaption class="text-xs font-medium text-base-600 dark:text-base-400">primary</figcaption>
+            </figure>
+            <figure class="space-y-2">
+                <div class="size-24 rounded-xl bg-accent-500 shadow-sm"></div>
+                <figcaption class="text-xs font-medium text-base-600 dark:text-base-400">accent</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="mb-1 text-sm font-semibold uppercase tracking-wide text-base-500">Neutral base</h2>
+        <p class="mb-4 max-w-prose text-sm text-base-600 dark:text-base-400">
+            Auto-selected to coordinate with the brand hue — tinted, not a generic gray.
+        </p>
+        <div class="flex overflow-hidden rounded-xl shadow-sm">
+            <div class="h-16 flex-1 bg-base-50"></div>
+            <div class="h-16 flex-1 bg-base-200"></div>
+            <div class="h-16 flex-1 bg-base-300"></div>
+            <div class="h-16 flex-1 bg-base-500"></div>
+            <div class="h-16 flex-1 bg-base-700"></div>
+            <div class="h-16 flex-1 bg-base-900"></div>
+            <div class="h-16 flex-1 bg-base-950"></div>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-base-500">Syntax tokens</h2>
+        <div class="flex flex-wrap gap-6">
+            <figure class="space-y-2">
+                <div class="size-16 rounded-lg bg-syntax-keyword-600 shadow-sm"></div>
+                <figcaption class="text-xs font-medium text-base-600 dark:text-base-400">keyword</figcaption>
+            </figure>
+            <figure class="space-y-2">
+                <div class="size-16 rounded-lg bg-syntax-string-600 shadow-sm"></div>
+                <figcaption class="text-xs font-medium text-base-600 dark:text-base-400">string</figcaption>
+            </figure>
+            <figure class="space-y-2">
+                <div class="size-16 rounded-lg bg-syntax-variable-600 shadow-sm"></div>
+                <figcaption class="text-xs font-medium text-base-600 dark:text-base-400">variable</figcaption>
+            </figure>
+            <figure class="space-y-2">
+                <div class="size-16 rounded-lg bg-syntax-function-600 shadow-sm"></div>
+                <figcaption class="text-xs font-medium text-base-600 dark:text-base-400">function</figcaption>
+            </figure>
+        </div>
+    </section>
+
+</div>
