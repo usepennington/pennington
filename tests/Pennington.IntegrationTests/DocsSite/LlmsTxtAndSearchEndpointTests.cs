@@ -362,7 +362,7 @@ public class LlmsTxtAndSearchEndpointTests
     public async Task Home_ServesMarketingHtml_AndAdvertisesAgentMarkdown()
     {
         // The landing page at "/" stays marketing HTML for humans, but advertises a purpose-built
-        // machine-readable home at /index.md (served by a MapGet, not derived from the splash).
+        // machine-readable home at /index.md (the index.llms.md sidecar, not derived from the splash).
         var html = await _client.GetStringAsync("/", TestContext.Current.CancellationToken);
 
         var context = BrowsingContext.New(Configuration.Default);
@@ -374,8 +374,8 @@ public class LlmsTxtAndSearchEndpointTests
         md.EnsureSuccessStatusCode();
         md.Content.Headers.ContentType?.MediaType.ShouldBe("text/markdown");
         var body = await md.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        body.ShouldContain("# Pennington");
-        body.ShouldContain("Read this site as Markdown");
+        body.ShouldContain("Pennington is a static content engine");
+        body.ShouldContain("Documentation map");
         // It is the authored orientation, not the converted marketing splash.
         body.ShouldNotContain("A static site your .NET project deserves");
     }

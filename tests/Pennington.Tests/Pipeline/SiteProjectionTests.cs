@@ -142,6 +142,46 @@ public class SiteProjectionTests
     }
 
     [Fact]
+    public async Task LlmsOnlySource_WinsRouteCollisionWithHtmlPage_RendersInProcessNotFetchedSplash()
+    {
+        // Regression: Content/index.llms.md and Index.razor's @page "/" both resolve to "/".
+        // The projection's source map must let the LlmsOnlySource win the collision so the
+        // /index.md sidecar is rendered in-process from the .llms.md body — not produced by
+        // converting the marketing splash fetched over HTTP. The integration suite can't catch
+        // this: under WebApplicationFactory the docs assembly isn't the entry assembly, so
+        // RazorPageContentService never discovers Index.razor and the collision never forms.
+        var root = new ContentRoute { CanonicalPath = new UrlPath("/"), OutputFile = new FilePath("index.html") };
+        var llms = new CollidingContentService(
+            new LlmsOnlySource(new FilePath("content/index.llms.md"), "markdown"),
+            new ContentTocItem("Machine home", root, 0, [], null, null),
+            new ParsedItem(root, new TestFrontMatter("Machine home"), "machine body"));
+        var razor = new CollidingContentService(
+            new RazorPageSource("Home"),
+            new ContentTocItem("Splash", root, 0, [], null, null),
+            parsed: null);
+
+        // Registration order mirrors the host: markdown services precede RazorPageContentService,
+        // so the Razor RazorPageSource is the last writer for "/" in discovery order.
+        var projection = CreateProjection(
+            contentServices: [llms, razor],
+            renderer: new MarkerRenderer("<p>IN-PROCESS LLMS BODY</p>"),
+            dispatcher: new SplashDispatcher("<html><body><p>RAZOR SPLASH</p></body></html>"));
+
+        var pages = new List<RenderedPage>();
+        await foreach (var page in projection.GetPagesAsync(TestContext.Current.CancellationToken))
+        {
+            pages.Add(page);
+        }
+
+        var home = pages.ShouldHaveSingleItem();
+        home.Route.CanonicalPath.Value.ShouldBe("/");
+        // In-process render path: MarkdownOrigin carrying the .llms.md body, not the fetched splash.
+        home.Origin.ShouldNotBeNull().Value.ShouldBeOfType<MarkdownOrigin>();
+        home.Html.ShouldContain("IN-PROCESS LLMS BODY");
+        home.Html.ShouldNotContain("RAZOR SPLASH");
+    }
+
+    [Fact]
     public async Task GetPagesAsync_InsideCorpusFetch_FailsFastInsteadOfDeadlocking()
     {
         // The b719d73 guard: a request the projection itself issued (marked by the
@@ -194,12 +234,13 @@ public class SiteProjectionTests
     private static SiteProjection CreateProjection(
         EndpointDataSource? endpointDataSource = null,
         IEnumerable<IContentService>? contentServices = null,
-        IInProcessHttpDispatcher? dispatcher = null)
+        IInProcessHttpDispatcher? dispatcher = null,
+        IContentRenderer? renderer = null)
     {
         return new SiteProjection(
             contentServices: contentServices ?? [],
             enrichment: new MetadataEnrichmentService([]),
-            renderer: new StubRenderer(),
+            renderer: renderer ?? new StubRenderer(),
             xrefResolver: new XrefResolvingService(new XrefResolver([])),
             fetcher: new RenderedHtmlFetcher(dispatcher ?? new StubDispatcher(), NullLogger<RenderedHtmlFetcher>.Instance),
             extractor: new HeadingSectionExtractor(),
@@ -274,6 +315,72 @@ public class SiteProjectionTests
                         "text/html"),
                 });
         }
+    }
+
+    private record TestFrontMatter(string Title) : Pennington.FrontMatter.IFrontMatter;
+
+    // Renders a ParsedItem to a fixed HTML marker so the in-process render path is observable.
+    private sealed class MarkerRenderer(string html) : IContentRenderer
+    {
+        public Task<ContentItem> RenderAsync(ParsedItem item) =>
+            Task.FromResult(new ContentItem(new RenderedItem(
+                item.Route,
+                item.Metadata,
+                new RenderedContent(
+                    html,
+                    [],
+                    System.Collections.Immutable.ImmutableList<Tag>.Empty,
+                    System.Collections.Immutable.ImmutableList<CrossReference>.Empty,
+                    null))));
+    }
+
+    // Dispatcher whose every fetch returns the same "marketing splash" HTML — the body the
+    // projection would convert if it (wrongly) took the HTTP path for the colliding "/" route.
+    private sealed class SplashDispatcher(string html) : IInProcessHttpDispatcher
+    {
+        public HttpClient CreateClient() =>
+            new(new Handler(html)) { BaseAddress = new Uri("http://localhost/") };
+
+        private sealed class Handler(string html) : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+                => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent(html, System.Text.Encoding.UTF8, "text/html"),
+                });
+        }
+    }
+
+    // A service that claims a single route with one source, one indexable entry, and an optional
+    // parsed body — enough to stage a same-route collision between two services in the projection.
+    private sealed class CollidingContentService(ContentSource source, ContentTocItem toc, ParsedItem? parsed) : IContentService
+    {
+        public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
+        {
+            yield return new DiscoveredItem(toc.Route, source);
+            await Task.CompletedTask;
+        }
+
+        public async IAsyncEnumerable<ParsedItem> ParseContentAsync()
+        {
+            if (parsed is not null)
+            {
+                yield return parsed;
+            }
+            await Task.CompletedTask;
+        }
+
+        public Task<System.Collections.Immutable.ImmutableList<ContentToCopy>> GetContentToCopyAsync()
+            => Task.FromResult(System.Collections.Immutable.ImmutableList<ContentToCopy>.Empty);
+
+        public Task<System.Collections.Immutable.ImmutableList<ContentTocItem>> GetContentTocEntriesAsync()
+            => Task.FromResult(System.Collections.Immutable.ImmutableList.Create(toc));
+
+        public Task<System.Collections.Immutable.ImmutableList<CrossReference>> GetCrossReferencesAsync()
+            => Task.FromResult(System.Collections.Immutable.ImmutableList<CrossReference>.Empty);
+
+        public string DefaultSectionLabel => "";
+        public int SearchPriority => 0;
     }
 
     // Minimal content service yielding a single fetchable TOC entry (no LlmsOnlySource,
