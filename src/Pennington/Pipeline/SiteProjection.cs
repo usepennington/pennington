@@ -310,13 +310,23 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
         var parsedByPath = _parsedByPath;
 
         // 2) Source-type map to distinguish LlmsOnlySource (in-process render) from regular markdown.
+        //    An LlmsOnlySource always wins a route collision: a *.llms.md file at the same canonical
+        //    route as an HTML page (e.g. Content/index.llms.md vs Index.razor's @page "/") is the
+        //    page's explicit machine-readable twin, so it must drive the sidecar render rather than
+        //    being clobbered by the discovery-order last-writer. Among non-llms sources the last
+        //    writer still wins, preserving prior behaviour for the common one-source-per-route case.
         var discoverStart = Stopwatch.GetTimestamp();
         if (staleAll)
         {
             _sourceByPath.Clear();
             await foreach (var discovered in _contentServices.DiscoverAllAsync(cancellationToken))
             {
-                _sourceByPath[Normalize(discovered.Route.CanonicalPath.Value)] = discovered.Source;
+                var key = Normalize(discovered.Route.CanonicalPath.Value);
+                if (_sourceByPath.TryGetValue(key, out var existing) && existing is LlmsOnlySource)
+                {
+                    continue;
+                }
+                _sourceByPath[key] = discovered.Source;
             }
         }
         else if (staleRoutes.Count > 0)
@@ -329,8 +339,12 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 {
                     continue;
                 }
-                _sourceByPath[key] = discovered.Source;
-                seen.Add(key);
+                // First fresh write this pass replaces the stale value; later collisions keep an
+                // already-written LlmsOnlySource but otherwise let the last non-llms source win.
+                if (seen.Add(key) || _sourceByPath[key] is not LlmsOnlySource)
+                {
+                    _sourceByPath[key] = discovered.Source;
+                }
             }
             foreach (var key in staleRoutes)
             {

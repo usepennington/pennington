@@ -12,6 +12,7 @@ public sealed class ClassMerge
 {
     private readonly Func<string, string, string>? _merge;
 
+    /// <summary>Creates a merger over the given conflict-aware delegate, or an appending fallback when none is supplied.</summary>
     /// <param name="merge">The conflict-aware merge, or <see langword="null"/> to append.</param>
     public ClassMerge(Func<string, string, string>? merge = null) => _merge = merge;
 

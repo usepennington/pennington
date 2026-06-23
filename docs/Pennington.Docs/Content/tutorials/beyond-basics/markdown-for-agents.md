@@ -11,9 +11,9 @@ tags:
 uid: tutorials.beyond-basics.markdown-for-agents
 ---
 
-AI coding agents read documentation badly when it arrives as HTML — they spend most of their token budget on layout, scripts, and SVG markup before reaching a sentence of prose. By the end of this tutorial you'll have a DocSite that hands those agents clean Markdown instead: every page available as a `.md` copy, an `/llms.txt` index an agent can crawl, a branded front door, one page deliberately held back, and a machine-readable home for your marketing landing page.
+When a developer points an AI coding agent at your library, the agent usually goes to your docs for the answer. Hand it an HTML page and most of what it reads is chrome — navigation, scripts, styling, SVG icons — with the prose it actually wants buried inside. Hand it clean Markdown and every token goes to content, so the agent answers more accurately, and the code it writes against your library is more likely to be right.
 
-You don't turn any of this on. `AddDocSite` calls `AddLlmsTxt` for you, so the index and the per-page Markdown copies already exist the moment your site runs. This tutorial is about *seeing* them, *verifying* them, and *shaping* them to fit your site.
+DocSite already publishes that Markdown for you. `AddDocSite` wires up `AddLlmsTxt`, so the moment your site runs, every page has a Markdown copy and `/llms.txt` lists them all — there's nothing to switch on. (It's a core feature, not a DocSite one: on a bare `AddPennington` host it's a single `AddLlmsTxt` call — see [the llms.txt how-to](xref:how-to.feeds.llms-txt).) This tutorial makes that work visible. You'll fetch the copies an agent would fetch, confirm an agent can find them, then shape them to fit your site: branding the `/llms.txt` front door, holding one page back from agents, and giving a Razor landing page a Markdown twin.
 
 ## Prerequisites
 
@@ -185,28 +185,26 @@ llms: false
 
 ## 5. Give a Razor landing page a Markdown twin
 
-A page backed by Markdown gets its `.md` copy for free, as you saw in section 1. A page backed by a Razor component — a marketing landing page, say — does not: there's no source Markdown to publish, and converting a splash full of layout would hand an agent the same noise you're trying to avoid. If you've built a [Razor landing page](xref:tutorials.docsite.landing-page), give it a purpose-built Markdown twin instead.
+A page backed by Markdown gets its `.md` copy for free, as you saw in section 1. A page backed by a Razor component — a marketing landing page, say — does not: there's no source Markdown to publish, and converting a splash full of layout would hand an agent the same noise you're trying to avoid. If you've built a [Razor landing page](xref:tutorials.docsite.landing-page), write its Markdown twin as an agent-only page.
 
 <Steps>
 <Step StepNumber="1">
 
-**Serve a hand-written Markdown home at `/index.md`**
+**Add `Content/index.llms.md`**
 
-Map an endpoint that returns the orientation you'd want an agent to read — what the project is, and where to go next. `WithLlmsTxtEntry` lists it in `/llms.txt`; the `using Pennington.LlmsTxt;` directive brings the extension into scope. Add this to your host after `app.UseDocSite()` and before `app.RunDocSiteAsync(args)`.
+A file whose name ends in `.llms.md` is agent-only: it joins `/llms.txt` and gets a Markdown copy, but it never renders as an HTML page — so it won't collide with the Razor landing at `/`. Its copy lands at the route's URL with `index.md` appended, which for the root is `/index.md`. Write the orientation you'd want an agent to read.
 
-```csharp
-const string agentHome = """
-    # Acme Widgets
+```markdown
+---
+title: "Acme Widgets — docs home"
+description: "Machine-readable orientation for agents."
+---
 
-    Acme Widgets is a .NET content toolkit. The page at `/` is a marketing
-    landing page; this is its machine-readable equivalent.
+Acme Widgets is a .NET content toolkit. The page at `/` is a marketing landing
+page; this is its machine-readable equivalent.
 
-    - `/llms.txt` — the full index of every page as Markdown.
-    - Start with `/guides/install/index.md`, then read `/guides/`.
-    """;
-
-app.MapGet("/index.md", () => Results.Text(agentHome, "text/markdown"))
-   .WithLlmsTxtEntry("Acme Widgets docs — home", "Machine-readable orientation for agents.");
+- `/llms.txt` — the full index of every page as Markdown.
+- Start with `/guides/install/index.md`, then read the rest from the index.
 ```
 
 </Step>
@@ -214,7 +212,7 @@ app.MapGet("/index.md", () => Results.Text(agentHome, "text/markdown"))
 
 **Point the landing page at it**
 
-Add the alternate link to your landing component's `<HeadContent>`, so an agent on the home page is steered to the Markdown twin the same way it would be on any other page.
+A `.llms.md` page produces no HTML, so it can't advertise itself. Add the alternate link to your landing component's `<HeadContent>`, so an agent on the home page is steered to the Markdown twin the same way it would be on any other page.
 
 ```razor
 <HeadContent>
@@ -228,7 +226,7 @@ Add the alternate link to your landing component's `<HeadContent>`, so an agent 
 <Checkpoint>
 
 - `curl http://localhost:5000/` returns your marketing HTML, unchanged
-- `curl http://localhost:5000/index.md` returns the hand-written orientation as `text/markdown`
+- `curl http://localhost:5000/index.md` returns your orientation as `text/markdown`
 - The source of `/` carries `<link rel="alternate" type="text/markdown" href="/index.md">`, and `/llms.txt` lists the home entry
 
 </Checkpoint>
@@ -241,4 +239,4 @@ Add the alternate link to your landing component's `<HeadContent>`, so an agent 
 - Each page advertises its Markdown copy with a `<link rel="alternate" type="text/markdown">` tag and through `/llms.txt`, the two routes agents use to find it.
 - A `Content/llms-header.txt` file replaces the front-door preamble without touching the generated page list.
 - `llms: false` in a page's front matter keeps it human-visible but removes it from the Markdown copies, the index, and the alternate-link advertisement.
-- A Razor-backed page has no Markdown copy of its own; serve a purpose-built one with `MapGet("/index.md", …).WithLlmsTxtEntry(…)` and advertise it with an alternate link.
+- A Razor-backed page has no Markdown copy of its own; write its twin as an agent-only `*.llms.md` page (it joins `/llms.txt` and gets a `.md` copy but renders no HTML) and advertise it with an alternate link.

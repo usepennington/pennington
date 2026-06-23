@@ -25,6 +25,12 @@ public enum TocVariant
 public static class TocVariantStyles
 {
     /// <summary>Base classes per rendered slot, before any per-instance merge.</summary>
+    /// <param name="List">The outer <c>&lt;ul&gt;</c> wrapping the whole tree.</param>
+    /// <param name="Section">The per-section <c>&lt;li&gt;</c>.</param>
+    /// <param name="SectionTitle">The section label — the <c>&lt;div&gt;</c> for empty-route entries, or the <c>&lt;a&gt;</c> when a top-level entry has children.</param>
+    /// <param name="SectionList">The nested <c>&lt;ul&gt;</c> holding a section's child entries.</param>
+    /// <param name="Link">A child link; also carries the <c>data-[current=true]</c> state styling.</param>
+    /// <param name="TopLink">A top-level leaf link; also carries the <c>data-[current=true]</c> state styling.</param>
     public readonly record struct Slots(
         string List,
         string Section,
