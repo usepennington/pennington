@@ -99,6 +99,9 @@ jobs:
           find "${{ env.WEBAPP_PATH }}output" -type f -name "*.css" -exec /usr/local/bin/minify -o {} {} \;
           find "${{ env.WEBAPP_PATH }}output" -type f -name "*.js"  -exec /usr/local/bin/minify -o {} {} \;
 
+      - name: Add Markdown content-negotiation worker
+        run: cp docs/cloudflare/_worker.js ${{ env.WEBAPP_PATH }}output/_worker.js
+
       - name: Resolve deploy target
         id: target
         shell: bash
