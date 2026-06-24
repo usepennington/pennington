@@ -192,6 +192,15 @@ public sealed class MarkdownContentService<TFrontMatter>
             return FileWatchResponse.Refreshed;
         }
 
+        // Subtrees in ExcludePaths belong to another content source — seeding skips them
+        // (see DiscoverFiles), so an edit must not let this service adopt one and publish a
+        // route that competes with the owning source's. (Renames re-seed above, which re-applies
+        // the same skip.)
+        if (IsExcludedAbsolute(absolutePath))
+        {
+            return FileWatchResponse.Refreshed;
+        }
+
         // Pre-seed mutations: the initial scan hasn't run yet, so it will see current
         // disk state when it does. Nothing to do.
         if (!_seededLazy.Task.IsCompletedSuccessfully)
@@ -424,6 +433,24 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// path, which builds entries directly rather than through <see cref="DiscoverFiles"/>,
     /// so a runtime create/edit can't re-introduce the not-found file as a route.
     /// </summary>
+    /// <summary>
+    /// True when the file at <paramref name="absolutePath"/> sits inside an <see cref="ExcludePaths"/>
+    /// subtree. Matches <see cref="DiscoverFiles"/>: the path is taken relative to its locale root so
+    /// an exclude like <c>"blog"</c> covers both <c>blog/…</c> and <c>fr/blog/…</c>. Used by the
+    /// file-watch path, which (unlike discovery) would otherwise cache an excluded file on edit.
+    /// </summary>
+    private bool IsExcludedAbsolute(string absolutePath)
+    {
+        if (_normalizedExcludePaths.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        var root = GetContentRootForLocale(LocaleForPath(absolutePath));
+        var relative = _fileSystem.Path.GetRelativePath(root, absolutePath).Replace('\\', '/');
+        return IsRelativePathExcluded(relative);
+    }
+
     private bool IsReservedNotFoundPageAbsolute(string absolutePath)
     {
         if (!_options.ReserveNotFoundPage)
@@ -445,12 +472,29 @@ public sealed class MarkdownContentService<TFrontMatter>
     /// <inheritdoc/>
     public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
     {
-        // Walk the cached metadata rather than re-reading + re-parsing front matter per call —
-        // every other channel on this service already does this (GetIndexableEntriesAsync,
-        // GetContentTocEntriesAsync, etc.), and per-request callers (catch-all page handlers)
-        // would otherwise pay an O(files) YAML re-parse on every hit.
-        var metadata = await SnapshotMetadataAsync();
-        foreach (var (route, frontMatter, isLlmsOnly) in metadata)
+        // Walk the cached metadata + body rather than re-reading + re-parsing per call — every
+        // other channel on this service already does this (GetIndexableEntriesAsync,
+        // GetContentTocEntriesAsync, etc.), and per-request callers (the page resolver) would
+        // otherwise re-read the matched file on every hit. Carrying the cached body lets the parser
+        // serve it without a fresh disk read; the file watcher only delivers a change once the
+        // file's edits go quiet (FileWatcher debounces, so the writer has closed), so the cached
+        // body reflects the finished file rather than one being written.
+        await _seededLazy;
+        var snapshot = ImmutableList<(ContentRoute Route, TFrontMatter FrontMatter, bool IsLlmsOnly, string Body)>.Empty;
+        lock (_cacheLock)
+        {
+            var builder = ImmutableList.CreateBuilder<(ContentRoute, TFrontMatter, bool, string)>();
+            foreach (var entry in _entries.Values)
+            {
+                foreach (var (route, isLlmsOnly) in entry.Routes)
+                {
+                    builder.Add((route, entry.FrontMatter, isLlmsOnly, entry.Body));
+                }
+            }
+            snapshot = builder.ToImmutable();
+        }
+
+        foreach (var (route, frontMatter, isLlmsOnly, body) in snapshot)
         {
             if (frontMatter.IsHiddenFromBuild(_clock))
             {
@@ -468,11 +512,11 @@ public sealed class MarkdownContentService<TFrontMatter>
 
             if (isLlmsOnly)
             {
-                yield return new DiscoveredItem(route, new LlmsOnlySource(route.SourceFile!.Value, _options.Format)) { Metadata = frontMatter };
+                yield return new DiscoveredItem(route, new LlmsOnlySource(route.SourceFile!.Value, _options.Format)) { Metadata = frontMatter, RawBody = body };
                 continue;
             }
 
-            yield return new DiscoveredItem(route, new FileSource(route.SourceFile!.Value, _options.Format)) { Metadata = frontMatter };
+            yield return new DiscoveredItem(route, new FileSource(route.SourceFile!.Value, _options.Format)) { Metadata = frontMatter, RawBody = body };
         }
     }
 

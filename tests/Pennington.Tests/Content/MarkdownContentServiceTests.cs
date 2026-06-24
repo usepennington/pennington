@@ -21,14 +21,16 @@ public class MarkdownContentServiceTests
         UrlPath? basePageUrl = null,
         LocalizationOptions? localization = null,
         System.TimeProvider? clock = null,
-        bool reserveNotFound = false)
+        bool reserveNotFound = false,
+        ImmutableArray<string> excludePaths = default)
     {
         var options = new MarkdownContentServiceOptions
         {
             ContentPath = new FilePath("/content"),
             BasePageUrl = basePageUrl ?? new UrlPath("/docs"),
             SectionLabel = section,
-            ReserveNotFoundPage = reserveNotFound
+            ReserveNotFoundPage = reserveNotFound,
+            ExcludePaths = excludePaths.IsDefault ? ImmutableArray<string>.Empty : excludePaths,
         };
 
         return new MarkdownContentService<DocFrontMatter>(options, new FrontMatterParser(), fs, localization ?? DefaultLocalization, clock);
@@ -1587,6 +1589,30 @@ public class MarkdownContentServiceTests
         var after = await ToListAsync(service.ParseContentAsync());
         after.Single().RawMarkdown.ShouldContain("Updated body.");
         after.Single().RawMarkdown.ShouldNotContain("Original body.");
+    }
+
+    [Fact]
+    public async Task OnFileChanged_Changed_ExcludedSubtree_NotCached()
+    {
+        // A source that carves out a subtree for another source (ExcludePaths) must keep ignoring
+        // it on edit, exactly as discovery does — otherwise it would adopt the excluded file and
+        // publish a route that competes with the owning source's (e.g. the docs source publishing
+        // a stale /blog/... over the blog source's).
+        var fs = CreateFs(
+            ("guide.md", "---\ntitle: Guide\n---\n# Guide"),
+            ("blog/post.md", "---\ntitle: Post\n---\n# Post"));
+        var service = CreateTestService(fs, basePageUrl: new UrlPath("/"), excludePaths: ["blog"]);
+
+        var initial = await service.GetContentTocEntriesAsync();
+        initial.ShouldHaveSingleItem().Route.CanonicalPath.Value.ShouldBe("/guide/");
+
+        var blogAbsolute = AbsoluteContentPath(service, fs, "blog/post.md");
+        fs.File.WriteAllText(blogAbsolute, "---\ntitle: Post v2\n---\n# Post v2");
+        service.OnFileChanged(new FileChangeNotification(blogAbsolute, WatcherChangeTypes.Changed));
+
+        var after = await service.GetContentTocEntriesAsync();
+        after.ShouldHaveSingleItem().Route.CanonicalPath.Value.ShouldBe("/guide/");
+        after.ShouldNotContain(e => e.Route.CanonicalPath.Value.Contains("blog"));
     }
 
     [Fact]

@@ -1,32 +1,51 @@
 namespace Pennington.Infrastructure;
 
-using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.IO.Abstractions;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Manages FileSystemWatcher instances and notifies subscribers of changes.
 /// </summary>
+/// <remarks>
+/// Notifications are debounced on the <em>trailing</em> edge: a file's raw OS events (the
+/// truncate/write/close burst a single save produces, plus the duplicate events Windows raises)
+/// are collapsed into one notification fired only after the file has been quiet for
+/// <see cref="DebounceWindow"/>. Because the editor has closed the handle by then, every
+/// subscriber that re-reads the file — every <see cref="IFileWatchAware"/> cache, the live-reload
+/// server — observes the finished file instead of one mid-write (which would otherwise throw a
+/// sharing violation or read a momentarily-truncated body).
+/// </remarks>
 public sealed class FileWatcher : IFileWatcher
 {
-    // 50ms is below human perception of save latency and well above the Windows
-    // FileSystemWatcher duplicate-event interval (typically <10ms for LastWrite +
-    // size + dir-metadata burst on a single save).
-    private static readonly TimeSpan CoalesceWindow = TimeSpan.FromMilliseconds(50);
+    // Trailing-edge quiet window. Comfortably above the Windows FileSystemWatcher duplicate-event
+    // burst (typically <10ms on a single save) so the burst collapses to one notification, and
+    // well below LiveReloadServer's 300ms reload debounce so caches refresh before the browser
+    // re-requests the page.
+    private static readonly TimeSpan DebounceWindow = TimeSpan.FromMilliseconds(100);
 
     private readonly IFileSystem _fileSystem;
+    private readonly TimeProvider _clock;
     private readonly Dictionary<string, IFileSystemWatcher> _watchers = new();
     private readonly List<Action> _subscribers = [];
     private readonly List<Action<FileChangeNotification>> _pathAwareSubscribers = [];
-    private readonly ConcurrentDictionary<string, long> _lastPublishedTimestamps = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Lock _debounceLock = new();
+    private readonly Dictionary<string, PendingChange> _pending = new(StringComparer.Ordinal);
     private readonly ILogger<FileWatcher>? _logger;
     private bool _disposed;
 
-    /// <summary>Initializes the watcher with a filesystem abstraction and optional logger.</summary>
-    public FileWatcher(IFileSystem fileSystem, ILogger<FileWatcher>? logger = null)
+    /// <summary>A change buffered until its file goes quiet; the latest event for a key wins.</summary>
+    private sealed record PendingChange(
+        ITimer Timer,
+        string FullPath,
+        WatcherChangeTypes ChangeType,
+        Action<string, WatcherChangeTypes> OnFileChanged);
+
+    /// <summary>Initializes the watcher with a filesystem abstraction, clock, and optional logger.</summary>
+    public FileWatcher(IFileSystem fileSystem, TimeProvider? clock = null, ILogger<FileWatcher>? logger = null)
     {
         _fileSystem = fileSystem;
+        _clock = clock ?? TimeProvider.System;
         _logger = logger;
     }
 
@@ -73,47 +92,63 @@ public sealed class FileWatcher : IFileWatcher
         _pathAwareSubscribers.Add(onUpdate);
     }
 
+    /// <summary>
+    /// Buffers a raw OS event behind the trailing-edge debounce. Editor backup/temp files are
+    /// dropped immediately (no subscriber consumes them); everything else (re)arms a per-key timer
+    /// so a burst of events for one file collapses into a single delivery once the file is quiet.
+    /// </summary>
     private void Publish(string fullPath, WatcherChangeTypes changeType, Action<string, WatcherChangeTypes> onFileChanged)
-    {
-        if (!ShouldPublish(fullPath, changeType))
-        {
-            return;
-        }
-        onFileChanged(fullPath, changeType);
-        NotifySubscribers(fullPath, changeType);
-    }
-
-    private bool ShouldPublish(string fullPath, WatcherChangeTypes changeType)
     {
         var fileName = _fileSystem.Path.GetFileName(fullPath) ?? string.Empty;
         if (IsEditorTempFile(fileName))
         {
             _logger?.LogTrace("Suppressed (backup-file): {Path} {ChangeType}", fullPath, changeType);
-            return false;
+            return;
         }
 
         var key = $"{fullPath}|{(int)changeType}";
-        var now = Stopwatch.GetTimestamp();
-        var publish = true;
-        _lastPublishedTimestamps.AddOrUpdate(
-            key,
-            addValueFactory: _ => now,
-            updateValueFactory: (_, prev) =>
-            {
-                if (Stopwatch.GetElapsedTime(prev) < CoalesceWindow)
-                {
-                    publish = false;
-                    // Preserve the original timestamp so a steady sub-window stream
-                    // stays suppressed instead of perpetually resetting the gate.
-                    return prev;
-                }
-                return now;
-            });
-        if (!publish)
+        lock (_debounceLock)
         {
-            _logger?.LogTrace("Suppressed (coalesced): {Path} {ChangeType}", fullPath, changeType);
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (_pending.TryGetValue(key, out var existing))
+            {
+                _pending[key] = existing with { FullPath = fullPath, OnFileChanged = onFileChanged };
+                existing.Timer.Change(DebounceWindow, Timeout.InfiniteTimeSpan);
+            }
+            else
+            {
+                var timer = _clock.CreateTimer(
+                    static s =>
+                    {
+                        var (self, k) = ((FileWatcher, string))s!;
+                        self.FireDebounced(k);
+                    },
+                    (this, key),
+                    DebounceWindow,
+                    Timeout.InfiniteTimeSpan);
+                _pending[key] = new PendingChange(timer, fullPath, changeType, onFileChanged);
+            }
         }
-        return publish;
+    }
+
+    private void FireDebounced(string key)
+    {
+        PendingChange? pending;
+        lock (_debounceLock)
+        {
+            if (_disposed || !_pending.Remove(key, out pending))
+            {
+                return;
+            }
+            pending.Timer.Dispose();
+        }
+
+        pending.OnFileChanged(pending.FullPath, pending.ChangeType);
+        NotifySubscribers(pending.FullPath, pending.ChangeType);
     }
 
     /// <summary>
@@ -190,6 +225,16 @@ public sealed class FileWatcher : IFileWatcher
         }
 
         _disposed = true;
+
+        lock (_debounceLock)
+        {
+            foreach (var pending in _pending.Values)
+            {
+                pending.Timer.Dispose();
+            }
+            _pending.Clear();
+        }
+
         foreach (var watcher in _watchers.Values)
         {
             // On Windows, disposing a FileSystemWatcher with a pending event can throw.

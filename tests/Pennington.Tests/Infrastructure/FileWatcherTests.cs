@@ -75,6 +75,35 @@ public class FileWatcherTests : IDisposable
     }
 
     [Fact]
+    public async Task FileWatcher_CoalescesRapidBurst_IntoSingleNotification()
+    {
+        // One logical save fans out into a truncate/write/close burst (plus Windows duplicate
+        // events). The trailing-edge debounce must collapse the whole burst into a single
+        // notification delivered after the file goes quiet — not one per raw event.
+        var ct = TestContext.Current.CancellationToken;
+        var fs = new RealFileSystem();
+        using var watcher = new FileWatcher(fs);
+        var count = 0;
+
+        var filePath = Path.Combine(_tempDir, "burst.txt");
+        await File.WriteAllTextAsync(filePath, "v0", ct);
+
+        watcher.AddPathWatch(_tempDir, "*.txt", (_, _) => { });
+        watcher.SubscribeToChanges(() => System.Threading.Interlocked.Increment(ref count));
+
+        // Tight synchronous burst — completes far inside the debounce window.
+        for (var i = 1; i <= 6; i++)
+        {
+            File.WriteAllText(filePath, $"v{i}");
+        }
+
+        // Wait comfortably past the debounce window for the single coalesced notification.
+        await Task.Delay(600, ct);
+
+        count.ShouldBe(1);
+    }
+
+    [Fact]
     public void AddPathWatch_NonExistentPath_DoesNotThrow()
     {
         var fs = new MockFileSystem();
