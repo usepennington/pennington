@@ -12,7 +12,7 @@ public static class LlmsTxtConfiguration
 {
     /// <summary>
     /// <c>GenerateFullFile = false</c> for the common per-page-markdown case. Per-page
-    /// markdown is co-located as <c>{route}/index.md</c> beside each page. The
+    /// markdown is co-located as <c>{route}.md</c> beside each page. The
     /// chrome-stripping selector lives on <c>PenningtonOptions.SiteProjection.ContentSelector</c>
     /// (shared with the search index), so it is configured once at the projection layer
     /// rather than per channel.

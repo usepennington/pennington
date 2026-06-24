@@ -144,7 +144,7 @@ else if (_notFound)
         };
     }
 
-    // Advertises the page's co-located markdown copy (page URL + index.md) as an alternate
+    // Advertises the page's co-located markdown copy (page URL + ".md") as an alternate
     // representation, so agents that honour content negotiation (Claude Code's WebFetch sends
     // Accept: text/markdown) can discover the token-cheap variant. The URL is pure string math on
     // the page's own route — no llms-service lookup, so it never re-enters the self-fetching
@@ -164,7 +164,7 @@ else if (_notFound)
         }
 
         var key = _resolved.Route.CanonicalPath.Value.Trim('/');
-        return key.Length == 0 ? "/index.md" : $"/{key}/index.md";
+        return key.Length == 0 ? "/index.md" : $"/{key}.md";
     }
 
     protected override async Task OnInitializedAsync()

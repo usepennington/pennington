@@ -27,7 +27,7 @@ You'll work in the DocSite project from the scaffold tutorial. Keep `dotnet run`
 
 ## 1. See your docs the way an agent does
 
-Your running site serves HTML at every page URL. Alongside each one, it also publishes a Markdown copy at the same URL with `index.md` appended — and an index of everything at `/llms.txt`. Let's add a page to look at, then fetch both forms.
+Your running site serves HTML at every page URL. Alongside each one, it also publishes a Markdown copy at the same URL with `.md` appended — and an index of everything at `/llms.txt`. Let's add a page to look at, then fetch both forms.
 
 <Steps>
 <Step StepNumber="1">
@@ -56,11 +56,11 @@ Then call `AddPennington` in your host and point it at a `Content/` folder.
 
 **Fetch the page as HTML, then as Markdown**
 
-The page renders at `/guides/install/`. Its Markdown copy lives at `/guides/install/index.md`.
+The page renders at `/guides/install/`. Its Markdown copy lives at `/guides/install.md`.
 
 ```bash
 curl http://localhost:5000/guides/install/
-curl http://localhost:5000/guides/install/index.md
+curl http://localhost:5000/guides/install.md
 ```
 
 The first command returns a full HTML document — `<head>`, scripts, navigation chrome, the works. The second returns just the page, as Markdown, with a small YAML header and the body underneath:
@@ -88,9 +88,9 @@ Then call `AddPennington` in your host and point it at a `Content/` folder.
 
 <Checkpoint>
 
-- `curl http://localhost:5000/guides/install/index.md` returns Markdown with a `Content-Type: text/markdown` response — not HTML
+- `curl http://localhost:5000/guides/install.md` returns Markdown with a `Content-Type: text/markdown` response — not HTML
 - The header carries `canonical_url`, `content_hash`, and a `tokens` estimate, so a budget-aware agent knows what it's fetching before it commits
-- `curl http://localhost:5000/llms.txt` returns an index that lists *Install* under its section, linked to `/guides/install/index.md`
+- `curl http://localhost:5000/llms.txt` returns an index that lists *Install* under its section, linked to `/guides/install.md`
 
 </Checkpoint>
 
@@ -103,14 +103,14 @@ Generating the Markdown isn't enough — an agent has to discover it. DocSite ad
 The first is a `<link rel="alternate">` tag in the page's `<head>`. View the source of `/guides/install/` and look near the other metadata:
 
 ```html
-<link rel="alternate" type="text/markdown" href="/guides/install/index.md">
+<link rel="alternate" type="text/markdown" href="/guides/install.md">
 ```
 
 This is the standard way to declare an alternate representation of a page. Claude Code's WebFetch sends an `Accept: text/markdown` header and looks for exactly this signal; other agents read it the same way. The second route is `/llms.txt` itself — a crawlable map of the whole corpus, with per-section grouping and token estimates so an agent can plan which pages to pull.
 
 <Checkpoint>
 
-- The HTML at `/guides/install/` contains a `<link rel="alternate" type="text/markdown" …>` pointing at `/guides/install/index.md`
+- The HTML at `/guides/install/` contains a `<link rel="alternate" type="text/markdown" …>` pointing at `/guides/install.md`
 - `/llms.txt` lists the same `.md` URL, so an agent that starts from the index reaches the page without ever parsing HTML
 
 </Checkpoint>
@@ -175,7 +175,7 @@ llms: false
 <Checkpoint>
 
 - `curl http://localhost:5000/guides/install/` still returns the HTML page — humans are unaffected
-- `curl http://localhost:5000/guides/install/index.md` now returns a 404 — there is no Markdown copy
+- `curl http://localhost:5000/guides/install.md` now returns a 404 — there is no Markdown copy
 - The page no longer appears in `/llms.txt`, and its `<link rel="alternate">` tag is gone from the HTML `<head>`
 - Remove the `llms: false` line again before moving on, so the page rejoins the corpus
 
@@ -192,7 +192,7 @@ A page backed by Markdown gets its `.md` copy for free, as you saw in section 1.
 
 **Add `Content/index.llms.md`**
 
-A file whose name ends in `.llms.md` is agent-only: it joins `/llms.txt` and gets a Markdown copy, but it never renders as an HTML page — so it won't collide with the Razor landing at `/`. Its copy lands at the route's URL with `index.md` appended, which for the root is `/index.md`. Write the orientation you'd want an agent to read.
+A file whose name ends in `.llms.md` is agent-only: it joins `/llms.txt` and gets a Markdown copy, but it never renders as an HTML page — so it won't collide with the Razor landing at `/`. Its copy lands at the route's URL with `.md` appended, which for the root is `/index.md`. Write the orientation you'd want an agent to read.
 
 ```markdown
 ---
@@ -204,7 +204,7 @@ Acme Widgets is a .NET content toolkit. The page at `/` is a marketing landing
 page; this is its machine-readable equivalent.
 
 - `/llms.txt` — the full index of every page as Markdown.
-- Start with `/guides/install/index.md`, then read the rest from the index.
+- Start with `/guides/install.md`, then read the rest from the index.
 ```
 
 </Step>
@@ -235,7 +235,7 @@ A `.llms.md` page produces no HTML, so it can't advertise itself. Add the altern
 
 ## Summary
 
-- DocSite publishes a Markdown copy of every page at its URL with `index.md` appended, plus an `/llms.txt` index — both wired automatically by `AddDocSite`.
+- DocSite publishes a Markdown copy of every page at its URL with `.md` appended, plus an `/llms.txt` index — both wired automatically by `AddDocSite`.
 - Each page advertises its Markdown copy with a `<link rel="alternate" type="text/markdown">` tag and through `/llms.txt`, the two routes agents use to find it.
 - A `Content/llms-header.txt` file replaces the front-door preamble without touching the generated page list.
 - `llms: false` in a page's front matter keeps it human-visible but removes it from the Markdown copies, the index, and the alternate-link advertisement.

@@ -345,10 +345,10 @@ public sealed class LlmsTxtService : IFileWatchAware
 
             var rendition = BuildRendition(markdown);
             var body = rendition.MarkdownBody;
-            // Co-located markdown: the sidecar lands beside the page it mirrors as
-            // {route}/index.md (the root page at /index.md), so an agent can reach it by
-            // appending "index.md" to any page URL — and the static build writes it into
-            // the same output folder as the page's index.html.
+            // Co-located markdown: the sidecar mirrors the page as {route}.md (Claude-docs
+            // style — the root page at /index.md), so an agent can reach it by appending
+            // ".md" to any page URL — and the static build writes it beside the page's
+            // own output folder.
             var mdPath = BuildCoLocatedMarkdownPath(key);
             var linkUrl = BuildCoLocatedMarkdownUrl(ctx.CanonicalBase, key);
             var description = frontMatter?.Description ?? page.Toc.Description;
@@ -559,15 +559,16 @@ public sealed class LlmsTxtService : IFileWatchAware
     }
 
     /// <summary>
-    /// Builds the relative output path for a page's co-located markdown: <c>{key}/index.md</c>,
-    /// or <c>index.md</c> for the root page (empty key). Mirrors the page's <c>index.html</c>.
+    /// Builds the relative output path for a page's co-located markdown: <c>{key}.md</c>
+    /// (Claude-docs style — the page URL with <c>.md</c> appended), or <c>index.md</c> for the
+    /// root page (empty key, since <c>/.md</c> isn't a usable URL).
     /// </summary>
     private static string BuildCoLocatedMarkdownPath(string key)
-        => string.IsNullOrEmpty(key) ? "index.md" : $"{key}/index.md";
+        => string.IsNullOrEmpty(key) ? "index.md" : $"{key}.md";
 
     /// <summary>
     /// Builds the public URL for a page's co-located markdown, combining the canonical base
-    /// with <c>/{key}/index.md</c> (<c>/index.md</c> for the root). Produces an absolute URL
+    /// with <c>/{key}.md</c> (<c>/index.md</c> for the root). Produces an absolute URL
     /// when the base has an http(s) scheme; otherwise a root-relative path.
     /// </summary>
     private static string BuildCoLocatedMarkdownUrl(CanonicalBaseUrl canonicalBase, string key)

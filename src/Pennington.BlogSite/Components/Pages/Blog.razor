@@ -98,7 +98,7 @@
 
     private string GetFullUrl() => _rendered == null ? "" : $"{PenningtonOptions.CanonicalBaseUrl}{_rendered.Url.Value}";
 
-    // Advertises the post's co-located markdown copy (post URL + index.md) as an alternate
+    // Advertises the post's co-located markdown copy (post URL + ".md") as an alternate
     // representation for content-negotiating agents (Claude Code's WebFetch sends
     // Accept: text/markdown). Pure string math on the post's own canonical URL — no llms-service
     // lookup — gated on llms generation being enabled and the post not opting out via `llms: false`.
@@ -110,6 +110,6 @@
         }
 
         var key = _rendered.Url.Value.Trim('/');
-        return key.Length == 0 ? "/index.md" : $"/{key}/index.md";
+        return key.Length == 0 ? "/index.md" : $"/{key}.md";
     }
 }
