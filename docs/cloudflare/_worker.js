@@ -1,6 +1,6 @@
 // _worker.js — Cloudflare Pages advanced-mode Worker.
 // When a client sends `Accept: text/markdown` (e.g. Claude Code's WebFetch),
-// serve the co-located Markdown twin at {route}/index.md. Otherwise serve HTML.
+// serve the co-located Markdown twin at {route}.md (the home at /index.md). Otherwise serve HTML.
 //
 // Copied into the deployed output/ folder by the "Add Markdown content-negotiation
 // worker" step in .github/workflows/deploy-docs.yml — the build wipes output/, so the
@@ -32,10 +32,12 @@ export default {
 };
 
 // Map a page route to its Markdown twin, or null if it's a real asset.
+// The twin is the page URL with `.md` appended; the home is the one special case (/ -> /index.md).
 function markdownTwin(pathname) {
-  if (pathname.endsWith("/")) return pathname + "index.md";             // /guides/install/  -> /guides/install/index.md
-  if (pathname.endsWith(".html")) return pathname.slice(0, -5) + ".md"; // /x/index.html     -> /x/index.md
+  if (pathname === "/" || pathname === "/index.html") return "/index.md";                 // home            -> /index.md
+  if (pathname.endsWith("/index.html")) return pathname.slice(0, -"/index.html".length) + ".md"; // /x/index.html -> /x.md
+  if (pathname.endsWith("/")) return pathname.slice(0, -1) + ".md";    // /guides/install/  -> /guides/install.md
   const last = pathname.slice(pathname.lastIndexOf("/") + 1);
-  if (!last.includes(".")) return pathname + "/index.md";              // clean URL /x       -> /x/index.md
+  if (!last.includes(".")) return pathname + ".md";                    // clean URL /x       -> /x.md
   return null;                                                          // .css/.png/.md/.txt/.json — leave alone
 }

@@ -34,19 +34,19 @@ public class LlmsTxtAndSearchEndpointTests
 
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         content.ShouldContain("# ");                // site title heading
-        content.ShouldContain("/index.md)");        // at least one co-located per-page markdown link
+        content.ShouldContain(".md)");              // at least one co-located per-page markdown link
         // The docs site configures an absolute CanonicalBaseUrl, so per-page markdown links are
         // emitted as absolute URLs. The assertion below rejects the bare-relative form (no origin,
         // no scheme) which would be unusable for LLMs that fetch /llms.txt and try to resolve
         // links against the origin.
-        System.Text.RegularExpressions.Regex.IsMatch(content, @"\]\((?!https?://)[^\s)]*index\.md\)")
+        System.Text.RegularExpressions.Regex.IsMatch(content, @"\]\((?!https?://)[^\s)]*\.md\)")
             .ShouldBeFalse("per-page markdown links must be absolute, not bare-relative");
     }
 
     [Fact]
     public async Task LlmsTxt_MarkdownFiles_ContainPostPipelineContent()
     {
-        // Co-located {path}/index.md files are emitted at static-build time, not served as
+        // Co-located {path}.md files are emitted at static-build time, not served as
         // live endpoints, so we fetch them directly from the service.
         var llmsService = _factory.Services.GetRequiredService<LlmsTxtService>();
         var files = await llmsService.GetMarkdownFilesAsync();
@@ -244,11 +244,11 @@ public class LlmsTxtAndSearchEndpointTests
     public async Task LlmsTxt_FrontDoor_DoesNotInlineSubtreeLeafSidecars()
     {
         // After the subtree split, the front door only contains a See-also pointer to
-        // /reference/llms.txt; individual /reference/.../index.md page-markdown links must live
+        // /reference/llms.txt; individual /reference/*.md page-markdown links must live
         // inside the subtree file, not the front door.
         var content = await _client.GetStringAsync("/llms.txt", TestContext.Current.CancellationToken);
 
-        System.Text.RegularExpressions.Regex.IsMatch(content, @"/reference/[^\s)]*index\.md")
+        System.Text.RegularExpressions.Regex.IsMatch(content, @"/reference/[^\s)]*\.md")
             .ShouldBeFalse("reference page markdown must not be inlined in the front door");
         content.ShouldContain("/reference/llms.txt");
     }
@@ -312,8 +312,8 @@ public class LlmsTxtAndSearchEndpointTests
         var text = Encoding.UTF8.GetString(refFile!.Content);
         text.ShouldContain("# Reference");
         // Should contain at least one entry linked to its co-located page markdown.
-        System.Text.RegularExpressions.Regex.IsMatch(text, @"/reference/[^\s)]*index\.md")
-            .ShouldBeTrue("subtree index should link reference pages to their /reference/.../index.md");
+        System.Text.RegularExpressions.Regex.IsMatch(text, @"/reference/[^\s)]*\.md")
+            .ShouldBeTrue("subtree index should link reference pages to their /reference/*.md");
     }
 
     [Fact]
@@ -353,7 +353,7 @@ public class LlmsTxtAndSearchEndpointTests
         var html = await _client.GetAsync("/migrating-via-ai/", TestContext.Current.CancellationToken);
         ((int)html.StatusCode).ShouldBe(404, "an llms-only page must not be served as HTML");
 
-        var md = await _client.GetAsync("/migrating-via-ai/index.md", TestContext.Current.CancellationToken);
+        var md = await _client.GetAsync("/migrating-via-ai.md", TestContext.Current.CancellationToken);
         md.EnsureSuccessStatusCode();
         md.Content.Headers.ContentType?.MediaType.ShouldBe("text/markdown");
     }
@@ -384,7 +384,7 @@ public class LlmsTxtAndSearchEndpointTests
     public async Task ContentPage_AdvertisesCoLocatedMarkdownAlternate()
     {
         // A markdown content page carries <link rel="alternate" type="text/markdown"> in <head>
-        // pointing at its co-located {route}/index.md — the signal Claude Code's WebFetch keys on
+        // pointing at its co-located {route}.md — the signal Claude Code's WebFetch keys on
         // when it sends Accept: text/markdown. The advertised URL must actually resolve to markdown.
         var html = await _client.GetStringAsync("/how-to/feeds/llms-txt/", TestContext.Current.CancellationToken);
 
@@ -395,7 +395,7 @@ public class LlmsTxtAndSearchEndpointTests
         link.ShouldNotBeNull("content pages should advertise their co-located markdown copy");
         var href = link!.GetAttribute("href");
         href.ShouldNotBeNull();
-        href!.ShouldEndWith("/how-to/feeds/llms-txt/index.md");
+        href!.ShouldEndWith("/how-to/feeds/llms-txt.md");
 
         var markdown = await _client.GetAsync(href, TestContext.Current.CancellationToken);
         markdown.EnsureSuccessStatusCode();
@@ -428,7 +428,7 @@ public class LlmsTxtAndSearchEndpointTests
     public async Task LlmsTxt_MarkdownFiles_RewriteInternalLinksToStrippedMarkdown()
     {
         // Links inside a stripped page-markdown file that point to another indexed page
-        // should be rewritten to that page's co-located {path}/index.md so an LLM following
+        // should be rewritten to that page's co-located {path}.md so an LLM following
         // them stays inside the stripped-markdown corpus instead of jumping back into
         // HTML with all the chrome.
         var llmsService = _factory.Services.GetRequiredService<LlmsTxtService>();
@@ -436,7 +436,7 @@ public class LlmsTxtAndSearchEndpointTests
 
         // Count rewritten internal links across all files. Match URLs of any form
         // (absolute or root-relative) that point at a co-located page-markdown file.
-        var linkRegex = new System.Text.RegularExpressions.Regex(@"\[[^\]]*\]\(([^)]*?/index\.md[^)]*)\)");
+        var linkRegex = new System.Text.RegularExpressions.Regex(@"\[[^\]]*\]\(([^)]*?\.md[^)]*)\)");
 
         var rewrittenInternalLinks = 0;
         foreach (var file in files)
@@ -446,6 +446,6 @@ public class LlmsTxtAndSearchEndpointTests
         }
 
         rewrittenInternalLinks.ShouldBeGreaterThan(0,
-            "at least one stripped markdown file should contain a rewritten {path}/index.md link");
+            "at least one stripped markdown file should contain a rewritten {path}.md link");
     }
 }

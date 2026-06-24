@@ -11,7 +11,7 @@ using Routing;
 /// the root <c>/llms.txt</c> front door (and optional <c>/llms-full.txt</c>), the per-subtree
 /// <c>{prefix}/llms.txt</c> indexes (a mid-path territory only a <see cref="SuffixClaim"/> can
 /// express — endpoint routing would let a content route's <c>{slug}</c> segment capture them),
-/// and the per-page co-located <c>{route}/index.md</c> markdown (root page at <c>/index.md</c>).
+/// and the per-page co-located <c>{route}.md</c> markdown (root page at <c>/index.md</c>).
 /// Serves dev requests through the artifact router and enumerates the same files for the static
 /// build. Transient so each
 /// resolution captures the current file-watched service.
@@ -39,11 +39,12 @@ public sealed class LlmsArtifactContentService : IArtifactContentService
         }
 
         builder.Add(new ArtifactClaim("llms", new SuffixClaim("/llms.txt"), "per-subtree llms.txt indexes"));
-        // Co-located per-page markdown: {route}/index.md beside each page's index.html. The
-        // SuffixClaim catches every nested page; the root page's /index.md is the bare suffix,
-        // which SuffixClaim deliberately excludes, so it needs its own ExactClaim.
-        builder.Add(new ArtifactClaim("llms", new ExactClaim(new UrlPath("/index.md")), "root page markdown"));
-        builder.Add(new ArtifactClaim("llms", new SuffixClaim("/index.md"), "per-page co-located markdown"));
+        // Co-located per-page markdown: {route}.md (the page URL with .md appended), with the
+        // root page at /index.md. A single .md SuffixClaim covers both — /index.md and every
+        // nested {route}.md end in ".md" and are longer than the suffix. Content routes are
+        // clean URLs (no extension), so this never shadows one; the resolver stays authoritative
+        // and declines (returns null → falls through) for any .md path it didn't generate.
+        builder.Add(new ArtifactClaim("llms", new SuffixClaim(".md"), "per-page co-located markdown"));
         _claims = builder.ToImmutable();
     }
 

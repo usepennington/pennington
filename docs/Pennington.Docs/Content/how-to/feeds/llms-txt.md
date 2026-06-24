@@ -77,7 +77,7 @@ The classes work anywhere in the rendered page — markdown bodies, Razor compon
 
 ## Result
 
-`/llms.txt` lists each indexed page as a markdown link grouped by section, and each page gets a co-located markdown copy at `<page>/index.md` — the page's own URL with `index.md` appended, beside its `index.html` (the root page lands at `/index.md`). Links are fully qualified when `PenningtonOptions.CanonicalBaseUrl` is set (or `build --base-url https://…` is passed); otherwise they fall back to root-relative paths so an agent that fetched `/llms.txt` can still resolve them against the origin.
+`/llms.txt` lists each indexed page as a markdown link grouped by section, and each page gets a co-located markdown copy at `<page>.md` — the page's own URL with `.md` appended, beside its output folder (the root page lands at `/index.md`). Links are fully qualified when `PenningtonOptions.CanonicalBaseUrl` is set (or `build --base-url https://…` is passed); otherwise they fall back to root-relative paths so an agent that fetched `/llms.txt` can still resolve them against the origin.
 
 A typical front door — a metadata block, a `## Map` of any subtrees split into their own `{prefix}llms.txt`, then the nav-grouped links:
 
@@ -97,12 +97,12 @@ penningtonVersion: 0.1.0
 
 ## Tutorials
 
-- [Your first Pennington site](https://docs.example.com/tutorials/getting-started/first-site/index.md): Build a static site from a single markdown file.
-- [Add a second locale](https://docs.example.com/tutorials/beyond-basics/add-a-locale/index.md): Ship the same content in a second language.
+- [Your first Pennington site](https://docs.example.com/tutorials/getting-started/first-site.md): Build a static site from a single markdown file.
+- [Add a second locale](https://docs.example.com/tutorials/beyond-basics/add-a-locale.md): Ship the same content in a second language.
 
 ## How-to
 
-- [Switch the body and heading typeface](https://docs.example.com/how-to/configuration/fonts/index.md): Self-host woff2, declare preloads, point the family options at the new faces.
+- [Switch the body and heading typeface](https://docs.example.com/how-to/configuration/fonts.md): Self-host woff2, declare preloads, point the family options at the new faces.
 ```
 
 The `## Map` block appears only when a subtree is declared (a folder's `_meta.yml` carries an `llms:` block, or a content service registers one) — those leaves move to `/reference/llms.txt` and the front door keeps just the see-also line above. A site with no subtrees jumps straight from the metadata block to the nav-grouped links.
@@ -110,7 +110,7 @@ The `## Map` block appears only when a subtree is declared (a folder's `_meta.ym
 ## Verify
 
 - Run `dotnet run` and fetch `/llms.txt`. Expect a metadata block, a `## Map` section listing per-subtree splits with token estimates, then nav-grouped links — and no line for any page marked `llms: false`
-- Fetch one per-page markdown copy (for example, `/<page>/index.md`). Expect a YAML header with `canonical_url`, `content_hash`, `tokens`, and the body stripped to clean markdown
+- Fetch one per-page markdown copy (for example, `/<page>.md`). Expect a YAML header with `canonical_url`, `content_hash`, `tokens`, and the body stripped to clean markdown
 - With `GenerateFullFile = true`, fetch `/llms-full.txt`. Expect every sidecar concatenated in one response
 
 ## Related
