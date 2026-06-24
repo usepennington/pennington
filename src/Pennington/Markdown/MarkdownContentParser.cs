@@ -38,6 +38,17 @@ public sealed class MarkdownContentParser<TFrontMatter> : IContentParser
                     new ContentError("Unsupported content source type for parser"));
         }
 
+        // Prefer the body + front matter the discovering service already parsed and cached
+        // (carried on the discovered item). The discovering service is file-watched and re-reads
+        // a changed file on a trailing-edge settle (see MarkdownContentService.ArmSettle), so the
+        // cache reflects the finished file rather than a half-written one — serving from it skips a
+        // redundant per-request disk read + re-parse. Falls back to reading the file for sources
+        // that don't pre-parse a body (custom services, build-time-only sources).
+        if (item is { RawBody: { } cachedBody, Metadata: TFrontMatter cachedMetadata })
+        {
+            return new ParsedItem(item.Route, cachedMetadata, cachedBody);
+        }
+
         try
         {
             var content = await _fileSystem.File.ReadAllTextAsync(path.Value);

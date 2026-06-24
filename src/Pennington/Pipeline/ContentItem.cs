@@ -13,6 +13,9 @@ public record DiscoveredItem(ContentRoute Route, ContentSource Source)
 {
     /// <summary>Front matter the discovering service already parsed, when its source carried any; null for sources whose metadata is not known until parse or render time.</summary>
     public IFrontMatter? Metadata { get; init; }
+
+    /// <summary>Raw markdown body the discovering service already parsed and cached, when its source carried any; null for sources whose body is not read until parse time. When both this and <see cref="Metadata"/> are present, parsers serve them directly instead of re-reading the file. The discovering service keeps this cache fresh by re-reading a changed file on a trailing-edge settle, so it reflects the finished file rather than one the writer still holds.</summary>
+    public string? RawBody { get; init; }
 }
 
 /// <summary>A content item whose front matter and raw markdown body have been parsed.</summary>

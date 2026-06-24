@@ -96,6 +96,48 @@ public class MarkdownContentParserTests
     }
 
     [Fact]
+    public async Task ParseAsync_DiscoveredItemCarriesCachedBody_ServesCacheWithoutReadingDisk()
+    {
+        // Simulates a file being rewritten mid-edit: on disk it is momentarily empty/truncated,
+        // but the discovering service already cached a complete parse and carries it on the item.
+        // The parser must serve the cache, not the half-written file — otherwise the page goes blank.
+        var fs = CreateFs(("/content/hello.md", ""));
+
+        var parser = new MarkdownContentParser<DocFrontMatter>(new FrontMatterParser(), fs);
+        var source = new ContentSource(new FileSource(new FilePath("/content/hello.md"), "markdown"));
+        var discovered = new DiscoveredItem(MakeRoute("/hello"), source)
+        {
+            Metadata = new DocFrontMatter { Title = "Cached Title" },
+            RawBody = "# Cached body\n\nComplete content.",
+        };
+
+        var result = await parser.ParseAsync(discovered);
+
+        var parsed = result.ShouldBeCase<ParsedItem>();
+        parsed.Metadata.Title.ShouldBe("Cached Title");
+        parsed.RawMarkdown.ShouldBe("# Cached body\n\nComplete content.");
+    }
+
+    [Fact]
+    public async Task ParseAsync_CachedBodyWithoutMetadata_FallsBackToDisk()
+    {
+        // RawBody alone (no carried Metadata) isn't enough to short-circuit — the parser still
+        // reads and parses the file so the front-matter type is produced correctly.
+        var fs = CreateFs(("/content/hello.md",
+            "---\ntitle: From Disk\n---\n# From disk"));
+
+        var parser = new MarkdownContentParser<DocFrontMatter>(new FrontMatterParser(), fs);
+        var source = new ContentSource(new FileSource(new FilePath("/content/hello.md"), "markdown"));
+        var discovered = new DiscoveredItem(MakeRoute("/hello"), source) { RawBody = "stale" };
+
+        var result = await parser.ParseAsync(discovered);
+
+        var parsed = result.ShouldBeCase<ParsedItem>();
+        parsed.Metadata.Title.ShouldBe("From Disk");
+        parsed.RawMarkdown.ShouldContain("# From disk");
+    }
+
+    [Fact]
     public async Task ParseAsync_FileWithWindowsLineEndings_ParsesCorrectly()
     {
         var fs = CreateFs(("/content/windows.md",
