@@ -23,9 +23,7 @@ lists every discovered type, grouped by namespace.
 Pennington's own reference dropped a row of hand-maintained markdown wrappers in
 favor of a single parameterised Razor page. The `<summary>` text, the parameter
 list, and the return type all read from the compiler, so they can't disagree
-with the code. Pointing the generator at your own class library takes one
-how-to: [auto-generate an API reference
-tree](xref:how-to.content-services.auto-api-reference).
+with the code.
 
 ## A layout built to scan
 
@@ -43,6 +41,6 @@ source.
 
 The pages also serve two readers at once: paired `.humans-only` and
 `.robots-only` content gives the browser the visual layout and the
-[llms.txt sidecar](xref:how-to.feeds.llms-txt) a plain HTML version. To wire your
+[llms.txt sidecar](xref:how-to.feeds.llms-txt) a declaration-only C# skeleton. To wire your
 own library in, see [auto-generate an API reference
 tree](xref:how-to.content-services.auto-api-reference).

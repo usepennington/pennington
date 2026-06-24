@@ -19,7 +19,9 @@ generates it.
 During the static build, Pennington produces two things:
 
 - `llms.txt` — an index of the whole site, organized by your navigation tree.
-  Drop a custom `llms.txt` in your content root and it becomes the index header.
+  Drop an `llms-header.txt` in your content root and its contents become the
+  index header. Don't name it `llms.txt`, or a static file there will shadow the
+  generated one.
 - a co-located markdown copy of every page at `<page>/index.md`, beside its
   `index.html` — a front-matter-stripped copy an agent reaches by appending
   `index.md` to the page URL.
