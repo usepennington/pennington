@@ -1,6 +1,6 @@
 ---
 title: Documentation in every language
-description: Localization is now a first-class part of the content engine — ambient locale context, automatic link rewriting, locale fallback, and ASP.NET integration.
+description: Localization is now built into the content engine — ambient locale context, automatic link rewriting, locale fallback, and ASP.NET integration.
 author: Phil Scott
 date: 2026-04-08
 isDraft: false

@@ -27,7 +27,10 @@ feed. Wiring either into an ASP.NET app takes a few lines:
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDocSite();
+builder.Services.AddDocSite(() => new DocSiteOptions
+{
+    SiteTitle = "My Docs",
+});
 
 var app = builder.Build();
 app.UseDocSite();

@@ -49,7 +49,7 @@ posts by series. Each of those browse axes used to mean a hand-written
 `IContentService`.
 
 `AddTaxonomy<TFrontMatter, TKey>` replaces that. Point it at a front-matter field
-and it walks every registered content service, collects the values, and emits an
+and it walks every other content source, collects the values, and emits an
 index page plus one page per term:
 
 ```csharp
