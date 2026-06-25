@@ -40,9 +40,10 @@ and the JSON-LD appears; leave it unset and Pennington skips it rather than emit
 broken relative links. See [hosting under a base
 URL](xref:how-to.deployment.base-url).
 
-The framework ships only one type — `JsonLdEntity`. Templates own the concrete
-records they emit, and you can add your own for any schema.org type the
-templates don't cover. Subclass `JsonLdEntity`, attribute your fields with
+The framework ships a small set of concrete records in `Pennington.StructuredData` —
+`JsonLdArticle`, `JsonLdPerson`, `JsonLdWebSite`, and `JsonLdBreadcrumbList`, all
+subclassing the abstract `JsonLdEntity` — and the templates emit those. You can add
+your own for any schema.org type the framework doesn't ship. Subclass `JsonLdEntity`, attribute your fields with
 `[JsonPropertyName]`, and pass the entity to `<StructuredData Entities="...">`.
 Pennington serializes it through the same path as the built-in types. See
 [Add a custom schema.org JSON-LD type](xref:how-to.rich-content.structured-data-custom-types)

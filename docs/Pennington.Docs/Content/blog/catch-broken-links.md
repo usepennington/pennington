@@ -21,7 +21,7 @@ your content: a broken-link verifier, a content-overlap detector, a translation
 completeness pass. Pennington runs them through one `AuditRunner` that primes a
 cache at startup and re-runs on every file change.
 
-The findings go two places from that single source:
+The same findings reach two surfaces:
 
 - **The build report** — every finding collected, with a non-zero exit code if
   anything is an error. This is the CI gate.
@@ -42,6 +42,6 @@ broken-link verification has to follow links against real routes, so it runs
 after the pipeline and dispatches each route through the live renderer.
 
 That split keeps the system open. A new check is a new auditor, and it picks up
-both surfaces — the report and the overlay — without extra wiring. Broken links
-and content overlap are the first two; an accessibility pass is a likely next
-one.
+both surfaces — the report and the overlay — without extra wiring. This release
+ships four: broken links, content overlap, unresolved cross-references, and
+translation coverage. An accessibility pass is a likely next one.
