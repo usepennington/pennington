@@ -27,8 +27,8 @@ Build Complete — 142 pages in 1.2s
 
 WARNINGS
   /guide/migration: Unresolved xref: reference.api.old-name
-  /guide/setup: Broken link to /guide/instalation (no such route)
-  /api/index: Broken link to /api/legacy (no such route)
+  /guide/setup: Broken link to /guide/instalation (Page not found)
+  /api/index: Broken link to /api/legacy (Page not found)
 ```
 
 When the report finds errors, the process exits with code 1, so a broken link

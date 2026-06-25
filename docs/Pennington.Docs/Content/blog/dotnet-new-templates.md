@@ -1,6 +1,6 @@
 ---
 title: Start a new site with dotnet new
-description: Three project templates — pennington, pennington-docs, and pennington-blog — get a site running with a single command.
+description: Three project templates — pennington, pennington-docs, and pennington-blog — get a site running from a single `dotnet new`.
 author: Phil Scott
 date: 2026-04-18
 isDraft: false
@@ -10,7 +10,8 @@ tags:
 ---
 
 Starting a new site used to be a short checklist: create a project, add the
-package references, wire up `Program.cs`, drop in a layout. Now it's one command.
+package references, wire up `Program.cs`, drop in a layout. Now creating the project
+is one command.
 
 ## Three templates, installed once
 

@@ -19,10 +19,11 @@ generates it.
 During the static build, Pennington produces two things:
 
 - `llms.txt` — an index of the whole site, organized by your navigation tree.
-  Drop a custom `llms.txt` in your content root and it becomes the index header.
-- a co-located markdown copy of every page at `<page>/index.md`, beside its
-  `index.html` — a front-matter-stripped copy an agent reaches by appending
-  `index.md` to the page URL.
+  Drop an `llms-header.txt` in your content root and its contents become the index
+  header. (Not `llms.txt` — a static file at that path would shadow the generated one.)
+- a co-located markdown copy of every page at `<page>.md`, beside its output
+  folder — a front-matter-stripped copy an agent reaches by appending
+  `.md` to the page URL (the home at `/index.md`).
 
 The markdown is real markdown, not a degraded HTML dump. The converter handles
 highlighted code blocks, tabbed groups, and GFM alerts, so a code sample
@@ -33,7 +34,7 @@ covers the setup.
 
 Generating the files isn't enough if nothing points to them. DocSite and
 BlogSite emit a `<link rel="alternate" type="text/markdown">` tag in every
-content page's head, pointing at that page's co-located `index.md` — the
+content page's head, pointing at that page's co-located `.md` copy — the
 standard way to advertise an alternate representation. And because tools like
 WebFetch strip `<head>` before an agent sees it, Pennington also drops a paired
 hidden hint at the top of the `<body>`, so an agent reading the page the hard
