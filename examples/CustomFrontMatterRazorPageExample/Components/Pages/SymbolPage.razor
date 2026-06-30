@@ -1,0 +1,50 @@
+@* Catch-all that resolves a URL to a rendered page and reads the custom front
+   matter directly. ResolveAsync<ApiFrontMatter> hands back the front matter
+   already typed as the custom record, so Stability and Namespace are plain
+   property reads — no cast, no MdazorContext dictionary. *@
+
+@page "/{*Path}"
+@inject IPageResolver Resolver
+
+@if (_html is not null)
+{
+    <PageTitle>@_title</PageTitle>
+    <article>
+        <h1>@_title</h1>
+        @if (_stability is not null)
+        {
+            <p>Stability: <strong>@_stability</strong> · Namespace: <code>@_namespace</code></p>
+        }
+        @((MarkupString)_html)
+    </article>
+}
+else
+{
+    <PageTitle>Not found</PageTitle>
+    <p>No content matches @Path.</p>
+}
+
+@code {
+    [Parameter] public string? Path { get; set; }
+
+    private string? _title;
+    private string? _html;
+    private string? _stability;
+    private string? _namespace;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var requested = new UrlPath(Path ?? string.Empty).EnsureLeadingSlash();
+
+        // The generic overload resolves the page and narrows its front matter to
+        // ApiFrontMatter in one step. It returns null when nothing matches or the
+        // page is served by a source registered against a different type.
+        if (await Resolver.ResolveAsync<ApiFrontMatter>(requested) is { } page)
+        {
+            _title = page.Metadata.Title;
+            _stability = page.Metadata.Stability;
+            _namespace = page.Metadata.Namespace;
+            _html = page.Content.Html;
+        }
+    }
+}

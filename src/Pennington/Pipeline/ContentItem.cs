@@ -42,6 +42,14 @@ public record ParsedItem(ContentRoute Route, IFrontMatter Metadata, string RawMa
 /// <param name="Content">Rendered content and extracted page data.</param>
 public record RenderedItem(ContentRoute Route, IFrontMatter Metadata, RenderedContent Content);
 
+/// <summary>A <see cref="RenderedItem"/> whose front matter has been narrowed to a known type, returned by the generic <c>ResolveAsync&lt;TFrontMatter&gt;</c> convenience.</summary>
+/// <typeparam name="TFrontMatter">The narrowed front-matter type.</typeparam>
+/// <param name="Route">Canonical route for the item.</param>
+/// <param name="Metadata">Front matter typed as <typeparamref name="TFrontMatter"/>.</param>
+/// <param name="Content">Rendered content and extracted page data.</param>
+public record RenderedItem<TFrontMatter>(ContentRoute Route, TFrontMatter Metadata, RenderedContent Content)
+    where TFrontMatter : IFrontMatter;
+
 /// <summary>A content item that failed during parsing or rendering.</summary>
 /// <param name="Route">Canonical route for the item that failed.</param>
 /// <param name="Error">Error describing the failure.</param>

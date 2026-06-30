@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>CustomFrontMatterRazorPageExample</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Pennington\Pennington.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Watch Include="Content\**\*.*" />
+    <Watch Include="Components\**\*.razor" />
+  </ItemGroup>
+</Project>

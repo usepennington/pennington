@@ -9,7 +9,7 @@ tags: [front-matter, authoring, yaml]
 
 To parse YAML keys the shipped front-matter records do not expose — a `namespace`, a `stability` badge, a `productName` — declare a custom `record` implementing `IFrontMatter` and the capability interfaces relevant to the keys, then register it as a markdown source with `AddMarkdownContent<T>`. For the full catalog of built-in keys, see <xref:reference.front-matter.keys>; for the design rationale behind the capability interfaces, see <xref:explanation.core.front-matter-capabilities>.
 
-The recipe references `examples/DocSiteKitchenSinkExample/ApiFrontMatter.cs`, which adds `namespace` and `stability` keys on top of the built-in front-matter records.
+The recipe declares and registers the record in `examples/DocSiteKitchenSinkExample`, which adds `namespace` and `stability` keys on top of the built-in front-matter records, then reads those keys from a regular Razor page in `examples/CustomFrontMatterRazorPageExample`.
 
 ## Before you begin
 
@@ -36,9 +36,9 @@ examples/DocSiteKitchenSinkExample/ServiceConfiguration.cs > ServiceConfiguratio
 
 `ExcludePaths` on the template's own doc source carves the subtree out so exactly one source owns those pages — drop that line on a bare `AddPennington` host where no template source claims the folder.
 
-## Read the key in a component
+## Read the key in a Razor page
 
-The lede promised a `stability` badge — here is what consumes it. A page under the registered source authors the custom keys at the top of its YAML block:
+The lede promised a `stability` value — here is what consumes it. The `ApiFrontMatter` record is portable across hosts; only its registration differs, so this section uses a bare `AddPennington` host where a Razor page owns rendering. A page under the registered source authors the custom keys at the top of its YAML block:
 
 ```yaml
 ---
@@ -48,17 +48,17 @@ stability: "preview"
 ---
 ```
 
-A component renders the `stability` value by casting the page's resolved front matter to the custom record. The ambient `MdazorContext` carries the parsed front matter under the `Metadata` key as an `IFrontMatter`; casting to `ApiFrontMatter` exposes the typed `Stability` property:
+A regular Razor `@page` reads those keys by injecting `IPageResolver` and calling the generic `ResolveAsync<ApiFrontMatter>`. That overload resolves the requested URL and hands back the front matter already typed as the custom record, so `Stability` and `Namespace` are plain property reads — no cast. It returns `null` when nothing matches or the page is served by a source registered against a different front-matter type:
 
 ```razor:symbol
-examples/DocSiteKitchenSinkExample/Components/StabilityBadge.razor
+examples/CustomFrontMatterRazorPageExample/Components/Pages/SymbolPage.razor
 ```
 
-Drop `<StabilityBadge />` into a markdown page served by the source and the badge renders the value the YAML supplied — the round-trip from key to component.
+Any page served by the `ApiFrontMatter` source now surfaces its typed keys — the round-trip from YAML to a strongly-typed Razor page.
 
 ## Verify
 
-- Run `dotnet run` and visit `/symbols/highlighting-service/`. The `<StabilityBadge />` renders the literal `preview` from that page's `stability:` key — proof the YAML deserialized into the typed `ApiFrontMatter.Stability` property.
+- In `examples/CustomFrontMatterRazorPageExample`, run `dotnet run` and visit `/symbols/highlighting-service/`. The page renders `Stability: preview` from that page's `stability:` key — proof the YAML deserialized into the typed `ApiFrontMatter.Stability` property and `ResolveAsync<ApiFrontMatter>` returned the typed page.
 - The build report contains no `FrontMatterParseError` diagnostics for pages under the new source.
 
 ## Related

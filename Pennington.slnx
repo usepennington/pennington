@@ -45,6 +45,7 @@
     <Project Path="examples/BeyondRemoteContentExample/BeyondRemoteContentExample.csproj" />
     <Project Path="examples/BeyondCookFormatExample/BeyondCookFormatExample.csproj" />
     <Project Path="examples/BareHostRazorPageExample/BareHostRazorPageExample.csproj" />
+    <Project Path="examples/CustomFrontMatterRazorPageExample/CustomFrontMatterRazorPageExample.csproj" />
     <Project Path="examples/DocSiteKitchenSinkExample/DocSiteKitchenSinkExample.csproj" />
     <Project Path="examples/MultipleSourcesExample/MultipleSourcesExample.csproj" />
     <Project Path="examples/PaginatedListingExample/PaginatedListingExample.csproj" />

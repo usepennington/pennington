@@ -89,12 +89,12 @@ public sealed class BlogPostQuery
     public async Task<RenderedBlogPost<TFrontMatter>?> GetRenderedPostAsync<TFrontMatter>(UrlPath url)
         where TFrontMatter : IFrontMatter
     {
-        if (await _resolver.ResolveAsync(url) is not { } rendered || rendered.Metadata is not TFrontMatter fm)
+        if (await _resolver.ResolveAsync<TFrontMatter>(url) is not { } rendered)
         {
             return null;
         }
 
-        return new RenderedBlogPost<TFrontMatter>(fm, rendered.Route.CanonicalPath, rendered.Content.Html);
+        return new RenderedBlogPost<TFrontMatter>(rendered.Metadata, rendered.Route.CanonicalPath, rendered.Content.Html);
     }
 
     /// <summary>
