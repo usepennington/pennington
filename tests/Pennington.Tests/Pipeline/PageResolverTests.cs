@@ -29,6 +29,8 @@ public class PageResolverTests
 
     private record TestFrontMatter(string Title) : IFrontMatter;
 
+    private record OtherFrontMatter(string Title) : IFrontMatter;
+
     // --- Stubs ---
 
     private class StubContentService(params DiscoveredItem[] items) : IContentService
@@ -162,6 +164,42 @@ public class PageResolverTests
         var resolver = new PageResolver([new StubContentService(item)], new StubRenderer());
 
         var rendered = await resolver.ResolveAsync(new UrlPath("/page-1"));
+
+        rendered.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task ResolveAsyncGeneric_MatchingType_ReturnsTypedItem()
+    {
+        var item = new DiscoveredItem(MakeRoute("/page-1"), MakeSource());
+        var resolver = new PageResolver([new StubContentService(item)], new StubRenderer(), new StubParser());
+
+        var rendered = await resolver.ResolveAsync<TestFrontMatter>(new UrlPath("/page-1"));
+
+        rendered.ShouldNotBeNull();
+        rendered.Metadata.Title.ShouldBe("Test Page");
+        rendered.Content.Html.ShouldBe("<p>test</p>");
+    }
+
+    [Fact]
+    public async Task ResolveAsyncGeneric_WrongType_ReturnsNull()
+    {
+        // The page parses as TestFrontMatter; asking for an unrelated type fails the narrow.
+        var item = new DiscoveredItem(MakeRoute("/page-1"), MakeSource());
+        var resolver = new PageResolver([new StubContentService(item)], new StubRenderer(), new StubParser());
+
+        var rendered = await resolver.ResolveAsync<OtherFrontMatter>(new UrlPath("/page-1"));
+
+        rendered.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task ResolveAsyncGeneric_NoMatch_ReturnsNull()
+    {
+        var item = new DiscoveredItem(MakeRoute("/page-1"), MakeSource());
+        var resolver = new PageResolver([new StubContentService(item)], new StubRenderer(), new StubParser());
+
+        var rendered = await resolver.ResolveAsync<TestFrontMatter>(new UrlPath("/does-not-exist"));
 
         rendered.ShouldBeNull();
     }
