@@ -16,7 +16,7 @@ Utility shape: `bg-primary-500`, `text-base-900 dark:text-base-50`, `border-acce
 
 Shades on every palette: `50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950`.
 
-Default scheme is `NamedColorScheme` Blue / Purple / Slate, overridable via `DocSiteOptions.ColorScheme`. Extra slots (`accent-one`, `accent-two`, …) are **not** built in — they only exist when the consumer registers them through a custom `IColorScheme`. Canonical example: `docs/Pennington.Docs/SnugglepussColorScheme.cs`.
+Default scheme is `NamedColorScheme` Blue / Purple / Slate, overridable via `DocSiteOptions.ColorScheme`. Any `IColorScheme` works: `NamedColorScheme` (explicit Tailwind colors per slot), `AlgorithmicColorScheme` (palettes synthesized from a seed hue), or `ColorTheme` (curated seed-hue themes, e.g. `ColorTheme.Orchid` — generates `primary`/`accent` algorithmically, snaps `base` to the nearest stock neutral via `NeutralForHue`, and adds coordinating `syntax-*` highlight palettes). Extra slots (`accent-one`, `accent-two`, …) are **not** built in — they only exist when the consumer registers them through a custom `IColorScheme`. Canonical example: `docs/Pennington.Docs/SnugglepussColorScheme.cs`.
 
 ## Dark mode
 
@@ -31,9 +31,12 @@ Every color-bearing utility pairs a `dark:` variant. The root wrapper carries `s
 
 - `Components/Layout/MainLayout.razor` — left sidebar nav + article + right outline rail (three columns at `xl`).
 - `Components/Layout/DocSiteHeader.razor` — sticky top bar with search, theme toggle, repo link.
+- `Components/Layout/DocSiteFooter.razor` — site footer.
 - `Components/Layout/AreaNavigation.razor` — multi-area switcher with `aria-current` states.
 - `Components/Layout/FullWidthLayout.razor` — landing/marketing pages that skip the sidebar.
-- `Slots/Components/DocSiteArticle.razor` — article shell rendered via `DocSiteArticleSlotRenderer`.
+- `Components/Layout/Pages.razor` — the catch-all content page; renders `DocSiteArticle` directly.
+- `Slots/Components/DocSiteArticle.razor` — article shell.
+- Blog integration (activated by a `Content/blog/` folder): `Components/Layout/{BlogLayout,BlogPostCard}.razor` + `Components/Pages/{Blog,BlogPost,BlogTagPage,BlogTags}.razor`.
 
 ## Rules
 
