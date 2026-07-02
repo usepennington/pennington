@@ -119,6 +119,9 @@ Requires `Pennington.TreeSitter` wired (`AddTreeSitter`) with `ContentRoot` set.
 
 ## Writing conventions
 
+### Agent-only pages: `*.llms.md`
+A markdown file named `<slug>.llms.md` is llms-only: it feeds `llms.txt` and the per-page Markdown twin at `{route}.md` but never renders as an HTML page, and it wins a route collision against an HTML page at the same canonical route. The site's agent home is `Content/index.llms.md`.
+
 ### Internal links: uid/xref, never URL paths
 Cross-links between docs pages use `[text](xref:uid)` or `<xref:uid>`. Never hardcode URL paths — they break silently when content moves or gets localized. The `uid` comes from the target page's front matter.
 

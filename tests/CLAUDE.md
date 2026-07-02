@@ -13,3 +13,9 @@
 - `DocsWebApplicationFactory` + `DocsTestServerCollection` is the canonical fixture pattern. Uses `WebApplicationFactory<Program>` (TestServer in-process) so self-fetching services (LlmsTxtService, SearchIndexService) flow through the same pipeline that serves browser requests — `IInProcessHttpDispatcher` detects the TestServer and dispatches in-memory.
 - Environment name is `"Testing"`; logs are clamped to `Warning` to keep output clean.
 - The docs project path is resolved by a relative walkup from the test binary — don't hardcode absolute paths.
+
+## Package test projects
+Same framework conventions (xunit.v3 + Shouldly), but each has its own fixture shape:
+- `Pennington.TreeSitter.Tests` — static `TreeSitterTestHelper` parses inline source with the bundled grammars; no MockFileSystem, no `CreateTestService`.
+- `Pennington.Book.Tests` — `BookTestBuilders` helpers + Testably MockFileSystem; the Chromium PDF smoke test is gated (skipped unless the environment provides Chromium).
+- `Pennington.BeyondCookFormat.Tests` — boots the `BeyondCookFormatExample` host via `WebApplicationFactory` (`CookExampleFactory`, environment `"Testing"`) to exercise the multi-format `.cook` pipeline seam end-to-end.

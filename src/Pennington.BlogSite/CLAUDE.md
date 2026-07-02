@@ -16,7 +16,7 @@ Utility shape: `bg-base-50 dark:bg-base-950`, `text-primary-500 dark:text-primar
 
 Shades on every palette: `50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950`.
 
-Default scheme is `NamedColorScheme` Blue / Purple / Slate, overridable via `BlogSiteOptions.ColorScheme`. Extra slots (`accent-one`, `accent-two`, …) are **not** built in — they only exist when the consumer registers them through a custom `IColorScheme` (see `docs/Pennington.Docs/SnugglepussColorScheme.cs`).
+Default scheme is `NamedColorScheme` Blue / Purple / Slate, overridable via `BlogSiteOptions.ColorScheme`. Any `IColorScheme` works: `NamedColorScheme`, `AlgorithmicColorScheme`, or a curated `ColorTheme` (seed-hue themes that also carry coordinating `syntax-*` highlight palettes and snap `base` to the nearest stock neutral). Extra slots (`accent-one`, `accent-two`, …) are **not** built in — they only exist when the consumer registers them through a custom `IColorScheme` (see `docs/Pennington.Docs/SnugglepussColorScheme.cs`).
 
 ## Dark mode
 
@@ -32,6 +32,8 @@ Every color-bearing utility pairs a `dark:` variant. The root wrapper carries `s
 Header + centered `max-w-7xl` main + footer. No sidebar chrome; the home page has an inline two-column layout (recent posts + author sidebar).
 
 - `Components/Layout/MainLayout.razor` — shell (header, nav, search, theme toggle, footer).
+- `Components/Layout/ContentLayout.razor` / `ContentWithProseLayout.razor` — standalone content-page shells (the latter wraps the body in the prose classes).
+- `Components/Pages/Pages.razor` — root catch-all content page (unmatched routes; also renders the built `output/404.html`).
 - `Components/Layout/BlogArticleCard.razor` — post card; group-hover transitions, `primary-200` accent bar on the date.
 - `Components/Layout/BlogPostsList.razor` — ordered list of cards, `divide-y divide-base-200 dark:divide-primary-900/50`.
 - `Components/Layout/BlogPost.razor` — full post view with metadata.

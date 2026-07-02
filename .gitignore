@@ -506,6 +506,7 @@ output/
 .claude/*
 !.claude/settings.json
 !.claude/hooks/
+!.claude/skills/
 .claude/settings.local.json
 
 # Playwright MCP runtime logs
