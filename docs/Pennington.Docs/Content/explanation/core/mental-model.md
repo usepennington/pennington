@@ -35,7 +35,7 @@ Start here for a conventional documentation site. You can still customize option
 
 `Pennington.BlogSite` is the same idea for a blog-first site. It is a template, not a separate engine: the underlying runtime is still Pennington content discovery plus the shared ASP.NET request pipeline.
 
-Use it when the blog is the site. If you want a blog alongside documentation, use DocSite's built-in blog folder instead of combining DocSite and BlogSite in the same app.
+Reach for it when the blog *is* the site; a blog alongside docs stays on DocSite. <xref:explanation.positioning.docsite-positioning> owns that decision rule and why the two templates cannot share a host.
 
 ### `Pennington.UI`
 

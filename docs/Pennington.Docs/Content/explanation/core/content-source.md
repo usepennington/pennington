@@ -19,7 +19,7 @@ A first instinct is to make `ContentSource` an interface with five implementatio
 
 ## Why `.Value` and not the case type directly
 
-Pennington multi-targets `net10.0;net11.0`. On `net11.0+` the C# 15 `union` keyword synthesizes a discriminated union with an inner `object? Value` field; on `net10.0` a hand-written polyfill struct provides the same shape. Going through `.Value` is the one read that compiles unchanged on both TFMs and matches what every consumer in the codebase already does.
+Every consumer reads the case through `.Value` — the one read that compiles unchanged on both TFMs the library multi-targets, and what the whole codebase already does. Why that read is the portable one, and what the `net10.0` shim does underneath the `net11.0` `union` keyword, is <xref:explanation.positioning.sdk-and-the-union-shim>'s story to tell.
 
 ## Why `RedirectSource` and `LlmsOnlySource` exclude themselves from `sitemap.xml`
 
