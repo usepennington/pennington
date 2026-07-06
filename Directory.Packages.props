@@ -2,6 +2,7 @@
   <ItemGroup>
     <PackageVersion Include="AngleSharp" Version="1.5.1" />
     <PackageVersion Include="Ashcroft" Version="0.5.0" />
+    <PackageVersion Include="Beck" Version="0.3.0" />
     <PackageVersion Include="CooklangSharp" Version="0.0.0-alpha.0.9" />
     <PackageVersion Include="DeweySearch" Version="0.1.2" />
     <PackageVersion Include="DeweySearch.Web" Version="0.1.2" />

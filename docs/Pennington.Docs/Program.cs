@@ -57,6 +57,10 @@ builder.Services.AddDocSite(() => new DocSiteOptions
             return Task.FromResult<byte[]?>(card.ToBytes());
         },
     },
+    // Beck's diagram engine (an RCL static asset) injected into every page's <head> so ```beck
+    // fenced blocks hydrate into rendered diagrams client-side. Beck themes itself from the host
+    // CSS variables and follows the site's dark mode — no per-diagram configuration.
+    AdditionalHtmlHeadContent = Beck.BeckAssets.ScriptTag,
     ColorScheme = new GrapeColorScheme(),
     SyntaxTheme = new SyntaxTheme
     {

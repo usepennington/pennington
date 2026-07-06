@@ -28,6 +28,12 @@
     <PackageReference Include="SharpYaml" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Beck hydrates ```beck fenced code blocks into rendered diagrams. Its engine ships as an
+         RCL static asset (/_content/Beck/beck.global.js) and is injected into the head via
+         DocSiteOptions.AdditionalHtmlHeadContent; DocSite serves the RCL assets already. -->
+    <PackageReference Include="Beck" />
+  </ItemGroup>
+  <ItemGroup>
     <!-- Social-card (OG image) generation via Ashcroft (SkiaSharp + HarfBuzz). The two
          *.NativeAssets.Linux* packages supply the headless native binaries the ubuntu-latest
          docs build needs; on Windows/macOS SkiaSharp's in-box natives are used and these stay inert. -->
