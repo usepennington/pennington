@@ -41,7 +41,7 @@ The default locale is not a special kind of locale — it is the locale that own
 
 ### Per-locale search indices
 
-`SearchArtifactService` emits one set of sharded artifacts per configured locale, keyed by each TOC item's route locale (or `DefaultLocale` when the route has none). `UsePennington` mounts `SearchArtifactMiddleware` under `/search/`, which serves the per-locale shards (`/search/{locale}/index.json` plus its segment files), and the DeweySearch client fetches only the bundle for the active locale. This keeps the client payload small on multilingual sites: a reader browsing `/es/` never downloads French or Japanese documents. More importantly, it keeps search semantics scoped. A query typed into the Spanish UI ranks against Spanish content, not against a mixed-language pool where term frequencies across languages distort each other's results.
+The search index is split per locale — a query typed into the Spanish UI ranks against Spanish content, not a mixed-language pool — and <xref:explanation.discovery.search> covers how that split is built and served. What belongs here is how the split interacts with fallback.
 
 A page that exists only in the default locale appears once, in the default-locale index. Fallback happens when a page renders; it does not add that page to other locales' indices. That asymmetry is deliberate. When a French reader searches for a term that only exists in English content, the right answer is "no results in French" rather than silently returning English hits the reader cannot read. The same per-locale split applies to sitemap construction and `hreflang` alternate-language tags, so search, sitemap, and alternates report the same set of pages for each locale.
 

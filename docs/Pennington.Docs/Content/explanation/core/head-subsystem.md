@@ -11,11 +11,9 @@ A surprising number of concerns want to write into the document `<head>`: the ti
 
 ## Context
 
-Before the head subsystem, those writers were spread across four unrelated mechanisms. Some were literal markup in each template's `App.razor` head. Two were head-scoped `IHtmlResponseRewriter`s — one for the canonical link, one for JSON-LD. Per-page meta was authored in Razor `<HeadContent>` blocks. The dev-host meta was a raw string insert that searched the response for `</head>`.
+The naive approach needs no subsystem at all: let each concern emit its own head markup wherever it already lives. Some tags are literal markup in a template's `App.razor` head; the canonical link and JSON-LD ride in head-scoped `IHtmlResponseRewriter`s; per-page meta lives in Razor `<HeadContent>` blocks. Each writer is reasonable on its own.
 
-Four mechanisms meant four ways to reason about ordering, four places a duplicate `og:image` or a second `<title>` could slip through, and no shared notion of "this tag is already present, leave it alone." The ordering was the worst of it: the rewriters carried hand-picked integers that unrelated writers silently collided on, and nothing connected a rewriter's order to the literal markup it had to interleave with.
-
-The worst of it showed up on the client. Pennington's [SPA navigation swaps page regions](xref:explanation.spa.islands) rather than reloading, so the head has to be reconciled in JavaScript on every soft navigation. The old client carried a hand-maintained allowlist naming exactly which head tags to carry across a swap. Every new head tag had to be added to that list by hand, and forgetting meant the tag silently vanished the moment a visitor clicked a link — a failure invisible on first paint and easy to ship.
+They stop being reasonable together. All of them target the same small region of the document, and nothing coordinates them — so tags duplicate, their relative order is left to hand-picked integers that share no scale, and the client, which reconciles the head in JavaScript on every [SPA navigation](xref:explanation.spa.islands) rather than reloading, needs some way to know which tags to carry across a swap. The closing section returns to these failures once the mechanism that fixes each is in view; the rest of this page builds that mechanism.
 
 ## How it works
 
