@@ -31,7 +31,7 @@ This is the extension point you reach for when your own service caches something
 
 ### Script injection and reconnection
 
-`LiveReloadScriptProcessor` is an `IResponseProcessor` at `Order = 20`, positioned between the HTML rewriting pipeline at `Order = 10` and the diagnostic overlay at `Order = 30`. When active it finds the last `</body>` tag and inserts an inline script that opens a WebSocket to `/__pennington/reload`. The script includes three refinements over a naive `location.reload()` approach: a `beforeunload` guard that suppresses reconnect attempts during normal page navigation, a 150ms delay before reload so the response pipeline has time to settle, and a reload on reconnect so that a host restart refreshes the browser without waiting for a file-change message.
+`LiveReloadScriptProcessor` injects an inline script before the closing `</body>` that opens a WebSocket to `/__pennington/reload`, reloads when a reload message arrives, and reloads on reconnect so a host restart refreshes the browser without waiting for a file change. Guards that keep it from firing mid-navigation or before the response pipeline settles are tuning details, not knobs a consumer sets.
 
 ### Build-mode gating
 

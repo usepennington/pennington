@@ -73,13 +73,13 @@ None of these is exotic. They are the common reason a host is built on `AddPenni
 
 ## Where BlogSite differs
 
-BlogSite is the same kind of shortcut, aimed at a different shape: a site where the blog *is* the site. A single `AddBlogSite` call composes `AddPennington`, forwards site identity and content paths from `BlogSiteOptions`, registers one `AddMarkdownContent<BlogSiteFrontMatter>` source rooted at `Content/Blog/`, wires MonorailCSS with the BlogSite theme, and registers the same Mdazor inline components DocSite does. The same ordering value holds — every registration lands compatible with the others, which is the part a hand-rolled host gets wrong first.
+BlogSite is the same kind of shortcut, aimed at a different shape: a site where the blog *is* the site. A single `AddBlogSite` call composes `AddPennington`, forwards site identity and content paths from `BlogSiteOptions`, registers one `AddMarkdownContent<BlogSiteFrontMatter>` source rooted at `Content/Blog/`, wires MonorailCSS with the BlogSite theme, and registers the same Mdazor inline components DocSite does. The compatible-ordering payoff is the same one DocSite gets.
 
 What BlogSite adds beyond DocSite is its route surface. The template ships Home, Archive, Tag, Tags, and Blog Razor pages inside `Pennington.BlogSite.dll`, so the home listing, `/archive`, `/blog/<slug>/`, the tag pages, and the `/rss.xml` feed exist without the host authoring a single `@page`. That is the inverse of DocSite, whose pages all come from markdown under `Content/`; BlogSite's structural pages are compiled into the template and its content is the posts you drop in.
 
 The caps are tighter than DocSite's in two ways. First, `BlogSiteOptions` has no `ConfigurePennington` callback — the post-defaults `Action<PenningtonOptions>` hook DocSite exposes. Reaching engine surface the options do not forward means dropping to bare `AddPennington` rather than threading a callback. Second, there is no `ContentSelector`: the body element the search index and llms.txt consume is fixed by the BlogSite layout rather than selectable. The tweak points it does share with DocSite — `ColorScheme`, `ExtraStyles`, `DisplayFontFamily`, `BodyFontFamily` — adjust the theme without swapping the composition, exactly as on DocSite. What `BlogSiteOptions` adds instead are blog-shaped knobs: author chrome (`AuthorName`, `AuthorBio`), homepage composition (`HeroContent`, `MyWork`, `Socials`), and feed toggles (`EnableRss`, `EnableSitemap`). The full surface is in the [`BlogSiteOptions` reference](xref:reference.api.blog-site-options).
 
-The escape hatch is identical in spirit. `BlogSiteServiceExtensions.AddBlogSite` is a single visible composition, and when a site outgrows the options the move is again to copy what is needed into a bare `AddPennington` host rather than fight the template.
+The escape hatch works exactly as DocSite's does — `BlogSiteServiceExtensions.AddBlogSite` is one visible composition to copy from when the options run out.
 
 ## Further reading
 
