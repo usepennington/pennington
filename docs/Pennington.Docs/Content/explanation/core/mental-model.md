@@ -17,6 +17,24 @@ That single idea explains most of the project:
 - The response pipeline finishes the HTML. Cross-references, locale prefixes, base URLs, live reload, diagnostics, and other response processors run against the actual HTTP response.
 - Build mode crawls the host. `dotnet run` serves through Kestrel; `dotnet run -- build` starts the same app on an in-process test server, requests every discovered route, and writes the responses to disk.
 
+```beck
+type: architecture
+meta: { animate: false, direction: LR }
+nodes:
+  - { id: templates, title: DocSite / BlogSite, subtitle: "templates", accent: primary }
+  - { id: sources, title: Content sources, subtitle: "markdown · Razor · API · taxonomy" }
+  - { id: pipeline, title: Content pipeline, subtitle: "discover · parse · render" }
+  - { id: response, title: Response pipeline, subtitle: "xref · locale · base URL" }
+  - { id: output, title: Browser / static output, kind: external }
+groups:
+  - { id: host, label: "ASP.NET host (Program.cs)", members: [sources, pipeline, response], accent: info }
+edges:
+  - { from: templates, to: sources, label: wire }
+  - { from: sources, to: pipeline, label: discover }
+  - { from: pipeline, to: response, label: render }
+  - { from: response, to: output, label: serve / write }
+```
+
 ## The layers
 
 ### `Pennington`

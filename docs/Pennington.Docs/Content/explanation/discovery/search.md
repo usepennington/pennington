@@ -15,6 +15,22 @@ The search engine itself is not Pennington's. The tokenizer, stemmer, inverted i
 
 Keeping the engine external means Pennington never re-implements ranking, and an upgrade to DeweySearch's relevance model arrives without a Pennington change. What Pennington owns is everything domain-specific: what counts as a record, what URL a result links to, and which dimensions become filter facets.
 
+```beck
+type: architecture
+meta: { animate: false, direction: LR }
+nodes:
+  - { id: render, title: Rendered corpus, subtitle: "site projection" }
+  - { id: extractor, title: HeadingSectionExtractor, subtitle: "one section per heading" }
+  - { id: builder, title: SearchIndexBuilder, subtitle: "section to SearchDocument" }
+  - { id: shards, title: Per-locale shards, subtitle: "/search/{locale}/", kind: db }
+  - { id: client, title: Browser client, subtitle: "dewey-search.js", kind: user }
+edges:
+  - { from: render, to: extractor, label: render fold }
+  - { from: extractor, to: builder, label: sections }
+  - { from: builder, to: shards, label: "index.json · t-* · f-*" }
+  - { from: shards, to: client, label: fetched on demand }
+```
+
 ## Records are heading-level, not page-level
 
 A naive index has one record per page. Search a thousand-word reference page and the whole page matches; the result drops the reader at the top and leaves them to scroll.
