@@ -15,6 +15,22 @@ Most static site generators are built as compilers: read content files, transfor
 
 Pennington keeps one host. Dev mode is that host serving requests over Kestrel; build mode is a crawler that drives the same host's request pipeline in process. There is exactly one ASP.NET pipeline, and the static build is a consumer of it. The rest of this page works through what that buys.
 
+```beck
+type: architecture
+meta: { animate: false, direction: LR }
+nodes:
+  - { id: browser, title: Browser, kind: user }
+  - { id: kestrel, title: Kestrel, subtitle: "dev serve" }
+  - { id: crawler, title: Build crawler, subtitle: "in-process TestServer" }
+  - { id: pipeline, title: ASP.NET request pipeline, subtitle: "middleware · response processors · renderers", accent: primary }
+  - { id: output, title: Output directory, kind: db }
+edges:
+  - { from: browser, to: kestrel, label: HTTP, arrow: both }
+  - { from: kestrel, to: pipeline }
+  - { from: crawler, to: pipeline, label: in-process }
+  - { from: pipeline, to: output, label: build writes HTML }
+```
+
 ## How it works
 
 ### Dev serve: the ASP.NET host is the renderer

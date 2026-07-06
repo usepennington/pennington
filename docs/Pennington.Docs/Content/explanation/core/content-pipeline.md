@@ -31,6 +31,26 @@ A `DiscoveredItem` pairs a `ContentRoute` with a second union, `ContentSource`, 
 
 Each stage in the pipeline works by replacing the incoming union case with the next one. `ParseAsync` pulls a stream of `ContentItem` values and, for each `DiscoveredItem`, hands its content to the registered `IContentParser`. When the parser succeeds, the `DiscoveredItem` is replaced by a `ParsedItem` carrying the resolved front matter and text. `RenderAsync` does the same thing one level further: each `ParsedItem` is handed to the `IContentRenderer`, and on success a `RenderedItem` takes its place, now carrying the HTML output and a navigation outline. The final stage, `GenerateAsync`, pattern-matches on the full union to write output files and accumulate the build report.
 
+```beck
+type: state
+meta: { direction: LR }
+transitions:
+  - { from: "[*]", to: discovered }
+  - { from: discovered, to: parsed, label: parse }
+  - { from: parsed, to: rendered, label: render }
+  - { from: discovered, to: failed, label: parse throws }
+  - { from: parsed, to: failed, label: render throws }
+  - { from: rendered, to: "[*]", label: emit }
+  - { from: failed, to: "[*]", label: build report }
+  - { from: parsed, to: parsed, label: pass through }
+  - { from: rendered, to: rendered, label: pass through }
+states:
+  - { id: discovered, title: DiscoveredItem, accent: info }
+  - { id: parsed, title: ParsedItem, accent: info }
+  - { id: rendered, title: RenderedItem, accent: success }
+  - { id: failed, title: FailedItem, accent: danger }
+```
+
 The replacement invariant is what gives the pipeline its composability. A `RenderedItem` flowing into `ParseAsync` is already past that stage, so `ParseAsync` passes it through unchanged. A `ParsedItem` flowing into `RenderAsync` gets rendered; a `RenderedItem` in the same stream passes through. This means you can hand the pipeline a partially-processed stream — one that mixes discovered and already-parsed items — and it will do the right thing for each. There is no need to coordinate which stage ran last; the case type carries that information.
 
 ```csharp:symbol,bodyonly
