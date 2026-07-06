@@ -37,6 +37,26 @@ The first phase, `PreParseAsync`, operates on the raw HTML string. This handles 
 
 The result is the invariant that matters here: N rewriters, one parse, one serialize, one DOM. Adding a new DOM-shaped concern — a heading-anchor normalizer, an image lazy-loader, a table classifier — costs a method call, not another parse/serialize round trip. See <xref:reference.api.i-response-processor> for the `IResponseProcessor` and `IHtmlResponseRewriter` contracts.
 
+```beck
+type: sequence
+participants:
+  - { id: req, title: Request, kind: user }
+  - { id: mw, title: ResponseProcessingMiddleware }
+  - { id: host, title: HtmlResponseRewritingProcessor }
+  - { id: doc, title: AngleSharp document, kind: db }
+messages:
+  - { from: req, to: mw, label: response body captured }
+  - { from: mw, to: host, label: run IResponseProcessors in Order }
+  - { from: host, to: host, label: PreParse (raw string) }
+  - { section: One AngleSharp pass, accent: info }
+  - { from: host, to: doc, label: parse (once) }
+  - { from: host, to: doc, label: N rewriters mutate }
+  - { from: doc, to: host, label: serialize (once), reply: true }
+  - { section: Back to the socket }
+  - { from: host, to: mw, label: rewritten body, reply: true }
+  - { from: mw, to: req, label: flush, reply: true }
+```
+
 ### Why two tiers, not one
 
 Collapsing everything into `IHtmlResponseRewriter` would be wrong in both directions. Making the string processors HTML rewriters forces an AngleSharp parse on operations that do not benefit from a DOM, and it also means the parser tries to fix partially-valid or framework-generated HTML that those processors are content to treat as an opaque string. Conversely, letting every DOM concern be its own `IResponseProcessor` means each one parses, mutates, and serializes independently — N parses and N DOM copies instead of one of each — and it hides the cross-concern ordering assumptions behind DI registration sequence.

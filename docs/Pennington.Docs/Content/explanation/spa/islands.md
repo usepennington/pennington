@@ -23,6 +23,23 @@ The first request to any URL returns complete server-rendered HTML, exactly as i
 
 Every server-side rewriter — xref resolution, locale-aware link rewriting, base-URL prefixing, anything else registered as `IHtmlResponseRewriter` — applies to that response by default, because it travelled through the same `ResponseProcessingMiddleware` as a fresh-tab visit. There is no second pipeline to mirror.
 
+```beck
+type: sequence
+participants:
+  - { id: reader, title: Reader, kind: user }
+  - { id: client, title: SPA client }
+  - { id: server, title: Server }
+messages:
+  - { from: reader, to: client, label: click in-site link }
+  - { from: client, to: client, label: intercept }
+  - { from: client, to: server, label: GET canonical URL }
+  - { from: server, to: client, label: HTML response, reply: true }
+  - { from: client, to: client, label: DOMParser }
+  - { from: client, to: client, label: swap data-spa-region regions }
+  - { from: client, to: client, label: data-head sweep }
+  - { from: client, to: client, label: "spa:commit fires" }
+```
+
 ### The `data-spa-region` contract
 
 Anywhere in the layout that should update on navigation gets a `data-spa-region="name"` attribute. The DocSite layout marks two regions out of the box:
