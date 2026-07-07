@@ -42,11 +42,10 @@ public class AuditRunnerTests
         cache.Diagnostics.ShouldBeEmpty();
         lifetime.FireStarted();
 
-        // RunAsync started on ApplicationStarted; give the cache a moment to be populated.
-        for (var i = 0; i < 50 && cache.Diagnostics.IsEmpty; i++)
-        {
-            await Task.Delay(10, TestContext.Current.CancellationToken);
-        }
+        // FireStarted synchronously kicks off the initial pass; await it to completion so the
+        // assertion reads a settled cache rather than polling with a bounded timeout (which could
+        // expire under thread-pool starvation on a loaded runner).
+        await runner.WaitForInitialPassAsync();
 
         cache.Diagnostics.Count.ShouldBe(1);
         cache.Diagnostics[0].Message.ShouldBe("rendered audit ran");
@@ -80,8 +79,9 @@ public class AuditRunnerTests
         await runner.StartAsync(TestContext.Current.CancellationToken);
         lifetime.FireStarted();
 
-        // Wait long enough for any background run to settle.
-        await Task.Delay(100, TestContext.Current.CancellationToken);
+        // Await the pass to completion, then assert the rendered auditor was never invoked —
+        // deterministic where a fixed delay only hoped the (skipped) run had settled.
+        await runner.WaitForInitialPassAsync();
 
         renderedAuditor.AuditCalls.ShouldBe(0);
         cache.Diagnostics.ShouldBeEmpty();

@@ -121,10 +121,18 @@ public class FileWatcherTests : IDisposable
     {
         // One logical save fans out into a truncate/write/close burst (plus Windows duplicate
         // events). The trailing-edge debounce must collapse the whole burst into a single
-        // notification delivered after the file goes quiet — not one per raw event.
+        // notification — not one per raw event.
+        //
+        // Drive the debounce off a fake clock so the assertion is deterministic. The raw OS events
+        // still arrive in real time, but the debounce timer fires only when we advance the clock, so
+        // while it stays frozen every event re-arms the same pending timer no matter how spread out
+        // their delivery is. That removes the real-clock flake this replaces: a loaded runner that
+        // dribbled the six events out over >100ms used to let the timer elapse mid-burst, splitting
+        // it into two notifications.
         var ct = TestContext.Current.CancellationToken;
         var fs = new RealFileSystem();
-        using var watcher = new FileWatcher(fs);
+        var clock = new FakeTimeProvider();
+        using var watcher = new FileWatcher(fs, clock);
         var count = 0;
 
         var filePath = Path.Combine(_tempDir, "burst.txt");
@@ -133,14 +141,19 @@ public class FileWatcherTests : IDisposable
         watcher.AddPathWatch(_tempDir, "*.txt", (_, _) => { });
         watcher.SubscribeToChanges(() => System.Threading.Interlocked.Increment(ref count));
 
-        // Tight synchronous burst — completes far inside the debounce window.
+        // Tight synchronous burst.
         for (var i = 1; i <= 6; i++)
         {
             File.WriteAllText(filePath, $"v{i}");
         }
 
-        // Wait comfortably past the debounce window for the single coalesced notification.
-        await Task.Delay(600, ct);
+        // Let the OS watcher drain every raw event into the pending buffer. The frozen clock keeps
+        // any of them from firing, so they collapse onto one re-armed timer; this wait only has to
+        // outlast event *delivery*, not sit above the debounce window.
+        await Task.Delay(500, ct);
+
+        // Advance once past the 100ms debounce window: the single settled timer fires exactly once.
+        clock.Advance(TimeSpan.FromMilliseconds(150));
 
         count.ShouldBe(1);
     }
