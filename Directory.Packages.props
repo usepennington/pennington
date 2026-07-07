@@ -21,8 +21,8 @@
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.10.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
     <PackageVersion Include="MinVer" Version="7.0.0" />
-    <PackageVersion Include="MonorailCss" Version="0.1.1" />
-    <PackageVersion Include="MonorailCss.Discovery" Version="0.1.1" />
+    <PackageVersion Include="MonorailCss" Version="0.1.2-alpha.0.4" />
+    <PackageVersion Include="MonorailCss.Discovery" Version="0.1.2-alpha.0.4" />
     <PackageVersion Include="PuppeteerSharp" Version="25.1.1" />
     <PackageVersion Include="SharpYaml" Version="3.10.0" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
