@@ -177,6 +177,21 @@ public sealed class OutputGenerationService
             mapGetPages.Add(page);
         }
 
+        // Phase 2b: The Blazor WebAssembly boot manifest (_framework/resource-collection*.js) is
+        // a runtime endpoint, not a physical static asset, so Phase 4's copy misses it and a static
+        // host 404s on WASM boot. Crawl it like any other GET so the fetch phase writes it. Deduped
+        // against claimed output files for symmetry, though its _framework path never collides.
+        foreach (var route in WebAssemblyBootAssetDiscovery.Discover(_endpointDataSource))
+        {
+            if (!claimedOutputFiles.Add(route.OutputFile.Value))
+            {
+                continue;
+            }
+
+            mapGetPages.Add(new PageToGenerate(route));
+            _logger.LogDebug("Discovered WebAssembly boot manifest: {Url}", route.CanonicalPath.Value);
+        }
+
         _logger.LogInformation("Found {ContentCount} content pages, {EndpointCount} static endpoints",
             contentPages.Count, mapGetPages.Count);
 
