@@ -20,7 +20,11 @@ public interface ICodeBlockPreprocessor
 /// <param name="HighlightedHtml">Fully highlighted HTML (wrapped in pre/code tags).</param>
 /// <param name="BaseLanguage">The base language for CSS class purposes.</param>
 /// <param name="SkipTransform">If true, skip CodeTransformer on the output.</param>
+/// <param name="SkipChrome">If true, emit <paramref name="HighlightedHtml"/> as-is with none of the standard
+/// code-block chrome (outer <c>code-highlight-wrapper</c>, language head bar, container divs) — the preprocessor
+/// owns the entire output. Use for fences that render to something other than a code block, such as a diagram.</param>
 public record CodeBlockPreprocessResult(
     string HighlightedHtml,
     string BaseLanguage,
-    bool SkipTransform = false);
+    bool SkipTransform = false,
+    bool SkipChrome = false);

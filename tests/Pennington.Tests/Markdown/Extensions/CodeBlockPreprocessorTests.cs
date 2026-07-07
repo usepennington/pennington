@@ -116,6 +116,28 @@ public class CodeBlockPreprocessorTests
         result.ShouldNotContain("<span class=\"line\">");
     }
 
+    [Fact]
+    public void SkipChrome_OmitsCodeBlockWrapper()
+    {
+        // With SkipChrome=true the preprocessor owns the entire output: no
+        // code-highlight-wrapper, no language head bar, no data-language attribute.
+        var preprocessor = new TestPreprocessor("test:owned",
+            new CodeBlockPreprocessResult(
+                "<div class=\"owned-output\"><svg></svg></div>",
+                "test",
+                SkipTransform: true,
+                SkipChrome: true));
+
+        var markdown = "```test:owned\nsome code\n```";
+
+        var result = RenderMarkdown(markdown, [preprocessor]);
+
+        result.ShouldContain("owned-output");
+        result.ShouldNotContain("code-highlight-wrapper");
+        result.ShouldNotContain("codeblock-head");
+        result.ShouldNotContain("data-language");
+    }
+
     private class TestPreprocessor(
         string matchLanguageId,
         CodeBlockPreprocessResult? result,

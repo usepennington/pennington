@@ -96,6 +96,28 @@ public class CodeBlockRenderingServiceTests
     }
 
     [Fact]
+    public void Render_SkipChrome_EmitsPreprocessorHtmlUnwrapped()
+    {
+        // A preprocessor whose output is not a code block (a rendered diagram) opts out
+        // of the wrapper chrome entirely — the result is its HTML verbatim.
+        var preprocessor = new StubPreprocessor(
+            matchLanguageId: "beck",
+            result: new CodeBlockPreprocessResult(
+                HighlightedHtml: "<div class=\"beck-embed\"><svg></svg></div>",
+                BaseLanguage: "beck",
+                SkipTransform: true,
+                SkipChrome: true));
+
+        var service = new CodeBlockRenderingService(
+            new HighlightingService([]),
+            [preprocessor]);
+
+        var html = service.Render(code: "nodes: []", languageId: "beck");
+
+        html.ShouldBe("<div class=\"beck-embed\"><svg></svg></div>");
+    }
+
+    [Fact]
     public void Render_NoPreprocessors_FallsBackToHighlighter()
     {
         var service = new CodeBlockRenderingService(new HighlightingService([]), preprocessors: null);
