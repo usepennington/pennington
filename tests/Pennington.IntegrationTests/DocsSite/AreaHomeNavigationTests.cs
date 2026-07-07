@@ -30,7 +30,9 @@ public class AreaHomeNavigationTests : IClassFixture<DocsWebApplicationFactory>
         // The pill links to the area home and is flagged so the click handler lets the
         // href navigate instead of just previewing the TOC.
         pill.GetAttribute("data-area-direct").ShouldBe("true");
-        pill.GetAttribute("href").ShouldContain("showcase");
+        var href = pill.GetAttribute("href");
+        href.ShouldNotBeNull();
+        href.ShouldContain("showcase");
 
         // The home entry is the only showcase page, so dropping it leaves an empty TOC —
         // no link back to the home the pill already points at.
