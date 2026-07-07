@@ -17,7 +17,7 @@ Keeping the engine external means Pennington never re-implements ranking, and an
 
 ```beck
 type: architecture
-meta: { animate: false, direction: LR }
+meta: { animate: false, direction: TB }
 nodes:
   - { id: render, title: Rendered corpus, subtitle: "site projection" }
   - { id: extractor, title: HeadingSectionExtractor, subtitle: "one section per heading" }

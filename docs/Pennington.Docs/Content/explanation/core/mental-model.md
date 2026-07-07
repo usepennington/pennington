@@ -19,7 +19,7 @@ That single idea explains most of the project:
 
 ```beck
 type: architecture
-meta: { animate: false, direction: LR }
+meta: { animate: false, direction: TB }
 nodes:
   - { id: templates, title: DocSite / BlogSite, subtitle: "templates", accent: primary }
   - { id: sources, title: Content sources, subtitle: "markdown · Razor · API · taxonomy" }
