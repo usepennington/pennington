@@ -17,7 +17,7 @@ Pennington keeps one host. Dev mode is that host serving requests over Kestrel; 
 
 ```beck
 type: architecture
-meta: { animate: false, direction: LR }
+meta: { animate: false, direction: TB }
 nodes:
   - { id: browser, title: Browser, kind: user }
   - { id: kestrel, title: Kestrel, subtitle: "dev serve" }

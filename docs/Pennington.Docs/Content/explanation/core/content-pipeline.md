@@ -33,7 +33,7 @@ Each stage in the pipeline works by replacing the incoming union case with the n
 
 ```beck
 type: state
-meta: { direction: LR }
+meta: { direction: TB }
 transitions:
   - { from: "[*]", to: discovered }
   - { from: discovered, to: parsed, label: parse }
