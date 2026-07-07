@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Time.Testing;
 using Pennington.Infrastructure;
 using Testably.Abstractions;
 using Testably.Abstractions.Testing;
@@ -72,6 +73,47 @@ public class FileWatcherTests : IDisposable
         var completed = await Task.WhenAny(tcs.Task, Task.Delay(5000, ct));
         completed.ShouldBe(tcs.Task, "Subscriber should have been notified");
         subscriberCalled.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task SubscribeDuringNotification_DoesNotCorruptEnumeration()
+    {
+        // Regression: NotifySubscribers enumerates the subscriber list on the debounce timer
+        // thread. A subscriber registering *during* that notification (AuditRunner at host start,
+        // RedirectContentService on first request) used to mutate the backing List mid-foreach and
+        // throw "Collection was modified" on that unobserved thread — a catastrophic, Linux-only CI
+        // crash. Fire the debounce on the test thread via a fake clock so any fault surfaces here,
+        // and assert the subscriber registered after the mid-notification one still runs.
+        var ct = TestContext.Current.CancellationToken;
+        var fs = new RealFileSystem();
+        var clock = new FakeTimeProvider();
+        using var watcher = new FileWatcher(fs, clock);
+
+        var filePath = Path.Combine(_tempDir, "race.txt");
+        await File.WriteAllTextAsync(filePath, "initial", ct);
+        watcher.AddPathWatch(_tempDir, "*.txt", (_, _) => { });
+
+        // This subscriber appends another from inside the notification — the exact
+        // modify-during-enumeration the startup race produced, but deterministic.
+        watcher.SubscribeToChanges(() => watcher.SubscribeToChanges(() => { }));
+        // If that append corrupts the in-flight enumeration, this trailing subscriber never fires.
+        var trailingFired = false;
+        watcher.SubscribeToChanges(() => trailingFired = true);
+
+        await File.WriteAllTextAsync(filePath, "changed", ct);
+
+        // Wait for the OS watcher to buffer the change (it arms a debounce timer), then advance the
+        // fake clock to fire that timer synchronously on this thread.
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (!trailingFired && DateTime.UtcNow < deadline)
+        {
+            clock.Advance(TimeSpan.FromMilliseconds(150));
+            if (trailingFired) { break; }
+            await Task.Delay(20, ct);
+        }
+
+        trailingFired.ShouldBeTrue(
+            "the subscriber registered after a mid-notification subscribe should still fire");
     }
 
     [Fact]
