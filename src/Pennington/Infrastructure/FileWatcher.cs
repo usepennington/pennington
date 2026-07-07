@@ -1,5 +1,6 @@
 namespace Pennington.Infrastructure;
 
+using System.Collections.Immutable;
 using System.IO.Abstractions;
 using System.Threading;
 using Microsoft.Extensions.Logging;
@@ -27,8 +28,14 @@ public sealed class FileWatcher : IFileWatcher
     private readonly IFileSystem _fileSystem;
     private readonly TimeProvider _clock;
     private readonly Dictionary<string, IFileSystemWatcher> _watchers = new();
-    private readonly List<Action> _subscribers = [];
-    private readonly List<Action<FileChangeNotification>> _pathAwareSubscribers = [];
+
+    // Subscribers register from startup and first-request threads (AuditRunner at host start,
+    // RedirectContentService on first request) while NotifySubscribers enumerates them on the
+    // debounce timer thread. Immutable lists let a registration swap the field atomically without
+    // disturbing an in-flight enumeration — a plain List threw "Collection was modified" on the
+    // unobserved timer thread and crashed the process.
+    private ImmutableList<Action> _subscribers = [];
+    private ImmutableList<Action<FileChangeNotification>> _pathAwareSubscribers = [];
     private readonly Lock _debounceLock = new();
     private readonly Dictionary<string, PendingChange> _pending = new(StringComparer.Ordinal);
     private readonly ILogger<FileWatcher>? _logger;
@@ -83,13 +90,13 @@ public sealed class FileWatcher : IFileWatcher
     /// <inheritdoc/>
     public void SubscribeToChanges(Action onUpdate)
     {
-        _subscribers.Add(onUpdate);
+        ImmutableInterlocked.Update(ref _subscribers, static (list, item) => list.Add(item), onUpdate);
     }
 
     /// <inheritdoc/>
     public void SubscribeToChanges(Action<FileChangeNotification> onUpdate)
     {
-        _pathAwareSubscribers.Add(onUpdate);
+        ImmutableInterlocked.Update(ref _pathAwareSubscribers, static (list, item) => list.Add(item), onUpdate);
     }
 
     /// <summary>
@@ -198,18 +205,23 @@ public sealed class FileWatcher : IFileWatcher
 
     private void NotifySubscribers(string fullPath, WatcherChangeTypes changeType)
     {
-        foreach (var subscriber in _subscribers)
+        // Snapshot each immutable list once — a concurrent SubscribeToChanges swaps the field, but
+        // these locals keep enumerating the set captured when the notification began.
+        var subscribers = _subscribers;
+        var pathAwareSubscribers = _pathAwareSubscribers;
+
+        foreach (var subscriber in subscribers)
         {
             try { subscriber(); }
             catch (Exception ex) { _logger?.LogError(ex, "Error notifying file watch subscriber"); }
         }
-        if (_pathAwareSubscribers.Count == 0)
+        if (pathAwareSubscribers.Count == 0)
         {
             return;
         }
 
         var notification = new FileChangeNotification(fullPath, changeType);
-        foreach (var subscriber in _pathAwareSubscribers)
+        foreach (var subscriber in pathAwareSubscribers)
         {
             try { subscriber(notification); }
             catch (Exception ex) { _logger?.LogError(ex, "Error notifying path-aware file watch subscriber"); }
