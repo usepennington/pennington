@@ -24,7 +24,7 @@ Implement <xref:reference.api.i-code-block-preprocessor> as a sealed class. `Try
 examples/ExtensibilityLabExample/LineCountPreprocessor.cs
 ```
 
-The returned `CodeBlockPreprocessResult` carries the pre-rendered HTML, the `BaseLanguage` CSS class Pennington stamps on the block, and `SkipTransform`. Set `SkipTransform` to `true` when the output is final and the `[!code ...]` annotation pass should not re-process it.
+The returned `CodeBlockPreprocessResult` carries the pre-rendered HTML, the `BaseLanguage` CSS class Pennington stamps on the block, and two opt-out flags. Set `SkipTransform` to `true` when the output is final and the `[!code ...]` annotation pass should not re-process it. Set `SkipChrome` to `true` when the output is not a code block at all — a rendered diagram, a chart, an embedded widget — and the standard wrapper markup (the `code-highlight-wrapper` div, the language head bar, and the container divs) should not surround it; the HTML is emitted verbatim. A `SkipChrome` block also stops registering as a code fence in the per-page Markdown twins: without the wrapper's `data-language` attribute, the HTML→markdown converter treats the output as ordinary markup instead of reconstructing a fence around it.
 
 ## Pick a Priority value
 
