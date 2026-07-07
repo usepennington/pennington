@@ -155,10 +155,15 @@ public sealed partial class LinkVerificationService
             }
         }
 
-        // Framework-managed static asset paths — not content routes, skip verification
-        if (pathOnly.StartsWith("/_content/", StringComparison.OrdinalIgnoreCase) ||
-            pathOnly.StartsWith("/_framework/", StringComparison.OrdinalIgnoreCase) ||
-            pathOnly.StartsWith("/_blazor/", StringComparison.OrdinalIgnoreCase))
+        // Framework-managed static asset paths — not content routes, skip verification. Accept
+        // both the root-absolute form (/_framework/blazor.web.js) and the base-relative form
+        // (_framework/blazor.web.js) a Blazor <base href> resolves — the standard blazor.web.js /
+        // blazor.webassembly.js script tags emit the latter, so a Blazor WebAssembly host would
+        // otherwise flag its own boot script on every page.
+        var frameworkPath = pathOnly.StartsWith('/') ? pathOnly : "/" + pathOnly;
+        if (frameworkPath.StartsWith("/_content/", StringComparison.OrdinalIgnoreCase) ||
+            frameworkPath.StartsWith("/_framework/", StringComparison.OrdinalIgnoreCase) ||
+            frameworkPath.StartsWith("/_blazor/", StringComparison.OrdinalIgnoreCase))
         {
             return new ValidLink(sourcePage, url);
         }

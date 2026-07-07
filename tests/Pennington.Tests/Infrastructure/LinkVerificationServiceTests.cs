@@ -490,6 +490,23 @@ public class LinkVerificationServiceTests
         (results[0] is ValidLink).ShouldBeTrue();
     }
 
+    [Fact]
+    public void RelativeFrameworkAsset_IsRecognizedAsValid()
+    {
+        // The standard Blazor boot script is a base-relative src (resolved by <base href>):
+        // `<script src="_framework/blazor.web.js">`. Without a leading slash it must still be
+        // treated as a framework asset, or a Blazor WebAssembly host flags its own boot script
+        // as a broken link on every page.
+        var service = new LinkVerificationService([], baseUrl: "/");
+        var source = MakeRoute("/playground");
+        var html = """<script src="_framework/blazor.web.js"></script>""";
+
+        var results = service.VerifyLinks(source, html);
+
+        results.Count.ShouldBe(1);
+        (results[0] is ValidLink).ShouldBeTrue();
+    }
+
     // --- Copied static assets are recognized as valid ---
 
     [Fact]
