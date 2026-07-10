@@ -11,6 +11,7 @@ using Pennington.Infrastructure;
 using Pennington.MonorailCss;
 using Pennington.SocialCards;
 using Pennington.TreeSitter;
+using Beck;
 using Pennington.Beck;
 using Pennington.Book;
 

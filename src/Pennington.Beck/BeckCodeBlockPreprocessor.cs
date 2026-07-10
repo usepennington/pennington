@@ -114,23 +114,8 @@ public sealed class BeckCodeBlockPreprocessor : ICodeBlockPreprocessor
         + WebUtility.HtmlEncode(yaml) + "</code></pre></div>";
 
     /// <summary>The host's base render options with the fence's animation flag applied.</summary>
-    private SvgRenderOptions OptionsFor(AnimationMode animation)
-    {
-        // Copies every host option except Animation (the per-fence override). When Beck grows a
-        // new SvgRenderOptions member, it must be added here or fences silently drop it.
-        var o = _options.RenderOptions;
-        return new SvgRenderOptions
-        {
-            Measurer = o.Measurer,
-            Font = o.Font,
-            Theme = o.Theme,
-            ThemeHooks = o.ThemeHooks,
-            Animation = animation,
-            TextLengthGuard = o.TextLengthGuard,
-            Style = o.Style,
-            Styles = o.Styles,
-        };
-    }
+    private SvgRenderOptions OptionsFor(AnimationMode animation) =>
+        _options.RenderOptions with { Animation = animation };
 
     /// <summary>
     /// Rewrites every document in <paramref name="yaml"/> so its <c>meta.style</c> is
