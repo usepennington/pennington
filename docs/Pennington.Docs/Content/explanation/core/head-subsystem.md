@@ -19,6 +19,26 @@ They stop being reasonable together. All of them target the same small region of
 
 The subsystem has four parts: a typed data model, the `IHeadContributor` extension point, a single rewriter that finalizes the head, and a `data-head` attribute that ties the server and client halves together.
 
+```beck
+type: architecture
+meta: { direction: TB }
+nodes:
+  - { id: pagec, title: Page-band contributors, subtitle: "Order 40 — per-page OpenGraph, title" }
+  - { id: sitec, title: Site-band contributors, subtitle: "Order 60 — canonical, alternates, defaults" }
+  - { id: authored, title: Page-authored markup, subtitle: "<HeadContent> · HeadOutlet" }
+  - { id: builder, title: HeadBuilder, subtitle: "keyed dedup — first add wins", accent: primary }
+  - { id: rewriter, title: HeadCompositionHtmlRewriter, subtitle: "in the shared AngleSharp pass" }
+  - { id: head, title: Document head, subtitle: "every element stamped data-head", kind: db }
+  - { id: client, title: SPA navigation script, kind: user }
+edges:
+  - { from: pagec, to: builder, label: runs first, note: "Lowest Order runs first — a page tag beats a site default at the same key" }
+  - { from: sitec, to: builder }
+  - { from: authored, to: rewriter, label: normalized, note: "Rendered page tags are pulled into the same model and win their keys" }
+  - { from: builder, to: rewriter }
+  - { from: rewriter, to: head, label: reconciled, note: "One finalization point, between the locale and base-URL rewriters" }
+  - { from: head, to: client, label: "data-head", note: "On soft navigation the client removes and re-clones every [data-head] element — a rule, not a list" }
+```
+
 ### The typed model
 
 Everything that can land in the head is a typed `HeadTag` — a union of `TitleTag`, `MetaNameTag`, `MetaPropertyTag`, `LinkTag`, `ScriptTag`, and a `RawTag` case for markup the engine does not model. Each tag that should appear at most once carries a stable `HeadTagKey`: `title`, `meta:prop:og:image`, `link:rel:canonical`, and so on. Repeatable tags — `hreflang` alternates, JSON-LD blocks, preloads, the Standard Site links — carry no key and always append.

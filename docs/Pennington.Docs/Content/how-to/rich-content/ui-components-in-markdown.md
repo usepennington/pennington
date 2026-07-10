@@ -2,7 +2,7 @@
 title: "Drop a Razor component into a markdown page"
 description: "Embed Pennington.UI components (and your own Razor components) inside a `.md` file through Mdazor-backed rendering."
 uid: how-to.rich-content.ui-components-in-markdown
-order: 3
+order: 4
 sectionLabel: "Rich Content"
 tags: [authoring, components, mdazor, razor]
 ---

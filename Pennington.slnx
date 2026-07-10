@@ -9,6 +9,7 @@
     <Project Path="src/Pennington.ApiMetadata.Reflection/Pennington.ApiMetadata.Reflection.csproj" />
     <Project Path="src/Pennington.TreeSitter/Pennington.TreeSitter.csproj" />
     <Project Path="src/Pennington.Book/Pennington.Book.csproj" />
+    <Project Path="src/Pennington.Beck/Pennington.Beck.csproj" />
     <Project Path="src/Pennington.TranslationAudit/Pennington.TranslationAudit.csproj" />
     <Project Path="src/Pennington.BlogSite/Pennington.BlogSite.csproj" />
     <Project Path="src/Pennington.Templates/Pennington.Templates.csproj" />

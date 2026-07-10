@@ -17,7 +17,7 @@ Pennington keeps one host. Dev mode is that host serving requests over Kestrel; 
 
 ```beck
 type: architecture
-meta: { animate: false, direction: TB }
+meta: { direction: TB }
 nodes:
   - { id: browser, title: Browser, kind: user }
   - { id: kestrel, title: Kestrel, subtitle: "dev serve" }
@@ -29,6 +29,24 @@ edges:
   - { from: kestrel, to: pipeline }
   - { from: crawler, to: pipeline, label: in-process }
   - { from: pipeline, to: output, label: build writes HTML }
+flow:
+  repeatDelay: 2
+  steps:
+    - narrate: "Dev serve: one request, one render"
+    - packet: { from: browser, to: kestrel, label: GET /foo }
+    - packet: { from: kestrel, to: pipeline }
+    - working: { node: pipeline }
+    - wait: 0.6
+    - idle: { node: pipeline }
+    - packet: { from: pipeline, to: kestrel, color: success }
+    - packet: { from: kestrel, to: browser, color: success, label: HTML }
+    - narrate: "The response goes back to the browser — nothing touches the output directory"
+    - wait: 0.5
+    - narrate: "Build: the crawler fires every discovered URL through the same pipeline"
+    - working: { node: pipeline }
+    - burst: { from: crawler, to: pipeline, count: 5, stagger: 0.15 }
+    - burst: { from: pipeline, to: output, count: 5, stagger: 0.15, color: success }
+    - idle: { node: pipeline }
 ```
 
 ## How it works

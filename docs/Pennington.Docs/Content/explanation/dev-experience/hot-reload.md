@@ -13,6 +13,23 @@ Content files — `.md` sources, front matter, images, assets tracked under a so
 
 The mechanism is a single chain: files change, cached services drop their state, a debounce window elapses, and the browser reloads.
 
+```beck
+type: sequence
+participants:
+  - { id: files, title: Content files, kind: db }
+  - { id: watcher, title: FileWatcher }
+  - { id: service, title: IFileWatchAware service, subtitle: "nav builder · xref map · search index" }
+  - { id: reload, title: LiveReloadServer }
+  - { id: browser, title: Browser, kind: user }
+messages:
+  - { from: files, to: watcher, label: change, note: "A save, create, delete, or rename lands in a watched ContentPath" }
+  - { from: watcher, to: service, label: OnFileChanged }
+  - { from: service, to: watcher, label: Recreate, reply: true, note: "The stale instance is dropped; the next request rebuilds it through normal constructor injection" }
+  - { from: watcher, to: reload, label: notify }
+  - { from: reload, to: reload, label: reset 300ms debounce, note: "Rapid saves keep resetting the timer — a burst of changes coalesces into one reload" }
+  - { from: reload, to: browser, label: "reload · /__pennington/reload", kind: async, note: "One WebSocket broadcast after 300ms of quiet" }
+```
+
 ### Watching content directories
 
 A service tells the engine which directories to watch by declaring `WatchScopes` — the public contract through which every file-reactive service registers its content roots. Creates, deletes, and renames count as changes, not just edits in place, so a new markdown file or a deleted asset reloads the same way a save does. The watcher behaves consistently across Windows and WSL, the two platforms most contributors run, so the dev loop feels the same on either.
