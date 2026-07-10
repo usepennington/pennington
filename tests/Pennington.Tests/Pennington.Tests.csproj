@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pennington\Pennington.csproj" />
     <ProjectReference Include="..\..\src\Pennington.ApiMetadata.Reflection\Pennington.ApiMetadata.Reflection.csproj" />
+    <ProjectReference Include="..\..\src\Pennington.Beck\Pennington.Beck.csproj" />
     <ProjectReference Include="..\..\src\Pennington.BlogSite\Pennington.BlogSite.csproj" />
     <ProjectReference Include="..\..\src\Pennington.MonorailCss\Pennington.MonorailCss.csproj" />
     <ProjectReference Include="..\..\src\Pennington.TranslationAudit\Pennington.TranslationAudit.csproj" />

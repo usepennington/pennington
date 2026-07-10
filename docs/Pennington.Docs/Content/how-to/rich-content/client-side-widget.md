@@ -2,7 +2,7 @@
 title: "Ship a custom client-side widget"
 description: "Add browser behavior to a static Pennington site by composing a server-rendered Mdazor component, your own script, and the head seam that loads a CDN library — built here as an image-gallery lightbox."
 uid: how-to.rich-content.client-side-widget
-order: 6
+order: 7
 sectionLabel: "Rich Content"
 tags: [client-side, javascript, mdazor, components, spa]
 ---

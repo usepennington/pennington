@@ -37,6 +37,39 @@ src/Pennington/FrontMatter/Capabilities.cs > IOrderable
 
 `NavigationBuilder` keys off the `IOrderable` interface itself, not a sentinel value in the `Order` property. A content type either implements the interface and participates in ordered navigation, or it does not; there is no "this page has no meaningful order" case to handle. The same applies to `ITaggable` (tag cloud participation), `ISectionable` (section-label breadcrumbs), `IRedirectable` (redirect-stub semantics), and `IStandardSiteDocument` (the AT Protocol record key for Standard Site syndication).
 
+The whole matrix fits in one view. The two shipped records implement different subsets — a doc page orders itself within its section, a blog post syndicates to Standard Site instead — and that difference is visible in the type declarations, not in runtime flags:
+
+```beck
+type: class
+meta: { direction: TB, spacing: { rank: 64, node: 20 }  }
+classes:
+  - id: ifm
+    name: IFrontMatter
+    stereotype: interface
+    accent: primary
+    fields: ["Title: string", "IsDraft = false", "Search = true", "Llms = true", "SearchOnly = false", "Uid = null", "Description = null", "Date = null"]
+  - { id: orderable, name: IOrderable, stereotype: interface, fields: ["Order: int"] }
+  - { id: taggable, name: ITaggable, stereotype: interface, fields: ["Tags: string[]"] }
+  - { id: sectionable, name: ISectionable, stereotype: interface, fields: ["SectionLabel: string?"] }
+  - { id: redirectable, name: IRedirectable, stereotype: interface, fields: ["RedirectUrl: string?"] }
+  - { id: standard, name: IStandardSiteDocument, stereotype: interface, fields: ["AtprotoRkey = null"] }
+  - { id: doc, name: DocSiteFrontMatter, stereotype: record, accent: info, rank: -1 }
+  - { id: blog, name: BlogSiteFrontMatter, stereotype: record, accent: info, rank: 1 }
+relations:
+  - { from: doc, to: ifm, kind: implements }
+  - { from: doc, to: taggable, kind: implements }
+  - { from: doc, to: sectionable, kind: implements }
+  - { from: doc, to: orderable, kind: implements }
+  - { from: doc, to: redirectable, kind: implements }
+  - { from: blog, to: ifm, kind: implements }
+  - { from: blog, to: taggable, kind: implements }
+  - { from: blog, to: sectionable, kind: implements }
+  - { from: blog, to: redirectable, kind: implements }
+  - { from: blog, to: standard, kind: implements }
+```
+
+Both records also implement `IHasStructuredData`, which belongs to the JSON-LD subsystem rather than this capability system and is omitted here.
+
 The rule of thumb is simple: if adoption is universal, the member lives on `IFrontMatter` with a sensible default. If adoption is selective, it lives on a capability interface so that pattern-matching on the interface remains meaningful.
 
 ### Custom front-matter records

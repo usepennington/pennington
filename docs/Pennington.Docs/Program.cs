@@ -11,6 +11,7 @@ using Pennington.Infrastructure;
 using Pennington.MonorailCss;
 using Pennington.SocialCards;
 using Pennington.TreeSitter;
+using Pennington.Beck;
 using Pennington.Book;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -57,10 +58,20 @@ builder.Services.AddDocSite(() => new DocSiteOptions
             return Task.FromResult<byte[]?>(card.ToBytes());
         },
     },
-    // Beck's diagram engine (an RCL static asset) injected into every page's <head> so ```beck
-    // fenced blocks hydrate into rendered diagrams client-side. Beck themes itself from the host
-    // CSS variables and follows the site's dark mode — no per-diagram configuration.
-    AdditionalHtmlHeadContent = Beck.BeckAssets.ScriptTag,
+    // ```beck fences render to SVG at build time (AddPenningtonBeck below) — no client engine.
+    // The emitted SVG keys dark mode off [data-theme] on an ancestor, but the DocSite theme
+    // toggle flips a `dark` class instead, so mirror the class onto the attribute (initial
+    // paint + every toggle) to keep diagrams in step with the site theme.
+    AdditionalHtmlHeadContent = """
+        <script>
+        (() => {
+            const root = document.documentElement;
+            const sync = () => root.setAttribute('data-theme', root.classList.contains('dark') ? 'dark' : 'light');
+            sync();
+            new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['class'] });
+        })();
+        </script>
+        """,
     ColorScheme = new GrapeColorScheme(),
     SyntaxTheme = new SyntaxTheme
     {
@@ -110,6 +121,28 @@ builder.Services.AddDocSite(() => new DocSiteOptions
         html { scroll-padding-top: 5rem; }
         body { font-feature-settings: "ss01", "cv11"; }
         .font-display { letter-spacing: -0.012em; }
+        /* A rendered ```beck fence becomes <div class="beck-embed"><svg …>; frame it as a
+           preview card. The SVG themes itself from [data-theme] + the --color-* ramps. */
+        .beck-embed {
+            border: 1px solid var(--color-base-200);
+            border-radius: 12px;
+            background-color: var(--color-base-50);
+            padding: 26px 18px;
+            margin: 0 0 24px;
+            display: flex;
+            min-height: 120px;
+            max-width: 100%;
+            overflow: auto;
+        }
+        .dark .beck-embed {
+            border-color: var(--color-base-800);
+            background-color: var(--color-base-900);
+        }
+        /* Auto margins center the SVG but collapse to the top edge when it's taller than a
+           constrained frame, so the diagram title stays scrollable. */
+        .beck-embed > .beck-svg { max-width: 100%; height: auto; margin: auto; }
+        .beck-embed--error { border-color: var(--color-red-400, #f87171); }
+        .beck-embed--error pre { margin: 0; width: 100%; overflow: auto; font-family: var(--font-mono, monospace); font-size: 12px; }
     """,
     Areas =
     [
@@ -136,6 +169,15 @@ builder.Services.AddDocSite(() => new DocSiteOptions
 builder.Services.AddTreeSitter(treeSitter =>
 {
     treeSitter.ContentRoot = "../..";
+});
+
+// ```beck fences render server-side to self-animating inline SVG via the pure-C# Beck engine
+// (0.4.0 dropped the client JS integration). The SVG's --beck-* tokens fall back to the site's
+// --color-* palette, so diagrams adopt the live brand colors; ContentRoot matches tree-sitter
+// so `beck:symbol` file embeds resolve repo-root-relative like `:symbol` source embeds.
+builder.Services.AddPenningtonBeck(beck =>
+{
+    beck.ContentRoot = "../..";
 });
 
 // Reflection-backed API metadata: read the built Pennington.* assemblies and their companion

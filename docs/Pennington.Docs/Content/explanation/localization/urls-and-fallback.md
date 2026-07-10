@@ -31,6 +31,31 @@ The second is *runtime* fallback, and it only runs when the first attempt finds 
 
 Either way — flag read off a precomputed route, or set after a runtime miss — the resolver records `RequestedLocale` so the view layer can render a "this page has not been translated yet" notice via `FallbackNotice`. The resolver never rewrites URLs — the URL the reader typed stays in the address bar, only the content source changes.
 
+The two flavors side by side — same request, different point of decision:
+
+```beck
+type: sequence
+participants:
+  - { id: reader, title: Reader, kind: user }
+  - { id: mw, title: LocaleDetectionMiddleware }
+  - { id: resolver, title: DocSiteContentResolver }
+  - { id: routes, title: Content services, subtitle: "route table", kind: db }
+messages:
+  - { section: "Startup-precomputed fallback (the common path)", accent: info }
+  - { from: reader, to: mw, label: GET /fr/guides/intro }
+  - { from: mw, to: resolver, label: resolve, note: "The prefix sets LocaleContext; the resolver still sees the full URL" }
+  - { from: resolver, to: routes, label: exact-URL match }
+  - { from: routes, to: resolver, label: "route · IsFallback: true", reply: true, note: "MarkdownContentService registered this route at startup for every missing translation" }
+  - { from: resolver, to: reader, label: English body + FallbackNotice }
+  - { section: "Runtime fallback (no route at all)", accent: warn }
+  - { from: resolver, to: routes, label: exact-URL match }
+  - { from: routes, to: resolver, label: no match, reply: true, color: warn }
+  - { from: resolver, to: resolver, label: StripLocalePrefix, note: "Pure URL math — /fr/guides/intro becomes guides/intro" }
+  - { from: resolver, to: routes, label: resolve default-locale source }
+  - { from: routes, to: resolver, label: route, reply: true }
+  - { from: resolver, to: reader, label: English body + FallbackNotice, note: "This time the resolver sets IsFallback itself" }
+```
+
 ### Fallback: default locale stands in
 
 There is exactly one fallback step: the default locale. A missing `/es/guides/intro` falls through to `guides/intro` — the unprefixed default-locale source — not to `/fr/guides/intro`. There is no cascade across non-default locales, no per-locale fallback chain, and no "similar language" matcher. The reason is that a cascade hides coverage gaps. Readers end up seeing a page in a language they did not request and cannot explain why, and translators cannot tell which pages still need coverage because every miss silently inherits from a neighbor. A single fallback step keeps the rule easy to reason about and makes missing translations easy to find.

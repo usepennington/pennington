@@ -32,23 +32,23 @@ A `DiscoveredItem` pairs a `ContentRoute` with a second union, `ContentSource`, 
 Each stage in the pipeline works by replacing the incoming union case with the next one. `ParseAsync` pulls a stream of `ContentItem` values and, for each `DiscoveredItem`, hands its content to the registered `IContentParser`. When the parser succeeds, the `DiscoveredItem` is replaced by a `ParsedItem` carrying the resolved front matter and text. `RenderAsync` does the same thing one level further: each `ParsedItem` is handed to the `IContentRenderer`, and on success a `RenderedItem` takes its place, now carrying the HTML output and a navigation outline. The final stage, `GenerateAsync`, pattern-matches on the full union to write output files and accumulate the build report.
 
 ```beck
-type: state
-meta: { direction: TB }
-transitions:
-  - { from: "[*]", to: discovered }
-  - { from: discovered, to: parsed, label: parse }
-  - { from: parsed, to: rendered, label: render }
-  - { from: discovered, to: failed, label: parse throws }
-  - { from: parsed, to: failed, label: render throws }
-  - { from: rendered, to: "[*]", label: emit }
-  - { from: failed, to: "[*]", label: build report }
-  - { from: parsed, to: parsed, label: pass through }
-  - { from: rendered, to: rendered, label: pass through }
-states:
-  - { id: discovered, title: DiscoveredItem, accent: info }
-  - { id: parsed, title: ParsedItem, accent: info }
-  - { id: rendered, title: RenderedItem, accent: success }
-  - { id: failed, title: FailedItem, accent: danger }
+type: sequence
+participants:
+  - { id: pipeline, title: ContentPipeline }
+  - { id: parser, title: IContentParser }
+  - { id: renderer, title: IContentRenderer }
+  - { id: generate, title: GenerateAsync, subtitle: "output · build report", kind: db }
+messages:
+  - { section: One item succeeds, accent: info }
+  - { from: pipeline, to: parser, label: DiscoveredItem, note: "ParseAsync hands each discovered item to the parser" }
+  - { from: parser, to: pipeline, label: ParsedItem, reply: true, note: "The case is replaced, not mutated — front matter and text take the source's place" }
+  - { from: pipeline, to: renderer, label: ParsedItem }
+  - { from: renderer, to: pipeline, label: RenderedItem, reply: true }
+  - { from: pipeline, to: generate, label: RenderedItem, color: success, note: "The exhaustive match writes the HTML and outline to disk" }
+  - { section: Another item fails to parse, accent: danger }
+  - { from: pipeline, to: parser, label: DiscoveredItem }
+  - { from: parser, to: pipeline, label: FailedItem, reply: true, color: danger, note: "The parser throws; the pipeline boundary demotes the exception to a data case" }
+  - { from: pipeline, to: generate, label: FailedItem, color: danger, note: "The failed item rides the same stream — it becomes a build-report entry, not a crash" }
 ```
 
 The replacement invariant is what gives the pipeline its composability. A `RenderedItem` flowing into `ParseAsync` is already past that stage, so `ParseAsync` passes it through unchanged. A `ParsedItem` flowing into `RenderAsync` gets rendered; a `RenderedItem` in the same stream passes through. This means you can hand the pipeline a partially-processed stream — one that mixes discovered and already-parsed items — and it will do the right thing for each. There is no need to coordinate which stage ran last; the case type carries that information.
