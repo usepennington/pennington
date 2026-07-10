@@ -27,7 +27,8 @@ namespace Pennington.Beck;
 /// before rendering. Flags combine with the file-embed form (<c>```beck:symbol,static</c>).
 ///
 /// <para>
-/// The emitted SVG needs no wiring: it keys dark mode off the ancestor <c>[data-theme]</c>
+/// The emitted SVG needs no wiring: it keys dark mode off the host's markers (the ancestor
+/// <c>[data-theme]</c> by default; configurable via <c>SvgRenderOptions.ThemeHooks</c>)
 /// and its <c>--beck-*</c> tokens fall back to the host's <c>--color-*</c> palette, so each
 /// diagram adopts the live site colors. Each render lands in a
 /// <c>&lt;div class="beck-embed"&gt;</c> (<c>beck-embed--error</c> on failure) for the host
@@ -115,12 +116,15 @@ public sealed class BeckCodeBlockPreprocessor : ICodeBlockPreprocessor
     /// <summary>The host's base render options with the fence's animation flag applied.</summary>
     private SvgRenderOptions OptionsFor(AnimationMode animation)
     {
+        // Copies every host option except Animation (the per-fence override). When Beck grows a
+        // new SvgRenderOptions member, it must be added here or fences silently drop it.
         var o = _options.RenderOptions;
         return new SvgRenderOptions
         {
             Measurer = o.Measurer,
             Font = o.Font,
             Theme = o.Theme,
+            ThemeHooks = o.ThemeHooks,
             Animation = animation,
             TextLengthGuard = o.TextLengthGuard,
             Style = o.Style,
