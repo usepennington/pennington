@@ -101,6 +101,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 wildcard = true;
                 break;
             }
+
             foreach (var route in routes.Value)
             {
                 (affected ??= []).Add(Normalize(route.CanonicalPath.Value));
@@ -127,11 +128,13 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 }
             }
         }
+
         return FileWatchResponse.Refreshed;
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<RenderedPage> GetPagesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<RenderedPage> GetPagesAsync(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ThrowIfReentrant();
         await _seededLazy;
@@ -142,6 +145,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
         {
             snapshot = _pages;
         }
+
         foreach (var page in snapshot)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -164,6 +168,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
             snapshot = _pages;
             index = _routeIndex;
         }
+
         return index.TryGetValue(key, out var i) ? snapshot[i] : null;
     }
 
@@ -180,6 +185,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
             _pages = pages;
             _routeIndex = routeIndex;
         }
+
         return true;
     }
 
@@ -191,6 +197,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
         {
             hasWork = _staleAll || _staleRoutes.Count > 0;
         }
+
         if (!hasWork) return;
 
         await _refreshGate.WaitAsync(cancellationToken);
@@ -209,12 +216,14 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 {
                     return;
                 }
+
                 // Snapshot the current cache so the build can reuse unchanged entries.
                 var builder = ImmutableDictionary.CreateBuilder<string, RenderedPage>(StringComparer.OrdinalIgnoreCase);
                 foreach (var (key, idx) in _routeIndex)
                 {
                     builder[key] = _pages[idx];
                 }
+
                 reusable = builder.ToImmutable();
             }
 
@@ -295,9 +304,11 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 {
                     continue;
                 }
+
                 _parsedByPath[key] = await _enrichment.EnrichAsync(parsed);
                 seen.Add(key);
             }
+
             foreach (var key in staleRoutes)
             {
                 if (!seen.Contains(key))
@@ -306,6 +317,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 }
             }
         }
+
         var parseElapsed = Stopwatch.GetElapsedTime(parseStart);
         var parsedByPath = _parsedByPath;
 
@@ -326,6 +338,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 {
                     continue;
                 }
+
                 _sourceByPath[key] = discovered.Source;
             }
         }
@@ -339,6 +352,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 {
                     continue;
                 }
+
                 // First fresh write this pass replaces the stale value; later collisions keep an
                 // already-written LlmsOnlySource but otherwise let the last non-llms source win.
                 if (seen.Add(key) || _sourceByPath[key] is not LlmsOnlySource)
@@ -346,6 +360,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                     _sourceByPath[key] = discovered.Source;
                 }
             }
+
             foreach (var key in staleRoutes)
             {
                 if (!seen.Contains(key))
@@ -354,6 +369,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 }
             }
         }
+
         var discoverElapsed = Stopwatch.GetElapsedTime(discoverStart);
         var sourceByPath = _sourceByPath;
 
@@ -412,8 +428,8 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 Toc: toc,
                 Origin: new EndpointOrigin(url),
                 Html: "",
-                Content: null,
-                Sections: new Lazy<IReadOnlyList<HeadingSection>>(() => []));
+                HasContent: false,
+                Sections: []);
         }
 
         var renderElapsed = Stopwatch.GetElapsedTime(renderStart);
@@ -442,6 +458,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                     // Defensive: deduplicate if two TOC items end up at the same canonical path.
                     continue;
                 }
+
                 indexBuilder[key] = pagesBuilder.Count;
                 pagesBuilder.Add(page);
             }
@@ -466,17 +483,19 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 var rendered = await RenderInProcessAsync(_renderer, _xrefResolver, llmsParsed);
                 if (rendered is null)
                 {
-                    _logger.LogWarning("SiteProjection: failed to render llms-only item {Path}", toc.Route.CanonicalPath.Value);
+                    _logger.LogWarning("SiteProjection: failed to render llms-only item {Path}",
+                        toc.Route.CanonicalPath.Value);
                     return null;
                 }
+
                 var (html, element) = rendered.Value;
                 return new RenderedPage(
                     Route: toc.Route,
                     Toc: toc,
                     Origin: new MarkdownOrigin(llmsParsed),
                     Html: html,
-                    Content: element,
-                    Sections: BuildSectionsLazy(_extractor, element));
+                    HasContent: true,
+                    Sections: ExtractSections(_extractor, element));
             }
 
             var fetched = await _fetcher.FetchContentAsync(toc.Route.CanonicalPath.Value, _options.ContentSelector, ct);
@@ -496,8 +515,8 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                 Toc: toc,
                 Origin: origin,
                 Html: fetched.OuterHtml,
-                Content: fetched,
-                Sections: BuildSectionsLazy(_extractor, fetched));
+                HasContent: true,
+                Sections: ExtractSections(_extractor, fetched));
         }
         catch (Exception ex) when (ex is not SelfFetchUnavailableException)
         {
@@ -511,9 +530,11 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
         // the search index / llms.txt would silently ship with zero pages.
     }
 
-    private static Lazy<IReadOnlyList<HeadingSection>> BuildSectionsLazy(
+    // Eager, not lazy: the element's owning document is released the moment RenderOneAsync
+    // returns, so anything derived from the DOM has to be captured as value data here.
+    private static IReadOnlyList<HeadingSection> ExtractSections(
         HeadingSectionExtractor extractor, IElement element)
-        => new(() => extractor.Extract(element, excludeCodeBlocks: true));
+        => extractor.Extract(element, excludeCodeBlocks: true);
 
     private static async Task<(string Html, IElement Element)?> RenderInProcessAsync(
         IContentRenderer renderer, XrefResolvingService xrefResolver, ParsedItem parsed)
@@ -545,7 +566,8 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
     /// endpoints whose URL contains a route parameter — the projection needs a
     /// concrete URL, not a pattern.
     /// </summary>
-    private static IEnumerable<(ContentTocItem Toc, string Url)> CollectEndpointEntries(EndpointDataSource endpointDataSource)
+    private static IEnumerable<(ContentTocItem Toc, string Url)> CollectEndpointEntries(
+        EndpointDataSource endpointDataSource)
     {
         foreach (var endpoint in endpointDataSource.Endpoints)
         {
@@ -570,8 +592,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
             var canonicalPath = new UrlPath(url);
             var contentRoute = new ContentRoute
             {
-                CanonicalPath = canonicalPath,
-                OutputFile = new FilePath(url.TrimStart('/')),
+                CanonicalPath = canonicalPath, OutputFile = new FilePath(url.TrimStart('/')),
             };
             var hierarchyParts = url.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
             yield return (
@@ -581,10 +602,7 @@ public sealed class SiteProjection : IFileWatchAware, ISiteProjection
                     Order: int.MaxValue,
                     HierarchyParts: hierarchyParts,
                     SectionLabel: null,
-                    Locale: null)
-                {
-                    Description = meta.Description,
-                },
+                    Locale: null) { Description = meta.Description, },
                 url);
         }
     }

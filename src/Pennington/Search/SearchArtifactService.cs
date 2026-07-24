@@ -36,8 +36,8 @@ public sealed class SearchArtifactService : IFileWatchAware
         LocalizationOptions localization,
         ContentRecordRegistry recordRegistry)
     {
-        _filesLazy = new AsyncLazy<IReadOnlyDictionary<string, byte[]>>(
-            () => BuildAllAsync(projection, corpusBuilder, indexBuilder, localization, recordRegistry));
+        _filesLazy = new AsyncLazy<IReadOnlyDictionary<string, byte[]>>(() =>
+            BuildAllAsync(projection, corpusBuilder, indexBuilder, localization, recordRegistry));
     }
 
     /// <summary>Returns every artifact keyed by its relative output path (e.g. <c>search/en/index.json</c>).</summary>
@@ -77,7 +77,7 @@ public sealed class SearchArtifactService : IFileWatchAware
         {
             // Endpoint entries and llms-only pages have no HTML body to index. The projection
             // already produced empty content for them; skip rather than emitting blank records.
-            if (page.Toc.ExcludeFromSearch || page.Content is null)
+            if (page.Toc.ExcludeFromSearch || !page.HasContent)
             {
                 continue;
             }
@@ -95,7 +95,7 @@ public sealed class SearchArtifactService : IFileWatchAware
 
             // One record per heading section (plus a page-lead record) so results are
             // heading-level and deep-link to anchors.
-            foreach (var section in page.Sections.Value)
+            foreach (var section in page.Sections)
             {
                 list.Add(corpusBuilder.BuildSection(page.Toc, section, record?.Metadata));
             }

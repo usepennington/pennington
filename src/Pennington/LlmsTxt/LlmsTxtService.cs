@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 using System.IO.Abstractions;
 using System.Security.Cryptography;
 using System.Text;
-using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
 using Content;
 using FrontMatter;
 using Infrastructure;
@@ -47,12 +47,11 @@ public sealed class LlmsTxtService : IFileWatchAware
         NavigationBuilder navigationBuilder,
         ILogger<LlmsTxtService> logger)
     {
-        _dataLazy = new AsyncLazy<LlmsTxtData>(
-            () => BuildAsync(
-                projection, contentServices, subtrees,
-                fileSystem, hostingEnvironment,
-                pennOptions, llmsTxtOptions, canonicalBase, navigationBuilder,
-                logger));
+        _dataLazy = new AsyncLazy<LlmsTxtData>(() => BuildAsync(
+            projection, contentServices, subtrees,
+            fileSystem, hostingEnvironment,
+            pennOptions, llmsTxtOptions, canonicalBase, navigationBuilder,
+            logger));
     }
 
     /// <summary>Returns the generated llms.txt index content.</summary>
@@ -122,7 +121,8 @@ public sealed class LlmsTxtService : IFileWatchAware
             RewriteHref: BuildLinkRewriter(linkablePaths, canonicalBase),
             Nodes: new List<RenderedNode>(),
             MarkdownFiles: ImmutableList.CreateBuilder<MarkdownFile>(),
-            FullContent: llmsTxtOptions.GenerateFullFile ? new StringBuilder() : null);
+            FullContent: llmsTxtOptions.GenerateFullFile ? new StringBuilder() : null,
+            Parser: new HtmlParser());
 
         await CollectAsync(tree, depth: 0, ctx);
         await CollectAsync(subtreeOnlyTree, depth: 0, ctx);
@@ -147,7 +147,8 @@ public sealed class LlmsTxtService : IFileWatchAware
             }
 
             var (entryCount, totalTokens) = SummarizeSubtree(ctx.Nodes, subtree, subtrees);
-            var canonicalSelf = canonicalBase.Combine(new UrlPath($"/{subtree.RoutePrefix.TrimStart('/')}llms.txt")).Value;
+            var canonicalSelf = canonicalBase.Combine(new UrlPath($"/{subtree.RoutePrefix.TrimStart('/')}llms.txt"))
+                .Value;
             sb.AppendLine($"canonical: {canonicalSelf}");
             sb.AppendLine($"entries: {entryCount}");
             sb.AppendLine($"tokens: ~{FormatTokenEstimate(totalTokens)}");
@@ -210,10 +211,12 @@ public sealed class LlmsTxtService : IFileWatchAware
                 return s;
             }
         }
+
         return null;
     }
 
-    private static void AppendFrontDoorPreamble(StringBuilder sb, string? userHeader, PenningtonOptions pennOptions, CanonicalBaseUrl canonicalBase)
+    private static void AppendFrontDoorPreamble(StringBuilder sb, string? userHeader, PenningtonOptions pennOptions,
+        CanonicalBaseUrl canonicalBase)
     {
         if (userHeader is not null)
         {
@@ -243,7 +246,8 @@ public sealed class LlmsTxtService : IFileWatchAware
         sb.AppendLine();
     }
 
-    private static void AppendMapBlock(StringBuilder sb, ImmutableList<LlmsSubtree> subtrees, List<RenderedNode> renderedNodes, CanonicalBaseUrl canonicalBase)
+    private static void AppendMapBlock(StringBuilder sb, ImmutableList<LlmsSubtree> subtrees,
+        List<RenderedNode> renderedNodes, CanonicalBaseUrl canonicalBase)
     {
         if (subtrees.Count == 0)
         {
@@ -263,11 +267,13 @@ public sealed class LlmsTxtService : IFileWatchAware
             var desc = string.IsNullOrWhiteSpace(s.Description) ? "" : $" — {s.Description}";
             sb.AppendLine($"- [{s.Title}]({url}) ({entryLabel}, ~{tokenLabel} tokens){desc}");
         }
+
         sb.AppendLine();
     }
 
     /// <summary>Counts entries and sums token estimates for leaves whose nearest matching subtree is <paramref name="target"/>.</summary>
-    private static (int Count, int Tokens) SummarizeSubtree(List<RenderedNode> renderedNodes, LlmsSubtree target, ImmutableList<LlmsSubtree> allSubtrees)
+    private static (int Count, int Tokens) SummarizeSubtree(List<RenderedNode> renderedNodes, LlmsSubtree target,
+        ImmutableList<LlmsSubtree> allSubtrees)
     {
         var count = 0;
         var tokens = 0;
@@ -279,6 +285,7 @@ public sealed class LlmsTxtService : IFileWatchAware
                 tokens += leaf.Tokens;
             }
         }
+
         return (count, tokens);
     }
 
@@ -290,6 +297,7 @@ public sealed class LlmsTxtService : IFileWatchAware
             var thousands = tokens / 1000.0;
             return thousands >= 10 ? $"{(int)thousands}k" : $"{thousands:0.#}k";
         }
+
         return tokens.ToString();
     }
 
@@ -324,7 +332,7 @@ public sealed class LlmsTxtService : IFileWatchAware
                 continue;
             }
 
-            if (page.Content is null)
+            if (!page.HasContent)
             {
                 continue;
             }
@@ -337,7 +345,16 @@ public sealed class LlmsTxtService : IFileWatchAware
                 continue;
             }
 
-            var markdown = HtmlToMarkdownConverter.Convert(page.Content, ctx.RewriteHref).Trim();
+            // The projection retains only Html, so re-parse here. The document is local to this
+            // iteration and collectable straight after, which keeps peak cost proportional to
+            // concurrency rather than to corpus size.
+            var content = ctx.Parser.ParseDocument(page.Html).Body;
+            if (content is null)
+            {
+                continue;
+            }
+
+            var markdown = HtmlToMarkdownConverter.Convert(content, ctx.RewriteHref).Trim();
             if (string.IsNullOrWhiteSpace(markdown))
             {
                 continue;
@@ -353,7 +370,8 @@ public sealed class LlmsTxtService : IFileWatchAware
             var linkUrl = BuildCoLocatedMarkdownUrl(ctx.CanonicalBase, key);
             var description = frontMatter?.Description ?? page.Toc.Description;
             var derived = page.Origin?.Value is MarkdownOrigin md2 ? md2.Parsed.Derived : null;
-            var sidecarHeader = BuildSidecarHeader(item, frontMatter, description, ctx.CanonicalBase, linkUrl, rendition, derived);
+            var sidecarHeader = BuildSidecarHeader(item, frontMatter, description, ctx.CanonicalBase, linkUrl,
+                rendition, derived);
             var sidecarContent = sidecarHeader + body;
 
             ctx.MarkdownFiles.Add(new MarkdownFile(new FilePath(mdPath), Encoding.UTF8.GetBytes(sidecarContent)));
@@ -407,6 +425,7 @@ public sealed class LlmsTxtService : IFileWatchAware
                         sb.AppendLine();
                         anyLeafEmittedSinceFlush = false;
                     }
+
                     break;
 
                 case LeafNode leaf when include(leaf):
@@ -418,6 +437,7 @@ public sealed class LlmsTxtService : IFileWatchAware
                         sb.AppendLine($"{new string('#', level)} {s.Title}");
                         sb.AppendLine();
                     }
+
                     pendingSections.Clear();
                     var desc = leaf.Description is { Length: > 0 } d ? $": {d}" : "";
                     sb.AppendLine($"- [{leaf.Title}]({leaf.SidecarUrl}){desc}");
@@ -448,6 +468,7 @@ public sealed class LlmsTxtService : IFileWatchAware
         {
             sb.AppendLine($"description: {YamlScalar(description)}");
         }
+
         // URLs and hashes contain `:` but never `: ` (colon-space) or whitespace, so they
         // parse correctly as bare YAML scalars. Bare emission keeps them readable.
         sb.AppendLine($"canonical_url: {canonicalBase.Combine(new UrlPath(item.Route.CanonicalPath.Value)).Value}");
@@ -487,16 +508,19 @@ public sealed class LlmsTxtService : IFileWatchAware
         {
             return "\"\"";
         }
+
         // Conservative: quote anything that isn't plain printable text to avoid YAML edge cases.
         var needsQuote = false;
         foreach (var c in s)
         {
-            if (c is ':' or '#' or '\n' or '\r' or '\t' or '"' or '\'' or '\\' or '{' or '}' or '[' or ']' or ',' or '&' or '*' or '!' or '|' or '>' or '%' or '@' or '`')
+            if (c is ':' or '#' or '\n' or '\r' or '\t' or '"' or '\'' or '\\' or '{' or '}' or '[' or ']' or ',' or '&'
+                or '*' or '!' or '|' or '>' or '%' or '@' or '`')
             {
                 needsQuote = true;
                 break;
             }
         }
+
         if (!needsQuote && (s.StartsWith(' ') || s.EndsWith(' ')))
         {
             needsQuote = true;
@@ -589,7 +613,8 @@ public sealed class LlmsTxtService : IFileWatchAware
         IWebHostEnvironment hostingEnvironment,
         PenningtonOptions pennOptions)
     {
-        var contentRoot = FilePath.ResolveAgainstRoot(pennOptions.ContentRootPath.Value, hostingEnvironment.ContentRootPath);
+        var contentRoot =
+            FilePath.ResolveAgainstRoot(pennOptions.ContentRootPath.Value, hostingEnvironment.ContentRootPath);
 
         var headerPath = fileSystem.Path.Combine(contentRoot, "llms-header.txt");
         if (!fileSystem.File.Exists(headerPath))
@@ -615,7 +640,9 @@ public sealed class LlmsTxtService : IFileWatchAware
     public record MarkdownFile(FilePath OutputPath, byte[] Content);
 
     private abstract record RenderedNode;
+
     private sealed record SectionNode(int Depth, string Title) : RenderedNode;
+
     private sealed record LeafNode(
         string Title,
         string CanonicalPath,
@@ -632,5 +659,6 @@ public sealed class LlmsTxtService : IFileWatchAware
         Func<string, string> RewriteHref,
         List<RenderedNode> Nodes,
         ImmutableList<MarkdownFile>.Builder MarkdownFiles,
-        StringBuilder? FullContent);
+        StringBuilder? FullContent,
+        HtmlParser Parser);
 }

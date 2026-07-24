@@ -53,15 +53,15 @@ public class SiteProjectionTests
         only.Toc.Title.ShouldBe("Agent Context");
         only.Toc.Description.ShouldBe("Build context for agents");
         only.Html.ShouldBe("");
-        only.Content.ShouldBeNull();
+        only.HasContent.ShouldBeFalse();
 
         // Endpoint entries route to the user-defined URL — no fetch happens, so the
         // origin carries the DirectUrl the projection's downstream consumers point at.
-        only.Origin.ShouldNotBeNull().Value.ShouldBeOfType<EndpointOrigin>().DirectUrl.ShouldBe("/_llms/agent-context.md");
+        only.Origin.ShouldNotBeNull().Value.ShouldBeOfType<EndpointOrigin>().DirectUrl
+            .ShouldBe("/_llms/agent-context.md");
 
-        // Lazy sections for endpoint entries materialize to an empty list rather than
-        // throwing on null content.
-        only.Sections.Value.ShouldBeEmpty();
+        // Endpoint entries carry an empty section list rather than throwing on absent content.
+        only.Sections.ShouldBeEmpty();
     }
 
     [Fact]
@@ -89,7 +89,8 @@ public class SiteProjectionTests
             new LlmsTxtEntryMetadata("Agent Context"));
         var projection = CreateProjection(endpointDataSource: new StubEndpointDataSource(endpoint));
 
-        var page = await projection.GetPageAsync(new UrlPath("/_llms/agent-context.md"), TestContext.Current.CancellationToken);
+        var page = await projection.GetPageAsync(new UrlPath("/_llms/agent-context.md"),
+            TestContext.Current.CancellationToken);
 
         page.ShouldNotBeNull();
         page.Toc.Title.ShouldBe("Agent Context");
@@ -208,8 +209,8 @@ public class SiteProjectionTests
         var projection = CreateProjection();
         using var scope = CorpusFetchScope.EnterMaterialization();
 
-        var ex = await Should.ThrowAsync<InvalidOperationException>(
-            () => projection.GetPageAsync(new UrlPath("/page/"), TestContext.Current.CancellationToken));
+        var ex = await Should.ThrowAsync<InvalidOperationException>(() =>
+            projection.GetPageAsync(new UrlPath("/page/"), TestContext.Current.CancellationToken));
 
         ex.Message.ShouldContain("self-deadlock");
     }
@@ -242,7 +243,8 @@ public class SiteProjectionTests
             enrichment: new MetadataEnrichmentService([]),
             renderer: renderer ?? new StubRenderer(),
             xrefResolver: new XrefResolvingService(new XrefResolver([])),
-            fetcher: new RenderedHtmlFetcher(dispatcher ?? new StubDispatcher(), NullLogger<RenderedHtmlFetcher>.Instance),
+            fetcher: new RenderedHtmlFetcher(dispatcher ?? new StubDispatcher(),
+                NullLogger<RenderedHtmlFetcher>.Instance),
             extractor: new HeadingSectionExtractor(),
             options: new SiteProjectionOptions(),
             endpointDataSource: endpointDataSource ?? new StubEndpointDataSource(),
@@ -281,7 +283,8 @@ public class SiteProjectionTests
 
         private sealed class StubHandler : HttpMessageHandler
         {
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+                CancellationToken cancellationToken)
                 => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
         }
     }
@@ -306,7 +309,8 @@ public class SiteProjectionTests
 
         private sealed class OkHandler : HttpMessageHandler
         {
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+                CancellationToken cancellationToken)
                 => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
                 {
                     Content = new StringContent(
@@ -343,7 +347,8 @@ public class SiteProjectionTests
 
         private sealed class Handler(string html) : HttpMessageHandler
         {
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+                CancellationToken cancellationToken)
                 => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
                 {
                     Content = new StringContent(html, System.Text.Encoding.UTF8, "text/html"),
@@ -353,7 +358,8 @@ public class SiteProjectionTests
 
     // A service that claims a single route with one source, one indexable entry, and an optional
     // parsed body — enough to stage a same-route collision between two services in the projection.
-    private sealed class CollidingContentService(ContentSource source, ContentTocItem toc, ParsedItem? parsed) : IContentService
+    private sealed class CollidingContentService(ContentSource source, ContentTocItem toc, ParsedItem? parsed)
+        : IContentService
     {
         public async IAsyncEnumerable<DiscoveredItem> DiscoverAsync()
         {
@@ -367,6 +373,7 @@ public class SiteProjectionTests
             {
                 yield return parsed;
             }
+
             await Task.CompletedTask;
         }
 
@@ -389,8 +396,7 @@ public class SiteProjectionTests
     {
         private static readonly ContentRoute Route = new()
         {
-            CanonicalPath = new UrlPath("/page/"),
-            OutputFile = new FilePath("page/index.html"),
+            CanonicalPath = new UrlPath("/page/"), OutputFile = new FilePath("page/index.html"),
         };
 
         public IAsyncEnumerable<DiscoveredItem> DiscoverAsync() => AsyncEnumerable.Empty<DiscoveredItem>();
