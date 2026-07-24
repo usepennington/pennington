@@ -38,7 +38,10 @@ public sealed class BookArtifactService : IFileWatchAware
     private readonly ILogger<BookArtifactService> _logger;
 
     private readonly AsyncLazy<ProjectionData> _projectionLazy;
-    private readonly ConcurrentDictionary<string, AsyncLazy<ComposedBook>> _composed = new(StringComparer.OrdinalIgnoreCase);
+
+    private readonly ConcurrentDictionary<string, AsyncLazy<ComposedBook>> _composed =
+        new(StringComparer.OrdinalIgnoreCase);
+
     private readonly ConcurrentDictionary<string, AsyncLazy<byte[]>> _pdfs = new(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
@@ -104,7 +107,8 @@ public sealed class BookArtifactService : IFileWatchAware
     public async Task<byte[]?> GetPdfAsync(string pdfPath)
     {
         var key = pdfPath.Trim('/');
-        var artifact = EnumerateArtifacts().FirstOrDefault(a => a.PdfPath.Equals(key, StringComparison.OrdinalIgnoreCase));
+        var artifact = EnumerateArtifacts()
+            .FirstOrDefault(a => a.PdfPath.Equals(key, StringComparison.OrdinalIgnoreCase));
         if (artifact is null)
         {
             return null;
@@ -139,7 +143,8 @@ public sealed class BookArtifactService : IFileWatchAware
     private async Task<ComposedBook> ComposeAsync(BookArtifact artifact)
     {
         var data = await _projectionLazy;
-        var scoped = BookScoping.ScopeToc(data.TocItems, artifact.Book.NormalizedRoutePrefix, _localization, artifact.Locale);
+        var scoped = BookScoping.ScopeToc(data.TocItems, artifact.Book.NormalizedRoutePrefix, _localization,
+            artifact.Locale);
         var tree = await _navigationBuilder.BuildTreeAsync(scoped, currentPath: null, locale: artifact.Locale);
 
         // Version auto-detection lives here (not in the composer) so composer tests stay
@@ -164,7 +169,7 @@ public sealed class BookArtifactService : IFileWatchAware
         await foreach (var page in _projection.GetPagesAsync())
         {
             // Reuse the existing "don't extract me" opt-out, and skip pages with no body to compose.
-            if (page.Toc.ExcludeFromLlms || page.Content is null)
+            if (page.Toc.ExcludeFromLlms || !page.HasContent)
             {
                 continue;
             }
@@ -179,7 +184,8 @@ public sealed class BookArtifactService : IFileWatchAware
 
     private static string NormalizePreview(string path) => path.Trim('/');
 
-    private static int CountPages(ImmutableList<NavigationTreeItem> tree, IReadOnlyDictionary<string, RenderedPage> pages)
+    private static int CountPages(ImmutableList<NavigationTreeItem> tree,
+        IReadOnlyDictionary<string, RenderedPage> pages)
     {
         var count = 0;
         Walk(tree);

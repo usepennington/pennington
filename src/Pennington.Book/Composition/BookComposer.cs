@@ -118,7 +118,8 @@ public sealed class BookComposer
             : $"{siteTitle} — {book.Title}";
 
         var sb = new StringBuilder();
-        sb.Append("<!DOCTYPE html>\n<html lang=\"").Append(Encode(ResolveLang(stamp?.Locale))).Append("\">\n<head>\n<meta charset=\"utf-8\">\n");
+        sb.Append("<!DOCTYPE html>\n<html lang=\"").Append(Encode(ResolveLang(stamp?.Locale)))
+            .Append("\">\n<head>\n<meta charset=\"utf-8\">\n");
         sb.Append("<title>").Append(Encode(documentTitle)).Append("</title>\n");
         sb.Append("<style>\n").Append(BookCss);
         if (monochrome)
@@ -133,7 +134,8 @@ public sealed class BookComposer
 
         sb.Append("\n</style>\n");
         // PagedConfig must precede the polyfill so the auto-run picks up the readiness callback.
-        sb.Append("<script>window.PagedConfig = { auto: true, after: () => { window.__pagedDone = true; } };</script>\n");
+        sb.Append(
+            "<script>window.PagedConfig = { auto: true, after: () => { window.__pagedDone = true; } };</script>\n");
         sb.Append("<script>\n").Append(PagedPolyfill).Append("\n</script>\n");
         sb.Append("</head>\n<body>\n");
 
@@ -219,7 +221,7 @@ public sealed class BookComposer
         var key = NormalizePath(node.Route.CanonicalPath.Value);
         if (!string.IsNullOrEmpty(key)
             && pageByPath.TryGetValue(key, out var page)
-            && page.Content is not null
+            && page.HasContent
             && !string.IsNullOrEmpty(page.Html))
         {
             var content = ProcessPageContent(page, depth, slug, rewriteHref, resolveImageSrc);
@@ -471,7 +473,8 @@ public sealed class BookComposer
         }
 
         var pennington = BookVersion.Pennington();
-        AppendColophonLine(sb, pennington is null ? "Produced with Pennington" : $"Produced with Pennington {pennington}");
+        AppendColophonLine(sb,
+            pennington is null ? "Produced with Pennington" : $"Produced with Pennington {pennington}");
 
         sb.Append("</section>\n");
     }
@@ -487,7 +490,8 @@ public sealed class BookComposer
         string? locale)
     {
         sb.Append("<nav class=\"book-toc\">\n");
-        sb.Append("<div class=\"book-toc-heading\">").Append(Encode(Translate(locale, ContentsKey, DefaultContents))).Append("</div>\n");
+        sb.Append("<div class=\"book-toc-heading\">").Append(Encode(Translate(locale, ContentsKey, DefaultContents)))
+            .Append("</div>\n");
         sb.Append("<ol>\n");
 
         // The unwrapped area landing reads as an unnumbered introduction entry.
@@ -545,20 +549,21 @@ public sealed class BookComposer
     }
 
     /// <summary>True when <paramref name="node"/> maps to a projected page with a body to compose — the same test <see cref="RenderNode"/> applies before emitting page content.</summary>
-    private static bool HasComposableContent(NavigationTreeItem node, IReadOnlyDictionary<string, RenderedPage> pageByPath)
+    private static bool HasComposableContent(NavigationTreeItem node,
+        IReadOnlyDictionary<string, RenderedPage> pageByPath)
     {
         var key = NormalizePath(node.Route.CanonicalPath.Value);
         return !string.IsNullOrEmpty(key)
-            && pageByPath.TryGetValue(key, out var page)
-            && page.Content is not null
-            && !string.IsNullOrEmpty(page.Html);
+               && pageByPath.TryGetValue(key, out var page)
+               && page.HasContent
+               && !string.IsNullOrEmpty(page.Html);
     }
 
     /// <summary>Resolves a book chrome string: the locale's translation, then the default locale's, then <paramref name="fallback"/> — the same chain as <see cref="BookCatalog"/>.</summary>
     private string Translate(string? locale, string key, string fallback)
         => _translations.Get(locale ?? _localization.DefaultLocale, key)
-            ?? _translations.Get(_localization.DefaultLocale, key)
-            ?? fallback;
+           ?? _translations.Get(_localization.DefaultLocale, key)
+           ?? fallback;
 
     /// <summary>The <c>lang</c> attribute value for <paramref name="locale"/>: the locale's configured <see cref="LocaleInfo.HtmlLang"/> when present, else the locale code itself.</summary>
     private string ResolveLang(string? locale)
@@ -619,9 +624,10 @@ public sealed class BookComposer
     {
         var assembly = typeof(BookComposer).Assembly;
         var name = Array.Find(
-            assembly.GetManifestResourceNames(),
-            n => n.EndsWith("." + fileName, StringComparison.OrdinalIgnoreCase))
-            ?? throw new InvalidOperationException($"Embedded resource '{fileName}' not found in {assembly.GetName().Name}.");
+                       assembly.GetManifestResourceNames(),
+                       n => n.EndsWith("." + fileName, StringComparison.OrdinalIgnoreCase))
+                   ?? throw new InvalidOperationException(
+                       $"Embedded resource '{fileName}' not found in {assembly.GetName().Name}.");
         using var stream = assembly.GetManifestResourceStream(name)!;
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();

@@ -1,6 +1,5 @@
 namespace Pennington.Pipeline;
 
-using AngleSharp.Dom;
 using Content;
 using Routing;
 using Search;
@@ -29,12 +28,16 @@ public readonly struct PageOrigin : System.Runtime.CompilerServices.IUnion
 {
     /// <summary>Wrapped case instance; inspect via pattern matching on the case types.</summary>
     public object? Value { get; }
+
     /// <summary>Wraps a <see cref="MarkdownOrigin"/>.</summary>
     public PageOrigin(MarkdownOrigin value) { Value = value; }
+
     /// <summary>Wraps an <see cref="EndpointOrigin"/>.</summary>
     public PageOrigin(EndpointOrigin value) { Value = value; }
+
     /// <summary>Implicit conversion from <see cref="MarkdownOrigin"/>.</summary>
     public static implicit operator PageOrigin(MarkdownOrigin value) => new(value);
+
     /// <summary>Implicit conversion from <see cref="EndpointOrigin"/>.</summary>
     public static implicit operator PageOrigin(EndpointOrigin value) => new(value);
 }
@@ -52,22 +55,24 @@ public readonly struct PageOrigin : System.Runtime.CompilerServices.IUnion
 /// item — the HTML is still available, just without front-matter context.
 /// </para>
 /// <para>
-/// <see cref="Content"/> is owned by a per-page AngleSharp browsing context —
-/// the projection holds the context for the page's lifetime. Treat
-/// <see cref="Content"/> as read-only: mutating it corrupts other consumers'
-/// views.
+/// No parsed DOM is retained. Holding an AngleSharp <c>IElement</c> keeps its whole
+/// owning document alive, so a corpus-sized cache of them costs roughly ten times
+/// what <see cref="Html"/> costs — enough to exhaust memory on large sites. Anything
+/// derived from the DOM is either captured here as value data
+/// (<see cref="Sections"/>) or re-parsed from <see cref="Html"/> on demand by the
+/// consumer that needs it, which keeps the parse transient.
 /// </para>
 /// </summary>
 /// <param name="Route">Canonical route for the page.</param>
 /// <param name="Toc">TOC entry that drove the page's inclusion.</param>
 /// <param name="Origin">Origin information (markdown / endpoint), or <c>null</c> for Razor / programmatic pages.</param>
 /// <param name="Html">Post-pipeline HTML of the selector-matched content element; empty for endpoint pages.</param>
-/// <param name="Content">Parsed content element from the post-pipeline HTML; null for endpoint pages.</param>
-/// <param name="Sections">Lazy heading-section split of <see cref="Content"/>; empty for endpoint pages.</param>
+/// <param name="HasContent">Whether the page produced a content element; <c>false</c> for endpoint pages.</param>
+/// <param name="Sections">Heading-section split of the page content; empty for endpoint pages.</param>
 public sealed record RenderedPage(
     ContentRoute Route,
     ContentTocItem Toc,
     PageOrigin? Origin,
     string Html,
-    IElement? Content,
-    Lazy<IReadOnlyList<HeadingSection>> Sections);
+    bool HasContent,
+    IReadOnlyList<HeadingSection> Sections);

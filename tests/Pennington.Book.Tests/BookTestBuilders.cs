@@ -7,7 +7,6 @@ using Pennington.Content;
 using Pennington.Navigation;
 using Pennington.Pipeline;
 using Pennington.Routing;
-using Pennington.Search;
 
 /// <summary>Shared builders for fake navigation trees and inline-HTML rendered pages.</summary>
 internal static class BookTestBuilders
@@ -16,22 +15,14 @@ internal static class BookTestBuilders
 
     public static NavigationTreeItem Node(string title, string path, params NavigationTreeItem[] children)
     {
-        var route = new ContentRoute
-        {
-            CanonicalPath = new UrlPath(path),
-            OutputFile = new FilePath(path.Trim('/')),
-        };
+        var route = new ContentRoute { CanonicalPath = new UrlPath(path), OutputFile = new FilePath(path.Trim('/')), };
         return new NavigationTreeItem(title, route, 0, null, false, false, [.. children]);
     }
 
     /// <summary>A section node with no page of its own (empty route), like an auto-created folder header.</summary>
     public static NavigationTreeItem Section(string title, params NavigationTreeItem[] children)
     {
-        var route = new ContentRoute
-        {
-            CanonicalPath = new UrlPath(""),
-            OutputFile = new FilePath(""),
-        };
+        var route = new ContentRoute { CanonicalPath = new UrlPath(""), OutputFile = new FilePath(""), };
         return new NavigationTreeItem(title, route, 0, null, false, false, [.. children]);
     }
 
@@ -42,14 +33,10 @@ internal static class BookTestBuilders
     public static RenderedPage Page(string path, string bodyHtml, string title = "Page Title")
     {
         var html = $"<article id=\"main-content\"><h1>{title}</h1>{bodyHtml}</article>";
-        var content = Parser.ParseDocument(html).Body!;
-        var route = new ContentRoute
-        {
-            CanonicalPath = new UrlPath(path),
-            OutputFile = new FilePath(path.Trim('/')),
-        };
-        var toc = new ContentTocItem(title, route, 0, path.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries), null, null);
-        return new RenderedPage(route, toc, null, html, content, new Lazy<IReadOnlyList<HeadingSection>>(() => []));
+        var route = new ContentRoute { CanonicalPath = new UrlPath(path), OutputFile = new FilePath(path.Trim('/')), };
+        var toc = new ContentTocItem(title, route, 0, path.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries),
+            null, null);
+        return new RenderedPage(route, toc, null, html, HasContent: true, Sections: []);
     }
 
     public static IReadOnlyDictionary<string, RenderedPage> PageMap(params RenderedPage[] pages)
