@@ -33,8 +33,8 @@ public class LlmsTxtAndSearchEndpointTests
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        content.ShouldContain("# ");                // site title heading
-        content.ShouldContain(".md)");              // at least one co-located per-page markdown link
+        content.ShouldContain("# "); // site title heading
+        content.ShouldContain(".md)"); // at least one co-located per-page markdown link
         // The docs site configures an absolute CanonicalBaseUrl, so per-page markdown links are
         // emitted as absolute URLs. The assertion below rejects the bare-relative form (no origin,
         // no scheme) which would be unusable for LLMs that fetch /llms.txt and try to resolve
@@ -73,27 +73,27 @@ public class LlmsTxtAndSearchEndpointTests
         using var doc = JsonDocument.Parse(json);
 
         doc.RootElement.ValueKind.ShouldBe(JsonValueKind.Object);
-        var docs = doc.RootElement.GetProperty("docs");
-        docs.ValueKind.ShouldBe(JsonValueKind.Array);
-        docs.GetArrayLength().ShouldBeGreaterThan(0);
 
-        // BM25 stats and at least one shard must be present for the client to query.
+        // BM25 stats and at least one term shard must be present for the client to query.
         doc.RootElement.GetProperty("n").GetInt32().ShouldBeGreaterThan(0);
         doc.RootElement.GetProperty("shards").GetArrayLength().ShouldBeGreaterThan(0);
 
+        // The document table itself is cold (d-{n}.json shards) as of DeweySearch 0.2.0.
+        var docs = await SearchIndexReader.LoadAsync(_client, cancellationToken: TestContext.Current.CancellationToken);
+        docs.Count.ShouldBeGreaterThan(0);
+        docs.Count.ShouldBe(doc.RootElement.GetProperty("n").GetInt32());
+
         // Every document-table row should have the required fields populated.
-        foreach (var element in docs.EnumerateArray())
+        foreach (var entry in docs)
         {
-            element.GetProperty("t").GetString().ShouldNotBeNullOrEmpty();
-            element.GetProperty("u").GetString().ShouldNotBeNullOrEmpty();
+            entry.Title.ShouldNotBeNullOrEmpty();
+            entry.Url.ShouldNotBeNullOrEmpty();
             // Records are heading-level: every row carries a (possibly empty) breadcrumb trail.
-            element.TryGetProperty("c", out var crumbs).ShouldBeTrue();
-            crumbs.ValueKind.ShouldBe(JsonValueKind.Array);
+            entry.Crumbs.ShouldNotBeNull();
         }
 
         // At least one row deep-links to a heading anchor, proving heading-level indexing.
-        docs.EnumerateArray()
-            .Any(d => (d.GetProperty("u").GetString() ?? "").Contains('#'))
+        docs.Any(d => d.Url.Contains('#'))
             .ShouldBeTrue("expected at least one heading-level record with a #anchor URL");
     }
 
@@ -104,23 +104,19 @@ public class LlmsTxtAndSearchEndpointTests
         // SearchIndexOptions.PrefixPriorities, so every generated API page row carries p=3 while
         // same-area prose under /reference/ keeps its (higher) area priority. This proves the
         // prefix-priority override flows all the way into the emitted index.
-        var json = await _client.GetStringAsync("/search/en/index.json", TestContext.Current.CancellationToken);
-        using var doc = JsonDocument.Parse(json);
-        var docs = doc.RootElement.GetProperty("docs");
+        var docs = await SearchIndexReader.LoadAsync(_client, cancellationToken: TestContext.Current.CancellationToken);
 
         var apiPriorities = new List<int>();
         var proseReferencePriorities = new List<int>();
-        foreach (var entry in docs.EnumerateArray())
+        foreach (var entry in docs)
         {
-            var u = entry.GetProperty("u").GetString() ?? "";
-            var p = entry.GetProperty("p").GetInt32();
-            if (u.StartsWith("/reference/api/", StringComparison.Ordinal))
+            if (entry.Url.StartsWith("/reference/api/", StringComparison.Ordinal))
             {
-                apiPriorities.Add(p);
+                apiPriorities.Add(entry.Priority);
             }
-            else if (u.StartsWith("/reference/", StringComparison.Ordinal))
+            else if (entry.Url.StartsWith("/reference/", StringComparison.Ordinal))
             {
-                proseReferencePriorities.Add(p);
+                proseReferencePriorities.Add(entry.Priority);
             }
         }
 
@@ -139,12 +135,10 @@ public class LlmsTxtAndSearchEndpointTests
         // Bodies live in per-page fragments (f-{docId}.json), fetched lazily by the
         // client. Verifies the selector resolved and StripHtml produced meaningful
         // text after the full pipeline ran (Razor pages included).
-        var json = await _client.GetStringAsync("/search/en/index.json", TestContext.Current.CancellationToken);
-        using var doc = JsonDocument.Parse(json);
-        var count = doc.RootElement.GetProperty("docs").GetArrayLength();
+        var docs = await SearchIndexReader.LoadAsync(_client, cancellationToken: TestContext.Current.CancellationToken);
 
         var nonEmpty = 0;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < docs.Count; i++)
         {
             var frag = await _client.GetStringAsync($"/search/en/f-{i}.json", TestContext.Current.CancellationToken);
             using var fd = JsonDocument.Parse(frag);
@@ -163,25 +157,20 @@ public class LlmsTxtAndSearchEndpointTests
         // Pick any indexed doc whose rendered page has a <pre> block, then verify
         // a distinctive token from inside that <pre> does not appear in the fragment
         // body for the same doc. The document-table order is the fragment id.
-        var json = await _client.GetStringAsync("/search/en/index.json", TestContext.Current.CancellationToken);
-        using var doc = JsonDocument.Parse(json);
-        var docs = doc.RootElement.GetProperty("docs");
+        var docs = await SearchIndexReader.LoadAsync(_client, cancellationToken: TestContext.Current.CancellationToken);
 
         // Records are heading-level, so a page maps to several fragments (its sections). Group
         // doc ids by page URL (strip the #anchor) so we can check every section of a page.
         var sectionIdsByPage = new Dictionary<string, List<int>>(StringComparer.Ordinal);
-        var id = -1;
-        foreach (var entry in docs.EnumerateArray())
+        foreach (var entry in docs)
         {
-            id++;
-            var u = entry.GetProperty("u").GetString();
-            if (string.IsNullOrEmpty(u))
+            if (string.IsNullOrEmpty(entry.Url))
             {
                 continue;
             }
 
-            var pageUrl = u.Split('#', 2)[0];
-            (sectionIdsByPage.TryGetValue(pageUrl, out var ids) ? ids : sectionIdsByPage[pageUrl] = []).Add(id);
+            var pageUrl = entry.Url.Split('#', 2)[0];
+            (sectionIdsByPage.TryGetValue(pageUrl, out var ids) ? ids : sectionIdsByPage[pageUrl] = []).Add(entry.Id);
         }
 
         var context = BrowsingContext.New(Configuration.Default);
@@ -204,7 +193,8 @@ public class LlmsTxtAndSearchEndpointTests
             var pageTextWithoutPre = page.Body?.TextContent ?? "";
 
             var candidate = preText
-                .Split([' ', '\n', '\r', '\t', '(', ')', '{', '}', '[', ']', ';', ','], StringSplitOptions.RemoveEmptyEntries)
+                .Split([' ', '\n', '\r', '\t', '(', ')', '{', '}', '[', ']', ';', ','],
+                    StringSplitOptions.RemoveEmptyEntries)
                 .FirstOrDefault(t => t.Length >= 6 && !pageTextWithoutPre.Contains(t, StringComparison.Ordinal));
             if (candidate is null)
             {
@@ -214,7 +204,8 @@ public class LlmsTxtAndSearchEndpointTests
             // Collect the body of every section fragment belonging to this page.
             foreach (var sectionId in ids)
             {
-                var frag = await _client.GetStringAsync($"/search/en/f-{sectionId}.json", TestContext.Current.CancellationToken);
+                var frag = await _client.GetStringAsync($"/search/en/f-{sectionId}.json",
+                    TestContext.Current.CancellationToken);
                 using var fd = JsonDocument.Parse(frag);
                 pageSectionBodies.Add(fd.RootElement.GetProperty("body").GetString() ?? "");
             }
@@ -223,9 +214,10 @@ public class LlmsTxtAndSearchEndpointTests
             break;
         }
 
-        codeOnlyToken.ShouldNotBeNull("expected at least one docs page with a <pre> block containing a code-only token");
+        codeOnlyToken.ShouldNotBeNull(
+            "expected at least one docs page with a <pre> block containing a code-only token");
         pageSectionBodies.ShouldNotBeEmpty();
-        pageSectionBodies.ShouldAllBe(body => !body.Contains(codeOnlyToken!, StringComparison.Ordinal));
+        pageSectionBodies.ShouldAllBe(body => !body.Contains(codeOnlyToken, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -309,7 +301,7 @@ public class LlmsTxtAndSearchEndpointTests
             f.OutputPath.Value.Equals("reference/llms.txt", StringComparison.OrdinalIgnoreCase));
 
         refFile.ShouldNotBeNull("expected /reference/llms.txt subtree file");
-        var text = Encoding.UTF8.GetString(refFile!.Content);
+        var text = Encoding.UTF8.GetString(refFile.Content);
         text.ShouldContain("# Reference");
         // Should contain at least one entry linked to its co-located page markdown.
         System.Text.RegularExpressions.Regex.IsMatch(text, @"/reference/[^\s)]*\.md")
@@ -393,9 +385,9 @@ public class LlmsTxtAndSearchEndpointTests
 
         var link = page.QuerySelector("link[rel='alternate'][type='text/markdown']");
         link.ShouldNotBeNull("content pages should advertise their co-located markdown copy");
-        var href = link!.GetAttribute("href");
+        var href = link.GetAttribute("href");
         href.ShouldNotBeNull();
-        href!.ShouldEndWith("/how-to/feeds/llms-txt.md");
+        href.ShouldEndWith("/how-to/feeds/llms-txt.md");
 
         var markdown = await _client.GetAsync(href, TestContext.Current.CancellationToken);
         markdown.EnsureSuccessStatusCode();
@@ -419,7 +411,7 @@ public class LlmsTxtAndSearchEndpointTests
 
         var cue = page.QuerySelector("body > p.robots-only");
         cue.ShouldNotBeNull("expected a .robots-only cue paragraph at the top of <body>");
-        cue!.TextContent.ShouldContain("/llms.txt");
+        cue.TextContent.ShouldContain("/llms.txt");
         cue.QuerySelector("a[href='/llms.txt']").ShouldNotBeNull(
             "the cue should link to /llms.txt so an extractor sees the path verbatim");
     }
