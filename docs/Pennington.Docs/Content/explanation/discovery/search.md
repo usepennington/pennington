@@ -27,7 +27,7 @@ nodes:
 edges:
   - { from: render, to: extractor, label: render fold }
   - { from: extractor, to: builder, label: sections }
-  - { from: builder, to: shards, label: "index.json · t-* · f-*" }
+  - { from: builder, to: shards, label: "index.json · d-* · t-* · f-*" }
   - { from: shards, to: client, label: fetched on demand }
 ```
 
@@ -45,11 +45,14 @@ A site of any size produces an index too large to ship as one file and download 
 
 Each locale gets a tree under `/search/{locale}/`:
 
-- `index.json` — the entrypoint: the document table (one row per record: URL, title, length, priority, facet ids), the facet label vocabularies, ranking statistics, and the stemmed synonym map.
+- `index.json` — the entrypoint, carrying only what ranking needs before any result is displayed: the ranking statistics, each record's priority and quantized length, the facet label vocabularies, the breadcrumb label dictionary, the stemmed synonym map, and the list of term-shard keys.
+- `d-*.json` — document-table shards: the URL, title, and breadcrumb ids for a run of records. URLs and titles are front-coded against the previous row, which collapses the long shared prefixes a sorted route list produces.
 - `t-*.json` — term shards. Terms are bucketed by the first few characters of their stemmed form, so a query fetches only the shards for the terms it contains.
 - `f-*.json` — per-page fragments holding the indexed body text, fetched only when a page surfaces in results.
 
-The client downloads `index.json` once, then pulls term shards and fragments on demand. Typing a query fetches a handful of small files rather than one large one; opening a result fetches that page's fragment and nothing else. The shard granularity is tunable, but the default keeps shards small enough that no single fetch dominates.
+The split is deliberate: ranking a query needs statistics for every record, but titles and URLs are needed only for the handful of records actually shown. Holding the document table back shrinks the first-keystroke download to the part that ranking actually uses — this site's 2,695 records ship a 43 KB entrypoint while the 183 KB document table stays cold until a query produces hits. The entrypoint still carries a few bytes per record, so it grows with the corpus; it just grows far more slowly than a catalogue of every URL and title would.
+
+The client downloads `index.json` once, then pulls term shards, the document shards covering its hits, and fragments on demand. Typing a query fetches a handful of small files rather than one large one; opening a result fetches that page's fragment and nothing else. The shard granularity is tunable, but the default keeps shards small enough that no single fetch dominates.
 
 ## The build is a fold over the render
 
