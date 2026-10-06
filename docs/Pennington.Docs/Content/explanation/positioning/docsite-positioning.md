@@ -47,6 +47,8 @@ DocSite owns exactly one `AddMarkdownContent<DocSiteFrontMatter>` registration. 
 
 `DocSiteOptions.ColorScheme`, `DisplayFontFamily`, `BodyFontFamily`, `ExtraStyles`, and `CustomCssFrameworkSettings` offer tweak points against MonorailCSS, but the theme composition itself — `AddMonorailCss` plus the DocSite `App` component plus the `DocSiteArticle` shell — is fixed. Replacing the `App` component or introducing a non-article layout means registering extra routing assemblies via `AdditionalRoutingAssemblies` and accepting that custom components ride alongside DocSite's, not in place of them.
 
+The shell being fixed does not mean its body has to be a string. `DocSiteArticle` takes the article body either as `HtmlContent` — what the markdown pipeline hands the catch-all page — or as child content, so a routed `@page` component under the DocSite `MainLayout` can wrap its own components in `<DocSiteArticle Title="…">…</DocSiteArticle>` and get the same header, pager, and prose typography as a markdown page. A generated reference section (one page per namespace, say, rendered from a model by a custom content service) is the typical case: it stays a DocSite page without flattening its content to HTML first.
+
 `ContentSelector` on `DocSiteOptions` defaults to `#main-content` — the wrapper the stock layout places around the article — and accepts any CSS selector, including the empty string to index the full body when the layout has been replaced. That one selector picks the body element that the search index, the llms.txt sidecars, and the build-time link audit all consume, so chrome is stripped once and all three read the same element.
 
 ### The escape hatch — DocSite's source as reference
@@ -64,7 +66,7 @@ For a documented walkthrough rather than source to read, the [first-site tutoria
 A template fits a particular kind of site. DocSite fits an article-centric documentation site rendered through a fixed Razor layout. A handful of site types fall outside it — and there the host is built on the engine, not the template:
 
 - Multiple markdown front-matter types served from the same host with different themes or different layouts. `ConfigurePennington` can register a second source, but it cannot give that source a separate layout shell.
-- Replacing the `App` component or the `DocSiteArticle` shell with a layout that is not article-shaped — a dashboard, a directory, a storefront.
+- Replacing the `App` component or the `DocSiteArticle` shell with a layout that is not article-shaped — a dashboard, a directory, a storefront. (An article-shaped page built from components is not this case; `DocSiteArticle` takes child content.)
 - A non-Razor rendering story: custom `MapGet` handlers, Minimal API endpoints that emit HTML strings, or a reverse-proxy shape where the engine feeds a different front-end entirely.
 - Embedding Pennington inside an existing ASP.NET app that already owns its routing, authentication, or layout conventions. Adding `AddDocSite` on top tends to fight those choices rather than cooperate with them.
 - Shipping the engine as a library into another product where only the pipeline is needed, not the layout.

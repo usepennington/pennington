@@ -62,6 +62,21 @@ The `data-chrome-overrides` attributes are not required by `DocSiteOptions` — 
 
 The DocSite shell only discovers `@page` directives in its own assembly by default; adding the host assembly to `AdditionalRoutingAssemblies` makes any `@page "/route"` component in that assembly routable alongside the bundled pages. The example returns `[typeof(SiteChromeOverrides).Assembly]` so a Razor component like `ExtraPage.razor` sitting next to `Program.cs` gets picked up without any additional DI wiring.
 
+A routed component that should look like a docs page rather than a bare route declares `@layout Pennington.DocSite.Components.Layout.MainLayout` for the sidebar, header, and outline rail, and wraps its body in `DocSiteArticle` for the page header, pager, and prose typography. The body goes in as child content, so the page composes its own components instead of building an HTML string:
+
+```razor
+@page "/catalog/{Slug}"
+@layout Pennington.DocSite.Components.Layout.MainLayout
+@using Pennington.DocSite.Slots.Components
+
+<DocSiteArticle Title="@_item.Title" Description="@_item.Summary" AreaTitle="Catalog">
+    <h2 id="members">Members</h2>
+    <MemberTable Items="@_item.Members" />
+</DocSiteArticle>
+```
+
+`HtmlContent` remains for pages that already hold rendered HTML; when both are set, the child content wins.
+
 ```csharp:symbol,bodyonly
 examples/DocSiteChromeOverridesExample/SiteChromeOverrides.cs > SiteChromeOverrides.BuildAdditionalRoutingAssemblies
 ```

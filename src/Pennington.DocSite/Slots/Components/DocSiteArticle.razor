@@ -24,7 +24,14 @@
 </header>
 
 <main class="prose dark:prose-invert dark:text-base-300 max-w-full prose-sm min-w-0 prose-headings:scroll-m-20 prose-headings:font-display prose-headings:text-base-900 dark:prose-headings:text-base-50">
-    @((MarkupString)HtmlContent)
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        @((MarkupString)HtmlContent)
+    }
 </main>
 
 @if (PreviousPageName is not null || NextPageName is not null)
@@ -59,7 +66,19 @@
 
 @code {
     [Parameter] public string Title { get; set; } = "";
+
+    /// <summary>
+    /// The article body as pre-rendered HTML — what the markdown pipeline produces. Ignored when
+    /// <see cref="ChildContent"/> is set.
+    /// </summary>
     [Parameter] public string HtmlContent { get; set; } = "";
+
+    /// <summary>
+    /// The article body as components, for pages that build their content in Razor rather than as
+    /// a string. Rendered inside the same prose wrapper <see cref="HtmlContent"/> gets, so a
+    /// component-authored page keeps the header, pager, and typography of a markdown page.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public string? Description { get; set; }
     [Parameter] public string? AreaTitle { get; set; }
     [Parameter] public string? AreaIconHtml { get; set; }
