@@ -8,7 +8,7 @@ Wires the DocSite template — `AddDocSite` / `UseDocSite` / `RunDocSiteAsync` �
 - Folder-driven navigation — markdown under `Content/` becomes sidebar entries; a subfolder becomes a navigation group, sorted by `order:`
 - A root `Content/index.md` serving `/`
 - A root `Content/404.md` — the not-found body. It is reserved out of discovery (no `/404/` route, not in nav/sitemap/search), rendered by the catch-all for any unmatched URL, and written to `output/404.html` by the static build.
-- `UseDocSite` ordering (locale → antiforgery → static files → routing → MonorailCSS → SPA → Pennington middleware)
+- `UseDocSite` ordering (locale → antiforgery → static files → static web assets → MonorailCSS → Pennington middleware → Razor components with the WebAssembly render mode)
 
 ## Referenced from
 
