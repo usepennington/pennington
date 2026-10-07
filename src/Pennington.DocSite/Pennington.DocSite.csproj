@@ -14,6 +14,10 @@
   <ItemGroup>
     <!-- Direct reference so the SharpYaml source generator runs in this project (DocSiteYamlContext). -->
     <PackageReference Include="SharpYaml" />
+    <!-- Host-side WebAssembly render-mode wiring (AddInteractiveWebAssembly*), which is not part of
+         the Microsoft.AspNetCore.App shared framework. Lets a consumer drop an interactive-WebAssembly
+         island into a page by referencing a Blazor WebAssembly client project; costs nothing otherwise. -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <ProjectReference Include="..\Pennington\Pennington.csproj" />
     <ProjectReference Include="..\Pennington.UI\Pennington.UI.csproj" />
     <ProjectReference Include="..\Pennington.MonorailCss\Pennington.MonorailCss.csproj" />

@@ -34,9 +34,12 @@ Middleware and endpoint wiring. The template `Use*` methods each wrap a fixed se
 1. `UseLocaleRouting`
 2. `UseAntiforgery`
 3. `UseStaticFiles`
-4. `UseMonorailCss`
-5. `UsePennington`
-6. `MapRazorComponents<App>()`
+4. `MapStaticAssets`
+5. `UseMonorailCss`
+6. `UsePennington`
+7. `MapRazorComponents<App>()` with `AddInteractiveWebAssemblyRenderMode`
+
+`AddDocSite` pairs the last step with `AddInteractiveWebAssemblyComponents`, so a host can reference a Blazor WebAssembly client project and render one of its components with `@rendermode InteractiveWebAssembly` on a routed page. Without such an island nothing extra is served or downloaded; with one, the static build also writes the WebAssembly boot manifest and `_framework` bundle so the island boots from a plain static host.
 
 ### `UseBlogSite` middleware order
 
