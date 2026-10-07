@@ -7,14 +7,14 @@ using Pennington.Pipeline;
 /// Shouldly-style assertions that check a union case type and extract the value.
 /// Replaces the verbose pattern of ShouldBeTrue + switch + ShouldNotBeNull.
 ///
-/// C# 15 unions require switch expressions for pattern matching (not <c>is</c> via <c>object</c>),
-/// so each union type needs a dedicated overload.
+/// Matching an open generic case type against the union instance is disallowed (CS8780), so the
+/// check goes through the synthesized <c>Value</c>; each union type gets its own overload.
 /// </summary>
 public static class UnionAssertExtensions
 {
     public static TCase ShouldBeCase<TCase>(this ContentItem union) where TCase : class
     {
-        if (union switch { TCase t => t, _ => null } is TCase result)
+        if (union.Value is TCase result)
         {
             return result;
         }
@@ -25,7 +25,7 @@ public static class UnionAssertExtensions
 
     public static TCase ShouldBeCase<TCase>(this ContentSource union) where TCase : class
     {
-        if (union switch { TCase t => t, _ => null } is TCase result)
+        if (union.Value is TCase result)
         {
             return result;
         }
@@ -36,7 +36,7 @@ public static class UnionAssertExtensions
 
     public static TCase ShouldBeCase<TCase>(this LinkCheckResult union) where TCase : class
     {
-        if (union switch { TCase t => t, _ => null } is TCase result)
+        if (union.Value is TCase result)
         {
             return result;
         }
