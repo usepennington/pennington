@@ -225,7 +225,13 @@ public static class DocSiteServiceExtensions
         // Manifest-aware static web assets. UseStaticFiles covers wwwroot and the /_content/*
         // assets of referenced Razor class libraries, but not blazor.web.js nor a referenced
         // WebAssembly client's _framework bundle: those only exist as manifest endpoints.
-        app.MapStaticAssets();
+        // MapStaticAssets throws without a manifest (a test host built without one, say), so
+        // a host that has none keeps the UseStaticFiles behaviour it always had.
+        var staticAssetsManifest = StaticAssetsManifestPath(app);
+        if (staticAssetsManifest is not null)
+        {
+            app.MapStaticAssets(staticAssetsManifest);
+        }
         app.UseMonorailCss();
         // UsePennington wires the redirect middleware; call it before mapping
         // the Razor component endpoint so `redirectUrl:` pages short-circuit
@@ -242,7 +248,7 @@ public static class DocSiteServiceExtensions
         // (_framework/resource-collection*.js) whether or not anything will ever boot, and the
         // static build dutifully writes it out. Only add the mode when the host actually ships
         // a WebAssembly client.
-        if (ShipsWebAssemblyClient(app))
+        if (staticAssetsManifest is not null && ShipsWebAssemblyClient(staticAssetsManifest))
         {
             components.AddInteractiveWebAssemblyRenderMode();
         }
@@ -269,20 +275,24 @@ public static class DocSiteServiceExtensions
     }
 
     /// <summary>
-    /// True when a referenced Blazor WebAssembly client contributes its runtime to the static web
-    /// assets manifest — the same file <c>MapStaticAssets</c> reads. The runtime's loader always
-    /// lands at <c>_framework/dotnet.js</c>, so that route is the tell; the server-side render-mode
-    /// package pulls the client assemblies into every host's output, so their presence is not.
+    /// The static web assets manifest MapStaticAssets resolves by default, or null when the host
+    /// was built without one.
     /// </summary>
-    private static bool ShipsWebAssemblyClient(WebApplication app)
+    private static string? StaticAssetsManifestPath(WebApplication app)
     {
-        var manifest = Path.Combine(AppContext.BaseDirectory, app.Environment.ApplicationName + ".staticwebassets.endpoints.json");
-        if (!File.Exists(manifest))
-        {
-            return false;
-        }
+        var path = Path.Combine(AppContext.BaseDirectory, app.Environment.ApplicationName + ".staticwebassets.endpoints.json");
+        return File.Exists(path) ? path : null;
+    }
 
-        using var document = JsonDocument.Parse(File.ReadAllBytes(manifest));
+    /// <summary>
+    /// True when a referenced Blazor WebAssembly client contributes its runtime to the static web
+    /// assets manifest. The runtime's loader always lands at <c>_framework/dotnet.js</c>, so that
+    /// route is the tell; the server-side render-mode package pulls the client assemblies into
+    /// every host's output, so their presence is not.
+    /// </summary>
+    private static bool ShipsWebAssemblyClient(string manifestPath)
+    {
+        using var document = JsonDocument.Parse(File.ReadAllBytes(manifestPath));
         if (!document.RootElement.TryGetProperty("Endpoints", out var endpoints) || endpoints.ValueKind != JsonValueKind.Array)
         {
             return false;
