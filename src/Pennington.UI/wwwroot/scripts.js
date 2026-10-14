@@ -926,9 +926,13 @@ class MobileNavManager {
             this.toggleMenu();
         });
         
-        // Close menu when clicking on a link (mobile only)
+        // Close menu when clicking on a link (mobile only). Match via closest()
+        // rather than e.target.tagName: the area pills wrap their label and icon
+        // in <span>s, so the tap usually lands on a child of the <a>, not the <a>
+        // itself. (Non-direct pills stopPropagation() in AreaNavManager before
+        // this runs, so previewing an area's TOC still keeps the menu open.)
         this.navSidebar.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A' && window.innerWidth < 1024) {
+            if (e.target.closest('a[href]') && window.innerWidth < 1024) {
                 this.closeMenu();
             }
         });
@@ -967,12 +971,17 @@ class MobileNavManager {
     }
 
     isMenuOpen() {
-        return this.navSidebar.getAttribute('aria-expanded') === 'true';
+        // Open/closed state lives in data-expanded (which the CSS keys off);
+        // nothing sets aria-expanded on the <nav>, so reading that here made
+        // isMenuOpen() always false — the hamburger could only ever open the
+        // menu, and the outside-click / Escape handlers never fired.
+        return this.navSidebar.dataset.expanded === 'true';
     }
 
     closeMenu() {
         this.navSidebar.dataset.expanded = 'false';
-        
+        this.menuToggle.setAttribute('aria-expanded', 'false');
+
         if (this.mobileOverlay) {
             this.mobileOverlay.setAttribute('aria-hidden', 'true');
         }
@@ -983,7 +992,8 @@ class MobileNavManager {
 
     openMenu() {
         this.navSidebar.dataset.expanded = 'true';
-        
+        this.menuToggle.setAttribute('aria-expanded', 'true');
+
         if (this.mobileOverlay) {
             this.mobileOverlay.setAttribute('aria-hidden', 'false');
         }

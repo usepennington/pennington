@@ -57,6 +57,19 @@ public class SidebarChromeTests : IClassFixture<DocsWebApplicationFactory>
         classes.ShouldContain("opacity-0");
     }
 
+    [Fact]
+    public async Task MobileMenuToggle_StartsCollapsed()
+    {
+        var document = await Load(ChromePage);
+
+        // MobileNavManager flips aria-expanded on the toggle as it opens/closes the sidebar;
+        // the server-rendered button must carry the matching initial (collapsed) state.
+        var toggle = document.QuerySelector("#menu-toggle");
+        toggle.ShouldNotBeNull();
+        toggle.GetAttribute("aria-controls").ShouldBe("nav-sidebar");
+        toggle.GetAttribute("aria-expanded").ShouldBe("false");
+    }
+
     private async Task<AngleSharp.Dom.IDocument> Load(string path)
     {
         var html = await _client.GetStringAsync(path, TestContext.Current.CancellationToken);
