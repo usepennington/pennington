@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Pennington.Generation;
 using Pennington.Infrastructure;
@@ -85,6 +86,122 @@ public class AuditRunnerTests
 
         renderedAuditor.AuditCalls.ShouldBe(0);
         cache.Diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task FileChange_InHeadlessOneShot_AfterHostDisposed_DoesNotStartAnotherPass()
+    {
+        // Regression: a static build writes its output under a watched root (the docs site's
+        // tree-sitter watch covers the repo, *.html/*.css included), so the last writes' debounced
+        // notifications fired after the host had disposed its provider and re-ran the pass,
+        // logging "Audit pass failed" with an ObjectDisposedException. One-shot runs audit once.
+        var services = new ServiceCollection();
+        services.AddSingleton<AuditCache>();
+        services.AddSingleton(new LocalizationOptions());
+        services.AddSingleton<ISiteProjection, StubProjection>();
+        var renderedAuditor = new FakeRenderedAuditor();
+        services.AddSingleton<IRenderedAuditor>(renderedAuditor);
+
+        var sp = services.BuildServiceProvider();
+        var fileWatcher = new RecordingFileWatcher();
+        var lifetime = new StubLifetime();
+        var logger = new CapturingLogger<AuditRunner>();
+        var runner = new AuditRunner(
+            sp,
+            sp.GetRequiredService<AuditCache>(),
+            fileWatcher,
+            sp.GetRequiredService<LocalizationOptions>(),
+            lifetime,
+            logger,
+            isHeadlessOneShot: true);
+
+        await runner.StartAsync(TestContext.Current.CancellationToken);
+        lifetime.FireStarted();
+        await runner.WaitForInitialPassAsync();
+        await runner.StopAsync(TestContext.Current.CancellationToken);
+        sp.Dispose();
+
+        fileWatcher.RaiseChange();
+        await runner.WaitForInitialPassAsync();
+
+        renderedAuditor.AuditCalls.ShouldBe(1);
+        logger.Warnings.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task FileChange_InDevMode_AfterStop_DoesNotStartAPass()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<AuditCache>();
+        services.AddSingleton(new LocalizationOptions());
+        var auditor = new FakeBuildAuditor();
+        services.AddSingleton<IBuildAuditor>(auditor);
+
+        var sp = services.BuildServiceProvider();
+        var fileWatcher = new RecordingFileWatcher();
+        var lifetime = new StubLifetime();
+        var logger = new CapturingLogger<AuditRunner>();
+        var runner = new AuditRunner(
+            sp,
+            sp.GetRequiredService<AuditCache>(),
+            fileWatcher,
+            sp.GetRequiredService<LocalizationOptions>(),
+            lifetime,
+            logger,
+            isHeadlessOneShot: false);
+
+        await runner.StartAsync(TestContext.Current.CancellationToken);
+        lifetime.FireStarted();
+        await runner.WaitForInitialPassAsync();
+
+        // Serve still re-audits on content edits while running.
+        fileWatcher.RaiseChange();
+        await runner.WaitForInitialPassAsync();
+        auditor.AuditCalls.ShouldBe(2);
+
+        // A change landing during host shutdown must not run against the disposed provider.
+        await runner.StopAsync(TestContext.Current.CancellationToken);
+        sp.Dispose();
+        fileWatcher.RaiseChange();
+        await runner.WaitForInitialPassAsync();
+
+        auditor.AuditCalls.ShouldBe(2);
+        logger.Warnings.ShouldBeEmpty();
+    }
+
+    private sealed class FakeBuildAuditor : IBuildAuditor
+    {
+        public string Code => "test.build";
+        public int AuditCalls { get; private set; }
+        public Task<IReadOnlyList<BuildDiagnostic>> AuditAsync(BuildAuditContext context, CancellationToken cancellationToken)
+        {
+            AuditCalls++;
+            return Task.FromResult<IReadOnlyList<BuildDiagnostic>>([]);
+        }
+    }
+
+    private sealed class RecordingFileWatcher : IFileWatcher
+    {
+        private readonly List<Action> _subscribers = [];
+        public void AddPathWatch(string path, string filePattern, Action<string, WatcherChangeTypes> onFileChanged, bool includeSubdirectories = true) { }
+        public void SubscribeToChanges(Action onUpdate) => _subscribers.Add(onUpdate);
+        public void SubscribeToChanges(Action<FileChangeNotification> onUpdate) { }
+        public void RaiseChange() => _subscribers.ForEach(s => s());
+        public void Dispose() { }
+    }
+
+    private sealed class CapturingLogger<T> : ILogger<T>
+    {
+        public List<string> Warnings { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (logLevel >= LogLevel.Warning)
+            {
+                Warnings.Add($"{formatter(state, exception)} {exception?.GetType().Name}");
+            }
+        }
     }
 
     private sealed class FakeRenderedAuditor : IRenderedAuditor

@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Hosted service that runs every registered <see cref="IBuildAuditor"/> at startup
-/// and again whenever <see cref="IFileWatcher"/> reports a content change. Writes
+/// and, when serving, again whenever <see cref="IFileWatcher"/> reports a content change. Writes
 /// the aggregated diagnostics into the shared <see cref="AuditCache"/>. In dev mode,
 /// emits a one-line summary via <see cref="ILogger"/> after each run.
 /// </summary>
@@ -27,6 +27,7 @@ public sealed class AuditRunner : IHostedService
     private readonly bool _isHeadlessOneShot;
     private readonly Lock _runLock = new();
     private Task? _activeRun;
+    private bool _stopped;
 
     /// <summary>Wires the runner to its dependencies.</summary>
     public AuditRunner(
@@ -69,12 +70,30 @@ public sealed class AuditRunner : IHostedService
         // result would then poison the projection's cache). ApplicationStarted fires only after
         // every hosted service, the server included, has started.
         _lifetime.ApplicationStarted.Register(RunInBackground);
-        _fileWatcher.SubscribeToChanges(() => RunInBackground());
+
+        // Build and diag audit exactly once (the pass they join). Re-running on file change there
+        // only reacts to the build's own output writes — a static build under a watched root fired
+        // re-runs mid-crawl and, for its last writes, after the host had disposed its provider.
+        if (!_isHeadlessOneShot)
+        {
+            _fileWatcher.SubscribeToChanges(() => RunInBackground());
+        }
+
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc/>
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    /// <summary>
+    /// Stops accepting new passes and joins the in-flight one, so no pass touches the root
+    /// <see cref="IServiceProvider"/> after the host disposes it.
+    /// </summary>
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        lock (_runLock)
+        {
+            _stopped = true;
+            return _activeRun ?? Task.CompletedTask;
+        }
+    }
 
     /// <summary>
     /// Awaits the initial audit pass kicked off by <see cref="StartAsync"/> so callers (e.g. the
@@ -91,7 +110,7 @@ public sealed class AuditRunner : IHostedService
         // overlapping audit passes that race on the cache.
         lock (_runLock)
         {
-            if (_activeRun is { IsCompleted: false })
+            if (_stopped || _activeRun is { IsCompleted: false })
             {
                 return;
             }
