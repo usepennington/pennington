@@ -17,7 +17,7 @@ By the end of this tutorial, a running BlogSite host titled "Scaffold Blog" serv
 - Completed [Create your first Pennington site](xref:tutorials.getting-started.first-site)
 - Completed [Serve markdown through a Blazor catch-all](xref:tutorials.getting-started.first-page) (so `Content/` already has at least one markdown file)
 
-The stable .NET 10 SDK is all BlogSite needs — its package targets .NET 10, and you never write the `union` keyword that would call for a preview SDK. See [the SDK and the union shim](xref:explanation.positioning.sdk-and-the-union-shim) for when the .NET 11 beta is worth opting into.
+The stable .NET 10 SDK is all BlogSite needs — its package targets .NET 10, and you never write the `union` keyword that would call for the .NET 11 SDK. See [the SDK and the union shim](xref:explanation.positioning.sdk-and-the-union-shim) for when .NET 11 is worth opting into.
 
 The finished code for this tutorial lives in [`examples/BlogSiteScaffoldExample`](https://github.com/usepennington/pennington/tree/main/examples/BlogSiteScaffoldExample).
 

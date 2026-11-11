@@ -27,7 +27,7 @@ Most documentation projects should start with `Pennington.DocSite`. Drop down to
 
 ## Installation
 
-Pennington targets .NET 10 and .NET 11, and uses preview C# language features.
+Pennington targets .NET 10 and .NET 11. Using the packages needs only the .NET 10 SDK; building Pennington from source needs the .NET 11 SDK, because its `net11.0` build uses C# 15 union types.
 
 For the DocSite quick start:
 

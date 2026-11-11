@@ -11,7 +11,7 @@ By the end of this tutorial a runnable ASP.NET project — `MyFirstPenningtonSit
 
 ## Prerequisites
 
-Pennington's published packages target .NET 10, so the stable .NET 10 SDK is all you need to build a site — no preview language flag. The .NET 11 beta SDK is an opt-in that only matters when you extend the pipeline yourself; [the SDK and the union shim](xref:explanation.positioning.sdk-and-the-union-shim) explains when that pays off.
+Pennington's published packages target .NET 10, so the stable .NET 10 SDK is all you need to build a site — no language-version flag. The .NET 11 SDK is an opt-in that only matters when you extend the pipeline yourself; [the SDK and the union shim](xref:explanation.positioning.sdk-and-the-union-shim) explains when that pays off.
 
 - .NET 10 SDK installed
 - A terminal and a text editor or IDE

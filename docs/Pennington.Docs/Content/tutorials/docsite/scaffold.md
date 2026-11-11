@@ -13,7 +13,7 @@ By the end of this tutorial the DocSite host runs with a "Scaffold Docs" title, 
 
 ## Prerequisites
 
-The DocSite template ships as a NuGet package built for .NET 10, so the stable .NET 10 SDK is all you need — no preview language flag. The .NET 11 beta SDK only matters if you later extend the pipeline by hand; see [the SDK and the union shim](xref:explanation.positioning.sdk-and-the-union-shim).
+The DocSite template ships as a NuGet package built for .NET 10, so the stable .NET 10 SDK is all you need — no language-version flag. The .NET 11 SDK only matters if you later extend the pipeline by hand; see [the SDK and the union shim](xref:explanation.positioning.sdk-and-the-union-shim).
 
 - .NET 10 SDK installed
 - A terminal and a text editor or IDE

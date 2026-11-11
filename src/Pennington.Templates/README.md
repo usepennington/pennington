@@ -26,4 +26,4 @@ dotnet run
 
 `dotnet run` serves the site with hot reload. `dotnet run -- build <baseUrl> <outputDir>` writes a static build.
 
-Targets .NET 11.
+Scaffolded projects target .NET 10.
